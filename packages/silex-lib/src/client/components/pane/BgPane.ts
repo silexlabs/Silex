@@ -15,10 +15,11 @@
  *
  */
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
+import { ElementData } from '../../../types';
 import { Controller, Model } from '../../ClientTypes';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
-import { ElementData } from '../../../types';
+import { getUi } from '../../api';
 
 /**
  * on of Silex Editors class
@@ -60,9 +61,6 @@ export class BgPane extends PaneBase {
 
     // init bg image
     this.buildBgImage();
-
-    // bg image properties
-    this.buildBgImageProperties();
   }
 
   /**
@@ -84,28 +82,28 @@ export class BgPane extends PaneBase {
 
     // event user wants to remove the bg image
     this.bgClearBgImage.addEventListener('click', () => this.onClearImageButton(), false);
-  }
 
-  /**
-   * build the UI
-   */
-  buildBgImageProperties() {
+    // bg image properties
     this.attachmentComboBox = this.initComboBox('.bg-attachment-combo-box', (event: Event) => {
       this.styleChanged('background-attachment', (event.target as HTMLInputElement).value);
     });
+
     this.vPositionComboBox = this.initComboBox('.bg-position-v-combo-box', (event: Event) => {
       const hPosition = this.hPositionComboBox.value;
       const vPosition = this.vPositionComboBox.value;
       this.styleChanged('background-position', vPosition + ' ' + hPosition);
     });
+
     this.hPositionComboBox = this.initComboBox('.bg-position-h-combo-box', (event: Event) => {
       const hPosition = this.hPositionComboBox.value;
       const vPosition = this.vPositionComboBox.value;
       this.styleChanged('background-position', vPosition + ' ' + hPosition);
     });
+
     this.repeatComboBox = this.initComboBox('.bg-repeat-combo-box', (event: Event) => {
       this.styleChanged('background-repeat', (event.target as HTMLInputElement).value);
     });
+
     this.sizeComboBox = this.initComboBox('.bg-size-combo-box', (event: Event) => {
       this.styleChanged('background-size', (event.target as HTMLInputElement).value);
     });
@@ -120,13 +118,15 @@ export class BgPane extends PaneBase {
   redraw(selectElements: ElementData[]) {
     super.redraw(selectElements);
 
+    const mobileOrDesktop = getUi().mobileEditor ? 'mobile' : 'desktop';
+
     // BG color
     if (selectElements.length > 0) {
       this.colorPicker.setDisabled(false);
-      const color = this.getCommonProperty(selectElements, (el) => el.style['background-color'] || '');
+      const color = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-color'] || '');
 
       // indeterminate state
-      this.colorPicker.setIndeterminate(color == null);
+      this.colorPicker.setIndeterminate(color === null);
 
       // display color
       if (color != null ) {
@@ -149,7 +149,9 @@ export class BgPane extends PaneBase {
       this.repeatComboBox.disabled = !enable;
       this.sizeComboBox.disabled = !enable;
     };
-    const bgImage = this.getCommonProperty(selectElements, (el) => el.style['background-image']);
+
+    // bg image
+    const bgImage = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-image']);
 
     if (bgImage != null  && bgImage !== 'none' && bgImage !== '') {
       enableBgComponents(true);
@@ -158,7 +160,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image attachment
-    const bgImageAttachment = this.getCommonProperty(selectElements, (el) => el.style['background-attachment']);
+    const bgImageAttachment = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-attachment']);
     if (bgImageAttachment) {
       this.attachmentComboBox.value = bgImageAttachment;
     } else {
@@ -166,7 +168,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image position
-    const bgImagePosition: string = this.getCommonProperty(selectElements, (el) => el.style['background-position']);
+    const bgImagePosition: string = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-position']);
     if (bgImagePosition && bgImagePosition !== '') {
       const hPosition = bgImagePosition.includes('left') ? 'left' : bgImagePosition.includes('right') ? 'right' : bgImagePosition.includes('center') ? 'center' : '';
       const vPosition = bgImagePosition.includes('top') ? 'top' : bgImagePosition.includes('bottom') ? 'bottom' : bgImagePosition.includes('center') ? 'center' : '';
@@ -180,7 +182,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image repeat
-    const bgImageRepeat = this.getCommonProperty(selectElements, (el) => el.style['background-repeat']);
+    const bgImageRepeat = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-repeat']);
 
     if (bgImageRepeat) {
       this.repeatComboBox.value = bgImageRepeat;
@@ -189,7 +191,7 @@ export class BgPane extends PaneBase {
     }
 
     // bg image size
-    const bgImageSize = this.getCommonProperty(selectElements, (el) => el.style['background-size']);
+    const bgImageSize = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-size']);
 
     if (bgImageSize) {
       this.sizeComboBox.value = bgImageSize;

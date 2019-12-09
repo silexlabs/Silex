@@ -14,16 +14,16 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
+import { FileInfo, Provider } from '../../types';
 import { getSite, updateSite } from '../api';
 import { Config } from '../ClientConfig';
+import { Model, PublicationOptions, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { PublishDialog } from '../components/dialog/PublishDialog';
 import { CloudStorage } from '../service/CloudStorage';
 import { SilexTasks } from '../service/SilexTasks';
-import { Model, PublicationOptions, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
-import { FileInfo, Provider } from '../../types';
 
 /**
  * @param view  view class which holds the other views
@@ -93,8 +93,7 @@ export class FileMenuController extends ControllerBase {
   /**
    * open a file
    */
-  newFile(
-      opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+  newFile(opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
     this.tracker.trackAction('controller-events', 'request', 'file.new', 0);
     this.view.dashboard.openDialog({
       openFileInfo: (fileInfo) => {

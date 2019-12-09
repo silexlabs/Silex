@@ -11,7 +11,10 @@
 
 import * as fs from 'fs';
 import * as Path from 'path';
+import { writeDataToDom } from '../../client/dom/site-dom';
 import { Constants } from '../../constants';
+import { ElementType } from '../../types';
+import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from './BackwardCompatV2.5.60';
 
 // FIXME: path in constants
 // const components = require('../../../dist/client/libs/prodotype/components/components.json')
@@ -39,7 +42,7 @@ export default class BackwardCompat {
    * @param {Document} doc
    * @return {Promise} a Promise, resolve can be called with a warning message
    */
-  update(doc): Promise<string> {
+  async update(doc): Promise<string> {
     // fix an issue when the style tag has no type, then json is "broken"
     const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
     if (styleTag) { styleTag.type = 'text/json'; } // old versions of silex have no json at all so do nothing in that case
@@ -66,37 +69,35 @@ export default class BackwardCompat {
         message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website. <a href="https://github.com/silexlabs/Silex/wiki/Website-saved-with-older-version-of-Silex">More about this here</a>',
       });
     } else if (hasToUpdate) {
-      const allActions = {};
       // convert to the latest version
-      return this.to2_2_8(version, doc).then((actions8: string[]) => {
-        if (actions8.length) { allActions['2.2.8'] = actions8; }
-        return this.to2_2_9(version, doc).then((actions9: string[]) => {
-        if (actions9.length) { allActions['2.2.9'] = actions9; }
-        return this.to2_2_10(version, doc).then((actions10: string[]) => {
-        if (actions10.length) { allActions['2.2.10'] = actions10; }
-        // update the static scripts to match the current server and latest version
-        this.updateStatic(doc);
-        // store the latest version
-        metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
-        // apply all-time fixes
-        this.fixes(doc);
-        // build the report for the user
-        const report = Object.keys(allActions).map((_version) => {
-          return `<small>Update to version ${ _version }:
-              <ul>${ allActions[_version].map((_action) => `<li class="no-list">${ _action }</li>`).join('') }</ul>
-          </small>`;
-        }).join('');
-        // needs to reload if silex scripts and stylesheets have been updated
-        return `<h2>Website updated</h2>
-          <p>This website has been updated to Silex latest version.</p>
-          <p>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).</p>
-          <small>Bellow you will find details of what I did.</small>
-          ${ report }
-        `;
-      });
-    });
-  });
-} else {
+      const allActions = {
+        '2.2.8': await this.to2_2_8(version, doc),
+        '2.2.9': await this.to2_2_9(version, doc),
+        '2.2.10': await this.to2_2_10(version, doc),
+        '2.2.11': await this.to2_2_11(version, doc),
+      };
+      // update the static scripts to match the current server and latest version
+      this.updateStatic(doc);
+      // store the latest version
+      metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
+      // apply all-time fixes
+      this.fixes(doc);
+      // build the report for the user
+      const report = Object.keys(allActions)
+      .filter((_version) => allActions[_version].length > 0)
+      .map((_version) => {
+        return `<small>Update to version ${ _version }:
+            <ul>${ allActions[_version].map((_action) => `<li class="no-list">${ _action }</li>`).join('') }</ul>
+        </small>`;
+      }).join('');
+      // needs to reload if silex scripts and stylesheets have been updated
+      return `<h2>Website updated</h2>
+        <p>This website has been updated to Silex latest version.</p>
+        <p>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).</p>
+        <small>Bellow you will find details of what I did.</small>
+        ${ report }
+      `;
+    } else {
       // update the static scripts to match the current server URL
       this.updateStatic(doc);
       // apply all-time fixes
@@ -181,11 +182,6 @@ export default class BackwardCompat {
       initialVersion[2] < targetVersion[2];
     }
 
-    /**
-     * @param {Array.<number>} version
-     * @param {Document} doc
-     * @return {Promise} a Promise
-     */
     to2_2_8(version, doc): Promise<string[]> {
       return new Promise((resolve, reject) => {
         const actions = [];
@@ -211,11 +207,6 @@ export default class BackwardCompat {
       });
     }
 
-    /**
-     * @param {Array.<number>} version
-     * @param {Document} doc
-     * @return {Promise} a Promise
-     */
     to2_2_9(version, doc): Promise<string[]> {
       return new Promise((resolve, reject) => {
         const actions = [];
@@ -233,11 +224,7 @@ export default class BackwardCompat {
         resolve(actions);
       });
     }
-    /**
-     * @param {Array.<number>} version
-     * @param {Document} doc
-     * @return {Promise} a Promise
-     */
+
     to2_2_10(version, doc): Promise<string[]> {
       return new Promise((resolve, reject) => {
         const actions = [];
@@ -249,14 +236,14 @@ export default class BackwardCompat {
             Constants.PREVENT_SELECTABLE_CLASS_NAME);
 
           // each section background and foreground is a drop zone, not selectable, not draggable, resizeable
-          const changedSections = Array.from(doc.querySelectorAll(`.${Constants.TYPE_SECTION}`)) as HTMLElement[];
+          const changedSections = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}`)) as HTMLElement[];
           changedSections.forEach((el: HTMLElement) => el.classList.add(
             Constants.PREVENT_DRAGGABLE_CLASS_NAME,
             Constants.PREVENT_RESIZABLE_CLASS_NAME,
           ));
 
           // we add classes to the elements so that we can tell the stage component if an element is draggable, resizeable, selectable...
-          const changedSectionsContent = Array.from(doc.querySelectorAll(`.${Constants.TYPE_SECTION}, .${Constants.TYPE_SECTION} .${Constants.TYPE_CONTAINER_CONTENT}`));
+          const changedSectionsContent = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}, .${ElementType.SECTION} .${Constants.SECTION_CONTAINER}`));
           changedSectionsContent.forEach((el: HTMLElement) => el.classList.add(
             Constants.PREVENT_DRAGGABLE_CLASS_NAME,
             // Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME,
@@ -269,6 +256,48 @@ export default class BackwardCompat {
           changedElements.forEach((el: HTMLElement) => el.setAttribute(Constants.TYPE_ATTR, el.getAttribute(Constants.TYPE_ATTR) + '-element'));
 
           actions.push(`Updated ${ changedElements.length } elements, changed their types to match the new version of Silex.`);
+        }
+        resolve(actions);
+      });
+    }
+
+    to2_2_11(version, doc): Promise<string[]> {
+      return new Promise((resolve, reject) => {
+        const actions = [];
+        if (this.hasToUpdate(version, [2, 2, 11])) {
+          // the body is supposed to be an element too
+          doc.body.classList.add(Constants.EDITABLE_CLASS_NAME)
+          actions.push(`
+            <p>I made the body editable.</p>
+          `);
+
+          // import elements
+          const elements = getElementsFromDomBC(doc)
+          // site
+          const site = getSiteFromDom(doc)
+          // pages
+          const pages = getPagesFromDom(doc)
+          if (elements.length && pages.length && site) {
+            writeDataToDom(doc, {
+              site,
+              pages,
+              elements,
+            })
+            function removeIfExist(selector) {
+              const tag = doc.querySelector(selector)
+              if (tag) {
+                tag.remove()
+              }
+            }
+            removeIfExist('meta[name="website-width"]')
+            removeIfExist('meta[name="hostingProvider"]')
+            removeIfExist('meta[name="publicationPath"]')
+            actions.push(`
+              <p>I updated the model to the latest version of Silex.</p>
+            `);
+          } else {
+            console.error('Could not import site from v2.2.11', {elements, pages, site})
+          }
         }
         resolve(actions);
       });

@@ -14,12 +14,11 @@
  * the Silex HTML editor
  *
  */
-import { Constants } from '../../../constants';
-import {Model} from '../../ClientTypes';
-import {Controller} from '../../ClientTypes';
-import {CodeEditorBase} from './CodeEditorBase';
-import { getElements, updateSite, getSite } from '../../api';
+import { getElements, getSite, updateSite } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
 import { getDomElement } from '../../dom/element-dom';
+import { CodeEditorBase } from './CodeEditorBase';
+import { getSiteDocument } from '../UiElements';
 
 /**
  * @class {silex.view.dialog.HtmlEditor}
@@ -45,10 +44,10 @@ export class HtmlEditor extends CodeEditorBase {
     if (selection.length === 0) {
       updateSite({
         ...getSite(),
-        userHeadTag: this.getValue(),
+        headTag: this.getValue(),
       });
     } else {
-      this.model.element.setInnerHtml(getDomElement(selection[0]), this.getValue());
+      this.model.element.setInnerHtml(getDomElement(getSiteDocument(), selection[0]), this.getValue());
     }
   }
 

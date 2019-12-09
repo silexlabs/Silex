@@ -39,7 +39,7 @@ enum PageAction {
 const pageReducer = (state: PageData[] = [], action: any) => {
   // console.log('page reducer', state, action)
   switch (action.type) {
-    case PageAction.OPEN: return state.map((item) => item.name === action.item.name ? Object.assign({}, action.item, { isOpen: true }) : item.isOpen ? Object.assign({}, item, { isOpen: false }) : item)
+    case PageAction.OPEN: return state.map((item) => item.id === action.item.id ? Object.assign({}, action.item, { isOpen: true }) : item.isOpen ? Object.assign({}, item, { isOpen: false }) : item)
     default: return state
   }
 }
@@ -52,7 +52,7 @@ enum SiteAction {
 const siteReducer = (state: SiteData = {
   description: '',
   enableMobile: true,
-  head: '',
+  headTag: '',
   title: '',
   publicationPath: null,
   websiteUrl: '',
@@ -64,14 +64,11 @@ const siteReducer = (state: SiteData = {
   width: -1,
   headStyle: '',
   headScript: '',
-  userStyle: '',
-  userScript: '',
-  userHeadTag: '',
   hostingProvider: '',
   twitterSocial: '',
   dataSources: {},
   fonts: [],
-}, action: any) => {
+},                   action: any) => {
   // console.log('page reducer', state, action)
   switch (action.type) {
     case SiteAction.INITIALIZE: return {
@@ -94,7 +91,7 @@ const uiReducer = (state: UiData = {
     loading: true,
     loadingSite: false,
     mobileEditor: false,
-  }, action: any) => {
+  },               action: any) => {
   // console.log('page reducer', state, action)
   switch (action.type) {
     case UiAction.INITIALIZE: return {
@@ -111,8 +108,18 @@ const uiReducer = (state: UiData = {
 // //////////////////////
 // Create the main store
 const store: Store<State> = createStore(combineReducers({
-  pages: withCrud<PageData>(PageAction, pageReducer, 'Pages'),
-  elements: withCrud<ElementData>(ElementAction, elementReducer, 'Elements'),
+  pages: withCrud<PageData>({
+    actionEnum: PageAction,
+    reducer: pageReducer,
+    label: 'Pages',
+    allowSetId: true,
+  }),
+  elements: withCrud<ElementData>({
+    actionEnum: ElementAction,
+    reducer: elementReducer,
+    label: 'Elements',
+    allowSetId: false,
+  }),
   site: siteReducer,
   ui: uiReducer,
 }))
@@ -178,7 +185,8 @@ export const subscribeElements = (cbk: (prevState: ElementData[], nextState: Ele
 
 /////////////////////////
 // Stage API
-export const getStageState = (element: ElementData) => getStage().getState(getDomElement(element))
+// export const getStageState = (element: ElementData) => getStage().getState(getDomElement(element))
+// export const setStageState = (element: ElementData, state) => getStage().setState(getDomElement(element), state)
 
 // //////////////////////
 // Page API

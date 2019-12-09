@@ -10,54 +10,10 @@
  */
 
 import { Constants } from '../../constants';
-import { LinkType, PageData } from '../../types';
+import { PageData } from '../../types';
+import { getPages } from '../api';
 import { getSiteDocument, getSiteWindow } from '../components/UiElements';
 import { noSectionContent } from './element-dom';
-
-/**
- * Util function to get page data from name
- */
-function getPageDataFromElement(element: HTMLAnchorElement): PageData {
-  const pageName = element.getAttribute('id')
-  return {
-    name: pageName,
-    displayName: element.innerHTML,
-    element,
-    link: {
-      type: LinkType.PAGE,
-      value: '#!' + pageName,
-    },
-    // isOpen: getCurrentPageName() === pageName,
-    isOpen: false,
-    canDelete: !element.hasAttribute(Constants.PAGE_PREVENT_DELETE),
-    canProperties: !element.hasAttribute(Constants.PAGE_PREVENT_PROPERTIES),
-    canMove: !element.hasAttribute(Constants.PAGE_PREVENT_MOVE),
-    canRename: !element.hasAttribute(Constants.PAGE_PREVENT_RENAME),
-  }
-}
-
-/**
- * Util function to get page data from name
- */
-function getPageData(pageName): PageData {
-  const element = getSiteDocument().getElementById(pageName) as HTMLAnchorElement
-  if (element) {
-    return getPageDataFromElement(element)
-  } else {
-    // this happens while undoing or redoing
-    // or when the page does not exist
-    return null
-  }
-}
-
-/**
- * get the pages from the dom
- * @return an array of the page names I have found in the DOM
- */
-export function getPagesFromDom(): PageData[] {
-  return Array.from(getSiteDocument().body.querySelectorAll(`a[data-silex-type="${Constants.TYPE_PAGE}"]`))
-    .map((element) => getPageDataFromElement(element as HTMLAnchorElement))
-}
 
 /**
  * get the currently opened page from the dom
@@ -68,19 +24,19 @@ export function getCurrentPageName(): string {
   return getSiteWindow()['jQuery'](getSiteDocument().body).pageable('option', 'currentPage')
 }
 
-/**
- * get the currently opened page from the dom
- */
-export function getCurrentPage(): PageData {
-  // tslint:disable:no-string-literal
-  try {
-    return getPageData(getCurrentPageName())
-  } catch (e) {
-    // there was a problem in the pageable plugin, return the first page
-    console.warn(`warning, could not retrieve the current page, I will return the first page (${getPagesFromDom()[0]})`)
-    return getPagesFromDom()[0]
-  }
-}
+// /**
+//  * get the currently opened page from the dom
+//  */
+// export function getCurrentPage(): PageData {
+//   // tslint:disable:no-string-literal
+//   try {
+//     return getPageData(getCurrentPageName())
+//   } catch (e) {
+//     // there was a problem in the pageable plugin, return the first page
+//     console.warn(`warning, could not retrieve the current page, I will return the first page (${getPagesFromDom()[0]})`)
+//     return getPagesFromDom()[0]
+//   }
+// }
 
 /**
  * open the page
@@ -90,7 +46,7 @@ export function openPage(pageData: PageData) {
   const bodyElement = getSiteDocument().body
   if (getSiteWindow()['jQuery'] && getSiteWindow()['jQuery'](bodyElement).pageable) {
     getSiteWindow()['jQuery'](bodyElement).pageable({
-      currentPage: pageData.name,
+      currentPage: pageData.id,
     })
   }
 }
@@ -107,7 +63,7 @@ export function removePage(pageData: PageData) {
  * move a page in the dom
  */
 export function movePage(pageData: PageData, newPageIdx: number) {
-  const pages = getPagesFromDom()
+  const pages = getPages()
   const pageIdx = pages.findIndex((page) => page === pageData)
   const container = getSiteDocument().body.querySelector('.' + Constants.PAGES_CONTAINER_CLASS_NAME)
   if (typeof pageIdx === 'undefined' || newPageIdx < 0 || newPageIdx >= pages.length) {
@@ -144,7 +100,7 @@ export function renamePage(pageData: PageData, newName: string, newDisplayName: 
   pageData.element.setAttribute('href', '#!' + newName)
   pageData.element.innerHTML = newDisplayName
 //
-//   if (pageData.name !== newName) {
+//   if (pageData.id !== newName) {
 //     // update the links to this page
 //     getLinksToPage(pageData)
 //       .forEach((element) => {
@@ -152,9 +108,9 @@ export function renamePage(pageData: PageData, newName: string, newDisplayName: 
 //       })
 //
 //     // update the visibility of the compoents
-//     Array.from(getSiteDocument().body.getElementsByClassName(pageData.name))
+//     Array.from(getSiteDocument().body.getElementsByClassName(pageData.id))
 //       .forEach((element) => {
-//         element.classList.remove(pageData.name)
+//         element.classList.remove(pageData.id)
 //         element.classList.add(newName)
 //       })
 //   }
@@ -169,12 +125,12 @@ export function addToPage(element: HTMLElement, pageData: PageData) {
     console.error('Element is already in page', element, pageData)
   } else {
     const noSectionEl = noSectionContent(element)
-    if (getPagesForElement(noSectionEl).length + 1 === getPagesFromDom().length) {
+    if (getPagesForElement(noSectionEl).length + 1 === getPages().length) {
       // from visible in some pages to visible everywhere
       removeFromAllPages(noSectionEl)
     } else {
       // still only visible on some pages
-      noSectionEl.classList.add(pageData.name)
+      noSectionEl.classList.add(pageData.id)
       noSectionEl.classList.add(Constants.PAGED_CLASS_NAME)
     }
   }
@@ -192,7 +148,7 @@ export function addToPage(element: HTMLElement, pageData: PageData) {
 //       // from visible in some pages to visible everywhere
 //       removeFromAllPages(noSectionEl)
 //     } else {
-//       noSectionEl.classList.remove(pageData.name)
+//       noSectionEl.classList.remove(pageData.id)
 //     }
 //   }
 // }
@@ -205,7 +161,7 @@ export function removeFromAllPages(element: HTMLElement) {
   const noSectionEl = noSectionContent(element)
   getPagesForElement(noSectionEl)
     .forEach((pageData) => {
-      noSectionEl.classList.remove(pageData.name)
+      noSectionEl.classList.remove(pageData.id)
     })
 
   // the element is not "paged" anymore
@@ -217,8 +173,8 @@ export function removeFromAllPages(element: HTMLElement) {
  */
 export function getPagesForElement(element: HTMLElement): PageData[] {
   const noSectionEl = noSectionContent(element)
-  return getPagesFromDom().filter(
-      (pageData) => noSectionEl.classList.contains(pageData.name))
+  return getPages().filter(
+      (pageData) => noSectionEl.classList.contains(pageData.id))
 }
 
 /**
@@ -234,21 +190,21 @@ export function getElementsForPage(pageData: PageData): HTMLElement[] {
  * these are only silex elements links, not elements in HTML boxes or text
  */
 export function getLinksToPage(pageData: PageData): HTMLElement[] {
-  return Array.from(getSiteDocument().body.querySelectorAll('*[data-silex-href="#!' + pageData.name + '"]'))
+  return Array.from(getSiteDocument().body.querySelectorAll('*[data-silex-href="#!' + pageData.id + '"]'))
 }
 
 /**
  * check if an element is in the given page (current page by default)
  */
-export function isInPage(element: HTMLElement, pageData = getCurrentPage()): boolean {
-  return noSectionContent(element).classList.contains(pageData.name)
+export function isInPage(element: HTMLElement, pageData = getPages().find((p) => p.isOpen)): boolean {
+  return noSectionContent(element).classList.contains(pageData.id)
 }
 
 /**
  * check if an element is visible in the given page
  * this means that the element is allways visible or it is visible in this page
  */
-export function isVisible(element: HTMLElement, pageData: PageData = getCurrentPage()) {
+export function isVisible(element: HTMLElement, pageData: PageData = getPages().find((p) => p.isOpen)) {
   if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !isInPage(element, pageData)) {
     return false
   }

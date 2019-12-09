@@ -138,7 +138,7 @@ export class LinkDialog {
             <label for="link-editor-page">Page</label>
             <select autocomplete="nope" class="tabbed alertify-text page big" id="link-editor-page">
               <option value=""${isExternal ? ' selected ' : ''}></option>
-              ${getPages().map((page) => `<option value="#!${page.name}"${        !isExternal && '#!' + page.name === linkData.href ? ' selected ' : ''} >
+              ${getPages().map((page) => `<option value="#!${page.id}"${        !isExternal && '#!' + page.id === linkData.href ? ' selected ' : ''} >
                 ${page.displayName}
               </option>`)}
             </select>

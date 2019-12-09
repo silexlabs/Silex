@@ -19,7 +19,6 @@ export type ElementId = string
 export enum ElementType {
   CONTAINER = 'container-element',
   SECTION = 'section-element',
-  CONTAINER_CONTENT = 'silex-container-content',
   IMAGE = 'image-element',
   TEXT = 'text-element',
   HTML = 'html-element',
@@ -56,11 +55,16 @@ export interface ElementData {
   enableDrop: boolean,
   enableResize: Rect<boolean>,
   useMinHeight: boolean,
+  title: string,
+  alt: string,
   visibility: {
     mobile: boolean,
     desktop: boolean,
   },
-  style: any,
+  style: {
+    mobile: any,
+    desktop: any,
+  },
   data: {
     component: any,
   },
@@ -70,9 +74,8 @@ export interface ElementData {
  * structure to store all of a page data
  */
 export interface PageData {
-  name: string,
+  id: string,
   displayName: string,
-  element: HTMLAnchorElement,
   link: Link,
   isOpen: boolean,
   canDelete: boolean,
@@ -98,7 +101,9 @@ export interface Font {
 }
 
 export interface SiteData {
-  head: string,
+  headTag: string,
+  headStyle: string,
+  headScript: string,
   title: string,
   description: string,
   enableMobile: boolean,
@@ -110,11 +115,6 @@ export interface SiteData {
   titleSocial: string,
   lang: string,
   width: number,
-  headStyle: string,
-  headScript: string,
-  userStyle: string,
-  userScript: string,
-  userHeadTag: string,
   hostingProvider: string,
   twitterSocial: string,
   dataSources: DataSources,

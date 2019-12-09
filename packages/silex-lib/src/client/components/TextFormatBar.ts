@@ -17,15 +17,16 @@
 
 import { ElementData } from '../../types';
 import { getElements } from '../api';
+import { Controller, LinkData, Model } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { getDomElement } from '../dom/element-dom';
 import { wysihtml, WysiHtmlEditor } from '../externs';
 import { Body } from '../model/Body';
 import { Tracker } from '../service/Tracker';
-import { Controller, LinkData, Model } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
+import { getSiteDocument } from './UiElements';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -80,7 +81,7 @@ export class TextFormatBar {
   }
 
   onScroll(e) {
-    this.controller.textEditorController.attachToTextBox(getDomElement(this.currentTextBox), this.element);
+    this.controller.textEditorController.attachToTextBox(getDomElement(getSiteDocument(), this.currentTextBox), this.element);
   }
 
   /**
@@ -115,7 +116,7 @@ export class TextFormatBar {
 
       // use array acces for getSelection as a workaround for google closure
       // warning 'Property getSelection never defined on Document' cleanup
-      const currentTextBoxEl = getDomElement(this.currentTextBox);
+      const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox);
       this.currentTextBox = null;
 
       const editable = this.model.element.getContentNode(currentTextBoxEl);
@@ -138,7 +139,7 @@ export class TextFormatBar {
         this.controller.stageController.startEdit();
 
         this.currentTextBox = newTextBox;
-        const currentTextBoxEl = getDomElement(this.currentTextBox);
+        const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox);
 
         // currentTextBoxEl.insertBefore(this.element,
         // currentTextBoxEl.firstChild);

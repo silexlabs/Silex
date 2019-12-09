@@ -15,13 +15,13 @@
  * FIXME: use a type instead of Promise<PublicationOptions>
  */
 
+import { Provider, VHost } from '../../../types';
 import { getSite, updateSite } from '../../api';
+import { Model, PublicationOptions, View } from '../../ClientTypes';
 import { File } from '../../model/File';
 import { SilexTasks } from '../../service/SilexTasks';
-import { Model, PublicationOptions, View } from '../../ClientTypes';
 import { SilexNotification } from '../../utils/Notification';
 import { getUiElements } from '../UiElements';
-import { Provider, VHost } from '../../../types';
 
 /**
  * the PublishDialog class

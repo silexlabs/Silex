@@ -11,6 +11,7 @@ export function startObservers() {
   console.log('startObserver')
   stoped = false
 }
+
 export function stopObservers() {
   console.log('stoptObserver')
   stoped = true
@@ -22,37 +23,52 @@ subscribeElements(onCrudChange<ElementData>({
   onDelete: onDeleteElement,
   onUpdate: onUpdateElement,
 }))
+
 subscribePages(onCrudChange<PageData>({
   onAdd: onAddPage,
   onDelete: onDeletePage,
   onUpdate: onUpdatePage,
 }))
 
-subscribeSite(onChangeSite)
-subscribeUi(onChangeUi)
+subscribeSite((prevState, currentState) => {
+  if (!stoped) {
+    console.log('site changed: ', {stoped, prevState, currentState}, currentState !== prevState)
+    onChangeSite(prevState, currentState)
+  }
+})
+
+subscribeUi((prevState, currentState) => {
+  if (!stoped) {
+    console.log('UI changed: ', {stoped, prevState, currentState}, currentState !== prevState)
+    onChangeUi(prevState, currentState)
+  }
+})
 
 // determine what has been changed/updated/deleted
 function onCrudChange<T>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T) => void, onDelete: (item: T) => void, onUpdate: (oldItem: T, newItem: T) => any }) {
   return (prevState, currentState) => {
-    if (!stoped && currentState !== prevState) {
-      // added pages
+    console.trace('something changed (CRUD)', prevState, currentState, stoped)
+    if (!stoped) {
+      // added items
       currentState
-        .filter((item) => !prevState.find((p) => p.name === item.name))
+        .filter((item) => !prevState || !prevState.find((p) => p.id === item.id))
         .forEach((item) => onAdd(item))
 
-      // removed
-      prevState
-        .filter((item) => !currentState.find((p) => p.name === item.name))
-        .forEach((item) => onDelete(item))
+      if (prevState) {
+        // removed
+        prevState
+          .filter((item) => !currentState.find((p) => p.id === item.id))
+          .forEach((item) => onDelete(item))
 
-      // updated
-      currentState
-        .filter((item) => {
-          const prev = prevState.find((p) => p.name === item.name)
-          return !!prev && prev !== item
-        })
-        .forEach((item) => onUpdate(prevState.find((p) => p.name === item.name)
-          , item))
+        // updated
+        currentState
+          .filter((item) => {
+            const prev = prevState.find((p) => p.id === item.id)
+            return !!prev && prev !== item
+          })
+          .forEach((item) => onUpdate(prevState.find((p) => p.id === item.id)
+            , item))
+      }
     }
   }
 }

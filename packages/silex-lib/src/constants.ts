@@ -18,6 +18,14 @@ import { ElementType } from './types';
 
 export class Constants {
   /**
+   * constant for the ID of the HTML node used
+   * to store Silex data as a JSON object of type SilexData
+   * containing all CSS rules for the elements on stage
+   * which are being edited with the wysiwyg
+   */
+  static JSON_STYLE_TAG_CLASS_NAME = 'silex-json-styles';
+
+  /**
    * constant for the class name set on the body depending on the context in which is the website
    */
   static WEBSITE_CONTEXT_RUNTIME_CLASS_NAME = 'silex-runtime';
@@ -126,6 +134,11 @@ export class Constants {
    * setting is changed used to set a default width to section content container
    */
   static WEBSITE_WIDTH_CLASS_NAME: string = 'website-width';
+
+  /**
+   * class name for containers which are created with sections
+   */
+  static SECTION_CONTAINER: string = 'silex-container-content';
 
   /**
    * constant for the attribute name of the links
@@ -253,7 +266,6 @@ export class Constants {
   static SILEX_CURRENT_PAGE_ID = 'current-page-style';
   static SILEX_TEMP_TAGS_CSS_CLASS = 'silex-temp-tag';
   static RISZE_HANDLE_CSS_CLASS = 'ui-resizable-handle';
-  static JSON_STYLE_TAG_CLASS_NAME = 'silex-json-styles';
   static INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles';
   static HEAD_TAG_START = '<!-- Silex HEAD tag do not remove -->';
   static HEAD_TAG_STOP = '<!-- End of Silex HEAD tag do not remove -->';
@@ -297,9 +309,6 @@ export class Constants {
     Constants.SELECTED_CLASS_NAME,
     Constants.RESIZING_CLASS_NAME,
     Constants.DRAGGING_CLASS_NAME,
-    Constants.ELEMENT_CONTENT_CLASS_NAME,
-    // useful to hide it when the content container of a section is selected
-    ElementType.CONTAINER_CONTENT,
     // useful to hide it when the content container of a section is selected
     Constants.WEBSITE_WIDTH_CLASS_NAME,
     ElementType.CONTAINER,
@@ -307,6 +316,8 @@ export class Constants {
     ElementType.IMAGE,
     ElementType.TEXT,
     ElementType.HTML,
+    Constants.SECTION_CONTAINER,
+    Constants.ELEMENT_CONTENT_CLASS_NAME,
     Constants.HIDE_ON_MOBILE,
     Constants.HIDE_ON_DESKTOP,
     Constants.COMPONENT_CLASS_NAME,

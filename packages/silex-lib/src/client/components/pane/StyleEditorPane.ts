@@ -12,9 +12,9 @@
 import { Constants } from '../../../constants';
 import { ElementData, ElementType } from '../../../types';
 import { getElements, getPages, getUi, updateElements, updateUi } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
 import { StyleData, StyleName, Visibility } from '../../model/Data';
 import { Tracker } from '../../service/Tracker';
-import { Controller, Model } from '../../ClientTypes';
 import { SilexNotification } from '../../utils/Notification';
 import { PaneBase } from './PaneBase';
 
@@ -115,7 +115,7 @@ export class StyleEditorPane extends PaneBase {
           'style-editor-events', 'select-all-elements-with-style');
       const currentPage = getPages().find((p) => p.isOpen);
       updateElements(getElements()
-      .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.name)))
+      .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id)))
       .map((el) => ({
         from: el,
         to: {

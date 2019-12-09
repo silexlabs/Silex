@@ -4,10 +4,12 @@ import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-sta
 import { Constants } from '../../constants';
 import { ElementData, ElementType } from '../../types';
 import { getElements, getPages, getUi, subscribeElements, subscribePages, updateElements } from '../api';
-import { getDomElement, getElementData } from '../dom/element-dom';
-import { Body } from '../model/Body';
 import { Controller, Model } from '../ClientTypes';
+import { getDomElement } from '../dom/element-dom';
+import { Body } from '../model/Body';
 import { SilexNotification } from '../utils/Notification';
+import { Style } from '../utils/Style';
+import { getSiteDocument } from './UiElements';
 
 // WIP: will be the way to interact with the model
 let stage: Stage
@@ -34,7 +36,7 @@ export class StageWrapper {
       const newElements = nextState.filter((el) => !prevState.find((e) => e.id === el.id));
       if (newElements.length) {
         // send the scroll to the target
-        this.center(newElements.map((el) => getDomElement(el)));
+        this.center(newElements.map((el) => getDomElement(getSiteDocument(), el)));
       }
     });
   }
@@ -110,7 +112,7 @@ export class StageWrapper {
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
     stage = this.stage = new Stage(iframe, [], {
-      isSelectable: ((el) => this.model.element.isVisible(el) && !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
+      isSelectable: ((el) => !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
       isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
       isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(ElementType.CONTAINER)),
       isResizeable: ((el) => {
@@ -159,6 +161,7 @@ export class StageWrapper {
       onStartDrag: (change) => this.startDrag(),
       onStartResize: (change) => this.startResize(),
     });
+    this.reset();
     // give time to iframes to initialize
     setTimeout(() => {
       this.toBeUnsubscribed.push(
@@ -196,24 +199,68 @@ export class StageWrapper {
     this.model.body.getBodyElement().classList.add(Constants.DRAGGING_CLASS_NAME);
     this.startDragOrResize();
   }
-  private stopDragOrResize(change, redraw) {
+  private stopDragOrResize(changed: SelectableState[], redraw) {
     this.hideScrolls(false);
     this.dragging = false;
-    this.applyStyle(change);
+    this.applyStyle(changed);
     this.redraw();
   }
-  private stopResize(change, redraw = false) {
+  private stopResize(changed: SelectableState[], redraw = false) {
     this.model.body.getBodyElement().classList.remove(Constants.RESIZING_CLASS_NAME);
-    this.stopDragOrResize(change, redraw);
+    this.stopDragOrResize(changed, redraw);
   }
-  private stopDrag(change, redraw = false) {
+  private stopDrag(changed: SelectableState[], redraw = false) {
     this.model.body.getBodyElement().classList.remove(Constants.DRAGGING_CLASS_NAME);
-    this.stopDragOrResize(change, redraw);
+    this.stopDragOrResize(changed, redraw);
+    updateElements([
+      // update element's parents
+      ...changed
+        .filter((selectable) => selectable.selected)
+        // FIXME: find a more optimal way to get the data from DOM element
+        .map((selectable) => getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el))
+        .map((element) => {
+          const domEl = getDomElement(getSiteDocument(), element)
+          const parent = getElements().find((el) => getDomElement(getSiteDocument(), el) === domEl.parentElement)
+          return {
+            from: element,
+            to: {
+              ...element,
+              parent: parent ? parent.id : null,
+            },
+          };
+        }),
+      // update element's parent's children
+      ...changed
+        .filter((selectable) => selectable.selected)
+        // FIXME: find a more optimal way to get the data from DOM element
+        .map((selectable) => ({
+          parent: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el.parentElement),
+          element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
+        }))
+        .filter(({element, parent}) => !parent.children.find((el) => el === element.id))
+        .map(({element, parent}) => {
+          return {
+            from: parent,
+            to: {
+              ...parent,
+              children: parent.children.concat([element.id]),
+            },
+          };
+        }),
+      ])
   }
   private onSelectionChanged(changed: SelectableState[]) {
     updateElements(changed
       .map((selectable) => {
-        const element = getElementData(selectable.el);
+        // FIXME: find a more optimal way to get the data from DOM element
+        return {
+          element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
+          selectable,
+        };
+      })
+      .filter(({element, selectable}) => element.selected !== selectable.selected)
+      .map(({element, selectable}) => {
+        console.log('onSelectionChanged', element, selectable)
         return {
           from: element,
           to: {
@@ -246,15 +293,21 @@ export class StageWrapper {
       });
       // apply the style
       updateElements(change.map((s) => {
-        const element = getElementData(s.el);
+        // FIXME: find a more optimal way to get the data from DOM element
+        const element = getElements().find((el) => getDomElement(getSiteDocument(), el) === s.el);
         return {
           from: element,
           to: {
             ...element,
-            height: s.metrics.computedStyleRect.height + 'px',
-            top: s.metrics.computedStyleRect.top + 'px',
-            left: s.metrics.computedStyleRect.left + 'px',
-            width: s.metrics.computedStyleRect.width + 'px',
+            style: {
+              ...element.style,
+              ...Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, {
+                height: s.metrics.computedStyleRect.height + 'px',
+                top: s.metrics.computedStyleRect.top + 'px',
+                left: s.metrics.computedStyleRect.left + 'px',
+                width: s.metrics.computedStyleRect.width + 'px',
+              }),
+            },
           },
         };
       }))
@@ -266,14 +319,11 @@ export class StageWrapper {
     console.log('reset stage', currentPage)
     this.stage.reset(getElements()
       .filter(
-        (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.name))
-        && ((el.visibility.desktop && !this.isMobileEditor()) || (el.visibility.mobile && this.isMobileEditor())))
-      .map((el) => getDomElement(el)));
+        (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id))
+        && ((el.visibility.desktop && !getUi().mobileEditor) || (el.visibility.mobile && getUi().mobileEditor)))
+      .map((el) => getDomElement(getSiteDocument(), el)));
   }
   // FIXME: find another way to expose isMobileEditor to views
-  private isMobileEditor(): boolean {
-    return document.body.classList.contains('mobile-mode');
-  }
   private resizeWindow() {
     if (!this.stage) { return; }
     this.stage.resizeWindow();

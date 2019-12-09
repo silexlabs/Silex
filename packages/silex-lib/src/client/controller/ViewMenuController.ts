@@ -14,7 +14,7 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { getElements, updateElements } from '../api';
+import { getElements, getPages, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
@@ -102,15 +102,16 @@ export class ViewMenuController extends ControllerBase {
   doPreview(inResponsize: boolean) {
     this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
     const doOpenPreview = function() {
+      console.log('doOpenPreview', this.model.file.getFileInfo())
       if (inResponsize) {
         this.view.workspace.setPreviewWindowLocation(
             'http://www.responsize.org/?url=' +
-            this.model.file.getFileInfo().url + '#!' +
-            this.model.page.getCurrentPage());
+            window.location.origin + this.model.file.getFileInfo().absPath + '#!' +
+            getPages().find((p) => p.isOpen).id);
       } else {
         this.view.workspace.setPreviewWindowLocation(
-            this.model.file.getFileInfo().url + '#!' +
-            this.model.page.getCurrentPage());
+            window.location.origin + this.model.file.getFileInfo().absPath + '#!' +
+            getPages().find((p) => p.isOpen).id);
       }
       this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
     }.bind(this);

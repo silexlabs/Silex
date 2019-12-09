@@ -22,6 +22,7 @@
 import { detect } from 'detect-browser';
 import * as api from './api';
 import { Config } from './ClientConfig';
+import { Controller, Model, View } from './ClientTypes';
 import { BreadCrumbs } from './components/BreadCrumbs';
 import { ContextMenu } from './components/ContextMenu';
 import { CssEditor } from './components/dialog/CssEditor';
@@ -59,7 +60,7 @@ import { SilexElement } from './model/Element';
 import { File } from './model/File';
 import { Head } from './model/Head';
 import { Property } from './model/Property';
-import { Controller, Model, View } from './ClientTypes';
+import { startObservers } from './observers/index';
 import { SilexNotification } from './utils/Notification';
 import { Url } from './utils/Url';
 
@@ -155,6 +156,9 @@ export class App {
     this.view.dashboard.buildUi();
     this.view.propertyTool.buildUi();
 
+    // init model
+    startObservers();
+
     // warning when not ff or chrome
     const browser = detect();
     const isFirefox = browser && browser.name === 'firefox';
@@ -232,6 +236,7 @@ export class App {
   }
 
   initDone() {
+    console.log('init done')
     api.updateUi({
       ...api.getUi(),
       loading: false,

@@ -17,13 +17,13 @@
 
 import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType, FileInfo } from '../../types';
-import { createElements, deleteElements, getElements, getSite, moveElement, updateElements } from '../api';
+import { createElements, deleteElements, getElements, getPages, getSite, getUi, moveElement, updateElements } from '../api';
+import { LinkData, Model, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { getSiteDocument } from '../components/UiElements';
 import { getDomElement } from '../dom/element-dom';
 import { PseudoClass, StyleName, Visibility } from '../model/Data';
 import { DomDirection } from '../model/Element';
-import { LinkData, Model, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
 
@@ -108,16 +108,17 @@ export class EditMenuController extends ControllerBase {
 
       // add to the container
       createElements(ControllerBase.clipboard.map((element: ElementData) => {
-        // apply default size
-        const withDefaults: ElementData = toDefaultPostion ? this.model.element.getDefaults(element) : element;
-        // make element editable and visible on current page
-        const initComplete = this.doAddElement(withDefaults);
+        // only visible on the current page unless one of its parents is in a page already
+        const pageNames = !!element.parent && !!this.getFirstPagedParent(getElements().find((el) => el.parent === element.parent)) ? [] : [getPages().find((p) => p.isOpen).id]
         offset += 20;
         return {
-          ...initComplete,
+          ...element,
+          pageNames,
           style: {
-            ...initComplete.style,
-            left: initComplete.style.left + offset,
+            ...element.style,
+            desktop: {
+              left: element.style.desktop.left + offset,
+            },
           },
         }
       }));
@@ -164,7 +165,7 @@ export class EditMenuController extends ControllerBase {
   }
 
   isEditable(el: ElementData) {
-    return this.model.component.isComponent(getDomElement(el)) ||
+    return this.model.component.isComponent(getDomElement(getSiteDocument(), el)) ||
       Constants.EDITABLE_ELEMENT_TYPES.indexOf(el.type) > -1;
   }
 
@@ -178,7 +179,7 @@ export class EditMenuController extends ControllerBase {
 
     // open the params tab for the components
     // or the editor for the elements
-    const domEl = getDomElement(element);
+    const domEl = getDomElement(getSiteDocument(), element);
     if (this.model.component.isComponent(domEl)) {
       this.view.propertyTool.openParamsTab();
     } else {
@@ -204,8 +205,10 @@ export class EditMenuController extends ControllerBase {
                         ...element,
                         style: {
                           ...element.style,
-                          width: naturalWidth + 'px',
-                          height: naturalHeight + 'px',
+                          desktop: {
+                            width: naturalWidth + 'px',
+                            height: naturalHeight + 'px',
+                          },
                         },
                       },
                     }])
@@ -236,7 +239,7 @@ export class EditMenuController extends ControllerBase {
             // undo checkpoint
             this.undoCheckPoint();
 
-            const domEl = getDomElement(element);
+            const domEl = getDomElement(getSiteDocument(), element);
 
             // remove the editable elements temporarily
             const tempElements = this.model.component.saveEditableChildren(domEl);
@@ -318,7 +321,7 @@ export class EditMenuController extends ControllerBase {
     this.model.component.prodotypeStyle.edit(
       pseudoClassData,
       [{displayName: '', name: '', templateName: ''}]
-        .concat(this.model.property.getFonts()
+        .concat(getSite().fonts
         .map((font) => {
           return {
             displayName: font.family,
@@ -349,8 +352,7 @@ export class EditMenuController extends ControllerBase {
 
   /**
    * Move the selected elements in the DOM
-   * This will move its over or under other elements if the z-index CSS
-   * properties are not set
+   * Called from the context menu
    */
   move(direction: DomDirection) {
     // undo checkpoint
@@ -360,26 +362,8 @@ export class EditMenuController extends ControllerBase {
     const elements = getElements().filter((el) => el.selected);
 
     // move all the elements in the selection
-    // this is handled by the stage component ?
-    // updateElements(elements
-    //   .filter((element) => element.style.position === 'absolute')
-    //   .map((element) => ({
-    //     from: element,
-    //     to: {
-    //       ...element,
-    //       style: {
-    //         ...element.style,
-    //         top: direction === DomDirection.UP ? element.style.top - QTY
-    //          : direction === DomDirection.DOWN ? element.style.top + QTY
-    //          : element.style.top,
-    //       },
-    //     },
-    //   })));
-
-    // move all the elements in the selection
-    // FIXME: this is handled by the stage component ?
     elements
-      .filter((element) => element.style.position !== 'absolute')
+      .filter((element) => getUi().mobileEditor || element.style.desktop.position === 'static')
       .forEach((element, idx) => {
         switch (direction) {
           case DomDirection.UP:

@@ -19,7 +19,6 @@ import { Controller, Model } from '../../ClientTypes';
 import { ModalDialog } from '../ModalDialog';
 import { TipOfTheDay } from '../TipOfTheDay';
 
-
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any;
   openTemplate: (p1: string) => any;

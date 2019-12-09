@@ -39,7 +39,7 @@ super(model, view);
         from: el,
         to: {
           ...el,
-          pageNames: el.pageNames.concat([page.name]),
+          pageNames: el.pageNames.concat([page.id]),
         },
       })))
   }
@@ -55,7 +55,7 @@ super(model, view);
         from: el,
         to: {
           ...el,
-          pageNames: el.pageNames.filter((name) => name === page.name),
+          pageNames: el.pageNames.filter((name) => name === page.id),
         },
       })))
   }

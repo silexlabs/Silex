@@ -9,7 +9,8 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import {Constants} from '../../constants.js';
+import { readDataFromDom, StoredDataModel, writeDataToDom } from '../../client/dom/site-dom';
+import { Constants } from '../../constants';
 
 export default class DomTools {
   /**
@@ -118,53 +119,44 @@ export default class DomTools {
    * This is even more important than the URLs in the dom and stylesheets since it is re-applyed by Silex when the site is loaded in the editor
    */
   static transformJson(dom, fn) {
-    const jsonData = DomTools.getProperties(dom.window.document);
-    if (jsonData) {
-      for (const dataObjName in jsonData) {
-        const dataObj = jsonData[dataObjName];
-        for (const elementId in dataObj) {
-          const elementData = dataObj[elementId];
-          for (const propName in elementData) {
-            const propValue = elementData[propName];
-            const valueUrlKeyword = DomTools.transformValueUrlKeyword(propValue, null, true, fn);
-            if (valueUrlKeyword) {
-              elementData[propName] = valueUrlKeyword;
-            } else {
-              if (['src', 'href'].indexOf(propName) >= 0) {
-                elementData[propName] = fn(propValue) || propValue;
-              }
-            }
-          }
+    function checkItOut(name: string, value: string): string {
+      const valueUrlKeyword = DomTools.transformValueUrlKeyword(value, null, true, fn);
+      if (valueUrlKeyword) {
+        return valueUrlKeyword;
+      } else {
+        if (['src', 'href'].indexOf(name) >= 0) {
+          return fn(value) || value;
         }
       }
-      DomTools.setProperties(dom.window.document, jsonData);
     }
-  }
-
-  /**
-   * Load the styles from the json saved in a script tag
-   * This code comes from the client side class property.js
-   */
-  static getProperties(doc) {
-    const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag != null ) {
-      return JSON.parse(styleTag.innerHTML)[0];
+    function recursiveCheck(name: string, dataObj: any) {
+      if (typeof dataObj === 'object') {
+        for (const elementId in dataObj) {
+          dataObj[elementId] = recursiveCheck(dataObj, dataObj[elementId])
+        }
+        return dataObj
+      } else {
+        return checkItOut(name, dataObj)
+      }
     }
-    // no JSON styles array found in the dom
-    // this is ok when publishing
-    return null;
-  }
-
-  /**
-   * Saves the styles to a script tag
-   * This code comes from the client side class property.js
-   */
-  static setProperties(doc, value) {
-    const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag != null ) {
-      styleTag.innerHTML = JSON.stringify([value]);
+    const data: StoredDataModel = readDataFromDom(dom.window.document);
+    if (data) {
+      const { elements, site, pages } = data
+      const result = {
+        elements: elements.map((el) => ({
+          ...el,
+          link: el.link ? {
+            ...el.link,
+            value: checkItOut('href', el.link.value),
+          } : null,
+          data: recursiveCheck('data', el.data),
+          style: recursiveCheck('data', el.data),
+        })),
+      }
+      writeDataToDom(dom.window.document, data);
     } else {
-      console.error('Error: no JSON styles array found in the dom');
+      // no JSON styles array found in the dom
+      // this is ok when publishing
     }
   }
 

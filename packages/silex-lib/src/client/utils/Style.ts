@@ -17,6 +17,18 @@
 type Rgb = number[];
 
 export class Style {
+  static addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: any, style: any): {desktop: any, mobile: any} {
+    return {
+      mobile: mobileEditor ? {
+        ...originalStyle.mobile,
+        ...style,
+      } : originalStyle.mobile,
+      desktop: mobileEditor ? originalStyle.desktop : {
+        ...originalStyle.desktop,
+        ...style,
+      },
+    }
+  }
   /**
    * convert style object to object
    * with only the keys which are set
