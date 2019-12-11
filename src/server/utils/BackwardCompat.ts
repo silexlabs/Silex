@@ -11,10 +11,9 @@
 
 import * as fs from 'fs';
 import * as Path from 'path';
-import { writeDataToDom } from '../../client/dom/site-dom';
 import { Constants } from '../../constants';
-import { ElementType } from '../../types';
-import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from './BackwardCompatV2.5.60';
+import { DataModel, ElementType } from '../../types';
+import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeStyles } from './BackwardCompatV2.5.60';
 
 // FIXME: path in constants
 // const components = require('../../../dist/client/libs/prodotype/components/components.json')
@@ -35,6 +34,7 @@ console.log(`\nSilex starts with backward compat version ${LATEST_VERSION} and f
  *
  */
 export default class BackwardCompat {
+  private data: DataModel = null;
   constructor(private rootUrl: string) {}
   /**
    * handle backward compatibility issues
@@ -42,10 +42,15 @@ export default class BackwardCompat {
    * @param {Document} doc
    * @return {Promise} a Promise, resolve can be called with a warning message
    */
-  async update(doc): Promise<string> {
-    // fix an issue when the style tag has no type, then json is "broken"
-    const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
-    if (styleTag) { styleTag.type = 'text/json'; } // old versions of silex have no json at all so do nothing in that case
+  async update(doc: HTMLDocument, data: DataModel): Promise<[string, DataModel]> {
+    // // fix an issue when the style tag has no type, then json is "broken"
+    // const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
+    // if (styleTag) { styleTag.type = 'text/json'; } // old versions of silex have no json at all so do nothing in that case
+    // TODO: move this to the data model (e.g. data.site.silexVersion)
+
+    // we need this.data as to2_2_11 will extract it and set it from the dom
+    this.data = data;
+
     // if no generator tag, create one
     let metaNode = doc.querySelector('meta[name="generator"]');
     if (!metaNode) {
@@ -63,7 +68,7 @@ export default class BackwardCompat {
 
     // warn the user
     if (this.amIObsolete(version, LATEST_VERSION)) {
-      return Promise.resolve('This website has been saved with a newer version of Silex. Continue at your own risks.');
+      return ['This website has been saved with a newer version of Silex. Continue at your own risks.', this.data];
     } else if (this.hasToUpdate(version, [2, 2, 7])) {
       return Promise.reject({
         message: 'This website has been saved with an older version of Silex, which is not supported anymore as of March 2018. In order to convert it to a newer version, please go to <a href="https://old.silex.me">old.silex.me</a> to open and then save your website. <a href="https://github.com/silexlabs/Silex/wiki/Website-saved-with-older-version-of-Silex">More about this here</a>',
@@ -74,7 +79,7 @@ export default class BackwardCompat {
         '2.2.8': await this.to2_2_8(version, doc),
         '2.2.9': await this.to2_2_9(version, doc),
         '2.2.10': await this.to2_2_10(version, doc),
-        '2.2.11': await this.to2_2_11(version, doc),
+        '2.2.11': await this.to2_2_11(version, doc), // this will set this.data
       };
       // update the static scripts to match the current server and latest version
       this.updateStatic(doc);
@@ -91,19 +96,22 @@ export default class BackwardCompat {
         </small>`;
       }).join('');
       // needs to reload if silex scripts and stylesheets have been updated
-      return `<h2>Website updated</h2>
+      return [
+        `<h2>Website updated</h2>
         <p>This website has been updated to Silex latest version.</p>
         <p>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).</p>
         <small>Bellow you will find details of what I did.</small>
         ${ report }
-      `;
+      `,
+        this.data,
+      ];
     } else {
       // update the static scripts to match the current server URL
       this.updateStatic(doc);
       // apply all-time fixes
       this.fixes(doc);
       // resolve immediately
-      return Promise.resolve('');
+      return ['', this.data];
     }
   }
 
@@ -273,16 +281,20 @@ export default class BackwardCompat {
 
           // import elements
           const elements = getElementsFromDomBC(doc)
+          writeStyles(doc, elements)
+
           // site
           const site = getSiteFromDom(doc)
+
           // pages
           const pages = getPagesFromDom(doc)
+
           if (elements.length && pages.length && site) {
-            writeDataToDom(doc, {
+            this.data = {
               site,
               pages,
               elements,
-            })
+            }
             function removeIfExist(selector) {
               const tag = doc.querySelector(selector)
               if (tag) {
@@ -293,7 +305,12 @@ export default class BackwardCompat {
             removeIfExist('meta[name="hostingProvider"]')
             removeIfExist('meta[name="publicationPath"]')
             actions.push(`
-              <p>I updated the model to the latest version of Silex.</p>
+            <p>I updated the model to the latest version of Silex.</p>
+            `);
+            // pages
+            removeIfExist(`.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
+            actions.push(`
+            <p>I removed the old pages system.</p>
             `);
           } else {
             console.error('Could not import site from v2.2.11', {elements, pages, site})

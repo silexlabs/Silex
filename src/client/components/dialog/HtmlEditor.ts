@@ -14,7 +14,7 @@
  * the Silex HTML editor
  *
  */
-import { getElements, getSite, updateSite } from '../../api';
+import { getElements, getSite, updateSite, updateElements, getSelectedElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { getDomElement } from '../../dom/element-dom';
 import { CodeEditorBase } from './CodeEditorBase';
@@ -40,14 +40,20 @@ export class HtmlEditor extends CodeEditorBase {
    * the content has changed, notify the controler
    */
   contentChanged() {
-    const selection = getElements().filter((el) => el.selected);
+    const selection = getSelectedElements();
     if (selection.length === 0) {
       updateSite({
         ...getSite(),
         headTag: this.getValue(),
       });
     } else {
-      this.model.element.setInnerHtml(getDomElement(getSiteDocument(), selection[0]), this.getValue());
+      updateElements([{
+        from: selection[0],
+        to: {
+          ...selection[0],
+          innerHtml: this.getValue(),
+        },
+      }])
     }
   }
 

@@ -30,8 +30,4 @@ export class ContextMenuController extends ControllerBase {
   constructor(model: Model, view: View) {
     super(model, view);
   }
-
-  hasElementsToPaste() {
-    return !!ControllerBase.clipboard && ControllerBase.clipboard.length > 0;
-  }
 }

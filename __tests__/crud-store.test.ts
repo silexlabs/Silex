@@ -1,4 +1,4 @@
-import { createPages, deletePages, getPages, initializePages, movePage, subscribePages, updatePages, openPage } from '../src/client/api';
+import { createPages, deletePages, getPages, initializePages, movePage, openPage, subscribePages, updatePages } from '../src/client/api';
 import { LinkType, PageData } from '../src/types';
 
 const PAGE1 = {
@@ -83,6 +83,10 @@ test('Delete a page', () => {
 
 test('Update a page', () => {
   initializePages(PAGES_2)
+  updatePages([])
+  expect(getPages()).toHaveLength(2)
+  expect(getPages()[0]).toBe(PAGE1)
+  expect(getPages()[1]).toBe(PAGE2)
   updatePages([{from: PAGE2, to: PAGE2}])
   expect(getPages()[1]).toBe(PAGE2)
   updatePages([{from: PAGE3, to: PAGE3}])
@@ -134,5 +138,8 @@ test('Subscribe to pages', () => {
   jest.spyOn(test, 'cbk')
   subscribePages(test.cbk)
   initializePages(PAGES_1)
-  expect(test.cbk).toHaveBeenCalled()
+  expect(test.cbk).toHaveBeenCalledTimes(1)
+  subscribePages(test.cbk)
+  initializePages([])
+  expect(test.cbk).toHaveBeenCalledTimes(3)
 })

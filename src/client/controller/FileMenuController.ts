@@ -14,7 +14,7 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { FileInfo, Provider } from '../../types';
+import { FileInfo, Provider, DataModel } from '../../types';
 import { getSite, updateSite } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, PublicationOptions, View } from '../ClientTypes';
@@ -37,7 +37,7 @@ export class FileMenuController extends ControllerBase {
       url, opt_cbk?: (() => any),
       opt_errorCbk?: ((p1: any) => any)) {
     this.model.file.openFromUrl(
-        url, (rawHtml) => this.onOpened(opt_cbk, rawHtml),
+        url, (rawHtml: string, data: DataModel) => this.onOpened(opt_cbk, rawHtml, data),
         (err, msg) => this.onOpenError(err, msg, opt_errorCbk));
   }
 
@@ -54,7 +54,7 @@ export class FileMenuController extends ControllerBase {
   openRecent(fileInfo, opt_cbk) {
     // a recent file was selected
     this.model.file.open(
-        (fileInfo as FileInfo), (rawHtml) => this.onOpened(opt_cbk, rawHtml),
+        (fileInfo as FileInfo), (rawHtml, data: DataModel) => this.onOpened(opt_cbk, rawHtml, data),
         (err, message, code) => {
           console.error('Could not open recent file', err, message, code);
           // make silex visible
@@ -131,10 +131,11 @@ export class FileMenuController extends ControllerBase {
     });
   }
 
-  onOpened(opt_cbk, rawHtml) {
+  onOpened(opt_cbk, rawHtml: string, data: DataModel) {
     // reset file URL in order to "save as" instead of "save"
     // this.model.file.setUrl(null);
     this.model.file.setHtml(rawHtml, () => {
+      this.model.file.setData(data);
       // undo redo reset
       this.undoReset();
       this.fileOperationSuccess(null, true);

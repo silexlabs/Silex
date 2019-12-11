@@ -14,10 +14,10 @@
  *
  */
 
-type Rgb = number[];
+import { CssRule } from '../../types';
 
 export class Style {
-  static addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: any, style: any): {desktop: any, mobile: any} {
+  static addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: { mobile: CssRule, desktop: CssRule }, style: CssRule): {desktop: CssRule, mobile: CssRule} {
     return {
       mobile: mobileEditor ? {
         ...originalStyle.mobile,

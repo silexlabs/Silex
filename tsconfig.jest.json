@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "outDir": "dist/client/",
-    "target": "es6",
+    "target": "esnext",
     "sourceMap": true,
-    "module": "es6",
+    "module": "esnext",
+    "esModuleInterop": true,
   },
 }

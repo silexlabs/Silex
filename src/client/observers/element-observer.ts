@@ -1,134 +1,142 @@
 import { ElementData, ElementId } from '../../types';
-import { getElements, getPages, getUi } from '../api';
-import { getStage } from '../components/StageWrapper';
-import { addToPage, createElement, getDomElement, removeElement, removeFromAllPages, reorderElements, setClassName, setLink, writeStyleToDom, getDomElementById, getContentNode } from '../dom/element-dom';
-import { getSiteDocument } from '../components/UiElements';
-import { Style } from '../utils/Style';
+import { getData, getElements, getPages, getParent, getUi, noSectionContent } from '../api';
+import { createDomElement, getDomElement, hideOnDesktop, hideOnMobile, removeElement, reorderElements, setLink, showOnDesktop, showOnMobile, writeStyleToDom } from '../dom/element-dom';
+import { setPages } from '../dom/page-dom';
+import { writeDataToDom } from '../dom/site-dom';
+import { StateChange } from '../flux/crud-store';
+import { executeScripts, getContentNode, setInnerHtml } from '../utils/ElementUtils';
 
-export function onAddElement(element: ElementData, doc = getSiteDocument()) {
-  console.log('Adding a element to the DOM')
-  // create with defaults
-  const newElement: ElementData = createElement(element.id, element.type)
-
-  // update with provided data
-  onUpdateElement(newElement, element)
-
-  getStage().addElement(getDomElement(doc, element))
-
-  // need to call Component:initComponent (adds default data)
-  console.error('not implemented: components')
-}
-
-export function onDeleteElement(element: ElementData, doc = getSiteDocument()) {
-  console.log('Removing element to the DOM', element)
-  getStage().removeElement(getDomElement(doc, element))
-  removeElement(getDomElement(doc, element))
-}
-
-export function onUpdateElement(oldElement: ElementData, element: ElementData, doc = getSiteDocument()) {
-  // console.log('Updating element to the DOM', oldElement, element, element.style !== oldElement.style, element.style.desktop !== oldElement.style.desktop)
-  const domEl = getDomElement(doc, element)
-  // selection
-  if (element.selected !== oldElement.selected) {
-    const selection = getStage().getSelection()
-    const found = selection.find((s) => s.el === domEl)
-    if (element.selected) {
-      if (!found) {
-        getStage().setSelection(selection.map((s) => s.el).concat([domEl]))
-      }
-    } else {
-      if (found) {
-        getStage().setSelection(selection.filter((s) => s !== found).map((s) => s.el))
-      }
-    }
-  }
-  if (element.pageNames !== oldElement.pageNames) {
-    console.log('Updating element visibility', oldElement.pageNames, element.pageNames)
-    removeFromAllPages(domEl)
-    element.pageNames.forEach((name) => addToPage(domEl, getPages().find((p) => p.id === name)))
-  }
-  if (element.parent !== oldElement.parent) {
-    const parentEl = getElements().find((el) => element.parent === el.id)
-    console.log('Updating parent', oldElement.parent, element.parent)
-    getDomElement(doc, parentEl).appendChild(getDomElement(doc, element))
-  }
-  if (element.children !== oldElement.children) {
-    console.log('Updating children', oldElement.children, element.children)
-    reorderElements(element
-      .children
-      .map((id: ElementId) => getDomElement(doc, getElements().find((el) => el.id === id))))
-  }
-  if (element.link !== oldElement.link) {
-    setLink(domEl, element.link)
-  }
-  if (element.classList !== oldElement.classList) {
-    setClassName(domEl, element.classList.join(' '))
-  }
-  if (element.visibility !== oldElement.visibility) {
-    console.error('not implemented')
-    // check visible in current page + in current mobile mode
-    //   this.noSectionContent(element).classList.add(Constants.HIDE_ON_MOBILE);
-    //   if (!wasHidden && this.view.workspace.getMobileEditor()) {
-    //     this.view.stageWrapper.removeElement(element);
-    //   }
-    // } else {
-    //   this.noSectionContent(element).classList.remove(Constants.HIDE_ON_MOBILE);
-    //   if (wasHidden && this.view.workspace.getMobileEditor()) {
-    //     this.view.stageWrapper.addElement(element);
-    //   }
-    // }
-    // const wasHidden = this.getHideOnDesktop(element);
-    // if (hide) {
-    //   this.noSectionContent(element).classList.add(Constants.HIDE_ON_DESKTOP);
-    //   if (!wasHidden && !this.view.workspace.getMobileEditor()) {
-    //     this.view.stageWrapper.removeElement(element);
-    //   }
-    // } else {
-    //   this.noSectionContent(element).classList.remove(Constants.HIDE_ON_DESKTOP);
-    //   if (wasHidden && !this.view.workspace.getMobileEditor()) {
-    //     this.view.stageWrapper.addElement(element);
-    //   }
-    // }
-  }
-  if (element.alt !== oldElement.alt) {
-    const img: HTMLImageElement = getContentNode(domEl) as HTMLImageElement
-    if (img) {
-      img.alt = element.alt
-    } else {
-      console.error('could not set alt attribute as no image element was found')
-    }
-  }
-  if (element.title !== oldElement.title) {
-    getDomElement(doc, element).title = element.title
-  }
-  if (element.style !== oldElement.style) {
-    // handle min-height VS height
-    const mobileOrDesktop = getUi().mobileEditor ? 'mobile' : 'desktop'
-    const height = element.style[mobileOrDesktop].height
-    const style = Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, {
-      'min-height': element.useMinHeight ? height : null,
-      'height': element.useMinHeight ? null : height,
+export const onAddElements = (win: Window) => (elements: ElementData[]) => {
+  console.log('on add element observer', elements)
+  const doc = win.document
+  const added = []
+  elements.forEach((element) => {
+    // create with defaults
+    const parent = getParent(element) // parent may be null if the parent's children array has not yet be changed, then the element will be moved when it is set
+    const parentEl = parent ? getDomElement(doc, parent) : doc.body
+    const emptyElement: ElementData = createDomElement({
+      doc,
+      id: element.id,
+      type: element.type,
+      parent: parentEl,
+      isSectionContent: element.isSectionContent,
     })
-    // write css rules
-    writeStyleToDom(doc, element.id, style[mobileOrDesktop], getUi().mobileEditor)
-    // update stage for element and children
-    getStage().redrawSome([getDomElement(doc, element)]
-      .concat(element.children.map((id) => getDomElementById(doc, id)))
-      .map((el) => getStage().getState(el)))
-    // if (['top', 'left', 'width', 'height'].find((name) => !!element.style[name])) {
-    // const state = getStage().getState(domEl);
-    // getStage().setState(domEl, {
-    //   ...state,
-    //   metrics: {
-    //     ...state.metrics,
-    //     clientRect: {
-    //       ...state.metrics.clientRect,
-    //       top: element.style[mobileOrDesktop].top ? parseInt(element.style[mobileOrDesktop].top) : state.metrics.clientRect.top,
-    //       left: element.style[mobileOrDesktop].left ? parseInt(element.style[mobileOrDesktop].left) : state.metrics.clientRect.left,
-    //       width: element.style[mobileOrDesktop].width ? parseInt(element.style[mobileOrDesktop].width) : state.metrics.clientRect.width,
-    //       height: element.style[mobileOrDesktop].height ? parseInt(element.style[mobileOrDesktop].height) : state.metrics.clientRect.height,
-    //     },
-    //   },
-    // });
+
+    if (parent && !parentEl) {
+      // no parent element yet but will come soon
+      console.log('no parent element yet but will come soon')
+    } else {
+      // update with provided data
+      added.push({
+        from: emptyElement,
+        to: element,
+      })
+    }
+
+    // execute the scripts
+    // FIXME: exec scripts in elements and components?
+    // this.model.component.executeScripts(domEl)
+
+    // need to call Component:initComponent (adds default data)
+    console.error('not implemented: components')
+  })
+  if (added.length) {
+    onUpdateElements(win)(added)
   }
+}
+
+export const onDeleteElements = (win: Window) => (elements: ElementData[]) => {
+  const doc = win.document
+  elements
+  .map((element) => getDomElement(doc, element))
+  .forEach((element) => {
+    removeElement(element)
+  })
+}
+
+export const onUpdateElements = (win: Window) => (change: Array<StateChange<ElementData>>) => {
+  const doc = win.document
+
+  change.forEach(({from, to}) => {
+    const domEl = getDomElement(doc, to)
+
+    if (to.pageNames !== from.pageNames) {
+      const noSection = noSectionContent(to)
+      setPages(getDomElement(doc, noSection), to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
+    }
+    if (to.children !== from.children) {
+      reorderElements(domEl, to.children
+        .map((id: ElementId) => getDomElement(doc, getElements().find((el) => el.id === id)))
+        .filter((el) => !!el)) // FIXME: what should we do while the child is not yet added
+    }
+    if (to.link !== from.link) {
+      setLink(domEl, to.link)
+    }
+    if (to.classList !== from.classList) {
+      from.classList.forEach((c) => domEl.classList.remove(c))
+      to.classList.forEach((c) => domEl.classList.add(c))
+    }
+    // element visibility destkop and mobile
+    if (to.visibility.desktop !== from.visibility.desktop) {
+      if (to.visibility.desktop) {
+        showOnDesktop(domEl)
+      } else {
+        hideOnDesktop(domEl)
+      }
+    }
+    if (to.visibility.mobile !== from.visibility.mobile) {
+      if (to.visibility.mobile) {
+        showOnMobile(domEl)
+      } else {
+        hideOnMobile(domEl)
+      }
+    }
+    if (to.alt !== from.alt) {
+      const img: HTMLImageElement = getContentNode(domEl) as HTMLImageElement
+      if (img) {
+        img.alt = to.alt
+      } else {
+        console.error('could not set alt attribute as no image element was found')
+      }
+    }
+    if (to.title !== from.title) {
+      domEl.title = to.title
+    }
+    if (to.innerHtml !== from.innerHtml) {
+      // FIXME: keep children in the dom ??
+      // remove the editable elements temporarily
+      // const tempElements = this.model.component.saveEditableChildren(domEl)
+
+      setInnerHtml(domEl, to.innerHtml)
+
+      // FIXME: keep children in the dom ??
+      // put back the editable elements
+      // domEl.appendChild(tempElements)
+
+      // FIXME: should exec scripts only after dependencies are loaded
+      // execute the scripts
+      executeScripts(win, domEl)
+
+      // getStage().redrawSome([domEl]
+      //   .map((el) => getStage().getState(el)))
+    }
+    if (to.style !== from.style) {
+      console.log('style changed', to.style, from.style);
+      ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
+        if (to.style[mobileOrDesktop] !== from.style[mobileOrDesktop]) {
+          // handle min-height VS height
+          const height = to.style[mobileOrDesktop].height
+          const style = {
+            ...to.style[mobileOrDesktop],
+            'min-height': to.useMinHeight ? height : null,
+            'height': to.useMinHeight ? null : height,
+          }
+          // write css rules
+          writeStyleToDom(doc, to.id, style, getUi().mobileEditor)
+        }
+      })
+    }
+  })
+  // save data to the dom for front-end.js
+  writeDataToDom(doc, getData())
 }

@@ -15,33 +15,33 @@
  * the websites
  */
 
-export type StyleName = string;
+// export type StyleName = string;
 
-export interface CssRule {
-  [key: string]: CssPropertyValue;
-}
+// export interface CssRule {
+//   [key: string]: CssPropertyValue;
+// }
 
-export interface ComponentData {
-  name: string;
-  displayName?: string;
-  templateName: TemplateName;
-}
+// export interface ComponentData {
+//   name: string;
+//   displayName?: string;
+//   templateName: TemplateName;
+// }
 
-export interface StyleData {
-  className: StyleName;
-  displayName: string;
-  templateName: TemplateName;
-  styles: {[key: string]: VisibilityData};
-}
+// export interface StyleData {
+//   className: StyleName;
+//   displayName: string;
+//   templateName: TemplateName;
+//   styles: {[key: string]: VisibilityData};
+// }
 
-export interface ProdotypeData {
-  component: {[key: string]: ComponentData};
-  style: {[key: string]: StyleData};
-}
+// export interface ProdotypeData {
+//   component: {[key: string]: ComponentData};
+//   style: {[key: string]: StyleData};
+// }
 
-export interface SilexData {
-  [key: string]: CssRule;
-}
+// export interface SilexData {
+//   [key: string]: CssRule;
+// }
 
 // export interface JsonData {
 //   desktop: SilexData;
@@ -50,24 +50,24 @@ export interface SilexData {
 // }
 
 // FIXME: still used for text styles, remove this as it is useless with the new model
-export enum ProdotypeTypes {
-  COMPONENT = 'component',
-  STYLE = 'style',
-}
-export interface VisibilityData {
-  [key: string]: PseudoClassData;
-}
-export interface PseudoClassData {
-  [key: string]: CssRule|TemplateName|StyleName;
-}
-export type Visibility = string;
+// export enum ProdotypeTypes {
+//   COMPONENT = 'component',
+//   STYLE = 'style',
+// }
+// export interface VisibilityData {
+//   [key: string]: PseudoClassData;
+// }
+// export interface PseudoClassData {
+//   [key: string]: CssRule|TemplateName|StyleName;
+// }
+// export type Visibility = string;
 
-export type PseudoClass = string;
+// export type PseudoClass = string;
 
-export type TagName = string;
+// export type TagName = string;
 
-export type CssPropertyName = string;
+// export type CssPropertyName = string;
 
-export type CssPropertyValue = string;
+// export type CssPropertyValue = string;
 
-export type TemplateName = string;
+// export type TemplateName = string;

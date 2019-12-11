@@ -54,6 +54,7 @@ export class PageTool {
         } else {
           // select page
           const cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
+          console.log('select page', cellIndex, e.target)
           if (cellIndex >= 0) {
             this.setSelectedIndex(cellIndex, true);
           }
@@ -103,6 +104,7 @@ export class PageTool {
   setSelectedIndex(idx: number, opt_notify?: boolean) {
     // notify the controller
     if (opt_notify) {
+      console.log('setSelectedIndex', getPages()[idx], idx)
       openPage(getPages()[idx])
     }
   }
@@ -125,12 +127,15 @@ export class PageTool {
    * find all pages in the dom
    */
   private redraw() {
+    console.log('page tool redraw')
     const pages = getPages();
+    console.log('page tool redraw', pages)
     // prepare the data for the template
     // make an array with name, displayName, linkName
     const templateData = pages
-      .map((p) => Object.assign({
+      .map((p, idx) => Object.assign({
         className: (p.isOpen ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
+        idx,
       }, p))
     // refresh the list with new pages
     const container = this.element.getElementsByClassName('page-tool-container')[0];

@@ -1,156 +1,25 @@
-import { combineReducers, createStore, Store } from 'redux';
-import { ElementData, PageData, SiteData, UiData } from '../types';
-import { getStage } from './components/StageWrapper';
-import { getDomElement } from './dom/element-dom';
-import { withCrud } from './flux/crud-store';
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
 
-interface State {
-  pages: PageData[],
-  elements: ElementData[],
-  site: SiteData,
-  ui: UiData,
-}
+import { DataModel, ElementData, PageData, SiteData, UiData, ElementId } from '../types';
+import { ElementAction, PageAction, SiteAction, UiAction } from './flux/actions';
+import { store, subscribeTo, subscribeToCrud } from './flux/store';
+import { StateChange } from './flux/crud-store';
+import { DomDirection } from './model/Element';
 
-// //////////////////////
-// Actions and reducers
-enum ElementAction {
-  INITIALIZE = 'ELEMENT_INITIALISE',
-  CREATE = 'ELEMENT_CREATE',
-  DELETE = 'ELEMENT_DELETE',
-  UPDATE = 'ELEMENT_UPDATE',
-  MOVE = 'ELEMENT_MOVE',
-}
-
-const elementReducer = (state: ElementData[] = [], action: any): any => {
-  switch (action.type) {
-    default: return state
-  }
-}
-
-enum PageAction {
-  INITIALIZE = 'PAGE_INITIALIZE',
-  CREATE = 'PAGE_CREATE',
-  DELETE = 'PAGE_DELETE',
-  UPDATE = 'PAGE_UPDATE',
-  OPEN = 'PAGE_OPEN',
-  MOVE = 'PAGE_MOVE',
-}
-
-const pageReducer = (state: PageData[] = [], action: any) => {
-  // console.log('page reducer', state, action)
-  switch (action.type) {
-    case PageAction.OPEN: return state.map((item) => item.id === action.item.id ? Object.assign({}, action.item, { isOpen: true }) : item.isOpen ? Object.assign({}, item, { isOpen: false }) : item)
-    default: return state
-  }
-}
-
-enum SiteAction {
-  INITIALIZE = 'SITE_INITIALIZE',
-  UPDATE = 'SITE_UPDATE',
-}
-
-const siteReducer = (state: SiteData = {
-  description: '',
-  enableMobile: true,
-  headTag: '',
-  title: '',
-  publicationPath: null,
-  websiteUrl: '',
-  faviconPath: '',
-  thumbnailSocialPath: '',
-  descriptionSocial: '',
-  titleSocial: '',
-  lang: '',
-  width: -1,
-  headStyle: '',
-  headScript: '',
-  hostingProvider: '',
-  twitterSocial: '',
-  dataSources: {},
-  fonts: [],
-},                   action: any) => {
-  // console.log('page reducer', state, action)
-  switch (action.type) {
-    case SiteAction.INITIALIZE: return {
-      ...action.data,
-    }
-    case SiteAction.UPDATE: return {
-      ...state,
-      ...action.data,
-    }
-    default: return state
-  }
-}
-
-enum UiAction {
-  INITIALIZE = 'UI_INITIALIZE',
-  UPDATE = 'UI_UPDATE',
-}
-
-const uiReducer = (state: UiData = {
-    loading: true,
-    loadingSite: false,
-    mobileEditor: false,
-  },               action: any) => {
-  // console.log('page reducer', state, action)
-  switch (action.type) {
-    case UiAction.INITIALIZE: return {
-      ...action.data,
-    }
-    case UiAction.UPDATE: return {
-      ...state,
-      ...action.data,
-    }
-    default: return state
-  }
-}
-
-// //////////////////////
-// Create the main store
-const store: Store<State> = createStore(combineReducers({
-  pages: withCrud<PageData>({
-    actionEnum: PageAction,
-    reducer: pageReducer,
-    label: 'Pages',
-    allowSetId: true,
-  }),
-  elements: withCrud<ElementData>({
-    actionEnum: ElementAction,
-    reducer: elementReducer,
-    label: 'Elements',
-    allowSetId: false,
-  }),
-  site: siteReducer,
-  ui: uiReducer,
-}))
-
-function subscribeToCrud<T>(name: string, cbk: (prevState: T[], nextState: T[]) => void): () => void {
-  return store.subscribe(() => {
-    const state = store.getState()
-    if (!prevState || state[name] !== prevState[name]) {
-      cbk(prevState ? prevState[name] : null, state[name])
-    }
-  })
-}
-
-function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) => void): () => void {
-  return store.subscribe(() => {
-    const state = store.getState()
-    if (!prevState || state[name] !== prevState[name]) {
-      cbk(prevState ? prevState[name] : null, state[name])
-    }
-  })
-}
-
-let prevState: State
-let curState: State
-store.subscribe(() => {
-  prevState = curState
-  curState = store.getState()
-})
+export const getData = (): DataModel => store.getState()
 
 // //////////////////////
 // Element API
+
 export const initializeElements = (items: ElementData[]) => store.dispatch({
   type: ElementAction.INITIALIZE,
   items,
@@ -166,15 +35,9 @@ export const deleteElements = (items: ElementData[]) => store.dispatch({
   items,
 })
 
-export const updateElements = (changes: Array<{from: ElementData, to: ElementData}>) => store.dispatch({
+export const updateElements = (changes: Array<StateChange<ElementData>>) => store.dispatch({
   type: ElementAction.UPDATE,
   changes,
-})
-
-export const moveElement = (item: ElementData, idx: number) => store.dispatch({
-  type: ElementAction.MOVE,
-  item,
-  idx,
 })
 
 export const getElements = () => store.getState().elements
@@ -183,13 +46,64 @@ export const subscribeElements = (cbk: (prevState: ElementData[], nextState: Ele
   return subscribeToCrud<ElementData>('elements', cbk)
 }
 
-/////////////////////////
-// Stage API
-// export const getStageState = (element: ElementData) => getStage().getState(getDomElement(element))
-// export const setStageState = (element: ElementData, state) => getStage().setState(getDomElement(element), state)
+// ///////////////////
+// utils
+
+export const getElement = (id: ElementId): ElementData => getElements().find((el) => el.id === id)
+
+export const getChildren = (element: ElementData): ElementData[] => element.children.map((id) => getElement(id))
+
+export const getChildrenRecursive = (element: ElementData): ElementData[] => element.children.map((id) => getElement(id)).concat(element.children.reduce((prev, id) => getChildrenRecursive(getElement(id)), []))
+
+export const getParent = (element: ElementData): ElementData => getElements().find((parent) => {
+  return parent.children.includes(element.id)
+})
+
+export const getBody = (): ElementData => getElements().find((el) => !getParent(el))
+
+export const noSectionContent = (element: ElementData): ElementData => element.isSectionContent ? getParent(element) : element
+
+export const getSelectedElements = () => getElements()
+  .filter((el) => el.selected)
+
+export const getSelectedElementsNoSectionContent = () => getElements()
+  .map((el) => noSectionContent(el))
+  .filter((el) => el.selected)
+
+// move elements order in their parent's children array
+export const moveElements = (elements: ElementData[], direction: DomDirection) => {
+  console.log('moveElements', elements, direction)
+  updateElements(elements
+    .map((el) => ({
+      el,
+      parent: getParent(noSectionContent(el)), // move the parent instead of the section content
+    }))
+    .filter(({el, parent}) => {
+      if (!parent) {
+        console.warn('No parent, is this the body??', el)
+      }
+      return !!el && !!parent
+    })
+    .map(({el, parent}) => ({
+      el,
+      parent,
+      idx: parent.children.findIndex((c) => c === el.id),
+    }))
+    .map(({el, parent, idx}) => ({
+      from: parent,
+      to: {
+        ...parent,
+        children: parent.children
+          .filter((c) => c !== el.id)
+          .splice(direction === DomDirection.UP ? idx - 1 : DomDirection.DOWN ? idx + 1 : DomDirection.TOP ? 0 : parent.children.length - 1, 0, el.id),
+      },
+    })),
+  )
+}
 
 // //////////////////////
 // Page API
+
 export const initializePages = (items: PageData[]) => store.dispatch({
   type: PageAction.INITIALIZE,
   items,
@@ -205,7 +119,7 @@ export const deletePages = (items: PageData[]) => store.dispatch({
   items,
 })
 
-export const updatePages = (changes: Array<{from: PageData, to: PageData}>) => store.dispatch({
+export const updatePages = (changes: Array<StateChange<PageData>>) => store.dispatch({
   type: PageAction.UPDATE,
   changes,
 })
@@ -227,8 +141,15 @@ export const subscribePages = (cbk: (prevState: PageData[], nextState: PageData[
   return subscribeToCrud<PageData>('pages', cbk)
 }
 
+// ///////////////////
+// utils
+
+export const getCurrentPage = () => getPages()
+  .find((p) => p.isOpen)
+
 // //////////////////////
 // Site API
+
 export const initializeSite = (data: SiteData) => store.dispatch({
   type: SiteAction.INITIALIZE,
   data,
@@ -247,6 +168,7 @@ export const subscribeSite = (cbk: (prevState: SiteData, nextState: SiteData) =>
 
 // //////////////////////
 // Ui API
+
 export const initializeUi = (data: UiData) => store.dispatch({
   type: UiAction.INITIALIZE,
   data,

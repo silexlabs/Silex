@@ -16,7 +16,7 @@
  */
 
 import { Provider, VHost } from '../../../types';
-import { getSite, updateSite } from '../../api';
+import { getSite, updateSite, updateUi, getUi } from '../../api';
 import { Model, PublicationOptions, View } from '../../ClientTypes';
 import { File } from '../../model/File';
 import { SilexTasks } from '../../service/SilexTasks';
@@ -36,14 +36,11 @@ export class PublishDialog {
   /**
    * display/hide a loader
    */
-  loading(on: boolean) {
-    if (on) {
-      getUiElements().stage.classList.add(
-          File.LOADING_LIGHT_CSS_CLASS);
-    } else {
-      getUiElements().stage.classList.remove(
-          File.LOADING_LIGHT_CSS_CLASS);
-    }
+  loading(loading: boolean) {
+    updateUi({
+      ...getUi(),
+      loading,
+    })
   }
 
   /**
@@ -58,11 +55,8 @@ export class PublishDialog {
         const providerName = site.hostingProvider;
         const publicationPath = site.publicationPath;
         if (providerName && publicationPath) {
-          const provider: Provider = hosting.providers.find(
-              (p) => p.name === providerName);
-          const providerDisplayName = provider ?
-              provider.displayName || provider.name :
-              publicationPath.service;
+          const provider: Provider = hosting.providers.find((p) => p.name === providerName);
+          const providerDisplayName = provider ? provider.displayName || provider.name : publicationPath.service;
           SilexNotification.confirm('Publication', `
             I am about to publish your website to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path || '/'}.
           `, (ok) => {
@@ -341,7 +335,6 @@ export class PublishDialog {
               let msg = `<strong>${json.message}</strong>`;
               if (json.stop === true) {
                 clearInterval(timer);
-                console.log('publish dialog', publicationPath)
                 const websiteUrl = getSite().websiteUrl || publicationPath.absPath + '/index.html';
                 msg += `
                   <p>Please visit <a target="_blanck" href="${websiteUrl}">your published website here</a>.

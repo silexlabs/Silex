@@ -16,14 +16,13 @@
  */
 
 import { Constants } from '../../constants';
-import { ElementData, ElementId } from '../../types';
-import { updateElements, getSite } from '../api';
+import { ComponentData, ElementData, ElementType, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../../types';
+import { getElements, getSite, updateElements } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, View } from '../ClientTypes';
-import { getDomElement } from '../dom/element-dom';
-import { Prodotype, ProdotypeCompDef } from '../externs';
-import { ComponentData, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from './Data';
 import { getSiteDocument } from '../components/UiElements';
+import { Prodotype, ProdotypeCompDef } from '../externs';
+import { addMediaQuery } from '../utils/ElementUtils';
 
 /**
  * Manage Prodotype components and styles
@@ -70,31 +69,31 @@ export class Component {
     }
   }
 
-  /**
-   * check existance and possibly create the body style if it is missing
-   * @param doc docment of the iframe containing the website
-   */
-  initStyles(doc: Document) {
-    const element = doc.body;
+  // /**
+  //  * check existance and possibly create the body style if it is missing
+  //  * @param doc docment of the iframe containing the website
+  //  */
+  // initStyles(doc: Document) {
+  //   const element = doc.body;
 
-    // make sure that the style exists
-    const styleData = this.model.property.getStyleData(Constants.BODY_STYLE_CSS_CLASS);
-    if (!styleData) {
-      this.initStyle(Constants.BODY_STYLE_NAME, Constants.BODY_STYLE_CSS_CLASS, null);
-    }
+  //   // make sure that the style exists
+  //   const styleData = this.model.property.getStyleData(Constants.BODY_STYLE_CSS_CLASS);
+  //   if (!styleData) {
+  //     this.initStyle(Constants.BODY_STYLE_NAME, Constants.BODY_STYLE_CSS_CLASS, null);
+  //   }
 
-    // make sure that body has the style
-    element.classList.add(Constants.BODY_STYLE_CSS_CLASS);
-  }
+  //   // make sure that body has the style
+  //   element.classList.add(Constants.BODY_STYLE_CSS_CLASS);
+  // }
 
-  /**
-   * not needed? we sometimes use !!this.model.property.getElementData(element,
-   * Constants.COMPONENT_TYPE)
-   * @return true if el is a component (not only an element)
-   */
-  isComponent(el: HTMLElement): boolean {
-    return el.classList.contains(Constants.COMPONENT_CLASS_NAME);
-  }
+  // /**
+  //  * not needed? we sometimes use !!this.model.property.getElementData(element,
+  //  * Constants.COMPONENT_TYPE)
+  //  * @return true if el is a component (not only an element)
+  //  */
+  // isComponent(el: HTMLElement): boolean {
+  //   return el.classList.contains(Constants.COMPONENT_CLASS_NAME);
+  // }
 
   /**
    * get Prodotype descriptor of the components
@@ -110,7 +109,9 @@ export class Component {
    * @param templateName type of component
    */
   initComponent(element: ElementData, templateName: string) {
-    const name = this.prodotypeComponent.createName(templateName, this.getProdotypeComponents(Constants.COMPONENT_TYPE));
+    const name = this.prodotypeComponent.createName(templateName, getElements()
+      .filter((el) => el.type === ElementType.COMPONENT)
+      .map((el) => el.data.component));
 
     // for selection (select all components)
     // element.classList.add(Constants.COMPONENT_CLASS_NAME);
@@ -119,25 +120,25 @@ export class Component {
     // this includes the css class of the component (component-templateName)
     const cssClasses = this.getCssClasses(templateName) || [];
 
-    // for styles (select buttons and apply a style)
-    updateElements([{
-      from: element,
-      to: {
-        ...element,
-        classList: element.classList.concat(cssClasses),
-        data: {
-          ...element.data,
-          component: {
-            name,
-            templateName,
-          },
-        },
-      },
-    }]);
-    // this.model.property.setElementComponentData(element, {name, templateName});
-
     // first rendering of the component
-    this.render(getDomElement(getSiteDocument(), element), () => {
+    this.prodotypeComponent.decorate(templateName, element.data.component, getSite().dataSources).then((html) => {
+      updateElements([{
+        from: element,
+        to: {
+          ...element,
+          classList: element.classList.concat(cssClasses),
+          data: {
+            ...element.data,
+            component: {
+              name,
+              templateName,
+              data: {},
+            },
+          },
+          innerHtml: html,
+        },
+      }]);
+
       // update the dependencies once the component is added
       this.updateDepenedencies(Constants.COMPONENT_TYPE);
     });
@@ -162,58 +163,78 @@ export class Component {
     }
   }
 
-  /**
-   * render the component
-   * this is made using prodotype
-   * the template is expanded with the data we have for this component
-   * used when the component is created, or duplicated (paste)
-   * @param element component to render
-   */
-  render(element: HTMLElement, opt_cbk?: (() => any)) {
-    this.renderType(element, Constants.COMPONENT_TYPE, () => {
-      this.renderType(element, Constants.STYLE_TYPE, opt_cbk);
-    });
-  }
+  // /**
+  //  * render the component
+  //  * this is made using prodotype
+  //  * the template is expanded with the data we have for this component
+  //  * used when the component is created, or duplicated (paste)
+  //  * @param element component to render
+  //  */
+  // render(element: HTMLElement, opt_cbk?: (() => any)) {
+  //   this.renderType(element, Constants.COMPONENT_TYPE, () => {
+  //     this.renderType(element, Constants.STYLE_TYPE, opt_cbk);
+  //   });
+  // }
 
-  getProdotype(type) {
-    switch (type) {
-      case Constants.COMPONENT_TYPE:
-        return this.prodotypeComponent;
-      case Constants.STYLE_TYPE:
-        return this.prodotypeStyle;
-      default:
-        throw new Error('Unknown component type ' + type);
-    }
-  }
+  // getProdotype(type) {
+  //   switch (type) {
+  //     case Constants.COMPONENT_TYPE:
+  //       return this.prodotypeComponent;
+  //     case Constants.STYLE_TYPE:
+  //       return this.prodotypeStyle;
+  //     default:
+  //       throw new Error('Unknown component type ' + type);
+  //   }
+  // }
 
-  /**
-   * render a component or style
-   */
-  renderType(element: HTMLElement, type: ElementId|StyleName, opt_cbk?: (() => any)) {
-    const data = type === Constants.COMPONENT_TYPE ?
-        this.model.property.getElementComponentData(element) :
-        this.model.property.getElementStyleData(element);
-    if (data) {
-      const templateName = data.templateName;
-      const prodotype = this.getProdotype(type);
-      prodotype.decorate(templateName, data, getSite().dataSources).then((html) => {
-        this.model.element.setInnerHtml(element, html);
+  // /**
+  //  * render a component or style
+  //  */
+  // renderComponent(element: ElementData, opt_cbk?: (() => any)) {
+  //   if (element.data.component) {
+  //     const templateName = element.data.component.templateName;
+  //     this.prodotypeComponent.decorate(templateName, element.data.component, getSite().dataSources).then((html) => {
+  //       updateElements([{
+  //         from: element,
+  //         to: {
+  //           ...element,
+  //           innerHtml: html,
+  //         },
+  //       }]);
 
-        // notify the owner
-        if (opt_cbk) {
-          opt_cbk();
-        }
+  //       // notify the owner
+  //       if (opt_cbk) {
+  //         opt_cbk();
+  //       }
+  //     });
+  //   } else {
+  //     if (opt_cbk) {
+  //       opt_cbk();
+  //     }
+  //   }
+  // }
 
-        // execute the scripts
-        // FIXME: should exec scripts only after dependencies are loaded
-        this.executeScripts(element);
-      });
-    } else {
-      if (opt_cbk) {
-        opt_cbk();
-      }
-    }
-  }
+  // /**
+  //  * render a component or style
+  //  */
+  // renderStyle(element: HTMLElement, opt_cbk?: (() => any)) {
+  //   const data = this.model.property.getElementStyleData(element);
+  //   if (data) {
+  //     const templateName = data.templateName;
+  //     this.prodotypeStyle.decorate(templateName, data).then((html) => {
+  //       this.model.element.setInnerHtml(element, html);
+
+  //       // notify the owner
+  //       if (opt_cbk) {
+  //         opt_cbk();
+  //       }
+  //     });
+  //   } else {
+  //     if (opt_cbk) {
+  //       opt_cbk();
+  //     }
+  //   }
+  // }
 
   /**
    * get all CSS classes set on this component when it is created
@@ -243,19 +264,20 @@ export class Component {
     return cssClasses;
   }
 
-  /**
-   * eval the scripts found in an element
-   * this is useful when we render a template, since the scripts are executed
-   * only when the page loads
-   */
-  executeScripts(element: HTMLElement) {
-    // execute the scripts
-    const scripts = element.querySelectorAll('script');
-    for (const el of scripts) {
-      // tslint:disable:no-string-literal
-      this.model.file.getContentWindow()['eval'](el.innerText);
-    }
-  }
+  // NOW IN UTILS
+  // /**
+  //  * eval the scripts found in an element
+  //  * this is useful when we render a template, since the scripts are executed
+  //  * only when the page loads
+  //  */
+  // executeScripts(element: HTMLElement) {
+  //   // execute the scripts
+  //   const scripts = element.querySelectorAll('script');
+  //   for (const el of scripts) {
+  //     // tslint:disable:no-string-literal
+  //     getSiteWindow()['eval'](el.innerText);
+  //   }
+  // }
 
   // /**
   //  * apply a style to an element
@@ -268,20 +290,32 @@ export class Component {
   //   this.model.property.setStyle(element, style, false);
   // }
 
-  /**
-   * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
-   */
-  getProdotypeComponents(type: string): Array<ComponentData|StyleData> {
-    const className = type === Constants.COMPONENT_TYPE ? Constants.COMPONENT_CLASS_NAME : Constants.STYLE_CLASS_NAME;
-    const attrName = type === Constants.COMPONENT_TYPE ? Constants.ELEMENT_ID_ATTR_NAME : 'data-style-id';
-    return Array.from(this.model.file.getContentDocument().querySelectorAll('.' + className))
-    .map((el) => {
-      const attr = el.getAttribute(attrName);
-      const data = type === Constants.COMPONENT_TYPE ? this.model.property.getComponentData(attr) : this.model.property.getStyleData(attr);
-      return data;
-    })
-    .filter((data) => !!data);
-  }
+  // /**
+  //  * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
+  //  */
+  // getStyles(type: string): Array<StyleData> {
+  //   const className = type === Constants.COMPONENT_TYPE ? Constants.COMPONENT_CLASS_NAME : Constants.STYLE_CLASS_NAME;
+  //   const attrName = type === Constants.COMPONENT_TYPE ? Constants.ELEMENT_ID_ATTR_NAME : 'data-style-id';
+  //   return Array.from(getSiteDocument().querySelectorAll('.' + className))
+  //   .map((el) => {
+  //     const attr = el.getAttribute(attrName);
+  //     const data = type === Constants.COMPONENT_TYPE ? this.model.property.getComponentData(attr) : this.model.property.getStyleData(attr);
+  //     return data;
+  //   })
+  //   .filter((data) => !!data);
+  // }
+
+  // getProdotypeComponents(type: string): Array<ComponentData|StyleData> {
+  //   const className = type === Constants.COMPONENT_TYPE ? Constants.COMPONENT_CLASS_NAME : Constants.STYLE_CLASS_NAME;
+  //   const attrName = type === Constants.COMPONENT_TYPE ? Constants.ELEMENT_ID_ATTR_NAME : 'data-style-id';
+  //   return Array.from(getSiteDocument().querySelectorAll('.' + className))
+  //   .map((el) => {
+  //     const attr = el.getAttribute(attrName);
+  //     const data = type === Constants.COMPONENT_TYPE ? this.model.property.getComponentData(attr) : this.model.property.getStyleData(attr);
+  //     return data;
+  //   })
+  //   .filter((data) => !!data);
+  // }
 
   /**
    * update the dependencies of Prodotype components
@@ -294,18 +328,19 @@ export class Component {
       throw new Error('Not supported, all dependencies are for components for now, not styles');
     }
     const head = this.model.head.getHeadElement();
-    const components = this.getProdotypeComponents(type);
-    const prodotype = this.getProdotype(type);
+    const components: ComponentData[] = getElements()
+      .filter((el) => el.type === ElementType.COMPONENT)
+      .map((el) => el.data.component);
 
     // remove unused dependencies (scripts and style sheets)
     const elements = Array.from(this.model.head.getHeadElement().querySelectorAll('[data-dependency]'));
-    const unused = prodotype.getUnusedDependencies(elements, components);
+    const unused = this.prodotypeComponent.getUnusedDependencies(elements, components);
     for (const el of unused) {
       head.removeChild(el);
     }
 
     // add missing dependencies (scripts and style sheets)
-    const missing = prodotype.getMissingDependencies(head, components);
+    const missing = this.prodotypeComponent.getMissingDependencies(head, components);
     for (const el of missing) {
       el.setAttribute('data-dependency', '');
       head.appendChild(el);
@@ -362,7 +397,7 @@ export class Component {
    */
   initStyle(displayName: string, className: StyleName, opt_data?: StyleData) {
     // check that style does not exist
-    if (this.model.property.getStyleData(className)) {
+    if (getSite().style[className]) {
       console.error('This style already exists');
       throw new Error('This style already exists');
     } else {
@@ -441,7 +476,7 @@ export class Component {
     newData.pseudoClass = pseudoClass;
 
     // store the component's data for later edition
-    const styleData = (this.model.property.getStyleData(className) || {
+    const styleData = (getSite().style[className] || {
       className,
       templateName: 'text',
       displayName: opt_displayName,
@@ -459,7 +494,7 @@ export class Component {
     const head = this.model.head.getHeadElement();
     let elStyle = head.querySelector(`[data-style-id="${className}"]`);
     if (!elStyle) {
-      const doc = this.model.file.getContentDocument();
+      const doc = getSiteDocument();
       elStyle = doc.createElement('style');
       elStyle.className = Constants.STYLE_CLASS_NAME;
       elStyle.setAttribute('type', 'text/css');
@@ -488,6 +523,6 @@ export class Component {
     if (visibility === Constants.STYLE_VISIBILITY[0]) {
       return html;
     }
-    return this.model.property.addMediaQuery(html);
+    return addMediaQuery(html);
   }
 }

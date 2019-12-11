@@ -18,7 +18,7 @@
 
 import { Constants } from '../../constants';
 import { ElementType } from '../../types';
-import { getElements, getUi, moveElement, updateElements, updateUi } from '../api';
+import { getElements, getUi, updateElements, updateUi, moveElements, getSelectedElementsNoSectionContent, getSelectedElements } from '../api';
 import { Config } from '../ClientConfig';
 import { Controller, Model } from '../ClientTypes';
 import { DomDirection } from '../model/Element';
@@ -55,15 +55,23 @@ export class Menu {
     return el;
   }
 
+  // /**
+  //  * sections are not draggable but can be moved with arrows
+  //  */
+  // handleSectionCase(direction: DomDirection) {
+  //   getElements()
+  //     .filter((el) => el.selected)
+  //     .map((el) => noSectionContent(el))
+  //     .filter((el) => el.type === ElementType.SECTION)
+  //     .forEach((el, idx) => moveElement(el, direction === DomDirection.UP ? idx - 1 : idx + 1));
+  // }
+
   /**
-   *
+   * move section content's parent with arrow keys
    */
-  handleSectionCase(direction: DomDirection) {
-    getElements()
-      .filter((el) => el.selected)
-      .map((el) => this.model.element.noSectionContent(el))
-      .filter((el) => this.model.element.isSection(el))
-      .forEach((el, idx) => moveElement(el, direction === DomDirection.UP ? idx - 1 : idx + 1));
+  handleSectionContent(direction: DomDirection) {
+    moveElements(getSelectedElements()
+      .filter((el) => el.type === ElementType.SECTION), direction)
   }
 
   /**
@@ -75,15 +83,15 @@ export class Menu {
     Config.shortcuts.forEach((shortcut) => {
       Menu.keyboard.addShortcut(shortcut, (e) => this.onMenuEvent(shortcut.id));
     });
-    // special case of the sections which are not draggable but can be moved with arrows
+    // special case of the section content (move the section/parent with arrow keys)
     Menu.keyboard.addShortcut({
       label: 'Move section up',
       key: 'ArrowDown',
-    }, (e) => this.handleSectionCase(DomDirection.UP));
+    }, (e) => this.handleSectionContent(DomDirection.UP));
     Menu.keyboard.addShortcut({
       label: 'Move section down',
       key: 'ArrowUp',
-    }, (e) => this.handleSectionCase(DomDirection.DOWN));
+    }, (e) => this.handleSectionContent(DomDirection.DOWN));
 
     // components
     this.model.component.ready(() => {
@@ -261,22 +269,31 @@ export class Menu {
       case 'insert.page':
         this.controller.pageToolController.createPage();
         break;
-      case 'insert.text':
-        added = this.controller.insertMenuController.addElement(ElementType.TEXT, opt_componentName);
+      case 'insert.text': {
+        const parent = this.model.element.getCreationDropZone();
+        added = this.controller.insertMenuController.addElement(ElementType.TEXT, parent, opt_componentName);
         break;
-      case 'insert.section':
-        added = this.controller.insertMenuController.addElement(ElementType.SECTION, opt_componentName);
+      }
+      case 'insert.section': {
+        const parent = this.model.element.getCreationDropZone();
+        added = this.controller.insertMenuController.addElement(ElementType.SECTION, parent, opt_componentName);
         break;
-      case 'insert.html':
-        added = this.controller.insertMenuController.addElement(ElementType.HTML, opt_componentName);
+      }
+      case 'insert.html': {
+        const parent = this.model.element.getCreationDropZone();
+        added = this.controller.insertMenuController.addElement(ElementType.HTML, parent, opt_componentName);
         break;
-      case 'insert.image':
-      // FIXME: add opt_componentName param to browseAndAddImage
-        this.controller.insertMenuController.browseAndAddImage();
+      }
+      case 'insert.image': {
+        const parent = this.model.element.getCreationDropZone();
+        this.controller.insertMenuController.browseAndAddImage(parent);
         break;
-      case 'insert.container':
-        added = this.controller.insertMenuController.addElement(ElementType.CONTAINER, opt_componentName);
+      }
+      case 'insert.container': {
+        const parent = this.model.element.getCreationDropZone();
+        added = this.controller.insertMenuController.addElement(ElementType.CONTAINER, parent, opt_componentName);
         break;
+      }
       case 'edit.delete.selection':
         this.controller.editMenuController.removeSelectedElements();
         break;
@@ -289,10 +306,10 @@ export class Menu {
         this.controller.editMenuController.copySelection();
         break;
       case 'edit.paste.selection':
-        this.controller.editMenuController.pasteClipBoard(true);
+        this.controller.editMenuController.pasteClipBoard();
         break;
       case 'edit.duplicate.selection':
-        this.controller.editMenuController.duplicate();
+        this.controller.editMenuController.duplicateSelection();
         break;
       case 'edit.undo':
         this.controller.editMenuController.undo();

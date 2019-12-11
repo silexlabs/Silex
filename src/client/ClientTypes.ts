@@ -14,7 +14,7 @@
  * Controller structures
  *
  */
-import { ElementData, FileInfo, PageData, Provider } from '../types';
+import { ElementData, FileInfo, PageData, Provider, DataModel } from '../types';
 import { BreadCrumbs } from './components/BreadCrumbs';
 import { ContextMenu } from './components/ContextMenu';
 import { CssEditor } from './components/dialog/CssEditor';
@@ -82,8 +82,7 @@ export interface PublicationOptions {
   provider: Provider;
 }
 export interface UndoItem {
-  elements: ElementData[];
-  pages: PageData[];
+  data: DataModel;
   page: PageData;
   html: string;
   scrollX: number;

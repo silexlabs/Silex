@@ -1,11 +1,11 @@
 import * as objectPath from '../../../node_modules/object-path/index.js';
-import { SiteData, DataSources } from '../../types';
+import { DataSources, SiteData } from '../../types';
+import { getData } from '../api';
 import { getSiteDocument } from '../components/UiElements';
-import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth } from '../dom/site-dom';
+import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, writeDataToDom } from '../dom/site-dom';
 import { SilexNotification } from '../utils/Notification';
 
 export function onChangeSite(prev: SiteData, site: SiteData) {
-  console.log('site changed', prev, site)
   const doc = getSiteDocument()
   if (!prev || prev.headStyle !== site.headStyle) { setHeadStyle(doc, site.headStyle) }
   if (!prev || prev.headScript !== site.headScript) { setHeadScript(doc, site.headScript) }
@@ -17,10 +17,13 @@ export function onChangeSite(prev: SiteData, site: SiteData) {
   if (!prev || prev.descriptionSocial !== site.descriptionSocial) { setDescriptionSocial(doc, site.descriptionSocial) }
   if (!prev || prev.titleSocial !== site.titleSocial) { setTitleSocial(doc, site.titleSocial) }
   if (!prev || prev.lang !== site.lang) { setLang(doc, site.lang) }
-  if (!prev || prev.width !== site.width) { setWebsiteWidth(doc, site.width) }
+  // if (!prev || prev.width !== site.width) { setWebsiteWidth(doc, site.width) }
   if (!prev || prev.twitterSocial !== site.twitterSocial) { setTwitterSocial(doc, site.twitterSocial) }
   if (!prev || prev.dataSources !== site.dataSources) { loadDataSources(site.dataSources, true) }
   if (!prev || prev.fonts !== site.fonts) { setFonts(doc, site.fonts) }
+
+  // save data to the dom for front-end.js
+  writeDataToDom(doc, getData())
 }
 
 async function loadDataSources(dataSources: DataSources, reload): Promise<DataSources> {

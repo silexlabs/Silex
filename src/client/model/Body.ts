@@ -53,12 +53,12 @@ export class Body {
     document.body.appendChild(Body.focusInput);
   }
 
-  /**
-   * @return   body element
-   */
-  getBodyElement(): HTMLElement {
-    return this.model.file.getContentDocument().body;
-  }
+  // /**
+  //  * @return   body element
+  //  */
+  // getBodyElement(): HTMLElement {
+  //   return getSiteDocument().body;
+  // }
 
   // /**
   //  * @return   array of elements which are currently selected

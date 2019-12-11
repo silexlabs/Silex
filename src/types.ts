@@ -14,6 +14,15 @@
  *
  */
 
+// whole data model
+
+export interface DataModel {
+  site: SiteData,
+  elements: ElementData[],
+  pages: PageData[],
+}
+
+// Element data
 export type ElementId = string
 
 export enum ElementType {
@@ -22,6 +31,7 @@ export enum ElementType {
   IMAGE = 'image-element',
   TEXT = 'text-element',
   HTML = 'html-element',
+  COMPONENT = 'component-element',
 }
 
 export enum LinkType {
@@ -50,11 +60,11 @@ export interface ElementData {
   id: ElementId,
   children: ElementId[],
   selected: boolean,
-  parent: ElementId,
   enableDrag: boolean,
   enableDrop: boolean,
   enableResize: Rect<boolean>,
   useMinHeight: boolean,
+  isSectionContent: boolean,
   title: string,
   alt: string,
   visibility: {
@@ -62,17 +72,17 @@ export interface ElementData {
     desktop: boolean,
   },
   style: {
-    mobile: any,
-    desktop: any,
+    mobile: CssRule,
+    desktop: CssRule,
   },
   data: {
-    component: any,
+    component: ComponentData,
   },
+  innerHtml: string,
 }
 
-/**
- * structure to store all of a page data
- */
+// page data
+
 export interface PageData {
   id: string,
   displayName: string,
@@ -84,15 +94,15 @@ export interface PageData {
   canRename: boolean,
 }
 
-/**
- * site data
- */
+// site data
+
 export interface DataSource {
   href: string;
   root: string;
   data?: object;
   structure?: object;
 }
+
 export interface DataSources { [key: string]: DataSource; }
 
 export interface Font {
@@ -119,13 +129,14 @@ export interface SiteData {
   twitterSocial: string,
   dataSources: DataSources,
   fonts: Font[],
+  style: StyleDataObject,
 }
 
 export interface UiData {
   mobileEditor: boolean,
   loading: boolean,
-  loadingSite: boolean,
 }
+
 // FIXME: choose between path and folder + name, remove absPath
 export interface FileInfo {
   path: string;
@@ -138,10 +149,12 @@ export interface FileInfo {
   mime: string;
   absPath: string;
 }
+
 export interface Hosting {
   providers: Provider[];
   skipHostingSelection: boolean;
 }
+
 export interface Provider {
   name: string;
   displayName: string;
@@ -155,10 +168,59 @@ export interface Provider {
   skipFolderSelection: boolean;
   afterPublishMessage: string;
 }
+
 export interface VHost {
   name: string;
   domainUrl: string;
   skipDomainSelection: boolean;
   publicationPath: FileInfo;
   url: string;
+}
+
+// Styles
+
+export type StyleName = string;
+
+export interface CssRule {
+  [key: string]: CssPropertyValue;
+}
+
+export interface StyleDataObject {
+  [key: string]: StyleData;
+}
+
+export interface StyleData {
+  className: StyleName;
+  displayName: string;
+  templateName: TemplateName;
+  styles: {[key: string]: VisibilityData};
+}
+
+export interface VisibilityData {
+  [key: string]: PseudoClassData;
+}
+
+export interface PseudoClassData {
+  [key: string]: CssRule|TemplateName|StyleName;
+}
+
+export type Visibility = string;
+
+export type PseudoClass = string;
+
+export type TagName = string;
+
+export type CssPropertyName = string;
+
+export type CssPropertyValue = string;
+
+export type TemplateName = string;
+
+// Components
+
+export interface ComponentData {
+  name: string;
+  displayName?: string;
+  templateName: TemplateName;
+  data: any;
 }

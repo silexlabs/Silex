@@ -18,13 +18,13 @@
 
 import { Constants } from '../../../constants';
 import { ElementData, LinkType, PageData } from '../../../types';
-import { getElements, getPages, getSite, updateElements } from '../../api';
+import { getElements, getPages, getSite, getUi, noSectionContent, updateElements, subscribePages, subscribeSite, subscribeUi, getSelectedElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { getDomElement } from '../../dom/element-dom';
 import { Dom } from '../../utils/Dom';
 import { getStage } from '../StageWrapper';
-import { PaneBase } from './PaneBase';
 import { getSiteDocument } from '../UiElements';
+import { PaneBase } from './PaneBase';
 
 /**
  * on of Silex Editors class
@@ -70,6 +70,17 @@ export class PagePane extends PaneBase {
 
     // init the component
     this.buildUi();
+
+    subscribePages(() => {
+      if (getStage()) {
+        this.redraw(getSelectedElements());
+      }
+    })
+    subscribeUi(() => {
+      if (getStage()) {
+        this.redraw(getSelectedElements());
+      }
+    })
   }
 
   /**
@@ -89,22 +100,29 @@ export class PagePane extends PaneBase {
     this.viewOnDeviceEl.onclick = (e) => {
       const selected: HTMLInputElement = this.element.querySelector('.view-on-mobile input:checked');
       const value = selected.value;
+      const desktop = value !== 'mobile'
+      const mobile = value !== 'desktop'
+      // stopStageObserver() // prevent reset selection
       updateElements(getElements()
-        .filter((el) => el.selected)
+        .map((el) => noSectionContent(el))
+        .filter((el) => el.selected && (el.visibility.desktop !== desktop || el.visibility.mobile !== mobile))
         .map((el) => ({
           from: el,
           to: {
             ...el,
+            selected: getUi().mobileEditor ? mobile : desktop,
             visibility: {
-              desktop: value !== 'desktop',
-              mobile: value !== 'mobile',
+              desktop,
+              mobile,
             },
           },
         })));
+      // startStageObserver()
     };
     this.viewOnAllPagesCheckbox = this.element.querySelector('.view-on-allpages-check');
     this.viewOnAllPagesCheckbox.onchange = () => {
       updateElements(getElements()
+        .map((el) => noSectionContent(el))
         .filter((el) => el.selected)
         .map((el) => ({
           from: el,
@@ -126,29 +144,17 @@ export class PagePane extends PaneBase {
    * refresh with new pages
    * @param pages   the new list of pages
    */
-  setPages(pages: string[]) {
-    this.pageNames = pages;
-
-    // build an array of obects with name and displayName properties
-    const pageData = pages.map((pageName) => {
-      const pageElement =
-          this.model.file.getContentDocument().getElementById(pageName);
-      if (!pageElement) {
-        // this happens while undoing or redoing
-        return null;
-      }
-      return {
-        name: pageName,
-        displayName: pageElement.innerHTML,
-        linkName: '#!' + pageName,
-      };
-    });
-
+  setPages(pages: PageData[]) {
     // link selector
     const pageDataWithDefaultOptions = [
-      {name: 'none', displayName: '-', linkName: 'none'},
-      {name: 'custom', displayName: 'External link', linkName: 'custom'},
-    ].concat(pageData);
+      {id: 'none', displayName: '-', linkName: 'none'},
+      {id: 'custom', displayName: 'External link', linkName: 'custom'},
+    ].concat(pages.map((p) => ({
+      id: p.id,
+      displayName: p.displayName,
+      linkName: p.link.value,
+    })));
+
     const linkContainer = this.element.querySelector('.link-combo-box');
     let templateHtml = this.element.querySelector('.link-template').innerHTML;
     linkContainer.innerHTML = Dom.renderList(templateHtml, pageDataWithDefaultOptions);
@@ -157,7 +163,7 @@ export class PagePane extends PaneBase {
     // init page template
     const pagesContainer = this.element.querySelector('.pages-container');
     templateHtml = this.element.querySelector('.pages-selector-template').innerHTML;
-    pagesContainer.innerHTML = Dom.renderList(templateHtml, pageData);
+    pagesContainer.innerHTML = Dom.renderList(templateHtml, pages);
 
     // reset page checkboxes
     if (this.pageCheckboxes) {
@@ -187,14 +193,14 @@ export class PagePane extends PaneBase {
    */
   onLinkChanged() {
     if (this.linkDropdown.value === 'none') {
-      this.controller.propertyToolController.removeLink(getElements().filter((el) => el.selected));
+      this.controller.propertyToolController.removeLink(getSelectedElements());
       this.linkInputTextField.style.display = 'none';
     } else {
       if (this.linkDropdown.value === 'custom') {
         this.linkInputTextField.value = '';
         this.linkInputTextField.style.display = 'inherit';
       } else {
-        this.controller.propertyToolController.addLink(getElements().filter((el) => el.selected), {
+        this.controller.propertyToolController.addLink(getSelectedElements(), {
           type: LinkType.PAGE,
           value: this.linkDropdown.value,
         });
@@ -206,9 +212,9 @@ export class PagePane extends PaneBase {
    * the user changed the link text field
    */
   onLinkTextChanged() {
-    this.controller.propertyToolController.addLink(getElements().filter((el) => el.selected), {
+    this.controller.propertyToolController.addLink(getSelectedElements(), {
       type: LinkType.URL,
-      value: this.linkDropdown.value,
+      value: this.linkInputTextField.value,
     });
 }
 
@@ -219,9 +225,9 @@ export class PagePane extends PaneBase {
   checkPage(page: PageData, checkbox: HTMLInputElement) {
     // notify the toolbox
     if (checkbox.checked) {
-      this.controller.propertyToolController.addToPage(getElements().filter((el) => el.selected), page);
+      this.controller.propertyToolController.addToPage(getSelectedElements(), page);
     } else {
-      this.controller.propertyToolController.removeFromPage(getElements().filter((el) => el.selected), page);
+      this.controller.propertyToolController.removeFromPage(getSelectedElements(), page);
     }
   }
 
@@ -230,24 +236,32 @@ export class PagePane extends PaneBase {
    */
   protected redraw(selectedElements: ElementData[]) {
     super.redraw(selectedElements);
-    const states = selectedElements.map((el) => getStage().getState(getDomElement(getSiteDocument(), el)));
+
+    const selectedElementsNoSectionContent = selectedElements
+      .map((el) => noSectionContent(el));
+
+    const states = selectedElementsNoSectionContent
+      .map((el) => getStage().getState(getDomElement(getSiteDocument(), el)))
+      .filter((state) => !!state); // if the selected element is not visible (on the page or mobile/desktop) => it has no state
 
     // update page list
-    this.setPages(getPages().map((p) => p.id));
+    this.setPages(getPages());
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
         .forEach((el: HTMLInputElement) => el.disabled = !getSite().enableMobile);
 
-    // not available for stage element
-    const statesNoBody = states.filter((data) => data.el !== this.model.body.getBodyElement());
+    // not available for the body element
+    const statesNoBody = states
+      .filter((data) => data.el !== getSiteDocument().body);
+
     if (statesNoBody.length > 0) {
       // update the "view on mobile" checkbox
-      const visibility = this.getCommonProperty(states, (state) => {
-        if (this.model.element.getHideOnMobile(state.el)) {
+      const visibility = this.getCommonProperty(selectedElementsNoSectionContent, (element) => {
+        if (!element.visibility.mobile) {
           return 'desktop';
         } else {
-          if (this.model.element.getHideOnDesktop(state.el)) {
+          if (!element.visibility.desktop) {
             return 'mobile';
           } else {
             return 'both';
@@ -276,7 +290,7 @@ export class PagePane extends PaneBase {
 
         // compute common pages
         const page = getPages().find((p) => p.id === item.page.id);
-        const isInPage = this.getCommonProperty(states, (state) => this.model.element.isInPage(state.el, page));
+        const isInPage = this.getCommonProperty(selectedElementsNoSectionContent, (el) => el.pageNames.includes(page.id));
 
         // set visibility
         isInNoPage = isInNoPage && isInPage === false;

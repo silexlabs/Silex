@@ -1,7 +1,7 @@
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, Link, PageData } from '../../types';
-import { getSiteDocument } from '../components/UiElements';
+import { ElementData, ElementId, ElementType, Link } from '../../types';
 import { CSSRuleInfo } from '../model/Property';
+import { getContentNode, getEmptyElementData, addMediaQuery } from '../utils/ElementUtils';
 import { Style } from '../utils/Style';
 import { model } from './wip-refacto-model';
 
@@ -13,38 +13,39 @@ export function getDomElementById(doc: HTMLDocument, elementId: ElementId): HTML
   return doc.querySelector(`[${Constants.ELEMENT_ID_ATTR_NAME}="${elementId}"]`)
 }
 
+export function getId(element: HTMLElement): ElementId {
+  return element.getAttribute(Constants.ELEMENT_ID_ATTR_NAME)
+}
+
 // export function moveToContainer(element: HTMLElement, parent: HTMLElement) {
 //   parent.appendChild(element)
 // }
 
-export function reorderElements(elements: HTMLElement[]) {
-  if (elements.length) {
-    // check that they all belong to a container
-    const parent = elements
-      .map((el) => el.parentElement)
-      .reduce((prev, el) => el === prev ? prev : null)
-    if (parent) {
-      elements.forEach((el) => parent.appendChild(el))
-    } else {
-      throw new Error('Can not reoder elements because they are not from the same container')
-    }
-  }
+export function reorderElements(parent: HTMLElement, elements: HTMLElement[]) {
+  // attach to the new parent
+  elements
+    .forEach((el) => {
+      parent.appendChild(el)
+      // return el.parentElement !== parent
+    })
+  // TODO: check that they do not belong to an other element's children list
+  // changed.filter((el) => {
+  //   if (getElements().filter((el2) => !!el2.children.find((id) => id === el.id)))
+
+  // })
 }
 export function setLink(element: HTMLElement, link: Link) {
   model.element.setLink(element, !!link ? link.value : null)
 }
 
-///////////////////////////////////////////////
-// WIP: need to update to the simpler abstract model decoupled from the dom
-
-export const noSectionContent = (element: HTMLElement) => model.element.noSectionContent(element)
-export const removeElement = (rootElement: HTMLElement) => model.element.removeElement(rootElement)
-export const removeFromAllPages = (element: HTMLElement) => model.element.removeFromAllPages(element)
-export const addToPage = (element: HTMLElement, page: PageData) => model.element.addToPage(element, page)
-export const setClassName = (element: HTMLElement, opt_className?: string) => model.element.setClassName(element, opt_className)
+/**
+ * remove a DOM element
+ */
+export function removeElement(element: HTMLElement) {
+  element.remove()
+}
 
 /**
- * FIXME: move to element-dom
  * element creation
  * create a DOM element, attach it to this container
  * and returns a new component for the element
@@ -52,33 +53,38 @@ export const setClassName = (element: HTMLElement, opt_className?: string) => mo
  *    see TYPE_* constants of the class @see silex.model.Element
  * @return   the newly created element
  */
-export function createElement(id: ElementId, type: ElementType): ElementData {
+export function createDomElement({doc, id, type, parent, isSectionContent}: {doc: HTMLDocument, id: ElementId, type: ElementType, parent: HTMLElement, isSectionContent: boolean}): ElementData {
   // create the element
   let element: HTMLElement = null;
   switch (type) {
     // container
     case ElementType.CONTAINER:
-      element = createContainerElement();
+      element = createContainerElement(doc);
       break;
 
     // section
     case ElementType.SECTION:
-      element = createSectionElement();
+      element = createSectionElement(doc);
       break;
 
     // text
     case ElementType.TEXT:
-      element = createTextElement();
+      element = createTextElement(doc);
       break;
 
     // HTML box
     case ElementType.HTML:
-      element = createHtmlElement();
+      element = createHtmlElement(doc);
       break;
 
     // Image
     case ElementType.IMAGE:
-      element = createImageElement();
+      element = createImageElement(doc);
+      break;
+
+    // Component
+    case ElementType.COMPONENT:
+      element = createComponentElement(doc);
       break;
   }
   // init the element
@@ -87,59 +93,40 @@ export function createElement(id: ElementId, type: ElementType): ElementData {
   // add css class for Silex styles
   element.classList.add(type.toString());
 
-  // return the element
-  return {
-    id,
-    pageNames: [],
-    classList: [],
-    type,
-    alt: null,
-    title: null,
-    parent: null,
-    children: [],
-    // children: Array.from(element.querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`))
-    //   .map((el: HTMLElement) => getElementId(el)),
-    link: null,
-    enableDrag: true,
-    enableDrop: false,
-    enableResize: {
-      top: true,
-      bottom: true,
-      left: true,
-      right: true,
-    },
-    selected: false,
-    useMinHeight: true,
-    visibility: {
-      desktop: true,
-      mobile: true,
-    },
-    style: {
-      desktop: {},
-      mobile: {},
-    },
-    data: {
-      component: null,
-    },
+  // element id
+  element.setAttribute(Constants.ELEMENT_ID_ATTR_NAME, id)
+  element.classList.add(id);
+
+  if (parent) {
+    // add to the body
+    if (type === ElementType.SECTION && parent !== doc.body) {
+      throw new Error('Section can only be added to the body')
+    }
+    parent.appendChild(element);
+  } else {
+    console.info('element not yet created in the dom')
   }
+
+  // return the element
+  return getEmptyElementData({id, type, isSectionContent, isBody: false});
 }
 /**
  * element creation method for a given type
  * called from createElement
  */
-function createContainerElement(): HTMLElement {
+function createContainerElement(doc: HTMLDocument): HTMLElement {
   // create the conatiner
-  const element = getSiteDocument().createElement('div');
+  const element = doc.createElement('div');
   element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
   return element;
 }
-function createElementWithContent(className: string): HTMLElement {
+function createElementWithContent(doc: HTMLDocument, className: string): HTMLElement {
   // create the element
-  const element = getSiteDocument().createElement('div');
+  const element = doc.createElement('div');
   element.setAttribute(Constants.TYPE_ATTR, className);
 
   // create the container for text content
-  const content = getSiteDocument().createElement('div');
+  const content = doc.createElement('div');
 
   // add empty content
   element.appendChild(content);
@@ -152,13 +139,12 @@ function createElementWithContent(className: string): HTMLElement {
 }
 
 /**
- * FIXME: move to element-dom
  * element creation method for a given type
  * called from createElement
  */
-function createSectionElement(): HTMLElement {
+function createSectionElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = getSiteDocument().createElement('div');
+  const element = doc.createElement('div');
   element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
   element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
   element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
@@ -180,9 +166,9 @@ function createSectionElement(): HTMLElement {
  * element creation method for a given type
  * called from createElement
  */
-function createTextElement(): HTMLElement {
+function createTextElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = createElementWithContent(ElementType.TEXT);
+  const element = createElementWithContent(doc, ElementType.TEXT);
 
   // add default content
   const content = getContentNode(element);
@@ -201,13 +187,24 @@ function createTextElement(): HTMLElement {
  * element creation method for a given type
  * called from createElement
  */
-function createHtmlElement(): HTMLElement {
+function createComponentElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = getSiteDocument().createElement('div');
+  const element = doc.createElement('div');
+  element.setAttribute(Constants.TYPE_ATTR, ElementType.COMPONENT);
+  return element;
+}
+
+/**
+ * element creation method for a given type
+ * called from createElement
+ */
+function createHtmlElement(doc: HTMLDocument): HTMLElement {
+  // create the element
+  const element = doc.createElement('div');
   element.setAttribute(Constants.TYPE_ATTR, ElementType.HTML);
 
   // create the container for html content
-  const htmlContent = getSiteDocument().createElement('div');
+  const htmlContent = doc.createElement('div');
   htmlContent.innerHTML = '<p>New HTML box</p>';
   element.appendChild(htmlContent);
 
@@ -220,23 +217,14 @@ function createHtmlElement(): HTMLElement {
  * element creation method for a given type
  * called from createElement
  */
-function createImageElement(): HTMLElement {
+function createImageElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = getSiteDocument().createElement('div');
+  const element = doc.createElement('div');
   element.setAttribute(Constants.TYPE_ATTR, ElementType.IMAGE);
   return element;
 }
-/**
- * get/set element from a container created by silex
- * @param element  created by silex, either a text box, image, ...
- * @return  the element which holds the content, i.e. a div, an image, ...
- */
-export function getContentNode(element: HTMLElement): HTMLElement {
-  const content: HTMLElement = element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME);
-  return content || element;
-}
 
-export function writeStyleToDom(doc, elementId, style, isMobile) {
+export function writeStyleToDom(doc: HTMLDocument, elementId, style, isMobile) {
   // find the index of the rule for the given element
   const styleSheet = getInlineStyleSheet(doc)
   const cssRuleObject = findCssRule(styleSheet, elementId, isMobile)
@@ -251,7 +239,7 @@ export function writeStyleToDom(doc, elementId, style, isMobile) {
   if (isMobile) {
     // add the rule to the dom to see the changes, mobile rules after
     // desktop ones
-    styleSheet.insertRule(this.addMediaQuery(styleStr), styleSheet.cssRules.length);
+    styleSheet.insertRule(addMediaQuery(styleStr), styleSheet.cssRules.length);
   } else {
     styleSheet.insertRule(styleStr, 0);
   }
@@ -259,7 +247,7 @@ export function writeStyleToDom(doc, elementId, style, isMobile) {
 
 function getInlineStyleSheet(doc: Document): CSSStyleSheet {
   // make sure of the existance of the style tag with Silex definitions
-  let styleTag: HTMLElement = doc.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME);
+  let styleTag: HTMLStyleElement = doc.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME);
   if (!styleTag) {
     styleTag = doc.createElement('style');
     styleTag.classList.add(Constants.INLINE_STYLE_TAG_CLASS_NAME);
@@ -267,8 +255,12 @@ function getInlineStyleSheet(doc: Document): CSSStyleSheet {
     doc.head.appendChild(styleTag);
   }
   for (const s of doc.styleSheets) {
-    if (s.ownerNode && s.ownerNode === styleTag) {
-      return s as CSSStyleSheet;
+    const cssStyleSheet = s as CSSStyleSheet
+    if (
+      (cssStyleSheet.ownerNode && cssStyleSheet.ownerNode === styleTag) // case of browser
+      || cssStyleSheet === styleTag.sheet) // jsdom
+    {
+      return cssStyleSheet;
     }
   }
   console.error('no stylesheet found');
@@ -278,7 +270,7 @@ function getInlineStyleSheet(doc: Document): CSSStyleSheet {
 function findCssRule(styleSheet: CSSStyleSheet, elementId: string, isMobile: boolean): CSSRuleInfo {
   // find the rule for the given element
   for (let idx = 0; idx < styleSheet.cssRules.length; idx++) {
-    const cssRule = styleSheet.cssRules[idx] as any; // FIXME: should be CSSRule ?
+    const cssRule = styleSheet.cssRules[idx] as any; // should it be CSSRule ?
     // we use the class name because elements have their ID as a css class too
     if ((isMobile === false && cssRule.selectorText === '.' + elementId) ||
         (cssRule.media && cssRule.cssRules && cssRule.cssRules[0] &&
@@ -291,4 +283,20 @@ function findCssRule(styleSheet: CSSStyleSheet, elementId: string, isMobile: boo
     }
   }
   return null;
+}
+
+export function hideOnDesktop(domEl) {
+  domEl.classList.add(Constants.HIDE_ON_DESKTOP)
+}
+
+export function showOnDesktop(domEl) {
+  domEl.classList.remove(Constants.HIDE_ON_DESKTOP)
+}
+
+export function hideOnMobile(domEl) {
+  domEl.classList.add(Constants.HIDE_ON_MOBILE)
+}
+
+export function showOnMobile(domEl) {
+  domEl.classList.remove(Constants.HIDE_ON_MOBILE)
 }

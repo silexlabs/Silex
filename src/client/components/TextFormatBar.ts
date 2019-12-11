@@ -16,17 +16,18 @@
  */
 
 import { ElementData } from '../../types';
-import { getElements } from '../api';
+import { getElements, updateElements, getSelectedElements } from '../api';
 import { Controller, LinkData, Model } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { getDomElement } from '../dom/element-dom';
 import { wysihtml, WysiHtmlEditor } from '../externs';
 import { Body } from '../model/Body';
 import { Tracker } from '../service/Tracker';
+import { getContentNode, getInnerHtml } from '../utils/ElementUtils';
 import { SilexNotification } from '../utils/Notification';
-import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
+import { LinkDialog, LINK_ATTRIBUTES } from './dialog/LinkDialog';
 import { Menu } from './Menu';
-import { getSiteDocument } from './UiElements';
+import { getSiteDocument, getSiteWindow } from './UiElements';
 
 /**
  * @class {silex.view.TextFormatBar}
@@ -117,20 +118,27 @@ export class TextFormatBar {
       // use array acces for getSelection as a workaround for google closure
       // warning 'Property getSelection never defined on Document' cleanup
       const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox);
-      this.currentTextBox = null;
 
-      const editable = this.model.element.getContentNode(currentTextBoxEl);
+      const editable = getContentNode(currentTextBoxEl);
       editable.removeAttribute('contenteditable');
       editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
       currentTextBoxEl.classList.remove('text-editor-focus');
       currentTextBoxEl.removeAttribute('data-allow-silex-shortcuts');
       currentTextBoxEl.onclick = null;
+      updateElements([{
+        from: this.currentTextBox,
+        to: {
+          ...this.currentTextBox,
+          innerHtml: getInnerHtml(currentTextBoxEl),
+        },
+      }])
+      this.currentTextBox = null;
     }
     this.element.classList.remove('text-editor-editing');
   }
 
   startEditing(fileExplorer: FileExplorer, bookmark = null, cbk = null) {
-    const selectedElements = getElements().filter((el) => el.selected)
+    const selectedElements = getSelectedElements()
     // edit the style of the selection
     if (selectedElements.length === 1) {
       const newTextBox = selectedElements[0];
@@ -144,7 +152,7 @@ export class TextFormatBar {
         // currentTextBoxEl.insertBefore(this.element,
         // currentTextBoxEl.firstChild);
         this.controller.textEditorController.attachToTextBox(currentTextBoxEl, this.element);
-        const editable = this.model.element.getContentNode(currentTextBoxEl);
+        const editable = getContentNode(currentTextBoxEl);
         const options = {
           toolbar: this.toolbar,
           handleTables: false,
@@ -204,8 +212,8 @@ export class TextFormatBar {
         this.element.classList.add('text-editor-editing');
 
         // handle the focus
-        const doc = this.model.file.getContentDocument();
-        const win = this.model.file.getContentWindow();
+        const doc = getSiteDocument();
+        const win = getSiteWindow();
         const onKeyScrollBinded = (e) => this.onScroll(e);
         // events and shortcuts
         this.onStopEditCbks.push(

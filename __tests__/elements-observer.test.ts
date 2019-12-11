@@ -1,14 +1,13 @@
-import { onUpdateElement } from '../src/client/observers/element-observer';
-import { ElementData, ElementType } from '../src/types';
 import { initializeElements } from '../src/client/api';
-import { getUiElements } from '../src/client/components/UiElements';
+import { onUpdateElements } from '../src/client/observers/element-observer';
+import { ElementData, ElementType } from '../src/types';
 
-const ELEM1: ElementData = {
+const ELEM_CONTAINER: ElementData = {
   id: 'testId1',
   pageNames: [],
   classList: [],
   type: ElementType.CONTAINER,
-  parent: null,
+  isSectionContent: false,
   children: [],
   alt: null,
   title: 'test title',
@@ -34,36 +33,32 @@ const ELEM1: ElementData = {
   data: {
     component: null,
   },
+  innerHtml: '',
 }
 const elem1Html = `
-<div data-silex-id="${ELEM1.id}" class="editable-style ${ELEM1.id} container-element" title="${ELEM1.title}">
+<div data-silex-id="${ELEM_CONTAINER.id}" class="editable-style ${ELEM_CONTAINER.id} container-element" title="${ELEM_CONTAINER.title}">
 </div>
 `
-const ELEM2: ElementData = {
-  ...ELEM1,
+const ELEM_IMAGE: ElementData = {
+  ...ELEM_CONTAINER,
   id: 'testId2',
   type: ElementType.IMAGE,
+  useMinHeight: false,
 }
 const elem2Html = `
-<div data-silex-id="${ELEM2.id}" class="editable-style ${ELEM2.id} image-element" title="${ELEM2.title}">
+<div data-silex-id="${ELEM_IMAGE.id}" class="editable-style ${ELEM_IMAGE.id} image-element" title="${ELEM_IMAGE.title}">
   <img src="assets/feed-icon-14x14.png" class="silex-element-content" alt="test alt">
 </div>
-
-<div class="silex-element-content normal">
-  SOME CONTENT ELEM2
-</div>
-</div>
 `
-const ELEM3: ElementData = {
-  ...ELEM1,
+const ELEM_TEXT: ElementData = {
+  ...ELEM_CONTAINER,
   id: 'testId3',
   type: ElementType.TEXT,
+  innerHtml: 'SOME CONTENT ELEM3',
 }
 const elem3Html = `
-<div data-silex-id="${ELEM3.id}" class="editable-style ${ELEM3.id} text-element" title="${ELEM3.title}">
-<div class="silex-element-content normal">
-  SOME CONTENT ELEM3
-</div>
+<div data-silex-id="${ELEM_TEXT.id}" class="editable-style ${ELEM_TEXT.id} text-element" title="${ELEM_TEXT.title}">
+<div class="silex-element-content normal">SOME CONTENT ELEM3</div>
 </div>
 `
 
@@ -73,48 +68,103 @@ beforeEach(() => {
   document.body.innerHTML = elem1Html + elem2Html + elem3Html
 })
 test('update element', () => {
-  const elem1: HTMLElement = document.querySelector(`[data-silex-id=${ELEM1.id}]`)
-  const elem2: HTMLElement = document.querySelector(`[data-silex-id=${ELEM2.id}]`)
-  const elem3: HTMLElement = document.querySelector(`[data-silex-id=${ELEM3.id}]`)
+  const elemContainer: HTMLElement = document.querySelector(`[data-silex-id=${ELEM_CONTAINER.id}]`)
+  const elemImage: HTMLElement = document.querySelector(`[data-silex-id=${ELEM_IMAGE.id}]`)
+  const elemText: HTMLElement = document.querySelector(`[data-silex-id=${ELEM_TEXT.id}]`)
 
-  // console.log('xxx', mocked)
   // mocked.getElements.mockReturnValue = (() => [ELEM1, ELEM2])
-  initializeElements([ELEM1, ELEM2, ELEM3])
+  initializeElements([ELEM_CONTAINER, ELEM_IMAGE, ELEM_TEXT])
   // getUiElements().stage = {
   //   contentDocument: document,
   //   contentWindow: window,
   // } as any as HTMLIFrameElement
 
-  // container
-  onUpdateElement(ELEM2, {
-    ...ELEM2,
-    parent: 'testId1',
-  }, document)
-  onUpdateElement(ELEM3, {
-    ...ELEM3,
-    parent: 'testId1',
-  }, document)
-  expect(elem2.parentElement).toBe(elem1)
-  expect(elem3.parentElement).toBe(elem1)
-  // children order
-  expect(elem3.previousElementSibling).toBe(elem2)
-  onUpdateElement(ELEM1, {
-    ...ELEM1,
-    children: ['testId2', 'testId3'],
-  }, document)
-  expect(elem3.previousElementSibling).toBe(elem2)
-  onUpdateElement(ELEM1, {
-    ...ELEM1,
-    children: ['testId3', 'testId2'],
-  }, document)
-  expect(elem2.previousElementSibling).toBe(elem3)
+  // style
+  expect(window.getComputedStyle(elemImage).left).toBe('')
+  onUpdateElements(window)([
+    {
+      from: ELEM_IMAGE,
+      to: {
+        ...ELEM_IMAGE,
+        style: {
+          ...ELEM_IMAGE.style,
+          desktop: {
+            left: '1px',
+          },
+        },
+      },
+    },
+  ])
+  expect(window.getComputedStyle(elemImage).left).toBe('1px')
 
+  // height vs min height
+  onUpdateElements(window)([
+    {
+      from: ELEM_IMAGE,
+      to: {
+        ...ELEM_IMAGE,
+        style: {
+          ...ELEM_IMAGE.style,
+          desktop: {
+            height: '10px',
+          },
+        },
+      },
+    },
+    {
+      from: ELEM_CONTAINER,
+      to: {
+        ...ELEM_CONTAINER,
+        style: {
+          ...ELEM_CONTAINER.style,
+          desktop: {
+            height: '100px',
+          },
+        },
+      },
+    },
+  ])
+  expect(window.getComputedStyle(elemImage).height).toBe('10px')
+  expect(window.getComputedStyle(elemImage)['min-height']).toBe('')
+  expect(window.getComputedStyle(elemContainer).height).toBe('')
+  expect(window.getComputedStyle(elemContainer)['min-height']).toBe('100px')
+
+  // container
+  onUpdateElements(window)([
+    {
+      from: ELEM_CONTAINER,
+      to: {
+        ...ELEM_CONTAINER,
+        children: ELEM_CONTAINER.children.concat(['testId2', 'testId3']),
+      },
+    },
+  ])
+  expect(elemImage.parentElement).toBe(elemContainer)
+  expect(elemText.parentElement).toBe(elemContainer)
+  // children order
+  expect(elemText.previousElementSibling).toBe(elemImage)
+  onUpdateElements(window)([
+    {
+      from: ELEM_CONTAINER,
+      to: {
+        ...ELEM_CONTAINER,
+        children: ['testId3', 'testId2'],
+      },
+    },
+  ])
+  expect(elemImage.previousElementSibling).toBe(elemText)
+  expect(elemText.previousElementSibling).toBeNull()
   // title and alt
-  onUpdateElement(ELEM2, {
-    ...ELEM2,
-    title: 'title test xyz',
-    alt: 'alt test xyz',
-  }, document)
-  expect(elem2.title).toBe('title test xyz')
-  expect(elem2.querySelector('img').alt).toBe('alt test xyz')
+  onUpdateElements(window)([
+    {
+      from: ELEM_IMAGE,
+      to: {
+        ...ELEM_IMAGE,
+        title: 'title test xyz',
+        alt: 'alt test xyz',
+      },
+    },
+  ])
+  expect(elemImage.title).toBe('title test xyz')
+  expect(elemImage.querySelector('img').alt).toBe('alt test xyz')
 })

@@ -10,12 +10,13 @@
  */
 
 import { Constants } from '../../../constants';
-import { ElementData, ElementType } from '../../../types';
-import { getElements, getPages, getUi, updateElements, updateUi } from '../../api';
+import { ElementData, ElementType, StyleData, StyleName, Visibility } from '../../../types';
+import { getElements, getPages, getParent, getSite, getUi, updateElements, updateUi, getData, getBody } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
-import { StyleData, StyleName, Visibility } from '../../model/Data';
+import { getDomElement } from '../../dom/element-dom';
 import { Tracker } from '../../service/Tracker';
 import { SilexNotification } from '../../utils/Notification';
+import { getSiteDocument } from '../UiElements';
 import { PaneBase } from './PaneBase';
 
 /**
@@ -58,7 +59,7 @@ export class StyleEditorPane extends PaneBase {
     this.pseudoClassCombo.onchange = (e) => {
       this.tracker.trackAction('style-editor-events', 'select-pseudo-class');
       this.controller.editMenuController.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
-      const styleData = (this.model.property.getStyleData(this.styleCombo.value) ||  {} as StyleData);
+      const styleData = (getSite().style[this.styleCombo.value] ||  {} as StyleData);
       this.updateTagButtonBar(styleData);
     };
     this.mobileOnlyCheckbox.onchange = (e) => {
@@ -128,7 +129,7 @@ export class StyleEditorPane extends PaneBase {
     // duplicate a style
     (this.element.querySelector('.duplicate-style') as HTMLElement).onclick = (e) => {
       this.tracker.trackAction('style-editor-events', 'duplicate-style');
-      this.createStyle(this.model.property.getStyleData(this.styleCombo.value));
+      this.createStyle(getSite().style[this.styleCombo.value]);
     };
 
     // reset style:
@@ -144,7 +145,7 @@ export class StyleEditorPane extends PaneBase {
         `,
         () => {});
       } else {
-        const data = this.model.property.getStyleData(oldClassName);
+        const data = getSite().style[oldClassName];
         this.createStyle(data, (name) => {
           try {
             // update the style name
@@ -177,14 +178,16 @@ export class StyleEditorPane extends PaneBase {
    *     visible in the current page
    */
   getElementsWithStyle(styleName: StyleName, includeOffPage: boolean): HTMLElement[] {
-    const doc = this.model.file.getContentDocument();
+    const doc = getSiteDocument();
     const newSelection: HTMLElement[] = Array.from(doc.querySelectorAll('.' + styleName));
     if (includeOffPage) {
       return newSelection;
     } else {
-      return newSelection.filter(
-          (el) => this.model.element.isInPage(el) ||
-              this.model.element.getPagesForElement(el).length === 0);
+      const currentPage = getPages().find((p) => p.isOpen);
+      return newSelection
+        .map((el: HTMLElement) => getElements().find((e) => getDomElement(doc, e) === el))
+        .filter((el: ElementData) => el.pageNames.length === 0 || !!el.pageNames.find((id) => id === currentPage.id))
+        .map((el: ElementData) => getDomElement(doc, el));
     }
   }
 
@@ -209,8 +212,9 @@ export class StyleEditorPane extends PaneBase {
    * apply a style to a set of elements, remove old styles
    */
   applyStyle(newStyle: StyleName) {
+    const body = getBody()
     const noBody = getElements()
-      .filter((el) => el.selected && !!el.parent) // remove body
+      .filter((el) => el.selected && el !== body) // remove body
     if (newStyle === Constants.BODY_STYLE_CSS_CLASS) {
       SilexNotification.alert('Apply a style', `
         The style '${Constants.BODY_STYLE_NAME}' is a special style, it is already applyed to all elements.
@@ -239,7 +243,7 @@ export class StyleEditorPane extends PaneBase {
    * retrieve the styles applyed to the set of elements
    */
   getStyles(elements: ElementData[]): StyleName[] {
-    const allStyles = this.model.component.getProdotypeComponents(Constants.STYLE_TYPE);
+    const allStyles = getSite().style;
     return elements
       .map((el) => el.classList)
       // About this reduce:
@@ -250,7 +254,7 @@ export class StyleEditorPane extends PaneBase {
       .reduce((prev, classNames) => {
         return prev.filter((prevClassName) => classNames.indexOf(prevClassName) > -1);
       })
-      .filter((className) => allStyles.find((style: StyleData) => style.className === className));
+      .filter((className) => Object.keys(allStyles).find((styleName: string) => styleName === className));
   }
 
   /**
@@ -266,11 +270,12 @@ export class StyleEditorPane extends PaneBase {
     // add all the existing styles to the dropdown list
 
     // append options to the dom
+    const allStyleData = getSite().style;
     (styleName === Constants.EMPTY_STYLE_CLASS_NAME ? [{
       className: Constants.EMPTY_STYLE_CLASS_NAME,
       displayName: Constants.EMPTY_STYLE_DISPLAY_NAME,
     }] : [])
-    .concat(this.model.component.getProdotypeComponents(Constants.STYLE_TYPE) as Array<{className: string, displayName: string}>)
+    .concat(Object.keys(allStyleData).map((className) => allStyleData[className]))
     .map((obj) => {
       // create the combo box option
       const option = document.createElement('option');
@@ -288,7 +293,7 @@ export class StyleEditorPane extends PaneBase {
       this.element.classList.remove('no-style');
 
       // populate combos
-      const styleData = (this.model.property.getStyleData(styleNameNotNull) || {} as StyleData);
+      const styleData = (getSite().style[styleNameNotNull] || {} as StyleData);
       this.populatePseudoClassCombo(styleData);
       this.pseudoClassCombo.disabled = false;
 
@@ -350,7 +355,7 @@ export class StyleEditorPane extends PaneBase {
     // styles","props":[{"name":"pseudoClass","type":["normal",":hover",":focus-within",
     // ...
     const componentsDef = this.model.component.getComponentsDef(Constants.STYLE_TYPE);
-    const pseudoClasses = componentsDef.text.props.filter((prop) => prop.name === 'pseudoClass')[0].type;
+    const pseudoClasses = componentsDef.text.props.find((prop) => prop.name === 'pseudoClass').type;
 
     // append options to the dom
     pseudoClasses
@@ -380,7 +385,8 @@ export class StyleEditorPane extends PaneBase {
    * utility function to create a style in the style combo box or duplicate one
    */
   createStyle(opt_data?: StyleData, opt_cbk?: ((p1?: string) => any)) {
-    const noBody = getElements().filter((el) => !!el.parent);
+    const body = getBody()
+    const noBody = getElements().filter((el) => el !== body);
     if (noBody.length <= 0) {
       SilexNotification.alert('Create a style', 'Error: you need to select at least 1 element for this action.', () => {});
     } else {
@@ -480,8 +486,8 @@ export class StyleEditorPane extends PaneBase {
     this.controller.propertyToolController.undoCheckPoint();
 
     // remove from elements
-    Array.from(this.model.file.getContentDocument().querySelectorAll('.' + name))
-    .filter((el) => el !== this.model.body.getBodyElement())
+    Array.from(getSiteDocument().querySelectorAll('.' + name))
+    .filter((el) => el !== getSiteDocument().body)
     .forEach((el: HTMLElement) => el.classList.remove(name));
 
     // undo checkpoint

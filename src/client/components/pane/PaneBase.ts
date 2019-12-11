@@ -19,9 +19,10 @@
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { ElementData } from '../../../types';
-import { getElements, subscribeElements, updateElements, getUi } from '../../api';
+import { getElements, subscribeElements, updateElements, getUi, subscribePages, subscribeSite, subscribeUi, getSelectedElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { Style } from '../../utils/Style';
+import { getStage } from '../StageWrapper';
 
 export interface InputData {
   selector: string;
@@ -51,7 +52,11 @@ export class PaneBase {
   protected baseUrl = null;
 
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
-    subscribeElements(() => this.redraw(getElements().filter((el) => el.selected)))
+    subscribeElements(() => {
+      if (getStage()) {
+        this.redraw(getSelectedElements());
+      }
+    })
   }
 
   // /**

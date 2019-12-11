@@ -13,8 +13,6 @@
  * @fileoverview define externs for libs used in Silex
  */
 
-import { ComponentData } from './model/Data';
-
 /**
  * @typedef {{
  *          faIconClass:?string,
@@ -47,7 +45,7 @@ export interface ProdotypeCompDef {
 export interface Prodotype {
   componentsDef: ProdotypeCompDef;
 
-  decorate(templateName: string, data: any, dataSources: object);
+  decorate(templateName: string, data: any, dataSources?: object);
   ready(cbk: (any) => void);
   edit(
     data?: any,

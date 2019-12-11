@@ -3,90 +3,35 @@
  */
 
 /* pages */
-.page-element{
+.paged-element-hidden.paged-element.editable-style {
   display: none;
 }
-.paged-element{
-  display: none;
-}
-.silex-published .paged-element{
-  display: block;
-}
-/* default style for silex elements */
-.editable-style{
-  position: absolute;
-  box-sizing: content-box; /* this is needed to set the size of elements with a border (though it could be omited since this is the default value) */
-}
-.silex-element-content{
-  overflow: hidden;
-  border-radius: initial;
-  width: 100%;
-  min-height: inherit;
+.silex-editor .silex-element-content {
+  /* all container elements (text box) */
   pointer-events: none;
+}
+.silex-editor .section-element > .silex-element-content {
+  /* section have a content element, and it needs to keep pointer events
+     because it container other silex elements
+  */
+  pointer-events: auto;
+}
+.silex-editor .silex-element-content[contenteditable="true"] {
+  min-height: 20px;
+  cursor: text;
+  pointer-events: auto;
 }
 /* prevent-auto-z-index is to let the components handle their z-index */
 .section-element > .silex-element-content > *:not(.prevent-auto-z-index) {
   /* put the elements of a section on top of sections bellow */
   z-index: 10;
 }
-.silex-element-content[contenteditable="true"] {
-  min-height: 20px;
-  cursor: text;
-  pointer-events: auto;
-}
-.editable-style.silex-selected.text-editor-focus {
-  /* remove text box selection markers
-  box-shadow: none;
-  */
-  /* a click on current text box will select it */
-  cursor: pointer;
-}
 .text-editor-focus .ui-resizable-handle {
   /* remove text box UI handles for resize */
   display: none;
 }
-.section-element > .silex-element-content {
-  /* section have a content element, and it needs to keep pointer events
-     because it container other silex elements
-  */
-  pointer-events: auto;
-}
-body.silex-runtime .silex-element-content {
-  pointer-events: auto;
-}
-.editable-style.section-element {
-  position: relative;
-  left: 0;
-  top: 0;
-  right: 0;
-  padding: 0 100px;
-  margin: 0;
-}
-.silex-runtime .editable-style.section-element {
-  padding: 0;
-  margin: 0;
-  margin-top: -1px;
-}
-.default-site-width, /* for backward compat, FIXME: remove in a while */
 .website-width {
   width: 960px;
-}
-.section-element .silex-container-content {
-  position: relative;
-  left: 0;
-  top: 0;
-  margin-left: auto;
-  margin-right: auto;
-  overflow: initial;
-}
-/* background */
-.background{
-  position: relative !important;
-  left: 0 !important;
-  top: 0 !important; /* !important is useful while editing */
-  margin-left: auto;
-  margin-right: auto;
-  z-index: 1;
 }
 /* resize */
 .editable-style.image-element .silex-element-content {
@@ -113,10 +58,6 @@ body.enable-mobile .editable-style.hide-on-desktop {
   display: none;
 }
 /* elements styles */
-body.enable-mobile .background {
-  height: initial;
-  padding-bottom: 50px;
-}
 .silex-runtime .fixed {
   position: absolute;
   z-index: 20;
@@ -170,9 +111,6 @@ body.enable-mobile .background {
     height: fit-content;
   }
   /* but still hide paged elements or desktop only elements */
-  .paged-element-hidden.paged-element.editable-style {
-    display: none;
-  }
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
   }

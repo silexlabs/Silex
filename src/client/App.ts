@@ -99,6 +99,9 @@ export class App {
       console.warn('Silex starting in debug mode.');
     }
 
+    // init model
+    startObservers();
+
     // empty objects, to pass references to each other and later populate them
     const emptyModel: Model = {
       file: null,
@@ -156,9 +159,6 @@ export class App {
     this.view.dashboard.buildUi();
     this.view.propertyTool.buildUi();
 
-    // init model
-    startObservers();
-
     // warning when not ff or chrome
     const browser = detect();
     const isFirefox = browser && browser.name === 'firefox';
@@ -212,7 +212,6 @@ export class App {
           absPath: `/ce/${params.service}/get${params.path}`,
           url: `${Url.getRootUrl()}/ce/${params.service}/get${params.path}`,
         }, () => {
-          console.log('opened');
           this.initDone();
         });
       } else {
@@ -236,7 +235,6 @@ export class App {
   }
 
   initDone() {
-    console.log('init done')
     api.updateUi({
       ...api.getUi(),
       loading: false,

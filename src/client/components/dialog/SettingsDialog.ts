@@ -593,9 +593,7 @@ export class SettingsDialog {
         },
         (newFont) => {
           const fonts = getSite().fonts;
-          if (fonts.find(
-                  (font: Font) => font.href === newFont.href &&
-                      font.family === newFont.family)) {
+          if (!!fonts.find((font: Font) => font.href === newFont.href && font.family === newFont.family)) {
             console.warn('This font is already embedded in this website');
           } else {
             fonts.push(newFont);

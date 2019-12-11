@@ -1,4 +1,4 @@
-import {FileInfo} from '../../types';
+import {FileInfo, DataModel} from '../../types';
 
 /**
  * Silex, live web creation
@@ -63,10 +63,10 @@ export class CloudStorage {
    * save a file
    */
   write(
-      fileInfo: FileInfo, rawData: string, userHead: string, cbk: () => any,
+      fileInfo: FileInfo, html: string, data: DataModel, cbk: () => any,
       opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
     // // save the data
-    // this.ce.write(new Blob([rawData], {type: 'text/plain'}), fileInfo)
+    // this.ce.write(new Blob([html], {type: 'text/plain'}), fileInfo)
     // .then(() => {
     //   cbk();
     // })
@@ -89,14 +89,14 @@ export class CloudStorage {
     const url = `/website/ce/${fileInfo.service}/put/${fileInfo.path}`;
     oReq.open('PUT', url);
     oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
-    oReq.send(JSON.stringify({html: rawData, userHead}));
+    oReq.send(JSON.stringify({html, data}));
   }
 
   /**
    * load text blob from unifile
    */
   read(
-      fileInfo: FileInfo, cbk: (p1: string, p2: string) => any,
+      fileInfo: FileInfo, cbk: (p1: string, data: DataModel) => any,
       opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
     this.loadLocal(fileInfo.absPath, cbk, opt_errCbk);
   }
@@ -138,7 +138,7 @@ export class CloudStorage {
    * load data
    */
   loadLocal(
-      absPath: string, cbk: (p1: string, p2: string) => any,
+      absPath: string, cbk: (p1: string, data: DataModel) => any,
       opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
     const url = '/website' + absPath;
     const oReq = new XMLHttpRequest();
@@ -151,7 +151,7 @@ export class CloudStorage {
         if (data.message) {
           SilexNotification.alert('Open a website', data.message, () => {});
         }
-        cbk(data.html, data.userHead);
+        cbk(data.html, data.data);
       } else {
         const err = new Event('error');
         const msg = this.getErrorMessage(oReq);
