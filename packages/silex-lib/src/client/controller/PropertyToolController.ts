@@ -15,7 +15,7 @@
  *
  */
 import { ElementData, Link, PageData } from '../../types';
-import { getPages, updateElements } from '../api';
+import { getPages, updateElements, noSectionContent } from '../api';
 import { Model, View } from '../ClientTypes';
 import { ControllerBase } from './ControllerBase';
 
@@ -35,6 +35,7 @@ super(model, view);
     // undo checkpoint
     this.undoCheckPoint();
     updateElements(elements
+      .map((el) => noSectionContent(el))
       .map((el) => ({
         from: el,
         to: {

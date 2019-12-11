@@ -17,6 +17,7 @@ import * as nodeModules from 'node_modules-path';
 import * as Path from 'path';
 import { URL } from 'url';
 import { Constants } from '../../constants';
+import { DataModel } from '../../types';
 import BackwardCompat from '../utils/BackwardCompat';
 import DomTools from '../utils/DomTools';
 
@@ -57,19 +58,25 @@ export default function({ port, rootUrl }, unifile) {
   /**
    * load a website from the cloud storage of the user
    */
-  function readWebsite(req, res, next) {
+  async function readWebsite(req, res, next): Promise<void> {
     const connector = req.params[0];
     const path = req.params[1];
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
-    unifile.readFile(req.session.unifile || {}, connector, path)
-      .then((buffer) => {
-        return sendWebsiteData(res, buffer, url);
-      })
-      .catch((err) => {
-        console.error('unifile error catched:', err);
-        CloudExplorer.handleError(res, err);
-      });
+    try {
+      const htmlBuffer = await unifile.readFile(req.session.unifile || {}, connector, path)
+      try {
+        const jsonBuffer = await unifile.readFile(req.session.unifile || {}, connector, path + '.json')
+        return sendWebsiteData(res, htmlBuffer, jsonBuffer, url, false);
+      } catch (err) {
+        // old websites
+        sendWebsiteData(res, htmlBuffer, null, url, false);
+      }
+    } catch (err) {
+      console.error('unifile error catched:', err);
+      CloudExplorer.handleError(res, err);
+    }
   }
+
   /**
    * load a website from a template folder on local disk
    */
@@ -78,20 +85,30 @@ export default function({ port, rootUrl }, unifile) {
     const localPath = Path.resolve(nodeModules('silex-templates'), path);
     const url = new URL(`${ rootUrl }/libs/templates/${ Path.dirname(path) }/`);
     if (isInTemplateFolder(localPath)) {
-      fs.readFile(localPath, (err, buffer) => {
-        if (err) {
-          CloudExplorer.handleError(res, err);
+      fs.readFile(localPath, (err1, htmlBuffer) => {
+        if (err1) {
+          CloudExplorer.handleError(res, err1);
         } else {
-          sendWebsiteData(res, buffer, url, true);
+          fs.readFile(localPath + '.json', (err2, jsonBuffer) => {
+            if (err2) {
+              // old websites
+              sendWebsiteData(res, htmlBuffer, null, url, true);
+            } else {
+              sendWebsiteData(res, htmlBuffer, jsonBuffer, url, true);
+              // CloudExplorer.handleError(res, err2);
+            }
+          });
         }
       });
     } else {
       CloudExplorer.handleError(res, {message: 'Not authorized.', code: 'EACCES'});
     }
   }
-  function sendWebsiteData(res, buffer, url, isTemplate = false): Promise<void> {
+  async function sendWebsiteData(res, htmlBuffer: Buffer, jsonBuffer: Buffer, url: URL, isTemplate): Promise<void> {
     // remove user head tag to avoid bad markup messing with the website
-    const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
+    const { html } = DomTools.extractUserHeadTag(htmlBuffer.toString('utf-8'));
+    const data: DataModel = jsonBuffer ? JSON.parse(jsonBuffer.toString('utf-8')) : null; // may be null for older websites
+
     // from now on use a parsed DOM
     const dom = new JSDOM(html, { url: url.href });
     if (dom.window.document.body.classList.contains(Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME)) {
@@ -100,29 +117,25 @@ export default function({ port, rootUrl }, unifile) {
         message: 'Could not open this website for edition as it is a published Silex website, <a href="https://github.com/silexlabs/Silex/wiki/FAQ#why-do-i-get-the-error-could-not-open-this-website-for-edition-as-it-is-a-published-silex-website" target="_blank">Read more about this error here</a>.',
       });
     } else {
-      if (isTemplate) {
+      if (isTemplate && data) {
         // remove publication path
-        const publicationPath = dom.window.document.querySelector('meta[name=publicationPath]');
-        if (publicationPath) { publicationPath.remove(); }
+        delete data.site.publicationPath;
       }
-      return backwardCompat.update(dom.window.document)
-      .then((wanrningMsg) => {
-        prepareWebsite(dom, url);
-        // done, back to a string
-        const str = dom.serialize();
-        dom.window.close();
+      try {
+        const [wanrningMsg, updatedData] = await backwardCompat.update(dom.window.document, data);
+        const preparedData = prepareWebsite(dom, updatedData, url);
         res.send({
           message: wanrningMsg,
-          html: str,
-          userHead,
+          html: dom.serialize(),
+          data: preparedData,
         });
-      })
-      .catch((err) => {
+        dom.window.close();
+      } catch (err) {
         console.error('Could not send website data: ', err);
         res.status(400).send({
           message: err.message,
         });
-      });
+      }
     }
   }
   /**
@@ -131,15 +144,23 @@ export default function({ port, rootUrl }, unifile) {
   function writeWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
-    const { userHead, html } = JSON.parse(req.body);
+    const { data, html }: { data: DataModel, html: string} = JSON.parse(req.body);
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
     const dom = new JSDOM(html, { url: url.href });
-    unprepareWebsite(dom, url);
+    const unpreparedData = unprepareWebsite(dom, data, url);
     const str = dom.serialize();
-    const fullHtml = DomTools.insertUserHeadTag(str, userHead);
+    const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headTag);
     dom.window.close();
 
-    unifile.writeFile(req.session.unifile || {}, connector, req.params[1], fullHtml)
+    unifile.batch(req.session.unifile || {}, connector, [{
+      name: 'writeFile',
+      path: req.params[1],
+      content: fullHtml,
+    }, {
+      name: 'writeFile',
+      path: req.params[1] + '.json',
+      content: JSON.stringify(unpreparedData),
+    }])
       .then((result) => {
         res.send(result);
       })
@@ -152,9 +173,9 @@ export default function({ port, rootUrl }, unifile) {
    * prepare website for edit mode
    * make all URLs absolute (so that images are still found when I "save as" my website to another folder)
    */
-  function prepareWebsite(dom, baseUrl) {
+  function prepareWebsite(dom, data: DataModel, baseUrl): DataModel {
     // URLs
-    DomTools.transformPaths(dom, (path, el) => {
+    const transformedData = DomTools.transformPaths(dom, data, (path, el) => {
       const url = new URL(path, baseUrl);
       return url.href;
     });
@@ -168,13 +189,15 @@ export default function({ port, rootUrl }, unifile) {
     tag.href = rootUrl + '/css/editable.css';
     tag.classList.add(Constants.SILEX_TEMP_TAGS_CSS_CLASS);
     dom.window.document.head.appendChild(tag);
+
+    return transformedData;
   }
   /**
    * prepare website for being saved
    * * make all URLs relative to current path
    * * remove useless markup and css classes
    */
-  function unprepareWebsite(dom, baseUrl) {
+  function unprepareWebsite(dom, data: DataModel, baseUrl): DataModel {
     // markup
     dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME);
     dom.window.document.body.classList.remove(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME);
@@ -182,7 +205,7 @@ export default function({ port, rootUrl }, unifile) {
     restoreIFrames(dom);
     cleanupNoscripts(dom);
     // URLs
-    DomTools.transformPaths(dom, (path, el) => {
+    const transformedData = DomTools.transformPaths(dom, data, (path, el) => {
       const url = new URL(path, baseUrl);
       if (url.href.startsWith(rootUrl)) {
         // make it relative
@@ -207,6 +230,8 @@ export default function({ port, rootUrl }, unifile) {
     dom.window.document.body.style.minWidth = ''; // not needed?
     dom.window.document.body.style.minHeight = ''; // not needed?
     dom.window.document.body.style.overflow = ''; // set by stage
+
+    return transformedData;
   }
 
   function deactivateScripts(dom) {

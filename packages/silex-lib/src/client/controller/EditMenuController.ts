@@ -16,14 +16,15 @@
  */
 
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, FileInfo } from '../../types';
-import { createElements, deleteElements, getElements, getPages, getSite, getUi, moveElement, updateElements } from '../api';
+import { ElementData, ElementId, ElementType, FileInfo, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility, VisibilityData } from '../../types';
+import { createElements, deleteElements, getBody, getElement, getElements, getPages, getParent, getSite, getUi, moveElements, noSectionContent, updateElements, getSelectedElements, getSelectedElementsNoSectionContent, getChildren, getChildrenRecursive } from '../api';
 import { LinkData, Model, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
+import { getStage, stopStageObserver, startStageObserver } from '../components/StageWrapper';
 import { getSiteDocument } from '../components/UiElements';
 import { getDomElement } from '../dom/element-dom';
-import { PseudoClass, StyleName, Visibility } from '../model/Data';
 import { DomDirection } from '../model/Element';
+import { getFirstPagedParent, getNewId } from '../utils/ElementUtils';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
 
@@ -70,8 +71,37 @@ export class EditMenuController extends ControllerBase {
   copySelection() {
     // this is a flat map
     ControllerBase.clipboard = [];
-    getElements().filter((el) => el.selected)
-      .forEach((el) => ControllerBase.clipboard.concat(this.getClone(el)));
+    const body = getBody()
+    getElements()
+      .filter((el) => el.selected && el !== body)
+      .map((el) => noSectionContent(el))
+      .forEach((el) => ControllerBase.clipboard.push(...this.getClone(el)));
+  }
+
+  /**
+   * duplicate selection
+   */
+  duplicateSelection() {
+    const selection = getElements()
+      .filter((el) => el.selected)
+      .map((el) => noSectionContent(el))
+    if (selection.length) {
+      const allElements = [];
+      const rootElements = [];
+      selection
+        .forEach((el) => {
+          const all = this.getClone(el);
+          allElements.push(...all);
+          rootElements.push(...all.filter((e) => e.selected));
+        });
+
+      // keep the same parent
+      const body = getElements().find(((el) => getDomElement(getSiteDocument(), el) === getSiteDocument().body)); // FIXME: find a better way to find the body
+      const parent = getParent(selection[0]) || body;
+
+      // paste
+      this.pasteElements({parent, rootElements, allElements });
+    }
   }
 
   /**
@@ -80,70 +110,129 @@ export class EditMenuController extends ControllerBase {
    * the elements have already been added to stage
    */
   getClone(element: ElementData, parentId: ElementId = null): ElementData[] {
-    const newId = this.model.property.getNewId(getSiteDocument());
-    return [{
+    const newId = getNewId(getElements());
+    const res: ElementData[] = [{
       ...JSON.parse(JSON.stringify(element)),
       id: newId,
       parent: parentId,
       selected: parentId === null,
     }]
-    .concat(element
-      .children
-      .map((id) => this.getClone(getElements().find((e) => e.id === id), newId)))
+    res[0].children
+      .forEach((id) => res.push(...this.getClone(getElement(id), newId)))
+
+    return res;
+  }
+
+  hasElementsToPaste() {
+    return !!ControllerBase.clipboard && ControllerBase.clipboard.length > 0;
   }
 
   /**
    * paste the previously copied element
    */
-  pasteClipBoard(toDefaultPostion: boolean) {
+  pasteClipBoard() {
+    const rootElements = ControllerBase.clipboard.filter((el) => el.selected);
+
+    // get the drop zone in the center
+    const parent = this.model.element.getCreationDropZone();
+
+    this.pasteElements({
+      parent,
+      rootElements,
+      allElements: ControllerBase.clipboard,
+    });
+
+    // copy again so that we can paste several times (elements will be duplicated again)
+    const clone = [];
+    ControllerBase.clipboard
+      .forEach((el) => clone.push(...this.getClone(el)));
+    ControllerBase.clipboard = clone;
+  }
+
+  pasteElements({parent, rootElements, allElements}: {parent: ElementData, rootElements: ElementData[], allElements: ElementData[]}) {
+    console.log('pasteElements', {parent, rootElements, allElements})
     this.tracker.trackAction('controller-events', 'info', 'paste', 0);
 
-    // default is selected element
-    if (ControllerBase.clipboard && ControllerBase.clipboard.length > 0) {
+    if (allElements.length > 0) {
       // undo checkpoint
       this.undoCheckPoint();
 
-      // take the scroll into account (drop at (100, 100) from top left corner of the window, not the stage)
+      // reset selection
+      const resetSelection = getElements()
+        .filter((el) => el.selected)
+        .map((el) => ({
+          from: el,
+          to: {
+            ...el,
+            selected: false,
+          },
+        }));
+
+      const parentState = getStage().getState(getDomElement(getSiteDocument(), parent));
+      const parentRect = parentState.metrics.computedStyleRect;
+
+      // do not paste in place so that the user sees the pasted elements
       let offset = 0;
 
       // add to the container
-      createElements(ControllerBase.clipboard.map((element: ElementData) => {
+      createElements(allElements.map((element: ElementData) => {
         // only visible on the current page unless one of its parents is in a page already
-        const pageNames = !!element.parent && !!this.getFirstPagedParent(getElements().find((el) => el.parent === element.parent)) ? [] : [getPages().find((p) => p.isOpen).id]
-        offset += 20;
+        const pageNames = !parent || !!getFirstPagedParent(getElements(), parent) ? [] : [getPages().find((p) => p.isOpen).id]
+        const isRoot = rootElements.includes(element);
+        if (isRoot) {
+          offset += 20;
+        }
         return {
           ...element,
           pageNames,
           style: {
             ...element.style,
-            desktop: {
-              left: element.style.desktop.left + offset,
-            },
+            desktop: isRoot && element.style.desktop.position !== 'static' ? {
+              ...element.style.desktop,
+              top: Math.round(offset + (parentRect.height / 2) - (parseInt(element.style.desktop.height) / 2)) + 'px',
+              left: Math.round(offset + (parentRect.width / 2) - (parseInt(element.style.desktop.width) / 2)) + 'px',
+            } : element.style.desktop,
           },
+          // here selected is true since the cloned element was selected
+          // reset the selected flag because observers need to get it when we select it again
+          selected: true,
         }
       }));
-    }
-    // copy again so that we can paste several times (elements will be duplicated again)
-    const clone = [];
-    ControllerBase.clipboard
-      .forEach((el) => clone.concat(this.getClone(el)));
-    ControllerBase.clipboard = clone;
-  }
 
-  /**
-   * duplicate selection
-   */
-  duplicate() {
-    this.pasteClipBoard(false);
+      // update the parent (will add the element to the stage)
+      updateElements([{
+        from: parent,
+        to: {
+          ...parent,
+          children: parent.children.concat(rootElements
+            .filter((el) => el.type !== ElementType.SECTION) // sections are added to the body
+            .map((el) => el.id)),
+        },
+      }]
+      // reset selection
+      .concat(resetSelection),
+      // // make pasted elements selected
+      // .concat(rootElements
+      //   .map((el) => getElement(el.id))
+      //   .map((el) => ({
+      //     from: el,
+      //     to: {
+      //       ...el,
+      //       selected: true,
+      //     },
+      //   })))
+      )
+    }
   }
 
   /**
    * remove selected elements from the stage
    */
   removeSelectedElements() {
-    const elements = getElements().filter((el) => el.selected);
+    const elements = getSelectedElements();
 
-    if (!!elements.find((el) => el.parent === null)) {
+    const body = getBody()
+    if (!!elements.find((el) => el === body)) {
       SilexNotification.alert('Delete elements',
         'Error: I can not delete the body as it is the root container of all your website. <strong>Please select an element to delete it</strong>.',
         () => {},
@@ -157,7 +246,8 @@ export class EditMenuController extends ControllerBase {
             this.undoCheckPoint();
 
             // do remove selected elements
-            deleteElements(elements);
+            deleteElements(elements.concat(elements
+              .reduce((prev, el) => prev.concat(getChildrenRecursive(el)), [])));
           }
         }, 'delete', 'cancel',
       );
@@ -165,25 +255,24 @@ export class EditMenuController extends ControllerBase {
   }
 
   isEditable(el: ElementData) {
-    return this.model.component.isComponent(getDomElement(getSiteDocument(), el)) ||
-      Constants.EDITABLE_ELEMENT_TYPES.indexOf(el.type) > -1;
+    return Constants.EDITABLE_ELEMENT_TYPES.indexOf(el.type) > -1;
   }
 
   /**
-   * edit an {silex.types.Element} element
+   * edit the first element in the selection
    * take its type into account and open the corresponding editor
    */
-  editElement(element: ElementData = getElements().filter((el) => this.isEditable(el))[0]) {
-    // undo checkpoint
-    this.undoCheckPoint();
+  editElement() {
+    const element: ElementData = getElements().find((el) => el.selected && this.isEditable(el))
+    console.log('edit element', element)
 
-    // open the params tab for the components
-    // or the editor for the elements
-    const domEl = getDomElement(getSiteDocument(), element);
-    if (this.model.component.isComponent(domEl)) {
-      this.view.propertyTool.openParamsTab();
-    } else {
+    if (element) {
+      // open the params tab for the components
+      // or the editor for the elements
       switch (element.type) {
+        case ElementType.COMPONENT:
+          this.view.propertyTool.openParamsTab();
+          break;
         case ElementType.TEXT:
           // open the text editor
           this.view.textFormatBar.startEditing(this.view.fileExplorer);
@@ -195,31 +284,31 @@ export class EditMenuController extends ControllerBase {
           break;
         case ElementType.IMAGE:
           this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
-              .then((blob) => {
-                if (blob) {
-                  // load the image
-                  this.model.element.setImageUrl(domEl, blob.absPath, (naturalWidth: number, naturalHeight: number) => {
-                    updateElements([{
-                      from: element,
-                      to: {
-                        ...element,
-                        style: {
-                          ...element.style,
-                          desktop: {
-                            width: naturalWidth + 'px',
-                            height: naturalHeight + 'px',
-                          },
+            .then((blob) => {
+              if (blob) {
+                // load the image
+                this.model.element.setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
+                  updateElements([{
+                    from: element,
+                    to: {
+                      ...element,
+                      style: {
+                        ...element.style,
+                        desktop: {
+                          width: naturalWidth + 'px',
+                          height: naturalHeight + 'px',
                         },
                       },
-                    }])
-                  });
-                }
-              })
-              .catch((error) => {
-                SilexNotification.notifyError(
-                    'Error: I did not manage to load the image. \n' +
-                    (error.message || ''));
-              });
+                    },
+                  }])
+                });
+              }
+            })
+            .catch((error) => {
+              SilexNotification.notifyError(
+                'Error: I did not manage to load the image. \n' +
+                (error.message || ''));
+            });
           break;
       }
     }
@@ -241,9 +330,6 @@ export class EditMenuController extends ControllerBase {
 
             const domEl = getDomElement(getSiteDocument(), element);
 
-            // remove the editable elements temporarily
-            const tempElements = this.model.component.saveEditableChildren(domEl);
-
             // store the component's data for later edition
             updateElements([{
               from: element,
@@ -251,19 +337,15 @@ export class EditMenuController extends ControllerBase {
                 ...element,
                 data: {
                   ...element.data,
-                  ...newData,
+                  component: {
+                    ...element.data.component,
+                    ...newData,
+                  },
                 },
+                innerHtml: html,
               },
             }]);
 
-            // update the element with the new template
-            this.model.element.setInnerHtml(domEl, html);
-
-            // execute the scripts
-            this.model.component.executeScripts(domEl);
-
-            // put back the editable elements
-            domEl.appendChild(tempElements);
           },
           onBrowse: (e, url, cbk) => this.onBrowse(e, url, cbk),
           onEditLink: (e, linkData, cbk) =>
@@ -311,9 +393,9 @@ export class EditMenuController extends ControllerBase {
    * @param visibility, e.g. mobile only, desktop and mobile...
    */
   editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility) {
-    const styleData = this.model.property.getStyleData(className) || {styles: {}};
-    const visibilityData = styleData.styles[visibility] || {};
-    const pseudoClassData = visibilityData[pseudoClass] || {
+    const styleData: StyleData = getSite().style[className] || ({styles: {}} as StyleData);
+    const visibilityData: VisibilityData = styleData.styles[visibility] || {};
+    const pseudoClassData: PseudoClassData = visibilityData[pseudoClass] || {
       templateName: 'text',
       className,
       pseudoClass,
@@ -322,13 +404,13 @@ export class EditMenuController extends ControllerBase {
       pseudoClassData,
       [{displayName: '', name: '', templateName: ''}]
         .concat(getSite().fonts
-        .map((font) => {
-          return {
-            displayName: font.family,
-            name: font.family,
-            templateName: '',
-          };
-        }),
+          .map((font) => {
+            return {
+              displayName: font.family,
+              name: font.family,
+              templateName: '',
+            };
+          }),
       ),
       'text', {
         onChange: (newData, html) => this.model.component.componentStyleChanged(className, pseudoClass, visibility, newData),
@@ -358,28 +440,16 @@ export class EditMenuController extends ControllerBase {
     // undo checkpoint
     this.undoCheckPoint();
 
-    // get the selected elements
-    const elements = getElements().filter((el) => el.selected);
-
     // move all the elements in the selection
-    elements
-      .filter((element) => getUi().mobileEditor || element.style.desktop.position === 'static')
-      .forEach((element, idx) => {
-        switch (direction) {
-          case DomDirection.UP:
-            moveElement(element, idx - 1);
-            break;
-          case DomDirection.DOWN:
-            moveElement(element, idx + 1);
-            break;
-          case DomDirection.TOP:
-            moveElement(element, 0);
-            break;
-          case DomDirection.BOTTOM:
-            moveElement(element, getElements().find((el) => el.id === element.parent).children.length - 1);
-            break;
-        }
-    });
+    moveElements(getSelectedElementsNoSectionContent(), direction)
+
+    // // get the selected elements
+    // const elements = getSelectedElements();
+
+    // // move all the elements in the selection
+    // moveElements(getUi().mobileEditor ? elements : elements
+    //   .filter((element) => element.style.desktop.position === 'static'),
+    //   direction)
   }
 
   /**

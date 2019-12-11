@@ -3,17 +3,161 @@ import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/in
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../constants';
 import { ElementData, ElementType } from '../../types';
-import { getElements, getPages, getUi, subscribeElements, subscribePages, updateElements } from '../api';
+import { getElement, getElements, getPages, getParent, getUi, subscribeElements, subscribePages, updateElements, getChildrenRecursive } from '../api';
 import { Controller, Model } from '../ClientTypes';
-import { getDomElement } from '../dom/element-dom';
+import { getDomElement, getDomElementById, getId } from '../dom/element-dom';
+import { onCrudChange, StateChange } from '../flux/crud-store';
 import { Body } from '../model/Body';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
-import { getSiteDocument } from './UiElements';
+import { getSiteDocument, getSiteWindow } from './UiElements';
 
 // WIP: will be the way to interact with the model
 let stage: Stage
 export const getStage = () => stage;
+let stoped = false;
+export const stopStageObserver = () => stoped = true
+export const startStageObserver = () => stoped = false
+
+// expose reset as a workaround some stage bugs (see element-observer)
+export function resetStage() {
+  console.log('reset stage ', !!stage)
+  if (!stage) { return; } // happens when File::setData is called before the html is set
+  stopStageObserver() // FIXME: should not be necessary, stage bug?
+  const currentPage = getPages().find((p) => p.isOpen);
+  stage.reset(getElements()
+    .filter(
+      (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id))
+      && ((el.visibility.desktop && !getUi().mobileEditor) || (el.visibility.mobile && getUi().mobileEditor)))
+    .map((el) => getDomElement(getSiteDocument(), el))
+    .filter((el) => !!el)) // FIXME: what should we do while the child is not yet added
+  startStageObserver()
+}
+
+// //////////////////////////////
+// elements observer
+function preventStageObservers<A, B>(cbk: (...args: A[]) => B): (...args: A[]) => B {
+  return (...args) => {
+    // prevent updates from stage since we will update the selection
+    stopStageObserver()
+    // do the actual call
+    const res = cbk(...args)
+    // restart stage observers
+    startStageObserver()
+    // return the same as the cbk
+    return res
+  }
+}
+// on add elements
+function onAddElement(elements: ElementData[]) {
+  if (!stage) { console.warn('onAddElement NO STAGE'); return };
+  const doc = getSiteDocument()
+  elements.forEach((el) => {
+    const parent = getParent(el) // parent may be null if the parent's children array has not yet be changed, then the element will be moved when it is set
+    const parentEl = parent ? getDomElement(doc, parent) : doc.body
+    if (parent && !parentEl) {
+      // no parent element yet but will come soon
+      console.warn('no parent element yet but will come soon')
+    } else {
+      // add to stage (needs to be done before onUpdate for selection)
+      stage.addElement(getDomElement(doc, el), true)
+    }
+  })
+  if (elements.length) {
+    // send the scroll to the target
+    stage.center(elements.map((el) => getDomElement(doc, el)))
+  }
+}
+// on deleted elements
+function onDeleteElements(elements: ElementData[]) {
+  if (!stage) { console.warn('onDeleteElement NO STAGE'); return };
+  elements.forEach((el) => {
+    stage.removeElement(el.id)
+  })
+}
+// on update elements
+function onUpdateElement(change: Array<StateChange<ElementData>>) {
+  if (!stage) { console.warn('onUpdateElement NO STAGE'); return };
+  const doc = getSiteDocument()
+  let needReset = false
+  const needResetSome = []
+  change.forEach(({from, to}) => {
+    const domEl = getDomElement(doc, to)
+    const isStatic = getSiteWindow().getComputedStyle(domEl).position === 'static'
+    // selection
+    if (to.selected !== from.selected) {
+      const selection = getStage().getSelection()
+      const found = selection.find((s) => s.el === domEl)
+      if (to.selected) {
+        if (!found) {
+          const newSelection = selection.map((s) => s.el).concat([domEl])
+          getStage().setSelection(newSelection)
+        }
+      } else {
+        if (found) {
+          getStage().setSelection(selection.filter((s) => s !== found).map((s) => s.el))
+        }
+      }
+    }
+    if (to.pageNames !== from.pageNames) {
+      // FIXME: reset only if visibility changed
+      needReset = true
+    }
+    if (to.children !== from.children) {
+      // needs reset because children visibility may have changed (also when creating a section, when the parent is attached it has a container in it)
+      needReset = true
+    }
+    if (to.classList !== from.classList) {
+      needReset = true
+    }
+    // element visibility destkop and mobile
+    if (to.visibility.desktop !== from.visibility.desktop) {
+      if (to.visibility.desktop) {
+        if (!getUi().mobileEditor) {
+          getStage().addElement(domEl)
+        }
+      } else {
+        if (!getUi().mobileEditor) {
+          // there is a bug in stage => reset instead of  getStage().removeElement(domEl)
+          needReset = true
+        }
+      }
+    }
+    if (to.visibility.mobile !== from.visibility.mobile) {
+      if (to.visibility.mobile) {
+        if (getUi().mobileEditor) {
+          getStage().addElement(domEl)
+        }
+      } else {
+        if (getUi().mobileEditor) {
+          // there is a bug in stage => reset instead of  getStage().removeElement(domEl)
+          needReset = true
+        }
+      }
+    }
+    if (to.innerHtml !== from.innerHtml) {
+      getStage().redrawSome([domEl]
+        .map((el) => getStage().getState(el)))
+    }
+    if (to.style !== from.style) {
+      // update stage for element and children
+      if (isStatic || needReset) {
+        // FIXME: redraw only if position/layout/size changed
+        needReset = true;
+      } else {
+        needResetSome.push(...[domEl]
+          .concat(to.children.map((id) => getDomElementById(doc, id)))
+          .map((el) => getStage().getState(el)))
+      }
+    }
+  })
+  // re-compute the other elements metrics
+  if (needReset) {
+    resetStage();
+  } else {
+    getStage().redrawSome(needResetSome)
+  }
+}
 
 export class StageWrapper {
   private stage: Stage;
@@ -29,16 +173,16 @@ export class StageWrapper {
    * the controller instances
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
-    subscribePages((prevState, nextState) => {
-      this.reset();
+    subscribePages(() => {
+      console.warn('xxxxxxxx reset ici fait tout buguer')
+      // reset the stage after page open
+      // setTimeout(() => resetStage(), 1000)
     });
-    subscribeElements((prevState, nextState) => {
-      const newElements = nextState.filter((el) => !prevState.find((e) => e.id === el.id));
-      if (newElements.length) {
-        // send the scroll to the target
-        this.center(newElements.map((el) => getDomElement(getSiteDocument(), el)));
-      }
-    });
+    subscribeElements(onCrudChange<ElementData>({
+      onAdd: preventStageObservers(onAddElement),
+      onDelete: preventStageObservers(onDeleteElements),
+      onUpdate: preventStageObservers(onUpdateElement),
+    }))
   }
   getEnableSticky(): boolean {
     if (!this.stage) { return false; }
@@ -52,26 +196,26 @@ export class StageWrapper {
     if (!this.stage) { return; }
     this.stage.enableSticky = !this.stage.enableSticky;
   }
-  getState(el: HTMLElement): SelectableState {
-    if (!this.stage) { return null; }
-    return this.stage.getState(el);
-  }
-  setState(el: HTMLElement, state: SelectableState) {
-    if (!this.stage) { return; }
-    this.stage.setState(el, state);
-  }
-  getSelection(): SelectableState[] {
-    if (!this.stage) { return []; }
-    return this.stage.getSelection();
-  }
-  setSelection(elements: HTMLElement[]) {
-    if (!this.stage) { return; }
-    this.stage.setSelection(elements);
-  }
-  getSelectionBox() {
-    if (!this.stage) { return; }
-    return this.stage.getSelectionBox();
-  }
+  // getState(el: HTMLElement): SelectableState {
+  //   if (!this.stage) { return null; }
+  //   return this.stage.getState(el);
+  // }
+  // setState(el: HTMLElement, state: SelectableState) {
+  //   if (!this.stage) { return; }
+  //   this.stage.setState(el, state);
+  // }
+  // getSelection(): SelectableState[] {
+  //   if (!this.stage) { return []; }
+  //   return this.stage.getSelection();
+  // }
+  // setSelection(elements: HTMLElement[]) {
+  //   if (!this.stage) { return; }
+  //   this.stage.setSelection(elements);
+  // }
+  // getSelectionBox() {
+  //   if (!this.stage) { return; }
+  //   return this.stage.getSelectionBox();
+  // }
   getEditMode(): boolean {
     if (!this.stage) { return false; }
     return this.stage.catchingEvents;
@@ -111,40 +255,50 @@ export class StageWrapper {
 
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
+    // FIXME: do not use css classes but ElementData
     stage = this.stage = new Stage(iframe, [], {
-      isSelectable: ((el) => !el.classList.contains(Constants.PREVENT_SELECTABLE_CLASS_NAME)),
-      isDraggable: ((el) => !el.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME)),
-      isDropZone: ((el) => !el.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME) && el.classList.contains(ElementType.CONTAINER)),
+      getId: (el: HTMLElement) => getId(el),
+      isSelectable: (el) => true,
+      // isSelectable: (el) => {
+      //   const element = getElement(getId(el))
+      //   return element.enable
+      // },
+      isDraggable: (el) => {
+        const element = getElement(getId(el))
+        return element.enableDrag
+      },
+      isDropZone: (el) => {
+        const element = getElement(getId(el))
+        return element.enableDrop
+      },
       isResizeable: ((el) => {
+        const element = getElement(getId(el))
         // section is not resizeable on mobile
-        const isSectionOnMobile = getUi().mobileEditor && this.model.element.isSection(el);
-        // css classes which prevent resize
-        const hasPreventCssClass = el.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME);
-        if (isSectionOnMobile || hasPreventCssClass) {
+        const isSectionOnMobile = getUi().mobileEditor && element.type === ElementType.SECTION;
+        if (isSectionOnMobile) {
           return false;
         }
         // section content resizable height only
-        const isSectionContentOnMobile = getUi().mobileEditor && this.model.element.isSectionContent(el);
+        const isSectionContentOnMobile = getUi().mobileEditor && element.isSectionContent;
         if (isSectionContentOnMobile) {
           return {
-            top: !el.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
+            top: element.enableResize.top,
             left: false,
-            bottom: !el.classList.contains(Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME),
+            bottom: element.enableResize.bottom,
             right: false,
           };
         }
         // case of all or part of the sides are resizeable
-        return {
-          top: !el.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
-          left: !el.classList.contains(Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME),
-          bottom: !el.classList.contains(Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME),
-          right: !el.classList.contains(Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME),
-        };
+        return element.enableResize;
       }),
-      useMinHeight: ((el) => !el.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT)),
+      useMinHeight: (el) => {
+        const element = getElement(getId(el))
+        return element.useMinHeight
+      },
       canDrop: ((el: HTMLElement, dropZone: HTMLElement) => {
+        const element = getElement(getId(el))
         // sections can only be dropped in the body
-        return !el.classList.contains(ElementType.SECTION)
+        return element.type !== ElementType.SECTION
           || dropZone.tagName.toLowerCase() === 'body';
       }),
       onEdit: () => {
@@ -161,7 +315,7 @@ export class StageWrapper {
       onStartDrag: (change) => this.startDrag(),
       onStartResize: (change) => this.startResize(),
     });
-    this.reset();
+    resetStage();
     // give time to iframes to initialize
     setTimeout(() => {
       this.toBeUnsubscribed.push(
@@ -192,11 +346,11 @@ export class StageWrapper {
     this.prepareUndo();
   }
   private startResize() {
-    this.model.body.getBodyElement().classList.add(Constants.RESIZING_CLASS_NAME);
+    getSiteDocument().body.classList.add(Constants.RESIZING_CLASS_NAME);
     this.startDragOrResize();
   }
   private startDrag() {
-    this.model.body.getBodyElement().classList.add(Constants.DRAGGING_CLASS_NAME);
+    getSiteDocument().body.classList.add(Constants.DRAGGING_CLASS_NAME);
     this.startDragOrResize();
   }
   private stopDragOrResize(changed: SelectableState[], redraw) {
@@ -206,11 +360,11 @@ export class StageWrapper {
     this.redraw();
   }
   private stopResize(changed: SelectableState[], redraw = false) {
-    this.model.body.getBodyElement().classList.remove(Constants.RESIZING_CLASS_NAME);
+    getSiteDocument().body.classList.remove(Constants.RESIZING_CLASS_NAME);
     this.stopDragOrResize(changed, redraw);
   }
   private stopDrag(changed: SelectableState[], redraw = false) {
-    this.model.body.getBodyElement().classList.remove(Constants.DRAGGING_CLASS_NAME);
+    getSiteDocument().body.classList.remove(Constants.DRAGGING_CLASS_NAME);
     this.stopDragOrResize(changed, redraw);
     updateElements([
       // update element's parents
@@ -250,6 +404,11 @@ export class StageWrapper {
       ])
   }
   private onSelectionChanged(changed: SelectableState[]) {
+    if (stoped) {
+      // console.trace('prevent update elements with stoped in stage', changed);
+      return;
+    }
+    console.trace('update selection from stage', changed);
     updateElements(changed
       .map((selectable) => {
         // FIXME: find a more optimal way to get the data from DOM element
@@ -260,7 +419,6 @@ export class StageWrapper {
       })
       .filter(({element, selectable}) => element.selected !== selectable.selected)
       .map(({element, selectable}) => {
-        console.log('onSelectionChanged', element, selectable)
         return {
           from: element,
           to: {
@@ -274,6 +432,11 @@ export class StageWrapper {
     this.controller.stageController.undoCheckPoint();
   }
   private applyStyle(change) {
+    if (stoped) {
+      console.trace('prevent update elements with stoped in stage');
+      return;
+    }
+    console.log('apply style from stage')
     // do not mess up the css translation applyed by stage during drag
     if (!this.dragging) {
       // removed the inline styles
@@ -299,49 +462,36 @@ export class StageWrapper {
           from: element,
           to: {
             ...element,
-            style: {
-              ...element.style,
-              ...Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, {
-                height: s.metrics.computedStyleRect.height + 'px',
-                top: s.metrics.computedStyleRect.top + 'px',
-                left: s.metrics.computedStyleRect.left + 'px',
-                width: s.metrics.computedStyleRect.width + 'px',
-              }),
-            },
+            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, {
+              height: s.metrics.computedStyleRect.height + 'px',
+              top: s.metrics.computedStyleRect.top + 'px',
+              left: s.metrics.computedStyleRect.left + 'px',
+              width: s.metrics.computedStyleRect.width + 'px',
+            }),
           },
         };
       }))
     }
   }
-  private reset() {
-    if (!this.stage) { return; }
-    const currentPage = getPages().find((p) => p.isOpen);
-    console.log('reset stage', currentPage)
-    this.stage.reset(getElements()
-      .filter(
-        (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id))
-        && ((el.visibility.desktop && !getUi().mobileEditor) || (el.visibility.mobile && getUi().mobileEditor)))
-      .map((el) => getDomElement(getSiteDocument(), el)));
-  }
   // FIXME: find another way to expose isMobileEditor to views
-  private resizeWindow() {
-    if (!this.stage) { return; }
-    this.stage.resizeWindow();
-  }
-  private addElement(element: HTMLElement) {
-    if (!this.stage) { return; }
-    this.stage.addElement(element);
-  }
-  private removeElement(element: HTMLElement) {
-    if (!this.stage) { return; }
-    this.stage.removeElement(element);
-  }
-  private center(elements: HTMLElement[]) {
-    if (!this.stage) { return; }
-    this.stage.center(elements);
-  }
-  private getDropZone(posX: number, posY: number, element: HTMLElement): HTMLElement {
-    if (!this.stage) { return this.model.body.getBodyElement(); }
-    return this.stage.getDropZone(posX, posY, element);
-  }
+//   private resizeWindow() {
+//     if (!this.stage) { return; }
+//     this.stage.resizeWindow();
+//   }
+//   private addElement(element: HTMLElement) {
+//     if (!this.stage) { return; }
+//     this.stage.addElement(element);
+//   }
+//   private removeElement(element: HTMLElement) {
+//     if (!this.stage) { return; }
+//     this.stage.removeElement(element);
+//   }
+  // private center(elements: HTMLElement[]) {
+  //   if (!this.stage) { return; }
+  //   this.stage.center(elements);
+  // }
+//   private getDropZone(posX: number, posY: number, element: HTMLElement): HTMLElement {
+//     if (!this.stage) { return getSiteDocument().body; }
+//     return this.stage.getDropZone(posX, posY, element);
+//   }
 }

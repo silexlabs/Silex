@@ -17,11 +17,10 @@
  */
 
 import { Constants } from '../../constants';
-import { FileInfo } from '../../types';
-import { getElements, getPages, getSite, initializeElements, initializePages, initializeSite, openPage, updateSite } from '../api';
+import { DataModel, FileInfo } from '../../types';
+import { getElements, initializeElements, initializePages, initializeSite, openPage, updateUi, getUi } from '../api';
 import { Model, View } from '../ClientTypes';
 import { getUiElements } from '../components/UiElements';
-import { readDataFromDom, writeDataToDom } from '../dom/site-dom';
 import { startObservers, stopObservers } from '../observers/index';
 import { CloudStorage } from '../service/CloudStorage';
 
@@ -35,15 +34,15 @@ export class File {
    */
   static MAX_RECENT_FILES = 5;
 
-  /**
-   * loading css class
-   */
-  static LOADING_CSS_CLASS = 'loading-website';
+  // /**
+  //  * loading css class
+  //  */
+  // static LOADING_CSS_CLASS = 'loading-website';
 
-  /**
-   * loading css class
-   */
-  static LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
+  // /**
+  //  * loading css class
+  //  */
+  // static LOADING_LIGHT_CSS_CLASS = 'loading-website-light';
 
   /**
    * current file info returned by CE
@@ -84,23 +83,23 @@ export class File {
     // this is needed since iframes can keep their content
     // after a refresh in firefox
     this.contentDocument_.open();
-    this.getContentDocument().write('');
+    this.contentDocument_.write('');
     this.contentDocument_.close();
   }
 
-  /**
-   * get the iframe document
-   */
-  getContentDocument(): Document {
-    return this.contentDocument_;
-  }
+  // /**
+  //  * get the iframe document
+  //  */
+  // getContentDocument(): Document {
+  //   return this.contentDocument_;
+  // }
 
-  /**
-   * get the iframe window
-   */
-  getContentWindow(): Window {
-    return this.contentWindow_;
-  }
+  // /**
+  //  * get the iframe window
+  //  */
+  // getContentWindow(): Window {
+  //   return this.contentWindow_;
+  // }
 
   /**
    * @return true if a website is being edited
@@ -110,27 +109,43 @@ export class File {
         this.contentDocument_.body.childNodes.length > 0;
   }
 
+  setData(data: DataModel) {
+    const { site, pages, elements }  = data;
+
+    // update model
+    stopObservers();
+
+    initializeSite(site);
+
+    initializePages(pages);
+    openPage(pages[0]);
+
+    initializeElements(elements);
+
+    // create the stage
+    this.view.stageWrapper.init(this.iFrameElement_);
+
+    startObservers();
+  }
+
   /**
    * build the html content
    * Parse the raw html and fill the bodyElement and headElement
    * @export
    */
-  setHtml(
-      rawHtml: string, opt_cbk?: (() => any),
-      opt_showLoader?: boolean) {
+  setHtml(rawHtml: string, opt_cbk?: (() => any), opt_showLoader?: boolean) {
 
     // reset iframe content
     this.view.stageWrapper.cleanup();
     this.contentDocument_.open();
-    this.getContentDocument().write('');
+    this.contentDocument_.write('');
     this.contentDocument_.close();
 
     // loading
-    if (opt_showLoader !== false) {
-      getUiElements().stage.classList.add(File.LOADING_CSS_CLASS);
-    } else {
-      getUiElements().stage.classList.add(File.LOADING_LIGHT_CSS_CLASS);
-    }
+    updateUi({
+      ...getUi(),
+      loading: true,
+    })
 
     // write the content
     this.contentDocument_.open();
@@ -148,7 +163,6 @@ export class File {
     // assets
     this.contentDocument_ = this.iFrameElement_.contentDocument;
     this.contentWindow_ = this.iFrameElement_.contentWindow;
-    console.log('IFrame content changed')
     // tslint:disable:no-string-literal
     if (this.contentDocument_.body === null || this.contentWindow_ === null || this.contentWindow_['jQuery'] === null) {
       setTimeout(() => {
@@ -163,43 +177,33 @@ export class File {
     // this.model.property.loadProperties(this.contentDocument_);
     // this.model.component.initStyles(this.contentDocument_);
 
-    console.log('start')
-    // update model
-    stopObservers();
+    // // update model
+    // stopObservers();
 
-    const { site, pages, elements }  = readDataFromDom(getUiElements().stage.contentDocument);
-    console.log('loaded data', { site, pages, elements })
+    // const { site, pages, elements }  = readDataFromDom(getUiElements().stage.contentDocument);
 
-    initializeSite(site);
+    // initializeSite(site);
 
-    initializePages(pages);
-    openPage(pages[0]);
+    // initializePages(pages);
+    // openPage(pages[0]);
 
-    initializeElements(elements);
+    // initializeElements(elements);
 
-    // restore the stage
-    this.view.stageWrapper.init(this.iFrameElement_);
+    // // create the stage
+    // this.view.stageWrapper.init(this.iFrameElement_);
 
-    startObservers();
+    // startObservers();
 
     // notify the caller
     if (opt_cbk) {
       opt_cbk();
     }
 
-    // remove publication path for templates
-    if (this.isTemplate) {
-      updateSite({
-        ...getSite(),
-        publicationPath: null,
-      });
-    }
-
-    setTimeout(() => {
-      // loading
-      getUiElements().stage.classList.remove(File.LOADING_CSS_CLASS);
-      getUiElements().stage.classList.remove(File.LOADING_LIGHT_CSS_CLASS);
-    }, 10);
+    // loading
+    updateUi({
+      ...getUi(),
+      loading: false,
+    })
   }
 
   /**
@@ -249,14 +253,6 @@ export class File {
     const updatedStyles = this.model.property.getAllStyles(getElements());
     yield;
 
-    // update data
-    writeDataToDom(this.contentDocument_, {
-      site: getSite(),
-      pages: getPages(),
-      elements: getElements(),
-    })
-    yield;
-
     // clone
     const cleanFile = (this.contentDocument_.cloneNode(true) as Document);
     yield;
@@ -284,19 +280,16 @@ export class File {
    * @export
    */
   openFromUrl(
-      url: string, opt_cbk: ((p1: string) => any) = null,
+      url: string, opt_cbk: ((p1: string, data: DataModel) => any) = null,
       opt_errCbk: ((p1: any, p2: string) => any) = null) {
     this.isTemplate = true;
     CloudStorage.getInstance().loadLocal(
-        url, (rawHtml, userHead) => {
+        url, (rawHtml: string, data: DataModel) => {
+          this.close();
           this.fileInfo =
               ({isDir: false, mime: 'text/html'} as FileInfo);
-          updateSite({
-            ...getSite(),
-            headTag: userHead,
-          });
           if (opt_cbk) {
-            opt_cbk(rawHtml);
+            opt_cbk(rawHtml, data);
           }
         }, opt_errCbk);
   }
@@ -306,24 +299,24 @@ export class File {
    * @param cbk receives the raw HTML
    * @export
    */
-  saveAs(fileInfo: FileInfo, rawHtml: string, cbk: () => any, opt_errCbk?: ((p1: any, p2: string) => any)) {
+  saveAs(fileInfo: FileInfo, rawHtml: string, data: DataModel, cbk: () => any, opt_errCbk?: ((p1: any, p2: string) => any)) {
     // save the data
     this.fileInfo = fileInfo;
     this.addToLatestFiles(this.fileInfo);
-    this.save(rawHtml, cbk, opt_errCbk);
+    this.save(rawHtml, data, cbk, opt_errCbk);
   }
 
   /**
    * write content to the file
    * @export
    */
-  save(rawHtml: string, cbk: () => any, opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
+  save(rawHtml: string, data: DataModel, cbk: () => any, opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
     if (this.fileInfo == null) {
       throw new Error('Can not save, fileInfo is null');
     }
     CloudStorage.getInstance().write(
         (this.fileInfo as FileInfo), rawHtml,
-        getSite().headTag, () => {
+        data, () => {
           this.isTemplate = false;
           if (cbk) {
             cbk();
@@ -336,21 +329,17 @@ export class File {
    * @param cbk receives the raw HTML
    */
   open(
-      fileInfo: FileInfo, cbk: (p1: string) => any,
+      fileInfo: FileInfo, cbk: (p1: string, data: DataModel) => any,
       opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
     this.isTemplate = false;
     CloudStorage.getInstance().read(
-      fileInfo, (rawHtml, userHead) => {
+      fileInfo, (rawHtml: string, data: DataModel) => {
         // update model
         this.close();
         this.fileInfo = fileInfo;
         this.addToLatestFiles(this.fileInfo);
-        updateSite({
-          ...getSite(),
-          headTag: userHead,
-        });
         if (cbk) {
-          cbk(rawHtml);
+          cbk(rawHtml, data);
         }
       }, opt_errCbk);
   }

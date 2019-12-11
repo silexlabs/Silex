@@ -24,6 +24,9 @@ import { PagePane } from './pane/PagePane';
 import { PropertyPane } from './pane/PropertyPane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
 import { StylePane } from './pane/StylePane';
+import { subscribeElements, getElements } from '../api';
+import { getStage } from './StageWrapper';
+import { ElementType } from '../../types';
 
 //////////////////////////////////////////////////////////////////
 // PropertyTool class
@@ -111,6 +114,14 @@ export class PropertyTool {
     const styleEditorElement = this.element.querySelector('.prodotype-style-editor .prodotype-container');
     this.componentEditorElement = this.element.querySelector('.prodotype-component-editor');
     this.model.component.init(this.componentEditorElement, styleEditorElement);
+    subscribeElements(() => {
+      const selectedComponents = getElements().filter((el) => el.selected && el.type === ElementType.COMPONENT)
+      if (selectedComponents.length === 1) {
+        this.controller.editMenuController.editComponent(selectedComponents[0])
+      } else {
+        this.controller.editMenuController.editComponent(null)
+      }
+    })
 
     // expandables
     const expandables = this.element.querySelectorAll('.expandable legend');

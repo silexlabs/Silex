@@ -1,14 +1,8 @@
 import { Constants } from '../../constants';
-import { ElementData, Font, PageData, SiteData } from '../../types';
+import { DataModel, Font } from '../../types';
 // !!no because this file is used server side too: import { getSiteDocument } from '../components/UiElements';
 
-export interface StoredDataModel {
-  site: SiteData,
-  elements: ElementData[],
-  pages: PageData[],
-}
-
-export function writeDataToDom(doc: HTMLDocument, data: StoredDataModel) {
+export function writeDataToDom(doc: HTMLDocument, data: DataModel) {
   let tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
   if (!tag) {
     tag = doc.createElement('script')
@@ -17,13 +11,17 @@ export function writeDataToDom(doc: HTMLDocument, data: StoredDataModel) {
     tag.classList.add(Constants.JSON_STYLE_TAG_CLASS_NAME)
     doc.head.appendChild(tag)
   }
-  tag.innerHTML = JSON.stringify(data)
+  tag.innerHTML = JSON.stringify({
+    site: data.site,
+    pages: data.pages,
+    // elements: data.elements, // not this one as it is huge and useless at runtime
+  })
 }
 
-export function readDataFromDom(doc: HTMLDocument): StoredDataModel {
-  const tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
-  return JSON.parse(tag.innerHTML)
-}
+// export function readDataFromDom(doc: HTMLDocument): DataModel {
+//   const tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
+//   return JSON.parse(tag.innerHTML)
+// }
 
 /**
  * set/get silex editable js script
@@ -103,33 +101,33 @@ export function setEnableMobile(doc: HTMLDocument, enable: boolean) {
   }
 }
 
-/**
- * get/set the website width
- */
-export function setWebsiteWidth(doc: HTMLDocument, opt_value?: number) {
+// /**
+//  * get/set the website width
+//  */
+// export function setWebsiteWidth(doc: HTMLDocument, opt_value?: number) {
 
-  const width: string = opt_value ? opt_value.toString() : null;
-  setMeta(doc, 'website-width', width);
+//   const width: string = opt_value ? opt_value.toString() : null;
+//   setMeta(doc, 'website-width', width);
 
-  let silexStyle = doc.head.querySelector('.silex-style-settings') as HTMLStyleElement;
-  if (width && width !== '') {
-    if (!silexStyle) {
-      silexStyle = doc.createElement('style');
-      silexStyle.type = 'text/css';
-      silexStyle.className = 'silex-style-settings';
-      doc.head.appendChild(silexStyle);
-    }
-    silexStyle.innerHTML = `
-    .${Constants.WEBSITE_WIDTH_CLASS_NAME} {
-      width: ${width}px;
-    }
-  `;
-  } else {
-    if (silexStyle) {
-      doc.head.removeChild(silexStyle);
-    }
-  }
-}
+//   let silexStyle = doc.head.querySelector('.silex-style-settings') as HTMLStyleElement;
+//   if (width && width !== '') {
+//     if (!silexStyle) {
+//       silexStyle = doc.createElement('style');
+//       silexStyle.type = 'text/css';
+//       silexStyle.className = 'silex-style-settings';
+//       doc.head.appendChild(silexStyle);
+//     }
+//     silexStyle.innerHTML = `
+//     .${Constants.WEBSITE_WIDTH_CLASS_NAME} {
+//       width: ${width}px;
+//     }
+//   `;
+//   } else {
+//     if (silexStyle) {
+//       doc.head.removeChild(silexStyle);
+//     }
+//   }
+// }
 
 /**
  * get/set the description

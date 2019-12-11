@@ -1,11 +1,17 @@
-import * as cssBeautify from 'js-beautify';
-import { CssRule, ProdotypeData, SilexData } from '../../client/model/Data';
+import * as jsBeautify from 'js-beautify';
+import { writeStyleToDom } from '../../client/dom/element-dom';
+import { getInnerHtml, getDefaultStyle } from '../../client/utils/ElementUtils';
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, FileInfo, LinkType, PageData, SiteData } from '../../types';
+import { ComponentData, CssRule, ElementData, ElementId, ElementType, FileInfo, LinkType, PageData, SiteData, StyleData } from '../../types';
 import DomTools from './DomTools';
 
 ////////////////////////////////////////////////////////////
-// Elements
+// Old data structures
+
+export interface ProdotypeData {
+  component: {[key: string]: ComponentData};
+  style: {[key: string]: StyleData};
+}
 
 interface DomData {
   fonts: any,
@@ -14,6 +20,9 @@ interface DomData {
   mobileStylesObj: any,
   prodotypeDataObj: any,
 }
+
+////////////////////////////////////////////////////////////
+// Elements
 
 /**
  * get/set Silex ID
@@ -59,18 +68,21 @@ export function getElementDataBC(data: DomData, element: HTMLElement): ElementDa
   const linkValue = element.getAttribute(Constants.LINK_ATTR)
   const linkType = linkValue ? linkValue.startsWith('#!page-') ? LinkType.PAGE : LinkType.URL : null
   const id = getElementId(element)
+  const type = getTypeBC(element)
+  const isSectionContent = element.classList.contains(Constants.ELEMENT_CONTENT_CLASS_NAME)
+  const isBody = element.classList.contains('body-initial')
   return {
     id,
     pageNames: [],
     classList: element.className
       .split(' ')
       .filter((c) => !Constants.SILEX_CLASS_NAMES.includes(c) && c !== id),
-    type: getTypeBC(element),
+    type,
+    isSectionContent,
     title: element.title,
     alt: Array.from(element.querySelectorAll(':scope > img'))
       .map((img: HTMLImageElement) => img.alt)[0],
-    parent: element.parentElement ? getElementId(element.parentElement) : null,
-    children: Array.from(element.querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`))
+    children: Array.from(element.querySelectorAll(`:scope > .${Constants.EDITABLE_CLASS_NAME}`))
       .map((el: HTMLElement) => getElementId(el)),
     link: linkType && linkValue ? {
       type: linkType,
@@ -91,12 +103,27 @@ export function getElementDataBC(data: DomData, element: HTMLElement): ElementDa
       mobile: !element.classList.contains(Constants.HIDE_ON_MOBILE),
     },
     style: {
-      desktop: getStylesFromDomBC(data, element, false),
-      mobile: getStylesFromDomBC(data, element, true),
+      desktop: getStylesFromDomBC({
+        data,
+        element,
+        mobile: false,
+        type,
+        isSectionContent,
+        isBody,
+      }),
+      mobile: getStylesFromDomBC({
+        data,
+        element,
+        mobile: true,
+        type,
+        isSectionContent,
+        isBody,
+      }),
     },
     data: {
       component: getComponentDataFromDomBC(data, element),
     },
+    innerHtml: type === ElementType.COMPONENT || type === ElementType.HTML || type === ElementType.TEXT ? getInnerHtml(element) : '',
   }
 }
 
@@ -109,30 +136,67 @@ export function getElementsFromDomBC(doc: HTMLDocument): ElementData[] {
     .map((element) => getElementDataBC(data, element))
 }
 
-function getStylesFromDomBC(data: DomData, element: HTMLElement, mobile: boolean) {
+export function writeStyles(doc: HTMLDocument, elements: ElementData[]) {
+  elements.forEach((el) => {
+    writeStyleToDom(doc, el.id, el.style.desktop, false)
+    writeStyleToDom(doc, el.id, el.style.mobile, true)
+  })
+}
+
+function getStylesFromDomBC({data, element, mobile, type, isSectionContent, isBody}: {data: DomData, element: HTMLElement, mobile: boolean, type: ElementType, isSectionContent: boolean, isBody: boolean}) {
   const elementId = (getElementId(element) as ElementId);
-  const targetObj = (mobile ? data.mobileStylesObj : data.stylesObj as SilexData);
-  const style = (targetObj[elementId] as CssRule);
-  if (!!style) {
+  const targetObj = (mobile ? data.mobileStylesObj : data.stylesObj as StyleData);
+  const style = (targetObj[elementId] as CssRule) || {};
+  // create the style applied byt the editor
+  const silexInlineStyle = {
+    ...style,
+    height: style.height || style['min-height'],
+    // 'min-height': undefined,
+  }
+  delete silexInlineStyle['min-height']
+  if (isBody) {
+    delete silexInlineStyle.height
+  }
+  if (mobile) {
     return {
-      ...style,
-      'height': style.height || style['min-height'],
-      'min-height': null,
-    };
+      ...silexInlineStyle,
+    }
+  } else {
+    return {
+      ...silexInlineStyle,
+      ...getDefaultStyle({type, isSectionContent, isBody}),
+    }
+  }
+}
+function getComponentDataFromDomBC(data: DomData, element: HTMLElement): ComponentData {
+  const elementId = (getElementId(element) as ElementId);
+  if (data.prodotypeDataObj.component[elementId]) {
+    const justData = {
+      ...data.prodotypeDataObj.component[elementId],
+    }
+    delete justData.displayName
+    delete justData.name
+    delete justData.templateName
+    return {
+      displayName: data.prodotypeDataObj.component[elementId].displayName,
+      name: data.prodotypeDataObj.component[elementId].name,
+      templateName: data.prodotypeDataObj.component[elementId].templateName,
+      data: justData,
+    }
   }
   return null;
 }
-function getComponentDataFromDomBC(data: DomData, element: HTMLElement) {
-  const elementId = (getElementId(element) as ElementId);
-  return data.prodotypeDataObj.component[elementId]
-}
+
 /**
  * get/set type of the element
  * @param element   created by silex, either a text box, image, ...
  * @return           the type of element
  * example: for a container this will return "container"
  */
-export function getTypeBC(element: HTMLElement): ElementType {
+function getTypeBC(element: HTMLElement): ElementType {
+  if (element.classList.contains(Constants.COMPONENT_CLASS_NAME)) {
+    return ElementType.COMPONENT
+  }
   switch (element.getAttribute(Constants.TYPE_ATTR)) {
     case ElementType.CONTAINER.toString(): return element.classList.contains('section-element') ? ElementType.SECTION : ElementType.CONTAINER
     case ElementType.SECTION.toString(): return ElementType.SECTION
@@ -196,7 +260,6 @@ export function getPagesFromDom(doc: HTMLDocument): PageData[] {
 export function getSiteFromDom(doc: HTMLDocument): SiteData {
   const properties = loadProperties(doc)
   return {
-    headTag: DomTools.extractUserHeadTag(doc.head.innerHTML).userHead,
     title: doc.querySelector('title').innerHTML,
     description: getMeta(doc, 'description'),
     enableMobile: doc.body.classList.contains(Constants.ENABLE_MOBILE_CSS_CLASS),
@@ -208,12 +271,14 @@ export function getSiteFromDom(doc: HTMLDocument): SiteData {
     titleSocial: getMeta(doc, 'twitter:title') || getMeta(doc, 'og:title'),
     lang: doc.querySelector('html').lang,
     width: getWebsiteWidth(doc),
+    headTag: DomTools.extractUserHeadTag(doc.head.innerHTML).userHead,
     headStyle: getHeadStyle(doc),
     headScript: getHeadScript(doc),
     hostingProvider: getMeta(doc, 'hostingProvider'),
     twitterSocial: getMeta(doc, 'twitter:site'),
     dataSources: properties.dataSources,
     fonts: properties.fonts,
+    style: properties.prodotypeDataObj.style,
   }
 }
 function getMeta(doc, name: string): string {
@@ -258,7 +323,7 @@ function getHeadStyle(doc: HTMLDocument): string {
     return '';
   }
   // tslint:disable:no-string-literal
-  return cssBeautify(silexStyle.innerHTML, BEAUTIFY_CSS_OPTIONS);
+  return jsBeautify.css_beautify(silexStyle.innerHTML, BEAUTIFY_CSS_OPTIONS);
 }
 function getHeadScript(doc: HTMLDocument): string {
   // get silex scripts from the DOM

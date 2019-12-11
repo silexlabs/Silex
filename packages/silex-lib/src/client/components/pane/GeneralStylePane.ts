@@ -16,7 +16,7 @@
  */
 
 import { ElementData } from '../../../types';
-import { getUi } from '../../api';
+import { getParent, getUi, getBody } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
 
@@ -66,7 +66,8 @@ export class GeneralStylePane extends PaneBase {
    */
   protected redraw(selectedElements: ElementData[]) {
     super.redraw(selectedElements);
-    const elementsNoBody = selectedElements.filter((el) => !!el.parent);
+    const body = getBody()
+    const elementsNoBody = selectedElements.filter((el) => el !== body);
     if (elementsNoBody.length > 0) {
       // not stage element only
       this.opacityInput.removeAttribute('disabled');

@@ -14,11 +14,12 @@
  *   This class is used to access Silex elements properties
  */
 import { Constants } from '../../constants';
+import { CssRule } from '../../types';
 import { DataSources, ElementData, ElementId, Font } from '../../types.js';
 import { getSite, getUi } from '../api';
 import { Model, View } from '../ClientTypes';
 import { Style } from '../utils/Style';
-import { ComponentData, CssRule, ProdotypeData, ProdotypeTypes, SilexData, StyleData, StyleName } from './Data';
+import { addMediaQuery } from '../utils/ElementUtils';
 
 export interface CSSRuleInfo {
   rule: CSSRule;
@@ -31,7 +32,7 @@ export interface CSSRuleInfo {
  * @param view  view class which holds the other views
  */
 export class Property {
-  static EMPTY_PRODOTYPE_DATA: ProdotypeData = {component: {}, style: {}};
+  // static EMPTY_PRODOTYPE_DATA: ProdotypeData = {component: {}, style: {}};
 
   /**
    * constant for the ID of the style tag
@@ -40,16 +41,16 @@ export class Property {
    */
   // static INLINE_STYLE_TAG_CLASS_NAME = 'silex-inline-styles';
 
-  /**
-   * constant for the prefix of the IDs given to Silex editable elements
-   */
-  static ELEMENT_ID_PREFIX = 'silex-id-';
+  // /**
+  //  * constant for the prefix of the IDs given to Silex editable elements
+  //  */
+  // static ELEMENT_ID_PREFIX = 'silex-id-';
 
-  /**
-   * constant for the value of media query for mobile version
-   * @static
-   */
-  static MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px)';
+  // /**
+  //  * constant for the value of media query for mobile version
+  //  * @static
+  //  */
+  // static MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px)';
 
   /**
    * the current file's silex style sheet which holds silex elements styles
@@ -62,15 +63,15 @@ export class Property {
    * IDs
    */
   nextId: number = 0;
-  stylesObj: SilexData = {};
-  fonts: Font[] = [];
-  dataSources: DataSources = {};
-  mobileStylesObj: SilexData = {};
+  // stylesObj: SilexData = {};
+  // fonts: Font[] = [];
+  // dataSources: DataSources = {};
+  // mobileStylesObj: SilexData = {};
 
   /**
    * arbitrary data for prodotype components
    */
-  prodotypeDataObj: ProdotypeData = Property.EMPTY_PRODOTYPE_DATA;
+  // prodotypeDataObj: ProdotypeData = Property.EMPTY_PRODOTYPE_DATA;
 
   constructor(public model: Model, public view: View) {}
 
@@ -123,52 +124,54 @@ export class Property {
   //   return this.fonts.slice();
   // }
 
-  /**
-   * get/set Silex ID
-   * @return uniqueId
-   */
-  getElementId(element: HTMLElement): ElementId {
-    return element.getAttribute(Constants.ELEMENT_ID_ATTR_NAME);
-  }
+  // /**
+  //  * get/set Silex ID
+  //  * @return uniqueId
+  //  */
+  // getElementId(element: HTMLElement): ElementId {
+  //   return element.getAttribute(Constants.ELEMENT_ID_ATTR_NAME);
+  // }
 
-  /**
-   * get/set Silex ID
-   */
-  setElementId(element: HTMLElement, uniqueId: ElementId) {
-    const oldId = this.getElementId(element);
-    if (oldId) {
-      element.classList.remove(oldId);
-    }
-    element.setAttribute(Constants.ELEMENT_ID_ATTR_NAME, uniqueId);
-    element.classList.add(uniqueId);
-  }
+  // /**
+  //  * get/set Silex ID
+  //  */
+  // setElementId(element: HTMLElement, uniqueId: ElementId) {
+  //   const oldId = this.getElementId(element);
+  //   if (oldId) {
+  //     element.classList.remove(oldId);
+  //   }
+  //   element.setAttribute(Constants.ELEMENT_ID_ATTR_NAME, uniqueId);
+  //   element.classList.add(uniqueId);
+  // }
 
-  /**
-   * @param opt_doc docment of the iframe containing the website
-   */
-  getElementByElementId(uniqueId: ElementId, opt_doc?: Document):
-      Element {
-    opt_doc = opt_doc || this.model.file.getContentDocument();
-    return opt_doc.querySelector(
-        '[' + Constants.ELEMENT_ID_ATTR_NAME + '="' + uniqueId + '"]');
-  }
+  // /**
+  //  * @param opt_doc docment of the iframe containing the website
+  //  */
+  // getElementByElementId(uniqueId: ElementId, opt_doc?: Document):
+  //     Element {
+  //   opt_doc = opt_doc || getSiteDocument();
+  //   return opt_doc.querySelector(
+  //       '[' + Constants.ELEMENT_ID_ATTR_NAME + '="' + uniqueId + '"]');
+  // }
 
-  /**
-   * @param opt_doc docment of the iframe containing the website
-   * Used in copy element
-   */
-  generateElementId(opt_doc?: Document): ElementId {
-    let uniqueId;
-    do {
-      uniqueId = Date.now().toString() + '-' + this.nextId++;
-    } while (this.getElementByElementId(uniqueId, opt_doc));
-    return uniqueId;
-  }
+  // NOW IN UTILS
+  // /**
+  //  * @param opt_doc docment of the iframe containing the website
+  //  * Used in copy element
+  //  */
+  // generateElementId(opt_doc?: Document): ElementId {
+  //   let uniqueId;
+  //   do {
+  //     uniqueId = Date.now().toString() + '-' + this.nextId++;
+  //   } while (this.getElementByElementId(uniqueId, opt_doc));
+  //   return uniqueId;
+  // }
 
-  // Used in copy element
-  getNewId(doc: Document) {
-    return Property.ELEMENT_ID_PREFIX + this.generateElementId(doc);
-  }
+  // NOW IN UTILS
+  // // Used in copy element
+  // getNewId(doc: Document) {
+  //   return Property.ELEMENT_ID_PREFIX + this.generateElementId(doc);
+  // }
 
   // /**
   //  * @param doc docment of the iframe containing the website
@@ -286,21 +289,21 @@ export class Property {
   //   this.setProdotypeData(id, ProdotypeTypes.STYLE, opt_prodotypeData);
   // }
 
-  /**
-   * get / set the data associated with an element
-   * @return a clone of the data object
-   */
-  getComponentData(id: ElementId): ComponentData {
-    return (this.getProdotypeData(id, ProdotypeTypes.COMPONENT) as ComponentData |null);
-  }
+  // /**
+  //  * get / set the data associated with an element
+  //  * @return a clone of the data object
+  //  */
+  // getComponentData(id: ElementId): ComponentData {
+  //   return (this.getProdotypeData(id, ProdotypeTypes.COMPONENT) as ComponentData |null);
+  // }
 
-  /**
-   * get / set the data associated with an element
-   * @return a clone of the data object
-   */
-  getStyleData(id: StyleName): StyleData {
-    return (this.getProdotypeData(id, ProdotypeTypes.STYLE) as StyleData |null);
-  }
+  // /**
+  //  * get / set the data associated with an element
+  //  * @return a clone of the data object
+  //  */
+  // getStyleData(id: StyleName): StyleData {
+  //   return (this.getProdotypeData(id, ProdotypeTypes.STYLE) as StyleData |null);
+  // }
 
   // /**
   //  * get / set the data associated with an element
@@ -321,30 +324,27 @@ export class Property {
   //       element, ProdotypeTypes.STYLE, opt_componentData);
   // }
 
-  /**
-   * get / set the data associated with an element
-   * @return a clone of the data object
-   */
-  getElementComponentData(element: HTMLElement): ComponentData {
-    // call private generic method
-    return (
-        this.getElementData(
-            element, ProdotypeTypes.COMPONENT) as
-            ComponentData |
-        null);
-  }
+  // /**
+  //  * get / set the data associated with an element
+  //  * @return a clone of the data object
+  //  */
+  // getElementComponentData(element: HTMLElement): ComponentData {
+  //   // call private generic method
+  //   return (
+  //       this.getElementData(
+  //           element, ProdotypeTypes.COMPONENT) as
+  //           ComponentData |
+  //       null);
+  // }
 
-  /**
-   * get / set the data associated with an element
-   * @return a clone of the data object
-   */
-  getElementStyleData(element: HTMLElement): StyleData {
-    // call private generic method
-    return (
-        this.getElementData(element, ProdotypeTypes.STYLE) as
-            StyleData |
-        null);
-  }
+  // /**
+  //  * get / set the data associated with an element
+  //  * @return a clone of the data object
+  //  */
+  // getElementStyleData(element: HTMLElement): StyleData {
+  //   // call private generic method
+  //   return this.getElementData(element, ProdotypeTypes.STYLE) as StyleData || null;
+  // }
 
   // /**
   //  * get / set the css style of an element
@@ -428,42 +428,42 @@ export class Property {
   //   }
   // }
 
-  /**
-   * FIXME: for retro compat in element-dom, used in Element:getAllStyles
-   * get / set the css style of an element
-   * @param opt_isMobile defaults to the global setting of silex.view.Workspace
-   * @return a clone of the style object
-   */
-  getStyle(element: HTMLElement, opt_isMobile?: boolean): CssRule {
-    const elementId = (this.getElementId(element) as ElementId);
-    const isMobile = opt_isMobile != null  ? opt_isMobile :  getUi().mobileEditor;
-    const targetObj = (isMobile ? this.mobileStylesObj : this.stylesObj as SilexData);
-    const style = (targetObj[elementId] as CssRule);
-    if (!!style) {
-      // convert to obj (also makes it a copy we can change)
-      const clone = (JSON.parse(JSON.stringify(style)) as CssRule);
+  // /**
+  //  * FIXME: for retro compat in element-dom, used in Element:getAllStyles
+  //  * get / set the css style of an element
+  //  * @param opt_isMobile defaults to the global setting of silex.view.Workspace
+  //  * @return a clone of the style object
+  //  */
+  // getStyle(element: HTMLElement, opt_isMobile?: boolean): CssRule {
+  //   const elementId = (this.getElementId(element) as ElementId);
+  //   const isMobile = opt_isMobile != null  ? opt_isMobile :  getUi().mobileEditor;
+  //   const targetObj = (isMobile ? this.mobileStylesObj : this.stylesObj as SilexData);
+  //   const style = (targetObj[elementId] as CssRule);
+  //   if (!!style) {
+  //     // convert to obj (also makes it a copy we can change)
+  //     const clone = (JSON.parse(JSON.stringify(style)) as CssRule);
 
-      // styles of sections are special
-      // the min-height of the section is stored on its content container
-      if (this.model.element.isSection(element)) {
-        // min-height of sections is the min-height of section content
-        const contentElement = (this.model.element.getContentNode(element) as HTMLElement);
-        if (contentElement === element) {
-          console.warn('This section has no content, how is this possible?', element);
-        } else {
-          const contentStyle = this.getStyle(contentElement, isMobile);
-          if (contentStyle) {
-            clone['min-height'] = contentStyle['min-height'];
-          }
-        }
-      }
-      if (this.model.element.isSection(element) || this.model.element.isSectionContent(element)) {
-        clone.width = getSite().width + 'px';
-      }
-      return clone;
-    }
-    return null;
-  }
+  //     // styles of sections are special
+  //     // the min-height of the section is stored on its content container
+  //     if (this.model.element.isSection(element)) {
+  //       // min-height of sections is the min-height of section content
+  //       const contentElement = (this.model.element.getContentNode(element) as HTMLElement);
+  //       if (contentElement === element) {
+  //         console.warn('This section has no content, how is this possible?', element);
+  //       } else {
+  //         const contentStyle = this.getStyle(contentElement, isMobile);
+  //         if (contentStyle) {
+  //           clone['min-height'] = contentStyle['min-height'];
+  //         }
+  //       }
+  //     }
+  //     if (this.model.element.isSection(element) || this.model.element.isSectionContent(element)) {
+  //       clone.width = getSite().width + 'px';
+  //     }
+  //     return clone;
+  //   }
+  //   return null;
+  // }
 
   // /**
   //  * @return null if not found
@@ -499,7 +499,7 @@ export class Property {
       desktop: '',
       mobile: '',
     })
-    return `${desktop}\n\n${this.addMediaQuery(mobile)}\n`;
+    return `${desktop}\n\n${addMediaQuery(mobile)}\n`;
   }
   // getAllStyles(doc: Document): string {
   //   const elements = doc.querySelectorAll('body, .' + Constants.EDITABLE_CLASS_NAME);
@@ -522,13 +522,13 @@ export class Property {
   //   return allStyles;
   // }
 
-  /**
-   * add a media query around the style string
-   * will make the style mobile-only
-   */
-  addMediaQuery(styleStr: string) {
-    return '@media ' + Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
-  }
+  // /**
+  //  * add a media query around the style string
+  //  * will make the style mobile-only
+  //  */
+  // addMediaQuery(styleStr: string) {
+  //   return '@media ' + Property.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
+  // }
 
   // /**
   //  * compute the bounding box of the given elements
@@ -631,38 +631,37 @@ export class Property {
   //   return res;
   // }
 
-  /**
-   * get / set the data associated with an ID
-   * if opt_prodotypeData is null this data set will removed
-   */
-  private setProdotypeData(
-      id: ElementId, type: ProdotypeTypes,
-      opt_prodotypeData?: ComponentData|StyleData) {
-    // store in object
-    if (opt_prodotypeData) {
-      this.prodotypeDataObj[type][id] = opt_prodotypeData;
-    } else {
-      delete this.prodotypeDataObj[type][id];
-    }
-  }
+  // /**
+  //  * get / set the data associated with an ID
+  //  * if opt_prodotypeData is null this data set will removed
+  //  */
+  // private setProdotypeData(
+  //     id: ElementId, type: ProdotypeTypes,
+  //     opt_prodotypeData?: ComponentData|StyleData) {
+  //   // store in object
+  //   if (opt_prodotypeData) {
+  //     this.prodotypeDataObj[type][id] = opt_prodotypeData;
+  //   } else {
+  //     delete this.prodotypeDataObj[type][id];
+  //   }
+  // }
 
-  /**
-   * FIXME: for retro compat in element-dom
-   * get / set the data associated with an element
-   * @return a clone of the data object
-   */
-  private getProdotypeData(id: ElementId, type: ProdotypeTypes): ComponentData
-      |StyleData {
-    const res = this.prodotypeDataObj[type][id];
-    if (res) {
-      const clone =
-          (JSON.parse(JSON.stringify(res)) as ComponentData | StyleData);
+  // /**
+  //  * FIXME: for retro compat in element-dom
+  //  * get / set the data associated with an element
+  //  * @return a clone of the data object
+  //  */
+  // private getProdotypeData(id: ElementId, type: ProdotypeTypes): ComponentData|StyleData {
+  //   const res = this.prodotypeDataObj[type][id];
+  //   if (res) {
+  //     const clone =
+  //         (JSON.parse(JSON.stringify(res)) as ComponentData | StyleData);
 
-      // clone the object
-      return clone;
-    }
-    return null;
-  }
+  //     // clone the object
+  //     return clone;
+  //   }
+  //   return null;
+  // }
 
   // /**
   //  * get / set the data associated with an element
@@ -682,21 +681,20 @@ export class Property {
   //   this.setProdotypeData(elementId, type, opt_componentData);
   // }
 
-  /**
-   * FIXME: for retro compat in element-dom
-   * get / set the data associated with an element
-   * @return a clone of the data object
-   */
-  private getElementData(element: HTMLElement, type: ProdotypeTypes):
-      ComponentData|StyleData {
-    // a section's container content can not be a component, but the section
-    // itself may be
-    element = this.model.element.noSectionContent(element);
+  // /**
+  //  * FIXME: for retro compat in element-dom
+  //  * get / set the data associated with an element
+  //  * @return a clone of the data object
+  //  */
+  // private getElementData(element: HTMLElement, type: ProdotypeTypes): StyleData {
+  //   // a section's container content can not be a component, but the section
+  //   // itself may be
+  //   element = this.model.element.noSectionContent(element);
 
-    // get the internal ID
-    const elementId = (this.getElementId(element) as ElementId);
+  //   // get the internal ID
+  //   const elementId = (this.getElementId(element) as ElementId);
 
-    // returns value of object
-    return this.getProdotypeData(elementId, type);
-  }
+  //   // returns value of object
+  //   return this.getProdotypeData(elementId, type);
+  // }
 }

@@ -159,7 +159,7 @@ split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Ac
   extractAssets(baseUrl: string|URL, absoluteRootUrl?: string): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
     // all scripts, styles and assets from head => local
     const files: File[] = [];
-    DomTools.transformPaths(this.dom, (path, el, isInHead) => {
+    DomTools.transformPaths(this.dom, null, (path, el, isInHead) => {
       // el may be null if the path comes from the JSON object holding Silex data
       // This is never supposed to happen because the tag holding the JSON object
       // is removed from the head tag in DomPublisher::cleanup.

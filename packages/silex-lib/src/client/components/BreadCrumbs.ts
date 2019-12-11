@@ -15,10 +15,10 @@
  *
  */
 
-import { getElements, subscribeElements, updateElements } from '../api';
+import { ElementData, ElementType } from '../../types';
+import { getElements, getParent, subscribeElements, updateElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { getDomElement } from '../dom/element-dom';
-import { ElementData } from '../../types';
 import { getSiteDocument } from './UiElements';
 
 /**
@@ -50,8 +50,8 @@ export class BreadCrumbs {
 
     // get the common ancesters to all selected elements
     function getParents(element: ElementData): ElementData[] {
-      const parent = getElements().find((el) => el.id === element.parent)
-      return parent ? (parent.parent ? [parent].concat(getParents(parent)) : [parent]) : []
+      const parent = getParent(element)
+      return parent ? (getParent(parent) ? [parent].concat(getParents(parent)) : [parent]) : []
     }
 
     // find the selected element which is the "deepest" in the dom, i.e. has
@@ -62,8 +62,6 @@ export class BreadCrumbs {
 
     if (selectedElements.length) {
       const deepest = selectedElements.shift();
-
-      console.log('parents', selectedElements)
 
       // for this "deepest" element, find the common ancestors with all others
       let ancestors = getParents(deepest);
@@ -91,31 +89,30 @@ export class BreadCrumbs {
       // create a button for each ancester
       ancestors
         .reverse()
-        .forEach((ancestor) => this.addCrumb(getDomElement(getSiteDocument(), ancestor)));
+        .forEach((ancestor) => this.addCrumb(ancestor));
     }
   }
 
   /**
    * add a button in the bread crumb container
    */
-  private addCrumb(ancestor: HTMLElement) {
+  private addCrumb(element: ElementData) {
+    const domEl = getDomElement(getSiteDocument(), element)
     const crumb = document.createElement('DIV');
-    let cssClasses = this.model.element.getClassName(ancestor);
-    if (cssClasses !== '') {
-      cssClasses = '.' + cssClasses.split(' ').join('.');
-    }
-    const displayName = ancestor.tagName.toLowerCase() === 'body' ? 'Body' : this.model.component.isComponent(ancestor) ? 'Component' : this.model.element.getDisplayName(ancestor);
+    const cssClasses = element.classList.length ? '.' + element.classList.join('.') : '';
+
+    const displayName = domEl.tagName.toLowerCase() === 'body' ? 'Body' : element.type === ElementType.COMPONENT ? 'Component' : this.model.element.getDisplayName(element);
     crumb.classList.add('crumb');
     crumb.innerHTML = displayName + cssClasses;
     crumb.style.zIndex = (100 - this.element.childNodes.length).toString();
     this.element.appendChild(crumb);
     crumb.onclick = () => updateElements(getElements()
-      .filter((el) => el.selected || getDomElement(getSiteDocument(), el) === ancestor)
+      .filter((el) => el.selected || el === element)
       .map((el) => ({
         from: el,
         to: {
           ...el,
-          selected: getDomElement(getSiteDocument(), el) === ancestor,
+          selected: el === element,
         },
       })));
     const svg = '<svg class="svg" viewBox="0 0 7 28" height="28" width="7"><path d="M.5 0l6 14-6 14H7V0z" fill="currentColor"></path><path d="M1 0H0l6 14-6 14h1l6-14z" fill="#858585"></path></svg>';

@@ -19,9 +19,8 @@ import { ElementType } from './types';
 export class Constants {
   /**
    * constant for the ID of the HTML node used
-   * to store Silex data as a JSON object of type SilexData
-   * containing all CSS rules for the elements on stage
-   * which are being edited with the wysiwyg
+   * to store Silex data as a JSON object
+   * this is used as the front end API, see front-end.js
    */
   static JSON_STYLE_TAG_CLASS_NAME = 'silex-json-styles';
 
@@ -109,7 +108,7 @@ export class Constants {
   static TYPE_ATTR: string = 'data-silex-type';
 
   static EDITABLE_ELEMENT_TYPES: string[] = [
-    ElementType.HTML, ElementType.IMAGE, ElementType.TEXT,
+    ElementType.HTML, ElementType.IMAGE, ElementType.TEXT, ElementType.COMPONENT,
   ];
 
   /**
@@ -261,6 +260,12 @@ export class Constants {
    * CSS class applied to the **editor** body (not the site)
    */
   static MOBILE_MODE_CSS_CLASS = 'mobile-mode';
+
+  /**
+   * constant for the value of media query for mobile version
+   * @static
+   */
+  static MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px)';
 
   // head tag constants
   static SILEX_CURRENT_PAGE_ID = 'current-page-style';

@@ -17,32 +17,17 @@ $(function() {
   var $win = $(window);
   var $doc = $(document);
   var $body = $('body');
-  // var siteWidth = parseInt($('meta[name=website-width]').attr('content')) || null;
-  var data = JSON.parse($('.silex-json-styles').text());
-  var siteWidth = data.site.width
 
   // expose data to components
   window.silex = window.silex || {};
-  window.silex.data = data;
-  window.silex.siteWidth = siteWidth;
+  window.silex.data = JSON.parse($('.silex-json-styles').text());
   window.silex.scale = 1;
   window.silex.scroll = {top: 0, left: 0};
   window.silex.getCurrentPage = function() {
     var pageable = $body.pageable;
     var currentPageName = pageable ? $body.pageable().data()['silexlabs-pageable'].options.currentPage : $body.attr('data-current-page');
-    var currentPage = silex.getPages().filter(function(idx, el2) { return el2.name === currentPageName })[0];
+    var currentPage = silex.pages.filter(function(idx, el2) { return el2.name === currentPageName })[0];
     return currentPage;
-  };
-  window.silex.getPages = function() {
-    var pages = $('a[data-silex-type="page-element"]').map(function(idx, el) {
-      return {
-        name: el.id,
-        displayName: el.innerHTML,
-        idx: idx,
-        href: el.getAttribute('href')
-      };
-    });
-    return pages;
   };
 
   // FIXME: why is it needed?
@@ -174,7 +159,7 @@ $(function() {
     }
     function getScaleRatio() {
       var winWidth = $win.width();
-      if((siteWidth && winWidth < siteWidth) || isBellowBreakPoint()) {
+      if((window.silex.data.siteWidth && winWidth < window.silex.data.siteWidth) || isBellowBreakPoint()) {
         // scale the site
         var breakPoint = getScaleBreakPoint();
         return winWidth / breakPoint;
@@ -182,20 +167,21 @@ $(function() {
       return 1;
     }
     function getScaleBreakPoint() {
-      return isBellowBreakPoint() ? 480 : siteWidth;
+      return isBellowBreakPoint() ? 480 : window.silex.data.siteWidth;
     }
 
     function initPages() {
-      /**
-       * list all pages from the head section
-       * and open the 1st one by default
-       */
-      var firstPageName = null;
-      var pages = $('a[data-silex-type="page-element"]');
-      if (pages && pages.length>0){
-        var firstPage = pages[0];
-        firstPageName = firstPage.getAttribute('id');
-      }
+      // /**
+      //  * list all pages from the head section
+      //  * and open the 1st one by default
+      //  */
+      // var firstPageName = null;
+      // var pages = $('a[data-silex-type="page-element"]');
+      // if (pages && pages.length>0){
+      //   var firstPage = pages[0];
+      //   firstPageName = firstPage.getAttribute('id');
+      // }
+      var firstPageName = silex.data.pages[0].id;
       /**
        * callback for change events
        * called when a page is opened
@@ -203,7 +189,8 @@ $(function() {
       $body.on('pageChanged', function (event, pageName) {
         // mark links to the current page as active
         $('[data-silex-href*="#!'+pageName+'"]').addClass('page-link-active');
-        $('[id*="'+pageName+'"]').addClass('page-link-active');
+        // $('[id*="'+pageName+'"]').addClass('page-link-active');
+
         // prevent iframe content from staying in the dom
         // this prevent a youtube video to continue playing while on another page
         // this is useful in chrome and not firefox since display:none does not reset iframe dom in chrome

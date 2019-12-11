@@ -123,6 +123,7 @@ export class BgPane extends PaneBase {
     // BG color
     if (selectElements.length > 0) {
       this.colorPicker.setDisabled(false);
+
       const color = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-color'] || '');
 
       // indeterminate state

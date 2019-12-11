@@ -17,6 +17,7 @@
  */
 
 import { Model, View } from '../ClientTypes';
+import { getSiteDocument } from '../components/UiElements';
 
 // const BEAUTIFY_CSS_OPTIONS = {
 //   indent_size: 2,
@@ -97,7 +98,7 @@ export class Head {
 //   setHeadScript(jsString: string) {
 //     let scriptTag = this.getHeadElement().querySelector('.' + Constants.SILEX_SCRIPT_ELEMENT_CSS_CLASS) as HTMLScriptElement;
 //     if (!scriptTag) {
-//       const doc = this.model.file.getContentDocument();
+//       const doc = getSiteDocument();
 //       scriptTag = doc.createElement('script');
 //       scriptTag.type = 'text/javascript';
 //       scriptTag.className = Constants.SILEX_SCRIPT_ELEMENT_CSS_CLASS;
@@ -128,7 +129,7 @@ export class Head {
 //   setHeadStyle(cssString: string) {
 //     let silexStyle = this.getHeadElement().querySelector('.' + Constants.SILEX_STYLE_ELEMENT_CSS_CLASS) as HTMLStyleElement;
 //     if (!silexStyle) {
-//       const doc = this.model.file.getContentDocument();
+//       const doc = getSiteDocument();
 //       silexStyle = doc.createElement('style');
 //       silexStyle.type = 'text/css';
 //       silexStyle.className = Constants.SILEX_STYLE_ELEMENT_CSS_CLASS;
@@ -143,7 +144,7 @@ export class Head {
 //    * get/set a meta data
 //    */
 //   getMeta(name: string): string {
-//     const metaNode = this.model.file.getContentDocument().querySelector(
+//     const metaNode = getSiteDocument().querySelector(
 //         'meta[name="' + name + '"]');
 //     if (metaNode) {
 //       return metaNode.getAttribute('content');
@@ -157,10 +158,10 @@ export class Head {
 //    */
 //   setMeta(name: string, opt_value?: string) {
 //     // update the DOM element
-//     let metaNode = this.model.file.getContentDocument().querySelector('meta[name="' + name + '"]') as HTMLMetaElement;
+//     let metaNode = getSiteDocument().querySelector('meta[name="' + name + '"]') as HTMLMetaElement;
 //     if (!metaNode && opt_value && opt_value !== '') {
 //       // create the DOM element
-//       const doc = this.model.file.getContentDocument();
+//       const doc = getSiteDocument();
 //       metaNode = doc.createElement('meta');
 //       metaNode.name = name;
 //       metaNode.content = opt_value;
@@ -234,7 +235,7 @@ export class Head {
 //    * enable/disable the mobile version
 //    */
 //   setEnableMobile(enable: boolean) {
-//     const doc = this.model.file.getContentDocument();
+//     const doc = getSiteDocument();
 //     if (doc.body === null) {
 //       // body is null, this happens while undoing or redoing
 //       return;
@@ -261,7 +262,7 @@ export class Head {
 //    * enable/disable the mobile version
 //    */
 //   getEnableMobile(): boolean {
-//     const body = this.model.file.getContentDocument().body;
+//     const body = getSiteDocument().body;
 //     if (body === null) {
 //       // body is null, this happens while undoing or redoing
 //       return false;
@@ -281,7 +282,7 @@ export class Head {
 //     let silexStyle = this.getHeadElement().querySelector('.silex-style-settings') as HTMLStyleElement;
 //     if (width && width !== '') {
 //       if (!silexStyle) {
-//         const doc = this.model.file.getContentDocument();
+//         const doc = getSiteDocument();
 //         silexStyle = doc.createElement('style');
 //         silexStyle.type = 'text/css';
 //         silexStyle.className = 'silex-style-settings';
@@ -341,7 +342,7 @@ export class Head {
 //     // find or create the title tag in the head section
 //     let titleNode = this.getHeadElement().querySelector('title') as HTMLTitleElement;
 //     if (!titleNode) {
-//       const doc = this.model.file.getContentDocument();
+//       const doc = getSiteDocument();
 //       titleNode = doc.createElement('title');
 //       this.getHeadElement().appendChild(titleNode);
 //     }
@@ -357,14 +358,14 @@ export class Head {
 //    * website default website language
 //    */
 //   getLang(): string {
-//     return this.model.file.getContentDocument().querySelector('html').lang;
+//     return getSiteDocument().querySelector('html').lang;
 //   }
 
 //   /**
 //    * website default website language
 //    */
 //   setLang(name: string) {
-//     this.model.file.getContentDocument().querySelector('html').lang =
+//     getSiteDocument().querySelector('html').lang =
 //         name || '';
 
 //     // update view
@@ -392,7 +393,7 @@ export class Head {
 //         this.getHeadElement().querySelector('link[rel="shortcut icon"]');
 //     if (!faviconTag) {
 //       if (opt_path) {
-//       const doc = this.model.file.getContentDocument();
+//       const doc = getSiteDocument();
 //       faviconTag = doc.createElement('link');
 //       faviconTag.setAttribute('href', opt_path);
 //       faviconTag.setAttribute('rel', 'shortcut icon');
@@ -486,7 +487,7 @@ export class Head {
    */
   getHeadElement(): HTMLElement {
     // returns the head of the document in the iframe
-    return this.model.file.getContentDocument().head;
+    return getSiteDocument().head;
   }
 
 //   getDataSources(): DataSources {
@@ -518,7 +519,7 @@ export class Head {
 
 //     // remove fonts which are not in fonts anymore
 //     const head = this.getHeadElement();
-//     const doc = this.model.file.getContentDocument();
+//     const doc = getSiteDocument();
 //     const oldFonts = this.getFonts();
 //     oldFonts.filter((font) => !fonts.find((f) => compareFonts(f, font)))
 //         .forEach((font) => {

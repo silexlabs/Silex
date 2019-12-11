@@ -19,16 +19,16 @@
  */
 
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, FileInfo, PageData } from '../../types';
-import { createElements, deleteElements, getElements, getPages, getUi, initializeElements, initializePages, openPage, updateElements } from '../api';
+import { CssRule, ElementData, ElementType, FileInfo, PageData } from '../../types';
+import { createElements, deleteElements, getData, getElements, getPages, getUi, openPage, updateElements, getSelectedElements } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, UndoItem, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LinkDialog } from '../components/dialog/LinkDialog';
 import { getSiteDocument } from '../components/UiElements';
 import { getDomElement } from '../dom/element-dom';
-import { SilexElement } from '../model/Element';
 import { Tracker } from '../service/Tracker';
+import { getEmptyElementData, getNewId } from '../utils/ElementUtils';
 import { InvalidationManager } from '../utils/InvalidationManager';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
@@ -185,9 +185,10 @@ export class ControllerBase {
 
     this.model.file.getHtmlAsync((html) => {
       opt_cbk({
+        data: {
+          ...getData(),
+        },
         html,
-        elements: getElements(),
-        pages: getPages(),
         page: getPages().find((p) => p.isOpen),
         scrollX: scrollData.x,
         scrollY: scrollData.y,
@@ -202,8 +203,9 @@ export class ControllerBase {
     const scrollData = this.view.stageWrapper.getScroll();
 
     return {
-      elements: getElements(),
-      pages: getPages(),
+      data: {
+        ...getData(),
+      },
       html: this.model.file.getHtml(),
       page: getPages().find((p) => p.isOpen),
       scrollX: scrollData.x,
@@ -216,8 +218,7 @@ export class ControllerBase {
    */
   restoreState(state: UndoItem) {
     this.model.file.setHtml(state.html, () => {
-      initializeElements(state.elements),
-      initializePages(state.pages),
+      this.model.file.setData(state.data)
       this.view.stageWrapper.setScroll({
         x: state.scrollX,
         y: state.scrollY,
@@ -246,7 +247,7 @@ export class ControllerBase {
       const fileInfo = await this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS);
       if (fileInfo) {
         // update the model
-        const element = getElements().filter((el) => el.selected)[0];
+        const element = getElements().find((el) => el.selected);
 
         // undo checkpoint
         this.undoCheckPoint();
@@ -272,7 +273,7 @@ export class ControllerBase {
   /**
    * open file explorer, choose an image and add it to the stage
    */
-  browseAndAddImage() {
+  browseAndAddImage(parent: ElementData) {
     this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
     this.view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
     .then((fileInfo) => {
@@ -281,8 +282,10 @@ export class ControllerBase {
         this.undoCheckPoint();
 
         // create the element
-        const imgData = this.addElement(ElementType.IMAGE);
+        const [imgData, parentData] = this.addElement(ElementType.IMAGE, parent);
         const img = getDomElement(getSiteDocument(), imgData);
+
+        console.error('not implemented: missing updateElements here?')
 
         // load the image
         this.model.element.setImageUrl(
@@ -315,7 +318,7 @@ export class ControllerBase {
    * @param opt_isUndoable default is true
    * FIXME: useless method
    */
-  styleChanged(name: string, value?: string, elements: ElementData[] = getElements().filter((el) => el.selected), opt_isUndoable?: boolean) {
+  styleChanged(name: string, value?: string, elements: ElementData[] = getSelectedElements(), opt_isUndoable?: boolean) {
     if (opt_isUndoable !== false) {
       // undo checkpoint
       this.undoCheckPoint();
@@ -331,7 +334,7 @@ export class ControllerBase {
   /**
    * set a set of styles to the current selection
    */
-  multipleStylesChanged(style: object, elements = getElements().filter((el) => el.selected)) {
+  multipleStylesChanged(style: CssRule, elements = getSelectedElements()) {
     // undo checkpoint
     this.undoCheckPoint();
 
@@ -340,10 +343,7 @@ export class ControllerBase {
       from: el,
       to: {
         ...el,
-        style: {
-          ...el.style,
-          ...style,
-        },
+        style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, style),
       },
     })));
   }
@@ -351,7 +351,7 @@ export class ControllerBase {
   /**
    * set a given property to the current selection
    */
-  propertyChanged(name: string, value?: string, elements = getElements().filter((el) => el.selected), opt_applyToContent?: boolean) {
+  propertyChanged(name: string, value?: string, elements = getSelectedElements(), opt_applyToContent?: boolean) {
     // undo checkpoint
     this.undoCheckPoint();
 
@@ -439,76 +439,71 @@ export class ControllerBase {
   /**
    * create an element and add it to the stage
    * @param type the desired type for the new element
-   * @param opt_componentName the desired component type if it is a component
+   * @param componentName the desired component type if it is a component
    * @return the new element
    */
-  addElement(type: ElementType, opt_componentName?: string, parent?: ElementData): ElementData {
+  addElement(type: ElementType, parent: ElementData, componentName?: string): ElementData[] {
     this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
 
     // undo checkpoint
     this.undoCheckPoint();
 
-    const element = this.createEmptyElement(type, opt_componentName, parent)
+    const [newElementData, newParentData] = this.createEmptyElement({
+      type,
+      parent,
+      componentName,
+      isSectionContent: false,
+    })
 
     if (type === ElementType.SECTION) {
-      const content = this.createEmptyElement(ElementType.CONTAINER, null, element)
-      const contentFinal = {
-        ...content,
-        classList: content.classList.concat([
+      const [contentElement, newElementDataWithContent] = this.createEmptyElement({
+        type: ElementType.CONTAINER,
+        parent: newElementData,
+        componentName: null,
+        isSectionContent: true,
+      })
+      const contentElementWithCssClasses = {
+        ...contentElement,
+        classList: contentElement.classList.concat([
           Constants.ELEMENT_CONTENT_CLASS_NAME,
           Constants.WEBSITE_WIDTH_CLASS_NAME,
           Constants.PREVENT_DRAGGABLE_CLASS_NAME,
         ]),
       }
-      createElements([element, content]);
+      createElements([newElementDataWithContent, contentElementWithCssClasses]);
     } else {
-      createElements([element]);
+      createElements([newElementData]);
+    }
+    if (type === ElementType.TEXT) {
+      newElementData.innerHtml = 'New text box';
+    }
+    if (type === ElementType.HTML) {
+      newElementData.innerHtml = '<p>New <strong>HTML</strong> box</p>';
     }
 
     // tracking
     this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
-    return element;
+    return [newElementData, newParentData];
   }
-  createEmptyElement(type: ElementType, opt_componentName?: string, parent?: ElementData): ElementData {
+
+  createEmptyElement({type, parent, isSectionContent, componentName}: {type: ElementType, parent: ElementData, isSectionContent: boolean, componentName?: string}): ElementData[] {
       // create the element and add it to the stage
-    const element: ElementData = {
-      id: this.model.property.getNewId(getSiteDocument()),
-      type,
-      alt: null,
-      title: null,
-      parent: parent ? parent.id : null,
-      visibility: {
-        desktop: true,
-        mobile: true,
-      },
-      style: {
-        desktop: {
-          'width': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
-          'height': SilexElement.INITIAL_ELEMENT_SIZE + 'px',
-          'background-color': type === ElementType.HTML || type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : null,
-        },
-        mobile: {},
-      },
-      data: {
-        component: {},
-      },
-      children: [],
-      pageNames: !!parent && !!this.getFirstPagedParent(parent) ? [] : [getPages().find((p) => p.isOpen).id], // only visible on the current page unless one of its parents is in a page already
-      classList: [],
-      link: null,
-      enableDrag: true,
-      enableDrop: type === ElementType.CONTAINER, // FIXME: sections to?
-      enableResize: { top: true, bottom: true, left: true, right: true }, // FIXME: handle sections?
-      selected: true,
-      useMinHeight: true,
-    }
+    const element: ElementData = getEmptyElementData({id: getNewId(getElements()), type, isSectionContent, isBody: false});
 
     // apply component styles etc
-    if (!!opt_componentName) {
+    if (!!componentName) {
+      console.error('not implemented: components')
       // FIXME: handle components data in the new model
-      // this.model.component.initComponent(element, opt_componentName);
+      // this.model.component.initComponent(element, componentName);
     }
-    return element
+    return [{
+        ...element,
+        selected: true,
+      }, {
+        ...parent,
+        children: parent.children.concat(element.id),
+      },
+    ]
   }
 
   /**
@@ -543,25 +538,26 @@ export class ControllerBase {
   //   return finalElement;
   // }
 
-  /**
-   * check if the element's parents belong to a page, and if one of them do,
-   * remove the element from the other pages
-   *
-   * if the element is in a container which is visible only on some pages,
-   * then the element should be visible everywhere, i.e. in the same pages as
-   * its parent
-   */
-  getFirstPagedParent(element: ElementData): ElementData {
-    if (!!element.parent) {
-      const parent = getElements().find((el) => el.id === element.parent);
-      if (parent.pageNames.length) {
-        return parent;
-      }
-      return this.getFirstPagedParent(parent);
-    }
-    // body
-    return null;
-  }
+  // /**
+  //  * NOW IN UTILS
+  //  * check if the element's parents belong to a page, and if one of them do,
+  //  * remove the element from the other pages
+  //  *
+  //  * if the element is in a container which is visible only on some pages,
+  //  * then the element should be visible everywhere, i.e. in the same pages as
+  //  * its parent
+  //  */
+  // getFirstPagedParent(element: ElementData): ElementData {
+  //   if (!!element.parent) {
+  //     const parent = getElements().find((el) => el.id === element.parent);
+  //     if (parent.pageNames.length) {
+  //       return parent;
+  //     }
+  //     return this.getFirstPagedParent(parent);
+  //   }
+  //   // body
+  //   return null;
+  // }
 
   // /**
   //  * ask the user for a new file title
@@ -648,7 +644,7 @@ export class ControllerBase {
     }
 
     // save to file
-    this.model.file.saveAs(fileInfo, rawHtml, () => {
+    this.model.file.saveAs(fileInfo, rawHtml, getData(), () => {
       this.tracker.trackAction('controller-events', 'success', 'file.save', 1);
       ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
       this.fileOperationSuccess('File is saved.', false);

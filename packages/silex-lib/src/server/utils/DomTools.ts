@@ -9,8 +9,8 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import { readDataFromDom, StoredDataModel, writeDataToDom } from '../../client/dom/site-dom';
 import { Constants } from '../../constants';
+import { DataModel } from '../../types';
 
 export default class DomTools {
   /**
@@ -18,7 +18,7 @@ export default class DomTools {
    * with a function you provide
    * The algorithm will call your function with the URLs found in the stylsheets, the html markup, and the JSON data stored by Silex
    */
-  static transformPaths(dom, fn) {
+  static transformPaths(dom, data: DataModel, fn): DataModel {
     // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach((attr) => {
       const elements = dom.window.document.querySelectorAll(`[${attr}]`);
@@ -62,8 +62,13 @@ export default class DomTools {
       }
     }
     matches.forEach(({tag, innerHTML}) => tag.innerHTML = innerHTML);
-    // JSON object of Silex (components and styles)
-    DomTools.transformJson(dom, fn);
+    if (data) {
+      // JSON object of Silex (components and styles)
+      return DomTools.transformDataModel(data, fn);
+    } else {
+      // no JSON data is normal, this is the case when publishing
+      return null;
+    }
   }
 
   /**
@@ -118,7 +123,7 @@ export default class DomTools {
    * It contains all the components data, the elements styles, etc.
    * This is even more important than the URLs in the dom and stylesheets since it is re-applyed by Silex when the site is loaded in the editor
    */
-  static transformJson(dom, fn) {
+  static transformDataModel(data: DataModel, fn): DataModel {
     function checkItOut(name: string, value: string): string {
       const valueUrlKeyword = DomTools.transformValueUrlKeyword(value, null, true, fn);
       if (valueUrlKeyword) {
@@ -127,37 +132,34 @@ export default class DomTools {
         if (['src', 'href'].indexOf(name) >= 0) {
           return fn(value) || value;
         }
+        return value;
       }
     }
     function recursiveCheck(name: string, dataObj: any) {
       if (typeof dataObj === 'object') {
         for (const elementId in dataObj) {
-          dataObj[elementId] = recursiveCheck(dataObj, dataObj[elementId])
+          dataObj[elementId] = recursiveCheck(elementId, dataObj[elementId])
         }
         return dataObj
       } else {
         return checkItOut(name, dataObj)
       }
     }
-    const data: StoredDataModel = readDataFromDom(dom.window.document);
-    if (data) {
-      const { elements, site, pages } = data
-      const result = {
-        elements: elements.map((el) => ({
-          ...el,
-          link: el.link ? {
-            ...el.link,
-            value: checkItOut('href', el.link.value),
-          } : null,
-          data: recursiveCheck('data', el.data),
-          style: recursiveCheck('data', el.data),
-        })),
-      }
-      writeDataToDom(dom.window.document, data);
-    } else {
-      // no JSON styles array found in the dom
-      // this is ok when publishing
+    const { elements, site, pages } = data
+    const result = {
+      site, // FIXME: handle URLS here too
+      pages, // FIXME: handle URLS here too
+      elements: elements.map((el) => ({
+        ...el,
+        link: el.link ? {
+          ...el.link,
+          value: checkItOut('href', el.link.value),
+        } : null,
+        data: recursiveCheck('data', el.data),
+        style: recursiveCheck('data', el.style),
+      })),
     }
+    return result;
   }
 
   /**

@@ -16,12 +16,12 @@
 
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { ElementData, ElementType } from '../../../types';
-import { getElements, updateElements } from '../../api';
+import { getBody, getElements, updateElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { getDomElement } from '../../dom/element-dom';
 import { getStage } from '../StageWrapper';
+import { getSiteDocument, getSiteWindow } from '../UiElements';
 import { PaneBase } from './PaneBase';
-import { getSiteDocument } from '../UiElements';
 
 const FlexWrapSelect = '.flex-wrap-select';
 const JustifyContentSelect = '.justify-content-select';
@@ -132,7 +132,6 @@ export class PropertyPane extends PaneBase {
     // get the selected element
     const input = e.target as HTMLInputElement;
 
-    console.log('onTitleChanged', input, input.value)
     // apply the change to all elements
     updateElements(getElements()
       .filter((el) => el.selected)
@@ -152,20 +151,27 @@ export class PropertyPane extends PaneBase {
    */
   protected redraw(selectedElements: ElementData[]) {
     super.redraw(selectedElements);
-    const states = selectedElements.map((el) => getStage().getState(getDomElement(getSiteDocument(), el)));
+    const body = getBody()
 
     // useful filters
-    const statesNoBody: SelectableState[] = states
-      .filter((data) => data.el !== this.model.body.getBodyElement());
-    const statesNoBodyNoSection = statesNoBody
-      .filter((s: SelectableState) => !this.model.element.isSection(s.el));
-    const statesNoBodyNoSectionNoSectionContent = statesNoBodyNoSection
-      .filter((s: SelectableState) => !this.model.element.isSectionContent(s.el));
+    const elementsNoBody = selectedElements
+      .filter((el) => el !== body)
+
+    const elementsNoBodyNoSection = elementsNoBody
+      .filter((el) => el.type !== ElementType.SECTION)
+
+    const statesNoBody = elementsNoBody
+      .map((el) => getStage().getState(getDomElement(getSiteDocument(), el)))
+      .filter((state) => !!state) // if the selected element is not visible (on the page or mobile/desktop) => it has no state
+
+    const statesNoBodyNoSection = elementsNoBodyNoSection
+      .map((el) => getStage().getState(getDomElement(getSiteDocument(), el)))
+      .filter((state) => !!state) // if the selected element is not visible (on the page or mobile/desktop) => it has no state
 
     // useful values
-    const elementsDisplay = this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el).display);
+    const elementsDisplay = this.getCommonProperty(statesNoBody, (state) => getSiteWindow().getComputedStyle(state.el).display);
     const elementsPosition = this.getCommonProperty(statesNoBody, (state) => state.metrics.position);
-    const bb = this.controller.editMenuController.view.stageWrapper.getSelectionBox(); // FIXME: stageWrapper should be accessible in the views
+    const bb = getStage().getSelectionBox(); // FIXME: stageWrapper should be accessible in the views
 
     const computeValue = new Map([
       [LeftInput, () => Math.round(bb.left || 0).toString()],
@@ -182,14 +188,18 @@ export class PropertyPane extends PaneBase {
       [PaddingLeftInput, () => this.getCommonProperty(statesNoBody, (state) => state.metrics.padding.left)],
       [PositionSelect, () => elementsPosition],
       [DisplaySelect, () => elementsDisplay],
-      [FlexDirectionSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['flex-direction'])],
-      [AlignItemsSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['align-items'])],
-      [JustifyContentSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['justify-content'])],
-      [FlexWrapSelect, () => this.getCommonProperty(statesNoBody, (state) => this.model.file.getContentWindow().getComputedStyle(state.el)['flex-wrap'])],
+      [FlexDirectionSelect, () => this.getCommonProperty(statesNoBody, (state) => getSiteWindow().getComputedStyle(state.el)['flex-direction'])],
+      [AlignItemsSelect, () => this.getCommonProperty(statesNoBody, (state) => getSiteWindow().getComputedStyle(state.el)['align-items'])],
+      [JustifyContentSelect, () => this.getCommonProperty(statesNoBody, (state) => getSiteWindow().getComputedStyle(state.el)['justify-content'])],
+      [FlexWrapSelect, () => this.getCommonProperty(statesNoBody, (state) => getSiteWindow().getComputedStyle(state.el)['flex-wrap'])],
     ]);
 
     // compute visibility
     if (statesNoBody.length > 0) {
+      const statesNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection
+        .filter((el) => !el.isSectionContent)
+        .map((el) => getStage().getState(getDomElement(getSiteDocument(), el)))
+        .filter((state) => !!state) // if the selected element is not visible (on the page or mobile/desktop) => it has no state
       this.altInput.disabled = false;
       this.titleInput.disabled = false;
       this.onInputPxChanged(WidthInput, computeValue.get(WidthInput)());

@@ -102,7 +102,6 @@ export class ViewMenuController extends ControllerBase {
   doPreview(inResponsize: boolean) {
     this.tracker.trackAction('controller-events', 'request', 'view.file', 0);
     const doOpenPreview = function() {
-      console.log('doOpenPreview', this.model.file.getFileInfo())
       if (inResponsize) {
         this.view.workspace.setPreviewWindowLocation(
             'http://www.responsize.org/?url=' +

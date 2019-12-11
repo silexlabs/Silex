@@ -13,7 +13,7 @@
  * the Silex context menu
  *
  */
-import { getElements, getPages } from '../api';
+import { getElements, getPages, getParent, subscribeElements, getCurrentPage } from '../api';
 import { Controller, Model } from '../ClientTypes';
 
 /**
@@ -33,6 +33,7 @@ export class ContextMenu {
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
     this.currentPageElement = element.querySelector('.current-page');
     this.currentPageElement.onclick = (e) => this.controller.viewMenuController.showPages();
+    subscribeElements((oldElements, elements) => this.redraw())
   }
 
   /**
@@ -48,12 +49,13 @@ export class ContextMenu {
     });
     this.element.querySelector('.copy').addEventListener('click', () => {
       this.controller.editMenuController.copySelection();
+      this.redraw();
     });
     this.element.querySelector('.paste').addEventListener('click', () => {
-      this.controller.editMenuController.pasteClipBoard(true);
+      this.controller.editMenuController.pasteClipBoard();
     });
     this.element.querySelector('.duplicate').addEventListener('click', () => {
-      this.controller.editMenuController.duplicate();
+      this.controller.editMenuController.duplicateSelection();
     });
     this.element.querySelector('.top').addEventListener('click', () => {
       this.controller.editMenuController.moveToTop();
@@ -78,7 +80,7 @@ export class ContextMenu {
    * @param opt_selectedElements the selected elements
    */
   private redraw() {
-    const page = getPages().find((p) => p.isOpen);
+    const page = getCurrentPage();
     // update page name
     if (page) {
       const fileInfo = this.model.file.getFileInfo();
@@ -88,11 +90,12 @@ export class ContextMenu {
       `;
     }
 
-    // get the selection
-    const selectedElements = getElements().filter((el) => el.selected)
+    // get the selection without the body
+    const selectedElements = getElements()
+      .filter((el) => el.selected && getParent(el))
 
     // update menu items according to selection
-    if (selectedElements.length === 1 && selectedElements[0].parent === null) {
+    if (selectedElements.length === 0) {
       // only body is selected
       this.element.querySelector('.delete').classList.add('off');
       this.element.querySelector('.edit').classList.add('off');
@@ -112,7 +115,7 @@ export class ContextMenu {
       this.element.querySelector('.bottom').classList.remove('off');
       this.element.querySelector('.duplicate').classList.remove('off');
     }
-    if (this.controller.contextMenuController.hasElementsToPaste()) {
+    if (this.controller.editMenuController.hasElementsToPaste()) {
       this.element.querySelector('.paste').classList.remove('off');
     } else {
       this.element.querySelector('.paste').classList.add('off');

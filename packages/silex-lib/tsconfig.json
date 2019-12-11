@@ -2,7 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "outDir": "dist/client/",
-    "target": "es6",
+    "target": "esnext",
     "watch": true,
     "sourceMap": true,
     "module": "esnext",
