@@ -14,7 +14,7 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { getElements, getPages, updateElements } from '../api';
+import { getBody, getPages, getSelectedElements, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
@@ -45,14 +45,16 @@ export class ViewMenuController extends ControllerBase {
     // undo checkpoint
     this.undoCheckPoint();
 
-    // deselect all elements
-    updateElements(getElements()
-      .filter((el) => el.selected)
+    // deselect all elements but select the body
+    const selection = getSelectedElements()
+    const body = getBody()
+    const selectionWithBody = selection.includes(body) ? selection : selection.concat(body)
+    updateElements(selectionWithBody
       .map((el) => ({
         from: el,
         to: {
           ...el,
-          selected: false,
+          selected: el === body,
         },
       })))
 
@@ -106,11 +108,11 @@ export class ViewMenuController extends ControllerBase {
         this.view.workspace.setPreviewWindowLocation(
             'http://www.responsize.org/?url=' +
             window.location.origin + this.model.file.getFileInfo().absPath + '#!' +
-            getPages().find((p) => p.isOpen).id);
+            getPages().find((p) => p.opened).id);
       } else {
         this.view.workspace.setPreviewWindowLocation(
             window.location.origin + this.model.file.getFileInfo().absPath + '#!' +
-            getPages().find((p) => p.isOpen).id);
+            getPages().find((p) => p.opened).id);
       }
       this.tracker.trackAction('controller-events', 'success', 'view.file', 1);
     }.bind(this);

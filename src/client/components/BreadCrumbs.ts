@@ -16,7 +16,7 @@
  */
 
 import { ElementData, ElementType } from '../../types';
-import { getElements, getParent, subscribeElements, updateElements } from '../api';
+import { getElements, getParent, subscribeElements, updateElements, getSelectedElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { getDomElement } from '../dom/element-dom';
 import { getSiteDocument } from './UiElements';
@@ -41,10 +41,6 @@ export class BreadCrumbs {
 
   /**
    * the selection has changed
-   * called by silex.model.Body
-   * @param opt_selectedElements the selected elements
-   * @param opt_pageNames   the names of the pages
-   * @param  opt_currentPageName   the name of the current page
    */
   private redraw() {
 
@@ -56,21 +52,22 @@ export class BreadCrumbs {
 
     // find the selected element which is the "deepest" in the dom, i.e. has
     // the greater number of parent nodes
-    const selectedElements = getElements()
-      .filter((el) => el.selected)
-      .sort((elem1, elem2) => getParents(elem2).length - getParents(elem1).length);
+    const selectedElements = getSelectedElements()
+      .map((el) => ({
+        el,
+        parents: getParents(el),
+      }))
+      .sort((elem1, elem2) => elem2.parents.length - elem1.parents.length);
 
     if (selectedElements.length) {
       const deepest = selectedElements.shift();
 
       // for this "deepest" element, find the common ancestors with all others
-      let ancestors = getParents(deepest);
-      selectedElements.forEach((element) => {
-        const parents = getParents(element);
+      let ancestors = deepest.parents;
+      selectedElements.forEach(({el, parents}) => {
         const newAncestors = [];
         let idx = 0;
-        while (idx < ancestors.length && idx < parents.length &&
-                ancestors[idx] === parents[idx]) {
+        while (idx < ancestors.length && idx < parents.length && ancestors[idx] === parents[idx]) {
           newAncestors.push(ancestors[idx++]);
         }
         ancestors = newAncestors;
@@ -78,7 +75,7 @@ export class BreadCrumbs {
 
       // if only 1 element is selected, display it in the crumbs
       if (selectedElements.length === 0) {
-        ancestors.unshift(deepest);
+        ancestors.unshift(deepest.el);
       }
 
       // empty current bread crumbs

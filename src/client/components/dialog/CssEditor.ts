@@ -15,9 +15,10 @@
  *
  *
  */
-import {Model} from '../../ClientTypes';
-import {Controller} from '../../ClientTypes';
-import {CodeEditorBase} from './CodeEditorBase';
+import { SiteData } from '../../../types';
+import { getSite, subscribeSite, updateSite } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
+import { CodeEditorBase } from './CodeEditorBase';
 
 /**
  * @class {silex.view.dialog.CssEditor}
@@ -33,12 +34,20 @@ export class CssEditor extends CodeEditorBase {
    */
   constructor(element: HTMLElement, model: Model, controller: Controller) {
     super(element, model, controller, 'css');
+    subscribeSite((_: SiteData, site: SiteData) => {
+      if (site.headStyle !== this.getValue()) {
+        this.setValue(site.headStyle)
+      }
+    })
   }
 
   /**
    * the content has changed, notify the controler
    */
   contentChanged() {
-    this.controller.cssEditorController.changed(this.getValue());
+    updateSite({
+      ...getSite(),
+      headStyle: this.getValue(),
+    });
   }
 }

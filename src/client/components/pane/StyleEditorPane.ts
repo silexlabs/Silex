@@ -114,7 +114,7 @@ export class StyleEditorPane extends PaneBase {
     this.selectionCountPage.onclick = (e) => {
       this.tracker.trackAction(
           'style-editor-events', 'select-all-elements-with-style');
-      const currentPage = getPages().find((p) => p.isOpen);
+      const currentPage = getPages().find((p) => p.opened);
       updateElements(getElements()
       .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id)))
       .map((el) => ({
@@ -183,7 +183,7 @@ export class StyleEditorPane extends PaneBase {
     if (includeOffPage) {
       return newSelection;
     } else {
-      const currentPage = getPages().find((p) => p.isOpen);
+      const currentPage = getPages().find((p) => p.opened);
       return newSelection
         .map((el: HTMLElement) => getElements().find((e) => getDomElement(doc, e) === el))
         .filter((el: ElementData) => el.pageNames.length === 0 || !!el.pageNames.find((id) => id === currentPage.id))

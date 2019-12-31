@@ -15,6 +15,8 @@ test('convert from 2.5.60', () => {
   const IMAGE_ELEMENT_ID = 'silex-id-1439573539993-24'
   const BODY_ID = 'body-initial'
   const COMPONENT_ID = 'silex-id-1526234059780-5'
+  const SECTION_ID = 'silex-id-1478366450713-3'
+  const SECTION_CONTAINER_ID = 'silex-id-1478366450713-2'
 
   // import elements
   document.body.classList.add('editable-style')
@@ -48,8 +50,40 @@ test('convert from 2.5.60', () => {
   expect(component.data.component.data.buttonBackgroundColor).toBe('#000000')
 
   // data
+  const section = elements.find((el) => el.id === SECTION_ID)
+  expect(section.enableDrag).toBe(false)
+  expect(section.enableDrop).toBe(true)
+  expect(section.enableResize.left).toBe(false)
+  expect(section.enableResize.right).toBe(false)
+  expect(section.enableResize.top).toBe(false)
+  expect(section.enableResize.bottom).toBe(false)
+  expect(section.style.desktop).toEqual({
+    'background-color': 'transparent',
+    'position': 'static',
+    'margin-top': '-1px',
+  })
+  expect(section.style.mobile).toEqual({
+    'background-color': 'red',
+  })
+  expect(section.children).toHaveLength(1)
+  const sectionContainer = elements.find((el) => el.id === SECTION_CONTAINER_ID)
+  expect(sectionContainer.enableDrag).toBe(false)
+  expect(sectionContainer.enableDrop).toBe(true)
+  expect(sectionContainer.enableResize.left).toBe(true)
+  expect(sectionContainer.enableResize.right).toBe(true)
+  expect(sectionContainer.enableResize.top).toBe(true)
+  expect(sectionContainer.enableResize.bottom).toBe(true)
+  expect(sectionContainer.style.mobile).toEqual({})
+  expect(sectionContainer.children).toHaveLength(2)
   const textBox = elements.find((el) => el.type === ElementType.TEXT)
-  expect(textBox.style.mobile).toEqual({})
+  expect(textBox.enableDrag).toBe(true)
+  expect(textBox.enableDrop).toBe(false)
+  expect(textBox.enableResize.left).toBe(true)
+  expect(textBox.enableResize.left).toBe(true)
+  expect(textBox.enableResize.right).toBe(true)
+  expect(textBox.enableResize.top).toBe(true)
+  expect(textBox.enableResize.bottom).toBe(true)
+  expect(textBox.children).toHaveLength(0)
   expect(textBox.style.desktop).toEqual({
     position: 'absolute',
     height: '53px',
@@ -77,4 +111,9 @@ test('convert from 2.5.60', () => {
   expect(pages).toHaveLength(1)
   expect(pages[0].id).toBe('page-page-1')
   expect(pages[0].displayName).toBe('Page 1')
+
+  const image = elements.find((el) => el.type === ElementType.IMAGE)
+  expect(textBox.pageNames).toHaveLength(0)
+  expect(image.pageNames).toHaveLength(1)
+  expect(image.pageNames).toEqual(['page-page-1'])
 })

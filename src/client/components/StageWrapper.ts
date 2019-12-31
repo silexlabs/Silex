@@ -2,8 +2,8 @@
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../constants';
-import { ElementData, ElementType } from '../../types';
-import { getElement, getElements, getPages, getParent, getUi, subscribeElements, subscribePages, updateElements, getChildrenRecursive } from '../api';
+import { ElementData, ElementType, UiData } from '../../types';
+import { getBody, getElement, getElements, getPages, getParent, getSelectedElements, getUi, selectBody, subscribeElements, subscribePages, subscribeUi, updateElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { getDomElement, getDomElementById, getId } from '../dom/element-dom';
 import { onCrudChange, StateChange } from '../flux/crud-store';
@@ -21,10 +21,10 @@ export const startStageObserver = () => stoped = false
 
 // expose reset as a workaround some stage bugs (see element-observer)
 export function resetStage() {
-  console.log('reset stage ', !!stage)
+  const currentPage = getPages().find((p) => p.opened);
   if (!stage) { return; } // happens when File::setData is called before the html is set
+  console.log('reset stage ', !!stage, currentPage)
   stopStageObserver() // FIXME: should not be necessary, stage bug?
-  const currentPage = getPages().find((p) => p.isOpen);
   stage.reset(getElements()
     .filter(
       (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id))
@@ -174,9 +174,14 @@ export class StageWrapper {
    */
   constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
     subscribePages(() => {
-      console.warn('xxxxxxxx reset ici fait tout buguer')
       // reset the stage after page open
-      // setTimeout(() => resetStage(), 1000)
+      setTimeout(() => resetStage(), 0)
+    });
+    subscribeUi((prevState: UiData, nextState: UiData) => {
+      if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
+        // reset the stage after page open
+        setTimeout(() => resetStage(), 0)
+      }
     });
     subscribeElements(onCrudChange<ElementData>({
       onAdd: preventStageObservers(onAddElement),
@@ -258,20 +263,18 @@ export class StageWrapper {
     // FIXME: do not use css classes but ElementData
     stage = this.stage = new Stage(iframe, [], {
       getId: (el: HTMLElement) => getId(el),
-      isSelectable: (el) => true,
-      // isSelectable: (el) => {
-      //   const element = getElement(getId(el))
-      //   return element.enable
-      // },
-      isDraggable: (el) => {
+      isSelectable: (el: HTMLElement) => {
+        return true // el.tagName.toLowerCase() !== 'body'
+      },
+      isDraggable: (el: HTMLElement) => {
         const element = getElement(getId(el))
         return element.enableDrag
       },
-      isDropZone: (el) => {
+      isDropZone: (el: HTMLElement) => {
         const element = getElement(getId(el))
         return element.enableDrop
       },
-      isResizeable: ((el) => {
+      isResizeable: ((el: HTMLElement) => {
         const element = getElement(getId(el))
         // section is not resizeable on mobile
         const isSectionOnMobile = getUi().mobileEditor && element.type === ElementType.SECTION;
@@ -291,7 +294,7 @@ export class StageWrapper {
         // case of all or part of the sides are resizeable
         return element.enableResize;
       }),
-      useMinHeight: (el) => {
+      useMinHeight: (el: HTMLElement) => {
         const element = getElement(getId(el))
         return element.useMinHeight
       },
@@ -408,26 +411,40 @@ export class StageWrapper {
       // console.trace('prevent update elements with stoped in stage', changed);
       return;
     }
+    const updateActions = changed
+    .map((selectable) => {
+      // FIXME: find a more optimal way to get the data from DOM element
+      return {
+        element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
+        selectable,
+      };
+    })
+    .filter(({element, selectable}) => element.selected !== selectable.selected)
+    .map(({element, selectable}) => {
+      return {
+        from: element,
+        to: {
+          ...element,
+          selected: selectable.selected,
+        },
+      };
+    })
+    const body = getBody()
     console.trace('update selection from stage', changed);
-    updateElements(changed
-      .map((selectable) => {
-        // FIXME: find a more optimal way to get the data from DOM element
-        return {
-          element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
-          selectable,
-        };
-      })
-      .filter(({element, selectable}) => element.selected !== selectable.selected)
-      .map(({element, selectable}) => {
-        return {
-          from: element,
-          to: {
-            ...element,
-            selected: selectable.selected,
-          },
-        };
-      }))
-  }
+    // always deselect the body in Silex
+    updateElements(body.selected ? updateActions.concat([{
+      from: body,
+      to: {
+        ...body,
+        selected: false,
+      },
+    }]) : updateActions)
+    // select the body if nothing else is selected
+    if (getSelectedElements().length === 0) {
+      console.log('Stage wrapper: selection empty => select body')
+      selectBody()
+    }
+}
   private prepareUndo() {
     this.controller.stageController.undoCheckPoint();
   }

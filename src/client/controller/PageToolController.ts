@@ -17,6 +17,7 @@
 import { LinkType, PageData } from '../../types';
 import { createPages, deletePages, getPages, movePage, updatePages } from '../api';
 import { Model, View } from '../ClientTypes';
+import { crudIdKey } from '../flux/crud-store';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
 
@@ -40,13 +41,14 @@ export class PageToolController extends ControllerBase {
 
         // create the page model
         createPages([{
+          [crudIdKey]: Symbol(),
           id,
           displayName,
           link: {
             type: LinkType.PAGE,
             value: '#!' + name,
           },
-          isOpen: false,
+          opened: false,
           canDelete: true,
           canRename: true,
           canMove: true,
@@ -67,7 +69,7 @@ export class PageToolController extends ControllerBase {
    * edit a page properties
    * @param pageData data of the page edited, defaults to current page
    */
-  editPage(pageData: PageData = getPages().find((p) => p.isOpen)) {
+  editPage(pageData: PageData = getPages().find((p) => p.opened)) {
     this.editPageSettings(pageData)
       .then(({id, displayName}) => {
         // undo checkpoint
@@ -96,7 +98,7 @@ export class PageToolController extends ControllerBase {
   /**
    * remvove a page
    */
-  removePage(page: PageData = getPages().find((p) => p.isOpen)) {
+  removePage(page: PageData = getPages().find((p) => p.opened)) {
     // confirm and delete
     SilexNotification.confirm(
       'Delete page',

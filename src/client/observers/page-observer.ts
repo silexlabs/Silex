@@ -1,4 +1,4 @@
-import { LinkType, PageData } from '../../types';
+import { LinkType, PageData, ElementData } from '../../types';
 import { deleteElements, getData, getElements, updateElements } from '../api';
 import { getSiteDocument, getSiteWindow } from '../components/UiElements';
 import { openPageDom } from '../dom/page-dom';
@@ -6,7 +6,10 @@ import { writeDataToDom } from '../dom/site-dom';
 import { StateChange } from '../flux/crud-store';
 import { SilexNotification } from '../utils/Notification';
 
-export function onAddPages(pages: PageData[]) {}
+export function onAddPages(pages: PageData[]) {
+  // save the changed data to the dom for front-end.js
+  writeDataToDom(getSiteDocument(), getData())
+}
 
 export function onDeletePages(pages: PageData[]) {
   pages.forEach((page) => {
@@ -60,27 +63,44 @@ export function onDeletePages(pages: PageData[]) {
           },
         })))
     }, []))
+
+  // save the changed data to the dom for front-end.js
+  writeDataToDom(getSiteDocument(), getData())
 }
+
+const hasLinkToPage = (element: ElementData, page: PageData) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value
+const isVisibleOnPage = (element: ElementData, page: PageData) => !!element.pageNames.length && element.pageNames.includes(page.id)
 
 export function onUpdatePages(changes: Array<StateChange<PageData>>) {
   changes.forEach(({from, to}) => {
     // page ID change
     if (!from || from.id !== to.id) {
-      // update links to this page
-      // TODO: handle links in HTML boxes and texts?
-      updateElements(getElements()
-        .filter((element) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === to.link.value)
-        .map((element) => ({
-          from: element,
-          to: {
-            ...element,
-            link: to.link,
-          },
-        })))
+      // about the `setTimeout`: need to re-dispatch after this round of listeners
+      // this is needed to avoid silent crash
+      setTimeout(() => {
+        // console.log('xxxxxxxxxxxxxxxx', from, getElements().map((el) => [el.pageNames, el.pageNames.includes(from.id)]), getElements()
+        //   .filter((element) => isVisibleOnPage(element, from))
+        // , getElements()
+        //   .filter((element) => hasLinkToPage(element, from))
+        // , getElements()
+        updateElements(getElements()
+          // update elements visibility
+          // + update links to this page
+          // TODO: handle links in HTML boxes and texts?
+          .filter((element) => isVisibleOnPage(element, from) || hasLinkToPage(element, from))
+          .map((element) => ({
+            from: element,
+            to: {
+              ...element,
+              link: hasLinkToPage(element, from) ? to.link : element.link,
+              pageNames: isVisibleOnPage(element, from) ? element.pageNames.map((name) => name === from.id ? to.id : name) : element.pageNames,
+            },
+          })))
+      }, 0);
     }
 
     // current opened page
-    if (!from || !from.isOpen && to.isOpen) {
+    if (!from || !from.opened && to.opened) {
       openPageDom(getSiteWindow(), to)
     }
   })

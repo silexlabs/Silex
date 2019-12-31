@@ -14,8 +14,9 @@
  *
  */
 
-// whole data model
+import { CrudState } from './client/flux/crud-store';
 
+// whole data model
 export interface DataModel {
   site: SiteData,
   elements: ElementData[],
@@ -52,7 +53,7 @@ interface Rect<T> {
   bottom: T,
 }
 
-export interface ElementData {
+export interface ElementData extends CrudState {
   pageNames: string[],
   classList: string[],
   type: ElementType,
@@ -82,12 +83,11 @@ export interface ElementData {
 }
 
 // page data
-
-export interface PageData {
+export interface PageData extends CrudState {
   id: string,
   displayName: string,
   link: Link,
-  isOpen: boolean,
+  opened: boolean,
   canDelete: boolean,
   canProperties: boolean,
   canMove: boolean,
@@ -95,7 +95,6 @@ export interface PageData {
 }
 
 // site data
-
 export interface DataSource {
   href: string;
   root: string;

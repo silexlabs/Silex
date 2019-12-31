@@ -11,7 +11,7 @@
 
 import { Constants } from '../../constants';
 import { PageData } from '../../types';
-import { getPages, noSectionContent } from '../api';
+import { getPages } from '../api';
 
 /**
  * get the currently opened page from the dom
@@ -206,7 +206,7 @@ function getPagesForElement(element: HTMLElement): PageData[] {
 // /**
 //  * check if an element is in the given page (current page by default)
 //  */
-// export function isInPage(element: HTMLElement, pageData = getPages().find((p) => p.isOpen)): boolean {
+// export function isInPage(element: HTMLElement, pageData = getPages().find((p) => p.opened)): boolean {
 //   return noSectionContent(element).classList.contains(pageData.id)
 // }
 //
@@ -214,7 +214,7 @@ function getPagesForElement(element: HTMLElement): PageData[] {
 //  * check if an element is visible in the given page
 //  * this means that the element is allways visible or it is visible in this page
 //  */
-// export function isVisible(element: HTMLElement, pageData: PageData = getPages().find((p) => p.isOpen)) {
+// export function isVisible(element: HTMLElement, pageData: PageData = getPages().find((p) => p.opened)) {
 //   if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !isInPage(element, pageData)) {
 //     return false
 //   }

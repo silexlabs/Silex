@@ -18,7 +18,8 @@
     "no-bitwise": false,
     "max-classes-per-file": false,
     "no-conditional-assignment": false,
-    "semicolon": false
+    "semicolon": false,
+    "curly": false
   },
   "rulesDirectory": []
 }

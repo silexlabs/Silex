@@ -14,10 +14,11 @@
  * the Silex HTML editor
  *
  */
-import { getElements, getSite, updateSite, updateElements, getSelectedElements } from '../../api';
+import { SiteData, ElementData, ElementType } from '../../../types';
+import { getSelectedElements, getSite, subscribeSite, updateElements, updateSite, subscribeElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
-import { getDomElement } from '../../dom/element-dom';
 import { CodeEditorBase } from './CodeEditorBase';
+import { getDomElement } from '../../dom/element-dom';
 import { getSiteDocument } from '../UiElements';
 
 /**
@@ -34,27 +35,51 @@ export class HtmlEditor extends CodeEditorBase {
    */
   constructor(element: HTMLElement, model: Model, controller: Controller) {
     super(element, model, controller, 'html');
+    subscribeSite((_: SiteData, site: SiteData) => {
+      this.redraw()
+    })
+    subscribeElements((_: ElementData[], __: ElementData[]) => {
+      this.redraw()
+    })
+  }
+  forSelection({ htmlBox, body, error }: { htmlBox: (el: ElementData) => void, body: () => void, error: () => void }) {
+    const elements = getSelectedElements()
+    console.log('forSelection', elements.length, elements)
+    if (elements.length === 1 && elements[0].type === ElementType.HTML) {
+      htmlBox(elements[0])
+    } else if (elements.length === 0 || elements.length === 1 && getDomElement(getSiteDocument(), elements[0]).tagName.toLowerCase() === 'body') {
+      body()
+    } else {
+      error()
+    }
+  }
+  redraw() {
+    const headTag = getSite().headTag
+    this.forSelection({
+      htmlBox: (el) => el.innerHtml !== this.getValue() ? this.setValue(el.innerHtml) : null,
+      body: () => headTag !== this.getValue() ? this.setValue(headTag) : null,
+      error: () => this.setError('-select an HTML box-'),
+    })
   }
 
   /**
    * the content has changed, notify the controler
    */
   contentChanged() {
-    const selection = getSelectedElements();
-    if (selection.length === 0) {
-      updateSite({
-        ...getSite(),
-        headTag: this.getValue(),
-      });
-    } else {
-      updateElements([{
-        from: selection[0],
+    this.forSelection({
+      htmlBox: (el) => updateElements([{
+        from: el,
         to: {
-          ...selection[0],
+          ...el,
           innerHtml: this.getValue(),
         },
-      }])
-    }
+      }]),
+      body: () => updateSite({
+        ...getSite(),
+        headTag: this.getValue(),
+      }),
+      error: () => {},
+    })
   }
 
   // setSelection(selection) {

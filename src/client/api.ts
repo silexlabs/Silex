@@ -9,11 +9,14 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { DataModel, ElementData, PageData, SiteData, UiData, ElementId } from '../types';
+import { DataModel, ElementData, ElementId, PageData, SiteData, UiData } from '../types';
 import { ElementAction, PageAction, SiteAction, UiAction } from './flux/actions';
-import { store, subscribeTo, subscribeToCrud } from './flux/store';
 import { StateChange } from './flux/crud-store';
+import { store, subscribeTo, subscribeToCrud } from './flux/store';
 import { DomDirection } from './model/Element';
+
+// //////////////////////
+// The whole model API
 
 export const getData = (): DataModel => store.getState()
 
@@ -59,9 +62,26 @@ export const getParent = (element: ElementData): ElementData => getElements().fi
   return parent.children.includes(element.id)
 })
 
-export const getBody = (): ElementData => getElements().find((el) => !getParent(el))
+export const isBody = (el: ElementData): boolean => !getParent(el)
+export const getBody = (): ElementData => getElements().find((el) => isBody(el))
+export const selectBody = () => {
+  const body = getBody()
+  if (body && body.selected === false) {
+    updateElements([{
+      from: body,
+      to: {
+        ...body,
+        selected: true,
+      },
+    }])
+  } else {
+    console.warn('Select body: no body or body already selected', body)
+  }
+}
 
 export const noSectionContent = (element: ElementData): ElementData => element.isSectionContent ? getParent(element) : element
+
+// const defaultSelection = (selected) => selected.length ? selected : [getBody()]
 
 export const getSelectedElements = () => getElements()
   .filter((el) => el.selected)
@@ -145,7 +165,7 @@ export const subscribePages = (cbk: (prevState: PageData[], nextState: PageData[
 // utils
 
 export const getCurrentPage = () => getPages()
-  .find((p) => p.isOpen)
+  .find((p) => p.opened)
 
 // //////////////////////
 // Site API

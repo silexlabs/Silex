@@ -18,7 +18,7 @@
 
 import { Constants } from '../../constants';
 import { ElementType } from '../../types';
-import { getElements, getUi, updateElements, updateUi, moveElements, getSelectedElementsNoSectionContent, getSelectedElements } from '../api';
+import { getElements, getUi, updateElements, updateUi, moveElements, getSelectedElementsNoSectionContent, getSelectedElements, getBody, selectBody } from '../api';
 import { Config } from '../ClientConfig';
 import { Controller, Model } from '../ClientTypes';
 import { DomDirection } from '../model/Element';
@@ -244,9 +244,6 @@ export class Menu {
       case 'view.open.htmlHeadEditor':
         this.controller.viewMenuController.openHtmlHeadEditor();
         break;
-      // case 'tools.advanced.activate':
-      //   this.controller.toolMenuController.toggleAdvanced();
-      //   break;
       case 'tools.mobile.mode':
         const ui = getUi();
         updateUi({
@@ -298,9 +295,10 @@ export class Menu {
         this.controller.editMenuController.removeSelectedElements();
         break;
       case 'edit.empty.selection':
-        updateElements(getElements()
-          .filter((el) => el.selected)
-          .map((el) => ({ from: el, to: { ...el, selected: false }})))
+        // empty selection
+        updateElements(getSelectedElements().map((el) => ({ from: el, to: { ...el, selected: false }})))
+        // select body
+        selectBody()
         break;
       case 'edit.copy.selection':
         this.controller.editMenuController.copySelection();
