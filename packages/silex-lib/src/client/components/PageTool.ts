@@ -20,6 +20,7 @@ import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm
 import { deletePages, getPages, movePage, openPage, subscribePages } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { Dom } from '../utils/Dom';
+import { PageData } from '../../types.js';
 
 /**
  *
@@ -32,7 +33,7 @@ import { Dom } from '../utils/Dom';
  */
 export class PageTool {
   constructor(public element: HTMLElement, public model: Model, public controller: Controller) {
-    subscribePages(() => this.redraw())
+    subscribePages((_, pages) => this.redraw(_, pages))
   }
 
   /**
@@ -70,14 +71,25 @@ export class PageTool {
     attach('.add-page', (e) => this.controller.pageToolController.createPage());
     attach('.remove-page', (e) => this.controller.pageToolController.removePage());
     attach('.move-page-up', (e) => {
-      const idx = getPages().findIndex((page) => page.isOpen);
+      const idx = getPages().findIndex((page) => page.opened);
       const currentPage = getPages()[idx];
       this.controller.pageToolController.movePageTo(currentPage, idx - 1);
     });
     attach('.move-page-down', (e) => {
-      const idx = getPages().findIndex((page) => page.isOpen);
+      const idx = getPages().findIndex((page) => page.opened);
       const currentPage = getPages()[idx];
       this.controller.pageToolController.movePageTo(currentPage, idx + 1);
+    });
+    const container = this.element.querySelector('.page-tool-container');
+    Sortable.create(container, {
+      ghostClass: 'page-ghost',
+      animation: 150,
+      handle: '.page-handle',
+      onSort: (e) => {
+        const pages = getPages();
+        console.log('move page', pages, e.oldIndex, pages[e.oldIndex], e.newIndex)
+        movePage(pages[e.oldIndex], e.newIndex);
+      },
     });
   }
 
@@ -104,7 +116,6 @@ export class PageTool {
   setSelectedIndex(idx: number, opt_notify?: boolean) {
     // notify the controller
     if (opt_notify) {
-      console.log('setSelectedIndex', getPages()[idx], idx)
       openPage(getPages()[idx])
     }
   }
@@ -126,28 +137,18 @@ export class PageTool {
    * refresh the pages
    * find all pages in the dom
    */
-  private redraw() {
-    console.log('page tool redraw')
-    const pages = getPages();
+  private redraw(_, pages: PageData[]) {
     console.log('page tool redraw', pages)
     // prepare the data for the template
     // make an array with name, displayName, linkName
     const templateData = pages
       .map((p, idx) => Object.assign({
-        className: (p.isOpen ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
+        className: (p.opened ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
         idx,
       }, p))
     // refresh the list with new pages
-    const container = this.element.getElementsByClassName('page-tool-container')[0];
-    const templateHtml = this.element.getElementsByClassName('page-tool-template')[0].innerHTML;
+    const container = this.element.querySelector('.page-tool-container');
+    const templateHtml = this.element.querySelector('.page-tool-template').innerHTML;
     container.innerHTML = Dom.renderList(templateHtml, templateData);
-    Sortable.create(container, {
-      ghostClass: 'page-ghost',
-      animation: 150,
-      handle: '.page-handle',
-      onSort: (e) => {
-        movePage(pages[e.oldIndex], e.newIndex);
-      },
-    });
   }
 }

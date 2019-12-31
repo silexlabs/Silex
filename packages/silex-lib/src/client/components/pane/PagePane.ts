@@ -128,7 +128,7 @@ export class PagePane extends PaneBase {
           from: el,
           to: {
             ...el,
-            pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getPages().find((p) => p.isOpen).id],
+            pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getPages().find((p) => p.opened).id],
           },
         })));
       // const elements = this.states.map((state) => state.el);

@@ -1,6 +1,7 @@
 import * as jsBeautify from 'js-beautify';
 import { writeStyleToDom } from '../../client/dom/element-dom';
-import { getInnerHtml, getDefaultStyle } from '../../client/utils/ElementUtils';
+import { crudIdKey } from '../../client/flux/crud-store';
+import { getContentNode, getDefaultStyle, getInnerHtml } from '../../client/utils/ElementUtils';
 import { Constants } from '../../constants';
 import { ComponentData, CssRule, ElementData, ElementId, ElementType, FileInfo, LinkType, PageData, SiteData, StyleData } from '../../types';
 import DomTools from './DomTools';
@@ -64,37 +65,39 @@ export function loadProperties(doc: HTMLDocument): DomData {
   }
 }
 
-export function getElementDataBC(data: DomData, element: HTMLElement): ElementData {
+export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTMLElement): ElementData {
   const linkValue = element.getAttribute(Constants.LINK_ATTR)
   const linkType = linkValue ? linkValue.startsWith('#!page-') ? LinkType.PAGE : LinkType.URL : null
   const id = getElementId(element)
   const type = getTypeBC(element)
   const isSectionContent = element.classList.contains(Constants.ELEMENT_CONTENT_CLASS_NAME)
   const isBody = element.classList.contains('body-initial')
+  const contentElement = getContentNode(element)
   return {
+    [crudIdKey]: Symbol(),
     id,
-    pageNames: [],
+    pageNames: getPagesForElementBC(doc, element).map((p) => p.id),
     classList: element.className
       .split(' ')
       .filter((c) => !Constants.SILEX_CLASS_NAMES.includes(c) && c !== id),
     type,
     isSectionContent,
     title: element.title,
-    alt: Array.from(element.querySelectorAll(':scope > img'))
-      .map((img: HTMLImageElement) => img.alt)[0],
-    children: Array.from(element.querySelectorAll(`:scope > .${Constants.EDITABLE_CLASS_NAME}`))
+    alt: type === ElementType.IMAGE && !!contentElement ? (contentElement as HTMLImageElement).alt : null,
+    children: Array.from(element.children)
+      .filter((child) => child.classList.contains(Constants.EDITABLE_CLASS_NAME))
       .map((el: HTMLElement) => getElementId(el)),
     link: linkType && linkValue ? {
       type: linkType,
       value: linkValue,
     } : null,
     enableDrag: !element.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME),
-    enableDrop: !element.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME),
+    enableDrop: (type === ElementType.CONTAINER || type === ElementType.SECTION) && !element.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME),
     enableResize: {
       top: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
       bottom: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME),
-      left: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME),
-      right: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME),
+      left: type !== ElementType.SECTION && !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME),
+      right: type !== ElementType.SECTION && !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME),
     },
     selected: false,
     useMinHeight: !element.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT),
@@ -133,7 +136,7 @@ export function getElementDataBC(data: DomData, element: HTMLElement): ElementDa
 export function getElementsFromDomBC(doc: HTMLDocument): ElementData[] {
   const data = loadProperties(doc)
   return (Array.from(doc.querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
-    .map((element) => getElementDataBC(data, element))
+    .map((element) => getElementDataBC(doc, data, element))
 }
 
 export function writeStyles(doc: HTMLDocument, elements: ElementData[]) {
@@ -162,10 +165,10 @@ function getStylesFromDomBC({data, element, mobile, type, isSectionContent, isBo
       ...silexInlineStyle,
     }
   } else {
-    return {
+    return JSON.parse(JSON.stringify({ // this will remove the undefined props
       ...silexInlineStyle,
       ...getDefaultStyle({type, isSectionContent, isBody}),
-    }
+    }))
   }
 }
 function getComponentDataFromDomBC(data: DomData, element: HTMLElement): ComponentData {
@@ -207,6 +210,13 @@ function getTypeBC(element: HTMLElement): ElementType {
   throw new Error('unknown type ' + element.getAttribute(Constants.TYPE_ATTR))
 }
 
+/**
+ * get the pages on which this element is visible
+ */
+function getPagesForElementBC(doc: HTMLDocument, element: HTMLElement): PageData[] {
+  return getPagesFromDom(doc).filter((pageData) => element.classList.contains(pageData.id))
+}
+
 ////////////////////////////////////////////////////////////
 // Pages
 
@@ -216,14 +226,15 @@ function getTypeBC(element: HTMLElement): ElementType {
 function getPageDataFromElement(element: HTMLAnchorElement): PageData {
   const pageName = element.getAttribute('id')
   return {
+    [crudIdKey]: Symbol(),
     id: pageName,
     displayName: element.innerHTML,
     link: {
       type: LinkType.PAGE,
       value: '#!' + pageName,
     },
-    // isOpen: getCurrentPageName() === pageName,
-    isOpen: false,
+    // opened: getCurrentPageName() === pageName,
+    opened: false,
     canDelete: !element.hasAttribute(Constants.PAGE_PREVENT_DELETE),
     canProperties: !element.hasAttribute(Constants.PAGE_PREVENT_PROPERTIES),
     canMove: !element.hasAttribute(Constants.PAGE_PREVENT_MOVE),
@@ -231,19 +242,19 @@ function getPageDataFromElement(element: HTMLAnchorElement): PageData {
   }
 }
 
-/**
- * Util function to get page data from name
- */
-function getPageData(doc, pageName): PageData {
-  const element = doc.getElementById(pageName) as HTMLAnchorElement
-  if (element) {
-    return getPageDataFromElement(element)
-  } else {
-    // this happens while undoing or redoing
-    // or when the page does not exist
-    return null
-  }
-}
+// /**
+//  * Util function to get page data from name
+//  */
+// function getPageData(doc, pageName): PageData {
+//   const element = doc.getElementById(pageName) as HTMLAnchorElement
+//   if (element) {
+//     return getPageDataFromElement(element)
+//   } else {
+//     // this happens while undoing or redoing
+//     // or when the page does not exist
+//     return null
+//   }
+// }
 
 /**
  * get the pages from the dom

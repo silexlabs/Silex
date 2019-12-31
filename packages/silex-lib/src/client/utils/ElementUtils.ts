@@ -1,5 +1,6 @@
 import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType } from '../../types';
+import { crudIdKey } from '../flux/crud-store';
 import { Dom } from './Dom';
 
 /**
@@ -14,6 +15,7 @@ const INITIAL_ELEMENT_SIZE = 100;
 
 export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: ElementId, type: ElementType, isSectionContent: boolean, isBody: boolean}): ElementData {
   return {
+    [crudIdKey]: Symbol(),
     id,
     type,
     alt: null,
@@ -24,12 +26,12 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
       mobile: true,
     },
     style: {
-      desktop: {
+      desktop: JSON.parse(JSON.stringify({ // this will remove the undefined props
         'width': INITIAL_ELEMENT_SIZE + 'px',
         'height': INITIAL_ELEMENT_SIZE + 'px',
         'background-color': type === ElementType.HTML || type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : null,
         ...getDefaultStyle({type, isSectionContent, isBody}),
-      },
+      })),
       mobile: {},
     },
     data: {
@@ -59,13 +61,13 @@ export function getDefaultStyle({type, isSectionContent, isBody}: {type: Element
     const section = { // sections
       'position': 'static',
       'margin-top': '-1px',
-      'top': '',
-      'left': '',
+      'top': undefined,
+      'left': undefined,
     }
     const sectionContent = { // section containers
       'position': 'relative',
-      'top': '',
-      'left': '',
+      'top': undefined,
+      'left': undefined,
       'margin-left': 'auto',
       'margin-right': 'auto',
     }

@@ -27,8 +27,7 @@ import {ControllerBase} from './ControllerBase';
  */
 export class ToolMenuController extends ControllerBase {
   constructor(model: Model, view: View) {
-
-super(model, view);
+    super(model, view);
   }
 
   /**
@@ -47,19 +46,6 @@ super(model, view);
       this.view.propSplitter.remove(cssEditor);
       this.view.propSplitter.remove(jsEditor);
       this.view.propSplitter.remove(htmlEditor);
-
-      // this is a workaround to avoid the editor to be stuck on the side
-      if (ModalDialog.currentDialog.element === cssEditor) {
-        this.view.cssEditor.setValue(this.view.cssEditor.getValue());
-      }
-      // this is a workaround to avoid the editor to be stuck on the side
-      if (ModalDialog.currentDialog.element === jsEditor) {
-        this.view.jsEditor.setValue(this.view.jsEditor.getValue());
-      }
-      // this is a workaround to avoid the editor to be stuck on the side
-      if (ModalDialog.currentDialog.element === htmlEditor) {
-        this.view.htmlEditor.setValue(this.view.htmlEditor.getValue());
-      }
     }
   }
 }

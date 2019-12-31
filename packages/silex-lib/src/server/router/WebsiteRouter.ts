@@ -16,6 +16,7 @@ import { JSDOM } from 'jsdom';
 import * as nodeModules from 'node_modules-path';
 import * as Path from 'path';
 import { URL } from 'url';
+import { dataModelFromJson } from '../../client/utils/data';
 import { Constants } from '../../constants';
 import { DataModel } from '../../types';
 import BackwardCompat from '../utils/BackwardCompat';
@@ -107,7 +108,7 @@ export default function({ port, rootUrl }, unifile) {
   async function sendWebsiteData(res, htmlBuffer: Buffer, jsonBuffer: Buffer, url: URL, isTemplate): Promise<void> {
     // remove user head tag to avoid bad markup messing with the website
     const { html } = DomTools.extractUserHeadTag(htmlBuffer.toString('utf-8'));
-    const data: DataModel = jsonBuffer ? JSON.parse(jsonBuffer.toString('utf-8')) : null; // may be null for older websites
+    const data: DataModel = jsonBuffer ? dataModelFromJson(JSON.parse(jsonBuffer.toString('utf-8'))) : null; // may be null for older websites
 
     // from now on use a parsed DOM
     const dom = new JSDOM(html, { url: url.href });
@@ -146,8 +147,7 @@ export default function({ port, rootUrl }, unifile) {
     const path = req.params[1];
     const { data, html }: { data: DataModel, html: string} = JSON.parse(req.body);
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
-    const dom = new JSDOM(html, { url: url.href });
-    const unpreparedData = unprepareWebsite(dom, data, url);
+    const [unpreparedData, dom] = unprepareWebsite(new JSDOM(html, { url: url.href }), data, url);
     const str = dom.serialize();
     const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headTag);
     dom.window.close();
@@ -197,7 +197,7 @@ export default function({ port, rootUrl }, unifile) {
    * * make all URLs relative to current path
    * * remove useless markup and css classes
    */
-  function unprepareWebsite(dom, data: DataModel, baseUrl): DataModel {
+  function unprepareWebsite(dom: JSDOM, data: DataModel, baseUrl): [DataModel, JSDOM] {
     // markup
     dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME);
     dom.window.document.body.classList.remove(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME);
@@ -213,6 +213,17 @@ export default function({ port, rootUrl }, unifile) {
       }
       return path;
     });
+    const cleanedUp: DataModel = {
+      ...transformedData,
+      pages: transformedData.pages.map((p) => ({
+        ...p,
+        opened: false, // do not keep selection, this is also done at load time @see utils/data.ts
+      })),
+      elements: transformedData.elements.map((el) => ({
+        ...el,
+        selected: false, // do not keep selection, this is also done at load time @see utils/data.ts
+      })),
+    }
     // remove temp tags
     Array.from(dom.window.document.querySelectorAll(`
       .${Constants.SILEX_TEMP_TAGS_CSS_CLASS},
@@ -231,7 +242,7 @@ export default function({ port, rootUrl }, unifile) {
     dom.window.document.body.style.minHeight = ''; // not needed?
     dom.window.document.body.style.overflow = ''; // set by stage
 
-    return transformedData;
+    return [cleanedUp, dom];
   }
 
   function deactivateScripts(dom) {

@@ -189,7 +189,7 @@ export class ControllerBase {
           ...getData(),
         },
         html,
-        page: getPages().find((p) => p.isOpen),
+        page: getPages().find((p) => p.opened),
         scrollX: scrollData.x,
         scrollY: scrollData.y,
       });
@@ -207,7 +207,7 @@ export class ControllerBase {
         ...getData(),
       },
       html: this.model.file.getHtml(),
-      page: getPages().find((p) => p.isOpen),
+      page: getPages().find((p) => p.opened),
       scrollX: scrollData.x,
       scrollY: scrollData.y,
     };
@@ -516,7 +516,7 @@ export class ControllerBase {
   //   // only visible on the current page
   //   const finalElement = {
   //     ...element,
-  //     pageNames: [getPages().find((p) => p.isOpen).id],
+  //     pageNames: [getPages().find((p) => p.opened).id],
   //   }
 
   //   // reset selection

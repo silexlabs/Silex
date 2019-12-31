@@ -1,6 +1,3 @@
-import {Controller} from '../../ClientTypes';
-import {Model} from '../../ClientTypes';
-
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -11,14 +8,16 @@ import {Model} from '../../ClientTypes';
  * Silex is available under the GPL license
  * http://www.silexlabs.org/silex/silex-licensing/
  */
-
 /**
  * @fileoverview
  * Silex JS editor
  *
  */
+import { SiteData } from '../../../types';
+import { getSite, subscribeSite, updateSite } from '../../api';
+import { Controller, Model } from '../../ClientTypes';
+import { CodeEditorBase } from './CodeEditorBase';
 
-import {CodeEditorBase} from './CodeEditorBase';
 
 /**
  * @class {silex.view.dialog.CssEditor}
@@ -34,12 +33,20 @@ export class JsEditor extends CodeEditorBase {
    */
   constructor(element: HTMLElement, model: Model, controller: Controller) {
     super(element, model, controller, 'javascript');
+    subscribeSite((_: SiteData, site: SiteData) => {
+      if (site.headScript !== this.getValue()) {
+        this.setValue(site.headScript)
+      }
+    })
   }
 
   /**
    * the content has changed, notify the controler
    */
   contentChanged() {
-    this.controller.jsEditorController.changed(this.getValue());
+    updateSite({
+      ...getSite(),
+      headScript: this.getValue(),
+    });
   }
 }

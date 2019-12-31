@@ -7,7 +7,6 @@ import { StateChange } from '../flux/crud-store';
 import { executeScripts, getContentNode, setInnerHtml } from '../utils/ElementUtils';
 
 export const onAddElements = (win: Window) => (elements: ElementData[]) => {
-  console.log('on add element observer', elements)
   const doc = win.document
   const added = []
   elements.forEach((element) => {
@@ -24,7 +23,7 @@ export const onAddElements = (win: Window) => (elements: ElementData[]) => {
 
     if (parent && !parentEl) {
       // no parent element yet but will come soon
-      console.log('no parent element yet but will come soon')
+      console.warn('no parent element yet but will come soon')
     } else {
       // update with provided data
       added.push({
@@ -121,7 +120,6 @@ export const onUpdateElements = (win: Window) => (change: Array<StateChange<Elem
       //   .map((el) => getStage().getState(el)))
     }
     if (to.style !== from.style) {
-      console.log('style changed', to.style, from.style);
       ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
         if (to.style[mobileOrDesktop] !== from.style[mobileOrDesktop]) {
           // handle min-height VS height

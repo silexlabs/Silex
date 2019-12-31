@@ -31,7 +31,7 @@ super(model, view);
   /**
    * add the provided elements to a given page
    */
-  addToPage(elements: ElementData[], page = getPages().find((p) => p.isOpen)) {
+  addToPage(elements: ElementData[], page = getPages().find((p) => p.opened)) {
     // undo checkpoint
     this.undoCheckPoint();
     updateElements(elements

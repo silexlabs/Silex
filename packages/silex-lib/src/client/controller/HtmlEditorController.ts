@@ -14,7 +14,6 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { getSite, updateSite } from '../api';
 import { Model, View } from '../ClientTypes';
 import { ControllerBase } from './ControllerBase';
 

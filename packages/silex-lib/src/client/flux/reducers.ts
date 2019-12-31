@@ -9,8 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementData, PageData, SiteData, UiData } from "../../types";
-import { PageAction, SiteAction, UiAction } from "./actions";
+import { ElementData, PageData, SiteData, UiData } from '../../types';
+import { PageAction, SiteAction, UiAction } from './actions';
 
 export const elementReducer = (state: ElementData[] = [], action: any): any => {
   switch (action.type) {
@@ -18,11 +18,11 @@ export const elementReducer = (state: ElementData[] = [], action: any): any => {
   }
 }
 
-export const pageReducer = (state: PageData[] = [], action: any) => {
+export const pageReducer = (state: PageData[] = [], action: any): PageData[] => {
   switch (action.type) {
     case PageAction.OPEN:
       return state
-        .map((item) => item.id === action.item.id ? Object.assign({}, action.item, { isOpen: true }) : item.isOpen ? Object.assign({}, item, { isOpen: false }) : item)
+        .map((item) => item.id === action.item.id ? Object.assign({}, action.item, { opened: true }) : item.opened ? Object.assign({}, item, { opened: false }) : item)
     case PageAction.MOVE:
       // remove the item
       const idx = state.findIndex((item) => item === action.item)
@@ -71,15 +71,14 @@ export const uiReducer = (state: UiData = {
   loading: true,
   mobileEditor: false,
 }, action: any) => {
-switch (action.type) {
-  case UiAction.INITIALIZE: return {
-    ...action.data,
+  switch (action.type) {
+    case UiAction.INITIALIZE: return {
+      ...action.data,
+    }
+    case UiAction.UPDATE: return {
+      ...state,
+      ...action.data,
+    }
+    default: return state
   }
-  case UiAction.UPDATE: return {
-    ...state,
-    ...action.data,
-  }
-  default: return state
 }
-}
-

@@ -198,13 +198,13 @@ export class SilexElement {
 
   // getCurrentPage(): PageData {
   //   const pages = getPages();
-  //   return pages.find((p) => p.isOpen);
+  //   return pages.find((p) => p.opened);
   // }
 
   // /**
   //  * get all elements visible when the given page is opened
   //  */
-  // getElementsForPage(page: PageData = getPages().find((p) => p.isOpen), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
+  // getElementsForPage(page: PageData = getPages().find((p) => p.opened), includeHideDesktop = this.view.workspace.getMobileEditor(), includeHideMobile = !this.view.workspace.getMobileEditor()): HTMLElement[] {
   //   return (Array.from(getSiteDocument().querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}`)) as HTMLElement[])
   //   .filter((el) => this.isVisible(el, page) &&
   //     (includeHideDesktop || !this.model.element.getHideOnDesktop(el)) &&
@@ -215,7 +215,7 @@ export class SilexElement {
    * check if an element is visible in the given page
    * this means that the element is allways visible or it is visible in this page
    */
-  isVisible(element: HTMLElement, page: PageData = getPages().find((p) => p.isOpen)) {
+  isVisible(element: HTMLElement, page: PageData = getPages().find((p) => p.opened)) {
     if (element.classList.contains(Constants.PAGED_CLASS_NAME) && !this.isInPage(element, page)) {
       return false;
     }
@@ -1057,7 +1057,7 @@ export class SilexElement {
   /**
    * check if an element is in the given page (current page by default)
    */
-  private isInPage(element: HTMLElement, page: PageData = getPages().find((p) => p.isOpen)): boolean {
+  private isInPage(element: HTMLElement, page: PageData = getPages().find((p) => p.opened)): boolean {
     return element.classList.contains(page.id);
   }
 }

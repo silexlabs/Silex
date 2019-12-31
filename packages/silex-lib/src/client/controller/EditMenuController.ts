@@ -177,7 +177,7 @@ export class EditMenuController extends ControllerBase {
       // add to the container
       createElements(allElements.map((element: ElementData) => {
         // only visible on the current page unless one of its parents is in a page already
-        const pageNames = !parent || !!getFirstPagedParent(getElements(), parent) ? [] : [getPages().find((p) => p.isOpen).id]
+        const pageNames = !parent || !!getFirstPagedParent(getElements(), parent) ? [] : [getPages().find((p) => p.opened).id]
         const isRoot = rootElements.includes(element);
         if (isRoot) {
           offset += 20;

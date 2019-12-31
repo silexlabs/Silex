@@ -101,33 +101,23 @@ export function setEnableMobile(doc: HTMLDocument, enable: boolean) {
   }
 }
 
-// /**
-//  * get/set the website width
-//  */
-// export function setWebsiteWidth(doc: HTMLDocument, opt_value?: number) {
-
-//   const width: string = opt_value ? opt_value.toString() : null;
-//   setMeta(doc, 'website-width', width);
-
-//   let silexStyle = doc.head.querySelector('.silex-style-settings') as HTMLStyleElement;
-//   if (width && width !== '') {
-//     if (!silexStyle) {
-//       silexStyle = doc.createElement('style');
-//       silexStyle.type = 'text/css';
-//       silexStyle.className = 'silex-style-settings';
-//       doc.head.appendChild(silexStyle);
-//     }
-//     silexStyle.innerHTML = `
-//     .${Constants.WEBSITE_WIDTH_CLASS_NAME} {
-//       width: ${width}px;
-//     }
-//   `;
-//   } else {
-//     if (silexStyle) {
-//       doc.head.removeChild(silexStyle);
-//     }
-//   }
-// }
+/**
+ * get/set the website width
+ */
+export function setWebsiteWidth(doc: HTMLDocument, width: number) {
+  let silexStyle = doc.head.querySelector('.silex-style-settings') as HTMLStyleElement;
+  if (!silexStyle) {
+    silexStyle = doc.createElement('style');
+    silexStyle.type = 'text/css';
+    silexStyle.className = 'silex-style-settings';
+    doc.head.appendChild(silexStyle);
+  }
+  silexStyle.innerHTML = `
+  .${Constants.WEBSITE_WIDTH_CLASS_NAME} {
+    width: ${width}px;
+  }
+`;
+}
 
 /**
  * get/set the description

@@ -11,7 +11,7 @@
 
 import { combineReducers, createStore, Store } from 'redux';
 import { ElementData, PageData, SiteData, UiData } from '../../types';
-import { withCrud } from '../flux/crud-store';
+import { withCrudReducer } from '../flux/crud-store';
 import { ElementAction, PageAction } from './actions';
 import { elementReducer, pageReducer, siteReducer, uiReducer } from './reducers';
 
@@ -26,21 +26,26 @@ interface State {
 }
 
 export const store: Store<State> = createStore(combineReducers({
-  pages: withCrud<PageData>({
+  pages: withCrudReducer<PageData>({
     actionEnum: PageAction,
     reducer: pageReducer,
     label: 'Pages',
-    allowSetId: true,
   }),
-  elements: withCrud<ElementData>({
+  elements: withCrudReducer<ElementData>({
     actionEnum: ElementAction,
     reducer: elementReducer,
     label: 'Elements',
-    allowSetId: false,
   }),
   site: siteReducer,
   ui: uiReducer,
 }))
+
+let prevState: State
+let curState: State
+store.subscribe(() => {
+  prevState = curState
+  curState = store.getState()
+})
 
 export function subscribeToCrud<T>(name: string, cbk: (prevState: T[], nextState: T[]) => void): () => void {
   return store.subscribe(() => {
@@ -59,10 +64,3 @@ export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) =
     }
   })
 }
-
-let prevState: State
-let curState: State
-store.subscribe(() => {
-  prevState = curState
-  curState = store.getState()
-})

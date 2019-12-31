@@ -1,8 +1,10 @@
 import { initializeElements } from '../src/client/api';
+import { crudIdKey } from '../src/client/flux/crud-store';
 import { onUpdateElements } from '../src/client/observers/element-observer';
 import { ElementData, ElementType } from '../src/types';
 
 const ELEM_CONTAINER: ElementData = {
+  [crudIdKey]: Symbol(),
   id: 'testId1',
   pageNames: [],
   classList: [],
@@ -41,6 +43,7 @@ const elem1Html = `
 `
 const ELEM_IMAGE: ElementData = {
   ...ELEM_CONTAINER,
+  [crudIdKey]: Symbol(),
   id: 'testId2',
   type: ElementType.IMAGE,
   useMinHeight: false,
@@ -52,6 +55,7 @@ const elem2Html = `
 `
 const ELEM_TEXT: ElementData = {
   ...ELEM_CONTAINER,
+  [crudIdKey]: Symbol(),
   id: 'testId3',
   type: ElementType.TEXT,
   innerHtml: 'SOME CONTENT ELEM3',

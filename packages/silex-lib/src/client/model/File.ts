@@ -18,7 +18,7 @@
 
 import { Constants } from '../../constants';
 import { DataModel, FileInfo } from '../../types';
-import { getElements, initializeElements, initializePages, initializeSite, openPage, updateUi, getUi } from '../api';
+import { getElements, getUi, initializeElements, initializePages, initializeSite, openPage, updateUi } from '../api';
 import { Model, View } from '../ClientTypes';
 import { getUiElements } from '../components/UiElements';
 import { startObservers, stopObservers } from '../observers/index';

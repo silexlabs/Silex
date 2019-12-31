@@ -1,5 +1,4 @@
-import {FileInfo, DataModel} from '../../types';
-
+import { DataModel, FileInfo } from '../../types';
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -10,16 +9,15 @@ import {FileInfo, DataModel} from '../../types';
  * Silex is available under the GPL license
  * http://www.silexlabs.org/silex/silex-licensing/
  */
-
 /**
  * @fileoverview Service used to interact with the unifile server.
  *     This class is a singleton.
  *
  */
-
 import { getUiElements } from '../components/UiElements';
-import {CloudExplorer} from '../externs';
-import {SilexNotification} from '../utils/Notification';
+import { CloudExplorer } from '../externs';
+import { dataModelFromJson } from '../utils/data';
+import { SilexNotification } from '../utils/Notification';
 
 /**
  * the Silex CloudStorage service
@@ -151,7 +149,7 @@ export class CloudStorage {
         if (data.message) {
           SilexNotification.alert('Open a website', data.message, () => {});
         }
-        cbk(data.html, data.data);
+        cbk(data.html, dataModelFromJson(data.data));
       } else {
         const err = new Event('error');
         const msg = this.getErrorMessage(oReq);

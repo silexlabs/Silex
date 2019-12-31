@@ -1,22 +1,18 @@
-interface StateBase {
-  id: string;
+
+export const crudIdKey = Symbol('crudId key')
+export interface CrudState {
+  [crudIdKey]: symbol;
 }
-export function withCrud<State extends StateBase>(options: { actionEnum: any, reducer: (state: State[], action: any) => any, label: string, allowSetId: boolean }) {
-  const { actionEnum, reducer, label, allowSetId } = options
+export function withCrudReducer<State extends CrudState>(options: { actionEnum: any, reducer: (state: State[], action: any) => any, label: string }) {
+  const { actionEnum, reducer } = options
   return (state: State[], action: any) => {
-    // console.trace('CRUD reducer', label, {state, action})
+    // console.trace('CRUD reducer', options.label, {state, action})
     switch (action.type) {
       case actionEnum.INITIALIZE: return action.items.slice()
-      case actionEnum.CREATE: return reducer(state.concat(action.items), action)
-      case actionEnum.DELETE: return reducer(state.filter((item) => !action.items.find((i) => i === item)), action)
+      case actionEnum.CREATE: return action.items.length ? reducer(state.concat(action.items), action) : state
+      case actionEnum.DELETE: return action.items.length ? reducer(state.filter((item) => !action.items.find((i) => i === item)), action) : state
       case actionEnum.UPDATE:
-        if (!allowSetId) {
-          action.changes.forEach((change) => {
-            if (change.from.id !== change.to.id) {
-              throw new Error('Change an item ID is forbiden');
-            }
-          })
-        }
+        if (action.changes.length === 0) return state
         return reducer(state.map((item) => {
           const found = action.changes.find((i) => i.from === item)
           return found ? found.to : item
@@ -32,37 +28,28 @@ export interface StateChange<T> {
   from: T,
   to: T,
 }
-export function onCrudChange<T extends {id: string}>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T[]) => void, onDelete: (item: T[]) => void, onUpdate: (change: Array<StateChange<T>>) => void }) {
+export function onCrudChange<T extends CrudState>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T[]) => void, onDelete: (item: T[]) => void, onUpdate: (change: Array<StateChange<T>>) => void }) {
   return (prevState: T[], currentState: T[]) => {
-    console.log('onCrudChange', currentState
-    .map((to) => {
-      const from = prevState.find((p) => p.id === to.id)
-      return {
-        from,
-        to,
-      }
-    })
-    .filter(({from, to}) => !!from && from !== to),
-    )
     // added items
-    onAdd(currentState
-      .filter((item) => !prevState || !prevState.find((p) => p.id === item.id)))
+    const added = currentState.filter((item) => !prevState || !prevState.find((p) => p[crudIdKey] === item[crudIdKey]))
+    if (added.length) onAdd(added)
 
     if (prevState) {
       // removed
-      onDelete(prevState
-        .filter((item) => !currentState.find((p) => p.id === item.id)))
+      const deleted = prevState.filter((item) => !currentState.find((p) => p[crudIdKey] === item[crudIdKey]))
+      if (deleted.length) onDelete(deleted)
 
       // updated
-      onUpdate(currentState
+      const updated = currentState
         .map((to) => {
-          const from = prevState.find((p) => p.id === to.id)
+          const from = prevState.find((p) => p[crudIdKey] === to[crudIdKey])
           return {
             from,
             to,
           }
         })
-        .filter(({from, to}) => !!from && from !== to))
+        .filter(({from, to}) => !!from && from !== to)
+      if (updated.length) onUpdate(updated)
     }
   }
 }

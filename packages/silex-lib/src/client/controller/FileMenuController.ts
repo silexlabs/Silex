@@ -15,7 +15,7 @@
  *
  */
 import { FileInfo, Provider, DataModel } from '../../types';
-import { getSite, updateSite } from '../api';
+import { getSite, updateSite, selectBody } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, PublicationOptions, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
@@ -136,6 +136,10 @@ export class FileMenuController extends ControllerBase {
     // this.model.file.setUrl(null);
     this.model.file.setHtml(rawHtml, () => {
       this.model.file.setData(data);
+
+      // init selection
+      selectBody();
+
       // undo redo reset
       this.undoReset();
       this.fileOperationSuccess(null, true);
