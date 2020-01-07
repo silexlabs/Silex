@@ -50,6 +50,17 @@ test('convert from 2.5.60', () => {
   expect(component.data.component.data.buttonBackgroundColor).toBe('#000000')
 
   // data
+  const allSections = elements.filter((el) => el.type === ElementType.SECTION)
+  allSections.forEach((el) => {
+    expect(el.style.desktop.width).toBeUndefined()
+    expect(el.style.desktop['min-width']).toBeUndefined()
+  })
+
+  const allSectionContainers = elements.filter((el) => el.isSectionContent)
+  allSectionContainers.forEach((el) => {
+    expect(el.style.desktop.width).toBeUndefined()
+  })
+
   const section = elements.find((el) => el.id === SECTION_ID)
   expect(section.enableDrag).toBe(false)
   expect(section.enableDrop).toBe(true)
@@ -105,6 +116,7 @@ test('convert from 2.5.60', () => {
     // alert('this is js');
   `)
   expect(site.headTag).toBe(`<!-- this is head -->`)
+  expect(site.width).toBe(1200)
 
   // pages
   const pages = getPagesFromDom(document)

@@ -314,7 +314,6 @@ export class Constants {
     Constants.SELECTED_CLASS_NAME,
     Constants.RESIZING_CLASS_NAME,
     Constants.DRAGGING_CLASS_NAME,
-    // useful to hide it when the content container of a section is selected
     Constants.WEBSITE_WIDTH_CLASS_NAME,
     ElementType.CONTAINER,
     ElementType.SECTION,

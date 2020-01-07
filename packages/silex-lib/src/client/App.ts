@@ -289,7 +289,7 @@ export class App {
     const dashboard = new Dashboard(uiElements.dashboard, emptyModel, emptyController);
 
     // FileExplorer
-    const fileExplorer = new FileExplorer(uiElements.fileExplorer, emptyModel, emptyController);
+    const fileExplorer = FileExplorer.getInstance();
 
     // PropertyTool
     const propertyTool = new PropertyTool(uiElements.propertyTool, emptyModel, emptyController);

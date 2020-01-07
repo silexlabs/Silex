@@ -42,7 +42,7 @@ export interface InputData {
  */
 export class PaneBase {
   protected pageNames: string[];
-  protected currentPageName: string;
+  // protected currentPageName: string;
   protected change = new Map();
 
   /**

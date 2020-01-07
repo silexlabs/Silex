@@ -11,6 +11,8 @@
 
 /**
  * @fileoverview The settings dialog which handles the file settings
+ * TODO: refactor font list and data source list which should share more code
+ * TODO: remove the logic to open tabs and handle it in CSS/HTML only with check boxes
  *
  */
 
@@ -21,6 +23,7 @@ import { CloudStorage } from '../../service/CloudStorage';
 import { SilexNotification } from '../../utils/Notification';
 import { Url } from '../../utils/Url';
 import { ModalDialog } from '../ModalDialog';
+import { FileExplorer } from './FileExplorer';
 
 /**
  * constant for all pane css classes
@@ -139,22 +142,8 @@ export class SettingsDialog {
             ...getSite(),
             thumbnailSocialPath: v,
           }));
-    this.bindTextField('.publish-pane .input-publication-path', (v) => {
-      const fileInfo = getSite().publicationPath;
-      const fileInfoNew = Url.updateFileInfo(fileInfo, {path: v});
-      updateSite({
-        ...getSite(),
-        publicationPath: fileInfoNew,
-      });
-    });
-    this.bindTextField('.publish-pane .input-publication-service', (v) => {
-      const fileInfo = getSite().publicationPath;
-      const fileInfoNew = Url.updateFileInfo(fileInfo, {service: v});
-      updateSite({
-        ...getSite(),
-        publicationPath: fileInfoNew,
-      });
-    });
+    this.bindTextField('.publish-pane .input-publication-path', (v) => this.updatePublicationPath({path: v}));
+    this.bindTextField('.publish-pane .input-publication-service', (v) => this.updatePublicationPath({service: v}));
     this.bindTextField('.publish-pane .input-website-url', (v) => {
       if (v === '') {
         v = null;
@@ -167,19 +156,51 @@ export class SettingsDialog {
 
     // image path browse button
     this.bindBrowseButton('.general-pane .browse-favicon-path', () => {
-      this.controller.settingsDialogController.browseFaviconPath(
-          () => this.open());
+      FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
+      .then((fileInfo) => {
+        if (fileInfo) {
+          // set the new favicon path
+          updateSite({
+            ...getSite(),
+            faviconPath: fileInfo.absPath,
+          })
+          this.open()
+        }
+      })
+      .catch((error) => {
+        SilexNotification.notifyError(
+            'Error: I could not select the favicon. <br /><br />' +
+            (error.message || ''));
+      });
     });
+
     this.bindBrowseButton('.publish-pane .browse-publication-path', () => {
-      this.controller.settingsDialogController.browsePublishPath(
-        () => this.open());
+      FileExplorer.getInstance().openFolder()
+      .then((fileInfo) => {
+        if (fileInfo) {
+          // set the new publication path
+          updateSite({
+            ...getSite(),
+            publicationPath: fileInfo,
+          })
+          this.open()
+        }
+      })
+      .catch((error) => {
+          SilexNotification.notifyError(
+              'Error: I could not select the publication path. <br /><br />' +
+              (error.message || ''));
+      });
     });
 
     // build UI
     this.mobileCheckbox = this.element.querySelector('.mobile-check');
     this.mobileCheckbox.addEventListener('click', () => {
-        this.controller.settingsDialogController.toggleEnableMobile();
-      }, false);
+      updateSite({
+        ...getSite(),
+        enableMobile: this.mobileCheckbox.checked,
+      })
+    }, false);
 
     // fill the options of the service selector
     CloudStorage.getInstance().ready(() => {
@@ -297,7 +318,8 @@ export class SettingsDialog {
       throw new Error(
           'Settings panel error: could not find the element to bind.');
     }
-    input.onchange = (e) => {
+    input.onkeyup = (e) => {
+      console.log('text field changed', input.value, e, input)
       cbk(input.value);
     };
   }
@@ -321,28 +343,13 @@ export class SettingsDialog {
    * @see silex.model.Head
    */
   setInputValue(cssSelector: string, opt_value?: string) {
+    console.log('setInputValue', {cssSelector, opt_value})
     const input = this.element.querySelector(cssSelector) as HTMLInputElement;
     if (opt_value) {
-      input.value = opt_value;
+      if (opt_value !== input.value) input.value = opt_value;
     } else {
-      input.value = '';
+      if (input.value !== '') input.value = '';
     }
-  }
-
-  /**
-   * set the favicon path to display
-   * @see silex.model.Head
-   */
-  setFaviconPath(opt_path?: string) {
-    this.setInputValue('.general-pane .input-favicon-path', opt_path);
-  }
-
-  /**
-   * set the social image path to display
-   * @see silex.model.Head
-   */
-  setThumbnailSocialPath(opt_path?: string) {
-    this.setInputValue('.social-pane .input-image-path', opt_path);
   }
 
   /**
@@ -365,105 +372,6 @@ export class SettingsDialog {
       // display the "not set" UI
       this.element.classList.add('publication-path-not-set');
     }
-    if (getSite().publicationPath !== fileInfo) {
-      updateSite({
-        ...getSite(),
-        publicationPath: fileInfo,
-      })
-    }
-  }
-
-  /**
-   * get the pubication path from text fields
-   * @return the publication path
-   */
-  getPublicationPath(): FileInfo {
-    const service = (this.element.querySelector('.publish-pane .input-publication-service') as HTMLInputElement).value;
-    const path = (this.element.querySelector('.publish-pane .input-publication-path') as HTMLInputElement).value;
-    const publicationPath = getSite().publicationPath;
-    if (publicationPath != null  && service && path && service !== '' && path !== '') {
-      publicationPath.service = service;
-      publicationPath.path = path;
-    }
-    return publicationPath;
-  }
-  setWebsiteUrl(opt_url) {
-    this.setInputValue('.publish-pane .input-website-url', opt_url);
-    if (getSite().websiteUrl !== opt_url) {
-      updateSite({
-        ...getSite(),
-        websiteUrl: opt_url,
-      })
-    }
-  }
-
-  /**
-   * enable/disable mobile version
-   * @see silex.model.Head
-   */
-  setEnableMobile(enabled: boolean) {
-    this.mobileCheckbox.checked = enabled;
-  }
-
-  /**
-   * set the website width
-   * @see silex.model.Head
-   */
-  setWebsiteWidth(opt_value?: number) {
-    this.setInputValue('.general-pane .input-site-width', opt_value ? opt_value.toString() : null);
-  }
-
-  /**
-   * set the site title to display
-   * @see silex.model.Head
-   * @param opt_title   the site title
-   */
-  setTitle(opt_title?: string) {
-    this.setInputValue('.general-pane .input-title', opt_title);
-  }
-
-  /**
-   * set the site default language
-   * @see silex.model.Head
-   * @param opt_lang   the site lang
-   */
-  setLang(opt_lang?: string) {
-    this.setInputValue('.general-pane .input-lang', opt_lang);
-  }
-
-  /**
-   * set the site description tag
-   * @see silex.model.Head
-   * @param opt_description   the site description
-   */
-  setDescription(opt_description?: string) {
-    this.setInputValue('.general-pane .input-description', opt_description);
-  }
-
-  /**
-   * set the site title to display
-   * @see silex.model.Head
-   * @param opt_title   the site title
-   */
-  setTitleSocial(opt_title?: string) {
-    this.setInputValue('.social-pane .input-title', opt_title);
-  }
-
-  /**
-   * set the site description tag
-   * @see silex.model.Head
-   * @param opt_description   the site description
-   */
-  setDescriptionSocial(opt_description?: string) {
-    this.setInputValue('.social-pane .input-description', opt_description);
-  }
-
-  /**
-   * set the owner twitter account
-   * @see silex.model.Head
-   */
-  setTwitterSocial(opt_twitter?: string) {
-    this.setInputValue('.social-pane .input-twitter', opt_twitter);
   }
 
   /**
@@ -479,14 +387,24 @@ export class SettingsDialog {
    * redraw the dialog
    */
   redraw() {
-    try {
-      const site = getSite();
-      this.setPublicationPath(site.publicationPath);
-      this.setWebsiteUrl(site.websiteUrl);
-      this.fontList.innerHTML = this.getFontList(getSite().fonts);
-      this.dataSourcesList.innerHTML = this.getDataSourcesList(site.dataSources);
-    } catch (e) {
-    }
+    const site = getSite();
+
+    this.fontList.innerHTML = this.getFontList(getSite().fonts);
+    this.dataSourcesList.innerHTML = this.getDataSourcesList(site.dataSources);
+
+    this.setPublicationPath(site.publicationPath);
+    this.mobileCheckbox.checked = site.enableMobile
+
+    this.setInputValue('.general-pane .input-favicon-path', site.faviconPath);
+    this.setInputValue('.publish-pane .input-website-url', site.websiteUrl);
+    this.setInputValue('.general-pane .input-site-width', site.width.toString());
+    this.setInputValue('.general-pane .input-title', site.title);
+    this.setInputValue('.general-pane .input-lang', site.lang);
+    this.setInputValue('.general-pane .input-description', site.description);
+    this.setInputValue('.social-pane .input-twitter', site.twitterSocial);
+    this.setInputValue('.social-pane .input-description', site.descriptionSocial);
+    this.setInputValue('.social-pane .input-title', site.titleSocial);
+    this.setInputValue('.social-pane .input-image-path', site.thumbnailSocialPath);
   }
   getDataSourcesList(dataSources: DataSources) {
     return '<ul>' +
@@ -629,5 +547,14 @@ export class SettingsDialog {
    */
   close() {
     this.modalDialog.close();
+  }
+
+  private updatePublicationPath(updateObj: any) {
+    const fileInfo = getSite().publicationPath;
+    const fileInfoNew = Url.updateFileInfo(fileInfo, updateObj);
+    updateSite({
+      ...getSite(),
+      publicationPath: fileInfoNew,
+    });
   }
 }

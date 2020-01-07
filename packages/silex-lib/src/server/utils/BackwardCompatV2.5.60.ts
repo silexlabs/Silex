@@ -5,6 +5,7 @@ import { getContentNode, getDefaultStyle, getInnerHtml } from '../../client/util
 import { Constants } from '../../constants';
 import { ComponentData, CssRule, ElementData, ElementId, ElementType, FileInfo, LinkType, PageData, SiteData, StyleData } from '../../types';
 import DomTools from './DomTools';
+import { setWebsiteWidth } from '../../client/dom/site-dom';
 
 ////////////////////////////////////////////////////////////
 // Old data structures
@@ -144,6 +145,11 @@ export function writeStyles(doc: HTMLDocument, elements: ElementData[]) {
     writeStyleToDom(doc, el.id, el.style.desktop, false)
     writeStyleToDom(doc, el.id, el.style.mobile, true)
   })
+}
+
+export function writeSiteStyles(doc: HTMLDocument, site: SiteData) {
+  // website width
+  setWebsiteWidth(doc, site.width)
 }
 
 function getStylesFromDomBC({data, element, mobile, type, isSectionContent, isBody}: {data: DomData, element: HTMLElement, mobile: boolean, type: ElementType, isSectionContent: boolean, isBody: boolean}) {

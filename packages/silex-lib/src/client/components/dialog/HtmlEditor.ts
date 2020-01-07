@@ -47,7 +47,7 @@ export class HtmlEditor extends CodeEditorBase {
     console.log('forSelection', elements.length, elements)
     if (elements.length === 1 && elements[0].type === ElementType.HTML) {
       htmlBox(elements[0])
-    } else if (elements.length === 0 || elements.length === 1 && getDomElement(getSiteDocument(), elements[0]).tagName.toLowerCase() === 'body') {
+    } else if (elements.length === 1 && getDomElement(getSiteDocument(), elements[0]).tagName.toLowerCase() === 'body') {
       body()
     } else {
       error()

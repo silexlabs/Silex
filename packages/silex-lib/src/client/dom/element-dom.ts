@@ -1,11 +1,12 @@
 import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType, Link } from '../../types';
 import { CSSRuleInfo } from '../model/Property';
-import { getContentNode, getEmptyElementData, addMediaQuery } from '../utils/ElementUtils';
+import { addMediaQuery, getContentNode, getEmptyElementData } from '../utils/ElementUtils';
 import { Style } from '../utils/Style';
 import { model } from './wip-refacto-model';
 
 export function getDomElement(doc: HTMLDocument, element: ElementData): HTMLElement {
+  console.trace('getDomElement', element)
   return getDomElementById(doc, element.id)
 }
 
