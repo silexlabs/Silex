@@ -78,11 +78,6 @@ export function onUpdatePages(changes: Array<StateChange<PageData>>) {
       // about the `setTimeout`: need to re-dispatch after this round of listeners
       // this is needed to avoid silent crash
       setTimeout(() => {
-        // console.log('xxxxxxxxxxxxxxxx', from, getElements().map((el) => [el.pageNames, el.pageNames.includes(from.id)]), getElements()
-        //   .filter((element) => isVisibleOnPage(element, from))
-        // , getElements()
-        //   .filter((element) => hasLinkToPage(element, from))
-        // , getElements()
         updateElements(getElements()
           // update elements visibility
           // + update links to this page

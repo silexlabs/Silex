@@ -68,6 +68,7 @@ export function getDefaultStyle({type, isSectionContent, isBody}: {type: Element
       'position': 'relative',
       'top': undefined,
       'left': undefined,
+      'width': undefined,
       'margin-left': 'auto',
       'margin-right': 'auto',
     }

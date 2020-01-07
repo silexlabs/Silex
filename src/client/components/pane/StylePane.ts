@@ -37,9 +37,9 @@ export class StylePane extends PaneBase {
   cssClassesTagsInput: any;
 
   /**
-   * instance of ace editor
+   * prevent loops and stage reset while updating the value from store
    */
-  // ace: AceAjax.Editor;
+  iAmChanging = false;
 
   constructor(element: HTMLElement, model: Model, controller: Controller) {
 
@@ -59,20 +59,6 @@ export class StylePane extends PaneBase {
     this.cssClassesTagsInput.classList.add('silex-input');
     // add a listener for the delete event
     this.initComboBox('.style-css-classes-input', () => this.onInputChanged());
-    // this.ace = ace.edit(this.element.querySelector('.element-style-editor') as HTMLElement);
-    // this.ace.setTheme('ace/theme/idle_fingers');
-    // this.ace.renderer.setShowGutter(false);
-
-    // // for some reason, this.ace.getSession().* is undefined,
-    // //    closure renames it despite the fact that that it is declared in the
-    // //    externs.js file
-    // this.ace.getSession().setMode('ace/mode/css');
-    // this.ace.setOptions({
-    //   enableBasicAutocompletion: true,
-    //   enableSnippets: true,
-    //   enableLiveAutocompletion: true,
-    // });
-    // this.ace.setReadOnly(true);
   }
 
   getClassesTags() {
@@ -80,8 +66,11 @@ export class StylePane extends PaneBase {
   }
 
   setClassesTags(cssClasses) {
+    if (this.iAmChanging) return
     if (this.getClassesTags() !== cssClasses) {
+      this.iAmChanging = true
       this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','));
+      this.iAmChanging = false
     }
   }
 
@@ -89,6 +78,7 @@ export class StylePane extends PaneBase {
    * User has selected a color
    */
   onInputChanged() {
+    if (this.iAmChanging) return
     if (this.cssClassesTagsInput.classList.contains('off')) {
       this.setClassesTags('');
     } else {

@@ -18,11 +18,11 @@
  */
 
 import { FileInfo } from '../../../types';
-import { Controller, Model } from '../../ClientTypes';
 import { ModalDialog } from '../../components/ModalDialog';
 import { CloudExplorer } from '../../externs';
 import { CloudStorage } from '../../service/CloudStorage';
 import { SilexNotification } from '../../utils/Notification';
+import { getUiElements } from '../UiElements';
 
 /**
  * the Silex FileExplorer class
@@ -36,6 +36,14 @@ export class FileExplorer {
     return ['.html', '.htm'];
   }
 
+  // singleton pattern
+  // FIXME: refactor it as a function and use import
+  static getInstance(): FileExplorer {
+    FileExplorer.instance = FileExplorer.instance || new FileExplorer();
+    return FileExplorer.instance;
+  }
+  private static instance: FileExplorer;
+
   /**
    * reference to the filepicker instance
    */
@@ -44,15 +52,9 @@ export class FileExplorer {
   // make this a dialog
   modalDialog: any;
 
-  /**
-   * @param element   container to render the UI
-   * @param model  model class which holds
-   * the model instances - views use it for
-   * read operation only
-   * @param controller  structure which holds
-   * the controller instances
-   */
-  constructor(protected element: HTMLElement, protected model: Model, protected controller: Controller) {
+  private constructor() {
+    const element = getUiElements().fileExplorer;
+
     // cloud explorer instance
     CloudStorage.getInstance().ready(() => {
       this.ce = CloudStorage.getInstance().ce;
@@ -134,27 +136,23 @@ export class FileExplorer {
    *                           null to show all the files and folders
    *                           [] to show only folders
    */
-  openFiles(opt_extensions?: string[]): Promise<FileInfo> {
+  async openFiles(opt_extensions?: string[]): Promise<FileInfo> {
     this.open();
-    return this.ce.openFiles(opt_extensions)
-        .then((fileInfo) => this.addAbsPath(fileInfo))
-        .then((fileInfo) => {
-          this.close();
-          return fileInfo;
-        });
+    const fileInfo = await this.ce.openFiles(opt_extensions);
+    const fileInfo_2 = this.addAbsPath(fileInfo);
+    this.close();
+    return fileInfo_2;
   }
 
   /**
    * pick a folder
    */
-  openFolder(): Promise<FileInfo> {
+  async openFolder(): Promise<FileInfo> {
     this.open();
-    return this.ce.openFolder()
-        .then((fileInfo) => this.addAbsPath(fileInfo))
-        .then((fileInfo) => {
-          this.close();
-          return fileInfo;
-        });
+    const fileInfo = await this.ce.openFolder();
+    const fileInfo_2 = this.addAbsPath(fileInfo);
+    this.close();
+    return fileInfo_2;
   }
 
   /**
@@ -164,15 +162,13 @@ export class FileExplorer {
    *                           null to show all the files and folders
    *                           [] to show only folders
    */
-  saveAs(defaultName: string, opt_extensions?: string[]):
+  async saveAs(defaultName: string, opt_extensions?: string[]):
       Promise<FileInfo> {
     this.open();
-    return this.ce.saveAs(defaultName, opt_extensions)
-        .then((fileInfo) => this.addAbsPath(fileInfo))
-        .then((fileInfo) => {
-          this.close();
-          return fileInfo;
-        });
+    const fileInfo = await this.ce.saveAs(defaultName, opt_extensions);
+    const fileInfo_2 = this.addAbsPath(fileInfo);
+    this.close();
+    return fileInfo_2;
   }
 
   /**

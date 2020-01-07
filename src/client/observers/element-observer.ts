@@ -1,8 +1,8 @@
-import { ElementData, ElementId } from '../../types';
+import { ElementData, ElementId, ElementType } from '../../types';
 import { getData, getElements, getPages, getParent, getUi, noSectionContent } from '../api';
 import { createDomElement, getDomElement, hideOnDesktop, hideOnMobile, removeElement, reorderElements, setLink, showOnDesktop, showOnMobile, writeStyleToDom } from '../dom/element-dom';
 import { setPages } from '../dom/page-dom';
-import { writeDataToDom } from '../dom/site-dom';
+import { writeDataToDom, setWebsiteWidth } from '../dom/site-dom';
 import { StateChange } from '../flux/crud-store';
 import { executeScripts, getContentNode, setInnerHtml } from '../utils/ElementUtils';
 
@@ -133,6 +133,19 @@ export const onUpdateElements = (win: Window) => (change: Array<StateChange<Elem
           writeStyleToDom(doc, to.id, style, getUi().mobileEditor)
         }
       })
+      // website width is also section containers width
+      if (!getUi().mobileEditor && to.style.desktop !== from.style.desktop) {
+        if (to.isSectionContent && !!to.style.desktop.width) {
+          const style = {
+            ...to.style.desktop,
+            width: null,
+          }
+          // write css rules
+          writeStyleToDom(doc, to.id, style, false)
+          // set website width
+          setWebsiteWidth(doc, parseInt(to.style.desktop.width))
+        }
+      }
     }
   })
   // save data to the dom for front-end.js

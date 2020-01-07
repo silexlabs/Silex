@@ -116,6 +116,11 @@ export function setWebsiteWidth(doc: HTMLDocument, width: number) {
   .${Constants.WEBSITE_WIDTH_CLASS_NAME} {
     width: ${width}px;
   }
+  @media (min-width:481px) {
+    .silex-editor {
+      min-width: ${width + 200}px;
+    }
+  }
 `;
 }
 

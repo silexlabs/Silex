@@ -23,7 +23,7 @@ export const startStageObserver = () => stoped = false
 export function resetStage() {
   const currentPage = getPages().find((p) => p.opened);
   if (!stage) { return; } // happens when File::setData is called before the html is set
-  console.log('reset stage ', !!stage, currentPage)
+  console.trace('reset stage ', !!stage, currentPage)
   stopStageObserver() // FIXME: should not be necessary, stage bug?
   stage.reset(getElements()
     .filter(
@@ -179,7 +179,7 @@ export class StageWrapper {
     });
     subscribeUi((prevState: UiData, nextState: UiData) => {
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
-        // reset the stage after page open
+        // reset the stage after switch to/from mobile editor
         setTimeout(() => resetStage(), 0)
       }
     });

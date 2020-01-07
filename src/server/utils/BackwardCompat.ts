@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import { Constants } from '../../constants';
 import { DataModel, ElementType } from '../../types';
-import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeStyles } from './BackwardCompatV2.5.60';
+import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeStyles, writeSiteStyles } from './BackwardCompatV2.5.60';
 
 // FIXME: path in constants
 // const components = require('../../../dist/client/libs/prodotype/components/components.json')
@@ -285,6 +285,7 @@ export default class BackwardCompat {
 
           // site
           const site = getSiteFromDom(doc)
+          writeSiteStyles(doc, site)
 
           // pages
           const pages = getPagesFromDom(doc)
