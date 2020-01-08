@@ -21,16 +21,17 @@ export const startStageObserver = () => stoped = false
 
 // expose reset as a workaround some stage bugs (see element-observer)
 export function resetStage() {
-  const currentPage = getPages().find((p) => p.opened);
   if (!stage) { return; } // happens when File::setData is called before the html is set
-  console.trace('reset stage ', !!stage, currentPage)
+  const doc = getSiteDocument();
+  const currentPage = getPages().find((p) => p.opened);
   stopStageObserver() // FIXME: should not be necessary, stage bug?
   stage.reset(getElements()
     .filter(
       (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id))
       && ((el.visibility.desktop && !getUi().mobileEditor) || (el.visibility.mobile && getUi().mobileEditor)))
-    .map((el) => getDomElement(getSiteDocument(), el))
+    .map((el) => getDomElement(doc, el))
     .filter((el) => !!el)) // FIXME: what should we do while the child is not yet added
+  stage.setSelection(getSelectedElements().map((el) => getDomElement(doc, el)))
   startStageObserver()
 }
 
@@ -86,7 +87,7 @@ function onUpdateElement(change: Array<StateChange<ElementData>>) {
     const isStatic = getSiteWindow().getComputedStyle(domEl).position === 'static'
     // selection
     if (to.selected !== from.selected) {
-      const selection = getStage().getSelection()
+      const selection = stage.getSelection()
       const found = selection.find((s) => s.el === domEl)
       if (to.selected) {
         if (!found) {
@@ -369,42 +370,44 @@ export class StageWrapper {
   private stopDrag(changed: SelectableState[], redraw = false) {
     getSiteDocument().body.classList.remove(Constants.DRAGGING_CLASS_NAME);
     this.stopDragOrResize(changed, redraw);
-    updateElements([
-      // update element's parents
-      ...changed
-        .filter((selectable) => selectable.selected)
+    // Handle parent change
+    // build an array with all the changes (may contain several times the same parent)
+    const changes: Array<{element: ElementData, newParent: ElementData, oldParent: ElementData}> = changed
+      .map((selectable) => ({
         // FIXME: find a more optimal way to get the data from DOM element
-        .map((selectable) => getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el))
-        .map((element) => {
-          const domEl = getDomElement(getSiteDocument(), element)
-          const parent = getElements().find((el) => getDomElement(getSiteDocument(), el) === domEl.parentElement)
-          return {
-            from: element,
-            to: {
-              ...element,
-              parent: parent ? parent.id : null,
-            },
-          };
-        }),
-      // update element's parent's children
-      ...changed
-        .filter((selectable) => selectable.selected)
-        // FIXME: find a more optimal way to get the data from DOM element
-        .map((selectable) => ({
-          parent: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el.parentElement),
-          element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
-        }))
-        .filter(({element, parent}) => !parent.children.find((el) => el === element.id))
-        .map(({element, parent}) => {
-          return {
-            from: parent,
-            to: {
-              ...parent,
-              children: parent.children.concat([element.id]),
-            },
-          };
-        }),
-      ])
+        element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
+        newParent: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el.parentElement),
+      }))
+      .map(({element, newParent}) => ({
+        element, newParent,
+        oldParent: getElements().find((el) => el.children.includes(element.id)),
+      }))
+      .filter(({element, newParent, oldParent}) => newParent !== oldParent)
+    // build an array with 1 element by chanded parent
+    const changedParents = changes
+      .reduce((aggr, {element, newParent, oldParent}) => {
+        const existingNewParentObj = aggr.find(({from, to}) => from.id === newParent.id);
+        if (existingNewParentObj) existingNewParentObj.to.children.push(element.id);
+        else aggr.push({
+          from: newParent,
+          to: {
+            ...newParent,
+            children: newParent.children.concat(element.id),
+          },
+        });
+        const existingOldParentObj = aggr.find(({from, to}) => from.id === oldParent.id);
+        if (existingOldParentObj) existingOldParentObj.to.children =  existingOldParentObj.to.children.filter((id) => id !== element.id);
+        else aggr.push({
+          from: oldParent,
+          to: {
+            ...oldParent,
+            children: oldParent.children.filter((id) => id !== element.id),
+          },
+        })
+        return aggr;
+      }, [] as Array<StateChange<ElementData>>)
+    // apply the changes
+    updateElements(changedParents)
   }
   private onSelectionChanged(changed: SelectableState[]) {
     if (stoped) {
