@@ -13,7 +13,7 @@
  * the Silex context menu
  *
  */
-import { getElements, getPages, getParent, subscribeElements, getCurrentPage } from '../api';
+import { getCurrentPage, getElements, getPages, getParent, subscribeElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 
 /**

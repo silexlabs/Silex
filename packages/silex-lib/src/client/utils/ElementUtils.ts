@@ -1,17 +1,20 @@
+import { FullBox } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType } from '../../types';
+import { CssRule, ElementData, ElementId, ElementType } from '../../types';
+import { getAllParents, getBody, getParent } from '../api';
+import { getDomElement } from '../dom/element-dom';
 import { crudIdKey } from '../flux/crud-store';
 import { Dom } from './Dom';
 
 /**
  * constant for the prefix of the IDs given to Silex editable elements
  */
-const ELEMENT_ID_PREFIX = 'silex-id-';
+const ELEMENT_ID_PREFIX = 'silex-id-'
 
 /**
  * constant for default size of an element
  */
-const INITIAL_ELEMENT_SIZE = 100;
+const INITIAL_ELEMENT_SIZE = 100
 
 export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: ElementId, type: ElementType, isSectionContent: boolean, isBody: boolean}): ElementData {
   return {
@@ -78,19 +81,18 @@ export function getDefaultStyle({type, isSectionContent, isBody}: {type: Element
 let nextId = 0
 
 /**
- * @param doc docment of the iframe containing the website
  * Used in copy element
  */
 function generateElementId(elements: ElementData[]): ElementId {
-  let uniqueId;
+  let uniqueId
   do {
-    uniqueId = Date.now().toString() + '-' + nextId++;
-  } while (elements.find((el) => el.id === uniqueId));
-  return uniqueId;
+    uniqueId = Date.now().toString() + '-' + nextId++
+  } while (elements.find((el) => el.id === uniqueId))
+  return uniqueId
 }
 
 export function getNewId(elements: ElementData[]) {
-  return ELEMENT_ID_PREFIX + generateElementId(elements);
+  return ELEMENT_ID_PREFIX + generateElementId(elements)
 }
 
 /**
@@ -101,16 +103,16 @@ export function getNewId(elements: ElementData[]) {
  * then the element should be visible everywhere, i.e. in the same pages as
  * its parent
  */
-export function getFirstPagedParent(elements: ElementData[], element: ElementData): ElementData {
-  const parent = elements.find((el) => !!el.children.find((id) => element.id === id))
+export function getFirstPagedParent(element: ElementData): ElementData {
+  const parent = getParent(element)
   if (!!parent) {
     if (parent.pageNames.length) {
-      return parent;
+      return parent
     }
-    return getFirstPagedParent(elements, parent);
+    return getFirstPagedParent(parent)
   }
   // body
-  return null;
+  return null
 }
 
 /**
@@ -119,8 +121,8 @@ export function getFirstPagedParent(elements: ElementData[], element: ElementDat
  * @return  the element which holds the content, i.e. a div, an image, ...
  */
 export function getContentNode(element: HTMLElement): HTMLElement {
-  const content: HTMLElement = element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME);
-  return content || element;
+  const content: HTMLElement = element.querySelector(':scope > .' + Constants.ELEMENT_CONTENT_CLASS_NAME)
+  return content || element
 }
 
 /**
@@ -130,10 +132,10 @@ export function getContentNode(element: HTMLElement): HTMLElement {
  */
 export function setInnerHtml(element: HTMLElement, innerHTML: string) {
   // get the container of the html content of the element
-  const contentNode = getContentNode(element);
+  const contentNode = getContentNode(element)
 
   // deactivate executable scripts and set html
-  contentNode.innerHTML = Dom.deactivateScripts(innerHTML);
+  contentNode.innerHTML = Dom.deactivateScripts(innerHTML)
 }
 
 /**
@@ -142,11 +144,11 @@ export function setInnerHtml(element: HTMLElement, innerHTML: string) {
  * @return  the html content
  */
 export function getInnerHtml(element: HTMLElement): string {
-  let innerHTML = getContentNode(element).innerHTML;
+  let innerHTML = getContentNode(element).innerHTML
 
   // put back executable scripts
-  innerHTML = Dom.reactivateScripts(innerHTML);
-  return innerHTML;
+  innerHTML = Dom.reactivateScripts(innerHTML)
+  return innerHTML
 }
 
 /**
@@ -154,7 +156,7 @@ export function getInnerHtml(element: HTMLElement): string {
  * will make the style mobile-only
  */
 export function addMediaQuery(styleStr: string) {
-  return '@media ' + Constants.MOBILE_MEDIA_QUERY + '{' + styleStr + '}';
+  return '@media ' + Constants.MOBILE_MEDIA_QUERY + '{' + styleStr + '}'
 }
 
 /**
@@ -164,9 +166,106 @@ export function addMediaQuery(styleStr: string) {
  */
 export function executeScripts(win: Window, element: HTMLElement) {
   // execute the scripts
-  const scripts = element.querySelectorAll('script');
+  const scripts = element.querySelectorAll('script')
   for (const el of scripts) {
     // tslint:disable:no-string-literal
-    win['eval'](el.innerText);
+    win['eval'](el.innerText)
   }
+}
+
+/**
+ * compute new element data
+ * center the element in the container
+ */
+export function center(element: ElementData, parent: ElementData, mobile: boolean, opt_offset: number = 0): ElementData {
+  const mobileOrDesktop = mobile ? element.style.mobile : element.style.desktop
+  const mobileOrDesktopParent = mobile ? parent.style.mobile : parent.style.desktop
+  const posX = Math.round((parseInt(mobileOrDesktopParent.width) / 2) - (parseInt(mobileOrDesktop.width) / 2))
+  const posY = Math.round((parseInt(mobileOrDesktopParent.height) / 2) - (parseInt(mobileOrDesktop.height) / 2))
+  return {
+    ...element,
+    style: {
+      ...element.style,
+      desktop: mobile ? element.style.desktop : {
+        ...element.style.desktop,
+        left: opt_offset + posX + 'px',
+        top: opt_offset + posY + 'px',
+      },
+      mobile: mobile ? {
+        ...element.style.mobile,
+        left: opt_offset + posX + 'px',
+        top: opt_offset + posY + 'px',
+      } : element.style.mobile,
+    },
+  }
+}
+
+/**
+ * get the bounding box of some elements
+ * width, height, top, left, right integers in pixels
+ * Achtung: elements and their parents need to have their top, left, width, height styles set
+ */
+export function getBoundingBox(elements: ElementData[], mobile: boolean): FullBox {
+  // retrieve a style value, either the mobile or desktop
+  // when retrieving mobile value, defaults to desktop value
+  const error = (style, prop) => {
+    throw new Error('No value found for `' + prop + '` on `' + style + '`')
+  }
+  const getStyle = (style: { mobile: CssRule, desktop: CssRule }, prop: string): number => mobile && style.mobile[prop]
+    ? parseInt(style.mobile[prop])
+    : !!style.desktop[prop] ? parseInt(style.desktop[prop]) : error(style, prop)
+
+  return elements.reduce((aggr, element) => {
+    const parents = getAllParents(element)
+    const offset = parents.reduce((o, el) => ({
+      top: o.top + getStyle(el.style, 'top'),
+      left: o.left + getStyle(el.style, 'left'),
+    }), {top: 0, left: 0})
+    const box: FullBox = {
+      top: offset.top + getStyle(element.style, 'top'),
+      left: offset.left + getStyle(element.style, 'left'),
+      width: getStyle(element.style, 'width'),
+      height: getStyle(element.style, 'height'),
+      bottom: offset.top + getStyle(element.style, 'top') + getStyle(element.style, 'height'),
+      right: offset.left + getStyle(element.style, 'left') + getStyle(element.style, 'width'),
+    }
+    return {
+      top: Math.min(aggr.top, box.top),
+      left: Math.min(aggr.left, box.left),
+      bottom: Math.max(aggr.bottom, box.bottom),
+      right: Math.max(aggr.right, box.right),
+      width: Math.max(aggr.width, box.width),
+      height: Math.max(aggr.height, box.height),
+    }
+  }, {
+    top: Infinity,
+    left: Infinity,
+    bottom: -Infinity,
+    right: -Infinity,
+    width: -Infinity,
+    height: -Infinity,
+  } as FullBox)
+}
+
+// FIXME: remove (with UT) because it is not used
+export function getCreationDropZone(isSection: boolean, stageEl: HTMLIFrameElement, elements: ElementData[]): ElementData {
+  if (isSection) {
+    return getBody()
+  }
+  // other than sections
+  // find the topmost element in the middle of the stage
+  const doc = stageEl.contentDocument
+
+  // compute stage size
+  const stageSize = stageEl.getBoundingClientRect()
+  const posX = Math.round((stageSize.width / 2)) // - (width / 2))
+  const posY = Math.round((stageSize.height / 2)) // - (height / 2))
+
+  // find the tpopmost in the DOM
+  return doc.elementsFromPoint(posX, posY)
+      // retrieve the model which holds this HTML element
+    .map((domEl) => elements.find((el) => getDomElement(doc, el) === domEl))
+    .filter((el) => !!el && el.enableDrop)
+    // just the top most element
+    .shift()
 }

@@ -1,8 +1,8 @@
 import { Constants } from '../../constants';
 import { UiData } from '../../types'
 import { getSite } from '../api';
-import { SilexNotification } from '../utils/Notification';
 import { getUiElements } from '../components/UiElements';
+import { SilexNotification } from '../utils/Notification';
 
 export function onChangeUi(prev: UiData, ui: UiData) {
   if (ui.mobileEditor) {

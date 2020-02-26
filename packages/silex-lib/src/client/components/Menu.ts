@@ -18,11 +18,12 @@
 
 import { Constants } from '../../constants';
 import { ElementType } from '../../types';
-import { getElements, getUi, updateElements, updateUi, moveElements, getSelectedElementsNoSectionContent, getSelectedElements, getBody, selectBody } from '../api';
+import { getElements, getSelectedElements, getUi, moveElements, selectBody, updateElements, updateUi } from '../api';
 import { Config } from '../ClientConfig';
-import { Controller, Model } from '../ClientTypes';
-import { DomDirection } from '../model/Element';
+import { Controller, DomDirection, Model } from '../ClientTypes';
+import { getCreationDropZone } from '../utils/ElementUtils';
 import { Keyboard } from '../utils/Keyboard';
+import { getUiElements } from './UiElements';
 
 /**
  * @param element   container to render the UI
@@ -182,7 +183,6 @@ export class Menu {
    * TODO: use redux for this
    */
   onMenuEvent(type: string, opt_componentName?: string) {
-    let added = null;
     switch (type) {
       case 'show.pages':
         this.toggleSubMenu('page-tool-visible');
@@ -267,28 +267,28 @@ export class Menu {
         this.controller.pageToolController.createPage();
         break;
       case 'insert.text': {
-        const parent = this.model.element.getCreationDropZone();
-        added = this.controller.insertMenuController.addElement(ElementType.TEXT, parent, opt_componentName);
+        const parent = getCreationDropZone(false, getUiElements().stage, getElements());
+        this.controller.insertMenuController.addElement(ElementType.TEXT, parent, opt_componentName);
         break;
       }
       case 'insert.section': {
-        const parent = this.model.element.getCreationDropZone();
-        added = this.controller.insertMenuController.addElement(ElementType.SECTION, parent, opt_componentName);
+        const parent = getCreationDropZone(true, getUiElements().stage, getElements());
+        this.controller.insertMenuController.addElement(ElementType.SECTION, parent, opt_componentName);
         break;
       }
       case 'insert.html': {
-        const parent = this.model.element.getCreationDropZone();
-        added = this.controller.insertMenuController.addElement(ElementType.HTML, parent, opt_componentName);
+        const parent = getCreationDropZone(false, getUiElements().stage, getElements());
+        this.controller.insertMenuController.addElement(ElementType.HTML, parent, opt_componentName);
         break;
       }
       case 'insert.image': {
-        const parent = this.model.element.getCreationDropZone();
+        const parent = getCreationDropZone(false, getUiElements().stage, getElements());
         this.controller.insertMenuController.browseAndAddImage(parent);
         break;
       }
       case 'insert.container': {
-        const parent = this.model.element.getCreationDropZone();
-        added = this.controller.insertMenuController.addElement(ElementType.CONTAINER, parent, opt_componentName);
+        const parent = getCreationDropZone(false, getUiElements().stage, getElements());
+        this.controller.insertMenuController.addElement(ElementType.CONTAINER, parent, opt_componentName);
         break;
       }
       case 'edit.delete.selection':

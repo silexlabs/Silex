@@ -20,15 +20,17 @@
 
 import { Constants } from '../../constants';
 import { CssRule, ElementData, ElementType, FileInfo, PageData } from '../../types';
-import { createElements, deleteElements, getData, getElements, getPages, getUi, openPage, updateElements, getSelectedElements } from '../api';
+import { createElements, deleteElements, getData, getElement, getElements, getPages, getSelectedElements, getUi, openPage, updateElements } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, UndoItem, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LinkDialog } from '../components/dialog/LinkDialog';
-import { getSiteDocument } from '../components/UiElements';
+import { getStage } from '../components/StageWrapper';
+import { getSiteDocument, getSiteWindow } from '../components/UiElements';
 import { getDomElement } from '../dom/element-dom';
+import { getCurrentPage } from '../dom/page-dom';
 import { Tracker } from '../service/Tracker';
-import { getEmptyElementData, getNewId } from '../utils/ElementUtils';
+import { center, getEmptyElementData, getFirstPagedParent, getNewId } from '../utils/ElementUtils';
 import { InvalidationManager } from '../utils/InvalidationManager';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
@@ -442,7 +444,7 @@ export class ControllerBase {
    * @param componentName the desired component type if it is a component
    * @return the new element
    */
-  addElement(type: ElementType, parent: ElementData, componentName?: string): ElementData[] {
+  addElement(type: ElementType, parent: ElementData, componentName?: string): [ElementData, ElementData] {
     this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
 
     // undo checkpoint
@@ -455,10 +457,23 @@ export class ControllerBase {
       isSectionContent: false,
     })
 
+    if (type === ElementType.TEXT) {
+      newElementData.innerHtml = 'New text box';
+    } else if (type === ElementType.HTML) {
+      newElementData.innerHtml = '<p>New <strong>HTML</strong> box</p>';
+    }
+
+    const newElementDataPaged = {
+      ...newElementData,
+      pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [getCurrentPage(getSiteWindow(), getPages()).id],
+    }
+
+    const centeredAndPaged = center(newElementDataPaged, newParentData, false)
+
     if (type === ElementType.SECTION) {
       const [contentElement, newElementDataWithContent] = this.createEmptyElement({
         type: ElementType.CONTAINER,
-        parent: newElementData,
+        parent: centeredAndPaged,
         componentName: null,
         isSectionContent: true,
       })
@@ -472,18 +487,36 @@ export class ControllerBase {
       }
       createElements([newElementDataWithContent, contentElementWithCssClasses]);
     } else {
-      createElements([newElementData]);
+      createElements([centeredAndPaged]);
     }
-    if (type === ElementType.TEXT) {
-      newElementData.innerHtml = 'New text box';
-    }
-    if (type === ElementType.HTML) {
-      newElementData.innerHtml = '<p>New <strong>HTML</strong> box</p>';
-    }
+    updateElements(getSelectedElements()
+      // deselect all but the added element
+      .filter((el) => el !== newParentData) // will be updated bellow
+      .map((el) => ({
+        from: el,
+        to: {
+          ...el,
+          selected: el === centeredAndPaged,
+        },
+      }))
+      // update the parent element
+      .concat({
+        from: getElement(newParentData.id),
+        to: {
+          ...newParentData,
+          selected: false,
+        },
+      }))
+
+    const element = centeredAndPaged
+    const elementDom = getDomElement(getSiteDocument(), element)
+    // setTimeout(() => getStage().startDrag(elementDom, parseInt(element.style.desktop.left || '0') || 0, parseInt(element.style.desktop.top || '0') || 0), 5000)
+    getStage().startDrag(elementDom)
 
     // tracking
     this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
-    return [newElementData, newParentData];
+
+    return [centeredAndPaged, newParentData]
   }
 
   createEmptyElement({type, parent, isSectionContent, componentName}: {type: ElementType, parent: ElementData, isSectionContent: boolean, componentName?: string}): ElementData[] {
@@ -505,38 +538,6 @@ export class ControllerBase {
       },
     ]
   }
-
-  /**
-   * called after an element has been created
-   * add the element to the current page (only if it has not a container which
-   * is in a page) redraw the tools and set the element as editable
-   * @param element the element to add
-   */
-  // doAddElement(element: ElementData): ElementData {
-  //   // only visible on the current page
-  //   const finalElement = {
-  //     ...element,
-  //     pageNames: [getPages().find((p) => p.opened).id],
-  //   }
-
-  //   // reset selection
-  //   updateElements(getElements()
-  //     .filter((el) => el.selected)
-  //     .map((el) => ({
-  //       from: el,
-  //       to: {
-  //         ...el,
-  //         selected: false,
-  //       },
-  //     })))
-
-  //   // unless one of its parents is in a page already
-  //   if (this.getFirstPagedParent(finalElement)) {
-  //     finalElement.pageNames = [];
-  //   }
-
-  //   return finalElement;
-  // }
 
   // /**
   //  * NOW IN UTILS

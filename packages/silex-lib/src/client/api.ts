@@ -10,10 +10,10 @@
  */
 
 import { DataModel, ElementData, ElementId, PageData, SiteData, UiData } from '../types';
+import { DomDirection } from './ClientTypes';
 import { ElementAction, PageAction, SiteAction, UiAction } from './flux/actions';
 import { StateChange } from './flux/crud-store';
 import { store, subscribeTo, subscribeToCrud } from './flux/store';
-import { DomDirection } from './model/Element';
 
 // //////////////////////
 // The whole model API
@@ -61,6 +61,11 @@ export const getChildrenRecursive = (element: ElementData): ElementData[] => ele
 export const getParent = (element: ElementData): ElementData => getElements().find((parent) => {
   return parent.children.includes(element.id)
 })
+
+export const getAllParents = (element: ElementData): ElementData[] => {
+  const parent = getParent(element)
+  return !!parent ? [parent, ...getAllParents(parent)] : []
+}
 
 export const isBody = (el: ElementData): boolean => !getParent(el)
 export const getBody = (): ElementData => getElements().find((el) => isBody(el))

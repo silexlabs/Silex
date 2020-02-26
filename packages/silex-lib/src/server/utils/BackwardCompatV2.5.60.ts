@@ -1,11 +1,11 @@
 import * as jsBeautify from 'js-beautify';
 import { writeStyleToDom } from '../../client/dom/element-dom';
+import { setWebsiteWidth } from '../../client/dom/site-dom';
 import { crudIdKey } from '../../client/flux/crud-store';
 import { getContentNode, getDefaultStyle, getInnerHtml } from '../../client/utils/ElementUtils';
 import { Constants } from '../../constants';
 import { ComponentData, CssRule, ElementData, ElementId, ElementType, FileInfo, LinkType, PageData, SiteData, StyleData } from '../../types';
 import DomTools from './DomTools';
-import { setWebsiteWidth } from '../../client/dom/site-dom';
 
 ////////////////////////////////////////////////////////////
 // Old data structures

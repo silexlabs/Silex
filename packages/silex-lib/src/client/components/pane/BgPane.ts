@@ -16,10 +16,10 @@
  */
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { ElementData } from '../../../types';
+import { getUi } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
-import { getUi } from '../../api';
 
 /**
  * on of Silex Editors class

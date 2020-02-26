@@ -18,7 +18,6 @@ import { getSite, subscribeSite, updateSite } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { CodeEditorBase } from './CodeEditorBase';
 
-
 /**
  * @class {silex.view.dialog.CssEditor}
  */

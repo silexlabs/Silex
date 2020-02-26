@@ -11,7 +11,7 @@
 
 import { Constants } from '../../../constants';
 import { ElementData, ElementType, StyleData, StyleName, Visibility } from '../../../types';
-import { getElements, getPages, getParent, getSite, getUi, updateElements, updateUi, getData, getBody } from '../../api';
+import { getBody, getData, getElements, getPages, getParent, getSite, getUi, updateElements, updateUi } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { getDomElement } from '../../dom/element-dom';
 import { Tracker } from '../../service/Tracker';

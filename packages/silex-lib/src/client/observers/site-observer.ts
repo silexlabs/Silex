@@ -1,6 +1,6 @@
 import * as objectPath from '../../../node_modules/object-path/index.js';
 import { DataSources, SiteData } from '../../types';
-import { getData, updateElements, getBody } from '../api';
+import { getBody, getData, updateElements } from '../api';
 import { getSiteDocument } from '../components/UiElements';
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth, writeDataToDom } from '../dom/site-dom';
 import { SilexNotification } from '../utils/Notification';

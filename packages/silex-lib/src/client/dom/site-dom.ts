@@ -6,8 +6,7 @@ export function writeDataToDom(doc: HTMLDocument, data: DataModel) {
   let tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
   if (!tag) {
     tag = doc.createElement('script')
-    // json type: it used to be javascript and sometimes it tabs mess up the json
-    tag.type = 'text/json'
+    tag.type = 'application/json'
     tag.classList.add(Constants.JSON_STYLE_TAG_CLASS_NAME)
     doc.head.appendChild(tag)
   }

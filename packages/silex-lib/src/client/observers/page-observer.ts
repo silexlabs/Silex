@@ -1,4 +1,4 @@
-import { LinkType, PageData, ElementData } from '../../types';
+import { ElementData, LinkType, PageData } from '../../types';
 import { deleteElements, getData, getElements, updateElements } from '../api';
 import { getSiteDocument, getSiteWindow } from '../components/UiElements';
 import { openPageDom } from '../dom/page-dom';

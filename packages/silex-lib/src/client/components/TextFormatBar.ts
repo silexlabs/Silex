@@ -16,7 +16,7 @@
  */
 
 import { ElementData } from '../../types';
-import { getElements, updateElements, getSelectedElements } from '../api';
+import { getElements, getSelectedElements, updateElements } from '../api';
 import { Controller, LinkData, Model } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { getDomElement } from '../dom/element-dom';
@@ -25,7 +25,7 @@ import { Body } from '../model/Body';
 import { Tracker } from '../service/Tracker';
 import { getContentNode, getInnerHtml } from '../utils/ElementUtils';
 import { SilexNotification } from '../utils/Notification';
-import { LinkDialog, LINK_ATTRIBUTES } from './dialog/LinkDialog';
+import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
 import { Menu } from './Menu';
 import { getSiteDocument, getSiteWindow } from './UiElements';
 

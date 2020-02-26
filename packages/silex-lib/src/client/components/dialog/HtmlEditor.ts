@@ -14,12 +14,12 @@
  * the Silex HTML editor
  *
  */
-import { SiteData, ElementData, ElementType } from '../../../types';
-import { getSelectedElements, getSite, subscribeSite, updateElements, updateSite, subscribeElements } from '../../api';
+import { ElementData, ElementType, SiteData } from '../../../types';
+import { getSelectedElements, getSite, subscribeElements, subscribeSite, updateElements, updateSite } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
-import { CodeEditorBase } from './CodeEditorBase';
 import { getDomElement } from '../../dom/element-dom';
 import { getSiteDocument } from '../UiElements';
+import { CodeEditorBase } from './CodeEditorBase';
 
 /**
  * @class {silex.view.dialog.HtmlEditor}
@@ -44,11 +44,15 @@ export class HtmlEditor extends CodeEditorBase {
   }
   forSelection({ htmlBox, body, error }: { htmlBox: (el: ElementData) => void, body: () => void, error: () => void }) {
     const elements = getSelectedElements()
-    console.log('forSelection', elements.length, elements)
-    if (elements.length === 1 && elements[0].type === ElementType.HTML) {
-      htmlBox(elements[0])
-    } else if (elements.length === 1 && getDomElement(getSiteDocument(), elements[0]).tagName.toLowerCase() === 'body') {
-      body()
+    if (elements.length === 1) {
+      const domEl = getDomElement(getSiteDocument(), elements[0])
+      if (elements[0].type === ElementType.HTML) {
+        htmlBox(elements[0])
+      } else if (domEl && domEl.tagName.toLowerCase() === 'body') {
+        body()
+      } else {
+        error()
+      }
     } else {
       error()
     }

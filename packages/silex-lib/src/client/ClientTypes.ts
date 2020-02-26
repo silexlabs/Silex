@@ -14,7 +14,7 @@
  * Controller structures
  *
  */
-import { ElementData, FileInfo, PageData, Provider, DataModel } from '../types';
+import { DataModel, FileInfo, PageData, Provider } from '../types';
 import { BreadCrumbs } from './components/BreadCrumbs';
 import { ContextMenu } from './components/ContextMenu';
 import { CssEditor } from './components/dialog/CssEditor';
@@ -52,6 +52,16 @@ import { Head } from './model/Head';
 import { Property } from './model/Property';
 
 // FIXME: this file should not exist
+
+/**
+ * direction in the dom
+ */
+export class DomDirection {
+  static UP = 'UP';
+  static DOWN = 'DOWN';
+  static TOP = 'TOP';
+  static BOTTOM = 'BOTTOM';
+}
 
 export interface LinkData {
   href?: string;

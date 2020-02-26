@@ -16,7 +16,7 @@
  */
 
 import { ElementData } from '../../../types';
-import { getParent, getUi, getBody } from '../../api';
+import { getBody, getParent, getUi } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
 

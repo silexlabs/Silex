@@ -34,7 +34,7 @@ const ELEM1: ElementData = {
   data: {
     component: null,
   },
-  innerHtml: 'SOME CONTENT ELEM3',
+  innerHtml: 'SOME CONTENT ELEM1',
 }
 
 const ELEM2: ElementData = {

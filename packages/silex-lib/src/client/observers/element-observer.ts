@@ -2,7 +2,7 @@ import { ElementData, ElementId, ElementType } from '../../types';
 import { getData, getElements, getPages, getParent, getUi, noSectionContent } from '../api';
 import { createDomElement, getDomElement, hideOnDesktop, hideOnMobile, removeElement, reorderElements, setLink, showOnDesktop, showOnMobile, writeStyleToDom } from '../dom/element-dom';
 import { setPages } from '../dom/page-dom';
-import { writeDataToDom, setWebsiteWidth } from '../dom/site-dom';
+import { setWebsiteWidth, writeDataToDom } from '../dom/site-dom';
 import { StateChange } from '../flux/crud-store';
 import { executeScripts, getContentNode, setInnerHtml } from '../utils/ElementUtils';
 
@@ -61,7 +61,7 @@ export const onUpdateElements = (win: Window) => (change: Array<StateChange<Elem
 
     if (to.pageNames !== from.pageNames) {
       const noSection = noSectionContent(to)
-      setPages(getDomElement(doc, noSection), to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
+      setPages(getPages(), getDomElement(doc, noSection), to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
     }
     if (to.children !== from.children) {
       reorderElements(domEl, to.children

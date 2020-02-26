@@ -319,7 +319,6 @@ export class SettingsDialog {
           'Settings panel error: could not find the element to bind.');
     }
     input.onkeyup = (e) => {
-      console.log('text field changed', input.value, e, input)
       cbk(input.value);
     };
   }
@@ -343,7 +342,6 @@ export class SettingsDialog {
    * @see silex.model.Head
    */
   setInputValue(cssSelector: string, opt_value?: string) {
-    console.log('setInputValue', {cssSelector, opt_value})
     const input = this.element.querySelector(cssSelector) as HTMLInputElement;
     if (opt_value) {
       if (opt_value !== input.value) input.value = opt_value;
