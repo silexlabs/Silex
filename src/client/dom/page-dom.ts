@@ -11,7 +11,6 @@
 
 import { Constants } from '../../constants';
 import { PageData } from '../../types';
-import { getPages } from '../api';
 
 /**
  * get the currently opened page from the dom
@@ -25,9 +24,9 @@ export function getCurrentPageName(win: Window): string {
 /**
  * get the currently opened page from the dom
  */
-export function getCurrentPage(win: Window): PageData {
+export function getCurrentPage(win: Window, pages: PageData[]): PageData {
   const name = getCurrentPageName(win)
-  return getPages().find((p) => p.id === name)
+  return pages.find((p) => p.id === name)
 }
 
 // /**
@@ -48,7 +47,6 @@ export function getCurrentPage(win: Window): PageData {
  * open the page
  */
 export function openPageDom(win: Window, pageData: PageData) {
-  console.log('openPage', pageData, pageData.id)
   // tslint:disable:no-string-literal
   const bodyElement = win.document.body
   if (win['jQuery'] && win['jQuery'](bodyElement).pageable) {
@@ -142,8 +140,8 @@ export function openPageDom(win: Window, pageData: PageData) {
  * set/get a the visibility of an element in the given page
  * remove from all pages if visible in all pages
  */
-export function setPages(element: HTMLElement, pages: PageData[]) {
-  removeFromAllPages(element)
+export function setPages(allPages: PageData[], element: HTMLElement, pages: PageData[]) {
+  removeFromAllPages(allPages, element)
   pages.forEach((page) => {
     element.classList.add(page.id)
     element.classList.add(Constants.PAGED_CLASS_NAME)
@@ -170,8 +168,8 @@ export function setPages(element: HTMLElement, pages: PageData[]) {
  * remove an element from all the pages
  * make it visible on all pages
  */
-export function removeFromAllPages(element: HTMLElement) {
-  getPagesForElement(element)
+export function removeFromAllPages(pages: PageData[], element: HTMLElement) {
+  getPagesForElement(pages, element)
     .forEach((pageData) => {
       element.classList.remove(pageData.id)
     })
@@ -183,8 +181,8 @@ export function removeFromAllPages(element: HTMLElement) {
 /**
  * get the pages on which this element is visible
  */
-function getPagesForElement(element: HTMLElement): PageData[] {
-  return getPages().filter((pageData) => element.classList.contains(pageData.id))
+function getPagesForElement(pages: PageData[], element: HTMLElement): PageData[] {
+  return pages.filter((pageData) => element.classList.contains(pageData.id))
 }
 
 // /**

@@ -395,15 +395,19 @@ export class StageWrapper {
             children: newParent.children.concat(element.id),
           },
         });
-        const existingOldParentObj = aggr.find(({from, to}) => from.id === oldParent.id);
-        if (existingOldParentObj) existingOldParentObj.to.children =  existingOldParentObj.to.children.filter((id) => id !== element.id);
-        else aggr.push({
-          from: oldParent,
-          to: {
-            ...oldParent,
-            children: oldParent.children.filter((id) => id !== element.id),
-          },
-        })
+        if (!!oldParent) {
+          const existingOldParentObj = aggr.find(({from, to}) => from.id === oldParent.id);
+          if (existingOldParentObj) existingOldParentObj.to.children =  existingOldParentObj.to.children.filter((id) => id !== element.id);
+          else aggr.push({
+            from: oldParent,
+            to: {
+              ...oldParent,
+              children: oldParent.children.filter((id) => id !== element.id),
+            },
+          })
+        } else {
+          console.warn('Element was not in a parent!', element)
+        }
         return aggr;
       }, [] as Array<StateChange<ElementData>>)
     // apply the changes
@@ -444,7 +448,6 @@ export class StageWrapper {
     }]) : updateActions)
     // select the body if nothing else is selected
     if (getSelectedElements().length === 0) {
-      console.log('Stage wrapper: selection empty => select body')
       selectBody()
     }
 }
@@ -456,7 +459,6 @@ export class StageWrapper {
       console.trace('prevent update elements with stoped in stage');
       return;
     }
-    console.log('apply style from stage')
     // do not mess up the css translation applyed by stage during drag
     if (!this.dragging) {
       // removed the inline styles

@@ -22,7 +22,7 @@
   pointer-events: auto;
 }
 /* prevent-auto-z-index is to let the components handle their z-index */
-.section-element > .silex-element-content > *:not(.prevent-auto-z-index) {
+.section-element > .silex-element-content > *:not(.prevent-auto-z-index):not(.fixed) {
   /* put the elements of a section on top of sections bellow */
   z-index: 10;
 }

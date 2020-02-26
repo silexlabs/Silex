@@ -15,7 +15,7 @@
  *
  */
 import { ElementData, Link, PageData } from '../../types';
-import { getPages, updateElements, noSectionContent } from '../api';
+import { getPages, noSectionContent, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
 import { ControllerBase } from './ControllerBase';
 

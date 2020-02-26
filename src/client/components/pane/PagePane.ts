@@ -18,7 +18,7 @@
 
 import { Constants } from '../../../constants';
 import { ElementData, LinkType, PageData } from '../../../types';
-import { getElements, getPages, getSite, getUi, noSectionContent, updateElements, subscribePages, subscribeSite, subscribeUi, getSelectedElements } from '../../api';
+import { getElements, getPages, getSelectedElements, getSite, getUi, noSectionContent, subscribePages, subscribeSite, subscribeUi, updateElements } from '../../api';
 import { Controller, Model } from '../../ClientTypes';
 import { getDomElement } from '../../dom/element-dom';
 import { Dom } from '../../utils/Dom';

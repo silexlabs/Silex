@@ -11,9 +11,10 @@
 
 import * as fs from 'fs';
 import * as Path from 'path';
+import { writeDataToDom } from '../../client/dom/site-dom';
 import { Constants } from '../../constants';
 import { DataModel, ElementType } from '../../types';
-import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeStyles, writeSiteStyles } from './BackwardCompatV2.5.60';
+import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeSiteStyles, writeStyles } from './BackwardCompatV2.5.60';
 
 // FIXME: path in constants
 // const components = require('../../../dist/client/libs/prodotype/components/components.json')
@@ -95,6 +96,10 @@ export default class BackwardCompat {
             <ul>${ allActions[_version].map((_action) => `<li class="no-list">${ _action }</li>`).join('') }</ul>
         </small>`;
       }).join('');
+      // save data to dom for front-end.js and other scripts
+      // in case data has been changed
+      // FIXME: should not have this.data mutated but returned by update scripts
+      writeDataToDom(doc, this.data)
       // needs to reload if silex scripts and stylesheets have been updated
       return [
         `<h2>Website updated</h2>

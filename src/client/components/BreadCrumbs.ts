@@ -16,7 +16,7 @@
  */
 
 import { ElementData, ElementType } from '../../types';
-import { getElements, getParent, subscribeElements, updateElements, getSelectedElements } from '../api';
+import { getElements, getParent, getSelectedElements, subscribeElements, updateElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { getDomElement } from '../dom/element-dom';
 import { getSiteDocument } from './UiElements';

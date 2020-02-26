@@ -258,8 +258,7 @@ function getInlineStyleSheet(doc: Document): CSSStyleSheet {
     const cssStyleSheet = s as CSSStyleSheet
     if (
       (cssStyleSheet.ownerNode && cssStyleSheet.ownerNode === styleTag) // case of browser
-      || cssStyleSheet === styleTag.sheet) // jsdom
-    {
+      || cssStyleSheet === styleTag.sheet) {
       return cssStyleSheet;
     }
   }

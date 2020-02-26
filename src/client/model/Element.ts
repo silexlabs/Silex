@@ -18,22 +18,10 @@
 
 import { Constants } from '../../constants';
 import { ElementData, ElementType, PageData, TemplateName } from '../../types';
-import { getElements, getPages, updateElements } from '../api';
+import { getPages, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
-import { getStage } from '../components/StageWrapper';
-import { getSiteDocument, getUiElements } from '../components/UiElements';
-import { getDomElement } from '../dom/element-dom';
+import { getSiteDocument } from '../components/UiElements';
 import { getContentNode } from '../utils/ElementUtils';
-
-/**
- * direction in the dom
- */
-export class DomDirection {
-  static UP = 'UP';
-  static DOWN = 'DOWN';
-  static TOP = 'TOP';
-  static BOTTOM = 'BOTTOM';
-}
 
 /**
  * @param model  model class which holds the other models
@@ -669,18 +657,19 @@ export class SilexElement {
   //   this.model.property.setStyle(element, styleObject, false);
   // }
 
-  getCreationDropZone(): ElementData {
-    // compute sizes
-    const stageSize = getUiElements().stage.getBoundingClientRect();
-    const posX = Math.round((stageSize.width / 2)) // - (width / 2));
-    const posY = Math.round((stageSize.height / 2)) // - (height / 2));
+  // now in utils
+  // getCreationDropZone(): ElementData {
+  //   // compute sizes
+  //   const stageSize = getUiElements().stage.getBoundingClientRect();
+  //   const posX = Math.round((stageSize.width / 2)) // - (width / 2));
+  //   const posY = Math.round((stageSize.height / 2)) // - (height / 2));
 
-    // find the container
-    const container = getStage().getDropZone(posX, posY) || getSiteDocument().body;
-    const parent = getElements().find((el) => getDomElement(getSiteDocument(), el) === container);
+  //   // find the container
+  //   const container = getStage().getDropZone(posX, posY) || getSiteDocument().body;
+  //   const parent = getElements().find((el) => getDomElement(getSiteDocument(), el) === container);
 
-    return parent;
-  }
+  //   return parent;
+  // }
 
   // /**
   //  * add an element at the center of the stage

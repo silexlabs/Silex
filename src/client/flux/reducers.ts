@@ -54,7 +54,7 @@ export const siteReducer = (state: SiteData = {
   dataSources: {},
   fonts: [],
   style: {},
-}, action: any) => {
+},                          action: any) => {
   switch (action.type) {
     case SiteAction.INITIALIZE: return {
       ...action.data,
@@ -70,7 +70,7 @@ export const siteReducer = (state: SiteData = {
 export const uiReducer = (state: UiData = {
   loading: true,
   mobileEditor: false,
-}, action: any) => {
+},                        action: any) => {
   switch (action.type) {
     case UiAction.INITIALIZE: return {
       ...action.data,

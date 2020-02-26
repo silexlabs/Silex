@@ -16,6 +16,8 @@
  *
  */
 
+import { ElementType } from '../../types';
+import { getElements, subscribeElements } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { BgPane } from './pane/BgPane';
 import { BorderPane } from './pane/BorderPane';
@@ -24,9 +26,7 @@ import { PagePane } from './pane/PagePane';
 import { PropertyPane } from './pane/PropertyPane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
 import { StylePane } from './pane/StylePane';
-import { subscribeElements, getElements } from '../api';
 import { getStage } from './StageWrapper';
-import { ElementType } from '../../types';
 
 //////////////////////////////////////////////////////////////////
 // PropertyTool class

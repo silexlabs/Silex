@@ -14,8 +14,8 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { FileInfo, Provider, DataModel } from '../../types';
-import { getSite, updateSite, selectBody } from '../api';
+import { DataModel, FileInfo, Provider } from '../../types';
+import { getSite, selectBody, updateSite } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, PublicationOptions, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';

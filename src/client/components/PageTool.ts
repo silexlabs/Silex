@@ -17,10 +17,10 @@
  */
 
 import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
+import { PageData } from '../../types.js';
 import { deletePages, getPages, movePage, openPage, subscribePages } from '../api';
 import { Controller, Model } from '../ClientTypes';
 import { Dom } from '../utils/Dom';
-import { PageData } from '../../types.js';
 
 /**
  *
@@ -55,7 +55,6 @@ export class PageTool {
         } else {
           // select page
           const cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
-          console.log('select page', cellIndex, e.target)
           if (cellIndex >= 0) {
             this.setSelectedIndex(cellIndex, true);
           }
@@ -87,7 +86,6 @@ export class PageTool {
       handle: '.page-handle',
       onSort: (e) => {
         const pages = getPages();
-        console.log('move page', pages, e.oldIndex, pages[e.oldIndex], e.newIndex)
         movePage(pages[e.oldIndex], e.newIndex);
       },
     });
@@ -138,7 +136,6 @@ export class PageTool {
    * find all pages in the dom
    */
   private redraw(_, pages: PageData[]) {
-    console.log('page tool redraw', pages)
     // prepare the data for the template
     // make an array with name, displayName, linkName
     const templateData = pages

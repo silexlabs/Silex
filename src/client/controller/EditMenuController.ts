@@ -17,14 +17,13 @@
 
 import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType, FileInfo, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility, VisibilityData } from '../../types';
-import { createElements, deleteElements, getBody, getElement, getElements, getPages, getParent, getSite, getUi, moveElements, noSectionContent, updateElements, getSelectedElements, getSelectedElementsNoSectionContent, getChildren, getChildrenRecursive } from '../api';
-import { LinkData, Model, View } from '../ClientTypes';
+import { createElements, deleteElements, getBody, getChildrenRecursive, getElement, getElements, getPages, getParent, getSelectedElements, getSelectedElementsNoSectionContent, getSite, moveElements, noSectionContent, updateElements } from '../api';
+import { DomDirection, LinkData, Model, View } from '../ClientTypes';
 import { FileExplorer } from '../components/dialog/FileExplorer';
-import { getStage, stopStageObserver, startStageObserver } from '../components/StageWrapper';
-import { getSiteDocument } from '../components/UiElements';
+import { getStage } from '../components/StageWrapper';
+import { getSiteDocument, getUiElements } from '../components/UiElements';
 import { getDomElement } from '../dom/element-dom';
-import { DomDirection } from '../model/Element';
-import { getFirstPagedParent, getNewId } from '../utils/ElementUtils';
+import { getCreationDropZone, getFirstPagedParent, getNewId } from '../utils/ElementUtils';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
 
@@ -134,7 +133,7 @@ export class EditMenuController extends ControllerBase {
     const rootElements = ControllerBase.clipboard.filter((el) => el.selected);
 
     // get the drop zone in the center
-    const parent = this.model.element.getCreationDropZone();
+    const parent = getCreationDropZone(false, getUiElements().stage, getElements());
 
     this.pasteElements({
       parent,
@@ -150,7 +149,6 @@ export class EditMenuController extends ControllerBase {
   }
 
   pasteElements({parent, rootElements, allElements}: {parent: ElementData, rootElements: ElementData[], allElements: ElementData[]}) {
-    console.log('pasteElements', {parent, rootElements, allElements})
     this.tracker.trackAction('controller-events', 'info', 'paste', 0);
 
     if (allElements.length > 0) {
@@ -177,7 +175,7 @@ export class EditMenuController extends ControllerBase {
       // add to the container
       createElements(allElements.map((element: ElementData) => {
         // only visible on the current page unless one of its parents is in a page already
-        const pageNames = !parent || !!getFirstPagedParent(getElements(), parent) ? [] : [getPages().find((p) => p.opened).id]
+        const pageNames = !parent || !!getFirstPagedParent(parent) ? [] : [getPages().find((p) => p.opened).id]
         const isRoot = rootElements.includes(element);
         if (isRoot) {
           offset += 20;
@@ -198,6 +196,8 @@ export class EditMenuController extends ControllerBase {
           selected: true,
         }
       }));
+
+      console.warn('not implemented add sections to the body')
 
       // update the parent (will add the element to the stage)
       updateElements([{
@@ -264,7 +264,6 @@ export class EditMenuController extends ControllerBase {
    */
   editElement() {
     const element: ElementData = getElements().find((el) => el.selected && this.isEditable(el))
-    console.log('edit element', element)
 
     if (element) {
       // open the params tab for the components
