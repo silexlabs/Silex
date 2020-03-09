@@ -511,7 +511,7 @@ export class ControllerBase {
     const element = centeredAndPaged
     const elementDom = getDomElement(getSiteDocument(), element)
     // setTimeout(() => getStage().startDrag(elementDom, parseInt(element.style.desktop.left || '0') || 0, parseInt(element.style.desktop.top || '0') || 0), 5000)
-    getStage().startDrag(elementDom)
+    getStage().startDrag()
 
     // tracking
     this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);

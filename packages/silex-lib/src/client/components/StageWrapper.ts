@@ -77,7 +77,7 @@ function onDeleteElements(elements: ElementData[]) {
   })
 }
 // on update elements
-function onUpdateElement(change: Array<StateChange<ElementData>>) {
+function onUpdateElement(change: StateChange<ElementData>[]) {
   if (!stage) { console.warn('onUpdateElement NO STAGE'); return };
   const doc = getSiteDocument()
   let needReset = false
@@ -372,7 +372,7 @@ export class StageWrapper {
     this.stopDragOrResize(changed, redraw);
     // Handle parent change
     // build an array with all the changes (may contain several times the same parent)
-    const changes: Array<{element: ElementData, newParent: ElementData, oldParent: ElementData}> = changed
+    const changes: {element: ElementData, newParent: ElementData, oldParent: ElementData}[] = changed
       .map((selectable) => ({
         // FIXME: find a more optimal way to get the data from DOM element
         element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
@@ -409,7 +409,7 @@ export class StageWrapper {
           console.warn('Element was not in a parent!', element)
         }
         return aggr;
-      }, [] as Array<StateChange<ElementData>>)
+      }, [] as StateChange<ElementData>[])
     // apply the changes
     updateElements(changedParents)
   }

@@ -62,7 +62,7 @@ export class PagePane extends PaneBase {
   /**
    * Array of checkboxes used to add/remove the element from pages
    */
-  pageCheckboxes: Array<{checkbox: HTMLInputElement, page: PageData}> = null;
+  pageCheckboxes: {checkbox: HTMLInputElement, page: PageData}[] = null;
 
   constructor(element: HTMLElement, model: Model, controller: Controller) {
 

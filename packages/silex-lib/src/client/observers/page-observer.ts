@@ -71,7 +71,7 @@ export function onDeletePages(pages: PageData[]) {
 const hasLinkToPage = (element: ElementData, page: PageData) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value
 const isVisibleOnPage = (element: ElementData, page: PageData) => !!element.pageNames.length && element.pageNames.includes(page.id)
 
-export function onUpdatePages(changes: Array<StateChange<PageData>>) {
+export function onUpdatePages(changes: StateChange<PageData>[]) {
   changes.forEach(({from, to}) => {
     // page ID change
     if (!from || from.id !== to.id) {

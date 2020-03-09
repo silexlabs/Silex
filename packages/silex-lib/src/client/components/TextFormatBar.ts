@@ -43,7 +43,7 @@ export class TextFormatBar {
   toolbar: HTMLElement;
 
   // for event remove events, this is reset on stop edit
-  private onStopEditCbks: Array<() => void> = [];
+  private onStopEditCbks: (() => void)[] = [];
 
   /**
    *

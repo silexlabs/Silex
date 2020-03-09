@@ -53,7 +53,7 @@ export const onDeleteElements = (win: Window) => (elements: ElementData[]) => {
   })
 }
 
-export const onUpdateElements = (win: Window) => (change: Array<StateChange<ElementData>>) => {
+export const onUpdateElements = (win: Window) => (change: StateChange<ElementData>[]) => {
   const doc = win.document
 
   change.forEach(({from, to}) => {

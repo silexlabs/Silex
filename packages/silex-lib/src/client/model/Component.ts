@@ -34,7 +34,7 @@ export class Component {
   prodotypeStyle: Prodotype = null;
   componentEditorElement: HTMLElement = null;
   styleEditorElement: HTMLElement = null;
-  readyCbkArr: Array<(p1: any) => any> = [];
+  readyCbkArr: ((p1: any) => any)[] = [];
 
   /**
    * @param model  model class which holds the other models
@@ -418,7 +418,7 @@ export class Component {
    * build an array of all the data we provide to Prodotype for the "text"
    * template
    */
-  getPseudoClassData(styleData: StyleData): Array<{visibility: Visibility, pseudoClass: PseudoClass, data: PseudoClassData}> {
+  getPseudoClassData(styleData: StyleData): {visibility: Visibility, pseudoClass: PseudoClass, data: PseudoClassData}[] {
     // return all pseudo classes in all visibility object
     // flatten
     // build an object for each pseudoClass
@@ -508,7 +508,7 @@ export class Component {
       Promise.all(pseudoClassData.map((obj) => {
             return this.prodotypeStyle.decorate('text', obj.data, getSite().dataSources)
                 .then((html) => this.addMediaQuery(html, obj.visibility));
-          }) as Array<Promise<string>>)
+          }) as Promise<string>[])
           .then((htmlStrings) => {
             elStyle.innerHTML = htmlStrings.join('');
           });
