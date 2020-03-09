@@ -49,7 +49,7 @@ export class Splitter {
   /**
    * handle mouse event
    */
-  toBeCleared: Array<() => void> = [];
+  toBeCleared: (() => void)[] = [];
 
   constructor(public element: HTMLElement, public model: Model, public controller: Controller, opt_onRedraw?: (() => any)) {
     this.onRedraw = opt_onRedraw;

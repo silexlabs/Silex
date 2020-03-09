@@ -28,7 +28,7 @@ export interface StateChange<T> {
   from: T,
   to: T,
 }
-export function onCrudChange<T extends CrudState>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T[]) => void, onDelete: (item: T[]) => void, onUpdate: (change: Array<StateChange<T>>) => void }) {
+export function onCrudChange<T extends CrudState>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T[]) => void, onDelete: (item: T[]) => void, onUpdate: (change: StateChange<T>[]) => void }) {
   return (prevState: T[], currentState: T[]) => {
     // added items
     const added = currentState.filter((item) => !prevState || !prevState.find((p) => p[crudIdKey] === item[crudIdKey]))

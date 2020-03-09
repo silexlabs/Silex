@@ -38,7 +38,7 @@ export const deleteElements = (items: ElementData[]) => store.dispatch({
   items,
 })
 
-export const updateElements = (changes: Array<StateChange<ElementData>>) => store.dispatch({
+export const updateElements = (changes: StateChange<ElementData>[]) => store.dispatch({
   type: ElementAction.UPDATE,
   changes,
 })
@@ -144,7 +144,7 @@ export const deletePages = (items: PageData[]) => store.dispatch({
   items,
 })
 
-export const updatePages = (changes: Array<StateChange<PageData>>) => store.dispatch({
+export const updatePages = (changes: StateChange<PageData>[]) => store.dispatch({
   type: PageAction.UPDATE,
   changes,
 })

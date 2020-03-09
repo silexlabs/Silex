@@ -56,9 +56,9 @@ export interface Prodotype {
   createName(type, list): string;
   getMissingDependencies(
     container: HTMLElement,
-    componentNames: Array<{templateName: string}>,
+    componentNames: {templateName: string}[],
   ): Element[];
-  getUnusedDependencies(dependencyElements: Element[], componentNames: Array<{templateName: string}>);
+  getUnusedDependencies(dependencyElements: Element[], componentNames: {templateName: string}[]);
 }
 
 /**
