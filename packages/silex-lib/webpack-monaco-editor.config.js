@@ -3,6 +3,7 @@ const path = require('path');
 
 module.exports = {
   entry: './src/client/MonacoEditor.ts',
+  mode: 'production',
   module: {
     rules: [
       {

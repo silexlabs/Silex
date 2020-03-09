@@ -5,6 +5,7 @@ module.exports = {
   entry: './src/client/App.ts',
   devtool: 'inline-source-map',
   // devtool: 'source-map',
+  mode: 'production',
   module: {
     rules: [
       {
