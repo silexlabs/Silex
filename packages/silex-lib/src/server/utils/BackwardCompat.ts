@@ -11,10 +11,11 @@
 
 import * as fs from 'fs';
 import * as Path from 'path';
-import { writeDataToDom } from '../../client/dom/site-dom';
+import { writeDataToDom } from '../../client/site/dom';
 import { Constants } from '../../constants';
-import { DataModel, ElementType } from '../../types';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeSiteStyles, writeStyles } from './BackwardCompatV2.5.60';
+import { DataModel } from '../../client/flux/types';
+import { ElementType } from '../../client/element/types';
 
 // FIXME: path in constants
 // const components = require('../../../dist/client/libs/prodotype/components/components.json')

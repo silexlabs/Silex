@@ -18,7 +18,7 @@ import { CssRule } from '../../types';
 import { DataSources, ElementData, ElementId, Font } from '../../types.js';
 import { getSite, getUi } from '../api';
 import { Model, View } from '../ClientTypes';
-import { addMediaQuery } from '../utils/ElementUtils';
+import { addMediaQuery } from '../element/utils';
 import { Style } from '../utils/Style';
 
 export interface CSSRuleInfo {

@@ -1,4 +1,4 @@
-import { getUiElements } from '../components/UiElements';
+import { getUiElements } from '../ui/UiElements';
 
 /**
  * Silex, live web creation

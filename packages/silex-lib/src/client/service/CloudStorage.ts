@@ -14,7 +14,7 @@ import { DataModel, FileInfo } from '../../types';
  *     This class is a singleton.
  *
  */
-import { getUiElements } from '../components/UiElements';
+import { getUiElements } from '../ui/UiElements';
 import { CloudExplorer } from '../externs';
 import { dataModelFromJson } from '../utils/data';
 import { SilexNotification } from '../utils/Notification';

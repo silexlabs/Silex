@@ -10,6 +10,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { Url } from './Url';
+
 /**
  * @fileoverview Helper class for common tasks
  *
@@ -17,108 +19,22 @@
 
 /**
  * @struct
+ * TODO: split into functions and move to site/utils.ts
  */
 export class Dom {
 
-  /**
-   * name of the get param used to store the timestamp (cache control)
-   * ant
-   */
-  static CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
-
-  /**
-   * refresh an image with its latest version on the server
-   */
-  static refreshImage(img: HTMLImageElement, cbk: () => any) {
-    const initialUrl = img.src;
-    img.onload = (e) => {
-      // stop the process
-      img.onload = null;
-      cbk();
-    };
-    img.src = Dom.addCacheControl(initialUrl);
-  }
-
-  /**
-   * add cache control to an URL
-   * handle the cases where there is a ? or & or an existing cache control
-   * example: Dom.addCacheControl('aaaaaaaa.com') returns
-   * 'aaaaaaaa.com?silex-cache-control=09238734099890'
-   */
-  static addCacheControl(url: string): string {
-    // remove existing cache control if any
-    url = Dom.removeCacheControl(url);
-
-    // add an url separator
-    if (url.indexOf('?') > 0) {
-      url += '&';
-    } else {
-      url += '?';
-    }
-
-    // add the timestamp
-    url += Dom.CACHE_CONTROL_PARAM_NAME + '=' + Date.now();
-
-    // return the new url
-    return url;
-  }
-
-  /**
-   * remove cache control from an URL
-   * handle the cases where there are other params in get
-   * works fine when url contains several URLs with cache control or other text
-   * (like a full image tag with src='') example:
-   * Dom.addCacheControl('aaaaaaaa.com?silex-cache-control=09238734099890')
-   * returns 'aaaaaaaa.com'
-   */
-  static removeCacheControl(url: string): string {
-    // only when there is an existing cache control
-    if (url.indexOf(Dom.CACHE_CONTROL_PARAM_NAME) > 0) {
-      const re = new RegExp(
-          '([?|&|&amp;]' + Dom.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)',
-          'gi');
-      url = url.replace(re, (match, group1, group2) => {
-        // if there is a ? or & then return ?
-        // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
-        // aaaaaaaa.com?silex-cache-control=09238734099890
-        // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
-        // aaaaaaaa.com?xxx&silex-cache-control=09238734&ccsqcqsc&
-        if (group1.charAt(0) === '?' &&
-            group1.charAt(group1.length - 1) === '&') {
-          return '?';
-        } else {
-          if (group1.charAt(group1.length - 1) === '&' ||
-              group1.charAt(0) === '&') {
-            return '&';
-          } else {
-            return '';
-          }
-        }
-      });
-    }
-
-    // return the new url
-    return url;
-  }
-
-  /**
-   * prevent scripts from executing in components, html boxes...
-   * @return a safe html string
-   */
-  static deactivateScripts(html: string): string {
-    return html.replace(
-        /<script.*class="silex-script".*?>/gi,
-        '<script type="text/notjavascript" class="silex-script">');
-  }
-
-  /**
-   * undo the deactivateScript
-   * @return the original html string
-   */
-  static reactivateScripts(html: string): string {
-    return html.replace(
-        /type="text\/notjavascript"/gi, 'type="text/javascript"');
-  }
+  // /**
+  //  * refresh an image with its latest version on the server
+  //  */
+  // static refreshImage(img: HTMLImageElement, cbk: () => any) {
+  //   const initialUrl = img.src;
+  //   img.onload = (e) => {
+  //     // stop the process
+  //     img.onload = null;
+  //     cbk();
+  //   };
+  //   img.src = Url.addCacheControl(initialUrl);
+  // }
 
   /**
    * render a template by duplicating the itemTemplateString and inserting the

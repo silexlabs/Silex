@@ -14,7 +14,7 @@
  *
  */
 
-import { ElementType } from './types';
+import { ElementType } from './client/element/types';
 
 export class Constants {
   /**
@@ -265,7 +265,8 @@ export class Constants {
    * constant for the value of media query for mobile version
    * @static
    */
-  static MOBILE_MEDIA_QUERY = 'only screen and (max-width: 480px)';
+  static MOBILE_BREAKPOINT = 480;
+  static MOBILE_MEDIA_QUERY = `only screen and (max-width: ${Constants.MOBILE_BREAKPOINT}px)`;
 
   // head tag constants
   static SILEX_CURRENT_PAGE_ID = 'current-page-style';

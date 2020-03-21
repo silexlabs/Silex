@@ -9,8 +9,11 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementData, PageData, SiteData, UiData } from '../../types';
 import { PageAction, SiteAction, UiAction } from './actions';
+import { ElementData } from '../element/types';
+import { PageData } from '../page/types';
+import { SiteData } from '../site/types';
+import { UiData } from '../ui/types';
 
 export const elementReducer = (state: ElementData[] = [], action: any): any => {
   switch (action.type) {

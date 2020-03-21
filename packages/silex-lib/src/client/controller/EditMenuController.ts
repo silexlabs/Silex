@@ -16,19 +16,25 @@
  */
 
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, FileInfo, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility, VisibilityData } from '../../types';
-import { createElements, deleteElements, getBody, getChildrenRecursive, getElement, getElements, getPages, getParent, getSelectedElements, getSelectedElementsNoSectionContent, getSite, moveElements, noSectionContent, updateElements } from '../api';
+import { createElements, deleteElements, getElements, updateElements } from '../element/store';
 import { DomDirection, LinkData, Model, View } from '../ClientTypes';
-import { FileExplorer } from '../components/dialog/FileExplorer';
-import { getStage } from '../components/StageWrapper';
-import { getSiteDocument, getUiElements } from '../components/UiElements';
-import { getDomElement } from '../dom/element-dom';
-import { getCreationDropZone, getFirstPagedParent, getNewId } from '../utils/ElementUtils';
+import { FileExplorer } from '../ui/dialog/FileExplorer';
+import { getStage } from '../ui/StageWrapper';
+import { getSiteDocument, getUiElements } from '../ui/UiElements';
+import { getDomElement } from '../element/dom';
+import { cloneElement, getCreationDropZone, cloneElements } from '../element/utils';
+import { getBody, getChildrenRecursive, getParent, getSelectedElements, getSelectedElementsNoSectionContent, noSectionContent, getFirstPagedParent } from '../element/filters';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
+import { ElementData, ElementType, StyleName, PseudoClass, Visibility, StyleData, VisibilityData, PseudoClassData } from '../element/types';
+import { getPages } from '../page/store';
+import { getSite } from '../site/store';
+import { FileInfo } from '../third-party/types';
+import { moveElements } from '../element/dispatchers'
 
 /**
  * @param view  view class which holds the other views
+ * FIXME: move all this to site/undo.ts element/clipboard.ts etc
  */
 export class EditMenuController extends ControllerBase {
   constructor(model: Model, view: View) {
@@ -68,17 +74,15 @@ export class EditMenuController extends ControllerBase {
    * copy the selection for later paste
    */
   copySelection() {
-    // this is a flat map
-    ControllerBase.clipboard = [];
-    const body = getBody()
-    getElements()
-      .filter((el) => el.selected && el !== body)
-      .map((el) => noSectionContent(el))
-      .forEach((el) => ControllerBase.clipboard.push(...this.getClone(el)));
+    ControllerBase.clipboard = cloneElements(
+      getElements()
+      .filter((el) => el.selected)
+    )
   }
 
   /**
    * duplicate selection
+   * FIXME: use copyElements ??
    */
   duplicateSelection() {
     const selection = getElements()
@@ -89,7 +93,7 @@ export class EditMenuController extends ControllerBase {
       const rootElements = [];
       selection
         .forEach((el) => {
-          const all = this.getClone(el);
+          const all = cloneElement(el);
           allElements.push(...all);
           rootElements.push(...all.filter((e) => e.selected));
         });
@@ -103,25 +107,6 @@ export class EditMenuController extends ControllerBase {
     }
   }
 
-  /**
-   * clone elements
-   * reset the ID of the element and its children
-   * the elements have already been added to stage
-   */
-  getClone(element: ElementData, parentId: ElementId = null): ElementData[] {
-    const newId = getNewId(getElements());
-    const res: ElementData[] = [{
-      ...JSON.parse(JSON.stringify(element)),
-      id: newId,
-      parent: parentId,
-      selected: parentId === null,
-    }]
-    res[0].children
-      .forEach((id) => res.push(...this.getClone(getElement(id), newId)))
-
-    return res;
-  }
-
   hasElementsToPaste() {
     return !!ControllerBase.clipboard && ControllerBase.clipboard.length > 0;
   }
@@ -130,22 +115,19 @@ export class EditMenuController extends ControllerBase {
    * paste the previously copied element
    */
   pasteClipBoard() {
-    const rootElements = ControllerBase.clipboard.filter((el) => el.selected);
+    const [allElements, rootElements] = ControllerBase.clipboard
 
     // get the drop zone in the center
-    const parent = getCreationDropZone(false, getUiElements().stage, getElements());
+    const parent = getCreationDropZone(false, getUiElements().stage);
 
     this.pasteElements({
       parent,
       rootElements,
-      allElements: ControllerBase.clipboard,
+      allElements,
     });
 
     // copy again so that we can paste several times (elements will be duplicated again)
-    const clone = [];
-    ControllerBase.clipboard
-      .forEach((el) => clone.push(...this.getClone(el)));
-    ControllerBase.clipboard = clone;
+    ControllerBase.clipboard = cloneElements(rootElements)
   }
 
   pasteElements({parent, rootElements, allElements}: {parent: ElementData, rootElements: ElementData[], allElements: ElementData[]}) {
@@ -180,9 +162,11 @@ export class EditMenuController extends ControllerBase {
         if (isRoot) {
           offset += 20;
         }
+        console.log('paste', {element, isRoot})
         return {
           ...element,
           pageNames,
+          // position the element
           style: {
             ...element.style,
             desktop: isRoot && element.style.desktop.position !== 'static' ? {
@@ -222,6 +206,9 @@ export class EditMenuController extends ControllerBase {
       //     },
       //   })))
       )
+
+      console.info('could be dragged')
+      // getStage().startDrag()
     }
   }
 

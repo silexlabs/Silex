@@ -17,11 +17,14 @@
  */
 
 import { Constants } from '../../constants';
-import { ElementData, ElementType, PageData, TemplateName } from '../../types';
-import { getPages, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
-import { getSiteDocument } from '../components/UiElements';
-import { getContentNode } from '../utils/ElementUtils';
+import { getSiteDocument } from '../ui/UiElements';
+import { getContentNode } from '../element/dom';
+import { Url } from '../utils/Url';
+import { ElementData, ElementType, TemplateName } from '../element/types';
+import { updateElements } from '../element/store';
+import { PageData } from '../page/types';
+import { getPages } from '../page/store';
 
 /**
  * @param model  model class which holds the other models
@@ -46,7 +49,12 @@ export class SilexElement {
         img.onerror = null;
         reject(e);
       };
-      img.src = url;
+
+      // add cache control
+      const uncached = Url.addCacheControl(url)
+
+      // start loading
+      img.src = uncached;
     });
   }
 

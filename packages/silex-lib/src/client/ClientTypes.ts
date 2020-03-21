@@ -12,24 +12,24 @@
 /**
  * @fileoverview This file contains the definitions of the Model, View and
  * Controller structures
+ * FIXME: remove old MVC types, split to packages: element, page, site, ui
  *
  */
-import { DataModel, FileInfo, PageData, Provider } from '../types';
-import { BreadCrumbs } from './components/BreadCrumbs';
-import { ContextMenu } from './components/ContextMenu';
-import { CssEditor } from './components/dialog/CssEditor';
-import { Dashboard } from './components/dialog/Dashboard';
-import { FileExplorer } from './components/dialog/FileExplorer';
-import { HtmlEditor } from './components/dialog/HtmlEditor';
-import { JsEditor } from './components/dialog/JsEditor';
-import { SettingsDialog } from './components/dialog/SettingsDialog';
-import { Menu } from './components/Menu';
-import { PageTool } from './components/PageTool';
-import { PropertyTool } from './components/PropertyTool';
-import { Splitter } from './components/Splitter';
-import { StageWrapper } from './components/StageWrapper';
-import { TextFormatBar } from './components/TextFormatBar';
-import { Workspace } from './components/Workspace';
+import { BreadCrumbs } from './ui/BreadCrumbs';
+import { ContextMenu } from './ui/ContextMenu';
+import { CssEditor } from './ui/dialog/CssEditor';
+import { Dashboard } from './ui/dialog/Dashboard';
+import { FileExplorer } from './ui/dialog/FileExplorer';
+import { HtmlEditor } from './ui/dialog/HtmlEditor';
+import { JsEditor } from './ui/dialog/JsEditor';
+import { SettingsDialog } from './ui/dialog/SettingsDialog';
+import { Menu } from './ui/Menu';
+import { PageTool } from './ui/PageTool';
+import { PropertyTool } from './ui/PropertyTool';
+import { Splitter } from './ui/Splitter';
+import { StageWrapper } from './ui/StageWrapper';
+import { TextFormatBar } from './ui/TextFormatBar';
+import { Workspace } from './ui/Workspace';
 import { ContextMenuController } from './controller/ContextMenuController';
 import { CssEditorController } from './controller/CssEditorController';
 import { EditMenuController } from './controller/EditMenuController';
@@ -50,6 +50,9 @@ import { SilexElement } from './model/Element';
 import { File } from './model/File';
 import { Head } from './model/Head';
 import { Property } from './model/Property';
+import { Provider, DataModel } from '../types';
+import { FileInfo } from './third-party/types';
+import { PageData } from './page/types';
 
 // FIXME: this file should not exist
 

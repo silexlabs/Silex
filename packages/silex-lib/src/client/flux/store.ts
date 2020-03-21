@@ -9,11 +9,15 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { combineReducers, createStore, Store } from 'redux';
-import { ElementData, PageData, SiteData, UiData } from '../../types';
-import { withCrudReducer } from '../flux/crud-store';
-import { ElementAction, PageAction } from './actions';
-import { elementReducer, pageReducer, siteReducer, uiReducer } from './reducers';
+import { combineReducers, createStore, Store } from 'redux'
+import { DataModel } from '../../types'
+import { withCrudReducer } from '../flux/crud-store'
+import { ElementAction, PageAction } from './actions'
+import { elementReducer, pageReducer, siteReducer, uiReducer } from './reducers'
+import { PageData } from '../page/types'
+import { ElementData } from '../element/types'
+import { SiteData } from '../site/types'
+import { UiData } from '../ui/types'
 
 // //////////////////////
 // The main store
@@ -25,7 +29,8 @@ interface State {
   ui: UiData,
 }
 
-export const store: Store<State> = createStore(combineReducers({
+export type SilexStore = Store<State>
+export const store: SilexStore = createStore(combineReducers({
   pages: withCrudReducer<PageData>({
     actionEnum: PageAction,
     reducer: pageReducer,
@@ -64,3 +69,6 @@ export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) =
     }
   })
 }
+
+// get the whole state object
+export const getData = (): DataModel => store.getState()

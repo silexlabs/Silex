@@ -17,12 +17,16 @@
  */
 
 import { Constants } from '../../constants';
-import { DataModel, FileInfo } from '../../types';
-import { getElements, getUi, initializeElements, initializePages, initializeSite, openPage, updateUi } from '../api';
 import { Model, View } from '../ClientTypes';
-import { getUiElements } from '../components/UiElements';
+import { getUiElements } from '../ui/UiElements';
 import { startObservers, stopObservers } from '../observers/index';
 import { CloudStorage } from '../service/CloudStorage';
+import { FileInfo } from '../third-party/types';
+import { DataModel } from '../../types';
+import { initializePages, openPage } from '../page/store';
+import { initializeElements, getElements } from '../element/store';
+import { initializeSite } from '../site/store';
+import { getUi, updateUi } from '../ui/store';
 
 /**
  * @param model  model class which holds the other models
