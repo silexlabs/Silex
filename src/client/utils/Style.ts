@@ -14,7 +14,7 @@
  *
  */
 
-import { CssRule } from '../../types';
+import { CssRule } from '../element/types';
 
 export class Style {
   static addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: { mobile: CssRule, desktop: CssRule }, style: CssRule): {desktop: CssRule, mobile: CssRule} {

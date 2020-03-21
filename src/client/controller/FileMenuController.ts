@@ -15,11 +15,12 @@
  *
  */
 import { DataModel, FileInfo, Provider } from '../../types';
-import { getSite, selectBody, updateSite } from '../api';
+import { getSite, updateSite } from '../api';
+import { selectBody } from '../utils/actions';
 import { Config } from '../ClientConfig';
 import { Model, PublicationOptions, View } from '../ClientTypes';
-import { FileExplorer } from '../components/dialog/FileExplorer';
-import { PublishDialog } from '../components/dialog/PublishDialog';
+import { FileExplorer } from '../ui/dialog/FileExplorer';
+import { PublishDialog } from '../ui/dialog/PublishDialog';
 import { CloudStorage } from '../service/CloudStorage';
 import { SilexTasks } from '../service/SilexTasks';
 import { SilexNotification } from '../utils/Notification';

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from '../src/server/utils/BackwardCompatV2.5.60';
-import { ElementType } from '../src/types';
+import { ElementType } from '../src/client/element/types';
 
 test('convert from 2.5.60', () => {
   const htmlBuffer = fs.readFileSync('./__tests__/editable-v2.5.60.html')

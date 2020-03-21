@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 import { Constants } from '../../constants';
-import { DataModel } from '../../types';
+import { DataModel } from '../../client/flux/types';
 
 export default class DomTools {
   /**

@@ -20,9 +20,9 @@ import { ComponentData, ElementData, ElementType, PseudoClass, PseudoClassData, 
 import { getElements, getSite, updateElements } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, View } from '../ClientTypes';
-import { getSiteDocument } from '../components/UiElements';
+import { getSiteDocument } from '../ui/UiElements';
 import { Prodotype, ProdotypeCompDef } from '../externs';
-import { addMediaQuery } from '../utils/ElementUtils';
+import { addMediaQuery } from '../element/utils';
 
 /**
  * Manage Prodotype components and styles

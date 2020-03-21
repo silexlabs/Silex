@@ -20,17 +20,17 @@
 
 import { Constants } from '../../constants';
 import { CssRule, ElementData, ElementType, FileInfo, PageData } from '../../types';
-import { createElements, deleteElements, getData, getElement, getElements, getPages, getSelectedElements, getUi, openPage, updateElements } from '../api';
+import { createElements, deleteElements, getData, getElement, getElements, getPages, getSelectedElements, getUi, openPage, updateElements, getSite } from '../api';
 import { Config } from '../ClientConfig';
 import { Model, UndoItem, View } from '../ClientTypes';
-import { FileExplorer } from '../components/dialog/FileExplorer';
-import { LinkDialog } from '../components/dialog/LinkDialog';
-import { getStage } from '../components/StageWrapper';
-import { getSiteDocument, getSiteWindow } from '../components/UiElements';
-import { getDomElement } from '../dom/element-dom';
+import { FileExplorer } from '../ui/dialog/FileExplorer';
+import { LinkDialog } from '../ui/dialog/LinkDialog';
+import { getStage } from '../ui/StageWrapper';
+import { getSiteDocument, getSiteWindow } from '../ui/UiElements';
+import { getDomElement } from '../element/dom';
 import { getCurrentPage } from '../dom/page-dom';
 import { Tracker } from '../service/Tracker';
-import { center, getEmptyElementData, getFirstPagedParent, getNewId } from '../utils/ElementUtils';
+import { center, getEmptyElementData, getFirstPagedParent, getNewId, getElementSize } from '../element/utils';
 import { InvalidationManager } from '../utils/InvalidationManager';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
@@ -63,8 +63,9 @@ export class ControllerBase {
 
   /**
    * @static because it is shared by all controllers
+   * array of 2 elements: [allElements, rootElements]
    */
-  protected static clipboard: ElementData[] = null;
+  protected static clipboard: ElementData[][] = null;
 
   /**
    * flag to indicate that a getState ation is pending
@@ -447,6 +448,8 @@ export class ControllerBase {
   addElement(type: ElementType, parent: ElementData, componentName?: string): [ElementData, ElementData] {
     this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
 
+    const win = getSiteWindow()
+
     // undo checkpoint
     this.undoCheckPoint();
 
@@ -465,10 +468,21 @@ export class ControllerBase {
 
     const newElementDataPaged = {
       ...newElementData,
-      pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [getCurrentPage(getSiteWindow(), getPages()).id],
+      pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [getCurrentPage(win, getPages()).id],
     }
-
-    const centeredAndPaged = center(newElementDataPaged, newParentData, false)
+    console.warn('todo: handle add in mobile')
+    const centeredStyle = center(getElementSize(win, getElements(), newElementDataPaged, false), getElementSize(win, newParentData, false))
+    const centeredAndPaged = {
+      ...newElementDataPaged,
+      style: {
+        ...newElementDataPaged.style,
+        desktop: {
+          ...newElementDataPaged.style.desktop,
+          top: centeredStyle.top + 'px',
+          left: centeredStyle.left + 'px',
+        }
+      }
+    }
 
     if (type === ElementType.SECTION) {
       const [contentElement, newElementDataWithContent] = this.createEmptyElement({
@@ -508,15 +522,13 @@ export class ControllerBase {
         },
       }))
 
-    const element = centeredAndPaged
-    const elementDom = getDomElement(getSiteDocument(), element)
-    // setTimeout(() => getStage().startDrag(elementDom, parseInt(element.style.desktop.left || '0') || 0, parseInt(element.style.desktop.top || '0') || 0), 5000)
-    getStage().startDrag()
+    console.info('could be dragged')
+    // getStage().startDrag()
 
     // tracking
     this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
 
-    return [centeredAndPaged, newParentData]
+    return [newElementDataPaged, newParentData]
   }
 
   createEmptyElement({type, parent, isSectionContent, componentName}: {type: ElementType, parent: ElementData, isSectionContent: boolean, componentName?: string}): ElementData[] {

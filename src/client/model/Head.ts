@@ -17,7 +17,7 @@
  */
 
 import { Model, View } from '../ClientTypes';
-import { getSiteDocument } from '../components/UiElements';
+import { getSiteDocument } from '../ui/UiElements';
 
 // const BEAUTIFY_CSS_OPTIONS = {
 //   indent_size: 2,

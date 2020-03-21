@@ -14,12 +14,13 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { LinkType, PageData } from '../../types';
-import { createPages, deletePages, getPages, movePage, updatePages } from '../api';
+import { createPages, deletePages, getPages, movePage, updatePages } from '../page/store';
 import { Model, View } from '../ClientTypes';
 import { crudIdKey } from '../flux/crud-store';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';
+import { PageData } from '../page/types';
+import { LinkType } from '../element/types';
 
 /**
  * @param view  view class which holds the other views
@@ -134,6 +135,6 @@ export class PageToolController extends ControllerBase {
    * @param offset
    */
   movePageTo(page: PageData, idx: number) {
-    movePage(page, idx);
+    movePage({page, idx});
   }
 }

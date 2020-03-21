@@ -14,7 +14,8 @@
  *      and call the main {silex.controller.Controller} controller's methods
  *
  */
-import { getBody, getPages, getSelectedElements, updateElements } from '../api';
+import { getPages, updateElements } from '../api';
+import { getBody, getSelectedElements } from '../element/filters';
 import { Model, View } from '../ClientTypes';
 import { SilexNotification } from '../utils/Notification';
 import { ControllerBase } from './ControllerBase';

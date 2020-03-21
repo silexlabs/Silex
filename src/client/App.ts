@@ -20,25 +20,24 @@
  */
 
 import { detect } from 'detect-browser';
-import * as api from './api';
 import { Config } from './ClientConfig';
 import { Controller, Model, View } from './ClientTypes';
-import { BreadCrumbs } from './components/BreadCrumbs';
-import { ContextMenu } from './components/ContextMenu';
-import { CssEditor } from './components/dialog/CssEditor';
-import { Dashboard } from './components/dialog/Dashboard';
-import { FileExplorer } from './components/dialog/FileExplorer';
-import { HtmlEditor } from './components/dialog/HtmlEditor';
-import { JsEditor } from './components/dialog/JsEditor';
-import { SettingsDialog } from './components/dialog/SettingsDialog';
-import { Menu } from './components/Menu';
-import { PageTool } from './components/PageTool';
-import { PropertyTool } from './components/PropertyTool';
-import { Splitter } from './components/Splitter';
-import { StageWrapper } from './components/StageWrapper';
-import { TextFormatBar } from './components/TextFormatBar';
-import { getUiElements } from './components/UiElements';
-import { Workspace } from './components/Workspace';
+import { BreadCrumbs } from './ui/BreadCrumbs';
+import { ContextMenu } from './ui/ContextMenu';
+import { CssEditor } from './ui/dialog/CssEditor';
+import { Dashboard } from './ui/dialog/Dashboard';
+import { FileExplorer } from './ui/dialog/FileExplorer';
+import { HtmlEditor } from './ui/dialog/HtmlEditor';
+import { JsEditor } from './ui/dialog/JsEditor';
+import { SettingsDialog } from './ui/dialog/SettingsDialog';
+import { Menu } from './ui/Menu';
+import { PageTool } from './ui/PageTool';
+import { PropertyTool } from './ui/PropertyTool';
+import { Splitter } from './ui/Splitter';
+import { StageWrapper } from './ui/StageWrapper';
+import { TextFormatBar } from './ui/TextFormatBar';
+import { getUiElements } from './ui/UiElements';
+import { Workspace } from './ui/Workspace';
 import { ContextMenuController } from './controller/ContextMenuController';
 import { CssEditorController } from './controller/CssEditorController';
 import { EditMenuController } from './controller/EditMenuController';
@@ -53,7 +52,7 @@ import { StageController } from './controller/StageController';
 import { TextEditorController } from './controller/TextEditorController';
 import { ToolMenuController } from './controller/ToolMenuController';
 import { ViewMenuController } from './controller/ViewMenuController';
-import { setModel } from './dom/wip-refacto-model';
+import { setModel } from './wip-refacto-model';
 import { Body } from './model/Body';
 import { Component } from './model/Component';
 import { SilexElement } from './model/Element';
@@ -63,6 +62,7 @@ import { Property } from './model/Property';
 import { startObservers } from './observers/index';
 import { SilexNotification } from './utils/Notification';
 import { Url } from './utils/Url';
+import { updateUi, getUi } from './ui/store';
 
 /**
  * Defines the entry point of Silex client application
@@ -235,8 +235,8 @@ export class App {
   }
 
   initDone() {
-    api.updateUi({
-      ...api.getUi(),
+    updateUi({
+      ...getUi(),
       loading: false,
     });
     if (Config.debug.debugMode && Config.debug.debugScript) {

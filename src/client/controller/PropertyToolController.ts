@@ -15,9 +15,10 @@
  *
  */
 import { ElementData, Link, PageData } from '../../types';
-import { getPages, noSectionContent, updateElements } from '../api';
+import { getPages, updateElements } from '../api';
 import { Model, View } from '../ClientTypes';
 import { ControllerBase } from './ControllerBase';
+import { noSectionContent } from '../element/filters';
 
 /**
  * @param view  view class which holds the other views

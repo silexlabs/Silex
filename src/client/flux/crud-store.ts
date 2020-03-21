@@ -1,3 +1,19 @@
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
+
+/**
+ * @fileoverview Util methods for CRUD states/stores (Create Update Delete). Cross platform, it needs to run client and server side
+ *
+ */
+
 
 export const crudIdKey = Symbol('crudId key')
 export interface CrudState {

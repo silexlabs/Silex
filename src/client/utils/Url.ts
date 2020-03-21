@@ -14,9 +14,18 @@
  *
  */
 
-import {FileInfo} from '../../types';
+import {FileInfo} from '../third-party/types';
 
 export class Url {
+  /**
+   * name of the get param used to store the timestamp (cache control)
+   * ant
+   */
+  static CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
+
+  /**
+   * get the GET params from the URL
+   */
   static getUrlParams(): any {
     return window.location.search
     .substr(1)
@@ -148,5 +157,67 @@ export class Url {
    */
   static addUrlKeyword(url: string): string {
     return `url('${url}')`;
+  }
+
+  /**
+   * add cache control to an URL
+   * handle the cases where there is a ? or & or an existing cache control
+   * example: Url.addCacheControl('aaaaaaaa.com') returns
+   * 'aaaaaaaa.com?silex-cache-control=09238734099890'
+   */
+  static addCacheControl(url: string): string {
+    // remove existing cache control if any
+    url = Url.removeCacheControl(url);
+
+    // add an url separator
+    if (url.indexOf('?') > 0) {
+      url += '&';
+    } else {
+      url += '?';
+    }
+
+    // add the timestamp
+    url += Url.CACHE_CONTROL_PARAM_NAME + '=' + Date.now();
+
+    // return the new url
+    return url;
+  }
+
+  /**
+   * remove cache control from an URL
+   * handle the cases where there are other params in get
+   * works fine when url contains several URLs with cache control or other text
+   * (like a full image tag with src='') example:
+   * Url.addCacheControl('aaaaaaaa.com?silex-cache-control=09238734099890')
+   * returns 'aaaaaaaa.com'
+   */
+  static removeCacheControl(url: string): string {
+    // only when there is an existing cache control
+    if (url.indexOf(Url.CACHE_CONTROL_PARAM_NAME) > 0) {
+      const re = new RegExp(
+          '([?|&|&amp;]' + Url.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)',
+          'gi');
+      url = url.replace(re, (match, group1, group2) => {
+        // if there is a ? or & then return ?
+        // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
+        // aaaaaaaa.com?silex-cache-control=09238734099890
+        // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
+        // aaaaaaaa.com?xxx&silex-cache-control=09238734&ccsqcqsc&
+        if (group1.charAt(0) === '?' &&
+            group1.charAt(group1.length - 1) === '&') {
+          return '?';
+        } else {
+          if (group1.charAt(group1.length - 1) === '&' ||
+              group1.charAt(0) === '&') {
+            return '&';
+          } else {
+            return '';
+          }
+        }
+      });
+    }
+
+    // return the new url
+    return url;
   }
 }
