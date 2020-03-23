@@ -1,10 +1,12 @@
-import { ElementData, LinkType, PageData } from '../../types';
-import { deleteElements, getData, getElements, updateElements } from '../api';
-import { getSiteDocument, getSiteWindow } from '../ui/UiElements';
-import { openPageDom } from '../dom/page-dom';
-import { writeDataToDom } from '../dom/site-dom';
+import { deleteElements, getElements, updateElements } from '../element/store';
 import { StateChange } from '../flux/crud-store';
+import { getData } from '../flux/store';
+import { writeDataToDom } from '../site/dom';
+import { getSiteDocument, getSiteWindow } from '../ui/UiElements';
 import { SilexNotification } from '../utils/Notification';
+import { PageData } from './types';
+import { LinkType, ElementData } from '../element/types'
+import { openPageDom } from './dom'
 
 export function onAddPages(pages: PageData[]) {
   // save the changed data to the dom for front-end.js

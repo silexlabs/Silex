@@ -11,6 +11,8 @@
 
 import { ElementId, ElementData } from './types'
 import { getElements } from './store';
+import { getDomElement } from './dom'
+import { getSiteDocument } from '../ui/UiElements'
 
 /**
  * @fileoverview Useful filters used to retrieve items in the store
@@ -18,7 +20,7 @@ import { getElements } from './store';
  */
 
 export const getElementById = (id: ElementId): ElementData => getElements().find((el) => el.id === id)
-export const getElementByDomElement = () => console.error('not implemented')
+export const getElementByDomElement = (element: HTMLElement) => getElements().find((el) => element === getDomElement(getSiteDocument(), el))
 
 export const getChildren = (element: ElementData): ElementData[] => element.children.map((id) => getElementById(id))
 

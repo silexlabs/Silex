@@ -28,7 +28,7 @@ export const onAddElements = (win: Window) => (elements: ElementData[]) => {
 
     if (parent && !parentEl) {
       // no parent element yet but will come soon
-      console.warn('no parent element yet but will come soon')
+      console.warn('no parent element yet but will come soon hopefully')
     } else {
       // update with provided data
       added.push({
@@ -115,7 +115,7 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
     if (to.innerHtml !== from.innerHtml) {
       // FIXME: keep children in the dom ??
       // remove the editable elements temporarily
-      // const tempElements = this.model.component.saveEditableChildren(domEl)
+      // const tempElements = saveEditableChildren(domEl)
 
       setInnerHtml(domEl, to.innerHtml)
 

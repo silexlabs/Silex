@@ -69,6 +69,10 @@ export function loadProperties(doc: HTMLDocument): DomData {
   }
 }
 
+const EDITABLE_ELEMENT_TYPES: string[] = [
+  ElementType.HTML, ElementType.IMAGE, ElementType.TEXT, ElementType.COMPONENT,
+];
+
 export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTMLElement): ElementData {
   const linkValue = element.getAttribute(Constants.LINK_ATTR)
   const linkType = linkValue ? linkValue.startsWith('#!page-') ? LinkType.PAGE : LinkType.URL : null
@@ -95,6 +99,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       type: linkType,
       value: linkValue,
     } : null,
+    enableEdit: EDITABLE_ELEMENT_TYPES.indexOf(type) > -1,
     enableDrag: !element.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME),
     enableDrop: (type === ElementType.CONTAINER || type === ElementType.SECTION) && !element.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME),
     enableResize: {
@@ -299,6 +304,7 @@ export function getSiteFromDom(doc: HTMLDocument): SiteData {
     dataSources: properties.dataSources,
     fonts: properties.fonts,
     style: properties.prodotypeDataObj.style,
+    isTemplate: false, // backward compat is only about loaded websites, not templates
   }
 }
 function getMeta(doc, name: string): string {

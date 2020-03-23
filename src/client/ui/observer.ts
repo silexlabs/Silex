@@ -1,7 +1,6 @@
 import { Constants } from '../../constants';
-import { UiData } from '../../types'
-import { getSite } from '../api';
-import { getUiElements } from '../ui/UiElements';
+import { UiData } from './types'
+import { getSite } from '../site/store';
 import { SilexNotification } from '../utils/Notification';
 
 export function onChangeUi(prev: UiData, ui: UiData) {
@@ -16,12 +15,6 @@ export function onChangeUi(prev: UiData, ui: UiData) {
   } else {
     document.body.classList.remove(Constants.MOBILE_MODE_CSS_CLASS);
   }
-  // if (ui.loading) {
-  //   document.body.classList.add('loading-pending');
-  // } else {
-  //   document.body.classList.remove('loading-pending');
-  // }
-
   // if (opt_showLoader !== false) {
   //   getUiElements().stage.classList.add('loading-website');
   // } else {

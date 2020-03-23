@@ -1,4 +1,4 @@
-import { DataModel } from '../../types';
+import { DataModel } from '../flux/types';
 import { crudIdKey } from '../flux/crud-store';
 
 const withCrudId = (arr: any[]) => arr.map((item) => ({

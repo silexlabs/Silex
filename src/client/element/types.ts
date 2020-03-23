@@ -48,6 +48,7 @@ export interface ElementData extends CrudState {
   id: ElementId,
   children: ElementId[],
   selected: boolean,
+  enableEdit: boolean,
   enableDrag: boolean,
   enableDrop: boolean,
   enableResize: Rect<boolean>,
@@ -105,6 +106,12 @@ export interface VisibilityData {
 
 export interface PseudoClassData {
   [key: string]: CssRule|TemplateName|StyleName;
+}
+
+export interface CSSRuleInfo {
+  rule: CSSRule;
+  parent: CSSRule|StyleSheet;
+  index: number;
 }
 
 export type Visibility = string;

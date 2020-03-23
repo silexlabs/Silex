@@ -17,20 +17,6 @@ import { FileInfo } from '../third-party/types';
  *
  */
 
- export interface DataSource {
-  href: string;
-  root: string;
-  data?: object;
-  structure?: object;
-}
-
-export interface DataSources { [key: string]: DataSource; }
-
-export interface Font {
-  family: string;
-  href: string;
-}
-
 export interface SiteData {
   headTag: string,
   headStyle: string,
@@ -38,6 +24,7 @@ export interface SiteData {
   title: string,
   description: string,
   enableMobile: boolean,
+  isTemplate: boolean,
   publicationPath: FileInfo,
   websiteUrl: string,
   faviconPath: string,
@@ -51,9 +38,30 @@ export interface SiteData {
   dataSources: DataSources,
   fonts: Font[],
   style: StyleDataObject,
+  file: FileInfo,
+}
+
+export interface DataSource {
+  href: string;
+  root: string;
+  data?: object;
+  structure?: object;
+}
+
+export interface DataSources { [key: string]: DataSource; }
+
+export interface Font {
+  family: string;
+  href: string;
 }
 
 // TODO: move these to the server side?
+export interface PublicationOptions {
+  file: FileInfo;
+  publicationPath: FileInfo;
+  provider: Provider;
+}
+
 export interface Hosting {
   providers: Provider[];
   skipHostingSelection: boolean;

@@ -18,6 +18,9 @@ import { Font } from './types';
  *
  */
 
+/**
+ * write elements and pages data to the dom for the components and scripts to use
+ */
 export function writeDataToDom(doc: HTMLDocument, data: DataModel) {
   let tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
   if (!tag) {

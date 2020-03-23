@@ -17,4 +17,22 @@
 export interface UiData {
   mobileEditor: boolean,
   loading: boolean,
+  debug: boolean,
+  // stacked: boolean,
+  // modals: Array<{type: Modal, data: any}>,
+  // route: Route,
 }
+
+// export enum Modal {
+//   SETTINGS,
+//   ALERT,
+//   PROMPT,
+//   CONFIRM,
+//   PUBLISH,
+//   EXPLORER,
+// }
+
+// export enum Route {
+//   DASHBOARD,
+//   EDITOR,
+// }

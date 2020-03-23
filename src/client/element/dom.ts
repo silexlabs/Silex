@@ -1,9 +1,7 @@
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, Link } from './types';
-import { CSSRuleInfo } from '../model/Property';
+import { ElementData, ElementId, ElementType, Link, CSSRuleInfo } from './types';
 import { getEmptyElementData } from '../element/utils';
 import { Style } from '../utils/Style';
-import { model } from '../wip-refacto-model';
 
 export function getDomElement(doc: HTMLDocument, element: ElementData): HTMLElement {
   return getDomElementById(doc, element.id)
@@ -34,8 +32,16 @@ export function reorderElements(parent: HTMLElement, elements: HTMLElement[]) {
 
   // })
 }
+
+/**
+ * set/get a "silex style link" on an element
+ */
 export function setLink(element: HTMLElement, link: Link) {
-  model.element.setLink(element, !!link ? link.value : null)
+  if (link) {
+    element.setAttribute(Constants.LINK_ATTR, link.value);
+  } else {
+    element.removeAttribute(Constants.LINK_ATTR);
+  }
 }
 
 /**
@@ -374,4 +380,98 @@ export function executeScripts(win: Window, element: HTMLElement) {
     // tslint:disable:no-string-literal
     win['eval'](el.innerText)
   }
+}
+
+export function removeWysihtmlMarkup(root: HTMLElement|Document) {
+  Array.from(root.querySelectorAll('.wysihtml-editor')).forEach((el) => {
+    el.classList.remove('wysihtml-sandbox');
+    el.removeAttribute('contenteditable');
+  });
+}
+
+/**
+ * set/get the image URL of an image element
+ */
+export async function setImageUrl(
+    element: HTMLElement, url: string,
+    opt_callback?: ((naturalWidth: number, naturalheight: number) => void),
+    opt_errorCallback?: ((p1: HTMLElement, p2: string) => void)) {
+  if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
+    // get the image tag
+    const img = getContentNode(element) as HTMLImageElement;
+    if (img) {
+      // add loading asset
+      element.classList.add(Constants.LOADING_ELEMENT_CSS_CLASS);
+
+      // remove previous img tag
+      const imgTags = Array.from(element.querySelectorAll('img.' + Constants.ELEMENT_CONTENT_CLASS_NAME));
+      imgTags.forEach((imgTag: HTMLImageElement) => {
+        imgTag.parentElement.removeChild(imgTag);
+      });
+
+      try {
+        // load the new image
+        const loadedImg: HTMLImageElement = await loadImage(url);
+
+        // callback
+        if (opt_callback) {
+          opt_callback(loadedImg.naturalWidth, loadedImg.naturalHeight);
+        }
+
+        // add the image to the element
+        element.appendChild(loadedImg);
+
+        // add a marker to find the inner content afterwards, with
+        // getContent
+        loadedImg.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
+
+        // remove loading asset
+        element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS);
+      } catch (e) {
+        console.error('An error occured while loading the image.', element, e);
+
+        // callback
+        if (opt_errorCallback) {
+          opt_errorCallback(element, 'An error occured while loading the image.');
+        }
+      }
+    } else {
+      console.error(
+          'The image could not be retrieved from the element.', element);
+      if (opt_errorCallback) {
+        opt_errorCallback(
+            element, 'The image could not be retrieved from the element.');
+      }
+    }
+  } else {
+    console.error('The element is not an image.', element);
+    if (opt_errorCallback) {
+      opt_errorCallback(element, 'The element is not an image.');
+    }
+  }
+}
+
+/**
+ * set the img.src and promise the events
+ */
+async function loadImage(url: string): Promise<HTMLImageElement> {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = (e) => {
+      img.onload = null;
+      img.onerror = null;
+      resolve(img);
+    };
+    img.onerror = (e: Event) => {
+      img.onload = null;
+      img.onerror = null;
+      reject(e);
+    };
+
+    // add cache control
+    const uncached = Url.addCacheControl(url)
+
+    // start loading
+    img.src = uncached;
+  });
 }
