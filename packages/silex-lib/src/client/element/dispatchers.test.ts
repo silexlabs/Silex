@@ -1,7 +1,6 @@
 import { ELEM_CONTAINER, ELEM_IMAGE, ELEM_TEXT, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_CONTAINER_2_CHILDREN, ELEM_HTML } from '../../../__tests__/data-set';
 import { getElementById } from '../element/filters';
 import { initializeElements } from '../element/store';
-import { ElementData } from './types';
 import { selectBody, moveElements } from './dispatchers';
 import { DomDirection } from '../ClientTypes';
 
@@ -10,6 +9,11 @@ beforeEach(() => {
 })
 
 test('select body', () => {
+  initializeElements([{
+    ...ELEM_TEXT,
+    selected: true,
+  }, ELEM_IMAGE, ELEM_CONTAINER])
+  expect(getElementById(ELEM_TEXT.id).selected).toBe(true)
   expect(getElementById(ELEM_CONTAINER.id).selected).toBe(false)
   selectBody()
   expect(getElementById(ELEM_CONTAINER.id).selected).toBe(true)

@@ -11,11 +11,16 @@
 
 import { ElementData, Size, ElementType, ElementId, Point, FullBox } from './types'
 import { crudIdKey } from '../flux/crud-store'
-import { getElementById, getChildren, getAllParents, getBody, noSectionContent, getParent } from './filters'
+import { getElementById, getChildren, getBody, noSectionContent, getParent } from './filters'
 import { Constants } from '../../constants'
 import { getSite } from '../site/store'
-import { getElements } from './store'
-import { getDomElement } from './dom'
+import { getElements, updateElements } from './store'
+import { getDomElement, getContentNode, addMediaQuery } from './dom'
+import { FileExplorer } from '../components/dialog/FileExplorer'
+import { Style } from '../utils/Style'
+import { getUi } from '../ui/store'
+import { Url } from '../utils/Url'
+import { SilexNotification } from '../utils/Notification'
 
 // FIXME: these methods need to use connect() in order to avoid side effects
 
@@ -57,6 +62,7 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
     pageNames: [],
     classList: [],
     link: null,
+    enableEdit: true,
     enableDrag: true,
     enableDrop: type === ElementType.CONTAINER, // FIXME: sections to?
     enableResize: { top: true, bottom: true, left: true, right: true }, // FIXME: handle sections?
@@ -296,3 +302,61 @@ export function getCreationDropZone(isSection: boolean, stageEl: HTMLIFrameEleme
     // just the top most element
     .shift()
 }
+
+/**
+ * get a human readable name for this element
+ */
+export function getDisplayName(element: ElementData): string {
+  if (element.isSectionContent) {
+    return 'Section Container';
+  }
+
+  switch (element.type) {
+    case ElementType.TEXT: return 'Text';
+    case ElementType.IMAGE: return 'Image';
+    case ElementType.CONTAINER: return 'Container';
+    case ElementType.HTML: return 'Html';
+    // case ElementType.CONTAINER_CONTENT: return 'Container';
+    case ElementType.SECTION: return 'Section';
+    default: return element.type.toString();
+  }
+}
+
+// /**
+//  * set/get the image URL of an image element
+//  * @param element  container created by silex which contains an image
+//  * @return  the url of the image
+//  */
+// export function getImageUrl(element: HTMLElement): string {
+//   let url = '';
+//   if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
+//     // get the image tag
+//     const img = getContentNode(element);
+//     if (img) {
+//       url = img.getAttribute('src');
+//     } else {
+//       console.error(
+//           'The image could not be retrieved from the element.', element);
+//     }
+//   } else {
+//     console.error('The element is not an image.', element);
+//   }
+//   return url;
+// }
+
+/**
+ * @param doc docment of the iframe containing the website
+ * @return the string defining all elements styles
+ */
+export function getAllStyles(): string {
+  const {desktop, mobile} = getElements()
+  .reduce((prev, el) => ({
+    desktop: `${prev.desktop}\n.${el.id} {\n${Style.styleToString(el.style.desktop, '\n    ')}\n}\n`,
+    mobile: `${prev.mobile}\n.${el.id} {\n${Style.styleToString(el.style.mobile, '\n    ')}\n}\n`,
+  }), {
+    desktop: '',
+    mobile: '',
+  })
+  return `${desktop}\n\n${addMediaQuery(mobile)}\n`;
+}
+

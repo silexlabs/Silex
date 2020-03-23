@@ -11,7 +11,7 @@
 
 /**
  * @fileoverview Helper class for common tasks
- *
+ * TODO: split into funtions
  */
 
 import { CssRule } from '../element/types';

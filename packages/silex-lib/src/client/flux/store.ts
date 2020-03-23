@@ -10,7 +10,6 @@
  */
 
 import { combineReducers, createStore, Store } from 'redux'
-import { DataModel } from '../../types'
 import { withCrudReducer } from '../flux/crud-store'
 import { ElementAction, PageAction } from './actions'
 import { elementReducer, pageReducer, siteReducer, uiReducer } from './reducers'
@@ -18,6 +17,13 @@ import { PageData } from '../page/types'
 import { ElementData } from '../element/types'
 import { SiteData } from '../site/types'
 import { UiData } from '../ui/types'
+import { DataModel } from './types';
+import { stopObservers, startObservers } from './observer'
+import { initializeSite } from '../site/store'
+import { initializeElements } from '../element/store'
+import { initializePages, openPage } from '../page/store'
+import { initStageWrapper } from '../components/StageWrapper'
+import { getUiElements } from '../ui/UiElements'
 
 // //////////////////////
 // The main store
@@ -72,3 +78,21 @@ export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) =
 
 // get the whole state object
 export const getData = (): DataModel => store.getState()
+
+/**
+ * update Site state in store along with elements and pages
+ */
+export function initializeData(data: DataModel) {
+  const { site, pages, elements }  = data;
+
+  stopObservers();
+
+  initializeSite(site);
+
+  initializePages(pages);
+  openPage(pages[0]);
+
+  initializeElements(elements);
+
+  startObservers();
+}

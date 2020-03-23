@@ -31,7 +31,7 @@ export const updateSite_ = (store: SilexStore, data: SiteData) => store.dispatch
 export const updateSite = connect<SiteData>(updateSite_)
 
 export const getSite_ = (store: SilexStore) => store.getState().site
-export const getSite = connect(getSite_)
+export const getSite = connect<null, SiteData>(getSite_)
 
 export const subscribeSite = (cbk: (prevState: SiteData, nextState: SiteData) => void): () => void => {
   return subscribeTo<SiteData>('site', cbk)

@@ -24,7 +24,7 @@ export function getCurrentPageName(win: Window): string {
 /**
  * get the currently opened page from the dom
  */
-export function getCurrentPage(win: Window, pages: PageData[]): PageData {
+export function getCurrentPageFromDom(win: Window, pages: PageData[]): PageData {
   const name = getCurrentPageName(win)
   return pages.find((p) => p.id === name)
 }

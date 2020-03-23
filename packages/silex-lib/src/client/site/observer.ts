@@ -1,10 +1,11 @@
 import * as objectPath from '../../../node_modules/object-path/index.js';
-import { DataSources, SiteData } from '../../types';
-import { getData, updateElements } from '../api';
+import { DataSources, SiteData } from '../site/types';
+import { getData } from '../flux/store';
 import { getSiteDocument } from '../ui/UiElements';
-import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth, writeDataToDom } from '../dom/site-dom';
+import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth, writeDataToDom } from '../site/dom';
 import { SilexNotification } from '../utils/Notification';
-import { getBody } from '../element/filters.js';
+import { getBody } from '../element/filters';
+import { updateElements } from '../element/store'
 
 export function onChangeSite(prev: SiteData, site: SiteData) {
   const doc = getSiteDocument()
@@ -23,10 +24,10 @@ export function onChangeSite(prev: SiteData, site: SiteData) {
   if (!prev || prev.fonts !== site.fonts) { setFonts(doc, site.fonts) }
   if (!prev || prev.width !== site.width) {
     // store a style to all section containers
-    // FIXME: set a min-width to all sections instead
+    // TODO: set a min-width to all sections instead
     setWebsiteWidth(doc, site.width)
     // set a minimum width to the body
-    // FIXME: is this useful?
+    // TODO: is this useful?
     const body = getBody()
     if (body) { // FIXME: (!body) happens at start of Silex but it should not?
       updateElements([{

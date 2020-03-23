@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { PageData } from './types'
+import { getPages } from './store'
 
 /**
  * @fileoverview Useful filters used to retrieve items in the store
@@ -17,6 +17,6 @@ import { PageData } from './types'
  */
 
 
-export const getCurrentPage = (pages: PageData[]) => pages
+export const getCurrentPage = () => getPages()
   .find((p) => p.opened)
 
