@@ -15,27 +15,6 @@
  * FIXME: remove old MVC types, split to packages: element, page, site, ui
  *
  */
-import { BreadCrumbs } from './components/BreadCrumbs';
-import { ContextMenu } from './components/ContextMenu';
-import { CssEditor } from './components/dialog/CssEditor';
-import { Dashboard } from './components/dialog/Dashboard';
-import { FileExplorer } from './components/dialog/FileExplorer';
-import { HtmlEditor } from './components/dialog/HtmlEditor';
-import { JsEditor } from './components/dialog/JsEditor';
-import { SettingsDialog } from './components/dialog/SettingsDialog';
-import { Menu } from './components/Menu';
-import { PageTool } from './components/PageTool';
-import { PropertyTool } from './components/PropertyTool';
-import { Splitter } from './components/Splitter';
-import { StageWrapper } from './components/StageWrapper';
-import { TextFormatBar } from './components/TextFormatBar';
-import { Workspace } from './components/Workspace';
-import { Body } from './model/Body';
-import { Component } from './model/Component';
-import { SilexElement } from './model/Element';
-import { File } from './model/File';
-import { Head } from './model/Head';
-import { Property } from './model/Property';
 import { DataModel } from './flux/types';
 import { PageData } from './page/types';
 

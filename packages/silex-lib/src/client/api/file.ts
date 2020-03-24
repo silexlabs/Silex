@@ -2,7 +2,7 @@ import { FileExplorer } from '../components/dialog/FileExplorer'
 import { SilexNotification } from '../utils/Notification'
 import { FileInfo } from '../third-party/types'
 import { Config } from '../ClientConfig'
-import { getData, initializeData } from '../flux/store'
+import { getData } from '../flux/store'
 import { DataModel } from '../flux/types'
 import { CloudStorage } from '../io/CloudStorage'
 import { getSite, updateSite } from '../site/store'
@@ -17,6 +17,7 @@ import { openDashboard } from '../components/dialog/Dashboard'
 import { PublicationOptions, Provider } from '../site/types'
 import { openSettingsDialog } from '../components/dialog/SettingsDialog'
 import { SilexTasks } from '../io/SilexTasks'
+import { initializeData } from '../flux/dispatchers'
 
 /**
  * save or save-as

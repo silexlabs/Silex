@@ -14,7 +14,6 @@
  * the Silex menu on the left
  * based on closure menu class
  *
- * FIXME: only functions + no use of old controlers
  */
 
 import { Constants } from '../../constants'
@@ -29,6 +28,8 @@ import { getUi, updateUi } from '../ui/store'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { getUiElements } from '../ui/UiElements'
 
+///////////////////
+// API for the outside world
 export function initMenu() {
   return new Menu(getUiElements().menu)
 }
@@ -42,10 +43,7 @@ export function keyboardAddShortcut(s: Shortcut, cbk: (p1: Event) => void) {
 }
 
 /**
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read operation only
- * @param controller  structure which holds the controller instances
+ * TODO: make this only methods and write tests
  */
 class Menu {
   static keyboard = new Keyboard(document);

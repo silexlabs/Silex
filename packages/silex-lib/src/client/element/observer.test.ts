@@ -14,6 +14,7 @@ const ELEM_CONTAINER: ElementData = {
   alt: null,
   title: 'test title',
   link: null,
+  enableEdit: true,
   enableDrag: true,
   enableDrop: false,
   enableResize: {

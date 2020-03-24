@@ -22,12 +22,12 @@ test('convert from 2.5.60', () => {
   document.body.classList.add('editable-style')
   const elements = getElementsFromDomBC(document)
   expect(elements).not.toBeNull()
-  expect(elements).toHaveLength(10)
+  expect(elements).toHaveLength(11)
   expect(elements.filter((el) => el.type === ElementType.SECTION)).toHaveLength(3)
   expect(elements.filter((el) => el.type === ElementType.CONTAINER)).toHaveLength(4)
   expect(elements.filter((el) => el.type === ElementType.TEXT)).toHaveLength(1)
   expect(elements.filter((el) => el.type === ElementType.IMAGE)).toHaveLength(1)
-  expect(elements.filter((el) => el.type === ElementType.COMPONENT)).toHaveLength(1)
+  expect(elements.filter((el) => el.type === ElementType.COMPONENT)).toHaveLength(2)
   expect(elements.find((el) => el.id === TEXT_ELEMENT_ID).title).toEqual('test title')
   expect(elements.find((el) => el.id === IMAGE_ELEMENT_ID).alt).toEqual('test alt')
   expect(elements.find((el) => el.id === BODY_ID).classList).toEqual([
@@ -112,11 +112,25 @@ test('convert from 2.5.60', () => {
   expect(site.headStyle).toBe(`.test {
   color: red;
 }`)
-  expect(site.headScript).toBe(`
-    // alert('this is js');
-  `)
-  expect(site.headTag).toBe(`<!-- this is head -->`)
+  expect(site.headScript.trim()).toBe(`// alert('this is js');`)
+  expect(site.headUser.trim()).toBe(`<!-- this is head -->`)
   expect(site.width).toBe(1200)
+
+  expect(site.prodotypeDependencies).toEqual({
+    'silex-id-1585068099307-0':
+      [{
+        'script': [{
+          'data-silex-static': '',
+          'src': '/static/2.7/unslider/unslider-min.js'
+        }],
+        'link': [{
+          'data-silex-static': '',
+          'rel': 'stylesheet',
+          'href': '/static/2.7/unslider/unslider.css'
+        }]
+      }]
+    }
+  )
 
   // pages
   const pages = getPagesFromDom(document)

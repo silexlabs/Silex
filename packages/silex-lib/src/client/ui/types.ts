@@ -17,7 +17,6 @@
 export interface UiData {
   mobileEditor: boolean,
   loading: boolean,
-  debug: boolean,
   // stacked: boolean,
   // modals: Array<{type: Modal, data: any}>,
   // route: Route,

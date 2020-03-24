@@ -22,12 +22,20 @@ import { CodeEditorBase } from './CodeEditorBase';
 import { subscribeSite, getSite, updateSite } from '../../site/store'
 import { getSelectedElements } from '../../element/filters'
 
-export function initHtmlEditor() {
-  return new HtmlEditor(getUiElements().htmlEditor)
+///////////////////
+// API for the outside world
+let instance: HtmlEditor
+function initHtmlEditor() {
+  instance = instance || new HtmlEditor(getUiElements().htmlEditor)
+  return instance
+}
+export function openHtmlEditor() {
+  initHtmlEditor()
+  return instance.open()
 }
 
 /**
- * @class {silex.view.dialog.HtmlEditor}
+ * TODO: make this only methods and write tests
  */
 class HtmlEditor extends CodeEditorBase {
   /**
@@ -63,7 +71,7 @@ class HtmlEditor extends CodeEditorBase {
     }
   }
   redraw() {
-    const headTag = getSite().headTag
+    const headTag = getSite().headUser
     this.forSelection({
       htmlBox: (el) => el.innerHtml !== this.getValue() ? this.setValue(el.innerHtml) : null,
       body: () => headTag !== this.getValue() ? this.setValue(headTag) : null,
@@ -85,7 +93,7 @@ class HtmlEditor extends CodeEditorBase {
       }]),
       body: () => updateSite({
         ...getSite(),
-        headTag: this.getValue(),
+        headUser: this.getValue(),
       }),
       error: () => {},
     })

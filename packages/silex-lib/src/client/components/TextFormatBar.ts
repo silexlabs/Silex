@@ -15,11 +15,10 @@ import { getSelectedElements } from '../element/filters';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { getDomElement } from '../element/dom';
 import { wysihtml, WysiHtmlEditor } from '../externs';
-import { Body } from '../model/Body';
 import { Tracker } from '../io/Tracker';
 import { getContentNode, getInnerHtml } from '../element/dom';
 import { SilexNotification } from '../utils/Notification';
-import { LINK_ATTRIBUTES, LinkDialog } from './dialog/LinkDialog';
+import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog';
 import { getSiteDocument, getSiteWindow, getUiElements } from '../ui/UiElements';
 import { LinkData } from '../ClientTypes'
 import { setEditMode } from './StageWrapper'
@@ -32,15 +31,23 @@ import { keyboardAttach, keyboardAddShortcut } from './Menu'
  * box It uses the wysihtml library to change text format
  */
 
-export function initTextFormatBar() {
-  return new TextFormatBar(getUiElements().textFormatBar)
-}
-
 const MENU_WIDTH = 35;
 const CONTEXT_MENU_HEIGHT = 35;
 
+///////////////////
+// API for the outside world
+let instance: TextFormatBar
+function initTextFormatBar() {
+  instance = instance || new TextFormatBar(getUiElements().textFormatBar)
+  return instance
+}
+export function openTextFormatBar() {
+  initTextFormatBar()
+  return instance.startEditing(FileExplorer.getInstance())
+}
+
 /**
- * @class {silex.view.TextFormatBar}
+ * TODO: make this only methods and write tests
  */
 export class TextFormatBar {
   // tracker for analytics
@@ -49,7 +56,6 @@ export class TextFormatBar {
   // store the params
   currentTextBox: ElementData = null;
   wysihtmlEditor: WysiHtmlEditor = null;
-  linkDialog: LinkDialog;
   toolbar: HTMLElement;
 
   // for event remove events, this is reset on stop edit
@@ -66,7 +72,6 @@ export class TextFormatBar {
    */
   constructor(protected element: HTMLElement) {
     this.tracker = Tracker.getInstance();
-    this.linkDialog = new LinkDialog();
     this.toolbar = this.element.querySelector('#wysihtml5-toolbar');
   }
 
@@ -329,17 +334,20 @@ export class TextFormatBar {
    */
   openLinkEditor(e: Event) {
     const oldLink = this.getLink();
-    this.linkDialog.open(oldLink, (_options) => {
+    openLinkDialog({
+      data: oldLink,
+      cbk: (_options) => {
       // _options is the same as oldLink when the user canceled the link editor
       // therfore it is undefined when the selection is not a link
       // and it will be undefined when the user clicks "remove link"
-      if (_options) {
-        this.wysihtmlEditor.composer.commands.exec('createLink', _options);
-      } else {
-        this.wysihtmlEditor.composer.commands.exec('removeLink');
-      }
-      // give back the focus to the editor
-      this.wysihtmlEditor.focus(false); // seems to be needed only when _options is undefined
+        if (_options) {
+          this.wysihtmlEditor.composer.commands.exec('createLink', _options);
+        } else {
+          this.wysihtmlEditor.composer.commands.exec('removeLink');
+        }
+        // give back the focus to the editor
+        this.wysihtmlEditor.focus(false); // seems to be needed only when _options is undefined
+      },
     });
     // prevent click on the button
     e.preventDefault();

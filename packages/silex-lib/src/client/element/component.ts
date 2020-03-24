@@ -10,13 +10,13 @@
  */
 
 import { Constants } from '../../constants';
-import { ComponentData, ElementData, ElementType, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../element/types';
+import { ComponentData, ElementData, ElementType, PseudoClass, PseudoClassData, StyleData, StyleName, Visibility, TemplateName, StyleDataObject } from '../element/types';
 import { Config } from '../ClientConfig';
-import { getSiteDocument, getUiElements } from '../components/UiElements';
 import { Prodotype, ProdotypeCompDef } from '../externs';
 import { getElements, updateElements } from '../element/store';
-import { getSite } from '../site/store';
+import { getSite, updateSite } from '../site/store';
 import { addMediaQuery } from '../element/dom';
+import { getUiElements } from '../ui/UiElements'
 
 /**
  * @fileoverview
@@ -24,19 +24,29 @@ import { addMediaQuery } from '../element/dom';
  *   Components are based on Silex elements, use Prodotype to render a templates
  */
 
-// load the Prodotype library
-const styleEditorElement = getUiElements().propertyTool.querySelector('.prodotype-style-editor .prodotype-container');
-const componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor');
-
-// tslint:disable:no-string-literal
-const prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders);
-const prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles');
-
+let styleEditorElement
+let componentEditorElement
+let prodotypeComponent: Prodotype
+let prodotypeStyle: Prodotype
 let readyCbkArr = []
-prodotypeComponent.ready((err) => {
-  readyCbkArr.forEach((cbk) => cbk(err))
-  readyCbkArr = []
-});
+
+window.addEventListener('load', () => initProdotype())
+
+function initProdotype() {
+  // load the Prodotype library
+  styleEditorElement = getUiElements().propertyTool.querySelector('.prodotype-style-editor .prodotype-container');
+  componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor');
+
+  // tslint:disable:no-string-literal
+  prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders);
+  prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles');
+
+
+  prodotypeComponent.ready((err) => {
+    readyCbkArr.forEach((cbk) => cbk(err))
+    readyCbkArr = []
+  });
+}
 
 /**
  * notify when Prodotype library is ready
@@ -168,39 +178,90 @@ export function updateDepenedencies(type: string) {
     // TODO: cleanup since this would need to support several types of components?
     throw new Error('Not supported, all dependencies are for components for now, not styles');
   }
-  const head = model.head.getHeadElement();
   const components: ComponentData[] = getElements()
     .filter((el) => el.type === ElementType.COMPONENT)
     .map((el) => el.data.component);
+  const prodotypeDependencies = prodotypeComponent.getDependencies(components)
 
-  // remove unused dependencies (scripts and style sheets)
-  const elements = Array.from(model.head.getHeadElement().querySelectorAll('[data-dependency]'));
-  const unused = prodotypeComponent.getUnusedDependencies(elements, components);
-  for (const el of unused) {
-    head.removeChild(el);
-  }
+  const oldDependencies = getSite().prodotypeDependencies
+  const isDifferent = (() => {
+    for(const compName in oldDependencies)
+      if(!prodotypeDependencies[compName]) return false
+    for(const compName in prodotypeDependencies)
+      if(!oldDependencies[compName]) return false
+    return true
+  })()
 
-  // add missing dependencies (scripts and style sheets)
-  const missing = prodotypeComponent.getMissingDependencies(head, components);
-  for (const el of missing) {
-    el.setAttribute('data-dependency', '');
-    head.appendChild(el);
+  if(isDifferent) {
+    updateSite({
+      ...getSite(),
+      prodotypeDependencies,
+    })
   }
+  // const head = model.head.getHeadElement();
+  // const components: ComponentData[] = getElements()
+  //   .filter((el) => el.type === ElementType.COMPONENT)
+  //   .map((el) => el.data.component);
+
+  // // remove unused dependencies (scripts and style sheets)
+  // const elements = Array.from(model.head.getHeadElement().querySelectorAll('[data-dependency]'));
+  // const unused = prodotypeComponent.getUnusedDependencies(elements, components);
+  // for (const el of unused) {
+  //   head.removeChild(el);
+  // }
+
+  // // add missing dependencies (scripts and style sheets)
+  // const missing = prodotypeComponent.getDependencies(components);
+  // for (const el of missing) {
+  //   el.setAttribute('data-dependency', '');
+  //   head.appendChild(el);
+  // }
 }
 
 /**
  * hide component editors
  */
-export function resetSelection(type: string) {
-  if (type === Constants.COMPONENT_TYPE) {
-    if (prodotypeComponent) {
-      prodotypeComponent.edit();
-    }
-  } else {
-    if (prodotypeStyle) {
-      prodotypeStyle.edit();
-    }
+export function resetComponentEditor() {
+  if (prodotypeComponent) {
+    componentEditorElement.classList.add('hide-panel')
+    prodotypeComponent.edit();
   }
+}
+
+/**
+ * show component editors and edit the selection
+ */
+export function openComponentEditor(options: {
+  data?: any,
+  dataSources?: object,
+  templateName?: string,
+  events?: any
+}) {
+  if (prodotypeComponent) {
+    prodotypeComponent.edit(options.data, options.dataSources, options.templateName, options.events);
+    componentEditorElement.classList.remove('hide-panel')
+  }
+}
+
+/**
+ * edit a style in the style editor
+ */
+export function openStyleEditor(options: {
+  data?: any,
+  dataSources?: object,
+  templateName?: string,
+  events?: any
+}) {
+  if (prodotypeStyle) {
+    prodotypeStyle.edit(options.data, options.dataSources, options.templateName, options.events);
+  }
+}
+
+/**
+ *
+ */
+export function renderStyle(options: {templateName: string, data: any, dataSources?: object}) {
+  return prodotypeStyle.decorate(options.templateName, options.data, options.dataSources)
 }
 
 /**
@@ -229,6 +290,19 @@ export function initStyle(displayName: string, className: StyleName, opt_data?: 
     console.error('This style already exists');
     throw new Error('This style already exists');
   } else {
+    // const style: StyleDataObject = {
+    //   ...getSite().style,
+    // }
+    // style[className] = {
+    //   className,
+    //   displayName,
+    //   templateName: 'text',
+    //   styles: {desktop: {normal: {}}},
+    // }
+    // updateSite({
+    //   ...getSite(),
+    //   style,
+    // })
     // render all pseudo classes in all visibility object
     getPseudoClassData(opt_data || ({
       className: '',
@@ -266,7 +340,7 @@ export function getPseudoClassData(styleData: StyleData): {visibility: Visibilit
         visibility: vData.visibility,
         pseudoClass: pcName,
         /* unused, the data is in data */
-export function         data: vData.data[pcName],
+        data: vData.data[pcName],
       });
     }
     return arrayOfPCData;
@@ -275,7 +349,7 @@ export function         data: vData.data[pcName],
 }
 
 /**
- * apply the style to the dom and save it to the JSON object
+ * update the style in the store
  */
 export function componentStyleChanged(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, opt_data?: PseudoClassData, opt_displayName?: string) {
   // expose the class name and pseudo class to the prodotype template
@@ -294,40 +368,50 @@ export function componentStyleChanged(className: StyleName, pseudoClass: PseudoC
     styleData.styles[visibility] = {};
   }
   styleData.styles[visibility][pseudoClass] = newData;
-  console.error('not implemented')
-  // FIXME: pour this to the new model?
-  // model.property.setStyleData(className, styleData);
 
-  // update the head style with the new template
-  const head = model.head.getHeadElement();
-  let elStyle = head.querySelector(`[data-style-id="${className}"]`);
-  if (!elStyle) {
-    const doc = getSiteDocument();
-    elStyle = doc.createElement('style');
-    elStyle.className = Constants.STYLE_CLASS_NAME;
-    elStyle.setAttribute('type', 'text/css');
-    elStyle.setAttribute('data-style-id', className);
-    head.appendChild(elStyle);
+  const style: StyleDataObject = {
+    ...getSite().style,
   }
+  style[className] = styleData
+  updateSite({
+    ...getSite(),
+    style,
+  })
 
-  // render all pseudo classes in all visibility object
-  const pseudoClassData = getPseudoClassData(styleData);
-  if (pseudoClassData.length > 0) {
-    Promise.all(pseudoClassData.map((obj) => {
-          return prodotypeStyle.decorate('text', obj.data, getSite().dataSources)
-              .then((html) => addMediaQueryIfMobileOnly(html, obj.visibility));
-        }) as Promise<string>[])
-        .then((htmlStrings) => {
-          elStyle.innerHTML = htmlStrings.join('');
-        });
-  }
+  // console.error('not implemented')
+  // // FIXME: pour this to the new model?
+  // // model.property.setStyleData(className, styleData);
+
+  // // update the head style with the new template
+  // const head = model.head.getHeadElement();
+  // let elStyle = head.querySelector(`[data-style-id="${className}"]`);
+  // if (!elStyle) {
+  //   const doc = getSiteDocument();
+  //   elStyle = doc.createElement('style');
+  //   elStyle.className = Constants.STYLE_CLASS_NAME;
+  //   elStyle.setAttribute('type', 'text/css');
+  //   elStyle.setAttribute('data-style-id', className);
+  //   head.appendChild(elStyle);
+  // }
+
+  // // render all pseudo classes in all visibility object
+  // const pseudoClassData = getPseudoClassData(styleData);
+  // if (pseudoClassData.length > 0) {
+  //   Promise.all(pseudoClassData.map((obj) => {
+  //         return prodotypeStyle.decorate('text', obj.data, getSite().dataSources)
+  //             .then((html) => addMediaQueryIfMobileOnly(html, obj.visibility));
+  //       }) as Promise<string>[])
+  //       .then((htmlStrings) => {
+  //         elStyle.innerHTML = htmlStrings.join('');
+  //       });
+  // }
 }
 
 /**
  * add a media query around the style string
  * when needed for mobile-only
  */
-function addMediaQueryIfMobileOnly(html: string, visibility: Visibility) {
+export function addMediaQueryIfMobileOnly(html: string, visibility: Visibility) {
   if (visibility === Constants.STYLE_VISIBILITY[0]) {
     return html;
   }

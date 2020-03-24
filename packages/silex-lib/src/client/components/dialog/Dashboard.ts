@@ -31,7 +31,7 @@ export interface DashboardOptions {
 ///////////////////
 // API for the outside world
 let dashboard: Dashboard
-export function initDashboard() {
+function initDashboard() {
   dashboard = dashboard || new Dashboard(getUiElements().dashboard)
   return dashboard
 }

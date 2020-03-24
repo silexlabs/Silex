@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { StyleDataObject } from '../element/types';
+import { ProdotypeDependency, StyleDataObject } from '../element/types';
 import { FileInfo } from '../third-party/types';
 
 /**
@@ -18,7 +18,7 @@ import { FileInfo } from '../third-party/types';
  */
 
 export interface SiteData {
-  headTag: string,
+  headUser: string,
   headStyle: string,
   headScript: string,
   title: string,
@@ -39,6 +39,20 @@ export interface SiteData {
   fonts: Font[],
   style: StyleDataObject,
   file: FileInfo,
+  // prodotypeDependencies is the object returned by getDependencies: {
+  //   "test-comp":
+  //     [{
+  //         "script": [{
+  //             "src": "https://code.jquery.com/jquery-2.1.4.min.js"
+  //         }],
+  //         "link": [{
+  //             "rel": "stylesheet",
+  //             "href": "https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css"
+  //         }]
+  //     }]
+  //   }
+  // FIXME: the site should not have this array of deps, but each component should have its deps
+  prodotypeDependencies: {[key: string]: ProdotypeDependency[]},
 }
 
 export interface DataSource {

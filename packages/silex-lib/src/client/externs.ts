@@ -54,11 +54,25 @@ export interface Prodotype {
     events?: any);
   reset();
   createName(type, list): string;
+  // "getDependencies" returns an object like this: {
+  //   test-comp:
+  //     [{
+  //         "script": [{
+  //             "src": "https://code.jquery.com/jquery-2.1.4.min.js"
+  //         }],
+  //         "link": [{
+  //             "rel": "stylesheet",
+  //             "href": "https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css"
+  //         }]
+  //     }]
+  //   }
+  //  }
+  getDependencies(components: {name:string, displayName?:string, templateName:string}[]): {[key: string]: ProdotypeDependency[]};
   getMissingDependencies(
     container: HTMLElement,
     componentNames: {templateName: string}[],
-  ): Element[];
-  getUnusedDependencies(dependencyElements: Element[], componentNames: {templateName: string}[]);
+  ): HTMLElement[];
+  getUnusedDependencies(dependencyElements: HTMLElement[], componentNames: {templateName: string}[]);
 }
 
 /**

@@ -20,12 +20,20 @@ import { getSite, subscribeSite, updateSite } from '../../site/store';
 import { CodeEditorBase } from './CodeEditorBase';
 import { getUiElements } from '../../ui/UiElements'
 
-export function initCssEditor() {
-  return new CssEditor(getUiElements().cssEditor)
+///////////////////
+// API for the outside world
+let instance: CssEditor
+function initCssEditor() {
+  instance = instance || new CssEditor(getUiElements().cssEditor)
+  return instance
+}
+export function openCssEditor() {
+  initCssEditor()
+  return instance.open()
 }
 
 /**
- * @class {silex.view.dialog.CssEditor}
+ * TODO: make this only methods and write tests
  */
 class CssEditor extends CodeEditorBase {
   /**

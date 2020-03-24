@@ -134,3 +134,17 @@ export interface ComponentData {
   templateName: TemplateName;
   data: any;
 }
+
+// FIXME: the site should not have this array of deps, but each component should have its deps
+export interface ProdotypeDependency {
+  [key: string]: ProdotypeDependencyTag[],
+}
+
+export interface ProdotypeDependencyTag {
+  [key: string]: string,
+}
+
+export interface ProdotypeDependencyTagAttr {
+  [key: string]: string,
+}
+

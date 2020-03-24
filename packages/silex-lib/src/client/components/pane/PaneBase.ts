@@ -19,7 +19,6 @@
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { ElementData } from '../../element/types';
 import { getElements, subscribeElements, updateElements } from '../../element/store';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { Style } from '../../utils/Style';
 import { getStage } from '../StageWrapper';
 import { getSelectedElements } from '../../element/filters'
@@ -52,7 +51,7 @@ export class PaneBase {
    */
   protected baseUrl = null;
 
-  constructor(protected element: HTMLElement, protected model: Modelxxx, protected controller: Controller) {
+  constructor(protected element: HTMLElement) {
     subscribeElements(() => {
       if (getStage()) {
         this.redraw(getSelectedElements());

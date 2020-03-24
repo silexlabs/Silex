@@ -2,6 +2,7 @@ import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType, Link, CSSRuleInfo } from './types';
 import { getEmptyElementData } from '../element/utils';
 import { Style } from '../utils/Style';
+import { Url } from '../utils/Url'
 
 export function getDomElement(doc: HTMLDocument, element: ElementData): HTMLElement {
   return getDomElementById(doc, element.id)

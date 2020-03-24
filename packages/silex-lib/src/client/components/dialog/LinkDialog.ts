@@ -28,10 +28,22 @@ const DEFAULT_LINK_DATA = {
   download: '',
 };
 
+///////////////////
+// API for the outside world
+let instance: LinkDialog
+function initLinkDialog() {
+  instance = instance || new LinkDialog()
+  return instance
+}
+export function openLinkDialog(options: {data: LinkData, cbk: (p1: LinkData) => any}) {
+  initLinkDialog()
+  return instance.open(options.data, options.cbk)
+}
+
 /**
- * the LinkDialog class
+ * TODO: make this only methods and write tests
  */
-export class LinkDialog {
+class LinkDialog {
   constructor() {}
 
   open(linkDataArg: LinkData, cbk: (p1: LinkData) => any) {

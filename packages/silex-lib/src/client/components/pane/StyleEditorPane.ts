@@ -12,7 +12,6 @@
 import { Constants } from '../../../constants';
 import { ElementData, ElementType, StyleData, StyleName, Visibility } from '../../element/types';
 import { getElements, updateElements  } from '../../element/store';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { getDomElement } from '../../element/dom';
 import { Tracker } from '../../io/Tracker';
 import { SilexNotification } from '../../utils/Notification';
@@ -22,6 +21,8 @@ import { getSite } from '../../site/store'
 import { updateUi, getUi } from '../../ui/store'
 import { getPages } from '../../page/store'
 import { getBody } from '../../element/filters'
+import { editStyle } from '../../api/element'
+import { getComponentsDef, initStyle } from '../../element/component'
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the
@@ -54,15 +55,15 @@ export class StyleEditorPane extends PaneBase {
    * @param controller  structure which holds
    * the controller instances
    */
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
-    super(element, model, controller);
+  constructor(element: HTMLElement) {
+    super(element);
     this.tracker = Tracker.getInstance();
     this.styleCombo = this.element.querySelector('.class-name-style-combo-box');
     this.pseudoClassCombo = this.element.querySelector('.pseudoclass-style-combo-box');
     this.mobileOnlyCheckbox = this.element.querySelector('.visibility-style-checkbox');
     this.pseudoClassCombo.onchange = (e) => {
       //    this.tracker.trackAction('style-editor-events', 'select-pseudo-class');
-      this.controller.editMenuController.editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
+      editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
       const styleData = (getSite().style[this.styleCombo.value] ||  {} as StyleData);
       this.updateTagButtonBar(styleData);
     };
@@ -102,8 +103,7 @@ export class StyleEditorPane extends PaneBase {
     };
     this.selectionCountTotal = this.element.querySelector('.total');
     this.selectionCountTotal.onclick = (e) => {
-      //    this.tracker.trackAction(
-          'style-editor-events', 'select-elements-with-style');
+      //    this.tracker.trackAction('style-editor-events', 'select-elements-with-style');
       updateElements(getElements()
         .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value))
         .map((el) => ({
@@ -116,8 +116,7 @@ export class StyleEditorPane extends PaneBase {
     };
     this.selectionCountPage = this.element.querySelector('.on-page');
     this.selectionCountPage.onclick = (e) => {
-      //    this.tracker.trackAction(
-          'style-editor-events', 'select-all-elements-with-style');
+      //    this.tracker.trackAction('style-editor-events', 'select-all-elements-with-style');
       const currentPage = getPages().find((p) => p.opened);
       updateElements(getElements()
       .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id)))
@@ -225,7 +224,7 @@ export class StyleEditorPane extends PaneBase {
       `,
       () => {});
     } else if (noBody.length) {
-      this.controller.propertyToolController.undoCheckPoint();
+      // this.controller.propertyToolController.undoCheckPoint();
       updateElements(noBody
         .map((el) => ({
           from: el,
@@ -309,7 +308,7 @@ export class StyleEditorPane extends PaneBase {
       this.styleComboPrevValue = styleNameNotNull;
 
       // start editing the style with prodotype
-      this.controller.editMenuController.editStyle(styleNameNotNull, this.getPseudoClass(), this.getVisibility());
+      editStyle(styleNameNotNull, this.getPseudoClass(), this.getVisibility());
 
       // update selection count
       const total = this.getElementsWithStyle(styleNameNotNull, true).length;
@@ -358,7 +357,7 @@ export class StyleEditorPane extends PaneBase {
     // {"name":"Text
     // styles","props":[{"name":"pseudoClass","type":["normal",":hover",":focus-within",
     // ...
-    const componentsDef = this.model.component.getComponentsDef(Constants.STYLE_TYPE);
+    const componentsDef = getComponentsDef(Constants.STYLE_TYPE);
     const pseudoClasses = componentsDef.text.props.find((prop) => prop.name === 'pseudoClass').type;
 
     // append options to the dom
@@ -381,8 +380,7 @@ export class StyleEditorPane extends PaneBase {
    * @return normal if pseudo class is ''
    */
   getPseudoClass(): string {
-    return this.pseudoClassCombo.value === '' ? 'normal' :
-                                                this.pseudoClassCombo.value;
+    return this.pseudoClassCombo.value === '' ? 'normal' : this.pseudoClassCombo.value;
   }
 
   /**
@@ -396,9 +394,9 @@ export class StyleEditorPane extends PaneBase {
     } else {
       SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data.displayName : '', 'Your Style', (accept, name) => {
         if (accept && name && name !== '') {
-          this.controller.propertyToolController.undoCheckPoint();
+          // this.controller.propertyToolController.undoCheckPoint();
           const className = 'style-' + name.replace(/ /g, '-').toLowerCase();
-          this.model.component.initStyle(name, className, opt_data);
+          initStyle(name, className, opt_data);
           this.applyStyle(className);
 
           // FIXME: needed to select className but
@@ -487,7 +485,7 @@ export class StyleEditorPane extends PaneBase {
         this.styleCombo.querySelector('option[value="' + name + '"]');
 
     // undo checkpoint
-    this.controller.propertyToolController.undoCheckPoint();
+    // this.controller.propertyToolController.undoCheckPoint();
 
     // remove from elements
     Array.from(getSiteDocument().querySelectorAll('.' + name))
@@ -495,7 +493,7 @@ export class StyleEditorPane extends PaneBase {
     .forEach((el: HTMLElement) => el.classList.remove(name));
 
     // undo checkpoint
-    this.controller.settingsDialogController.undoCheckPoint();
+    // this.controller.settingsDialogController.undoCheckPoint();
 
     // remove from model
     removeStyle(option.value);

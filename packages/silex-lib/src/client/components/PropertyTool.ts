@@ -27,20 +27,23 @@ import { StyleEditorPane } from './pane/StyleEditorPane';
 import { StylePane } from './pane/StylePane';
 import { getUiElements } from '../ui/UiElements'
 
+///////////////////
+// API for the outside world
+let instance: PropertyTool
 export function initPropertyTool() {
-  return new PropertyTool(getUiElements().propertyTool)
+  instance = instance || new PropertyTool(getUiElements().propertyTool)
+  return instance
+}
+export function openParamsTab() {
+  initPropertyTool()
+  return instance.openParamsTab()
 }
 
 /**
  * the Silex PropertyTool class handles the panes actually displaying the
  * properties
  *
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller  structure which holds
- * the controller instances
+ * TODO: make this only methods and write tests
  */
 class PropertyTool {
 

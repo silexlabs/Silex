@@ -3,7 +3,7 @@ import { writeStyleToDom, getContentNode, getInnerHtml } from '../../client/elem
 import { crudIdKey } from '../../client/flux/crud-store';
 import { Constants } from '../../constants';
 import DomTools from './DomTools';
-import { ComponentData, StyleData, ElementId, LinkType, ElementType, ElementData, CssRule } from '../../client/element/types';
+import { ComponentData, StyleData, ElementId, LinkType, ElementType, ElementData, CssRule, ProdotypeDependency, ProdotypeDependencyTag } from '../../client/element/types';
 import { setWebsiteWidth } from '../../client/site/dom';
 import { SiteData } from '../../client/site/types';
 import { getDefaultStyle } from '../../client/element/utils';
@@ -23,7 +23,7 @@ interface DomData {
   dataSources: any,
   stylesObj: any,
   mobileStylesObj: any,
-  prodotypeDataObj: any,
+  prodotypeDataObj: ProdotypeData,
 }
 
 ////////////////////////////////////////////////////////////
@@ -296,7 +296,7 @@ export function getSiteFromDom(doc: HTMLDocument): SiteData {
     titleSocial: getMeta(doc, 'twitter:title') || getMeta(doc, 'og:title'),
     lang: doc.querySelector('html').lang,
     width: getWebsiteWidth(doc),
-    headTag: DomTools.extractUserHeadTag(doc.head.innerHTML).userHead,
+    headUser: DomTools.extractUserHeadTag(doc.head.innerHTML).userHead,
     headStyle: getHeadStyle(doc),
     headScript: getHeadScript(doc),
     hostingProvider: getMeta(doc, 'hostingProvider'),
@@ -305,7 +305,30 @@ export function getSiteFromDom(doc: HTMLDocument): SiteData {
     fonts: properties.fonts,
     style: properties.prodotypeDataObj.style,
     isTemplate: false, // backward compat is only about loaded websites, not templates
+    file: null,
+    prodotypeDependencies: getDependenciesFromDom(properties),
   }
+}
+
+function getDependenciesFromDom(properties: DomData): {[key: string]: ProdotypeDependency[]} {
+  const res: {[key: string]: ProdotypeDependency[]} = {}
+  const componentDef = require('./componentsV2.5.60.json')
+
+  Object.keys(properties.prodotypeDataObj.component)
+  .map((compName) => ({
+    compName,
+    templateName: properties.prodotypeDataObj.component[compName].templateName,
+  }))
+  .map(({compName, templateName}) => ({
+    compName,
+    dependencies: componentDef[templateName].dependencies,
+  }))
+  .filter(({dependencies}) => !!dependencies)
+  .forEach(({compName, dependencies}) => {
+    res[compName] = [dependencies]
+  })
+
+  return res
 }
 function getMeta(doc, name: string): string {
   const metaNode = doc.querySelector(
