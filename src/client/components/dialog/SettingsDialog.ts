@@ -34,7 +34,7 @@ const PANE_CSS_CLASSES: string[] = ['general-pane', 'social-pane', 'publish-pane
 ///////////////////
 // API for the outside world
 let settingsDialog: SettingsDialog
-export function initSettingsDialog() {
+function initSettingsDialog() {
   settingsDialog = settingsDialog || new SettingsDialog(getUiElements().settingsDialog)
   return settingsDialog
 }

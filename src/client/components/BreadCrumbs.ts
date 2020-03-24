@@ -22,17 +22,14 @@ import { getDisplayName } from '../element/utils'
  *
  */
 
+///////////////////
+// API for the outside world
 export function initBreadCrumbs() {
   return new BreadCrumbs(getUiElements().breadCrumbs)
 }
 
 /**
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller  structure which holds
- * the controller instances
+ * TODO: make this only methods and write tests
  */
 class BreadCrumbs {
   constructor(private element: HTMLElement) {

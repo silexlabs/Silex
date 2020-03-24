@@ -21,20 +21,16 @@ import { deletePages, getPages, movePage, openPage, subscribePages } from '../pa
 import { Dom } from '../utils/Dom';
 import { PageData } from '../page/types.js';
 import { getUiElements } from '../ui/UiElements.js'
-import { createPage, removePage, movePageTo } from '../api/page'
+import { createPage, removePage, movePageTo, editPage } from '../api/page'
 
+///////////////////
+// API for the outside world
 export function initPageTool() {
   return new PageTool(getUiElements().pageTool)
 }
 
 /**
- *
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller  structure which holds
- * the controller instances
+ * TODO: make this only methods and write tests
  */
 class PageTool {
   constructor(public element: HTMLElement) {

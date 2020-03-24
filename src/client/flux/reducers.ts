@@ -15,6 +15,8 @@ import { PageData } from '../page/types';
 import { SiteData } from '../site/types';
 import { UiData } from '../ui/types';
 
+// FIXME:  split this file in the packages page, element, site, ui
+
 export const elementReducer = (state: ElementData[] = [], action: any): any => {
   switch (action.type) {
     default: return state
@@ -40,7 +42,7 @@ export const pageReducer = (state: PageData[] = [], action: any): PageData[] => 
 export const siteReducer = (state: SiteData = {
   description: '',
   enableMobile: true,
-  headTag: '',
+  isTemplate: false,
   title: '',
   publicationPath: null,
   websiteUrl: '',
@@ -52,11 +54,14 @@ export const siteReducer = (state: SiteData = {
   width: -1,
   headStyle: '',
   headScript: '',
+  headUser: '',
   hostingProvider: '',
   twitterSocial: '',
   dataSources: {},
   fonts: [],
   style: {},
+  file: null,
+  prodotypeDependencies: {}
 },                          action: any) => {
   switch (action.type) {
     case SiteAction.INITIALIZE: return {

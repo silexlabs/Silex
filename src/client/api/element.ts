@@ -17,18 +17,23 @@
 
 import { Constants } from '../../constants'
 import { moveElements } from '../element/dispatchers'
-import { getDomElement } from '../element/dom'
+import { getDomElement, setImageUrl } from '../element/dom'
 import { getBody, getChildrenRecursive, getSelectedElements, getSelectedElementsNoSectionContent } from '../element/filters'
 import { deleteElements, getElements, updateElements } from '../element/store'
 import { ElementData, ElementType, PseudoClassData, StyleData, VisibilityData, StyleName, PseudoClass, Visibility } from '../element/types'
 import { getSite } from '../site/store'
 import { FileInfo } from '../third-party/types'
 import { SilexNotification } from '../utils/Notification'
-import { DomDirection } from '../ClientTypes'
+import { DomDirection, LinkData } from '../ClientTypes'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { getSiteDocument } from '../ui/UiElements'
-
-
+import { resetComponentEditor, openStyleEditor } from '../element/component'
+import { openComponentEditor } from '../element/component'
+import { openHtmlEditor } from '../components/dialog/HtmlEditor'
+import { openParamsTab } from '../components/PropertyTool'
+import { openTextFormatBar } from '../components/TextFormatBar'
+import { openLinkDialog } from '../components/dialog/LinkDialog'
+import { componentStyleChanged } from '../element/component'
 /**
  * remove selected elements from the stage
  */
@@ -70,23 +75,22 @@ export function editElement() {
     // or the editor for the elements
     switch (element.type) {
       case ElementType.COMPONENT:
-        view.propertyTool.openParamsTab();
+        openParamsTab();
         break;
       case ElementType.TEXT:
         // open the text editor
-        view.textFormatBar.startEditing(view.fileExplorer);
-        // view.propertyTool.openStyleTab();
+        openTextFormatBar();
         break;
       case ElementType.HTML:
-        view.htmlEditor.open();
+        openHtmlEditor();
         // view.htmlEditor.setSelection([element]);
         break;
       case ElementType.IMAGE:
-        view.fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
+        FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
           .then((blob) => {
             if (blob) {
               // load the image
-              model.element.setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
+              setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
                 updateElements([{
                   from: element,
                   to: {
@@ -119,10 +123,11 @@ export function editElement() {
 export function editComponent(element: ElementData) {
   if (element && element.data.component) {
     const componentData = element.data.component;
-    model.component.prodotypeComponent.edit(
-      componentData,
-      getSite().dataSources,
-      componentData.templateName, {
+    openComponentEditor({
+      data: componentData,
+      dataSources: getSite().dataSources,
+      templateName: componentData.templateName,
+      events: {
         onChange: (newData, html) => {
           // undo checkpoint
           // undoCheckPoint();
@@ -149,18 +154,18 @@ export function editComponent(element: ElementData) {
         onBrowse: (e, url, cbk) => onBrowse(e, url, cbk),
         onEditLink: (e, linkData, cbk) =>
         onEditLink(e, linkData, cbk),
-      });
-    model.component.componentEditorElement.classList.remove('hide-panel');
-    } else {
-      model.component.componentEditorElement.classList.add('hide-panel');
-      model.component.resetSelection(Constants.COMPONENT_TYPE);
-    }
+      }
+    });
+  } else {
+    resetComponentEditor();
   }
+}
 
 function onEditLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
   e.preventDefault();
-  openLinkDialog(linkData, (_linkData) => {
-    cbk(_linkData);
+  openLinkDialog({
+    data: linkData,
+    cbk,
   });
 }
 
@@ -199,9 +204,9 @@ export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibi
     className,
     pseudoClass,
   };
-  model.component.prodotypeStyle.edit(
-    pseudoClassData,
-    [{displayName: '', name: '', templateName: ''}]
+  openStyleEditor({
+    data: pseudoClassData,
+    dataSources: [{displayName: '', name: '', templateName: ''}]
       .concat(getSite().fonts
         .map((font) => {
           return {
@@ -211,11 +216,12 @@ export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibi
           };
         }),
     ),
-    'text', {
-      onChange: (newData, html) => model.component.componentStyleChanged(className, pseudoClass, visibility, newData),
+    templateName: 'text',
+    events: {
+      onChange: (newData, html) => componentStyleChanged(className, pseudoClass, visibility, newData),
       onBrowse: (e, url, cbk) => onBrowse(e, url, cbk),
     },
-  );
+  });
 }
 
 /**

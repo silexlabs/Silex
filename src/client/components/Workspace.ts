@@ -19,11 +19,7 @@ import { initMenu } from './Menu'
 import { initContextMenu } from './ContextMenu'
 import { initBreadCrumbs } from './BreadCrumbs'
 import { initPageTool } from './PageTool'
-import { initHtmlEditor } from './dialog/HtmlEditor'
-import { initCssEditor } from './dialog/CssEditor'
-import { initJsEditor } from './dialog/JsEditor'
 import { initPropertyTool } from './PropertyTool'
-import { initTextFormatBar } from './TextFormatBar'
 
 /**
  * @fileoverview Silex workspace is in charge of positionning
@@ -47,11 +43,7 @@ export function createWorkspace(element: HTMLElement) {
   initContextMenu()
   initBreadCrumbs()
   initPageTool()
-  initHtmlEditor()
-  initCssEditor()
-  initJsEditor()
   initPropertyTool()
-  initTextFormatBar()
 
   // add splitters
   const uiElements = getUiElements()

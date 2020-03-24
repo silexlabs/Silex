@@ -11,6 +11,7 @@ export const ELEM_TEXT: ElementData = {
   pageNames: [],
   classList: [],
   type: ElementType.TEXT,
+  enableEdit: true,
   isSectionContent: false,
   children: [],
   alt: null,
@@ -168,11 +169,12 @@ export const PAGE3 = {
 }
 
 export const SITE1: SiteData = {
-  headTag: 'headTag',
+  headUser: 'headUser',
   headStyle: 'headStyle',
   headScript: 'headScript',
   title: 'title',
   description: 'description',
+  isTemplate: false,
   enableMobile: true,
   publicationPath: null,
   websiteUrl: 'websiteUrl',
@@ -186,5 +188,34 @@ export const SITE1: SiteData = {
   twitterSocial: 'twitterSocial',
   dataSources: {},
   fonts: [],
-  style: {},
+  style: {
+    'all-style': {
+      'className': 'all-style',
+      'templateName': 'text',
+      'displayName': 'All style',
+      'styles': {
+        'desktop': {
+          'normal': {
+            'className': 'all-style',
+            'pseudoClass': 'normal',
+            'All': {
+              'font-family': '\'Roboto\', sans-serif'
+            }
+          }
+        }
+      }
+    }
+  },
+  file: null,
+  prodotypeDependencies: {
+    'test-component': [{
+      'script': [{
+          'src': 'https://code.jquery.com/jquery-2.1.4.min.js'
+      }],
+      'link': [{
+          'rel': 'stylesheet',
+          'href': 'https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css'
+      }]
+  }]
+  }
 }

@@ -1,4 +1,4 @@
-import { store, subscribeTo, subscribeToCrud, SilexStore } from './store';
+import { store, SilexStore } from './store';
 
 // export const connect = (fun) => (...args) => fun(store, ...args)
 export function connect<Args=null, Ret=void>(fun: (SilexStore, T) => Ret): (args?: Args) => Ret {

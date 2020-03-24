@@ -23,17 +23,14 @@ import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste }
 import { getSite } from '../site/store'
 import { getEnableSticky, toggleSticky } from './StageWrapper'
 
+///////////////////
+// API for the outside world
 export function initContextMenu() {
   return new ContextMenu(getUiElements().contextMenu)
 }
 
 /**
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller  structure which holds
- * the controller instances
+ * TODO: make this only methods and write tests
  */
 class ContextMenu {
   /**
