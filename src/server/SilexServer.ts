@@ -9,6 +9,8 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
+Error.stackTraceLimit = Infinity
+
 // node modules
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';

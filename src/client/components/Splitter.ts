@@ -1,6 +1,3 @@
-import {Controller} from '../ClientTypes';
-import {Modelxxx} from '../ClientTypes';
-
 /**
  * Silex, live web creation
  * http://projects.silexlabs.org/?/silex/
@@ -12,13 +9,13 @@ import {Modelxxx} from '../ClientTypes';
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { hideScrolls, subscribeMouseEvent } from './StageWrapper'
+
 /**
  * @fileoverview
  * splitter to resize the UI
  *
  */
-
-import { addEvent } from '../../../node_modules/drag-drop-stage-component/src/ts/utils/Events';
 
 /**
  * @param element   container to render the UI
@@ -90,7 +87,7 @@ export class Splitter {
   /**
    * redraw the components
    */
-  redraw() {
+  redraw(callRedraw = true) {
     const pos = this.element.getBoundingClientRect();
     const parentSize = this.element.parentElement.getBoundingClientRect();
 
@@ -101,18 +98,18 @@ export class Splitter {
     this.onTheRight.forEach((element) => {
       element.style.left = Splitter.WIDTH + pos.left + 'px';
     });
-    if (this.onRedraw) {
+    if (callRedraw && this.onRedraw) {
       this.onRedraw();
     }
   }
   onMouseDown(evt: Event) {
     this.isDown = true;
-    stageWrapper.hideScrolls(true);
+    hideScrolls(true);
 
     // listen mouse events
     this.toBeCleared.push(
-      stageWrapper.subscribeMouseEvent('mousemove', (e: MouseEvent) => this.onMouseMove(e)),
-      stageWrapper.subscribeMouseEvent('mouseup', (e: MouseEvent) => this.onMouseUp(e)),
+      subscribeMouseEvent('mousemove', (e: MouseEvent) => this.onMouseMove(e)),
+      subscribeMouseEvent('mouseup', (e: MouseEvent) => this.onMouseUp(e)),
     );
   }
 
@@ -121,7 +118,7 @@ export class Splitter {
    */
   onMouseUp(e: Event) {
     this.isDown = false;
-    stageWrapper.hideScrolls(false);
+    hideScrolls(false);
     this.toBeCleared.forEach((clear) => clear());
     this.toBeCleared = [];
   }

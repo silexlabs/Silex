@@ -11,7 +11,7 @@
 
 import * as fs from 'fs';
 import * as Path from 'path';
-import { writeDataToDom } from '../../client/site/dom';
+import { writeDataToDom } from '../../client/flux/dom';
 import { Constants } from '../../constants';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeSiteStyles, writeStyles } from './BackwardCompatV2.5.60';
 import { DataModel } from '../../client/flux/types';

@@ -16,8 +16,8 @@
  */
 import tagsInput from 'tags-input';
 import { ElementData } from '../../element/types';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
+import { setClassName } from '../../element/dispatchers'
 
 /**
  * on of Silex Editors class
@@ -40,9 +40,9 @@ export class StylePane extends PaneBase {
    */
   iAmChanging = false;
 
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
+  constructor(element: HTMLElement) {
 
-    super(element, model, controller);
+    super(element);
 
     // init the component
     this.buildUi();
@@ -81,7 +81,7 @@ export class StylePane extends PaneBase {
     if (this.cssClassesTagsInput.classList.contains('off')) {
       this.setClassesTags('');
     } else {
-      this.controller.propertyToolController.setClassName(this.getClassesTags());
+      setClassName(this.getClassesTags());
     }
   }
 

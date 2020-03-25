@@ -19,9 +19,9 @@
 import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
 import { deletePages, getPages, movePage, openPage, subscribePages } from '../page/store';
 import { Dom } from '../utils/Dom';
-import { PageData } from '../page/types.js';
-import { getUiElements } from '../ui/UiElements.js'
+import { PageData } from '../page/types';
 import { createPage, removePage, movePageTo, editPage } from '../api/page'
+import { getUiElements } from '../ui/UiElements'
 
 ///////////////////
 // API for the outside world

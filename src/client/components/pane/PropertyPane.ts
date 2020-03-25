@@ -17,12 +17,11 @@
 import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { ElementData, ElementType } from '../../element/types';
 import { getElements, updateElements } from '../../element/store';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { getDomElement } from '../../element/dom';
 import { getStage } from '../StageWrapper';
 import { getSiteDocument, getSiteWindow } from '../../ui/UiElements';
 import { PaneBase } from './PaneBase';
-import { getBody } from '../../element/filters'
+import { getBody, getElementByDomElement } from '../../element/filters'
 
 const FlexWrapSelect = '.flex-wrap-select';
 const JustifyContentSelect = '.justify-content-select';
@@ -66,9 +65,9 @@ export class PropertyPane extends PaneBase {
    */
   titleInput: HTMLInputElement;
 
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
+  constructor(element: HTMLElement) {
 
-    super(element, model, controller);
+    super(element);
 
     // init the component
     this.buildUi();
@@ -121,7 +120,7 @@ export class PropertyPane extends PaneBase {
         },
       })))
 
-    this.controller.propertyToolController.undoCheckPoint();
+    // this.controller.propertyToolController.undoCheckPoint();
   }
 
   /**
@@ -144,7 +143,7 @@ export class PropertyPane extends PaneBase {
         },
       })))
 
-    this.controller.propertyToolController.undoCheckPoint();
+    // this.controller.propertyToolController.undoCheckPoint();
   }
 
   /**
@@ -215,7 +214,7 @@ export class PropertyPane extends PaneBase {
       }
 
       // only images
-      const elementsType = this.getCommonProperty(statesNoBody, (state) => this.model.element.getType(state.el));
+      const elementsType = this.getCommonProperty(statesNoBody, (state) => getElementByDomElement(state.el).type);
       if (elementsType === ElementType.IMAGE) {
         this.altInput.disabled = false;
         const alt = this.getCommonProperty(selectedElements, (el) => {

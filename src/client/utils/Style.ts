@@ -9,12 +9,12 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { CssRule } from '../site/types'
+
 /**
  * @fileoverview Helper class for common tasks
  * TODO: split into funtions
  */
-
-import { CssRule } from '../element/types';
 
 export class Style {
   static addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: { mobile: CssRule, desktop: CssRule }, style: CssRule): {desktop: CssRule, mobile: CssRule} {

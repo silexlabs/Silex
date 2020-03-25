@@ -190,11 +190,8 @@ export default class DomTools {
    * the head tag edited by the user is a portion of the real head tag
    * it is delimited by specific comments
    * it can not be interpreted while editing, in case it has bad HTML tags, it could break the whole site, insert tags into the body instead of the head...
-   * @param {string} htmlString
-   * @param {string} userHead
-   * @return {string} the provided string with the user's head tags
    */
-  static insertUserHeadTag(htmlString, userHead) {
+  static insertUserHeadTag(htmlString: string, userHead: string): string {
     if (userHead) {
       return htmlString.replace(/<\/head>/i, Constants.HEAD_TAG_START + userHead + Constants.HEAD_TAG_STOP + '</head>');
     } else {

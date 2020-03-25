@@ -1,11 +1,13 @@
-import * as objectPath from '../../../node_modules/object-path/index.js';
-import { DataSources, SiteData } from '../site/types';
-import { getData } from '../flux/store';
-import { getSiteDocument } from '../ui/UiElements';
-import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth, writeDataToDom, setStyle } from '../site/dom';
-import { SilexNotification } from '../utils/Notification';
-import { getBody } from '../element/filters';
+import * as objectPath from '../../../node_modules/object-path/index.js'
+import { getBody } from '../element/filters'
 import { updateElements } from '../element/store'
+import { getData } from '../flux/store'
+import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth } from '../site/dom'
+import { writeDataToDom } from '../flux/dom';
+import { DataSources, SiteData } from '../site/types'
+import { getSiteDocument } from '../ui/UiElements'
+import { SilexNotification } from '../utils/Notification'
+import { setStyleToDom } from '../element/component'
 
 export function onChangeSite(prev: SiteData, site: SiteData) {
   const doc = getSiteDocument()
@@ -86,7 +88,7 @@ export function onChangeSite(prev: SiteData, site: SiteData) {
       })
     })
   }
-  if(!prev || prev.style !== site.style) {
+  if(!prev || prev.styles !== site.styles) {
     const head = getSiteDocument().head
 
     // remove all dependencies
@@ -94,16 +96,16 @@ export function onChangeSite(prev: SiteData, site: SiteData) {
       .forEach((tag: HTMLElement) => tag.remove())
 
     // and add them back
-    Object.keys(site.style)
+    Object.keys(site.styles)
     .forEach((className) => {
-      const styleData = site.style[className]
-      Object.keys(styleData)
+      const styleData = site.styles[className]
+      Object.keys(styleData.styles)
       .forEach((visibility) => {
-        const visibilityData = styleData[visibility]
+        const visibilityData = styleData.styles[visibility]
         Object.keys(visibilityData)
         .forEach((pseudoClassName) => {
           const pseudoClassData = visibilityData[pseudoClassName]
-          setStyle(className, pseudoClassName, visibility, pseudoClassData, styleData.displayName)
+          setStyleToDom(getSiteDocument(), className, pseudoClassName, visibility, pseudoClassData, styleData.displayName)
         })
       })
 

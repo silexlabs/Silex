@@ -26,6 +26,7 @@ import { SilexNotification } from './utils/Notification';
 import { updateUi, getUi } from './ui/store';
 import { createWorkspace, preventQuit, warnIfWindowTooSmall, initSingleSiteMode } from './components/Workspace'
 import { getUiElements } from './ui/UiElements'
+import { newFile } from './api/file'
 
 /**
  * Defines the entry point of Silex client application

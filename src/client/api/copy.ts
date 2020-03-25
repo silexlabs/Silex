@@ -3,9 +3,9 @@ import { cloneElements, cloneElement, getCreationDropZone } from '../element/uti
 import { getElements, createElements, updateElements } from '../element/store'
 import { noSectionContent, getParent, getFirstPagedParent } from '../element/filters'
 import { getDomElement } from '../element/dom'
-import { getSiteDocument, getUiElements } from '../components/UiElements'
 import { getStage } from '../components/StageWrapper'
 import { getPages } from '../page/store'
+import { getSiteDocument, getUiElements } from '../ui/UiElements'
 
 /**
  * @static because it is shared by all controllers

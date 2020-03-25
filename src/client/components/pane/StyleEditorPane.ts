@@ -10,7 +10,7 @@
  */
 
 import { Constants } from '../../../constants';
-import { ElementData, ElementType, StyleData, StyleName, Visibility } from '../../element/types';
+import { ElementData, ElementType } from '../../element/types';
 import { getElements, updateElements  } from '../../element/store';
 import { getDomElement } from '../../element/dom';
 import { Tracker } from '../../io/Tracker';
@@ -22,7 +22,9 @@ import { updateUi, getUi } from '../../ui/store'
 import { getPages } from '../../page/store'
 import { getBody } from '../../element/filters'
 import { editStyle } from '../../api/element'
-import { getComponentsDef, initStyle } from '../../element/component'
+import { getComponentsDef } from '../../element/component'
+import { StyleName, StyleData, Visibility } from '../../site/types'
+import { initStyle, removeStyle } from '../../site/dispatchers'
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the
@@ -64,7 +66,7 @@ export class StyleEditorPane extends PaneBase {
     this.pseudoClassCombo.onchange = (e) => {
       //    this.tracker.trackAction('style-editor-events', 'select-pseudo-class');
       editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility());
-      const styleData = (getSite().style[this.styleCombo.value] ||  {} as StyleData);
+      const styleData = (getSite().styles[this.styleCombo.value] ||  {} as StyleData);
       this.updateTagButtonBar(styleData);
     };
     this.mobileOnlyCheckbox.onchange = (e) => {
@@ -132,7 +134,7 @@ export class StyleEditorPane extends PaneBase {
     // duplicate a style
     (this.element.querySelector('.duplicate-style') as HTMLElement).onclick = (e) => {
       //    this.tracker.trackAction('style-editor-events', 'duplicate-style');
-      this.createStyle(getSite().style[this.styleCombo.value]);
+      this.createStyle(getSite().styles[this.styleCombo.value]);
     };
 
     // reset style:
@@ -148,7 +150,7 @@ export class StyleEditorPane extends PaneBase {
         `,
         () => {});
       } else {
-        const data = getSite().style[oldClassName];
+        const data = getSite().styles[oldClassName];
         this.createStyle(data, (name) => {
           try {
             // update the style name
@@ -246,7 +248,7 @@ export class StyleEditorPane extends PaneBase {
    * retrieve the styles applyed to the set of elements
    */
   getStyles(elements: ElementData[]): StyleName[] {
-    const allStyles = getSite().style;
+    const allStyles = getSite().styles;
     return elements
       .map((el) => el.classList)
       // About this reduce:
@@ -273,7 +275,7 @@ export class StyleEditorPane extends PaneBase {
     // add all the existing styles to the dropdown list
 
     // append options to the dom
-    const allStyleData = getSite().style;
+    const allStyleData = getSite().styles;
     (styleName === Constants.EMPTY_STYLE_CLASS_NAME ? [{
       className: Constants.EMPTY_STYLE_CLASS_NAME,
       displayName: Constants.EMPTY_STYLE_DISPLAY_NAME,
@@ -296,7 +298,7 @@ export class StyleEditorPane extends PaneBase {
       this.element.classList.remove('no-style');
 
       // populate combos
-      const styleData = (getSite().style[styleNameNotNull] || {} as StyleData);
+      const styleData = (getSite().styles[styleNameNotNull] || {} as StyleData);
       this.populatePseudoClassCombo(styleData);
       this.pseudoClassCombo.disabled = false;
 

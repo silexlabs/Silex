@@ -1,5 +1,4 @@
 import { FileInfo } from '../third-party/types'
-import { cpus } from 'os'
 
 /**
  * clear the recent files

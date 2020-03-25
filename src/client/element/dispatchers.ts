@@ -11,7 +11,7 @@
 
 import { getBody, getParent, noSectionContent, getSelectedElements, getFirstPagedParent, getElementById } from './filters'
 import { updateElements, createElements, getElements } from './store';
-import { ElementData, CssRule, ElementType, Link } from './types';
+import { ElementData, ElementType, Link } from './types';
 import { DomDirection } from '../ClientTypes';
 import { Style } from '../utils/Style'
 import { getUi } from '../ui/store'
@@ -21,6 +21,7 @@ import { getCurrentPage } from '../page/filters'
 import { Constants } from '../../constants'
 import { PageData } from '../page/types'
 import { getPages } from '../page/store'
+import { CssRule } from '../site/types'
 
 /**
  * @fileoverview helpers to dispatch common actions on the store

@@ -9,6 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { ProdotypeDependency } from './element/types'
+
 /**
  * @fileoverview define externs for libs used in Silex
  */
@@ -45,7 +47,7 @@ export interface ProdotypeCompDef {
 export interface Prodotype {
   componentsDef: ProdotypeCompDef;
 
-  decorate(templateName: string, data: any, dataSources?: object);
+  decorate(templateName: string, data: any, dataSources?: object): Promise<string>;
   ready(cbk: (any) => void);
   edit(
     data?: any,

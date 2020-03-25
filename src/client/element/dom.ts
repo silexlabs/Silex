@@ -1,8 +1,10 @@
 import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType, Link, CSSRuleInfo } from './types';
+import { ElementData, ElementId, ElementType, Link } from './types';
 import { getEmptyElementData } from '../element/utils';
 import { Style } from '../utils/Style';
 import { Url } from '../utils/Url'
+import { CSSRuleInfo, DataSource, DataSources } from '../site/types'
+import { Prodotype } from '../externs'
 
 export function getDomElement(doc: HTMLDocument, element: ElementData): HTMLElement {
   return getDomElementById(doc, element.id)
@@ -392,6 +394,7 @@ export function removeWysihtmlMarkup(root: HTMLElement|Document) {
 
 /**
  * set/get the image URL of an image element
+ * FIXME: html sould be set to flux store using element.innerHtml
  */
 export async function setImageUrl(
     element: HTMLElement, url: string,
@@ -476,3 +479,12 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
     img.src = uncached;
   });
 }
+
+
+/**
+ * prodotype render in dom
+ */
+export function renderWithProdotype(prodotypeInstance: Prodotype, options: {templateName: string, data: any, dataSources?: DataSources}) {
+  return prodotypeInstance.decorate(options.templateName, options.data, options.dataSources)
+}
+

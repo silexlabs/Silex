@@ -10,36 +10,17 @@
  */
 
 import { Constants } from '../../constants';
-import { DataModel } from '../flux/types';
 import { Font } from './types';
-import { StyleName, PseudoClass, Visibility, PseudoClassData, StyleData } from '../element/types'
-import { getSiteDocument } from '../ui/UiElements'
-import { getPseudoClassData, renderStyle } from '../element/component'
+import { StyleName, PseudoClass, Visibility, PseudoClassData, StyleData } from '../site/types'
 import { getSite } from './store'
 import { addMediaQueryIfMobileOnly } from '../element/component'
+import { getPseudoClassData } from './utils'
+import { renderWithProdotype } from '../element/dom'
 
 /**
  * @fileoverview Site dom manipulation. Cross platform, it needs to run client and server side
  *
  */
-
-/**
- * write elements and pages data to the dom for the components and scripts to use
- */
-export function writeDataToDom(doc: HTMLDocument, data: DataModel) {
-  let tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
-  if (!tag) {
-    tag = doc.createElement('script')
-    tag.type = 'application/json'
-    tag.classList.add(Constants.JSON_STYLE_TAG_CLASS_NAME)
-    doc.head.appendChild(tag)
-  }
-  tag.innerHTML = JSON.stringify({
-    site: data.site,
-    pages: data.pages,
-    // elements: data.elements, // not this one as it is huge and useless at runtime
-  })
-}
 
 // export function readDataFromDom(doc: HTMLDocument): DataModel {
 //   const tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
@@ -262,57 +243,4 @@ export function setFonts(doc: HTMLDocument, fonts: Font[]) {
       link.className = Constants.CUSTOM_FONTS_CSS_CLASS;
       head.appendChild(link);
     });
-}
-
-/**
- * create or update a style
- * if data is not provided, create the style with defaults
- */
-export function setStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, data?: PseudoClassData, displayName?: string) {
-
-  // // expose the class name and pseudo class to the prodotype template
-  const newData = data || {};
-  newData.className = className;
-  newData.pseudoClass = pseudoClass;
-
-  // store the component's data for later edition
-  const styleData = (getSite().style[className] || {
-    className,
-    templateName: 'text',
-    displayName,
-    styles: {},
-  } as StyleData);
-  if (!styleData.styles[visibility]) {
-    styleData.styles[visibility] = {};
-  }
-  styleData.styles[visibility][pseudoClass] = newData;
-
-  const doc = getSiteDocument();
-  const head = doc.head;
-
-  // update the head style with the new template
-  let elStyle = head.querySelector(`[data-style-id="${className}"]`);
-  if (!elStyle) {
-    elStyle = doc.createElement('style');
-    elStyle.className = Constants.STYLE_CLASS_NAME;
-    elStyle.setAttribute('type', 'text/css');
-    elStyle.setAttribute('data-style-id', className);
-    head.appendChild(elStyle);
-  }
-
-  // render all pseudo classes in all visibility object
-  const pseudoClassData = getPseudoClassData(styleData);
-  if (pseudoClassData.length > 0) {
-    Promise.all(pseudoClassData.map((obj) => {
-          return renderStyle({
-            templateName: 'text',
-            data: obj.data,
-            dataSources: getSite().dataSources,
-          })
-          .then((html) => addMediaQueryIfMobileOnly(html, obj.visibility));
-        }) as Promise<string>[])
-        .then((htmlStrings) => {
-          elStyle.innerHTML = htmlStrings.join('');
-        });
-  }
 }

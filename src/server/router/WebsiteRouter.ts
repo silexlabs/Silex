@@ -18,9 +18,9 @@ import * as Path from 'path';
 import { URL } from 'url';
 import { dataModelFromJson } from '../../client/utils/data';
 import { Constants } from '../../constants';
-import { DataModel } from '../../types';
 import BackwardCompat from '../utils/BackwardCompat';
 import DomTools from '../utils/DomTools';
+import { DataModel } from '../../client/flux/types'
 
 export default function({ port, rootUrl }, unifile) {
 
@@ -149,7 +149,7 @@ export default function({ port, rootUrl }, unifile) {
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
     const [unpreparedData, dom] = unprepareWebsite(new JSDOM(html, { url: url.href }), data, url);
     const str = dom.serialize();
-    const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headTag);
+    const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headUser);
     dom.window.close();
 
     unifile.batch(req.session.unifile || {}, connector, [{

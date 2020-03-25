@@ -18,7 +18,6 @@
 
 import { Constants } from '../../../constants';
 import { ElementData, LinkType } from '../../element/types';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { getDomElement } from '../../element/dom';
 import { Dom } from '../../utils/Dom';
 import { getStage } from '../StageWrapper';
@@ -30,6 +29,7 @@ import { getSelectedElements, noSectionContent } from '../../element/filters'
 import { subscribeUi, getUi } from '../../ui/store'
 import { updateElements, getElements } from '../../element/store'
 import { getSite } from '../../site/store'
+import { removeLink, addLink, addToPage, removeFromPage } from '../../element/dispatchers'
 
 /**
  * on of Silex Editors class
@@ -69,9 +69,9 @@ export class PagePane extends PaneBase {
    */
   pageCheckboxes: { checkbox: HTMLInputElement, page: PageData }[] = null;
 
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
+  constructor(element: HTMLElement) {
 
-    super(element, model, controller);
+    super(element);
 
     // init the component
     this.buildUi();
@@ -198,14 +198,14 @@ export class PagePane extends PaneBase {
    */
   onLinkChanged() {
     if (this.linkDropdown.value === 'none') {
-      this.controller.propertyToolController.removeLink(getSelectedElements());
+      removeLink(getSelectedElements());
       this.linkInputTextField.style.display = 'none';
     } else {
       if (this.linkDropdown.value === 'custom') {
         this.linkInputTextField.value = '';
         this.linkInputTextField.style.display = 'inherit';
       } else {
-        this.controller.propertyToolController.addLink(getSelectedElements(), {
+        addLink(getSelectedElements(), {
           type: LinkType.PAGE,
           value: this.linkDropdown.value,
         });
@@ -217,7 +217,7 @@ export class PagePane extends PaneBase {
    * the user changed the link text field
    */
   onLinkTextChanged() {
-    this.controller.propertyToolController.addLink(getSelectedElements(), {
+    addLink(getSelectedElements(), {
       type: LinkType.URL,
       value: this.linkInputTextField.value,
     });
@@ -230,9 +230,9 @@ export class PagePane extends PaneBase {
   checkPage(page: PageData, checkbox: HTMLInputElement) {
     // notify the toolbox
     if (checkbox.checked) {
-      this.controller.propertyToolController.addToPage(getSelectedElements(), page);
+      addToPage(getSelectedElements(), page);
     } else {
-      this.controller.propertyToolController.removeFromPage(getSelectedElements(), page);
+      removeFromPage(getSelectedElements(), page);
     }
   }
 

@@ -1,7 +1,8 @@
 import { ElementData, ElementId } from './types';
 import { createDomElement, getDomElement, hideOnDesktop, hideOnMobile, removeElement, reorderElements, setLink, showOnDesktop, showOnMobile, writeStyleToDom } from './dom';
 import { setPages } from '../page/dom';
-import { setWebsiteWidth, writeDataToDom } from '../site/dom';
+import { setWebsiteWidth } from '../site/dom';
+import { writeDataToDom } from '../flux/dom';
 import { StateChange } from '../flux/crud-store';
 import { executeScripts, getContentNode, setInnerHtml } from './dom';
 import { noSectionContent, getParent } from '../element/filters';

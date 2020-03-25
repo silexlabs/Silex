@@ -14,6 +14,7 @@ import { onChangeUi } from '../ui/observer';
 // a 'preventDefault'-like mechanism to avoid changing the dom when populating the model
 let stoped = true
 export function startObservers() {
+  console.trace('start observers')
   stoped = false
 }
 

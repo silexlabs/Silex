@@ -26,178 +26,122 @@ import { PropertyPane } from './pane/PropertyPane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
 import { StylePane } from './pane/StylePane';
 import { getUiElements } from '../ui/UiElements'
+import { editComponent } from '../api/element'
+import { resetComponentEditor } from '../element/component'
 
-///////////////////
-// API for the outside world
-let instance: PropertyTool
+/**
+ * @fileoverview the Silex PropertyTool class handles the panes actually displaying the
+ * properties
+ *
+ */
+
+
+// element which contains the UI
+const element = getUiElements().propertyTool
+
+// init once to create all panes and attach events to the UI
+let initDone = false
 export function initPropertyTool() {
-  instance = instance || new PropertyTool(getUiElements().propertyTool)
-  return instance
-}
-export function openParamsTab() {
-  initPropertyTool()
-  return instance.openParamsTab()
+  if(!initDone) buildUi()
+  initDone = true
 }
 
 /**
- * the Silex PropertyTool class handles the panes actually displaying the
- * properties
- *
- * TODO: make this only methods and write tests
+ * build the UI
  */
-class PropertyTool {
+function buildUi() {
+  const bgPane = new BgPane(element.querySelector('.background-editor'))
+  const borderPane = new BorderPane(element.querySelector('.border-editor'))
+  const propertyPane = new PropertyPane(element)
+  const pagePane = new PagePane(element.querySelector('.page-editor'))
+  const generalStylePane = new GeneralStylePane(element.querySelector('.general-editor'))
+  const stylePane = new StylePane(element.querySelector('.style-editor'))
 
-  componentEditorElement: any;
+  // Style editor
+  const styleEditorMenu = element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu') as HTMLElement;
+  const styleEditorPane = new StyleEditorPane(styleEditorMenu)
 
-  /**
-   * base url for relative/absolute urls
-   */
-  baseUrl = null;
-
-  /**
-   * bg editor
-   * @see     silex.view.pane.BgPane
-   */
-  bgPane: BgPane = null;
-
-  /**
-   * property editor
-   * @see     silex.view.pane.PropertyPane
-   */
-  propertyPane: PropertyPane = null;
-
-  /**
-   * editor
-   * @see     silex.view.pane.BorderPane
-   */
-  borderPane: BorderPane = null;
-
-  /**
-   * property editor
-   * @see     silex.view.pane.PagePane
-   */
-  pagePane: PagePane = null;
-
-  /**
-   * property editor
-   * @see     silex.view.pane.GeneralStylePane
-   */
-  generalStylePane: GeneralStylePane = null;
-
-  /**
-   * property editor
-   * @see     silex.view.pane.StylePane
-   */
-  stylePane: StylePane = null;
-
-  /**
-   * style editor
-   * @see     silex.view.pane.StyleEditorPane
-   */
-  styleEditorPane: StyleEditorPane = null;
-
-  constructor(public element: HTMLElement) {}
-
-  /**
-   * build the UI
-   */
-  buildUi() {
-    this.bgPane = new BgPane(this.element.querySelector('.background-editor'))
-    this.borderPane = new BorderPane(this.element.querySelector('.border-editor'))
-    this.propertyPane = new PropertyPane(this.element)
-    this.pagePane = new PagePane(this.element.querySelector('.page-editor'))
-    this.generalStylePane = new GeneralStylePane(this.element.querySelector('.general-editor'))
-    this.stylePane = new StylePane(this.element.querySelector('.style-editor'))
-
-    // Style editor
-    const styleEditorMenu = this.element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu') as HTMLElement;
-    this.styleEditorPane = new StyleEditorPane(styleEditorMenu)
-
-    // init component editor and style editor
-    const styleEditorElement = this.element.querySelector('.prodotype-style-editor .prodotype-container');
-    this.componentEditorElement = this.element.querySelector('.prodotype-component-editor');
-    this.model.component.init(this.componentEditorElement, styleEditorElement);
-    subscribeElements(() => {
-      const selectedComponents = getElements().filter((el) => el.selected && el.type === ElementType.COMPONENT)
-      if (selectedComponents.length === 1) {
-        this.controller.editMenuController.editComponent(selectedComponents[0])
-      } else {
-        this.controller.editMenuController.editComponent(null)
-      }
-    })
-
-    // expandables
-    const expandables = this.element.querySelectorAll('.expandable legend');
-    for (let idx = 0; idx < expandables.length; idx++) {
-      const el: HTMLElement = expandables[idx] as HTMLElement;
-      const lsKey = 'silex-expand-property-' + idx;
-      const isExpand = window.localStorage.getItem(lsKey) === 'true';
-      if (isExpand) {
-        this.togglePanel(el);
-      }
-      el.onclick = (e) => {
-        this.togglePanel(el);
-        window.localStorage.setItem(lsKey, (el.parentElement as HTMLElement).classList.contains('expanded').toString());
-      };
+  // display component when possible
+  subscribeElements(() => {
+    const selectedComponents = getElements().filter((el) => el.selected && el.type === ElementType.COMPONENT)
+    if (selectedComponents.length === 1) {
+      editComponent(selectedComponents[0])
+    } else {
+      resetComponentEditor()
     }
+  })
 
-    // tabs
-    const designTab = this.element.querySelector('.design');
-    const paramsTab = this.element.querySelector('.params');
-    const styleTab = this.element.querySelector('.style');
-    designTab.addEventListener('click', () => this.openDesignTab());
-    paramsTab.addEventListener('click', () => this.openParamsTab());
-    styleTab.addEventListener('click', () => this.openStyleTab());
-  }
-
-  /**
-   * toggle a property panel
-   */
-  togglePanel(el: HTMLElement) {
-    (el.parentElement as HTMLElement).classList.toggle('expanded');
-    const caret = el.querySelector('.fa-inverse');
-    if (caret) {
-      caret.classList.toggle('fa-caret-right');
-      caret.classList.toggle('fa-caret-down');
+  // expandables
+  const expandables = element.querySelectorAll('.expandable legend');
+  for (let idx = 0; idx < expandables.length; idx++) {
+    const el: HTMLElement = expandables[idx] as HTMLElement;
+    const lsKey = 'silex-expand-property-' + idx;
+    const isExpand = window.localStorage.getItem(lsKey) === 'true';
+    if (isExpand) {
+      togglePanel(el);
     }
+    el.onclick = (e) => {
+      togglePanel(el);
+      window.localStorage.setItem(lsKey, (el.parentElement as HTMLElement).classList.contains('expanded').toString());
+    };
   }
 
-  /**
-   * open the "design" tab
-   */
-  openDesignTab() {
-    const designTab = this.element.querySelector('.design');
-    this.selectTab(designTab);
-    this.element.classList.remove('params-tab');
-    this.element.classList.remove('style-tab');
-    this.element.classList.add('design-tab');
-  }
+  // tabs
+  const designTab = element.querySelector('.design');
+  const paramsTab = element.querySelector('.params');
+  const styleTab = element.querySelector('.style');
+  designTab.addEventListener('click', () => openDesignTab());
+  paramsTab.addEventListener('click', () => openParamsTab());
+  styleTab.addEventListener('click', () => openStyleTab());
+}
 
-  /**
-   * open the "params" tab
-   */
-  openParamsTab() {
-    const paramsTab = this.element.querySelector('.params');
-    this.selectTab(paramsTab);
-    this.element.classList.remove('design-tab');
-    this.element.classList.remove('style-tab');
-    this.element.classList.add('params-tab');
+/**
+ * toggle a property panel
+ */
+function togglePanel(el: HTMLElement) {
+  (el.parentElement as HTMLElement).classList.toggle('expanded');
+  const caret = el.querySelector('.fa-inverse');
+  if (caret) {
+    caret.classList.toggle('fa-caret-right');
+    caret.classList.toggle('fa-caret-down');
   }
+}
 
-  /**
-   * open the "style" tab
-   */
-  openStyleTab() {
-    const styleTab = this.element.querySelector('.style');
-    this.selectTab(styleTab);
-    this.element.classList.remove('design-tab');
-    this.element.classList.remove('params-tab');
-    this.element.classList.add('style-tab');
-  }
+/**
+ * open the "design" tab
+ */
+export function openDesignTab() {
+  const designTab = element.querySelector('.design');
+  selectTab(designTab);
+  element.classList.remove('params-tab');
+  element.classList.remove('style-tab');
+  element.classList.add('design-tab');
+}
 
-  selectTab(tab) {
-    Array.from(this.element.querySelectorAll('.tab'))
-    .forEach((el) => el.classList.remove('on'));
-    tab.classList.add('on');
-  }
+/**
+ * open the "params" tab
+ */
+export function openParamsTab() {
+  const paramsTab = element.querySelector('.params');
+  selectTab(paramsTab);
+  element.classList.remove('design-tab');
+  element.classList.remove('style-tab');
+  element.classList.add('params-tab');
+}
+
+/**
+ * open the "style" tab
+ */
+export function openStyleTab() {
+  const styleTab = element.querySelector('.style');
+  selectTab(styleTab);
+  element.classList.remove('design-tab');
+  element.classList.remove('params-tab');
+  element.classList.add('style-tab');
+}
+
+function selectTab(tab) {
+  Array.from(element.querySelectorAll('.tab'))
+  .forEach((el) => el.classList.remove('on'));
+  tab.classList.add('on');
 }
