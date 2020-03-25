@@ -18,7 +18,7 @@ import { getCurrentPage } from '../page/filters'
 import { getParent } from '../element/filters'
 import { getUiElements } from '../ui/UiElements'
 import { showPages } from '../api/view'
-import { removeSelectedElements, editElement, moveUp, moveToTop, moveDown, moveToBottom } from '../api/element'
+import { removeElements, editElement, moveUp, moveToTop, moveDown, moveToBottom } from '../api/element'
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../api/copy'
 import { getSite } from '../site/store'
 import { getEnableSticky, toggleSticky } from './StageWrapper'
@@ -50,7 +50,7 @@ class ContextMenu {
    */
   buildUi() {
     this.element.querySelector('.delete').addEventListener('click', () => {
-      removeSelectedElements();
+      removeElements();
     });
     this.element.querySelector('.edit').addEventListener('click', () => {
       editElement();

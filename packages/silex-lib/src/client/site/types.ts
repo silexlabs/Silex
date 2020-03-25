@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ProdotypeDependency, StyleDataObject } from '../element/types';
+import { TemplateName, ProdotypeDependency } from '../element/types';
 import { FileInfo } from '../third-party/types';
 
 /**
@@ -37,7 +37,8 @@ export interface SiteData {
   twitterSocial: string,
   dataSources: DataSources,
   fonts: Font[],
-  style: StyleDataObject,
+  styles: StyleDataObject,
+  // file holds the URL, service and unifile/CE info of the site currently opened
   file: FileInfo,
   // prodotypeDependencies is the object returned by getDependencies: {
   //   "test-comp":
@@ -55,6 +56,9 @@ export interface SiteData {
   prodotypeDependencies: {[key: string]: ProdotypeDependency[]},
 }
 
+/**
+ * data sources of the data source manager (settings)
+ */
 export interface DataSource {
   href: string;
   root: string;
@@ -64,6 +68,9 @@ export interface DataSource {
 
 export interface DataSources { [key: string]: DataSource; }
 
+/**
+ * fonts of the font manager (settings)
+ */
 export interface Font {
   family: string;
   href: string;
@@ -102,3 +109,48 @@ export interface VHost {
   publicationPath: FileInfo,
   url: string,
 }
+
+/**
+ * styles of the style manager
+ * @see components.StyleEditorPane
+ */
+export interface StyleDataObject {
+  [key: string]: StyleData;
+}
+
+export type StyleName = string;
+
+export interface CssRule {
+  [key: string]: CssPropertyValue;
+}
+
+export interface StyleData {
+  className: StyleName;
+  displayName: string;
+  templateName: TemplateName;
+  styles: {[key: string]: VisibilityData};
+}
+
+export interface VisibilityData {
+  [key: string]: PseudoClassData;
+}
+
+export interface PseudoClassData {
+  [key: string]: CssRule|TemplateName|StyleName;
+}
+
+export interface CSSRuleInfo {
+  rule: CSSRule;
+  parent: CSSRule|StyleSheet;
+  index: number;
+}
+
+export type Visibility = string;
+
+export type PseudoClass = string;
+
+export type TagName = string;
+
+export type CssPropertyName = string;
+
+export type CssPropertyValue = string;

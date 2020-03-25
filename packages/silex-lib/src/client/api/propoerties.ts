@@ -1,11 +1,11 @@
 import { ElementData, ElementType } from '../element/types'
 import { addElement, selectBody } from '../element/dispatchers'
 import { getDomElement } from '../element/dom'
-import { getSiteDocument } from '../components/UiElements'
 import { deleteElements } from '../element/store'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { SilexNotification } from '../utils/Notification'
-import { setImageUrl } from '../element/utils'
+import { setImageUrl } from '../element/dom'
+import { getSiteDocument } from '../ui/UiElements'
 
 /**
  * open file explorer, choose an image and add it to the stage
@@ -23,6 +23,7 @@ export function browseAndAddImage(parent: ElementData) {
       const img = getDomElement(getSiteDocument(), imgData);
 
       // load the image
+      // FIXME: src should be set with flux
       setImageUrl(img, fileInfo.absPath, (element, imgElement) => {
           // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
         },

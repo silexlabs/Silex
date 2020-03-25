@@ -17,7 +17,6 @@
 
 import { ElementData } from '../../element/types';
 import { getElements, updateElements } from '../../element/store';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { Style } from '../../utils/Style';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
@@ -64,9 +63,9 @@ export class BorderPane extends PaneBase {
    */
   cornerPlacementCheckBoxes: HTMLInputElement[] = null;
 
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
+  constructor(element: HTMLElement) {
 
-    super(element, model, controller);
+    super(element);
 
     // init the component
     this.buildUi();

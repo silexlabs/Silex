@@ -15,31 +15,29 @@
  *
  */
 
-import { Constants } from '../../constants'
+import { DomDirection, LinkData } from '../ClientTypes'
+import { FileExplorer } from '../components/dialog/FileExplorer'
+import { openHtmlEditor } from '../components/dialog/HtmlEditor'
+import { openLinkDialog } from '../components/dialog/LinkDialog'
+import { openTextFormatBar } from '../components/TextFormatBar'
+import { openComponentEditor, openStyleEditor, resetComponentEditor } from '../element/component'
 import { moveElements } from '../element/dispatchers'
 import { getDomElement, setImageUrl } from '../element/dom'
 import { getBody, getChildrenRecursive, getSelectedElements, getSelectedElementsNoSectionContent } from '../element/filters'
 import { deleteElements, getElements, updateElements } from '../element/store'
-import { ElementData, ElementType, PseudoClassData, StyleData, VisibilityData, StyleName, PseudoClass, Visibility } from '../element/types'
+import { ElementData, ElementType } from '../element/types'
 import { getSite } from '../site/store'
 import { FileInfo } from '../third-party/types'
-import { SilexNotification } from '../utils/Notification'
-import { DomDirection, LinkData } from '../ClientTypes'
-import { FileExplorer } from '../components/dialog/FileExplorer'
 import { getSiteDocument } from '../ui/UiElements'
-import { resetComponentEditor, openStyleEditor } from '../element/component'
-import { openComponentEditor } from '../element/component'
-import { openHtmlEditor } from '../components/dialog/HtmlEditor'
+import { SilexNotification } from '../utils/Notification'
 import { openParamsTab } from '../components/PropertyTool'
-import { openTextFormatBar } from '../components/TextFormatBar'
-import { openLinkDialog } from '../components/dialog/LinkDialog'
-import { componentStyleChanged } from '../element/component'
+import { StyleName, PseudoClass, Visibility, StyleData, VisibilityData, PseudoClassData } from '../site/types'
+import { componentStyleChanged } from '../site/dispatchers'
+
 /**
  * remove selected elements from the stage
  */
-export function removeSelectedElements() {
-  const elements = getSelectedElements();
-
+export function removeElements(elements = getSelectedElements()) {
   const body = getBody()
   if (!!elements.find((el) => el === body)) {
     SilexNotification.alert('Delete elements',
@@ -90,6 +88,7 @@ export function editElement() {
           .then((blob) => {
             if (blob) {
               // load the image
+              // FIXME: src should be set with flux
               setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
                 updateElements([{
                   from: element,
@@ -197,7 +196,7 @@ function onBrowse(e: Event, url: string, cbk: (p1: FileInfo[]) => any) {
  * @param visibility, e.g. mobile only, desktop and mobile...
  */
 export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility) {
-  const styleData: StyleData = getSite().style[className] || ({styles: {}} as StyleData);
+  const styleData: StyleData = getSite().styles[className] || ({styles: {}} as StyleData);
   const visibilityData: VisibilityData = styleData.styles[visibility] || {};
   const pseudoClassData: PseudoClassData = visibilityData[pseudoClass] || {
     templateName: 'text',

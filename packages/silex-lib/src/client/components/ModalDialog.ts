@@ -15,6 +15,7 @@
  */
 
 import {Body} from '../model/Body';
+import { resetFocus } from './Workspace'
 
 /**
  * implement a "modal" behavior to hide and show dialogs
@@ -143,7 +144,7 @@ export class ModalDialog {
 
       // give focus to the stage, this will trigger a change event on the input
       // elements which have focus
-      Body.resetFocus();
+      resetFocus();
 
       // finally hide the dialog - this has to be last, otherwise things like
       // blur inputs will fail since this makes the dialog display: none;

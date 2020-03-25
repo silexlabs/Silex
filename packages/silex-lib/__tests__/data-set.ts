@@ -3,6 +3,36 @@ import { crudIdKey } from '../src/client/flux/crud-store'
 import { PageData } from '../src/client/page/types';
 import { SiteData } from '../src/client/site/types';
 
+export function mockUiElements(): HTMLIFrameElement {
+  const iframe: HTMLIFrameElement = document.createElement('iframe')
+  document.body.appendChild(iframe)
+
+  // fake ui elements
+  jest.doMock('../src/client/ui/UiElements', () => ({
+    getSiteDocument: () => iframe.contentDocument,
+    getSiteWindow: () => iframe.contentWindow,
+    getUiElements: () => ({
+      stage: iframe,
+      fileExplorer: iframe.contentDocument.body,
+      contextMenu: iframe.contentDocument.body,
+      menu: iframe.contentDocument.body,
+      breadCrumbs: iframe.contentDocument.body,
+      pageTool: iframe.contentDocument.body,
+      htmlEditor: iframe.contentDocument.body,
+      cssEditor: iframe.contentDocument.body,
+      jsEditor: iframe.contentDocument.body,
+      settingsDialog: iframe.contentDocument.body,
+      dashboard: iframe.contentDocument.body,
+      propertyTool: iframe.contentDocument.body,
+      textFormatBar: iframe.contentDocument.body,
+      workspace: iframe.contentDocument.body,
+      verticalSplitter: iframe.contentDocument.body,
+    }),
+  }))
+
+  return iframe
+}
+
 let nextId = 0;
 function getNextId() { return 'testId' + (nextId++) }
 export const ELEM_TEXT: ElementData = {
@@ -188,7 +218,7 @@ export const SITE1: SiteData = {
   twitterSocial: 'twitterSocial',
   dataSources: {},
   fonts: [],
-  style: {
+  styles: {
     'all-style': {
       'className': 'all-style',
       'templateName': 'text',

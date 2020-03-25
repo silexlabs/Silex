@@ -1,34 +1,51 @@
-const iframe: HTMLIFrameElement = document.createElement('iframe')
-document.body.appendChild(iframe)
+import { SITE1, mockUiElements } from '../../../__tests__/data-set';
+const iframe = mockUiElements()
 
 import { initializeSite_, initializeSite } from './store'
-import { SITE1 } from '../../../__tests__/data-set';
 import { onChangeSite } from './observer'
 import { createStore } from 'redux'
 import { State } from '../flux/store'
 import { Store } from 'redux'
+import { ProdotypeCompDef } from '../externs'
+import { ProdotypeDependency } from '../element/types'
 
-jest.mock('../ui/UiElements', () => ({
-  getSiteDocument: () => iframe.contentDocument,
-  getSiteWindow: () => iframe.contentWindow,
-  getUiElements: () => ({
-    stage: iframe,
-    fileExplorer: iframe.contentDocument.body,
-    contextMenu: iframe.contentDocument.body,
-    menu: iframe.contentDocument.body,
-    breadCrumbs: iframe.contentDocument.body,
-    pageTool: iframe.contentDocument.body,
-    htmlEditor: iframe.contentDocument.body,
-    cssEditor: iframe.contentDocument.body,
-    jsEditor: iframe.contentDocument.body,
-    settingsDialog: iframe.contentDocument.body,
-    dashboard: iframe.contentDocument.body,
-    propertyTool: iframe.contentDocument.body,
-    textFormatBar: iframe.contentDocument.body,
-    workspace: iframe.contentDocument.body,
-    verticalSplitter: iframe.contentDocument.body,
-  }),
-}))
+// fake prodotype
+class Prodotype {
+  constructor(element: HTMLElement, folder: string) {
+    // console.log('[Prodotype] constructor', {folder})
+  }
+  componentsDef: ProdotypeCompDef = {
+    text: '',
+  }
+  decorate(templateName: string, data: any, dataSources?: object): Promise<string> {
+    // console.log('[Prodotype] decorate', {templateName, data})
+    return Promise.resolve('fake prodotype rendered component or style')
+  }
+  ready(cbk: (any) => void) {
+    // console.log('[Prodotype] ready', {cbk})
+  }
+  edit(
+    data?: any,
+    dataSources?: object,
+    templateName?: string,
+    events?: any) {}
+  reset() {}
+  createName(type, list): string { return 'New fake name' }
+  getDependencies(components: {name:string, displayName?:string, templateName:string}[]): {[key: string]: ProdotypeDependency[]} {
+    return {}
+  }
+  getMissingDependencies(
+    container: HTMLElement,
+    componentNames: {templateName: string}[],
+  ): HTMLElement[] {
+    return []
+  }
+  getUnusedDependencies(dependencyElements: HTMLElement[], componentNames: {templateName: string}[]) {
+    return []
+  }
+}
+// tslint:disable:no-string-literal
+window['Prodotype'] = Prodotype
 
 const store: Store<State> = createStore((oldState, newState) => {
   // console.log('store', oldState, newState)
@@ -43,7 +60,7 @@ const styleString = `
 `
 
 beforeEach(() => {
-  iframe.contentDocument.write('')
+  iframe.contentDocument.write('<html />')
   initializeSite_(store, SITE1)
 })
 
@@ -92,9 +109,10 @@ test('add a style', () => {
 
 test('add 0 styles', () => {
   // there was no styles and there will be no styles
+  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
   onChangeSite(null, {
     ...SITE1,
-    style: {},
+    styles: {},
   })
   expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
   // already has the styles
@@ -106,11 +124,11 @@ test('add 0 styles', () => {
 
 
 test('remove style', () => {
-  iframe.contentDocument.head.innerHTML = dependenciesString
+  iframe.contentDocument.head.innerHTML = styleString
   expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
   onChangeSite(null, {
     ...SITE1,
-    style: {},
+    styles: {},
   })
   expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
 })

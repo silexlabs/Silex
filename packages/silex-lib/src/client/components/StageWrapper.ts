@@ -64,6 +64,21 @@ export function setEditMode(mode: boolean) {
     stage.visible = !mode;
   }
 }
+export function hideScrolls(hide: boolean) {
+  if (!stage) { return; }
+  stage.hideScrolls(hide);
+}
+
+/**
+ * safe subscribe to mouse event
+ * handle the multiple iframes and the current window
+ * @return function to call to unsubscribe
+ */
+export function subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
+  if (!this.stage) { return; }
+  return stage.subscribeMouseEvent(type, cbk);
+}
+
 
 // //////////////////////////////
 // elements observer
@@ -258,21 +273,6 @@ class StageWrapper {
     this.toBeUnsubscribed = [];
   }
 
-  /**
-   * safe subscribe to mouse event
-   * handle the multiple iframes and the current window
-   * @return function to call to unsubscribe
-   */
-  subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
-    if (!this.stage) { return; }
-    return this.stage.subscribeMouseEvent(type, cbk);
-  }
-
-  hideScrolls(hide: boolean) {
-    if (!this.stage) { return; }
-    this.stage.hideScrolls(hide);
-  }
-
   init(iframe: HTMLIFrameElement) {
     this.cleanup();
     // FIXME: do not use css classes but ElementData
@@ -337,7 +337,7 @@ class StageWrapper {
     // give time to iframes to initialize
     setTimeout(() => {
       this.toBeUnsubscribed.push(
-        this.subscribeMouseEvent('mousedown', (e: MouseEvent) => {
+        subscribeMouseEvent('mousedown', (e: MouseEvent) => {
           // reset focus when the stage is clicked
           if (window !== (e.target as HTMLElement).ownerDocument.defaultView) {
             resetFocus();
@@ -359,7 +359,7 @@ class StageWrapper {
     this.stage.redraw();
   }
   private startDragOrResize() {
-    this.hideScrolls(true);
+    hideScrolls(true);
     this.dragging = true;
     // this.prepareUndo();
   }
@@ -372,7 +372,7 @@ class StageWrapper {
     this.startDragOrResize();
   }
   private stopDragOrResize(changed: SelectableState[], redraw) {
-    this.hideScrolls(false);
+    hideScrolls(false);
     this.dragging = false;
     this.applyStyle(changed);
     this.redraw();

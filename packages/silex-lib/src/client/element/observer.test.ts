@@ -1,3 +1,6 @@
+import { mockUiElements } from '../../../__tests__/data-set';
+const iframe = mockUiElements()
+
 import { initializeElements } from './store';
 import { crudIdKey } from '../flux/crud-store';
 import { onUpdateElements } from './observer';
@@ -68,14 +71,13 @@ const elem3Html = `
 `
 
 // const mocked: any = jest.genMockFromModule('../src/client/api')
-
 beforeEach(() => {
-  document.body.innerHTML = elem1Html + elem2Html + elem3Html
+  iframe.contentDocument.body.innerHTML = elem1Html + elem2Html + elem3Html
 })
 test('update element', () => {
-  const elemContainer: HTMLElement = document.querySelector(`[data-silex-id=${ELEM_CONTAINER.id}]`)
-  const elemImage: HTMLElement = document.querySelector(`[data-silex-id=${ELEM_IMAGE.id}]`)
-  const elemText: HTMLElement = document.querySelector(`[data-silex-id=${ELEM_TEXT.id}]`)
+  const elemContainer: HTMLElement = iframe.contentDocument.querySelector(`[data-silex-id=${ELEM_CONTAINER.id}]`)
+  const elemImage: HTMLElement = iframe.contentDocument.querySelector(`[data-silex-id=${ELEM_IMAGE.id}]`)
+  const elemText: HTMLElement = iframe.contentDocument.querySelector(`[data-silex-id=${ELEM_TEXT.id}]`)
 
   // mocked.getElements.mockReturnValue = (() => [ELEM1, ELEM2])
   initializeElements([ELEM_CONTAINER, ELEM_IMAGE, ELEM_TEXT])
@@ -85,8 +87,8 @@ test('update element', () => {
   // } as any as HTMLIFrameElement
 
   // style
-  expect(window.getComputedStyle(elemImage).left).toBe('')
-  onUpdateElements(window)([
+  expect(iframe.contentWindow.getComputedStyle(elemImage).left).toBe('')
+  onUpdateElements(iframe.contentWindow)([
     {
       from: ELEM_IMAGE,
       to: {
@@ -100,10 +102,10 @@ test('update element', () => {
       },
     },
   ])
-  expect(window.getComputedStyle(elemImage).left).toBe('1px')
+  expect(iframe.contentWindow.getComputedStyle(elemImage).left).toBe('1px')
 
   // height vs min height
-  onUpdateElements(window)([
+  onUpdateElements(iframe.contentWindow)([
     {
       from: ELEM_IMAGE,
       to: {
@@ -129,13 +131,13 @@ test('update element', () => {
       },
     },
   ])
-  expect(window.getComputedStyle(elemImage).height).toBe('10px')
-  expect(window.getComputedStyle(elemImage)['min-height']).toBe('')
-  expect(window.getComputedStyle(elemContainer).height).toBe('')
-  expect(window.getComputedStyle(elemContainer)['min-height']).toBe('100px')
+  expect(iframe.contentWindow.getComputedStyle(elemImage).height).toBe('10px')
+  expect(iframe.contentWindow.getComputedStyle(elemImage)['min-height']).toBe('')
+  expect(iframe.contentWindow.getComputedStyle(elemContainer).height).toBe('')
+  expect(iframe.contentWindow.getComputedStyle(elemContainer)['min-height']).toBe('100px')
 
   // container
-  onUpdateElements(window)([
+  onUpdateElements(iframe.contentWindow)([
     {
       from: ELEM_CONTAINER,
       to: {
@@ -148,7 +150,7 @@ test('update element', () => {
   expect(elemText.parentElement).toBe(elemContainer)
   // children order
   expect(elemText.previousElementSibling).toBe(elemImage)
-  onUpdateElements(window)([
+  onUpdateElements(iframe.contentWindow)([
     {
       from: ELEM_CONTAINER,
       to: {
@@ -160,7 +162,7 @@ test('update element', () => {
   expect(elemImage.previousElementSibling).toBe(elemText)
   expect(elemText.previousElementSibling).toBeNull()
   // title and alt
-  onUpdateElements(window)([
+  onUpdateElements(iframe.contentWindow)([
     {
       from: ELEM_IMAGE,
       to: {

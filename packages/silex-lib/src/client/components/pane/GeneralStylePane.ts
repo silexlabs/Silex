@@ -16,7 +16,6 @@
  */
 
 import { ElementData } from '../../element/types';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { PaneBase } from './PaneBase';
 import { getBody } from '../../element/filters'
 import { getUi } from '../../ui/store'
@@ -37,9 +36,9 @@ export class GeneralStylePane extends PaneBase {
    */
   opacityInput: HTMLInputElement;
 
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
+  constructor(element: HTMLElement) {
 
-    super(element, model, controller);
+    super(element);
 
     // init the component
     this.buildUi();

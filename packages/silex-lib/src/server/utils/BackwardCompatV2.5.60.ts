@@ -3,9 +3,9 @@ import { writeStyleToDom, getContentNode, getInnerHtml } from '../../client/elem
 import { crudIdKey } from '../../client/flux/crud-store';
 import { Constants } from '../../constants';
 import DomTools from './DomTools';
-import { ComponentData, StyleData, ElementId, LinkType, ElementType, ElementData, CssRule, ProdotypeDependency, ProdotypeDependencyTag } from '../../client/element/types';
+import { ComponentData, ElementId, LinkType, ElementType, ElementData, ProdotypeDependency } from '../../client/element/types';
 import { setWebsiteWidth } from '../../client/site/dom';
-import { SiteData } from '../../client/site/types';
+import { SiteData, StyleData, CssRule } from '../../client/site/types';
 import { getDefaultStyle } from '../../client/element/utils';
 import { PageData } from '../../client/page/types';
 import { FileInfo } from '../../client/third-party/types';
@@ -303,7 +303,7 @@ export function getSiteFromDom(doc: HTMLDocument): SiteData {
     twitterSocial: getMeta(doc, 'twitter:site'),
     dataSources: properties.dataSources,
     fonts: properties.fonts,
-    style: properties.prodotypeDataObj.style,
+    styles: properties.prodotypeDataObj.style,
     isTemplate: false, // backward compat is only about loaded websites, not templates
     file: null,
     prodotypeDependencies: getDependenciesFromDom(properties),

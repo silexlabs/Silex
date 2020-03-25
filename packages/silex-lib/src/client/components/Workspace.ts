@@ -30,7 +30,7 @@ import { initPropertyTool } from './PropertyTool'
  *
  */
 
-let propSplitter
+export let propSplitter
 
 /**
  * create the workspace, start listening to window events
@@ -115,7 +115,7 @@ export function warnIfWindowTooSmall() {
  * called on window resize and when the layout changes
  */
 function resizeWorkspace(element: HTMLElement) {
-  propSplitter.redraw()
+  propSplitter.redraw(false)
 
   // change the number of columns in the properties pannel
   const container = element.querySelector('.silex-property-tool .main-container');

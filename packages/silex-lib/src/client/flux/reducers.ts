@@ -59,7 +59,7 @@ export const siteReducer = (state: SiteData = {
   twitterSocial: '',
   dataSources: {},
   fonts: [],
-  style: {},
+  styles: {},
   file: null,
   prodotypeDependencies: {}
 },                          action: any) => {

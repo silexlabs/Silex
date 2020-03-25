@@ -1,3 +1,6 @@
+import { mockUiElements } from './data-set'
+const iframe = mockUiElements()
+
 import * as fs from 'fs';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from '../src/server/utils/BackwardCompatV2.5.60';
 import { ElementType } from '../src/client/element/types';
@@ -8,8 +11,8 @@ test('convert from 2.5.60', () => {
   const htmlString = htmlBuffer.toString()
   expect(htmlString).not.toBeNull()
   expect(htmlString).toMatch(/^<!DOCTYPE html>/)
-  document.write(htmlString)
-  expect(document.body).not.toBeNull()
+  iframe.contentDocument.write(htmlString)
+  expect(iframe.contentDocument.body).not.toBeNull()
 
   const TEXT_ELEMENT_ID = 'silex-id-1442914737143-3'
   const IMAGE_ELEMENT_ID = 'silex-id-1439573539993-24'
@@ -19,8 +22,8 @@ test('convert from 2.5.60', () => {
   const SECTION_CONTAINER_ID = 'silex-id-1478366450713-2'
 
   // import elements
-  document.body.classList.add('editable-style')
-  const elements = getElementsFromDomBC(document)
+  iframe.contentDocument.body.classList.add('editable-style')
+  const elements = getElementsFromDomBC(iframe.contentDocument)
   expect(elements).not.toBeNull()
   expect(elements).toHaveLength(11)
   expect(elements.filter((el) => el.type === ElementType.SECTION)).toHaveLength(3)
@@ -104,7 +107,7 @@ test('convert from 2.5.60', () => {
   })
 
   // site
-  const site = getSiteFromDom(document)
+  const site = getSiteFromDom(iframe.contentDocument)
   expect(site.title).toBe('test title')
   expect(site.description).toBe('test description')
   expect(site.dataSources).toEqual({})
@@ -133,7 +136,7 @@ test('convert from 2.5.60', () => {
   )
 
   // pages
-  const pages = getPagesFromDom(document)
+  const pages = getPagesFromDom(iframe.contentDocument)
   expect(pages).toHaveLength(1)
   expect(pages[0].id).toBe('page-page-1')
   expect(pages[0].displayName).toBe('Page 1')

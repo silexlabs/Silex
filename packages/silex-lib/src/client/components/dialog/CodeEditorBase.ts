@@ -27,10 +27,9 @@ declare namespace monaco.editor {
 
 }
 // tslint:enable
-
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { ModalDialog } from '../ModalDialog';
 import { getUiElements } from '../../ui/UiElements'
+import { propSplitter } from '../Workspace'
 
 /**
  * @class {silex.view.dialog.CodeEditorBase}
@@ -109,7 +108,6 @@ export class CodeEditorBase {
    * @param dock or undock
    */
   dockPanel(dock: boolean) {
-    const propSplitter = ;
     const { cssEditor, jsEditor, htmlEditor } = getUiElements();
     if (dock) {
       document.body.classList.add('dock-editors');

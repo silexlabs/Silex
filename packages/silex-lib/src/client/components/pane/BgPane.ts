@@ -16,7 +16,6 @@
  */
 import { ElementData } from '../../element/types';
 import { getUi } from '../../ui/store';
-import { Controller, Modelxxx } from '../../ClientTypes';
 import { ColorPicker } from '../ColorPicker';
 import { PaneBase } from './PaneBase';
 import { FileExplorer } from '../dialog/FileExplorer'
@@ -49,8 +48,8 @@ export class BgPane extends PaneBase {
   repeatComboBox: HTMLSelectElement;
   sizeComboBox: HTMLSelectElement;
 
-  constructor(element: HTMLElement, model: Modelxxx, controller: Controller) {
-    super(element, model, controller);
+  constructor(element: HTMLElement) {
+    super(element);
 
     // init the component
     this.buildUi();

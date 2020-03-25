@@ -10,12 +10,17 @@
  */
 
 import { CrudState } from '../flux/crud-store'
+import { CssRule } from '../site/types'
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side
  *
  */
 
+/**
+ * Elements
+ * @see components.element
+ */
 export type ElementId = string
 
 export enum ElementType {
@@ -70,7 +75,10 @@ export interface ElementData extends CrudState {
   innerHtml: string,
 }
 
-// Links
+/**
+ * Links
+ * @see LinkDialog
+ */
 export enum LinkType {
   PAGE = 'LinkTypePage',
   URL= 'LinkTypeExternal',
@@ -82,52 +90,13 @@ export interface Link {
   value: string,
 }
 
-// Styles
-export type StyleName = string;
-
-export interface CssRule {
-  [key: string]: CssPropertyValue;
-}
-
-export interface StyleDataObject {
-  [key: string]: StyleData;
-}
-
-export interface StyleData {
-  className: StyleName;
-  displayName: string;
-  templateName: TemplateName;
-  styles: {[key: string]: VisibilityData};
-}
-
-export interface VisibilityData {
-  [key: string]: PseudoClassData;
-}
-
-export interface PseudoClassData {
-  [key: string]: CssRule|TemplateName|StyleName;
-}
-
-export interface CSSRuleInfo {
-  rule: CSSRule;
-  parent: CSSRule|StyleSheet;
-  index: number;
-}
-
-export type Visibility = string;
-
-export type PseudoClass = string;
-
-export type TagName = string;
-
-export type CssPropertyName = string;
-
-export type CssPropertyValue = string;
-
+// prodotype template names are strings
 export type TemplateName = string;
 
-// Components
-
+/**
+ * Components
+ * @see client.element.component
+ */
 export interface ComponentData {
   name: string;
   displayName?: string;
