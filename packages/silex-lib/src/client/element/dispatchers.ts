@@ -11,17 +11,16 @@
 
 import { getBody, getParent, noSectionContent, getSelectedElements, getFirstPagedParent, getElementById } from './filters'
 import { updateElements, createElements, getElements } from './store';
-import { ElementData, ElementType, Link } from './types';
-import { DomDirection } from '../ClientTypes';
+import { ElementData, ElementType, Link, DomDirection } from './types';
 import { Style } from '../utils/Style'
 import { getUi } from '../ui/store'
-import { getSiteWindow } from '../ui/UiElements'
 import { center, getElementSize, getEmptyElementData, getNewId } from './utils'
 import { getCurrentPage } from '../page/filters'
 import { Constants } from '../../constants'
 import { PageData } from '../page/types'
 import { getPages } from '../page/store'
 import { CssRule } from '../site/types'
+import { getSiteWindow } from '../components/SiteFrame'
 
 /**
  * @fileoverview helpers to dispatch common actions on the store
@@ -29,20 +28,24 @@ import { CssRule } from '../site/types'
  */
 
 /**
- * select the body
+ * select the body and only the body
  */
 export const selectBody = () => {
+  // empty selection
   const body = getBody()
   if (body && body.selected === false) {
-    updateElements([{
-      from: body,
-      to: {
-        ...body,
-        selected: true,
-      },
-    }])
-  } else {
-    console.warn('Select body: no body or body already selected', body)
+    updateElements(getSelectedElements()
+      // unselect all but the body
+      .filter((el) => el !== body)
+      .map((el) => ({ from: el, to: { ...el, selected: false }}))
+      // select the body
+      .concat({
+        from: body,
+        to: {
+          ...body,
+          selected: true,
+        },
+      }))
   }
 }
 
@@ -50,7 +53,6 @@ export const selectBody = () => {
  * move elements order in their parent's children array
  */
 export const moveElements = (elements: ElementData[], direction: DomDirection) => {
-  // console.log('moveElements', elements, direction)
   updateElements(elements
     .map((el) => ({
       el,
@@ -112,7 +114,7 @@ export const setHideOnDesktop = (element: ElementData, hide: boolean) => {
 export const styleChanged = (name: string, value?: string, elements: ElementData[] = getSelectedElements()) => {
   // if (opt_isUndoable !== false) {
   //   // undo checkpoint
-  //     //  this.undoCheckPoint();
+  //     //  undoCheckPoint();
   // }
 
   // build the style change object
@@ -127,7 +129,7 @@ export const styleChanged = (name: string, value?: string, elements: ElementData
  */
 export const multipleStylesChanged = (style: CssRule, elements = getSelectedElements()) => {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
 
   // apply the change to all elements
   updateElements(elements.map((el) => ({
@@ -145,7 +147,7 @@ export const multipleStylesChanged = (style: CssRule, elements = getSelectedElem
  */
 export function setClassName(name: string) {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
 
   // apply the change to all elements
   updateElements(getElements()
@@ -166,14 +168,14 @@ export function setClassName(name: string) {
  * @return the new element
  */
 export function addElement(type: ElementType, parent: ElementData, componentName?: string): [ElementData, ElementData] {
-  //    this.tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
+  //    tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
 
   const win = getSiteWindow()
 
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
 
-  const [newElementData, newParentData] = this.createEmptyElement({
+  const [newElementData, newParentData] = createEmptyElement({
     type,
     parent,
     componentName,
@@ -205,7 +207,7 @@ export function addElement(type: ElementType, parent: ElementData, componentName
   }
 
   if (type === ElementType.SECTION) {
-    const [contentElement, newElementDataWithContent] = this.createEmptyElement({
+    const [contentElement, newElementDataWithContent] = createEmptyElement({
       type: ElementType.CONTAINER,
       parent: centeredAndPaged,
       componentName: null,
@@ -242,11 +244,9 @@ export function addElement(type: ElementType, parent: ElementData, componentName
       },
     }))
 
-  console.info('could be dragged')
+  console.info('TODO: drag to insert?')
+  // TODO: drag to insert?
   // getStage().startDrag()
-
-  // tracking
-  //    this.tracker.trackAction('controller-events', 'success', 'insert.' + type, 1);
 
   return [newElementDataPaged, newParentData]
 }
@@ -259,7 +259,7 @@ export function createEmptyElement({type, parent, isSectionContent, componentNam
   if (!!componentName) {
     console.error('not implemented: components')
     // FIXME: handle components data in the new model
-    // this.model.component.initComponent(element, componentName);
+    // model.component.initComponent(element, componentName);
   }
   return [{
       ...element,
@@ -276,7 +276,7 @@ export function createEmptyElement({type, parent, isSectionContent, componentNam
  */
 export function addToPage(elements: ElementData[], page = getPages().find((p) => p.opened)) {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
   updateElements(elements
     .map((el) => noSectionContent(el))
     .map((el) => ({
@@ -293,7 +293,7 @@ export function addToPage(elements: ElementData[], page = getPages().find((p) =>
  */
 export function removeFromPage(elements: ElementData[], page: PageData) {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
   updateElements(elements
     .map((el) => ({
       from: el,
@@ -309,7 +309,7 @@ export function removeFromPage(elements: ElementData[], page: PageData) {
  */
 export function visibleOnAllPages(elements: ElementData[]) {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
   updateElements(elements
     .map((el) => ({
       from: el,
@@ -325,7 +325,7 @@ export function visibleOnAllPages(elements: ElementData[]) {
  */
 export function addLink(elements: ElementData[], link: Link) {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
   updateElements(elements
     .map((el) => ({
       from: el,
@@ -342,7 +342,7 @@ export function addLink(elements: ElementData[], link: Link) {
  */
 export function removeLink(elements: ElementData[]) {
   // undo checkpoint
-    //  this.undoCheckPoint();
+    //  undoCheckPoint();
   updateElements(elements
     .map((el) => ({
       from: el,

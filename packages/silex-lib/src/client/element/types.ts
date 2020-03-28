@@ -44,6 +44,13 @@ export interface FullBox<T=number> extends Rect<T> {
   width: T,
   height: T,
 }
+// move elements in the dom
+export enum DomDirection {
+  UP = 'UP',
+  DOWN = 'DOWN',
+  TOP = 'TOP',
+  BOTTOM = 'BOTTOM',
+}
 
 export interface ElementData extends CrudState {
   pageNames: string[],
@@ -79,6 +86,15 @@ export interface ElementData extends CrudState {
  * Links
  * @see LinkDialog
  */
+export interface LinkData {
+  href?: string;
+  target?: string;
+  title?: string;
+  rel?: string;
+  type?: string;
+  download?: string;
+}
+
 export enum LinkType {
   PAGE = 'LinkTypePage',
   URL= 'LinkTypeExternal',

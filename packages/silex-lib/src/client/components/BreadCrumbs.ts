@@ -11,10 +11,11 @@
 
 import { ElementData, ElementType } from '../element/types';
 import { getDomElement } from '../element/dom';
-import { getSiteDocument, getUiElements } from '../ui/UiElements';
+import { getUiElements } from '../ui/UiElements';
 import { subscribeElements, updateElements, getElements } from '../element/store'
 import { getParent, getSelectedElements } from '../element/filters'
 import { getDisplayName } from '../element/utils'
+import { getSiteDocument } from './SiteFrame'
 
 /**
  * @fileoverview

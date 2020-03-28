@@ -5,7 +5,7 @@ import { deleteElements } from '../element/store'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { SilexNotification } from '../utils/Notification'
 import { setImageUrl } from '../element/dom'
-import { getSiteDocument } from '../ui/UiElements'
+import { getSiteDocument } from '../components/SiteFrame'
 
 /**
  * open file explorer, choose an image and add it to the stage

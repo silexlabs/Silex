@@ -15,10 +15,10 @@
  */
 import { getUiElements } from '../ui/UiElements';
 import { CloudExplorer } from '../externs';
-import { dataModelFromJson } from '../utils/data';
+import { persistantDataFromJson } from '../utils/data';
 import { SilexNotification } from '../utils/Notification';
 import { FileInfo } from '../third-party/types'
-import { DataModel } from '../flux/types'
+import { PersistantData } from '../flux/types'
 
 /**
  * the Silex CloudStorage service
@@ -62,7 +62,7 @@ export class CloudStorage {
    * save a file
    */
   write(
-      fileInfo: FileInfo, html: string, data: DataModel, cbk: () => any,
+      fileInfo: FileInfo, html: string, data: PersistantData, cbk: () => any,
       opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
     // // save the data
     // this.ce.write(new Blob([html], {type: 'text/plain'}), fileInfo)
@@ -89,15 +89,6 @@ export class CloudStorage {
     oReq.open('PUT', url);
     oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
     oReq.send(JSON.stringify({html, data}));
-  }
-
-  /**
-   * load text blob from unifile
-   */
-  read(
-      fileInfo: FileInfo, cbk: (p1: string, data: DataModel) => any,
-      opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
-    this.loadLocal(fileInfo.absPath, cbk, opt_errCbk);
   }
 
   /**
@@ -134,10 +125,10 @@ export class CloudStorage {
   }
 
   /**
-   * load data
+   * load a website from the api
    */
-  loadLocal(
-      absPath: string, cbk: (p1: string, data: DataModel) => any,
+  loadWebsite(
+      absPath: string, cbk: (p1: string, data: PersistantData) => any,
       opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
     const url = '/website' + absPath;
     const oReq = new XMLHttpRequest();
@@ -150,7 +141,7 @@ export class CloudStorage {
         if (data.message) {
           SilexNotification.alert('Open a website', data.message, () => {});
         }
-        cbk(data.html, dataModelFromJson(data.data));
+        cbk(data.html, persistantDataFromJson(data.data));
       } else {
         const err = new Event('error');
         const msg = this.getErrorMessage(oReq);

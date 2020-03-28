@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementData } from '../element/types';
+import { ElementData, LinkData } from '../element/types';
 import { updateElements } from '../element/store';
 import { getSelectedElements } from '../element/filters';
 import { FileExplorer } from '../components/dialog/FileExplorer';
@@ -19,11 +19,11 @@ import { Tracker } from '../io/Tracker';
 import { getContentNode, getInnerHtml } from '../element/dom';
 import { SilexNotification } from '../utils/Notification';
 import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog';
-import { getSiteDocument, getSiteWindow, getUiElements } from '../ui/UiElements';
-import { LinkData } from '../ClientTypes'
+import { getUiElements } from '../ui/UiElements';
 import { setEditMode } from './StageWrapper'
 import { resetFocus } from './Workspace'
 import { keyboardAttach, keyboardAddShortcut } from './Menu'
+import { getSiteDocument, getSiteIFrame, getSiteWindow } from './SiteFrame'
 
 /**
  * @fileoverview
@@ -102,7 +102,7 @@ export class TextFormatBar {
 
   attachToTextBox(textBox, toolbar) {
     const pos = textBox.getBoundingClientRect();
-    const stageSize = getUiElements().stage.getBoundingClientRect();
+    const stageSize = getSiteIFrame().getBoundingClientRect();
     const theoricalBottom = stageSize.height + stageSize.top - pos.top;
     const bottom = Math.max(theoricalBottom - pos.height + CONTEXT_MENU_HEIGHT, Math.min(stageSize.height - 20, theoricalBottom));
     const left = pos.left + MENU_WIDTH;

@@ -1,4 +1,4 @@
-import { DataModel } from './types'
+import { PersistantData } from './types'
 import { Constants } from '../../constants'
 
 /**
@@ -8,7 +8,7 @@ import { Constants } from '../../constants'
 /**
  * write elements and pages data to the dom for the components and scripts to use
  */
-export function writeDataToDom(doc: HTMLDocument, data: DataModel) {
+export function writeDataToDom(doc: HTMLDocument, data: PersistantData) {
   let tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
   if (!tag) {
     tag = doc.createElement('script')

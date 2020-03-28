@@ -10,7 +10,7 @@
 //////////////////////////////////////////////////
 
 import { Constants } from '../../constants';
-import { DataModel } from '../../client/flux/types';
+import { PersistantData } from '../../client/flux/types';
 
 export default class DomTools {
   /**
@@ -18,7 +18,7 @@ export default class DomTools {
    * with a function you provide
    * The algorithm will call your function with the URLs found in the stylsheets, the html markup, and the JSON data stored by Silex
    */
-  static transformPaths(dom, data: DataModel, fn): DataModel {
+  static transformPaths(dom, data: PersistantData, fn): PersistantData {
     // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach((attr) => {
       const elements = dom.window.document.querySelectorAll(`[${attr}]`);
@@ -64,7 +64,7 @@ export default class DomTools {
     matches.forEach(({tag, innerHTML}) => tag.innerHTML = innerHTML);
     if (data) {
       // JSON object of Silex (components and styles)
-      return DomTools.transformDataModel(data, fn);
+      return DomTools.transformPersistantData(data, fn);
     } else {
       // no JSON data is normal, this is the case when publishing
       return null;
@@ -123,7 +123,7 @@ export default class DomTools {
    * It contains all the components data, the elements styles, etc.
    * This is even more important than the URLs in the dom and stylesheets since it is re-applyed by Silex when the site is loaded in the editor
    */
-  static transformDataModel(data: DataModel, fn): DataModel {
+  static transformPersistantData(data: PersistantData, fn): PersistantData {
     function checkItOut(name: string, value: string): string {
       const valueUrlKeyword = DomTools.transformValueUrlKeyword(value, null, true, fn);
       if (valueUrlKeyword) {

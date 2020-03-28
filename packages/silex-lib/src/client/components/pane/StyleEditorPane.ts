@@ -15,7 +15,7 @@ import { getElements, updateElements  } from '../../element/store';
 import { getDomElement } from '../../element/dom';
 import { Tracker } from '../../io/Tracker';
 import { SilexNotification } from '../../utils/Notification';
-import { getSiteDocument } from '../../ui/UiElements';
+import { getSiteDocument } from '../../components/SiteFrame';
 import { PaneBase } from './PaneBase';
 import { getSite } from '../../site/store'
 import { updateUi, getUi } from '../../ui/store'

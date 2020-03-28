@@ -19,14 +19,15 @@
  *
  */
 
-import { detect } from 'detect-browser';
-import { Config } from './ClientConfig';
-import { startObservers } from './flux/observer';
-import { SilexNotification } from './utils/Notification';
-import { updateUi, getUi } from './ui/store';
-import { createWorkspace, preventQuit, warnIfWindowTooSmall, initSingleSiteMode } from './components/Workspace'
+import { detect } from 'detect-browser'
+import { openDashboardToLoadAWebsite } from './api/file'
+import { Config } from './ClientConfig'
+import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
+import { startObservers } from './flux/observer'
+import { getUi, updateUi } from './ui/store'
 import { getUiElements } from './ui/UiElements'
-import { newFile } from './api/file'
+import { SilexNotification } from './utils/Notification'
+import { LOADING } from './ui/types'
 
 /**
  * Defines the entry point of Silex client application
@@ -44,9 +45,6 @@ export class App {
     if (Config.debug.debugMode) {
       console.warn('Silex starting in debug mode.');
     }
-
-    // start observers each state in the store
-    startObservers();
 
     // warning when not ff or chrome
     const browser = detect();
@@ -69,6 +67,9 @@ export class App {
     // create all the components of Silex app
     createWorkspace(getUiElements().workspace)
 
+    // start observers
+    startObservers();
+
     // the build type
     if (!Config.debug.debugMode) {
       // warn when closing window if changes are not saved yet
@@ -83,14 +84,14 @@ export class App {
       initSingleSiteMode()
       .then(() => this.initDone())
     } else {
-      newFile(() => this.initDone(), () => this.initDone());
+      openDashboardToLoadAWebsite(() => this.initDone(), () => this.initDone());
     }
   }
 
   initDone() {
     updateUi({
       ...getUi(),
-      loading: false,
+      loading: LOADING.NONE,
     });
   }
 }

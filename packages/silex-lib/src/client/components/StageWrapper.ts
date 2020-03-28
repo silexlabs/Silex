@@ -1,4 +1,4 @@
-// FIXME: thie hole file is a mess, start from scratch
+// FIXME: thie hole file is a mess
 
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
@@ -9,7 +9,7 @@ import { getDomElement, getDomElementById, getId } from '../element/dom';
 import { onCrudChange, StateChange } from '../flux/crud-store';
 import { SilexNotification } from '../utils/Notification';
 import { Style } from '../utils/Style';
-import { getSiteDocument, getSiteWindow } from '../ui/UiElements';
+import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
 import { getElementById, getSelectedElements, getParent, getBody } from '../element/filters';
 import { UiData } from '../ui/types';
 import { getPages, subscribePages } from '../page/store';
@@ -75,7 +75,7 @@ export function hideScrolls(hide: boolean) {
  * @return function to call to unsubscribe
  */
 export function subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
-  if (!this.stage) { return; }
+  if (!stage) { return; }
   return stage.subscribeMouseEvent(type, cbk);
 }
 
@@ -216,8 +216,9 @@ export function initStageWrapper(element: HTMLIFrameElement) {
   stageWrapper.init(element)
 }
 export function stageCleanup() {
-  stageWrapper.cleanup()
+  if(stageWrapper) stageWrapper.cleanup()
 }
+
 class StageWrapper {
   private stage: Stage;
   private dragging = false;

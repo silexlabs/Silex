@@ -9,19 +9,18 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { getDomElement } from '../../element/dom'
+import { getBody, getElementByDomElement } from '../../element/filters'
+import { getElements, updateElements } from '../../element/store'
+import { ElementData, ElementType } from '../../element/types'
+import { getSiteDocument, getSiteWindow } from '../SiteFrame'
+import { getStage } from '../StageWrapper'
+import { PaneBase } from './PaneBase'
+
 /**
  * @fileoverview Property pane, displayed in the property tool box
  *
  */
-
-import { SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { ElementData, ElementType } from '../../element/types';
-import { getElements, updateElements } from '../../element/store';
-import { getDomElement } from '../../element/dom';
-import { getStage } from '../StageWrapper';
-import { getSiteDocument, getSiteWindow } from '../../ui/UiElements';
-import { PaneBase } from './PaneBase';
-import { getBody, getElementByDomElement } from '../../element/filters'
 
 const FlexWrapSelect = '.flex-wrap-select';
 const JustifyContentSelect = '.justify-content-select';
@@ -214,7 +213,7 @@ export class PropertyPane extends PaneBase {
       }
 
       // only images
-      const elementsType = this.getCommonProperty(statesNoBody, (state) => getElementByDomElement(state.el).type);
+      const elementsType = this.getCommonProperty(statesNoBody, (state) => getElementByDomElement(getSiteDocument(), state.el).type);
       if (elementsType === ElementType.IMAGE) {
         this.altInput.disabled = false;
         const alt = this.getCommonProperty(selectedElements, (el) => {

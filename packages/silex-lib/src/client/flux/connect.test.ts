@@ -1,5 +1,6 @@
 import { connect } from './connect';
-import { SilexStore, store as theStore } from './store';
+import { store as theStore } from './store';
+import { SilexStore } from './types'
 
 test('connect', () => {
   expect(connect).not.toBeNull()

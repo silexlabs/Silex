@@ -20,6 +20,7 @@ import { initContextMenu } from './ContextMenu'
 import { initBreadCrumbs } from './BreadCrumbs'
 import { initPageTool } from './PageTool'
 import { initPropertyTool } from './PropertyTool'
+import { getSiteIFrame } from './SiteFrame'
 
 /**
  * @fileoverview Silex workspace is in charge of positionning
@@ -50,7 +51,7 @@ export function createWorkspace(element: HTMLElement) {
   propSplitter = new Splitter(uiElements.verticalSplitter, () => resizeWorkspace(element));
   propSplitter.addLeft(uiElements.contextMenu);
   propSplitter.addLeft(uiElements.breadCrumbs);
-  propSplitter.addLeft(uiElements.stage.parentElement);
+  propSplitter.addLeft(getSiteIFrame().parentElement);
   propSplitter.addRight(uiElements.propertyTool);
 }
 

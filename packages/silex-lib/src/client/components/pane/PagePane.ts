@@ -21,7 +21,7 @@ import { ElementData, LinkType } from '../../element/types';
 import { getDomElement } from '../../element/dom';
 import { Dom } from '../../utils/Dom';
 import { getStage } from '../StageWrapper';
-import { getSiteDocument } from '../../ui/UiElements';
+import { getSiteDocument } from '../../components/SiteFrame';
 import { PaneBase } from './PaneBase';
 import { PageData } from '../../page/types'
 import { subscribePages, getPages } from '../../page/store'

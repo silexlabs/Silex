@@ -52,7 +52,7 @@ class Dashboard {
   selected: {url: string, fileInfo: FileInfo} = null;
 
   // make this a dialog
-  modalDialog: any;
+  modalDialog: ModalDialog;
 
   /**
    * flag set to 'success' when the template list is loaded
@@ -76,12 +76,7 @@ class Dashboard {
       onOpen: (args) => this.redraw(),
       onClose: () => {},
     });
-  }
 
-  /**
-   * init the menu and UIs
-   */
-  buildUi() {
     if (Config.singleSiteMode) {
       return;
     }
@@ -200,19 +195,19 @@ class Dashboard {
     }
 
     // is ready callback
-    // error callback
     if (this.state === 'ready') {
       // notify the owner
       if (options.ready) {
         options.ready();
       }
     } else {
-      // store them for later
       if (this.state === 'error') {
+        // error callback
         if (options.error) {
           options.error();
         }
       } else {
+        // store them for later
         this.readyCbk = options.ready;
         this.errorCbk = options.error;
       }
@@ -364,6 +359,7 @@ class Dashboard {
             li.appendChild(icon);
             const name = document.createElement('span');
             name.setAttribute('data-file-info', JSON.stringify(blob));
+            console.log('recent files', recentFiles, blob)
             name.innerHTML = blob.folder + '<strong>' + (blob.name.startsWith('/') ? '' : '/') + blob.name + '</strong>/';
 
             // the '/' is at the end because the css are "ltr" in order to have

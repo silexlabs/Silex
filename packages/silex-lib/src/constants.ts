@@ -93,11 +93,6 @@ export class Constants {
   static PAGE_LINK_ACTIVE_CLASS_NAME: string = 'page-link-active';
 
   /**
-   * constant for loader on elements
-   */
-  static LOADING_ELEMENT_CSS_CLASS: string = 'loading-image';
-
-  /**
    * constant for silex element type
    */
   static TYPE_PAGE: string = 'page-element';
@@ -256,6 +251,24 @@ export class Constants {
    * CSS class applied to the **editor** body (not the site)
    */
   static MOBILE_MODE_CSS_CLASS = 'mobile-mode';
+
+  /**
+   * constant for loader on elements
+   * applied to Silex image element
+   */
+  static LOADING_ELEMENT_CSS_CLASS: string = 'loading-image';
+
+  /**
+   * constant for loader on elements
+   * applied to site iframe
+   */
+  static LOADING_SITE_CSS_CLASS = 'loading-website'
+
+  /**
+   * constant for loader on elements
+   * applied to body
+   */
+  static LOADING_SILEX_CSS_CLASS = 'loading-pending'
 
   /**
    * constant for the value of media query for mobile version

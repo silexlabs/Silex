@@ -1,8 +1,9 @@
-import { SilexStore, subscribeToCrud } from '../flux/store'
+import { subscribeToCrud } from '../flux/store'
 import { connect } from '../flux/connect'
 import { PageData } from './types'
 import { PageAction } from '../flux/actions'
 import { StateChange } from '../flux/crud-store'
+import { SilexStore } from '../flux/types'
 
 /**
  * Silex, live web creation

@@ -2,7 +2,7 @@ import { deleteElements, getElements, updateElements } from '../element/store';
 import { StateChange } from '../flux/crud-store';
 import { getData } from '../flux/store';
 import { writeDataToDom } from '../flux/dom';
-import { getSiteDocument, getSiteWindow } from '../ui/UiElements';
+import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
 import { SilexNotification } from '../utils/Notification';
 import { PageData } from './types';
 import { LinkType, ElementData } from '../element/types'

@@ -93,7 +93,7 @@ class ContextMenu {
     if (page) {
       const fileInfo = getSite().file;
       this.currentPageElement.innerHTML = `
-        ${fileInfo.path ? fileInfo.path + ' - ' : ''}
+        ${fileInfo && fileInfo.path ? fileInfo.path + ' - ' : ''}
         ${page.displayName}
       `;
     }

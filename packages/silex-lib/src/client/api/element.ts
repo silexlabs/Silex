@@ -15,7 +15,6 @@
  *
  */
 
-import { DomDirection, LinkData } from '../ClientTypes'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { openHtmlEditor } from '../components/dialog/HtmlEditor'
 import { openLinkDialog } from '../components/dialog/LinkDialog'
@@ -25,10 +24,10 @@ import { moveElements } from '../element/dispatchers'
 import { getDomElement, setImageUrl } from '../element/dom'
 import { getBody, getChildrenRecursive, getSelectedElements, getSelectedElementsNoSectionContent } from '../element/filters'
 import { deleteElements, getElements, updateElements } from '../element/store'
-import { ElementData, ElementType } from '../element/types'
+import { ElementData, ElementType, LinkData, DomDirection } from '../element/types'
 import { getSite } from '../site/store'
 import { FileInfo } from '../third-party/types'
-import { getSiteDocument } from '../ui/UiElements'
+import { getSiteDocument } from '../components/SiteFrame'
 import { SilexNotification } from '../utils/Notification'
 import { openParamsTab } from '../components/PropertyTool'
 import { StyleName, PseudoClass, Visibility, StyleData, VisibilityData, PseudoClassData } from '../site/types'
@@ -39,9 +38,10 @@ import { componentStyleChanged } from '../site/dispatchers'
  */
 export function removeElements(elements = getSelectedElements()) {
   const body = getBody()
-  if (!!elements.find((el) => el === body)) {
+  const toDelete = elements.filter((el) => el !== body)
+  if (toDelete.length <= 0) {
     SilexNotification.alert('Delete elements',
-      'Error: I can not delete the body as it is the root container of all your website. <strong>Please select an element to delete it</strong>.',
+      'Error: Please select an element to delete.',
       () => {},
     );
   } else {
@@ -49,12 +49,10 @@ export function removeElements(elements = getSelectedElements()) {
     SilexNotification.confirm('Delete elements', 'I am about to <strong>delete the selected element(s)</strong>, are you sure?',
       (accept) => {
         if (accept) {
-          // undo checkpoint
-          // undoCheckPoint();
-
           // do remove selected elements
           deleteElements(elements.concat(elements
             .reduce((prev, el) => prev.concat(getChildrenRecursive(el)), [])));
+          console.log('deleted', elements, elements.map(el => getChildrenRecursive(el)), getElements())
         }
       }, 'delete', 'cancel',
     );

@@ -1,31 +1,35 @@
-import { FileExplorer } from '../components/dialog/FileExplorer'
-import { SilexNotification } from '../utils/Notification'
-import { FileInfo } from '../third-party/types'
 import { Config } from '../ClientConfig'
-import { getData } from '../flux/store'
-import { DataModel } from '../flux/types'
-import { CloudStorage } from '../io/CloudStorage'
-import { getSite, updateSite } from '../site/store'
-import { getSiteDocument, getUiElements } from '../ui/UiElements'
-import { selectBody } from '../element/dispatchers'
-import { initStageWrapper, stageCleanup } from '../components/StageWrapper'
-import { addToLatestFiles } from '../io/latest-files'
-import { setPreviewWindowLocation } from '../components/Workspace'
-import { setHtml, getHtml } from '../components/SiteFrame'
-import { openPublishDialog, closePublishDialog, startPublish } from '../components/dialog/PublishDialog'
 import { openDashboard } from '../components/dialog/Dashboard'
-import { PublicationOptions, Provider } from '../site/types'
+import { FileExplorer } from '../components/dialog/FileExplorer'
+import { closePublishDialog, openPublishDialog, startPublish } from '../components/dialog/PublishDialog'
 import { openSettingsDialog } from '../components/dialog/SettingsDialog'
-import { SilexTasks } from '../io/SilexTasks'
+import { getHtml, getSiteDocument, setHtml } from '../components/SiteFrame'
+import { setPreviewWindowLocation } from '../components/Workspace'
 import { initializeData } from '../flux/dispatchers'
+import { startObservers, stopObservers } from '../flux/observer'
+import { getData } from '../flux/store'
+import { PersistantData } from '../flux/types'
+import { CloudStorage } from '../io/CloudStorage'
+import { addToLatestFiles } from '../io/latest-files'
+import { SilexTasks } from '../io/SilexTasks'
+import { getSite, updateSite } from '../site/store'
+import { Provider, PublicationOptions } from '../site/types'
+import { FileInfo } from '../third-party/types'
+import { SilexNotification } from '../utils/Notification'
+import { updateUi, getUi } from '../ui/store'
+import { LOADING } from '../ui/types'
+
+///////////////////////////////////////////////////////////////////
+// Read / write website HTML file
+///////////////////////////////////////////////////////////////////
 
 /**
  * save or save-as
  */
-export function save(opt_fileInfo?: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+export function save(opt_fileInfo?: FileInfo, cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
   // tracker.trackAction('controller-events', 'request', 'file.save', 0);
   if (opt_fileInfo && !getSite().isTemplate) {
-    doSave((opt_fileInfo as FileInfo), opt_cbk, opt_errorCbk);
+    doSave((opt_fileInfo as FileInfo), cbk, opt_errorCbk);
   } else if (Config.singleSiteMode) {
     // do nothing in single site mode
     throw new Error('File has no name and can not "save as" in single site mode')
@@ -35,7 +39,7 @@ export function save(opt_fileInfo?: FileInfo, opt_cbk?: (() => any), opt_errorCb
         .saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
         .then((fileInfo) => {
           if (fileInfo != null ) {
-            doSave((fileInfo as FileInfo), opt_cbk, opt_errorCbk);
+            doSave((fileInfo as FileInfo), cbk, opt_errorCbk);
           } else {
             // user aborted save as
           }
@@ -50,9 +54,9 @@ export function save(opt_fileInfo?: FileInfo, opt_cbk?: (() => any), opt_errorCb
 }
 
 /**
- * save or save-as
+ * save
  */
-function doSave(fileInfo: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+function doSave(fileInfo: FileInfo, cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
   // relative urls only in the files
   let rawHtml = getHtml();
 
@@ -74,10 +78,10 @@ function doSave(fileInfo: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: 
   saveAs(fileInfo, rawHtml, getData(), () => {
     // tracker.trackAction('controller-events', 'success', 'file.save', 1);
     // ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
-    fileOperationSuccess('File is saved.', false);
+    SilexNotification.notifySuccess('File is saved.');
     setPreviewWindowLocation();
-    if (opt_cbk) {
-      opt_cbk();
+    if (cbk) {
+      cbk();
     }
   },
   (error, msg) => {
@@ -92,42 +96,42 @@ function doSave(fileInfo: FileInfo, opt_cbk?: (() => any), opt_errorCbk?: ((p1: 
 }
 
 /**
- * success of an operation involving changing the file model
+ * save a file with a new name
+ * @param cbk receives the raw HTML
  */
-export function fileOperationSuccess(opt_message?: string, opt_updateTools?: boolean) {
-  // notify user
-  if (opt_message) {
-    SilexNotification.notifySuccess(opt_message);
-  }
-}
+function saveAs(file: FileInfo, rawHtml: string, data: PersistantData, cbk: () => any, errCbk?: ((p1: any, p2: string) => any)) {
+  // save the data
+  updateSite({
+    ...getSite(),
+    file,
+  })
+  addToLatestFiles(file);
 
-export function loadTemplate(
-    url, opt_cbk?: (() => any),
-    opt_errorCbk?: ((p1: any) => any)) {
-      openFromUrl(
-        url, (rawHtml: string, data: DataModel) => onOpened(opt_cbk, rawHtml, data),
-        (err, msg) => onOpenError(err, msg, opt_errorCbk));
+  CloudStorage.getInstance().write(
+      (file as FileInfo), rawHtml,
+      data, () => {
+        updateSite({
+          ...getSite(),
+          isTemplate: false,
+        })
+        if (cbk) {
+          cbk();
+        }
+      }, errCbk);
 }
 
 /**
- * load blank template
+ * load a website from the recent files list
  */
-export function loadBlank(
-    opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
-  const blankUrl =
-      '/libs/templates/silex-blank-templates/blank/editable.html';
-  loadTemplate(blankUrl, opt_cbk, opt_errorCbk);
-}
-
-export function openRecent(fileInfo, opt_cbk) {
+export function openRecent(fileInfo, cbk) {
   // a recent file was selected
-  open(
-      (fileInfo as FileInfo), (rawHtml, data: DataModel) => onOpened(opt_cbk, rawHtml, data),
+  loadFromUserFiles(
+      (fileInfo as FileInfo), (rawHtml, data: PersistantData) => cbk(),
       (err, message, code) => {
         console.error('Could not open recent file', err, message, code);
         // make silex visible
-        if (opt_cbk) {
-          opt_cbk();
+        if (cbk) {
+          cbk();
         }
         // handle the error
         if (code === 403) {
@@ -135,43 +139,41 @@ export function openRecent(fileInfo, opt_cbk) {
           SilexNotification.confirm(
             'Open recent file', `Could not open this recent file, you probably need to connect to ${fileInfo.service} again.`,
             (ok) => {
-              const ce = CloudStorage.getInstance().ce;
               SilexNotification.alert('Open recent file', `
-                I am trying to connect you to ${fileInfo.service} again,
-                please accept the connection in the popup I have just opened then <strong>please wait</strong>.
+              I am trying to connect you to ${fileInfo.service} again,
+              please accept the connection in the popup I have just opened then <strong>please wait</strong>.
               `, () => {});
+              const ce = CloudStorage.getInstance().ce;
               // tslint:disable:no-string-literal
               ce['auth'](fileInfo.service).then((res) => {
                 SilexNotification.close();
                 if (ok) {
-                  openRecent(fileInfo, opt_cbk);
+                  openRecent(fileInfo, cbk);
                 }
               });
             },
           );
         } else {
-          SilexNotification.confirm('Open recent file', `
-            Could not open this recent file. ${ message }
-          `,
-          (ok) => {});
+          SilexNotification.confirm('Open recent file', `Could not open this recent file. ${ message }`, (ok) => {});
         }
       });
 }
 
 /**
- * open a file
+ * open the dashboard
+ * TODO: move this to the Dashboard component
  */
-export function newFile(opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+export function openDashboardToLoadAWebsite(cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
   // tracker.trackAction('controller-events', 'request', 'file.new', 0);
   openDashboard({
     openFileInfo: (fileInfo) => {
       if (!fileInfo && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
-        loadBlank(opt_cbk, opt_errorCbk);
+        loadBlankTemplate(cbk, opt_errorCbk);
       } else {
         if (fileInfo) {
-          openRecent(fileInfo, opt_cbk);
+          openRecent(fileInfo, cbk);
         }
       }
     },
@@ -179,17 +181,17 @@ export function newFile(opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)
       if (!url && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
-        loadBlank(opt_cbk, opt_errorCbk);
+        loadBlankTemplate(cbk, opt_errorCbk);
       } else {
         if (url) {
           // a template was selected
-          loadTemplate(url, opt_cbk, opt_errorCbk);
+          loadFromServerTemplates(url, cbk, (err, msg) => onOpenError(err, msg, opt_errorCbk, true));
         }
       }
     },
     ready: () => {
-      if (opt_cbk) {
-        opt_cbk();
+      if (cbk) {
+        cbk();
       }
     },
     error: (err) => {
@@ -199,56 +201,10 @@ export function newFile(opt_cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)
   });
 }
 
-function onOpened(opt_cbk, rawHtml: string, data: DataModel) {
-  stageCleanup();
-
-  setHtml(rawHtml, () => {
-
-    initializeData(data);
-
-    // reset stage
-    initStageWrapper(getUiElements().stage);
-
-    // init selection
-    selectBody();
-
-    // undo redo reset
-    // undoReset();
-    fileOperationSuccess(null, true);
-  }, true);
-
-  // with loader
-  // track success
-  // tracker.trackAction('controller-events', 'success', 'file.new', 1);
-  if (opt_cbk) {
-    opt_cbk();
-  }
-}
-
-function onOpenError(err: any, msg: string, opt_errorCbk?: ((p1: any) => any)) {
-  console.error('opening template error', err);
-  SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {});
-  if (opt_errorCbk) {
-    opt_errorCbk(err);
-  }
-  if (!hasContent()) {
-    loadBlank();
-  }
-  // tracker.trackAction('controller-events', 'error', 'file.new', -1);
-}
-
-/**
- * @return true if a website is being edited
- */
-function hasContent(): boolean {
-  const contentDocument = getSiteDocument()
-  return !!contentDocument.body && contentDocument.body.childNodes.length > 0;
-}
-
 /**
  * open a file
  */
-export function openFile(opt_cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1: any) => any), opt_cancelCbk?: (() => any)) {
+export function openFile(cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1: any) => any), opt_cancelCbk?: (() => any)) {
   if (Config.singleSiteMode) {
     return;
   }
@@ -260,23 +216,17 @@ export function openFile(opt_cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1:
   FileExplorer.getInstance().openFile(FileExplorer.HTML_EXTENSIONS)
       .then((fileInfo) => {
         if (fileInfo) {
-          open(
+          loadFromUserFiles(
               fileInfo,
-              (rawHtml) => {
-                stageCleanup();
-                setHtml(rawHtml, () => {
-                  // undo redo reset
-                  // undoReset();
+              (rawHtml, data: PersistantData) => {
+                // display and redraw
+                SilexNotification.notifySuccess((getSite().title || 'Untitled website') + ' opened.');
 
-                  // display and redraw
-                  fileOperationSuccess((getSite().title || 'Untitled website') + ' opened.', true);
-
-                  // track success
-                  // tracker.trackAction('controller-events', 'success', 'file.open', 1);
-                  if (opt_cbk) {
-                    opt_cbk((fileInfo as FileInfo));
-                  }
-                }, true);
+                // track success
+                // tracker.trackAction('controller-events', 'success', 'file.open', 1);
+                if (cbk) {
+                  cbk((fileInfo as FileInfo));
+                }
               },
               // with loader
               (error: any, message) => {
@@ -301,88 +251,24 @@ export function openFile(opt_cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1:
         }
       });
 }
-/**
- * load an arbitrary url as a silex html editable file
- * will not be able to save
- * @export
- */
-export function openFromUrl(
-    url: string, opt_cbk: ((p1: string, data: DataModel) => any) = null,
-    opt_errCbk: ((p1: any, p2: string) => any) = null) {
 
-  CloudStorage.getInstance().loadLocal(
-      url, (rawHtml: string, data: DataModel) => {
-        this.close();
-        updateSite({
-          ...getSite(),
-          file: ({isDir: false, mime: 'text/html'} as FileInfo),
-          isTemplate: true,
-        })
-        if (opt_cbk) {
-          opt_cbk(rawHtml, data);
-        }
-      }, opt_errCbk);
+///////////////////////////////////////////////////////////////////
+// Callbacks
+///////////////////////////////////////////////////////////////////
+
+function onOpenError(err: any, msg: string, opt_errorCbk?: ((p1: any) => any), loadBlankOnError: boolean = true) {
+  console.error('opening template error', err);
+  SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {});
+  if (opt_errorCbk) {
+    opt_errorCbk(err);
+  }
+  if (loadBlankOnError && !hasContent()) {
+    loadBlankTemplate();
+  }
+  // tracker.trackAction('controller-events', 'error', 'file.new', -1);
 }
 
-/**
- * save a file with a new name
- * @param cbk receives the raw HTML
- * @export
- */
-export function saveAs(file: FileInfo, rawHtml: string, data: DataModel, cbk: () => any, opt_errCbk?: ((p1: any, p2: string) => any)) {
-  // save the data
-  updateSite({
-    ...getSite(),
-    file,
-  })
-  addToLatestFiles(file);
-
-  CloudStorage.getInstance().write(
-      (file as FileInfo), rawHtml,
-      data, () => {
-        updateSite({
-          ...getSite(),
-          isTemplate: false,
-        })
-        if (cbk) {
-          cbk();
-        }
-      }, opt_errCbk);
-}
-
-/**
- * load a new file
- * @param cbk receives the raw HTML
- */
-export function open(file: FileInfo, cbk: (p1: string, data: DataModel) => any,
-    opt_errCbk?: ((p1: any, msg: string, code: number) => any)) {
-  CloudStorage.getInstance().read(
-    file, (rawHtml: string, data: DataModel) => {
-      // update model
-      this.close();
-      updateSite({
-        ...getSite(),
-        file,
-        isTemplate: false,
-      })
-      this.addToLatestFiles(file);
-      if (cbk) {
-        cbk(rawHtml, data);
-      }
-    }, opt_errCbk);
-}
-
-/**
- * reset data, close file
- */
-export function close() {
-  updateSite({
-    ...getSite(),
-    file: null,
-  })
-}
-
-export function publishError(message) {
+function publishError(message) {
   // tracker.trackAction('controller-events', 'error', 'file.publish', -1);
   console.error('Error: I did not manage to publish the file.', message);
   SilexNotification.alert('Publication',
@@ -390,6 +276,10 @@ export function publishError(message) {
           message}</p><p><a href="${ Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`,
       () => {});
 }
+
+///////////////////////////////////////////////////////////////////
+// Publication
+///////////////////////////////////////////////////////////////////
 
 /**
  * ask the user for a new file title
@@ -514,4 +404,98 @@ function doPublish(
       }
     }
   }
+}
+
+///////////////////////////////////////////////////////////////////
+// Utils
+///////////////////////////////////////////////////////////////////
+
+/**
+ * @return true if a website is being edited
+ * TODO: move this to the SiteFrame component or use getElements().length
+ */
+function hasContent(): boolean {
+  const contentDocument = getSiteDocument()
+  return !!contentDocument.body && contentDocument.body.childNodes.length > 0;
+}
+
+/**
+ * load a silex html editable file from the templates located on the server
+ * will not be able to save until the user choose a file name
+ */
+function loadFromServerTemplates(
+    path: string,
+    cbk: ((p1: string, data: PersistantData) => any) = null,
+    errCbk: ((p1: any, p2: string) => any) = null) {
+  doLoadWebsite({
+    site: {
+      file: ({isDir: false, mime: 'text/html'} as FileInfo),
+      isTemplate: true,
+    },
+    path,
+    cbk, errCbk,
+  })
+}
+
+/**
+ * load blank template
+ */
+function loadBlankTemplate(cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+  const blankUrl = '/libs/templates/silex-blank-templates/blank/editable.html';
+  loadFromServerTemplates(blankUrl, cbk, (err, msg) => onOpenError(err, msg, opt_errorCbk, false));
+}
+
+/**
+ * load a new file
+ * @param cbk receives the raw HTML and the stored data
+ */
+function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantData) => any,
+    errCbk?: ((p1: any, msg: string, code?: number) => any)) {
+  console.log('load', file)
+  doLoadWebsite({
+    site: {
+      file,
+      isTemplate: true,
+    },
+    path: file.absPath,
+    cbk: (rawHtml: string, data: PersistantData) => {
+      console.log('loaded', file)
+      addToLatestFiles(file);
+      if (cbk) {
+        cbk(rawHtml, data);
+      }
+    },
+    errCbk,
+  })
+}
+
+function doLoadWebsite({site, path, cbk, errCbk}: {
+    site: any,
+    path: string,
+    cbk: ((p1: string, data: PersistantData) => any),
+    errCbk: ((p1: any, p2: string) => any),
+  }) {
+  updateUi({
+    ...getUi(),
+    loading: LOADING.WEBSITE,
+  })
+  CloudStorage.getInstance().loadWebsite(
+      path, (rawHtml: string, data: PersistantData) => {
+        setHtml(rawHtml, () => {
+          initializeData(data)
+          stopObservers()
+          updateSite({
+            ...getSite(),
+            ...site,
+          })
+          startObservers()
+          updateUi({
+            ...getUi(),
+            loading: LOADING.NONE,
+          })
+          if (cbk) {
+            cbk(rawHtml, data);
+          }
+        })
+      }, errCbk);
 }

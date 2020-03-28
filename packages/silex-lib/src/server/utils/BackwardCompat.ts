@@ -14,7 +14,7 @@ import * as Path from 'path';
 import { writeDataToDom } from '../../client/flux/dom';
 import { Constants } from '../../constants';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeSiteStyles, writeStyles } from './BackwardCompatV2.5.60';
-import { DataModel } from '../../client/flux/types';
+import { PersistantData } from '../../client/flux/types';
 import { ElementType } from '../../client/element/types';
 
 // FIXME: path in constants
@@ -36,7 +36,7 @@ console.log(`\nSilex starts with backward compat version ${LATEST_VERSION} and f
  *
  */
 export default class BackwardCompat {
-  private data: DataModel = null;
+  private data: PersistantData = null;
   constructor(private rootUrl: string) {}
   /**
    * handle backward compatibility issues
@@ -44,7 +44,7 @@ export default class BackwardCompat {
    * @param {Document} doc
    * @return {Promise} a Promise, resolve can be called with a warning message
    */
-  async update(doc: HTMLDocument, data: DataModel): Promise<[string, DataModel]> {
+  async update(doc: HTMLDocument, data: PersistantData): Promise<[string, PersistantData]> {
     // // fix an issue when the style tag has no type, then json is "broken"
     // const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
     // if (styleTag) { styleTag.type = 'text/json'; } // old versions of silex have no json at all so do nothing in that case

@@ -5,7 +5,8 @@ import { noSectionContent, getParent, getFirstPagedParent } from '../element/fil
 import { getDomElement } from '../element/dom'
 import { getStage } from '../components/StageWrapper'
 import { getPages } from '../page/store'
-import { getSiteDocument, getUiElements } from '../ui/UiElements'
+import { getUiElements } from '../ui/UiElements'
+import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
 
 /**
  * @static because it is shared by all controllers
@@ -46,7 +47,7 @@ export function duplicateSelection() {
     const parent = getParent(selection[0]) || body;
 
     // paste
-    this.pasteElements({parent, rootElements, allElements });
+    pasteElements({parent, rootElements, allElements });
   }
 }
 
@@ -61,9 +62,9 @@ export function pasteClipBoard() {
   const [allElements, rootElements] = clipboard
 
   // get the drop zone in the center
-  const parent = getCreationDropZone(false, getUiElements().stage);
+  const parent = getCreationDropZone(false, getSiteIFrame());
 
-  this.pasteElements({
+  pasteElements({
     parent,
     rootElements,
     allElements,
@@ -74,7 +75,7 @@ export function pasteClipBoard() {
 }
 
 export function pasteElements({parent, rootElements, allElements}: {parent: ElementData, rootElements: ElementData[], allElements: ElementData[]}) {
-  this.tracker.trackAction('controller-events', 'info', 'paste', 0);
+  // this.tracker.trackAction('controller-events', 'info', 'paste', 0);
 
   if (allElements.length > 0) {
     // undo checkpoint
@@ -105,7 +106,6 @@ export function pasteElements({parent, rootElements, allElements}: {parent: Elem
       if (isRoot) {
         offset += 20;
       }
-      console.log('paste', {element, isRoot})
       return {
         ...element,
         pageNames,

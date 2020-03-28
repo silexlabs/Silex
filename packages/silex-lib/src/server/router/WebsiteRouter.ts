@@ -16,11 +16,11 @@ import { JSDOM } from 'jsdom';
 import * as nodeModules from 'node_modules-path';
 import * as Path from 'path';
 import { URL } from 'url';
-import { dataModelFromJson } from '../../client/utils/data';
+import { persistantDataFromJson } from '../../client/utils/data';
 import { Constants } from '../../constants';
 import BackwardCompat from '../utils/BackwardCompat';
 import DomTools from '../utils/DomTools';
-import { DataModel } from '../../client/flux/types'
+import { PersistantData } from '../../client/flux/types'
 
 export default function({ port, rootUrl }, unifile) {
 
@@ -108,7 +108,7 @@ export default function({ port, rootUrl }, unifile) {
   async function sendWebsiteData(res, htmlBuffer: Buffer, jsonBuffer: Buffer, url: URL, isTemplate): Promise<void> {
     // remove user head tag to avoid bad markup messing with the website
     const { html } = DomTools.extractUserHeadTag(htmlBuffer.toString('utf-8'));
-    const data: DataModel = jsonBuffer ? dataModelFromJson(JSON.parse(jsonBuffer.toString('utf-8'))) : null; // may be null for older websites
+    const data: PersistantData = jsonBuffer ? persistantDataFromJson(JSON.parse(jsonBuffer.toString('utf-8'))) : null; // may be null for older websites
 
     // from now on use a parsed DOM
     const dom = new JSDOM(html, { url: url.href });
@@ -145,7 +145,7 @@ export default function({ port, rootUrl }, unifile) {
   function writeWebsite(req, res, next) {
     const connector = req.params[0];
     const path = req.params[1];
-    const { data, html }: { data: DataModel, html: string} = JSON.parse(req.body);
+    const { data, html }: { data: PersistantData, html: string} = JSON.parse(req.body);
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`);
     const [unpreparedData, dom] = unprepareWebsite(new JSDOM(html, { url: url.href }), data, url);
     const str = dom.serialize();
@@ -173,7 +173,7 @@ export default function({ port, rootUrl }, unifile) {
    * prepare website for edit mode
    * make all URLs absolute (so that images are still found when I "save as" my website to another folder)
    */
-  function prepareWebsite(dom, data: DataModel, baseUrl): DataModel {
+  function prepareWebsite(dom, data: PersistantData, baseUrl): PersistantData {
     // URLs
     const transformedData = DomTools.transformPaths(dom, data, (path, el) => {
       const url = new URL(path, baseUrl);
@@ -197,7 +197,7 @@ export default function({ port, rootUrl }, unifile) {
    * * make all URLs relative to current path
    * * remove useless markup and css classes
    */
-  function unprepareWebsite(dom: JSDOM, data: DataModel, baseUrl): [DataModel, JSDOM] {
+  function unprepareWebsite(dom: JSDOM, data: PersistantData, baseUrl): [PersistantData, JSDOM] {
     // markup
     dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME);
     dom.window.document.body.classList.remove(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME);
@@ -213,7 +213,7 @@ export default function({ port, rootUrl }, unifile) {
       }
       return path;
     });
-    const cleanedUp: DataModel = {
+    const cleanedUp: PersistantData = {
       ...transformedData,
       pages: transformedData.pages.map((p) => ({
         ...p,
