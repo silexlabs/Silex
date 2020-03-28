@@ -28,9 +28,9 @@ const MAX_RECENT_FILES = 5;
  * store this file in the latest opened files
  */
 export function addToLatestFiles(fileInfo: FileInfo) {
-  const latestFiles = [fileInfo].concat(this.getLatestFiles().filter(
-      (item, idx) =>
-          item.absPath !== fileInfo.absPath && idx < MAX_RECENT_FILES));
-  window.localStorage.setItem(
-      'silex:recent-files', JSON.stringify(latestFiles));
+  const latestFiles = [
+    fileInfo,
+    ...getLatestFiles().filter((item, idx) => item.absPath !== fileInfo.absPath && idx < MAX_RECENT_FILES),
+  ]
+  window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
 }

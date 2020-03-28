@@ -14,24 +14,13 @@
  *
  */
 
-export interface UiData {
-  mobileEditor: boolean,
-  loading: boolean,
-  // stacked: boolean,
-  // modals: Array<{type: Modal, data: any}>,
-  // route: Route,
+export enum LOADING {
+  NONE,
+  WEBSITE,
+  SILEX,
 }
 
-// export enum Modal {
-//   SETTINGS,
-//   ALERT,
-//   PROMPT,
-//   CONFIRM,
-//   PUBLISH,
-//   EXPLORER,
-// }
-
-// export enum Route {
-//   DASHBOARD,
-//   EDITOR,
-// }
+export interface UiData {
+  mobileEditor: boolean,
+  loading: LOADING,
+}

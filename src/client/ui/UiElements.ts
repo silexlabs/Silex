@@ -1,6 +1,5 @@
 
 export interface UiElements {
-  stage: HTMLIFrameElement;
   fileExplorer: HTMLIFrameElement;
   contextMenu: HTMLElement;
   menu: HTMLElement;
@@ -17,19 +16,10 @@ export interface UiElements {
   verticalSplitter: HTMLElement;
 }
 
-export function getSiteWindow() {
-  return uiElements.stage.contentWindow
-}
-
-export function getSiteDocument() {
-  return uiElements.stage.contentDocument
-}
-
 // keep references to ui elements
 let uiElements: UiElements
 export function getUiElements(): UiElements {
   uiElements = uiElements || {
-    stage: document.querySelector('#silex-stage-iframe'),
     fileExplorer: document.querySelector('#silex-file-explorer'),
     contextMenu: document.querySelector('.silex-context-menu'),
     menu: document.querySelector('.silex-menu'),

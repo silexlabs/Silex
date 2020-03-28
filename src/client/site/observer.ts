@@ -5,7 +5,7 @@ import { getData } from '../flux/store'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth } from '../site/dom'
 import { writeDataToDom } from '../flux/dom';
 import { DataSources, SiteData } from '../site/types'
-import { getSiteDocument } from '../ui/UiElements'
+import { getSiteDocument } from '../components/SiteFrame'
 import { SilexNotification } from '../utils/Notification'
 import { setStyleToDom } from '../element/component'
 

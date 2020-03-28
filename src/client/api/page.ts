@@ -1,4 +1,4 @@
-import { createPages, getPages, updatePages, deletePages, movePage } from '../page/store'
+import { createPages, getPages, updatePages, deletePages, movePage, openPage } from '../page/store'
 import { crudIdKey } from '../flux/crud-store'
 import { LinkType } from '../element/types'
 import { PageData } from '../page/types'
@@ -146,7 +146,7 @@ export function editPageSettings(pageData: PageData = null): Promise<{id: string
           const existing = getPages().find((p) => p.id === newName);
           if (!!existing) {
             // open the new page
-            this.openPage(existing);
+            openPage(existing);
             reject('Page already exists');
           } else {
             resolve({id: cleanName, displayName: newName});

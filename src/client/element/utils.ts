@@ -9,20 +9,20 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementData, Size, ElementType, ElementId, Point, FullBox } from './types'
-import { crudIdKey } from '../flux/crud-store'
-import { getElementById, getChildren, getBody, noSectionContent, getParent } from './filters'
 import { Constants } from '../../constants'
+import { crudIdKey } from '../flux/crud-store'
 import { getSite } from '../site/store'
-import { getElements, updateElements } from './store'
-import { getDomElement, getContentNode, addMediaQuery } from './dom'
-import { FileExplorer } from '../components/dialog/FileExplorer'
 import { Style } from '../utils/Style'
-import { getUi } from '../ui/store'
-import { Url } from '../utils/Url'
-import { SilexNotification } from '../utils/Notification'
+import { addMediaQuery, getDomElement } from './dom'
+import { getBody, getChildren, getElementById, getParent, noSectionContent } from './filters'
+import { getElements } from './store'
+import { ElementData, ElementId, ElementType, Point, Size } from './types'
 
-// FIXME: these methods need to use connect() in order to avoid side effects
+/**
+ * @fileoverview Cross platform, it needs to run client and server side
+ *
+ */
+
 
 /**
  * constant for the prefix of the IDs given to Silex editable elements

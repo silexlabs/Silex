@@ -54,7 +54,7 @@
         "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
         "start:electron": "SILEX_ELECTRON=true electron .",
         "prepublishOnly": "npm run lint:fix && npm run build",
-        "xxxxprepare": "npm run build",
+        "prepare": "npm run build",
         "build": "npm run cleanup && npm run lint && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release && npm run build:monaco-editor",
         "cleanup": "mkdir -p tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
         "release": "npm run lint && electron-builder",
@@ -84,6 +84,7 @@
         "cookie-parser": "1.4.4",
         "cookie-session": "2.0.0-beta.3",
         "cross-env": "7.0.2",
+        "drag-drop-stage-component": "^1.0.22",
         "express": "4.17.1",
         "express-force-ssl": "0.3.2",
         "font-awesome": "4.7.0",
@@ -111,7 +112,6 @@
         "@types/redux": "3.6.31",
         "css-loader": "3.4.2",
         "detect-browser": "5.0.0",
-        "drag-drop-stage-component": "1.0.21",
         "electron": "5.0.1",
         "electron-builder": "20.40.2",
         "eslint": "6.8.0",
@@ -183,7 +183,8 @@
             "target": "dmg"
         },
         "dmg": {
-            "contents": [{
+            "contents": [
+                {
                     "x": 110,
                     "y": 150
                 },

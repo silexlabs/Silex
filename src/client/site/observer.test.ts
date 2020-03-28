@@ -4,10 +4,10 @@ const iframe = mockUiElements()
 import { initializeSite_, initializeSite } from './store'
 import { onChangeSite } from './observer'
 import { createStore } from 'redux'
-import { State } from '../flux/store'
 import { Store } from 'redux'
 import { ProdotypeCompDef } from '../externs'
 import { ProdotypeDependency } from '../element/types'
+import { State } from '../flux/types'
 
 // fake prodotype
 class Prodotype {

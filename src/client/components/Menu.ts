@@ -18,18 +18,20 @@
 
 import { Constants } from '../../constants'
 import { Config } from '../ClientConfig'
-import { DomDirection } from '../ClientTypes'
 import { addElement, moveElements, selectBody } from '../element/dispatchers'
 import { getSelectedElements } from '../element/filters'
 import { updateElements } from '../element/store'
-import { ElementType } from '../element/types'
+import { ElementType, DomDirection } from '../element/types'
 import { getCreationDropZone } from '../element/utils'
 import { getUi, updateUi } from '../ui/store'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { getUiElements } from '../ui/UiElements'
 import { prodotypeReady, getComponentsDef } from '../element/component'
-import { toggleSubMenu, preview, previewResponsize, openCssEditor, openJsEditor, openHtmlHeadEditor, closeAllSubMenu } from '../api/view'
-import { newFile, save, publish, openFile } from '../api/file'
+import { toggleSubMenu, preview, previewResponsize, closeAllSubMenu } from '../api/view'
+import { openCssEditor } from './dialog/CssEditor'
+import { openJsEditor } from './dialog/JsEditor'
+import { openHtmlEditor, openHtmlHeadEditor } from './dialog/HtmlEditor'
+import { openDashboardToLoadAWebsite, save, publish, openFile } from '../api/file'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { getSite } from '../site/store'
 import { FileExplorer } from './dialog/FileExplorer'
@@ -37,6 +39,7 @@ import { browseAndAddImage } from '../api/propoerties'
 import { removeElements, moveToBottom, moveUp, moveDown, moveToTop } from '../api/element'
 import { copySelection, pasteClipBoard, duplicateSelection } from '../api/copy'
 import { removePage, editPage, createPage } from '../api/page'
+import { getSiteIFrame } from './SiteFrame'
 
 ///////////////////
 // API for the outside world
@@ -190,7 +193,7 @@ function onMenuEvent(type: string, opt_componentName?: string) {
       toggleSubMenu('add-menu-visible');
       break;
     case 'file.new':
-      newFile();
+      openDashboardToLoadAWebsite();
       break;
     case 'file.saveas':
       save();
@@ -251,27 +254,27 @@ function onMenuEvent(type: string, opt_componentName?: string) {
       createPage();
       break;
     case 'insert.text': {
-      const parent = getCreationDropZone(false, getUiElements().stage);
+      const parent = getCreationDropZone(false, getSiteIFrame());
       addElement(ElementType.TEXT, parent, opt_componentName);
       break;
     }
     case 'insert.section': {
-      const parent = getCreationDropZone(true, getUiElements().stage);
+      const parent = getCreationDropZone(true, getSiteIFrame());
       addElement(ElementType.SECTION, parent, opt_componentName);
       break;
     }
     case 'insert.html': {
-      const parent = getCreationDropZone(false, getUiElements().stage);
+      const parent = getCreationDropZone(false, getSiteIFrame());
       addElement(ElementType.HTML, parent, opt_componentName);
       break;
     }
     case 'insert.image': {
-      const parent = getCreationDropZone(false, getUiElements().stage);
+      const parent = getCreationDropZone(false, getSiteIFrame());
       browseAndAddImage(parent);
       break;
     }
     case 'insert.container': {
-      const parent = getCreationDropZone(false, getUiElements().stage);
+      const parent = getCreationDropZone(false, getSiteIFrame());
       addElement(ElementType.CONTAINER, parent, opt_componentName);
       break;
     }
@@ -279,8 +282,6 @@ function onMenuEvent(type: string, opt_componentName?: string) {
       removeElements();
       break;
     case 'edit.empty.selection':
-      // empty selection
-      updateElements(getSelectedElements().map((el) => ({ from: el, to: { ...el, selected: false }})))
       // select body
       selectBody()
       break;

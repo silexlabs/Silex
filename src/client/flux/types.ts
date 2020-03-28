@@ -12,13 +12,33 @@
 import { ElementData } from '../element/types';
 import { PageData } from '../page/types';
 import { SiteData } from '../site/types';
+import { UiData } from '../ui/types'
+import { Store } from 'redux'
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side
  *
  */
 
-export interface DataModel {
+/**
+ * type of the store for the whole Silex app
+ */
+export type SilexStore = Store<State>
+
+/**
+ * type of the state object hold by the SilexStore
+ */
+export interface State {
+  pages: PageData[],
+  elements: ElementData[],
+  site: SiteData,
+  ui: UiData,
+}
+
+/**
+ * the data which are relevant to be saved/loaded for a given site
+ */
+export interface PersistantData {
   site: SiteData,
   elements: ElementData[],
   pages: PageData[],

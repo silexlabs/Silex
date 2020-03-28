@@ -1,7 +1,8 @@
 import { UiData } from './types'
 import { UiAction } from '../flux/actions'
-import { subscribeTo, SilexStore } from '../flux/store'
+import { subscribeTo } from '../flux/store'
 import { connect } from '../flux/connect';
+import { SilexStore } from '../flux/types'
 
 /**
  * Silex, live web creation

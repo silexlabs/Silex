@@ -20,6 +20,7 @@ import { updateUi, getUi } from '../../ui/store'
 import { getSite, updateSite } from '../../site/store'
 import { Provider, VHost, PublicationOptions } from '../../site/types'
 import { FileExplorer } from './FileExplorer'
+import { LOADING } from '../../ui/types'
 
 const service = SilexTasks.getInstance();
 
@@ -29,7 +30,7 @@ const service = SilexTasks.getInstance();
 function setLoading(loading: boolean) {
   updateUi({
     ...getUi(),
-    loading,
+    loading: loading ? LOADING.SILEX : LOADING.NONE,
   })
 }
 

@@ -1,12 +1,28 @@
+/**
+ * Silex, live web creation
+ * http://projects.silexlabs.org/?/silex/
+ *
+ * Copyright (c) 2012 Silex Labs
+ * http://www.silexlabs.org/
+ *
+ * Silex is available under the GPL license
+ * http://www.silexlabs.org/silex/silex-licensing/
+ */
+
 import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType, Link } from './types';
 import { getEmptyElementData } from '../element/utils';
 import { Style } from '../utils/Style';
 import { Url } from '../utils/Url'
-import { CSSRuleInfo, DataSource, DataSources } from '../site/types'
+import { CSSRuleInfo, DataSources } from '../site/types'
 import { Prodotype } from '../externs'
 
-export function getDomElement(doc: HTMLDocument, element: ElementData): HTMLElement {
+/**
+ * @fileoverview Dom manipulation methods, mostly used by observers. Cross platform, it needs to run client and server side
+ *
+ */
+
+ export function getDomElement(doc: HTMLDocument, element: ElementData): HTMLElement {
   return getDomElementById(doc, element.id)
 }
 

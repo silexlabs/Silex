@@ -17,10 +17,12 @@
 import { ElementData, ElementType } from '../../element/types';
 import { subscribeElements, updateElements } from '../../element/store';
 import { getDomElement } from '../../element/dom';
-import { getSiteDocument, getUiElements } from '../../ui/UiElements';
+import { getSiteDocument } from '../../components/SiteFrame';
 import { CodeEditorBase } from './CodeEditorBase';
 import { subscribeSite, getSite, updateSite } from '../../site/store'
 import { getSelectedElements } from '../../element/filters'
+import { selectBody } from '../../element/dispatchers'
+import { getUiElements } from '../../ui/UiElements'
 
 ///////////////////
 // API for the outside world
@@ -33,6 +35,21 @@ export function openHtmlEditor() {
   initHtmlEditor()
   return instance.open()
 }
+
+/**
+ * edit HTML head tag
+ */
+export function openHtmlHeadEditor() {
+  // undo checkpoint
+    //  undoCheckPoint();
+
+  // deselect all elements but select the body
+  selectBody()
+
+  // open the editor
+  openHtmlEditor()
+}
+
 
 /**
  * TODO: make this only methods and write tests

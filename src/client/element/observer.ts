@@ -12,7 +12,6 @@ import { getUi } from '../ui/store';
 import { getData } from '../flux/store';
 
 export const onAddElements = (win: Window) => (elements: ElementData[]) => {
-  console.log('onAddElements', elements)
   const doc = win.document
   const added = []
   elements.forEach((element) => {
@@ -60,7 +59,6 @@ export const onDeleteElements = (win: Window) => (elements: ElementData[]) => {
 }
 
 export const onUpdateElements = (win: Window) => (change: StateChange<ElementData>[]) => {
-  // console.log('onUpdateElements', change)
   const doc = win.document
 
   change.forEach(({from, to}) => {

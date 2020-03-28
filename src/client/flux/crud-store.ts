@@ -21,7 +21,7 @@ export interface CrudState {
 }
 export function withCrudReducer<State extends CrudState>(options: { actionEnum: any, reducer: (state: State[], action: any) => any, label: string }) {
   const { actionEnum, reducer } = options
-  return (state: State[], action: any) => {
+  return (state: State[] = [], action: any) => {
     // console.trace('CRUD reducer', options.label, {state, action})
     switch (action.type) {
       case actionEnum.INITIALIZE: return action.items.slice()

@@ -15,12 +15,12 @@
  */
 
 import { Constants } from '../../constants'
-import { getSiteDocument, getSiteWindow } from '../ui/UiElements'
-import { removeWysihtmlMarkup, addMediaQuery } from '../element/dom'
-import { getElements } from '../element/store'
-import { getUi, updateUi } from '../ui/store'
-import { Style } from '../utils/Style'
+import { selectBody } from '../element/dispatchers'
+import { removeWysihtmlMarkup } from '../element/dom'
 import { getAllStyles } from '../element/utils'
+import { getUi, updateUi } from '../ui/store'
+import { initStageWrapper, stageCleanup } from './StageWrapper'
+import { LOADING } from '../ui/types'
 
 ///////////////////
 // API for the outside world
@@ -29,10 +29,27 @@ export function initSiteComponent() {
   site = site || new Site()
 }
 export function setHtml(rawHtml: string, opt_cbk?: (() => any), opt_showLoader?: boolean) {
+  initSiteComponent()
   return site.setHtml(rawHtml, opt_cbk, opt_showLoader)
 }
 export function getHtml() {
+  initSiteComponent()
   return site.getHtml()
+}
+
+export function getSiteWindow(): Window {
+  initSiteComponent()
+  return site.getSiteWindow()
+}
+
+export function getSiteDocument(): HTMLDocument {
+  initSiteComponent()
+  return site.getSiteDocument()
+}
+
+export function getSiteIFrame(): HTMLIFrameElement {
+  initSiteComponent()
+  return site.iframe
 }
 
 ///////////////////
@@ -40,15 +57,27 @@ export function getHtml() {
 // TODO: make this only methods and write tests
 class Site {
 
+  iframe: HTMLIFrameElement = document.createElement('iframe')
+
   constructor() {
-    // reset iframe content
+    // create the iframe
+    this.iframe.id = 'silex-stage-iframe'
+    this.iframe.className = 'silex-stage-iframe notranslate'
+    this.iframe.src = 'about:blank'
+    document.querySelector('.silex-stage').appendChild(this.iframe)
+
+    // init iframe content
     // this is needed since iframes can keep their content
     // after a refresh in firefox
-    const contentDocument = getSiteDocument()
+    const contentDocument = this.getSiteDocument()
     contentDocument.open();
     contentDocument.write('');
     contentDocument.close();
+    console.log('SIteIframe constructor 3')
   }
+
+  getSiteWindow(): Window { return this.iframe.contentWindow }
+  getSiteDocument(): HTMLDocument { return this.iframe.contentDocument }
 
   /**
    * build the html content
@@ -57,17 +86,21 @@ class Site {
    */
   setHtml(rawHtml: string, opt_cbk?: (() => any), opt_showLoader?: boolean) {
     const contentDocument = getSiteDocument()
+    console.log('setHtml', contentDocument, opt_showLoader)
+
+    // remove all elements from stage component
+    stageCleanup();
 
     // reset iframe content
     contentDocument.open();
     contentDocument.write('');
     contentDocument.close();
 
-    // loading
-    updateUi({
-      ...getUi(),
-      loading: true,
-    })
+    // // loading
+    // updateUi({
+    //   ...getUi(),
+    //   loading: LOADING.WEBSITE,
+    // })
 
     // write the content
     contentDocument.open();
@@ -99,11 +132,17 @@ class Site {
       opt_cbk();
     }
 
-    // loading
-    updateUi({
-      ...getUi(),
-      loading: false,
-    })
+    // // loading
+    // updateUi({
+    //   ...getUi(),
+    //   loading: LOADING.NONE,
+    // })
+
+    // update stage component
+    initStageWrapper(this.iframe);
+
+    // init selection
+    selectBody();
   }
 
   /**

@@ -2,19 +2,13 @@
   transition: opacity .5s ease-out .25s;
   opacity: 1;
 }
+// initial loader state, overriden by the css in index.jade
 .loader {
-  z-index: -1;
-  height: 0;
-  overflow: hidden;
+  display: none;
 }
+// hide the whole workspace wile loading silex
 .loading-pending {
   .silex-workspace {
     opacity: 0; // also in index.jade
-  }
-  .loader {
-    color: #DDD;
-    text-align: center;
-    margin-top: 50vh;
-    height: auto;
   }
 }

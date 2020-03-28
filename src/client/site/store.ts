@@ -9,10 +9,11 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { SilexStore, subscribeTo } from '../flux/store'
+import { subscribeTo } from '../flux/store'
 import { SiteData } from './types'
 import { SiteAction } from '../flux/actions'
 import { connect } from '../flux/connect'
+import { SilexStore } from '../flux/types'
 
 /**
  * @fileoverview this is the API used to interact with the store

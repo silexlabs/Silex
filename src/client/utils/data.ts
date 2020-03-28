@@ -1,4 +1,4 @@
-import { DataModel } from '../flux/types';
+import { PersistantData } from '../flux/types';
 import { crudIdKey } from '../flux/crud-store';
 
 const withCrudId = (arr: any[]) => arr.map((item) => ({
@@ -6,7 +6,7 @@ const withCrudId = (arr: any[]) => arr.map((item) => ({
   [crudIdKey]: Symbol(),
 }))
 
-export const dataModelFromJson = (json: any): DataModel => ({
+export const persistantDataFromJson = (json: any): PersistantData => ({
   site: json.site,
   elements: withCrudId(json.elements).map((el) => ({
     ...el,

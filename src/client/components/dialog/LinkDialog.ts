@@ -14,8 +14,8 @@
  *
  */
 import { getPages } from '../../page/store';
-import {LinkData} from '../../ClientTypes';
 import {SilexNotification} from '../../utils/Notification';
+import { LinkData } from '../../element/types'
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];

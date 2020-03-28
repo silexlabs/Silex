@@ -12,15 +12,14 @@
 import { ElementId, ElementData } from './types'
 import { getElements } from './store';
 import { getDomElement } from './dom'
-import { getSiteDocument } from '../ui/UiElements'
 
 /**
- * @fileoverview Useful filters used to retrieve items in the store
+ * @fileoverview Useful filters used to retrieve items in the store. Cross platform, it needs to run client and server side
  *
  */
 
 export const getElementById = (id: ElementId): ElementData => getElements().find((el) => el.id === id)
-export const getElementByDomElement = (element: HTMLElement) => getElements().find((el) => element === getDomElement(getSiteDocument(), el))
+export const getElementByDomElement = (doc: HTMLDocument, element: HTMLElement) => getElements().find((el) => element === getDomElement(doc, el))
 
 export const getChildren = (element: ElementData): ElementData[] => element.children.map((id) => getElementById(id))
 

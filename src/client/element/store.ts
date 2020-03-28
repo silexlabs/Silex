@@ -11,9 +11,10 @@
 
 import { ElementAction } from '../flux/actions'
 import { connect } from '../flux/connect'
-import { SilexStore, subscribeToCrud } from '../flux/store'
+import { subscribeToCrud } from '../flux/store'
 import { ElementData } from './types'
 import { StateChange } from '../flux/crud-store';
+import { SilexStore } from '../flux/types'
 
 /**
  * @fileoverview this is the API used to interact with the store

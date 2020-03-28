@@ -9,23 +9,14 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { Constants } from '../../constants';
-import { Font } from './types';
-import { StyleName, PseudoClass, Visibility, PseudoClassData, StyleData } from '../site/types'
-import { getSite } from './store'
-import { addMediaQueryIfMobileOnly } from '../element/component'
-import { getPseudoClassData } from './utils'
-import { renderWithProdotype } from '../element/dom'
+import { Constants } from '../../constants'
+import { Font } from './types'
 
 /**
  * @fileoverview Site dom manipulation. Cross platform, it needs to run client and server side
  *
  */
 
-// export function readDataFromDom(doc: HTMLDocument): DataModel {
-//   const tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
-//   return JSON.parse(tag.innerHTML)
-// }
 
 /**
  * set/get silex editable js script

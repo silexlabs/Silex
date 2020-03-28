@@ -1,0 +1,49 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`get all ui elements 1`] = `
+Object {
+  "breadCrumbs": <div
+    class="silex-bread-crumbs"
+  />,
+  "contextMenu": <div
+    class="silex-context-menu"
+  />,
+  "cssEditor": <div
+    class="silex-css-editor"
+  />,
+  "dashboard": <div
+    class="silex-dashboard"
+  />,
+  "fileExplorer": <iframe
+    id="silex-file-explorer"
+    src="about:blank"
+  />,
+  "htmlEditor": <div
+    class="silex-html-editor"
+  />,
+  "jsEditor": <div
+    class="silex-js-editor"
+  />,
+  "menu": <div
+    class="silex-menu"
+  />,
+  "pageTool": <div
+    class="silex-page-tool"
+  />,
+  "propertyTool": <div
+    class="silex-property-tool"
+  />,
+  "settingsDialog": <div
+    class="silex-settings-dialog"
+  />,
+  "textFormatBar": <div
+    class="silex-text-format-bar"
+  />,
+  "verticalSplitter": <div
+    class="vertical-splitter"
+  />,
+  "workspace": <div
+    class="silex-workspace"
+  />,
+}
+`;

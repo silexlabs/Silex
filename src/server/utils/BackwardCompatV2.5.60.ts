@@ -9,6 +9,7 @@ import { SiteData, StyleData, CssRule } from '../../client/site/types';
 import { getDefaultStyle } from '../../client/element/utils';
 import { PageData } from '../../client/page/types';
 import { FileInfo } from '../../client/third-party/types';
+import componentDef from './componentsV2.5.60'
 
 ////////////////////////////////////////////////////////////
 // Old data structures
@@ -312,7 +313,6 @@ export function getSiteFromDom(doc: HTMLDocument): SiteData {
 
 function getDependenciesFromDom(properties: DomData): {[key: string]: ProdotypeDependency[]} {
   const res: {[key: string]: ProdotypeDependency[]} = {}
-  const componentDef = require('./componentsV2.5.60.json')
 
   Object.keys(properties.prodotypeDataObj.component)
   .map((compName) => ({

@@ -13,7 +13,7 @@ import { PageAction, SiteAction, UiAction } from './actions';
 import { ElementData } from '../element/types';
 import { PageData } from '../page/types';
 import { SiteData } from '../site/types';
-import { UiData } from '../ui/types';
+import { UiData, LOADING } from '../ui/types';
 
 // FIXME:  split this file in the packages page, element, site, ui
 
@@ -62,7 +62,7 @@ export const siteReducer = (state: SiteData = {
   styles: {},
   file: null,
   prodotypeDependencies: {}
-},                          action: any) => {
+}, action: any) => {
   switch (action.type) {
     case SiteAction.INITIALIZE: return {
       ...action.data,
@@ -76,7 +76,7 @@ export const siteReducer = (state: SiteData = {
 }
 
 export const uiReducer = (state: UiData = {
-  loading: true,
+  loading: LOADING.SILEX,
   mobileEditor: false,
 },                        action: any) => {
   switch (action.type) {

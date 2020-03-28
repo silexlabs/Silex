@@ -1,20 +1,19 @@
-import { subscribeElements } from '../element/store';
-import { onCrudChange } from './crud-store';
-import { onAddElements, onDeleteElements, onUpdateElements } from '../element/observer';
-import { getSiteWindow } from '../ui/UiElements';
-import { PageData } from '../page/types';
-import { subscribePages } from '../page/store';
-import { subscribeSite } from '../site/store';
-import { onChangeSite } from '../site/observer';
-import { subscribeUi } from '../ui/store';
-import { ElementData } from '../element/types';
-import {onAddPages, onDeletePages, onUpdatePages } from '../page/observer';
-import { onChangeUi } from '../ui/observer';
+import { onAddElements, onDeleteElements, onUpdateElements } from '../element/observer'
+import { subscribeElements } from '../element/store'
+import { ElementData } from '../element/types'
+import { onAddPages, onDeletePages, onUpdatePages } from '../page/observer'
+import { subscribePages } from '../page/store'
+import { PageData } from '../page/types'
+import { onChangeSite } from '../site/observer'
+import { subscribeSite } from '../site/store'
+import { onChangeUi } from '../ui/observer'
+import { subscribeUi } from '../ui/store'
+import { onCrudChange } from './crud-store'
+import { getSiteWindow } from '../components/SiteFrame'
 
 // a 'preventDefault'-like mechanism to avoid changing the dom when populating the model
 let stoped = true
 export function startObservers() {
-  console.trace('start observers')
   stoped = false
 }
 

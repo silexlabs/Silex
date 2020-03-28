@@ -9,27 +9,15 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { combineReducers, createStore, Store } from 'redux'
+import { combineReducers, createStore } from 'redux'
 import { ElementData } from '../element/types'
 import { withCrudReducer } from '../flux/crud-store'
 import { PageData } from '../page/types'
-import { SiteData } from '../site/types'
-import { UiData } from '../ui/types'
 import { ElementAction, PageAction } from './actions'
 import { elementReducer, pageReducer, siteReducer, uiReducer } from './reducers'
-import { DataModel } from './types'
+import { PersistantData, SilexStore, State } from './types'
 
-// //////////////////////
-// The main store
-
-export interface State {
-  pages: PageData[],
-  elements: ElementData[],
-  site: SiteData,
-  ui: UiData,
-}
-
-export type SilexStore = Store<State>
+// create the main store
 export const store: SilexStore = createStore(combineReducers({
   pages: withCrudReducer<PageData>({
     actionEnum: PageAction,
@@ -45,13 +33,19 @@ export const store: SilexStore = createStore(combineReducers({
   ui: uiReducer,
 }))
 
-let prevState: State
-let curState: State
+// update previous and current states before other listeners fire
+let curState: State = store.getState()
+let prevState: State = null
 store.subscribe(() => {
   prevState = curState
   curState = store.getState()
 })
 
+/**
+ * special subscribe for CRUD states, i.e. elements and pages
+ * provides the listener with prev and next state
+ * only the states piece relevant to the CRUD state
+ */
 export function subscribeToCrud<T>(name: string, cbk: (prevState: T[], nextState: T[]) => void): () => void {
   return store.subscribe(() => {
     const state = store.getState()
@@ -61,6 +55,11 @@ export function subscribeToCrud<T>(name: string, cbk: (prevState: T[], nextState
   })
 }
 
+/**
+ * special subscribe for states, i.e. site and ui
+ * provides the listener with prev and next state
+ * only the states piece relevant to the CRUD state
+ */
 export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) => void): () => void {
   return store.subscribe(() => {
     const state = store.getState()
@@ -70,5 +69,8 @@ export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) =
   })
 }
 
-// get the whole state object
-export const getData = (): DataModel => store.getState()
+/**
+ * get the whole state object
+ * used to save the state for example
+ */
+export const getData = (): PersistantData => store.getState()
