@@ -29,20 +29,23 @@ import { getUiElements } from '../ui/UiElements'
 let prodotypeComponent: Prodotype
 let prodotypeStyle: Prodotype
 let readyCbkArr = []
-const styleEditorElement = getUiElements().propertyTool.querySelector('.prodotype-style-editor .prodotype-container');
-const componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor');
+let styleEditorElement
+let componentEditorElement
 
 // wait for the Prodotype library to be loaded
 // FIXME: this is useless, it can be done directly on module import
 function initProdotype() {
+  styleEditorElement = getUiElements().propertyTool.querySelector('.prodotype-style-editor .prodotype-container')
+  componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor')
+
   // tslint:disable:no-string-literal
-  prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders);
-  prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles');
+  prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders)
+  prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles')
 
   prodotypeComponent.ready((err) => {
     readyCbkArr.forEach((cbk) => cbk(err))
     readyCbkArr = []
-  });
+  })
 }
 
 function getProdotypeComponent(): Prodotype {
@@ -61,9 +64,9 @@ function getProdotypeStyle(): Prodotype {
  */
 export function prodotypeReady(cbk: (p1: any) => any) {
   if (getProdotypeComponent()) {
-    getProdotypeComponent().ready((err) => cbk(err));
+    getProdotypeComponent().ready((err) => cbk(err))
   } else {
-    readyCbkArr.push(cbk);
+    readyCbkArr.push(cbk)
   }
 }
 
@@ -72,8 +75,8 @@ export function prodotypeReady(cbk: (p1: any) => any) {
  * @return component descriptors
  */
 export function getComponentsDef(type: string): ProdotypeCompDef {
-  const obj = type === Constants.COMPONENT_TYPE ? getProdotypeComponent() : getProdotypeStyle();
-  return obj ? obj.componentsDef : ({} as ProdotypeCompDef);
+  const obj = type === Constants.COMPONENT_TYPE ? getProdotypeComponent() : getProdotypeStyle()
+  return obj ? obj.componentsDef : ({} as ProdotypeCompDef)
 }
 
 /**
@@ -83,14 +86,14 @@ export function getComponentsDef(type: string): ProdotypeCompDef {
 export function initComponent(element: ElementData, templateName: string) {
   const name = getProdotypeComponent().createName(templateName, getElements()
     .filter((el) => el.type === ElementType.COMPONENT)
-    .map((el) => el.data.component));
+    .map((el) => el.data.component))
 
   // for selection (select all components)
-  // element.classList.add(Constants.COMPONENT_CLASS_NAME);
+  // element.classList.add(Constants.COMPONENT_CLASS_NAME)
 
   // apply the style found in component definition
   // this includes the css class of the component (component-templateName)
-  const cssClasses = getCssClasses(templateName) || [];
+  const cssClasses = getCssClasses(templateName) || []
 
   // first rendering of the component
   renderWithProdotype(getProdotypeComponent(), {
@@ -114,19 +117,19 @@ export function initComponent(element: ElementData, templateName: string) {
         },
         innerHtml: html,
       },
-    }]);
+    }])
 
     // update the dependencies once the component is added
-    updateDepenedencies(Constants.COMPONENT_TYPE);
-  });
+    updateDepenedencies(Constants.COMPONENT_TYPE)
+  })
 
   // css styles
-  const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE);
-  const comp = componentsDef[templateName];
+  const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE)
+  const comp = componentsDef[templateName]
   if (comp) {
     // apply the style found in component definition
     if (comp.initialCss) {
-      // applyStyleTo(element, comp.initialCss);
+      // applyStyleTo(element, comp.initialCss)
       console.error('not implemented')
     }
 
@@ -134,7 +137,7 @@ export function initComponent(element: ElementData, templateName: string) {
     if (comp.initialCssContentContainer) {
       // applyStyleTo(
       //     model.element.getContentNode(element),
-      //     comp.initialCssContentContainer);
+      //     comp.initialCssContentContainer)
       console.error('not implemented')
     }
   }
@@ -146,10 +149,10 @@ export function initComponent(element: ElementData, templateName: string) {
  */
 export function getComponentClassName(element) {
   if (element.type === ElementType.COMPONENT) {
-    const templateName = (element.data.component.templateName as TemplateName);
-    return getCssClasses(templateName);
+    const templateName = (element.data.component.templateName as TemplateName)
+    return getCssClasses(templateName)
   }
-  return [];
+  return []
 }
 
 /**
@@ -159,25 +162,25 @@ export function getComponentClassName(element) {
  * @return an array of CSS classes
  */
 export function getCssClasses(templateName: string): string[] {
-  const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE);
-  const comp = componentsDef[templateName];
-  let cssClasses = [Constants.COMPONENT_CLASS_NAME + '-' + templateName];
+  const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE)
+  const comp = componentsDef[templateName]
+  let cssClasses = [Constants.COMPONENT_CLASS_NAME + '-' + templateName]
   if (comp) {
     // class name is either an array
     // or a string or null
     switch (typeof comp.initialCssClass) {
       case 'undefined':
-        break;
+        break
       case 'string':
-        cssClasses = cssClasses.concat(comp.initialCssClass.split(' '));
-        break;
+        cssClasses = cssClasses.concat(comp.initialCssClass.split(' '))
+        break
       default:
-        cssClasses = cssClasses.concat(comp.initialCssClass);
+        cssClasses = cssClasses.concat(comp.initialCssClass)
     }
   } else {
-    console.error(`Error: component's definition not found in prodotype templates, with template name "${templateName}".`);
+    console.error(`Error: component's definition not found in prodotype templates, with template name "${templateName}".`)
   }
-  return cssClasses;
+  return cssClasses
 }
 
 /**
@@ -188,11 +191,11 @@ export function getCssClasses(templateName: string): string[] {
 export function updateDepenedencies(type: string) {
   if (type !==  Constants.COMPONENT_TYPE) {
     // TODO: cleanup since this would need to support several types of components?
-    throw new Error('Not supported, all dependencies are for components for now, not styles');
+    throw new Error('Not supported, all dependencies are for components for now, not styles')
   }
   const components: ComponentData[] = getElements()
     .filter((el) => el.type === ElementType.COMPONENT)
-    .map((el) => el.data.component);
+    .map((el) => el.data.component)
   const prodotypeDependencies = getProdotypeComponent().getDependencies(components)
 
   const oldDependencies = getSite().prodotypeDependencies
@@ -210,23 +213,23 @@ export function updateDepenedencies(type: string) {
       prodotypeDependencies,
     })
   }
-  // const head = model.head.getHeadElement();
+  // const head = model.head.getHeadElement()
   // const components: ComponentData[] = getElements()
   //   .filter((el) => el.type === ElementType.COMPONENT)
-  //   .map((el) => el.data.component);
+  //   .map((el) => el.data.component)
 
   // // remove unused dependencies (scripts and style sheets)
-  // const elements = Array.from(model.head.getHeadElement().querySelectorAll('[data-dependency]'));
-  // const unused = prodotypeComponent.getUnusedDependencies(elements, components);
+  // const elements = Array.from(model.head.getHeadElement().querySelectorAll('[data-dependency]'))
+  // const unused = prodotypeComponent.getUnusedDependencies(elements, components)
   // for (const el of unused) {
-  //   head.removeChild(el);
+  //   head.removeChild(el)
   // }
 
   // // add missing dependencies (scripts and style sheets)
-  // const missing = prodotypeComponent.getDependencies(components);
+  // const missing = prodotypeComponent.getDependencies(components)
   // for (const el of missing) {
-  //   el.setAttribute('data-dependency', '');
-  //   head.appendChild(el);
+  //   el.setAttribute('data-dependency', '')
+  //   head.appendChild(el)
   // }
 }
 
@@ -237,7 +240,7 @@ export function updateDepenedencies(type: string) {
 export function resetComponentEditor() {
   if (getProdotypeComponent()) {
     componentEditorElement.classList.add('hide-panel')
-    getProdotypeComponent().edit();
+    getProdotypeComponent().edit()
   }
 }
 
@@ -252,7 +255,7 @@ export function openComponentEditor(options: {
   events?: any
 }) {
   if (getProdotypeComponent()) {
-    getProdotypeComponent().edit(options.data, options.dataSources, options.templateName, options.events);
+    getProdotypeComponent().edit(options.data, options.dataSources, options.templateName, options.events)
     componentEditorElement.classList.remove('hide-panel')
   }
 }
@@ -268,7 +271,7 @@ export function openStyleEditor(options: {
   events?: any
 }) {
   if (getProdotypeStyle()) {
-    getProdotypeStyle().edit(options.data, options.dataSources, options.templateName, options.events);
+    getProdotypeStyle().edit(options.data, options.dataSources, options.templateName, options.events)
   }
 }
 
@@ -279,14 +282,14 @@ export function openStyleEditor(options: {
  * @return an HTML fragment with the editable children in it
  */
 export function saveEditableChildren(parentElement: HTMLElement): DocumentFragment {
-  const fragment = document.createDocumentFragment();
+  const fragment = document.createDocumentFragment()
   Array.from(parentElement.children)
   .forEach((el) => {
     if (el.classList.contains('editable-style')) {
-      fragment.appendChild(el.cloneNode(true));
+      fragment.appendChild(el.cloneNode(true))
     }
-  });
-  return fragment;
+  })
+  return fragment
 }
 
 /**
@@ -295,9 +298,9 @@ export function saveEditableChildren(parentElement: HTMLElement): DocumentFragme
  */
 export function addMediaQueryIfMobileOnly(html: string, visibility: Visibility) {
   if (visibility === Constants.STYLE_VISIBILITY[0]) {
-    return html;
+    return html
   }
-  return addMediaQuery(html);
+  return addMediaQuery(html)
 }
 
 /**
@@ -307,9 +310,9 @@ export function addMediaQueryIfMobileOnly(html: string, visibility: Visibility) 
 export function setStyleToDom(doc: HTMLDocument, className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, data: PseudoClassData, displayName: string) {
 
   // // expose the class name and pseudo class to the prodotype template
-  const newData = data || {};
-  newData.className = className;
-  newData.pseudoClass = pseudoClass;
+  const newData = data || {}
+  newData.className = className
+  newData.pseudoClass = pseudoClass
 
   // store the component's data for later edition
   const styleData = (getSite().styles[className] || {
@@ -317,26 +320,26 @@ export function setStyleToDom(doc: HTMLDocument, className: StyleName, pseudoCla
     templateName: 'text',
     displayName,
     styles: {},
-  } as StyleData);
+  } as StyleData)
   if (!styleData.styles[visibility]) {
-    styleData.styles[visibility] = {};
+    styleData.styles[visibility] = {}
   }
-  styleData.styles[visibility][pseudoClass] = newData;
+  styleData.styles[visibility][pseudoClass] = newData
 
-  const head = doc.head;
+  const head = doc.head
 
   // update the head style with the new template
-  let elStyle = head.querySelector(`[data-style-id="${className}"]`);
+  let elStyle = head.querySelector(`[data-style-id="${className}"]`)
   if (!elStyle) {
-    elStyle = doc.createElement('style');
-    elStyle.className = Constants.STYLE_CLASS_NAME;
-    elStyle.setAttribute('type', 'text/css');
-    elStyle.setAttribute('data-style-id', className);
-    head.appendChild(elStyle);
+    elStyle = doc.createElement('style')
+    elStyle.className = Constants.STYLE_CLASS_NAME
+    elStyle.setAttribute('type', 'text/css')
+    elStyle.setAttribute('data-style-id', className)
+    head.appendChild(elStyle)
   }
 
   // render all pseudo classes in all visibility object
-  const pseudoClassData = getPseudoClassData(styleData);
+  const pseudoClassData = getPseudoClassData(styleData)
   if (pseudoClassData.length > 0) {
     Promise.all(pseudoClassData.map((obj) => {
           return renderWithProdotype(getProdotypeStyle(), {
@@ -344,10 +347,10 @@ export function setStyleToDom(doc: HTMLDocument, className: StyleName, pseudoCla
             data: obj.data,
             dataSources: getSite().dataSources,
           })
-          .then((html) => addMediaQueryIfMobileOnly(html, obj.visibility));
+          .then((html) => addMediaQueryIfMobileOnly(html, obj.visibility))
         }) as Promise<string>[])
         .then((htmlStrings) => {
-          elStyle.innerHTML = htmlStrings.join('');
-        });
+          elStyle.innerHTML = htmlStrings.join('')
+        })
   }
 }

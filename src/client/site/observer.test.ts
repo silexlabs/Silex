@@ -1,7 +1,7 @@
 import { SITE1, mockUiElements } from '../../../__tests__/data-set';
-const iframe = mockUiElements()
+const { siteIFrame } = mockUiElements()
 
-import { initializeSite_, initializeSite } from './store'
+import { initializeSite_ } from './store'
 import { onChangeSite } from './observer'
 import { createStore } from 'redux'
 import { Store } from 'redux'
@@ -60,7 +60,7 @@ const styleString = `
 `
 
 beforeEach(() => {
-  iframe.contentDocument.write('<html />')
+  siteIFrame.contentDocument.write('<html />')
   initializeSite_(store, SITE1)
 })
 
@@ -68,9 +68,9 @@ beforeEach(() => {
 // dependencies
 
 test('add prodotype dependencies', () => {
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(0)
   onChangeSite(null, SITE1)
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
 })
 
 test('add 0 prodotype dependencies', () => {
@@ -79,56 +79,56 @@ test('add 0 prodotype dependencies', () => {
     ...SITE1,
     prodotypeDependencies: {},
   })
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(0)
 
   // already has all dependencies
-  iframe.contentDocument.head.innerHTML = dependenciesString
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
+  siteIFrame.contentDocument.head.innerHTML = dependenciesString
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
   onChangeSite(null, SITE1)
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
 })
 
 test('remove 2 prodotype dependencies', () => {
-  iframe.contentDocument.head.innerHTML = dependenciesString
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
+  siteIFrame.contentDocument.head.innerHTML = dependenciesString
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(2)
   onChangeSite(null, {
     ...SITE1,
     prodotypeDependencies: {},
   })
-  expect(iframe.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-dependency]')).toHaveLength(0)
 })
 
 // //////////////////////////
 // styles
 
 test('add a style', () => {
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
   onChangeSite(null, SITE1)
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
 })
 
 test('add 0 styles', () => {
   // there was no styles and there will be no styles
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
   onChangeSite(null, {
     ...SITE1,
     styles: {},
   })
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
   // already has the styles
-  iframe.contentDocument.head.innerHTML = styleString
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
+  siteIFrame.contentDocument.head.innerHTML = styleString
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
   onChangeSite(null, SITE1)
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
 })
 
 
 test('remove style', () => {
-  iframe.contentDocument.head.innerHTML = styleString
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
+  siteIFrame.contentDocument.head.innerHTML = styleString
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(1)
   onChangeSite(null, {
     ...SITE1,
     styles: {},
   })
-  expect(iframe.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
+  expect(siteIFrame.contentDocument.head.querySelectorAll('[data-style-id]')).toHaveLength(0)
 })

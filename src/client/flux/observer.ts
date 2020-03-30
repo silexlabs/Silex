@@ -29,19 +29,24 @@ function notWhenStopped<A, B>(cbk: (...args: A[]) => B): ((...args: A[]) => B) {
   }
 }
 
-// subscribe the observer to the model
-subscribeElements(onCrudChange<ElementData>({
-  onAdd: notWhenStopped(onAddElements(getSiteWindow())),
-  onDelete: notWhenStopped(onDeleteElements(getSiteWindow())),
-  onUpdate: notWhenStopped(onUpdateElements(getSiteWindow())),
-}))
+export function initObservers() {
+  // subscribe the observer to the model
+  subscribeElements(onCrudChange<ElementData>({
+    onAdd: notWhenStopped(onAddElements(getSiteWindow())),
+    onDelete: notWhenStopped(onDeleteElements(getSiteWindow())),
+    onUpdate: notWhenStopped(onUpdateElements(getSiteWindow())),
+  }))
 
-subscribePages(onCrudChange<PageData>({
-  onAdd: notWhenStopped(onAddPages),
-  onDelete: notWhenStopped(onDeletePages),
-  onUpdate: notWhenStopped(onUpdatePages),
-}))
+  subscribePages(onCrudChange<PageData>({
+    onAdd: notWhenStopped(onAddPages),
+    onDelete: notWhenStopped(onDeletePages),
+    onUpdate: notWhenStopped(onUpdatePages),
+  }))
 
-subscribeSite(notWhenStopped(onChangeSite))
+  subscribeSite(notWhenStopped(onChangeSite))
 
-subscribeUi(notWhenStopped(onChangeUi))
+  subscribeUi(notWhenStopped(onChangeUi))
+
+  startObservers()
+}
+

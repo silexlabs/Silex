@@ -32,7 +32,7 @@ const ELEMENT_ID_PREFIX = 'silex-id-'
 /**
  * constant for default size of an element
  */
-const INITIAL_ELEMENT_SIZE = 100
+export const INITIAL_ELEMENT_SIZE = 100
 
 export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: ElementId, type: ElementType, isSectionContent: boolean, isBody: boolean}): ElementData {
   return {
@@ -115,50 +115,6 @@ export function getNewId() {
 }
 
 /**
- * clone elements
- * reset the ID of the element and its children
- * the elements need to be in the store already (and dom)
- */
-export function cloneElement(element: ElementData, parentId: ElementId = null): ElementData[] {
-  const newId = getNewId()
-  const res: ElementData[] = [{
-    ...JSON.parse(JSON.stringify(element)),
-    id: newId,
-    parent: parentId,
-    selected: parentId === null,
-  }]
-  res[0].children
-    .forEach((id) => res.push(...cloneElement(getElementById(id), newId)))
-
-  return res
-}
-
-// FIXME: flat seems to be missing on array in UT
-export const flat = (arr) => arr.reduce((acc, val) => acc.concat(val), []);
-
-/**
- * duplicate elements for later paste or for duplicate
- * returns a is a flat array of elements with new IDs and updated children list
- * only root elements are selected
- * @returns [allElements, rootElements]
- */
-export function cloneElements(selection: ElementData[]): ElementData[][] {
-  const body = getBody()
-  const all = flat(selection
-    // do not allow the body to be cloned
-    .filter((el) => el !== body)
-    // take the section instead of section container
-    .map((el) => noSectionContent(el))
-    // do not clone elements twice:
-    // remove elements which have a parent who is already being cloned
-    // remove elements which are in the list multiple times due to noSectionContent
-    .filter((el) => !selection.includes(getParent(el)) && 1 === selection.filter((e) => e === el).length)
-    .map((el) => cloneElement(el)))
-
-  return [all, all.filter((el) => el.selected)]
-}
-
-/**
  * get a given style for an element
  * to get the mobile style we may return the desktop style
  * because on mobile we apply the desktop style unless overriden for mobile only
@@ -204,7 +160,12 @@ export function getElementSize(win: Window, element: ElementData, mobile: boolea
  * compute new element data
  * center the element in the container
  */
-export function center(element: Size, parent: Size, opt_offset: number = 0): Point {
+export function center({element, parent, win, opt_offset = 0}: {
+  win: Window,
+  element: ElementData,
+  parent: ElementData,
+  opt_offset?: number,
+}): Point {
   // const doc = win.document
   // const elementDom = getDomElement(doc, element)
   // const parentDom = getDomElement(doc, parent)
@@ -233,9 +194,11 @@ export function center(element: Size, parent: Size, opt_offset: number = 0): Poi
   //     } : element.style.mobile,
   //   },
   // }
+  const parentSize = getElementSize(win, parent, false)
+  const elementSize = getElementSize(win, element, false)
 
-  const posX = Math.round((parent.width / 2) - (element.width / 2))
-  const posY = Math.round((parent.height / 2) - (element.height / 2))
+  const posX = Math.round((parentSize.width / 2) - (elementSize.width / 2))
+  const posY = Math.round((parentSize.height / 2) - (elementSize.height / 2))
   return {
     top: opt_offset + posY,
     left: opt_offset + posX,

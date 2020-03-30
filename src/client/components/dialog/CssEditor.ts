@@ -23,12 +23,11 @@ import { getUiElements } from '../../ui/UiElements'
 ///////////////////
 // API for the outside world
 let instance: CssEditor
-function initCssEditor() {
+export function initCssEditor() {
   instance = instance || new CssEditor(getUiElements().cssEditor)
   return instance
 }
 export function openCssEditor() {
-  initCssEditor()
   return instance.open()
 }
 

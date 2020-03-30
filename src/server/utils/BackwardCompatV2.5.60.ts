@@ -321,7 +321,7 @@ function getDependenciesFromDom(properties: DomData): {[key: string]: ProdotypeD
   }))
   .map(({compName, templateName}) => ({
     compName,
-    dependencies: componentDef[templateName].dependencies,
+    dependencies: componentDef[templateName] ? componentDef[templateName].dependencies : [], // if the component is not found, then defaults to no dependencies
   }))
   .filter(({dependencies}) => !!dependencies)
   .forEach(({compName, dependencies}) => {

@@ -78,7 +78,7 @@ export const siteReducer = (state: SiteData = {
 export const uiReducer = (state: UiData = {
   loading: LOADING.SILEX,
   mobileEditor: false,
-},                        action: any) => {
+}, action: any) => {
   switch (action.type) {
     case UiAction.INITIALIZE: return {
       ...action.data,

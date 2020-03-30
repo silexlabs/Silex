@@ -1,39 +1,20 @@
 import { ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_TEXT } from '../../../__tests__/data-set';
 import { getSite, updateSite } from '../site/store';
 import { initializeElements } from './store';
-import { center, cloneElement, cloneElements, flat, getElementSize, getElementStyle } from './utils';
+import { center, getElementSize, getElementStyle } from './utils';
 
 beforeEach(() => {
   initializeElements([ELEM_TEXT, ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT])
 })
 
-test('flat', () => {
-  expect(flat([['a', 'b'], 'c'])).toEqual(['a', 'b', 'c'])
-  expect(flat(['a', ['b', 'c']])).toEqual(['a', 'b', 'c'])
-  expect(flat([['a', 'b', 'c']])).toEqual(['a', 'b', 'c'])
-  expect(flat(['a', 'b', 'c'])).toEqual(['a', 'b', 'c'])
-})
-
-test('cloneElement', () => {
-  const cloned = cloneElement(ELEM_TEXT)
-  expect(cloned).not.toBeNull()
-  expect(cloned[0].id).not.toBe(ELEM_TEXT.id)
-  expect(cloned[0].id).not.toBe(ELEM_TEXT.id)
-})
-
-test('cloneElements', () => {
-  const [all, root] = cloneElements([ELEM_TEXT])
-  expect(all).not.toBeNull()
-  expect(all).toHaveLength(1)
-  expect(all).toEqual(root)
-  expect(all[0].id).not.toBe(ELEM_TEXT.id)
-  expect(all[0].id).not.toBe(ELEM_TEXT.id)
-})
-
 const getSize = (el) => ({width: parseInt(el.style.desktop.width), height: parseInt(el.style.desktop.height)})
 
 test('center in container', () => {
-  expect(center(getSize(ELEM_TEXT), getSize(ELEM_CONTAINER))).toEqual({
+  expect(center({
+    element: ELEM_TEXT,
+    parent: ELEM_CONTAINER,
+    win: window,
+  })).toEqual({
     top: 450,
     left: 450,
   })

@@ -1,15 +1,28 @@
 import { ElementData, ElementId } from './types';
-import { createDomElement, getDomElement, hideOnDesktop, hideOnMobile, removeElement, reorderElements, setLink, showOnDesktop, showOnMobile, writeStyleToDom } from './dom';
+import { StateChange } from '../flux/crud-store';
+import {
+  createDomElement,
+  executeScripts,
+  getContentNode,
+  getDomElement,
+  hideOnDesktop,
+  hideOnMobile,
+  removeElement,
+  reorderElements,
+  setInnerHtml,
+  setLink,
+  showOnDesktop,
+  showOnMobile,
+  writeStyleToDom
+} from './dom';
+import { getData } from '../flux/store';
+import { getElementById } from './filters';
+import { getPages } from '../page/store';
+import { getUi } from '../ui/store';
+import { noSectionContent, getParent } from '../element/filters';
 import { setPages } from '../page/dom';
 import { setWebsiteWidth } from '../site/dom';
 import { writeDataToDom } from '../flux/dom';
-import { StateChange } from '../flux/crud-store';
-import { executeScripts, getContentNode, setInnerHtml } from './dom';
-import { noSectionContent, getParent } from '../element/filters';
-import { getPages } from '../page/store';
-import { getElements } from './store';
-import { getUi } from '../ui/store';
-import { getData } from '../flux/store';
 
 export const onAddElements = (win: Window) => (elements: ElementData[]) => {
   const doc = win.document
@@ -75,8 +88,11 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
     }
     if (to.children !== from.children) {
       reorderElements(domEl, to.children
-        .map((id: ElementId) => getDomElement(doc, getElements().find((el) => el.id === id)))
-        .filter((el) => !!el)) // FIXME: what should we do while the child is not yet added
+        .map((id: ElementId) => getElementById(id))
+        .filter((el: ElementData) => !!el) // filter out elements which have their ID in children but can not be found, which should never happen?
+        .map((el: ElementData) => getDomElement(doc, el))
+        .filter((el: HTMLElement) => !!el) //  filter out elements which have no DOM elements, i.e. recently added, should never happen??
+      )
     }
     if (to.link !== from.link) {
       setLink(domEl, to.link)

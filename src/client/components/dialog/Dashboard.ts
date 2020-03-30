@@ -359,7 +359,6 @@ class Dashboard {
             li.appendChild(icon);
             const name = document.createElement('span');
             name.setAttribute('data-file-info', JSON.stringify(blob));
-            console.log('recent files', recentFiles, blob)
             name.innerHTML = blob.folder + '<strong>' + (blob.name.startsWith('/') ? '' : '/') + blob.name + '</strong>/';
 
             // the '/' is at the end because the css are "ltr" in order to have

@@ -22,7 +22,6 @@ export interface CrudState {
 export function withCrudReducer<State extends CrudState>(options: { actionEnum: any, reducer: (state: State[], action: any) => any, label: string }) {
   const { actionEnum, reducer } = options
   return (state: State[] = [], action: any) => {
-    // console.trace('CRUD reducer', options.label, {state, action})
     switch (action.type) {
       case actionEnum.INITIALIZE: return action.items.slice()
       case actionEnum.CREATE: return action.items.length ? reducer(state.concat(action.items), action) : state
@@ -69,3 +68,4 @@ export function onCrudChange<T extends CrudState>({ onAdd, onDelete, onUpdate }:
     }
   }
 }
+

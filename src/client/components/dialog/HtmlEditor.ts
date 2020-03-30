@@ -27,12 +27,11 @@ import { getUiElements } from '../../ui/UiElements'
 ///////////////////
 // API for the outside world
 let instance: HtmlEditor
-function initHtmlEditor() {
+export function initHtmlEditor() {
   instance = instance || new HtmlEditor(getUiElements().htmlEditor)
   return instance
 }
 export function openHtmlEditor() {
-  initHtmlEditor()
   return instance.open()
 }
 
@@ -90,8 +89,8 @@ class HtmlEditor extends CodeEditorBase {
   redraw() {
     const headTag = getSite().headUser
     this.forSelection({
-      htmlBox: (el) => el.innerHtml !== this.getValue() ? this.setValue(el.innerHtml) : null,
-      body: () => headTag !== this.getValue() ? this.setValue(headTag) : null,
+      htmlBox: (el) => this.setValue(el.innerHtml),
+      body: () => this.setValue(headTag),
       error: () => this.setError('-select an HTML box-'),
     })
   }

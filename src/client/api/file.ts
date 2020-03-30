@@ -1,23 +1,26 @@
-import { Config } from '../ClientConfig'
-import { openDashboard } from '../components/dialog/Dashboard'
-import { FileExplorer } from '../components/dialog/FileExplorer'
-import { closePublishDialog, openPublishDialog, startPublish } from '../components/dialog/PublishDialog'
-import { openSettingsDialog } from '../components/dialog/SettingsDialog'
-import { getHtml, getSiteDocument, setHtml } from '../components/SiteFrame'
-import { setPreviewWindowLocation } from '../components/Workspace'
-import { initializeData } from '../flux/dispatchers'
-import { startObservers, stopObservers } from '../flux/observer'
-import { getData } from '../flux/store'
-import { PersistantData } from '../flux/types'
 import { CloudStorage } from '../io/CloudStorage'
-import { addToLatestFiles } from '../io/latest-files'
-import { SilexTasks } from '../io/SilexTasks'
-import { getSite, updateSite } from '../site/store'
-import { Provider, PublicationOptions } from '../site/types'
+import { Config } from '../ClientConfig'
+import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../third-party/types'
-import { SilexNotification } from '../utils/Notification'
-import { updateUi, getUi } from '../ui/store'
 import { LOADING } from '../ui/types'
+import { PersistantData } from '../flux/types'
+import { Provider, PublicationOptions } from '../site/types'
+import { SilexNotification } from '../utils/Notification'
+import { SilexTasks } from '../io/SilexTasks'
+import { addToLatestFiles } from '../io/latest-files'
+import { closePublishDialog, openPublishDialog, startPublish } from '../components/dialog/PublishDialog'
+import { getData } from '../flux/store'
+import { getHtml, getSiteDocument, setHtml } from '../components/SiteFrame'
+import { getSite, updateSite } from '../site/store'
+import { initCssEditor } from '../components/dialog/CssEditor';
+import { initHtmlEditor } from '../components/dialog/HtmlEditor';
+import { initJsEditor } from '../components/dialog/JsEditor';
+import { initializeData } from '../flux/dispatchers'
+import { openDashboard } from '../components/dialog/Dashboard'
+import { openSettingsDialog } from '../components/dialog/SettingsDialog'
+import { setPreviewWindowLocation } from '../components/Workspace'
+import { startObservers, stopObservers } from '../flux/observer'
+import { updateUi, getUi } from '../ui/store'
 
 ///////////////////////////////////////////////////////////////////
 // Read / write website HTML file
@@ -123,10 +126,10 @@ function saveAs(file: FileInfo, rawHtml: string, data: PersistantData, cbk: () =
 /**
  * load a website from the recent files list
  */
-export function openRecent(fileInfo, cbk) {
+export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
   // a recent file was selected
   loadFromUserFiles(
-      (fileInfo as FileInfo), (rawHtml, data: PersistantData) => cbk(),
+      fileInfo, (rawHtml, data: PersistantData) => cbk && cbk(),
       (err, message, code) => {
         console.error('Could not open recent file', err, message, code);
         // make silex visible
@@ -166,7 +169,7 @@ export function openRecent(fileInfo, cbk) {
 export function openDashboardToLoadAWebsite(cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
   // tracker.trackAction('controller-events', 'request', 'file.new', 0);
   openDashboard({
-    openFileInfo: (fileInfo) => {
+    openFileInfo: (fileInfo: FileInfo) => {
       if (!fileInfo && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
@@ -479,23 +482,30 @@ function doLoadWebsite({site, path, cbk, errCbk}: {
     ...getUi(),
     loading: LOADING.WEBSITE,
   })
-  CloudStorage.getInstance().loadWebsite(
-      path, (rawHtml: string, data: PersistantData) => {
-        setHtml(rawHtml, () => {
-          initializeData(data)
-          stopObservers()
-          updateSite({
-            ...getSite(),
-            ...site,
-          })
-          startObservers()
-          updateUi({
-            ...getUi(),
-            loading: LOADING.NONE,
-          })
-          if (cbk) {
-            cbk(rawHtml, data);
-          }
-        })
-      }, errCbk);
+  CloudStorage.getInstance().loadWebsite(path, (rawHtml: string, data: PersistantData) => {
+    // display the site HTML in the SiteIframe component
+    setHtml(rawHtml, () => {
+      // code editors need to start listening to store
+      // was done in the Workspace component but the later the better
+      initCssEditor()
+      initJsEditor()
+      initHtmlEditor()
+
+      // now update the store
+      initializeData(data)
+      stopObservers()
+      updateSite({
+        ...getSite(),
+        ...site,
+      })
+      startObservers()
+      updateUi({
+        ...getUi(),
+        loading: LOADING.NONE,
+      })
+      if (cbk) {
+        cbk(rawHtml, data);
+      }
+    })
+  }, errCbk);
 }

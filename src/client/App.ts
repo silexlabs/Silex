@@ -20,14 +20,15 @@
  */
 
 import { detect } from 'detect-browser'
-import { openDashboardToLoadAWebsite } from './api/file'
+
 import { Config } from './ClientConfig'
+import { LOADING } from './ui/types'
+import { SilexNotification } from './utils/Notification'
 import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
-import { startObservers } from './flux/observer'
 import { getUi, updateUi } from './ui/store'
 import { getUiElements } from './ui/UiElements'
-import { SilexNotification } from './utils/Notification'
-import { LOADING } from './ui/types'
+import { initObservers } from './flux/observer';
+import { openDashboardToLoadAWebsite } from './api/file'
 
 /**
  * Defines the entry point of Silex client application
@@ -68,7 +69,7 @@ export class App {
     createWorkspace(getUiElements().workspace)
 
     // start observers
-    startObservers();
+    initObservers();
 
     // the build type
     if (!Config.debug.debugMode) {
