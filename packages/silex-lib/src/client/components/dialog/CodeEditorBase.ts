@@ -27,6 +27,7 @@ declare namespace monaco.editor {
 
 }
 // tslint:enable
+
 import { ModalDialog } from '../ModalDialog';
 import { getUiElements } from '../../ui/UiElements'
 import { propSplitter } from '../Workspace'

@@ -41,11 +41,15 @@ class BreadCrumbs {
    * the selection has changed
    */
   private redraw() {
-
     // get the common ancesters to all selected elements
     function getParents(element: ElementData): ElementData[] {
       const parent = getParent(element)
       return parent ? (getParent(parent) ? [parent].concat(getParents(parent)) : [parent]) : []
+    }
+
+    // empty current bread crumbs
+    while (this.element.childNodes.length) {
+      this.removeCrumb((this.element.childNodes[0] as HTMLElement));
     }
 
     // find the selected element which is the "deepest" in the dom, i.e. has
@@ -76,11 +80,6 @@ class BreadCrumbs {
         ancestors.unshift(deepest.el);
       }
 
-      // empty current bread crumbs
-      while (this.element.childNodes.length) {
-        this.removeCrumb((this.element.childNodes[0] as HTMLElement));
-      }
-
       // create a button for each ancester
       ancestors
         .reverse()
@@ -93,6 +92,9 @@ class BreadCrumbs {
    */
   private addCrumb(element: ElementData) {
     const domEl = getDomElement(getSiteDocument(), element)
+    console.log('addCrumb', element, domEl)
+    if(!domEl) return // element is in the model but its parent has not been updated yet, so it is not yet in the dom
+
     const crumb = document.createElement('DIV');
     const cssClasses = element.classList.length ? '.' + element.classList.join('.') : '';
 

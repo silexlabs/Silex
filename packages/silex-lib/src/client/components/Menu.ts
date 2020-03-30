@@ -16,30 +16,33 @@
  *
  */
 
-import { Constants } from '../../constants'
 import { Config } from '../ClientConfig'
-import { addElement, moveElements, selectBody } from '../element/dispatchers'
-import { getSelectedElements } from '../element/filters'
-import { updateElements } from '../element/store'
+import { Constants } from '../../constants'
 import { ElementType, DomDirection } from '../element/types'
-import { getCreationDropZone } from '../element/utils'
-import { getUi, updateUi } from '../ui/store'
-import { Keyboard, Shortcut } from '../utils/Keyboard'
-import { getUiElements } from '../ui/UiElements'
-import { prodotypeReady, getComponentsDef } from '../element/component'
-import { toggleSubMenu, preview, previewResponsize, closeAllSubMenu } from '../api/view'
-import { openCssEditor } from './dialog/CssEditor'
-import { openJsEditor } from './dialog/JsEditor'
-import { openHtmlEditor, openHtmlHeadEditor } from './dialog/HtmlEditor'
-import { openDashboardToLoadAWebsite, save, publish, openFile } from '../api/file'
-import { openSettingsDialog } from './dialog/SettingsDialog'
-import { getSite } from '../site/store'
 import { FileExplorer } from './dialog/FileExplorer'
+import { Keyboard, Shortcut } from '../utils/Keyboard'
+import {
+  addElementCentered,
+  moveElements,
+  selectBody
+} from '../element/dispatchers';
 import { browseAndAddImage } from '../api/propoerties'
-import { removeElements, moveToBottom, moveUp, moveDown, moveToTop } from '../api/element'
 import { copySelection, pasteClipBoard, duplicateSelection } from '../api/copy'
+import { getCreationDropZone } from '../element/utils';
+import { getSelectedElements } from '../element/filters'
+import { getSite } from '../site/store'
+import { getSiteIFrame } from './SiteFrame';
+import { getUi, updateUi } from '../ui/store'
+import { getUiElements } from '../ui/UiElements'
+import { openCssEditor } from './dialog/CssEditor'
+import { openDashboardToLoadAWebsite, save, publish, openFile } from '../api/file'
+import { openHtmlHeadEditor } from './dialog/HtmlEditor';
+import { openJsEditor } from './dialog/JsEditor'
+import { openSettingsDialog } from './dialog/SettingsDialog'
+import { prodotypeReady, getComponentsDef } from '../element/component'
+import { removeElements, moveToBottom, moveUp, moveDown, moveToTop } from '../api/element'
 import { removePage, editPage, createPage } from '../api/page'
-import { getSiteIFrame } from './SiteFrame'
+import { toggleSubMenu, preview, previewResponsize, closeAllSubMenu } from '../api/view'
 
 ///////////////////
 // API for the outside world
@@ -173,9 +176,9 @@ function handleSectionContent(direction: DomDirection) {
 /**
  * handles click events
  * calls onStatus to notify the controller
- * @param opt_componentName the component type if it is a component
+ * @param componentName the component type if it is a component
  */
-function onMenuEvent(type: string, opt_componentName?: string) {
+function onMenuEvent(type: string, componentName?: string) {
   switch (type) {
     case 'show.pages':
       toggleSubMenu('page-tool-visible');
@@ -254,28 +257,23 @@ function onMenuEvent(type: string, opt_componentName?: string) {
       createPage();
       break;
     case 'insert.text': {
-      const parent = getCreationDropZone(false, getSiteIFrame());
-      addElement(ElementType.TEXT, parent, opt_componentName);
+      addElementCentered(ElementType.TEXT, componentName)
       break;
     }
     case 'insert.section': {
-      const parent = getCreationDropZone(true, getSiteIFrame());
-      addElement(ElementType.SECTION, parent, opt_componentName);
+      addElementCentered(ElementType.SECTION, componentName)
       break;
     }
     case 'insert.html': {
-      const parent = getCreationDropZone(false, getSiteIFrame());
-      addElement(ElementType.HTML, parent, opt_componentName);
+      addElementCentered(ElementType.HTML, componentName)
       break;
     }
     case 'insert.image': {
-      const parent = getCreationDropZone(false, getSiteIFrame());
-      browseAndAddImage(parent);
+      browseAndAddImage(componentName);
       break;
     }
     case 'insert.container': {
-      const parent = getCreationDropZone(false, getSiteIFrame());
-      addElement(ElementType.CONTAINER, parent, opt_componentName);
+      addElementCentered(ElementType.CONTAINER, componentName)
       break;
     }
     case 'edit.delete.selection':

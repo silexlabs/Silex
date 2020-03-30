@@ -1,7 +1,13 @@
 import { PAGE1, PAGE2, PAGE3 } from '../../../__tests__/data-set';
-import { onCrudChange } from '../flux/crud-store';
-import { updatePages, openPage, initializePages, subscribePages, movePage } from '../page/store';
 import { PageData } from '../page/types';
+import {
+  initializePages,
+  movePage,
+  openPage,
+  subscribePages,
+  updatePages
+} from '../page/store';
+import { onCrudChange } from '../flux/crud-store';
 
 beforeEach(() => {
   initializePages([])
@@ -89,6 +95,8 @@ test('Subscribe CRUD', () => {
   expect(test.onDeletePages).toHaveBeenCalledTimes(1)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(1)
 
+  initializePages(PAGES_2)
+  expect(test.onUpdatePages).toHaveBeenCalledTimes(2)
   updatePages([{
     from: PAGE1,
     to: {
@@ -96,7 +104,7 @@ test('Subscribe CRUD', () => {
       id: 'newId',
     },
   }])
-  expect(test.onUpdatePages).toHaveBeenCalledTimes(2)
+  expect(test.onUpdatePages).toHaveBeenCalledTimes(3)
   expect(test.onAddPages).toHaveBeenCalledTimes(1)
   expect(test.onDeletePages).toHaveBeenCalledTimes(1)
 })

@@ -1,25 +1,22 @@
-import { ElementData, ElementType } from '../element/types'
-import { addElement, selectBody } from '../element/dispatchers'
-import { getDomElement } from '../element/dom'
-import { deleteElements } from '../element/store'
+import { ElementType } from '../element/types';
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { SilexNotification } from '../utils/Notification'
-import { setImageUrl } from '../element/dom'
+import { addElementCentered } from '../element/dispatchers';
+import { deleteElements } from '../element/store'
+import { getDomElement, setImageUrl } from '../element/dom';
 import { getSiteDocument } from '../components/SiteFrame'
 
 /**
  * open file explorer, choose an image and add it to the stage
  */
-export function browseAndAddImage(parent: ElementData) {
+export function browseAndAddImage(componentName: string) {
   // this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
   FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
   .then((fileInfo) => {
     if (fileInfo) {
-      // undo checkpoint
-      //   //  this.undoCheckPoint();
 
       // create the element
-      const [imgData, parentData] = addElement(ElementType.IMAGE, parent);
+      const [imgData] = addElementCentered(ElementType.IMAGE, componentName);
       const img = getDomElement(getSiteDocument(), imgData);
 
       // load the image

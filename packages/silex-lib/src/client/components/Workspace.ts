@@ -10,17 +10,17 @@
  */
 
 import { SilexNotification } from '../utils/Notification'
-import { Url } from '../utils/Url'
-import { getUiElements } from '../ui/UiElements'
 import { Splitter } from './Splitter'
-import { openRecent } from '../api/file'
-import { isDirty } from '../api/undo'
-import { initMenu } from './Menu'
-import { initContextMenu } from './ContextMenu'
+import { Url } from '../utils/Url'
+import { getSiteIFrame } from './SiteFrame'
+import { getUiElements } from '../ui/UiElements'
 import { initBreadCrumbs } from './BreadCrumbs'
+import { initContextMenu } from './ContextMenu'
+import { initMenu } from './Menu'
 import { initPageTool } from './PageTool'
 import { initPropertyTool } from './PropertyTool'
-import { getSiteIFrame } from './SiteFrame'
+import { isDirty } from '../api/undo'
+import { openRecent } from '../api/file'
 
 /**
  * @fileoverview Silex workspace is in charge of positionning
@@ -46,6 +46,12 @@ export function createWorkspace(element: HTMLElement) {
   initPageTool()
   initPropertyTool()
 
+  // // code editors need to start listening to store
+  // // was done in the Workspace component but the later the better
+  // initCssEditor()
+  // initJsEditor()
+  // initHtmlEditor()
+
   // add splitters
   const uiElements = getUiElements()
   propSplitter = new Splitter(uiElements.verticalSplitter, () => resizeWorkspace(element));
@@ -61,12 +67,16 @@ export async function initSingleSiteMode() {
     document.body.classList.add('single-site-mode');
     // open the website from url
     const params = Url.getUrlParams();
-    if (params.path && params.service) {
+    const { path, service }: { path: string, service: string } = params;
+    if (path && service) {
       openRecent({
-        path: params.path,
-        service: params.service,
-        absPath: `/ce/${params.service}/get${params.path}`,
-        url: `${Url.getRootUrl()}/ce/${params.service}/get${params.path}`,
+        path,
+        service,
+        absPath: `/ce/${service}/get${path}`,
+        name: path.split('/').pop(),
+        mime: '',
+        isDir: false,
+        // url: `${Url.getRootUrl()}/ce/${params.service}/get${params.path}`,
       }, () => {
         resolve();
       });

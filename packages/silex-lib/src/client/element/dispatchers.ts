@@ -9,18 +9,44 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { getBody, getParent, noSectionContent, getSelectedElements, getFirstPagedParent, getElementById } from './filters'
-import { updateElements, createElements, getElements } from './store';
-import { ElementData, ElementType, Link, DomDirection } from './types';
-import { Style } from '../utils/Style'
-import { getUi } from '../ui/store'
-import { center, getElementSize, getEmptyElementData, getNewId } from './utils'
-import { getCurrentPage } from '../page/filters'
 import { Constants } from '../../constants'
-import { PageData } from '../page/types'
-import { getPages } from '../page/store'
 import { CssRule } from '../site/types'
-import { getSiteWindow } from '../components/SiteFrame'
+import {
+  DomDirection,
+  ElementData,
+  ElementType,
+  Link,
+  StyleObject
+} from './types';
+import {
+  INITIAL_ELEMENT_SIZE,
+  getCreationDropZone,
+  getEmptyElementData,
+  getNewId
+} from './utils';
+import { PageData } from '../page/types'
+import { Style } from '../utils/Style'
+import {
+  createElements,
+  deleteElements,
+  getElements,
+  updateElements
+} from './store';
+import {
+  getBody,
+  getChildrenRecursive,
+  getElementById,
+  getFirstPagedParent,
+  getParent,
+  getSelectedElements,
+  noSectionContent
+} from './filters';
+import { getCurrentPage } from '../page/filters'
+import { getDomElement } from './dom';
+import { getPages } from '../page/store'
+import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame';
+import { getStage } from '../components/StageWrapper';
+import { getUi } from '../ui/store'
 
 /**
  * @fileoverview helpers to dispatch common actions on the store
@@ -31,22 +57,27 @@ import { getSiteWindow } from '../components/SiteFrame'
  * select the body and only the body
  */
 export const selectBody = () => {
-  // empty selection
-  const body = getBody()
-  if (body && body.selected === false) {
-    updateElements(getSelectedElements()
-      // unselect all but the body
-      .filter((el) => el !== body)
-      .map((el) => ({ from: el, to: { ...el, selected: false }}))
-      // select the body
-      .concat({
-        from: body,
+  selectElements([getBody()])
+}
+
+/**
+ * select the body and only the body
+ */
+export const selectElements = (elements: ElementData[]) => {
+  updateElements(getSelectedElements()
+    // unselect all but the one to select
+    .filter((el) => !elements.includes(el))
+    .map((el) => ({ from: el, to: { ...el, selected: false }}))
+    // select the once to select
+    .concat(elements
+      .map((el) => ({
+        from: el,
         to: {
-          ...body,
+          ...el,
           selected: true,
         },
-      }))
-  }
+      })))
+    )
 }
 
 /**
@@ -162,54 +193,92 @@ export function setClassName(name: string) {
 }
 
 /**
- * create an element and add it to the stage
- * @param type the desired type for the new element
- * @param componentName the desired component type if it is a component
- * @return the new element
+ * local function to be used in addElement
  */
-export function addElement(type: ElementType, parent: ElementData, componentName?: string): [ElementData, ElementData] {
-  //    tracker.trackAction('controller-events', 'request', 'insert.' + type, 0);
+function createEmptyElement({type, parent, isSectionContent, componentName}: {
+  type: ElementType,
+  parent: ElementData,
+  isSectionContent: boolean,
+  componentName?: string,
+}): ElementData[] {
+    // create the element and add it to the stage
+  const element: ElementData = getEmptyElementData({id: getNewId(), type, isSectionContent, isBody: false});
 
-  const win = getSiteWindow()
+  // apply component styles etc
+  if (!!componentName) {
+    console.error('not implemented: components')
+    // model.component.initComponent(element, componentName);
+  }
+  return [{
+      ...element,
+      selected: true,
+    }, {
+      ...parent,
+      children: parent.children.concat(element.id),
+    },
+  ]
+}
 
-  // undo checkpoint
-    //  undoCheckPoint();
+export function addElementCentered(type: ElementType, componentName: string) {
+  const parent = getCreationDropZone(false, getSiteIFrame());
+  const parentState = getStage().getState(getDomElement(getSiteDocument(), parent))
+  const parentRect = parentState.metrics.computedStyleRect
 
-  const [newElementData, newParentData] = createEmptyElement({
+  const [el, updatedParentData] = addElement({
+    type: type,
+    parent,
+    componentName,
+    style: {
+      mobile: {},
+      desktop: {
+        top: Math.round((parentRect.height / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+        left: Math.round((parentRect.width / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+      },
+    },
+  });
+  selectElements([el])
+
+  return [el, updatedParentData]
+}
+
+/**
+ * create an element and add it to the stage
+ * componentName the desired component type if it is a component
+ * @return [element, updatedParentData]
+ */
+export function addElement({type, parent, style, componentName} : {
+  type: ElementType,
+  parent: ElementData,
+  style: StyleObject,
+  componentName?: string,
+}): [ElementData, ElementData] {
+  // create an element
+  const [newElementData, updatedParentData] = createEmptyElement({
     type,
     parent,
     componentName,
     isSectionContent: false,
   })
 
+  // init the new element depending on its type
   if (type === ElementType.TEXT) {
     newElementData.innerHtml = 'New text box';
   } else if (type === ElementType.HTML) {
     newElementData.innerHtml = '<p>New <strong>HTML</strong> box</p>';
   }
 
+  // add it to the current page only if it has no parent which already are in a page
   const newElementDataPaged = {
     ...newElementData,
     pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [getCurrentPage().id],
   }
   console.warn('todo: handle add in mobile')
-  const centeredStyle = center(getElementSize(win, newElementDataPaged, false), getElementSize(win, newParentData, false))
-  const centeredAndPaged = {
-    ...newElementDataPaged,
-    style: {
-      ...newElementDataPaged.style,
-      desktop: {
-        ...newElementDataPaged.style.desktop,
-        top: centeredStyle.top + 'px',
-        left: centeredStyle.left + 'px',
-      }
-    }
-  }
 
+  // if it is a section add its container element
   if (type === ElementType.SECTION) {
     const [contentElement, newElementDataWithContent] = createEmptyElement({
       type: ElementType.CONTAINER,
-      parent: centeredAndPaged,
+      parent: newElementDataPaged,
       componentName: null,
       isSectionContent: true,
     })
@@ -221,54 +290,68 @@ export function addElement(type: ElementType, parent: ElementData, componentName
         Constants.PREVENT_DRAGGABLE_CLASS_NAME,
       ]),
     }
+    // add the elements to the store
     createElements([newElementDataWithContent, contentElementWithCssClasses]);
   } else {
-    createElements([centeredAndPaged]);
+    // add the elements to the store
+    createElements([newElementDataPaged]);
   }
+
+  // select the created element
   updateElements(getSelectedElements()
     // deselect all but the added element
-    .filter((el) => el !== newParentData) // will be updated bellow
+    .filter((el) => el !== updatedParentData) // will be updated bellow
     .map((el) => ({
       from: el,
       to: {
         ...el,
-        selected: el === centeredAndPaged,
+        selected: el === newElementDataPaged,
+        style: el === newElementDataPaged ? {
+          mobile: {
+            ...el.style.mobile,
+            ...style.mobile,
+          },
+          desktop: {
+            ...el.style.desktop,
+            ...style.desktop,
+          },
+        } : el.style,
       },
     }))
     // update the parent element
     .concat({
-      from: getElementById(newParentData.id),
+      from: getElementById(updatedParentData.id),
       to: {
-        ...newParentData,
+        ...updatedParentData,
         selected: false,
       },
     }))
 
-  console.info('TODO: drag to insert?')
+  console.log('TODO: drag to insert?')
   // TODO: drag to insert?
   // getStage().startDrag()
 
-  return [newElementDataPaged, newParentData]
+  return [getElementById(newElementDataPaged.id), updatedParentData]
 }
 
-export function createEmptyElement({type, parent, isSectionContent, componentName}: {type: ElementType, parent: ElementData, isSectionContent: boolean, componentName?: string}): ElementData[] {
-    // create the element and add it to the stage
-  const element: ElementData = getEmptyElementData({id: getNewId(), type, isSectionContent, isBody: false});
+export function removeElementsWithoutConfirm(elements) {
+  // get the elements and their children
+  const deleted = elements.concat(elements
+    .reduce((prev, el) => prev.concat(getChildrenRecursive(el)), []))
 
-  // apply component styles etc
-  if (!!componentName) {
-    console.error('not implemented: components')
-    // FIXME: handle components data in the new model
-    // model.component.initComponent(element, componentName);
-  }
-  return [{
-      ...element,
-      selected: true,
-    }, {
-      ...parent,
-      children: parent.children.concat(element.id),
-    },
-  ]
+  // delete the elements from the store
+  deleteElements(deleted)
+
+  // update the parents to remove deleted elements from children lists
+  updateElements(getElements()
+    .filter((element: ElementData) => element.children.some((id) => !!deleted.find((el) => el.id === id))) // keep the parents
+    .map((element: ElementData) => ({
+      from: element,
+      to: {
+        ...element,
+        children: element.children.filter((id) => !deleted.find((el) => el.id === id)),
+      }
+    })))
 }
 
 /**

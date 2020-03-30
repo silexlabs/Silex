@@ -51,6 +51,10 @@ export enum DomDirection {
   TOP = 'TOP',
   BOTTOM = 'BOTTOM',
 }
+export type StyleObject = {
+  mobile: CssRule,
+  desktop: CssRule,
+}
 
 export interface ElementData extends CrudState {
   pageNames: string[],
@@ -72,10 +76,7 @@ export interface ElementData extends CrudState {
     mobile: boolean,
     desktop: boolean,
   },
-  style: {
-    mobile: CssRule,
-    desktop: CssRule,
-  },
+  style: StyleObject,
   data: {
     component: ComponentData,
   },

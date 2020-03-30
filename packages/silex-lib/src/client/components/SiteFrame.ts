@@ -18,9 +18,7 @@ import { Constants } from '../../constants'
 import { selectBody } from '../element/dispatchers'
 import { removeWysihtmlMarkup } from '../element/dom'
 import { getAllStyles } from '../element/utils'
-import { getUi, updateUi } from '../ui/store'
 import { initStageWrapper, stageCleanup } from './StageWrapper'
-import { LOADING } from '../ui/types'
 
 ///////////////////
 // API for the outside world
@@ -73,7 +71,6 @@ class Site {
     contentDocument.open();
     contentDocument.write('');
     contentDocument.close();
-    console.log('SIteIframe constructor 3')
   }
 
   getSiteWindow(): Window { return this.iframe.contentWindow }
@@ -86,7 +83,6 @@ class Site {
    */
   setHtml(rawHtml: string, opt_cbk?: (() => any), opt_showLoader?: boolean) {
     const contentDocument = getSiteDocument()
-    console.log('setHtml', contentDocument, opt_showLoader)
 
     // remove all elements from stage component
     stageCleanup();

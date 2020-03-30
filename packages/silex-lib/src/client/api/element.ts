@@ -15,23 +15,31 @@
  *
  */
 
-import { FileExplorer } from '../components/dialog/FileExplorer'
-import { openHtmlEditor } from '../components/dialog/HtmlEditor'
-import { openLinkDialog } from '../components/dialog/LinkDialog'
-import { openTextFormatBar } from '../components/TextFormatBar'
-import { openComponentEditor, openStyleEditor, resetComponentEditor } from '../element/component'
-import { moveElements } from '../element/dispatchers'
-import { getDomElement, setImageUrl } from '../element/dom'
-import { getBody, getChildrenRecursive, getSelectedElements, getSelectedElementsNoSectionContent } from '../element/filters'
-import { deleteElements, getElements, updateElements } from '../element/store'
 import { ElementData, ElementType, LinkData, DomDirection } from '../element/types'
-import { getSite } from '../site/store'
+import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../third-party/types'
-import { getSiteDocument } from '../components/SiteFrame'
 import { SilexNotification } from '../utils/Notification'
-import { openParamsTab } from '../components/PropertyTool'
 import { StyleName, PseudoClass, Visibility, StyleData, VisibilityData, PseudoClassData } from '../site/types'
 import { componentStyleChanged } from '../site/dispatchers'
+import {
+  getBody,
+  getSelectedElements,
+  getSelectedElementsNoSectionContent
+} from '../element/filters';
+import { getDomElement, setImageUrl } from '../element/dom'
+import { getElements, updateElements } from '../element/store';
+import { getSite } from '../site/store'
+import { getSiteDocument } from '../components/SiteFrame'
+import {
+  moveElements,
+  removeElementsWithoutConfirm,
+  selectBody
+} from '../element/dispatchers';
+import { openComponentEditor, openStyleEditor, resetComponentEditor } from '../element/component'
+import { openHtmlEditor } from '../components/dialog/HtmlEditor'
+import { openLinkDialog } from '../components/dialog/LinkDialog'
+import { openParamsTab } from '../components/PropertyTool'
+import { openTextFormatBar } from '../components/TextFormatBar'
 
 /**
  * remove selected elements from the stage
@@ -46,13 +54,11 @@ export function removeElements(elements = getSelectedElements()) {
     );
   } else {
     // confirm and delete
-    SilexNotification.confirm('Delete elements', 'I am about to <strong>delete the selected element(s)</strong>, are you sure?',
+    SilexNotification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
       (accept) => {
         if (accept) {
-          // do remove selected elements
-          deleteElements(elements.concat(elements
-            .reduce((prev, el) => prev.concat(getChildrenRecursive(el)), [])));
-          console.log('deleted', elements, elements.map(el => getChildrenRecursive(el)), getElements())
+          removeElementsWithoutConfirm(toDelete)
+          selectBody()
         }
       }, 'delete', 'cancel',
     );

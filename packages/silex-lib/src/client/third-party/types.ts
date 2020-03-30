@@ -18,12 +18,12 @@
 // This comes from Cloud Explorer
 export interface FileInfo {
   path: string,
-  folder: string,
   service: string,
-  size: number,
-  modified: string,
   name: string,
   isDir: boolean,
   mime: string,
   absPath: string,
+  folder?: string,
+  size?: number,
+  modified?: string,
 }

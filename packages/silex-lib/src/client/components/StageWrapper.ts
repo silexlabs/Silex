@@ -64,6 +64,11 @@ export function setEditMode(mode: boolean) {
     stage.visible = !mode;
   }
 }
+export function hideUi(hide: boolean) {
+  if (!stage) { return; }
+  stage.hideUi(hide);
+}
+
 export function hideScrolls(hide: boolean) {
   if (!stage) { return; }
   stage.hideScrolls(hide);

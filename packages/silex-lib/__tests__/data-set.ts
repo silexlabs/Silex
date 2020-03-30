@@ -3,34 +3,47 @@ import { crudIdKey } from '../src/client/flux/crud-store'
 import { PageData } from '../src/client/page/types';
 import { SiteData } from '../src/client/site/types';
 
-export function mockUiElements(): HTMLIFrameElement {
-  const iframe: HTMLIFrameElement = document.createElement('iframe')
-  document.body.appendChild(iframe)
+export function mockForAllTests() {
+  jest.doMock('../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());
+}
+
+export function mockUiElements(): {siteIFrame: HTMLIFrameElement, uiIFrame: HTMLIFrameElement} {
+  const uiIFrame: HTMLIFrameElement = document.createElement('iframe')
+  document.body.appendChild(uiIFrame)
 
   // fake ui elements
   jest.doMock('../src/client/ui/UiElements', () => ({
-    getSiteDocument: () => iframe.contentDocument,
-    getSiteWindow: () => iframe.contentWindow,
+    getSiteDocument: () => uiIFrame.contentDocument,
+    getSiteWindow: () => uiIFrame.contentWindow,
     getUiElements: () => ({
-      stage: iframe,
-      fileExplorer: iframe.contentDocument.body,
-      contextMenu: iframe.contentDocument.body,
-      menu: iframe.contentDocument.body,
-      breadCrumbs: iframe.contentDocument.body,
-      pageTool: iframe.contentDocument.body,
-      htmlEditor: iframe.contentDocument.body,
-      cssEditor: iframe.contentDocument.body,
-      jsEditor: iframe.contentDocument.body,
-      settingsDialog: iframe.contentDocument.body,
-      dashboard: iframe.contentDocument.body,
-      propertyTool: iframe.contentDocument.body,
-      textFormatBar: iframe.contentDocument.body,
-      workspace: iframe.contentDocument.body,
-      verticalSplitter: iframe.contentDocument.body,
+      stage: uiIFrame,
+      fileExplorer: uiIFrame.contentDocument.body,
+      contextMenu: uiIFrame.contentDocument.body,
+      menu: uiIFrame.contentDocument.body,
+      breadCrumbs: uiIFrame.contentDocument.body,
+      pageTool: uiIFrame.contentDocument.body,
+      htmlEditor: uiIFrame.contentDocument.body,
+      cssEditor: uiIFrame.contentDocument.body,
+      jsEditor: uiIFrame.contentDocument.body,
+      settingsDialog: uiIFrame.contentDocument.body,
+      dashboard: uiIFrame.contentDocument.body,
+      propertyTool: uiIFrame.contentDocument.body,
+      textFormatBar: uiIFrame.contentDocument.body,
+      workspace: uiIFrame.contentDocument.body,
+      verticalSplitter: uiIFrame.contentDocument.body,
     }),
   }))
 
-  return iframe
+
+  const siteIFrame: HTMLIFrameElement = document.createElement('iframe')
+  document.body.appendChild(siteIFrame)
+  jest.doMock('../src/client/components/SiteFrame', () => ({
+    getSiteWindow: () => siteIFrame.contentWindow,
+    getSiteDocument: () => siteIFrame.contentDocument,
+    getSiteIFrame: () => siteIFrame,
+  }))
+
+  return { uiIFrame, siteIFrame }
 }
 
 let nextId = 0;
@@ -158,7 +171,7 @@ export const PAGE1 = {
     value: '#!page-page-1',
   },
   idx: 0,
-  opened: false,
+  opened: true,
   canDelete: true,
   canProperties: true,
   canMove: true,

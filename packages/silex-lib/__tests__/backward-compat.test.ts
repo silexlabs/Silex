@@ -1,5 +1,5 @@
 import { mockUiElements } from './data-set'
-const iframe = mockUiElements()
+const {siteIFrame} = mockUiElements()
 
 import * as fs from 'fs';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from '../src/server/utils/BackwardCompatV2.5.60';
@@ -11,8 +11,8 @@ test('convert from 2.5.60', () => {
   const htmlString = htmlBuffer.toString()
   expect(htmlString).not.toBeNull()
   expect(htmlString).toMatch(/^<!DOCTYPE html>/)
-  iframe.contentDocument.write(htmlString)
-  expect(iframe.contentDocument.body).not.toBeNull()
+  siteIFrame.contentDocument.write(htmlString)
+  expect(siteIFrame.contentDocument.body).not.toBeNull()
 
   const TEXT_ELEMENT_ID = 'silex-id-1442914737143-3'
   const IMAGE_ELEMENT_ID = 'silex-id-1439573539993-24'
@@ -22,8 +22,8 @@ test('convert from 2.5.60', () => {
   const SECTION_CONTAINER_ID = 'silex-id-1478366450713-2'
 
   // import elements
-  iframe.contentDocument.body.classList.add('editable-style')
-  const elements = getElementsFromDomBC(iframe.contentDocument)
+  siteIFrame.contentDocument.body.classList.add('editable-style')
+  const elements = getElementsFromDomBC(siteIFrame.contentDocument)
   expect(elements).not.toBeNull()
   expect(elements).toHaveLength(11)
   expect(elements.filter((el) => el.type === ElementType.SECTION)).toHaveLength(3)
@@ -107,7 +107,7 @@ test('convert from 2.5.60', () => {
   })
 
   // site
-  const site = getSiteFromDom(iframe.contentDocument)
+  const site = getSiteFromDom(siteIFrame.contentDocument)
   expect(site.title).toBe('test title')
   expect(site.description).toBe('test description')
   expect(site.dataSources).toEqual({})
@@ -117,6 +117,7 @@ test('convert from 2.5.60', () => {
 }`)
   expect(site.headScript.trim()).toBe(`// alert('this is js');`)
   expect(site.headUser.trim()).toBe(`<!-- this is head -->`)
+  expect(site.headStyle).toContain('.test')
   expect(site.width).toBe(1200)
 
   expect(site.prodotypeDependencies).toEqual({
@@ -136,7 +137,7 @@ test('convert from 2.5.60', () => {
   )
 
   // pages
-  const pages = getPagesFromDom(iframe.contentDocument)
+  const pages = getPagesFromDom(siteIFrame.contentDocument)
   expect(pages).toHaveLength(1)
   expect(pages[0].id).toBe('page-page-1')
   expect(pages[0].displayName).toBe('Page 1')

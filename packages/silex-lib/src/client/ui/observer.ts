@@ -3,7 +3,7 @@ import { UiData, LOADING } from './types'
 import { getSite } from '../site/store'
 import { SilexNotification } from '../utils/Notification'
 import { getSiteIFrame } from '../components/SiteFrame'
-import { setEditMode, hideScrolls } from '../components/StageWrapper'
+import { setEditMode, hideUi } from '../components/StageWrapper'
 
 export function onChangeUi(prev: UiData, ui: UiData) {
   if (ui.mobileEditor) {
@@ -22,17 +22,17 @@ export function onChangeUi(prev: UiData, ui: UiData) {
     case LOADING.SILEX:
       document.body.classList.add(Constants.LOADING_SILEX_CSS_CLASS)
       setEditMode(false)
-      hideScrolls(true)
+      hideUi(true)
       break
     case LOADING.WEBSITE:
       getSiteIFrame().classList.add(Constants.LOADING_SITE_CSS_CLASS)
       setEditMode(false)
-      hideScrolls(true)
+      hideUi(true)
       break
     default:
       getSiteIFrame().classList.remove(Constants.LOADING_SITE_CSS_CLASS)
       document.body.classList.remove(Constants.LOADING_SILEX_CSS_CLASS)
       setEditMode(true)
-      hideScrolls(false)
+      hideUi(false)
   }
 }

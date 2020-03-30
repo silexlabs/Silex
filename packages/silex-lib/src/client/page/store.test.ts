@@ -24,7 +24,6 @@ test('Initialize page store', () => {
   expect(getPages()).toHaveLength(2)
   expect(getPages()[0]).toBe(PAGE1)
   expect(getPages()[1]).toBe(PAGE2)
-  getPages().forEach((page) => expect(page.opened).toBe(false))
 })
 
 test('Add a page', () => {

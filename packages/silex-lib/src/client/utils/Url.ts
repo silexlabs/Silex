@@ -19,7 +19,6 @@ import {FileInfo} from '../third-party/types';
 export class Url {
   /**
    * name of the get param used to store the timestamp (cache control)
-   * ant
    */
   static CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
 
