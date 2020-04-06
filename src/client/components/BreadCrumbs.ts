@@ -9,13 +9,14 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementData, ElementType } from '../element/types';
-import { getDomElement } from '../element/dom';
-import { getUiElements } from '../ui/UiElements';
-import { subscribeElements, updateElements, getElements } from '../element/store'
-import { getParent, getSelectedElements } from '../element/filters'
+import { ElementData } from '../element/types';
 import { getDisplayName } from '../element/utils'
+import { getDomElement } from '../element/dom';
+import { getParent, getSelectedElements } from '../element/filters'
 import { getSiteDocument } from './SiteFrame'
+import { getUiElements } from '../ui/UiElements';
+import { isComponent } from '../element/component';
+import { subscribeElements, updateElements, getElements } from '../element/store'
 
 /**
  * @fileoverview
@@ -92,13 +93,12 @@ class BreadCrumbs {
    */
   private addCrumb(element: ElementData) {
     const domEl = getDomElement(getSiteDocument(), element)
-    console.log('addCrumb', element, domEl)
     if(!domEl) return // element is in the model but its parent has not been updated yet, so it is not yet in the dom
 
     const crumb = document.createElement('DIV');
     const cssClasses = element.classList.length ? '.' + element.classList.join('.') : '';
 
-    const displayName = domEl.tagName.toLowerCase() === 'body' ? 'Body' : element.type === ElementType.COMPONENT ? 'Component' : getDisplayName(element);
+    const displayName = domEl.tagName.toLowerCase() === 'body' ? 'Body' : isComponent(element) ? 'Component' : getDisplayName(element);
     crumb.classList.add('crumb');
     crumb.innerHTML = displayName + cssClasses;
     crumb.style.zIndex = (100 - this.element.childNodes.length).toString();

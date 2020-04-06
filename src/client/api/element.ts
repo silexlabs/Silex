@@ -18,28 +18,106 @@
 import { ElementData, ElementType, LinkData, DomDirection } from '../element/types'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../third-party/types'
+import { INITIAL_ELEMENT_SIZE, getCreationDropZone } from '../element/utils';
 import { SilexNotification } from '../utils/Notification'
 import { StyleName, PseudoClass, Visibility, StyleData, VisibilityData, PseudoClassData } from '../site/types'
+import {
+  addElement,
+  moveElements,
+  removeElementsWithoutConfirm,
+  selectBody
+} from '../element/dispatchers';
 import { componentStyleChanged } from '../site/dispatchers'
+import { deleteElements, getElements, updateElements } from '../element/store';
 import {
   getBody,
   getSelectedElements,
   getSelectedElementsNoSectionContent
 } from '../element/filters';
 import { getDomElement, setImageUrl } from '../element/dom'
-import { getElements, updateElements } from '../element/store';
 import { getSite } from '../site/store'
-import { getSiteDocument } from '../components/SiteFrame'
+import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame';
+import { getStage } from '../components/StageWrapper';
 import {
-  moveElements,
-  removeElementsWithoutConfirm,
-  selectBody
-} from '../element/dispatchers';
-import { openComponentEditor, openStyleEditor, resetComponentEditor } from '../element/component'
+  isComponent,
+  openComponentEditor,
+  openStyleEditor,
+  resetComponentEditor
+} from '../element/component';
 import { openHtmlEditor } from '../components/dialog/HtmlEditor'
 import { openLinkDialog } from '../components/dialog/LinkDialog'
 import { openParamsTab } from '../components/PropertyTool'
 import { openTextFormatBar } from '../components/TextFormatBar'
+
+/**
+ * add an element, center it in the container which is in the middle of the screen
+ */
+export function addElementCentered(type: ElementType, componentName: string) {
+  if (type === ElementType.SECTION) {
+    const [el, updatedParentData] = addElement({
+      type: type,
+      parent: getBody(),
+      componentName,
+      style: {
+        mobile: {},
+        desktop: {},
+      },
+    });
+
+    return [el, updatedParentData]
+  } else {
+    const parent = getCreationDropZone(false, getSiteIFrame());
+    const parentState = getStage().getState(getDomElement(getSiteDocument(), parent))
+    const parentRect = parentState.metrics.computedStyleRect
+
+    const [el, updatedParentData] = addElement({
+      type: type,
+      parent,
+      componentName,
+      style: {
+        mobile: {},
+        desktop: {
+          top: Math.round((parentRect.height / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+          left: Math.round((parentRect.width / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+        },
+      },
+    });
+
+    return [el, updatedParentData]
+  }
+}
+
+/**
+ * open file explorer, choose an image and add it to the stage
+ */
+export function browseAndAddImage(componentName: string) {
+  // this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
+  FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
+  .then((fileInfo) => {
+    if (fileInfo) {
+
+      // create the element
+      const [imgData] = addElementCentered(ElementType.IMAGE, componentName);
+      const img = getDomElement(getSiteDocument(), imgData);
+
+      // load the image
+      // FIXME: src should be set with flux
+      setImageUrl(img, fileInfo.absPath, (element, imgElement) => {
+          // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
+        },
+        (element: HTMLElement, message: string) => {
+          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message);
+          deleteElements([imgData]);
+          // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+        },
+      );
+    }
+  })
+  .catch((error) => {
+    SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
+    // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+  });
+}
 
 /**
  * remove selected elements from the stage
@@ -73,49 +151,50 @@ export function editElement() {
   const element: ElementData = getElements().find((el) => el.selected && el.enableEdit)
 
   if (element) {
-    // open the params tab for the components
-    // or the editor for the elements
-    switch (element.type) {
-      case ElementType.COMPONENT:
-        openParamsTab();
+    if (isComponent(element)) {
+      openParamsTab();
+    } else {
+      // open the params tab for the components
+      // or the editor for the elements
+      switch (element.type) {
+        case ElementType.TEXT:
+          // open the text editor
+          openTextFormatBar();
         break;
-      case ElementType.TEXT:
-        // open the text editor
-        openTextFormatBar();
-        break;
-      case ElementType.HTML:
-        openHtmlEditor();
+        case ElementType.HTML:
+          openHtmlEditor();
         // view.htmlEditor.setSelection([element]);
         break;
-      case ElementType.IMAGE:
-        FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
-          .then((blob) => {
-            if (blob) {
-              // load the image
-              // FIXME: src should be set with flux
-              setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
-                updateElements([{
-                  from: element,
-                  to: {
-                    ...element,
-                    style: {
-                      ...element.style,
-                      desktop: {
-                        width: naturalWidth + 'px',
-                        height: naturalHeight + 'px',
-                      },
+        case ElementType.IMAGE:
+          FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
+        .then((blob) => {
+          if (blob) {
+            // load the image
+            // FIXME: src should be set with flux
+            setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
+              updateElements([{
+                from: element,
+                to: {
+                  ...element,
+                  style: {
+                    ...element.style,
+                    desktop: {
+                      width: naturalWidth + 'px',
+                      height: naturalHeight + 'px',
                     },
                   },
-                }])
-              });
-            }
-          })
-          .catch((error) => {
-            SilexNotification.notifyError(
-              'Error: I did not manage to load the image. \n' +
+                },
+              }])
+            });
+          }
+        })
+        .catch((error) => {
+          SilexNotification.notifyError(
+            'Error: I did not manage to load the image. \n' +
               (error.message || ''));
-          });
+        });
         break;
+      }
     }
   }
 }

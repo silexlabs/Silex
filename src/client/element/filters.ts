@@ -38,6 +38,7 @@ export const getAllParents = (element: ElementData): ElementData[] => {
   return !!parent ? [parent, ...getAllParents(parent)] : []
 }
 
+// FIXME: find a more relyable way to find the body, i.e. isBody or a type of element
 export const isBody = (el: ElementData): boolean => !getParent(el)
 
 export const getBody = (): ElementData => getElements().find((el) => isBody(el))

@@ -29,7 +29,6 @@ export enum ElementType {
   IMAGE = 'image-element',
   TEXT = 'text-element',
   HTML = 'html-element',
-  COMPONENT = 'component-element',
 }
 
 export interface Size {width: number, height: number}

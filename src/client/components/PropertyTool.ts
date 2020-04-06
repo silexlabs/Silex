@@ -16,8 +16,6 @@
  *
  */
 
-import { ElementType } from '../element/types';
-import { getElements, subscribeElements } from '../element/store';
 import { BgPane } from './pane/BgPane';
 import { BorderPane } from './pane/BorderPane';
 import { GeneralStylePane } from './pane/GeneralStylePane';
@@ -25,9 +23,10 @@ import { PagePane } from './pane/PagePane';
 import { PropertyPane } from './pane/PropertyPane';
 import { StyleEditorPane } from './pane/StyleEditorPane';
 import { StylePane } from './pane/StylePane';
-import { getUiElements } from '../ui/UiElements'
 import { editComponent } from '../api/element'
-import { resetComponentEditor } from '../element/component'
+import { getElements, subscribeElements } from '../element/store';
+import { getUiElements } from '../ui/UiElements'
+import { isComponent, resetComponentEditor } from '../element/component';
 
 /**
  * @fileoverview the Silex PropertyTool class handles the panes actually displaying the
@@ -63,7 +62,7 @@ function buildUi() {
 
   // display component when possible
   subscribeElements(() => {
-    const selectedComponents = getElements().filter((el) => el.selected && el.type === ElementType.COMPONENT)
+    const selectedComponents = getElements().filter((el) => el.selected && isComponent(el))
     if (selectedComponents.length === 1) {
       editComponent(selectedComponents[0])
     } else {

@@ -71,7 +71,7 @@ export function loadProperties(doc: HTMLDocument): DomData {
 }
 
 const EDITABLE_ELEMENT_TYPES: string[] = [
-  ElementType.HTML, ElementType.IMAGE, ElementType.TEXT, ElementType.COMPONENT,
+  ElementType.HTML, ElementType.IMAGE, ElementType.TEXT,
 ];
 
 export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTMLElement): ElementData {
@@ -101,7 +101,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       value: linkValue,
     } : null,
     enableEdit: EDITABLE_ELEMENT_TYPES.indexOf(type) > -1,
-    enableDrag: !element.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME),
+    enableDrag: type === ElementType.SECTION || !element.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME), // New feature: make all sections draggable
     enableDrop: (type === ElementType.CONTAINER || type === ElementType.SECTION) && !element.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME),
     enableResize: {
       top: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
@@ -136,7 +136,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
     data: {
       component: getComponentDataFromDomBC(data, element),
     },
-    innerHtml: type === ElementType.COMPONENT || type === ElementType.HTML || type === ElementType.TEXT ? getInnerHtml(element) : '',
+    innerHtml: getInnerHtml(element),
   }
 }
 
@@ -212,9 +212,6 @@ function getComponentDataFromDomBC(data: DomData, element: HTMLElement): Compone
  * example: for a container this will return "container"
  */
 function getTypeBC(element: HTMLElement): ElementType {
-  if (element.classList.contains(Constants.COMPONENT_CLASS_NAME)) {
-    return ElementType.COMPONENT
-  }
   switch (element.getAttribute(Constants.TYPE_ATTR)) {
     case ElementType.CONTAINER.toString(): return element.classList.contains('section-element') ? ElementType.SECTION : ElementType.CONTAINER
     case ElementType.SECTION.toString(): return ElementType.SECTION

@@ -18,12 +18,6 @@ import {
   Link,
   StyleObject
 } from './types';
-import {
-  INITIAL_ELEMENT_SIZE,
-  getCreationDropZone,
-  getEmptyElementData,
-  getNewId
-} from './utils';
 import { PageData } from '../page/types'
 import { Style } from '../utils/Style'
 import {
@@ -39,13 +33,12 @@ import {
   getFirstPagedParent,
   getParent,
   getSelectedElements,
+  isBody,
   noSectionContent
 } from './filters';
 import { getCurrentPage } from '../page/filters'
-import { getDomElement } from './dom';
+import { getEmptyElementData, getNewId } from './utils';
 import { getPages } from '../page/store'
-import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame';
-import { getStage } from '../components/StageWrapper';
 import { getUi } from '../ui/store'
 
 /**
@@ -219,28 +212,6 @@ function createEmptyElement({type, parent, isSectionContent, componentName}: {
   ]
 }
 
-export function addElementCentered(type: ElementType, componentName: string) {
-  const parent = getCreationDropZone(false, getSiteIFrame());
-  const parentState = getStage().getState(getDomElement(getSiteDocument(), parent))
-  const parentRect = parentState.metrics.computedStyleRect
-
-  const [el, updatedParentData] = addElement({
-    type: type,
-    parent,
-    componentName,
-    style: {
-      mobile: {},
-      desktop: {
-        top: Math.round((parentRect.height / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
-        left: Math.round((parentRect.width / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
-      },
-    },
-  });
-  selectElements([el])
-
-  return [el, updatedParentData]
-}
-
 /**
  * create an element and add it to the stage
  * componentName the desired component type if it is a component
@@ -260,13 +231,6 @@ export function addElement({type, parent, style, componentName} : {
     isSectionContent: false,
   })
 
-  // init the new element depending on its type
-  if (type === ElementType.TEXT) {
-    newElementData.innerHtml = 'New text box';
-  } else if (type === ElementType.HTML) {
-    newElementData.innerHtml = '<p>New <strong>HTML</strong> box</p>';
-  }
-
   // add it to the current page only if it has no parent which already are in a page
   const newElementDataPaged = {
     ...newElementData,
@@ -274,64 +238,78 @@ export function addElement({type, parent, style, componentName} : {
   }
   console.warn('todo: handle add in mobile')
 
-  // if it is a section add its container element
-  if (type === ElementType.SECTION) {
-    const [contentElement, newElementDataWithContent] = createEmptyElement({
-      type: ElementType.CONTAINER,
-      parent: newElementDataPaged,
-      componentName: null,
-      isSectionContent: true,
-    })
-    const contentElementWithCssClasses = {
-      ...contentElement,
-      classList: contentElement.classList.concat([
-        Constants.ELEMENT_CONTENT_CLASS_NAME,
-        Constants.WEBSITE_WIDTH_CLASS_NAME,
-        Constants.PREVENT_DRAGGABLE_CLASS_NAME,
-      ]),
-    }
-    // add the elements to the store
-    createElements([newElementDataWithContent, contentElementWithCssClasses]);
-  } else {
-    // add the elements to the store
-    createElements([newElementDataPaged]);
-  }
+  const element = ((() => {
+    // if it is a section add its container element
+    if (type === ElementType.SECTION) {
 
-  // select the created element
-  updateElements(getSelectedElements()
-    // deselect all but the added element
-    .filter((el) => el !== updatedParentData) // will be updated bellow
+      if (!isBody(parent)) throw new Error('Sections can only be added to the body')
+      const [contentElement, newElementDataWithContent] = createEmptyElement({
+        type: ElementType.CONTAINER,
+        parent: newElementDataPaged,
+        componentName: null,
+        isSectionContent: true,
+      })
+      const contentElementWithCssClasses = {
+        ...contentElement,
+        classList: contentElement.classList.concat([
+          Constants.ELEMENT_CONTENT_CLASS_NAME,
+          Constants.WEBSITE_WIDTH_CLASS_NAME,
+          Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+        ]),
+      }
+      // add the elements to the store
+      createElements([newElementDataWithContent, contentElementWithCssClasses]);
+      return newElementDataWithContent
+    } else {
+      // add the elements to the store
+      createElements([newElementDataPaged]);
+      return newElementDataPaged
+    }
+  })())
+
+  updateElements(
+    // unselect all
+    getSelectedElements()
+    .filter((el) => el !== parent && el !== element) // will be updated bellow
     .map((el) => ({
       from: el,
       to: {
         ...el,
-        selected: el === newElementDataPaged,
-        style: el === newElementDataPaged ? {
+        selected: false,
+      },
+    }))
+    // apply style + select the created element
+    .concat([{
+      from: element,
+      to: {
+        ...element,
+        selected: true,
+        style: {
           mobile: {
-            ...el.style.mobile,
+            ...element.style.mobile,
             ...style.mobile,
           },
           desktop: {
-            ...el.style.desktop,
+            ...element.style.desktop,
             ...style.desktop,
           },
-        } : el.style,
+        },
       },
-    }))
+    },
     // update the parent element
-    .concat({
-      from: getElementById(updatedParentData.id),
+    {
+      from: parent,
       to: {
         ...updatedParentData,
         selected: false,
       },
-    }))
+    }]))
 
   console.log('TODO: drag to insert?')
   // TODO: drag to insert?
   // getStage().startDrag()
 
-  return [getElementById(newElementDataPaged.id), updatedParentData]
+  return [getElementById(newElementDataPaged.id), getElementById(updatedParentData.id)]
 }
 
 export function removeElementsWithoutConfirm(elements) {
