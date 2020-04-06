@@ -79,13 +79,17 @@ export function getComponentsDef(type: string): ProdotypeCompDef {
   return obj ? obj.componentsDef : ({} as ProdotypeCompDef)
 }
 
+export function isComponent(element: ElementData) {
+  return !!element.data.component && !!element.data.component.templateName
+}
+
 /**
  * @param element component just added
  * @param templateName type of component
  */
 export function initComponent(element: ElementData, templateName: string) {
   const name = getProdotypeComponent().createName(templateName, getElements()
-    .filter((el) => el.type === ElementType.COMPONENT)
+    .filter((el) => isComponent(el))
     .map((el) => el.data.component))
 
   // for selection (select all components)
@@ -148,7 +152,7 @@ export function initComponent(element: ElementData, templateName: string) {
  * this is in the className attribute of the component .md file
  */
 export function getComponentClassName(element) {
-  if (element.type === ElementType.COMPONENT) {
+  if (isComponent(element)) {
     const templateName = (element.data.component.templateName as TemplateName)
     return getCssClasses(templateName)
   }
@@ -194,7 +198,7 @@ export function updateDepenedencies(type: string) {
     throw new Error('Not supported, all dependencies are for components for now, not styles')
   }
   const components: ComponentData[] = getElements()
-    .filter((el) => el.type === ElementType.COMPONENT)
+    .filter((el) => isComponent(el))
     .map((el) => el.data.component)
   const prodotypeDependencies = getProdotypeComponent().getDependencies(components)
 

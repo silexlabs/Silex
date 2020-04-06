@@ -10,13 +10,14 @@
  */
 
 import { Constants } from '../../constants'
-import { crudIdKey } from '../flux/crud-store'
-import { getSite } from '../site/store'
+import { ElementData, ElementId, ElementType, Point, Size } from './types'
 import { Style } from '../utils/Style'
 import { addMediaQuery, getDomElement } from './dom'
-import { getBody, getChildren, getElementById, getParent, noSectionContent } from './filters'
+import { crudIdKey } from '../flux/crud-store'
+import { getBody, getChildren, getElementById } from './filters';
 import { getElements } from './store'
-import { ElementData, ElementId, ElementType, Point, Size } from './types'
+import { getSite } from '../site/store'
+import { isComponent } from './component';
 
 /**
  * @fileoverview Cross platform, it needs to run client and server side
@@ -62,13 +63,17 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
     pageNames: [],
     classList: [],
     link: null,
-    enableEdit: true,
-    enableDrag: true,
-    enableDrop: type === ElementType.CONTAINER, // FIXME: sections to?
-    enableResize: { top: true, bottom: true, left: true, right: true }, // FIXME: handle sections?
+    enableEdit: type !== ElementType.SECTION && type !== ElementType.CONTAINER,
+    enableDrag: /* type !== ElementType.SECTION && */ !isSectionContent,
+    enableDrop: type === ElementType.SECTION || type === ElementType.CONTAINER,
+    enableResize: type === ElementType.SECTION ? { top: true, bottom: true, left: false, right: false }
+      : isSectionContent ? { top: false, bottom: false, left: true, right: true }
+      : { top: true, bottom: true, left: true, right: true },
     selected: false, // we sill make it selected afterwards so that observer get it
     useMinHeight: true,
-    innerHtml: '',
+    innerHtml: type === ElementType.TEXT ? 'New text box'
+      : type === ElementType.HTML ? '<p>New <strong>HTML</strong> box</p>'
+      : '',
   }
 }
 
@@ -85,6 +90,8 @@ export function getDefaultStyle({type, isSectionContent, isBody}: {type: Element
       'margin-top': '-1px',
       'top': undefined,
       'left': undefined,
+      'height': undefined,
+      'width': undefined,
     }
     const sectionContent = { // section containers
       'position': 'relative',
@@ -270,6 +277,9 @@ export function getCreationDropZone(isSection: boolean, stageEl: HTMLIFrameEleme
  * get a human readable name for this element
  */
 export function getDisplayName(element: ElementData): string {
+  if (isComponent(element)) {
+    return `${ element.data.component.templateName}`
+  }
   if (element.isSectionContent) {
     return 'Section Container';
   }
@@ -281,7 +291,6 @@ export function getDisplayName(element: ElementData): string {
     case ElementType.HTML: return 'Html';
     // case ElementType.CONTAINER_CONTENT: return 'Container';
     case ElementType.SECTION: return 'Section';
-    default: return element.type.toString();
   }
 }
 
@@ -322,4 +331,3 @@ export function getAllStyles(): string {
   })
   return `${desktop}\n\n${addMediaQuery(mobile)}\n`;
 }
-

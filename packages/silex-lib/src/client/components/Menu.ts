@@ -23,24 +23,28 @@ import { FileExplorer } from './dialog/FileExplorer'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import {
   addElementCentered,
+  browseAndAddImage,
+  moveDown,
+  moveToBottom,
+  moveToTop,
+  moveUp,
+  removeElements
+} from '../api/element';
+import { copySelection, pasteClipBoard, duplicateSelection } from '../api/copy'
+import { getSelectedElements } from '../element/filters'
+import { getSite } from '../site/store'
+import { getUi, updateUi } from '../ui/store'
+import { getUiElements } from '../ui/UiElements'
+import {
   moveElements,
   selectBody
 } from '../element/dispatchers';
-import { browseAndAddImage } from '../api/propoerties'
-import { copySelection, pasteClipBoard, duplicateSelection } from '../api/copy'
-import { getCreationDropZone } from '../element/utils';
-import { getSelectedElements } from '../element/filters'
-import { getSite } from '../site/store'
-import { getSiteIFrame } from './SiteFrame';
-import { getUi, updateUi } from '../ui/store'
-import { getUiElements } from '../ui/UiElements'
 import { openCssEditor } from './dialog/CssEditor'
 import { openDashboardToLoadAWebsite, save, publish, openFile } from '../api/file'
 import { openHtmlHeadEditor } from './dialog/HtmlEditor';
 import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { prodotypeReady, getComponentsDef } from '../element/component'
-import { removeElements, moveToBottom, moveUp, moveDown, moveToTop } from '../api/element'
 import { removePage, editPage, createPage } from '../api/page'
 import { toggleSubMenu, preview, previewResponsize, closeAllSubMenu } from '../api/view'
 

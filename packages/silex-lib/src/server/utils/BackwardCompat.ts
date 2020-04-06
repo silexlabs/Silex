@@ -31,6 +31,19 @@ const LATEST_VERSION = PACKAGE_JSON_DATA['version:backwardcompat'].split('.').ma
 
 console.log(`\nSilex starts with backward compat version ${LATEST_VERSION} and front end version ${FRONT_END_VERSION}\n`);
 
+// remove all tags
+function removeIfExist(doc: HTMLDocument, selector: string) {
+  const tag = doc.querySelector(selector)
+  if (tag) {
+    tag.remove()
+  }
+}
+// remove all useless css class
+function removeUselessCSSClass(doc: HTMLDocument, className: string) {
+  Array.from(doc.querySelectorAll('.' + className))
+  .forEach((el) => el.classList.remove(className))
+}
+
 /**
  * @fileoverview Handle backward compatibility when a user opens a site for edition
  *
@@ -302,20 +315,17 @@ export default class BackwardCompat {
               pages,
               elements,
             }
-            function removeIfExist(selector) {
-              const tag = doc.querySelector(selector)
-              if (tag) {
-                tag.remove()
-              }
-            }
-            removeIfExist('meta[name="website-width"]')
-            removeIfExist('meta[name="hostingProvider"]')
-            removeIfExist('meta[name="publicationPath"]')
+            removeIfExist(doc, 'meta[name="website-width"]')
+            removeIfExist(doc, 'meta[name="hostingProvider"]')
+            removeIfExist(doc, 'meta[name="publicationPath"]');
+
+            // ['prevent-draggable'].forEach((className) => removeUselessCSSClass(doc, className))
+
             actions.push(`
             <p>I updated the model to the latest version of Silex.</p>
             `);
             // pages
-            removeIfExist(`.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
+            removeIfExist(doc, `.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
             actions.push(`
             <p>I removed the old pages system.</p>
             `);

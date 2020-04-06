@@ -30,7 +30,7 @@ test('convert from 2.5.60', () => {
   expect(elements.filter((el) => el.type === ElementType.CONTAINER)).toHaveLength(4)
   expect(elements.filter((el) => el.type === ElementType.TEXT)).toHaveLength(1)
   expect(elements.filter((el) => el.type === ElementType.IMAGE)).toHaveLength(1)
-  expect(elements.filter((el) => el.type === ElementType.COMPONENT)).toHaveLength(2)
+  expect(elements.filter((el) => el.type === ElementType.HTML)).toHaveLength(2) // the 2 components are based on HTML Box
   expect(elements.find((el) => el.id === TEXT_ELEMENT_ID).title).toEqual('test title')
   expect(elements.find((el) => el.id === IMAGE_ELEMENT_ID).alt).toEqual('test alt')
   expect(elements.find((el) => el.id === BODY_ID).classList).toEqual([
@@ -48,6 +48,7 @@ test('convert from 2.5.60', () => {
 
   // component data
   const component = elements.find((el) => el.id === COMPONENT_ID)
+  expect(component.type).toBe(ElementType.HTML)
   expect(component.data.component.templateName).toBe('form')
   expect(component.data.component.data).not.toBeNull()
   expect(component.data.component.data.buttonBackgroundColor).toBe('#000000')
@@ -65,7 +66,7 @@ test('convert from 2.5.60', () => {
   })
 
   const section = elements.find((el) => el.id === SECTION_ID)
-  expect(section.enableDrag).toBe(false)
+  expect(section.enableDrag).toBe(true)
   expect(section.enableDrop).toBe(true)
   expect(section.enableResize.left).toBe(false)
   expect(section.enableResize.right).toBe(false)

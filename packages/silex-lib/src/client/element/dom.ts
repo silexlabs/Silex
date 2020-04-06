@@ -107,11 +107,9 @@ export function createDomElement({doc, id, type, parent, isSectionContent}: {doc
       element = createImageElement(doc);
       break;
 
-    // Component
-    case ElementType.COMPONENT:
-      element = createComponentElement(doc);
-      break;
+    default: throw new Error('unknown type: ' + type)
   }
+
   // init the element
   element.classList.add(Constants.EDITABLE_CLASS_NAME);
 
@@ -205,17 +203,6 @@ function createTextElement(doc: HTMLDocument): HTMLElement {
   content.classList.add('normal');
 
   // done
-  return element;
-}
-
-/**
- * element creation method for a given type
- * called from createElement
- */
-function createComponentElement(doc: HTMLDocument): HTMLElement {
-  // create the element
-  const element = doc.createElement('div');
-  element.setAttribute(Constants.TYPE_ATTR, ElementType.COMPONENT);
   return element;
 }
 

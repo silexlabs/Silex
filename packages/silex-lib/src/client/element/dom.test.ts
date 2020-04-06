@@ -61,16 +61,6 @@ test('element creation', () => {
   createDomElement({
     doc: document,
     id,
-    type: ElementType.COMPONENT,
-    isSectionContent: false,
-    parent: container,
-  })
-  const component = testDomElement(id)
-  expect(component.parentElement).toBe(container)
-  id = getRandomId()
-  createDomElement({
-    doc: document,
-    id,
     type: ElementType.SECTION,
     isSectionContent: false,
     parent: document.body,
