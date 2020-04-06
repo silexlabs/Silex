@@ -106,21 +106,24 @@ export default class BackwardCompat {
       const report = Object.keys(allActions)
       .filter((_version) => allActions[_version].length > 0)
       .map((_version) => {
-        return `<small>Update to version ${ _version }:
+        return `<p>Update to version ${ _version }:
             <ul>${ allActions[_version].map((_action) => `<li class="no-list">${ _action }</li>`).join('') }</ul>
-        </small>`;
+        </p>`;
       }).join('');
       // save data to dom for front-end.js and other scripts
       // in case data has been changed
       // FIXME: should not have this.data mutated but returned by update scripts
       writeDataToDom(doc, this.data)
       // needs to reload if silex scripts and stylesheets have been updated
-      return [
-        `<h2>Website updated</h2>
+      return [`
         <p>This website has been updated to Silex latest version.</p>
         <p>Before you save it, please check that everything is fine. Saving it with another name could be a good idea too (menu file > save as).</p>
-        <small>Bellow you will find details of what I did.</small>
-        ${ report }
+        <details>
+          <summary>Details</summary>
+          <small>
+            ${ report }
+          </small>
+        </details>
       `,
         this.data,
       ];
@@ -226,9 +229,7 @@ export default class BackwardCompat {
           .forEach((el: HTMLLinkElement) => {
             el.setAttribute('href', '#!' + el.getAttribute('id'));
           });
-          actions.push(`
-            <p>I fixed the mobile menu so that it is compatible with the new publication (now multiple pages are generated instead of 1 single page for the whole website).</p>
-          `);
+          actions.push('I fixed the mobile menu so that it is compatible with the new publication (now multiple pages are generated instead of 1 single page for the whole website).');
         }
         resolve(actions);
       });
@@ -242,10 +243,9 @@ export default class BackwardCompat {
           const menuButton = doc.querySelector('.menu-button');
           if (menuButton) {
             menuButton.parentElement.removeChild(menuButton);
-            actions.push(`
-              <p>I removed the mobile menu as there is now a component for that.</p>
-              <p><a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Hamburger-menu">Read more about the Hamburger Menu component here</a>.</p>
-            `);
+            actions.push(
+              'I removed the mobile menu as there is now a component for that. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Hamburger-menu">Read more about the Hamburger Menu component here</a>.',
+            );
           }
         }
         resolve(actions);
@@ -294,9 +294,7 @@ export default class BackwardCompat {
         if (this.hasToUpdate(version, [2, 2, 11])) {
           // the body is supposed to be an element too
           doc.body.classList.add(Constants.EDITABLE_CLASS_NAME)
-          actions.push(`
-            <p>I made the body editable.</p>
-          `);
+          actions.push('I made the body editable.');
 
           // import elements
           const elements = getElementsFromDomBC(doc)
@@ -321,14 +319,10 @@ export default class BackwardCompat {
 
             // ['prevent-draggable'].forEach((className) => removeUselessCSSClass(doc, className))
 
-            actions.push(`
-            <p>I updated the model to the latest version of Silex.</p>
-            `);
+            actions.push('I updated the model to the latest version of Silex.');
             // pages
             removeIfExist(doc, `.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
-            actions.push(`
-            <p>I removed the old pages system.</p>
-            `);
+            actions.push('I removed the old pages system.');
           } else {
             console.error('Could not import site from v2.2.11', {elements, pages, site})
           }
