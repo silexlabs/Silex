@@ -11,20 +11,21 @@
 
 import { Constants } from '../../../constants';
 import { ElementData, ElementType } from '../../element/types';
-import { getElements, updateElements  } from '../../element/store';
-import { getDomElement } from '../../element/dom';
-import { Tracker } from '../../io/Tracker';
-import { SilexNotification } from '../../utils/Notification';
-import { getSiteDocument } from '../../components/SiteFrame';
 import { PaneBase } from './PaneBase';
-import { getSite } from '../../site/store'
-import { updateUi, getUi } from '../../ui/store'
-import { getPages } from '../../page/store'
-import { getBody } from '../../element/filters'
-import { editStyle } from '../../api/element'
-import { getComponentsDef } from '../../element/component'
+import { SilexNotification } from '../../utils/Notification';
 import { StyleName, StyleData, Visibility } from '../../site/types'
+import { Tracker } from '../../io/Tracker';
+import { editStyle } from '../../api/element'
+import { getBody } from '../../element/filters'
+import { getComponentsDef } from '../../element/component'
+import { getCurrentPage } from '../../page/filters';
+import { getDomElement } from '../../element/dom';
+import { getElements, updateElements  } from '../../element/store';
+import { getPages } from '../../page/store'
+import { getSite } from '../../site/store'
+import { getSiteDocument } from '../../components/SiteFrame';
 import { initStyle, removeStyle } from '../../site/dispatchers'
+import { updateUi, getUi } from '../../ui/store'
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the
@@ -119,7 +120,7 @@ export class StyleEditorPane extends PaneBase {
     this.selectionCountPage = this.element.querySelector('.on-page');
     this.selectionCountPage.onclick = (e) => {
       //    this.tracker.trackAction('style-editor-events', 'select-all-elements-with-style');
-      const currentPage = getPages().find((p) => p.opened);
+      const currentPage = getCurrentPage();
       updateElements(getElements()
       .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id)))
       .map((el) => ({
@@ -188,7 +189,7 @@ export class StyleEditorPane extends PaneBase {
     if (includeOffPage) {
       return newSelection;
     } else {
-      const currentPage = getPages().find((p) => p.opened);
+      const currentPage = getCurrentPage();
       return newSelection
         .map((el: HTMLElement) => getElements().find((e) => getDomElement(doc, e) === el))
         .filter((el: ElementData) => el.pageNames.length === 0 || !!el.pageNames.find((id) => id === currentPage.id))

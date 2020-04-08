@@ -232,9 +232,10 @@ export function addElement({type, parent, style, componentName} : {
   })
 
   // add it to the current page only if it has no parent which already are in a page
+  const { currentPageId } = getUi()
   const newElementDataPaged = {
     ...newElementData,
-    pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [getCurrentPage().id],
+    pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [currentPageId],
   }
   console.warn('todo: handle add in mobile')
 
@@ -335,7 +336,7 @@ export function removeElementsWithoutConfirm(elements) {
 /**
  * add the provided elements to a given page
  */
-export function addToPage(elements: ElementData[], page = getPages().find((p) => p.opened)) {
+export function addToPage(elements: ElementData[], page = getCurrentPage()) {
   // undo checkpoint
     //  undoCheckPoint();
   updateElements(elements

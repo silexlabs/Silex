@@ -9,9 +9,9 @@ import {
 import { getCreationDropZone, getNewId } from '../element/utils';
 import { getDomElement } from '../element/dom'
 import { getElements, createElements, updateElements } from '../element/store'
-import { getPages } from '../page/store'
 import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
 import { getStage } from '../components/StageWrapper'
+import { getUi } from '../ui/store';
 
 /**
  * @static because it is shared by all controllers
@@ -157,7 +157,8 @@ export function pasteElements({parent, rootElements, allElements}: {parent: Elem
     // add to the container
     createElements(allElements.map((element: ElementData) => {
       // only visible on the current page unless one of its parents is in a page already
-      const pageNames = !parent || !!getFirstPagedParent(parent) ? [] : [getPages().find((p) => p.opened).id]
+      const { currentPageId } = getUi()
+      const pageNames = !parent || !!getFirstPagedParent(parent) ? [] : [currentPageId]
       const isRoot = rootElements.includes(element)
       if (isRoot) {
         offset += 20

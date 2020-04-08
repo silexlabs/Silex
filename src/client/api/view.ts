@@ -1,10 +1,8 @@
-import { getPages } from '../page/store'
 import { SilexNotification } from '../utils/Notification'
-import { updateElements } from '../element/store'
-import { getBody, getSelectedElements } from '../element/filters'
 import { getSite } from '../site/store'
-import { save } from './file'
+import { getUi } from '../ui/store';
 import { isDirty } from './undo'
+import { save } from './file'
 import { setPreviewWindowLocation } from '../components/Workspace'
 
 
@@ -36,11 +34,11 @@ function doPreview(inResponsize: boolean) {
       setPreviewWindowLocation(
           'http://www.responsize.org/?url=' +
           window.location.origin + getSite().file.absPath + '#!' +
-          getPages().find((p) => p.opened).id);
+          getUi().currentPageId);
     } else {
       setPreviewWindowLocation(
           window.location.origin + getSite().file.absPath + '#!' +
-          getPages().find((p) => p.opened).id);
+          getUi().currentPageId);
     }
     //    tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }

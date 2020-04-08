@@ -10,6 +10,7 @@
  */
 
 import { getPages } from './store'
+import { getUi } from '../ui/store';
 
 /**
  * @fileoverview Useful filters used to retrieve items in the store
@@ -17,6 +18,8 @@ import { getPages } from './store'
  */
 
 
-export const getCurrentPage = () => getPages()
-  .find((p) => p.opened)
-
+export const getCurrentPage = () => {
+  const { currentPageId } = getUi()
+  return getPages()
+    .find((p) => p.id === currentPageId)
+}

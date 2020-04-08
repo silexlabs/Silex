@@ -25,9 +25,6 @@ export const elementReducer = (state: ElementData[] = [], action: any): any => {
 
 export const pageReducer = (state: PageData[] = [], action: any): PageData[] => {
   switch (action.type) {
-    case PageAction.OPEN:
-      return state
-        .map((item) => item.id === action.item.id ? Object.assign({}, action.item, { opened: true }) : item.opened ? Object.assign({}, item, { opened: false }) : item)
     case PageAction.MOVE:
       // remove the item
       const idx = state.findIndex((item) => item === action.item)
@@ -78,6 +75,7 @@ export const siteReducer = (state: SiteData = {
 export const uiReducer = (state: UiData = {
   loading: LOADING.SILEX,
   mobileEditor: false,
+  currentPageId: null,
 }, action: any) => {
   switch (action.type) {
     case UiAction.INITIALIZE: return {

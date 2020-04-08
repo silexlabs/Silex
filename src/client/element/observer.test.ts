@@ -172,13 +172,14 @@ test('update element', () => {
 })
 
 test('onAddElements', () => {
-  siteIFrame.contentDocument.body.innerHTML = elem1Html
+  //siteIFrame.contentDocument.body.innerHTML = elem1Html
   onAddElements(siteIFrame.contentWindow)([
     ELEM_IMAGE,
   ])
   const elemImage: HTMLElement = siteIFrame.contentDocument.querySelector(`[data-silex-id=${ELEM_IMAGE.id}]`)
   expect(elemImage).not.toBeNull()
-  expect(siteIFrame.contentWindow.getComputedStyle(elemImage).left).toBe('0px') // 0px is the value in ELEM_IMAGE
+  const computedStyle = siteIFrame.contentWindow.getComputedStyle(elemImage)
+  expect(computedStyle.left).toBe(ELEM_IMAGE.style.desktop.left) // 0px is the value in ELEM_IMAGE
 
   onAddElements(siteIFrame.contentWindow)([
     ELEM_SECTION,

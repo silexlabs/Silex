@@ -16,12 +16,14 @@
  *
  */
 
-import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
-import { deletePages, getPages, movePage, openPage, subscribePages } from '../page/store';
 import { Dom } from '../utils/Dom';
-import { PageData } from '../page/types';
 import { createPage, removePage, movePageTo, editPage } from '../api/page'
+import { deletePages, getPages, movePage, subscribePages } from '../page/store';
+import { getCurrentPage } from '../page/filters';
+import { getUi, subscribeUi } from '../ui/store';
 import { getUiElements } from '../ui/UiElements'
+import { openPage } from '../ui/dispatchers';
+import Sortable from '../../../node_modules/sortablejs/modular/sortable.core.esm.js';
 
 ///////////////////
 // API for the outside world
@@ -34,14 +36,9 @@ export function initPageTool() {
  */
 class PageTool {
   constructor(public element: HTMLElement) {
-    subscribePages((_, pages) => this.redraw(_, pages))
-  }
+    subscribePages((_, pages) => this.redraw())
+    subscribeUi(() => this.redraw())
 
-  /**
-   * add listeners on the tool container
-   * called by the app constructor
-   */
-  buildUi() {
     // listen for the click on a page
     this.element.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).classList.contains('page-delete')) {
@@ -71,13 +68,13 @@ class PageTool {
     attach('.add-page', (e) => createPage());
     attach('.remove-page', (e) => removePage());
     attach('.move-page-up', (e) => {
-      const idx = getPages().findIndex((page) => page.opened);
-      const currentPage = getPages()[idx];
+      const currentPage = getCurrentPage();
+      const idx = getPages().indexOf(currentPage);
       movePageTo(currentPage, idx - 1);
     });
     attach('.move-page-down', (e) => {
-      const idx = getPages().findIndex((page) => page.opened);
-      const currentPage = getPages()[idx];
+      const currentPage = getCurrentPage();
+      const idx = getPages().indexOf(currentPage);
       movePageTo(currentPage, idx + 1);
     });
     const container: HTMLElement = this.element.querySelector('.page-tool-container');
@@ -136,12 +133,13 @@ class PageTool {
    * refresh the pages
    * find all pages in the dom
    */
-  private redraw(_, pages: PageData[]) {
+  private redraw() {
     // prepare the data for the template
     // make an array with name, displayName, linkName
-    const templateData = pages
+    const { currentPageId } = getUi();
+    const templateData = getPages()
       .map((p, idx) => Object.assign({
-        className: (p.opened ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
+        className: (p.id === currentPageId ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
         idx,
       }, p))
     // refresh the list with new pages
