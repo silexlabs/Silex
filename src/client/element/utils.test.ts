@@ -1,7 +1,7 @@
 import { ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_TEXT } from '../../../__tests__/data-set';
+import { center, getAllStyles, getElementSize, getElementStyle } from './utils';
 import { getSite, updateSite } from '../site/store';
 import { initializeElements } from './store';
-import { center, getElementSize, getElementStyle } from './utils';
 
 beforeEach(() => {
   initializeElements([ELEM_TEXT, ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT])
@@ -30,6 +30,23 @@ test('center in container', () => {
 //     right: 1010,
 //   })
 // })
+
+test('get all styles', () => {
+  initializeElements([ELEM_TEXT])
+  const styles = getAllStyles()
+  const iframe = document.createElement('iframe')
+  document.body.appendChild(iframe)
+  iframe.contentDocument.body.innerHTML = `<style>${styles}</style><div class="${ELEM_TEXT.id}"></div>`
+
+  const el = iframe.contentDocument.querySelector(`.${ELEM_TEXT.id}`)
+  expect(el).not.toBeNull()
+  const style = iframe.contentWindow.getComputedStyle(el)
+  expect(style).not.toBeNull()
+  expect(style.width).toBe('100px')
+  expect(style.height).toBe('')
+  expect(style['min-height']).toBe('100px')
+
+})
 
 test('get element styles', () => {
   expect(getElementStyle(ELEM_TEXT, 'width', false)).toBe('100px')

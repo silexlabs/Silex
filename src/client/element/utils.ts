@@ -51,7 +51,7 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
       desktop: JSON.parse(JSON.stringify({ // this will remove the undefined props
         'width': INITIAL_ELEMENT_SIZE + 'px',
         'height': INITIAL_ELEMENT_SIZE + 'px',
-        'background-color': type === ElementType.HTML || type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : null,
+        'background-color': type === ElementType.HTML || type === ElementType.CONTAINER ? 'rgb(255, 255, 255)' : undefined,
         ...getDefaultStyle({type, isSectionContent, isBody}),
       })),
       mobile: {},
@@ -70,7 +70,7 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
       : isSectionContent ? { top: false, bottom: false, left: true, right: true }
       : { top: true, bottom: true, left: true, right: true },
     selected: false, // we sill make it selected afterwards so that observer get it
-    useMinHeight: true,
+    useMinHeight: type !== ElementType.IMAGE,
     innerHtml: type === ElementType.TEXT ? 'New text box'
       : type === ElementType.HTML ? '<p>New <strong>HTML</strong> box</p>'
       : '',
@@ -322,9 +322,15 @@ export function getDisplayName(element: ElementData): string {
  */
 export function getAllStyles(): string {
   const {desktop, mobile} = getElements()
-  .reduce((prev, el) => ({
-    desktop: `${prev.desktop}\n.${el.id} {\n${Style.styleToString(el.style.desktop, '\n    ')}\n}\n`,
-    mobile: `${prev.mobile}\n.${el.id} {\n${Style.styleToString(el.style.mobile, '\n    ')}\n}\n`,
+  .map((el) => ({
+    desktop: Object.keys(el.style.desktop).length ? el.style.desktop : null,
+    mobile: Object.keys(el.style.mobile).length ? el.style.mobile : null,
+    useMinHeight: el.useMinHeight,
+    id: el.id,
+  }))
+  .reduce((prev, {mobile, desktop, useMinHeight, id}) => ({
+    desktop: prev.desktop + (desktop ? `\n.${id} {\n${Style.styleToString(desktop, useMinHeight, '\n    ')}\n}\n` : ''),
+    mobile: prev.mobile + (mobile ? `\n.${id} {\n${Style.styleToString(mobile, useMinHeight, '\n    ')}\n}\n` : ''),
   }), {
     desktop: '',
     mobile: '',

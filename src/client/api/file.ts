@@ -454,7 +454,6 @@ function loadBlankTemplate(cbk?: (() => any), opt_errorCbk?: ((p1: any) => any))
  */
 function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantData) => any,
     errCbk?: ((p1: any, msg: string, code?: number) => any)) {
-  console.log('load', file)
   doLoadWebsite({
     site: {
       file,
@@ -462,7 +461,6 @@ function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantDat
     },
     path: file.absPath,
     cbk: (rawHtml: string, data: PersistantData) => {
-      console.log('loaded', file)
       addToLatestFiles(file);
       if (cbk) {
         cbk(rawHtml, data);

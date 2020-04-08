@@ -126,11 +126,6 @@ export class Constants {
   static WEBSITE_WIDTH_CLASS_NAME: string = 'website-width';
 
   /**
-   * class name for containers which are created with sections
-   */
-  static SECTION_CONTAINER: string = 'silex-container-content';
-
-  /**
    * constant for the attribute name of the links
    */
   static LINK_ATTR: string = 'data-silex-href';
@@ -330,7 +325,6 @@ export class Constants {
     ElementType.IMAGE,
     ElementType.TEXT,
     ElementType.HTML,
-    Constants.SECTION_CONTAINER,
     Constants.ELEMENT_CONTENT_CLASS_NAME,
     Constants.HIDE_ON_MOBILE,
     Constants.HIDE_ON_DESKTOP,

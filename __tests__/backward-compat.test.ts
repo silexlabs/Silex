@@ -1,9 +1,19 @@
 import { mockUiElements } from './data-set'
+
 const {siteIFrame} = mockUiElements()
 
 import * as fs from 'fs';
 import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from '../src/server/utils/BackwardCompatV2.5.60';
 import { ElementType } from '../src/client/element/types';
+import BackwardCompat from '../src/server/utils/BackwardCompat';
+
+test('remove useless elements', () => {
+  const bc = new BackwardCompat('root url', __dirname + '/..')
+  siteIFrame.contentDocument.body.innerHTML = '<div class="test-class"></div>'
+  expect(siteIFrame.contentDocument.body.children).toHaveLength(1)
+  bc.removeIfExist(siteIFrame.contentDocument, '.test-class')
+  expect(siteIFrame.contentDocument.body.children).toHaveLength(0)
+})
 
 test('convert from 2.5.60', () => {
   const htmlBuffer = fs.readFileSync('./__tests__/editable-v2.5.60.html')
@@ -46,6 +56,10 @@ test('convert from 2.5.60', () => {
   ])
   expect(elements.find((el) => el.id === TEXT_ELEMENT_ID).innerHtml).toContain('www.silex.me');
 
+  // body
+  const body = elements.find((el) => el.id === BODY_ID)
+  expect(body.innerHtml).toBe('')
+
   // component data
   const component = elements.find((el) => el.id === COMPONENT_ID)
   expect(component.type).toBe(ElementType.HTML)
@@ -63,6 +77,7 @@ test('convert from 2.5.60', () => {
   const allSectionContainers = elements.filter((el) => el.isSectionContent)
   allSectionContainers.forEach((el) => {
     expect(el.style.desktop.width).toBeUndefined()
+    expect(el.style.desktop.height).not.toBeUndefined()
   })
 
   const section = elements.find((el) => el.id === SECTION_ID)
@@ -81,6 +96,7 @@ test('convert from 2.5.60', () => {
     'background-color': 'red',
   })
   expect(section.children).toHaveLength(1)
+
   const sectionContainer = elements.find((el) => el.id === SECTION_CONTAINER_ID)
   expect(sectionContainer.enableDrag).toBe(false)
   expect(sectionContainer.enableDrop).toBe(true)
@@ -90,6 +106,15 @@ test('convert from 2.5.60', () => {
   expect(sectionContainer.enableResize.bottom).toBe(true)
   expect(sectionContainer.style.mobile).toEqual({})
   expect(sectionContainer.children).toHaveLength(2)
+  expect(sectionContainer.style.desktop).toEqual({
+    'height': '100px',
+    'position': 'relative',
+    'margin-left': 'auto',
+    'margin-right': 'auto',
+    'background-color': 'transparent',
+  })
+  expect(JSON.stringify(sectionContainer.style.mobile)).toBe('{}')
+
   const textBox = elements.find((el) => el.type === ElementType.TEXT)
   expect(textBox.enableDrag).toBe(true)
   expect(textBox.enableDrop).toBe(false)
@@ -147,4 +172,6 @@ test('convert from 2.5.60', () => {
   expect(textBox.pageNames).toHaveLength(0)
   expect(image.pageNames).toHaveLength(1)
   expect(image.pageNames).toEqual(['page-page-1'])
+  expect(image.classList).not.toEqual(['page-page-1'])
+  // expect(siteIFrame.contentDocument.querySelector('.page-page-1')).toBeNull()
 })

@@ -43,25 +43,22 @@ export class Style {
 
   /**
    * convert style object to string
+   * this does handle height / min-height
    */
-  static styleToString(style: string|object|CSSStyleDeclaration, opt_tab?: string): string {
-    if (typeof style === 'string') {
-      return style;
-    }
-    if (!opt_tab) {
-      opt_tab = '';
-    }
-    let styleStr = '';
-    for (const idx in style) {
-      // filter the numerical indexes of a CSSStyleDeclaration object
-      // filter initial values and shorthand properties
-      if (style[idx] && typeof style[idx] === 'string' && style[idx] !== '' &&
-          idx.match(/[^0-9]/)) {
-        styleStr +=
-            opt_tab + idx + ': ' + style[idx] + '; ';
-      }
-    }
-    return styleStr;
+  static styleToString(style: {[key: string]: string}, useMinHeight: boolean, opt_tab = ''): string {
+    return Object.keys(style)
+      .reduce((result: string, key:string) => {
+        const val = style[key]
+        if(typeof(val) !== 'undefined') {
+          console.log({key, val})
+          if (useMinHeight && key === 'height') {
+            result += opt_tab + 'min-height: ' + val + '; '
+          } else {
+            result += `${opt_tab}${key}: ${val}; `
+          }
+        }
+        return result
+      }, '')
   }
 
   static hexToRgb(hexColor: string): any {

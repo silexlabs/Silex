@@ -8,11 +8,11 @@ body {
   body {
     position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
   }
-  .section-element .silex-container-content {
+  .section-element > .silex-element-content {
     border-left: 1px dashed;
     border-right: 1px dashed;
   }
-  .section-element:last-of-type .silex-container-content {
+  .section-element:last-of-type > .silex-element-content {
     border-bottom: 1px dashed;
   }
 }
@@ -22,6 +22,11 @@ body {
   background-position: 50%;
 }
 
+.silex-element-content[contenteditable="true"] {
+  min-height: 20px;
+  cursor: text;
+  pointer-events: auto;
+}
 /* .editable-style[data-silex-sub-type="image"] {
   overflow: visible;
 }
