@@ -17,32 +17,11 @@ import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeSiteStyles,
 import { PersistantData } from '../../client/flux/types';
 import { ElementType } from '../../client/element/types';
 
-// FIXME: path in constants
-// const components = require('../../../dist/client/libs/prodotype/components/components.json')
-
 /**
- * the version of the website is stored in the generator tag as "Silex v-X-Y-Z"
- * we get it from package.json
- * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
+ * class name for containers which are created with sections
  */
-const PACKAGE_JSON_DATA = JSON.parse(fs.readFileSync(Path.resolve(__dirname, '../../../../package.json')).toString());
-const FRONT_END_VERSION = PACKAGE_JSON_DATA['version:frontend'].split('.').map((s) => parseInt(s));
-const LATEST_VERSION = PACKAGE_JSON_DATA['version:backwardcompat'].split('.').map((s) => parseInt(s));
+const SECTION_CONTAINER: string = 'silex-container-content';
 
-console.log(`\nSilex starts with backward compat version ${LATEST_VERSION} and front end version ${FRONT_END_VERSION}\n`);
-
-// remove all tags
-function removeIfExist(doc: HTMLDocument, selector: string) {
-  const tag = doc.querySelector(selector)
-  if (tag) {
-    tag.remove()
-  }
-}
-// remove all useless css class
-function removeUselessCSSClass(doc: HTMLDocument, className: string) {
-  Array.from(doc.querySelectorAll('.' + className))
-  .forEach((el) => el.classList.remove(className))
-}
 
 /**
  * @fileoverview Handle backward compatibility when a user opens a site for edition
@@ -50,7 +29,39 @@ function removeUselessCSSClass(doc: HTMLDocument, className: string) {
  */
 export default class BackwardCompat {
   private data: PersistantData = null;
-  constructor(private rootUrl: string) {}
+  private frontEndVersion: string[]
+  private silexVersion: string[]
+
+  constructor(private rootUrl: string, rootPath = __dirname + '/../../../..') {
+    // FIXME: path in constants
+    /**
+     * the version of the website is stored in the generator tag as "Silex v-X-Y-Z"
+     * we get it from package.json
+     * used for backward compat and for the static files URLs taken from //{{host}}/static/{{Y-Z}}
+     */
+    const packageJson = JSON.parse(fs.readFileSync(Path.resolve(rootPath, 'package.json')).toString());
+    this.frontEndVersion = packageJson['version:frontend'].split('.').map((s) => parseInt(s));
+    this.silexVersion = packageJson['version:backwardcompat'].split('.').map((s) => parseInt(s));
+
+    // const components = require('../../../dist/client/libs/prodotype/components/components.json')
+    console.log(`\nSilex starts with backward compat version ${this.silexVersion} and front end version ${this.frontEndVersion}\n`);
+
+  }
+
+  // remove all tags
+  // export for tests
+  removeIfExist(doc: HTMLDocument, selector: string) {
+    Array.from(doc.querySelectorAll(selector))
+    .forEach((tag) => tag.remove())
+  }
+
+  // remove all useless css class
+  // export for tests
+  removeUselessCSSClass(doc: HTMLDocument, className: string) {
+    Array.from(doc.querySelectorAll('.' + className))
+    .forEach((el) => el.classList.remove(className))
+  }
+
   /**
    * handle backward compatibility issues
    * Backwardcompatibility process takes place after opening a file
@@ -79,10 +90,10 @@ export default class BackwardCompat {
       .split('.')
       .map((str) => parseInt(str, 10) || 0);
 
-    const hasToUpdate = this.hasToUpdate(version, LATEST_VERSION);
+    const hasToUpdate = this.hasToUpdate(version, this.silexVersion);
 
     // warn the user
-    if (this.amIObsolete(version, LATEST_VERSION)) {
+    if (this.amIObsolete(version, this.silexVersion)) {
       return ['This website has been saved with a newer version of Silex. Continue at your own risks.', this.data];
     } else if (this.hasToUpdate(version, [2, 2, 7])) {
       return Promise.reject({
@@ -99,7 +110,7 @@ export default class BackwardCompat {
       // update the static scripts to match the current server and latest version
       this.updateStatic(doc);
       // store the latest version
-      metaNode.setAttribute('content', 'Silex v' + LATEST_VERSION.join('.'));
+      metaNode.setAttribute('content', 'Silex v' + this.silexVersion.join('.'));
       // apply all-time fixes
       this.fixes(doc);
       // build the report for the user
@@ -141,11 +152,11 @@ export default class BackwardCompat {
    * Check for common errors in editable html files
    */
   fixes(doc) {
-    const pages: HTMLElement[] = Array.from(doc.querySelectorAll(`.${Constants.PAGES_CONTAINER_CLASS_NAME} a[${Constants.TYPE_ATTR}="page"]`));
-    if (pages.length > 0) {
-      console.log('Fix error of wrong silex type for', pages.length, 'pages');
-      pages.forEach((page) => page.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_PAGE));
-    }
+    // const pages: HTMLElement[] = Array.from(doc.querySelectorAll(`.${Constants.PAGES_CONTAINER_CLASS_NAME} a[${Constants.TYPE_ATTR}="page"]`));
+    // if (pages.length > 0) {
+    //   console.log('Fix error of wrong silex type for', pages.length, 'pages');
+    //   pages.forEach((page) => page.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_PAGE));
+    // }
   }
 
   /**
@@ -185,7 +196,7 @@ export default class BackwardCompat {
       return url;
     }
     const pathRelativeToStatic = pathRelativeToStaticMatch[1];
-    return `${ this.rootUrl }/static/${ FRONT_END_VERSION[0] }.${ FRONT_END_VERSION[1] }/${ pathRelativeToStatic }`;
+    return `${ this.rootUrl }/static/${ this.frontEndVersion[0] }.${ this.frontEndVersion[1] }/${ pathRelativeToStatic }`;
   }
 
   /**
@@ -270,7 +281,7 @@ export default class BackwardCompat {
           ));
 
           // we add classes to the elements so that we can tell the stage component if an element is draggable, resizeable, selectable...
-          const changedSectionsContent = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}, .${ElementType.SECTION} .${Constants.SECTION_CONTAINER}`));
+          const changedSectionsContent = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}, .${ElementType.SECTION} .${SECTION_CONTAINER}`));
           changedSectionsContent.forEach((el: HTMLElement) => el.classList.add(
             Constants.PREVENT_DRAGGABLE_CLASS_NAME,
             // Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME,
@@ -313,15 +324,15 @@ export default class BackwardCompat {
               pages,
               elements,
             }
-            removeIfExist(doc, 'meta[name="website-width"]')
-            removeIfExist(doc, 'meta[name="hostingProvider"]')
-            removeIfExist(doc, 'meta[name="publicationPath"]');
+            this.removeIfExist(doc, 'meta[name="website-width"]')
+            this.removeIfExist(doc, 'meta[name="hostingProvider"]')
+            this.removeIfExist(doc, 'meta[name="publicationPath"]');
 
-            // ['prevent-draggable'].forEach((className) => removeUselessCSSClass(doc, className))
+            ['prevent-draggable', 'silex-container-content'].forEach((className) => this.removeUselessCSSClass(doc, className))
 
             actions.push('I updated the model to the latest version of Silex.');
             // pages
-            removeIfExist(doc, `.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
+            this.removeIfExist(doc, `.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
             actions.push('I removed the old pages system.');
           } else {
             console.error('Could not import site from v2.2.11', {elements, pages, site})

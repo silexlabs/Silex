@@ -70,9 +70,11 @@ export function loadProperties(doc: HTMLDocument): DomData {
   }
 }
 
-const EDITABLE_ELEMENT_TYPES: string[] = [
-  ElementType.HTML, ElementType.IMAGE, ElementType.TEXT,
-];
+const EDITABLE = [ElementType.HTML, ElementType.IMAGE, ElementType.TEXT]
+const DROPPABLE = [ElementType.CONTAINER, ElementType.SECTION]
+const HAVE_INNER_HTML = [ElementType.HTML, ElementType.TEXT]
+const HAVE_ALT = [ElementType.IMAGE]
+
 
 export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTMLElement): ElementData {
   const linkValue = element.getAttribute(Constants.LINK_ATTR)
@@ -82,17 +84,20 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
   const isSectionContent = element.classList.contains(Constants.ELEMENT_CONTENT_CLASS_NAME)
   const isBody = element.classList.contains('body-initial')
   const contentElement = getContentNode(element)
+  const pages = getPagesForElementBC(doc, element)
   return {
     [crudIdKey]: Symbol(),
     id,
-    pageNames: getPagesForElementBC(doc, element).map((p) => p.id),
+    pageNames: pages.map((p) => p.id),
     classList: element.className
       .split(' ')
-      .filter((c) => !Constants.SILEX_CLASS_NAMES.includes(c) && c !== id),
+      .filter((c) => c !== id)
+      .filter((c) => !pages.find((p) => p.id === c))
+      .filter((c) => !Constants.SILEX_CLASS_NAMES.includes(c)),
     type,
     isSectionContent,
     title: element.title,
-    alt: type === ElementType.IMAGE && !!contentElement ? (contentElement as HTMLImageElement).alt : null,
+    alt: HAVE_ALT.includes(type) && !!contentElement ? (contentElement as HTMLImageElement).alt : null,
     children: Array.from(element.children)
       .filter((child) => child.classList.contains(Constants.EDITABLE_CLASS_NAME))
       .map((el: HTMLElement) => getElementId(el)),
@@ -100,9 +105,9 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       type: linkType,
       value: linkValue,
     } : null,
-    enableEdit: EDITABLE_ELEMENT_TYPES.indexOf(type) > -1,
+    enableEdit: EDITABLE.includes(type),
     enableDrag: type === ElementType.SECTION || !element.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME), // New feature: make all sections draggable
-    enableDrop: (type === ElementType.CONTAINER || type === ElementType.SECTION) && !element.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME),
+    enableDrop: DROPPABLE.includes(type) && !element.classList.contains(Constants.PREVENT_DROPPABLE_CLASS_NAME),
     enableResize: {
       top: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME),
       bottom: !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME),
@@ -136,7 +141,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
     data: {
       component: getComponentDataFromDomBC(data, element),
     },
-    innerHtml: getInnerHtml(element),
+    innerHtml: HAVE_INNER_HTML.includes(type) ? getInnerHtml(element) : '',
   }
 }
 
@@ -151,8 +156,8 @@ export function getElementsFromDomBC(doc: HTMLDocument): ElementData[] {
 
 export function writeStyles(doc: HTMLDocument, elements: ElementData[]) {
   elements.forEach((el) => {
-    writeStyleToDom(doc, el.id, el.style.desktop, false)
-    writeStyleToDom(doc, el.id, el.style.mobile, true)
+    writeStyleToDom(doc, el, false)
+    writeStyleToDom(doc, el, true)
   })
 }
 

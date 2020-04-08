@@ -236,8 +236,7 @@ function createImageElement(doc: HTMLDocument): HTMLElement {
   return element;
 }
 
-export function writeStyleToDom(doc: HTMLDocument, elementId, style, isMobile) {
-  // find the index of the rule for the given element
+export function deleteStyleFromDom(doc, elementId, isMobile) {
   const styleSheet = getInlineStyleSheet(doc)
   const cssRuleObject = findCssRule(styleSheet, elementId, isMobile)
 
@@ -245,15 +244,28 @@ export function writeStyleToDom(doc: HTMLDocument, elementId, style, isMobile) {
   if (cssRuleObject) {
     styleSheet.deleteRule(cssRuleObject.index);
   }
-  // convert style to string
-  // we use the class name because elements have their ID as a css class too
-  const styleStr = '.' + elementId + '{' + Style.styleToString(style) + '} ';
-  if (isMobile) {
-    // add the rule to the dom to see the changes, mobile rules after
-    // desktop ones
-    styleSheet.insertRule(addMediaQuery(styleStr), styleSheet.cssRules.length);
-  } else {
-    styleSheet.insertRule(styleStr, 0);
+}
+
+export function writeStyleToDom(doc: HTMLDocument, element: ElementData, isMobile: boolean) {
+  // find the index of the rule for the given element
+  const elementId = element.id
+  const style = isMobile ? element.style.mobile : element.style.desktop
+  const styleSheet = getInlineStyleSheet(doc)
+
+  deleteStyleFromDom(doc, element.id, isMobile)
+
+  // prevent empty rules
+  if (Object.keys(style).filter((key) => typeof(style[key]) !== 'undefined').length > 0) {
+    // convert style to string
+    // we use the class name because elements have their ID as a css class too
+    const styleStr = '.' + elementId + '{' + Style.styleToString(style, element.useMinHeight) + '} ';
+    if (isMobile) {
+      // add the rule to the dom to see the changes, mobile rules after
+      // desktop ones
+      styleSheet.insertRule(addMediaQuery(styleStr), styleSheet.cssRules.length);
+    } else {
+      styleSheet.insertRule(styleStr, 0);
+    }
   }
 }
 

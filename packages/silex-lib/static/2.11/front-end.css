@@ -1,34 +1,11 @@
 /**
- * This file holds the basic CSS styles of Silex websites
+ * This file holds the styles of websites while editing
  */
 
-/* pages */
-.paged-element-hidden.paged-element.editable-style {
-  display: none;
-}
-.silex-editor .silex-element-content {
-  /* all container elements (text box) */
-  pointer-events: none;
-}
-.silex-editor .section-element > .silex-element-content {
-  /* section have a content element, and it needs to keep pointer events
-     because it container other silex elements
-  */
-  pointer-events: auto;
-}
-.silex-editor .silex-element-content[contenteditable="true"] {
-  min-height: 20px;
-  cursor: text;
-  pointer-events: auto;
-}
 /* prevent-auto-z-index is to let the components handle their z-index */
 .section-element > .silex-element-content > *:not(.prevent-auto-z-index):not(.fixed) {
   /* put the elements of a section on top of sections bellow */
   z-index: 10;
-}
-.text-editor-focus .ui-resizable-handle {
-  /* remove text box UI handles for resize */
-  display: none;
 }
 .website-width {
   width: 960px;
@@ -51,13 +28,13 @@
     because of normalize.css */
 a:focus{ outline: none;}
 
-body.silex-runtime .editable-style[data-silex-href] {
+body .editable-style[data-silex-href] {
   cursor: pointer;
 }
 body.enable-mobile .editable-style.hide-on-desktop {
   display: none;
 }
-/* elements styles */
+/* only outside the editor */
 .silex-runtime .fixed {
   position: absolute;
   z-index: 20;

@@ -2,6 +2,7 @@ import { ElementData, ElementId } from './types';
 import { StateChange } from '../flux/crud-store';
 import {
   createDomElement,
+  deleteStyleFromDom,
   executeScripts,
   getContentNode,
   getDomElement,
@@ -65,7 +66,12 @@ export const onAddElements = (win: Window) => (elements: ElementData[]) => {
 export const onDeleteElements = (win: Window) => (elements: ElementData[]) => {
   const doc = win.document
   elements
-  .map((element) => getDomElement(doc, element))
+  .map((element) => {
+    deleteStyleFromDom(doc, element.id, true)
+    deleteStyleFromDom(doc, element.id, false)
+
+    return getDomElement(doc, element)
+  })
   .forEach((element) => {
     removeElement(element)
   })
@@ -147,27 +153,14 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
     }
     if (to.style !== from.style) {
       ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
-        if (to.style[mobileOrDesktop] !== from.style[mobileOrDesktop]) {
-          // handle min-height VS height
-          const height = to.style[mobileOrDesktop].height
-          const style = {
-            ...to.style[mobileOrDesktop],
-            'min-height': to.useMinHeight ? height : null,
-            'height': to.useMinHeight ? null : height,
-          }
-          // write css rules
-          writeStyleToDom(doc, to.id, style, getUi().mobileEditor)
-        }
+        // write css rules
+        writeStyleToDom(doc, to, true)
+        writeStyleToDom(doc, to, false)
       })
       // website width is also section containers width
       if (!getUi().mobileEditor && to.style.desktop !== from.style.desktop) {
         if (to.isSectionContent && !!to.style.desktop.width) {
-          const style = {
-            ...to.style.desktop,
-            width: null,
-          }
-          // write css rules
-          writeStyleToDom(doc, to.id, style, false)
+          console.warn('FIXME: update real section container width to null')
           // set website width
           setWebsiteWidth(doc, parseInt(to.style.desktop.width))
         }

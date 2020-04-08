@@ -86,7 +86,7 @@ export const ELEM_TEXT: ElementData = {
   data: {
     component: null,
   },
-  innerHtml: 'SOME CONTENT ELEM1',
+  innerHtml: 'SOME TEXT CONTENT',
 }
 
 export const ELEM_IMAGE: ElementData = {
@@ -94,6 +94,7 @@ export const ELEM_IMAGE: ElementData = {
   [crudIdKey]: Symbol(),
   id: getNextId(),
   type: ElementType.IMAGE,
+  useMinHeight: false,
   innerHtml: '',
 }
 

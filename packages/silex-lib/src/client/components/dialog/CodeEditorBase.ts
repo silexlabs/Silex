@@ -18,6 +18,8 @@
  */
 
 // tslint:disable
+import { SilexNotification } from '../../utils/Notification';
+
 declare namespace monaco {
   class Selection { constructor(a: number, b: number, c: number, d: number); }
 }
@@ -61,47 +63,53 @@ export class CodeEditorBase {
    * the controller instances
    */
   constructor(protected element: HTMLElement, language: string) {
-    // init the menu and UIs
-    // if (!this.editor) {
-    // }
-    this.editor = monaco.editor.create(element.querySelector('.ace-editor'), {
-      value: '',
-      language,
-      theme: 'vs-dark',
-    });
-    this.editor.onDidChangeModelContent((e) => {
-      if (!this.lockOnChange) {
-        this.contentChanged();
-      }
-    });
+    // check third party script
+    // tslint:disable
+    const monaco = window['monaco']
+    // tslint:enable
+    if (monaco) {
+      // init the menu and UIs
+      this.editor = monaco.editor.create(element.querySelector('.ace-editor'), {
+        value: '',
+        language,
+        theme: 'vs-dark',
+      });
+      this.editor.onDidChangeModelContent((e) => {
+        if (!this.lockOnChange) {
+          this.contentChanged();
+        }
+      });
 
-    // dock mode
-    const dockBtn = element.querySelector('.dock-btn');
-    if (dockBtn) {
-      dockBtn.addEventListener('click', () => {
-        CodeEditorBase.isDocked = !CodeEditorBase.isDocked;
-        this.dockPanel(CodeEditorBase.isDocked);
-        this.setOptions();
-        // force ace redraw for editor size
-        this.editor.render();
-        this.editor.layout();
-        // give the editor the focus
-        this.editor.focus();
-      }, false);
+      // dock mode
+      const dockBtn = element.querySelector('.dock-btn');
+      if (dockBtn) {
+        dockBtn.addEventListener('click', () => {
+          CodeEditorBase.isDocked = !CodeEditorBase.isDocked;
+          this.dockPanel(CodeEditorBase.isDocked);
+          this.setOptions();
+          // force ace redraw for editor size
+          this.editor.render();
+          this.editor.layout();
+          // give the editor the focus
+          this.editor.focus();
+        }, false);
+      }
+      this.modalDialog = new ModalDialog({
+        name: `${language} Editor`,
+        element,
+        onOpen: (args) => {
+          this.setOptions();
+          // force ace redraw for editor size
+          this.editor.render();
+          this.editor.layout();
+          // give the editor the focus
+          this.editor.focus();
+        },
+        onClose: () => {},
+      });
+    } else {
+      SilexNotification.alert('Error', 'The monaco editor did not load. This is required by Silex, please try reloading the page or build Silex again.', () => {})
     }
-    this.modalDialog = new ModalDialog({
-      name: `${language} Editor`,
-      element,
-      onOpen: (args) => {
-        this.setOptions();
-        // force ace redraw for editor size
-        this.editor.render();
-        this.editor.layout();
-        // give the editor the focus
-        this.editor.focus();
-      },
-      onClose: () => {},
-    });
   }
 
   /**
