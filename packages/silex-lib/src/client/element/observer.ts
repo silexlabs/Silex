@@ -104,8 +104,10 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
       setLink(domEl, to.link)
     }
     if (to.classList !== from.classList) {
+      // remove only the old css classes
+      // this will keep the element SilexId, type,  etc.
       from.classList.forEach((c) => domEl.classList.remove(c))
-      to.classList.forEach((c) => domEl.classList.add(c))
+      domEl.classList.add(...to.classList)
     }
     // element visibility destkop and mobile
     if (to.visibility.desktop !== from.visibility.desktop) {
@@ -152,11 +154,11 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
       //   .map((el) => getStage().getState(el)))
     }
     if (to.style !== from.style) {
-      ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
-        // write css rules
-        writeStyleToDom(doc, to, true)
-        writeStyleToDom(doc, to, false)
-      })
+      // write css rules
+      writeStyleToDom(doc, to, true)
+      writeStyleToDom(doc, to, false)
+      // ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
+      // })
       // website width is also section containers width
       if (!getUi().mobileEditor && to.style.desktop !== from.style.desktop) {
         if (to.isSectionContent && !!to.style.desktop.width) {

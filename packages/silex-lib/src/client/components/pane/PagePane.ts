@@ -17,19 +17,20 @@
  */
 
 import { Constants } from '../../../constants';
-import { ElementData, LinkType } from '../../element/types';
-import { getDomElement } from '../../element/dom';
 import { Dom } from '../../utils/Dom';
-import { getStage } from '../StageWrapper';
-import { getSiteDocument } from '../../components/SiteFrame';
-import { PaneBase } from './PaneBase';
+import { ElementData, LinkType } from '../../element/types';
 import { PageData } from '../../page/types'
-import { subscribePages, getPages } from '../../page/store'
+import { PaneBase } from './PaneBase';
+import { getCurrentPage } from '../../page/filters';
+import { getDomElement } from '../../element/dom';
 import { getSelectedElements, noSectionContent } from '../../element/filters'
+import { getSite } from '../../site/store'
+import { getSiteDocument } from '../../components/SiteFrame';
+import { getStage } from '../StageWrapper';
+import { removeLink, addLink, addToPage, removeFromPage } from '../../element/dispatchers'
+import { subscribePages, getPages } from '../../page/store'
 import { subscribeUi, getUi } from '../../ui/store'
 import { updateElements, getElements } from '../../element/store'
-import { getSite } from '../../site/store'
-import { removeLink, addLink, addToPage, removeFromPage } from '../../element/dispatchers'
 
 /**
  * on of Silex Editors class
@@ -133,7 +134,7 @@ export class PagePane extends PaneBase {
           from: el,
           to: {
             ...el,
-            pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getPages().find((p) => p.opened).id],
+            pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getCurrentPage().id],
           },
         })));
       // const elements = this.states.map((state) => state.el);

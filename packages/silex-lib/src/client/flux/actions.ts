@@ -22,7 +22,6 @@ export enum PageAction {
   CREATE = 'PAGE_CREATE',
   DELETE = 'PAGE_DELETE',
   UPDATE = 'PAGE_UPDATE',
-  OPEN = 'PAGE_OPEN',
   MOVE = 'PAGE_MOVE',
 }
 

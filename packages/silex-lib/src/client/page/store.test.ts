@@ -1,5 +1,5 @@
 import { PAGE1, PAGE2, PAGE3 } from '../../../__tests__/data-set';
-import { createPages, deletePages, getPages, initializePages, movePage, openPage, updatePages } from './store';
+import { createPages, deletePages, getPages, initializePages, movePage, updatePages } from './store';
 import { PageData } from './types';
 
 beforeEach(() => {
@@ -71,9 +71,3 @@ test('Move a page', () => {
   initializePages(PAGES_1)
 })
 
-test('Open a page', () => {
-  initializePages(PAGES_2)
-  openPage(PAGE2)
-  expect(getPages()[0].opened).toBe(false)
-  expect(getPages()[1].opened).toBe(true)
-})

@@ -30,11 +30,11 @@ export const startStageObserver = () => stoped = false
 export function resetStage() {
   if (!stage) { return; } // happens when File::setData is called before the html is set
   const doc = getSiteDocument();
-  const currentPage = getPages().find((p) => p.opened);
+  const { currentPageId } = getUi();
   stopStageObserver() // FIXME: should not be necessary, stage bug?
   stage.reset(getElements()
     .filter(
-      (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id))
+      (el: ElementData) => (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPageId))
       && ((el.visibility.desktop && !getUi().mobileEditor) || (el.visibility.mobile && getUi().mobileEditor)))
     .map((el) => getDomElement(doc, el))
     .filter((el) => !!el)) // FIXME: what should we do while the child is not yet added

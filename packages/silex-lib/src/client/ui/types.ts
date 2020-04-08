@@ -23,4 +23,5 @@ export enum LOADING {
 export interface UiData {
   mobileEditor: boolean,
   loading: LOADING,
+  currentPageId: string,
 }

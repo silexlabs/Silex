@@ -186,21 +186,17 @@ class Site {
     // update style tag (the dom do not update automatically when we change
     // document.styleSheets)
     const updatedStyles = getAllStyles();
-    console.log({updatedStyles})
     yield;
 
     // clone
     const contentDocument = getSiteDocument()
     const cleanFile = (contentDocument.cloneNode(true) as Document);
-    console.log({cleanFile})
     yield;
 
     // apply styles in JSON to the DOM, this is to ensure we save the styles
     // untuched by the browser
     const styleTag = cleanFile.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME);
-    console.log('BEFORE', styleTag.innerHTML)
     styleTag.innerHTML = updatedStyles;
-    console.log('AFTER', styleTag.innerHTML)
     yield;
 
     // get html

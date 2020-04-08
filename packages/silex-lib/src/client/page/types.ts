@@ -21,7 +21,6 @@ export interface PageData extends CrudState {
   id: string,
   displayName: string,
   link: Link,
-  opened: boolean,
   canDelete: boolean,
   canProperties: boolean,
   canMove: boolean,

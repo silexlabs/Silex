@@ -3,7 +3,6 @@ import { PageData } from '../page/types';
 import {
   initializePages,
   movePage,
-  openPage,
   subscribePages,
   updatePages
 } from '../page/store';
@@ -90,13 +89,8 @@ test('Subscribe CRUD', () => {
   expect(test.onDeletePages).toHaveBeenCalledTimes(1)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
 
-  openPage(PAGE2)
-  expect(test.onAddPages).toHaveBeenCalledTimes(1)
-  expect(test.onDeletePages).toHaveBeenCalledTimes(1)
-  expect(test.onUpdatePages).toHaveBeenCalledTimes(1)
-
   initializePages(PAGES_2)
-  expect(test.onUpdatePages).toHaveBeenCalledTimes(2)
+  expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
   updatePages([{
     from: PAGE1,
     to: {
@@ -104,7 +98,7 @@ test('Subscribe CRUD', () => {
       id: 'newId',
     },
   }])
-  expect(test.onUpdatePages).toHaveBeenCalledTimes(3)
+  expect(test.onUpdatePages).toHaveBeenCalledTimes(1)
   expect(test.onAddPages).toHaveBeenCalledTimes(1)
   expect(test.onDeletePages).toHaveBeenCalledTimes(1)
 })

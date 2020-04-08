@@ -10,6 +10,9 @@
 .website-width {
   width: 960px;
 }
+.paged-element {
+  display: none;
+}
 /* resize */
 .editable-style.image-element .silex-element-content {
   border-radius: inherit; /* this is to follow the element's radius */

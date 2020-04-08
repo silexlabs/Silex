@@ -95,11 +95,6 @@ export function onUpdatePages(changes: StateChange<PageData>[]) {
           })))
       }, 0);
     }
-
-    // current opened page
-    if (!from || !from.opened && to.opened) {
-      openPageDom(getSiteWindow(), to)
-    }
   })
 
   // save the changed data to the dom for front-end.js

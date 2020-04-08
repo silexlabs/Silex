@@ -1,8 +1,10 @@
 import { Constants } from '../../constants'
-import { UiData, LOADING } from './types'
-import { getSite } from '../site/store'
 import { SilexNotification } from '../utils/Notification'
-import { getSiteIFrame } from '../components/SiteFrame'
+import { UiData, LOADING } from './types'
+import { getCurrentPage } from '../page/filters';
+import { getSite } from '../site/store'
+import { getSiteIFrame, getSiteWindow } from '../components/SiteFrame';
+import { openPageDom } from '../page/dom';
 import { setEditMode, hideUi } from '../components/StageWrapper'
 
 export function onChangeUi(prev: UiData, ui: UiData) {
@@ -35,4 +37,6 @@ export function onChangeUi(prev: UiData, ui: UiData) {
       setEditMode(true)
       hideUi(false)
   }
+
+  openPageDom(getSiteWindow(), getCurrentPage())
 }

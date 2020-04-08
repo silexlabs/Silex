@@ -50,7 +50,6 @@ export class Style {
       .reduce((result: string, key:string) => {
         const val = style[key]
         if(typeof(val) !== 'undefined') {
-          console.log({key, val})
           if (useMinHeight && key === 'height') {
             result += opt_tab + 'min-height: ' + val + '; '
           } else {

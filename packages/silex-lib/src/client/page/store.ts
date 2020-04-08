@@ -44,12 +44,6 @@ export const updatePages_ = (store: SilexStore, changes: StateChange<PageData>[]
 })
 export const updatePages = connect<StateChange<PageData>[]>(updatePages_)
 
-export const openPage_ = (store: SilexStore, item: PageData) => store.dispatch({
-  type: PageAction.OPEN,
-  item,
-})
-export const openPage = connect<PageData>(openPage_)
-
 export const movePage_ = (store: SilexStore, {page, idx}: {page: PageData, idx: number}) => store.dispatch({
   type: PageAction.MOVE,
   item: page,

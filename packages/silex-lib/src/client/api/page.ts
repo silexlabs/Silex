@@ -1,8 +1,10 @@
-import { createPages, getPages, updatePages, deletePages, movePage, openPage } from '../page/store'
-import { crudIdKey } from '../flux/crud-store'
 import { LinkType } from '../element/types'
 import { PageData } from '../page/types'
 import { SilexNotification } from '../utils/Notification'
+import { createPages, getPages, updatePages, deletePages, movePage } from '../page/store'
+import { crudIdKey } from '../flux/crud-store'
+import { getCurrentPage } from '../page/filters';
+import { openPage } from '../ui/dispatchers';
 
 /**
  * create a page
@@ -23,7 +25,6 @@ export function createPage(): Promise<void> {
           type: LinkType.PAGE,
           value: '#!' + name,
         },
-        opened: false,
         canDelete: true,
         canRename: true,
         canMove: true,
@@ -43,7 +44,7 @@ export function createPage(): Promise<void> {
  * edit a page properties
  * @param pageData data of the page edited, defaults to current page
  */
-export function editPage(pageData: PageData = getPages().find((p) => p.opened)) {
+export function editPage(pageData: PageData = getCurrentPage()) {
   editPageSettings(pageData)
     .then(({id, displayName}) => {
       // undo checkpoint
@@ -74,7 +75,7 @@ export function editPage(pageData: PageData = getPages().find((p) => p.opened)) 
 /**
  * remvove a page
  */
-export function removePage(page: PageData = getPages().find((p) => p.opened)) {
+export function removePage(page: PageData = getCurrentPage()) {
   // confirm and delete
   SilexNotification.confirm(
     'Delete page',

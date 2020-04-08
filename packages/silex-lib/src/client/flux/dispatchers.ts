@@ -1,8 +1,9 @@
 import { PersistantData } from './types'
-import { stopObservers, startObservers } from './observer'
-import { initializeSite } from '../site/store'
-import { initializePages, openPage } from '../page/store'
 import { initializeElements } from '../element/store'
+import { initializePages } from '../page/store';
+import { initializeSite } from '../site/store'
+import { openPage } from '../ui/dispatchers';
+import { stopObservers, startObservers } from './observer'
 
 /**
  * update Site state in store along with elements and pages
