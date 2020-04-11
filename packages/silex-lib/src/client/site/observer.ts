@@ -2,7 +2,7 @@ import * as objectPath from '../../../node_modules/object-path/index.js'
 import { getBody } from '../element/filters'
 import { updateElements } from '../element/store'
 import { getData } from '../flux/store'
-import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidth } from '../site/dom'
+import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site/dom'
 import { writeDataToDom } from '../flux/dom';
 import { DataSources, SiteData } from '../site/types'
 import { getSiteDocument } from '../components/SiteFrame'
@@ -28,7 +28,7 @@ export function onChangeSite(prev: SiteData, site: SiteData) {
   if (!prev || prev.width !== site.width) {
     // store a style to all section containers
     // TODO: set a min-width to all sections instead
-    setWebsiteWidth(doc, site.width)
+    setWebsiteWidthInDom(doc, site.width)
     // set a minimum width to the body
     // TODO: is this useful?
     const body = getBody()
