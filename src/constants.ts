@@ -211,11 +211,6 @@ export class Constants {
   static PREVENT_DROPPABLE_CLASS_NAME: string = 'prevent-droppable';
 
   /**
-   * prevent-auto-z-index is to let the components handle their z-index
-   */
-  static PREVENT_AUTO_Z_INDEX: string = 'prevent-auto-z-index';
-
-  /**
    * class name which can be used to force Silex to use height instead of
    * minHeight to set the height of an element this is useful if the element has
    * content with height set to 100%
@@ -306,7 +301,6 @@ export class Constants {
     Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME,
     Constants.PREVENT_SELECTABLE_CLASS_NAME,
     Constants.PREVENT_DRAGGABLE_CLASS_NAME,
-    Constants.PREVENT_AUTO_Z_INDEX,
     Constants.EDITABLE_CLASS_NAME,
     Constants.ENABLE_MOBILE_CSS_CLASS,
     Constants.PAGED_CLASS_NAME,

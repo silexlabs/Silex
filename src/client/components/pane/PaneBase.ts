@@ -18,11 +18,12 @@
 
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { ElementData } from '../../element/types';
-import { getElements, subscribeElements, updateElements } from '../../element/store';
 import { Style } from '../../utils/Style';
-import { getStage } from '../StageWrapper';
 import { getSelectedElements } from '../../element/filters'
+import { getSite, updateSite } from '../../site/store';
+import { getStage } from '../StageWrapper';
 import { getUi } from '../../ui/store'
+import { subscribeElements, updateElements } from '../../element/store';
 
 export interface InputData {
   selector: string;
@@ -159,8 +160,20 @@ export class PaneBase {
   }
 
   protected styleChanged(styleName: string, val: string) {
-    updateElements(getElements()
-    .filter((el) => el.selected)
+    if (styleName === 'width') {
+      // handle section content which set the site width
+      const sectionContent = getSelectedElements()
+      .filter((el) => el.isSectionContent && !getUi().mobileEditor).unshift()
+
+      if (sectionContent) {
+        updateSite({
+          ...getSite(),
+          width: parseInt(val),
+        })
+      }
+    }
+
+    updateElements(getSelectedElements()
     .map((el) => {
       const style = {}
       style[styleName] = val
@@ -170,7 +183,7 @@ export class PaneBase {
           ...el,
           style: {
             ...el.style,
-            ...Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, style),
+            ...Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, Style.fixStyleForType(el.type, el.isSectionContent, style)),
           },
         },
       };

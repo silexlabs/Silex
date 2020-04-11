@@ -10,6 +10,7 @@
  */
 
 import { CssRule } from '../site/types'
+import { ElementType } from '../element/types';
 
 /**
  * @fileoverview Helper class for common tasks
@@ -17,6 +18,17 @@ import { CssRule } from '../site/types'
  */
 
 export class Style {
+  /**
+   * handle the specificities of each element type, e.g. section have no width
+   */
+  static fixStyleForType(type: ElementType, isSectionContent: boolean, style: CssRule) {
+    return {
+      ...style,
+      width: type === ElementType.SECTION || isSectionContent ? undefined : style.width,
+      height: type === ElementType.SECTION ? undefined : style.height,
+    }
+  }
+
   static addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: { mobile: CssRule, desktop: CssRule }, style: CssRule): {desktop: CssRule, mobile: CssRule} {
     return {
       mobile: mobileEditor ? {

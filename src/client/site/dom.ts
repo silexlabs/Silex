@@ -99,7 +99,7 @@ export function setEnableMobile(doc: HTMLDocument, enable: boolean) {
 /**
  * get/set the website width
  */
-export function setWebsiteWidth(doc: HTMLDocument, width: number) {
+export function setWebsiteWidthInDom(doc: HTMLDocument, width: number) {
   let silexStyle = doc.head.querySelector('.silex-style-settings') as HTMLStyleElement;
   if (!silexStyle) {
     silexStyle = doc.createElement('style');

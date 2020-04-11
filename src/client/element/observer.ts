@@ -19,10 +19,8 @@ import {
 import { getData } from '../flux/store';
 import { getElementById } from './filters';
 import { getPages } from '../page/store';
-import { getUi } from '../ui/store';
 import { noSectionContent, getParent } from '../element/filters';
 import { setPages } from '../page/dom';
-import { setWebsiteWidth } from '../site/dom';
 import { writeDataToDom } from '../flux/dom';
 
 export const onAddElements = (win: Window) => (elements: ElementData[]) => {
@@ -159,14 +157,6 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
       writeStyleToDom(doc, to, false)
       // ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
       // })
-      // website width is also section containers width
-      if (!getUi().mobileEditor && to.style.desktop !== from.style.desktop) {
-        if (to.isSectionContent && !!to.style.desktop.width) {
-          console.warn('FIXME: update real section container width to null')
-          // set website width
-          setWebsiteWidth(doc, parseInt(to.style.desktop.width))
-        }
-      }
     }
   })
   // save data to the dom for front-end.js

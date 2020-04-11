@@ -18,13 +18,16 @@
   border-radius: inherit; /* this is to follow the element's radius */
 	height: 100%;
 }
-.silex-element-content {
+/*
+ .image-element > .silex-element-content {
 	overflow: hidden;
+}
+.silex-element-content {
 	border-radius: initial;
 	min-height:inherit;
 	width: 100%;
 }
-
+*/
 /* wysihtml text editor styles */
 .wysiwyg-float-left {
   float: left;

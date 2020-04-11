@@ -12,6 +12,7 @@ import { editElement } from '../api/element'
 import { getDomElement, getDomElementById, getId } from '../element/dom';
 import { getElementById, getSelectedElements, getParent, getBody } from '../element/filters';
 import { getElements, subscribeElements, updateElements } from '../element/store';
+import { getSite, updateSite } from '../site/store';
 import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
 import { getUi, subscribeUi } from '../ui/store';
 import { onCrudChange, StateChange } from '../flux/crud-store';
@@ -510,16 +511,26 @@ class StageWrapper {
       updateElements(change.map((s) => {
         // FIXME: find a more optimal way to get the data from DOM element
         const element = getElements().find((el) => getDomElement(getSiteDocument(), el) === s.el);
+        // website width is also section containers width
+        //  && s.metrics.computedStyleRect.width + 'px' !== element.style.desktop.width
+        if (!getUi().mobileEditor && element.isSectionContent) {
+            // set website width
+            const width = s.metrics.computedStyleRect.width
+            updateSite({
+              ...getSite(),
+              width,
+            })
+        }
         return {
           from: element,
           to: {
             ...element,
-            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, {
+            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, Style.fixStyleForType(element.type, element.isSectionContent, {
               height: s.metrics.computedStyleRect.height + 'px',
               top: s.metrics.computedStyleRect.top + 'px',
               left: s.metrics.computedStyleRect.left + 'px',
               width: s.metrics.computedStyleRect.width + 'px',
-            }),
+            })),
           },
         };
       }))
