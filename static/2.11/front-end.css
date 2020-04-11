@@ -16,8 +16,15 @@
 /* resize */
 .editable-style.image-element .silex-element-content {
   border-radius: inherit; /* this is to follow the element's radius */
-  height: 100%;
+	height: 100%;
 }
+.silex-element-content {
+	overflow: hidden;
+	border-radius: initial;
+	min-height:inherit;
+	width: 100%;
+}
+
 /* wysihtml text editor styles */
 .wysiwyg-float-left {
   float: left;

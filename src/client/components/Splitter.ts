@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { hideScrolls, subscribeMouseEvent } from './StageWrapper'
+import { subscribeMouseEvent } from './StageWrapper'
 
 /**
  * @fileoverview
@@ -104,7 +104,6 @@ export class Splitter {
   }
   onMouseDown(evt: Event) {
     this.isDown = true;
-    hideScrolls(true);
 
     // listen mouse events
     this.toBeCleared.push(
@@ -118,7 +117,6 @@ export class Splitter {
    */
   onMouseUp(e: Event) {
     this.isDown = false;
-    hideScrolls(false);
     this.toBeCleared.forEach((clear) => clear());
     this.toBeCleared = [];
   }

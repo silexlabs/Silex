@@ -5,7 +5,6 @@ import { getCurrentPage } from '../page/filters';
 import { getSite } from '../site/store'
 import { getSiteIFrame, getSiteWindow } from '../components/SiteFrame';
 import { openPageDom } from '../page/dom';
-import { setEditMode, hideUi } from '../components/StageWrapper'
 
 export function onChangeUi(prev: UiData, ui: UiData) {
   if (ui.mobileEditor) {
@@ -23,19 +22,13 @@ export function onChangeUi(prev: UiData, ui: UiData) {
   switch (ui.loading) {
     case LOADING.SILEX:
       document.body.classList.add(Constants.LOADING_SILEX_CSS_CLASS)
-      setEditMode(false)
-      hideUi(true)
       break
     case LOADING.WEBSITE:
       getSiteIFrame().classList.add(Constants.LOADING_SITE_CSS_CLASS)
-      setEditMode(false)
-      hideUi(true)
       break
     default:
       getSiteIFrame().classList.remove(Constants.LOADING_SITE_CSS_CLASS)
       document.body.classList.remove(Constants.LOADING_SILEX_CSS_CLASS)
-      setEditMode(true)
-      hideUi(false)
   }
 
   openPageDom(getSiteWindow(), getCurrentPage())

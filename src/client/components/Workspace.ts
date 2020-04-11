@@ -21,6 +21,7 @@ import { initPageTool } from './PageTool'
 import { initPropertyTool } from './PropertyTool'
 import { isDirty } from '../api/undo'
 import { openRecent } from '../api/file'
+import { resizeWindow } from './StageWrapper';
 
 /**
  * @fileoverview Silex workspace is in charge of positionning
@@ -127,26 +128,27 @@ export function warnIfWindowTooSmall() {
  */
 function resizeWorkspace(element: HTMLElement) {
   propSplitter.redraw(false)
+  resizeWindow()
 
-  // change the number of columns in the properties pannel
-  const container = element.querySelector('.silex-property-tool .main-container');
-  if (container.clientWidth < 500) {
-    container.classList.add('size1');
-    container.classList.remove('size2');
-    container.classList.remove('size3');
-  } else {
-    if (container.clientWidth < 750) {
-      container.classList.remove('size1');
-      container.classList.add('size2');
-      container.classList.remove('size3');
-    } else {
-      if (container.clientWidth < 1000) {
-        container.classList.remove('size1');
-        container.classList.remove('size2');
-        container.classList.add('size3');
-      }
-    }
-  }
+  // // change the number of columns in the properties pannel
+  // const container = element.querySelector('.silex-property-tool .main-container');
+  // if (container.clientWidth < 500) {
+  //   container.classList.add('size1');
+  //   container.classList.remove('size2');
+  //   container.classList.remove('size3');
+  // } else {
+  //   if (container.clientWidth < 750) {
+  //     container.classList.remove('size1');
+  //     container.classList.add('size2');
+  //     container.classList.remove('size3');
+  //   } else {
+  //     if (container.clientWidth < 1000) {
+  //       container.classList.remove('size1');
+  //       container.classList.remove('size2');
+  //       container.classList.add('size3');
+  //     }
+  //   }
+  // }
 }
 
 // store the window viewport for later use

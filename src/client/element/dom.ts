@@ -413,8 +413,8 @@ export function removeWysihtmlMarkup(root: HTMLElement|Document) {
  */
 export async function setImageUrl(
     element: HTMLElement, url: string,
-    opt_callback?: ((naturalWidth: number, naturalheight: number) => void),
-    opt_errorCallback?: ((p1: HTMLElement, p2: string) => void)) {
+    cbk: ((naturalWidth: number, naturalheight: number) => void),
+    errCbk: ((p1: HTMLElement, p2: string) => void)) {
   if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
     // get the image tag
     const img = getContentNode(element) as HTMLImageElement;
@@ -432,11 +432,6 @@ export async function setImageUrl(
         // load the new image
         const loadedImg: HTMLImageElement = await loadImage(url);
 
-        // callback
-        if (opt_callback) {
-          opt_callback(loadedImg.naturalWidth, loadedImg.naturalHeight);
-        }
-
         // add the image to the element
         element.appendChild(loadedImg);
 
@@ -446,26 +441,29 @@ export async function setImageUrl(
 
         // remove loading asset
         element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS);
+
+        // callback
+        if (cbk) {
+          cbk(loadedImg.naturalWidth, loadedImg.naturalHeight);
+        }
       } catch (e) {
         console.error('An error occured while loading the image.', element, e);
 
         // callback
-        if (opt_errorCallback) {
-          opt_errorCallback(element, 'An error occured while loading the image.');
+        if (errCbk) {
+          errCbk(element, 'An error occured while loading the image. ' + (e.message || ''));
         }
       }
     } else {
-      console.error(
-          'The image could not be retrieved from the element.', element);
-      if (opt_errorCallback) {
-        opt_errorCallback(
-            element, 'The image could not be retrieved from the element.');
+      console.error('The image could not be retrieved from the element.', element);
+      if (errCbk) {
+        errCbk(element, 'The image could not be retrieved from the element.');
       }
     }
   } else {
     console.error('The element is not an image.', element);
-    if (opt_errorCallback) {
-      opt_errorCallback(element, 'The element is not an image.');
+    if (errCbk) {
+      errCbk(element, 'The element is not an image.');
     }
   }
 }

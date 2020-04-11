@@ -1,23 +1,23 @@
 // FIXME: thie hole file is a mess
 
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
-import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
-import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { Constants } from '../../constants';
 import { ElementData, ElementType } from '../element/types';
-import { getDomElement, getDomElementById, getId } from '../element/dom';
-import { onCrudChange, StateChange } from '../flux/crud-store';
+import { LOADING, UiData } from '../ui/types';
+import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { SilexNotification } from '../utils/Notification';
+import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { Style } from '../utils/Style';
-import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
-import { getElementById, getSelectedElements, getParent, getBody } from '../element/filters';
-import { UiData } from '../ui/types';
-import { getPages, subscribePages } from '../page/store';
-import { getElements, subscribeElements, updateElements } from '../element/store';
-import { getUi, subscribeUi } from '../ui/store';
-import { selectBody } from '../element/dispatchers';
-import { resetFocus } from './Workspace'
 import { editElement } from '../api/element'
+import { getDomElement, getDomElementById, getId } from '../element/dom';
+import { getElementById, getSelectedElements, getParent, getBody } from '../element/filters';
+import { getElements, subscribeElements, updateElements } from '../element/store';
+import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
+import { getUi, subscribeUi } from '../ui/store';
+import { onCrudChange, StateChange } from '../flux/crud-store';
+import { resetFocus } from './Workspace'
+import { selectBody } from '../element/dispatchers';
+import { subscribePages } from '../page/store';
 
 // FIXME: do not expose the stage component here?
 let stage: Stage
@@ -60,18 +60,19 @@ export function getEditMode(): boolean {
 }
 export function setEditMode(mode: boolean) {
   if (!stage) { return; }
+  console.trace('hide stage', !mode)
   if (stage.visible === mode) {
     stage.visible = !mode;
   }
 }
+export function resizeWindow() {
+  if (!stage) { return; }
+  stage.resizeWindow()
+}
 export function hideUi(hide: boolean) {
   if (!stage) { return; }
+  console.trace('hide ui', hide)
   stage.hideUi(hide);
-}
-
-export function hideScrolls(hide: boolean) {
-  if (!stage) { return; }
-  stage.hideScrolls(hide);
 }
 
 /**
@@ -239,6 +240,18 @@ class StageWrapper {
         // reset the stage after switch to/from mobile editor
         setTimeout(() => resetStage(), 0)
       }
+      if (!prevState || prevState.loading !== nextState.loading) {
+        if (nextState.loading === LOADING.NONE) {
+          hideUi(false)
+          setEditMode(true)
+        } else {
+          hideUi(true)
+          setEditMode(false)
+        }
+      }
+      if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
+        resizeWindow()
+      }
     });
     subscribeElements(onCrudChange<ElementData>({
       onAdd: preventStageObservers(onAddElement),
@@ -365,7 +378,6 @@ class StageWrapper {
     this.stage.redraw();
   }
   private startDragOrResize() {
-    hideScrolls(true);
     this.dragging = true;
     // this.prepareUndo();
   }
@@ -378,7 +390,6 @@ class StageWrapper {
     this.startDragOrResize();
   }
   private stopDragOrResize(changed: SelectableState[], redraw) {
-    hideScrolls(false);
     this.dragging = false;
     this.applyStyle(changed);
     this.redraw();

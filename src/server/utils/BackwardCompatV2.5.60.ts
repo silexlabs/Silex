@@ -115,7 +115,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       right: type !== ElementType.SECTION && !element.classList.contains(Constants.PREVENT_RESIZABLE_CLASS_NAME) && !element.classList.contains(Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME),
     },
     selected: false,
-    useMinHeight: !element.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT),
+    useMinHeight: type !== ElementType.IMAGE && !element.classList.contains(Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT),
     visibility: {
       desktop: !element.classList.contains(Constants.HIDE_ON_DESKTOP),
       mobile: !element.classList.contains(Constants.HIDE_ON_MOBILE),
@@ -251,7 +251,6 @@ function getPageDataFromElement(element: HTMLAnchorElement): PageData {
       value: '#!' + pageName,
     },
     // opened: getCurrentPageName() === pageName,
-    opened: false,
     canDelete: !element.hasAttribute(Constants.PAGE_PREVENT_DELETE),
     canProperties: !element.hasAttribute(Constants.PAGE_PREVENT_PROPERTIES),
     canMove: !element.hasAttribute(Constants.PAGE_PREVENT_MOVE),

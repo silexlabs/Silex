@@ -101,9 +101,23 @@ export function browseAndAddImage(componentName: string) {
       const img = getDomElement(getSiteDocument(), imgData);
 
       // load the image
-      // FIXME: src should be set with flux
-      setImageUrl(img, fileInfo.absPath, (element, imgElement) => {
+      setImageUrl(img, fileInfo.absPath,
+        (naturalWidth: number, naturalHeight: number) => {
           // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
+          updateElements([{
+            from: imgData,
+            to: {
+              ...imgData,
+              style: {
+                ...imgData.style,
+                desktop: {
+                  ...imgData.style.desktop,
+                  width: naturalWidth + 'px',
+                  height: naturalHeight + 'px',
+                },
+              },
+            },
+          }])
         },
         (element: HTMLElement, message: string) => {
           SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message);
@@ -170,28 +184,34 @@ export function editElement() {
         .then((blob) => {
           if (blob) {
             // load the image
-            // FIXME: src should be set with flux
-            setImageUrl(getDomElement(getSiteDocument(), element), blob.absPath, (naturalWidth: number, naturalHeight: number) => {
-              updateElements([{
-                from: element,
-                to: {
-                  ...element,
-                  style: {
-                    ...element.style,
-                    desktop: {
-                      width: naturalWidth + 'px',
-                      height: naturalHeight + 'px',
+            setImageUrl(
+              getDomElement(getSiteDocument(), element),
+              blob.absPath,
+              (naturalWidth: number, naturalHeight: number) => {
+                updateElements([{
+                  from: element,
+                  to: {
+                    ...element,
+                    style: {
+                      ...element.style,
+                      desktop: {
+                        ...element.style.desktop,
+                        width: naturalWidth + 'px',
+                        height: naturalHeight + 'px',
+                      },
                     },
                   },
-                },
-              }])
-            });
+                }])
+              },
+              (element, message) => {
+                console.error('could not load the image', message)
+                SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message);
+              },
+            );
           }
         })
         .catch((error) => {
-          SilexNotification.notifyError(
-            'Error: I did not manage to load the image. \n' +
-              (error.message || ''));
+          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
         });
         break;
       }
