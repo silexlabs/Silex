@@ -115,7 +115,11 @@ test('convert from 2.5.60', () => {
   })
   expect(JSON.stringify(sectionContainer.style.mobile)).toBe('{}')
 
+  const htmlBox = elements.find((el) => el.type === ElementType.HTML)
+  expect(htmlBox.useMinHeight).toBe(false) // this is because there is the class name 'silex-use-height-not-minheight' on the element
+
   const textBox = elements.find((el) => el.type === ElementType.TEXT)
+  expect(textBox.useMinHeight).toBe(true)
   expect(textBox.enableDrag).toBe(true)
   expect(textBox.enableDrop).toBe(false)
   expect(textBox.enableResize.left).toBe(true)
@@ -173,5 +177,6 @@ test('convert from 2.5.60', () => {
   expect(image.pageNames).toHaveLength(1)
   expect(image.pageNames).toEqual(['page-page-1'])
   expect(image.classList).not.toEqual(['page-page-1'])
+	expect(image.useMinHeight).toBe(false)
   // expect(siteIFrame.contentDocument.querySelector('.page-page-1')).toBeNull()
 })

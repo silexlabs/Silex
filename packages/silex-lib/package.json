@@ -84,7 +84,7 @@
         "cookie-parser": "1.4.4",
         "cookie-session": "2.0.0-beta.3",
         "cross-env": "7.0.2",
-        "drag-drop-stage-component": "^1.0.22",
+        "drag-drop-stage-component": "^1.0.24",
         "express": "4.17.1",
         "express-force-ssl": "0.3.2",
         "font-awesome": "4.7.0",
