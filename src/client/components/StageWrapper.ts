@@ -2,19 +2,26 @@
 
 // import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
 import { Constants } from '../../constants';
-import { ElementData, ElementType } from '../element/types';
+import { ElementData, ElementId, ElementType } from '../element/types';
 import { LOADING, UiData } from '../ui/types';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { SilexNotification } from '../utils/Notification';
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
 import { addToMobileOrDesktopStyle, fixStyleForType } from '../utils/styles';
 import { editElement } from '../api/element'
+import {
+  getBody,
+  getElementByDomElement,
+  getElementById,
+  getParent,
+  getSelectedElements
+} from '../element/filters';
 import { getDomElement, getDomElementById, getId } from '../element/dom';
-import { getElementById, getSelectedElements, getParent, getBody } from '../element/filters';
 import { getElements, subscribeElements, updateElements } from '../element/store';
 import { getSite, updateSite } from '../site/store';
 import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
 import { getUi, subscribeUi } from '../ui/store';
+import { insertAt } from '../utils/array';
 import { onCrudChange, StateChange } from '../flux/crud-store';
 import { resetFocus } from './Workspace'
 import { selectBody } from '../element/dispatchers';
@@ -404,30 +411,37 @@ class StageWrapper {
     this.stopDragOrResize(changed, redraw);
     // Handle parent change
     // build an array with all the changes (may contain several times the same parent)
-    const changes: {element: ElementData, newParent: ElementData, oldParent: ElementData}[] = changed
+    const changes: {element: ElementData, newParent: ElementData, oldParent: ElementData, idx: number}[] = changed
       .map((selectable) => ({
         // FIXME: find a more optimal way to get the data from DOM element
-        element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
-        newParent: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el.parentElement),
+        element: getElementByDomElement(getSiteDocument(), selectable.el),
+        newParent: getElementByDomElement(getSiteDocument(), selectable.el.parentElement),
+        idx: Array.from(selectable.el.parentElement.children).indexOf(selectable.el),
       }))
-      .map(({element, newParent}) => ({
-        element, newParent,
-        oldParent: getElements().find((el) => el.children.includes(element.id)),
+      .map(({element, newParent, idx}) => ({
+        element, newParent, idx,
+        oldParent: getParent(element),
       }))
-      .filter(({element, newParent, oldParent}) => newParent !== oldParent)
+      .filter(({element, newParent, oldParent, idx}) => newParent !== oldParent || oldParent.children.indexOf(element.id) !== idx)
+    console.log('aaa', changes)
     // build an array with 1 element by chanded parent
     const changedParents = changes
-      .reduce((aggr, {element, newParent, oldParent}) => {
+      .reduce((aggr, {element, newParent, oldParent, idx}) => {
+        console.log('xxx', idx)
         const existingNewParentObj = aggr.find(({from, to}) => from.id === newParent.id);
-        if (existingNewParentObj) existingNewParentObj.to.children.push(element.id);
+        if (existingNewParentObj) existingNewParentObj.to.children = insertAt<ElementId>(
+          existingNewParentObj.to.children.filter((id) => id !== element.id), // in case it is the same parent
+          idx, element.id);
         else aggr.push({
           from: newParent,
           to: {
             ...newParent,
-            children: newParent.children.concat(element.id),
+            children: insertAt(
+              newParent.children.filter((id) => id !== element.id), // in case it is the same parent
+              idx, element.id),
           },
         });
-        if (!!oldParent) {
+        if (!!oldParent && oldParent !== newParent) {
           const existingOldParentObj = aggr.find(({from, to}) => from.id === oldParent.id);
           if (existingOldParentObj) existingOldParentObj.to.children =  existingOldParentObj.to.children.filter((id) => id !== element.id);
           else aggr.push({
