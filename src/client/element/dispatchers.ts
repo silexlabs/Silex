@@ -19,7 +19,7 @@ import {
   StyleObject
 } from './types';
 import { PageData } from '../page/types'
-import { Style } from '../utils/Style'
+import { addToMobileOrDesktopStyle } from '../utils/styles';
 import {
   createElements,
   deleteElements,
@@ -38,7 +38,6 @@ import {
 } from './filters';
 import { getCurrentPage } from '../page/filters'
 import { getEmptyElementData, getNewId } from './utils';
-import { getPages } from '../page/store'
 import { getUi } from '../ui/store'
 
 /**
@@ -160,7 +159,7 @@ export const multipleStylesChanged = (style: CssRule, elements = getSelectedElem
     from: el,
     to: {
       ...el,
-      style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, style),
+      style: addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, style),
     },
   })));
 }

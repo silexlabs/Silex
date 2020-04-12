@@ -7,7 +7,7 @@ import { LOADING, UiData } from '../ui/types';
 import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
 import { SilexNotification } from '../utils/Notification';
 import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
-import { Style } from '../utils/Style';
+import { addToMobileOrDesktopStyle, fixStyleForType } from '../utils/styles';
 import { editElement } from '../api/element'
 import { getDomElement, getDomElementById, getId } from '../element/dom';
 import { getElementById, getSelectedElements, getParent, getBody } from '../element/filters';
@@ -525,7 +525,7 @@ class StageWrapper {
           from: element,
           to: {
             ...element,
-            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, Style.fixStyleForType(element.type, element.isSectionContent, {
+            style: addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, fixStyleForType(element.type, element.isSectionContent, {
               height: s.metrics.computedStyleRect.height + 'px',
               top: s.metrics.computedStyleRect.top + 'px',
               left: s.metrics.computedStyleRect.left + 'px',

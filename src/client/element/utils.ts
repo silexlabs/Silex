@@ -11,13 +11,13 @@
 
 import { Constants } from '../../constants'
 import { ElementData, ElementId, ElementType, Point, Size } from './types'
-import { Style } from '../utils/Style'
 import { addMediaQuery, getDomElement } from './dom'
 import { crudIdKey } from '../flux/crud-store'
 import { getBody, getChildren, getElementById } from './filters';
 import { getElements } from './store'
 import { getSite } from '../site/store'
 import { isComponent } from './component';
+import { styleToString } from '../utils/styles';
 
 /**
  * @fileoverview Cross platform, it needs to run client and server side
@@ -66,8 +66,8 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
     enableEdit: type !== ElementType.SECTION && type !== ElementType.CONTAINER,
     enableDrag: /* type !== ElementType.SECTION && */ !isSectionContent,
     enableDrop: type === ElementType.SECTION || type === ElementType.CONTAINER,
-    enableResize: type === ElementType.SECTION ? { top: true, bottom: true, left: false, right: false }
-      : isSectionContent ? { top: false, bottom: false, left: true, right: true }
+    enableResize: type === ElementType.SECTION ? { top: false, bottom: false, left: false, right: false }
+      : isSectionContent ? { top: true, bottom: true, left: true, right: true }
       : { top: true, bottom: true, left: true, right: true },
     selected: false, // we sill make it selected afterwards so that observer get it
     useMinHeight: type !== ElementType.IMAGE,
@@ -173,34 +173,6 @@ export function center({element, parent, win, opt_offset = 0}: {
   parent: ElementData,
   opt_offset?: number,
 }): Point {
-  // const doc = win.document
-  // const elementDom = getDomElement(doc, element)
-  // const parentDom = getDomElement(doc, parent)
-  // const elementStyle = win.getComputedStyle(elementDom)
-  // const parentStyle = win.getComputedStyle(parentDom)
-  // const posX = Math.round((parseInt(parentStyle.width) / 2) - (parseInt(elementStyle.width) / 2))
-  // const posY = Math.round((parseInt(parentStyle.height) / 2) - (parseInt(elementStyle.height) / 2))
-
-  // const mobileOrDesktop = mobile ? element.style.mobile : element.style.desktop
-  // const mobileOrDesktopParent = mobile ? parent.style.mobile : parent.style.desktop
-  // const posX = Math.round((parseInt(mobileOrDesktopParent.width) / 2) - (parseInt(mobileOrDesktop.width) / 2))
-  // const posY = Math.round((parseInt(mobileOrDesktopParent.height) / 2) - (parseInt(mobileOrDesktop.height) / 2))
-  // return {
-  //   ...element,
-  //   style: {
-  //     ...element.style,
-  //     desktop: mobile ? element.style.desktop : {
-  //       ...element.style.desktop,
-  //       left: opt_offset + posX + 'px',
-  //       top: opt_offset + posY + 'px',
-  //     },
-  //     mobile: mobile ? {
-  //       ...element.style.mobile,
-  //       left: opt_offset + posX + 'px',
-  //       top: opt_offset + posY + 'px',
-  //     } : element.style.mobile,
-  //   },
-  // }
   const parentSize = getElementSize(win, parent, false)
   const elementSize = getElementSize(win, element, false)
 
@@ -329,8 +301,8 @@ export function getAllStyles(): string {
     id: el.id,
   }))
   .reduce((prev, {mobile, desktop, useMinHeight, id}) => ({
-    desktop: prev.desktop + (desktop ? `\n.${id} {\n${Style.styleToString(desktop, useMinHeight, '\n    ')}\n}\n` : ''),
-    mobile: prev.mobile + (mobile ? `\n.${id} {\n${Style.styleToString(mobile, useMinHeight, '\n    ')}\n}\n` : ''),
+    desktop: prev.desktop + (desktop ? `\n.${id} {\n${styleToString(desktop, useMinHeight, '\n    ')}\n}\n` : ''),
+    mobile: prev.mobile + (mobile ? `\n.${id} {\n${styleToString(mobile, useMinHeight, '\n    ')}\n}\n` : ''),
   }), {
     desktop: '',
     mobile: '',

@@ -15,11 +15,11 @@
  *
  */
 
-import { ElementData } from '../../element/types';
-import { getElements, updateElements } from '../../element/store';
-import { Style } from '../../utils/Style';
 import { ColorPicker } from '../ColorPicker';
+import { ElementData } from '../../element/types';
 import { PaneBase } from './PaneBase';
+import { addToMobileOrDesktopStyle } from '../../utils/styles';
+import { getElements, updateElements } from '../../element/store';
 import { getUi } from '../../ui/store'
 
 /**
@@ -312,7 +312,7 @@ export class BorderPane extends PaneBase {
             from: el,
             to: {
               ...el,
-              style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, {
+              style: addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, {
                 'border-width': borderWidthStr,
                 'border-style': borderStyleStr,
               }),
@@ -327,7 +327,7 @@ export class BorderPane extends PaneBase {
           from: el,
           to: {
             ...el,
-            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, {
+            style: addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, {
               'border-width': '',
               'border-style': '',
             }),

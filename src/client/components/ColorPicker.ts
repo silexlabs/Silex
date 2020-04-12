@@ -16,7 +16,7 @@
  * browser'scolor picker for the color
  */
 
-import {Style} from '../utils/Style';
+import { hexToRgba, rgbaToArray, rgbaToHex } from '../utils/styles';
 
 export class ColorPicker {
   // store for later use
@@ -90,7 +90,7 @@ export class ColorPicker {
       const opacityPercent = parseInt(this.opacityInput.value, 10);
       const opacity = isNaN(opacityPercent) ? 1 : opacityPercent / 100;
       const hex = Math.round(opacity * 255).toString(16);
-      this.color = Style.hexToRgba(this.colorInput.value + (hex.length === 2 ? '' : '0') + hex);
+      this.color = hexToRgba(this.colorInput.value + (hex.length === 2 ? '' : '0') + hex);
     } else {
       this.color = 'transparent';
     }
@@ -117,11 +117,11 @@ export class ColorPicker {
         this.colorInput.style.opacity = '1';
 
         // this will not accept rgba, only rgb:
-        const hex = Style.rgbaToHex(this.color);
+        const hex = rgbaToHex(this.color);
         this.colorInput.value = hex.substring(0, hex.length - 2);
         this.opacityInput.disabled = false;
         try {
-          const arr = Style.rgbaToArray(this.color);
+          const arr = rgbaToArray(this.color);
           this.opacityInput.value = (Math.round(arr[3] * 100 / 255)).toString();
         } catch (e) {
           // probably not an rgba color

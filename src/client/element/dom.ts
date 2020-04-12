@@ -9,13 +9,13 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { CSSRuleInfo, DataSources } from '../site/types'
 import { Constants } from '../../constants';
 import { ElementData, ElementId, ElementType, Link } from './types';
-import { getEmptyElementData } from '../element/utils';
-import { Style } from '../utils/Style';
-import { Url } from '../utils/Url'
-import { CSSRuleInfo, DataSources } from '../site/types'
 import { Prodotype } from '../externs'
+import { Url } from '../utils/Url'
+import { getEmptyElementData } from '../element/utils';
+import { styleToString } from '../utils/styles';
 
 /**
  * @fileoverview Dom manipulation methods, mostly used by observers. Cross platform, it needs to run client and server side
@@ -258,7 +258,7 @@ export function writeStyleToDom(doc: HTMLDocument, element: ElementData, isMobil
   if (Object.keys(style).filter((key) => typeof(style[key]) !== 'undefined').length > 0) {
     // convert style to string
     // we use the class name because elements have their ID as a css class too
-    const styleStr = '.' + elementId + '{' + Style.styleToString(style, element.useMinHeight) + '} ';
+    const styleStr = '.' + elementId + '{' + styleToString(style, element.useMinHeight) + '} ';
     if (isMobile) {
       // add the rule to the dom to see the changes, mobile rules after
       // desktop ones
@@ -500,4 +500,3 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
 export function renderWithProdotype(prodotypeInstance: Prodotype, options: {templateName: string, data: any, dataSources?: DataSources}) {
   return prodotypeInstance.decorate(options.templateName, options.data, options.dataSources)
 }
-
