@@ -1,14 +1,15 @@
 import * as jsBeautify from 'js-beautify';
-import { writeStyleToDom, getContentNode, getInnerHtml } from '../../client/element/dom';
-import { crudIdKey } from '../../client/flux/crud-store';
-import { Constants } from '../../constants';
-import DomTools from './DomTools';
+
 import { ComponentData, ElementId, LinkType, ElementType, ElementData, ProdotypeDependency } from '../../client/element/types';
-import { setWebsiteWidth } from '../../client/site/dom';
-import { SiteData, StyleData, CssRule } from '../../client/site/types';
-import { getDefaultStyle } from '../../client/element/utils';
-import { PageData } from '../../client/page/types';
+import { Constants } from '../../constants';
 import { FileInfo } from '../../client/third-party/types';
+import { PageData } from '../../client/page/types';
+import { SiteData, StyleData, CssRule } from '../../client/site/types';
+import { crudIdKey } from '../../client/flux/crud-store';
+import { getDefaultStyle } from '../../client/element/utils';
+import { setWebsiteWidthInDom } from '../../client/site/dom';
+import { writeStyleToDom, getContentNode, getInnerHtml } from '../../client/element/dom';
+import DomTools from './DomTools';
 import componentDef from './componentsV2.5.60'
 
 ////////////////////////////////////////////////////////////
@@ -163,7 +164,7 @@ export function writeStyles(doc: HTMLDocument, elements: ElementData[]) {
 
 export function writeSiteStyles(doc: HTMLDocument, site: SiteData) {
   // website width
-  setWebsiteWidth(doc, site.width)
+  setWebsiteWidthInDom(doc, site.width)
 }
 
 function getStylesFromDomBC({data, element, mobile, type, isSectionContent, isBody}: {data: DomData, element: HTMLElement, mobile: boolean, type: ElementType, isSectionContent: boolean, isBody: boolean}) {

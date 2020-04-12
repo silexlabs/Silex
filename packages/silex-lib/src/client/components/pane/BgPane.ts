@@ -14,15 +14,15 @@
  * Controls the background params
  *
  */
-import { ElementData } from '../../element/types';
-import { getUi } from '../../ui/store';
 import { ColorPicker } from '../ColorPicker';
-import { PaneBase } from './PaneBase';
+import { ElementData } from '../../element/types';
 import { FileExplorer } from '../dialog/FileExplorer'
-import { getElements, updateElements } from '../../element/store'
-import { Style } from '../../utils/Style'
-import { Url } from '../../utils/Url'
+import { PaneBase } from './PaneBase';
 import { SilexNotification } from '../../utils/Notification'
+import { Url } from '../../utils/Url'
+import { addToMobileOrDesktopStyle } from '../../utils/styles';
+import { getElements, updateElements } from '../../element/store'
+import { getUi } from '../../ui/store';
 
 /**
  * on of Silex Editors class
@@ -231,7 +231,7 @@ export class BgPane extends PaneBase {
           from: element,
           to: {
             ...element,
-            style: Style.addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, { 'background-image': Url.addUrlKeyword(fileInfo.absPath) }),
+            style: addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, { 'background-image': Url.addUrlKeyword(fileInfo.absPath) }),
           },
         }]);
 
