@@ -13,9 +13,11 @@ import { Constants } from '../../constants'
 import {
   ElementData,
   ElementId,
+  ElementRect,
   ElementType,
   FullBox,
   Point,
+  Rect,
   Size
 } from './types';
 import { addMediaQuery, getDomElement } from './dom'
@@ -203,27 +205,26 @@ export function center({element, parent, win, opt_offset = 0}: {
  * width, height, top, left, right integers in pixels
  * Achtung: elements need to have their top, left, width, height styles set
  */
-export function getBoundingBox(elements: ElementData[], mobile: boolean): FullBox {
-  // first check that elements have the required properties and share the same parent
-  if (elements.some((element) => !['top', 'left', 'width', 'height'].every((prop) => getElementStyle(element, prop, mobile) !== undefined))) return null
-
-  // compute the box dimentions
-  return elements.reduce((aggr, element) => {
+export function getBoundingBox(rects: ElementRect[]): FullBox {
+  return rects.reduce((aggr, rect) => {
     const box: FullBox = {
-      top: parseInt(getElementStyle(element, 'top', mobile)),
-      left: parseInt(getElementStyle(element, 'left', mobile)),
-      width: parseInt(getElementStyle(element, 'width', mobile)),
-      height: parseInt(getElementStyle(element, 'height', mobile)),
-      bottom: parseInt(getElementStyle(element, 'top', mobile)) + parseInt(getElementStyle(element, 'height', mobile)),
-      right: parseInt(getElementStyle(element, 'left', mobile)) + parseInt(getElementStyle(element, 'width', mobile)),
+      top: parseInt(rect.top || '0'),
+      left: parseInt(rect.left || '0'),
+      width: parseInt(rect.width || '0'),
+      height: parseInt(rect.height || '0'),
+      bottom: parseInt(rect.top || '0') + parseInt(rect.height || '0'),
+      right: parseInt(rect.left || '0') + parseInt(rect.width || '0'),
     }
-    return {
+    const newRect: Rect<number> = {
       top: Math.min(aggr.top, box.top),
       left: Math.min(aggr.left, box.left),
       bottom: Math.max(aggr.bottom, box.bottom),
       right: Math.max(aggr.right, box.right),
-      width: Math.max(aggr.width, box.width),
-      height: Math.max(aggr.height, box.height),
+    }
+    return {
+      ...newRect,
+      width: newRect.right - newRect.left,
+      height: newRect.bottom - newRect.top,
     }
   }, {
     top: Infinity,
@@ -234,6 +235,47 @@ export function getBoundingBox(elements: ElementData[], mobile: boolean): FullBo
     height: -Infinity,
   } as FullBox)
 }
+
+// /**
+//  * get the bounding box of some elements relative to their common parent
+//  * width, height, top, left, right integers in pixels
+//  * Achtung: elements need to have their top, left, width, height styles set
+//  */
+// export function getBoundingBox(elements: ElementData[], mobile: boolean): FullBox {
+//   // first check that elements have the required properties and share the same parent
+//   if (elements
+//     .some((element) => !['top', 'left', 'width', 'height']
+//         .every((prop) => getElementStyle(element, prop, mobile) !== undefined))) {
+//     return null
+//   }
+//
+//   // compute the box dimentions
+//   return elements.reduce((aggr, element) => {
+//     const box: FullBox = {
+//       top: parseInt(getElementStyle(element, 'top', mobile)),
+//       left: parseInt(getElementStyle(element, 'left', mobile)),
+//       width: parseInt(getElementStyle(element, 'width', mobile)),
+//       height: parseInt(getElementStyle(element, 'height', mobile)),
+//       bottom: parseInt(getElementStyle(element, 'top', mobile)) + parseInt(getElementStyle(element, 'height', mobile)),
+//       right: parseInt(getElementStyle(element, 'left', mobile)) + parseInt(getElementStyle(element, 'width', mobile)),
+//     }
+//     return {
+//       top: Math.min(aggr.top, box.top),
+//       left: Math.min(aggr.left, box.left),
+//       bottom: Math.max(aggr.bottom, box.bottom),
+//       right: Math.max(aggr.right, box.right),
+//       width: Math.max(aggr.width, box.width),
+//       height: Math.max(aggr.height, box.height),
+//     }
+//   }, {
+//     top: Infinity,
+//     left: Infinity,
+//     bottom: -Infinity,
+//     right: -Infinity,
+//     width: -Infinity,
+//     height: -Infinity,
+//   } as FullBox)
+// }
 
 export function getCreationDropZone(isSection: boolean, stageEl: HTMLIFrameElement): ElementData {
   if (isSection) {

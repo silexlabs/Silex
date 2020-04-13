@@ -1,13 +1,13 @@
 // FIXME: thie hole file is a mess
 
-// import { Stage } from 'drag-drop-stage-component'; // this is not recognized by my IDE
-import { Constants } from '../../constants';
-import { ElementData, ElementId, ElementType } from '../element/types';
-import { LOADING, UiData } from '../ui/types';
-import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types';
-import { SilexNotification } from '../utils/Notification';
-import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index';
-import { addToMobileOrDesktopStyle, fixStyleForType } from '../utils/styles';
+// import { Stage } from 'drag-drop-stage-component' // this is not recognized by my IDE
+import { Constants } from '../../constants'
+import { ElementData, ElementId, ElementType } from '../element/types'
+import { LOADING, UiData } from '../ui/types'
+import { ScrollData, SelectableState } from '../../../node_modules/drag-drop-stage-component/src/ts/Types'
+import { SilexNotification } from '../utils/Notification'
+import { Stage } from '../../../node_modules/drag-drop-stage-component/src/ts/index'
+import { addToMobileOrDesktopStyle, fixStyleForType } from '../utils/styles'
 import { editElement } from '../api/element'
 import {
   getBody,
@@ -15,30 +15,30 @@ import {
   getElementById,
   getParent,
   getSelectedElements
-} from '../element/filters';
-import { getDomElement, getDomElementById, getId } from '../element/dom';
-import { getElements, subscribeElements, updateElements } from '../element/store';
-import { getSite, updateSite } from '../site/store';
-import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
-import { getUi, subscribeUi } from '../ui/store';
-import { insertAt } from '../utils/array';
-import { onCrudChange, StateChange } from '../flux/crud-store';
+} from '../element/filters'
+import { getDomElement, getDomElementById, getId } from '../element/dom'
+import { getElements, subscribeElements, updateElements } from '../element/store'
+import { getSite, updateSite } from '../site/store'
+import { getSiteDocument, getSiteWindow } from '../components/SiteFrame'
+import { getUi, subscribeUi } from '../ui/store'
+import { insertAt } from '../utils/array'
+import { onCrudChange, StateChange } from '../flux/crud-store'
 import { resetFocus } from './Workspace'
-import { selectBody } from '../element/dispatchers';
-import { subscribePages } from '../page/store';
+import { selectBody } from '../element/dispatchers'
+import { subscribePages } from '../page/store'
 
 // FIXME: do not expose the stage component here?
 let stage: Stage
-export const getStage: (() => Stage) = () => stage;
-let stoped = false;
+export const getStage: (() => Stage) = () => stage
+let stoped = false
 export const stopStageObserver = () => stoped = true
 export const startStageObserver = () => stoped = false
 
 // expose reset as a workaround some stage bugs (see element-observer)
 export function resetStage() {
-  if (!stage) { return; } // happens when File::setData is called before the html is set
-  const doc = getSiteDocument();
-  const { currentPageId } = getUi();
+  if (!stage) { return } // happens when File::setData is called before the html is set
+  const doc = getSiteDocument()
+  const { currentPageId } = getUi()
   stopStageObserver() // FIXME: should not be necessary, stage bug?
   stage.reset(getElements()
     .filter(
@@ -51,34 +51,34 @@ export function resetStage() {
 }
 
 export function getEnableSticky(): boolean {
-  if (!stage) { return false; }
-  return stage.enableSticky;
+  if (!stage) { return false }
+  return stage.enableSticky
 }
 export function setEnableSticky(enable: boolean) {
-  if (!stage) { return; }
-  stage.enableSticky = enable;
+  if (!stage) { return }
+  stage.enableSticky = enable
 }
 export function toggleSticky() {
-  if (!stage) { return; }
-  stage.enableSticky = !stage.enableSticky;
+  if (!stage) { return }
+  stage.enableSticky = !stage.enableSticky
 }
 export function getEditMode(): boolean {
-  if (!stage) { return false; }
-  return stage.catchingEvents;
+  if (!stage) { return false }
+  return stage.catchingEvents
 }
 export function setEditMode(mode: boolean) {
-  if (!stage) { return; }
+  if (!stage) { return }
   if (stage.visible === mode) {
-    stage.visible = !mode;
+    stage.visible = !mode
   }
 }
 export function resizeWindow() {
-  if (!stage) { return; }
+  if (!stage) { return }
   stage.resizeWindow()
 }
 export function hideUi(hide: boolean) {
-  if (!stage) { return; }
-  stage.hideUi(hide);
+  if (!stage) { return }
+  stage.hideUi(hide)
 }
 
 /**
@@ -87,8 +87,8 @@ export function hideUi(hide: boolean) {
  * @return function to call to unsubscribe
  */
 export function subscribeMouseEvent(type: string, cbk: (e) => void): () => void {
-  if (!stage) { return; }
-  return stage.subscribeMouseEvent(type, cbk);
+  if (!stage) { return }
+  return stage.subscribeMouseEvent(type, cbk)
 }
 
 
@@ -108,7 +108,7 @@ function preventStageObservers<A, B>(cbk: (...args: A[]) => B): (...args: A[]) =
 }
 // on add elements
 function onAddElement(elements: ElementData[]) {
-  if (!stage) { console.warn('onAddElement NO STAGE'); return };
+  if (!stage) { console.warn('onAddElement NO STAGE'); return }
   const doc = getSiteDocument()
   elements.forEach((el) => {
     const parent = getParent(el) // parent may be null if the parent's children array has not yet be changed, then the element will be moved when it is set
@@ -128,14 +128,14 @@ function onAddElement(elements: ElementData[]) {
 }
 // on deleted elements
 function onDeleteElements(elements: ElementData[]) {
-  if (!stage) { console.warn('onDeleteElement NO STAGE'); return };
+  if (!stage) { console.warn('onDeleteElement NO STAGE'); return }
   elements.forEach((el) => {
     stage.removeElement(el.id)
   })
 }
 // on update elements
 function onUpdateElement(change: StateChange<ElementData>[]) {
-  if (!stage) { console.warn('onUpdateElement NO STAGE'); return };
+  if (!stage) { console.warn('onUpdateElement NO STAGE'); return }
   const doc = getSiteDocument()
   let needReset = false
   const needResetSome = []
@@ -205,7 +205,7 @@ function onUpdateElement(change: StateChange<ElementData>[]) {
       // update stage for element and children
       if (isStatic || needReset) {
         // FIXME: redraw only if position/layout/size changed
-        needReset = true;
+        needReset = true
       } else {
         needResetSome.push(...[domEl]
           .concat(to.children.map((id) => getDomElementById(doc, id)))
@@ -215,7 +215,7 @@ function onUpdateElement(change: StateChange<ElementData>[]) {
   })
   // re-compute the other elements metrics
   if (needReset) {
-    resetStage();
+    resetStage()
   } else {
     getStage().redrawSome(needResetSome)
   }
@@ -232,15 +232,15 @@ export function stageCleanup() {
 }
 
 class StageWrapper {
-  private stage: Stage;
-  private dragging = false;
-  private toBeUnsubscribed = [];
+  private stage: Stage
+  private dragging = false
+  private toBeUnsubscribed = []
 
   constructor() {
     subscribePages(() => {
       // reset the stage after page open
       setTimeout(() => resetStage(), 0)
-    });
+    })
     subscribeUi((prevState: UiData, nextState: UiData) => {
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         // reset the stage after switch to/from mobile editor
@@ -258,7 +258,7 @@ class StageWrapper {
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         resizeWindow()
       }
-    });
+    })
     subscribeElements(onCrudChange<ElementData>({
       onAdd: preventStageObservers(onAddElement),
       onDelete: preventStageObservers(onDeleteElements),
@@ -267,39 +267,39 @@ class StageWrapper {
   }
 
   // getState(el: HTMLElement): SelectableState {
-  //   if (!this.stage) { return null; }
-  //   return this.stage.getState(el);
+  //   if (!this.stage) { return null }
+  //   return this.stage.getState(el)
   // }
   // setState(el: HTMLElement, state: SelectableState) {
-  //   if (!this.stage) { return; }
-  //   this.stage.setState(el, state);
+  //   if (!this.stage) { return }
+  //   this.stage.setState(el, state)
   // }
   // getSelection(): SelectableState[] {
-  //   if (!this.stage) { return []; }
-  //   return this.stage.getSelection();
+  //   if (!this.stage) { return [] }
+  //   return this.stage.getSelection()
   // }
   // setSelection(elements: HTMLElement[]) {
-  //   if (!this.stage) { return; }
-  //   this.stage.setSelection(elements);
+  //   if (!this.stage) { return }
+  //   this.stage.setSelection(elements)
   // }
   // getSelectionBox() {
-  //   if (!this.stage) { return; }
-  //   return this.stage.getSelectionBox();
+  //   if (!this.stage) { return }
+  //   return this.stage.getSelectionBox()
   // }
 
   cleanup() {
     // cleanup
     if (!!this.stage) {
-      this.stage.cleanup();
-      this.stage = null;
-      stage = null;
+      this.stage.cleanup()
+      this.stage = null
+      stage = null
     }
-    this.toBeUnsubscribed.forEach((u) => u());
-    this.toBeUnsubscribed = [];
+    this.toBeUnsubscribed.forEach((u) => u())
+    this.toBeUnsubscribed = []
   }
 
   init(iframe: HTMLIFrameElement) {
-    this.cleanup();
+    this.cleanup()
     // FIXME: do not use css classes but ElementData
     stage = this.stage = new Stage(iframe, [], {
       getId: (el: HTMLElement) => getId(el),
@@ -317,22 +317,22 @@ class StageWrapper {
       isResizeable: ((el: HTMLElement) => {
         const element = getElementById(getId(el))
         // section is not resizeable on mobile
-        const isSectionOnMobile = getUi().mobileEditor && element.type === ElementType.SECTION;
+        const isSectionOnMobile = getUi().mobileEditor && element.type === ElementType.SECTION
         if (isSectionOnMobile) {
-          return false;
+          return false
         }
         // section content resizable height only
-        const isSectionContentOnMobile = getUi().mobileEditor && element.isSectionContent;
+        const isSectionContentOnMobile = getUi().mobileEditor && element.isSectionContent
         if (isSectionContentOnMobile) {
           return {
             top: element.enableResize.top,
             left: false,
             bottom: element.enableResize.bottom,
             right: false,
-          };
+          }
         }
         // case of all or part of the sides are resizeable
-        return element.enableResize;
+        return element.enableResize
       }),
       useMinHeight: (el: HTMLElement) => {
         const element = getElementById(getId(el))
@@ -342,11 +342,11 @@ class StageWrapper {
         const element = getElementById(getId(el))
         // sections can only be dropped in the body
         return element.type !== ElementType.SECTION
-          || dropZone.tagName.toLowerCase() === 'body';
+          || dropZone.tagName.toLowerCase() === 'body'
       }),
       onEdit: () => {
         if (!SilexNotification.isActive) {
-          editElement();
+          editElement()
         }
       },
       onChange: (change) => this.applyStyle(change),
@@ -357,56 +357,56 @@ class StageWrapper {
       onSelect: (change) => this.onSelectionChanged(change),
       onStartDrag: (change) => this.startDrag(),
       onStartResize: (change) => this.startResize(),
-    });
-    resetStage();
+    })
+    resetStage()
     // give time to iframes to initialize
     setTimeout(() => {
       this.toBeUnsubscribed.push(
         subscribeMouseEvent('mousedown', (e: MouseEvent) => {
           // reset focus when the stage is clicked
           if (window !== (e.target as HTMLElement).ownerDocument.defaultView) {
-            resetFocus();
+            resetFocus()
           }
         }),
-      );
-    }, 0);
+      )
+    }, 0)
   }
   getScroll(): ScrollData {
-    if (!this.stage) { return {x: 0, y: 0}; }
-    return this.stage.getScroll();
+    if (!this.stage) { return {x: 0, y: 0} }
+    return this.stage.getScroll()
   }
   setScroll(scroll: ScrollData) {
-    if (!this.stage) { return; }
-    this.stage.setScroll(scroll);
+    if (!this.stage) { return }
+    this.stage.setScroll(scroll)
   }
   redraw() {
-    if (!this.stage) { return; }
-    this.stage.redraw();
+    if (!this.stage) { return }
+    this.stage.redraw()
   }
   private startDragOrResize() {
-    this.dragging = true;
-    // this.prepareUndo();
+    this.dragging = true
+    // this.prepareUndo()
   }
   private startResize() {
-    getSiteDocument().body.classList.add(Constants.RESIZING_CLASS_NAME);
-    this.startDragOrResize();
+    getSiteDocument().body.classList.add(Constants.RESIZING_CLASS_NAME)
+    this.startDragOrResize()
   }
   private startDrag() {
-    getSiteDocument().body.classList.add(Constants.DRAGGING_CLASS_NAME);
-    this.startDragOrResize();
+    getSiteDocument().body.classList.add(Constants.DRAGGING_CLASS_NAME)
+    this.startDragOrResize()
   }
   private stopDragOrResize(changed: SelectableState[], redraw) {
-    this.dragging = false;
-    this.applyStyle(changed);
-    this.redraw();
+    this.dragging = false
+    this.applyStyle(changed)
+    this.redraw()
   }
   private stopResize(changed: SelectableState[], redraw = false) {
-    getSiteDocument().body.classList.remove(Constants.RESIZING_CLASS_NAME);
-    this.stopDragOrResize(changed, redraw);
+    getSiteDocument().body.classList.remove(Constants.RESIZING_CLASS_NAME)
+    this.stopDragOrResize(changed, redraw)
   }
   private stopDrag(changed: SelectableState[], redraw = false) {
-    getSiteDocument().body.classList.remove(Constants.DRAGGING_CLASS_NAME);
-    this.stopDragOrResize(changed, redraw);
+    getSiteDocument().body.classList.remove(Constants.DRAGGING_CLASS_NAME)
+    this.stopDragOrResize(changed, redraw)
     // Handle parent change
     // build an array with all the changes (may contain several times the same parent)
     const changes: {element: ElementData, newParent: ElementData, oldParent: ElementData, idx: number}[] = changed
@@ -424,10 +424,10 @@ class StageWrapper {
     // build an array with 1 element by chanded parent
     const changedParents = changes
       .reduce((aggr, {element, newParent, oldParent, idx}) => {
-        const existingNewParentObj = aggr.find(({from, to}) => from.id === newParent.id);
+        const existingNewParentObj = aggr.find(({from, to}) => from.id === newParent.id)
         if (existingNewParentObj) existingNewParentObj.to.children = insertAt<ElementId>(
           existingNewParentObj.to.children.filter((id) => id !== element.id), // in case it is the same parent
-          idx, element.id);
+          idx, element.id)
         else aggr.push({
           from: newParent,
           to: {
@@ -436,10 +436,10 @@ class StageWrapper {
               newParent.children.filter((id) => id !== element.id), // in case it is the same parent
               idx, element.id),
           },
-        });
+        })
         if (!!oldParent && oldParent !== newParent) {
-          const existingOldParentObj = aggr.find(({from, to}) => from.id === oldParent.id);
-          if (existingOldParentObj) existingOldParentObj.to.children =  existingOldParentObj.to.children.filter((id) => id !== element.id);
+          const existingOldParentObj = aggr.find(({from, to}) => from.id === oldParent.id)
+          if (existingOldParentObj) existingOldParentObj.to.children =  existingOldParentObj.to.children.filter((id) => id !== element.id)
           else aggr.push({
             from: oldParent,
             to: {
@@ -450,15 +450,15 @@ class StageWrapper {
         } else {
           console.warn('Element was not in a parent!', element)
         }
-        return aggr;
+        return aggr
       }, [] as StateChange<ElementData>[])
     // apply the changes
     updateElements(changedParents)
   }
   private onSelectionChanged(changed: SelectableState[]) {
     if (stoped) {
-      // console.trace('prevent update elements with stoped in stage', changed);
-      return;
+      // console.trace('prevent update elements with stoped in stage', changed)
+      return
     }
     const updateActions = changed
     .map((selectable) => {
@@ -466,7 +466,7 @@ class StageWrapper {
       return {
         element: getElements().find((el) => getDomElement(getSiteDocument(), el) === selectable.el),
         selectable,
-      };
+      }
     })
     .filter(({element, selectable}) => element.selected !== selectable.selected)
     .map(({element, selectable}) => {
@@ -476,7 +476,7 @@ class StageWrapper {
           ...element,
           selected: selectable.selected,
         },
-      };
+      }
     })
     const body = getBody()
     // always deselect the body in Silex
@@ -493,34 +493,34 @@ class StageWrapper {
     }
   }
   // private prepareUndo() {
-  //   this.controller.stageController.undoCheckPoint();
+  //   this.controller.stageController.undoCheckPoint()
   // }
   private applyStyle(change) {
     if (stoped) {
-      console.trace('prevent update elements with stoped in stage');
-      return;
+      console.trace('prevent update elements with stoped in stage')
+      return
     }
     // do not mess up the css translation applyed by stage during drag
     if (!this.dragging) {
       // removed the inline styles
       change.forEach((s) => {
         // these are all the properties that can be set by the stage component
-        s.el.style.top = '';
-        s.el.style.left = '';
-        s.el.style.right = '';
-        s.el.style.bottom = '';
-        s.el.style.width = '';
-        s.el.style.height = '';
-        s.el.style.margin = '';
-        s.el.style.padding = '';
-        s.el.style.border = '';
-        s.el.style.minHeight = '';
-        s.el.style.position = '';
-      });
+        s.el.style.top = ''
+        s.el.style.left = ''
+        s.el.style.right = ''
+        s.el.style.bottom = ''
+        s.el.style.width = ''
+        s.el.style.height = ''
+        s.el.style.margin = ''
+        s.el.style.padding = ''
+        s.el.style.border = ''
+        s.el.style.minHeight = ''
+        s.el.style.position = ''
+      })
       // apply the style
       updateElements(change.map((s) => {
         // FIXME: find a more optimal way to get the data from DOM element
-        const element = getElements().find((el) => getDomElement(getSiteDocument(), el) === s.el);
+        const element = getElements().find((el) => getDomElement(getSiteDocument(), el) === s.el)
         // website width is also section containers width
         //  && s.metrics.computedStyleRect.width + 'px' !== element.style.desktop.width
         if (!getUi().mobileEditor && element.isSectionContent) {
@@ -542,29 +542,24 @@ class StageWrapper {
               width: s.metrics.computedStyleRect.width + 'px',
             })),
           },
-        };
+        }
       }))
     }
   }
-  // FIXME: find another way to expose isMobileEditor to views
-//   private resizeWindow() {
-//     if (!this.stage) { return; }
-//     this.stage.resizeWindow();
-//   }
 //   private addElement(element: HTMLElement) {
-//     if (!this.stage) { return; }
-//     this.stage.addElement(element);
+//     if (!this.stage) { return }
+//     this.stage.addElement(element)
 //   }
 //   private removeElement(element: HTMLElement) {
-//     if (!this.stage) { return; }
-//     this.stage.removeElement(element);
+//     if (!this.stage) { return }
+//     this.stage.removeElement(element)
 //   }
   // private center(elements: HTMLElement[]) {
-  //   if (!this.stage) { return; }
-  //   this.stage.center(elements);
+  //   if (!this.stage) { return }
+  //   this.stage.center(elements)
   // }
 //   private getDropZone(posX: number, posY: number, element: HTMLElement): HTMLElement {
-//     if (!this.stage) { return getSiteDocument().body; }
-//     return this.stage.getDropZone(posX, posY, element);
+//     if (!this.stage) { return getSiteDocument().body }
+//     return this.stage.getDropZone(posX, posY, element)
 //   }
 }

@@ -33,6 +33,9 @@ export enum ElementType {
 
 export interface Size {width: number, height: number}
 export interface Point {top: number, left: number}
+export interface ElementRect {
+  width: string, height: string, left: string, top: string,
+}
 export interface Rect<T> {
   top: T,
   left: T,

@@ -21,6 +21,7 @@ import { PaneBase } from './PaneBase';
 import { SilexNotification } from '../../utils/Notification'
 import { Url } from '../../utils/Url'
 import { addToMobileOrDesktopStyle } from '../../utils/styles';
+import { getBody, getSelectedElements } from '../../element/filters';
 import { getElements, updateElements } from '../../element/store'
 import { getUi } from '../../ui/store';
 
@@ -208,8 +209,13 @@ export class BgPane extends PaneBase {
    * User has selected a color
    */
   onColorChanged() {
-    // notify the toolbox
-    this.styleChanged('background-color', this.colorPicker.getColor());
+    if ((this.colorPicker.getColor() === 'transparent' || this.colorPicker.getOpacity() !== 1) &&
+        getSelectedElements().includes(getBody())) {
+      // prevent a transparent body
+      this.redraw(getSelectedElements());
+    } else {
+      this.styleChanged('background-color', this.colorPicker.getColor());
+    }
   }
 
   /**

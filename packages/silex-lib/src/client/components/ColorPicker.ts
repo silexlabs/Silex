@@ -81,14 +81,22 @@ export class ColorPicker {
     return this.color;
   }
 
+  /**
+   * get current opacity as a number in the [0, 1] interval
+   */
+  getOpacity(): number {
+    const opacityPercent = parseInt(this.opacityInput.value, 10);
+    const opacity = isNaN(opacityPercent) ? 1 : opacityPercent / 100;
+    return opacity;
+  }
+
   onChange(e: Event) {
     // let redraw update the value
     e.preventDefault();
     e.stopPropagation();
 
     if (!this.transparentCheckbox.checked) {
-      const opacityPercent = parseInt(this.opacityInput.value, 10);
-      const opacity = isNaN(opacityPercent) ? 1 : opacityPercent / 100;
+      const opacity = this.getOpacity();
       const hex = Math.round(opacity * 255).toString(16);
       this.color = hexToRgba(this.colorInput.value + (hex.length === 2 ? '' : '0') + hex);
     } else {
@@ -125,7 +133,7 @@ export class ColorPicker {
           this.opacityInput.value = (Math.round(arr[3] * 100 / 255)).toString();
         } catch (e) {
           // probably not an rgba color
-          console.warn('error, this color is probably not an rgba color', this.color, e);
+          console.warn('this color is probably not an rgba color', this.color, e);
           this.opacityInput.value = '100';
         }
       }

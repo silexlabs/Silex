@@ -11,10 +11,10 @@
 
 import { ElementData, ElementType } from '../../element/types'
 import { PaneBase } from './PaneBase'
-import { getBody, getElementByDomElement } from '../../element/filters'
+import { getBody } from '../../element/filters';
 import { getBoundingBox, getElementStyle } from '../../element/utils';
 import { getElements, updateElements } from '../../element/store'
-import { getSiteDocument } from '../SiteFrame';
+import { getSite } from '../../site/store';
 import { getUi } from '../../ui/store'
 
 /**
@@ -164,7 +164,24 @@ export class PropertyPane extends PaneBase {
     // useful values
     const elementsDisplay = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'display', mobile))
     const elementsPosition = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'position', mobile))
-    const bb = getBoundingBox(selectedElements, getUi().mobileEditor)
+
+    // bounding box
+    const bb = getBoundingBox(elementsNoBodyNoSection
+      .map((el) => {
+        if (el.isSectionContent && !mobile) return {
+          top: null,
+          left: null,
+          width: getSite().width + 'px',
+          height: getElementStyle(el, 'height', mobile),
+        }
+        else return {
+          top: getElementStyle(el, 'top', mobile),
+          left: getElementStyle(el, 'left', mobile),
+          width: getElementStyle(el, 'width', mobile),
+          height: getElementStyle(el, 'height', mobile),
+        }
+      }))
+
     const computeValue = new Map([
       [LeftInput, () => Math.round(bb.left || 0).toString()],
         [TopInput, () => Math.round(bb.top || 0).toString()],
@@ -186,7 +203,7 @@ export class PropertyPane extends PaneBase {
         [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
     ])
     // compute visibility
-    if (bb && elementsNoBody.length > 0) {
+    if (elementsNoBody.length > 0) {
       const elementsNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection
         .filter((el) => !el.isSectionContent)
       this.altInput.disabled = false
