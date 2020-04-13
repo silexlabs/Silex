@@ -1,5 +1,11 @@
 import { ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_TEXT } from '../../../__tests__/data-set';
-import { center, getAllStyles, getElementSize, getElementStyle } from './utils';
+import {
+  center,
+  getAllStyles,
+  getBoundingBox,
+  getElementSize,
+  getElementStyle
+} from './utils';
 import { getSite, updateSite } from '../site/store';
 import { initializeElements } from './store';
 
@@ -20,16 +26,19 @@ test('center in container', () => {
   })
 })
 
-// test('get bounding box', () => {
-//   expect(getBoundingBox([ELEM_TEXT, ELEM_CONTAINER], false)).toEqual({
-//     top: 10,
-//     left: 10,
-//     width: 1000,
-//     height: 1000,
-//     bottom: 1010,
-//     right: 1010,
-//   })
-// })
+test('get bounding box', () => {
+  expect(getBoundingBox([ELEM_TEXT, ELEM_CONTAINER], false)).toEqual({
+    top: 0,
+    left: 0,
+    width: 1000,
+    height: 1000,
+    bottom: 1010,
+    right: 1010,
+  })
+  expect(getBoundingBox([ELEM_SECTION_CONTENT], false)).toBeNull()
+  // test with top equal to 0
+  expect(getBoundingBox([ELEM_TEXT], false)).not.toBeNull()
+})
 
 test('get all styles', () => {
   initializeElements([ELEM_TEXT])
@@ -53,6 +62,8 @@ test('get element styles', () => {
   expect(getElementStyle(ELEM_TEXT, 'width', true)).toBe('100px')
   expect(getElementStyle(ELEM_TEXT, 'unknown', true)).toBeUndefined()
   expect(getElementStyle(ELEM_CONTAINER, 'height', true)).toBe('900px')
+  expect(getElementStyle(ELEM_CONTAINER, 'top', false)).toBe('10px')
+  expect(getElementStyle(ELEM_CONTAINER, 'top', true)).toBeUndefined()
 })
 
 test('get element size on desktop', () => {

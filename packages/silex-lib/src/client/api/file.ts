@@ -29,10 +29,10 @@ import { updateUi, getUi } from '../ui/store'
 /**
  * save or save-as
  */
-export function save(opt_fileInfo?: FileInfo, cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   // tracker.trackAction('controller-events', 'request', 'file.save', 0);
-  if (opt_fileInfo && !getSite().isTemplate) {
-    doSave((opt_fileInfo as FileInfo), cbk, opt_errorCbk);
+  if (fileInfo && !getSite().isTemplate) {
+    doSave((fileInfo as FileInfo), cbk, errorCbk);
   } else if (Config.singleSiteMode) {
     // do nothing in single site mode
     throw new Error('File has no name and can not "save as" in single site mode')
@@ -42,15 +42,15 @@ export function save(opt_fileInfo?: FileInfo, cbk?: (() => any), opt_errorCbk?: 
         .saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
         .then((fileInfo) => {
           if (fileInfo != null ) {
-            doSave((fileInfo as FileInfo), cbk, opt_errorCbk);
+            doSave((fileInfo as FileInfo), cbk, errorCbk);
           } else {
             // user aborted save as
           }
         })
         .catch((error) => {
           // tracker.trackAction('controller-events', 'error', 'file.save', -1);
-          if (opt_errorCbk) {
-            opt_errorCbk(error);
+          if (errorCbk) {
+            errorCbk(error);
           }
         });
   }
@@ -59,7 +59,7 @@ export function save(opt_fileInfo?: FileInfo, cbk?: (() => any), opt_errorCbk?: 
 /**
  * save
  */
-function doSave(fileInfo: FileInfo, cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+function doSave(fileInfo: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   // relative urls only in the files
   let rawHtml = getHtml();
 
@@ -90,8 +90,8 @@ function doSave(fileInfo: FileInfo, cbk?: (() => any), opt_errorCbk?: ((p1: any)
   (error, msg) => {
     SilexNotification.alert('Save website', 'Error: I did not manage to save the file. \n' + (msg || error.message || ''),
     () => {
-      if (opt_errorCbk) {
-        opt_errorCbk(error);
+      if (errorCbk) {
+        errorCbk(error);
       }
     });
     // tracker.trackAction('controller-events', 'error', 'file.save', -1);
@@ -166,14 +166,14 @@ export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
  * open the dashboard
  * TODO: move this to the Dashboard component
  */
-export function openDashboardToLoadAWebsite(cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+export function openDashboardToLoadAWebsite(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   // tracker.trackAction('controller-events', 'request', 'file.new', 0);
   openDashboard({
     openFileInfo: (fileInfo: FileInfo) => {
       if (!fileInfo && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
-        loadBlankTemplate(cbk, opt_errorCbk);
+        loadBlankTemplate(cbk, errorCbk);
       } else {
         if (fileInfo) {
           openRecent(fileInfo, cbk);
@@ -184,11 +184,11 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), opt_errorCbk?: ((
       if (!url && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
-        loadBlankTemplate(cbk, opt_errorCbk);
+        loadBlankTemplate(cbk, errorCbk);
       } else {
         if (url) {
           // a template was selected
-          loadFromServerTemplates(url, cbk, (err, msg) => onOpenError(err, msg, opt_errorCbk, true));
+          loadFromServerTemplates(url, cbk, (err, msg) => onOpenError(err, msg, errorCbk, true));
         }
       }
     },
@@ -199,7 +199,7 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), opt_errorCbk?: ((
     },
     error: (err) => {
       console.error('loading templates error');
-      onOpenError(err, 'Loading templates error', opt_errorCbk);
+      onOpenError(err, 'Loading templates error', errorCbk);
     },
   });
 }
@@ -207,7 +207,7 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), opt_errorCbk?: ((
 /**
  * open a file
  */
-export function openFile(cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1: any) => any), opt_cancelCbk?: (() => any)) {
+export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) => any), cancelCbk?: (() => any)) {
   if (Config.singleSiteMode) {
     return;
   }
@@ -235,22 +235,22 @@ export function openFile(cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1: any
               (error: any, message) => {
                 SilexNotification.alert('Open file', 'Error: I did not manage to open this file. \n' + (message || error.message || ''),
                 () => {
-                  if (opt_errorCbk) {
-                    opt_errorCbk(error);
+                  if (errorCbk) {
+                    errorCbk(error);
                   }
                 });
                 // tracker.trackAction('controller-events', 'error', 'file.open', -1);
               });
         } else {
-          if (opt_cancelCbk) {
-            opt_cancelCbk();
+          if (cancelCbk) {
+            cancelCbk();
           }
         }
       })
       .catch((error) => {
         // tracker.trackAction('controller-events', 'error', 'file.open', -1);
-        if (opt_errorCbk) {
-          opt_errorCbk(error);
+        if (errorCbk) {
+          errorCbk(error);
         }
       });
 }
@@ -259,11 +259,11 @@ export function openFile(cbk?: ((p1: FileInfo) => any), opt_errorCbk?: ((p1: any
 // Callbacks
 ///////////////////////////////////////////////////////////////////
 
-function onOpenError(err: any, msg: string, opt_errorCbk?: ((p1: any) => any), loadBlankOnError: boolean = true) {
+function onOpenError(err: any, msg: string, errorCbk?: ((p1: any) => any), loadBlankOnError: boolean = true) {
   console.error('opening template error', err);
   SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {});
-  if (opt_errorCbk) {
-    opt_errorCbk(err);
+  if (errorCbk) {
+    errorCbk(err);
   }
   if (loadBlankOnError && !hasContent()) {
     loadBlankTemplate();
@@ -443,9 +443,9 @@ function loadFromServerTemplates(
 /**
  * load blank template
  */
-function loadBlankTemplate(cbk?: (() => any), opt_errorCbk?: ((p1: any) => any)) {
+function loadBlankTemplate(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   const blankUrl = '/libs/templates/silex-blank-templates/blank/editable.html';
-  loadFromServerTemplates(blankUrl, cbk, (err, msg) => onOpenError(err, msg, opt_errorCbk, false));
+  loadFromServerTemplates(blankUrl, cbk, (err, msg) => onOpenError(err, msg, errorCbk, false));
 }
 
 /**
@@ -457,7 +457,7 @@ function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantDat
   doLoadWebsite({
     site: {
       file,
-      isTemplate: true,
+      isTemplate: false,
     },
     path: file.absPath,
     cbk: (rawHtml: string, data: PersistantData) => {

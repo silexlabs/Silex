@@ -1,7 +1,6 @@
 import { ElementType, ElementData, LinkType } from '../src/client/element/types'
-import { crudIdKey } from '../src/client/flux/crud-store'
-import { PageData } from '../src/client/page/types';
 import { SiteData } from '../src/client/site/types';
+import { crudIdKey } from '../src/client/flux/crud-store'
 
 export function mockForAllTests() {
   jest.doMock('../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());

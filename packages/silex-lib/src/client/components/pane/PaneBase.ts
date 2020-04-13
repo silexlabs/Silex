@@ -20,7 +20,7 @@
 import { ElementData } from '../../element/types';
 import { addToMobileOrDesktopStyle, fixStyleForType } from '../../utils/styles';
 import { getSelectedElements } from '../../element/filters'
-import { getSite, updateSite } from '../../site/store';
+import { getSite, subscribeSite, updateSite } from '../../site/store';
 import { getStage } from '../StageWrapper';
 import { getUi } from '../../ui/store'
 import { subscribeElements, updateElements } from '../../element/store';
@@ -53,6 +53,11 @@ export class PaneBase {
   protected baseUrl = null;
 
   constructor(protected element: HTMLElement) {
+    subscribeSite(() => {
+      if (getStage()) {
+        this.redraw(getSelectedElements());
+      }
+    })
     subscribeElements(() => {
       if (getStage()) {
         this.redraw(getSelectedElements());
@@ -136,7 +141,7 @@ export class PaneBase {
         onChange: (value: string) => {
           // if (changeObj.freez) { return; }
           if (value !== null) {
-            input.value = value;
+            if (value !== input.value) input.value = value;
             input.disabled = false;
           } else {
             input.value = '';

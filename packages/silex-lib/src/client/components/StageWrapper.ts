@@ -68,7 +68,6 @@ export function getEditMode(): boolean {
 }
 export function setEditMode(mode: boolean) {
   if (!stage) { return; }
-  console.trace('hide stage', !mode)
   if (stage.visible === mode) {
     stage.visible = !mode;
   }
@@ -79,7 +78,6 @@ export function resizeWindow() {
 }
 export function hideUi(hide: boolean) {
   if (!stage) { return; }
-  console.trace('hide ui', hide)
   stage.hideUi(hide);
 }
 
@@ -423,11 +421,9 @@ class StageWrapper {
         oldParent: getParent(element),
       }))
       .filter(({element, newParent, oldParent, idx}) => newParent !== oldParent || oldParent.children.indexOf(element.id) !== idx)
-    console.log('aaa', changes)
     // build an array with 1 element by chanded parent
     const changedParents = changes
       .reduce((aggr, {element, newParent, oldParent, idx}) => {
-        console.log('xxx', idx)
         const existingNewParentObj = aggr.find(({from, to}) => from.id === newParent.id);
         if (existingNewParentObj) existingNewParentObj.to.children = insertAt<ElementId>(
           existingNewParentObj.to.children.filter((id) => id !== element.id), // in case it is the same parent
