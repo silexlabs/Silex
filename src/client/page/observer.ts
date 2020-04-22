@@ -1,6 +1,6 @@
 import { deleteElements, getElements, updateElements } from '../element/store';
 import { StateChange } from '../flux/crud-store';
-import { getData } from '../flux/store';
+import { getState } from '../flux/store';
 import { writeDataToDom } from '../flux/dom';
 import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
 import { SilexNotification } from '../utils/Notification';
@@ -10,7 +10,7 @@ import { openPageDom } from './dom'
 
 export function onAddPages(pages: PageData[]) {
   // save the changed data to the dom for front-end.js
-  writeDataToDom(getSiteDocument(), getData())
+  writeDataToDom(getSiteDocument(), getState())
 }
 
 export function onDeletePages(pages: PageData[]) {
@@ -67,7 +67,7 @@ export function onDeletePages(pages: PageData[]) {
     }, []))
 
   // save the changed data to the dom for front-end.js
-  writeDataToDom(getSiteDocument(), getData())
+  writeDataToDom(getSiteDocument(), getState())
 }
 
 const hasLinkToPage = (element: ElementData, page: PageData) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value
@@ -98,5 +98,5 @@ export function onUpdatePages(changes: StateChange<PageData>[]) {
   })
 
   // save the changed data to the dom for front-end.js
-  writeDataToDom(getSiteDocument(), getData())
+  writeDataToDom(getSiteDocument(), getState())
 }

@@ -17,7 +17,7 @@ import { Link } from '../element/types';
  *
  */
 
-export interface PageData extends CrudState {
+export interface PageData {
   id: string,
   displayName: string,
   link: Link,

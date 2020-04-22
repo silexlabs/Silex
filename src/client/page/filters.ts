@@ -9,6 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { PageData } from './types';
 import { getPages } from './store'
 import { getUi } from '../ui/store';
 
@@ -18,8 +19,12 @@ import { getUi } from '../ui/store';
  */
 
 
-export const getCurrentPage = () => {
-  const { currentPageId } = getUi()
-  return getPages()
-    .find((p) => p.id === currentPageId)
+export const getPageById = (id: string): PageData => {
+  return getPages().find((p) => p.id === id)
 }
+
+export const getCurrentPage = (): PageData => {
+  const { currentPageId } = getUi()
+  return getPageById(currentPageId)
+}
+

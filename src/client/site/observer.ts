@@ -1,7 +1,7 @@
 import * as objectPath from '../../../node_modules/object-path/index.js'
 import { getBody } from '../element/filters'
 import { updateElements } from '../element/store'
-import { getData } from '../flux/store'
+import { getState } from '../flux/store'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site/dom'
 import { writeDataToDom } from '../flux/dom';
 import { DataSources, SiteData } from '../site/types'
@@ -112,7 +112,7 @@ export function onChangeSite(prev: SiteData, site: SiteData) {
     })
   }
   // save data to the dom for front-end.js
-  writeDataToDom(doc, getData())
+  writeDataToDom(doc, getState())
 }
 
 async function loadDataSources(dataSources: DataSources, reload): Promise<DataSources> {

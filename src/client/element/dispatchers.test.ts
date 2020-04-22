@@ -97,7 +97,7 @@ test('move 2 elements among 3', () => {
 test('add element', () => {
   const [element, updatedParentData] = addElement({
     type: ElementType.HTML,
-    parent: ELEM_CONTAINER,
+    parent: getElementById(ELEM_CONTAINER.id),
     componentName: null,
     style: {
       mobile: {},
@@ -132,7 +132,7 @@ test('add a section in a selected element', () => {
   initializeElements([ELEM_TEXT, ELEM_IMAGE, selectedContainer, ELEM_SECTION_CONTENT])
   const [element, updatedParentData] = addElement({
     type: ElementType.HTML,
-    parent: selectedContainer,
+    parent: getElementById(selectedContainer.id),
     componentName: null,
     style: {
       mobile: {},
@@ -155,7 +155,7 @@ test('add a section', () => {
   expect(() => {
     addElement({
       type: ElementType.SECTION,
-      parent: ELEM_CONTAINER,
+      parent: getElementById(ELEM_CONTAINER.id),
       componentName: null,
       style: {
         mobile: {},
@@ -169,7 +169,7 @@ test('add a section', () => {
   expect(isBody(ELEM_CONTAINER)).toBe(true)
   const [element, updatedParentData] = addElement({
     type: ElementType.SECTION,
-    parent: ELEM_CONTAINER,
+    parent: getElementById(ELEM_CONTAINER.id),
     componentName: null,
     style: {
       mobile: {},
@@ -199,5 +199,4 @@ test('add a section', () => {
   expect(updatedParentData.children).not.toBe(ELEM_CONTAINER.children)
   expect(updatedParentData.children).toHaveLength(ELEM_CONTAINER.children.length + 1)
   expect(updatedParentData.children).toContain(element.id)
- })
-
+})

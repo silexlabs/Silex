@@ -1,6 +1,7 @@
 import { PAGE1, PAGE2, PAGE3 } from '../../../__tests__/data-set';
 import { PageData } from '../page/types';
 import {
+  getPages,
   initializePages,
   movePage,
   subscribePages,
@@ -79,22 +80,22 @@ test('Subscribe CRUD', () => {
     onUpdate: test.onUpdatePages,
   }))
 
-  initializePages(PAGES_3)
+  initializePages(PAGES_3.map((page) => getPages().find((p) => p.id === page.id) || page))
   expect(test.onAddPages).toHaveBeenCalledTimes(1)
   expect(test.onDeletePages).toHaveBeenCalledTimes(0)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
 
-  initializePages(PAGES_2)
+  initializePages(PAGES_2.map((page) => getPages().find((p) => p.id === page.id) || page))
   expect(test.onAddPages).toHaveBeenCalledTimes(1)
   expect(test.onDeletePages).toHaveBeenCalledTimes(1)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
 
-  initializePages(PAGES_2)
+  initializePages(PAGES_2.map((page) => getPages().find((p) => p.id === page.id) || page))
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
   updatePages([{
-    from: PAGE1,
+    from: getPages().find((p) => p.id === PAGE1.id),
     to: {
-      ...PAGE1,
+      ...getPages().find((p) => p.id === PAGE1.id),
       id: 'newId',
     },
   }])

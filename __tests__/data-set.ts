@@ -1,6 +1,5 @@
 import { ElementType, ElementData, LinkType } from '../src/client/element/types'
 import { SiteData } from '../src/client/site/types';
-import { crudIdKey } from '../src/client/flux/crud-store'
 
 export function mockForAllTests() {
   jest.doMock('../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());
@@ -48,7 +47,6 @@ export function mockUiElements(): {siteIFrame: HTMLIFrameElement, uiIFrame: HTML
 let nextId = 0;
 function getNextId() { return 'testId' + (nextId++) }
 export const ELEM_TEXT: ElementData = {
-  [crudIdKey]: Symbol(),
   id: getNextId(),
   pageNames: [],
   classList: [],
@@ -90,7 +88,6 @@ export const ELEM_TEXT: ElementData = {
 
 export const ELEM_IMAGE: ElementData = {
   ...ELEM_TEXT,
-  [crudIdKey]: Symbol(),
   id: getNextId(),
   type: ElementType.IMAGE,
   useMinHeight: false,
@@ -99,7 +96,6 @@ export const ELEM_IMAGE: ElementData = {
 
 export const ELEM_HTML: ElementData = {
   ...ELEM_TEXT,
-  [crudIdKey]: Symbol(),
   id: getNextId(),
   type: ElementType.HTML,
   innerHtml: '',
@@ -107,7 +103,6 @@ export const ELEM_HTML: ElementData = {
 
 export const ELEM_CONTAINER: ElementData = {
   ...ELEM_TEXT,
-  [crudIdKey]: Symbol(),
   id: getNextId(),
   type: ElementType.CONTAINER,
   innerHtml: '',
@@ -133,7 +128,6 @@ export const ELEM_CONTAINER_2_CHILDREN: ElementData = {
 
 export const ELEM_SECTION_CONTENT: ElementData = {
   ...ELEM_CONTAINER,
-  [crudIdKey]: Symbol(),
   id: getNextId(),
   type: ElementType.CONTAINER,
   isSectionContent: true,
@@ -149,7 +143,6 @@ export const ELEM_SECTION_CONTENT: ElementData = {
 
 export const ELEM_SECTION: ElementData = {
   ...ELEM_SECTION_CONTENT,
-  [crudIdKey]: Symbol(),
   id: getNextId(),
   type: ElementType.SECTION,
   isSectionContent: false,
@@ -162,7 +155,6 @@ export const ELEM_SECTION: ElementData = {
 }
 
 export const PAGE1 = {
-  [crudIdKey]: Symbol(),
   id: 'page-1',
   displayName: 'Page 1',
   element: document.createElement('a'),
@@ -179,7 +171,6 @@ export const PAGE1 = {
 }
 
 export const PAGE2 = {
-  [crudIdKey]: Symbol(),
   id: 'page-2',
   displayName: 'Page 2',
   element: document.createElement('a'),
@@ -195,7 +186,6 @@ export const PAGE2 = {
   canRename: true,
 }
 export const PAGE3 = {
-  [crudIdKey]: Symbol(),
   id: 'page-3',
   displayName: 'Page 3',
   element: document.createElement('a'),

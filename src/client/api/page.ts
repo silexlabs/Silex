@@ -18,7 +18,6 @@ export function createPage(): Promise<void> {
 
       // create the page model
       createPages([{
-        [crudIdKey]: Symbol(),
         id,
         displayName,
         link: {

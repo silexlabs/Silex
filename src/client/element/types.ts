@@ -58,7 +58,7 @@ export type StyleObject = {
   desktop: CssRule,
 }
 
-export interface ElementData extends CrudState {
+export interface ElementData {
   pageNames: string[],
   classList: string[],
   type: ElementType,

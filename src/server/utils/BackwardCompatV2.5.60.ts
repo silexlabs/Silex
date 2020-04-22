@@ -87,7 +87,6 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
   const contentElement = getContentNode(element)
   const pages = getPagesForElementBC(doc, element)
   return {
-    [crudIdKey]: Symbol(),
     id,
     pageNames: pages.map((p) => p.id),
     classList: element.className
@@ -244,7 +243,6 @@ function getPagesForElementBC(doc: HTMLDocument, element: HTMLElement): PageData
 function getPageDataFromElement(element: HTMLAnchorElement): PageData {
   const pageName = element.getAttribute('id')
   return {
-    [crudIdKey]: Symbol(),
     id: pageName,
     displayName: element.innerHTML,
     link: {
