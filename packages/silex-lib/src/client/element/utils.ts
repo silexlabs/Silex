@@ -46,7 +46,6 @@ export const INITIAL_ELEMENT_SIZE = 100
 
 export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: ElementId, type: ElementType, isSectionContent: boolean, isBody: boolean}): ElementData {
   return {
-    [crudIdKey]: Symbol(),
     id,
     type,
     alt: null,

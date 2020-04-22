@@ -73,4 +73,4 @@ export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) =
  * get the whole state object
  * used to save the state for example
  */
-export const getData = (): PersistantData => store.getState()
+export const getState = (): PersistantData => store.getState()

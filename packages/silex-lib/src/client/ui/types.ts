@@ -9,6 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { ElementData } from '../element/types';
+
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side
  *
@@ -24,4 +26,5 @@ export interface UiData {
   mobileEditor: boolean,
   loading: LOADING,
   currentPageId: string,
+  clipboard: null|[ElementData[], ElementData[]] // array of 2 elements: [allElements, rootElements]
 }

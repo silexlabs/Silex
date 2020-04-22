@@ -6,5 +6,5 @@ beforeEach(() => {
 })
 
 test('get data', () => {
-  expect(getElements()[0]).toBe(ELEM_TEXT)
+  expect(getElements()[0].id).toBe(ELEM_TEXT.id)
 })

@@ -4,6 +4,7 @@ import {
   getElementById,
   getFirstPagedParent,
   getParent,
+  getSelectedElements,
   noSectionContent
 } from '../element/filters';
 import { getCreationDropZone, getNewId } from '../element/utils';
@@ -11,22 +12,20 @@ import { getDomElement } from '../element/dom'
 import { getElements, createElements, updateElements } from '../element/store'
 import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
 import { getStage } from '../components/StageWrapper'
-import { getUi } from '../ui/store';
-
-/**
- * @static because it is shared by all controllers
- * array of 2 elements: [allElements, rootElements]
- */
-let clipboard: [ElementData[], ElementData[]] = null
+import { getUi, updateUi } from '../ui/store'
 
 /**
  * copy the selection for later paste
  */
 export function copySelection() {
-  clipboard = cloneElements(
+  const clipboard = cloneElements(
     getElements()
     .filter((el) => el.selected)
   )
+  updateUi({
+    ...getUi(),
+    clipboard,
+  })
 }
 
 /**
@@ -34,9 +33,7 @@ export function copySelection() {
  * FIXME: use copyElements ??
  */
 export function duplicateSelection() {
-  const selection = getElements()
-    .filter((el) => el.selected)
-    .map((el) => noSectionContent(el))
+  const selection = getSelectedElements().map((el) => noSectionContent(el))
   if (selection.length) {
     const allElements = []
     const rootElements = []
@@ -48,8 +45,7 @@ export function duplicateSelection() {
       })
 
     // keep the same parent
-    const body = getBody()
-    const parent = getParent(selection[0]) || body
+    const parent = getParent(selection[0])
 
     // paste
     pasteElements({parent, rootElements, allElements })
@@ -108,14 +104,14 @@ export function cloneElement(element: ElementData, parentId: ElementId = null): 
 }
 
 export function hasElementsToPaste() {
-  return !!clipboard && clipboard.length > 0
+  return !!getUi().clipboard
 }
 
 /**
  * paste the previously copied element
  */
 export function pasteClipBoard() {
-  const [allElements, rootElements] = clipboard
+  const [allElements, rootElements] = getUi().clipboard
 
   // get the drop zone in the center
   const parent = getCreationDropZone(false, getSiteIFrame())
@@ -127,7 +123,10 @@ export function pasteClipBoard() {
   })
 
   // copy again so that we can paste several times (elements will be duplicated again)
-  clipboard = cloneElements(rootElements)
+  updateUi({
+    ...getUi(),
+    clipboard: cloneElements(rootElements),
+  })
 }
 
 export function pasteElements({parent, rootElements, allElements}: {parent: ElementData, rootElements: ElementData[], allElements: ElementData[]}) {

@@ -16,7 +16,7 @@ import {
   showOnMobile,
   writeStyleToDom
 } from './dom';
-import { getData } from '../flux/store';
+import { getState } from '../flux/store';
 import { getElementById } from './filters';
 import { getPages } from '../page/store';
 import { noSectionContent, getParent } from '../element/filters';
@@ -160,5 +160,5 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementDat
     }
   })
   // save data to the dom for front-end.js
-  writeDataToDom(doc, getData())
+  writeDataToDom(doc, getState())
 }

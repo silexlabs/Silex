@@ -15,8 +15,6 @@ import { PageData } from '../page/types';
 import { SiteData } from '../site/types';
 import { UiData, LOADING } from '../ui/types';
 
-// FIXME:  split this file in the packages page, element, site, ui
-
 export const elementReducer = (state: ElementData[] = [], action: any): any => {
   switch (action.type) {
     default: return state
@@ -76,6 +74,7 @@ export const uiReducer = (state: UiData = {
   loading: LOADING.SILEX,
   mobileEditor: false,
   currentPageId: null,
+  clipboard: null,
 }, action: any) => {
   switch (action.type) {
     case UiAction.INITIALIZE: return {

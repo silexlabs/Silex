@@ -19,21 +19,35 @@ export const crudIdKey = Symbol('crudId key')
 export interface CrudState {
   [crudIdKey]: symbol;
 }
-export function withCrudReducer<State extends CrudState>(options: { actionEnum: any, reducer: (state: State[], action: any) => any, label: string }) {
+function testCrud(items: CrudState[]) {
+  const withoutKey = items.filter((item) => !item[crudIdKey])
+  if (withoutKey.length) throw new Error('The items need to have a key. The items you provide to update or deleted need to be retrieved from the store')
+}
+export function withCrudReducer<State>(options: { actionEnum: any, reducer: (state: State[], action: any) => any, label: string }) {
   const { actionEnum, reducer } = options
-  return (state: State[] = [], action: any) => {
+  return (state_: State[] = [], action: any) => {
+    const state = state_ as any as CrudState[]
     switch (action.type) {
-      case actionEnum.INITIALIZE: return action.items.slice()
-      case actionEnum.CREATE: return action.items.length ? reducer(state.concat(action.items), action) : state
-      case actionEnum.DELETE: return action.items.length ? reducer(state.filter((item) => !action.items.find((i) => i[crudIdKey] === item[crudIdKey])), action) : state
+      case actionEnum.INITIALIZE: return action.items.map((item) => (item[crudIdKey] ? item : {
+        ...item,
+        [crudIdKey]: Symbol(),
+      }))
+      case actionEnum.CREATE: return action.items.length ? reducer(state.concat(action.items.map((item) => (item[crudIdKey] ? item : {
+        ...item,
+        [crudIdKey]: Symbol(),
+      }))) as any as State[], action) : state
+      case actionEnum.DELETE:
+        testCrud(action.items)
+        return action.items.length ? reducer(state.filter((item) => !action.items.find((i) => i[crudIdKey] === item[crudIdKey])) as any as State[], action) : state
       case actionEnum.UPDATE:
         if (action.changes.length === 0) return state
+        testCrud(action.changes.reduce((result, item) => result.concat([item.from, item.to]), []))
         return reducer(state.map((item) => {
           const found = action.changes.find((i) => i.from[crudIdKey] === item[crudIdKey])
           return found ? found.to : item
-        }), action)
+        }) as any as State[], action)
       default:
-        return reducer(state, action)
+        return reducer(state_, action)
     }
   }
 }
@@ -43,7 +57,7 @@ export interface StateChange<T> {
   from: T,
   to: T,
 }
-export function onCrudChange<T extends CrudState>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T[]) => void, onDelete: (item: T[]) => void, onUpdate: (change: StateChange<T>[]) => void }) {
+export function onCrudChange<T>({ onAdd, onDelete, onUpdate }: { onAdd: (item: T[]) => void, onDelete: (item: T[]) => void, onUpdate: (change: StateChange<T>[]) => void }) {
   return (prevState: T[], currentState: T[]) => {
     // added items
     const added = currentState.filter((item) => !prevState || !prevState.find((p) => p[crudIdKey] === item[crudIdKey]))

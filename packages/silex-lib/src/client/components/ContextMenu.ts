@@ -13,15 +13,17 @@
  * the Silex context menu
  *
  */
-import { getElements, subscribeElements } from '../element/store';
-import { getCurrentPage } from '../page/filters'
-import { getParent } from '../element/filters'
-import { getUiElements } from '../ui/UiElements'
-import { showPages } from '../api/view'
-import { removeElements, editElement, moveUp, moveToTop, moveDown, moveToBottom } from '../api/element'
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../api/copy'
-import { getSite } from '../site/store'
+import { getCurrentPage } from '../page/filters'
+import { getElements, subscribeElements } from '../element/store';
 import { getEnableSticky, toggleSticky } from './StageWrapper'
+import { getParent } from '../element/filters'
+import { getSite } from '../site/store'
+import { getUiElements } from '../ui/UiElements'
+import { removeElements, editElement, moveUp, moveToTop, moveDown, moveToBottom } from '../api/element'
+import { showPages } from '../api/view'
+import { subscribePages } from '../page/store';
+import { subscribeUi } from '../ui/store';
 
 ///////////////////
 // API for the outside world
@@ -29,9 +31,6 @@ export function initContextMenu() {
   return new ContextMenu(getUiElements().contextMenu)
 }
 
-/**
- * TODO: make this only methods and write tests
- */
 class ContextMenu {
   /**
    * hold the element in the context menu which has the current page name
@@ -39,47 +38,24 @@ class ContextMenu {
   currentPageElement: HTMLElement;
 
   constructor(public element: HTMLElement) {
+
     this.currentPageElement = element.querySelector('.current-page');
     this.currentPageElement.onclick = (e) => showPages();
-    subscribeElements((oldElements, elements) => this.redraw())
-  }
 
-  /**
-   * create the context menu
-   * called by the app constructor
-   */
-  buildUi() {
-    this.element.querySelector('.delete').addEventListener('click', () => {
-      removeElements();
-    });
-    this.element.querySelector('.edit').addEventListener('click', () => {
-      editElement();
-    });
-    this.element.querySelector('.copy').addEventListener('click', () => {
-      copySelection();
-      this.redraw();
-    });
-    this.element.querySelector('.paste').addEventListener('click', () => {
-      pasteClipBoard();
-    });
-    this.element.querySelector('.duplicate').addEventListener('click', () => {
-      duplicateSelection();
-    });
-    this.element.querySelector('.top').addEventListener('click', () => {
-      moveToTop();
-    });
-    this.element.querySelector('.up').addEventListener('click', () => {
-      moveUp();
-    });
-    this.element.querySelector('.down').addEventListener('click', () => {
-      moveDown();
-    });
-    this.element.querySelector('.bottom').addEventListener('click', () => {
-      moveToBottom();
-    });
-    this.element.querySelector('.sticky-elements').addEventListener('click', (e) => {
-      toggleSticky();
-    });
+    subscribeElements((oldElements, elements) => this.redraw())
+    subscribePages(() => this.redraw())
+    subscribeUi(() => this.redraw())
+
+    this.element.querySelector('.delete').addEventListener('click', () => removeElements())
+    this.element.querySelector('.edit').addEventListener('click', () => editElement())
+    this.element.querySelector('.copy').addEventListener('click', () => copySelection())
+    this.element.querySelector('.paste').addEventListener('click', () => pasteClipBoard())
+    this.element.querySelector('.duplicate').addEventListener('click', () => duplicateSelection())
+    this.element.querySelector('.top').addEventListener('click', () => moveToTop())
+    this.element.querySelector('.up').addEventListener('click', () => moveUp())
+    this.element.querySelector('.down').addEventListener('click', () => moveDown())
+    this.element.querySelector('.bottom').addEventListener('click', () => moveToBottom())
+    this.element.querySelector('.sticky-elements').addEventListener('click', (e) => toggleSticky())
   }
 
   /**

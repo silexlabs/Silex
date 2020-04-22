@@ -9,7 +9,7 @@ import { SilexNotification } from '../utils/Notification'
 import { SilexTasks } from '../io/SilexTasks'
 import { addToLatestFiles } from '../io/latest-files'
 import { closePublishDialog, openPublishDialog, startPublish } from '../components/dialog/PublishDialog'
-import { getData } from '../flux/store'
+import { getState } from '../flux/store'
 import { getHtml, getSiteDocument, setHtml } from '../components/SiteFrame'
 import { getSite, updateSite } from '../site/store'
 import { initCssEditor } from '../components/dialog/CssEditor';
@@ -78,7 +78,7 @@ function doSave(fileInfo: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => 
   }
 
   // save to file
-  saveAs(fileInfo, rawHtml, getData(), () => {
+  saveAs(fileInfo, rawHtml, getState(), () => {
     // tracker.trackAction('controller-events', 'success', 'file.save', 1);
     // ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
     SilexNotification.notifySuccess('File is saved.');

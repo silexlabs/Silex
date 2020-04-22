@@ -259,11 +259,11 @@ export function addElement({type, parent, style, componentName} : {
       }
       // add the elements to the store
       createElements([newElementDataWithContent, contentElementWithCssClasses]);
-      return newElementDataWithContent
+      return getElementById(newElementDataWithContent.id)
     } else {
       // add the elements to the store
       createElements([newElementDataPaged]);
-      return newElementDataPaged
+      return getElementById(newElementDataPaged.id)
     }
   })())
 

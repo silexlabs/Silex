@@ -65,7 +65,7 @@ test('pasteElements 2 root elements', () => {
   expect(getElements()).toHaveLength(4)
   const elementsToPaste = [ELEM_IMAGE, ELEM_HTML]
   pasteElements({
-    parent: ELEM_CONTAINER,
+    parent: getElementById(ELEM_CONTAINER.id),
     rootElements: elementsToPaste,
     allElements: elementsToPaste,
   })
@@ -77,7 +77,7 @@ test('pasteElements 3 elements with 1 root element', () => {
   expect(getElements()).toHaveLength(1)
   expect(getElementById(ELEM_SECTION.id).children).toHaveLength(1)
   pasteElements({
-    parent: ELEM_SECTION,
+    parent: getElementById(ELEM_SECTION.id),
     rootElements: [ELEM_CONTAINER],
     allElements: [ELEM_CONTAINER, ELEM_IMAGE, ELEM_HTML],
   })
