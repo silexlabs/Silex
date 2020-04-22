@@ -102,10 +102,29 @@ export class App {
 // tslint:disable:no-string-literal
 window['silex'] = window['silex'] || {};
 
-// Expose the APP to JS for debug
-window['silex']['init'] = () => {
-  window['silex']['config'] = Config;
-};
-window['silex']['start'] = () => {
-  window['silex']['app'] = new App();
-};
+// Expose the APP to JS
+import * as file from './api/file'
+import * as copy from './api/copy'
+import * as view from './api/view'
+import * as page from './api/page'
+import * as undo from './api/undo'
+import * as element from './api/element'
+
+window['silex'] = {
+  init: () => {
+    window['silex']['config'] = Config;
+  },
+  start: () => {
+    window['silex'] = {
+      app: new App(),
+      api: {
+        file,
+        copy,
+        element,
+        undo,
+        page,
+        view,
+      },
+    }
+  },
+}
