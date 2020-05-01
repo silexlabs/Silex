@@ -7,10 +7,10 @@
     "sourceMap": true,
     "module": "esnext",
     "removeComments": false,
-    "typeRoots": ["src/types"],
+    "typeRoots": ["src/ts/types"],
     "esModuleInterop": true,
   },
   "include": [
-    "src/client/App.ts",
+    "src/ts/client/App.ts",
   ],
 }

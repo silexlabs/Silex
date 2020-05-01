@@ -9,8 +9,8 @@
     "removeComments": true,
   },
   "include": [
-    "src/server/silex_electron.ts",
-    "src/server/silex_web.ts",
-    "src/server/index.ts",
+    "src/ts/server/silex_electron.ts",
+    "src/ts/server/silex_web.ts",
+    "src/ts/server/index.ts",
   ],
 }
