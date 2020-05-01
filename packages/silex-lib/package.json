@@ -37,13 +37,13 @@
         },
         "build:client:debug": {
             "patterns": [
-                "src/client/"
+                "src/ts/client/"
             ],
             "extensions": "ts"
         },
         "build:server:debug": {
             "patterns": [
-                "src/server/"
+                "src/ts/server/"
             ],
             "extensions": "ts"
         }
@@ -70,7 +70,7 @@
         "build:server:release": "tsc -p tsconfig-server-release.json",
         "build:server:debug": "tsc -p tsconfig-server-debug.json",
         "build:monaco-editor": "webpack --config webpack-monaco-editor.config.js",
-        "lint": "tslint -c tslint.json 'src/**/*.ts'",
+        "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
         "lint:js": "npm run lint",
         "lint:server": "npm run lint",
         "lint:fix": "npm run lint -- --fix",
