@@ -7,7 +7,7 @@ import { LOADING, UiState } from '../ui-store/types'
 import { ScrollData, SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types'
 import { SilexNotification } from '../utils/Notification'
 import { Stage } from '../../../../node_modules/drag-drop-stage-component/src/ts/index'
-import { addToMobileOrDesktopStyle, fixStyleForType } from '../utils/styles'
+import { fixStyleForElement } from '../utils/styles'
 import { editElement } from '../api/element'
 import {
   getBody,
@@ -388,10 +388,12 @@ class StageWrapper {
     // this.prepareUndo()
   }
   private startResize() {
+    // FIXME: add a class to the body is slow
     getSiteDocument().body.classList.add(Constants.RESIZING_CLASS_NAME)
     this.startDragOrResize()
   }
   private startDrag() {
+    // FIXME: add a class to the body is slow
     getSiteDocument().body.classList.add(Constants.DRAGGING_CLASS_NAME)
     this.startDragOrResize()
   }
@@ -401,10 +403,12 @@ class StageWrapper {
     this.redraw()
   }
   private stopResize(changed: SelectableState[], redraw = false) {
+    // FIXME: add a class to the body is slow
     getSiteDocument().body.classList.remove(Constants.RESIZING_CLASS_NAME)
     this.stopDragOrResize(changed, redraw)
   }
   private stopDrag(changed: SelectableState[], redraw = false) {
+    // FIXME: add a class to the body is slow
     getSiteDocument().body.classList.remove(Constants.DRAGGING_CLASS_NAME)
     this.stopDragOrResize(changed, redraw)
     // Handle parent change
@@ -521,12 +525,16 @@ class StageWrapper {
         }
         return {
           ...element,
-          style: addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, fixStyleForType(element.type, element.isSectionContent, {
-            height: s.metrics.computedStyleRect.height + 'px',
-            top: s.metrics.computedStyleRect.top + 'px',
-            left: s.metrics.computedStyleRect.left + 'px',
-            width: s.metrics.computedStyleRect.width + 'px',
-          })),
+          style: {
+            ...element.style,
+            [getUi().mobileEditor ? 'mobile' : 'desktop']: fixStyleForElement(element, element.isSectionContent, {
+                ...(getUi().mobileEditor ? element.style.mobile : element.style.desktop),
+                height: s.metrics.computedStyleRect.height + 'px',
+                top: s.metrics.computedStyleRect.top + 'px',
+                left: s.metrics.computedStyleRect.left + 'px',
+                width: s.metrics.computedStyleRect.width + 'px',
+              })
+          },
         }
       }))
     }

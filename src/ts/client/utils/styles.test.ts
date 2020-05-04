@@ -1,5 +1,11 @@
-import { ElementType } from '../element-store/types';
-import { addToMobileOrDesktopStyle, fixStyleForType } from './styles';
+import { addToMobileOrDesktopStyle, fixStyleForElement } from './styles';
+import { ELEM_TEXT, ELEM_SECTION, ELEM_CONTAINER } from '../../test-utils/data-set'
+import { ElementState } from '../element-store/types'
+
+// in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
+const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
+const ELEM_CONTAINER_STATE = ELEM_CONTAINER as ElementState
+const ELEM_SECTION_STATE = ELEM_SECTION as ElementState
 
 test('add to mobile or desktop style', () => {
   expect(
@@ -14,34 +20,34 @@ test('add to mobile or desktop style', () => {
 })
 
 test('fix style for type', () => {
-  let style = fixStyleForType(ElementType.TEXT, false, { height: '20px', width: '10px', a: 'b' })
+  let style = fixStyleForElement(ELEM_TEXT_STATE, false, { height: '20px', width: '10px', a: 'b' })
   expect(style).toEqual({ height: '20px', width: '10px', a: 'b' })
 
-  style = fixStyleForType(ElementType.TEXT, false, { a: 'b' })
+  style = fixStyleForElement(ELEM_TEXT_STATE, false, { a: 'b' })
   expect(Object.keys(style)).not.toContain('height')
   expect(Object.keys(style)).not.toContain('width')
   expect(style).toEqual({ a: 'b' })
 
-  style = fixStyleForType(ElementType.SECTION, false, { height: '20px', width: '10px', a: 'b' })
+  style = fixStyleForElement(ELEM_SECTION_STATE, false, { height: '20px', width: '10px', a: 'b' })
   expect(Object.keys(style)).not.toContain('height')
   expect(Object.keys(style)).not.toContain('width')
   expect(style).toEqual({ a: 'b' })
 
-  style = fixStyleForType(ElementType.CONTAINER, true, { height: '20px', width: '10px', a: 'b' })
+  style = fixStyleForElement(ELEM_CONTAINER_STATE, true, { height: '20px', width: '10px', a: 'b' })
   expect(Object.keys(style)).not.toContain('width')
   expect(style).toEqual({ height: '20px', a: 'b' })
 
-  style = fixStyleForType(ElementType.SECTION, false, { a: 'b' })
+  style = fixStyleForElement(ELEM_SECTION_STATE, false, { a: 'b' })
   expect(Object.keys(style)).not.toContain('height')
   expect(Object.keys(style)).not.toContain('width')
   expect(style).toEqual({ a: 'b' })
 
-  style = fixStyleForType(ElementType.SECTION, false, { height: '20px', width: '10px', a: 'b' })
+  style = fixStyleForElement(ELEM_SECTION_STATE, false, { height: '20px', width: '10px', a: 'b' })
   expect(Object.keys(style)).not.toContain('height')
   expect(Object.keys(style)).not.toContain('width')
   expect(style).toEqual({ a: 'b' })
 
-  style = fixStyleForType(ElementType.CONTAINER, false, { height: '20px', width: '10px', a: 'b' })
+  style = fixStyleForElement(ELEM_CONTAINER_STATE, false, { height: '20px', width: '10px', a: 'b' })
   expect(style).toEqual({ height: '20px', width: '10px', a: 'b' })
 })
 

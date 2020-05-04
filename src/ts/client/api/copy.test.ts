@@ -5,12 +5,20 @@ import {
   ELEM_SECTION,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
-  PAGE1,
 } from '../../test-utils/data-set';
 import { cloneElement, cloneElements, pasteElements } from './copy';
 import { getElementById } from '../element-store/filters';
 import { getElements, initializeElements } from '../element-store/index';
 import { initializePages } from '../page-store/index';
+import { ElementState } from '../element-store/types'
+
+// in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
+const ELEM_CONTAINER_STATE = ELEM_CONTAINER as ElementState
+const ELEM_IMAGE_STATE = ELEM_IMAGE as ElementState
+const ELEM_SECTION_STATE = ELEM_SECTION as ElementState
+const ELEM_SECTION_CONTENT_STATE = ELEM_SECTION_CONTENT as ElementState
+const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
+const ELEM_HTML_STATE = ELEM_HTML as ElementState
 
 jest.mock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());
 jest.mock('../components/SiteFrame', () => ({
@@ -19,64 +27,83 @@ jest.mock('../components/SiteFrame', () => ({
 
 jest.mock('../components/StageWrapper', () => ({
   getStage: () => ({
-    getState: (doc, el) => ({ metrics: { computedStyleRect: {}}}),
+    getState: (doc, el) => ({ metrics: { computedStyleRect: {
+      top: 0,
+      left: 0,
+      width: 0,
+      height: 0,
+    }}}),
   })
 }))
 
-beforeEach(() => {
-  initializeElements([ELEM_TEXT, ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT])
-  initializePages([PAGE1])
-})
-
 test('cloneElement', () => {
-  const cloned = cloneElement(ELEM_TEXT)
+  const cloned = cloneElement(ELEM_TEXT_STATE)
   expect(cloned).not.toBeNull()
-  expect(cloned[0].id).not.toBe(ELEM_TEXT.id)
-  expect(cloned[0].id).not.toBe(ELEM_TEXT.id)
+  expect(cloned[0].id).not.toBe(ELEM_TEXT_STATE.id)
+  expect(cloned[0].id).not.toBe(ELEM_TEXT_STATE.id)
 })
 
 test('cloneElements 1 element', () => {
-  const [all, root] = cloneElements([ELEM_TEXT])
+  const [all, root] = cloneElements([ELEM_TEXT_STATE])
   expect(all).toHaveLength(1)
   expect(all).not.toBeNull()
   expect(all).toHaveLength(1)
   expect(all).toEqual(root)
-  expect(all[0].id).not.toBe(ELEM_TEXT.id)
+  expect(all[0].id).not.toBe(ELEM_TEXT_STATE.id)
 })
 
 test('cloneElements container', () => {
-  initializeElements([ELEM_TEXT, ELEM_CONTAINER, ELEM_IMAGE, ELEM_HTML, ELEM_SECTION, ELEM_SECTION_CONTENT])
-  const [all, root] = cloneElements([ELEM_CONTAINER])
+  const [all, root] = cloneElements([ELEM_CONTAINER_STATE], [ELEM_TEXT_STATE, ELEM_CONTAINER_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE, ELEM_SECTION_STATE, ELEM_SECTION_CONTENT_STATE])
   expect(all).toHaveLength(4)
 })
 
 test('cloneElements with non existing elements', () => {
-  expect(() => cloneElements([ELEM_CONTAINER])).toThrow(Error)
+  expect(() => cloneElements([ELEM_CONTAINER_STATE])).toThrow(Error)
 })
 
 test('pasteElements 2 root elements', () => {
-  expect(getElements()).toHaveLength(4)
-  const elementsToPaste = [ELEM_IMAGE, ELEM_HTML]
+  const elementsToPaste = [ELEM_IMAGE_STATE, ELEM_HTML_STATE]
+  const dispatch = jest.fn()
   pasteElements({
-    parent: getElementById(ELEM_CONTAINER.id),
+    parent: ELEM_CONTAINER_STATE,
     rootElements: elementsToPaste,
     allElements: elementsToPaste,
-  })
-  expect(getElements()).toHaveLength(6)
+    pageNames: [],
+  }, [ELEM_TEXT_STATE, ELEM_CONTAINER_STATE, ELEM_SECTION_STATE, ELEM_SECTION_CONTENT_STATE], dispatch)
+  expect(dispatch).toHaveBeenCalledTimes(2) // 2 calls
+
+  // 1st call: create
+  expect(dispatch.mock.calls[0]).toHaveLength(1) // 1 arg which is the action
+  expect(dispatch.mock.calls[0][0].type).toBe('ELEMENT_CREATE')
+  expect(dispatch.mock.calls[0][0].items).toHaveLength(2)
+  expect(dispatch.mock.calls[0][0].items.map((i) => i.id)).toEqual([ELEM_IMAGE_STATE.id, ELEM_HTML_STATE.id])
+
+  // 2nd call: update parents
+  expect(dispatch.mock.calls[1]).toHaveLength(1) // 1 arg which is the action
+  expect(dispatch.mock.calls[1][0].type).toBe('ELEMENT_UPDATE')
+  expect(dispatch.mock.calls[1][0].items).toHaveLength(1)
+  expect(dispatch.mock.calls[1][0].items.map((i) => i.id)).toEqual([ELEM_CONTAINER_STATE.id])
 })
 
 test('pasteElements 3 elements with 1 root element', () => {
-  initializeElements([ELEM_SECTION])
-  expect(getElements()).toHaveLength(1)
-  expect(getElementById(ELEM_SECTION.id).children).toHaveLength(1)
+  const dispatch = jest.fn()
   pasteElements({
-    parent: getElementById(ELEM_SECTION.id),
-    rootElements: [ELEM_CONTAINER],
-    allElements: [ELEM_CONTAINER, ELEM_IMAGE, ELEM_HTML],
-  })
-  expect(getElements()).toHaveLength(4)
-  expect(getElementById(ELEM_SECTION.id).children).toHaveLength(2)
-  expect(getElementById(ELEM_SECTION.id).children).toStrictEqual(expect.arrayContaining([ELEM_CONTAINER.id]))
-  expect(getElementById(ELEM_CONTAINER.id).children).toStrictEqual(expect.arrayContaining([ELEM_HTML.id]))
+    parent: ELEM_SECTION_STATE,
+    rootElements: [ELEM_CONTAINER_STATE],
+    allElements: [ELEM_CONTAINER_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE],
+    pageNames: [],
+  }, [ELEM_SECTION_STATE], dispatch)
+
+  // 1st call: create
+  expect(dispatch.mock.calls[0]).toHaveLength(1) // 1 arg which is the action
+  expect(dispatch.mock.calls[0][0].type).toBe('ELEMENT_CREATE')
+  expect(dispatch.mock.calls[0][0].items).toHaveLength(3)
+  expect(dispatch.mock.calls[0][0].items.map((i) => i.id)).toEqual([ELEM_CONTAINER_STATE.id, ELEM_IMAGE_STATE.id, ELEM_HTML_STATE.id])
+
+  // 2nd call: update parents
+  expect(dispatch.mock.calls[1]).toHaveLength(1) // 1 arg which is the action
+  expect(dispatch.mock.calls[1][0].type).toBe('ELEMENT_UPDATE')
+  expect(dispatch.mock.calls[1][0].items).toHaveLength(1)
+  expect(dispatch.mock.calls[1][0].items.map((i) => i.id)).toEqual([ELEM_SECTION_STATE.id])
 })
 

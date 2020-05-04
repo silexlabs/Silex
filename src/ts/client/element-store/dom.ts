@@ -73,7 +73,7 @@ export function removeElement(element: HTMLElement) {
 /**
  * element creation
  * create a DOM element, attach it to this container
- * and returns a new component for the element
+ * and returns new component data for the element
  * @param type  the type of the element to create,
  *    see TYPE_* constants of the class @see silex.model.Element
  * @return   the newly created element

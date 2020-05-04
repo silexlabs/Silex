@@ -8,7 +8,7 @@ import { ElementType } from '../client/element-store/types';
 import BackwardCompat from '../server/utils/BackwardCompat';
 
 test('remove useless elements', () => {
-  const bc = new BackwardCompat('root url', __dirname + '/..')
+  const bc = new BackwardCompat('root url', __dirname + '/../../..')
   siteIFrame.contentDocument.body.innerHTML = '<div class="test-class"></div>'
   expect(siteIFrame.contentDocument.body.children).toHaveLength(1)
   bc.removeIfExist(siteIFrame.contentDocument, '.test-class')
@@ -16,7 +16,7 @@ test('remove useless elements', () => {
 })
 
 test('convert from 2.5.60', () => {
-  const htmlBuffer = fs.readFileSync('./test-utils/editable-v2.5.60.html')
+  const htmlBuffer = fs.readFileSync(__dirname + '/../test-utils/editable-v2.5.60.html')
   expect(htmlBuffer).not.toBeNull()
   const htmlString = htmlBuffer.toString()
   expect(htmlString).not.toBeNull()
