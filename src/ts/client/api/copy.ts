@@ -13,6 +13,7 @@ import { getElements, createElements, updateElements } from '../element-store/in
 import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
 import { getStage } from '../components/StageWrapper'
 import { getUi, updateUi } from '../ui-store/index'
+import { flat } from '../utils/array'
 
 /**
  * copy the selection for later paste
@@ -52,10 +53,6 @@ export function duplicateSelection() {
   }
 }
 
-
-// FIXME: flat seems to be missing on array in UT
-// exported only for unit tests
-export const flat = (arr) => arr.reduce((acc, val) => acc.concat(val), []);
 
 /**
  * duplicate elements for later paste or for duplicate

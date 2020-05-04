@@ -7,7 +7,7 @@ import {
   ELEM_TEXT,
   PAGE1,
 } from '../../test-utils/data-set';
-import { cloneElement, cloneElements, flat, pasteElements } from './copy';
+import { cloneElement, cloneElements, pasteElements } from './copy';
 import { getElementById } from '../element-store/filters';
 import { getElements, initializeElements } from '../element-store/index';
 import { initializePages } from '../page-store/index';
@@ -26,13 +26,6 @@ jest.mock('../components/StageWrapper', () => ({
 beforeEach(() => {
   initializeElements([ELEM_TEXT, ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT])
   initializePages([PAGE1])
-})
-
-test('flat', () => {
-  expect(flat([['a', 'b'], 'c'])).toEqual(['a', 'b', 'c'])
-  expect(flat(['a', ['b', 'c']])).toEqual(['a', 'b', 'c'])
-  expect(flat([['a', 'b', 'c']])).toEqual(['a', 'b', 'c'])
-  expect(flat(['a', 'b', 'c'])).toEqual(['a', 'b', 'c'])
 })
 
 test('cloneElement', () => {
