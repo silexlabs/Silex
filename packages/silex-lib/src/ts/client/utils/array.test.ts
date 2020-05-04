@@ -1,4 +1,4 @@
-import { insertAt } from './array';
+import { insertAt, flat } from './array';
 
 test('insert at 1 object', () => {
   const obj1 = 'obj1'
@@ -32,3 +32,9 @@ test('insert at strnage number of objects', () => {
   expect(insertAt([2], null,1)).toHaveLength(2)
 })
 
+test('flat', () => {
+  expect(flat([['a', 'b'], 'c'])).toEqual(['a', 'b', 'c'])
+  expect(flat(['a', ['b', 'c']])).toEqual(['a', 'b', 'c'])
+  expect(flat([['a', 'b', 'c']])).toEqual(['a', 'b', 'c'])
+  expect(flat(['a', 'b', 'c'])).toEqual(['a', 'b', 'c'])
+})
