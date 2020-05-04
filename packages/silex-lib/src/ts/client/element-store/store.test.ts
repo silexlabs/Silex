@@ -1,8 +1,8 @@
-import { initializeElements, getElements } from '../element-store/index';
+import { initializeElements, getElements, fromElementData } from '../element-store/index';
 import { ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER } from '../../test-utils/data-set';
 
 beforeEach(() => {
-  initializeElements([ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER])
+  initializeElements(fromElementData([ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER]))
 })
 
 test('get data', () => {

@@ -1,11 +1,12 @@
 import { PAGE1, PAGE2, PAGE3 } from '../../test-utils/data-set';
-import { PageData } from '../page-store/types';
+import { PageData, PageState } from '../page-store/types';
 import {
   getPages,
   initializePages,
   movePage,
   subscribePages,
-  updatePages
+  updatePages,
+  fromPageData
 } from '../page-store/index';
 import { onCrudChange } from '../store/crud-store';
 
@@ -13,19 +14,19 @@ beforeEach(() => {
   initializePages([])
 })
 
-const PAGES_1: PageData[] = [PAGE1]
-const PAGES_2: PageData[] = PAGES_1.concat([PAGE2])
-const PAGES_3: PageData[] = PAGES_2.concat([PAGE3])
+const PAGES_1: PageState[] = fromPageData([PAGE1])
+const PAGES_2: PageState[] = PAGES_1.concat(fromPageData([PAGE2]))
+const PAGES_3: PageState[] = PAGES_2.concat(fromPageData([PAGE3]))
 
 test('Move a page', () => {
-  initializePages(PAGES_3)
+  initializePages(fromPageData(PAGES_3))
   const test = {
     cbk: (prev, next) => {},
   }
   jest.spyOn(test, 'cbk')
   subscribePages(test.cbk)
 
-  movePage({page: PAGE3, idx: 0})
+  movePage({page: PAGES_3[2], idx: 0})
 
   expect(test.cbk).toHaveBeenCalled()
 })
@@ -80,24 +81,21 @@ test('Subscribe CRUD', () => {
     onUpdate: test.onUpdatePages,
   }))
 
-  initializePages(PAGES_3.map((page) => getPages().find((p) => p.id === page.id) || page))
+  initializePages(PAGES_3)
   expect(test.onAddPages).toHaveBeenCalledTimes(1)
   expect(test.onDeletePages).toHaveBeenCalledTimes(0)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
 
-  initializePages(PAGES_2.map((page) => getPages().find((p) => p.id === page.id) || page))
+  initializePages(PAGES_2)
   expect(test.onAddPages).toHaveBeenCalledTimes(1)
   expect(test.onDeletePages).toHaveBeenCalledTimes(1)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
 
-  initializePages(PAGES_2.map((page) => getPages().find((p) => p.id === page.id) || page))
+  initializePages(PAGES_2)
   expect(test.onUpdatePages).toHaveBeenCalledTimes(0)
   updatePages([{
-    from: getPages().find((p) => p.id === PAGE1.id),
-    to: {
-      ...getPages().find((p) => p.id === PAGE1.id),
-      id: 'newId',
-    },
+    ...PAGES_2[0],
+    id: 'newId',
   }])
   expect(test.onUpdatePages).toHaveBeenCalledTimes(1)
   expect(test.onAddPages).toHaveBeenCalledTimes(1)

@@ -12,7 +12,7 @@
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import { getBody } from '../../element-store/filters';
-import { getBoundingBox, getElementStyle } from '../../element-store/utils';
+import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils';
 import { getElements, updateElements } from '../../element-store/index'
 import { getSite } from '../../site-store/index';
 import { getUi } from '../../ui-store/index'
@@ -160,21 +160,7 @@ export class PropertyPane extends PaneBase {
     const elementsPosition = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'position', mobile))
 
     // bounding box
-    const bb = getBoundingBox(elementsNoBodyNoSection
-      .map((el) => {
-        if (el.isSectionContent && !mobile) return {
-          top: null,
-          left: null,
-          width: getSite().width + 'px',
-          height: getElementStyle(el, 'height', mobile),
-        }
-        else return {
-          top: getElementStyle(el, 'top', mobile),
-          left: getElementStyle(el, 'left', mobile),
-          width: getElementStyle(el, 'width', mobile),
-          height: getElementStyle(el, 'height', mobile),
-        }
-      }))
+    const bb = getBoundingBox(elementsNoBodyNoSection.map((el) => getElementRect(el, mobile)))
 
     const computeValue = new Map([
       [LeftInput, () => Math.round(bb.left || 0).toString()],

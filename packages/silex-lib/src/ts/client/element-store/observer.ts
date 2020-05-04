@@ -22,13 +22,14 @@ import { getPages } from '../page-store/index';
 import { noSectionContent, getParent } from '../element-store/filters';
 import { setPages } from '../page-store/dom';
 import { writeDataToDom } from '../store/dom';
+import { getElements } from './index'
 
-export const onAddElements = (win: Window) => (elements: ElementState[]) => {
+export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elements = getElements()) => {
   const doc = win.document
-  const added = []
-  elements.forEach((element) => {
+  const added: StateChange<ElementState>[] = []
+  toBeAdded.forEach((element) => {
     // create with defaults
-    const parent = getParent(element) // parent may be null if the parent's children array has not yet be changed, then the element will be moved when it is set
+    const parent = getParent(element, elements) // parent may be null if the parent's children array has not yet be changed, then the element will be moved when it is set
     const parentEl = parent ? getDomElement(doc, parent) : doc.body
     const emptyElement: ElementData = createDomElement({
       doc,
@@ -44,7 +45,7 @@ export const onAddElements = (win: Window) => (elements: ElementState[]) => {
     } else {
       // update with provided data
       added.push({
-        from: emptyElement,
+        from: emptyElement as ElementState, // we do not need crudId here
         to: element,
       })
     }
@@ -57,7 +58,7 @@ export const onAddElements = (win: Window) => (elements: ElementState[]) => {
     console.error('not implemented: components')
   })
   if (added.length) {
-    onUpdateElements(win)(added)
+    onUpdateElements(win)(added, elements)
   }
 }
 
@@ -75,14 +76,14 @@ export const onDeleteElements = (win: Window) => (elements: ElementState[]) => {
   })
 }
 
-export const onUpdateElements = (win: Window) => (change: StateChange<ElementState>[]) => {
+export const onUpdateElements = (win: Window) => (change: StateChange<ElementState>[], elements = getElements()) => {
   const doc = win.document
 
   change.forEach(({from, to}) => {
     const domEl = getDomElement(doc, to)
 
     if (to.pageNames !== from.pageNames) {
-      const noSection = noSectionContent(to)
+      const noSection = noSectionContent(to, elements)
       const noSectionDom = getDomElement(doc, noSection)
       if (noSectionDom) {
         setPages(getPages(), noSectionDom, to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
@@ -92,7 +93,7 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
     }
     if (to.children !== from.children) {
       reorderElements(domEl, to.children
-        .map((id: ElementId) => getElementById(id))
+        .map((id: ElementId) => getElementById(id, elements))
         .filter((el: ElementState) => !!el) // filter out elements which have their ID in children but can not be found, which should never happen?
         .map((el: ElementState) => getDomElement(doc, el))
         .filter((el: HTMLElement) => !!el) //  filter out elements which have no DOM elements, i.e. recently added, should never happen??

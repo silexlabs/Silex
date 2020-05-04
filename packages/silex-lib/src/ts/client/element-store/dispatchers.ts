@@ -39,10 +39,12 @@ import {
 import { getUi } from '../ui-store/index'
 import { store } from '../store/index'
 import { getCreateAction } from './utils'
+import { insertAt } from '../utils/array'
 
 /**
  * @fileoverview helpers to dispatch common actions on the store
- *
+ * TODO: 1- remove all references to the store or dispatch => every function should take ElementState[] and return the changes to be made as an ElementState[]
+ * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
  */
 
 /**
@@ -56,54 +58,68 @@ export const selectBody = (elements = getElements(), dispatch = store.dispatch) 
  * select a set of elements
  */
 export const selectElements = (selection: ElementState[], elements = getElements(), dispatch = store.dispatch) => {
-  updateElements(getSelectedElements(elements)
-    // unselect all but the one to select
-    .filter((el) => !selection.includes(el))
-    .map((el) => ({ ...el, selected: false, }))
-    // select the once to select
-    .concat(selection
-      .map((el) => ({
-        ...el,
-        selected: true,
-      }))),
+  updateElements(elements
+    .filter((el) => el.selected !== selection.map((e) => e.id).includes(el.id))
+    .map((el) => ({
+      ...el,
+      selected: !el.selected,
+    })),
     dispatch)
 }
 
 /**
  * move elements order in their parent's children array
+ * @return the parent elements to be updated
  */
-export const moveElements = (selection: ElementState[], direction: DomDirection, elements = getElements(), dispatch = store.dispatch) => {
-  updateElements(selection
+export const moveElements = (selection: ElementState[], direction: DomDirection, elements = getElements(), dispatch = store.dispatch, debug = false) => {
+  const getIdx = (el, children) => children.findIndex((c) => c === el.id)
+  const getTargetIdx = (el, parent) => {
+    const idx = getIdx(el, parent.children)
+    return direction === DomDirection.UP ? idx - 1 : direction === DomDirection.DOWN ? idx + 1 : direction === DomDirection.TOP ? 0 : parent.children.length - 1
+  }
+  const changes = selection
     .map((el) => ({
       el,
-      parent: getParent(noSectionContent(el), elements), // move the parent instead of the section content
+      parent: getParent(el, elements),
     }))
     .filter(({el, parent}) => {
       if (!parent) {
-        console.warn('No parent, is this the body??', el)
+        console.warn('No parent, are you trying to move the root element?', {el, parent})
       }
       return !!el && !!parent
     })
     .map(({el, parent}) => ({
       el,
       parent,
-      idx: parent.children.findIndex((c) => c === el.id),
+      idx: getTargetIdx(el, parent),
     }))
-    .map(({el, parent, idx}) => ({
-      el, parent,
-      idx: direction === DomDirection.UP ? idx - 1 : direction === DomDirection.DOWN ? idx + 1 : direction === DomDirection.TOP ? 0 : parent.children.length - 1,
-      children: parent.children.filter(((c) => c !== el.id)), // remove the element in order to insert it at the right spot
-    }))
-    .map(({el, parent, idx, children}) => ({
-      ...parent,
-      children: [
-        ...children.slice(0, idx),
-        el.id,
-        ...children.slice(idx),
-      ],
-    })),
-    dispatch,
-  )
+    .sort((o1, o2) => (o2.idx - o1.idx) * (direction === DomDirection.UP || direction === DomDirection.TOP ? -1 : 1))
+    .reduce((acc, {el, parent, idx}) => {
+      const stored = acc.has(parent) ? acc.get(parent) : {
+        children: parent.children,
+        parent,
+        beforeMe: 0,
+        errored: false,
+      }
+      // how many elements have been moved before me
+      const currentIdx = getIdx(el, stored.children)
+      const targetIdx = idx // + (direction === DomDirection.TOP ? 0 : direction === DomDirection.BOTTOM ? 0 : 0)
+      acc.set(parent, {
+        parent: stored.parent,
+        children: targetIdx !== currentIdx ? insertAt(stored.children.filter((c, i) => i !== currentIdx), targetIdx, el.id) : stored.children,
+        errored: stored.errored || targetIdx < 0 || targetIdx >= stored.parent.children.length,
+        beforeMe: stored.beforeMe + 1,
+      })
+      return acc
+    }, new Map())
+    const states = Array.from(changes.values())
+      .filter((change) => !change.errored && JSON.stringify(change.children) !== JSON.stringify(change.parent.children))
+      .map((change) => ({
+        ...change.parent,
+        children: change.children,
+      })) as ElementState[]
+
+  if (states.length) updateElements(states, dispatch)
 }
 
 /**
@@ -172,6 +188,7 @@ export function setClassName(name: string, elements = getElements(), dispatch = 
 /**
  * create an element and add it to the stage
  * componentName the desired component type if it is a component
+ * TODO: refactore add element to be able to unit test
  * @return [element, updatedParent]
  */
 export function addElement({type, parent, style, componentName} : {
@@ -179,7 +196,7 @@ export function addElement({type, parent, style, componentName} : {
   parent: ElementState,
   style: StyleObject,
   componentName?: string,
-}, elements = getElements(), dispatch = store.dispatch): [ElementState, ElementState] {
+}, dispatch = store.dispatch): [ElementState, ElementState] {
   // create an element
   const [newElementState, updatedParentState] = getCreateAction({
     type,
@@ -217,17 +234,17 @@ export function addElement({type, parent, style, componentName} : {
       }
       // add the elements to the store
       createElements([newElementStateWithContent, contentElementWithCssClasses], dispatch);
-      return getElementById(newElementStateWithContent.id, getElements())
+      return getElementById(newElementStateWithContent.id, getElements()) // here it is important to use getElements(), not store elements of before the dispatch
     } else {
       // add the elements to the store
       createElements([newElementStatePaged], dispatch);
-      return getElementById(newElementStatePaged.id, getElements())
+      return getElementById(newElementStatePaged.id, getElements()) // here it is important to use getElements(), not store elements of before the dispatch
     }
   })())
 
   updateElements(
     // unselect all
-    getSelectedElements(getElements())
+    getSelectedElements(getElements()) // here it is important to use getElements(), not store elements of before the dispatch
     .filter((el) => el !== parent && el !== element) // will be updated bellow
     .map((el) => ({
       ...el,
@@ -258,7 +275,7 @@ export function addElement({type, parent, style, componentName} : {
   // TODO: drag to insert?
   // getStage().startDrag()
 
-  return [getElementById(newElementStatePaged.id, getElements()), getElementById(updatedParentState.id, getElements())]
+  return [getElementById(newElementStatePaged.id, getElements()), getElementById(updatedParentState.id, getElements())] // here it is important to use getElements(), not store elements of before the dispatch
 }
 
 export function removeElementsWithoutConfirm(selection, dispatch = store.dispatch) {

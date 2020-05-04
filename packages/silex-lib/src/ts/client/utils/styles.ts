@@ -10,7 +10,7 @@
  */
 
 import { CssRule } from '../site-store/types'
-import { ElementType } from '../element-store/types';
+import { ElementType, ElementState } from '../element-store/types';
 
 /**
  * @fileoverview Helper class for common tasks
@@ -18,16 +18,26 @@ import { ElementType } from '../element-store/types';
 
 /**
  * handle the specificities of each element type, e.g. section have no width
+ * TODO: also use element's position (static or not)
  */
-export function fixStyleForType(type: ElementType, isSectionContent: boolean, style: CssRule) {
+export function fixStyleForElement(element: ElementState, isSectionContent: boolean, style: CssRule) {
   const result = {
     ...style,
   }
-  if (type === ElementType.SECTION || isSectionContent) delete result.width
-  if (type === ElementType.SECTION) delete result.height
+  if (style.position === 'static') {
+    delete result.left
+    delete result.top
+  }
+  if (element.type === ElementType.SECTION || isSectionContent) {
+    delete result.width // always 100% for sections and "site width" for section content
+    delete result.left // section content are relative because of auto z-index
+    delete result.top // section content are relative because of auto z-index
+  }
+  if (element.type === ElementType.SECTION) delete result.height
   return result
 }
 
+// TODO: use a dynamic key instead of this method: [mobileEditor ? 'mobile' : 'desktop']
 export function addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: { mobile: CssRule, desktop: CssRule }, style: CssRule): {desktop: CssRule, mobile: CssRule} {
   return {
     ...originalStyle,

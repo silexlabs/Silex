@@ -18,7 +18,7 @@
 
 // FIXME: do not find module only in vim: import { SelectableState } from 'drag-drop-stage-component/src/ts/Types';
 import { ElementState } from '../../element-store/types';
-import { addToMobileOrDesktopStyle, fixStyleForType } from '../../utils/styles';
+import { addToMobileOrDesktopStyle, fixStyleForElement } from '../../utils/styles';
 import { getSelectedElements } from '../../element-store/filters'
 import { getSite, subscribeSite, updateSite } from '../../site-store/index';
 import { getStage } from '../StageWrapper';
@@ -186,7 +186,7 @@ export class PaneBase {
         ...el,
         style: {
           ...el.style,
-          ...addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, fixStyleForType(el.type, el.isSectionContent, style)),
+          ...addToMobileOrDesktopStyle(getUi().mobileEditor, el.style, fixStyleForElement(el, el.isSectionContent, style)),
         },
       };
     }))

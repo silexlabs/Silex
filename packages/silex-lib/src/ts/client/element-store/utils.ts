@@ -184,8 +184,9 @@ export function getElementStyle(element: ElementState, styleName: string, mobile
  * get an element size
  * this takes into account all cases, i.e. element with style, section width, section height, section container whidth
  * also takes the max width in mobile editor
+ * TODO: make better UT, should not depend on getSite
  */
-export function getElementSize(win: Window, element: ElementState, mobile: boolean): Size {
+export function getElementSize(win: Window, element: ElementState, mobile: boolean, elements = getElements()): Size {
   const result: Size = {width: -1, height: -1}
   const width = getElementStyle(element, 'width', mobile)
   if (width) result.width = parseInt(width)
@@ -202,7 +203,7 @@ export function getElementSize(win: Window, element: ElementState, mobile: boole
   const height = getElementStyle(element, 'height', mobile)
   if (height) result.height = parseInt(height)
   else if (element.type === ElementType.SECTION) {
-    const sectionContent = getChildren(element).find((el) => el.isSectionContent)
+    const sectionContent = getChildren(element, elements).find((el) => el.isSectionContent)
     if(sectionContent) result.height = getElementSize(win, sectionContent, mobile).height
     else result.height = 0
     // else result.height = parseInt(getStyle(sectionContent, 'height', mobile))
@@ -231,6 +232,21 @@ export function center({element, parent, win, opt_offset = 0}: {
   return {
     top: opt_offset + posY,
     left: opt_offset + posX,
+  }
+}
+
+export function getElementRect(element: ElementState, mobile: boolean): ElementRect {
+  if (element.isSectionContent && !mobile) return {
+    top: null,
+    left: null,
+    width: getSite().width + 'px',
+    height: getElementStyle(element, 'height', mobile),
+  }
+  else return {
+    top: getElementStyle(element, 'top', mobile),
+    left: getElementStyle(element, 'left', mobile),
+    width: getElementStyle(element, 'width', mobile),
+    height: getElementStyle(element, 'height', mobile),
   }
 }
 
