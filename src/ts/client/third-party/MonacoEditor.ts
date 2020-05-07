@@ -6,6 +6,3 @@
 import * as monaco from '../../../../node_modules/monaco-editor/esm/vs/editor/editor.api.js';
 window['monaco'] = monaco;
 
-// FIXME: is this used?
-console.log('LOADING MONACO, IS THIS EVEN CALLED SOMETIMES?')
-

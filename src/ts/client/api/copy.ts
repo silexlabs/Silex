@@ -1,4 +1,17 @@
-import { ElementState, ElementId, ElementType } from '../element-store/types';
+import {
+  ElementData,
+  ElementId,
+  ElementState,
+  ElementType
+} from '../element-store/types';
+import {
+  createElements,
+  fromElementData,
+  toElementData,
+  getElements,
+  updateElements
+} from '../element-store/index';
+import { flat } from '../utils/array'
 import {
   getBody,
   getElementById,
@@ -9,22 +22,17 @@ import {
 } from '../element-store/filters';
 import { getCreationDropZone, getNewId } from '../element-store/utils';
 import { getDomElement } from '../element-store/dom'
-import { getElements, createElements, updateElements } from '../element-store/index'
 import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
 import { getStage } from '../components/StageWrapper'
 import { getUi, updateUi } from '../ui-store/index'
-import { flat } from '../utils/array'
 import { store } from '../store/index'
-import { PageState } from '../page-store/types'
 
 /**
  * copy the selection for later paste
  */
 export function copySelection() {
-  const clipboard = cloneElements(
-    getElements()
-    .filter((el) => el.selected)
-  )
+  const selection = getSelectedElements().map((el) => noSectionContent(el))
+  const clipboard = cloneElements(selection)
   updateUi({
     ...getUi(),
     clipboard,
@@ -38,8 +46,8 @@ export function copySelection() {
 export function duplicateSelection() {
   const selection = getSelectedElements().map((el) => noSectionContent(el))
   if (selection.length) {
-    const allElements = []
-    const rootElements = []
+    const allElements: ElementData[] = []
+    const rootElements: ElementData[] = []
     selection
       .forEach((el) => {
         const all = cloneElement(el)
@@ -58,12 +66,12 @@ export function duplicateSelection() {
 
 /**
  * duplicate elements for later paste or for duplicate
- * returns a is a flat array of elements with new IDs and updated children list
+ * returns a flat array of elements with new IDs and updated children list
  * only root elements are selected
  * @returns [allElements, rootElements]
  */
 export function cloneElements(selection: ElementState[], elements = getElements()): [ElementState[], ElementState[]] {
-  const body = getBody()
+  const body = getBody(elements)
   const all = flat(selection
     // do not allow the body to be cloned
     .filter((el) => el !== body)
@@ -82,20 +90,20 @@ export function cloneElements(selection: ElementState[], elements = getElements(
  * clone elements
  * reset the ID of the element and its children
  * the elements need to be in the store already (and dom)
+ * this method is exported only for unit tests, only cloneElements is supposed to be used
  */
-export function cloneElement(element: ElementState, parentId: ElementId = null, elements = getElements()): ElementState[] {
+export function cloneElement(element: ElementState, parentId: ElementId = null, elements = getElements()): ElementData[] {
   if(element) {
-  const newId = getNewId()
-  const res: ElementState[] = [{
-    ...JSON.parse(JSON.stringify(element)),
-    id: newId,
-    parent: parentId,
-    selected: parentId === null,
-  }]
-  res[0].children
-    .forEach((id) => res.push(...cloneElement(getElementById(id, elements), newId)))
+    const newId = getNewId()
+    const children = flat(element.children
+      .map((id) => cloneElement(getElementById(id, elements), newId, elements)))
+    return [{
+      ...toElementData([element])[0],
+      id: newId,
+      selected: parentId === null,
+      children: children.map((el) => el.id),
+    }].concat(children)
 
-  return res
   } else {
     // happens if getElementById returns undefined for whatever reason
     throw new Error('Element could not be cloned because it could not be found')
@@ -135,8 +143,8 @@ export function pasteClipBoard() {
 
 export function pasteElements({parent, rootElements, allElements, pageNames = null}: {
   parent: ElementState,
-  rootElements: ElementState[],
-  allElements: ElementState[],
+  rootElements: ElementData[],
+  allElements: ElementData[],
   pageNames?: string[],
 }, elements = getElements(), dispatch = store.dispatch) {
   // this.tracker.trackAction('controller-events', 'info', 'paste', 0)
@@ -160,7 +168,7 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
     let offset = 0
 
     // add to the container
-    createElements(allElements.map((element: ElementState) => {
+    createElements(fromElementData(allElements.map((element) => {
       const isRoot = rootElements.includes(element)
       if (isRoot) {
         offset += 20
@@ -179,11 +187,9 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
         },
         // here selected is true since the cloned element was selected
         // reset the selected flag because observers need to get it when we select it again
-        selected: true,
+        // selected: true,
       }
-    }), dispatch)
-
-    console.warn('not implemented add sections to the body')
+    })), dispatch)
 
     // update the parent (will add the element to the stage)
     const body = getBody(elements)
@@ -195,26 +201,26 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
       .map((el) => el.id)
 
     updateElements((newChildren.length ? [{
-      ...parent,
-      children: parent.children.concat(newChildren),
-    }] : [])
-    .concat(bodyChildren.length ? {
-      ...body,
-      children: body.children.concat(bodyChildren),
-    } : [])
-    // reset selection
-    .concat(resetSelection.length ? resetSelection : []),
-    // // make pasted elements selected
-    // .concat(rootElements
-    //   .map((el) => getElement(el.id))
-    //   .map((el) => ({
-    //     from: el,
-    //     to: {
-    //       ...el,
-    //       selected: true,
-    //     },
-    //   })))
-    dispatch)
+        ...parent,
+        children: parent.children.concat(newChildren),
+      }] : [])
+      .concat(bodyChildren.length ? {
+        ...body,
+        children: body.children.concat(bodyChildren),
+      } : [])
+      // reset selection
+      .concat(resetSelection.length ? resetSelection : []),
+      // // make pasted elements selected
+      // .concat(rootElements
+      //   .map((el) => getElement(el.id))
+      //   .map((el) => ({
+      //     from: el,
+      //     to: {
+      //       ...el,
+      //       selected: true,
+      //     },
+      //   })))
+      dispatch)
 
     console.info('could be dragged')
     // getStage().startDrag()

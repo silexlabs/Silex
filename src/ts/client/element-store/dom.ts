@@ -172,9 +172,9 @@ function createSectionElement(doc: HTMLDocument): HTMLElement {
   // create the element
   const element = doc.createElement('div');
   element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
-  element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
-  element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
-  element.classList.add(ElementType.CONTAINER);
+  // element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
+  // element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
+  // element.classList.add(ElementType.CONTAINER);
 
   // // content element is both a container and a content element
   // const content = createElement(ElementType.CONTAINER);

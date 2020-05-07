@@ -150,7 +150,7 @@ split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Ac
       return {
         name: 'writefile',
         path: this.rootPath + '/' + this.getDestFolder('.html', null) + '/' + fileName,
-        displayName: fileName, // FIXME: this is not part of a unifile aciton
+        displayName: fileName, // FIXME: this is not part of a unifile action
         content: '<!doctype html>' + clone.documentElement.outerHTML,
       };
     });

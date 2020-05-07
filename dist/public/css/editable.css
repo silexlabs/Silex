@@ -8,11 +8,11 @@ body {
   body {
     position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
   }
-  .section-element > .silex-element-content {
+  .section-element > .website-width {
     border-left: 1px dashed;
     border-right: 1px dashed;
   }
-  .section-element:last-of-type > .silex-element-content {
+  .section-element:last-of-type > .website-width {
     border-bottom: 1px dashed;
   }
 }
