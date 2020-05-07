@@ -328,7 +328,7 @@ export default class BackwardCompat {
             this.removeIfExist(doc, 'meta[name="hostingProvider"]')
             this.removeIfExist(doc, 'meta[name="publicationPath"]');
 
-            ['prevent-draggable', 'silex-container-content'].forEach((className) => this.removeUselessCSSClass(doc, className))
+            ['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
 
             actions.push('I updated the model to the latest version of Silex.');
             // pages

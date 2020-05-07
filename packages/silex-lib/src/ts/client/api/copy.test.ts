@@ -6,11 +6,8 @@ import {
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
 } from '../../test-utils/data-set';
+import { ElementState, ElementType } from '../element-store/types';
 import { cloneElement, cloneElements, pasteElements } from './copy';
-import { getElementById } from '../element-store/filters';
-import { getElements, initializeElements } from '../element-store/index';
-import { initializePages } from '../page-store/index';
-import { ElementState } from '../element-store/types'
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
 const ELEM_CONTAINER_STATE = ELEM_CONTAINER as ElementState
@@ -20,7 +17,6 @@ const ELEM_SECTION_CONTENT_STATE = ELEM_SECTION_CONTENT as ElementState
 const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
 const ELEM_HTML_STATE = ELEM_HTML as ElementState
 
-jest.mock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());
 jest.mock('../components/SiteFrame', () => ({
   getSiteDocument: () => document,
 }));
@@ -36,29 +32,47 @@ jest.mock('../components/StageWrapper', () => ({
   })
 }))
 
-test('cloneElement', () => {
-  const cloned = cloneElement(ELEM_TEXT_STATE)
-  expect(cloned).not.toBeNull()
+test('cloneElement 1 element', () => {
+  const cloned = cloneElement(ELEM_TEXT_STATE, null, [ELEM_TEXT_STATE])
+  expect(cloned).toHaveLength(1)
   expect(cloned[0].id).not.toBe(ELEM_TEXT_STATE.id)
   expect(cloned[0].id).not.toBe(ELEM_TEXT_STATE.id)
 })
 
+test('cloneElement 1 element with children', () => {
+  const cloned = cloneElement(ELEM_CONTAINER_STATE, null, [ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE, ELEM_CONTAINER_STATE])
+  expect(cloned).toHaveLength(4)
+  expect(cloned[0].type).toBe(ElementType.CONTAINER)
+  expect(cloned[0].children[0]).toBe(cloned[1].id)
+  expect(cloned[0].children[0]).not.toBe(ELEM_TEXT_STATE.id)
+})
+
+test('cloneElements root', () => {
+  const [all, root] = cloneElements([ELEM_TEXT_STATE], [ELEM_TEXT_STATE])
+  expect(all).toHaveLength(0)
+  expect(root).toHaveLength(0)
+})
+
 test('cloneElements 1 element', () => {
-  const [all, root] = cloneElements([ELEM_TEXT_STATE])
+  const [all, root] = cloneElements([ELEM_TEXT_STATE], [ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE, ELEM_CONTAINER_STATE])
   expect(all).toHaveLength(1)
-  expect(all).not.toBeNull()
-  expect(all).toHaveLength(1)
+  expect(root).toHaveLength(1)
   expect(all).toEqual(root)
   expect(all[0].id).not.toBe(ELEM_TEXT_STATE.id)
 })
 
-test('cloneElements container', () => {
+test('cloneElements container with children', () => {
   const [all, root] = cloneElements([ELEM_CONTAINER_STATE], [ELEM_TEXT_STATE, ELEM_CONTAINER_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE, ELEM_SECTION_STATE, ELEM_SECTION_CONTENT_STATE])
   expect(all).toHaveLength(4)
+  expect(root).toHaveLength(1)
+  expect(root[0].type).toBe(ElementType.CONTAINER)
+  expect(root[0].id).not.toBe(ELEM_CONTAINER_STATE.id)
+  expect(root[0].children[0]).not.toBe(ELEM_TEXT_STATE.id)
+  expect(root[0].children[0]).toBe(all[1].id)
 })
 
 test('cloneElements with non existing elements', () => {
-  expect(() => cloneElements([ELEM_CONTAINER_STATE])).toThrow(Error)
+  expect(() => cloneElements([ELEM_CONTAINER_STATE], [])).toThrow(Error)
 })
 
 test('pasteElements 2 root elements', () => {

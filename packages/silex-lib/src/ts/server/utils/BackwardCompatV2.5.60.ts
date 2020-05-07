@@ -27,6 +27,44 @@ interface DomData {
   prodotypeDataObj: ProdotypeData,
 }
 
+const SILEX_CLASS_NAMES_TO_IGNORE = [
+  'silex-container-content',
+  Constants.PREVENT_DROPPABLE_CLASS_NAME,
+  Constants.SILEX_USE_HEIGHT_NOT_MINHEIGHT,
+  Constants.PREVENT_RESIZABLE_CLASS_NAME,
+  Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME,
+  Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME,
+  Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME,
+  Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME,
+  Constants.PREVENT_SELECTABLE_CLASS_NAME,
+  Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+  Constants.EDITABLE_CLASS_NAME,
+  Constants.ENABLE_MOBILE_CSS_CLASS,
+  Constants.PAGED_CLASS_NAME,
+  Constants.PAGED_HIDDEN_CLASS_NAME,
+  Constants.PAGED_VISIBLE_CLASS_NAME,
+  Constants.PAGEABLE_PLUGIN_READY_CLASS_NAME,
+  Constants.PAGE_LINK_ACTIVE_CLASS_NAME,
+  Constants.STAGE_COMPONENT_SELECTED_CLASS_NAME,
+  Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
+  Constants.SELECTED_CLASS_NAME,
+  Constants.RESIZING_CLASS_NAME,
+  Constants.DRAGGING_CLASS_NAME,
+  ElementType.CONTAINER,
+  ElementType.SECTION,
+  ElementType.IMAGE,
+  ElementType.TEXT,
+  ElementType.HTML,
+  Constants.ELEMENT_CONTENT_CLASS_NAME,
+  Constants.HIDE_ON_MOBILE,
+  Constants.HIDE_ON_DESKTOP,
+  Constants.COMPONENT_CLASS_NAME,
+  Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME,
+  Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME,
+  Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME,
+  Constants.BODY_STYLE_CSS_CLASS,
+]
+
 ////////////////////////////////////////////////////////////
 // Elements
 
@@ -92,7 +130,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       .split(' ')
       .filter((c) => c !== id)
       .filter((c) => !pages.find((p) => p.id === c))
-      .filter((c) => !Constants.SILEX_CLASS_NAMES.includes(c)),
+      .filter((c) => !SILEX_CLASS_NAMES_TO_IGNORE.includes(c)),
     type,
     isSectionContent,
     title: element.title,
