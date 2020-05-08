@@ -31,27 +31,23 @@ import {
   removeElements
 } from '../api/element';
 import { copySelection, pasteClipBoard, duplicateSelection } from '../api/copy'
-import { getSelectedElements } from '../element-store/filters'
 import { getSite } from '../site-store/index'
 import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
-import {
-  moveElements,
-  selectBody
-} from '../element-store/dispatchers';
 import { openCssEditor } from './dialog/CssEditor'
 import { openDashboardToLoadAWebsite, save, publish, openFile } from '../api/file'
-import { openHtmlHeadEditor } from './dialog/HtmlEditor';
+import { openHtmlHeadEditor } from './dialog/HtmlEditor'
 import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { prodotypeReady, getComponentsDef } from '../element-store/component'
 import { removePage, editPage, createPage } from '../api/page'
+import { selectBody } from '../element-store/dispatchers';
 import { toggleSubMenu, preview, previewResponsize, closeAllSubMenu } from '../api/view'
 
 ///////////////////
 // API for the outside world
 const element = getUiElements().menu
-const keyboard = new Keyboard(document);
+const keyboard = new Keyboard(document)
 let initDone = false
 
 export function initMenu() {
@@ -71,18 +67,18 @@ export function keyboardAddShortcut(s: Shortcut, cbk: (p1: Event) => void) {
 
 function elFromCompDef(comp, id) {
   // build the dom elements for each comp by category
-  const iconClassName = comp.faIconClass || 'prodotype-icon';
-  const baseElementType = comp.baseElement || 'html';
-  const el = document.createElement('div');
-  el.classList.add('sub-menu-item');
-  el.title = `${comp.name}`;
-  el.setAttribute('data-menu-action', 'insert.' + baseElementType);
-  el.setAttribute('data-comp-id', id);
+  const iconClassName = comp.faIconClass || 'prodotype-icon'
+  const baseElementType = comp.baseElement || 'html'
+  const el = document.createElement('div')
+  el.classList.add('sub-menu-item')
+  el.title = `${comp.name}`
+  el.setAttribute('data-menu-action', 'insert.' + baseElementType)
+  el.setAttribute('data-comp-id', id)
   el.innerHTML = `
   <span class="icon fa-inverse ${iconClassName}"></span>
   ${comp.name}
-  `;
-  return el;
+  `
+  return el
 }
 /**
  * create the menu with closure API
@@ -91,62 +87,53 @@ function elFromCompDef(comp, id) {
 function buildUi() {
   // Shortcuts
   Config.shortcuts.forEach((shortcut) => {
-    keyboard.addShortcut(shortcut, (e) => onMenuEvent(shortcut.id));
-  });
-  // special case of the section content (move the section/parent with arrow keys)
-  keyboard.addShortcut({
-    label: 'Move section up',
-    key: 'ArrowDown',
-  }, (e) => handleSectionContent(DomDirection.UP));
-  keyboard.addShortcut({
-    label: 'Move section down',
-    key: 'ArrowUp',
-  }, (e) => handleSectionContent(DomDirection.DOWN));
+    keyboard.addShortcut(shortcut, (e) => onMenuEvent(shortcut.id))
+  })
 
   // components
   prodotypeReady(() => {
     // **
-    const list = element.querySelector('.add-menu-container');
-    const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE);
+    const list = element.querySelector('.add-menu-container')
+    const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE)
 
     // build a list of component categories
-    const elements = {};
+    const elements = {}
     for (const id in componentsDef) {
-      const comp = componentsDef[id];
+      const comp = componentsDef[id]
       if (comp.isPrivate !== true) {
         if (!elements[comp.category]) {
-          elements[comp.category] = [elFromCompDef(comp, id)];
+          elements[comp.category] = [elFromCompDef(comp, id)]
         } else {
-          elements[comp.category].push(elFromCompDef(comp, id));
+          elements[comp.category].push(elFromCompDef(comp, id))
         }
       }
     }
     for (const id in elements) {
       // create a label for the category
-      const label = document.createElement('div');
-      label.classList.add('label');
-      label.innerHTML = id;
-      list.appendChild(label);
+      const label = document.createElement('div')
+      label.classList.add('label')
+      label.innerHTML = id
+      list.appendChild(label)
 
       // attach each comp's element
-      elements[id].forEach((el) => list.appendChild(el));
+      elements[id].forEach((el) => list.appendChild(el))
     }
-  });
+  })
 
   // event handling
   element.onclick = (e) => {
     const action = (e.target as HTMLElement).getAttribute('data-menu-action') ||
-    (e.target as HTMLElement).parentElement.getAttribute('data-menu-action');
+    (e.target as HTMLElement).parentElement.getAttribute('data-menu-action')
     const componentId = (e.target as HTMLElement).getAttribute('data-comp-id') ||
-    (e.target as HTMLElement).parentElement.getAttribute('data-comp-id');
-    onMenuEvent(action, componentId);
+    (e.target as HTMLElement).parentElement.getAttribute('data-comp-id')
+    onMenuEvent(action, componentId)
     if ((e.target as HTMLElement).parentElement &&
     !(e.target as HTMLElement).parentElement.classList.contains('menu-container') &&
     !(e.target as HTMLElement).parentElement.classList.contains('silex-menu')) {
       // not a first level menu => close sub menus
-      closeAllSubMenu();
+      closeAllSubMenu()
     }
-  };
+  }
 }
 
 // /**
@@ -158,24 +145,16 @@ function buildUi() {
 //  */
 // function redraw() {
 //   if (hasUndo()) {
-//     element.querySelector('.undo').classList.remove('off');
+//     element.querySelector('.undo').classList.remove('off')
 //   } else {
-//     element.querySelector('.undo').classList.add('off');
+//     element.querySelector('.undo').classList.add('off')
 //   }
 //   if (hasRedo()) {
-//     element.querySelector('.redo').classList.remove('off');
+//     element.querySelector('.redo').classList.remove('off')
 //   } else {
-//     element.querySelector('.redo').classList.add('off');
+//     element.querySelector('.redo').classList.add('off')
 //   }
 // }
-
-/**
- * move section content's parent with arrow keys
- */
-function handleSectionContent(direction: DomDirection) {
-  moveElements(getSelectedElements()
-    .filter((el) => el.type === ElementType.SECTION), direction)
-}
 
 /**
  * handles click events
@@ -185,179 +164,180 @@ function handleSectionContent(direction: DomDirection) {
 function onMenuEvent(type: string, componentName?: string) {
   switch (type) {
     case 'show.pages':
-      toggleSubMenu('page-tool-visible');
-      break;
+      toggleSubMenu('page-tool-visible')
+      break
     case 'show.about.menu':
-      toggleSubMenu('about-menu-visible');
-      break;
+      toggleSubMenu('about-menu-visible')
+      break
     case 'show.file.menu':
-      toggleSubMenu('file-menu-visible');
-      break;
+      toggleSubMenu('file-menu-visible')
+      break
     case 'show.code.menu':
-      toggleSubMenu('code-menu-visible');
-      break;
+      toggleSubMenu('code-menu-visible')
+      break
     case 'show.add.menu':
-      toggleSubMenu('add-menu-visible');
-      break;
+      toggleSubMenu('add-menu-visible')
+      break
     case 'file.new':
-      openDashboardToLoadAWebsite();
-      break;
+      openDashboardToLoadAWebsite()
+      break
     case 'file.saveas':
-      save();
-      break;
+      save()
+      break
     case 'file.publish.settings':
-      openSettingsDialog();
-      break;
+      openSettingsDialog()
+      break
     case 'file.fonts':
-      openSettingsDialog(null, 'fonts-pane');
-      break;
+      openSettingsDialog(null, 'fonts-pane')
+      break
     case 'file.publish':
-      publish();
-      break;
+      publish()
+      break
     case 'file.save':
-      save(getSite().file);
-      break;
+      save(getSite().file)
+      break
     case 'file.open':
-      openFile();
-      break;
+      openFile()
+      break
     case 'view.file':
-      preview();
-      break;
+      preview()
+      break
     case 'view.file.responsize':
-      previewResponsize();
-      break;
+      previewResponsize()
+      break
     case 'view.open.fileExplorer':
-      FileExplorer.getInstance().openFile();
-      break;
+      FileExplorer.getInstance().openFile()
+      break
     case 'view.open.cssEditor':
-      openCssEditor();
-      break;
+      openCssEditor()
+      break
     case 'view.open.jsEditor':
-      openJsEditor();
-      break;
+      openJsEditor()
+      break
     case 'view.open.htmlHeadEditor':
-      openHtmlHeadEditor();
-      break;
+      openHtmlHeadEditor()
+      break
     case 'tools.mobile.mode':
-      const ui = getUi();
+      const ui = getUi()
       updateUi({
         ...ui,
         mobileEditor: !ui.mobileEditor,
-      });
-      break;
+      })
+      break
     case 'tools.mobile.mode.on':
       updateUi({
         ...getUi(),
         mobileEditor: true,
-      });
-      break;
+      })
+      break
     case 'tools.mobile.mode.off':
       updateUi({
         ...getUi(),
         mobileEditor: false,
-      });
-      break;
+      })
+      break
     case 'insert.page':
-      createPage();
-      break;
+      createPage()
+      break
     case 'insert.text': {
       addElementCentered(ElementType.TEXT, componentName)
-      break;
+      break
     }
     case 'insert.section': {
       addElementCentered(ElementType.SECTION, componentName)
-      break;
+      break
     }
     case 'insert.html': {
       addElementCentered(ElementType.HTML, componentName)
-      break;
+      break
     }
     case 'insert.image': {
-      browseAndAddImage(componentName);
-      break;
+      browseAndAddImage(componentName)
+      break
     }
     case 'insert.container': {
       addElementCentered(ElementType.CONTAINER, componentName)
-      break;
+      break
     }
     case 'edit.delete.selection':
-      removeElements();
-      break;
+      removeElements()
+      break
     case 'edit.empty.selection':
       // select body
       selectBody()
-      break;
+      break
     case 'edit.copy.selection':
-      copySelection();
-      break;
+      copySelection()
+      break
     case 'edit.paste.selection':
-      pasteClipBoard();
-      break;
+      pasteClipBoard()
+      break
     case 'edit.duplicate.selection':
-      duplicateSelection();
-      break;
+      duplicateSelection()
+      break
     // case 'edit.undo':
-    //   undo();
-    //   break;
+    //   undo()
+    //   break
     // case 'edit.redo':
-    //   redo();
-    //   break;
+    //   redo()
+    //   break
     case 'edit.move.up':
-      moveUp();
-      break;
+      console.log('edit.move.up')
+      moveUp()
+      break
     case 'edit.move.down':
-      moveDown();
-      break;
+      moveDown()
+      break
     case 'edit.move.to.top':
-      moveToTop();
-      break;
+      moveToTop()
+      break
     case 'edit.move.to.bottom':
-      moveToBottom();
-      break;
+      moveToBottom()
+      break
     case 'edit.delete.page':
-      removePage();
-      break;
+      removePage()
+      break
     case 'edit.rename.page':
-      editPage();
-      break;
+      editPage()
+      break
     // Help menu
     case 'help.wiki':
-      window.open(Config.WIKI_SILEX);
-      break;
+      window.open(Config.WIKI_SILEX)
+      break
     case 'help.crowdfunding':
-      window.open(Config.CROWD_FUNDING);
-      break;
+      window.open(Config.CROWD_FUNDING)
+      break
     case 'help.issues':
-      window.open(Config.ISSUES_SILEX);
-      break;
+      window.open(Config.ISSUES_SILEX)
+      break
     case 'help.downloads.widget':
-      window.open(Config.DOWNLOADS_WIDGET_SILEX);
-      break;
+      window.open(Config.DOWNLOADS_WIDGET_SILEX)
+      break
     case 'help.downloads.template':
-      window.open(Config.DOWNLOADS_TEMPLATE_SILEX);
-      break;
+      window.open(Config.DOWNLOADS_TEMPLATE_SILEX)
+      break
     case 'help.aboutSilexLabs':
-      window.open(Config.ABOUT_SILEX_LABS);
-      break;
+      window.open(Config.ABOUT_SILEX_LABS)
+      break
     case 'help.newsLetter':
-      window.open(Config.SUBSCRIBE_SILEX_LABS);
-      break;
+      window.open(Config.SUBSCRIBE_SILEX_LABS)
+      break
     case 'help.diaspora':
-      window.open(Config.SOCIAL_DIASPORA);
-      break;
+      window.open(Config.SOCIAL_DIASPORA)
+      break
     case 'help.twitter':
-      window.open(Config.SOCIAL_TWITTER);
-      break;
+      window.open(Config.SOCIAL_TWITTER)
+      break
     case 'help.facebook':
-      window.open(Config.SOCIAL_FB);
-      break;
+      window.open(Config.SOCIAL_FB)
+      break
     case 'help.forkMe':
-      window.open(Config.FORK_CODE);
-      break;
+      window.open(Config.FORK_CODE)
+      break
     case 'help.contribute':
-      window.open(Config.CONTRIBUTE);
-      break;
+      window.open(Config.CONTRIBUTE)
+      break
       default:
-      console.warn('menu type not found', type);
+      console.warn('menu type not found', type)
   }
 }
