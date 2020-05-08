@@ -18,7 +18,7 @@
 import { ElementState, ElementType, LinkData, DomDirection } from '../element-store/types'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../third-party/types'
-import { INITIAL_ELEMENT_SIZE, getCreationDropZone } from '../element-store/utils';
+import { INITIAL_ELEMENT_SIZE, getCreationDropZone } from '../element-store/utils'
 import { SilexNotification } from '../utils/Notification'
 import { StyleName, PseudoClass, Visibility, StyleData, VisibilityData, PseudoClassData } from '../site-store/types'
 import {
@@ -26,24 +26,24 @@ import {
   moveElements,
   removeElementsWithoutConfirm,
   selectBody
-} from '../element-store/dispatchers';
+} from '../element-store/dispatchers'
 import { componentStyleChanged } from '../site-store/dispatchers'
-import { deleteElements, getElements, updateElements } from '../element-store/index';
+import { deleteElements, getElements, updateElements } from '../element-store/index'
 import {
   getBody,
   getSelectedElements,
   getSelectedElementsNoSectionContent
-} from '../element-store/filters';
+} from '../element-store/filters'
 import { getDomElement, setImageUrl } from '../element-store/dom'
 import { getSite } from '../site-store/index'
-import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame';
-import { getStage } from '../components/StageWrapper';
+import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
+import { getStage } from '../components/StageWrapper'
 import {
   isComponent,
   openComponentEditor,
   openStyleEditor,
   resetComponentEditor
-} from '../element-store/component';
+} from '../element-store/component'
 import { openHtmlEditor } from '../components/dialog/HtmlEditor'
 import { openLinkDialog } from '../components/dialog/LinkDialog'
 import { openParamsTab } from '../components/PropertyTool'
@@ -62,11 +62,11 @@ export function addElementCentered(type: ElementType, componentName: string) {
         mobile: {},
         desktop: {},
       },
-    });
+    })
 
     return [el, updatedParentData]
   } else {
-    const parent = getCreationDropZone(false, getSiteIFrame());
+    const parent = getCreationDropZone(false, getSiteIFrame())
     const parentState = getStage().getState(getDomElement(getSiteDocument(), parent))
     const parentRect = parentState.metrics.computedStyleRect
 
@@ -81,7 +81,7 @@ export function addElementCentered(type: ElementType, componentName: string) {
           left: Math.round((parentRect.width / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
         },
       },
-    });
+    })
 
     return [el, updatedParentData]
   }
@@ -91,19 +91,19 @@ export function addElementCentered(type: ElementType, componentName: string) {
  * open file explorer, choose an image and add it to the stage
  */
 export function browseAndAddImage(componentName: string) {
-  // this.tracker.trackAction('controller-events', 'request', 'insert.image', 0);
+  // this.tracker.trackAction('controller-events', 'request', 'insert.image', 0)
   FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
   .then((fileInfo) => {
     if (fileInfo) {
 
       // create the element
-      const [imgData] = addElementCentered(ElementType.IMAGE, componentName);
-      const img = getDomElement(getSiteDocument(), imgData);
+      const [imgData] = addElementCentered(ElementType.IMAGE, componentName)
+      const img = getDomElement(getSiteDocument(), imgData)
 
       // load the image
       setImageUrl(img, fileInfo.absPath,
         (naturalWidth: number, naturalHeight: number) => {
-          // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1);
+          // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1)
           updateElements([{
             ...imgData,
             style: {
@@ -117,17 +117,17 @@ export function browseAndAddImage(componentName: string) {
           }])
         },
         (element: HTMLElement, message: string) => {
-          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message);
-          deleteElements([imgData]);
-          // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
+          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
+          deleteElements([imgData])
+          // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1)
         },
-      );
+      )
     }
   })
   .catch((error) => {
-    SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-    // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1);
-  });
+    SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+    // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1)
+  })
 }
 
 /**
@@ -140,7 +140,7 @@ export function removeElements(elements = getSelectedElements()) {
     SilexNotification.alert('Delete elements',
       'Error: Please select an element to delete.',
       () => {},
-    );
+    )
   } else {
     // confirm and delete
     SilexNotification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
@@ -150,7 +150,7 @@ export function removeElements(elements = getSelectedElements()) {
           selectBody()
         }
       }, 'delete', 'cancel',
-    );
+    )
   }
 }
 
@@ -163,19 +163,19 @@ export function editElement() {
 
   if (element) {
     if (isComponent(element)) {
-      openParamsTab();
+      openParamsTab()
     } else {
       // open the params tab for the components
       // or the editor for the elements
       switch (element.type) {
         case ElementType.TEXT:
           // open the text editor
-          openTextFormatBar();
-        break;
+          openTextFormatBar()
+        break
         case ElementType.HTML:
-          openHtmlEditor();
-        // view.htmlEditor.setSelection([element]);
-        break;
+          openHtmlEditor()
+          // view.htmlEditor.setSelection([element])
+        break
         case ElementType.IMAGE:
           FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
         .then((blob) => {
@@ -199,15 +199,15 @@ export function editElement() {
               },
               (el, message) => {
                 console.error('could not load the image', message)
-                SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message);
+                SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
               },
-            );
+            )
           }
         })
         .catch((error) => {
-          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-        });
-        break;
+          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+        })
+        break
       }
     }
   }
@@ -218,7 +218,7 @@ export function editElement() {
  */
 export function editComponent(element: ElementState) {
   if (element && element.data.component) {
-    const componentData = element.data.component;
+    const componentData = element.data.component
     openComponentEditor({
       data: componentData,
       dataSources: getSite().dataSources,
@@ -226,9 +226,9 @@ export function editComponent(element: ElementState) {
       events: {
         onChange: (newData, html) => {
           // undo checkpoint
-          // undoCheckPoint();
+          // undoCheckPoint()
 
-          const domEl = getDomElement(getSiteDocument(), element);
+          const domEl = getDomElement(getSiteDocument(), element)
 
           // store the component's data for later edition
           updateElements([{
@@ -241,47 +241,47 @@ export function editComponent(element: ElementState) {
               },
             },
             innerHtml: html,
-          }]);
+          }])
 
         },
         onBrowse: (e, url, cbk) => onBrowse(e, url, cbk),
         onEditLink: (e, linkData, cbk) =>
         onEditLink(e, linkData, cbk),
       }
-    });
+    })
   } else {
-    resetComponentEditor();
+    resetComponentEditor()
   }
 }
 
 function onEditLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
-  e.preventDefault();
+  e.preventDefault()
   openLinkDialog({
     data: linkData,
     cbk,
-  });
+  })
 }
 
 function onBrowse(e: Event, url: string, cbk: (p1: FileInfo[]) => any) {
-  e.preventDefault();
+  e.preventDefault()
 
   // browse with CE
-  const promise = FileExplorer.getInstance().openFile();
+  const promise = FileExplorer.getInstance().openFile()
 
   // add tracking and undo/redo checkpoint
-  // track(promise, 'prodotype.browse');
-  // undoredo(promise);
+  // track(promise, 'prodotype.browse')
+  // undoredo(promise)
 
   // handle the result
   promise
   .then((fileInfo: FileInfo) => {
     if (fileInfo) {
-      cbk([fileInfo]);
+      cbk([fileInfo])
     }
   })
   .catch((error) => {
-    SilexNotification.notifyError('Error: I could not select the file. <br /><br />' + (error.message || ''));
-  });
+    SilexNotification.notifyError('Error: I could not select the file. <br /><br />' + (error.message || ''))
+  })
 }
 
 /**
@@ -290,13 +290,13 @@ function onBrowse(e: Event, url: string, cbk: (p1: FileInfo[]) => any) {
  * @param visibility, e.g. mobile only, desktop and mobile...
  */
 export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility) {
-  const styleData: StyleData = getSite().styles[className] || ({styles: {}} as StyleData);
-  const visibilityData: VisibilityData = styleData.styles[visibility] || {};
+  const styleData: StyleData = getSite().styles[className] || ({styles: {}} as StyleData)
+  const visibilityData: VisibilityData = styleData.styles[visibility] || {}
   const pseudoClassData: PseudoClassData = visibilityData[pseudoClass] || {
     templateName: 'text',
     className,
     pseudoClass,
-  };
+  }
   openStyleEditor({
     data: pseudoClassData,
     dataSources: [{displayName: '', name: '', templateName: ''}]
@@ -306,7 +306,7 @@ export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibi
             displayName: font.family,
             name: font.family,
             templateName: '',
-          };
+          }
         }),
     ),
     templateName: 'text',
@@ -314,40 +314,31 @@ export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibi
       onChange: (newData, html) => componentStyleChanged(className, pseudoClass, visibility, newData),
       onBrowse: (e, url, cbk) => onBrowse(e, url, cbk),
     },
-  });
+  })
 }
 
 /**
  * get the index of the element in the DOM
  */
 export function indexOfElement(element: HTMLElement): number {
-  const len = element.parentElement.childNodes.length;
+  const len = element.parentElement.childNodes.length
   for (let idx = 0; idx < len; idx++) {
     if (element.parentElement.childNodes[idx] === element) {
-      return idx;
+      return idx
     }
   }
-  return -1;
+  return -1
 }
 
 /**
  * Move the selected elements in the DOM
- * Called from the context menu
  */
-export function move(direction: DomDirection) {
+function move(direction: DomDirection) {
   // undo checkpoint
-  // undoCheckPoint();
+  // undoCheckPoint()
 
   // move all the elements in the selection
   moveElements(getSelectedElementsNoSectionContent(), direction)
-
-  // // get the selected elements
-  // const elements = getSelectedElements();
-
-  // // move all the elements in the selection
-  // moveElements(getUi().mobileEditor ? elements : elements
-  //   .filter((element) => element.style.desktop.position === 'static'),
-  //   direction)
 }
 
 /**
@@ -356,7 +347,7 @@ export function move(direction: DomDirection) {
  * properties are not set
  */
 export function moveUp() {
-  move(DomDirection.UP);
+  move(DomDirection.UP)
 }
 
 /**
@@ -365,7 +356,7 @@ export function moveUp() {
  * properties are not set
  */
 export function moveDown() {
-  move(DomDirection.DOWN);
+  move(DomDirection.DOWN)
 }
 
 /**
@@ -374,7 +365,7 @@ export function moveDown() {
  * properties are not set
  */
 export function moveToTop() {
-  move(DomDirection.TOP);
+  move(DomDirection.TOP)
 }
 
 /**
@@ -383,5 +374,5 @@ export function moveToTop() {
  * properties are not set
  */
 export function moveToBottom() {
-  move(DomDirection.BOTTOM);
+  move(DomDirection.BOTTOM)
 }
