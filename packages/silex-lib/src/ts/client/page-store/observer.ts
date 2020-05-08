@@ -15,40 +15,47 @@ export function onAddPages(pages: PageState[]) {
 
 export function onDeletePages(pages: PageState[]) {
   pages.forEach((page) => {
-    // remove the elements which were only visible on this page
-    // getElementsForPage(page)
-    //   .filter(element => element.classList.contains(Constants.PAGED_CLASS_NAME))
-    //   .forEach((element: HTMLElement) => element.remove())
-    const elementsOnlyOnThisPage = getElements()
-      .filter((element) => element.pageNames.length === 1 && element.pageNames.find((name) => name === page.id))
+    const elementsOnThisPage = getElements()
+      .filter((element) => element.pageNames.includes(page.id))
+
+    const elementsOnlyOnThisPage = elementsOnThisPage
+      .filter((element) => element.pageNames.length === 1)
 
     // handle elements which should be deleted
     if (elementsOnlyOnThisPage.length > 0) {
       SilexNotification.confirm('Delete elements' , `
-              ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.id}).
-              <br /><ul>
-                <li>Do you want me to <strong>delete these elements?</strong><br /></li>
-                <li>or keep them and <strong>make them visible on all pages?</strong></li>
-              </ul>
-            `,
-            (accept) => {
-              if (accept) {
-                elementsOnlyOnThisPage.forEach((element) => {
-                  // remove these elements
-                  deleteElements([element])
-                })
-              } else {
-                // FIXME: observer should not update store?
-                // make it visible in all pages
-                updateElements(elementsOnlyOnThisPage
-                  .map((element) => ({
-                    ...element,
-                    pageNames: [],
-                  })))
-                }
-              }, 'delete', 'keep')
+        ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.id}).
+        <br /><ul>
+          <li>Do you want me to <strong>delete these elements?</strong><br /></li>
+          <li>or keep them and <strong>make them visible on all pages?</strong></li>
+        </ul>
+      `,
+      (accept) => {
+        if (accept) {
+          elementsOnlyOnThisPage.forEach((element) => {
+            // remove these elements
+            deleteElements([element])
+          })
+        } else {
+          // the element will be made visible on all pages by the code bellow
+        }
+      }, 'delete', 'keep')
     }
+
+    // FIXME: observer should not update store
+    setTimeout(() => {
+    // remove "visibility" on this page
+    // elements may be deleted afterwards by the code above
+    updateElements(elementsOnlyOnThisPage
+      .map((element) => ({
+        ...element,
+        pageNames: element.pageNames.filter((id) => id !== page.id),
+      })))
+    }, 0)
   })
+
+  // FIXME: observer should not update store
+  setTimeout(() => {
   // remove the links to this page
   // TODO: handle links in HTML boxes and texts?
   updateElements(pages
@@ -63,6 +70,7 @@ export function onDeletePages(pages: PageState[]) {
           },
         })))
     }, []))
+  }, 0)
 
   // save the changed data to the dom for front-end.js
   writeDataToDom(getSiteDocument(), getState())

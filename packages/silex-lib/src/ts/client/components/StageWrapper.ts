@@ -237,10 +237,10 @@ class StageWrapper {
   private toBeUnsubscribed = []
 
   constructor() {
-    subscribePages(() => {
-      // reset the stage after page open
-      setTimeout(() => resetStage(), 0)
-    })
+    // subscribePages(() => {
+    //   // reset the stage after page creation
+    //   setTimeout(() => resetStage(), 0)
+    // })
     subscribeUi((prevState: UiState, nextState: UiState) => {
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         // reset the stage after switch to/from mobile editor
@@ -257,6 +257,10 @@ class StageWrapper {
       }
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         resizeWindow()
+      }
+      if (prevState && prevState.currentPageId !== nextState.currentPageId) {
+        // reset the stage after page open
+        setTimeout(() => resetStage(), 0)
       }
     })
     subscribeElements(onCrudChange<ElementState>({
@@ -438,15 +442,14 @@ class StageWrapper {
             newParent.children.filter((id) => id !== element.id), // in case it is the same parent
             idx, element.id),
         })
-        if (!!oldParent && oldParent !== newParent) {
-          const existingOldParentObj = aggr.find((item) => item.id === oldParent.id)
-          if (existingOldParentObj) existingOldParentObj.children =  existingOldParentObj.children.filter((id) => id !== element.id)
+        if (!!oldParent && oldParent.id !== newParent.id) {
+          // parent changed
+          const existingOldParentObj = getElementById(oldParent.id, aggr)
+          if (existingOldParentObj) existingOldParentObj.children = existingOldParentObj.children.filter((id) => id !== element.id)
           else aggr.push({
             ...oldParent,
             children: oldParent.children.filter((id) => id !== element.id),
           })
-        } else {
-          console.warn('Element was not in a parent!', element)
         }
         return aggr
       }, [] as ElementState[])
