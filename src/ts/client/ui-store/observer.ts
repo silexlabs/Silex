@@ -2,9 +2,11 @@ import { Constants } from '../../constants'
 import { SilexNotification } from '../utils/Notification'
 import { UiState, LOADING } from './types'
 import { getCurrentPage } from '../page-store/filters';
+import { getSelectedElements } from '../element-store/filters';
 import { getSite } from '../site-store/index'
 import { getSiteIFrame, getSiteWindow } from '../components/SiteFrame';
 import { openPageDom } from '../page-store/dom';
+import { updateElements } from '../element-store/index';
 
 export function onChangeUi(prev: UiState, ui: UiState) {
   if (ui.mobileEditor) {
@@ -32,4 +34,17 @@ export function onChangeUi(prev: UiState, ui: UiState) {
   }
 
   openPageDom(getSiteWindow(), getCurrentPage())
+
+  console.log('update ui', prev, ui)
+  if (prev && prev.currentPageId !== ui.currentPageId) {
+    // FIXME: observer should not update store
+    setTimeout(() => {
+    updateElements(getSelectedElements()
+      .filter((el) => !!el.pageNames.length && !el.pageNames.includes(ui.currentPageId))
+      .map((el) => ({
+        ...el,
+        selected: false,
+      })))
+    }, 0)
+  }
 }

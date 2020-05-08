@@ -31,9 +31,10 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
     setWebsiteWidthInDom(doc, site.width)
     // set a minimum width to the body
     // TODO: is this useful?
-    // FIXME: observer should not update store?
     const body = getBody()
     if (body) { // FIXME: (!body) happens at start of Silex but it should not?
+      // FIXME: observer should not update store
+      setTimeout(() => {
       updateElements([{
         ...body,
         style: {
@@ -44,6 +45,7 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
           },
         },
       }])
+      }, 0)
     }
   }
   if(!prev || prev.prodotypeDependencies !== site.prodotypeDependencies) {
