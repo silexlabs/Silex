@@ -52,7 +52,7 @@
     "watch": "npm-watch",
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
-    "start:electron": "SILEX_ELECTRON=true electron .",
+    "start:electron": "SILEX_ELECTRON=true electron dist/server/server/silex_web.js",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build",
     "build": "npm run cleanup && npm run lint && npm run build:css:release && npm run build:html && npm run build:prodotype && npm run build:client:release && npm run build:server:release && npm run build:monaco-editor",
