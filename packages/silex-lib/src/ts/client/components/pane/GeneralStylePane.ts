@@ -73,7 +73,7 @@ export class GeneralStylePane extends PaneBase {
       this.opacityInput.removeAttribute('disabled');
 
       // get the opacity
-      const opacity = this.getCommonProperty<ElementState>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity);
+      const opacity = this.getCommonProperty<ElementState, string>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity);
 
       if (opacity === null) {
         this.opacityInput.value = '';

@@ -249,14 +249,18 @@ test('add a section', () => {
 test('removeFromPage', () => {
   const dispatch = jest.fn()
 
+  // remove from an element with only this page
   removeFromPage([{
     ...ELEM_TEXT_STATE,
     pageNames: ['fake-id'],
-  }], { id: 'fake-id' } as PageState, dispatch)
+  }], { id: 'fake-id' } as PageState, 'fake-id', dispatch)
   expect(dispatch).toHaveBeenCalledTimes(1)
   expect(dispatch).toHaveBeenLastCalledWith({
     type: 'ELEMENT_UPDATE',
-    items: [ELEM_TEXT_STATE],
+    items: [{
+      ...ELEM_TEXT_STATE,
+      selected: true, // this is because the element will have pageNames set to [] => visible everywhere => selected
+    }],
   })
 
 })

@@ -79,7 +79,7 @@ export class PaneBase {
    *     same for all elements
    * FIXME: we should use Array::reduce
    */
-  getCommonProperty<T>(items: T[], getPropertyFunction: (p1: T) => string | number | boolean | null): any {
+  getCommonProperty<ItemType, PropType>(items: ItemType[], getPropertyFunction: (p1: ItemType) => PropType): any {
     let value = null;
     let hasCommonValue: boolean = true;
     let isFirstValue = true;

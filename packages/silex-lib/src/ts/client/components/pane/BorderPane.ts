@@ -106,7 +106,7 @@ export class BorderPane extends PaneBase {
 
     // border width, this builds a string like "0px 1px 2px 3px"
     // FIXME: should not build a string which is then split in redrawBorderWidth
-    const borderWidth = this.getCommonProperty<ElementState>(selectedElements, (el) => {
+    const borderWidth = this.getCommonProperty<ElementState, string>(selectedElements, (el) => {
       const w = el.style[isMobile]['border-width'];
       if (w && w !== '') {
         return w;

@@ -79,9 +79,6 @@ $.widget('silexlabs.pageable', {
       // change to the new page
       this.options.currentPage = newPage;
     }
-    // show elements which belong to this page
-    $('#current-page-style').remove();
-    $('head').append('<style id="current-page-style">.'+this.options.currentPage+'{display:inherit; }</style>');
     // mark these elements as visible
     $('.paged-element-visible').each(function() {
       $(this).removeClass('paged-element-visible');
