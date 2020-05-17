@@ -44,32 +44,32 @@ export function onDeletePages(pages: PageState[]) {
 
     // FIXME: observer should not update store
     setTimeout(() => {
-    // remove "visibility" on this page
-    // elements may be deleted afterwards by the code above
-    updateElements(elementsOnlyOnThisPage
-      .map((element) => ({
-        ...element,
-        pageNames: element.pageNames.filter((id) => id !== page.id),
-      })))
+      // remove "visibility" on this page
+      // elements may be deleted afterwards by the code above
+      updateElements(elementsOnlyOnThisPage
+        .map((element) => ({
+          ...element,
+          pageNames: element.pageNames.filter((id) => id !== page.id),
+        })))
     }, 0)
   })
 
   // FIXME: observer should not update store
   setTimeout(() => {
-  // remove the links to this page
-  // TODO: handle links in HTML boxes and texts?
-  updateElements(pages
-    .reduce((prev, cur) => {
-      return prev.concat(getElements()
-        .filter((element) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === cur.link.value)
-        .map((element) => ({
-          from: element,
-          to: {
-            ...element,
-            link: null,
-          },
-        })))
-    }, []))
+    // remove the links to this page
+    // TODO: handle links in HTML boxes and texts?
+    updateElements(pages
+      .reduce((prev, cur) => {
+        return prev.concat(getElements()
+          .filter((element) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === cur.link.value)
+          .map((element) => ({
+            from: element,
+            to: {
+              ...element,
+              link: null,
+            },
+          })))
+      }, []))
   }, 0)
 
   // save the changed data to the dom for front-end.js
@@ -83,8 +83,7 @@ export function onUpdatePages(changes: StateChange<PageState>[]) {
   changes.forEach(({from, to}) => {
     // page ID change
     if (!from || from.id !== to.id) {
-      // about the `setTimeout`: need to re-dispatch after this round of listeners
-      // this is needed to avoid silent crash
+      // FIXME: observer should not update store
       setTimeout(() => {
         updateElements(getElements()
           // update elements visibility

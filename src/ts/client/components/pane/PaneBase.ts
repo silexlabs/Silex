@@ -21,7 +21,6 @@ import { ElementState } from '../../element-store/types';
 import { addToMobileOrDesktopStyle, fixStyleForElement } from '../../utils/styles';
 import { getSelectedElements } from '../../element-store/filters'
 import { getSite, subscribeSite, updateSite } from '../../site-store/index';
-import { getStage } from '../StageWrapper';
 import { getUi } from '../../ui-store/index'
 import { subscribeElements, updateElements } from '../../element-store/index';
 
@@ -52,18 +51,7 @@ export class PaneBase {
    */
   protected baseUrl = null;
 
-  constructor(protected element: HTMLElement) {
-    subscribeSite(() => {
-      if (getStage()) {
-        this.redraw(getSelectedElements());
-      }
-    })
-    subscribeElements(() => {
-      if (getStage()) {
-        this.redraw(getSelectedElements());
-      }
-    })
-  }
+  constructor(protected element: HTMLElement) {}
 
   // /**
   //  * notify the controller that the style changed

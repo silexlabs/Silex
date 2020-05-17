@@ -1,8 +1,8 @@
 import { Constants } from '../../constants'
 import { SilexNotification } from '../utils/Notification'
 import { UiState, LOADING } from './types'
+import { getBody, getSelectedElements } from '../element-store/filters';
 import { getCurrentPage } from '../page-store/filters';
-import { getSelectedElements } from '../element-store/filters';
 import { getSite } from '../site-store/index'
 import { getSiteIFrame, getSiteWindow } from '../components/SiteFrame';
 import { openPageDom } from '../page-store/dom';
@@ -39,12 +39,18 @@ export function onChangeUi(prev: UiState, ui: UiState) {
   if (prev && prev.currentPageId !== ui.currentPageId) {
     // FIXME: observer should not update store
     setTimeout(() => {
-    updateElements(getSelectedElements()
-      .filter((el) => !!el.pageNames.length && !el.pageNames.includes(ui.currentPageId))
-      .map((el) => ({
-        ...el,
-        selected: false,
-      })))
+      const selection = getSelectedElements()
+      const toDeselect = selection
+        .filter((el) => !!el.pageNames.length && !el.pageNames.includes(ui.currentPageId))
+        .map((el) => ({
+          ...el,
+          selected: false,
+        }))
+      updateElements(toDeselect
+        .concat(toDeselect.length === selection.length ? [{
+          ...getBody(),
+          selected: true,
+        }] : []))
     }, 0)
   }
 }

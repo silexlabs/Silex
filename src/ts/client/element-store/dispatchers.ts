@@ -313,11 +313,12 @@ export function addToPage(selection: ElementState[], page: PageState, elements =
 /**
  * remove the provided elements from a given page
  */
-export function removeFromPage(selection: ElementState[], page: PageState, dispatch = store.dispatch) {
+export function removeFromPage(selection: ElementState[], page: PageState, currentPageId: string, dispatch = store.dispatch) {
   updateElements(selection
     .map((el) => ({
       ...el,
-      pageNames: el.pageNames.filter((name) => name === page.id),
+      pageNames: el.pageNames.filter((name) => name !== page.id),
+      selected: currentPageId !== page.id || el.pageNames.length <= 1, // keep selected only if page will be visible everywhere or at least on the current page
     })), dispatch)
 }
 
