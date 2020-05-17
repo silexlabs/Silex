@@ -14,50 +14,50 @@
           label W
         .two-col
           .input-with-unit
-            input.position-input.left-input(placeholder='-', type='number', tabindex='1')
+            input.position-input.left-input(tabindex='1', placeholder='-', type='number')
             label.unit PX
           .input-with-unit
-            input.position-input.width-input(placeholder='-', type='number', tabindex='3', min='0')
+            input.position-input.width-input(tabindex='3', placeholder='-', type='number', min='0')
             label.unit PX
         .two-col
           label Y
           label H
         .two-col
           .input-with-unit
-            input.position-input.top-input(placeholder='-', type='number', tabindex='2')
+            input.position-input.top-input(tabindex='2', placeholder='-', type='number')
             label.unit PX
           .input-with-unit
-            input.position-input.height-input(placeholder='-', type='number', tabindex='4', min='0')
+            input.position-input.height-input(tabindex='4', laceholder='-', type='number', min='0')
             label.unit PX
     .expandable
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right
         span Layout
       .body
-        select.position-select.combobox
+        select.position-select.combobox(tabindex='5')
           option(value='')
           option(value='absolute') Absolute
           option(value='static') Automatic
         hr
         label.full-width Container content flow
-        select.display-select.combobox
+        select.display-select.combobox(tabindex='6')
           option(value='')
           option(value='block') Normal
           option(value='flex') Flex
         label.full-width Flex flow
         .two-col
-          select.flex-direction-select.combobox
+          select.flex-direction-select.combobox(tabindex='7')
             option(value='')
             option(value='row') Row
             option(value='column') Column
             option(value='row-reverse') Row reverse
             option(value='column-reverse') Column reverse
-          select.flex-wrap-select.combobox
+          select.flex-wrap-select.combobox(tabindex='8')
             option(value='')
             option(value='nowrap') No wrap
             option(value='wrap') Wrap
             option(value='wrap-reverse') Wrap reverse
-          select.align-items-select.combobox
+          select.align-items-select.combobox(tabindex='9')
             option(value='')
             option(value='normal') Normal
             option(value='stretch') Stretch
@@ -66,7 +66,7 @@
             option(value='end') End
             option(value='flex-start') Flex start
             option(value='flex-end') Flex end
-          select.justify-content-select.combobox
+          select.justify-content-select.combobox(tabindex='10')
             option(value='')
             option(value='normal') Normal
             option(value='stretch') Stretch
@@ -87,20 +87,20 @@
           label Right
         .two-col
           .input-with-unit
-            input.position-input.margin-left-input(placeholder='-', type='number', tabindex='1')
+            input.position-input.margin-left-input(placeholder='-', type='number', tabindex='11')
             label.unit PX
           .input-with-unit
-            input.position-input.margin-right-input(placeholder='-', type='number', tabindex='3', min='0')
+            input.position-input.margin-right-input(placeholder='-', type='number', tabindex='14', min='0')
             label.unit PX
         .two-col
           label Top
           label Bottom
         .two-col
           .input-with-unit
-            input.position-input.margin-top-input(placeholder='-', type='number', tabindex='2')
+            input.position-input.margin-top-input(placeholder='-', type='number', tabindex='13')
             label.unit PX
           .input-with-unit
-            input.position-input.margin-bottom-input(placeholder='-', type='number', tabindex='4', min='0')
+            input.position-input.margin-bottom-input(placeholder='-', type='number', tabindex='15', min='0')
             label.unit PX
       .body
         span Padding
@@ -109,20 +109,20 @@
           label Right
         .two-col
           .input-with-unit
-            input.position-input.padding-left-input(placeholder='-', type='number', tabindex='1')
+            input.position-input.padding-left-input(placeholder='-', type='number', tabindex='12')
             label.unit PX
           .input-with-unit
-            input.position-input.padding-right-input(placeholder='-', type='number', tabindex='3', min='0')
+            input.position-input.padding-right-input(placeholder='-', type='number', tabindex='16', min='0')
             label.unit PX
         .two-col
           label Top
           label Bottom
         .two-col
           .input-with-unit
-            input.position-input.padding-top-input(placeholder='-', type='number', tabindex='2')
+            input.position-input.padding-top-input(placeholder='-', type='number', tabindex='17')
             label.unit PX
           .input-with-unit
-            input.position-input.padding-bottom-input(placeholder='-', type='number', tabindex='4', min='0')
+            input.position-input.padding-bottom-input(placeholder='-', type='number', tabindex='18', min='0')
             label.unit PX
 
   span.seo-editor.old-advanced-only.editor-container
@@ -132,9 +132,9 @@
         span SEO (search engines)
       .body
         label.alt-label Alt (images only)
-        input.alt-input(placeholder='-', type='text')
+        input.alt-input(tabindex='19', placeholder='-', type='text')
         label.title-label Title and tooltip
-        input.title-input(placeholder='-', type='text')
+        input.title-input(tabindex='20', laceholder='-', type='text')
 
 
   span.page-editor.editor-container
@@ -144,15 +144,15 @@
         span Visible on
       .body
         .view-on-mobile
-          input#mobile.checkbox(type='radio', name='visibility', value='mobile')
+          input#mobile.checkbox(tabindex='21', type='radio', name='visibility', value='mobile')
           label.xsmall-font(for='mobile') mobile
-          input#desktop.checkbox(type='radio', name='visibility', value='desktop')
+          input#desktop.checkbox(tabindex='22', type='radio', name='visibility', value='desktop')
           label.xsmall-font(for='desktop') desktop
-          input#both.checkbox(type='radio', name='visibility', value='both')
+          input#both.checkbox(tabindex='23', type='radio', name='visibility', value='both')
           label.xsmall-font(for='both') both
           hr
         .view-on-allpages
-          input#allpages.view-on-allpages-check.checkbox(type='checkbox')
+          input#allpages.view-on-allpages-check.checkbox(tabindex='24', type='checkbox')
           label.view-on-allpages-label.xsmall-font(for='allpages')
             | all pages
         .pages-container
@@ -162,7 +162,7 @@
         span Link
       .body
         select.link-combo-box.combobox
-        input.link-input-text(placeholder='-', type='text')
+        input.link-input-text(tabindex='25', placeholder='-', type='text')
 
   span.style-container
     span.tab-page
@@ -173,7 +173,7 @@
             span Opacity
             small  in %
           .body
-            input.opacity-input(placeholder='-', type='number', min='0', max='100')
+            input.opacity-input(tabindex='26', placeholder='-', type='number', min='0', max='100')
 
       .background-editor.editor-container
         .expandable.background-property
@@ -183,9 +183,9 @@
           .body
             .color-edit-container
               label.color-edit-label.alpha Alpha
-              input.color-edit-text-input.color-opacity-input(placeholder='-', type='number', min='0', max='100')
-              input.color-edit-color-input.color-button.color-button(type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
-              input#bgtransp.color-edit-transparent-check(type='checkbox', indeterminate='true')
+              input.color-edit-text-input.color-opacity-input(tabindex='27', placeholder='-', type='number', min='0', max='100')
+              input.color-edit-color-input.color-button.color-button(tabindex='28', type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
+              input#bgtransp.color-edit-transparent-check(tabindex='29', type='checkbox', indeterminate='true')
               label.color-edit-label(for='bgtransp') Transparent
         .expandable.background-image
           legend
@@ -193,8 +193,8 @@
             span Background Image
           .body
             div
-              input.button.bg-image-button(type='button', value='Select image')
-              input.button.clear-bg-image-button(type='button', value='Clear image')
+              input.button.bg-image-button(tabindex='30', type='button', value='Select image')
+              input.button.clear-bg-image-button(tabindex='31', type='button', value='Clear image')
             div
               select.bg-position-h-combo-box.combobox
                   option(value='left') left
@@ -226,7 +226,7 @@
             .border-width-container
               label.border-width-label Width
               label.border-type-label Style
-              input.border-width-input(placeholder='-', type='number', min='0')
+              input.border-width-input(tabindex='32', placeholder='-', type='number', min='0')
               select.border-type-combo-box.combobox
                 option(value='solid') solid
                 option(value='dotted') dotted
@@ -238,39 +238,39 @@
                 option(value='outset') outset
             .color-edit-container
               label.color-edit-label Alpha
-              input.color-edit-text-input.color-opacity-input.color-border-opacity-input(placeholder='-', type='number', min='0', max='100')
-              input.color-edit-color-input.color-border-button.color-button(type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
-              input#bordertransp.color-edit-transparent-check(type='checkbox', indeterminate='true')
+              input.color-edit-text-input.color-opacity-input.color-border-opacity-input(tabindex='33', placeholder='-', type='number', min='0', max='100')
+              input.color-edit-color-input.color-border-button.color-button(tabindex='34', type='color', defaultValue='rgba(0, 0, 0, 1)', placeholder='-')
+              input#bordertransp.color-edit-transparent-check(tabindex='35', type='checkbox', indeterminate='true')
               label.color-edit-label.alpha(for='bordertransp') Transparent
             .border-placement-container.old-advanced-only
               .half-col
-                input#topplacement.top.border-placement-check.checkbox(type='checkbox')
+                input#topplacement.top.border-placement-check.checkbox(tabindex='36', type='checkbox')
                 label.border-placement-label(for='topplacement') Top
               .half-col
-                input#leftplacement.left.border-placement-check.checkbox(type='checkbox')
+                input#leftplacement.left.border-placement-check.checkbox(tabindex='37', type='checkbox')
                 label.border-placement-label(for='leftplacement') Left
               .half-col
-                input#bottomplacement.bottom.border-placement-check.checkbox(type='checkbox')
+                input#bottomplacement.bottom.border-placement-check.checkbox(tabindex='38', type='checkbox')
                 label.border-placement-label(for='bottomplacement') Bottom
               .half-col
-                input#rightplacement.right.border-placement-check.checkbox(type='checkbox')
+                input#rightplacement.right.border-placement-check.checkbox(tabindex='39', type='checkbox')
                 label.border-placement-label(for='rightplacement') Right
             .border-radius-container
               .border-radius-width-container
                 label.border-radius-label Radius
-                input.corner-radius-input(placeholder='-', type='number', min='0')
+                input.corner-radius-input(tabindex='40', placeholder='-', type='number', min='0')
               .corner-placement-container.old-advanced-only
                 .half-col
-                  input#topleftplacementradius.top-left.corner-placement-check.checkbox(type='checkbox')
+                  input#topleftplacementradius.top-left.corner-placement-check.checkbox(tabindex='41', type='checkbox')
                   label.corner-placement-label(for='topleftplacementradius') Top Left
                 .half-col
-                  input#toprightplacementradius.top-right.corner-placement-check.checkbox(type='checkbox')
+                  input#toprightplacementradius.top-right.corner-placement-check.checkbox(tabindex='42', type='checkbox')
                   label.corner-placement-label(for='toprightplacementradius') Top Right
                 .half-col
-                  input#bottomleftplacementradius.bottom-left.corner-placement-check.checkbox(type='checkbox')
+                  input#bottomleftplacementradius.bottom-left.corner-placement-check.checkbox(tabindex='43', type='checkbox')
                   label.corner-placement-label(for='bottomleftplacementradius') Btm Left
                 .half-col
-                  input#bottomrightplacementradius.bottom-right.corner-placement-check.checkbox(type='checkbox')
+                  input#bottomrightplacementradius.bottom-right.corner-placement-check.checkbox(tabindex='44', type='checkbox')
                   label.corner-placement-label(for='bottomrightplacementradius') Btm Right
       .style-editor.editor-container
         .expandable.style-property.old-advanced-only
@@ -280,7 +280,7 @@
           .body
             label CSS classes
               a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes', title='about Silex and CSS', target='_blank') Help
-            input.style-css-classes-input(type='tags')
+            input.style-css-classes-input(tabindex='45', type='tags')
             .element-style-editor.editor-container
   span.prodotype-component-editor.editor-container
   span.prodotype-style-editor.editor-container
@@ -289,7 +289,7 @@
         span Style name:
         select#pseudoclass-style-combo-box.pseudoclass-style-combo-box.combobox
       .class-name-block
-        input#visibility-style-checkbox.visibility-style-checkbox.hidden(type='checkbox')
+        input#visibility-style-checkbox.visibility-style-checkbox.hidden(tabindex='46', type='checkbox')
         label.visibility-style-label.fa-fw.icon.fa-inverse.fa-mobile.expandable(for='visibility-style-checkbox', title='Mobile only')
         select#class-name-style-combo-box.class-name-style-combo-box.combobox
 
@@ -305,19 +305,19 @@
       .unapply-style.icon-btn.icon-btn-right(title='Remove the current style from selected text boxes.') <svg id='Group_9' data-name='Group 9' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 11'><defs><style>.cls-1 {fill: #e4e4e4;}</style></defs><path id='Path_72' data-name='Path 72' class='cls-1' d='M8.964-6A3.516,3.516,0,0,0,5.5-9,3.5,3.5,0,0,0,2-5.5,3.5,3.5,0,0,0,5.5-2,3.53,3.53,0,0,0,6-2.036V-.023C5.831-.007,5.663,0,5.5,0A5.506,5.506,0,0,1,0-5.5,5.506,5.506,0,0,1,5.5-11,5.482,5.482,0,0,1,9.218-9.55,5.485,5.485,0,0,1,10.977-6H13L10-2,7-6Z' transform='translate(0 11)'/></svg>
       <hr>
       .style-editor-tag-form.add-menu-icons
-        input#style-editor-tag-all.hidden(type='radio', name='style-editor-tag-name', value='all', checked)
-        input#style-editor-tag-paragraph.hidden(type='radio', name='style-editor-tag-name', value='paragraph')
-        input#style-editor-tag-link.hidden(type='radio', name='style-editor-tag-name', value='link')
-        input#style-editor-tag-active.hidden(type='radio', name='style-editor-tag-name', value='active')
-        input#style-editor-tag-ul.hidden(type='radio', name='style-editor-tag-name', value='ul')
-        input#style-editor-tag-ol.hidden(type='radio', name='style-editor-tag-name', value='ol')
-        input#style-editor-tag-heading1.hidden(type='radio', name='style-editor-tag-name', value='heading1')
-        input#style-editor-tag-heading2.hidden(type='radio', name='style-editor-tag-name', value='heading2')
-        input#style-editor-tag-heading3.hidden(type='radio', name='style-editor-tag-name', value='heading3')
-        input#style-editor-tag-bold.hidden(type='radio', name='style-editor-tag-name', value='bold')
-        input#style-editor-tag-underline.hidden(type='radio', name='style-editor-tag-name', value='underline')
-        input#style-editor-tag-italic.hidden(type='radio', name='style-editor-tag-name', value='italic')
-        input#style-editor-tag-notext.hidden(type='radio', name='style-editor-tag-name', value='notext')
+        input#style-editor-tag-all.hidden(tabindex='47', type='radio', name='style-editor-tag-name', value='all', checked)
+        input#style-editor-tag-paragraph.hidden(tabindex='48', type='radio', name='style-editor-tag-name', value='paragraph')
+        input#style-editor-tag-link.hidden(tabindex='49', type='radio', name='style-editor-tag-name', value='link')
+        input#style-editor-tag-active.hidden(tabindex='50', type='radio', name='style-editor-tag-name', value='active')
+        input#style-editor-tag-ul.hidden(tabindex='51', type='radio', name='style-editor-tag-name', value='ul')
+        input#style-editor-tag-ol.hidden(tabindex='52', type='radio', name='style-editor-tag-name', value='ol')
+        input#style-editor-tag-heading1.hidden(tabindex='53', type='radio', name='style-editor-tag-name', value='heading1')
+        input#style-editor-tag-heading2.hidden(tabindex='54', type='radio', name='style-editor-tag-name', value='heading2')
+        input#style-editor-tag-heading3.hidden(tabindex='55', type='radio', name='style-editor-tag-name', value='heading3')
+        input#style-editor-tag-bold.hidden(tabindex='56', type='radio', name='style-editor-tag-name', value='bold')
+        input#style-editor-tag-underline.hidden(tabindex='57', type='radio', name='style-editor-tag-name', value='underline')
+        input#style-editor-tag-italic.hidden(tabindex='58', type='radio', name='style-editor-tag-name', value='italic')
+        input#style-editor-tag-notext.hidden(tabindex='59', type='radio', name='style-editor-tag-name', value='notext')
         .labels.style-editor-text
           label.all.first-button(for='style-editor-tag-all', title='Edit style of all texts', data-initial-value='All', data-prodotype-name='All') All
           label.p(for='style-editor-tag-paragraph', title='Edit style of paragraphs', data-initial-value='P', data-prodotype-name='Paragraph') P

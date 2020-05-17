@@ -69,7 +69,7 @@ beforeEach(() => {
 })
 
 test('init page pane', () => {
-  const pane = new PagePane(document.body)
+  new PagePane(document.body)
   expect(subscribePages).toHaveBeenCalledTimes(1)
 })
 
