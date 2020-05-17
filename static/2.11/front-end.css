@@ -10,7 +10,7 @@
 .website-width {
   width: 960px;
 }
-.paged-element {
+.paged-element-hidden {
   display: none;
 }
 /* resize */

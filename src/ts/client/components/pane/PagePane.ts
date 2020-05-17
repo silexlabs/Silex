@@ -297,20 +297,21 @@ export class PagePane extends PaneBase {
 
       // refresh the link inputs
       // get the link of the element
-      const elementLink = this.getCommonProperty(noSectionContentNoBody, (el) => !!el.link)
+      const link = this.getCommonProperty(noSectionContentNoBody, (el) => el.link)
 
       // default selection
-      if (!elementLink || elementLink === '') {
+      // TODO: handle this with link.type instead of guessing from link.value
+      if (!link || link.value === '') {
         this.linkDropdown.value = 'none'
         this.linkInputTextField.value = ''
       } else {
-        if (elementLink.indexOf('#!') === 0) {
+        if (link.value.indexOf('#!') === 0) {
           // case of an internal link
           // select a page
-          this.linkDropdown.value = elementLink
+          this.linkDropdown.value =link.value
         } else {
           // in case it is a custom link
-          this.linkInputTextField.value = elementLink
+          this.linkInputTextField.value =link.value
           this.linkDropdown.value = 'custom'
         }
       }
