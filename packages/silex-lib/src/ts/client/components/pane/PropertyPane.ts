@@ -11,11 +11,15 @@
 
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { getBody } from '../../element-store/filters';
+import { getBody, getSelectedElements } from '../../element-store/filters';
 import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils';
-import { getElements, updateElements } from '../../element-store/index'
-import { getSite } from '../../site-store/index';
-import { getUi } from '../../ui-store/index'
+import {
+  getElements,
+  subscribeElements,
+  updateElements
+} from '../../element-store/index';
+import { getUi, subscribeUi } from '../../ui-store/index';
+import { subscribeSite } from '../../site-store/index';
 
 /**
  * @fileoverview Property pane, displayed in the property tool box
@@ -68,14 +72,18 @@ export class PropertyPane extends PaneBase {
 
     super(element)
 
-    // init the component
-    this.buildUi()
-  }
+    subscribeSite(() => {
+      this.redraw(getSelectedElements())
+    })
 
-  /**
-   * build the UI
-   */
-  buildUi() {
+    subscribeUi(() => {
+      this.redraw(getSelectedElements())
+    })
+
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
+
     this.createInput([
       { selector: LeftInput, styleName: 'left', eventName: 'input', unit: 'px' },
       { selector: TopInput, styleName: 'top', eventName: 'input', unit: 'px' },
@@ -142,7 +150,7 @@ export class PropertyPane extends PaneBase {
   /**
    * redraw the properties
    */
-  protected redraw(selectedElements: ElementState[]) {
+  redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
     const body = getBody()
