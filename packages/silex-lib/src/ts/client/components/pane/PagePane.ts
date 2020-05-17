@@ -16,18 +16,19 @@
  *
  */
 
-import { Constants } from '../../../constants';
-import { Dom } from '../../utils/Dom';
-import { ElementState, LinkType } from '../../element-store/types';
+import { Dom } from '../../utils/Dom'
+import { ElementState, LinkType } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
-import { PaneBase } from './PaneBase';
-import { getCurrentPage } from '../../page-store/filters';
-import { getDomElement } from '../../element-store/dom';
-import { getSelectedElements, noSectionContent } from '../../element-store/filters'
+import { PaneBase } from './PaneBase'
+import {
+  getBody,
+  getSelectedElements,
+  noSectionContent
+} from '../../element-store/filters';
+import { getCurrentPage } from '../../page-store/filters'
 import { getSite } from '../../site-store/index'
-import { getSiteDocument } from '../../components/SiteFrame';
-import { getStage } from '../StageWrapper';
 import { removeLink, addLink, addToPage, removeFromPage } from '../../element-store/dispatchers'
+import { subscribeElements } from '../../element-store/index';
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'
 import { updateElements, getElements } from '../../element-store/index'
@@ -43,72 +44,73 @@ import { updateElements, getElements } from '../../element-store/index'
  * the controller instances
  */
 export class PagePane extends PaneBase {
+  static linkTemplate = `<option value='{{linkName}}'>{{displayName}}</option>`
+
+  static selectorTemplate = `<div class='page-container'>
+    <input class='page-check checkbox' type='checkbox' id='page-check-id-{{id}}' />
+    <label class='page-label xsmall-font' for='page-check-id-{{id}}' >{{displayName}}</label>
+  </div>
+	`
 
   /**
    * dropdown list to select a link
    * link, select page or enter custom link
    */
-  linkDropdown: HTMLInputElement;
+  linkDropdown: HTMLInputElement
 
   /**
    * text field used to type an external link
    */
-  linkInputTextField: HTMLInputElement;
+  linkInputTextField: HTMLInputElement
 
   /**
    * check box "view on mobile"
    */
-  viewOnDeviceEl: HTMLDivElement = null;
+  viewOnDeviceEl: HTMLDivElement = null
 
   /**
    * check box "view on all pages"
    */
-  viewOnAllPagesCheckbox: HTMLInputElement = null;
+  viewOnAllPagesCheckbox: HTMLInputElement = null
 
   /**
    * Array of checkboxes used to add/remove the element from pages
    */
-  pageCheckboxes: { checkbox: HTMLInputElement, page: PageState }[] = null;
+  pageCheckboxes: { checkbox: HTMLInputElement, page: PageState }[] = []
 
   constructor(element: HTMLElement) {
 
-    super(element);
-
-    // init the component
-    this.buildUi();
+    super(element)
 
     subscribePages(() => {
-      if (getStage()) {
-        this.redraw(getSelectedElements());
-      }
+      this.setPages(getPages())
+      this.redraw(getSelectedElements())
     })
-    subscribeUi(() => {
-      if (getStage()) {
-        this.redraw(getSelectedElements());
-      }
-    })
-  }
 
-  /**
-   * build the UI
-   */
-  buildUi() {
-    this.linkDropdown = this.element.querySelector('.link-combo-box');
-    this.linkDropdown.onchange = () => this.onLinkChanged();
-    this.linkInputTextField = this.element.querySelector('.link-input-text');
+    subscribeUi(() => {
+      this.redraw(getSelectedElements())
+    })
+
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
+
+    // get dom elements of interest
+    this.linkDropdown = this.element.querySelector('.link-combo-box')
+    this.linkDropdown.onchange = () => this.onLinkChanged()
+    this.linkInputTextField = this.element.querySelector('.link-input-text')
 
     // hide by default
-    this.linkInputTextField.style.display = 'none';
+    this.linkInputTextField.style.display = 'none'
 
     // Watch for field changes, to display below.
-    this.linkInputTextField.oninput = () => this.onLinkTextChanged();
-    this.viewOnDeviceEl = (this.element.querySelector('.view-on-mobile') as HTMLDivElement);
+    this.linkInputTextField.oninput = () => this.onLinkTextChanged()
+    this.viewOnDeviceEl = (this.element.querySelector('.view-on-mobile') as HTMLDivElement)
     this.viewOnDeviceEl.onclick = (e) => {
-      const selected: HTMLInputElement = this.element.querySelector('.view-on-mobile input:checked');
-      const value = selected.value;
+      const selected: HTMLInputElement = this.element.querySelector('.view-on-mobile input:checked')
+      const value = selected.value
       const desktop = value !== 'mobile'
       const mobile = value !== 'desktop'
-      // stopStageObserver() // prevent reset selection
       updateElements(getElements()
         .map((el) => noSectionContent(el))
         .filter((el) => el.selected && (el.visibility.desktop !== desktop || el.visibility.mobile !== mobile))
@@ -119,24 +121,18 @@ export class PagePane extends PaneBase {
             desktop,
             mobile,
           },
-        })));
-      // startStageObserver()
-    };
-    this.viewOnAllPagesCheckbox = this.element.querySelector('.view-on-allpages-check');
+        })))
+    }
+    this.viewOnAllPagesCheckbox = this.element.querySelector('.view-on-allpages-check')
     this.viewOnAllPagesCheckbox.onchange = () => {
+      const pageNames = this.viewOnAllPagesCheckbox.checked ? [] : [getCurrentPage().id]
       updateElements(getSelectedElements()
         .map((el) => noSectionContent(el))
         .map((el) => ({
           ...el,
-          pageNames: this.viewOnAllPagesCheckbox.checked ? [] : [getCurrentPage().id],
-        })));
-      // const elements = this.states.map((state) => state.el);
-      // if (this.viewOnAllPagesCheckbox.checked) {
-      //   this.controller.propertyToolController.visibleOnAllPages(elements);
-      // } else {
-      //   this.controller.propertyToolController.addToPage(elements);
-      // }
-    };
+          pageNames,
+        })))
+    }
   }
 
   /**
@@ -148,43 +144,41 @@ export class PagePane extends PaneBase {
     const pageDataWithDefaultOptions = [
       {id: 'none', displayName: '-', linkName: 'none'},
       {id: 'custom', displayName: 'External link', linkName: 'custom'},
-    ].concat(pages.map((p) => ({
-      id: p.id,
-      displayName: p.displayName,
-      linkName: p.link.value,
-    })));
+    ].concat(pages.map(({id, displayName, link}) => ({
+      id,
+      displayName,
+      linkName: link.value,
+    })))
 
-    const linkContainer = this.element.querySelector('.link-combo-box');
-    let templateHtml = this.element.querySelector('.link-template').innerHTML;
-    linkContainer.innerHTML = Dom.renderList(templateHtml, pageDataWithDefaultOptions);
+    const linkContainer = this.element.querySelector('.link-combo-box')
+    linkContainer.innerHTML = Dom.renderList(PagePane.linkTemplate, pageDataWithDefaultOptions)
 
     // render page/visibility template
     // init page template
-    const pagesContainer = this.element.querySelector('.pages-container');
-    templateHtml = this.element.querySelector('.pages-selector-template').innerHTML;
-    pagesContainer.innerHTML = Dom.renderList(templateHtml, pages);
+    const pagesContainer = this.element.querySelector('.pages-container')
+    pagesContainer.innerHTML = Dom.renderList(PagePane.selectorTemplate, pages)
 
     // reset page checkboxes
     if (this.pageCheckboxes) {
       this.pageCheckboxes.forEach((item) => {
         if (item.checkbox.parentElement != null ) {
-          item.checkbox.parentElement.removeChild(item.checkbox);
+          item.checkbox.parentElement.removeChild(item.checkbox)
         }
-        item.checkbox.onchange = null;
-      });
+        item.checkbox.onchange = null
+      })
     }
 
     // create page checkboxes
-    const mainContainer = this.element.querySelector('.pages-container');
-    const items = (Array.from(mainContainer.querySelectorAll('.page-container')) as HTMLElement[]);
+    const items = (Array.from(pagesContainer.querySelectorAll('.page-container')) as HTMLElement[])
     this.pageCheckboxes = items.map((item, idx) => {
-      const checkbox: HTMLInputElement = item.querySelector('.page-check');
-      const page = getPages()[idx++];
-      checkbox.onchange = () => {
-        this.checkPage(page, checkbox);
-      };
-      return {checkbox, page};
-    });
+      const checkbox: HTMLInputElement = item.querySelector('.page-check')
+      const page = pages[idx++]
+      checkbox.onchange = (e: MouseEvent) => {
+        this.checkPage(page, checkbox)
+        e.preventDefault()
+      }
+      return {checkbox, page}
+    })
   }
 
   /**
@@ -192,17 +186,17 @@ export class PagePane extends PaneBase {
    */
   onLinkChanged() {
     if (this.linkDropdown.value === 'none') {
-      removeLink(getSelectedElements());
-      this.linkInputTextField.style.display = 'none';
+      removeLink(getSelectedElements())
+      this.linkInputTextField.style.display = 'none'
     } else {
       if (this.linkDropdown.value === 'custom') {
-        this.linkInputTextField.value = '';
-        this.linkInputTextField.style.display = 'inherit';
+        this.linkInputTextField.value = ''
+        this.linkInputTextField.style.display = 'inherit'
       } else {
         addLink(getSelectedElements(), {
           type: LinkType.PAGE,
           value: this.linkDropdown.value,
-        });
+        })
       }
     }
   }
@@ -214,8 +208,8 @@ export class PagePane extends PaneBase {
     addLink(getSelectedElements(), {
       type: LinkType.URL,
       value: this.linkInputTextField.value,
-    });
-}
+    })
+  }
 
   /**
    * callback for checkboxes click event
@@ -224,131 +218,122 @@ export class PagePane extends PaneBase {
   checkPage(page: PageState, checkbox: HTMLInputElement) {
     // notify the toolbox
     if (checkbox.checked) {
-      addToPage(getSelectedElements(), page);
+      addToPage(getSelectedElements(), page)
     } else {
-      removeFromPage(getSelectedElements(), page);
+      removeFromPage(getSelectedElements(), page, getUi().currentPageId)
     }
   }
 
   /**
    * redraw the properties
    */
-  protected redraw(selectedElements: ElementState[]) {
-    super.redraw(selectedElements);
+  redraw(selectedElements: ElementState[]) {
+    super.redraw(selectedElements)
 
-    const selectedElementsNoSectionContent = selectedElements
-      .map((el) => noSectionContent(el));
-
-    const states = selectedElementsNoSectionContent
-      .map((el) => getStage().getState(getDomElement(getSiteDocument(), el)))
-      .filter((state) => !!state); // if the selected element is not visible (on the page or mobile/desktop) => it has no state
-
-    // update page list
-    this.setPages(getPages());
+    const body = getBody()
+    const noSectionContentNoBody = selectedElements
+      .filter((el) => el !== body)
+      .map((el) => noSectionContent(el))
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-        .forEach((el: HTMLInputElement) => el.disabled = !getSite().enableMobile);
+        .forEach((el: HTMLInputElement) => el.disabled = !getSite().enableMobile)
 
-    // not available for the body element
-    const statesNoBody = states
-      .filter((data) => data.el !== getSiteDocument().body);
-
-    if (statesNoBody.length > 0) {
+    if (noSectionContentNoBody.length > 0) {
       // update the "view on mobile" checkbox
-      const visibility = this.getCommonProperty(selectedElementsNoSectionContent, (element) => {
+      const visibility = this.getCommonProperty(noSectionContentNoBody, (element) => {
         if (!element.visibility.mobile) {
-          return 'desktop';
+          return 'desktop'
         } else {
           if (!element.visibility.desktop) {
-            return 'mobile';
+            return 'mobile'
           } else {
-            return 'both';
+            return 'both'
           }
         }
-      });
+      })
       if (!!visibility) {
         Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
         .forEach((el: HTMLInputElement) => {
-          el.checked = visibility === el.value;
-          el.indeterminate = false;
-        });
+          el.checked = visibility === el.value
+          el.indeterminate = false
+        })
       } else {
         Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-        .forEach((el: HTMLInputElement) => el.indeterminate = true);
+        .forEach((el: HTMLInputElement) => el.indeterminate = true)
       }
 
       // not stage element only
-      this.linkDropdown.disabled = false;
+      this.linkDropdown.disabled = false
 
       // refresh page checkboxes
-      let isInNoPage = true;
+      let isInNoPage = true
       this.pageCheckboxes.forEach((item) => {
         // there is a selection
-        item.checkbox.disabled = false;
+        item.checkbox.disabled = false
 
         // compute common pages
-        const page = getPages().find((p) => p.id === item.page.id);
-        const isInPage = this.getCommonProperty(selectedElementsNoSectionContent, (el) => el.pageNames.includes(page.id));
+        const page = getPages().find((p) => p.id === item.page.id)
+        const isInPage = this.getCommonProperty(noSectionContentNoBody, (el) => el.pageNames.includes(page.id))
 
         // set visibility
-        isInNoPage = isInNoPage && isInPage === false;
+        isInNoPage = isInNoPage && isInPage === false
         if (isInPage === null) {
           // multiple elements selected with different values
-          item.checkbox.indeterminate = true;
+          item.checkbox.indeterminate = true
         } else {
-          item.checkbox.indeterminate = false;
-          item.checkbox.checked = isInPage;
+          item.checkbox.indeterminate = false
+          item.checkbox.checked = isInPage
         }
-      });
-      this.viewOnAllPagesCheckbox.disabled = false;
+      })
+      this.viewOnAllPagesCheckbox.disabled = false
 
-      // this.checkAllPages();
+      // this.checkAllPages()
       if (isInNoPage) {
-        this.viewOnAllPagesCheckbox.checked = true;
+        this.viewOnAllPagesCheckbox.checked = true
       } else {
-        this.viewOnAllPagesCheckbox.checked = false;
+        this.viewOnAllPagesCheckbox.checked = false
       }
 
       // refresh the link inputs
       // get the link of the element
-      const elementLink = this.getCommonProperty(states, (state) => state.el.getAttribute(Constants.LINK_ATTR));
+      const elementLink = this.getCommonProperty(noSectionContentNoBody, (el) => !!el.link)
 
       // default selection
       if (!elementLink || elementLink === '') {
-        this.linkDropdown.value = 'none';
-        this.linkInputTextField.value = '';
+        this.linkDropdown.value = 'none'
+        this.linkInputTextField.value = ''
       } else {
         if (elementLink.indexOf('#!') === 0) {
           // case of an internal link
           // select a page
-          this.linkDropdown.value = elementLink;
+          this.linkDropdown.value = elementLink
         } else {
           // in case it is a custom link
-          this.linkInputTextField.value = elementLink;
-          this.linkDropdown.value = 'custom';
+          this.linkInputTextField.value = elementLink
+          this.linkDropdown.value = 'custom'
         }
       }
       if (this.linkDropdown.value === 'custom') {
-        this.linkInputTextField.style.display = 'inherit';
+        this.linkInputTextField.style.display = 'inherit'
       } else {
-        this.linkInputTextField.style.display = 'none';
+        this.linkInputTextField.style.display = 'none'
       }
     } else {
       // body element only
       this.pageCheckboxes.forEach((item) => {
-        item.checkbox.disabled = true;
-        item.checkbox.indeterminate = true;
-      });
-      this.linkDropdown.value = 'none';
-      this.linkDropdown.disabled = true;
-      this.linkInputTextField.style.display = 'none';
-      this.viewOnAllPagesCheckbox.disabled = true;
-      this.viewOnAllPagesCheckbox.checked = true;
+        item.checkbox.disabled = true
+        item.checkbox.indeterminate = true
+      })
+      this.linkDropdown.value = 'none'
+      this.linkDropdown.disabled = true
+      this.linkInputTextField.style.display = 'none'
+      this.viewOnAllPagesCheckbox.disabled = true
+      this.viewOnAllPagesCheckbox.checked = true
 
       Array
       .from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-      .forEach((el: HTMLInputElement) => el.disabled = true);
+      .forEach((el: HTMLInputElement) => el.disabled = true)
     }
   }
 }

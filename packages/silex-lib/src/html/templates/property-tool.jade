@@ -138,15 +138,6 @@
 
 
   span.page-editor.editor-container
-    script.pages-selector-template(type='text/x-handlebars-template')
-      <div class='page-container'>
-      <input class='page-check checkbox' type='checkbox' id='{{id}}' />
-      <label class='page-label xsmall-font' for='{{id}}' >{{displayName}}</label>
-      </div>
-
-    script.link-template(type='text/x-handlebars-template')
-      <option value='{{linkName}}'>{{displayName}}</option>
-
     .expandable
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right

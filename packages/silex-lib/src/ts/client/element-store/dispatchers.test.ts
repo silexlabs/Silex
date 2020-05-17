@@ -7,7 +7,14 @@ import {
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
 } from '../../test-utils/data-set';
-import { addElement, moveElements, selectBody, selectElements } from './dispatchers'
+import { PageState } from '../page-store/types';
+import {
+  addElement,
+  moveElements,
+  removeFromPage,
+  selectBody,
+  selectElements
+} from './dispatchers';
 import { getElementById } from '../element-store/filters'
 import { initializeElements } from '../element-store/index'
 import { isBody } from './filters';
@@ -238,3 +245,19 @@ test('add a section', () => {
   expect(updatedParentData.children).toHaveLength(ELEM_CONTAINER_STATE.children.length + 1)
   expect(updatedParentData.children).toContain(element.id)
 })
+
+test('removeFromPage', () => {
+  const dispatch = jest.fn()
+
+  removeFromPage([{
+    ...ELEM_TEXT_STATE,
+    pageNames: ['fake-id'],
+  }], { id: 'fake-id' } as PageState, dispatch)
+  expect(dispatch).toHaveBeenCalledTimes(1)
+  expect(dispatch).toHaveBeenLastCalledWith({
+    type: 'ELEMENT_UPDATE',
+    items: [ELEM_TEXT_STATE],
+  })
+
+})
+
