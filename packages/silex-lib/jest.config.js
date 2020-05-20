@@ -92,6 +92,7 @@ module.exports = {
 
   // A preset that is used as a base for Jest's configuration
   // preset: null,
+  "preset": "ts-jest",
 
   // Run tests from one or more projects
   // projects: null,
@@ -171,6 +172,7 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   transform: {
+    ".js": "babel-jest",
     ".(ts|tsx)": "ts-jest"
   },
   globals: {
@@ -183,6 +185,10 @@ module.exports = {
   // transformIgnorePatterns: [
   //   "/node_modules/"
   // ],
+  // avoid the error "Jest encountered an unexpected token"
+  transformIgnorePatterns: [
+    "node_modules/(?!(drag-drop-stage-component|sortablejs)/)"
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,

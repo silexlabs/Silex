@@ -4,6 +4,6 @@
     "target": "esnext",
     "sourceMap": true,
     "module": "esnext",
-    "esModuleInterop": true,
-  },
+    "esModuleInterop": true
+  }
 }

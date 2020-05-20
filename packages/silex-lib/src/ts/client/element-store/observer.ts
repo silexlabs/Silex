@@ -16,13 +16,15 @@ import {
   showOnMobile,
   writeStyleToDom
 } from './dom';
-import { getState } from '../store/index';
+import { getCurrentPage } from '../page-store/filters';
 import { getElementById } from './filters';
-import { getPages } from '../page-store/index';
-import { noSectionContent, getParent } from '../element-store/filters';
-import { setPages } from '../page-store/dom';
-import { writeDataToDom } from '../store/dom';
 import { getElements } from './index'
+import { getPages } from '../page-store/index';
+import { getSiteWindow } from '../components/SiteFrame';
+import { getState } from '../store/index';
+import { noSectionContent, getParent } from '../element-store/filters';
+import { openPageDom, setPages } from '../page-store/dom';
+import { writeDataToDom } from '../store/dom';
 
 export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elements = getElements()) => {
   const doc = win.document
@@ -90,6 +92,8 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
       } else {
         console.warn('no section dom, why?')
       }
+      // reopen the current page in case the element is not visible on the current page anymore
+      openPageDom(getSiteWindow(), getCurrentPage())
     }
     if (to.children !== from.children) {
       reorderElements(domEl, to.children

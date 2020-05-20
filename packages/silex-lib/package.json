@@ -107,10 +107,13 @@
         "wysihtml": "0.6.0-beta1"
     },
     "devDependencies": {
-        "@types/jest": "25.1.4",
+        "@babel/preset-env": "^7.9.6",
+        "@babel/preset-typescript": "^7.9.0",
+        "@types/jest": "^25.2.3",
         "@types/jsdom": "16.1.0",
         "@types/node": "13.9.0",
         "@types/redux": "3.6.31",
+        "babel-jest": "^26.0.1",
         "css-loader": "3.4.2",
         "detect-browser": "5.0.0",
         "electron": "5.0.1",

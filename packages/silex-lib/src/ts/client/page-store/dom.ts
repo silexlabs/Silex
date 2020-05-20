@@ -176,6 +176,10 @@ export function removeFromAllPages(pages: PageState[], element: HTMLElement) {
 
   // the element is not "paged" anymore
   element.classList.remove(Constants.PAGED_CLASS_NAME)
+
+  // reset page visibility
+  element.classList.remove(Constants.PAGED_VISIBLE_CLASS_NAME)
+  element.classList.remove(Constants.PAGED_HIDDEN_CLASS_NAME)
 }
 
 /**

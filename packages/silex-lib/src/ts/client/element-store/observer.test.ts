@@ -6,9 +6,10 @@ import {
   ELEM_TEXT,
   mockUiElements
 } from '../../test-utils/data-set';
-import { onAddElements, onDeleteElements } from './observer';
 
 const { siteIFrame } = mockUiElements()
+
+import { onAddElements, onDeleteElements } from './observer';
 
 import { onUpdateElements } from './observer';
 import { ElementState } from './types';
