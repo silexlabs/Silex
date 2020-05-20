@@ -35,7 +35,6 @@ export function onChangeUi(prev: UiState, ui: UiState) {
 
   openPageDom(getSiteWindow(), getCurrentPage())
 
-  console.log('update ui', prev, ui)
   if (prev && prev.currentPageId !== ui.currentPageId) {
     // FIXME: observer should not update store
     setTimeout(() => {

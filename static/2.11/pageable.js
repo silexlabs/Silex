@@ -43,11 +43,6 @@ $.widget('silexlabs.pageable', {
         });
       });
     }
-    // mark all paged elements as hidden
-    $('.' + this.options.pageClass).each(function() {
-      if (!$(this).hasClass('paged-element-hidden'))
-        $(this).addClass('paged-element-hidden');
-    });
     this.updatePage();
   },
   _destroy: function() {
@@ -79,15 +74,14 @@ $.widget('silexlabs.pageable', {
       // change to the new page
       this.options.currentPage = newPage;
     }
-    // mark these elements as visible
-    $('.paged-element-visible').each(function() {
-      $(this).removeClass('paged-element-visible');
-      $(this).addClass('paged-element-hidden');
-    });
-    $('.'+this.options.currentPage).each(function() {
-      $(this).addClass('paged-element-visible');
-      $(this).removeClass('paged-element-hidden');
-    });
+    // mark all paged elements as hidden
+    $('.' + this.options.pageClass)
+      .addClass('paged-element-hidden')
+      .removeClass('paged-element-visible');
+    // mark elements of the current page visible
+    $('.' + this.options.pageClass + '.' + this.options.currentPage)
+      .removeClass('paged-element-hidden')
+      .addClass('paged-element-visible');
     // mark all links as not active
     $('.page-link-active').removeClass('page-link-active');
     // mark links to the current page as active

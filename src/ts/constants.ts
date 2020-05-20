@@ -307,7 +307,6 @@ export class Constants {
   //   Constants.PAGED_HIDDEN_CLASS_NAME,
   //   Constants.PAGED_VISIBLE_CLASS_NAME,
   //   Constants.PAGEABLE_PLUGIN_READY_CLASS_NAME,
-  //   Constants.PAGE_LINK_ACTIVE_CLASS_NAME,
   //   Constants.STAGE_COMPONENT_SELECTED_CLASS_NAME,
   //   Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
   //   Constants.SELECTED_CLASS_NAME,
@@ -333,10 +332,9 @@ export class Constants {
    * This seems to be useless
    */
   static SILEX_TEMP_CLASS_NAMES = [
-  //   Constants.PAGE_LINK_ACTIVE_CLASS_NAME,
-  //   Constants.PAGEABLE_PLUGIN_READY_CLASS_NAME,
-  //   Constants.PAGED_HIDDEN_CLASS_NAME,
-  //   Constants.PAGED_VISIBLE_CLASS_NAME,
+    Constants.PAGEABLE_PLUGIN_READY_CLASS_NAME,
+    Constants.PAGED_HIDDEN_CLASS_NAME,
+    Constants.PAGED_VISIBLE_CLASS_NAME,
   //   Constants.STAGE_COMPONENT_SELECTED_CLASS_NAME,
   //   Constants.STAGE_COMPONENT_NOT_SELECTED_CLASS_NAME,
   //   Constants.SELECTED_CLASS_NAME,
