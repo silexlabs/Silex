@@ -49,15 +49,6 @@ export class StyleEditorPane extends PaneBase {
   // select only elements on this page
   selectionCountPage: any;
 
-  /**
-   *
-   * @param element   container to render the UI
-   * @param model  model class which holds
-   * the model instances - views use it for
-   * read operation only
-   * @param controller  structure which holds
-   * the controller instances
-   */
   constructor(element: HTMLElement) {
     super(element);
     this.tracker = Tracker.getInstance();

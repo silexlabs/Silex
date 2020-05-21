@@ -215,7 +215,7 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
   })
   // re-compute the other elements metrics
   if (needReset) {
-    resetStage()
+    setTimeout(() => resetStage(), 0)
   } else {
     getStage().redrawSome(needResetSome)
   }
@@ -362,7 +362,8 @@ class StageWrapper {
       onStartDrag: (change) => this.startDrag(),
       onStartResize: (change) => this.startResize(),
     })
-    resetStage()
+    // init => the dom needs time to load
+    setTimeout(() => resetStage(), 1000)
     // give time to iframes to initialize
     setTimeout(() => {
       this.toBeUnsubscribed.push(

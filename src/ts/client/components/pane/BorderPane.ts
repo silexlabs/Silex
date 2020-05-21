@@ -25,13 +25,7 @@ import { getSelectedElements } from '../../element-store/filters'
 
 /**
  * on of Silex Editors class
- * const user edit style of components
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller structure which holds
- * the controller instances
+ * let user edit style of selected elements
  */
 export class BorderPane extends PaneBase {
   /**

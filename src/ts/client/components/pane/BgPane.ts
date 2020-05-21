@@ -24,16 +24,11 @@ import { addToMobileOrDesktopStyle } from '../../utils/styles';
 import { getBody, getSelectedElements } from '../../element-store/filters';
 import { getElements, updateElements } from '../../element-store/index'
 import { getUi } from '../../ui-store/index';
+import { subscribeElements } from '../../element-store/index';
 
 /**
  * on of Silex Editors class
- * const user edit style of components
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller  structure which holds
- * the controller instances
+ * let user edit style of selected elements
  */
 export class BgPane extends PaneBase {
   colorPicker: ColorPicker;
@@ -52,19 +47,15 @@ export class BgPane extends PaneBase {
   constructor(element: HTMLElement) {
     super(element);
 
-    // init the component
-    this.buildUi();
-  }
-
-  /**
-   * build the UI
-   */
-  buildUi() {
     // BG color
     this.buildBgColor();
 
     // init bg image
     this.buildBgImage();
+
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
   }
 
   /**

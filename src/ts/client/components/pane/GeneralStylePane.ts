@@ -15,40 +15,31 @@
  *
  */
 
-import { ElementState } from '../../element-store/types';
-import { PaneBase } from './PaneBase';
-import { getBody } from '../../element-store/filters'
+import { ElementState } from '../../element-store/types'
+import { PaneBase } from './PaneBase'
+import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getUi } from '../../ui-store/index'
+import { subscribeElements } from '../../element-store/index'
 
 /**
  * on of Silex Editors class
- * let user edit style of components
- * @param element   container to render the UI
- * @param model  model class which holds
- * the model instances - views use it for read
- * operation only
- * @param controller  structure which holds
- * the controller instances
+ * let user edit style of selected elements
  */
 export class GeneralStylePane extends PaneBase {
   /**
    * opacity input
    */
-  opacityInput: HTMLInputElement;
+  opacityInput: HTMLInputElement
 
   constructor(element: HTMLElement) {
 
-    super(element);
+    super(element)
 
-    // init the component
-    this.buildUi();
-  }
+    this.opacityInput = this.initInput('.opacity-input', (e) => this.onInputChanged(e))
 
-  /**
-   * build the UI
-   */
-  buildUi() {
-    this.opacityInput = this.initInput('.opacity-input', (e) => this.onInputChanged(e));
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
   }
 
   /**
@@ -57,37 +48,37 @@ export class GeneralStylePane extends PaneBase {
   onInputChanged(event) {
     const val = !!this.opacityInput.value && this.opacityInput.value !== '' ?
       Math.max(0, (Math.min(1, parseFloat(this.opacityInput.value) / 100.0)))
-      : null;
-    this.styleChanged('opacity', val ? val.toString() : null);
+      : null
+    this.styleChanged('opacity', val ? val.toString() : null)
   }
 
   /**
    * redraw the properties
    */
   protected redraw(selectedElements: ElementState[]) {
-    super.redraw(selectedElements);
+    super.redraw(selectedElements)
     const body = getBody()
-    const elementsNoBody = selectedElements.filter((el) => el !== body);
+    const elementsNoBody = selectedElements.filter((el) => el !== body)
     if (elementsNoBody.length > 0) {
       // not stage element only
-      this.opacityInput.removeAttribute('disabled');
+      this.opacityInput.removeAttribute('disabled')
 
       // get the opacity
-      const opacity = this.getCommonProperty<ElementState, string>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity);
+      const opacity = this.getCommonProperty<ElementState, string>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity)
 
       if (opacity === null) {
-        this.opacityInput.value = '';
+        this.opacityInput.value = ''
       } else {
         if (opacity === '') {
-          this.opacityInput.value = '100';
+          this.opacityInput.value = '100'
         } else {
-          this.opacityInput.value = Math.round(parseFloat(opacity) * 100).toString();
+          this.opacityInput.value = Math.round(parseFloat(opacity) * 100).toString()
         }
       }
     } else {
       // stage element only
-      this.opacityInput.value = '';
-      this.opacityInput.setAttribute('disabled', 'true');
+      this.opacityInput.value = ''
+      this.opacityInput.setAttribute('disabled', 'true')
     }
   }
 }
