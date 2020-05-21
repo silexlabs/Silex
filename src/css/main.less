@@ -41,10 +41,21 @@ body {
     text-decoration: none;
     cursor: pointer;
   }
-  button, input[disabled], select[disabled] {
-    background-color: @silexmediumdarkgrey;
+
+  button[disabled], input[disabled], select[disabled] {
+    background-color: @silexmediumdarkgrey; // this does not work in properties because it is overriden
+    opacity: .5;
+  }
+  button, input[type=button] {
+    cursor: pointer;
   }
   button, input, select, .silex-input {
+    &:not([disabled]) {
+      &:hover, &:focus {
+        border-color: @silexlightblue;
+        outline: none;
+      }
+    }
     border: 1px solid @silexmediumgrey;
     color: @silexlightergrey;
     background-color: @silexdarkgrey;
@@ -153,10 +164,6 @@ body {
 .modal-dialog {
   z-index: 220;
 }
-label {
-  vertical-align: top;
-}
-
 .advanced-mode-off {
 
   .advanced-only {
