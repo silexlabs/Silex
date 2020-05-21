@@ -218,7 +218,7 @@ export class PagePane extends PaneBase {
   checkPage(page: PageState, checkbox: HTMLInputElement) {
     // notify the toolbox
     if (checkbox.checked) {
-      addToPage(getSelectedElements(), page)
+      addToPage(getSelectedElements(), page, getUi().currentPageId)
     } else {
       removeFromPage(getSelectedElements(), page, getUi().currentPageId)
     }

@@ -173,7 +173,16 @@ test('view on 1 page', () => {
   document.querySelector('#page-check-id-page-1').dispatchEvent(new MouseEvent('click'))
   expect(updateElements).toHaveBeenCalledTimes(4)
   expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([ELEM_HTML_1PAGE])
-})
 
+  // from all pages to 1 page which is not the current one
+	;(getPages as any).mockReturnValue([PAGE1_STATE, fakePage])
+	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, ELEM_HTML_SELECTED])
+	pane.setPages([PAGE1_STATE, fakePage ])
+	pane.redraw([ELEM_HTML_SELECTED])
+  expect(viewOnAllPages.checked).toBe(true)
+  document.querySelector('#page-check-id-fake-id').dispatchEvent(new MouseEvent('click'))
+  expect(updateElements).toHaveBeenCalledTimes(5)
+  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([ELEM_HTML_1PAGE])
+})
 
 

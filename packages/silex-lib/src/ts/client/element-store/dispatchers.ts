@@ -301,12 +301,13 @@ export function removeElementsWithoutConfirm(selection, dispatch = store.dispatc
 /**
  * add the provided elements to a given page
  */
-export function addToPage(selection: ElementState[], page: PageState, elements = getElements(), dispatch = store.dispatch) {
+export function addToPage(selection: ElementState[], page: PageState, currentPageId: string, elements = getElements(), dispatch = store.dispatch) {
   updateElements(selection
     .map((el) => noSectionContent(el, elements))
     .map((el) => ({
       ...el,
       pageNames: el.pageNames.concat([page.id]),
+      selected: currentPageId === page.id || el.pageNames.includes(currentPageId), // keep selected only if visible in current page
     })), dispatch)
 }
 
