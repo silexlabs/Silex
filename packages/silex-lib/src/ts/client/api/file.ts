@@ -501,11 +501,6 @@ function doLoadWebsite({site, path, cbk, errCbk}: {
       }
       initializeData(states)
       openPage(states.pages[0]);
-      console.info('why update site here? after initialize?? before startObservers??')
-      updateSite({
-        ...getSite(),
-        ...site,
-      })
       startObservers()
       updateUi({
         ...getUi(),
