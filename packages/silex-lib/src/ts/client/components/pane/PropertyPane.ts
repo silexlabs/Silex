@@ -13,12 +13,11 @@ import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import { getBody, getSelectedElements } from '../../element-store/filters';
 import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils';
+import { getUi, subscribeUi } from '../../ui-store/index';
 import {
-  getElements,
   subscribeElements,
   updateElements
 } from '../../element-store/index';
-import { getUi, subscribeUi } from '../../ui-store/index';
 import { subscribeSite } from '../../site-store/index';
 
 /**
@@ -118,7 +117,7 @@ export class PropertyPane extends PaneBase {
     const input = e.target as HTMLInputElement
 
     // apply the change to all elements
-    updateElements(getElements()
+    updateElements(getSelectedElements()
       .map((el) => ({
         ...el,
         alt: input.value,
@@ -137,8 +136,7 @@ export class PropertyPane extends PaneBase {
     const input = e.target as HTMLInputElement
 
     // apply the change to all elements
-    updateElements(getElements()
-      .filter((el) => el.selected)
+    updateElements(getSelectedElements()
       .map((el) => ({
         ...el,
         title: input.value,
@@ -191,11 +189,11 @@ export class PropertyPane extends PaneBase {
         [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
     ])
     // compute visibility
-    if (elementsNoBody.length > 0) {
+    if (elementsNoBodyNoSection.length > 0) {
       const elementsNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection
         .filter((el) => !el.isSectionContent)
-      this.altInput.disabled = false
-      this.titleInput.disabled = false
+
+        this.titleInput.disabled = false
       if (!elementsNoBodyNoSection.length) {
         // only sections and body
         this.onInputPxChanged(WidthInput, null)
@@ -215,10 +213,10 @@ export class PropertyPane extends PaneBase {
       }
 
       // only images
-      const elementsType = this.getCommonProperty(elementsNoBody, (element) => element.type)
+      const elementsType = this.getCommonProperty(elementsNoBodyNoSection, (element) => element.type)
       if (elementsType === ElementType.IMAGE) {
         this.altInput.disabled = false
-        const alt = this.getCommonProperty(selectedElements, (el) => {
+        const alt = this.getCommonProperty(elementsNoBodyNoSection, (el) => {
           return el.alt
         })
         if (alt) {
@@ -259,7 +257,7 @@ export class PropertyPane extends PaneBase {
       }
 
       // title
-      const title = this.getCommonProperty(selectedElements, (el) => el.title)
+      const title = this.getCommonProperty(elementsNoBodyNoSection, (el) => el.title)
       if (title) {
         this.titleInput.value = title
       } else {
