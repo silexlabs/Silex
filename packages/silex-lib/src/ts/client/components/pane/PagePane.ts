@@ -17,7 +17,7 @@
  */
 
 import { Dom } from '../../utils/Dom'
-import { ElementState, LinkType } from '../../element-store/types'
+import { ElementState, ElementType, LinkType } from '../../element-store/types';
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
 import {
@@ -26,12 +26,15 @@ import {
   noSectionContent
 } from '../../element-store/filters';
 import { getCurrentPage } from '../../page-store/filters'
+import {
+  getElements,
+  subscribeElements,
+  updateElements
+} from '../../element-store/index';
 import { getSite } from '../../site-store/index'
 import { removeLink, addLink, addToPage, removeFromPage } from '../../element-store/dispatchers'
-import { subscribeElements } from '../../element-store/index';
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'
-import { updateElements, getElements } from '../../element-store/index'
 
 /**
  * on of Silex Editors class
@@ -234,6 +237,8 @@ export class PagePane extends PaneBase {
     const noSectionContentNoBody = selectedElements
       .filter((el) => el !== body)
       .map((el) => noSectionContent(el))
+    const noSectionNoBody = noSectionContentNoBody
+      .filter((el) => el.type !== ElementType.SECTION)
 
     // View on mobile checkbox
     Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
@@ -262,9 +267,6 @@ export class PagePane extends PaneBase {
         Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
         .forEach((el: HTMLInputElement) => el.indeterminate = true)
       }
-
-      // not stage element only
-      this.linkDropdown.disabled = false
 
       // refresh page checkboxes
       let isInNoPage = true
@@ -297,9 +299,11 @@ export class PagePane extends PaneBase {
 
       // refresh the link inputs
       // get the link of the element
-      const link = this.getCommonProperty(noSectionContentNoBody, (el) => el.link)
+      const link = this.getCommonProperty(noSectionNoBody, (el) => el.link)
 
-      // default selection
+      // link drop down only for elements which are not sections, section content or body
+      if(noSectionNoBody.length) this.linkDropdown.disabled = false
+      else this.linkDropdown.disabled = true
       // TODO: handle this with link.type instead of guessing from link.value
       if (!link || link.value === '') {
         this.linkDropdown.value = 'none'
