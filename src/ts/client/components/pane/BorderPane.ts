@@ -19,9 +19,10 @@ import { ColorPicker } from '../ColorPicker';
 import { ElementState } from '../../element-store/types';
 import { PaneBase } from './PaneBase';
 import { addToMobileOrDesktopStyle } from '../../utils/styles';
-import { getElements, updateElements } from '../../element-store/index';
-import { getUi } from '../../ui-store/index'
 import { getSelectedElements } from '../../element-store/filters'
+import { getUi } from '../../ui-store/index'
+import { subscribeElements } from '../../element-store/index';
+import { updateElements } from '../../element-store/index';
 
 /**
  * on of Silex Editors class
@@ -62,14 +63,6 @@ export class BorderPane extends PaneBase {
 
     super(element);
 
-    // init the component
-    this.buildUi();
-  }
-
-  /**
-   * build the UI
-   */
-  buildUi() {
     this.colorPicker = new ColorPicker(this.element.querySelector('.color-edit-container'), () => this.onBorderColorChanged());
     this.borderPlacementCheckBoxes = [
       '.border-placement-container .top',
@@ -88,6 +81,11 @@ export class BorderPane extends PaneBase {
     this.borderWidthInput = this.initInput('.border-width-input', (e) => this.onBorderWidthChanged());
     this.borderStyleComboBox = this.initComboBox('.border-type-combo-box', (e) => this.onBorderStyleChanged());
     this.borderRadiusInput = this.initInput('.corner-radius-input', (e) => this.onBorderCornerChanged());
+
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
+
   }
 
   /**
