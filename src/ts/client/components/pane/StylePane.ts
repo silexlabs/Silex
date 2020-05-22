@@ -15,9 +15,12 @@
  *
  */
 import tagsInput from 'tags-input';
+
 import { ElementState } from '../../element-store/types';
 import { PaneBase } from './PaneBase';
+import { getSelectedElements } from '../../element-store/filters';
 import { setClassName } from '../../element-store/dispatchers'
+import { subscribeElements } from '../../element-store/index';
 
 /**
  * on of Silex Editors class
@@ -38,20 +41,16 @@ export class StylePane extends PaneBase {
 
     super(element);
 
-    // init the component
-    this.buildUi();
-  }
-
-  /**
-   * build the UI
-   */
-  buildUi() {
     const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged());
     tagsInput(cssClassesInput);
     this.cssClassesTagsInput = cssClassesInput.nextElementSibling;
     this.cssClassesTagsInput.classList.add('silex-input');
     // add a listener for the delete event
     this.initComboBox('.style-css-classes-input', () => this.onInputChanged());
+
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
   }
 
   getClassesTags() {

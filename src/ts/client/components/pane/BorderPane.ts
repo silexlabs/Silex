@@ -85,7 +85,6 @@ export class BorderPane extends PaneBase {
     subscribeElements(() => {
       this.redraw(getSelectedElements())
     })
-
   }
 
   /**
