@@ -55,15 +55,10 @@ export const getSelectedElementsNoSectionContent = (elements = getElements()) =>
   .filter((el) => el.selected)
 
 /**
- * check if the element's parents belong to a page, and if one of them do,
- * remove the element from the other pages
- *
- * if the element is in a container which is visible only on some pages,
- * then the element should be visible everywhere, i.e. in the same pages as
- * its parent
+ * get the fist parent element which is "paged", i.e. not visible on all pages
  */
 export function getFirstPagedParent(element: ElementState, elements = getElements()): ElementState {
-  const parent = elements.find((el) => el.children.includes(element.id))
+  const parent = getParent(element)
   if (!!parent) {
     if (parent.pageNames.length) {
       return parent
@@ -73,3 +68,4 @@ export function getFirstPagedParent(element: ElementState, elements = getElement
   // body
   return null
 }
+

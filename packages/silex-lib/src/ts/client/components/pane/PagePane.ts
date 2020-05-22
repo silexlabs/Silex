@@ -32,6 +32,7 @@ import {
   updateElements
 } from '../../element-store/index';
 import { getSite } from '../../site-store/index'
+import { isVisibleInPage } from '../../element-store/utils';
 import { removeLink, addLink, addToPage, removeFromPage } from '../../element-store/dispatchers'
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'
@@ -213,12 +214,26 @@ export class PagePane extends PaneBase {
    * changes the visibility of the current component for the given page
    */
   checkPage(page: PageState, checkbox: HTMLInputElement) {
+    const { currentPageId } = getUi()
     // notify the toolbox
     if (checkbox.checked) {
-      addToPage(getSelectedElements(), page, getUi().currentPageId)
+      addToPage(getSelectedElements(), page)
     } else {
-      removeFromPage(getSelectedElements(), page, getUi().currentPageId)
+      removeFromPage(getSelectedElements(), page)
     }
+    this.updateSelection()
+  }
+
+  /**
+   * keep selected only if visible in current page
+   */
+  updateSelection() {
+    const { currentPageId } = getUi()
+    updateElements(getSelectedElements()
+      .map((el) => ({
+        ...el,
+        selected: isVisibleInPage(el, currentPageId),
+      })))
   }
 
   /**
