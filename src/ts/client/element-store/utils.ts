@@ -21,8 +21,9 @@ import {
   Size,
   ElementData
 } from './types';
+import { PageState } from '../page-store/types';
 import { addMediaQuery, getDomElement } from './dom'
-import { getBody, getChildren, getElementById } from './filters';
+import { getAllParents, getBody, getChildren, getElementById } from './filters';
 import { getElements, fromElementData } from './index'
 import { getSite } from '../site-store/index'
 import { isComponent } from './component';
@@ -413,3 +414,14 @@ export function getAllStyles(): string {
   })
   return `${styles.desktop}\n\n${addMediaQuery(styles.mobile)}\n`;
 }
+
+/**
+ * @returns true if the element and all of its parents are visible in the given page
+ */
+export function isVisibleInPage(element: ElementState, pageId: string): boolean {
+  return !getAllParents(element)
+    .concat(element)
+    // find one which is not visible => break
+    .find((el) => el.pageNames.length > 0 && !el.pageNames.includes(pageId))
+}
+

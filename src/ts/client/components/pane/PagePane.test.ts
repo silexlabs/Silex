@@ -1,4 +1,11 @@
-import { ELEM_HTML, ELEM_TEXT, PAGE1 } from '../../../test-utils/data-set';
+import {
+  ELEM_HTML,
+  ELEM_SECTION,
+  ELEM_SECTION_CONTENT,
+  ELEM_TEXT,
+  PAGE1
+} from '../../../test-utils/data-set';
+import { ElementData } from '../../element-store/types';
 import { LOADING } from '../../ui-store/types';
 import { PagePane } from './PagePane';
 import { PageState } from '../../page-store/types';
@@ -7,8 +14,15 @@ import { getElements, updateElements } from '../../element-store';
 import { getPages, subscribePages } from '../../page-store';
 import { getUi } from '../../ui-store/index';
 
-const [ELEM_TEXT_STATE, ELEM_HTML_SELECTED] = fromData([ELEM_TEXT, {
+const fakePage = { id: 'fake-id', link: { value: 'fake-link' } } as PageState
+const [ELEM_TEXT_STATE, ELEM_HTML_SELECTED, ELEM_SECTION_SELECTED, ELEM_SECTION_CONTENT_SELECTED] = fromData([ELEM_TEXT, {
   ...ELEM_HTML,
+  selected: true,
+}, {
+  ...ELEM_SECTION,
+  selected: true,
+}, {
+  ...ELEM_SECTION_CONTENT,
   selected: true,
 }])
 const ELEM_HTML_1PAGE = {
@@ -26,7 +40,12 @@ const ELEM_HTML_SELECTED_2PAGES = {
 }
 const [PAGE1_STATE] = fromData([PAGE1]) as PageState[]
 jest.mock('../../ui-store/index', () => ({
-  getUi: jest.fn(),
+  getUi: () => ({
+    mobileEditor: false,
+    loading: LOADING.NONE,
+    currentPageId: 'page-1',
+    clipboard: null,
+  }),
   subscribeUi: jest.fn(),
 }))
 
@@ -43,6 +62,11 @@ jest.mock('../../page-store/index', () => ({
 
 let viewOnAllPages: HTMLInputElement
 let viewOnAllPagesLabel: HTMLLabelElement
+
+function checkUpdate(elem: ElementData, pages: string[], calls, idx) {
+  expect(calls[idx][0][0].id).toBe(elem.id)
+  expect(calls[idx][0][0].pageNames).toEqual(pages)
+}
 
 beforeEach(() => {
   document.body.innerHTML = `
@@ -82,13 +106,7 @@ test('view on all pages', () => {
   expect(updateElements).toHaveBeenCalledWith([ELEM_HTML_SELECTED])
 
   jest.resetAllMocks()
-	;(getUi as any).mockReturnValue({
-    mobileEditor: false,
-    loading: LOADING.NONE,
-    currentPageId: 'page-1',
-    clipboard: null,
-  })
-	;(getPages as any).mockReturnValue([PAGE1_STATE])
+  ;(getPages as any).mockReturnValue([PAGE1_STATE])
 	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, {
 		...ELEM_HTML_SELECTED,
 		pageNames: [PAGE1_STATE.id],
@@ -120,12 +138,6 @@ test('view on 1 page', () => {
   const updateElementsMock = updateElements as any
   const pane = new PagePane(document.body);
 
-	;(getUi as any).mockReturnValue({
-    mobileEditor: false,
-    loading: LOADING.NONE,
-    currentPageId: 'page-1',
-    clipboard: null,
-  })
 	;(getPages as any).mockReturnValue([PAGE1_STATE])
 	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, ELEM_HTML_SELECTED])
 
@@ -135,17 +147,14 @@ test('view on 1 page', () => {
   const checkbox = document.querySelector('#page-check-id-page-1')
   const label = document.querySelector('#page-check-id-page-1 + label')
 
-  // checked because it is visible only on page1
+  // checked because pageNames is set to []
   expect(viewOnAllPages.checked).toBe(true)
 
   // make it visible on page1
   label.dispatchEvent(new MouseEvent('click'))
 
-  expect(updateElements).toHaveBeenCalledTimes(1)
-  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([{
-    ...ELEM_HTML_SELECTED,
-    pageNames: ['page-1'],
-  }])
+  expect(updateElements).toHaveBeenCalledTimes(2)
+  checkUpdate(ELEM_HTML, ['page-1'], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
 
   // remove it
 	pane.redraw([{
@@ -153,26 +162,25 @@ test('view on 1 page', () => {
     pageNames: ['page-1'],
   }])
   checkbox.dispatchEvent(new MouseEvent('click'))
-  expect(updateElements).toHaveBeenCalledTimes(2)
-  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([ELEM_HTML_SELECTED])
+  expect(updateElements).toHaveBeenCalledTimes(4)
+  checkUpdate(ELEM_HTML, [], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
 
   // hide from page which is not the current one => keep element selected
-  const fakePage = { id: 'fake-id', link: { value: 'fake-link' } } as PageState
 	;(getPages as any).mockReturnValue([PAGE1_STATE, fakePage])
 	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, ELEM_HTML_SELECTED_2PAGES])
 	pane.setPages([PAGE1_STATE, fakePage ])
 	pane.redraw([ELEM_HTML_SELECTED_2PAGES])
   const checkbox2 = document.querySelector('#page-check-id-fake-id')
   checkbox2.dispatchEvent(new MouseEvent('click'))
-  expect(updateElements).toHaveBeenCalledTimes(3)
-  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([ELEM_HTML_SELECTED_1PAGE])
+  expect(updateElements).toHaveBeenCalledTimes(6)
+  checkUpdate(ELEM_HTML, ['page-1'], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
 
   // hide from current page => deselect
 	pane.setPages([PAGE1_STATE, fakePage ])
 	pane.redraw([ELEM_HTML_SELECTED_2PAGES])
   document.querySelector('#page-check-id-page-1').dispatchEvent(new MouseEvent('click'))
-  expect(updateElements).toHaveBeenCalledTimes(4)
-  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([ELEM_HTML_1PAGE])
+  expect(updateElements).toHaveBeenCalledTimes(8)
+  checkUpdate(ELEM_HTML, ['fake-id'], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
 
   // from all pages to 1 page which is not the current one
 	;(getPages as any).mockReturnValue([PAGE1_STATE, fakePage])
@@ -181,8 +189,139 @@ test('view on 1 page', () => {
 	pane.redraw([ELEM_HTML_SELECTED])
   expect(viewOnAllPages.checked).toBe(true)
   document.querySelector('#page-check-id-fake-id').dispatchEvent(new MouseEvent('click'))
-  expect(updateElements).toHaveBeenCalledTimes(5)
-  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1]).toContainEqual([ELEM_HTML_1PAGE])
+  expect(updateElements).toHaveBeenCalledTimes(10)
+  checkUpdate(ELEM_HTML, ['fake-id'], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
 })
 
+test('sections and section content', () => {
+  const updateElementsMock = updateElements as any
+  const pane = new PagePane(document.body);
+
+  ;(getPages as any).mockReturnValue([PAGE1_STATE, fakePage])
+	;(getElements as any).mockReturnValue([ELEM_SECTION, ELEM_SECTION_CONTENT_SELECTED])
+
+	pane.setPages([PAGE1_STATE, fakePage])
+	pane.redraw([ELEM_SECTION_CONTENT_SELECTED])
+
+  let checkbox = document.querySelector('#page-check-id-page-1') as HTMLInputElement
+  let label = document.querySelector('#page-check-id-page-1 + label')
+
+  // checked because pageNames is set to []
+  expect(viewOnAllPages.checked).toBe(true)
+
+  // make it visible on page1
+  label.dispatchEvent(new MouseEvent('click'))
+
+  expect(updateElements).toHaveBeenCalledTimes(2)
+  checkUpdate(ELEM_SECTION, ['page-1'], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
+
+  // element is visible on page1
+	;(getElements as any).mockReturnValue([ELEM_SECTION, {
+    ...ELEM_SECTION_CONTENT_SELECTED,
+    pageNames: [PAGE1.id],
+  }])
+	pane.redraw([{
+    ...ELEM_SECTION_CONTENT_SELECTED,
+    pageNames: ['page-1'],
+  }])
+
+  // remove it from page1
+  checkbox.dispatchEvent(new MouseEvent('click'))
+  expect(updateElements).toHaveBeenCalledTimes(4)
+
+  // it is still visible
+  checkUpdate(ELEM_SECTION, ['page-1'], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
+
+  // element is a section content
+  // element is visible on page1 and fakePage
+  // the section (parent) is on both pages
+	;(getElements as any).mockReturnValue([ELEM_SECTION_CONTENT_SELECTED, {
+    ...ELEM_SECTION,
+    pageNames: [PAGE1.id, fakePage.id],
+  }])
+	pane.setPages([PAGE1_STATE, fakePage ])
+	pane.redraw([{
+    ...ELEM_SECTION_CONTENT_SELECTED,
+    pageNames: [], // the parent has pages
+  }])
+  checkbox = document.querySelector('#page-check-id-page-1') as HTMLInputElement
+  expect(checkbox.checked).toBe(true)
+
+  // remove it from page1
+  checkbox.dispatchEvent(new MouseEvent('click'))
+
+  // it should be visible only on fakePage
+  expect(updateElements).toHaveBeenCalledTimes(6)
+  checkUpdate(ELEM_SECTION, [fakePage.id], updateElementsMock.mock.calls, updateElementsMock.mock.calls.length - 2)
+})
+
+test('update selection', () => {
+  const updateElementsMock = updateElements as any
+  const pane = new PagePane(document.body);
+
+  // element is visible on all pages
+  // element is selected
+	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, {
+    ...ELEM_HTML_SELECTED,
+    pageNames: [],
+  }])
+  pane.updateSelection()
+
+  // it should still be selected
+  expect(updateElements).toHaveBeenCalledTimes(1)
+  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1][0][0].selected).toBe(true)
+
+  // make it visible on the current page
+	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, {
+    ...ELEM_HTML_SELECTED,
+    pageNames: [PAGE1_STATE.id],
+  }])
+  pane.updateSelection()
+
+  // it should still be selected
+  expect(updateElements).toHaveBeenCalledTimes(2)
+  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1][0][0].selected).toBe(true)
+
+  // make it visible on the other page
+	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, {
+    ...ELEM_HTML_SELECTED,
+    pageNames: [fakePage.id],
+  }])
+  pane.updateSelection()
+
+  // it is not selected anymore
+  expect(updateElements).toHaveBeenCalledTimes(3)
+  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1][0][0].selected).toBe(false)
+})
+
+test('selection with sections', () => {
+  const updateElementsMock = updateElements as any
+  const pane = new PagePane(document.body);
+
+  // element is a section
+  // it is selected
+  // it is visible on the other page
+	;(getElements as any).mockReturnValue([{
+    ...ELEM_SECTION_SELECTED,
+    pageNames: [fakePage.id],
+  }])
+  pane.updateSelection()
+
+  // it is not selected anymore
+  expect(updateElements).toHaveBeenCalledTimes(1)
+  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1][0][0].selected).toBe(false)
+
+  // element is a section container
+  // it is selected
+  // it is visible on the other page
+	;(getElements as any).mockReturnValue([ELEM_SECTION, {
+    ...ELEM_SECTION_CONTENT_SELECTED,
+    pageNames: [fakePage.id],
+  }])
+  pane.updateSelection()
+
+  // it is not selected anymore
+  expect(updateElements).toHaveBeenCalledTimes(2)
+  expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1][0][0].selected).toBe(false)
+})
 

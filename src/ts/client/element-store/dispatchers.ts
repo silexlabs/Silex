@@ -301,25 +301,24 @@ export function removeElementsWithoutConfirm(selection, dispatch = store.dispatc
 /**
  * add the provided elements to a given page
  */
-export function addToPage(selection: ElementState[], page: PageState, currentPageId: string, elements = getElements(), dispatch = store.dispatch) {
+export function addToPage(selection: ElementState[], page: PageState, elements = getElements(), dispatch = store.dispatch) {
   updateElements(selection
     .map((el) => noSectionContent(el, elements))
     .map((el) => ({
       ...el,
       pageNames: el.pageNames.concat([page.id]),
-      selected: currentPageId === page.id || el.pageNames.includes(currentPageId), // keep selected only if visible in current page
     })), dispatch)
 }
 
 /**
  * remove the provided elements from a given page
  */
-export function removeFromPage(selection: ElementState[], page: PageState, currentPageId: string, dispatch = store.dispatch) {
+export function removeFromPage(selection: ElementState[], page: PageState, elements = getElements(), dispatch = store.dispatch) {
   updateElements(selection
+    .map((el) => noSectionContent(el))
     .map((el) => ({
       ...el,
       pageNames: el.pageNames.filter((name) => name !== page.id),
-      selected: currentPageId !== page.id || el.pageNames.length <= 1, // keep selected only if page will be visible everywhere or at least on the current page
     })), dispatch)
 }
 
