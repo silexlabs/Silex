@@ -47,7 +47,7 @@ export class BgPane extends PaneBase {
   constructor(element: HTMLElement) {
     super(element);
 
-    // BG color
+    // init BG color
     this.buildBgColor();
 
     // init bg image
@@ -107,8 +107,6 @@ export class BgPane extends PaneBase {
   /**
    * redraw the properties
    * @param states the elements currently selected
-   * @param pageNames   the names of the pages which appear in the current HTML file
-   * @param  currentPageName   the name of the current page
    */
   redraw(selectElements: ElementState[]) {
     super.redraw(selectElements);
