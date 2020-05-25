@@ -21,10 +21,10 @@ import { getComponentsDef } from '../../element-store/component'
 import { getCurrentPage } from '../../page-store/filters';
 import { getDomElement } from '../../element-store/dom';
 import { getElements, updateElements  } from '../../element-store/index';
-import { getPages } from '../../page-store/index'
 import { getSite } from '../../site-store/index'
 import { getSiteDocument } from '../../components/SiteFrame';
 import { initStyle, removeStyle } from '../../site-store/dispatchers'
+import { subscribeElements } from '../../element-store/index'
 import { updateUi, getUi } from '../../ui-store/index'
 
 /**
@@ -152,12 +152,9 @@ export class StyleEditorPane extends PaneBase {
         });
       }
     };
-
-    // for tracking only
-    (this.element.querySelector('.style-editor-tag-form .labels') as HTMLElement).onclick =
-        (e) => {
-          //    this.tracker.trackAction('style-editor-events', 'select-tag');
-        };
+    subscribeElements(() => {
+      this.redraw(getSelectedElements())
+    })
   }
 
   /**
