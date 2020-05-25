@@ -527,10 +527,9 @@ class SettingsDialog {
           if (!!fonts.find((font: Font) => font.href === newFont.href && font.family === newFont.family)) {
             console.warn('This font is already embedded in this website');
           } else {
-            fonts.push(newFont);
             updateSite({
               ...getSite(),
-              fonts,
+              fonts: fonts.concat(newFont),
             });
           }
         });
