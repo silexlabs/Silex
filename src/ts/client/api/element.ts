@@ -299,16 +299,15 @@ export function editStyle(className: StyleName, pseudoClass: PseudoClass, visibi
   }
   openStyleEditor({
     data: pseudoClassData,
-    dataSources: [{displayName: '', name: '', templateName: ''}]
-      .concat(getSite().fonts
-        .map((font) => {
-          return {
-            displayName: font.family,
-            name: font.family,
-            templateName: '',
-          }
-        }),
-    ),
+    dataSources: {
+      components: [{displayName: '', name: '', templateName: ''}]
+        .concat(getSite().fonts
+          .map((font) => ({
+              displayName: font.family,
+              name: font.family,
+              templateName: '',
+          }))),
+      },
     templateName: 'text',
     events: {
       onChange: (newData, html) => componentStyleChanged(className, pseudoClass, visibility, newData),
