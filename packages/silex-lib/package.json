@@ -72,8 +72,6 @@
         "build:server:debug": "tsc -p tsconfig-server-debug.json",
         "build:monaco-editor": "webpack --config webpack-monaco-editor.config.js",
         "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
-        "lint:js": "npm run lint",
-        "lint:server": "npm run lint",
         "lint:fix": "npm run lint -- --fix",
         "test": "jest",
         "test:watch": "jest --watch"
