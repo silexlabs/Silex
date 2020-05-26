@@ -93,7 +93,7 @@ beforeEach(() => {
 })
 
 test('init page pane', () => {
-  new PagePane(document.body)
+  const _ = new PagePane(document.body)
   expect(subscribePages).toHaveBeenCalledTimes(1)
 })
 
@@ -204,7 +204,7 @@ test('sections and section content', () => {
 	pane.redraw([ELEM_SECTION_CONTENT_SELECTED])
 
   let checkbox = document.querySelector('#page-check-id-page-1') as HTMLInputElement
-  let label = document.querySelector('#page-check-id-page-1 + label')
+  const label = document.querySelector('#page-check-id-page-1 + label')
 
   // checked because pageNames is set to []
   expect(viewOnAllPages.checked).toBe(true)

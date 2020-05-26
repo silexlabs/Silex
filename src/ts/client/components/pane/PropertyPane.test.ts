@@ -155,7 +155,7 @@ beforeEach(() => {
 })
 
 test('init pane', () => {
-  new PropertyPane(document.body)
+  const _ = new PropertyPane(document.body)
   expect(subscribeElements).toHaveBeenCalledTimes(1)
 })
 
