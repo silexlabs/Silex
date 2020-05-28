@@ -1,6 +1,8 @@
-import { SITE1 } from '../../test-utils/data-set'
-import { initializeSite, getSite } from './index'
 import { Constants } from '../../constants'
+import { ELEM_HTML, ELEM_TEXT, SITE1 } from '../../test-utils/data-set';
+import { ElementState } from '../element-store/types';
+import { SiteState } from './types';
+import { initializeSite, getSite } from './index'
 import { removeStyle, initStyle, componentStyleChanged } from './dispatchers'
 
 
@@ -47,7 +49,28 @@ test('update a style', () => {
 })
 
 test('delete a style', () => {
-  expect(getSite().styles[Constants.BODY_STYLE_CSS_CLASS]).not.toBeUndefined()
-  removeStyle(Constants.BODY_STYLE_CSS_CLASS)
-  expect(getSite().styles[Constants.BODY_STYLE_CSS_CLASS]).toBeUndefined()
+  // reference eleents
+  const ELEM_TEXT_STATE = {
+    ...ELEM_TEXT,
+    classList: ['a-style'],
+  } as ElementState
+  const styles = {
+    'a-style': {},
+  }
+  // mock to be called to change the model
+  const dispatch = jest.fn()
+  // call with reference elements + a style to remove
+  removeStyle('test-style', {
+    styles: {
+      ...styles,
+      'test-style': {},
+    },
+  } as any as SiteState, [{
+    ...ELEM_TEXT_STATE,
+    classList: ELEM_TEXT_STATE.classList.concat('test-style'),
+  }, ELEM_HTML as ElementState], dispatch)
+  // check that the style was removed from elements and site
+  expect(dispatch).toHaveBeenCalledTimes(2)
+  expect(dispatch).toHaveBeenNthCalledWith(1, {type: 'ELEMENT_UPDATE', items: [ELEM_TEXT_STATE]})
+  expect(dispatch).toHaveBeenNthCalledWith(2, {type: 'SITE_UPDATE', data: { styles }})
 })
