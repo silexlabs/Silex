@@ -253,7 +253,7 @@ test('removeFromPage', () => {
   removeFromPage([{
     ...ELEM_TEXT_STATE,
     pageNames: ['fake-id'],
-  }], { id: 'fake-id' } as PageState, dispatch)
+  }], { id: 'fake-id' } as PageState, null, dispatch)
   expect(dispatch).toHaveBeenCalledTimes(1)
   expect(dispatch).toHaveBeenLastCalledWith({
     type: 'ELEMENT_UPDATE',
