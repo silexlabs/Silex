@@ -122,8 +122,11 @@ function onAddElement(elements: ElementState[]) {
     }
   })
   if (elements.length) {
-    // send the scroll to the target
-    stage.center(elements.map((el) => getDomElement(doc, el)))
+    // a timeout is needed because otherwise it sends the scroll at the bottom (the element seems to be put after the last section)
+    setTimeout(() => {
+      // send the scroll to the target
+      stage.center(elements.map((el) => getDomElement(doc, el)))
+    }, 500)
   }
 }
 // on deleted elements
