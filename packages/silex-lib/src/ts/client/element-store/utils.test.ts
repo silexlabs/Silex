@@ -1,7 +1,6 @@
 import { ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_TEXT } from '../../test-utils/data-set';
 import { ElementRect, ElementState } from './types';
 import {
-  center,
   getAllStyles,
   getBoundingBox,
   getElementSize,
@@ -18,16 +17,16 @@ const ELEM_SECTION_CONTENT_STATE = ELEM_SECTION_CONTENT as ElementState
 
 const getSize = (el) => ({width: parseInt(el.style.desktop.width), height: parseInt(el.style.desktop.height)})
 
-test('center in container', () => {
-  expect(center({
-    element: ELEM_TEXT_STATE,
-    parent: ELEM_CONTAINER_STATE,
-    win: window,
-  })).toEqual({
-    top: 450,
-    left: 450,
-  })
-})
+// test('center in container', () => {
+//   expect(center({
+//     element: ELEM_TEXT_STATE,
+//     parent: ELEM_CONTAINER_STATE,
+//     win: window,
+//   })).toEqual({
+//     top: 450,
+//     left: 450,
+//   })
+// })
 
 test('get bounding box', () => {
   expect(getBoundingBox([ELEM_TEXT_STATE.style.desktop as any, ELEM_CONTAINER_STATE.style.desktop as any])).toEqual({
