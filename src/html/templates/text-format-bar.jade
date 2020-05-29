@@ -25,9 +25,9 @@ form
     a.hidden(data-wysihtml-command="insertImage", href="javascript:;", unselectable="on") Image
     .image-details(data-wysihtml-dialog="insertImage", style="display: none;")
       input.src.hidden(data-wysihtml-dialog-field="src", value="http://", autocomplete="off")
-      label alt:
-      input.alt(data-wysihtml-dialog-field="alt", value="", placeholder="Image description", autocomplete="off")
-      select.float(data-wysihtml-dialog-field="className")
+      span alt
+      input.alt.keep-text-format-bar-open(data-wysihtml-dialog-field="alt", value="", placeholder="Image description", autocomplete="off")
+      select.float.keep-text-format-bar-open(data-wysihtml-dialog-field="className")
         option(value="") No float
         option(value="wysiwyg-float-left") left
         option(value="wysiwyg-float-right") right
