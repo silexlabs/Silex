@@ -120,6 +120,7 @@ export function editPageSettings(pageData: PageState = null): Promise<{id: strin
     form.innerHTML = `
       Page Name
       <input
+        autofocus
         id="page-property-name"
         class="block-dialog"
         placeholder="Your page name here"

@@ -155,6 +155,7 @@ export class SilexNotification {
       const container = SilexNotification.currentDialog.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}_content`);
       if (!keepExisiting) { container.innerHTML = ''; }
       container.appendChild(el);
+      SilexNotification.updateFocus()
     }
   }
 
@@ -176,6 +177,7 @@ export class SilexNotification {
     if (SilexNotification.currentDialog) {
       const buttonBar = SilexNotification.currentDialog.querySelector(`.${SilexNotification.NOTIFICATION_CSS_CLASS}_buttons`);
       buttonBar.appendChild(el);
+      SilexNotification.updateFocus()
     }
   }
 
@@ -213,6 +215,7 @@ export class SilexNotification {
           ${
             typeof options.defaultValue !== 'undefined' ? `
               <input
+                autofocus
                 id="${SilexNotification.NOTIFICATION_CSS_CLASS}_value"
                 ${options.placeholder ? `placeholder="${options.placeholder}"` : ''}
                 class="block-dialog" type="text" value="${options.defaultValue}"
@@ -232,7 +235,10 @@ export class SilexNotification {
     const container: HTMLElement = document.querySelector('.alerts');
     container.insertAdjacentHTML('afterbegin', markup);
     container.classList.remove('closed');
-    const input = (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_value`) as HTMLElement);
+    SilexNotification.updateFocus()
+  }
+  private static updateFocus() {
+    const input = (SilexNotification.currentDialog.querySelector('[autofocus]') as HTMLElement);
     if (input) {
       input.focus();
     }
