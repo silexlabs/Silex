@@ -194,7 +194,9 @@ export default function({ port, rootUrl }, unifile) {
       return url.href;
     });
     // update context classes
-    dom.window.document.body.classList.remove(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME);
+    dom.window.document
+      .querySelector('.' + Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME)
+      .classList.remove(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME);
     dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME);
     deactivateScripts(dom);
     // add /css/editable.css
