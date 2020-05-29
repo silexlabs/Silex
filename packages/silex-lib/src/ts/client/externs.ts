@@ -122,6 +122,7 @@ export interface WysiHtmlEditor {
   composer: WysiHtmlComposer;
   focus(changePosition);
   on(eventName, cbk);
+  off(eventName);
   destroy();
 }
 interface WysiHtmlComposer {

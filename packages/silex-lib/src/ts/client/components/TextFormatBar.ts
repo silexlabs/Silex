@@ -237,6 +237,8 @@ export class TextFormatBar {
         const doc = getSiteDocument();
         const win = getSiteWindow();
         const onKeyScrollBinded = (e) => this.onScroll(e);
+        const onBlurBinded = () => this.onBlur(currentTextBoxEl)
+
         // events and shortcuts
         this.onStopEditCbks.push(
           keyboardAttach(doc),
@@ -249,36 +251,27 @@ export class TextFormatBar {
             label: 'Exit text editor',
             key: 'Escape',
           }, (e) => this.stopEditing()),
-          () => win.addEventListener('scroll', onKeyScrollBinded),
+          () => win.removeEventListener('scroll', onKeyScrollBinded),
+          () => currentTextBoxEl.removeEventListener('blur', onBlurBinded),
+          () => this.wysihtmlEditor.off('blur'),
+          () => this.wysihtmlEditor.off('load'),
         );
         win.addEventListener('scroll', onKeyScrollBinded);
-        this.wysihtmlEditor.on('blur', (e) => {
-          // leave time for the onclick events to fire (wtf? events in the toolbar always come after blur + huge dekay)
-          setTimeout(() => {
-            if (!SilexNotification.isActive) {
-              this.stopEditing();
-            }
-          }, 500);
-        });
+        currentTextBoxEl.addEventListener('blur', onBlurBinded)
+        this.wysihtmlEditor.on('blur', (e) => this.onBlur(currentTextBoxEl));
         this.wysihtmlEditor.on('load', () => {
           (this.element.querySelector('.insert-image') as HTMLElement).onclick = (e) => {
-            //    this.tracker.trackAction('controller-events', 'request', 'insert.image.text', 0);
             const bookmarkNew = this.wysihtmlEditor.composer.selection.getBookmark();
             fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
                 .then((fileInfo) => {
                   this.startEditing(fileExplorer, bookmarkNew, () => {
                     if (fileInfo) {
-                      // undo checkpoint
-                      // this.controller.textEditorController.undoCheckPoint();
                       this.wysihtmlEditor.composer.commands.exec('insertImage', {src: fileInfo.absPath, alt: ''});
-                      //    this.tracker.trackAction('controller-events', 'success', 'insert.image.text', 1);
                     }
                   });
                 })
                 .catch((error) => {
                   SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-                  //    this.tracker.trackAction('controller-events', 'error', 'insert.image.text', -1);
-
                   this.startEditing(fileExplorer, bookmarkNew);
                 });
           };
@@ -296,10 +289,12 @@ export class TextFormatBar {
               (e.target as HTMLElement).focus();
             }, 100);
           }
-          (imageDetails.querySelector('.float') as HTMLElement).onchange = (e) => autoSubmitImage(e);
-          (imageDetails.querySelector('.src') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
-          (imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e);
-          (this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => this.openLinkEditor(e);
+          ;(imageDetails.querySelector('.float') as HTMLElement).onchange = (e) => autoSubmitImage(e)
+          ;(imageDetails.querySelector('.float') as HTMLElement).onblur = (e) => this.onBlur(currentTextBoxEl)
+          ;(imageDetails.querySelector('.src') as HTMLElement).onkeydown = (e) => autoSubmitImage(e)
+          ;(imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e)
+          ;(imageDetails.querySelector('.alt') as HTMLElement).onblur = (e) => this.onBlur(currentTextBoxEl);
+          ;(this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => this.openLinkEditor(e);
 
           // loaded
           this.focus(bookmark);
@@ -313,6 +308,18 @@ export class TextFormatBar {
     } else {
       console.error('Error, can not edit selection with format pane', selectedElements);
     }
+  }
+
+  onBlur(currentTextBoxEl: HTMLElement) {
+    // leave time for the onclick events to fire
+    // note: events in the toolbar always come after blur + huge dekay
+    setTimeout(() => {
+      if (!SilexNotification.isActive
+        && document.activeElement !== currentTextBoxEl
+        && !document.activeElement.classList.contains('keep-text-format-bar-open')) {
+        this.stopEditing();
+      }
+    }, 0);
   }
 
   // give focus to the editor if it still exists
