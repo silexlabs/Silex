@@ -49,6 +49,10 @@ export function resetStage() {
   stage.setSelection(getSelectedElements().map((el) => getDomElement(doc, el)))
   startStageObserver()
 }
+function scrollToContainSelection() {
+  stage.show(getSelectedElements()
+    .map((el) => getDomElement(getSiteDocument(), el)))
+}
 
 export function getEnableSticky(): boolean {
   if (!stage) { return false }
@@ -171,6 +175,8 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
     if (to.children !== from.children) {
       // needs reset because children visibility may have changed (also when creating a section, when the parent is attached it has a container in it)
       needReset = true
+      // why a timout here? looks like without it there is a problem when creating elements / pasting etc ?
+      setTimeout(() => scrollToContainSelection(), 500)
     }
     if (to.classList !== from.classList) {
       needReset = true
@@ -214,6 +220,8 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
           .concat(to.children.map((id) => getDomElementById(doc, id)))
           .map((el) => getStage().getState(el)))
       }
+      // why a timout here? looks like without it there is a problem when creating elements / pasting etc ?
+      setTimeout(() => scrollToContainSelection(), 500)
     }
   })
   // re-compute the other elements metrics
@@ -383,10 +391,10 @@ class StageWrapper {
     if (!this.stage) { return {x: 0, y: 0} }
     return this.stage.getScroll()
   }
-  setScroll(scroll: ScrollData) {
-    if (!this.stage) { return }
-    this.stage.setScroll(scroll)
-  }
+  // setScroll(scroll: ScrollData) {
+  //   if (!this.stage) { return }
+  //   this.stage.setScroll(scroll)
+  // }
   redraw() {
     if (!this.stage) { return }
     this.stage.redraw()

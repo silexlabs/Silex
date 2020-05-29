@@ -333,9 +333,6 @@ export function indexOfElement(element: HTMLElement): number {
  * Move the selected elements in the DOM
  */
 function move(direction: DomDirection) {
-  // undo checkpoint
-  // undoCheckPoint()
-
   // move all the elements in the selection
   moveElements(getSelectedElementsNoSectionContent(), direction)
 }

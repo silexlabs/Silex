@@ -215,26 +215,26 @@ export function getElementSize(win: Window, element: ElementState, mobile: boole
   return result
 }
 
-/**
- * compute new element data
- * center the element in the container
- */
-export function center({element, parent, win, opt_offset = 0}: {
-  win: Window,
-  element: ElementState,
-  parent: ElementState,
-  opt_offset?: number,
-}): Point {
-  const parentSize = getElementSize(win, parent, false)
-  const elementSize = getElementSize(win, element, false)
-
-  const posX = Math.round((parentSize.width / 2) - (elementSize.width / 2))
-  const posY = Math.round((parentSize.height / 2) - (elementSize.height / 2))
-  return {
-    top: opt_offset + posY,
-    left: opt_offset + posX,
-  }
-}
+// /**
+//  * compute new element data
+//  * center the element in the container
+//  */
+// export function center({element, parent, win, opt_offset = 0}: {
+//   win: Window,
+//   element: ElementState,
+//   parent: ElementState,
+//   opt_offset?: number,
+// }): Point {
+//   const parentSize = getElementSize(win, parent, false)
+//   const elementSize = getElementSize(win, element, false)
+//
+//   const posX = Math.round((parentSize.width / 2) - (elementSize.width / 2))
+//   const posY = Math.round((parentSize.height / 2) - (elementSize.height / 2))
+//   return {
+//     top: opt_offset + posY,
+//     left: opt_offset + posX,
+//   }
+// }
 
 export function getElementRect(element: ElementState, mobile: boolean): ElementRect {
   if (element.isSectionContent && !mobile) return {
