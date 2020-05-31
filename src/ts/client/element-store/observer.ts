@@ -1,3 +1,4 @@
+import { Constants } from '../../constants';
 import { ElementState, ElementId, ElementData } from './types';
 import { StateChange } from '../store/crud-store';
 import {
@@ -22,6 +23,7 @@ import { getElements } from './index'
 import { getPages } from '../page-store/index';
 import { getSiteWindow } from '../components/SiteFrame';
 import { getState } from '../store/index';
+import { isComponent, updateDepenedencies } from './component';
 import { noSectionContent, getParent } from '../element-store/filters';
 import { openPageDom, setPages } from '../page-store/dom';
 import { writeDataToDom } from '../store/dom';
@@ -57,7 +59,9 @@ export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elemen
     // this.model.component.executeScripts(domEl)
 
     // need to call Component:initComponent (adds default data)
-    console.error('not implemented: components')
+    if(isComponent(element)) {
+      updateDepenedencies(Constants.COMPONENT_TYPE)
+    }
   })
   if (added.length) {
     onUpdateElements(win)(added, elements)

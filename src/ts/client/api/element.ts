@@ -52,9 +52,9 @@ import { openTextFormatBar } from '../components/TextFormatBar'
 /**
  * add an element, center it in the container which is in the middle of the screen
  */
-export function addElementCentered(type: ElementType, componentName: string) {
+export async function addElementCentered(type: ElementType, componentName: string) {
   if (type === ElementType.SECTION) {
-    const [el, updatedParentData] = addElement({
+    const [el, updatedParentData] = await addElement({
       type,
       parent: getBody(),
       componentName,
@@ -70,7 +70,7 @@ export function addElementCentered(type: ElementType, componentName: string) {
     const parentState = getStage().getState(getDomElement(getSiteDocument(), parent))
     const parentRect = parentState.metrics.computedStyleRect
 
-    const [el, updatedParentData] = addElement({
+    const [el, updatedParentData] = await addElement({
       type,
       parent,
       componentName,
@@ -90,14 +90,13 @@ export function addElementCentered(type: ElementType, componentName: string) {
 /**
  * open file explorer, choose an image and add it to the stage
  */
-export function browseAndAddImage(componentName: string) {
-  // this.tracker.trackAction('controller-events', 'request', 'insert.image', 0)
-  FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
-  .then((fileInfo) => {
+export async function browseAndAddImage(componentName: string) {
+  try {
+    const fileInfo = await FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
     if (fileInfo) {
 
       // create the element
-      const [imgData] = addElementCentered(ElementType.IMAGE, componentName)
+      const [imgData] = await addElementCentered(ElementType.IMAGE, componentName)
       const img = getDomElement(getSiteDocument(), imgData)
 
       // load the image
@@ -123,11 +122,9 @@ export function browseAndAddImage(componentName: string) {
         },
       )
     }
-  })
-  .catch((error) => {
+  } catch(error) {
     SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
-    // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1)
-  })
+  }
 }
 
 /**

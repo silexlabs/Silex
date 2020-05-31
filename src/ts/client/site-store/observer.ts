@@ -69,22 +69,16 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
     //   }
     //  }
     Object.keys(site.prodotypeDependencies)
-    .forEach((compName) => {
-      const deps = site.prodotypeDependencies[compName]
+    .forEach((tagName) => {
+      const deps = site.prodotypeDependencies[tagName]
       deps.forEach((depObj) => {
+        const el = doc.createElement(tagName)
+        el.setAttribute('data-dependency', '');
         Object.keys(depObj)
-        .forEach((tagName) => {
-          const dep = depObj[tagName]
-          dep.forEach((depTagObj) => {
-            const el = doc.createElement(tagName)
-            el.setAttribute('data-dependency', '');
-            Object.keys(depTagObj)
-            .forEach((attrName) => {
-              el.setAttribute(attrName, depTagObj[attrName])
-            })
-            head.appendChild(el);
-          })
+        .forEach((attrName) => {
+          el.setAttribute(attrName, depObj[attrName])
         })
+        head.appendChild(el);
       })
     })
   }

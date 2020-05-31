@@ -41,8 +41,6 @@ export interface SiteState {
   // file holds the URL, service and unifile/CE info of the site currently opened
   file: FileInfo,
   // prodotypeDependencies is the object returned by getDependencies: {
-  //   "test-comp":
-  //     [{
   //         "script": [{
   //             "src": "https://code.jquery.com/jquery-2.1.4.min.js"
   //         }],
@@ -50,7 +48,6 @@ export interface SiteState {
   //             "rel": "stylesheet",
   //             "href": "https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css"
   //         }]
-  //     }]
   //   }
   // FIXME: the site should not have this array of deps, but each component should have its deps
   prodotypeDependencies: {[key: string]: ProdotypeDependency[]},
