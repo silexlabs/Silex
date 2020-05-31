@@ -87,60 +87,63 @@ export function isComponent(element: ElementState) {
  * @param element component just added
  * @param templateName type of component
  */
-export function initComponent(element: ElementState, templateName: string) {
-  const name = getProdotypeComponent().createName(templateName, getElements()
-    .filter((el) => isComponent(el))
-    .map((el) => el.data.component))
-
-  // for selection (select all components)
-  // element.classList.add(Constants.COMPONENT_CLASS_NAME)
-
-  // apply the style found in component definition
-  // this includes the css class of the component (component-templateName)
-  const cssClasses = getCssClasses(templateName) || []
-
-  // first rendering of the component
-  renderWithProdotype(getProdotypeComponent(), {
-    templateName,
-    data: element.data.component,
-    dataSources: getSite().dataSources,
-  })
-  .then((html) => {
-    updateElements([{
-      ...element,
-      classList: element.classList.concat(cssClasses),
-      data: {
-        ...element.data,
-        component: {
-          name,
-          templateName,
-          data: {},
-        },
-      },
-      innerHtml: html,
-    }])
-
-    // update the dependencies once the component is added
-    updateDepenedencies(Constants.COMPONENT_TYPE)
-  })
-
-  // css styles
+export function initComponent(element: ElementState, templateName: string): Promise<ElementState> {
   const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE)
   const comp = componentsDef[templateName]
   if (comp) {
+    const name = getProdotypeComponent()
+      .createName(templateName, getElements()
+        .filter((el) => isComponent(el))
+        .map((el) => el.data.component))
+
+    // for selection (select all components)
+    // element.classList.add(Constants.COMPONENT_CLASS_NAME)
+
     // apply the style found in component definition
-    if (comp.initialCss) {
-      // applyStyleTo(element, comp.initialCss)
-      console.error('not implemented')
-    }
+    // this includes the css class of the component (component-templateName)
+    const cssClasses = getCssClasses(templateName) || []
+
+    // apply the style found in component definition
+    const initialCss = comp.initialCss || {}
 
     // same for the container inside the element (content node)
     if (comp.initialCssContentContainer) {
       // applyStyleTo(
       //     model.element.getContentNode(element),
       //     comp.initialCssContentContainer)
-      console.error('not implemented')
+      console.error('not implemented', comp.initialCssContentContainer)
     }
+
+    // first rendering of the component
+    return renderWithProdotype(getProdotypeComponent(), {
+      templateName,
+      data: {},
+      dataSources: getSite().dataSources,
+    })
+    .then((html) => {
+      return {
+        ...element,
+        classList: element.classList.concat(cssClasses),
+        data: {
+          ...element.data,
+          component: {
+            name,
+            templateName,
+            data: {},
+          },
+        },
+        innerHtml: html,
+        style: {
+          ...element.style,
+          desktop: {
+            ...element.style.desktop,
+            ...initialCss,
+          },
+        },
+      }
+    })
+  } else {
+    console.error('Component definition not found in prodotype data')
   }
 }
 
@@ -202,12 +205,13 @@ export function updateDepenedencies(type: string) {
   const oldDependencies = getSite().prodotypeDependencies
   const isDifferent = (() => {
     for(const compName in oldDependencies)
-      if(!prodotypeDependencies[compName]) return false
+      if(!prodotypeDependencies[compName]) return true
     for(const compName in prodotypeDependencies)
-      if(!oldDependencies[compName]) return false
-    return true
+      if(!oldDependencies[compName]) return true
+    return false
   })()
 
+  console.log('updateDepenedencies', {prodotypeDependencies, type, isDifferent, components, oldDependencies})
   if(isDifferent) {
     updateSite({
       ...getSite(),

@@ -35,10 +35,8 @@ export function initStyle(displayName: string, className: StyleName, opt_data?: 
     templateName: '',
     styles: {desktop: {normal: {}}},
   } as StyleData)
-  console.log('initStyle', {opt_data, newData})
   // check that style does not exist
   if (site.styles[className]) {
-    console.error('This style already exists')
     throw new Error('This style already exists')
   } else {
     // render all pseudo classes in all visibility object
@@ -54,7 +52,6 @@ export function initStyle(displayName: string, className: StyleName, opt_data?: 
  * FIXME: this should be at the site level
  */
 export function componentStyleChanged(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, opt_data?: PseudoClassData, opt_displayName?: string, site = getSite(), dispatch = store.dispatch) {
-  console.log('componentStyleChanged', {className, pseudoClass, visibility, opt_data, opt_displayName, site})
   // expose the class name and pseudo class to the prodotype template
   const newData = {
     ...opt_data,
@@ -88,7 +85,6 @@ export function componentStyleChanged(className: StyleName, pseudoClass: PseudoC
 }
 
 export function removeStyle(className: string, site = getSite(), elements = getElements(), dispatch = store.dispatch) {
-  console.log('removeStyle', {className, site})
   // clone the site and style objects
   const newSite = {
     ...site,

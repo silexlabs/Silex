@@ -16,17 +16,15 @@ import {
   ElementRect,
   ElementType,
   FullBox,
-  Point,
   Rect,
   Size,
   ElementData
 } from './types';
-import { PageState } from '../page-store/types';
 import { addMediaQuery, getDomElement } from './dom'
 import { getAllParents, getBody, getChildren, getElementById } from './filters';
 import { getElements, fromElementData } from './index'
 import { getSite } from '../site-store/index'
-import { isComponent } from './component';
+import { initComponent, isComponent } from './component';
 import { styleToString } from '../utils/styles';
 
 /**
@@ -49,12 +47,12 @@ export const INITIAL_ELEMENT_SIZE = 100
  * get the states needed to add a new element to the store
  * @returns [elementToBeCreated, parentToBeUpdated]
  */
-export function getCreateAction({type, parent, isSectionContent, componentName}: {
+export async function getCreateAction({type, parent, isSectionContent, componentName}: {
   type: ElementType,
   parent: ElementState,
   isSectionContent: boolean,
   componentName?: string,
-}): [ElementState, ElementState] {
+}): Promise<[ElementState, ElementState]> {
   // create the element ready to be added to the stage
   const [element] = fromElementData([
     getEmptyElementData({
@@ -64,19 +62,26 @@ export function getCreateAction({type, parent, isSectionContent, componentName}:
       isBody: false
     })
   ])
+  const newParent = {
+    ...parent,
+    children: parent.children.concat(element.id),
+  }
 
   // apply component styles etc
   if (!!componentName) {
-    console.error('not implemented: components')
-    // model.component.initComponent(element, componentName);
+    const newElement = await initComponent(element, componentName)
+    return [{
+        ...newElement,
+        selected: true,
+      },
+      newParent,
+    ]
   }
   return [{
       ...element,
       selected: true,
-    }, {
-      ...parent,
-      children: parent.children.concat(element.id),
     },
+    newParent,
   ]
 }
 
@@ -424,4 +429,3 @@ export function isVisibleInPage(element: ElementState, pageId: string): boolean 
     // find one which is not visible => break
     .find((el) => el.pageNames.length > 0 && !el.pageNames.includes(pageId))
 }
-

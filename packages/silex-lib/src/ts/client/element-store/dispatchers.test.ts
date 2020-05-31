@@ -134,10 +134,10 @@ test('move 2 elements among 3', () => {
   expect(dispatch.mock.calls[0][0].items[0].children[2]).toBe(ELEM_TEXT_STATE.id)
 })
 
-test('add element', () => {
+test('add element', async () => {
   // TODO: refactore add element to be able to unit test
   initializeElements([ELEM_CONTAINER_STATE])
-  const [element, updatedParentData] = addElement({
+  const [element, updatedParentData] = await addElement({
     type: ElementType.HTML,
     parent: ELEM_CONTAINER_STATE,
     componentName: null,
@@ -167,14 +167,14 @@ test('add element', () => {
 
 })
 
-test('add a section in a selected element', () => {
+test('add a section in a selected element', async () => {
   const selectedContainer = {
     ...ELEM_CONTAINER_STATE,
     selected: true,
   }
   // TODO: refactore add element to be able to unit test
   initializeElements([ELEM_TEXT_STATE, ELEM_IMAGE_STATE, selectedContainer, ELEM_SECTION_CONTENT_STATE])
-  const [element, updatedParentData] = addElement({
+  const [element, updatedParentData] = await addElement({
     type: ElementType.HTML,
     parent: getElementById(selectedContainer.id),
     componentName: null,
@@ -193,11 +193,11 @@ test('add a section in a selected element', () => {
   expect(updatedParentData.children).toContain(element.id)
 })
 
-test('add a section', () => {
+test('add a section', async () => {
   // TODO: refactore add element to be able to unit test
   initializeElements([ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_CONTAINER_STATE, ELEM_SECTION_CONTENT_STATE])
   // add a section in a container
-  expect(() => {
+  await expect(
     addElement({
       type: ElementType.SECTION,
       parent: ELEM_CONTAINER_STATE,
@@ -207,12 +207,12 @@ test('add a section', () => {
         desktop: {},
       },
     })
-  }).toThrow()
+  ).rejects.toThrow('added to the body')
 
   // add a section in the body
   initializeElements([ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_CONTAINER_STATE]) // here ELEM_CONTAINER_STATE has no parent => it is considered the body
   expect(isBody(ELEM_CONTAINER_STATE)).toBe(true)
-  const [element, updatedParentData] = addElement({
+  const [element, updatedParentData] = await addElement({
     type: ElementType.SECTION,
     parent: ELEM_CONTAINER_STATE,
     componentName: null,

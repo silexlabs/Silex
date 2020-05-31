@@ -241,14 +241,12 @@ export const SITE1: SiteState = {
   },
   file: null,
   prodotypeDependencies: {
-    'test-component': [{
-      'script': [{
-          'src': 'https://code.jquery.com/jquery-2.1.4.min.js'
-      }],
-      'link': [{
-          'rel': 'stylesheet',
-          'href': 'https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css'
-      }]
-  }]
+    'script': [{
+        'src': 'https://code.jquery.com/jquery-2.1.4.min.js'
+    }],
+    'link': [{
+        'rel': 'stylesheet',
+        'href': 'https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css'
+    }]
   }
 }

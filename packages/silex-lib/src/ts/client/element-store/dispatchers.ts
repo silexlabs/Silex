@@ -191,14 +191,14 @@ export function setClassName(name: string, elements = getElements(), dispatch = 
  * TODO: refactore add element to be able to unit test
  * @return [element, updatedParent]
  */
-export function addElement({type, parent, style, componentName} : {
+export async function addElement({type, parent, style, componentName} : {
   type: ElementType,
   parent: ElementState,
   style: StyleObject,
   componentName?: string,
-}, dispatch = store.dispatch): [ElementState, ElementState] {
+}, dispatch = store.dispatch): Promise<[ElementState, ElementState]> {
   // create an element
-  const [newElementState, updatedParentState] = getCreateAction({
+  const [newElementState, updatedParentState] = await getCreateAction({
     type,
     parent,
     componentName,
@@ -211,14 +211,12 @@ export function addElement({type, parent, style, componentName} : {
     ...newElementState,
     pageNames: !!parent.pageNames.length || !!getFirstPagedParent(parent) ? [] : [currentPageId],
   }
-  console.warn('todo: handle add in mobile')
 
-  const element = ((() => {
+  const element = (await (async () => {
     // if it is a section add its container element
     if (type === ElementType.SECTION) {
-
       if (!isBody(parent)) throw new Error('Sections can only be added to the body')
-      const [contentElement, newElementStateWithContent] = getCreateAction({
+      const [contentElement, newElementStateWithContent] = await getCreateAction({
         type: ElementType.CONTAINER,
         parent: newElementStatePaged,
         componentName: null,
@@ -271,7 +269,6 @@ export function addElement({type, parent, style, componentName} : {
       selected: false,
     }]), dispatch)
 
-  console.log('TODO: drag to insert?')
   // TODO: drag to insert?
   // getStage().startDrag()
 
