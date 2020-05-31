@@ -8,7 +8,7 @@
   },
   "scripts": {
     "postinstall": "electron-rebuild",
-    "start": "SILEX_ELECTRON=true electron ."
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
