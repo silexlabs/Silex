@@ -10,17 +10,17 @@
  */
 
 import { SilexNotification } from '../utils/Notification'
-import { Splitter } from './Splitter'
 import { Url } from '../utils/Url'
+import { getPropertySplitter } from './PropSplitter';
 import { getSiteIFrame } from './SiteFrame'
-import { getUiElements } from '../ui-store/UiElements'
+import { getUiElements } from '../ui-store/UiElements';
 import { initBreadCrumbs } from './BreadCrumbs'
 import { initContextMenu } from './ContextMenu'
 import { initMenu } from './Menu'
 import { initPageTool } from './PageTool'
 import { initPropertyTool } from './PropertyTool'
-import { isDirty } from '../api/undo'
-import { openRecent } from '../api/file'
+import { isDirty } from '../undo'
+import { openRecent } from '../file'
 import { resizeWindow } from './StageWrapper';
 
 /**
@@ -32,14 +32,10 @@ import { resizeWindow } from './StageWrapper';
  *
  */
 
-export let propSplitter
-
 /**
  * create the workspace, start listening to window events
  */
 export function createWorkspace(element: HTMLElement) {
-  window.addEventListener('resize', () => resizeWorkspace(element))
-
   // creation of the view instances
   initMenu()
   initContextMenu()
@@ -55,7 +51,7 @@ export function createWorkspace(element: HTMLElement) {
 
   // add splitters
   const uiElements = getUiElements()
-  propSplitter = new Splitter(uiElements.verticalSplitter, () => resizeWorkspace(element));
+  const propSplitter = getPropertySplitter()
   propSplitter.addLeft(uiElements.contextMenu);
   propSplitter.addLeft(uiElements.breadCrumbs);
   propSplitter.addLeft(getSiteIFrame().parentElement);
@@ -123,90 +119,29 @@ export function warnIfWindowTooSmall() {
   }
 }
 
-/**
- * called on window resize and when the layout changes
- */
-function resizeWorkspace(element: HTMLElement) {
-  propSplitter.redraw(false)
-  resizeWindow()
-
-  // // change the number of columns in the properties pannel
-  // const container = element.querySelector('.silex-property-tool .main-container');
-  // if (container.clientWidth < 500) {
-  //   container.classList.add('size1');
-  //   container.classList.remove('size2');
-  //   container.classList.remove('size3');
-  // } else {
-  //   if (container.clientWidth < 750) {
-  //     container.classList.remove('size1');
-  //     container.classList.add('size2');
-  //     container.classList.remove('size3');
-  //   } else {
-  //     if (container.clientWidth < 1000) {
-  //       container.classList.remove('size1');
-  //       container.classList.remove('size2');
-  //       container.classList.add('size3');
-  //     }
-  //   }
-  // }
-}
-
-// store the window viewport for later use
-let previewWindow: Window;
-
-/**
- * open a popup or refresh the allready opened one
- * @param opt_location or null to refresh only
- */
-export function setPreviewWindowLocation(opt_location?: string) {
-  if (previewWindow && !previewWindow.closed) {
-    if (opt_location) {
-      previewWindow.close();
-      previewWindow = window.open(opt_location);
-      previewWindow.focus();
-    } else {
-      try {
-        if (previewWindow.location.href !== 'about:blank') {
-          // only when loaded, reload
-          previewWindow.location.reload(true);
-        }
-      } catch (e) {
-        // case of responsize
-        previewWindow.frames[1].location.reload(true);
-      }
-    }
-    previewWindow.focus();
-  } else {
-    if (opt_location) {
-      previewWindow = window.open(opt_location);
-      previewWindow.focus();
-    }
-  }
-}
-
-/**
- * input element to get the focus
- * used to blur the UI inputs
- */
-let focusInput: HTMLElement;
-
-/**
- * remove the focus from all text fields
- */
-export function resetFocus() {
-  if (!focusInput) {
-    focusInput = document.createElement('input');
-
-    // hide the focus input and attach it to the DOM
-    focusInput.style.left = '-1000px';
-    focusInput.style.position = 'absolute';
-    document.body.appendChild(focusInput);
-  }
-  // setTimeout because we might need to wait for a click to finish bubbling
-  // e.g. when edit text, the UI layer is hidden, click on the stage => focus on the stage iframe
-  setTimeout(() => {
-    focusInput.focus();
-    focusInput.blur();
-    document.getSelection().removeAllRanges();
-  }, 0);
-}
+// /**
+//  * called on window resize and when the layout changes
+//  */
+// function resizeWorkspace(element: HTMLElement) {
+//   resizeWindow()
+//
+//   // // change the number of columns in the properties pannel
+//   // const container = element.querySelector('.silex-property-tool .main-container');
+//   // if (container.clientWidth < 500) {
+//   //   container.classList.add('size1');
+//   //   container.classList.remove('size2');
+//   //   container.classList.remove('size3');
+//   // } else {
+//   //   if (container.clientWidth < 750) {
+//   //     container.classList.remove('size1');
+//   //     container.classList.add('size2');
+//   //     container.classList.remove('size3');
+//   //   } else {
+//   //     if (container.clientWidth < 1000) {
+//   //       container.classList.remove('size1');
+//   //       container.classList.remove('size2');
+//   //       container.classList.add('size3');
+//   //     }
+//   //   }
+//   // }
+// }

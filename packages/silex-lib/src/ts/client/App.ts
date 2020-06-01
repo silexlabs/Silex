@@ -28,7 +28,7 @@ import { exposeModule } from './expose'
 import { getUi, updateUi } from './ui-store/index'
 import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
-import { openDashboardToLoadAWebsite } from './api/file'
+import { openDashboardToLoadAWebsite } from './file'
 
 interface AppOptions {
   debug: boolean,

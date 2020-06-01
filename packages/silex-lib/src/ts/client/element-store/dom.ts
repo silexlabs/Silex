@@ -72,7 +72,7 @@ export function removeElement(element: HTMLElement) {
 
 /**
  * element creation
- * create a DOM element, attach it to this container
+ * create a DOM element, attach it to its container
  * and returns new component data for the element
  * @param type  the type of the element to create,
  *    see TYPE_* constants of the class @see silex.model.Element
@@ -81,7 +81,7 @@ export function removeElement(element: HTMLElement) {
 export function createDomElement(
   {doc, id, type, parent, isSectionContent}: {
     doc: HTMLDocument, id: ElementId, type: ElementType, parent: HTMLElement, isSectionContent: boolean
-  }): ElementData {
+  }) {
   // create the element
   let element: HTMLElement = null;
   switch (type) {
@@ -132,10 +132,8 @@ export function createDomElement(
   } else {
     console.info('element not yet created in the dom')
   }
-
-  // return the element
-  return getEmptyElementData({id, type, isSectionContent, isBody: false});
 }
+
 /**
  * element creation method for a given type
  * called from createElement

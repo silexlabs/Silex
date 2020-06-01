@@ -13,22 +13,93 @@
  * the Silex context menu
  *
  */
-import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../api/copy'
+import { ElementState, ElementType } from '../element-store/types';
+import { FileExplorer } from './dialog/FileExplorer';
+import { SilexNotification } from '../utils/Notification';
+import { Toolboxes } from '../ui-store/types';
+import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'
+import { getDomElement, setImageUrl } from '../element-store/dom';
 import { getElements, subscribeElements } from '../element-store/index';
 import { getEnableSticky, toggleSticky } from './StageWrapper'
 import { getParent } from '../element-store/filters'
 import { getSite } from '../site-store/index'
+import { getSiteDocument } from './SiteFrame';
 import { getUiElements } from '../ui-store/UiElements'
-import { removeElements, editElement, moveUp, moveToTop, moveDown, moveToBottom } from '../api/element'
-import { showPages } from '../api/view'
+import { isComponent } from '../element-store/component';
+import { moveToTop, moveUp, moveDown, moveToBottom } from '../element-store/dispatchers';
+import { openHtmlEditor } from './dialog/HtmlEditor';
+import { openTextFormatBar } from './TextFormatBar';
+import { openToolbox } from '../ui-store/dispatchers';
+import { removeElements } from '../element-store/utils';
 import { subscribePages } from '../page-store/index';
 import { subscribeUi } from '../ui-store/index';
+import { updateElements } from '../element-store/index';
+import { showPages } from './Menu';
 
 ///////////////////
 // API for the outside world
 export function initContextMenu() {
   return new ContextMenu(getUiElements().contextMenu)
+}
+
+/**
+ * edit the elements in the selection
+ * take its type into account and open the corresponding editor
+ */
+export function editElement() {
+  const element: ElementState = getElements().find((el) => el.selected && el.enableEdit)
+
+  if (element) {
+    if (isComponent(element)) {
+      openToolbox(Toolboxes.PARAMS)
+    } else {
+      // open the params tab for the components
+      // or the editor for the elements
+      switch (element.type) {
+        case ElementType.TEXT:
+          // open the text editor
+          openTextFormatBar()
+        break
+        case ElementType.HTML:
+          openHtmlEditor()
+          // view.htmlEditor.setSelection([element])
+        break
+        case ElementType.IMAGE:
+          FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
+        .then((blob) => {
+          if (blob) {
+            // load the image
+            setImageUrl(
+              getDomElement(getSiteDocument(), element),
+              blob.absPath,
+              (naturalWidth: number, naturalHeight: number) => {
+                updateElements([{
+                  ...element,
+                  style: {
+                    ...element.style,
+                    desktop: {
+                      ...element.style.desktop,
+                      width: naturalWidth + 'px',
+                      height: naturalHeight + 'px',
+                    },
+                  },
+                }])
+              },
+              (el, message) => {
+                console.error('could not load the image', message)
+                SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
+              },
+            )
+          }
+        })
+        .catch((error) => {
+          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+        })
+        break
+      }
+    }
+  }
 }
 
 class ContextMenu {

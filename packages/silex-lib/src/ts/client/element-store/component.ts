@@ -9,15 +9,19 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { Constants } from '../../constants'
+import {
+  ComponentData,
+  ElementState,
+  TemplateName
+} from '../element-store/types';
 import { Config } from '../ClientConfig'
-import { addMediaQuery, renderWithProdotype } from '../element-store/dom'
-import { getElements, updateElements } from '../element-store/index'
-import { ComponentData, ElementState, ElementType, TemplateName } from '../element-store/types'
+import { Constants } from '../../constants'
 import { Prodotype, ProdotypeCompDef } from '../externs'
-import { getSite, updateSite } from '../site-store/index'
 import { PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../site-store/types'
+import { addMediaQuery, renderWithProdotype } from '../element-store/dom';
+import { getElements } from '../element-store/index';
 import { getPseudoClassData } from '../site-store/utils'
+import { getSite, updateSite } from '../site-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 
 /**
@@ -267,7 +271,6 @@ export function openComponentEditor(options: {
 
 /**
  * edit a style in the style editor
- * FIXME: this should be in the component
  */
 export function openStyleEditor(options: {
   data?: any,

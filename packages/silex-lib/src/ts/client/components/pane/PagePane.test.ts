@@ -3,7 +3,8 @@ import {
   ELEM_SECTION,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
-  PAGE1
+  PAGE1,
+  mockUiElements
 } from '../../../test-utils/data-set';
 import { ElementData } from '../../element-store/types';
 import { LOADING } from '../../ui-store/types';
@@ -12,7 +13,8 @@ import { PageState } from '../../page-store/types';
 import { fromData } from '../../store/crud-store';
 import { getElements, updateElements } from '../../element-store';
 import { getPages, subscribePages } from '../../page-store';
-import { getUi } from '../../ui-store/index';
+
+jest.mock('../../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => ({}))
 
 const fakePage = { id: 'fake-id', link: { value: 'fake-link' } } as PageState
 const [ELEM_TEXT_STATE, ELEM_HTML_SELECTED, ELEM_SECTION_SELECTED, ELEM_SECTION_CONTENT_SELECTED] = fromData([ELEM_TEXT, {
@@ -324,4 +326,3 @@ test('selection with sections', () => {
   expect(updateElements).toHaveBeenCalledTimes(2)
   expect(updateElementsMock.mock.calls[updateElementsMock.mock.calls.length - 1][0][0].selected).toBe(false)
 })
-

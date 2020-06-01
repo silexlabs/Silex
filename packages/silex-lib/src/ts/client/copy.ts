@@ -3,15 +3,15 @@ import {
   ElementId,
   ElementState,
   ElementType
-} from '../element-store/types';
+} from './element-store/types';
 import {
   createElements,
   fromElementData,
   toElementData,
   getElements,
   updateElements
-} from '../element-store/index';
-import { flat } from '../utils/array'
+} from './element-store/index';
+import { flat } from './utils/array'
 import {
   getBody,
   getElementById,
@@ -19,13 +19,13 @@ import {
   getParent,
   getSelectedElements,
   noSectionContent
-} from '../element-store/filters';
-import { getCreationDropZone, getNewId } from '../element-store/utils';
-import { getDomElement } from '../element-store/dom'
-import { getSiteDocument, getSiteIFrame } from '../components/SiteFrame'
-import { getStage } from '../components/StageWrapper'
-import { getUi, updateUi } from '../ui-store/index'
-import { store } from '../store/index'
+} from './element-store/filters';
+import { getCreationDropZone, getNewId } from './element-store/utils';
+import { getDomElement } from './element-store/dom'
+import { getSiteDocument, getSiteIFrame } from './components/SiteFrame'
+import { getStage } from './components/StageWrapper'
+import { getUi, updateUi } from './ui-store/index'
+import { store } from './store/index'
 
 /**
  * copy the selection for later paste

@@ -5,8 +5,8 @@ import {
   ELEM_SECTION,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
-} from '../../test-utils/data-set';
-import { ElementState, ElementType } from '../element-store/types';
+} from '../test-utils/data-set';
+import { ElementState, ElementType } from './element-store/types';
 import { cloneElement, cloneElements, pasteElements } from './copy';
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
@@ -17,11 +17,11 @@ const ELEM_SECTION_CONTENT_STATE = ELEM_SECTION_CONTENT as ElementState
 const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
 const ELEM_HTML_STATE = ELEM_HTML as ElementState
 
-jest.mock('../components/SiteFrame', () => ({
+jest.mock('./components/SiteFrame', () => ({
   getSiteDocument: () => document,
 }));
 
-jest.mock('../components/StageWrapper', () => ({
+jest.mock('./components/StageWrapper', () => ({
   getStage: () => ({
     getState: (doc, el) => ({ metrics: { computedStyleRect: {
       top: 0,

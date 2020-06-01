@@ -17,12 +17,15 @@ import {
   StyleData,
   StyleDataObject,
   StyleName,
-  Visibility
+  Visibility,
+  PseudoClass,
+  VisibilityData,
+  PseudoClassData
 } from '../../site-store/types';
 import { Tracker } from '../../io/Tracker'
-import { editStyle } from '../../api/element'
+import { browse } from '../../element-store/utils';
 import { getBody, getSelectedElements } from '../../element-store/filters'
-import { getComponentsDef } from '../../element-store/component'
+import { getComponentsDef, openStyleEditor } from '../../element-store/component'
 import { getCurrentPage } from '../../page-store/filters'
 import {
   getElements,
@@ -30,9 +33,41 @@ import {
   updateElements
 } from '../../element-store/index';
 import { getSite } from '../../site-store/index'
-import { initStyle, removeStyle } from '../../site-store/dispatchers'
+import { initStyle, removeStyle, componentStyleChanged } from '../../site-store/dispatchers'
 import { store } from '../../store/index';
 import { updateUi, getUi } from '../../ui-store/index'
+
+/**
+ * @param className, the css class to edit the style for
+ * @param pseudoClass, e.g. normal, :hover, ::first-letter
+ * @param visibility, e.g. mobile only, desktop and mobile...
+ */
+function editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: Visibility) {
+  const styleData: StyleData = getSite().styles[className] || ({styles: {}} as StyleData)
+  const visibilityData: VisibilityData = styleData.styles[visibility] || {}
+  const pseudoClassData: PseudoClassData = visibilityData[pseudoClass] || {
+    templateName: 'text',
+    className,
+    pseudoClass,
+  }
+  openStyleEditor({
+    data: pseudoClassData,
+    dataSources: {
+      components: [{displayName: '', name: '', templateName: ''}]
+        .concat(getSite().fonts
+          .map((font) => ({
+              displayName: font.family,
+              name: font.family,
+              templateName: '',
+          }))),
+      },
+    templateName: 'text',
+    events: {
+      onChange: (newData, html) => componentStyleChanged(className, pseudoClass, visibility, newData),
+      onBrowse: (e, url, cbk) => browse(e, cbk),
+    },
+  })
+}
 
 /**
  * @fileoverview The style editor pane is displayed in the property panel on the

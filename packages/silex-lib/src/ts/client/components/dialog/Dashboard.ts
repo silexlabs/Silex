@@ -19,7 +19,7 @@ import { ModalDialog } from '../ModalDialog';
 import { TipOfTheDay } from '../TipOfTheDay';
 import { getUiElements } from '../../ui-store/UiElements'
 import { clearLatestFiles, getLatestFiles } from '../../io/latest-files'
-import { openFile } from '../../api/file'
+import { openFile } from '../../file'
 
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any;

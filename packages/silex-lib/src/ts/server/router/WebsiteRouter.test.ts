@@ -1,5 +1,5 @@
-import { JSDOM } from 'jsdom';
 
+import { JSDOM } from 'jsdom';
 import { prepareWebsite } from './WebsiteRouter';
 
 test('open website', () => {

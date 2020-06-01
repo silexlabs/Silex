@@ -172,7 +172,7 @@ module.exports = {
 
   // A map from regular expressions to paths to transformers
   transform: {
-    ".js": "babel-jest",
+    '^.+\\.jsx?$': require.resolve('babel-jest'),
     ".(ts|tsx)": "ts-jest"
   },
   globals: {
@@ -186,9 +186,18 @@ module.exports = {
   //   "/node_modules/"
   // ],
   // avoid the error "Jest encountered an unexpected token"
+  // transformIgnorePatterns: [
+  //   "node_modules/(?!(drag-drop-stage-component)/)"
+  // ],
   transformIgnorePatterns: [
     "node_modules/(?!(drag-drop-stage-component|sortablejs)/)"
   ],
+  // transformIgnorePatterns: [],
+  // transformIgnorePatterns: [
+  //   "node_modules/(?!drag-drop-stage-component*)",
+  //   "node_modules/(?!sortablejs*)"
+  // ],
+
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,

@@ -23,3 +23,9 @@ export const openPage = (item: PageState, ui = getUi(), dispatch = store.dispatc
   ...ui,
   currentPageId: item.id,
 }, dispatch)
+
+export const openToolbox = (toolboxName: string, ui = getUi(), dispatch = store.dispatch) => updateUi({
+  ...ui,
+  currentToolbox: toolboxName,
+}, dispatch)
+
