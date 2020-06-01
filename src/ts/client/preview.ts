@@ -1,10 +1,12 @@
-import { SilexNotification } from '../utils/Notification'
-import { getSite } from '../site-store/index'
-import { getUi } from '../ui-store/index';
+import { SilexNotification } from './utils/Notification'
+import { getSite } from './site-store/index'
+import { getUi } from './ui-store/index';
 import { isDirty } from './undo'
 import { save } from './file'
-import { setPreviewWindowLocation } from '../components/Workspace'
 
+/**
+ * @fileoverview these functions show preview
+ */
 
 /**
  * view this file in a new window
@@ -20,6 +22,38 @@ export function previewResponsize() {
   doPreview(true);
 }
 
+// store the window viewport for later use
+let previewWindow: Window;
+
+/**
+ * open a popup or refresh the allready opened one
+ * @param opt_location or null to refresh only
+ */
+export function setPreviewWindowLocation(opt_location?: string) {
+  if (previewWindow && !previewWindow.closed) {
+    if (opt_location) {
+      previewWindow.close();
+      previewWindow = window.open(opt_location);
+      previewWindow.focus();
+    } else {
+      try {
+        if (previewWindow.location.href !== 'about:blank') {
+          // only when loaded, reload
+          previewWindow.location.reload(true);
+        }
+      } catch (e) {
+        // case of responsize
+        previewWindow.frames[1].location.reload(true);
+      }
+    }
+    previewWindow.focus();
+  } else {
+    if (opt_location) {
+      previewWindow = window.open(opt_location);
+      previewWindow.focus();
+    }
+  }
+}
 
 /**
  * preview the website in a new window or in responsize
@@ -71,34 +105,4 @@ function doPreview(inResponsize: boolean) {
       },
     );
   }
-}
-
-////////////////////////////////////
-// Menu open / close
-const SUB_MENU_CLASSES = [
-  'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
-  'code-menu-visible', 'add-menu-visible',
-];
-
-export function closeAllSubMenu() {
-  SUB_MENU_CLASSES.forEach((className) => {
-    document.body.classList.remove(className);
-  });
-}
-
-export function toggleSubMenu(classNameToToggle) {
-  SUB_MENU_CLASSES.forEach((className) => {
-    if (classNameToToggle === className) {
-      document.body.classList.toggle(className);
-    } else {
-      document.body.classList.remove(className);
-    }
-  });
-}
-
-/**
- * open the page pannel
- */
-export function showPages() {
-  toggleSubMenu('page-tool-visible');
 }

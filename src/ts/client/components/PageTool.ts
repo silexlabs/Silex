@@ -17,7 +17,7 @@
  */
 
 import { Dom } from '../utils/Dom';
-import { createPage, removePage, movePageTo, editPage } from '../api/page'
+import { createPage, removePage, movePageTo, editPage } from '../page-store/dispatchers'
 import { deletePages, getPages, movePage, subscribePages } from '../page-store/index';
 import { getCurrentPage } from '../page-store/filters';
 import { getUi, subscribeUi } from '../ui-store/index';

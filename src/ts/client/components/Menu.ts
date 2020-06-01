@@ -18,31 +18,40 @@
 
 import { Config } from '../ClientConfig'
 import { Constants } from '../../constants'
-import { ElementType, DomDirection } from '../element-store/types'
+import { ElementState, ElementType } from '../element-store/types';
 import { FileExplorer } from './dialog/FileExplorer'
-import { Keyboard, Shortcut } from '../utils/Keyboard'
 import {
-  addElementCentered,
-  browseAndAddImage,
+  INITIAL_ELEMENT_SIZE,
+  getCreationDropZone,
+  removeElements
+} from '../element-store/utils';
+import { Keyboard, Shortcut } from '../utils/Keyboard'
+import { SilexNotification } from '../utils/Notification';
+import {
+  addElement,
   moveDown,
   moveToBottom,
   moveToTop,
   moveUp,
-  removeElements
-} from '../api/element';
-import { copySelection, pasteClipBoard, duplicateSelection } from '../api/copy'
+  selectBody
+} from '../element-store/dispatchers';
+import { copySelection, duplicateSelection, pasteClipBoard } from '../copy'
+import { createPage, editPage, removePage } from '../page-store/dispatchers'
+import { deleteElements, updateElements } from '../element-store/index';
+import { getBody } from '../element-store/filters';
+import { getComponentsDef, prodotypeReady } from '../element-store/component'
+import { getDomElement, setImageUrl } from '../element-store/dom';
 import { getSite } from '../site-store/index'
+import { getSiteDocument, getSiteIFrame } from './SiteFrame';
+import { getStage } from './StageWrapper';
 import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 import { openCssEditor } from './dialog/CssEditor'
-import { openDashboardToLoadAWebsite, save, publish, openFile } from '../api/file'
+import { openDashboardToLoadAWebsite, openFile, publish, save } from '../file'
 import { openHtmlHeadEditor } from './dialog/HtmlEditor'
 import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
-import { prodotypeReady, getComponentsDef } from '../element-store/component'
-import { removePage, editPage, createPage } from '../api/page'
-import { selectBody } from '../element-store/dispatchers';
-import { toggleSubMenu, preview, previewResponsize, closeAllSubMenu } from '../api/view'
+import { preview, previewResponsize } from '../preview'
 
 ///////////////////
 // API for the outside world
@@ -53,6 +62,34 @@ let initDone = false
 export function initMenu() {
   if(!initDone) buildUi()
   initDone = true
+}
+
+const SUB_MENU_CLASSES = [
+  'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
+  'code-menu-visible', 'add-menu-visible',
+];
+
+export function closeAllSubMenu() {
+  SUB_MENU_CLASSES.forEach((className) => {
+    document.body.classList.remove(className);
+  });
+}
+
+function toggleSubMenu(classNameToToggle) {
+  SUB_MENU_CLASSES.forEach((className) => {
+    if (classNameToToggle === className) {
+      document.body.classList.toggle(className);
+    } else {
+      document.body.classList.remove(className);
+    }
+  });
+}
+
+/**
+ * open the page pannel
+ */
+export function showPages() {
+  toggleSubMenu('page-tool-visible');
 }
 
 export function keyboardAttach(doc: HTMLDocument) {
@@ -133,6 +170,85 @@ function buildUi() {
       // not a first level menu => close sub menus
       closeAllSubMenu()
     }
+  }
+}
+
+/**
+ * compute the desired state chages to add an element centered in the container which is in the middle of the screen
+ */
+export async function addElementCentered(type: ElementType, componentName: string): Promise<[ElementState, ElementState]> {
+  if (type === ElementType.SECTION) {
+    const [el, updatedParentData] = await addElement({
+      type,
+      parent: getBody(),
+      componentName,
+      style: {
+        mobile: {},
+        desktop: {},
+      },
+    })
+
+    return [el, updatedParentData]
+  } else {
+    const stageEl = getSiteIFrame()
+    const parent = getCreationDropZone(false, stageEl)
+    const parentState = getStage().getState(getDomElement(stageEl.contentDocument, parent))
+    const parentRect = parentState.metrics.computedStyleRect
+
+    const [el, updatedParentData] = await addElement({
+      type,
+      parent,
+      componentName,
+      style: {
+        mobile: {},
+        desktop: {
+          top: Math.round((parentRect.height / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+          left: Math.round((parentRect.width / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+        },
+      },
+    })
+
+    return [el, updatedParentData]
+  }
+}
+
+/**
+ * open file explorer, choose an image and add it to the stage
+ */
+export async function browseAndAddImage(componentName: string) {
+  try {
+    const fileInfo = await FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
+    if (fileInfo) {
+
+      // create the element
+      const [imgData] = await addElementCentered(ElementType.IMAGE, componentName)
+      const img = getDomElement(getSiteDocument(), imgData)
+
+      // load the image
+      setImageUrl(img, fileInfo.absPath,
+        (naturalWidth: number, naturalHeight: number) => {
+          // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1)
+          updateElements([{
+            ...imgData,
+            style: {
+              ...imgData.style,
+              desktop: {
+                ...imgData.style.desktop,
+                width: naturalWidth + 'px',
+                height: naturalHeight + 'px',
+              },
+            },
+          }])
+        },
+        (element: HTMLElement, message: string) => {
+          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
+          deleteElements([imgData])
+          // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1)
+        },
+      )
+    }
+  } catch(error) {
+    SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
   }
 }
 

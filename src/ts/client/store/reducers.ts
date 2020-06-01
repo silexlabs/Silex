@@ -9,11 +9,11 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { PageAction, SiteAction, UiAction } from './actions';
 import { ElementState } from '../element-store/types';
+import { LOADING, Toolboxes, UiState } from '../ui-store/types';
+import { PageAction, SiteAction, UiAction } from './actions';
 import { PageState } from '../page-store/types';
 import { SiteState } from '../site-store/types';
-import { UiState, LOADING } from '../ui-store/types';
 
 export const elementReducer = (state: ElementState[] = [], action: any): any => {
   switch (action.type) {
@@ -74,6 +74,7 @@ export const uiReducer = (state: UiState = {
   loading: LOADING.SILEX,
   mobileEditor: false,
   currentPageId: null,
+  currentToolbox: Toolboxes.PROPERTIES,
   clipboard: null,
 }, action: any) => {
   switch (action.type) {

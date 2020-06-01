@@ -34,12 +34,13 @@ import {
   getParent,
   getSelectedElements,
   isBody,
-  noSectionContent
+  noSectionContent,
+  getSelectedElementsNoSectionContent
 } from './filters';
+import { getCreateAction } from './utils';
 import { getUi } from '../ui-store/index'
-import { store } from '../store/index'
-import { getCreateAction } from './utils'
 import { insertAt } from '../utils/array'
+import { store } from '../store/index'
 
 /**
  * @fileoverview helpers to dispatch common actions on the store
@@ -358,3 +359,48 @@ export function removeLink(selection: ElementState[], dispatch = store.dispatch)
       link: null,
     })), dispatch)
 }
+
+/**
+ * Move the selected elements in the DOM
+ */
+function move(direction: DomDirection) {
+  // move all the elements in the selection
+  moveElements(getSelectedElementsNoSectionContent(), direction)
+}
+
+/**
+ * Move the selected elements in the DOM
+ * This will move its over or under other elements if the z-index CSS
+ * properties are not set
+ */
+export function moveUp() {
+  move(DomDirection.UP)
+}
+
+/**
+ * Move the selected elements in the DOM
+ * This will move its over or under other elements if the z-index CSS
+ * properties are not set
+ */
+export function moveDown() {
+  move(DomDirection.DOWN)
+}
+
+/**
+ * Move the selected elements in the DOM
+ * This will move its over or under other elements if the z-index CSS
+ * properties are not set
+ */
+export function moveToTop() {
+  move(DomDirection.TOP)
+}
+
+/**
+ * Move the selected elements in the DOM
+ * This will move its over or under other elements if the z-index CSS
+ * properties are not set
+ */
+export function moveToBottom() {
+  move(DomDirection.BOTTOM)
+}
+

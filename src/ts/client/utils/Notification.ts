@@ -194,8 +194,7 @@ export class SilexNotification {
       }
 
       // limit height so that small screens still see the close button
-      const stage = getSiteIFrame().querySelector('iframe');
-      infoPanel.style.maxHeight = Math.round(stage.clientHeight * 2 / 3) + 'px';
+      infoPanel.style.maxHeight = Math.round(window.innerHeight * 2 / 3) + 'px';
       SilexNotification.currentDialog.insertBefore(infoPanel, SilexNotification.currentDialog.childNodes[SilexNotification.currentDialog.childNodes.length - 1]);
       infoPanel.innerHTML = '';
       infoPanel.appendChild(element);

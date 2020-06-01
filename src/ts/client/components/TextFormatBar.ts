@@ -10,20 +10,23 @@
  */
 
 import { ElementState, LinkData } from '../element-store/types';
-import { updateElements } from '../element-store/index';
-import { getSelectedElements } from '../element-store/filters';
 import { FileExplorer } from '../components/dialog/FileExplorer';
-import { getDomElement } from '../element-store/dom';
-import { wysihtml, WysiHtmlEditor } from '../externs';
-import { Tracker } from '../io/Tracker';
-import { getContentNode, getInnerHtml } from '../element-store/dom';
-import { SilexNotification } from '../utils/Notification';
 import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog';
-import { getUiElements } from '../ui-store/UiElements';
-import { setEditMode } from './StageWrapper'
-import { resetFocus } from './Workspace'
-import { keyboardAttach, keyboardAddShortcut } from './Menu'
+import { SilexNotification } from '../utils/Notification';
+import { Tracker } from '../io/Tracker';
+import {
+  getContentNode,
+  getDomElement,
+  getInnerHtml
+} from '../element-store/dom';
+import { getSelectedElements } from '../element-store/filters';
 import { getSiteDocument, getSiteIFrame, getSiteWindow } from './SiteFrame'
+import { getUiElements } from '../ui-store/UiElements';
+import { keyboardAttach, keyboardAddShortcut } from './Menu'
+import { resetFocus } from './ModalDialog';
+import { setEditMode } from './StageWrapper'
+import { updateElements } from '../element-store/index';
+import { wysihtml, WysiHtmlEditor } from '../externs';
 
 /**
  * @fileoverview

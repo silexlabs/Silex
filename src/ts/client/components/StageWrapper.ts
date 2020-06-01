@@ -1,14 +1,13 @@
 // FIXME: thie hole file is a mess
 
 // import { Stage } from 'drag-drop-stage-component' // this is not recognized by my IDE
-import { Stage } from '../../../../node_modules/drag-drop-stage-component/src/ts/index'
-import { ScrollData, SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types'
-
 import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType } from '../element-store/types'
 import { LOADING, UiState } from '../ui-store/types'
+import { ScrollData, SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types'
 import { SilexNotification } from '../utils/Notification'
-import { editElement } from '../api/element'
+import { Stage } from '../../../../node_modules/drag-drop-stage-component/src/ts/index'
+import { editElement } from './ContextMenu';
 import { fixStyleForElement } from '../utils/styles'
 import {
   getBody,
@@ -24,7 +23,7 @@ import { getSiteDocument, getSiteWindow } from '../components/SiteFrame'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { onCrudChange, StateChange } from '../store/crud-store'
-import { resetFocus } from './Workspace'
+import { resetFocus } from './ModalDialog';
 import { selectBody } from '../element-store/dispatchers'
 
 // FIXME: do not expose the stage component here?
@@ -248,6 +247,8 @@ class StageWrapper {
   private toBeUnsubscribed = []
 
   constructor() {
+    window.addEventListener('resize', () => resizeWindow())
+
     // subscribePages(() => {
     //   // reset the stage after page creation
     //   setTimeout(() => resetStage(), 0)

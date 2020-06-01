@@ -14,7 +14,32 @@
  *   This class is in charge of the "modal" behavior of the dialogs in Silex
  */
 
-import { resetFocus } from './Workspace'
+/**
+ * input element to get the focus
+ * used to blur the UI inputs
+ */
+let focusInput: HTMLElement;
+
+/**
+ * remove the focus from all text fields
+ */
+export function resetFocus() {
+  if (!focusInput) {
+    focusInput = document.createElement('input');
+
+    // hide the focus input and attach it to the DOM
+    focusInput.style.left = '-1000px';
+    focusInput.style.position = 'absolute';
+    document.body.appendChild(focusInput);
+  }
+  // setTimeout because we might need to wait for a click to finish bubbling
+  // e.g. when edit text, the UI layer is hidden, click on the stage => focus on the stage iframe
+  setTimeout(() => {
+    focusInput.focus();
+    focusInput.blur();
+    document.getSelection().removeAllRanges();
+  }, 0);
+}
 
 /**
  * implement a "modal" behavior to hide and show dialogs

@@ -18,7 +18,7 @@
  */
 
 // tslint:disable
-import { SilexNotification } from '../../utils/Notification';
+import { getPropertySplitter } from '../PropSplitter';
 
 declare namespace monaco {
   class Selection { constructor(a: number, b: number, c: number, d: number); }
@@ -32,7 +32,7 @@ declare namespace monaco.editor {
 
 import { ModalDialog } from '../ModalDialog';
 import { getUiElements } from '../../ui-store/UiElements'
-import { propSplitter } from '../Workspace'
+import { SilexNotification } from '../../utils/Notification';
 
 /**
  * @class {silex.view.dialog.CodeEditorBase}
@@ -118,6 +118,7 @@ export class CodeEditorBase {
    */
   dockPanel(dock: boolean) {
     const { cssEditor, jsEditor, htmlEditor } = getUiElements();
+    const propSplitter = getPropertySplitter()
     if (dock) {
       document.body.classList.add('dock-editors');
       propSplitter.addRight(cssEditor);

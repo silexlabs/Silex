@@ -9,6 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { getUiElements } from '../ui-store/UiElements';
 import { resizeWindow, subscribeMouseEvent } from './StageWrapper'
 
 /**
@@ -136,3 +137,4 @@ export class Splitter {
     resizeWindow()
   }
 }
+

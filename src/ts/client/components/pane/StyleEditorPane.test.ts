@@ -8,7 +8,6 @@ jest.mock('../../element-store/component', () => ({
   openStyleEditor: jest.fn(),
 }))
 import { getComponentsDef } from '../../element-store/component';
-jest.mock('../../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => ({}))
 import { StyleEditorPane } from './StyleEditorPane';
 
 // import { getSite } from '../../site-store/index'

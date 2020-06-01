@@ -18,13 +18,19 @@ import {
   FullBox,
   Rect,
   Size,
-  ElementData
+  ElementData,
+  LinkData
 } from './types';
+import { FileExplorer } from '../components/dialog/FileExplorer';
+import { FileInfo } from '../third-party/types';
+import { SilexNotification } from '../utils/Notification';
 import { addMediaQuery, getDomElement } from './dom'
-import { getAllParents, getBody, getChildren, getElementById } from './filters';
+import { getAllParents, getBody, getChildren, getElementById, getSelectedElements } from './filters';
 import { getElements, fromElementData } from './index'
 import { getSite } from '../site-store/index'
 import { initComponent, isComponent } from './component';
+import { openLinkDialog } from '../components/dialog/LinkDialog';
+import { removeElementsWithoutConfirm, selectBody } from './dispatchers';
 import { styleToString } from '../utils/styles';
 
 /**
@@ -429,3 +435,72 @@ export function isVisibleInPage(element: ElementState, pageId: string): boolean 
     // find one which is not visible => break
     .find((el) => el.pageNames.length > 0 && !el.pageNames.includes(pageId))
 }
+
+
+/**
+ * remove selected elements from the stage
+ */
+export function removeElements(elements = getSelectedElements()) {
+  const body = getBody()
+  const toDelete = elements.filter((el) => el !== body)
+  if (toDelete.length <= 0) {
+    SilexNotification.alert('Delete elements',
+      'Error: Please select an element to delete.',
+      () => {},
+    )
+  } else {
+    // confirm and delete
+    SilexNotification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
+      (accept) => {
+        if (accept) {
+          removeElementsWithoutConfirm(toDelete)
+          selectBody()
+        }
+      }, 'delete', 'cancel',
+    )
+  }
+}
+
+export function editLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
+  e.preventDefault()
+  openLinkDialog({
+    data: linkData,
+    cbk,
+  })
+}
+
+export function browse(e: Event, cbk: (p1: FileInfo[]) => any) {
+  e.preventDefault()
+
+  // browse with CE
+  const promise = FileExplorer.getInstance().openFile()
+
+  // add tracking and undo/redo checkpoint
+  // track(promise, 'prodotype.browse')
+  // undoredo(promise)
+
+  // handle the result
+  promise
+  .then((fileInfo: FileInfo) => {
+    if (fileInfo) {
+      cbk([fileInfo])
+    }
+  })
+  .catch((error) => {
+    SilexNotification.notifyError('Error: I could not select the file. <br /><br />' + (error.message || ''))
+  })
+}
+
+/**
+ * get the index of the element in the DOM
+ */
+export function indexOfElement(element: HTMLElement): number {
+  const len = element.parentElement.childNodes.length
+  for (let idx = 0; idx < len; idx++) {
+    if (element.parentElement.childNodes[idx] === element) {
+      return idx
+    }
+  }
+  return -1
+}
+

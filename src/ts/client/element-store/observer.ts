@@ -20,6 +20,7 @@ import {
 import { getCurrentPage } from '../page-store/filters';
 import { getElementById } from './filters';
 import { getElements } from './index'
+import { getEmptyElementData } from './utils';
 import { getPages } from '../page-store/index';
 import { getSiteWindow } from '../components/SiteFrame';
 import { getState } from '../store/index';
@@ -35,7 +36,7 @@ export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elemen
     // create with defaults
     const parent = getParent(element, elements) // parent may be null if the parent's children array has not yet be changed, then the element will be moved when it is set
     const parentEl = parent ? getDomElement(doc, parent) : doc.body
-    const emptyElement: ElementData = createDomElement({
+    createDomElement({
       doc,
       id: element.id,
       type: element.type,
@@ -47,6 +48,14 @@ export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elemen
       // no parent element yet but will come soon
       console.warn('no parent element yet but will come soon hopefully')
     } else {
+      // create a temporary empty element in order to update it with onUpdateElements
+      const emptyElement: ElementData = getEmptyElementData({
+        id: element.id,
+        type: element.type,
+        isSectionContent: element.isSectionContent,
+        isBody: false,
+      });
+
       // update with provided data
       added.push({
         from: emptyElement as ElementState, // we do not need crudId here
