@@ -15,7 +15,7 @@
  */
 import { ElementState, ElementType } from '../element-store/types';
 import { FileExplorer } from './dialog/FileExplorer';
-import { SilexNotification } from '../utils/Notification';
+import { SilexNotification } from './Notification';
 import { Toolboxes } from '../ui-store/types';
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'

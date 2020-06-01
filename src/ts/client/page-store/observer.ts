@@ -3,7 +3,7 @@ import { StateChange } from '../store/crud-store';
 import { getState } from '../store/index';
 import { writeDataToDom } from '../store/dom';
 import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
-import { SilexNotification } from '../utils/Notification';
+import { SilexNotification } from '../components/Notification';
 import { PageState } from './types';
 import { LinkType, ElementState } from '../element-store/types'
 import { openPageDom } from './dom'

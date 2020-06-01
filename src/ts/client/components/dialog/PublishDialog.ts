@@ -15,7 +15,7 @@
  */
 
 import { SilexTasks } from '../../io/SilexTasks';
-import { SilexNotification } from '../../utils/Notification';
+import { SilexNotification } from '../Notification';
 import { updateUi, getUi } from '../../ui-store/index'
 import { getSite, updateSite } from '../../site-store/index'
 import { Provider, VHost, PublicationOptions } from '../../site-store/types'

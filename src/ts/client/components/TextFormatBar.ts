@@ -12,8 +12,7 @@
 import { ElementState, LinkData } from '../element-store/types';
 import { FileExplorer } from '../components/dialog/FileExplorer';
 import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog';
-import { SilexNotification } from '../utils/Notification';
-import { Tracker } from '../io/Tracker';
+import { SilexNotification } from './Notification';
 import {
   getContentNode,
   getDomElement,
@@ -53,8 +52,6 @@ export function openTextFormatBar() {
  * TODO: make this only methods and write tests
  */
 export class TextFormatBar {
-  // tracker for analytics
-  tracker: Tracker;
 
   // store the params
   currentTextBox: ElementState = null;
@@ -74,7 +71,6 @@ export class TextFormatBar {
    * the controller instances
    */
   constructor(protected element: HTMLElement) {
-    this.tracker = Tracker.getInstance();
     this.toolbar = this.element.querySelector('#wysihtml5-toolbar');
   }
 

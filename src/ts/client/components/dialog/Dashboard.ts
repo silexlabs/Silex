@@ -13,13 +13,13 @@
  * @fileoverview Silex Dashboard / "new website" dialog which displays templates
  *
  */
-import { FileInfo } from '../../third-party/types';
 import { Config } from '../../ClientConfig';
 import { ModalDialog } from '../ModalDialog';
 import { TipOfTheDay } from '../TipOfTheDay';
 import { getUiElements } from '../../ui-store/UiElements'
 import { clearLatestFiles, getLatestFiles } from '../../io/latest-files'
 import { openFile } from '../../file'
+import { FileInfo } from '../../io/CloudStorage';
 
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any;

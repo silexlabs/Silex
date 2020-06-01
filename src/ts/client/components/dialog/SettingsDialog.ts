@@ -17,12 +17,11 @@
  */
 
 import { getSite, subscribeSite, updateSite } from '../../site-store/index';
-import { CloudStorage } from '../../io/CloudStorage';
-import { SilexNotification } from '../../utils/Notification';
+import { CloudStorage, FileInfo } from '../../io/CloudStorage';
+import { SilexNotification } from '../Notification';
 import { Url } from '../../utils/Url';
 import { ModalDialog } from '../ModalDialog';
 import { FileExplorer } from './FileExplorer';
-import { FileInfo } from '../../third-party/types'
 import { DataSources, DataSource, Font } from '../../site-store/types'
 import { getUiElements } from '../../ui-store/UiElements'
 

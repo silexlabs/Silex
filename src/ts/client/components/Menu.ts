@@ -26,7 +26,7 @@ import {
   removeElements
 } from '../element-store/utils';
 import { Keyboard, Shortcut } from '../utils/Keyboard'
-import { SilexNotification } from '../utils/Notification';
+import { SilexNotification } from './Notification';
 import {
   addElement,
   moveDown,

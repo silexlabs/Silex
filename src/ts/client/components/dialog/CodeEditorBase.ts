@@ -32,7 +32,7 @@ declare namespace monaco.editor {
 
 import { ModalDialog } from '../ModalDialog';
 import { getUiElements } from '../../ui-store/UiElements'
-import { SilexNotification } from '../../utils/Notification';
+import { SilexNotification } from '../Notification';
 
 /**
  * @class {silex.view.dialog.CodeEditorBase}

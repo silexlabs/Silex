@@ -14,7 +14,7 @@
  *
  */
 import { getPages } from '../../page-store/index';
-import {SilexNotification} from '../../utils/Notification';
+import {SilexNotification} from '../Notification';
 import { LinkData } from '../../element-store/types'
 
 export const LINK_ATTRIBUTES =

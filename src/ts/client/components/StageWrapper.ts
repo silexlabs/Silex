@@ -5,7 +5,7 @@ import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType } from '../element-store/types'
 import { LOADING, UiState } from '../ui-store/types'
 import { ScrollData, SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types'
-import { SilexNotification } from '../utils/Notification'
+import { SilexNotification } from './Notification'
 import { Stage } from '../../../../node_modules/drag-drop-stage-component/src/ts/index'
 import { editElement } from './ContextMenu';
 import { fixStyleForElement } from '../utils/styles'

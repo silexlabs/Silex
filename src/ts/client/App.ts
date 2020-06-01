@@ -22,7 +22,7 @@
 import { detect } from 'detect-browser'
 import { Config } from './ClientConfig'
 import { LOADING } from './ui-store/types'
-import { SilexNotification } from './utils/Notification'
+import { SilexNotification } from './components/Notification'
 import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
 import { exposeModule } from './expose'
 import { getUi, updateUi } from './ui-store/index'

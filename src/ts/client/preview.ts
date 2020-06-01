@@ -1,4 +1,4 @@
-import { SilexNotification } from './utils/Notification'
+import { SilexNotification } from './components/Notification'
 import { getSite } from './site-store/index'
 import { getUi } from './ui-store/index';
 import { isDirty } from './undo'

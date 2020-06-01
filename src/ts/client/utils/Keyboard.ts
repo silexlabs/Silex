@@ -1,4 +1,4 @@
-import {SilexNotification} from '../utils/Notification';
+import {SilexNotification} from '../components/Notification';
 
 export interface Shortcut {
   label?: string;

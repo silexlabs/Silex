@@ -16,8 +16,6 @@
  *
  */
 
-import {Tracker} from '../io/Tracker';
-
 /**
  * @param element   container to render the UI
  */
@@ -35,8 +33,6 @@ export class TipOfTheDay {
    * Start the process of showing the tip of the day
    */
   init() {
-    let itemTrackAction = '';
-
     // start loading
     this.element.classList.add('tip-of-the-day');
     this.element.classList.add('loading');
@@ -70,11 +66,6 @@ export class TipOfTheDay {
       const idx = items.length - visits % items.length - 1;
       const item = items[idx];
       if (item) {
-        // store for actions tracking (QA)
-        itemTrackAction = item.title;
-        Tracker.getInstance().trackAction(
-            'tip-of-the-day', 'show', itemTrackAction, 0);
-
         // extract the first link from the issue
         const tmp = document.createElement('div');
         tmp.innerHTML = item.body;
@@ -94,17 +85,6 @@ export class TipOfTheDay {
       }
       this.element.classList.remove('loading');
     });
-
-    // attach click event
-    this.element.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).classList.contains('close')) {
-        Tracker.getInstance().trackAction(
-            'tip-of-the-day', 'close', itemTrackAction, 0);
-      } else {
-        Tracker.getInstance().trackAction(
-            'tip-of-the-day', 'open', itemTrackAction, 1);
-      }
-    }, false);
   }
 
   /**

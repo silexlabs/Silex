@@ -1,4 +1,4 @@
-import { FileInfo } from '../third-party/types'
+import { FileInfo } from "./CloudStorage";
 
 /**
  * clear the recent files

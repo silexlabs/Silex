@@ -15,9 +15,22 @@
  */
 import { getUiElements } from '../ui-store/UiElements';
 import { CloudExplorer } from '../externs';
-import { SilexNotification } from '../utils/Notification';
-import { FileInfo } from '../third-party/types'
+import { SilexNotification } from '../components/Notification';
 import { PersistantData } from '../store/types'
+
+// FIXME: choose between path and folder + name, remove absPath
+// This comes from Cloud Explorer
+export interface FileInfo {
+  path: string,
+  service: string,
+  name: string,
+  isDir: boolean,
+  mime: string,
+  absPath: string,
+  folder?: string,
+  size?: number,
+  modified?: string,
+}
 
 /**
  * the Silex CloudStorage service
