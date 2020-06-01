@@ -10,7 +10,7 @@
  */
 
 import { TemplateName, ProdotypeDependency } from '../element-store/types';
-import { FileInfo } from '../third-party/types';
+import { FileInfo } from '../io/CloudStorage';
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side

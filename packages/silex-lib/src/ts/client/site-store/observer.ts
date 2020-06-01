@@ -6,7 +6,7 @@ import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, 
 import { writeDataToDom } from '../store/dom';
 import { DataSources, SiteState } from '../site-store/types'
 import { getSiteDocument } from '../components/SiteFrame'
-import { SilexNotification } from '../utils/Notification'
+import { SilexNotification } from '../components/Notification'
 import { setStyleToDom } from '../element-store/component'
 
 export function onChangeSite(prev: SiteState, site: SiteState) {

@@ -9,12 +9,12 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { FileInfo } from "../io/CloudStorage";
+
 /**
  * @fileoverview Helper class for common tasks
  *
  */
-
-import {FileInfo} from '../third-party/types';
 
 export class Url {
   /**

@@ -1,5 +1,5 @@
 import { getUiElements } from '../ui-store/UiElements';
-import { getSiteIFrame } from '../components/SiteFrame'
+import { getSiteIFrame } from './SiteFrame'
 
 /**
  * Silex, live web creation

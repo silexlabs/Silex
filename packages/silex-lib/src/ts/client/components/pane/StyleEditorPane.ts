@@ -12,7 +12,7 @@
 import { Constants } from '../../../constants'
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { SilexNotification } from '../../utils/Notification'
+import { SilexNotification } from '../Notification'
 import {
   StyleData,
   StyleDataObject,
@@ -22,7 +22,6 @@ import {
   VisibilityData,
   PseudoClassData
 } from '../../site-store/types';
-import { Tracker } from '../../io/Tracker'
 import { browse } from '../../element-store/utils';
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getComponentsDef, openStyleEditor } from '../../element-store/component'
@@ -75,8 +74,6 @@ function editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: V
  *
  */
 export class StyleEditorPane extends PaneBase {
-  // tracker for analytics
-  tracker: any
 
   styleComboPrevValue: StyleName = ''
 
@@ -93,12 +90,10 @@ export class StyleEditorPane extends PaneBase {
 
   constructor(element: HTMLElement) {
     super(element)
-    this.tracker = Tracker.getInstance()
     this.styleCombo = this.element.querySelector('.class-name-style-combo-box')
     this.pseudoClassCombo = this.element.querySelector('.pseudoclass-style-combo-box')
     this.mobileOnlyCheckbox = this.element.querySelector('.visibility-style-checkbox')
     this.pseudoClassCombo.onchange = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'select-pseudo-class')
       editStyle(this.styleCombo.value, this.getPseudoClass(), this.getVisibility())
       const styleData = (getSite().styles[this.styleCombo.value] ||  {} as StyleData)
       this.updateTagButtonBar(styleData)
@@ -111,15 +106,12 @@ export class StyleEditorPane extends PaneBase {
       })
     }
     this.styleCombo.onchange = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'apply-style')
       this.applyStyle(this.styleCombo.value)
     }
     (this.element.querySelector('.add-style') as HTMLElement).onclick = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'create-style')
       this.createStyle()
     }
     (this.element.querySelector('.remove-style') as HTMLElement).onclick = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'remove-style')
 
       // delete from styles list
       this.deleteStyle(this.styleCombo.value)
@@ -127,7 +119,6 @@ export class StyleEditorPane extends PaneBase {
 
     // un-apply style
     (this.element.querySelector('.unapply-style') as HTMLElement).onclick = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'unapply-style')
       updateElements(getSelectedElements()
         .map((el) => ({
         ...el,
@@ -136,7 +127,6 @@ export class StyleEditorPane extends PaneBase {
     }
     this.selectionCountTotal = this.element.querySelector('.total')
     this.selectionCountTotal.onclick = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'select-elements-with-style')
       updateElements(getElements()
         .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value))
         .map((el) => ({
@@ -146,7 +136,6 @@ export class StyleEditorPane extends PaneBase {
     }
     this.selectionCountPage = this.element.querySelector('.on-page')
     this.selectionCountPage.onclick = (e) => {
-      //    this.tracker.trackAction('style-editor-events', 'select-all-elements-with-style')
       const currentPage = getCurrentPage()
       updateElements(getElements()
       .filter((el) => el.selected !== !!el.classList.find((c) => c === this.styleCombo.value) && (el.pageNames.length === 0 || !!el.pageNames.find((name) => name === currentPage.id)))

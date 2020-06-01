@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { SilexNotification } from '../utils/Notification'
+import { SilexNotification } from './Notification'
 import { Url } from '../utils/Url'
 import { getPropertySplitter } from './PropSplitter';
 import { getSiteIFrame } from './SiteFrame'

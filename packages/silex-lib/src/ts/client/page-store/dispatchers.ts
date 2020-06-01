@@ -1,6 +1,6 @@
 import { LinkType } from '../element-store/types'
 import { PageState } from './types'
-import { SilexNotification } from '../utils/Notification'
+import { SilexNotification } from '../components/Notification'
 import { createPages, getPages, updatePages, deletePages, movePage, fromPageData } from './index'
 import { getCurrentPage } from './filters';
 import { openPage } from '../ui-store/dispatchers';

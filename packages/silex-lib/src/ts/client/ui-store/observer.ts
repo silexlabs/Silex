@@ -1,5 +1,5 @@
 import { Constants } from '../../constants'
-import { SilexNotification } from '../utils/Notification'
+import { SilexNotification } from '../components/Notification'
 import { UiState, LOADING } from './types'
 import { getBody, getSelectedElements } from '../element-store/filters';
 import { getCurrentPage } from '../page-store/filters';

@@ -17,11 +17,10 @@
  *
  */
 
-import { FileInfo } from '../../third-party/types';
 import { ModalDialog } from '../../components/ModalDialog';
 import { CloudExplorer } from '../../externs';
-import { CloudStorage } from '../../io/CloudStorage';
-import { SilexNotification } from '../../utils/Notification';
+import { CloudStorage, FileInfo } from '../../io/CloudStorage';
+import { SilexNotification } from '../Notification';
 import { getUiElements } from '../../ui-store/UiElements';
 
 /**

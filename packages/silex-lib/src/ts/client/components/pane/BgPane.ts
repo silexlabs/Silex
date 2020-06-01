@@ -18,7 +18,7 @@ import { ColorPicker } from '../ColorPicker';
 import { ElementState } from '../../element-store/types';
 import { FileExplorer } from '../dialog/FileExplorer'
 import { PaneBase } from './PaneBase';
-import { SilexNotification } from '../../utils/Notification'
+import { SilexNotification } from '../Notification'
 import { Url } from '../../utils/Url'
 import { addToMobileOrDesktopStyle } from '../../utils/styles';
 import { getBody, getSelectedElements } from '../../element-store/filters';

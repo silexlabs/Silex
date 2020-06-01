@@ -22,8 +22,7 @@ import {
   LinkData
 } from './types';
 import { FileExplorer } from '../components/dialog/FileExplorer';
-import { FileInfo } from '../third-party/types';
-import { SilexNotification } from '../utils/Notification';
+import { SilexNotification } from '../components/Notification';
 import { addMediaQuery, getDomElement } from './dom'
 import { getAllParents, getBody, getChildren, getElementById, getSelectedElements } from './filters';
 import { getElements, fromElementData } from './index'
@@ -32,6 +31,7 @@ import { initComponent, isComponent } from './component';
 import { openLinkDialog } from '../components/dialog/LinkDialog';
 import { removeElementsWithoutConfirm, selectBody } from './dispatchers';
 import { styleToString } from '../utils/styles';
+import { FileInfo } from '../io/CloudStorage';
 
 /**
  * @fileoverview Cross platform, it needs to run client and server side
