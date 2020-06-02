@@ -9,15 +9,18 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import * as assert from 'assert';
 import { JSDOM } from 'jsdom';
-import * as Path from 'path';
-import * as sequential from 'promise-sequential';
 import * as request from 'request';
+import * as sequential from 'promise-sequential';
+
 import { URL } from 'url';
+import * as Path from 'path';
+import * as assert from 'assert';
 import * as uuid from 'uuid';
-import DomTools from '../utils/DomTools';
+
 import { Action, DomPublisher, File } from './DomPublisher';
+import { PersistantData } from '../../client/store/types';
+import DomTools from '../utils/DomTools';
 
 // const TMP_FOLDER = '.tmp';
 
@@ -212,41 +215,52 @@ export default class PublishJob {
       return;
     }
 
-    // download file
+    // download json file
     this.setStatus(`Downloading website ${this.context.from.name}`);
-    return this.unifile.readFile(this.context.session, this.context.from.service, this.context.from.path)
+    return this.unifile.readFile(this.context.session, this.context.from.service, this.context.from.path + '.json')
     .catch((err) => {
-      console.error('Publication error, could not download file:', err);
+      console.error('Publication error, could not download website JSON file:', err);
       this.error = true;
       this.setStatus(err.message);
     })
 
-    // build folders tree
-    .then((buffer) => {
-      if (this.isStopped()) {
-        console.warn('job is stopped', this.error, this.abort, this.success);
-        return;
-      }
-      this.setStatus(`Splitting file ${this.context.from.name}`);
-      const url = new URL(this.context.from.url);
-      const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
+    // download html file
+    .then((bufferJSON) => {
+      return this.unifile.readFile(this.context.session, this.context.from.service, this.context.from.path)
+      .catch((err) => {
+        console.error('Publication error, could not download HTML file:', err);
+        this.error = true;
+        this.setStatus(err.message);
+      })
 
-      // build the dom
-      const { html, userHead } = DomTools.extractUserHeadTag(buffer.toString('utf-8'));
-      const dom = new JSDOM(html, { url: baseUrl.href });
-      const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName));
-      // remove classes used by Silex during edition
-      domPublisher.cleanup();
-      // rewrite URLs and extract assets
-      this.tree = domPublisher.extractAssets(baseUrl, this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null);
-      // hide website before styles.css is loaded
-      dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
-      // split into pages
-      const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context) : null;
-      const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName;
-      this.pageActions = domPublisher.split(newFirstPageName, permalinkHook);
-      // release the dom object
-      dom.window.close();
+      // build folders tree
+      .then((bufferHTML) => {
+        if (this.isStopped()) {
+          console.warn('job is stopped', this.error, this.abort, this.success);
+          return;
+        }
+        this.setStatus(`Splitting file ${this.context.from.name}`);
+        const url = new URL(this.context.from.url);
+        const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/');
+
+        // build the dom
+        const data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
+        const { html, userHead } = DomTools.extractUserHeadTag(bufferHTML.toString('utf-8'));
+        const dom = new JSDOM(html, { url: baseUrl.href });
+        const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName), data);
+        // remove classes used by Silex during edition
+        domPublisher.cleanup();
+        // rewrite URLs and extract assets
+        this.tree = domPublisher.extractAssets(baseUrl, this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null);
+        // hide website before styles.css is loaded
+        dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>';
+        // split into pages
+        const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context) : null;
+        const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName;
+        this.pageActions = domPublisher.split(newFirstPageName, permalinkHook);
+        // release the dom object
+        dom.window.close();
+      })
     })
     .catch((err) => {
       console.error('Publication error, could not extract assets from file:', err);

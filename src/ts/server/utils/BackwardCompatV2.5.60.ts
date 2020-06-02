@@ -2,7 +2,7 @@ import * as jsBeautify from 'js-beautify';
 
 import { ComponentData, ElementId, LinkType, ElementType, ProdotypeDependency, ElementData } from '../../client/element-store/types';
 import { Constants } from '../../constants';
-import { FileInfo } from '../../client/third-party/types';
+import { FileInfo } from '../../client/io/CloudStorage';
 import { PageData } from '../../client/page-store/types';
 import { SiteState, StyleData, CssRule } from '../../client/site-store/types';
 import { getDefaultStyle } from '../../client/element-store/utils';
@@ -268,7 +268,7 @@ function getTypeBC(element: HTMLElement): ElementType {
  * get the pages on which this element is visible
  */
 function getPagesForElementBC(doc: HTMLDocument, element: HTMLElement): PageData[] {
-  return getPagesFromDom(doc).filter((pageData) => element.classList.contains(pageData.id))
+  return getPagesFromDom(doc).filter((pageData) => element.classList.contains('page-' + pageData.id))
 }
 
 ////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ function getPagesForElementBC(doc: HTMLDocument, element: HTMLElement): PageData
 function getPageDataFromElement(element: HTMLAnchorElement): PageData {
   const pageName = element.getAttribute('id')
   return {
-    id: pageName,
+    id: pageName.substr('page-'.length),
     displayName: element.innerHTML,
     link: {
       type: LinkType.PAGE,

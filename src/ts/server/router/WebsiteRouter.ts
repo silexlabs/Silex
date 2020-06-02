@@ -148,12 +148,12 @@ async function sendWebsiteData(res, rootUrl: string, backwardCompat: BackwardCom
       message: 'Could not open this website for edition as it is a published Silex website, <a href="https://github.com/silexlabs/Silex/wiki/FAQ#why-do-i-get-the-error-could-not-open-this-website-for-edition-as-it-is-a-published-silex-website" target="_blank">Read more about this error here</a>.',
     });
   } else {
-    if (isTemplate && data) {
-      // remove publication path
-      delete data.site.publicationPath;
-    }
     try {
       const [wanrningMsg, updatedData] = await backwardCompat.update(dom.window.document, data);
+      if (isTemplate) {
+        // remove publication path
+        delete updatedData.site.publicationPath;
+      }
       const preparedData = prepareWebsite(dom, rootUrl, updatedData, url);
       res.send({
         message: wanrningMsg,

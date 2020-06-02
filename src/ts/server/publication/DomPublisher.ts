@@ -9,9 +9,11 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import * as Path from 'path';
 import { URL } from 'url';
+import * as Path from 'path';
+
 import { Constants } from '../../constants';
+import { PersistantData } from '../../client/store/types';
 import DomTools from '../utils/DomTools';
 
 export interface File {
@@ -37,7 +39,7 @@ export class DomPublisher {
 
   private doc: HTMLDocument;
 
-  constructor(private dom, private userHead, private rootUrl, private rootPath, private getDestFolder) {
+  constructor(private dom, private userHead, private rootUrl, private rootPath, private getDestFolder, private data: PersistantData) {
     this.doc = dom.window.document;
   }
 
@@ -89,7 +91,7 @@ export class DomPublisher {
     });
   }
 
-split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Action[] {
+  split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Action[] {
     this.doc.body.classList.add(Constants.WEBSITE_CONTEXT_PUBLISHED_CLASS_NAME);
 
     // remove unused scripts when there is no deeplink navigation anymore
@@ -97,30 +99,31 @@ split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Ac
     .map((path) => this.doc.querySelector(`script[src="${ path }"]`))
     .filter((el) => !!el) // when not updated yet to the latest version, the URLs are not relative
     .forEach((el) => el.parentElement.removeChild(el));
+
     // split in multiple pages
-    const pages = Array.from(this.doc.querySelectorAll(`a[${Constants.TYPE_ATTR}="${Constants.TYPE_PAGE}"]`));
-    if (!pages) { throw new Error('Could not find the pages of the website.'); }
-    if (pages.length === 0) { throw new Error('The website has 0 pages.'); }
-    const initialFirstPageName = pages[0].getAttribute('id');
-    return pages
-    .map((el, idx) => {
+    if (this.data.pages.length === 0) { throw new Error('The website has 0 pages.'); }
+    const initialFirstPageName = this.data.pages[0].id
+    return this.data.pages
+    .map((page) => {
+      console.log('xxyyy', page)
       return  {
-        name: el.getAttribute('id'),
-        displayName: el.innerHTML,
-        fileName: el.getAttribute('id') === initialFirstPageName && newFirstPageName ? 'index.html' : (el.getAttribute('id').substr('page-'.length) + '.html'),
+        name: page.id,
+        displayName: page.displayName,
+        fileName: page.id === initialFirstPageName && newFirstPageName ? 'index.html' : page.id + '.html',
       };
     })
+    // TODO: use page.link.type and page.link.value instead of adding 'page-' to page id
     .map(({displayName, name, fileName}) => {
       // clone the document
       const clone = this.doc.cloneNode(true) as HTMLDocument;
-      // update title (TODO: description and SEO)
+      // update title
       (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName;
       // add page name on the body (used in front-end.js)
       clone.body.setAttribute('data-current-page', name);
       // remove elements from other pages
       Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
       .forEach((el) => {
-        if (el.classList.contains(name)) {
+        if (el.classList.contains('page-' + name)) {
           el.classList.add(Constants.PAGED_VISIBLE_CLASS_NAME);
         } else {
           el.parentElement.removeChild(el);
@@ -130,8 +133,8 @@ split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Ac
       Array.from(clone.querySelectorAll('a'))
       .filter((el) => el.hash.startsWith('#!'))
       .forEach((el) => {
-        const [pageName, anchor] = el.hash.substr('#!'.length).split('#');
-        el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? 'index.html' : pageName.substr('page-'.length) + '.html') + (anchor ? '#' + anchor : '');
+        const [pageName, anchor] = el.hash.substr('#!page-'.length).split('#');
+        el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html') + (anchor ? '#' + anchor : '');
         if (pageName ===  name) {
           el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME);
         } else {
