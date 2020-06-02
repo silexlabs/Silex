@@ -1,14 +1,14 @@
-import { mockUiElements } from './data-set'
+import { mockUiElements } from '../../test-utils/data-set'
 
 const {siteIFrame} = mockUiElements()
 
 import * as fs from 'fs';
-import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from '../server/utils/BackwardCompatV2.5.60';
-import { ElementType } from '../client/element-store/types';
-import BackwardCompat from '../server/utils/BackwardCompat';
+import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from './BackwardCompatV2.5.60';
+import { ElementType } from '../../client/element-store/types';
+import BackwardCompat from './BackwardCompat';
 
 test('remove useless elements', () => {
-  const bc = new BackwardCompat('root url', __dirname + '/../../..')
+  const bc = new BackwardCompat('root url', __dirname + '/../../../..')
   siteIFrame.contentDocument.body.innerHTML = '<div class="test-class"></div>'
   expect(siteIFrame.contentDocument.body.children).toHaveLength(1)
   bc.removeIfExist(siteIFrame.contentDocument, '.test-class')
@@ -16,7 +16,7 @@ test('remove useless elements', () => {
 })
 
 test('convert from 2.5.60', () => {
-  const htmlBuffer = fs.readFileSync(__dirname + '/../test-utils/editable-v2.5.60.html')
+  const htmlBuffer = fs.readFileSync(__dirname + '/../../test-utils/editable-v2.5.60.html')
   expect(htmlBuffer).not.toBeNull()
   const htmlString = htmlBuffer.toString()
   expect(htmlString).not.toBeNull()
@@ -169,14 +169,14 @@ test('convert from 2.5.60', () => {
   // pages
   const pages = getPagesFromDom(siteIFrame.contentDocument)
   expect(pages).toHaveLength(1)
-  expect(pages[0].id).toBe('page-page-1')
+  expect(pages[0].id).toBe('page-1')
   expect(pages[0].displayName).toBe('Page 1')
 
   const image = elements.find((el) => el.type === ElementType.IMAGE)
   expect(textBox.pageNames).toHaveLength(0)
   expect(image.pageNames).toHaveLength(1)
-  expect(image.pageNames).toEqual(['page-page-1'])
-  expect(image.classList).not.toEqual(['page-page-1'])
+  expect(image.pageNames).toEqual(['page-1'])
+  expect(image.classList).not.toEqual(['page-1'])
 	expect(image.useMinHeight).toBe(false)
-  // expect(siteIFrame.contentDocument.querySelector('.page-page-1')).toBeNull()
+  // expect(siteIFrame.contentDocument.querySelector('.page-1')).toBeNull()
 })
