@@ -17,6 +17,7 @@
 import { ElementType } from './client/element-store/types';
 
 export class Constants {
+  static PAGE_NAME_PREFIX = '#!page-'
   /**
    * constant for the ID of the HTML node used
    * to store Silex data as a JSON object

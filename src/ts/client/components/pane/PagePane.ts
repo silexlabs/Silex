@@ -16,6 +16,7 @@
  *
  */
 
+import { Constants } from '../../../constants';
 import { Dom } from '../../utils/Dom'
 import { ElementState, ElementType, LinkType } from '../../element-store/types';
 import { PageState } from '../../page-store/types'
@@ -318,7 +319,7 @@ export class PagePane extends PaneBase {
         this.linkDropdown.value = 'none'
         this.linkInputTextField.value = ''
       } else {
-        if (link.value.indexOf('#!') === 0) {
+        if (link.value.indexOf(Constants.PAGE_NAME_PREFIX) === 0) {
           // case of an internal link
           // select a page
           this.linkDropdown.value =link.value

@@ -131,9 +131,9 @@ export class DomPublisher {
       });
       // update links
       Array.from(clone.querySelectorAll('a'))
-      .filter((el) => el.hash.startsWith('#!'))
+      .filter((el) => el.hash.startsWith(Constants.PAGE_NAME_PREFIX))
       .forEach((el) => {
-        const [pageName, anchor] = el.hash.substr('#!page-'.length).split('#');
+        const [pageName, anchor] = el.hash.substr(Constants.PAGE_NAME_PREFIX.length).split('#');
         el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html') + (anchor ? '#' + anchor : '');
         if (pageName ===  name) {
           el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME);
