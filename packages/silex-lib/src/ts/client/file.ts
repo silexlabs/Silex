@@ -8,21 +8,23 @@ import { SilexNotification } from './components/Notification'
 import { SilexTasks } from './io/SilexTasks'
 import { addToLatestFiles } from './io/latest-files'
 import { closePublishDialog, openPublishDialog, startPublish } from './components/dialog/PublishDialog'
-import { getState } from './store/index'
+import { fromElementData } from './element-store/index'
+import { fromPageData } from './page-store/index'
 import { getHtml, getSiteDocument, setHtml } from './components/SiteFrame'
 import { getSite, updateSite } from './site-store/index'
+import { getState } from './store/index'
 import { initCssEditor } from './components/dialog/CssEditor';
 import { initHtmlEditor } from './components/dialog/HtmlEditor';
 import { initJsEditor } from './components/dialog/JsEditor';
 import { initializeData } from './store/dispatchers'
+import { isDirty, resetDirty } from './dirty';
 import { openDashboard } from './components/dialog/Dashboard'
+import { openPage } from './ui-store/dispatchers'
 import { openSettingsDialog } from './components/dialog/SettingsDialog'
+import { resetUndo } from './undo';
+import { setPreviewWindowLocation } from './preview'
 import { startObservers, stopObservers } from './store/observer'
 import { updateUi, getUi } from './ui-store/index'
-import { openPage } from './ui-store/dispatchers'
-import { fromPageData } from './page-store/index'
-import { fromElementData } from './element-store/index'
-import { setPreviewWindowLocation } from './preview'
 
 ///////////////////////////////////////////////////////////////////
 // Read / write website HTML file
@@ -61,7 +63,7 @@ export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: an
 /**
  * save
  */
-function doSave(fileInfo: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
+function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   // relative urls only in the files
   let rawHtml = getHtml();
 
@@ -79,12 +81,22 @@ function doSave(fileInfo: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => 
     });
   }
 
+  // update file path
+  updateSite({
+    ...getSite(),
+    file,
+  })
+
   // save to file
-  saveAs(fileInfo, rawHtml, getState(), () => {
+  saveAs(file, rawHtml, getState(), () => {
     // tracker.trackAction('controller-events', 'success', 'file.save', 1);
     // ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
     SilexNotification.notifySuccess('File is saved.');
     setPreviewWindowLocation();
+
+    // reset dirty flag
+    resetDirty()
+
     if (cbk) {
       cbk();
     }
@@ -105,11 +117,6 @@ function doSave(fileInfo: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => 
  * @param cbk receives the raw HTML
  */
 function saveAs(file: FileInfo, rawHtml: string, data: PersistantData, cbk: () => any, errCbk?: ((p1: any, p2: string) => any)) {
-  // save the data
-  updateSite({
-    ...getSite(),
-    file,
-  })
   addToLatestFiles(file);
 
   CloudStorage.getInstance().write(
@@ -434,7 +441,7 @@ function loadFromServerTemplates(
     errCbk: ((p1: any, p2: string) => any) = null) {
   doLoadWebsite({
     site: {
-      file: ({isDir: false, mime: 'text/html'} as FileInfo),
+      file: null,
       isTemplate: true,
     },
     path,
@@ -455,6 +462,17 @@ function loadBlankTemplate(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
  * @param cbk receives the raw HTML and the stored data
  */
 function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantData) => any,
+    errCbk?: ((p1: any, msg: string, code?: number) => any)) {
+  if (isDirty()) {
+    SilexNotification.confirm('Open a file', `You have unsaved modifications, are you sure you want to open the file "${ file.name }" ?`, (ok) => {
+      if(ok) doLoadFromUserFiles(file, cbk, errCbk)
+    }, 'Continue', 'Abort')
+  } else {
+    doLoadFromUserFiles(file, cbk, errCbk)
+  }
+}
+
+function doLoadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantData) => any,
     errCbk?: ((p1: any, msg: string, code?: number) => any)) {
   doLoadWebsite({
     site: {
@@ -494,7 +512,10 @@ function doLoadWebsite({site, path, cbk, errCbk}: {
       // now update the store
       stopObservers()
       const states = {
-        site: data.site,
+        site: {
+          ...data.site,
+          file: site.file,
+        },
         pages: fromPageData(data.pages),
         elements: fromElementData(data.elements),
       }
@@ -505,6 +526,12 @@ function doLoadWebsite({site, path, cbk, errCbk}: {
         ...getUi(),
         loading: LOADING.NONE,
       })
+      // reset history and dirty flag
+      setTimeout(() => {
+        resetDirty()
+        resetUndo()
+      }, 1000)
+      // end the process
       if (cbk) {
         cbk(rawHtml, data);
       }

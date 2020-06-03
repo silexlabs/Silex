@@ -28,7 +28,7 @@ export const updateUi = (data: UiState, dispatch = store.dispatch) => dispatch({
   data,
 })
 
-export const getUi = () => store.getState().ui
+export const getUi = () => store.getState().present.ui
 
 export const subscribeUi = (cbk: (prevState: UiState, nextState: UiState) => void, subscribe = store.subscribe): () => void => {
   return subscribeTo<UiState>('ui', cbk, subscribe)

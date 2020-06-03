@@ -33,6 +33,7 @@ export const Toolboxes = {
 export interface UiState {
   mobileEditor: boolean,
   loading: LOADING,
+  dirty: boolean,
   currentPageId: string,
   clipboard: null|[ElementState[], ElementState[]] // array of 2 elements: [allElements, rootElements]
   currentToolbox: string,

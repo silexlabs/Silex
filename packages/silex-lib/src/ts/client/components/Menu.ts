@@ -37,21 +37,28 @@ import {
 } from '../element-store/dispatchers';
 import { copySelection, duplicateSelection, pasteClipBoard } from '../copy'
 import { createPage, editPage, removePage } from '../page-store/dispatchers'
-import { deleteElements, updateElements } from '../element-store/index';
+import {
+  deleteElements,
+  subscribeElements,
+  updateElements
+} from '../element-store/index';
 import { getBody } from '../element-store/filters';
 import { getComponentsDef, prodotypeReady } from '../element-store/component'
 import { getDomElement, setImageUrl } from '../element-store/dom';
-import { getSite } from '../site-store/index'
+import { getSite, subscribeSite } from '../site-store/index';
 import { getSiteDocument, getSiteIFrame } from './SiteFrame';
 import { getStage } from './StageWrapper';
 import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
+import { hasRedo, hasUndo, redo, undo } from '../undo';
 import { openCssEditor } from './dialog/CssEditor'
 import { openDashboardToLoadAWebsite, openFile, publish, save } from '../file'
 import { openHtmlHeadEditor } from './dialog/HtmlEditor'
 import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { preview, previewResponsize } from '../preview'
+import { subscribePages } from '../page-store/index'
+import { subscribeUi } from '../ui-store/index'
 
 ///////////////////
 // API for the outside world
@@ -62,6 +69,11 @@ let initDone = false
 export function initMenu() {
   if(!initDone) buildUi()
   initDone = true
+  subscribeSite(() => redraw())
+  subscribePages(() => redraw())
+  subscribeElements(() => redraw())
+  subscribeUi(() => redraw())
+
 }
 
 const SUB_MENU_CLASSES = [
@@ -252,25 +264,21 @@ export async function browseAndAddImage(componentName: string) {
   }
 }
 
-// /**
-//  * redraw the menu
-//  * @param selectedElements the elements currently selected
-//  * @param pageNames   the names of the pages which appear in the current HTML
-//  *     file
-//  * @param  currentPageName   the name of the current page
-//  */
-// function redraw() {
-//   if (hasUndo()) {
-//     element.querySelector('.undo').classList.remove('off')
-//   } else {
-//     element.querySelector('.undo').classList.add('off')
-//   }
-//   if (hasRedo()) {
-//     element.querySelector('.redo').classList.remove('off')
-//   } else {
-//     element.querySelector('.redo').classList.add('off')
-//   }
-// }
+/**
+ * redraw the menu
+ */
+function redraw() {
+  if (hasUndo()) {
+    element.querySelector('.undo').classList.remove('off')
+  } else {
+    element.querySelector('.undo').classList.add('off')
+  }
+  if (hasRedo()) {
+    element.querySelector('.redo').classList.remove('off')
+  } else {
+    element.querySelector('.redo').classList.add('off')
+  }
+}
 
 /**
  * handles click events
@@ -391,12 +399,12 @@ function onMenuEvent(type: string, componentName?: string) {
     case 'edit.duplicate.selection':
       duplicateSelection()
       break
-    // case 'edit.undo':
-    //   undo()
-    //   break
-    // case 'edit.redo':
-    //   redo()
-    //   break
+    case 'edit.undo':
+      undo()
+      break
+    case 'edit.redo':
+      redo()
+      break
     case 'edit.move.up':
       console.log('edit.move.up')
       moveUp()

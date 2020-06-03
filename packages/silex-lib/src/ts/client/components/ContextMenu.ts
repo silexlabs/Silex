@@ -20,22 +20,26 @@ import { Toolboxes } from '../ui-store/types';
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'
 import { getDomElement, setImageUrl } from '../element-store/dom';
-import { getElements, subscribeElements } from '../element-store/index';
+import {
+  getElements,
+  subscribeElements,
+  updateElements
+} from '../element-store/index';
 import { getEnableSticky, toggleSticky } from './StageWrapper'
 import { getParent } from '../element-store/filters'
 import { getSite } from '../site-store/index'
 import { getSiteDocument } from './SiteFrame';
 import { getUiElements } from '../ui-store/UiElements'
 import { isComponent } from '../element-store/component';
+import { isDirty } from '../dirty';
 import { moveToTop, moveUp, moveDown, moveToBottom } from '../element-store/dispatchers';
 import { openHtmlEditor } from './dialog/HtmlEditor';
 import { openTextFormatBar } from './TextFormatBar';
 import { openToolbox } from '../ui-store/dispatchers';
 import { removeElements } from '../element-store/utils';
+import { showPages } from './Menu';
 import { subscribePages } from '../page-store/index';
 import { subscribeUi } from '../ui-store/index';
-import { updateElements } from '../element-store/index';
-import { showPages } from './Menu';
 
 ///////////////////
 // API for the outside world
@@ -139,8 +143,10 @@ class ContextMenu {
     // update page name
     if (page) {
       const fileInfo = getSite().file;
+      const changedChar = isDirty() ? '*' : ''
+      const fileName = fileInfo && fileInfo.path ? fileInfo.path + changedChar + ' - ' : ''
       this.currentPageElement.innerHTML = `
-        ${fileInfo && fileInfo.path ? fileInfo.path + ' - ' : ''}
+        ${fileName}
         ${page.displayName}
       `;
     }

@@ -1,10 +1,10 @@
-import { initializeElements, fromElementData } from '../element-store/index'
-import { initializePages, fromPageData } from '../page-store/index';
+import { ElementState } from '../element-store/types'
+import { PageState } from '../page-store/types'
+import { SiteState } from '../site-store/types'
+import { initializeElements } from '../element-store/index'
+import { initializePages } from '../page-store/index'
 import { initializeSite } from '../site-store/index'
 import { store } from './index'
-import { SiteState } from '../site-store/types'
-import { PageState } from '../page-store/types'
-import { ElementState } from '../element-store/types'
 
 /**
  * update Site state in store along with elements and pages
@@ -19,5 +19,4 @@ export function initializeData({ site, pages, elements }: {site: SiteState, page
   initializePages(pages, dispatch);
 
   initializeElements(elements, dispatch);
-
 }

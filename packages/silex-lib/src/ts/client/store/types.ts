@@ -9,11 +9,13 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
+import { Store } from 'redux'
+import { StateWithHistory } from 'redux-undo'
+
 import { ElementState, ElementData } from '../element-store/types';
 import { PageState, PageData } from '../page-store/types';
 import { SiteState } from '../site-store/types';
 import { UiState } from '../ui-store/types'
-import { Store } from 'redux'
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side
@@ -23,7 +25,7 @@ import { Store } from 'redux'
 /**
  * type of the store for the whole Silex app
  */
-export type SilexStore = Store<State>
+export type SilexStore = Store<StateWithHistory<State>>
 
 /**
  * type of the state object hold by the SilexStore
@@ -43,4 +45,3 @@ export interface PersistantData {
   elements: ElementData[],
   pages: PageData[],
 }
-

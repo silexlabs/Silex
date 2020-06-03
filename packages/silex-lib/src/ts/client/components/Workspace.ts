@@ -19,9 +19,8 @@ import { initContextMenu } from './ContextMenu'
 import { initMenu } from './Menu'
 import { initPageTool } from './PageTool'
 import { initPropertyTool } from './PropertyTool'
-import { isDirty } from '../undo'
+import { isDirty } from '../dirty';
 import { openRecent } from '../file'
-import { resizeWindow } from './StageWrapper';
 
 /**
  * @fileoverview Silex workspace is in charge of positionning
@@ -144,4 +143,3 @@ export function warnIfWindowTooSmall() {
 //   //     }
 //   //   }
 //   // }
-// }
