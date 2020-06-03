@@ -1,4 +1,3 @@
-[![license: GPL](https://img.shields.io/badge/license-GPL-green.svg)](http://www.silexlabs.org/silex/silex-licensing/)
 [![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
 [![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://editor.silex.me)
 
@@ -32,7 +31,7 @@ Silex for professionals, agencies and hosting companies:
 
 Other links
 
-* [Silex license is GPL](http://www.silexlabs.org/silex/silex-licensing/)
+* [Silex is dual licensed under GPL or MPL](http://www.silexlabs.org/silex/silex-licensing/)
 * [Road map](https://github.com/silexlabs/Silex/milestones)
 * [Change log](https://github.com/silexlabs/Silex/pulls?utf8=%E2%9C%93&q=is%3Apr)
 * [Open positions, join the team](https://github.com/silexlabs/Silex/issues?q=is%3Aissue+is%3Aopen+label%3A%22open+position%22)
