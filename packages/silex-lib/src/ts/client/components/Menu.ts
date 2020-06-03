@@ -18,15 +18,15 @@
 
 import { Config } from '../ClientConfig'
 import { Constants } from '../../constants'
-import { ElementState, ElementType } from '../element-store/types';
+import { ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
 import {
   INITIAL_ELEMENT_SIZE,
   getCreationDropZone,
   removeElements
-} from '../element-store/utils';
+} from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
-import { SilexNotification } from './Notification';
+import { SilexNotification } from './Notification'
 import {
   addElement,
   moveDown,
@@ -34,23 +34,23 @@ import {
   moveToTop,
   moveUp,
   selectBody
-} from '../element-store/dispatchers';
+} from '../element-store/dispatchers'
 import { copySelection, duplicateSelection, pasteClipBoard } from '../copy'
 import { createPage, editPage, removePage } from '../page-store/dispatchers'
 import {
   deleteElements,
   subscribeElements,
   updateElements
-} from '../element-store/index';
-import { getBody } from '../element-store/filters';
+} from '../element-store/index'
+import { getBody } from '../element-store/filters'
 import { getComponentsDef, prodotypeReady } from '../element-store/component'
-import { getDomElement, setImageUrl } from '../element-store/dom';
-import { getSite, subscribeSite } from '../site-store/index';
-import { getSiteDocument, getSiteIFrame } from './SiteFrame';
-import { getStage } from './StageWrapper';
+import { getDomElement, setImageUrl } from '../element-store/dom'
+import { getSite, subscribeSite } from '../site-store/index'
+import { getSiteDocument, getSiteIFrame } from './SiteFrame'
+import { getStage } from './StageWrapper'
 import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
-import { hasRedo, hasUndo, redo, undo } from '../undo';
+import { hasRedo, hasUndo, redo, undo } from '../undo'
 import { openCssEditor } from './dialog/CssEditor'
 import { openDashboardToLoadAWebsite, openFile, publish, save } from '../file'
 import { openHtmlHeadEditor } from './dialog/HtmlEditor'
@@ -79,29 +79,29 @@ export function initMenu() {
 const SUB_MENU_CLASSES = [
   'page-tool-visible', 'about-menu-visible', 'file-menu-visible',
   'code-menu-visible', 'add-menu-visible',
-];
+]
 
 export function closeAllSubMenu() {
   SUB_MENU_CLASSES.forEach((className) => {
-    document.body.classList.remove(className);
-  });
+    document.body.classList.remove(className)
+  })
 }
 
 function toggleSubMenu(classNameToToggle) {
   SUB_MENU_CLASSES.forEach((className) => {
     if (classNameToToggle === className) {
-      document.body.classList.toggle(className);
+      document.body.classList.toggle(className)
     } else {
-      document.body.classList.remove(className);
+      document.body.classList.remove(className)
     }
-  });
+  })
 }
 
 /**
  * open the page pannel
  */
 export function showPages() {
-  toggleSubMenu('page-tool-visible');
+  toggleSubMenu('page-tool-visible')
 }
 
 export function keyboardAttach(doc: HTMLDocument) {
@@ -252,7 +252,7 @@ export async function browseAndAddImage(componentName: string) {
             },
           }])
         },
-        (element: HTMLElement, message: string) => {
+        (_: HTMLElement, message: string) => {
           SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
           deleteElements([imgData])
           // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1)

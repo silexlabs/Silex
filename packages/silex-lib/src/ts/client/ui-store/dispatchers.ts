@@ -9,8 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
- import { PageState } from '../page-store/types';
-import { getUi, updateUi } from './index';
+ import { PageState } from '../page-store/types'
+import { getUi, updateUi } from './index'
 import { store } from '../store/index'
 
 /**

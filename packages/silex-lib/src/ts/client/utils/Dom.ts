@@ -10,7 +10,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { Url } from './Url';
+import { Url } from './Url'
 
 /**
  * @fileoverview Helper class for common tasks
@@ -44,26 +44,26 @@ export class Dom {
    * @return the template string with the data in it
    */
   static renderList(itemTemplateString: string, data: any[]): string {
-    let res = '';
+    let res = ''
 
     // for each item in data, e.g. each page in the list
     data.forEach((itemData) => {
       // build an item
-      let item = itemTemplateString;
+      let item = itemTemplateString
 
       // replace each key by its value
       for (const key in itemData) {
-        const value = itemData[key];
-        item = item.replace(new RegExp('{{' + key + '}}', 'g'), value);
+        const value = itemData[key]
+        item = item.replace(new RegExp('{{' + key + '}}', 'g'), value)
       }
 
       // add the item to the rendered template
-      res += item;
-    });
-    return res;
+      res += item
+    })
+    return res
   }
 
   constructor() {
-    throw new Error('this is a static class and it canot be instanciated');
+    throw new Error('this is a static class and it canot be instanciated')
   }
 }

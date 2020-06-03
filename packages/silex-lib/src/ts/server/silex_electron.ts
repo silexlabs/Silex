@@ -9,15 +9,15 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-'use strict';
+'use strict'
 
-import { app, BrowserWindow, protocol } from 'electron';
-import * as Path from 'path';
-import * as Url from 'url';
+import { app, BrowserWindow, protocol } from 'electron'
+import * as Path from 'path'
+import * as Url from 'url'
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win;
+let win
 
 function createWindow() {
   // Create the browser window.
@@ -36,12 +36,12 @@ function createWindow() {
       sandbox: true,
     },
 
-  });
+  })
 
   // and load the index.html of the app.
-  const url = 'http://localhost:' + (process.env.PORT || 6805) + '/';
-  console.log('Sarting app on ' + url);
-  win.loadURL(url);
+  const url = 'http://localhost:' + (process.env.PORT || 6805) + '/'
+  console.log('Sarting app on ' + url)
+  win.loadURL(url)
 
   // Open the DevTools.
   // win.webContents.openDevTools();
@@ -51,44 +51,44 @@ function createWindow() {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    win = null;
-  });
+    win = null
+  })
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', createWindow)
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
-    app.quit();
+    app.quit()
   }
-});
+})
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (win === null) {
-    createWindow();
+    createWindow()
   }
-});
+})
 
 // protocol.registerStandardSchemes(['silex']);
 app.on('ready', () => {
   protocol.registerFileProtocol('silex', (request, callback) => {
     // TODO Remove this hack
-    const pathname = Url.parse(request.url).pathname.replace('home/home', 'home');
-    callback(pathname);
+    const pathname = Url.parse(request.url).pathname.replace('home/home', 'home')
+    callback(pathname)
   }, (error) => {
-    if (error) { console.error('Failed to register protocol'); }
-  });
-});
+    if (error) { console.error('Failed to register protocol') }
+  })
+})
 
 // Remove menu bar
 app.on('browser-window-created', (e, window) => {
-  window.setMenu(null);
-});
+  window.setMenu(null)
+})

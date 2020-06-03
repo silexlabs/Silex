@@ -10,16 +10,16 @@
  */
 
 import { combineReducers, createStore } from 'redux'
-import undoable, { includeAction } from 'redux-undo';
+import undoable, { includeAction } from 'redux-undo'
 
-import { ElementAction, PageAction, SiteAction } from './actions';
+import { ElementAction, PageAction, SiteAction } from './actions'
 import { ElementState } from '../element-store/types'
 import { PageState } from '../page-store/types'
-import { SilexStore, State } from './types';
+import { SilexStore, State } from './types'
 import { elementReducer, pageReducer, siteReducer, uiReducer } from './reducers'
 import { withCrudReducer, CrudState } from '../store/crud-store'
-import { withDirtyDispatcher } from '../dirty';
-import { withUndoDispatcher } from '../undo';
+import { withDirtyDispatcher } from '../dirty'
+import { withUndoDispatcher } from '../undo'
 
 const RESET_ACTIONS = [
   ElementAction.INITIALIZE,

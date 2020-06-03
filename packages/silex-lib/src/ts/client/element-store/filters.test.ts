@@ -1,5 +1,5 @@
-import { ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER, ELEM_SECTION_CONTENT, ELEM_HTML } from '../../test-utils/data-set';
-import { getParent, isBody, getBody, getChildren, getChildrenRecursive, getElementById } from '../element-store/filters';
+import { ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER, ELEM_SECTION_CONTENT, ELEM_HTML } from '../../test-utils/data-set'
+import { getParent, isBody, getBody, getChildren, getChildrenRecursive, getElementById } from '../element-store/filters'
 import { ElementState } from './types'
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used

@@ -4,11 +4,11 @@ import {
   ELEM_SECTION,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT
-} from '../../../test-utils/data-set';
-import { PropertyPane } from './PropertyPane';
-import { fromData } from '../../store/crud-store';
-import { getElements, subscribeElements } from '../../element-store';
-import { getSite } from '../../site-store';
+} from '../../../test-utils/data-set'
+import { PropertyPane } from './PropertyPane'
+import { fromData } from '../../store/crud-store'
+import { getElements, subscribeElements } from '../../element-store'
+import { getSite } from '../../site-store'
 
 const [
   ELEM_SECTION_STATE,
@@ -160,7 +160,7 @@ test('init pane', () => {
 })
 
 test('redraw pane for base elements', () => {
-	;(getElements as any).mockReturnValue([
+	(getElements as any).mockReturnValue([
     ELEM_SECTION_STATE,
     ELEM_SECTION_CONTENT_STATE,
     ELEM_CONTAINER_STATE,

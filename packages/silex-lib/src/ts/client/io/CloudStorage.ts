@@ -13,9 +13,9 @@
  *     This class is a singleton.
  *
  */
-import { getUiElements } from '../ui-store/UiElements';
-import { CloudExplorer } from '../externs';
-import { SilexNotification } from '../components/Notification';
+import { getUiElements } from '../ui-store/UiElements'
+import { CloudExplorer } from '../externs'
+import { SilexNotification } from '../components/Notification'
 import { PersistantData } from '../store/types'
 
 // FIXME: choose between path and folder + name, remove absPath
@@ -39,34 +39,34 @@ export interface FileInfo {
  */
 export class CloudStorage {
 
-  static instance: CloudStorage;
+  static instance: CloudStorage
   static getInstance() {
-    CloudStorage.instance = CloudStorage.instance || new CloudStorage();
-    return CloudStorage.instance;
+    CloudStorage.instance = CloudStorage.instance || new CloudStorage()
+    return CloudStorage.instance
   }
   /**
    * reference to the filepicker instance
    */
-  ce: CloudExplorer = null;
-  cbks: any;
+  ce: CloudExplorer = null
+  cbks: any
 
   ready(cbk: () => any) {
-    const uiElements = getUiElements();
+    const uiElements = getUiElements()
     // cloud explorer instance
     // tslint:disable:no-string-literal
     if (uiElements.fileExplorer.contentWindow['ce']) {
-      this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer);
-      cbk();
+      this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer)
+      cbk()
     } else {
       if (this.cbks == null) {
-        this.cbks = [];
+        this.cbks = []
         uiElements.fileExplorer.addEventListener('load', (e) => {
-          this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer);
-          this.cbks.forEach((_) => _());
-          this.cbks = [];
-        });
+          this.ce = (uiElements.fileExplorer.contentWindow['ce'] as CloudExplorer)
+          this.cbks.forEach((_) => _())
+          this.cbks = []
+        })
       }
-      this.cbks.push(cbk);
+      this.cbks.push(cbk)
     }
   }
 
@@ -85,22 +85,22 @@ export class CloudStorage {
     //   console.error('Error: could not write file', fileInfo, e);
     //   if (opt_errCbk) opt_errCbk(/** @type {any} */ (e));
     // });
-    const oReq = new XMLHttpRequest();
+    const oReq = new XMLHttpRequest()
     oReq.onload = () => {
       if (oReq.status === 200) {
-        cbk();
+        cbk()
       } else {
-        const err = new Event('error');
-        const msg = this.getErrorMessage(oReq);
+        const err = new Event('error')
+        const msg = this.getErrorMessage(oReq)
         if (opt_errCbk) {
-          opt_errCbk(err, msg, oReq.status);
+          opt_errCbk(err, msg, oReq.status)
         }
       }
-    };
-    const url = `/website/ce/${fileInfo.service}/put/${fileInfo.path}`;
-    oReq.open('PUT', url);
-    oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8');
-    oReq.send(JSON.stringify({html, data}));
+    }
+    const url = `/website/ce/${fileInfo.service}/put/${fileInfo.path}`
+    oReq.open('PUT', url)
+    oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8')
+    oReq.send(JSON.stringify({html, data}))
   }
 
   /**
@@ -108,32 +108,32 @@ export class CloudStorage {
    * @return the error message
    */
   getErrorMessage(oReq): string {
-    let msg = '';
+    let msg = ''
     try {
-      const response = JSON.parse(oReq.responseText);
+      const response = JSON.parse(oReq.responseText)
       if (response.message) {
-        msg = response.message;
+        msg = response.message
       }
     } catch (e) {
     }
     if (msg === '') {
       if (oReq.responseText !== '') {
-        msg = oReq.responseText;
+        msg = oReq.responseText
       } else {
         switch (oReq.status) {
           case 404:
-            msg = 'File not found.';
-            break;
+            msg = 'File not found.'
+            break
           case 401:
             msg =
-                'You are not connected to the cloud service you are trying to use.';
-            break;
+                'You are not connected to the cloud service you are trying to use.'
+            break
           default:
-            msg = 'Unknown error with HTTP status ' + oReq.status;
+            msg = 'Unknown error with HTTP status ' + oReq.status
         }
       }
     }
-    return msg === '' ? null : msg;
+    return msg === '' ? null : msg
   }
 
   /**
@@ -142,34 +142,34 @@ export class CloudStorage {
   loadWebsite(
       absPath: string, cbk: (p1: string, data: PersistantData) => any,
       opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
-    const url = '/website' + absPath;
-    const oReq = new XMLHttpRequest();
+    const url = '/website' + absPath
+    const oReq = new XMLHttpRequest()
     oReq.addEventListener('load', (e) => {
       // success of the request
       if (oReq.status === 200) {
-        const json = JSON.parse(oReq.responseText);
+        const json = JSON.parse(oReq.responseText)
 
         // warn the user
         if (json.message) {
-          SilexNotification.alert('Open a website', json.message, () => {});
+          SilexNotification.alert('Open a website', json.message, () => {})
         }
-        cbk(json.html, json.data as PersistantData);
+        cbk(json.html, json.data as PersistantData)
       } else {
-        const err = new Event('error');
-        const msg = this.getErrorMessage(oReq);
-        opt_errCbk(err, msg, oReq.status);
+        const err = new Event('error')
+        const msg = this.getErrorMessage(oReq)
+        opt_errCbk(err, msg, oReq.status)
       }
-    });
+    })
     oReq.addEventListener('error', (e) => {
-      console.error('could not load website', absPath, 'from', url, e);
+      console.error('could not load website', absPath, 'from', url, e)
       if (opt_errCbk) {
         opt_errCbk(
             e,
-            'Network error, please check your internet connection or try again later.', oReq.status);
+            'Network error, please check your internet connection or try again later.', oReq.status)
       }
-    });
-    oReq.open('GET', url);
-    oReq.send();
+    })
+    oReq.open('GET', url)
+    oReq.send()
   }
 
   getServices(
@@ -177,15 +177,15 @@ export class CloudStorage {
       opt_errCbk?: ((p1: any, p2: string) => any)) {
     this.ce.getServices()
     .then((services) => {
-      cbk(services);
+      cbk(services)
     })
     .catch((e) => {
-      console.error('Error: could not get the list of services', e);
+      console.error('Error: could not get the list of services', e)
       if (opt_errCbk) {
-        opt_errCbk(e, 'Error: could not get the list of services');
+        opt_errCbk(e, 'Error: could not get the list of services')
       } else {
-        cbk([]);
+        cbk([])
       }
-    });
+    })
   }
 }

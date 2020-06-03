@@ -10,7 +10,7 @@
  */
 
 import { CssRule } from '../site-store/types'
-import { ElementType, ElementState } from '../element-store/types';
+import { ElementType, ElementState } from '../element-store/types'
 
 /**
  * @fileoverview Helper class for common tasks
@@ -56,11 +56,11 @@ export function addToMobileOrDesktopStyle(mobileEditor: boolean, originalStyle: 
  * with only the keys which are set
  */
 export function styleToObject(styleObj: CSSStyleDeclaration): object {
-  const res = {};
+  const res = {}
   for (const styleName of styleObj) {
-    res[styleName] = styleObj[styleName];
+    res[styleName] = styleObj[styleName]
   }
-  return res;
+  return res
 }
 
 /**
@@ -83,12 +83,12 @@ export function styleToString(style: {[key: string]: string}, useMinHeight: bool
 }
 
 export function hexToRgb(hexColor: string): any {
-  console.warn('why convert', hexColor, 'to RGB?');
-  const rgb = parseInt(hexColor.substr(1), 16);
-  const r = rgb >> 16;
-  const g = (rgb >> 8) & 255;
-  const b = rgb & 255;
-  return [r, g, b];
+  console.warn('why convert', hexColor, 'to RGB?')
+  const rgb = parseInt(hexColor.substr(1), 16)
+  const r = rgb >> 16
+  const g = (rgb >> 8) & 255
+  const b = rgb & 255
+  return [r, g, b]
 }
 
 /**
@@ -97,19 +97,19 @@ export function hexToRgb(hexColor: string): any {
  */
 export function hexToRgba(hex: string): string {
   if (hex.indexOf('#') !== 0) {
-    return hex;
+    return hex
   }
   if (hex.length !== 9) {
-    console.error('Error in length ' + hex + ' - ' + hex.length);
-    return hex;
+    console.error('Error in length ' + hex + ' - ' + hex.length)
+    return hex
   }
-  const hexArr = hexToArray(hex);
-  const r = hexArr[0];
-  const g = hexArr[1];
-  const b = hexArr[2];
-  const a = hexArr[3];
-  const result = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-  return result;
+  const hexArr = hexToArray(hex)
+  const r = hexArr[0]
+  const g = hexArr[1]
+  const b = hexArr[2]
+  const a = hexArr[3]
+  const result = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')'
+  return result
 }
 
 /**
@@ -118,15 +118,15 @@ export function hexToRgba(hex: string): string {
  */
 export function hexToArray(hex: string): number[] {
   if (hex.indexOf('#') !== 0) {
-    return null;
+    return null
   }
-  hex = hex.replace('#', '');
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  const a = parseInt(hex.substring(6, 8), 16) / 255;
-  const result = [r, g, b, a];
-  return result;
+  hex = hex.replace('#', '')
+  const r = parseInt(hex.substring(0, 2), 16)
+  const g = parseInt(hex.substring(2, 4), 16)
+  const b = parseInt(hex.substring(4, 6), 16)
+  const a = parseInt(hex.substring(6, 8), 16) / 255
+  const result = [r, g, b, a]
+  return result
 }
 
 /**
@@ -134,8 +134,8 @@ export function hexToArray(hex: string): number[] {
  * example:    rgb(0, 0, 0) will return #000000
  */
 export function rgbToHex(rgb: string): string {
-  const hexWithA = rgbaToHex(rgb);
-  return hexWithA.substr(0, 7);
+  const hexWithA = rgbaToHex(rgb)
+  return hexWithA.substr(0, 7)
 }
 
 /**
@@ -145,29 +145,29 @@ export function rgbToHex(rgb: string): string {
 export function rgbaToHex(rgba: string): string {
   // has to be rgb or rgba
   if (rgba.indexOf('rgb') !== 0) {
-    return rgba;
+    return rgba
   }
 
   // get the array version
-  const rgbaArr = rgbaToArray(rgba);
-  let r = rgbaArr[0].toString(16);
+  const rgbaArr = rgbaToArray(rgba)
+  let r = rgbaArr[0].toString(16)
   if (r.length < 2) {
-    r = '0' + r;
+    r = '0' + r
   }
-  let g = rgbaArr[1].toString(16);
+  let g = rgbaArr[1].toString(16)
   if (g.length < 2) {
-    g = '0' + g;
+    g = '0' + g
   }
-  let b = rgbaArr[2].toString(16);
+  let b = rgbaArr[2].toString(16)
   if (b.length < 2) {
-    b = '0' + b;
+    b = '0' + b
   }
-  let a = rgbaArr[3].toString(16);
+  let a = rgbaArr[3].toString(16)
   if (a.length < 2) {
-    a = '0' + a;
+    a = '0' + a
   }
-  const result = '#' + (r + g + b + a);
-  return result;
+  const result = '#' + (r + g + b + a)
+  return result
 }
 
 /**
@@ -177,26 +177,26 @@ export function rgbaToHex(rgba: string): string {
 export function rgbaToArray(rgba: string): number[] {
   // not rgb nor rgba
   if (rgba.indexOf('rgb') !== 0) {
-    return null;
+    return null
   }
   if (rgba.indexOf('rgba') !== 0) {
     // rgb
-    rgba = rgba.replace('rgb', '');
+    rgba = rgba.replace('rgb', '')
   } else {
     // rgba
-    rgba = rgba.replace('rgba', '');
+    rgba = rgba.replace('rgba', '')
   }
-  rgba = rgba.replace(' ', '');
-  const rgbaArr = rgba.substring(1, rgba.length - 1).split(',');
+  rgba = rgba.replace(' ', '')
+  const rgbaArr = rgba.substring(1, rgba.length - 1).split(',')
 
   // add alpha if needed
   if (rgbaArr.length < 4) {
-    rgbaArr.push('1');
+    rgbaArr.push('1')
   }
-  const r = parseInt(rgbaArr[0], 10);
-  const g = parseInt(rgbaArr[1], 10);
-  const b = parseInt(rgbaArr[2], 10);
-  const a = parseFloat(rgbaArr[3]) * 255;
-  const result = [r, g, b, a];
-  return result;
+  const r = parseInt(rgbaArr[0], 10)
+  const g = parseInt(rgbaArr[1], 10)
+  const b = parseInt(rgbaArr[2], 10)
+  const a = parseFloat(rgbaArr[3]) * 255
+  const result = [r, g, b, a]
+  return result
 }

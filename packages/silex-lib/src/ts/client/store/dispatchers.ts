@@ -14,9 +14,9 @@ import { store } from './index'
  */
 export function initializeData({ site, pages, elements }: {site: SiteState, pages: PageState[], elements: ElementState[]}, dispatch = store.dispatch) {
 
-  initializeSite(site, dispatch);
+  initializeSite(site, dispatch)
 
-  initializePages(pages, dispatch);
+  initializePages(pages, dispatch)
 
-  initializeElements(elements, dispatch);
+  initializeElements(elements, dispatch)
 }

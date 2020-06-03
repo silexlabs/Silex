@@ -16,14 +16,14 @@
  *
  */
 
-import { Dom } from '../utils/Dom';
+import { Dom } from '../utils/Dom'
 import { createPage, removePage, movePageTo, editPage } from '../page-store/dispatchers'
-import { deletePages, getPages, movePage, subscribePages } from '../page-store/index';
-import { getCurrentPage } from '../page-store/filters';
-import { getUi, subscribeUi } from '../ui-store/index';
+import { deletePages, getPages, movePage, subscribePages } from '../page-store/index'
+import { getCurrentPage } from '../page-store/filters'
+import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
-import { openPage } from '../ui-store/dispatchers';
-import Sortable from '../../../../node_modules/sortablejs/modular/sortable.core.esm.js';
+import { openPage } from '../ui-store/dispatchers'
+import Sortable from '../../../../node_modules/sortablejs/modular/sortable.core.esm.js'
 
 ///////////////////
 // API for the outside world
@@ -44,49 +44,49 @@ class PageTool {
       if ((e.target as HTMLElement).classList.contains('page-delete')) {
         // remove the page
         this.removePageAtIndex(
-            this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
+            this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement))
       } else {
         if ((e.target as HTMLElement).classList.contains('page-properties')) {
           // rename the page
           this.editPageAtIndex(
-              this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement));
+              this.getCellIndex((e.target as HTMLElement).parentElement.parentElement as HTMLElement))
         } else {
           // select page
-          const cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement);
+          const cellIndex = this.getCellIndex((e.target as HTMLElement).parentElement as HTMLElement)
           if (cellIndex >= 0) {
-            this.setSelectedIndex(cellIndex, true);
+            this.setSelectedIndex(cellIndex, true)
           }
         }
       }
-      e.preventDefault();
-    }, false);
+      e.preventDefault()
+    }, false)
 
     function attach(className, cbk) {
       Array.from(document.querySelectorAll(className))
-      .forEach((el) => el.onclick = cbk);
+      .forEach((el) => el.onclick = cbk)
     }
-    attach('.add-page', (e) => createPage());
-    attach('.remove-page', (e) => removePage());
+    attach('.add-page', (e) => createPage())
+    attach('.remove-page', (e) => removePage())
     attach('.move-page-up', (e) => {
-      const currentPage = getCurrentPage();
-      const idx = getPages().indexOf(currentPage);
-      movePageTo(currentPage, idx - 1);
-    });
+      const currentPage = getCurrentPage()
+      const idx = getPages().indexOf(currentPage)
+      movePageTo(currentPage, idx - 1)
+    })
     attach('.move-page-down', (e) => {
-      const currentPage = getCurrentPage();
-      const idx = getPages().indexOf(currentPage);
-      movePageTo(currentPage, idx + 1);
-    });
-    const container: HTMLElement = this.element.querySelector('.page-tool-container');
+      const currentPage = getCurrentPage()
+      const idx = getPages().indexOf(currentPage)
+      movePageTo(currentPage, idx + 1)
+    })
+    const container: HTMLElement = this.element.querySelector('.page-tool-container')
     Sortable.create(container, {
       ghostClass: 'page-ghost',
       animation: 150,
       handle: '.page-handle',
       onSort: (e) => {
-        const pages = getPages();
-        movePage({page: pages[e.oldIndex], idx: e.newIndex});
+        const pages = getPages()
+        movePage({page: pages[e.oldIndex], idx: e.newIndex})
       },
-    });
+    })
   }
 
   /**
@@ -94,7 +94,7 @@ class PageTool {
    * @param idx index of the page
    */
   removePageAtIndex(idx: number) {
-    deletePages([getPages()[idx]]);
+    deletePages([getPages()[idx]])
   }
 
   /**
@@ -102,7 +102,7 @@ class PageTool {
    * @param idx index of the page
    */
   editPageAtIndex(idx: number) {
-    editPage(getPages()[idx]);
+    editPage(getPages()[idx])
   }
 
   /**
@@ -121,11 +121,11 @@ class PageTool {
    * @param element which represents the cell in the dom
    */
   getCellIndex(element: HTMLElement): number {
-    const pageIdx = element.getAttribute('data-page-idx');
+    const pageIdx = element.getAttribute('data-page-idx')
     if (pageIdx) {
-      return parseInt(pageIdx, 10);
+      return parseInt(pageIdx, 10)
     } else {
-      return -1;
+      return -1
     }
   }
 
@@ -136,15 +136,15 @@ class PageTool {
   private redraw() {
     // prepare the data for the template
     // make an array with name, displayName, linkName
-    const { currentPageId } = getUi();
+    const { currentPageId } = getUi()
     const templateData = getPages()
       .map((p, idx) => Object.assign({
         className: (p.id === currentPageId ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
         idx,
       }, p))
     // refresh the list with new pages
-    const container = this.element.querySelector('.page-tool-container');
-    const templateHtml = this.element.querySelector('.page-tool-template').innerHTML;
-    container.innerHTML = Dom.renderList(templateHtml, templateData);
+    const container = this.element.querySelector('.page-tool-container')
+    const templateHtml = this.element.querySelector('.page-tool-template').innerHTML
+    container.innerHTML = Dom.renderList(templateHtml, templateData)
   }
 }

@@ -14,13 +14,13 @@
  * Controls the general params of the selected component
  *
  */
-import tagsInput from 'tags-input';
+import tagsInput from 'tags-input'
 
-import { ElementState } from '../../element-store/types';
-import { PaneBase } from './PaneBase';
-import { getSelectedElements } from '../../element-store/filters';
+import { ElementState } from '../../element-store/types'
+import { PaneBase } from './PaneBase'
+import { getSelectedElements } from '../../element-store/filters'
 import { setClassName } from '../../element-store/dispatchers'
-import { subscribeElements } from '../../element-store/index';
+import { subscribeElements } from '../../element-store/index'
 
 /**
  * on of Silex Editors class
@@ -30,23 +30,23 @@ export class StylePane extends PaneBase {
   /**
    * css class tags-input component
    */
-  cssClassesTagsInput: any;
+  cssClassesTagsInput: any
 
   /**
    * prevent loops and stage reset while updating the value from store
    */
-  iAmChanging = false;
+  iAmChanging = false
 
   constructor(element: HTMLElement) {
 
-    super(element);
+    super(element)
 
-    const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged());
-    tagsInput(cssClassesInput);
-    this.cssClassesTagsInput = cssClassesInput.nextElementSibling;
-    this.cssClassesTagsInput.classList.add('silex-input');
+    const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged())
+    tagsInput(cssClassesInput)
+    this.cssClassesTagsInput = cssClassesInput.nextElementSibling
+    this.cssClassesTagsInput.classList.add('silex-input')
     // add a listener for the delete event
-    this.initComboBox('.style-css-classes-input', () => this.onInputChanged());
+    this.initComboBox('.style-css-classes-input', () => this.onInputChanged())
 
     subscribeElements(() => {
       this.redraw(getSelectedElements())
@@ -54,14 +54,14 @@ export class StylePane extends PaneBase {
   }
 
   getClassesTags() {
-    return this.cssClassesTagsInput.getValue().split(',').join(' ');
+    return this.cssClassesTagsInput.getValue().split(',').join(' ')
   }
 
   setClassesTags(cssClasses) {
     if (this.iAmChanging) return
     if (this.getClassesTags() !== cssClasses) {
       this.iAmChanging = true
-      this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','));
+      this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','))
       this.iAmChanging = false
     }
   }
@@ -72,9 +72,9 @@ export class StylePane extends PaneBase {
   onInputChanged() {
     if (this.iAmChanging) return
     if (this.cssClassesTagsInput.classList.contains('off')) {
-      this.setClassesTags('');
+      this.setClassesTags('')
     } else {
-      setClassName(this.getClassesTags());
+      setClassName(this.getClassesTags())
     }
   }
 
@@ -82,15 +82,15 @@ export class StylePane extends PaneBase {
    * redraw the properties
    */
   protected redraw(selectedElements: ElementState[]) {
-    super.redraw(selectedElements);
+    super.redraw(selectedElements)
 
     // edit classes only if there is 1 element
     if (selectedElements.length === 1) {
-      this.cssClassesTagsInput.classList.remove('off');
-      this.setClassesTags(selectedElements[0].classList.join(' '));
+      this.cssClassesTagsInput.classList.remove('off')
+      this.setClassesTags(selectedElements[0].classList.join(' '))
     } else {
-      this.cssClassesTagsInput.classList.add('off');
-      this.setClassesTags('');
+      this.cssClassesTagsInput.classList.add('off')
+      this.setClassesTags('')
     }
 
     // if (selectedElements.length) {

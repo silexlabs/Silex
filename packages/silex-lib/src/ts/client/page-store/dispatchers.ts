@@ -1,10 +1,10 @@
-import { Constants } from '../../constants';
+import { Constants } from '../../constants'
 import { LinkType } from '../element-store/types'
 import { PageState } from './types'
 import { SilexNotification } from '../components/Notification'
 import { createPages, getPages, updatePages, deletePages, movePage, fromPageData } from './index'
-import { getCurrentPage } from './filters';
-import { openPage } from '../ui-store/dispatchers';
+import { getCurrentPage } from './filters'
+import { openPage } from '../ui-store/dispatchers'
 
 /**
  * create a page
@@ -28,7 +28,7 @@ export function createPage(): Promise<void> {
         canRename: true,
         canMove: true,
         canProperties: true,
-      }]));
+      }]))
 
       // tracking
       //    tracker.trackAction('controller-events', 'success', 'insert.page', 1);
@@ -36,7 +36,7 @@ export function createPage(): Promise<void> {
     .catch((e) => {
       // tracking
       //    tracker.trackAction('controller-events', 'cancel', 'insert.page', 0);
-    });
+    })
 }
 
 /**
@@ -61,11 +61,11 @@ export function editPage(pageData: PageState = getCurrentPage()) {
               value: Constants.PAGE_NAME_PREFIX + id,
             },
           },
-        ]);
+        ])
       }
     })
     .catch((e) => {
-    });
+    })
 }
 
 /**
@@ -82,10 +82,10 @@ export function removePage(page: PageState = getCurrentPage()) {
           //  undoCheckPoint();
 
         // update model
-        doRemovePage(page);
+        doRemovePage(page)
       }
     }, 'delete', 'cancel',
-  );
+  )
 }
 
 function doRemovePage(pageData: PageState) {
@@ -107,7 +107,7 @@ function doRemovePage(pageData: PageState) {
  * @param offset
  */
 export function movePageTo(page: PageState, idx: number) {
-  movePage({page, idx});
+  movePage({page, idx})
 }
 
 
@@ -117,7 +117,7 @@ export function movePageTo(page: PageState, idx: number) {
  */
 export function editPageSettings(pageData: PageState = null): Promise<{id: string, displayName: string}> {
   return new Promise((resolve, reject) => {
-    const form = document.createElement('div');
+    const form = document.createElement('div')
     form.innerHTML = `
       Page Name
       <input
@@ -128,32 +128,32 @@ export function editPageSettings(pageData: PageState = null): Promise<{id: strin
         value="${ pageData ? pageData.displayName : '' }"
         ${ !pageData || pageData.canRename ? '' : 'disabled' }
         />
-    `;
-    const nameInput = form.querySelector('#page-property-name') as HTMLInputElement;
+    `
+    const nameInput = form.querySelector('#page-property-name') as HTMLInputElement
     SilexNotification.confirm(
       pageData ? 'Page Properties' : 'New page',
       '',
       (accept) => {
-        const newName = nameInput.value;
+        const newName = nameInput.value
         if (accept && newName && newName.length > 0) {
           // cleanup the page name
           // add a prefix to prevent names which start with an dash or number (see css specifications)
-          const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase();
+          const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase()
 
           // check if a page with this name exists
-          const existing = getPages().find((p) => p.id === newName);
+          const existing = getPages().find((p) => p.id === newName)
           if (!!existing) {
             // open the new page
-            openPage(existing);
-            reject('Page already exists');
+            openPage(existing)
+            reject('Page already exists')
           } else {
-            resolve({id: cleanName, displayName: newName});
+            resolve({id: cleanName, displayName: newName})
           }
         } else {
-          reject('Canceled');
+          reject('Canceled')
         }
       },
-    );
-    SilexNotification.setContent(form);
-  });
+    )
+    SilexNotification.setContent(form)
+  })
 }

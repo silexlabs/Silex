@@ -15,9 +15,9 @@
  *
  *
  */
-import { SiteState } from '../../site-store/types';
-import { getSite, subscribeSite, updateSite } from '../../site-store/index';
-import { CodeEditorBase } from './CodeEditorBase';
+import { SiteState } from '../../site-store/types'
+import { getSite, subscribeSite, updateSite } from '../../site-store/index'
+import { CodeEditorBase } from './CodeEditorBase'
 import { getUiElements } from '../../ui-store/UiElements'
 
 ///////////////////
@@ -44,7 +44,7 @@ class CssEditor extends CodeEditorBase {
    * the controller instances
    */
   constructor(element: HTMLElement) {
-    super(element, 'css');
+    super(element, 'css')
     subscribeSite((_: SiteState, site: SiteState) => {
       if (site.headStyle !== this.getValue()) {
         this.setValue(site.headStyle)
@@ -59,6 +59,6 @@ class CssEditor extends CodeEditorBase {
     updateSite({
       ...getSite(),
       headStyle: this.getValue(),
-    });
+    })
   }
 }

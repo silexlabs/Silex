@@ -13,7 +13,7 @@
  * @fileoverview Silex config
  */
 
-import { Shortcut } from './utils/Keyboard';
+import { Shortcut } from './utils/Keyboard'
 
 export class Config {
 
@@ -31,85 +31,85 @@ export class Config {
     debugMode: false,
     preventQuit: false,
     debugScript: '/js/debug.js',
-  };
+  }
 
   /**
    * Link of the menu
    */
-  static WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki';
+  static WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki'
 
   /**
    * Link in property tool dialog
    * this is also hard coded in property-tool.jade
    */
   static WIKI_SILEX_CUSTOM_CSS_CLASS =
-      'https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes';
+      'https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes'
 
   /**
    * Link of the menu
    */
-  static CROWD_FUNDING = 'http://crowdfunding.silex.me/';
+  static CROWD_FUNDING = 'http://crowdfunding.silex.me/'
 
   /**
    * Link of the menu
    */
   static ISSUES_SILEX =
-      'https://github.com/silexlabs/Silex/issues?state=open';
+      'https://github.com/silexlabs/Silex/issues?state=open'
 
   /**
    * Link of the menu
    */
   static DOWNLOADS_TEMPLATE_SILEX =
-      'https://github.com/silexlabs/Silex/issues?labels=template&state=open';
+      'https://github.com/silexlabs/Silex/issues?labels=template&state=open'
 
   /**
    * Link of the menu
    */
   static DOWNLOADS_WIDGET_SILEX =
-      'https://github.com/silexlabs/Silex/issues?labels=widget&state=open';
+      'https://github.com/silexlabs/Silex/issues?labels=widget&state=open'
 
   /**
    * Link of the menu
    */
-  static ABOUT_SILEX_LABS = 'http://www.silexlabs.org/';
+  static ABOUT_SILEX_LABS = 'http://www.silexlabs.org/'
 
   /**
    * Link of the menu
    */
-  static SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5';
+  static SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5'
 
   /**
    * Link of the menu
    */
   static SOCIAL_DIASPORA =
-      'https://diasp.org/people/f37438103a9b013250aa2a0000053625';
+      'https://diasp.org/people/f37438103a9b013250aa2a0000053625'
 
   /**
    * Link of the menu
    */
-  static SOCIAL_TWITTER = 'http://twitter.com/silexlabs';
+  static SOCIAL_TWITTER = 'http://twitter.com/silexlabs'
 
   /**
    * Link of the menu
    */
-  static SOCIAL_FB = 'http://www.facebook.com/silexlabs';
+  static SOCIAL_FB = 'http://www.facebook.com/silexlabs'
 
   /**
    * Link of the menu
    */
-  static FORK_CODE = 'https://github.com/silexlabs/Silex';
+  static FORK_CODE = 'https://github.com/silexlabs/Silex'
 
   /**
    * Link of the menu
    */
-  static CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute';
+  static CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute'
 
   /**
    * Single site mode, skip the dashboard and get the site from the URL
    * Option to be provided by the client side
    */
-  static singleSiteMode = false;
-  static componentFolders = ['./prodotype/components'];
+  static singleSiteMode = false
+  static componentFolders = ['./prodotype/components']
 
   /**
    * The main application menu
@@ -338,5 +338,5 @@ export class Config {
     //   label: 'Source code and download Silex',
     //   id: 'help.forkMe',
     // }
-  ];
+  ]
 }

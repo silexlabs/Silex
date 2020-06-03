@@ -24,15 +24,15 @@ export default class HostingUnifile {
       skipVhostSelection: true,
       skipFolderSelection: false,
       afterPublishMessage: null,
-    };
+    }
   }
 
   finalizePublication(context, onStatus) {
-    return Promise.resolve();
+    return Promise.resolve()
   }
 
   getDefaultPageFileName(context) {
-    return 'index.html';
+    return 'index.html'
   }
 
   // this is commented out because with FS we need to explicitely link to index.html, not to the ./ folder

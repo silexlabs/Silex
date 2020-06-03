@@ -1,12 +1,12 @@
 import { Constants } from '../../constants'
 import { SilexNotification } from '../components/Notification'
 import { UiState, LOADING } from './types'
-import { getBody, getSelectedElements } from '../element-store/filters';
-import { getCurrentPage } from '../page-store/filters';
+import { getBody, getSelectedElements } from '../element-store/filters'
+import { getCurrentPage } from '../page-store/filters'
 import { getSite } from '../site-store/index'
-import { getSiteIFrame, getSiteWindow } from '../components/SiteFrame';
-import { openPageDom } from '../page-store/dom';
-import { updateElements } from '../element-store/index';
+import { getSiteIFrame, getSiteWindow } from '../components/SiteFrame'
+import { openPageDom } from '../page-store/dom'
+import { updateElements } from '../element-store/index'
 
 export function onChangeUi(prev: UiState, ui: UiState) {
   if (ui.mobileEditor) {

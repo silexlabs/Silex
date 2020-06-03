@@ -1,7 +1,7 @@
-import { StateWithHistory } from 'redux-undo';
+import { StateWithHistory } from 'redux-undo'
 
-import { PersistantData, State } from './store/types';
-import { getState } from './store/index';
+import { PersistantData, State } from './store/types'
+import { getState } from './store/index'
 import { getUi, updateUi } from './ui-store/index'
 
 export function withDirtyDispatcher(reducer, options: {changeActions: string[], resetActions: string[]}) {

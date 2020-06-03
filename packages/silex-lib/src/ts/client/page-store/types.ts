@@ -10,7 +10,7 @@
  */
 
 import { CrudState } from '../store/crud-store'
-import { Link } from '../element-store/types';
+import { Link } from '../element-store/types'
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side

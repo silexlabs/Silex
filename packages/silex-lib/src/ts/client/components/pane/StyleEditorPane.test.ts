@@ -1,14 +1,14 @@
-import { ELEM_CONTAINER, ELEM_TEXT } from '../../../test-utils/data-set';
-import { ElementState } from '../../element-store/types';
-import { StyleDataObject } from '../../site-store/types';
-import { initStyle, removeStyle } from '../../site-store/dispatchers';
+import { ELEM_CONTAINER, ELEM_TEXT } from '../../../test-utils/data-set'
+import { ElementState } from '../../element-store/types'
+import { StyleDataObject } from '../../site-store/types'
+import { initStyle, removeStyle } from '../../site-store/dispatchers'
 
 jest.mock('../../element-store/component', () => ({
   getComponentsDef: jest.fn(),
   openStyleEditor: jest.fn(),
 }))
-import { getComponentsDef } from '../../element-store/component';
-import { StyleEditorPane } from './StyleEditorPane';
+import { getComponentsDef } from '../../element-store/component'
+import { StyleEditorPane } from './StyleEditorPane'
 
 // import { getSite } from '../../site-store/index'
 // jest.mock('../../site-store/index', () => ({
@@ -59,121 +59,121 @@ const ELEM_TEXT_STATE = {
 const BODY_STATE = ELEM_CONTAINER as ElementState
 
 const componentsDef = {
-  "text": {
-    "props": [
+  'text': {
+    'props': [
       {
-        "name": "TextStyle",
-        "type": "template",
-        "extends": "ElementStyle",
-        "props": [
+        'name': 'TextStyle',
+        'type': 'template',
+        'extends': 'ElementStyle',
+        'props': [
           {
-            "name": "font-family",
-            "default": "",
-            "type": "component"
+            'name': 'font-family',
+            'default': '',
+            'type': 'component'
           },
         ]
       },
       {
-        "name": "All",
-        "displayName": "Editing style for all texts (P, A, UL, H1, H2...)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'All',
+        'displayName': 'Editing style for all texts (P, A, UL, H1, H2...)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Paragraph",
-        "displayName": "Editing style of paragraphs (P)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Paragraph',
+        'displayName': 'Editing style of paragraphs (P)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Link",
-        "displayName": "Editing style of links (A)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Link',
+        'displayName': 'Editing style of links (A)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Active",
-        "displayName": "Editing style of actives (A:active)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Active',
+        'displayName': 'Editing style of actives (A:active)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "UnorderedList",
-        "displayName": "Editing style of unordered lists (UL)",
-        "type": "ListStyle",
-        "className": "style-editor-text"
+        'name': 'UnorderedList',
+        'displayName': 'Editing style of unordered lists (UL)',
+        'type': 'ListStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "OrderedList",
-        "displayName": "Editing style of ordered lists (OL)",
-        "type": "ListStyle",
-        "className": "style-editor-text"
+        'name': 'OrderedList',
+        'displayName': 'Editing style of ordered lists (OL)',
+        'type': 'ListStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Heading1",
-        "displayName": "Editing style of heading 1 (H1)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Heading1',
+        'displayName': 'Editing style of heading 1 (H1)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Heading2",
-        "displayName": "Editing style of heading 2 (H2)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Heading2',
+        'displayName': 'Editing style of heading 2 (H2)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Heading3",
-        "displayName": "Editing style of heading 3 (H3)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Heading3',
+        'displayName': 'Editing style of heading 3 (H3)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Bold",
-        "displayName": "Editing style of bolds (B)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Bold',
+        'displayName': 'Editing style of bolds (B)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Underline",
-        "displayName": "Editing style of underlines (U)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Underline',
+        'displayName': 'Editing style of underlines (U)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Italic",
-        "displayName": "Editing style of italics (I)",
-        "type": "TextStyle",
-        "className": "style-editor-text"
+        'name': 'Italic',
+        'displayName': 'Editing style of italics (I)',
+        'type': 'TextStyle',
+        'className': 'style-editor-text'
       },
       {
-        "name": "Element",
-        "displayName": "Editing style for selected elements",
-        "type": "ElementStyle",
-        "className": "style-editor-tag-notext"
+        'name': 'Element',
+        'displayName': 'Editing style for selected elements',
+        'type': 'ElementStyle',
+        'className': 'style-editor-tag-notext'
       },
       {
-        "name": "className",
-        "type": "string",
-        "readonly": true
+        'name': 'className',
+        'type': 'string',
+        'readonly': true
       },
       {
-        "name": "pseudoClass",
-        "type": [
-          "normal",
-          ":hover",
-          ":active",
-          ":first-child",
-          ":last-child",
-          ":nth-child(even)",
-          ":nth-child(odd)",
-          "::first-letter",
-          "::first-line"
+        'name': 'pseudoClass',
+        'type': [
+          'normal',
+          ':hover',
+          ':active',
+          ':first-child',
+          ':last-child',
+          ':nth-child(even)',
+          ':nth-child(odd)',
+          '::first-letter',
+          '::first-line'
         ],
-        "readonly": true,
-        "default": "normal"
+        'readonly': true,
+        'default': 'normal'
       }
     ],
-    "rootPath": "./prodotype/styles"
+    'rootPath': './prodotype/styles'
   }
 }
 
@@ -182,7 +182,7 @@ beforeEach(() => {
 })
 
 test('create style', () => {
-  ;(getComponentsDef as any).mockReturnValue(componentsDef)
+  (getComponentsDef as any).mockReturnValue(componentsDef)
   const dispatch = jest.fn()
   const pane = new StyleEditorPane(document.body)
   pane.doCreateStyle({

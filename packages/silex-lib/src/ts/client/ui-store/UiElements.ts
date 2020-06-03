@@ -1,19 +1,19 @@
 
 export interface UiElements {
-  fileExplorer: HTMLIFrameElement;
-  contextMenu: HTMLElement;
-  menu: HTMLElement;
-  breadCrumbs: HTMLElement;
-  pageTool: HTMLElement;
-  htmlEditor: HTMLElement;
-  cssEditor: HTMLElement;
-  jsEditor: HTMLElement;
-  settingsDialog: HTMLElement;
-  dashboard: HTMLElement;
-  propertyTool: HTMLElement;
-  textFormatBar: HTMLElement;
-  workspace: HTMLElement;
-  verticalSplitter: HTMLElement;
+  fileExplorer: HTMLIFrameElement
+  contextMenu: HTMLElement
+  menu: HTMLElement
+  breadCrumbs: HTMLElement
+  pageTool: HTMLElement
+  htmlEditor: HTMLElement
+  cssEditor: HTMLElement
+  jsEditor: HTMLElement
+  settingsDialog: HTMLElement
+  dashboard: HTMLElement
+  propertyTool: HTMLElement
+  textFormatBar: HTMLElement
+  workspace: HTMLElement
+  verticalSplitter: HTMLElement
 }
 
 // keep references to ui elements

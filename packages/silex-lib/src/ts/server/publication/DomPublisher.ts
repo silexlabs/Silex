@@ -9,25 +9,25 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { URL } from 'url';
-import * as Path from 'path';
+import { URL } from 'url'
+import * as Path from 'path'
 
-import { Constants } from '../../constants';
-import { PersistantData } from '../../client/store/types';
-import DomTools from '../utils/DomTools';
+import { Constants } from '../../constants'
+import { PersistantData } from '../../client/store/types'
+import DomTools from '../utils/DomTools'
 
 export interface File {
-  original: string;
-  srcPath: string;
-  destPath: string;
-  tagName: string;
-  displayName: string;
+  original: string
+  srcPath: string
+  destPath: string
+  tagName: string
+  displayName: string
 }
 export interface Action {
-  name: string;
-  path: string;
-  displayName: string;
-  content: string|Buffer;
+  name: string
+  path: string
+  displayName: string
+  content: string|Buffer
 }
 
 /**
@@ -37,10 +37,10 @@ export interface Action {
 
 export class DomPublisher {
 
-  private doc: HTMLDocument;
+  private doc: HTMLDocument
 
   constructor(private dom, private userHead, private rootUrl, private rootPath, private getDestFolder, private data: PersistantData) {
-    this.doc = dom.window.document;
+    this.doc = dom.window.document
   }
 
   /**
@@ -53,9 +53,9 @@ export class DomPublisher {
     ['script', 'style'].forEach((tagName) => {
       Array.from(this.doc.querySelectorAll(`${tagName}[style="display:none"]`))
       .forEach((element) => {
-        element.parentElement.removeChild(element);
-      });
-    });
+        element.parentElement.removeChild(element)
+      })
+    })
   }
 
   /**
@@ -77,18 +77,18 @@ export class DomPublisher {
     // remove prodotype previews
     Array.from(this.doc.querySelectorAll(Constants.ELEMENTS_TO_REMOVE_AT_PUBLISH.join(', ')))
     .forEach((tagToRemove) => {
-      tagToRemove.parentElement.removeChild(tagToRemove);
-    });
+      tagToRemove.parentElement.removeChild(tagToRemove)
+    })
     // remove data-silex-id
     // remove data-silex-static (will then be downloaded like any other script, not striped by DomTools.transformPath)
     // remove data-dependency
     // do NOT remove data-silex-type because it is used by front-end.js at runtime
     Array.from(this.doc.querySelectorAll(`[${Constants.TYPE_ATTR}], [${Constants.ELEMENT_ID_ATTR_NAME}], [${Constants.STATIC_ASSET_ATTR}]`))
     .forEach((tagToClean) => {
-      tagToClean.removeAttribute(Constants.ELEMENT_ID_ATTR_NAME);
-      tagToClean.removeAttribute(Constants.STATIC_ASSET_ATTR);
-      tagToClean.removeAttribute('data-dependency');
-    });
+      tagToClean.removeAttribute(Constants.ELEMENT_ID_ATTR_NAME)
+      tagToClean.removeAttribute(Constants.STATIC_ASSET_ATTR)
+      tagToClean.removeAttribute('data-dependency')
+    })
   }
 
   split(newFirstPageName: string, permalinkHook: (pageName: string) => string): Action[] {
@@ -98,10 +98,10 @@ export class DomPublisher {
     ['js/jquery-ui.js', 'js/pageable.js']
     .map((path) => this.doc.querySelector(`script[src="${ path }"]`))
     .filter((el) => !!el) // when not updated yet to the latest version, the URLs are not relative
-    .forEach((el) => el.parentElement.removeChild(el));
+    .forEach((el) => el.parentElement.removeChild(el))
 
     // split in multiple pages
-    if (this.data.pages.length === 0) { throw new Error('The website has 0 pages.'); }
+    if (this.data.pages.length === 0) { throw new Error('The website has 0 pages.') }
     const initialFirstPageName = this.data.pages[0].id
     return this.data.pages
     .map((page) => {
@@ -110,44 +110,44 @@ export class DomPublisher {
         name: page.id,
         displayName: page.displayName,
         fileName: page.id === initialFirstPageName && newFirstPageName ? 'index.html' : page.id + '.html',
-      };
+      }
     })
     // TODO: use page.link.type and page.link.value instead of adding 'page-' to page id
     .map(({displayName, name, fileName}) => {
       // clone the document
       const clone = this.doc.cloneNode(true) as HTMLDocument;
       // update title
-      (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName;
+      (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName
       // add page name on the body (used in front-end.js)
-      clone.body.setAttribute('data-current-page', name);
+      clone.body.setAttribute('data-current-page', name)
       // remove elements from other pages
       Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
       .forEach((el) => {
         if (el.classList.contains('page-' + name)) {
-          el.classList.add(Constants.PAGED_VISIBLE_CLASS_NAME);
+          el.classList.add(Constants.PAGED_VISIBLE_CLASS_NAME)
         } else {
-          el.parentElement.removeChild(el);
+          el.parentElement.removeChild(el)
         }
-      });
+      })
       // update links
       Array.from(clone.querySelectorAll('a'))
       .filter((el) => el.hash.startsWith(Constants.PAGE_NAME_PREFIX))
       .forEach((el) => {
-        const [pageName, anchor] = el.hash.substr(Constants.PAGE_NAME_PREFIX.length).split('#');
-        el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html') + (anchor ? '#' + anchor : '');
+        const [pageName, anchor] = el.hash.substr(Constants.PAGE_NAME_PREFIX.length).split('#')
+        el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html') + (anchor ? '#' + anchor : '')
         if (pageName ===  name) {
-          el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME);
+          el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME)
         } else {
-          el.classList.remove(Constants.PAGE_LINK_ACTIVE_CLASS_NAME); // may be added when you save the file
+          el.classList.remove(Constants.PAGE_LINK_ACTIVE_CLASS_NAME) // may be added when you save the file
         }
-      });
+      })
 
       // remove useless css classes
       // do not do this before as these classes are needed until the last moment, e.g. to select paged elements
       Constants.SILEX_CLASS_NAMES_TO_REMOVE_AT_PUBLISH.forEach((className) => {
         Array.from(clone.getElementsByClassName(className))
-        .forEach((el: HTMLElement) => el.classList.remove(className));
-      });
+        .forEach((el: HTMLElement) => el.classList.remove(className))
+      })
 
       // create a unifile batch action
       return {
@@ -155,94 +155,94 @@ export class DomPublisher {
         path: this.rootPath + '/' + this.getDestFolder('.html', null) + '/' + fileName,
         displayName: fileName, // FIXME: this is not part of a unifile action
         content: '<!doctype html>' + clone.documentElement.outerHTML,
-      };
-    });
+      }
+    })
   }
 
   extractAssets(baseUrl: string|URL, absoluteRootUrl?: string): {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]} {
     // all scripts, styles and assets from head => local
-    const files: File[] = [];
+    const files: File[] = []
     DomTools.transformPaths(this.dom, null, (path, el, isInHead) => {
       // el may be null if the path comes from the JSON object holding Silex data
       // This is never supposed to happen because the tag holding the JSON object
       // is removed from the head tag in DomPublisher::cleanup.
       // But sometimes it appears that the tags are in the body
       // Maybe we should change cleanup to look for the tagsToRemove also in the body?
-      const tagName = el ? el.tagName : null;
+      const tagName = el ? el.tagName : null
 
-      const url = new URL(path, baseUrl);
+      const url = new URL(path, baseUrl)
 
       if (this.isDownloadable(url)) {
-        const fileName = Path.basename(url.pathname);
-        const destFolder = this.getDestFolder(Path.extname(url.pathname), tagName);
+        const fileName = Path.basename(url.pathname)
+        const destFolder = this.getDestFolder(Path.extname(url.pathname), tagName)
         if (destFolder) {
-          const destPath = `${destFolder}/${fileName}`;
+          const destPath = `${destFolder}/${fileName}`
           files.push({
             original: path,
             srcPath: url.href,
             destPath: this.rootPath + '/' + destPath,
             tagName,
             displayName: fileName,
-          });
+          })
           if (!!absoluteRootUrl) {
-            return absoluteRootUrl + destPath;
+            return absoluteRootUrl + destPath
           } else if (tagName) {
             // not an URL from a style sheet
-            return destPath;
+            return destPath
           } else if (isInHead) {
             // URL from a style sheet
             // called from '/css'
-            return '../' + destPath;
+            return '../' + destPath
           }
           // URL from a style sheet
           // called from './' because it is in the body and not moved to an external CSS
-          return destPath;
+          return destPath
         }
       }
-      return null;
-    });
+      return null
+    })
 
     // final js script to store in js/script.js
-    const scriptTags = [];
+    const scriptTags = []
     Array.from(this.doc.head.querySelectorAll('script'))
     .forEach((tag) => {
       if (!tag.src && tag.innerHTML) {
-        tag.parentElement.removeChild(tag);
-        scriptTags.push(tag);
+        tag.parentElement.removeChild(tag)
+        scriptTags.push(tag)
       }
-    });
+    })
 
     // link the user's script
     if (scriptTags.length > 0) {
-      const scriptTagSrc = this.doc.createElement('script');
-      scriptTagSrc.src = `${ absoluteRootUrl || '' }js/script.js`;
-      scriptTagSrc.type = 'text/javascript';
-      this.doc.head.appendChild(scriptTagSrc);
+      const scriptTagSrc = this.doc.createElement('script')
+      scriptTagSrc.src = `${ absoluteRootUrl || '' }js/script.js`
+      scriptTagSrc.type = 'text/javascript'
+      this.doc.head.appendChild(scriptTagSrc)
     } else {
-      console.info('no script found in head');
+      console.info('no script found in head')
     }
 
     // add head css
-    const styleTags = [];
+    const styleTags = []
     Array.from(this.doc.head.querySelectorAll('style'))
     .forEach((tag) => {
-      tag.parentElement.removeChild(tag);
-      styleTags.push(tag);
-    });
+      tag.parentElement.removeChild(tag)
+      styleTags.push(tag)
+    })
 
     // link the user's stylesheet
     if (styleTags.length > 0) {
-      const cssTagSrc = this.doc.createElement('link');
-      cssTagSrc.href = `${ absoluteRootUrl || '' }css/styles.css`;
-      cssTagSrc.rel = 'stylesheet';
-      cssTagSrc.type = 'text/css';
-      this.doc.head.appendChild(cssTagSrc);
+      const cssTagSrc = this.doc.createElement('link')
+      cssTagSrc.href = `${ absoluteRootUrl || '' }css/styles.css`
+      cssTagSrc.rel = 'stylesheet'
+      cssTagSrc.type = 'text/css'
+      this.doc.head.appendChild(cssTagSrc)
     } else {
-      console.warn('no styles found in head');
+      console.warn('no styles found in head')
     }
 
     // put back the user head now that all other scrips and styles are moved to external files
-    this.doc.head.innerHTML += this.userHead;
+    this.doc.head.innerHTML += this.userHead
     // this.doc.head.appendChild(this.doc.createTextNode(this.userHead));
 
     // cleanup classes used by Silex during edition
@@ -252,28 +252,28 @@ export class DomPublisher {
     // do a first pass, in order to avoid replacing the elements in the <a> containers
     const links = Array.from(this.doc.body.querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}[${Constants.LINK_ATTR}]`))
     .forEach((element: HTMLElement) => {
-      const href = element.getAttribute(Constants.LINK_ATTR);
-      element.removeAttribute(Constants.LINK_ATTR);
+      const href = element.getAttribute(Constants.LINK_ATTR)
+      element.removeAttribute(Constants.LINK_ATTR)
 
-      const replacement = this.doc.createElement('a');
-      replacement.setAttribute('href', href);
-      replacement.innerHTML = element.innerHTML;
+      const replacement = this.doc.createElement('a')
+      replacement.setAttribute('href', href)
+      replacement.innerHTML = element.innerHTML
       for (let attrIdx = 0; attrIdx < element.attributes.length; attrIdx++) {
-        const nodeName = element.attributes.item(attrIdx).nodeName;
-        const nodeValue = element.attributes.item(attrIdx).nodeValue;
-        replacement.setAttribute(nodeName, nodeValue);
+        const nodeName = element.attributes.item(attrIdx).nodeName
+        const nodeValue = element.attributes.item(attrIdx).nodeValue
+        replacement.setAttribute(nodeName, nodeValue)
       }
       // insert the clone at the place of the original and remove the original
       // FIXME: bug when there is a link in the content of an element with an external link set
       // see issue https://github.com/silexlabs/Silex/issues/56
-      element.parentElement.replaceChild(replacement, element);
-    });
+      element.parentElement.replaceChild(replacement, element)
+    })
 
     return {
       scriptTags,
       styleTags,
       files,
-    };
+    }
   }
 
   /**
@@ -286,7 +286,7 @@ export class DomPublisher {
     return url.search === ''
     // do not download data:* images
     && url.protocol !== 'data:'
-    && url.origin === this.rootUrl;
+    && url.origin === this.rootUrl
   }
 
 }

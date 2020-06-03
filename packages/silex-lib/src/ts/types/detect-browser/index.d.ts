@@ -1,3 +1,3 @@
 declare module 'detect-browser' {
-  export function detect(): any;
+  export function detect(): any
 }

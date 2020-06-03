@@ -10,12 +10,12 @@
  */
 
 import { CSSRuleInfo, DataSources } from '../site-store/types'
-import { Constants } from '../../constants';
-import { ElementState, ElementId, ElementType, Link, ElementData } from './types';
+import { Constants } from '../../constants'
+import { ElementState, ElementId, ElementType, Link, ElementData } from './types'
 import { Prodotype } from '../externs'
 import { Url } from '../utils/Url'
-import { getEmptyElementData } from '../element-store/utils';
-import { styleToString } from '../utils/styles';
+import { getEmptyElementData } from '../element-store/utils'
+import { styleToString } from '../utils/styles'
 
 /**
  * @fileoverview Dom manipulation methods, mostly used by observers. Cross platform, it needs to run client and server side
@@ -57,9 +57,9 @@ export function reorderElements(parent: HTMLElement, elements: HTMLElement[]) {
  */
 export function setLink(element: HTMLElement, link: Link) {
   if (link) {
-    element.setAttribute(Constants.LINK_ATTR, link.value);
+    element.setAttribute(Constants.LINK_ATTR, link.value)
   } else {
-    element.removeAttribute(Constants.LINK_ATTR);
+    element.removeAttribute(Constants.LINK_ATTR)
   }
 }
 
@@ -83,52 +83,52 @@ export function createDomElement(
     doc: HTMLDocument, id: ElementId, type: ElementType, parent: HTMLElement, isSectionContent: boolean
   }) {
   // create the element
-  let element: HTMLElement = null;
+  let element: HTMLElement = null
   switch (type) {
     // container
     case ElementType.CONTAINER:
-      element = createContainerElement(doc);
-      break;
+      element = createContainerElement(doc)
+      break
 
     // section
     case ElementType.SECTION:
-      element = createSectionElement(doc);
-      break;
+      element = createSectionElement(doc)
+      break
 
     // text
     case ElementType.TEXT:
-      element = createTextElement(doc);
-      break;
+      element = createTextElement(doc)
+      break
 
     // HTML box
     case ElementType.HTML:
-      element = createHtmlElement(doc);
-      break;
+      element = createHtmlElement(doc)
+      break
 
     // Image
     case ElementType.IMAGE:
-      element = createImageElement(doc);
-      break;
+      element = createImageElement(doc)
+      break
 
     default: throw new Error('unknown type: ' + type)
   }
 
   // init the element
-  element.classList.add(Constants.EDITABLE_CLASS_NAME);
+  element.classList.add(Constants.EDITABLE_CLASS_NAME)
 
   // add css class for Silex styles
-  element.classList.add(type.toString());
+  element.classList.add(type.toString())
 
   // element id
   element.setAttribute(Constants.ELEMENT_ID_ATTR_NAME, id)
-  element.classList.add(id);
+  element.classList.add(id)
 
   if (parent) {
     // add to the body
     if (type === ElementType.SECTION && parent !== doc.body) {
       throw new Error('Section can only be added to the body')
     }
-    parent.appendChild(element);
+    parent.appendChild(element)
   } else {
     console.info('element not yet created in the dom')
   }
@@ -140,26 +140,26 @@ export function createDomElement(
  */
 function createContainerElement(doc: HTMLDocument): HTMLElement {
   // create the conatiner
-  const element = doc.createElement('div');
-  element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
-  return element;
+  const element = doc.createElement('div')
+  element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER)
+  return element
 }
 function createElementWithContent(doc: HTMLDocument, className: string): HTMLElement {
   // create the element
-  const element = doc.createElement('div');
-  element.setAttribute(Constants.TYPE_ATTR, className);
+  const element = doc.createElement('div')
+  element.setAttribute(Constants.TYPE_ATTR, className)
 
   // create the container for text content
-  const content = doc.createElement('div');
+  const content = doc.createElement('div')
 
   // add empty content
-  element.appendChild(content);
+  element.appendChild(content)
 
   // add a marker to find the inner content afterwards, with getContent
-  content.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
+  content.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME)
 
   // done
-  return element;
+  return element
 }
 
 /**
@@ -168,8 +168,8 @@ function createElementWithContent(doc: HTMLDocument, className: string): HTMLEle
  */
 function createSectionElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = doc.createElement('div');
-  element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER);
+  const element = doc.createElement('div')
+  element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER)
   // element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
   // element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
   // element.classList.add(ElementType.CONTAINER);
@@ -183,7 +183,7 @@ function createSectionElement(doc: HTMLDocument): HTMLElement {
   // element.appendChild(content);
 
   // done
-  return element;
+  return element
 }
 
 /**
@@ -192,19 +192,19 @@ function createSectionElement(doc: HTMLDocument): HTMLElement {
  */
 function createTextElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = createElementWithContent(doc, ElementType.TEXT);
+  const element = createElementWithContent(doc, ElementType.TEXT)
 
   // add default content
-  const content = getContentNode(element);
-  content.innerHTML = '<p>New text box</p>';
+  const content = getContentNode(element)
+  content.innerHTML = '<p>New text box</p>'
 
   // add normal class for default text formatting
   // sometimes there is only in text node in content
   // e.g. whe select all + remove formatting
-  content.classList.add('normal');
+  content.classList.add('normal')
 
   // done
-  return element;
+  return element
 }
 
 /**
@@ -213,17 +213,17 @@ function createTextElement(doc: HTMLDocument): HTMLElement {
  */
 function createHtmlElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = doc.createElement('div');
-  element.setAttribute(Constants.TYPE_ATTR, ElementType.HTML);
+  const element = doc.createElement('div')
+  element.setAttribute(Constants.TYPE_ATTR, ElementType.HTML)
 
   // create the container for html content
-  const htmlContent = doc.createElement('div');
-  htmlContent.innerHTML = '<p>New HTML box</p>';
-  element.appendChild(htmlContent);
+  const htmlContent = doc.createElement('div')
+  htmlContent.innerHTML = '<p>New HTML box</p>'
+  element.appendChild(htmlContent)
 
   // add a marker to find the inner content afterwards, with getContent
-  htmlContent.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
-  return element;
+  htmlContent.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME)
+  return element
 }
 
 /**
@@ -232,9 +232,9 @@ function createHtmlElement(doc: HTMLDocument): HTMLElement {
  */
 function createImageElement(doc: HTMLDocument): HTMLElement {
   // create the element
-  const element = doc.createElement('div');
-  element.setAttribute(Constants.TYPE_ATTR, ElementType.IMAGE);
-  return element;
+  const element = doc.createElement('div')
+  element.setAttribute(Constants.TYPE_ATTR, ElementType.IMAGE)
+  return element
 }
 
 export function deleteStyleFromDom(doc, elementId, isMobile) {
@@ -243,7 +243,7 @@ export function deleteStyleFromDom(doc, elementId, isMobile) {
 
   // update or create the rule
   if (cssRuleObject) {
-    styleSheet.deleteRule(cssRuleObject.index);
+    styleSheet.deleteRule(cssRuleObject.index)
   }
 }
 
@@ -259,42 +259,42 @@ export function writeStyleToDom(doc: HTMLDocument, element: ElementData, isMobil
   if (Object.keys(style).filter((key) => typeof(style[key]) !== 'undefined').length > 0) {
     // convert style to string
     // we use the class name because elements have their ID as a css class too
-    const styleStr = '.' + elementId + '{' + styleToString(style, element.useMinHeight) + '} ';
+    const styleStr = '.' + elementId + '{' + styleToString(style, element.useMinHeight) + '} '
     if (isMobile) {
       // add the rule to the dom to see the changes, mobile rules after
       // desktop ones
-      styleSheet.insertRule(addMediaQuery(styleStr), styleSheet.cssRules.length);
+      styleSheet.insertRule(addMediaQuery(styleStr), styleSheet.cssRules.length)
     } else {
-      styleSheet.insertRule(styleStr, 0);
+      styleSheet.insertRule(styleStr, 0)
     }
   }
 }
 
 function getInlineStyleSheet(doc: Document): CSSStyleSheet {
   // make sure of the existance of the style tag with Silex definitions
-  let styleTag: HTMLStyleElement = doc.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME);
+  let styleTag: HTMLStyleElement = doc.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME)
   if (!styleTag) {
-    styleTag = doc.createElement('style');
-    styleTag.classList.add(Constants.INLINE_STYLE_TAG_CLASS_NAME);
-    styleTag.setAttribute('type', 'text/css');
-    doc.head.appendChild(styleTag);
+    styleTag = doc.createElement('style')
+    styleTag.classList.add(Constants.INLINE_STYLE_TAG_CLASS_NAME)
+    styleTag.setAttribute('type', 'text/css')
+    doc.head.appendChild(styleTag)
   }
   for (const s of doc.styleSheets) {
     const cssStyleSheet = s as CSSStyleSheet
     if (
       (cssStyleSheet.ownerNode && cssStyleSheet.ownerNode === styleTag) // case of browser
       || cssStyleSheet === styleTag.sheet) {
-      return cssStyleSheet;
+      return cssStyleSheet
     }
   }
-  console.error('no stylesheet found');
-  return null;
+  console.error('no stylesheet found')
+  return null
 }
 
 function findCssRule(styleSheet: CSSStyleSheet, elementId: string, isMobile: boolean): CSSRuleInfo {
   // find the rule for the given element
   for (let idx = 0; idx < styleSheet.cssRules.length; idx++) {
-    const cssRule = styleSheet.cssRules[idx] as any; // should it be CSSRule ?
+    const cssRule = styleSheet.cssRules[idx] as any // should it be CSSRule ?
     // we use the class name because elements have their ID as a css class too
     if ((isMobile === false && cssRule.selectorText === '.' + elementId) ||
         (cssRule.media && cssRule.cssRules && cssRule.cssRules[0] &&
@@ -303,10 +303,10 @@ function findCssRule(styleSheet: CSSStyleSheet, elementId: string, isMobile: boo
         rule: cssRule,
         parent: styleSheet,
         index: idx,
-      };
+      }
     }
   }
-  return null;
+  return null
 }
 
 export function hideOnDesktop(domEl) {
@@ -367,7 +367,7 @@ export function getInnerHtml(element: HTMLElement): string {
 function deactivateScripts(html: string): string {
   return html.replace(
       /<script.*class="silex-script".*?>/gi,
-      '<script type="text/notjavascript" class="silex-script">');
+      '<script type="text/notjavascript" class="silex-script">')
 }
 
 /**
@@ -376,7 +376,7 @@ function deactivateScripts(html: string): string {
  */
 function reactivateScripts(html: string): string {
   return html.replace(
-      /type="text\/notjavascript"/gi, 'type="text/javascript"');
+      /type="text\/notjavascript"/gi, 'type="text/javascript"')
 }
 
 /**
@@ -403,9 +403,9 @@ export function executeScripts(win: Window, element: HTMLElement) {
 
 export function removeWysihtmlMarkup(root: HTMLElement|Document) {
   Array.from(root.querySelectorAll('.wysihtml-editor')).forEach((el) => {
-    el.classList.remove('wysihtml-sandbox');
-    el.removeAttribute('contenteditable');
-  });
+    el.classList.remove('wysihtml-sandbox')
+    el.removeAttribute('contenteditable')
+  })
 }
 
 /**
@@ -418,53 +418,53 @@ export async function setImageUrl(
     errCbk: ((p1: HTMLElement, p2: string) => void)) {
   if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
     // get the image tag
-    const img = getContentNode(element) as HTMLImageElement;
+    const img = getContentNode(element) as HTMLImageElement
     if (img) {
       // add loading asset
-      element.classList.add(Constants.LOADING_ELEMENT_CSS_CLASS);
+      element.classList.add(Constants.LOADING_ELEMENT_CSS_CLASS)
 
       // remove previous img tag
-      const imgTags = Array.from(element.querySelectorAll('img.' + Constants.ELEMENT_CONTENT_CLASS_NAME));
+      const imgTags = Array.from(element.querySelectorAll('img.' + Constants.ELEMENT_CONTENT_CLASS_NAME))
       imgTags.forEach((imgTag: HTMLImageElement) => {
-        imgTag.parentElement.removeChild(imgTag);
-      });
+        imgTag.parentElement.removeChild(imgTag)
+      })
 
       try {
         // load the new image
-        const loadedImg: HTMLImageElement = await loadImage(url);
+        const loadedImg: HTMLImageElement = await loadImage(url)
 
         // add the image to the element
-        element.appendChild(loadedImg);
+        element.appendChild(loadedImg)
 
         // add a marker to find the inner content afterwards, with
         // getContent
-        loadedImg.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
+        loadedImg.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME)
 
         // remove loading asset
-        element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS);
+        element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS)
 
         // callback
         if (cbk) {
-          cbk(loadedImg.naturalWidth, loadedImg.naturalHeight);
+          cbk(loadedImg.naturalWidth, loadedImg.naturalHeight)
         }
       } catch (e) {
-        console.error('An error occured while loading the image.', element, e);
+        console.error('An error occured while loading the image.', element, e)
 
         // callback
         if (errCbk) {
-          errCbk(element, 'An error occured while loading the image. ' + (e.message || ''));
+          errCbk(element, 'An error occured while loading the image. ' + (e.message || ''))
         }
       }
     } else {
-      console.error('The image could not be retrieved from the element.', element);
+      console.error('The image could not be retrieved from the element.', element)
       if (errCbk) {
-        errCbk(element, 'The image could not be retrieved from the element.');
+        errCbk(element, 'The image could not be retrieved from the element.')
       }
     }
   } else {
-    console.error('The element is not an image.', element);
+    console.error('The element is not an image.', element)
     if (errCbk) {
-      errCbk(element, 'The element is not an image.');
+      errCbk(element, 'The element is not an image.')
     }
   }
 }
@@ -474,24 +474,24 @@ export async function setImageUrl(
  */
 async function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image();
+    const img = new Image()
     img.onload = (e) => {
-      img.onload = null;
-      img.onerror = null;
-      resolve(img);
-    };
+      img.onload = null
+      img.onerror = null
+      resolve(img)
+    }
     img.onerror = (e: Event) => {
-      img.onload = null;
-      img.onerror = null;
-      reject(e);
-    };
+      img.onload = null
+      img.onerror = null
+      reject(e)
+    }
 
     // add cache control
     const uncached = Url.addCacheControl(url)
 
     // start loading
-    img.src = uncached;
-  });
+    img.src = uncached
+  })
 }
 
 

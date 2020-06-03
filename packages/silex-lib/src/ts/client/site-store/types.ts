@@ -9,8 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { TemplateName, ProdotypeDependency } from '../element-store/types';
-import { FileInfo } from '../io/CloudStorage';
+import { TemplateName, ProdotypeDependency } from '../element-store/types'
+import { FileInfo } from '../io/CloudStorage'
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side
@@ -57,32 +57,32 @@ export interface SiteState {
  * data sources of the data source manager (settings)
  */
 export interface DataSource {
-  href: string;
-  root: string;
-  data?: object;
-  structure?: object;
+  href: string
+  root: string
+  data?: object
+  structure?: object
 }
 
-export interface DataSources { [key: string]: DataSource; }
+export interface DataSources { [key: string]: DataSource }
 
 /**
  * fonts of the font manager (settings)
  */
 export interface Font {
-  family: string;
-  href: string;
+  family: string
+  href: string
 }
 
 // TODO: move these to the server side?
 export interface PublicationOptions {
-  file: FileInfo;
-  publicationPath: FileInfo;
-  provider: Provider;
+  file: FileInfo
+  publicationPath: FileInfo
+  provider: Provider
 }
 
 export interface Hosting {
-  providers: Provider[];
-  skipHostingSelection: boolean;
+  providers: Provider[]
+  skipHostingSelection: boolean
 }
 
 export interface Provider {
@@ -112,42 +112,42 @@ export interface VHost {
  * @see components.StyleEditorPane
  */
 export interface StyleDataObject {
-  [key: string]: StyleData;
+  [key: string]: StyleData
 }
 
-export type StyleName = string;
+export type StyleName = string
 
 export interface CssRule {
-  [key: string]: CssPropertyValue;
+  [key: string]: CssPropertyValue
 }
 
 export interface StyleData {
-  className: StyleName;
-  displayName: string;
-  templateName: TemplateName;
-  styles: {[key: string]: VisibilityData};
+  className: StyleName
+  displayName: string
+  templateName: TemplateName
+  styles: {[key: string]: VisibilityData}
 }
 
 export interface VisibilityData {
-  [key: string]: PseudoClassData;
+  [key: string]: PseudoClassData
 }
 
 export interface PseudoClassData {
-  [key: string]: CssRule|TemplateName|StyleName;
+  [key: string]: CssRule|TemplateName|StyleName
 }
 
 export interface CSSRuleInfo {
-  rule: CSSRule;
-  parent: CSSRule|StyleSheet;
-  index: number;
+  rule: CSSRule
+  parent: CSSRule|StyleSheet
+  index: number
 }
 
-export type Visibility = string;
+export type Visibility = string
 
-export type PseudoClass = string;
+export type PseudoClass = string
 
-export type TagName = string;
+export type TagName = string
 
-export type CssPropertyName = string;
+export type CssPropertyName = string
 
-export type CssPropertyValue = string;
+export type CssPropertyValue = string

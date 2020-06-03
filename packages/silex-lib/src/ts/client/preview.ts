@@ -1,8 +1,8 @@
 import { SilexNotification } from './components/Notification'
-import { getCurrentPage } from './page-store/filters';
+import { getCurrentPage } from './page-store/filters'
 import { getSite } from './site-store/index'
-import { getUi } from './ui-store/index';
-import { isDirty } from './dirty';
+import { getUi } from './ui-store/index'
+import { isDirty } from './dirty'
 import { save } from './file'
 
 /**
@@ -13,18 +13,18 @@ import { save } from './file'
  * view this file in a new window
  */
 export function preview() {
-  doPreview(false);
+  doPreview(false)
 }
 
 /**
  * view this file in responsize
  */
 export function previewResponsize() {
-  doPreview(true);
+  doPreview(true)
 }
 
 // store the window viewport for later use
-let previewWindow: Window;
+let previewWindow: Window
 
 /**
  * open a popup or refresh the allready opened one
@@ -33,25 +33,25 @@ let previewWindow: Window;
 export function setPreviewWindowLocation(opt_location?: string) {
   if (previewWindow && !previewWindow.closed) {
     if (opt_location) {
-      previewWindow.close();
-      previewWindow = window.open(opt_location);
-      previewWindow.focus();
+      previewWindow.close()
+      previewWindow = window.open(opt_location)
+      previewWindow.focus()
     } else {
       try {
         if (previewWindow.location.href !== 'about:blank') {
           // only when loaded, reload
-          previewWindow.location.reload(true);
+          previewWindow.location.reload(true)
         }
       } catch (e) {
         // case of responsize
-        previewWindow.frames[1].location.reload(true);
+        previewWindow.frames[1].location.reload(true)
       }
     }
-    previewWindow.focus();
+    previewWindow.focus()
   } else {
     if (opt_location) {
-      previewWindow = window.open(opt_location);
-      previewWindow.focus();
+      previewWindow = window.open(opt_location)
+      previewWindow.focus()
     }
   }
 }
@@ -69,10 +69,10 @@ function doPreview(inResponsize: boolean) {
     if (inResponsize) {
       setPreviewWindowLocation(
           'http://www.responsize.org/?url=' +
-          window.location.origin + getSite().file.absPath + page.link.value);
+          window.location.origin + getSite().file.absPath + page.link.value)
     } else {
       setPreviewWindowLocation(
-          window.location.origin + getSite().file.absPath + page.link.value);
+          window.location.origin + getSite().file.absPath + page.link.value)
     }
     //    tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }
@@ -84,25 +84,25 @@ function doPreview(inResponsize: boolean) {
         () => {},
         (err) => {
           //    tracker.trackAction('controller-events', 'error', 'view.file', -1);
-        });
-  };
+        })
+  }
   if (getSite().file && !getSite().isTemplate) {
     // open the preview window
     // it is important to do it now, on the user click so that it is not
     // blocked it will be refreshed after save
-    doOpenPreview();
+    doOpenPreview()
 
     // also save
     if (isDirty()) {
-      doSaveTheFile();
+      doSaveTheFile()
     }
   } else {
     SilexNotification.alert(
       'Preview website',
       'You need to save the website before I can show a preview',
       () => {
-        doSaveTheFile();
+        doSaveTheFile()
       },
-    );
+    )
   }
 }

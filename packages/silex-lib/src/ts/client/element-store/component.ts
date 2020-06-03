@@ -13,13 +13,13 @@ import {
   ComponentData,
   ElementState,
   TemplateName
-} from '../element-store/types';
+} from '../element-store/types'
 import { Config } from '../ClientConfig'
 import { Constants } from '../../constants'
 import { Prodotype, ProdotypeCompDef } from '../externs'
 import { PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../site-store/types'
-import { addMediaQuery, renderWithProdotype } from '../element-store/dom';
-import { getElements } from '../element-store/index';
+import { addMediaQuery, renderWithProdotype } from '../element-store/dom'
+import { getElements } from '../element-store/index'
 import { getPseudoClassData } from '../site-store/utils'
 import { getSite, updateSite } from '../site-store/index'
 import { getUiElements } from '../ui-store/UiElements'

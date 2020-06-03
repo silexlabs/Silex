@@ -1,6 +1,6 @@
-import { ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER } from '../../test-utils/data-set';
-import { getState } from './index';
-import { initializeElements, fromElementData } from '../element-store/index';
+import { ELEM_TEXT, ELEM_IMAGE, ELEM_CONTAINER } from '../../test-utils/data-set'
+import { getState } from './index'
+import { initializeElements, fromElementData } from '../element-store/index'
 
 beforeEach(() => {
 })

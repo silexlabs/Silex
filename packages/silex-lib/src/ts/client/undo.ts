@@ -1,10 +1,10 @@
-import { ActionCreators, StateWithHistory } from 'redux-undo';
+import { ActionCreators, StateWithHistory } from 'redux-undo'
 
-import { State } from './store/types';
+import { State } from './store/types'
 import { store } from './store/index'
 
 function getResetUndo(state: StateWithHistory<State>): StateWithHistory<State> {
-  //store.dispatch(ActionCreators.clearHistory())
+  // store.dispatch(ActionCreators.clearHistory())
   return {
     ...state,
     past: [],

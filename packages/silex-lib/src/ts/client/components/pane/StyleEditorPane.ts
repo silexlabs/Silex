@@ -21,8 +21,8 @@ import {
   PseudoClass,
   VisibilityData,
   PseudoClassData
-} from '../../site-store/types';
-import { browse } from '../../element-store/utils';
+} from '../../site-store/types'
+import { browse } from '../../element-store/utils'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getComponentsDef, openStyleEditor } from '../../element-store/component'
 import { getCurrentPage } from '../../page-store/filters'
@@ -30,10 +30,10 @@ import {
   getElements,
   subscribeElements,
   updateElements
-} from '../../element-store/index';
+} from '../../element-store/index'
 import { getSite } from '../../site-store/index'
 import { initStyle, removeStyle, componentStyleChanged } from '../../site-store/dispatchers'
-import { store } from '../../store/index';
+import { store } from '../../store/index'
 import { updateUi, getUi } from '../../ui-store/index'
 
 /**

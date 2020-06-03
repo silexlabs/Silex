@@ -11,14 +11,14 @@
 
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { getBody, getSelectedElements } from '../../element-store/filters';
-import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils';
-import { getUi, subscribeUi } from '../../ui-store/index';
+import { getBody, getSelectedElements } from '../../element-store/filters'
+import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils'
+import { getUi, subscribeUi } from '../../ui-store/index'
 import {
   subscribeElements,
   updateElements
-} from '../../element-store/index';
-import { subscribeSite } from '../../site-store/index';
+} from '../../element-store/index'
+import { subscribeSite } from '../../site-store/index'
 
 /**
  * @fileoverview Property pane, displayed in the property tool box
