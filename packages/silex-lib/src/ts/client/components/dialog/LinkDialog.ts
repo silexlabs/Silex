@@ -13,9 +13,10 @@
  * @fileoverview The dialog to edit links
  *
  */
-import { getPages } from '../../page-store/index';
-import {SilexNotification} from '../Notification';
+import { Constants } from '../../../constants';
 import { LinkData } from '../../element-store/types'
+import {SilexNotification} from '../Notification';
+import { getPages } from '../../page-store/index';
 
 export const LINK_ATTRIBUTES =
     ['href', 'rel', 'target', 'type', 'title', 'download'];
@@ -51,7 +52,7 @@ class LinkDialog {
     const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {});
 
     // external link data
-    const isExternal = !linkData.href.startsWith('#!');
+    const isExternal = !linkData.href.startsWith(Constants.PAGE_NAME_PREFIX);
     SilexNotification.prompt(`
       Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor"> Help</a>
     `, 'unused', 'unused', 'unused', (accept, unused) => {
@@ -150,7 +151,7 @@ class LinkDialog {
             <label for="link-editor-page">Page</label>
             <select autocomplete="nope" class="tabbed alertify-text page big" id="link-editor-page">
               <option value=""${isExternal ? ' selected ' : ''}></option>
-              ${getPages().map((page) => `<option value="#!${page.id}"${        !isExternal && '#!' + page.id === linkData.href ? ' selected ' : ''} >
+              ${getPages().map((page) => `<option value="${Constants.PAGE_NAME_PREFIX + page.id}"${        !isExternal && Constants.PAGE_NAME_PREFIX + page.id === linkData.href ? ' selected ' : ''} >
                 ${page.displayName}
               </option>`)}
             </select>

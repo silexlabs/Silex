@@ -1,4 +1,5 @@
 import { SilexNotification } from './components/Notification'
+import { getCurrentPage } from './page-store/filters';
 import { getSite } from './site-store/index'
 import { getUi } from './ui-store/index';
 import { isDirty } from './dirty';
@@ -64,15 +65,14 @@ export function setPreviewWindowLocation(opt_location?: string) {
 function doPreview(inResponsize: boolean) {
   //    tracker.trackAction('controller-events', 'request', 'view.file', 0);
   const doOpenPreview = () => {
+    const page = getCurrentPage()
     if (inResponsize) {
       setPreviewWindowLocation(
           'http://www.responsize.org/?url=' +
-          window.location.origin + getSite().file.absPath + '#!' +
-          getUi().currentPageId);
+          window.location.origin + getSite().file.absPath + page.link.value);
     } else {
       setPreviewWindowLocation(
-          window.location.origin + getSite().file.absPath + '#!' +
-          getUi().currentPageId);
+          window.location.origin + getSite().file.absPath + page.link.value);
     }
     //    tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }

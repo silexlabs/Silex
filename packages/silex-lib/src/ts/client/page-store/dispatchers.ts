@@ -1,3 +1,4 @@
+import { Constants } from '../../constants';
 import { LinkType } from '../element-store/types'
 import { PageState } from './types'
 import { SilexNotification } from '../components/Notification'
@@ -21,7 +22,7 @@ export function createPage(): Promise<void> {
         displayName,
         link: {
           type: LinkType.PAGE,
-          value: '#!' + name,
+          value: Constants.PAGE_NAME_PREFIX + name,
         },
         canDelete: true,
         canRename: true,
@@ -57,7 +58,7 @@ export function editPage(pageData: PageState = getCurrentPage()) {
             displayName,
             link: {
               type: LinkType.PAGE,
-              value: '#!' + id,
+              value: Constants.PAGE_NAME_PREFIX + id,
             },
           },
         ]);
