@@ -1,15 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview This is the pane's base class
  * Property panes displayed in the property tool box.
  * Controls the params of the selected component.

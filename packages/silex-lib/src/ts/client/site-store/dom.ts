@@ -1,22 +1,10 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-import { Constants } from '../../constants'
-import { Font } from './types'
-
-/**
  * @fileoverview Site dom manipulation. Cross platform, it needs to run client and server side
  *
  */
 
+import { Constants } from '../../constants'
+import { Font } from './types'
 
 /**
  * set/get silex editable js script

@@ -1,22 +1,11 @@
+/**
+ * @fileoverview this is the API used to interact with the store
+ */
+
 import { subscribeToCrud, store } from '../store/index'
 import { PageState, PageData } from './types'
 import { PageAction } from '../store/actions'
 import { fromData, toData } from '../store/crud-store'
-
-/**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
- * @fileoverview this is the API used to interact with the store
- */
 
 export const fromPageData = (pages: PageData[]): PageState[] => fromData<PageData, PageState>(pages)
 export const toPageData = (pages: PageState[]): PageData[] => toData<PageState, PageData>(pages)

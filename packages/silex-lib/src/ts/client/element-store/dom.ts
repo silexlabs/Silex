@@ -1,12 +1,6 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Dom manipulation methods, mostly used by observers. Cross platform, it needs to run client and server side
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import { CSSRuleInfo, DataSources } from '../site-store/types'
@@ -14,15 +8,9 @@ import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType, Link, ElementData } from './types'
 import { Prodotype } from '../externs'
 import { Url } from '../utils/Url'
-import { getEmptyElementData } from '../element-store/utils'
 import { styleToString } from '../utils/styles'
 
-/**
- * @fileoverview Dom manipulation methods, mostly used by observers. Cross platform, it needs to run client and server side
- *
- */
-
- export function getDomElement(doc: HTMLDocument, element: ElementState): HTMLElement {
+export function getDomElement(doc: HTMLDocument, element: ElementState): HTMLElement {
   return getDomElementById(doc, element.id)
 }
 
@@ -33,10 +21,6 @@ export function getDomElementById(doc: HTMLDocument, elementId: ElementId): HTML
 export function getId(element: HTMLElement): ElementId {
   return element.getAttribute(Constants.ELEMENT_ID_ATTR_NAME)
 }
-
-// export function moveToContainer(element: HTMLElement, parent: HTMLElement) {
-//   parent.appendChild(element)
-// }
 
 export function reorderElements(parent: HTMLElement, elements: HTMLElement[]) {
   // attach to the new parent
@@ -167,22 +151,8 @@ function createElementWithContent(doc: HTMLDocument, className: string): HTMLEle
  * called from createElement
  */
 function createSectionElement(doc: HTMLDocument): HTMLElement {
-  // create the element
   const element = doc.createElement('div')
   element.setAttribute(Constants.TYPE_ATTR, ElementType.CONTAINER)
-  // element.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
-  // element.classList.add(Constants.PREVENT_RESIZABLE_CLASS_NAME);
-  // element.classList.add(ElementType.CONTAINER);
-
-  // // content element is both a container and a content element
-  // const content = createElement(ElementType.CONTAINER);
-  // content.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME);
-  // content.classList.add(ElementType.CONTAINER_CONTENT);
-  // content.classList.add(Constants.WEBSITE_WIDTH_CLASS_NAME);
-  // content.classList.add(Constants.PREVENT_DRAGGABLE_CLASS_NAME);
-  // element.appendChild(content);
-
-  // done
   return element
 }
 

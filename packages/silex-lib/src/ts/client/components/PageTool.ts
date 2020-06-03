@@ -1,15 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview The Silex PageTool class displays the list of pages
  *     and let the user interact with them.
  * @see silex.model.Page

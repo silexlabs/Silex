@@ -1,13 +1,12 @@
-import { SilexNotification } from './components/Notification'
-import { getCurrentPage } from './page-store/filters'
-import { getSite } from './site-store/index'
-import { getUi } from './ui-store/index'
-import { isDirty } from './dirty'
-import { save } from './file'
-
 /**
  * @fileoverview these functions show preview
  */
+
+import { SilexNotification } from './components/Notification'
+import { getCurrentPage } from './page-store/filters'
+import { getSite } from './site-store/index'
+import { isDirty } from './dirty'
+import { save } from './file'
 
 /**
  * view this file in a new window

@@ -1,15 +1,10 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
+ * @fileoverview Silex workspace is in charge of initialization of
+ *   the main UI elements.
+ * It refreshes the view when the window size changes
  */
 
-import { SilexNotification } from './Notification'
+ import { SilexNotification } from './Notification'
 import { Url } from '../utils/Url'
 import { getPropertySplitter } from './PropSplitter'
 import { getSiteIFrame } from './SiteFrame'
@@ -21,15 +16,6 @@ import { initPageTool } from './PageTool'
 import { initPropertyTool } from './PropertyTool'
 import { isDirty } from '../dirty'
 import { openRecent } from '../file'
-
-/**
- * @fileoverview Silex workspace is in charge of positionning
- *   the main UI elements.
- * It refreshes the view when the window size changes, and also when
- *   it is set as dirty. There is an invalidation mechanism to prevent
- *   redraw many times in the same key frame
- *
- */
 
 /**
  * create the workspace, start listening to window events
@@ -117,29 +103,3 @@ export function warnIfWindowTooSmall() {
         () => {})
   }
 }
-
-// /**
-//  * called on window resize and when the layout changes
-//  */
-// function resizeWorkspace(element: HTMLElement) {
-//   resizeWindow()
-//
-//   // // change the number of columns in the properties pannel
-//   // const container = element.querySelector('.silex-property-tool .main-container');
-//   // if (container.clientWidth < 500) {
-//   //   container.classList.add('size1');
-//   //   container.classList.remove('size2');
-//   //   container.classList.remove('size3');
-//   // } else {
-//   //   if (container.clientWidth < 750) {
-//   //     container.classList.remove('size1');
-//   //     container.classList.add('size2');
-//   //     container.classList.remove('size3');
-//   //   } else {
-//   //     if (container.clientWidth < 1000) {
-//   //       container.classList.remove('size1');
-//   //       container.classList.remove('size2');
-//   //       container.classList.add('size3');
-//   //     }
-//   //   }
-//   // }

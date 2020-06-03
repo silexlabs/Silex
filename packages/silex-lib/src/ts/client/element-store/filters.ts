@@ -1,22 +1,11 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Useful filters used to retrieve items in the store. Cross platform, it needs to run client and server side
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import { ElementId, ElementState } from './types'
 import { getElements } from './index'
 import { getDomElement } from './dom'
-
-/**
- * @fileoverview Useful filters used to retrieve items in the store. Cross platform, it needs to run client and server side
- *
- */
 
 export const getElementById = (id: ElementId, elements = getElements()): ElementState => elements.find((el) => el.id === id)
 export const getElementByDomElement = (doc: HTMLDocument, element: HTMLElement, elements = getElements()) => elements.find((el) => element === getDomElement(doc, el))

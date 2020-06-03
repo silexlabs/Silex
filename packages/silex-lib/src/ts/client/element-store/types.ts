@@ -1,21 +1,10 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Type definitions. Cross platform, it needs to run client and server side
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import { CrudState } from '../store/crud-store'
 import { CssRule } from '../site-store/types'
-
-/**
- * @fileoverview Type definitions. Cross platform, it needs to run client and server side
- *
- */
 
 /**
  * Elements
@@ -153,7 +142,6 @@ export interface ComponentData {
   data: any
 }
 
-// FIXME: the site should not have this array of deps, but each component should have its deps
 export interface ProdotypeDependency {
   [key: string]: string,
 }
@@ -161,4 +149,3 @@ export interface ProdotypeDependency {
 export interface ProdotypeDependencyTagAttr {
   [key: string]: string,
 }
-

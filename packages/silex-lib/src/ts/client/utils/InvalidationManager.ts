@@ -1,15 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview This class implements an invalidation mechanism.
  * This is useful when a method is called more often than needed
  * and you want to reduce the number of calls by skipping useless ones.

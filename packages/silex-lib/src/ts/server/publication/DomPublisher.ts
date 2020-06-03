@@ -1,12 +1,6 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Helper class used to cleanup the DOM when publishing a website
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import { URL } from 'url'
@@ -29,11 +23,6 @@ export interface Action {
   displayName: string
   content: string|Buffer
 }
-
-/**
- * @fileoverview Helper class used to cleanup the DOM when publishing a website
- *
- */
 
 export class DomPublisher {
 

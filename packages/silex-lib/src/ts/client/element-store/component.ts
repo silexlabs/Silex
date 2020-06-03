@@ -1,14 +1,3 @@
-/**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
 import {
   ComponentData,
   ElementState,
@@ -222,24 +211,6 @@ export function updateDepenedencies(type: string) {
       prodotypeDependencies,
     })
   }
-  // const head = model.head.getHeadElement()
-  // const components: ComponentData[] = getElements()
-  //   .filter((el) => el.type === ElementType.COMPONENT)
-  //   .map((el) => el.data.component)
-
-  // // remove unused dependencies (scripts and style sheets)
-  // const elements = Array.from(model.head.getHeadElement().querySelectorAll('[data-dependency]'))
-  // const unused = prodotypeComponent.getUnusedDependencies(elements, components)
-  // for (const el of unused) {
-  //   head.removeChild(el)
-  // }
-
-  // // add missing dependencies (scripts and style sheets)
-  // const missing = prodotypeComponent.getDependencies(components)
-  // for (const el of missing) {
-  //   el.setAttribute('data-dependency', '')
-  //   head.appendChild(el)
-  // }
 }
 
 /**
@@ -317,7 +288,7 @@ export function addMediaQueryIfMobileOnly(html: string, visibility: Visibility) 
  */
 export function setStyleToDom(doc: HTMLDocument, className: StyleName, pseudoClass: PseudoClass, visibility: Visibility, data: PseudoClassData, displayName: string) {
 
-  // // expose the class name and pseudo class to the prodotype template
+  // expose the class name and pseudo class to the prodotype template
   const newData = data || {}
   newData.className = className
   newData.pseudoClass = pseudoClass

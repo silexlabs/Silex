@@ -1,12 +1,5 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
+ * @fileoverview this is the API used to interact with the store
  */
 
 import { ElementAction } from '../store/actions'
@@ -14,18 +7,6 @@ import { store } from '../store/index'
 import { subscribeToCrud } from '../store/index'
 import { ElementData, ElementState } from './types'
 import { fromData, toData } from '../store/crud-store'
-
-/**
- * @fileoverview this is the API used to interact with the store
- */
-
-// /**
-//  * export const initializeElements = log(connect<ElementData[]>(initializeElements_), '[store] initializeElements')
-//  */
-// const log = (fun, label = 'auto log') => (...args) => {
-//   console.log(label, ...args)
-//   return fun(...args)
-// }
 
 export const fromElementData = (elements: ElementData[]): ElementState[] => fromData<ElementData, ElementState>(elements)
 export const toElementData = (elements: ElementState[]): ElementData[] => toData<ElementState, ElementData>(elements)

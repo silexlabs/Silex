@@ -1,15 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview This class is a color picker component used in the properties.
  * It let the user choose a color with an opacity, i.e. color is css
  * rgba(r,g,b,a) or no color at all, i.e. value is `transparent` It uses the

@@ -1,12 +1,6 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Property pane, displayed in the property tool box
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import { ElementState, ElementType } from '../../element-store/types'
@@ -19,11 +13,6 @@ import {
   updateElements
 } from '../../element-store/index'
 import { subscribeSite } from '../../site-store/index'
-
-/**
- * @fileoverview Property pane, displayed in the property tool box
- *
- */
 
 const FlexWrapSelect = '.flex-wrap-select'
 const JustifyContentSelect = '.justify-content-select'
