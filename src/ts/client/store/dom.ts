@@ -1,9 +1,9 @@
-import { PersistantData } from './types'
-import { Constants } from '../../constants'
-
 /**
  * @fileoverview Cross platform, it needs to run client and server side
  */
+
+import { PersistantData } from './types'
+import { Constants } from '../../constants'
 
 /**
  * write elements and pages data to the dom for the components and scripts to use

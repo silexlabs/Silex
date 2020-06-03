@@ -1,18 +1,6 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview This class handles the property panes,
- * Property panes displayed in the property tool box.
- * Controls the params of the selected component.
+ * which display the selection properties in the property tool box.
  *
  */
 
@@ -39,13 +27,6 @@ import {
 import { openToolbox } from '../ui-store/dispatchers'
 import { subscribeUi } from '../ui-store/index'
 import { updateElements } from '../element-store/index'
-
-/**
- * @fileoverview the Silex PropertyTool class handles the panes actually displaying the
- * properties
- *
- */
-
 
 // element which contains the UI
 const element = getUiElements().propertyTool
@@ -131,32 +112,7 @@ function togglePanel(el: HTMLElement) {
 function openTab(cssClass) {
   const tab = element.querySelector('.' + cssClass)
   selectTab(tab)
-  // element.classList.remove('params-tab');
-  // element.classList.remove('style-tab');
-  // element.classList.add('design-tab');
 }
-
-// /**
-//  * open the "params" tab
-//  */
-// export function openParamsTab() {
-//   const paramsTab = element.querySelector('.params');
-//   selectTab(paramsTab);
-//   element.classList.remove('design-tab');
-//   element.classList.remove('style-tab');
-//   element.classList.add('params-tab');
-// }
-//
-// /**
-//  * open the "style" tab
-//  */
-// export function openStyleTab() {
-//   const styleTab = element.querySelector('.style');
-//   selectTab(styleTab);
-//   element.classList.remove('design-tab');
-//   element.classList.remove('params-tab');
-//   element.classList.add('style-tab');
-// }
 
 function selectTab(tab) {
   Array.from(element.querySelectorAll('.tab'))
@@ -203,4 +159,3 @@ function editComponent(component: ElementState) {
     resetComponentEditor()
   }
 }
-

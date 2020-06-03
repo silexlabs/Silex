@@ -1,12 +1,6 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Cross platform, it needs to run client and server side
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import { Constants } from '../../constants'
@@ -32,12 +26,6 @@ import { openLinkDialog } from '../components/dialog/LinkDialog'
 import { removeElementsWithoutConfirm, selectBody } from './dispatchers'
 import { styleToString } from '../utils/styles'
 import { FileInfo } from '../io/CloudStorage'
-
-/**
- * @fileoverview Cross platform, it needs to run client and server side
- *
- */
-
 
 /**
  * constant for the prefix of the IDs given to Silex editable elements
@@ -382,28 +370,6 @@ export function getDisplayName(element: ElementState): string {
   }
 }
 
-// /**
-//  * set/get the image URL of an image element
-//  * @param element  container created by silex which contains an image
-//  * @return  the url of the image
-//  */
-// export function getImageUrl(element: HTMLElement): string {
-//   let url = '';
-//   if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
-//     // get the image tag
-//     const img = getContentNode(element);
-//     if (img) {
-//       url = img.getAttribute('src');
-//     } else {
-//       console.error(
-//           'The image could not be retrieved from the element.', element);
-//     }
-//   } else {
-//     console.error('The element is not an image.', element);
-//   }
-//   return url;
-// }
-
 /**
  * @param doc docment of the iframe containing the website
  * @return the string defining all elements styles
@@ -474,10 +440,6 @@ export function browse(e: Event, cbk: (p1: FileInfo[]) => any) {
 
   // browse with CE
   const promise = FileExplorer.getInstance().openFile()
-
-  // add tracking and undo/redo checkpoint
-  // track(promise, 'prodotype.browse')
-  // undoredo(promise)
 
   // handle the result
   promise

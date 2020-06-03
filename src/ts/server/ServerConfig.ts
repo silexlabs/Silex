@@ -1,15 +1,3 @@
-
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
-
 /**
  * @fileoverview this is where the default config is defined
  * The values can be overriden with env vars or before passing the config to Silex

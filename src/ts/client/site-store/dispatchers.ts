@@ -1,12 +1,7 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
+ * @fileoverview helpers to dispatch common actions on the store
+ * TODO: 1- remove all references to the store or dispatch => every function should take ElementState[] and return the changes to be made as an ElementState[]
+ * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
  */
 
 import { StyleName, StyleData, StyleDataObject, PseudoClass, PseudoClassData, Visibility } from './types'
@@ -15,13 +10,6 @@ import { getPseudoClassData } from './utils'
 import { getSite, updateSite } from './index'
 import { store } from '../store/index'
 import { updateElements } from '../element-store/index'
-
-/**
- * @fileoverview helpers to dispatch common actions on the store
- * TODO: 1- remove all references to the store or dispatch => every function should take ElementState[] and return the changes to be made as an ElementState[]
- * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
- */
-
 
 /**
  * save an empty style or reset a style

@@ -1,15 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview This is the dialog box containing the
  *     Cloud Explorer file picker
  *     this is only the UI part, to let user choose a file in the cloud

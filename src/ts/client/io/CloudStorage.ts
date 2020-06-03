@@ -1,14 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-/**
  * @fileoverview Service used to interact with the unifile server.
  *     This class is a singleton.
  *

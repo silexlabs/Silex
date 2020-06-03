@@ -1,15 +1,6 @@
-import { getUiElements } from '../ui-store/UiElements'
-import { getSiteIFrame } from './SiteFrame'
-
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Helper class for common tasks
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 interface Dialog {
@@ -29,10 +20,6 @@ interface Options {
   placeholder?: string
 }
 
-/**
- * @fileoverview Helper class for common tasks
- *
- */
 export class SilexNotification {
 
   static get isActive(): boolean {

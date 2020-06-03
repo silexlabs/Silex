@@ -1,12 +1,6 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
+ * @fileoverview Handle backward compatibility when a user opens a site for edition
  *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
  */
 
 import * as fs from 'fs'
@@ -22,11 +16,6 @@ import { ElementType } from '../../client/element-store/types'
  */
 const SECTION_CONTAINER: string = 'silex-container-content'
 
-
-/**
- * @fileoverview Handle backward compatibility when a user opens a site for edition
- *
- */
 export default class BackwardCompat {
   private data: PersistantData = null
   private frontEndVersion: string[]

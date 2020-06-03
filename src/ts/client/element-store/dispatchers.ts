@@ -1,12 +1,7 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
+ * @fileoverview helpers to dispatch common actions on the store
+ * TODO: 1- remove all references to the store or dispatch => every function should take ElementState[] and return the changes to be made as an ElementState[]
+ * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
  */
 
 import { Constants } from '../../constants'
@@ -41,12 +36,6 @@ import { getCreateAction } from './utils'
 import { getUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { store } from '../store/index'
-
-/**
- * @fileoverview helpers to dispatch common actions on the store
- * TODO: 1- remove all references to the store or dispatch => every function should take ElementState[] and return the changes to be made as an ElementState[]
- * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
- */
 
 /**
  * select the body and only the body
@@ -144,11 +133,6 @@ export const setHideOnDesktop = (element: ElementState, hide: boolean, elements 
  * FIXME: useless method
  */
 export const styleChanged = (name: string, value: string, selection: ElementState[], isMobile = getUi().mobileEditor, dispatch = store.dispatch) => {
-  // if (opt_isUndoable !== false) {
-  //   // undo checkpoint
-  //     //  undoCheckPoint();
-  // }
-
   // build the style change object
   const newStyle = {}
   newStyle[name] = value,

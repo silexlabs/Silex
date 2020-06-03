@@ -1,22 +1,10 @@
-import { UiState } from './types'
-import { UiAction } from '../store/actions'
-import { subscribeTo, store } from '../store/index'
-import { SilexStore } from '../store/types'
-
-/**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
 /**
  * @fileoverview this is the API used to interact with the store
  */
+
+import { UiState } from './types'
+import { UiAction } from '../store/actions'
+import { subscribeTo, store } from '../store/index'
 
 export const initializeUi = (data: UiState, dispatch = store.dispatch) => dispatch({
   type: UiAction.INITIALIZE,

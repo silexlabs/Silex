@@ -1,15 +1,4 @@
 /**
- * Silex, live web creation
- * http://projects.silexlabs.org/?/silex/
- *
- * Copyright (c) 2012 Silex Labs
- * http://www.silexlabs.org/
- *
- * Silex is available under the GPL license
- * http://www.silexlabs.org/silex/silex-licensing/
- */
-
-/**
  * @fileoverview The settings dialog which handles the file settings
  * TODO: refactor font list and data source list which should share more code
  * TODO: remove the logic to open tabs and handle it in CSS/HTML only with check boxes
