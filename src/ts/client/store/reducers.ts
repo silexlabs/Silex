@@ -72,6 +72,7 @@ export const siteReducer = (state: SiteState = {
 
 export const uiReducer = (state: UiState = {
   loading: LOADING.SILEX,
+  dirty: false,
   mobileEditor: false,
   currentPageId: null,
   currentToolbox: Toolboxes.PROPERTIES,

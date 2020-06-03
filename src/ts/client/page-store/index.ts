@@ -47,7 +47,7 @@ export const movePage = ({page, idx}: {page: PageState, idx: number}, dispatch =
   idx,
 })
 
-export const getPages = () => store.getState().pages
+export const getPages = () => store.getState().present.pages
 
 export const subscribePages = (cbk: (prevState: PageState[], nextState: PageState[]) => void, subscribe = store.subscribe): () => void => {
   return subscribeToCrud<PageState>('pages', cbk, subscribe)

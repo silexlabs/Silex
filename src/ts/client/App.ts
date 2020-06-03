@@ -20,6 +20,7 @@
  */
 
 import { detect } from 'detect-browser'
+
 import { Config } from './ClientConfig'
 import { LOADING } from './ui-store/types'
 import { SilexNotification } from './components/Notification'
@@ -29,6 +30,7 @@ import { getUi, updateUi } from './ui-store/index'
 import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
 import { openDashboardToLoadAWebsite } from './file'
+import { resetDirty } from './dirty';
 
 interface AppOptions {
   debug: boolean,
@@ -56,6 +58,7 @@ function afterInit() {
     ...getUi(),
     loading: LOADING.NONE,
   })
+  resetDirty()
 }
 
 // start Silex, called from host HTML page with window.silex.start()
@@ -110,4 +113,3 @@ function start({ debug }: AppOptions) {
     openDashboardToLoadAWebsite(() => afterInit(), () => afterInit())
   }
 }
-

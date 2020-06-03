@@ -19,13 +19,13 @@ import { fromData, toData } from '../store/crud-store'
  * @fileoverview this is the API used to interact with the store
  */
 
-/**
- * export const initializeElements = log(connect<ElementData[]>(initializeElements_), '[store] initializeElements')
- */
-const log = (fun, label = 'auto log') => (...args) => {
-  console.log(label, ...args)
-  return fun(...args)
-}
+// /**
+//  * export const initializeElements = log(connect<ElementData[]>(initializeElements_), '[store] initializeElements')
+//  */
+// const log = (fun, label = 'auto log') => (...args) => {
+//   console.log(label, ...args)
+//   return fun(...args)
+// }
 
 export const fromElementData = (elements: ElementData[]): ElementState[] => fromData<ElementData, ElementState>(elements)
 export const toElementData = (elements: ElementState[]): ElementData[] => toData<ElementState, ElementData>(elements)
@@ -50,7 +50,7 @@ export const updateElements = (items: ElementState[], dispatch = store.dispatch)
   items,
 })
 
-export const getElements = () => store.getState().elements
+export const getElements = () => store.getState().present.elements
 
 export const subscribeElements = (cbk: (prevState: ElementState[], nextState: ElementState[]) => void, subscribe = store.subscribe): () => void => {
   return subscribeToCrud<ElementState>('elements', cbk, subscribe)

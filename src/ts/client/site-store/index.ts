@@ -27,7 +27,7 @@ export const updateSite = (data: SiteState, dispatch = store.dispatch) => dispat
   data,
 })
 
-export const getSite = () => store.getState().site
+export const getSite = () => store.getState().present.site
 
 export const subscribeSite = (cbk: (prevState: SiteState, nextState: SiteState) => void, subscribe = store.subscribe): () => void => {
   return subscribeTo<SiteState>('site', cbk, subscribe)
