@@ -64,6 +64,14 @@ export async function openPublishDialog(): Promise<PublicationOptions> {
           }
         },
         'Continue', 'Cancel');
+        // edit button in order to change the existing settings
+        const editBtn = document.createElement('button')
+        editBtn.innerHTML = 'Edit'
+        editBtn.onclick = () => {
+          SilexNotification.close()
+          resolve(doOpen(false, hosting, providerName));
+        }
+        SilexNotification.addButton(editBtn)
       } else {
         // no publish settings
         resolve(doOpen(false, hosting, providerName));

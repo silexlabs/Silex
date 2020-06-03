@@ -364,18 +364,9 @@ function doPublish(
 
   // the file must be saved somewhere because all URLs are made relative
   if (!folder) {
-    openSettingsDialog(
-        () => {},
-        // here the panel was closed
-        'publish-pane');
-    cbk(null,
-        'I do not know where to publish your site.' +
-            'Select a folder in the settings pannel and do "publish" again.' +
-            '\nNow I will open the publish settings.',
-        null);
+    cbk(null, 'I did not publish your website. I did nothing because I do not know where to publish your site.', null);
   } else {
     if (!file || isTemplate) {
-      console.error('The file must be saved before I can publish it.');
       cbk(null, 'The file must be saved before I can publish it.', null);
     } else {
       if (!provider) {
