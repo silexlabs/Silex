@@ -17,11 +17,11 @@
  *
  */
 
-import { ModalDialog } from '../../components/ModalDialog';
-import { CloudExplorer } from '../../externs';
-import { CloudStorage, FileInfo } from '../../io/CloudStorage';
-import { SilexNotification } from '../Notification';
-import { getUiElements } from '../../ui-store/UiElements';
+import { ModalDialog } from '../../components/ModalDialog'
+import { CloudExplorer } from '../../externs'
+import { CloudStorage, FileInfo } from '../../io/CloudStorage'
+import { SilexNotification } from '../Notification'
+import { getUiElements } from '../../ui-store/UiElements'
 
 /**
  * the Silex FileExplorer class
@@ -29,36 +29,36 @@ import { getUiElements } from '../../ui-store/UiElements';
  */
 export class FileExplorer {
   static get IMAGE_EXTENSIONS() {
-    return ['.jpg', '.jpeg', '.png', '.gif', '.svg'];
+    return ['.jpg', '.jpeg', '.png', '.gif', '.svg']
   }
   static get HTML_EXTENSIONS() {
-    return ['.html', '.htm'];
+    return ['.html', '.htm']
   }
 
   // singleton pattern
   // FIXME: refactor it as a function and use import
   static getInstance(): FileExplorer {
-    FileExplorer.instance = FileExplorer.instance || new FileExplorer();
-    return FileExplorer.instance;
+    FileExplorer.instance = FileExplorer.instance || new FileExplorer()
+    return FileExplorer.instance
   }
-  private static instance: FileExplorer;
+  private static instance: FileExplorer
 
   /**
    * reference to the filepicker instance
    */
-  ce: CloudExplorer = null;
+  ce: CloudExplorer = null
 
   // make this a dialog
-  modalDialog: any;
+  modalDialog: any
 
   private constructor() {
-    const element = getUiElements().fileExplorer;
+    const element = getUiElements().fileExplorer
 
     // cloud explorer instance
     CloudStorage.getInstance().ready(() => {
-      this.ce = CloudStorage.getInstance().ce;
-    });
-    this.modalDialog = new ModalDialog({name: 'File explorer', element, onOpen: (args) => {}, onClose: () => {}});
+      this.ce = CloudStorage.getInstance().ce
+    })
+    this.modalDialog = new ModalDialog({name: 'File explorer', element, onOpen: (args) => {}, onClose: () => {}})
   }
 
   /**
@@ -67,12 +67,12 @@ export class FileExplorer {
    */
   addAbsPath(fileInfo: FileInfo): FileInfo {
     if (fileInfo === null) {
-      return fileInfo;
+      return fileInfo
     }
-    const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath;
+    const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath
     return (Object.assign(
       {absPath},
-      fileInfo) as FileInfo);
+      fileInfo) as FileInfo)
   }
 
   /**
@@ -83,11 +83,11 @@ export class FileExplorer {
    *                           [] to show only folders
    */
   async openFile(opt_extensions?: string[]): Promise<FileInfo> {
-    this.open();
-    const fileInfo = await this.ce.openFile(opt_extensions);
-    if (fileInfo && fileInfo.attribution) { await this.promptAttribution(fileInfo.attribution); }
-    this.close();
-    return this.addAbsPath(fileInfo);
+    this.open()
+    const fileInfo = await this.ce.openFile(opt_extensions)
+    if (fileInfo && fileInfo.attribution) { await this.promptAttribution(fileInfo.attribution) }
+    this.close()
+    return this.addAbsPath(fileInfo)
   }
 
   async promptAttribution(attribution) {
@@ -101,31 +101,31 @@ export class FileExplorer {
         </code>
       `, (ok) => {
         if (ok) {
-          resolve();
-          const copyText = document.createElement('div');
-          document.body.appendChild(copyText);
+          resolve()
+          const copyText = document.createElement('div')
+          document.body.appendChild(copyText)
           try {
-            copyText.innerHTML = attribution.content;
-            const range = document.createRange();
-            range.selectNode(copyText);
-            window.getSelection().addRange(range);
-            const success = document.execCommand('copy');
+            copyText.innerHTML = attribution.content
+            const range = document.createRange()
+            range.selectNode(copyText)
+            window.getSelection().addRange(range)
+            const success = document.execCommand('copy')
             if (success) {
-              SilexNotification.notifySuccess('Attribution copied to clipboard');
+              SilexNotification.notifySuccess('Attribution copied to clipboard')
             } else {
-              SilexNotification.notifyError('Attribution has not been copied to clipboard');
-              console.error('Could not copy to clipboard', attribution);
+              SilexNotification.notifyError('Attribution has not been copied to clipboard')
+              console.error('Could not copy to clipboard', attribution)
             }
           } catch (err) {
-            SilexNotification.notifyError('Attribution has not been copied to clipboard');
-            console.error('Could not copy to clipboard', err, attribution);
+            SilexNotification.notifyError('Attribution has not been copied to clipboard')
+            console.error('Could not copy to clipboard', err, attribution)
           }
-          document.body.removeChild(copyText);
+          document.body.removeChild(copyText)
         } else {
-          resolve();
+          resolve()
         }
-      }, 'Copy', 'Ignore');
-    });
+      }, 'Copy', 'Ignore')
+    })
   }
 
   /**
@@ -136,22 +136,22 @@ export class FileExplorer {
    *                           [] to show only folders
    */
   async openFiles(opt_extensions?: string[]): Promise<FileInfo> {
-    this.open();
-    const fileInfo = await this.ce.openFiles(opt_extensions);
-    const fileInfo_2 = this.addAbsPath(fileInfo);
-    this.close();
-    return fileInfo_2;
+    this.open()
+    const fileInfo = await this.ce.openFiles(opt_extensions)
+    const fileInfo_2 = this.addAbsPath(fileInfo)
+    this.close()
+    return fileInfo_2
   }
 
   /**
    * pick a folder
    */
   async openFolder(): Promise<FileInfo> {
-    this.open();
-    const fileInfo = await this.ce.openFolder();
-    const fileInfo_2 = this.addAbsPath(fileInfo);
-    this.close();
-    return fileInfo_2;
+    this.open()
+    const fileInfo = await this.ce.openFolder()
+    const fileInfo_2 = this.addAbsPath(fileInfo)
+    this.close()
+    return fileInfo_2
   }
 
   /**
@@ -163,24 +163,24 @@ export class FileExplorer {
    */
   async saveAs(defaultName: string, opt_extensions?: string[]):
       Promise<FileInfo> {
-    this.open();
-    const fileInfo = await this.ce.saveAs(defaultName, opt_extensions);
-    const fileInfo_2 = this.addAbsPath(fileInfo);
-    this.close();
-    return fileInfo_2;
+    this.open()
+    const fileInfo = await this.ce.saveAs(defaultName, opt_extensions)
+    const fileInfo_2 = this.addAbsPath(fileInfo)
+    this.close()
+    return fileInfo_2
   }
 
   /**
    * Open the editor
    */
   open() {
-    this.modalDialog.open();
+    this.modalDialog.open()
   }
 
   /**
    * Close the editor
    */
   close() {
-    this.modalDialog.close();
+    this.modalDialog.close()
   }
 }

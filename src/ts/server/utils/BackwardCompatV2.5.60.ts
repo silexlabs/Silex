@@ -1,22 +1,22 @@
-import * as jsBeautify from 'js-beautify';
+import * as jsBeautify from 'js-beautify'
 
-import { ComponentData, ElementId, LinkType, ElementType, ProdotypeDependency, ElementData } from '../../client/element-store/types';
-import { Constants } from '../../constants';
-import { FileInfo } from '../../client/io/CloudStorage';
-import { PageData } from '../../client/page-store/types';
-import { SiteState, StyleData, CssRule } from '../../client/site-store/types';
-import { getDefaultStyle } from '../../client/element-store/utils';
-import { setWebsiteWidthInDom } from '../../client/site-store/dom';
-import { writeStyleToDom, getContentNode, getInnerHtml } from '../../client/element-store/dom';
-import DomTools from './DomTools';
+import { ComponentData, ElementId, LinkType, ElementType, ProdotypeDependency, ElementData } from '../../client/element-store/types'
+import { Constants } from '../../constants'
+import { FileInfo } from '../../client/io/CloudStorage'
+import { PageData } from '../../client/page-store/types'
+import { SiteState, StyleData, CssRule } from '../../client/site-store/types'
+import { getDefaultStyle } from '../../client/element-store/utils'
+import { setWebsiteWidthInDom } from '../../client/site-store/dom'
+import { writeStyleToDom, getContentNode, getInnerHtml } from '../../client/element-store/dom'
+import DomTools from './DomTools'
 import componentDef from './componentsV2.5.60'
 
 ////////////////////////////////////////////////////////////
 // Old data structures
 
 export interface ProdotypeData {
-  component: {[key: string]: ComponentData};
-  style: {[key: string]: StyleData};
+  component: {[key: string]: ComponentData}
+  style: {[key: string]: StyleData}
 }
 
 interface DomData {
@@ -73,15 +73,15 @@ const SILEX_CLASS_NAMES_TO_IGNORE = [
  * @return uniqueId
  */
 function getElementId(element: HTMLElement): ElementId {
-  return element.getAttribute(Constants.ELEMENT_ID_ATTR_NAME);
+  return element.getAttribute(Constants.ELEMENT_ID_ATTR_NAME)
 }
 
-const EMPTY_PRODOTYPE_DATA: ProdotypeData = {component: {}, style: {}};
+const EMPTY_PRODOTYPE_DATA: ProdotypeData = {component: {}, style: {}}
 
 export function loadProperties(doc: HTMLDocument): DomData {
-  const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME);
+  const styleTag = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
   if (styleTag != null ) {
-    const styles = (JSON.parse(styleTag.innerHTML)[0] as any);
+    const styles = (JSON.parse(styleTag.innerHTML)[0] as any)
     return {
       fonts: styles.fonts || [],
       dataSources: styles.dataSources || {},
@@ -97,7 +97,7 @@ export function loadProperties(doc: HTMLDocument): DomData {
           EMPTY_PRODOTYPE_DATA,
     }
   } else {
-    console.info('Warning: no JSON styles array found in the dom');
+    console.info('Warning: no JSON styles array found in the dom')
     return {
       fonts: [],
       dataSources: {},
@@ -204,9 +204,9 @@ export function writeSiteStyles(doc: HTMLDocument, site: SiteState) {
 }
 
 function getStylesFromDomBC({data, element, mobile, type, isSectionContent, isBody}: {data: DomData, element: HTMLElement, mobile: boolean, type: ElementType, isSectionContent: boolean, isBody: boolean}) {
-  const elementId = (getElementId(element) as ElementId);
-  const targetObj = (mobile ? data.mobileStylesObj : data.stylesObj as StyleData);
-  const style = (targetObj[elementId] as CssRule) || {};
+  const elementId = (getElementId(element) as ElementId)
+  const targetObj = (mobile ? data.mobileStylesObj : data.stylesObj as StyleData)
+  const style = (targetObj[elementId] as CssRule) || {}
   // create the style applied byt the editor
   const silexInlineStyle = {
     ...style,
@@ -229,7 +229,7 @@ function getStylesFromDomBC({data, element, mobile, type, isSectionContent, isBo
   }
 }
 function getComponentDataFromDomBC(data: DomData, element: HTMLElement): ComponentData {
-  const elementId = (getElementId(element) as ElementId);
+  const elementId = (getElementId(element) as ElementId)
   if (data.prodotypeDataObj.component[elementId]) {
     const justData = {
       ...data.prodotypeDataObj.component[elementId],
@@ -244,7 +244,7 @@ function getComponentDataFromDomBC(data: DomData, element: HTMLElement): Compone
       data: justData,
     }
   }
-  return null;
+  return null
 }
 
 /**
@@ -369,53 +369,53 @@ function getDependenciesFromDom(properties: DomData): {[key: string]: ProdotypeD
 }
 function getMeta(doc, name: string): string {
   const metaNode = doc.querySelector(
-      'meta[name="' + name + '"]');
+      'meta[name="' + name + '"]')
   if (metaNode) {
-    return metaNode.getAttribute('content');
+    return metaNode.getAttribute('content')
   } else {
-    return null;
+    return null
   }
 }
 
 export function getPublicationPath(doc: HTMLDocument): FileInfo {
-  const fileInfo = getMeta(doc, 'publicationPath');
+  const fileInfo = getMeta(doc, 'publicationPath')
   try {
-    return fileInfo == null ? null : (JSON.parse(fileInfo) as FileInfo);
+    return fileInfo == null ? null : (JSON.parse(fileInfo) as FileInfo)
   } catch (e) {
     // this happens with old publication path (just a string)
-    return null;
+    return null
   }
 }
 
 function getFaviconPath(doc: HTMLDocument): string {
-  const faviconTag = doc.querySelector('link[rel="shortcut icon"]');
+  const faviconTag = doc.querySelector('link[rel="shortcut icon"]')
   if (faviconTag) {
-    return faviconTag.getAttribute('href');
+    return faviconTag.getAttribute('href')
   }
-  return null;
+  return null
 }
 function getWebsiteWidth(doc: HTMLDocument): number {
-  const width = getMeta(doc, 'website-width');
-  return !!width ? parseInt(width) : null;
+  const width = getMeta(doc, 'website-width')
+  return !!width ? parseInt(width) : null
 }
 const BEAUTIFY_CSS_OPTIONS = {
   indent_size: 2,
-};
+}
 function getHeadStyle(doc: HTMLDocument): string {
   // get silex styles from the DOM
-  const silexStyle = doc.head.querySelector('.' + Constants.SILEX_STYLE_ELEMENT_CSS_CLASS);
+  const silexStyle = doc.head.querySelector('.' + Constants.SILEX_STYLE_ELEMENT_CSS_CLASS)
   if (!silexStyle) {
-    console.warn('no silex editable styles defined');
-    return '';
+    console.warn('no silex editable styles defined')
+    return ''
   }
   // tslint:disable:no-string-literal
-  return jsBeautify.css_beautify(silexStyle.innerHTML, BEAUTIFY_CSS_OPTIONS);
+  return jsBeautify.css_beautify(silexStyle.innerHTML, BEAUTIFY_CSS_OPTIONS)
 }
 function getHeadScript(doc: HTMLDocument): string {
   // get silex scripts from the DOM
-  const scriptTag = doc.querySelector('.' + Constants.SILEX_SCRIPT_ELEMENT_CSS_CLASS);
+  const scriptTag = doc.querySelector('.' + Constants.SILEX_SCRIPT_ELEMENT_CSS_CLASS)
   if (!scriptTag) {
-    return '';
+    return ''
   }
-  return scriptTag.innerHTML;
+  return scriptTag.innerHTML
 }

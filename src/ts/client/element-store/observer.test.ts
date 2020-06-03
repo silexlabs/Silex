@@ -5,14 +5,14 @@ import {
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
   mockUiElements
-} from '../../test-utils/data-set';
+} from '../../test-utils/data-set'
 
 const { siteIFrame } = mockUiElements()
 
-import { onAddElements, onDeleteElements } from './observer';
+import { onAddElements, onDeleteElements } from './observer'
 
-import { onUpdateElements } from './observer';
-import { ElementState } from './types';
+import { onUpdateElements } from './observer'
+import { ElementState } from './types'
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
 const ELEM_CONTAINER_STATE = ELEM_CONTAINER as ElementState

@@ -1,28 +1,28 @@
-import { FileInfo } from "./CloudStorage";
+import { FileInfo } from './CloudStorage'
 
 /**
  * clear the recent files
  */
 export function clearLatestFiles() {
-  window.localStorage.removeItem('silex:recent-files');
+  window.localStorage.removeItem('silex:recent-files')
 }
 
 /**
  * get the latest opened files
  */
 export function getLatestFiles(): FileInfo[] {
-  const str = window.localStorage.getItem('silex:recent-files');
+  const str = window.localStorage.getItem('silex:recent-files')
   if (str) {
-    return (JSON.parse(str) as FileInfo[]);
+    return (JSON.parse(str) as FileInfo[])
   } else {
-    return [];
+    return []
   }
 }
 
 /**
  * max number of items in recent files
  */
-const MAX_RECENT_FILES = 5;
+const MAX_RECENT_FILES = 5
 
 /**
  * store this file in the latest opened files
@@ -32,5 +32,5 @@ export function addToLatestFiles(fileInfo: FileInfo) {
     fileInfo,
     ...getLatestFiles().filter((item, idx) => item.absPath !== fileInfo.absPath && idx < MAX_RECENT_FILES),
   ]
-  window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles));
+  window.localStorage.setItem('silex:recent-files', JSON.stringify(latestFiles))
 }

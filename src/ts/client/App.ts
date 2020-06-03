@@ -30,7 +30,7 @@ import { getUi, updateUi } from './ui-store/index'
 import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
 import { openDashboardToLoadAWebsite } from './file'
-import { resetDirty } from './dirty';
+import { resetDirty } from './dirty'
 
 interface AppOptions {
   debug: boolean,

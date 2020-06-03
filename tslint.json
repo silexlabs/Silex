@@ -19,7 +19,8 @@
     "max-classes-per-file": false,
     "no-conditional-assignment": false,
     "semicolon": [true, "never"],
-    "curly": false
+    "curly": false,
+    "only-arrow-functions": false
   },
   "rulesDirectory": []
 }

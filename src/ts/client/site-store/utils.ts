@@ -15,21 +15,21 @@ export function getPseudoClassData(styleData: StyleData): {visibility: Visibilit
     return {
       visibility,
       data: styleData.styles[visibility],
-    };
+    }
   })
   .filter((obj) => !!obj.data)
   .map((vData) => {
-    const arrayOfPCData = [];
+    const arrayOfPCData = []
     for (const pcName in vData.data) {
       arrayOfPCData.push({
         visibility: vData.visibility,
         pseudoClass: pcName,
         /* unused, the data is in data */
         data: vData.data[pcName],
-      });
+      })
     }
-    return arrayOfPCData;
+    return arrayOfPCData
   })
-  .reduce((acc, val) => acc.concat(val), []);
+  .reduce((acc, val) => acc.concat(val), [])
 }
 

@@ -1,7 +1,7 @@
 import { Constants } from '../../constants'
-import { ELEM_HTML, ELEM_TEXT, SITE1 } from '../../test-utils/data-set';
-import { ElementState } from '../element-store/types';
-import { SiteState } from './types';
+import { ELEM_HTML, ELEM_TEXT, SITE1 } from '../../test-utils/data-set'
+import { ElementState } from '../element-store/types'
+import { SiteState } from './types'
 import { initializeSite, getSite } from './index'
 import { removeStyle, initStyle, componentStyleChanged } from './dispatchers'
 

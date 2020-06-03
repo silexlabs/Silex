@@ -28,15 +28,15 @@ import { ProdotypeDependency } from './element-store/types'
  *          }}
  */
 export interface ProdotypeCompDef {
-  faIconClass?: string;
-  initialCss?: any[];
-  initialCssContentContainer?: any[];
-  initialCssClass?: any[];
-  baseElement?: string;
-  name?: string;
-  category?: string;
-  isPrivate?: boolean;
-  text: any; // FIXME: why? this is only used in StyleEditorPane
+  faIconClass?: string
+  initialCss?: any[]
+  initialCssContentContainer?: any[]
+  initialCssClass?: any[]
+  baseElement?: string
+  name?: string
+  category?: string
+  isPrivate?: boolean
+  text: any // FIXME: why? this is only used in StyleEditorPane
 }
 
 /**
@@ -45,17 +45,17 @@ export interface ProdotypeCompDef {
  * @constructor
  */
 export interface Prodotype {
-  componentsDef: ProdotypeCompDef;
+  componentsDef: ProdotypeCompDef
 
-  decorate(templateName: string, data: any, dataSources?: object): Promise<string>;
-  ready(cbk: (any) => void);
+  decorate(templateName: string, data: any, dataSources?: object): Promise<string>
+  ready(cbk: (any) => void)
   edit(
     data?: any,
     dataSources?: object,
     templateName?: string,
-    events?: any);
-  reset();
-  createName(type, list): string;
+    events?: any)
+  reset()
+  createName(type, list): string
   // "getDependencies" returns an object like this: {
   //   test-comp:
   //     [{
@@ -69,68 +69,68 @@ export interface Prodotype {
   //     }]
   //   }
   //  }
-  getDependencies(components: {name:string, displayName?:string, templateName:string}[]): {[key: string]: ProdotypeDependency[]};
+  getDependencies(components: {name:string, displayName?:string, templateName:string}[]): {[key: string]: ProdotypeDependency[]}
   getMissingDependencies(
     container: HTMLElement,
     componentNames: {templateName: string}[],
-  ): HTMLElement[];
-  getUnusedDependencies(dependencyElements: HTMLElement[], componentNames: {templateName: string}[]);
+  ): HTMLElement[]
+  getUnusedDependencies(dependencyElements: HTMLElement[], componentNames: {templateName: string}[])
 }
 
 /**
  * jquery externs
  */
 export interface JQuery {
-  editable(options);
-  pageable(option, value);
+  editable(options)
+  pageable(option, value)
 }
 
 /**
  * cloud explorer externs
  */
 export interface CloudExplorer {
-  getServices(): Promise<any>;
-  openFile(extensions): Promise<any>;
-  openFiles(extensions): Promise<any>;
-  openFolder(): Promise<any>;
-  write(data, blob): Promise<any>;
-  read(blob): Promise<any>;
-  saveAs(defaultFileName, extensions): Promise<any>;
+  getServices(): Promise<any>
+  openFile(extensions): Promise<any>
+  openFiles(extensions): Promise<any>
+  openFolder(): Promise<any>
+  write(data, blob): Promise<any>
+  read(blob): Promise<any>
+  saveAs(defaultFileName, extensions): Promise<any>
 }
 
 /**
  * unifile externs
  */
 export interface UnifileResponse {
-   success: boolean;
-   message?: string;
-   tempLink?: string;
-   code?: string;
+   success: boolean
+   message?: string
+   tempLink?: string
+   code?: string
  }
 
 /**
  * wysihtml library
  */
 // tslint:disable:no-string-literal
-export let wysihtml: any = window['wysihtml'];
+export let wysihtml: any = window['wysihtml']
 
 // export declare var wysihtml:WysiHtml;
 // export declare class wysihtml {
 //   public static Editor: any;
 // }
 export interface WysiHtmlEditor {
-  composer: WysiHtmlComposer;
-  focus(changePosition);
-  on(eventName, cbk);
-  off(eventName);
-  destroy();
+  composer: WysiHtmlComposer
+  focus(changePosition)
+  on(eventName, cbk)
+  off(eventName)
+  destroy()
 }
 interface WysiHtmlComposer {
-  commands: WysiHtmlCommand;
-  selection: any;
+  commands: WysiHtmlCommand
+  selection: any
 }
 interface WysiHtmlCommand {
-  exec(cmd: string, options?: any);
+  exec(cmd: string, options?: any)
 }
 
-export type wysihtmlParserRules = any;
+export type wysihtmlParserRules = any

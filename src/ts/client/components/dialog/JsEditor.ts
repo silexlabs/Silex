@@ -13,7 +13,7 @@
  * Silex JS editor
  *
  */
-import { CodeEditorBase } from './CodeEditorBase';
+import { CodeEditorBase } from './CodeEditorBase'
 import { subscribeSite, updateSite, getSite } from '../../site-store/index'
 import { SiteState } from '../../site-store/types'
 import { getUiElements } from '../../ui-store/UiElements'
@@ -42,7 +42,7 @@ class JsEditor extends CodeEditorBase {
    * the controller instances
    */
   constructor(element: HTMLElement) {
-    super(element, 'javascript');
+    super(element, 'javascript')
     subscribeSite((_: SiteState, site: SiteState) => {
       if (site.headScript !== this.getValue()) {
         this.setValue(site.headScript)
@@ -57,6 +57,6 @@ class JsEditor extends CodeEditorBase {
     updateSite({
       ...getSite(),
       headScript: this.getValue(),
-    });
+    })
   }
 }

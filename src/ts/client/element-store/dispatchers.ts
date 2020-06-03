@@ -17,15 +17,15 @@ import {
   ElementType,
   Link,
   StyleObject
-} from './types';
+} from './types'
 import { PageState } from '../page-store/types'
-import { addToMobileOrDesktopStyle } from '../utils/styles';
+import { addToMobileOrDesktopStyle } from '../utils/styles'
 import {
   createElements,
   deleteElements,
   getElements,
   updateElements
-} from './index';
+} from './index'
 import {
   getBody,
   getChildrenRecursive,
@@ -36,8 +36,8 @@ import {
   isBody,
   noSectionContent,
   getSelectedElementsNoSectionContent
-} from './filters';
-import { getCreateAction } from './utils';
+} from './filters'
+import { getCreateAction } from './utils'
 import { getUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { store } from '../store/index'
@@ -134,7 +134,7 @@ export const setHideOnDesktop = (element: ElementState, hide: boolean, elements 
       ...element.visibility,
       desktop: hide,
     },
-  }], dispatch);
+  }], dispatch)
 }
 
 
@@ -150,10 +150,10 @@ export const styleChanged = (name: string, value: string, selection: ElementStat
   // }
 
   // build the style change object
-  const newStyle = {};
+  const newStyle = {}
   newStyle[name] = value,
 
-  multipleStylesChanged(newStyle, selection, isMobile, dispatch);
+  multipleStylesChanged(newStyle, selection, isMobile, dispatch)
 }
 
 /**
@@ -167,7 +167,7 @@ export const multipleStylesChanged = (style: CssRule, selection: ElementState[],
   updateElements(selection.map((el) => ({
     ...el,
     style: addToMobileOrDesktopStyle(isMobile, el.style, style),
-  })), dispatch);
+  })), dispatch)
 }
 
 
@@ -232,11 +232,11 @@ export async function addElement({type, parent, style, componentName} : {
         ]),
       }
       // add the elements to the store
-      createElements([newElementStateWithContent, contentElementWithCssClasses], dispatch);
+      createElements([newElementStateWithContent, contentElementWithCssClasses], dispatch)
       return getElementById(newElementStateWithContent.id, getElements()) // here it is important to use getElements(), not store elements of before the dispatch
     } else {
       // add the elements to the store
-      createElements([newElementStatePaged], dispatch);
+      createElements([newElementStatePaged], dispatch)
       return getElementById(newElementStatePaged.id, getElements()) // here it is important to use getElements(), not store elements of before the dispatch
     }
   })())

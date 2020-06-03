@@ -14,11 +14,11 @@
  * the Silex HTML editor
  *
  */
-import { ElementState, ElementType } from '../../element-store/types';
-import { subscribeElements, updateElements } from '../../element-store/index';
-import { getDomElement } from '../../element-store/dom';
-import { getSiteDocument } from '../../components/SiteFrame';
-import { CodeEditorBase } from './CodeEditorBase';
+import { ElementState, ElementType } from '../../element-store/types'
+import { subscribeElements, updateElements } from '../../element-store/index'
+import { getDomElement } from '../../element-store/dom'
+import { getSiteDocument } from '../../components/SiteFrame'
+import { CodeEditorBase } from './CodeEditorBase'
 import { subscribeSite, getSite, updateSite } from '../../site-store/index'
 import { getSelectedElements } from '../../element-store/filters'
 import { selectBody } from '../../element-store/dispatchers'
@@ -63,7 +63,7 @@ class HtmlEditor extends CodeEditorBase {
    * the controller instances
    */
   constructor(element: HTMLElement) {
-    super(element, 'html');
+    super(element, 'html')
     subscribeSite(() => {
       this.redraw()
     })

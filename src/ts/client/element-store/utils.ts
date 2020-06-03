@@ -20,18 +20,18 @@ import {
   Size,
   ElementData,
   LinkData
-} from './types';
-import { FileExplorer } from '../components/dialog/FileExplorer';
-import { SilexNotification } from '../components/Notification';
+} from './types'
+import { FileExplorer } from '../components/dialog/FileExplorer'
+import { SilexNotification } from '../components/Notification'
 import { addMediaQuery, getDomElement } from './dom'
-import { getAllParents, getBody, getChildren, getElementById, getSelectedElements } from './filters';
+import { getAllParents, getBody, getChildren, getElementById, getSelectedElements } from './filters'
 import { getElements, fromElementData } from './index'
 import { getSite } from '../site-store/index'
-import { initComponent, isComponent } from './component';
-import { openLinkDialog } from '../components/dialog/LinkDialog';
-import { removeElementsWithoutConfirm, selectBody } from './dispatchers';
-import { styleToString } from '../utils/styles';
-import { FileInfo } from '../io/CloudStorage';
+import { initComponent, isComponent } from './component'
+import { openLinkDialog } from '../components/dialog/LinkDialog'
+import { removeElementsWithoutConfirm, selectBody } from './dispatchers'
+import { styleToString } from '../utils/styles'
+import { FileInfo } from '../io/CloudStorage'
 
 /**
  * @fileoverview Cross platform, it needs to run client and server side
@@ -369,16 +369,16 @@ export function getDisplayName(element: ElementState): string {
     return `${ element.data.component.templateName}`
   }
   if (element.isSectionContent) {
-    return 'Section Container';
+    return 'Section Container'
   }
 
   switch (element.type) {
-    case ElementType.TEXT: return 'Text';
-    case ElementType.IMAGE: return 'Image';
-    case ElementType.CONTAINER: return 'Container';
-    case ElementType.HTML: return 'Html';
+    case ElementType.TEXT: return 'Text'
+    case ElementType.IMAGE: return 'Image'
+    case ElementType.CONTAINER: return 'Container'
+    case ElementType.HTML: return 'Html'
     // case ElementType.CONTAINER_CONTENT: return 'Container';
-    case ElementType.SECTION: return 'Section';
+    case ElementType.SECTION: return 'Section'
   }
 }
 
@@ -423,7 +423,7 @@ export function getAllStyles(): string {
     desktop: '',
     mobile: '',
   })
-  return `${styles.desktop}\n\n${addMediaQuery(styles.mobile)}\n`;
+  return `${styles.desktop}\n\n${addMediaQuery(styles.mobile)}\n`
 }
 
 /**

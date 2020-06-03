@@ -1,3 +1,3 @@
 declare module 'tags-input' {
-  export default function tagsInput(input: HTMLInputElement): void;
+  export default function tagsInput(input: HTMLInputElement): void
 }

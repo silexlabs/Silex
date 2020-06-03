@@ -16,24 +16,24 @@
  *
  */
 
-import { Constants } from '../../../constants';
+import { Constants } from '../../../constants'
 import { Dom } from '../../utils/Dom'
-import { ElementState, ElementType, LinkType } from '../../element-store/types';
+import { ElementState, ElementType, LinkType } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
 import {
   getBody,
   getSelectedElements,
   noSectionContent
-} from '../../element-store/filters';
+} from '../../element-store/filters'
 import { getCurrentPage } from '../../page-store/filters'
 import {
   getElements,
   subscribeElements,
   updateElements
-} from '../../element-store/index';
+} from '../../element-store/index'
 import { getSite } from '../../site-store/index'
-import { isVisibleInPage } from '../../element-store/utils';
+import { isVisibleInPage } from '../../element-store/utils'
 import { removeLink, addLink, addToPage, removeFromPage } from '../../element-store/dispatchers'
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'

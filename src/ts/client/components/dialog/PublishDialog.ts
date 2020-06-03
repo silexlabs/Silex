@@ -14,15 +14,15 @@
  *
  */
 
-import { SilexTasks } from '../../io/SilexTasks';
-import { SilexNotification } from '../Notification';
+import { SilexTasks } from '../../io/SilexTasks'
+import { SilexNotification } from '../Notification'
 import { updateUi, getUi } from '../../ui-store/index'
 import { getSite, updateSite } from '../../site-store/index'
 import { Provider, VHost, PublicationOptions } from '../../site-store/types'
 import { FileExplorer } from './FileExplorer'
 import { LOADING } from '../../ui-store/types'
 
-const service = SilexTasks.getInstance();
+const service = SilexTasks.getInstance()
 
 /**
  * display/hide a loader
@@ -38,8 +38,8 @@ function setLoading(loading: boolean) {
  * close dialog
  */
 export function closePublishDialog() {
-  setLoading(false);
-  SilexNotification.close();
+  setLoading(false)
+  SilexNotification.close()
 }
 
 /**
@@ -47,41 +47,41 @@ export function closePublishDialog() {
  */
 export async function openPublishDialog(): Promise<PublicationOptions> {
   return (new Promise<PublicationOptions>((resolve, reject) => {
-    setLoading(true);
+    setLoading(true)
     service.hosting((hosting) => {
-      setLoading(false);
-      const site = getSite();
-      const providerName = site.hostingProvider;
-      const publicationPath = site.publicationPath;
+      setLoading(false)
+      const site = getSite()
+      const providerName = site.hostingProvider
+      const publicationPath = site.publicationPath
       if (providerName && publicationPath) {
-        const provider: Provider = hosting.providers.find((p) => p.name === providerName);
-        const providerDisplayName = provider ? provider.displayName || provider.name : publicationPath.service;
+        const provider: Provider = hosting.providers.find((p) => p.name === providerName)
+        const providerDisplayName = provider ? provider.displayName || provider.name : publicationPath.service
         SilexNotification.confirm('Publication', `
           I am about to publish your website to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path || '/'}.
         `, (ok) => {
           if (ok) {
-            resolve(doOpen(ok, hosting, providerName));
+            resolve(doOpen(ok, hosting, providerName))
           }
         },
-        'Continue', 'Cancel');
+        'Continue', 'Cancel')
         // edit button in order to change the existing settings
         const editBtn = document.createElement('button')
         editBtn.innerHTML = 'Edit'
         editBtn.onclick = () => {
           SilexNotification.close()
-          resolve(doOpen(false, hosting, providerName));
+          resolve(doOpen(false, hosting, providerName))
         }
         SilexNotification.addButton(editBtn)
       } else {
         // no publish settings
-        resolve(doOpen(false, hosting, providerName));
+        resolve(doOpen(false, hosting, providerName))
       }
-    }, (msg) => reject(msg));
+    }, (msg) => reject(msg))
   }))
   .catch((msg) => {
-    setLoading(false);
-    throw msg;
-  });
+    setLoading(false)
+    throw msg
+  })
 }
 
 function doOpen(usePredifinedSettings, hosting, providerName): Promise<PublicationOptions> {
@@ -92,18 +92,18 @@ function doOpen(usePredifinedSettings, hosting, providerName): Promise<Publicati
         file: null,
         publicationPath: null,
         provider: null,
-      });
+      })
     } else {
       if (hosting.skipHostingSelection === true) {
-        const provider = hosting.providers[0];
+        const provider = hosting.providers[0]
 
         // continue to next step
-        resolve(selectProviderFolder(provider));
+        resolve(selectProviderFolder(provider))
       } else {
-        resolve(selectProvider(hosting.providers, providerName));
+        resolve(selectProvider(hosting.providers, providerName))
       }
     }
-  });
+  })
 }
 
 function selectProvider(providers: Provider[], providerName: string): Promise<PublicationOptions> {
@@ -111,14 +111,14 @@ function selectProvider(providers: Provider[], providerName: string): Promise<Pu
   return new Promise<PublicationOptions>((resolve, reject) => {
     SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
       if (ok) {
-        const idx = selectEl.selectedIndex;
-        const provider = providers[idx];
-        resolve(selectProviderFolder(provider));
+        const idx = selectEl.selectedIndex
+        const provider = providers[idx]
+        resolve(selectProviderFolder(provider))
       } else {
-        resolve(null);
+        resolve(null)
       }
-    }, 'next', 'cancel');
-    const body = document.createElement('div');
+    }, 'next', 'cancel')
+    const body = document.createElement('div')
     body.insertAdjacentHTML('afterbegin', `
       <p>Choose the hosting provider you love!
       (<a href="https://github.com/silexlabs/Silex/wiki/Publishing-and-Releasing-Your-Website#hosting-providers" target="_blank" title="About hosting providers" class="help-btn">
@@ -129,13 +129,13 @@ function selectProvider(providers: Provider[], providerName: string): Promise<Pu
         ${providers.map((p) => `<option value="${p.name}">${p.displayName}</option>`)}
       </select>
       <br />
-    `);
-    SilexNotification.setContent(body);
-    const selectEl = body.querySelector('.providers') as HTMLSelectElement;
+    `)
+    SilexNotification.setContent(body)
+    const selectEl = body.querySelector('.providers') as HTMLSelectElement
     if (providerName) {
-      selectEl.value = providerName;
+      selectEl.value = providerName
     }
-  });
+  })
 }
 
 /**
@@ -148,65 +148,65 @@ function selectProviderFolder(provider: Provider): Promise<PublicationOptions> {
       hostingProvider: provider.name,
     })
     if (provider.skipFolderSelection) {
-      resolve(onSelectProvider(provider));
+      resolve(onSelectProvider(provider))
     } else {
       FileExplorer.getInstance().openFolder().then((folder) => {
         updateSite({
           ...getSite(),
           publicationPath: folder,
         })
-        resolve(onSelectProvider(provider));
-      });
+        resolve(onSelectProvider(provider))
+      })
     }
-  });
+  })
 }
 
 function onSelectProvider(provider: Provider): Promise<PublicationOptions> {
   return new Promise<PublicationOptions>((resolve, reject) => {
     if (provider.isLoggedIn) {
-      resolve(selectVhost(provider));
+      resolve(selectVhost(provider))
     } else {
-      setLoading(true);
+      setLoading(true)
       service.authorize(provider, (loginUrl) => {
-        setLoading(false);
+        setLoading(false)
         SilexNotification.confirm('Publication', `
           Please&nbsp;<a href="${loginUrl}" target="_blank">click here and login to ${provider.displayName}.</a>, then click "next".
         `, () => {
-          resolve(selectVhost(provider));
+          resolve(selectVhost(provider))
         },
-        'next', 'cancel');
-      }, (msg) => reject(msg));
+        'next', 'cancel')
+      }, (msg) => reject(msg))
     }
-  });
+  })
 }
 
 function selectVhost(provider: Provider): Promise<PublicationOptions> {
   return new Promise<PublicationOptions>((resolve, reject) => {
     if (provider.vhostsUrl) {
-      setLoading(true);
+      setLoading(true)
       service.vhosts(provider, (vhosts: VHost[]) => {
-        setLoading(false);
+        setLoading(false)
         if (vhosts.length === 0) {
           SilexNotification.alert('Publication', `Please click here to
             <a href="${provider.dashboardUrl}" target="_blank">
               ${provider.pleaseCreateAVhost}
             </a>
           `, () => {
-            resolve(selectVhost(provider));
+            resolve(selectVhost(provider))
           },
-          'Check again');
+          'Check again')
         } else {
           if (provider.skipVhostSelection === true) {
-            resolve(selectDomain(provider, vhosts[0]));
+            resolve(selectDomain(provider, vhosts[0]))
           } else {
             SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
               if (ok) {
-                const idx = selectEl.selectedIndex;
-                const vhost = vhosts[idx];
-                resolve(selectDomain(provider, vhost));
+                const idx = selectEl.selectedIndex
+                const vhost = vhosts[idx]
+                resolve(selectDomain(provider, vhost))
               }
-            }, 'next', 'cancel');
-            const body = document.createElement('div');
+            }, 'next', 'cancel')
+            const body = document.createElement('div')
             body.insertAdjacentHTML('afterbegin', `
               <p>Choose the website you are working on</p>
               <select class="vhosts">
@@ -215,25 +215,25 @@ function selectVhost(provider: Provider): Promise<PublicationOptions> {
                     (v) => `<option value="${v.name}">${v.name}</option>`)}
               </select>
               <br />
-            `);
-            SilexNotification.setContent(body);
-            const selectEl = body.querySelector('.vhosts') as HTMLSelectElement;
-            const publicationPath = getSite().publicationPath;
+            `)
+            SilexNotification.setContent(body)
+            const selectEl = body.querySelector('.vhosts') as HTMLSelectElement
+            const publicationPath = getSite().publicationPath
             if (publicationPath) {
-              selectEl.value = publicationPath.folder;
+              selectEl.value = publicationPath.folder
             }
           }
         }
-      }, (msg) => reject(msg));
+      }, (msg) => reject(msg))
     } else {
       resolve({
         file: getSite().file,
         publicationPath: getSite().publicationPath,
         provider,
-      });
+      })
 
     }
-  });
+  })
 }
 
 function selectDomain(provider: Provider, vhost: VHost): Promise<PublicationOptions> {
@@ -241,25 +241,25 @@ function selectDomain(provider: Provider, vhost: VHost): Promise<PublicationOpti
     updateSite({
       ...getSite(),
       websiteUrl: vhost.url,
-    });
+    })
     if (vhost.skipDomainSelection === true) {
       resolve({
         file: getSite().file,
         publicationPath: vhost.publicationPath,
         provider,
-      });
+      })
     } else {
-      setLoading(true);
+      setLoading(true)
       service.domain(vhost, (res) => {
-        const domain = res.domain;
+        const domain = res.domain
         if (res.url) {
           updateSite({
             ...getSite(),
             websiteUrl: res.url,
-          });
+          })
         }
-        setLoading(false);
-        const initialDomain = domain || '';
+        setLoading(false)
+        const initialDomain = domain || ''
 
         SilexNotification.prompt('Publication', `
           <h3>Optional: provide your domain name<h3>
@@ -274,61 +274,61 @@ function selectDomain(provider: Provider, vhost: VHost): Promise<PublicationOpti
               updateSite({
                 ...getSite(),
                 websiteUrl: resUrl.url,
-              });
+              })
             }
-            setLoading(false);
-            SilexNotification.notifySuccess('Domain updated');
+            setLoading(false)
+            SilexNotification.notifySuccess('Domain updated')
             resolve({
               file: getSite().file,
               publicationPath: vhost.publicationPath,
               provider,
-            });
-          };
+            })
+          }
           if (ok) {
             if (newDomain !== initialDomain) {
-              setLoading(true);
+              setLoading(true)
               if (newDomain !== '') {
                 service.updateDomain(
                     vhost, (newDomain as string),
                     (_res) => updateOrRemoveSuccess(_res),
-                    (msg) => reject(msg));
+                    (msg) => reject(msg))
               } else {
                 service.removeDomain(
                     vhost, newDomain, (_res) => updateOrRemoveSuccess(_res),
-                    (msg) => reject(msg));
+                    (msg) => reject(msg))
               }
             } else {
               resolve({
                 file: getSite().file,
                 publicationPath: vhost.publicationPath,
                 provider,
-              });
+              })
             }
           } else {
-            resolve(null);
+            resolve(null)
           }
-        }, 'next', 'cancel');
-      }, (msg) => reject(msg));
+        }, 'next', 'cancel')
+      }, (msg) => reject(msg))
     }
-  });
+  })
 }
 
 export function startPublish(options: PublicationOptions): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const publicationPath = options.publicationPath;
-    const provider = options.provider;
-    let timer = -1;
+    const publicationPath = options.publicationPath
+    const provider = options.provider
+    let timer = -1
     SilexNotification.alert('Publication', '<strong>I am about to publish your site. This may take several minutes.</strong>',
       () => {
         if (timer > 0) {
-          clearInterval(timer);
+          clearInterval(timer)
         }
       },
-      'Close');
-    timer = -1;
-    setLoading(true);
+      'Close')
+    timer = -1
+    setLoading(true)
     service.publish(options, () => {
-      setLoading(false);
+      setLoading(false)
       // setTimeout(() => {
       //   // tip of the day
       //   const tipOfTheDayElement = (document.createElement('div') as HTMLElement);
@@ -338,25 +338,25 @@ export function startPublish(options: PublicationOptions): Promise<string> {
       timer = window.setInterval(() => {
         service.publishState(
           (json) => {
-            let msg = `<strong>${json.message}</strong>`;
+            let msg = `<strong>${json.message}</strong>`
             if (json.stop === true) {
-              clearInterval(timer);
-              const websiteUrl = getSite().websiteUrl || publicationPath.absPath + '/index.html';
+              clearInterval(timer)
+              const websiteUrl = getSite().websiteUrl || publicationPath.absPath + '/index.html'
               msg += `
                 <p>Please visit <a target="_blanck" href="${websiteUrl}">your published website here</a>.
                 ${provider && provider.afterPublishMessage ? provider.afterPublishMessage : ''}</p>
-              `;
-              resolve(msg);
+              `
+              resolve(msg)
             } else {
-              SilexNotification.setText(msg);
+              SilexNotification.setText(msg)
             }
           },
           (msg) => {
-            clearInterval(timer);
-            reject(msg);
+            clearInterval(timer)
+            reject(msg)
           },
-        );
-      }, 1000);
-    }, (msg) => reject(msg));
-  });
+        )
+      }, 1000)
+    }, (msg) => reject(msg))
+  })
 }

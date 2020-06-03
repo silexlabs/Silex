@@ -9,23 +9,23 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementState, LinkData } from '../element-store/types';
-import { FileExplorer } from '../components/dialog/FileExplorer';
-import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog';
-import { SilexNotification } from './Notification';
+import { ElementState, LinkData } from '../element-store/types'
+import { FileExplorer } from '../components/dialog/FileExplorer'
+import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog'
+import { SilexNotification } from './Notification'
 import {
   getContentNode,
   getDomElement,
   getInnerHtml
-} from '../element-store/dom';
-import { getSelectedElements } from '../element-store/filters';
+} from '../element-store/dom'
+import { getSelectedElements } from '../element-store/filters'
 import { getSiteDocument, getSiteIFrame, getSiteWindow } from './SiteFrame'
-import { getUiElements } from '../ui-store/UiElements';
+import { getUiElements } from '../ui-store/UiElements'
 import { keyboardAttach, keyboardAddShortcut } from './Menu'
-import { resetFocus } from './ModalDialog';
+import { resetFocus } from './ModalDialog'
 import { setEditMode } from './StageWrapper'
-import { updateElements } from '../element-store/index';
-import { wysihtml, WysiHtmlEditor } from '../externs';
+import { updateElements } from '../element-store/index'
+import { wysihtml, WysiHtmlEditor } from '../externs'
 
 /**
  * @fileoverview
@@ -33,8 +33,8 @@ import { wysihtml, WysiHtmlEditor } from '../externs';
  * box It uses the wysihtml library to change text format
  */
 
-const MENU_WIDTH = 35;
-const CONTEXT_MENU_HEIGHT = 35;
+const MENU_WIDTH = 35
+const CONTEXT_MENU_HEIGHT = 35
 
 ///////////////////
 // API for the outside world
@@ -54,12 +54,12 @@ export function openTextFormatBar() {
 export class TextFormatBar {
 
   // store the params
-  currentTextBox: ElementState = null;
-  wysihtmlEditor: WysiHtmlEditor = null;
-  toolbar: HTMLElement;
+  currentTextBox: ElementState = null
+  wysihtmlEditor: WysiHtmlEditor = null
+  toolbar: HTMLElement
 
   // for event remove events, this is reset on stop edit
-  private onStopEditCbks: (() => void)[] = [];
+  private onStopEditCbks: (() => void)[] = []
 
   /**
    *
@@ -71,7 +71,7 @@ export class TextFormatBar {
    * the controller instances
    */
   constructor(protected element: HTMLElement) {
-    this.toolbar = this.element.querySelector('#wysihtml5-toolbar');
+    this.toolbar = this.element.querySelector('#wysihtml5-toolbar')
   }
 
   /**
@@ -80,100 +80,100 @@ export class TextFormatBar {
    * by wysihtml
    */
   getLink(): LinkData {
-    const isLink = this.element.querySelector('.create-link').classList.contains('wysihtml-command-active');
+    const isLink = this.element.querySelector('.create-link').classList.contains('wysihtml-command-active')
     if (isLink) {
       return LINK_ATTRIBUTES.reduce((acc, attr) => {
-        const el = this.element.querySelector('.get-' + attr) as HTMLInputElement;
+        const el = this.element.querySelector('.get-' + attr) as HTMLInputElement
         if (!el) {
-          console.error('could not get data from link editor for attribute', attr);
+          console.error('could not get data from link editor for attribute', attr)
         } else {
-          acc[attr] = el.value;
+          acc[attr] = el.value
         }
-        return acc;
-      }, {});
+        return acc
+      }, {})
     }
-    return null;
+    return null
   }
 
   onScroll(e) {
-    this.attachToTextBox(getDomElement(getSiteDocument(), this.currentTextBox), this.element);
+    this.attachToTextBox(getDomElement(getSiteDocument(), this.currentTextBox), this.element)
   }
 
   attachToTextBox(textBox, toolbar) {
-    const pos = textBox.getBoundingClientRect();
-    const stageSize = getSiteIFrame().getBoundingClientRect();
-    const theoricalBottom = stageSize.height + stageSize.top - pos.top;
-    const bottom = Math.max(theoricalBottom - pos.height + CONTEXT_MENU_HEIGHT, Math.min(stageSize.height - 20, theoricalBottom));
-    const left = pos.left + MENU_WIDTH;
-    toolbar.style.bottom = bottom + 'px';
-    toolbar.style.left = left + 'px';
+    const pos = textBox.getBoundingClientRect()
+    const stageSize = getSiteIFrame().getBoundingClientRect()
+    const theoricalBottom = stageSize.height + stageSize.top - pos.top
+    const bottom = Math.max(theoricalBottom - pos.height + CONTEXT_MENU_HEIGHT, Math.min(stageSize.height - 20, theoricalBottom))
+    const left = pos.left + MENU_WIDTH
+    toolbar.style.bottom = bottom + 'px'
+    toolbar.style.left = left + 'px'
   }
 
   /**
    * stop edit, destroy wysihtml object and reset everything
    */
   stopEditing() {
-    setEditMode(false);
+    setEditMode(false)
 
     if (this.wysihtmlEditor) {
 
       // remove event listeners
-      this.onStopEditCbks.forEach((cbk) => cbk());
+      this.onStopEditCbks.forEach((cbk) => cbk())
       this.onStopEditCbks = [];
 
       // remove and put back the whole UI
       // this is the way to go with wysihtml
       // @see https://github.com/Voog/wysihtml/issues/109#issuecomment-198350743
-      (this.element.querySelector('.image-details') as HTMLElement).style.display = 'none';
-      this.wysihtmlEditor.focus(true);
-      this.wysihtmlEditor.destroy();
-      this.wysihtmlEditor = null;
-      const parent = this.toolbar.parentElement;
-      const clone = this.toolbar.cloneNode(true) as HTMLElement;
+      (this.element.querySelector('.image-details') as HTMLElement).style.display = 'none'
+      this.wysihtmlEditor.focus(true)
+      this.wysihtmlEditor.destroy()
+      this.wysihtmlEditor = null
+      const parent = this.toolbar.parentElement
+      const clone = this.toolbar.cloneNode(true) as HTMLElement
       Array.from(clone.querySelectorAll('.wysihtml-command-active'))
-      .forEach((el: HTMLElement) => el.classList.remove('wysihtml-command-active'));
-      parent.insertBefore(clone, this.toolbar);
-      parent.removeChild(this.toolbar);
-      this.toolbar = clone;
+      .forEach((el: HTMLElement) => el.classList.remove('wysihtml-command-active'))
+      parent.insertBefore(clone, this.toolbar)
+      parent.removeChild(this.toolbar)
+      this.toolbar = clone
 
       // reset focus
-      resetFocus();
+      resetFocus()
 
       // use array acces for getSelection as a workaround for google closure
       // warning 'Property getSelection never defined on Document' cleanup
-      const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox);
+      const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
 
-      const editable = getContentNode(currentTextBoxEl);
-      editable.removeAttribute('contenteditable');
-      editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor');
-      currentTextBoxEl.classList.remove('text-editor-focus');
-      currentTextBoxEl.removeAttribute('data-allow-silex-shortcuts');
-      currentTextBoxEl.onclick = null;
+      const editable = getContentNode(currentTextBoxEl)
+      editable.removeAttribute('contenteditable')
+      editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor')
+      currentTextBoxEl.classList.remove('text-editor-focus')
+      currentTextBoxEl.removeAttribute('data-allow-silex-shortcuts')
+      currentTextBoxEl.onclick = null
       updateElements([{
         ...this.currentTextBox,
         innerHtml: getInnerHtml(currentTextBoxEl),
       }])
-      this.currentTextBox = null;
+      this.currentTextBox = null
     }
-    this.element.classList.remove('text-editor-editing');
+    this.element.classList.remove('text-editor-editing')
   }
 
   startEditing(fileExplorer: FileExplorer, bookmark = null, cbk = null) {
     const selectedElements = getSelectedElements()
     // edit the style of the selection
     if (selectedElements.length === 1) {
-      const newTextBox = selectedElements[0];
+      const newTextBox = selectedElements[0]
       if (newTextBox !== this.currentTextBox) {
-        this.stopEditing();
+        this.stopEditing()
         setEditMode(true)
 
-        this.currentTextBox = newTextBox;
-        const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox);
+        this.currentTextBox = newTextBox
+        const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
 
         // currentTextBoxEl.insertBefore(this.element,
         // currentTextBoxEl.firstChild);
-        this.attachToTextBox(currentTextBoxEl, this.element);
-        const editable = getContentNode(currentTextBoxEl);
+        this.attachToTextBox(currentTextBoxEl, this.element)
+        const editable = getContentNode(currentTextBoxEl)
         const options = {
           toolbar: this.toolbar,
           handleTables: false,
@@ -224,18 +224,18 @@ export class TextFormatBar {
               font: {rename_tag: 'span', add_class: {size: 'size_font'}},
             },
           },
-        };
-        this.wysihtmlEditor = new wysihtml.Editor(editable, options);
+        }
+        this.wysihtmlEditor = new wysihtml.Editor(editable, options)
 
         // CSS classes
-        currentTextBoxEl.classList.add('text-editor-focus');
-        currentTextBoxEl.setAttribute('data-allow-silex-shortcuts', 'true');
-        this.element.classList.add('text-editor-editing');
+        currentTextBoxEl.classList.add('text-editor-focus')
+        currentTextBoxEl.setAttribute('data-allow-silex-shortcuts', 'true')
+        this.element.classList.add('text-editor-editing')
 
         // handle the focus
-        const doc = getSiteDocument();
-        const win = getSiteWindow();
-        const onKeyScrollBinded = (e) => this.onScroll(e);
+        const doc = getSiteDocument()
+        const win = getSiteWindow()
+        const onKeyScrollBinded = (e) => this.onScroll(e)
         const onBlurBinded = () => this.onBlur(currentTextBoxEl)
 
         // events and shortcuts
@@ -254,58 +254,58 @@ export class TextFormatBar {
           () => currentTextBoxEl.removeEventListener('blur', onBlurBinded),
           () => this.wysihtmlEditor.off('blur'),
           () => this.wysihtmlEditor.off('load'),
-        );
-        win.addEventListener('scroll', onKeyScrollBinded);
+        )
+        win.addEventListener('scroll', onKeyScrollBinded)
         currentTextBoxEl.addEventListener('blur', onBlurBinded)
-        this.wysihtmlEditor.on('blur', (e) => this.onBlur(currentTextBoxEl));
+        this.wysihtmlEditor.on('blur', (e) => this.onBlur(currentTextBoxEl))
         this.wysihtmlEditor.on('load', () => {
           (this.element.querySelector('.insert-image') as HTMLElement).onclick = (e) => {
-            const bookmarkNew = this.wysihtmlEditor.composer.selection.getBookmark();
+            const bookmarkNew = this.wysihtmlEditor.composer.selection.getBookmark()
             fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
                 .then((fileInfo) => {
                   this.startEditing(fileExplorer, bookmarkNew, () => {
                     if (fileInfo) {
-                      this.wysihtmlEditor.composer.commands.exec('insertImage', {src: fileInfo.absPath, alt: ''});
+                      this.wysihtmlEditor.composer.commands.exec('insertImage', {src: fileInfo.absPath, alt: ''})
                     }
-                  });
+                  })
                 })
                 .catch((error) => {
-                  SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''));
-                  this.startEditing(fileExplorer, bookmarkNew);
-                });
-          };
+                  SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+                  this.startEditing(fileExplorer, bookmarkNew)
+                })
+          }
 
           // image details UI
-          const imageDetails = this.element.querySelector('.image-details') as HTMLElement;
-          const autoBtn = imageDetails.querySelector('#auto-submit-image') as HTMLElement;
+          const imageDetails = this.element.querySelector('.image-details') as HTMLElement
+          const autoBtn = imageDetails.querySelector('#auto-submit-image') as HTMLElement
 
           function autoSubmitImage(e) {
             // give time to the value to be updated and validate wysihtml image
             // dialog
             setTimeout(() => {
-              autoBtn.click();
+              autoBtn.click()
               imageDetails.style.display = '';
-              (e.target as HTMLElement).focus();
-            }, 100);
+              (e.target as HTMLElement).focus()
+            }, 100)
           }
-          ;(imageDetails.querySelector('.float') as HTMLElement).onchange = (e) => autoSubmitImage(e)
+          (imageDetails.querySelector('.float') as HTMLElement).onchange = (e) => autoSubmitImage(e)
           ;(imageDetails.querySelector('.float') as HTMLElement).onblur = (e) => this.onBlur(currentTextBoxEl)
           ;(imageDetails.querySelector('.src') as HTMLElement).onkeydown = (e) => autoSubmitImage(e)
           ;(imageDetails.querySelector('.alt') as HTMLElement).onkeydown = (e) => autoSubmitImage(e)
-          ;(imageDetails.querySelector('.alt') as HTMLElement).onblur = (e) => this.onBlur(currentTextBoxEl);
-          ;(this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => this.openLinkEditor(e);
+          ;(imageDetails.querySelector('.alt') as HTMLElement).onblur = (e) => this.onBlur(currentTextBoxEl)
+          ;(this.element.querySelector('.create-link') as HTMLElement).onclick = (e) => this.openLinkEditor(e)
 
           // loaded
-          this.focus(bookmark);
+          this.focus(bookmark)
           if (cbk) {
-            cbk();
+            cbk()
           }
-        });
+        })
       } else if (cbk) {
-        cbk();
+        cbk()
       }
     } else {
-      console.error('Error, can not edit selection with format pane', selectedElements);
+      console.error('Error, can not edit selection with format pane', selectedElements)
     }
   }
 
@@ -316,18 +316,18 @@ export class TextFormatBar {
       if (!SilexNotification.isActive
         && document.activeElement !== currentTextBoxEl
         && !document.activeElement.classList.contains('keep-text-format-bar-open')) {
-        this.stopEditing();
+        this.stopEditing()
       }
-    }, 0);
+    }, 0)
   }
 
   // give focus to the editor if it still exists
   focus(bookmark) {
     if (this.wysihtmlEditor) {
-      this.wysihtmlEditor.focus(false);
+      this.wysihtmlEditor.focus(false)
       // move the cursor where it was before
       if (bookmark) {
-        this.wysihtmlEditor.composer.selection.setBookmark(bookmark);
+        this.wysihtmlEditor.composer.selection.setBookmark(bookmark)
       }
     }
   }
@@ -336,7 +336,7 @@ export class TextFormatBar {
    * open the link editor, which uses SilexNotification
    */
   openLinkEditor(e: Event) {
-    const oldLink = this.getLink();
+    const oldLink = this.getLink()
     openLinkDialog({
       data: oldLink,
       cbk: (_options) => {
@@ -344,15 +344,15 @@ export class TextFormatBar {
       // therfore it is undefined when the selection is not a link
       // and it will be undefined when the user clicks "remove link"
         if (_options) {
-          this.wysihtmlEditor.composer.commands.exec('createLink', _options);
+          this.wysihtmlEditor.composer.commands.exec('createLink', _options)
         } else {
-          this.wysihtmlEditor.composer.commands.exec('removeLink');
+          this.wysihtmlEditor.composer.commands.exec('removeLink')
         }
         // give back the focus to the editor
-        this.wysihtmlEditor.focus(false); // seems to be needed only when _options is undefined
+        this.wysihtmlEditor.focus(false) // seems to be needed only when _options is undefined
       },
-    });
+    })
     // prevent click on the button
-    e.preventDefault();
+    e.preventDefault()
   }
 }

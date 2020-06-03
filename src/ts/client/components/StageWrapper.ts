@@ -7,7 +7,7 @@ import { LOADING, UiState } from '../ui-store/types'
 import { ScrollData, SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types'
 import { SilexNotification } from './Notification'
 import { Stage } from '../../../../node_modules/drag-drop-stage-component/src/ts/index'
-import { editElement } from './ContextMenu';
+import { editElement } from './ContextMenu'
 import { fixStyleForElement } from '../utils/styles'
 import {
   getBody,
@@ -23,7 +23,7 @@ import { getSiteDocument, getSiteWindow } from '../components/SiteFrame'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { onCrudChange, StateChange } from '../store/crud-store'
-import { resetFocus } from './ModalDialog';
+import { resetFocus } from './ModalDialog'
 import { selectBody } from '../element-store/dispatchers'
 
 // FIXME: do not expose the stage component here?

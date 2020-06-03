@@ -68,9 +68,9 @@ class Site {
     // this is needed since iframes can keep their content
     // after a refresh in firefox
     const contentDocument = this.getSiteDocument()
-    contentDocument.open();
-    contentDocument.write('');
-    contentDocument.close();
+    contentDocument.open()
+    contentDocument.write('')
+    contentDocument.close()
   }
 
   getSiteWindow(): Window { return this.iframe.contentWindow }
@@ -85,12 +85,12 @@ class Site {
     const contentDocument = getSiteDocument()
 
     // remove all elements from stage component
-    stageCleanup();
+    stageCleanup()
 
     // reset iframe content
-    contentDocument.open();
-    contentDocument.write('');
-    contentDocument.close();
+    contentDocument.open()
+    contentDocument.write('')
+    contentDocument.close()
 
     // // loading
     // updateUi({
@@ -99,10 +99,10 @@ class Site {
     // })
 
     // write the content
-    contentDocument.open();
-    contentDocument.write(rawHtml);
-    contentDocument.close();
-    this.contentChanged(opt_cbk);
+    contentDocument.open()
+    contentDocument.write(rawHtml)
+    contentDocument.close()
+    this.contentChanged(opt_cbk)
   }
 
   /**
@@ -118,14 +118,14 @@ class Site {
     // tslint:disable:no-string-literal
     if (contentDocument.body === null || contentWindow === null || contentWindow['jQuery'] === null) {
       setTimeout(() => {
-        this.contentChanged(opt_cbk);
-      }, 10);
-      return;
+        this.contentChanged(opt_cbk)
+      }, 10)
+      return
     }
 
     // notify the caller
     if (opt_cbk) {
-      opt_cbk();
+      opt_cbk()
     }
 
     // // loading
@@ -135,10 +135,10 @@ class Site {
     // })
 
     // update stage component
-    initStageWrapper(this.iframe);
+    initStageWrapper(this.iframe)
 
     // init selection
-    selectBody();
+    selectBody()
   }
 
   /**
@@ -146,12 +146,12 @@ class Site {
    * remove all internal objects and attributes
    */
   getHtml() {
-    const generator = this.getHtmlGenerator();
-    let res = null;
+    const generator = this.getHtmlGenerator()
+    let res = null
     do {
-      res = generator.next();
-    } while (!res.done);
-    return res.value;
+      res = generator.next()
+    } while (!res.done)
+    return res.value
   }
 
   /**
@@ -160,19 +160,19 @@ class Site {
    * point) it uses generator to lower the load induced by these operations
    */
   getHtmlAsync(cbk) {
-    const generator = this.getHtmlGenerator();
-    this.getHtmlNextStep(cbk, generator);
+    const generator = this.getHtmlGenerator()
+    this.getHtmlNextStep(cbk, generator)
   }
 
   /**
    * does one more step of the async getHtml process
    */
   getHtmlNextStep(cbk, generator) {
-    const res = generator.next();
+    const res = generator.next()
     if (res.done) {
-      setTimeout(() => cbk(res.value), 0);
+      setTimeout(() => cbk(res.value), 0)
     } else {
-      setTimeout(() => this.getHtmlNextStep(cbk, generator), 0);
+      setTimeout(() => this.getHtmlNextStep(cbk, generator), 0)
     }
   }
 
@@ -185,28 +185,28 @@ class Site {
   * getHtmlGenerator() {
     // update style tag (the dom do not update automatically when we change
     // document.styleSheets)
-    const updatedStyles = getAllStyles();
-    yield;
+    const updatedStyles = getAllStyles()
+    yield
 
     // clone
     const contentDocument = getSiteDocument()
-    const cleanFile = (contentDocument.cloneNode(true) as Document);
-    yield;
+    const cleanFile = (contentDocument.cloneNode(true) as Document)
+    yield
 
     // apply styles in JSON to the DOM, this is to ensure we save the styles
     // untuched by the browser
-    const styleTag = cleanFile.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME);
-    styleTag.innerHTML = updatedStyles;
-    yield;
+    const styleTag = cleanFile.querySelector('.' + Constants.INLINE_STYLE_TAG_CLASS_NAME)
+    styleTag.innerHTML = updatedStyles
+    yield
 
     // get html
-    removeWysihtmlMarkup(cleanFile);
-    yield;
-    let rawHtml = (cleanFile as Document).documentElement.outerHTML;
-    yield;
+    removeWysihtmlMarkup(cleanFile)
+    yield
+    let rawHtml = (cleanFile as Document).documentElement.outerHTML
+    yield
 
     // add doctype
-    rawHtml = '<!DOCTYPE html>' + rawHtml;
-    return rawHtml;
+    rawHtml = '<!DOCTYPE html>' + rawHtml
+    return rawHtml
   }
 }

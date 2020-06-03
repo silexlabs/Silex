@@ -1,4 +1,4 @@
-import { SITE1, mockUiElements } from '../../test-utils/data-set';
+import { SITE1, mockUiElements } from '../../test-utils/data-set'
 const { siteIFrame } = mockUiElements()
 
 import { initializeSite } from './index'

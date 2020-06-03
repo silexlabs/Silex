@@ -1,10 +1,10 @@
-import { deleteElements, getElements, updateElements } from '../element-store/index';
-import { StateChange } from '../store/crud-store';
-import { getState } from '../store/index';
-import { writeDataToDom } from '../store/dom';
-import { getSiteDocument, getSiteWindow } from '../components/SiteFrame';
-import { SilexNotification } from '../components/Notification';
-import { PageState } from './types';
+import { deleteElements, getElements, updateElements } from '../element-store/index'
+import { StateChange } from '../store/crud-store'
+import { getState } from '../store/index'
+import { writeDataToDom } from '../store/dom'
+import { getSiteDocument, getSiteWindow } from '../components/SiteFrame'
+import { SilexNotification } from '../components/Notification'
+import { PageState } from './types'
 import { LinkType, ElementState } from '../element-store/types'
 import { openPageDom } from './dom'
 
@@ -96,7 +96,7 @@ export function onUpdatePages(changes: StateChange<PageState>[]) {
             link: hasLinkToPage(element, from) ? to.link : element.link,
             pageNames: isVisibleOnPage(element, from) ? element.pageNames.map((name) => name === from.id ? to.id : name) : element.pageNames,
           })))
-      }, 0);
+      }, 0)
     }
   })
 

@@ -1,8 +1,8 @@
 import { ElementType, ElementData, LinkType } from '../client/element-store/types'
-import { SiteState } from '../client/site-store/types';
+import { SiteState } from '../client/site-store/types'
 
 export function mockForAllTests() {
-  jest.doMock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());
+  jest.doMock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn())
 }
 
 export function mockUiElements(): {siteIFrame: HTMLIFrameElement, uiIFrame: HTMLIFrameElement} {
@@ -44,7 +44,7 @@ export function mockUiElements(): {siteIFrame: HTMLIFrameElement, uiIFrame: HTML
   return { uiIFrame, siteIFrame }
 }
 
-let nextId = 0;
+let nextId = 0
 function getNextId() { return 'testId' + (nextId++) }
 export const ELEM_TEXT: ElementData = {
   id: getNextId(),

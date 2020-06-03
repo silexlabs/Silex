@@ -30,9 +30,9 @@ declare namespace monaco.editor {
 }
 // tslint:enable
 
-import { ModalDialog } from '../ModalDialog';
+import { ModalDialog } from '../ModalDialog'
 import { getUiElements } from '../../ui-store/UiElements'
-import { SilexNotification } from '../Notification';
+import { SilexNotification } from '../Notification'
 
 /**
  * @class {silex.view.dialog.CodeEditorBase}
@@ -40,19 +40,19 @@ import { SilexNotification } from '../Notification';
  */
 export class CodeEditorBase {
 
-  static isDocked: boolean;
+  static isDocked: boolean
   // make this a dialog
-  modalDialog: ModalDialog;
+  modalDialog: ModalDialog
 
   /**
    * if true, do not propagate onChange event
    */
-  private lockOnChange = false;
+  private lockOnChange = false
 
   /**
    * instance of monaco editor
    */
-  private editor: monaco.editor.ICodeEditor;
+  private editor: monaco.editor.ICodeEditor
 
   /**
    * @param element   container to render the UI
@@ -73,40 +73,40 @@ export class CodeEditorBase {
         value: '',
         language,
         theme: 'vs-dark',
-      });
+      })
       this.editor.onDidChangeModelContent((e) => {
         if (!this.lockOnChange) {
-          this.contentChanged();
+          this.contentChanged()
         }
-      });
+      })
 
       // dock mode
-      const dockBtn = element.querySelector('.dock-btn');
+      const dockBtn = element.querySelector('.dock-btn')
       if (dockBtn) {
         dockBtn.addEventListener('click', () => {
-          CodeEditorBase.isDocked = !CodeEditorBase.isDocked;
-          this.dockPanel(CodeEditorBase.isDocked);
-          this.setOptions();
+          CodeEditorBase.isDocked = !CodeEditorBase.isDocked
+          this.dockPanel(CodeEditorBase.isDocked)
+          this.setOptions()
           // force ace redraw for editor size
-          this.editor.render();
-          this.editor.layout();
+          this.editor.render()
+          this.editor.layout()
           // give the editor the focus
-          this.editor.focus();
-        }, false);
+          this.editor.focus()
+        }, false)
       }
       this.modalDialog = new ModalDialog({
         name: `${language} Editor`,
         element,
         onOpen: (args) => {
-          this.setOptions();
+          this.setOptions()
           // force ace redraw for editor size
-          this.editor.render();
-          this.editor.layout();
+          this.editor.render()
+          this.editor.layout()
           // give the editor the focus
-          this.editor.focus();
+          this.editor.focus()
         },
         onClose: () => {},
-      });
+      })
     } else {
       SilexNotification.alert('Error', 'The monaco editor did not load. This is required by Silex, please try reloading the page or build Silex again.', () => {})
     }
@@ -117,18 +117,18 @@ export class CodeEditorBase {
    * @param dock or undock
    */
   dockPanel(dock: boolean) {
-    const { cssEditor, jsEditor, htmlEditor } = getUiElements();
+    const { cssEditor, jsEditor, htmlEditor } = getUiElements()
     const propSplitter = getPropertySplitter()
     if (dock) {
-      document.body.classList.add('dock-editors');
-      propSplitter.addRight(cssEditor);
-      propSplitter.addRight(jsEditor);
-      propSplitter.addRight(htmlEditor);
+      document.body.classList.add('dock-editors')
+      propSplitter.addRight(cssEditor)
+      propSplitter.addRight(jsEditor)
+      propSplitter.addRight(htmlEditor)
     } else {
-      document.body.classList.remove('dock-editors');
-      propSplitter.remove(cssEditor);
-      propSplitter.remove(jsEditor);
-      propSplitter.remove(htmlEditor);
+      document.body.classList.remove('dock-editors')
+      propSplitter.remove(cssEditor)
+      propSplitter.remove(jsEditor)
+      propSplitter.remove(htmlEditor)
     }
   }
 
@@ -141,35 +141,35 @@ export class CodeEditorBase {
       minimap: {
         enabled: !CodeEditorBase.isDocked,
       },
-    });
+    })
   }
 
   /**
    * Open the editor
    */
   open() {
-    this.modalDialog.open();
+    this.modalDialog.open()
   }
 
   /**
    * Close the editor
    */
   close() {
-    this.modalDialog.close();
+    this.modalDialog.close()
   }
 
   /**
    * editor read only property
    */
   setReadOnly(readOnly: boolean) {
-    this.editor.updateOptions({ readOnly });
+    this.editor.updateOptions({ readOnly })
   }
 
   /**
    * current value of the editor
    */
   getValue(): string {
-    return this.editor.getValue();
+    return this.editor.getValue()
   }
 
   /**
@@ -177,13 +177,13 @@ export class CodeEditorBase {
    * param {!string} value
    */
   setValue(value) {
-    this.setReadOnly(false);
+    this.setReadOnly(false)
 
     // set value
     if (value !== this.getValue()) {
-      this.lockOnChange = true;
-      this.editor.setValue(value);
-      this.lockOnChange = false;
+      this.lockOnChange = true
+      this.editor.setValue(value)
+      this.lockOnChange = false
     }
 
     // // force ace redraw
@@ -195,17 +195,17 @@ export class CodeEditorBase {
    * param {!string} value
    */
   setError(value) {
-    this.setReadOnly(true);
+    this.setReadOnly(true)
 
-    this.lockOnChange = true;
-    this.editor.setValue(value);
-    this.lockOnChange = false;
+    this.lockOnChange = true
+    this.editor.setValue(value)
+    this.lockOnChange = false
   }
 
   /**
    * the content has changed, notify the controler
    */
   contentChanged() {
-    throw new Error('to be overridden in sub classes');
+    throw new Error('to be overridden in sub classes')
   }
 }

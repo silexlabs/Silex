@@ -13,15 +13,15 @@ import { fromPageData } from './page-store/index'
 import { getHtml, getSiteDocument, setHtml } from './components/SiteFrame'
 import { getSite, updateSite } from './site-store/index'
 import { getState } from './store/index'
-import { initCssEditor } from './components/dialog/CssEditor';
-import { initHtmlEditor } from './components/dialog/HtmlEditor';
-import { initJsEditor } from './components/dialog/JsEditor';
+import { initCssEditor } from './components/dialog/CssEditor'
+import { initHtmlEditor } from './components/dialog/HtmlEditor'
+import { initJsEditor } from './components/dialog/JsEditor'
 import { initializeData } from './store/dispatchers'
-import { isDirty, resetDirty } from './dirty';
+import { isDirty, resetDirty } from './dirty'
 import { openDashboard } from './components/dialog/Dashboard'
 import { openPage } from './ui-store/dispatchers'
 import { openSettingsDialog } from './components/dialog/SettingsDialog'
-import { resetUndo } from './undo';
+import { resetUndo } from './undo'
 import { setPreviewWindowLocation } from './preview'
 import { startObservers, stopObservers } from './store/observer'
 import { updateUi, getUi } from './ui-store/index'
@@ -36,7 +36,7 @@ import { updateUi, getUi } from './ui-store/index'
 export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   // tracker.trackAction('controller-events', 'request', 'file.save', 0);
   if (fileInfo && !getSite().isTemplate) {
-    doSave((fileInfo as FileInfo), cbk, errorCbk);
+    doSave((fileInfo as FileInfo), cbk, errorCbk)
   } else if (Config.singleSiteMode) {
     // do nothing in single site mode
     throw new Error('File has no name and can not "save as" in single site mode')
@@ -46,7 +46,7 @@ export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: an
         .saveAs('editable.html', FileExplorer.HTML_EXTENSIONS)
         .then((fileInfoChosen) => {
           if (fileInfoChosen != null ) {
-            doSave((fileInfoChosen as FileInfo), cbk, errorCbk);
+            doSave((fileInfoChosen as FileInfo), cbk, errorCbk)
           } else {
             // user aborted save as
           }
@@ -54,9 +54,9 @@ export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: an
         .catch((error) => {
           // tracker.trackAction('controller-events', 'error', 'file.save', -1);
           if (errorCbk) {
-            errorCbk(error);
+            errorCbk(error)
           }
-        });
+        })
   }
 }
 
@@ -65,20 +65,20 @@ export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: an
  */
 function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
   // relative urls only in the files
-  let rawHtml = getHtml();
+  let rawHtml = getHtml()
 
   // look for bug of firefox inserting quotes in url("")
   // FIXME: remove this!!
   if (rawHtml.indexOf('url(\'&quot;') > -1) {
-    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.');
+    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.')
 
     // log this (QA)
     // tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
 
     // try to cleanup the mess
     rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, (match, group1, group2) => {
-      return 'url(\'' + group2 + '\')';
-    });
+      return 'url(\'' + group2 + '\')'
+    })
   }
 
   // update file path
@@ -91,25 +91,25 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
   saveAs(file, rawHtml, getState(), () => {
     // tracker.trackAction('controller-events', 'success', 'file.save', 1);
     // ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
-    SilexNotification.notifySuccess('File is saved.');
-    setPreviewWindowLocation();
+    SilexNotification.notifySuccess('File is saved.')
+    setPreviewWindowLocation()
 
     // reset dirty flag
     resetDirty()
 
     if (cbk) {
-      cbk();
+      cbk()
     }
   },
   (error, msg) => {
     SilexNotification.alert('Save website', 'Error: I did not manage to save the file. \n' + (msg || error.message || ''),
     () => {
       if (errorCbk) {
-        errorCbk(error);
+        errorCbk(error)
       }
-    });
+    })
     // tracker.trackAction('controller-events', 'error', 'file.save', -1);
-  });
+  })
 }
 
 /**
@@ -117,7 +117,7 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
  * @param cbk receives the raw HTML
  */
 function saveAs(file: FileInfo, rawHtml: string, data: PersistantData, cbk: () => any, errCbk?: ((p1: any, p2: string) => any)) {
-  addToLatestFiles(file);
+  addToLatestFiles(file)
 
   CloudStorage.getInstance().write(
       (file as FileInfo), rawHtml,
@@ -127,9 +127,9 @@ function saveAs(file: FileInfo, rawHtml: string, data: PersistantData, cbk: () =
           isTemplate: false,
         })
         if (cbk) {
-          cbk();
+          cbk()
         }
-      }, errCbk);
+      }, errCbk)
 }
 
 /**
@@ -140,10 +140,10 @@ export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
   loadFromUserFiles(
       fileInfo, (rawHtml, data: PersistantData) => cbk && cbk(),
       (err, message, code) => {
-        console.error('Could not open recent file', err, message, code);
+        console.error('Could not open recent file', err, message, code)
         // make silex visible
         if (cbk) {
-          cbk();
+          cbk()
         }
         // handle the error
         if (code === 403) {
@@ -154,21 +154,21 @@ export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
               SilexNotification.alert('Open recent file', `
               I am trying to connect you to ${fileInfo.service} again,
               please accept the connection in the popup I have just opened then <strong>please wait</strong>.
-              `, () => {});
-              const ce = CloudStorage.getInstance().ce;
+              `, () => {})
+              const ce = CloudStorage.getInstance().ce
               // tslint:disable:no-string-literal
               ce['auth'](fileInfo.service).then((res) => {
-                SilexNotification.close();
+                SilexNotification.close()
                 if (ok) {
-                  openRecent(fileInfo, cbk);
+                  openRecent(fileInfo, cbk)
                 }
-              });
+              })
             },
-          );
+          )
         } else {
-          SilexNotification.confirm('Open recent file', `Could not open this recent file. ${ message }`, (ok) => {});
+          SilexNotification.confirm('Open recent file', `Could not open this recent file. ${ message }`, (ok) => {})
         }
-      });
+      })
 }
 
 /**
@@ -182,10 +182,10 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), errorCbk?: ((p1: 
       if (!fileInfo && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
-        loadBlankTemplate(cbk, errorCbk);
+        loadBlankTemplate(cbk, errorCbk)
       } else {
         if (fileInfo) {
-          openRecent(fileInfo, cbk);
+          openRecent(fileInfo, cbk)
         }
       }
     },
@@ -193,24 +193,24 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), errorCbk?: ((p1: 
       if (!url && !hasContent()) {
         // if the user closes the dialog and no website is being edited then
         // load default blank website
-        loadBlankTemplate(cbk, errorCbk);
+        loadBlankTemplate(cbk, errorCbk)
       } else {
         if (url) {
           // a template was selected
-          loadFromServerTemplates(url, cbk, (err, msg) => onOpenError(err, msg, errorCbk, true));
+          loadFromServerTemplates(url, cbk, (err, msg) => onOpenError(err, msg, errorCbk, true))
         }
       }
     },
     ready: () => {
       if (cbk) {
-        cbk();
+        cbk()
       }
     },
     error: (err) => {
-      console.error('loading templates error');
-      onOpenError(err, 'Loading templates error', errorCbk);
+      console.error('loading templates error')
+      onOpenError(err, 'Loading templates error', errorCbk)
     },
-  });
+  })
 }
 
 /**
@@ -218,7 +218,7 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), errorCbk?: ((p1: 
  */
 export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) => any), cancelCbk?: (() => any)) {
   if (Config.singleSiteMode) {
-    return;
+    return
   }
 
   // track success
@@ -232,12 +232,12 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
               fileInfo,
               (rawHtml, data: PersistantData) => {
                 // display and redraw
-                SilexNotification.notifySuccess((getSite().title || 'Untitled website') + ' opened.');
+                SilexNotification.notifySuccess((getSite().title || 'Untitled website') + ' opened.')
 
                 // track success
                 // tracker.trackAction('controller-events', 'success', 'file.open', 1);
                 if (cbk) {
-                  cbk((fileInfo as FileInfo));
+                  cbk((fileInfo as FileInfo))
                 }
               },
               // with loader
@@ -245,23 +245,23 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
                 SilexNotification.alert('Open file', 'Error: I did not manage to open this file. \n' + (message || error.message || ''),
                 () => {
                   if (errorCbk) {
-                    errorCbk(error);
+                    errorCbk(error)
                   }
-                });
+                })
                 // tracker.trackAction('controller-events', 'error', 'file.open', -1);
-              });
+              })
         } else {
           if (cancelCbk) {
-            cancelCbk();
+            cancelCbk()
           }
         }
       })
       .catch((error) => {
         // tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (errorCbk) {
-          errorCbk(error);
+          errorCbk(error)
         }
-      });
+      })
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -269,24 +269,24 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
 ///////////////////////////////////////////////////////////////////
 
 function onOpenError(err: any, msg: string, errorCbk?: ((p1: any) => any), loadBlankOnError: boolean = true) {
-  console.error('opening template error', err);
-  SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {});
+  console.error('opening template error', err)
+  SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {})
   if (errorCbk) {
-    errorCbk(err);
+    errorCbk(err)
   }
   if (loadBlankOnError && !hasContent()) {
-    loadBlankTemplate();
+    loadBlankTemplate()
   }
   // tracker.trackAction('controller-events', 'error', 'file.new', -1);
 }
 
 function publishError(message) {
   // tracker.trackAction('controller-events', 'error', 'file.publish', -1);
-  console.error('Error: I did not manage to publish the file.', message);
+  console.error('Error: I did not manage to publish the file.', message)
   SilexNotification.alert('Publication',
       `<strong>An error occured.</strong><p>I did not manage to publish the website. ${
           message}</p><p><a href="${ Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`,
-      () => {});
+      () => {})
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -300,8 +300,8 @@ function publishError(message) {
 export function publish() {
   if (SilexNotification.isActive) {
     console.warn(
-        'Publish canceled because a modal dialog is opened already.');
-    return;
+        'Publish canceled because a modal dialog is opened already.')
+    return
   }
   // tracker.trackAction('controller-events', 'request', 'file.publish', 0);
   openPublishDialog()
@@ -309,32 +309,32 @@ export function publish() {
         if (publishOptions) {
           doPublish(publishOptions, (errMsg, warningMsg, finalPublicationOptions) => {
             if (errMsg) {
-              closePublishDialog();
-              publishError(errMsg);
+              closePublishDialog()
+              publishError(errMsg)
             } else {
               if (warningMsg) {
-                closePublishDialog();
-                SilexNotification.alert('Publication', warningMsg, () => {});
+                closePublishDialog()
+                SilexNotification.alert('Publication', warningMsg, () => {})
                 // tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
               } else {
                 startPublish((finalPublicationOptions as PublicationOptions))
                 .then((msg: string) => {
                   // tracker.trackAction('controller-events', 'success', 'file.publish', 1);
-                  closePublishDialog();
-                  SilexNotification.alert('Publication', msg, () => {});
+                  closePublishDialog()
+                  SilexNotification.alert('Publication', msg, () => {})
                 })
                 .catch((msg) => {
-                  closePublishDialog();
-                  publishError(msg);
-                });
+                  closePublishDialog()
+                  publishError(msg)
+                })
               }
               }
-          });
+          })
         } else {
           // tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
         }
       })
-      .catch((msg) => publishError(msg));
+      .catch((msg) => publishError(msg))
 }
 
 function doPublish(
@@ -344,66 +344,66 @@ function doPublish(
     publicationOptions.publicationPath = {
       ...publicationOptions.publicationPath,
       path: publicationOptions.file.path.split('/').slice(0, -1).join('/'),
-    };
+    }
   }
-  const publicationPath = publicationOptions.publicationPath;
-  const provider = publicationOptions.provider;
+  const publicationPath = publicationOptions.publicationPath
+  const provider = publicationOptions.provider
 
   // get info about the website file
-  const file = getSite().file;
-  const isTemplate = getSite().isTemplate;
+  const file = getSite().file
+  const isTemplate = getSite().isTemplate
 
   // save new path when needed and get publication path
   if (publicationPath) {
     updateSite({
       ...getSite(),
       publicationPath,
-    });
+    })
   }
-  const folder = getSite().publicationPath;
+  const folder = getSite().publicationPath
 
   // the file must be saved somewhere because all URLs are made relative
   if (!folder) {
-    cbk(null, 'I did not publish your website. I did nothing because I do not know where to publish your site.', null);
+    cbk(null, 'I did not publish your website. I did nothing because I do not know where to publish your site.', null)
   } else {
     if (!file || isTemplate) {
-      cbk(null, 'The file must be saved before I can publish it.', null);
+      cbk(null, 'The file must be saved before I can publish it.', null)
     } else {
       if (!provider) {
-        const providerName = getSite().hostingProvider;
+        const providerName = getSite().hostingProvider
         if (!providerName) {
           throw new Error(
-              'I need a hosting provider name for this website. And none is configured.');
+              'I need a hosting provider name for this website. And none is configured.')
         } else {
           SilexTasks.getInstance().hosting((hosting) => {
             const storedProvider: Provider =
-                hosting.providers.find((p) => p.name === providerName);
+                hosting.providers.find((p) => p.name === providerName)
             if (!storedProvider) {
               SilexNotification.alert('Publication', `
                 <p>Unknown provider ${providerName}.</p>
                 <p>Is it configured on this servier? Here are the hosting providers I know:
                 ${hosting.providers.map((p) => p.name).join(', ')}</p>
-              `, () => {});
+              `, () => {})
               throw new Error(`
                 Unknown provider ${providerName}.
                 Is it configured on this servier? Here are the hosting providers I know: <ul>${hosting.providers
                 .map((p) => '<li>' + p.name + '</li>')
                 .join('')}</ul>
-              `);
+              `)
             }
             cbk(null, null, ({
                   file,
                   publicationPath: folder,
                   provider: storedProvider,
-                } as PublicationOptions));
-          });
+                } as PublicationOptions))
+          })
         }
       } else {
         cbk(null, null, ({
           file,
           publicationPath: folder,
           provider,
-        } as PublicationOptions));
+        } as PublicationOptions))
       }
     }
   }
@@ -419,7 +419,7 @@ function doPublish(
  */
 function hasContent(): boolean {
   const contentDocument = getSiteDocument()
-  return !!contentDocument.body && contentDocument.body.childNodes.length > 0;
+  return !!contentDocument.body && contentDocument.body.childNodes.length > 0
 }
 
 /**
@@ -444,8 +444,8 @@ function loadFromServerTemplates(
  * load blank template
  */
 function loadBlankTemplate(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
-  const blankUrl = '/libs/templates/silex-blank-templates/blank/editable.html';
-  loadFromServerTemplates(blankUrl, cbk, (err, msg) => onOpenError(err, msg, errorCbk, false));
+  const blankUrl = '/libs/templates/silex-blank-templates/blank/editable.html'
+  loadFromServerTemplates(blankUrl, cbk, (err, msg) => onOpenError(err, msg, errorCbk, false))
 }
 
 /**
@@ -472,9 +472,9 @@ function doLoadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantD
     },
     path: file.absPath,
     cbk: (rawHtml: string, data: PersistantData) => {
-      addToLatestFiles(file);
+      addToLatestFiles(file)
       if (cbk) {
-        cbk(rawHtml, data);
+        cbk(rawHtml, data)
       }
     },
     errCbk,
@@ -511,7 +511,7 @@ function doLoadWebsite({site, path, cbk, errCbk}: {
         elements: fromElementData(data.elements),
       }
       initializeData(states)
-      openPage(states.pages[0]);
+      openPage(states.pages[0])
       startObservers()
       updateUi({
         ...getUi(),
@@ -524,8 +524,8 @@ function doLoadWebsite({site, path, cbk, errCbk}: {
       }, 1000)
       // end the process
       if (cbk) {
-        cbk(rawHtml, data);
+        cbk(rawHtml, data)
       }
     })
-  }, errCbk);
+  }, errCbk)
 }

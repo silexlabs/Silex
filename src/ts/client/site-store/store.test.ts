@@ -1,5 +1,5 @@
-import { getSite, initializeSite } from './index';
-import { SITE1 } from '../../test-utils/data-set';
+import { getSite, initializeSite } from './index'
+import { SITE1 } from '../../test-utils/data-set'
 
 beforeEach(() => {
   initializeSite(SITE1)

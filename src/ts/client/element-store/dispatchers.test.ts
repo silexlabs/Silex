@@ -6,20 +6,20 @@ import {
   ELEM_IMAGE,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
-} from '../../test-utils/data-set';
-import { PageState } from '../page-store/types';
+} from '../../test-utils/data-set'
+import { PageState } from '../page-store/types'
 import {
   addElement,
   moveElements,
   removeFromPage,
   selectBody,
   selectElements
-} from './dispatchers';
+} from './dispatchers'
 import { getElementById } from '../element-store/filters'
 import { initializeElements } from '../element-store/index'
-import { isBody } from './filters';
+import { isBody } from './filters'
 
-jest.mock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn());
+jest.mock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn())
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
 const ELEM_CONTAINER_STATE = ELEM_CONTAINER as ElementState

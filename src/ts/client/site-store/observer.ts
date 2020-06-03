@@ -3,7 +3,7 @@ import { getBody } from '../element-store/filters'
 import { updateElements } from '../element-store/index'
 import { getState } from '../store/index'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site-store/dom'
-import { writeDataToDom } from '../store/dom';
+import { writeDataToDom } from '../store/dom'
 import { DataSources, SiteState } from '../site-store/types'
 import { getSiteDocument } from '../components/SiteFrame'
 import { SilexNotification } from '../components/Notification'
@@ -73,12 +73,12 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
       const deps = site.prodotypeDependencies[tagName]
       deps.forEach((depObj) => {
         const el = doc.createElement(tagName)
-        el.setAttribute('data-dependency', '');
+        el.setAttribute('data-dependency', '')
         Object.keys(depObj)
         .forEach((attrName) => {
           el.setAttribute(attrName, depObj[attrName])
         })
-        head.appendChild(el);
+        head.appendChild(el)
       })
     })
   }
@@ -111,27 +111,27 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
 
 async function loadDataSources(dataSources: DataSources, reload): Promise<DataSources> {
   try {
-    const dataSourcesClone = { ...dataSources };
+    const dataSourcesClone = { ...dataSources }
     return (await Promise.all(Object.keys(dataSourcesClone).map(async (name) => {
-      const dataSource = dataSourcesClone[name];
+      const dataSource = dataSourcesClone[name]
       if (reload || !dataSource.data || !dataSource.structure) {
-        const res = await fetch(dataSource.href);
-        const data = await res.json();
-        const root = objectPath.get(data, dataSource.root);
-        const first = objectPath.get(root, '0');
-        dataSource.data = data;
-        dataSource.structure = {};
+        const res = await fetch(dataSource.href)
+        const data = await res.json()
+        const root = objectPath.get(data, dataSource.root)
+        const first = objectPath.get(root, '0')
+        dataSource.data = data
+        dataSource.structure = {}
         if (first) {
-          Object.keys(first).forEach((key) => dataSource.structure[key] = getDataSourceType(first[key]));
+          Object.keys(first).forEach((key) => dataSource.structure[key] = getDataSourceType(first[key]))
         }
-        return {name, dataSource};
+        return {name, dataSource}
       }
-    }))).reduce((prev, cur) => prev[cur.name] = cur.dataSource, {});
+    }))).reduce((prev, cur) => prev[cur.name] = cur.dataSource, {})
   } catch (err) {
-    console.error('could not load data sources', err);
-    SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err; });
+    console.error('could not load data sources', err)
+    SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err })
   }
 }
 function getDataSourceType(value) {
-  return Array.isArray(value) ? 'array' : typeof(value);
+  return Array.isArray(value) ? 'array' : typeof(value)
 }

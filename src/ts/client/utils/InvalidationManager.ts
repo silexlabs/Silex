@@ -27,12 +27,12 @@ export class InvalidationManager {
   /**
    * the minimum time between two calls
    */
-  isDirty: boolean = false;
+  isDirty: boolean = false
 
   /**
    * store the last callback called while the delay since first call is not over
    */
-  cbk: (() => any) = null;
+  cbk: (() => any) = null
 
   /**
    * @param delay the minimum time between two calls, in seconds
@@ -47,13 +47,13 @@ export class InvalidationManager {
     if (this.isDirty) {
       // store the last call only (rewrite this.cbk each time)
       // and save it for later
-      this.cbk = cbk;
+      this.cbk = cbk
     } else {
       // otherwise call the calback right now
       // and check the flag saying that a call was made a short time ago
-      this.isDirty = true;
-      cbk();
-      this.startDirty();
+      this.isDirty = true
+      cbk()
+      this.startDirty()
     }
   }
 
@@ -62,12 +62,12 @@ export class InvalidationManager {
       // other calls have been made in the mean time, call the last one only
       if (this.cbk === null) {
         // reset the flag
-        this.isDirty = false;
+        this.isDirty = false
       } else {
-        this.cbk();
-        this.cbk = null;
-        this.startDirty();
+        this.cbk()
+        this.cbk = null
+        this.startDirty()
       }
-    }, this.delay);
+    }, this.delay)
   }
 }

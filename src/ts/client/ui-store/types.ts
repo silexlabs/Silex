@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementState } from '../element-store/types';
+import { ElementState } from '../element-store/types'
 
 /**
  * @fileoverview Type definitions. Cross platform, it needs to run client and server side

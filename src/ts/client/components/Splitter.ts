@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { getUiElements } from '../ui-store/UiElements';
+import { getUiElements } from '../ui-store/UiElements'
 import { resizeWindow, subscribeMouseEvent } from './StageWrapper'
 
 /**

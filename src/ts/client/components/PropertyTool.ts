@@ -16,29 +16,29 @@
  *
  */
 
-import { BgPane } from './pane/BgPane';
-import { BorderPane } from './pane/BorderPane';
-import { ElementState } from '../element-store/types';
-import { GeneralStylePane } from './pane/GeneralStylePane';
-import { PagePane } from './pane/PagePane';
-import { PropertyPane } from './pane/PropertyPane';
-import { StyleEditorPane } from './pane/StyleEditorPane';
-import { StylePane } from './pane/StylePane';
-import { Toolboxes } from '../ui-store/types';
-import { browse, editLink } from '../element-store/utils';
-import { getDomElement } from '../element-store/dom';
-import { getElements, subscribeElements } from '../element-store/index';
-import { getSite } from '../site-store/index';
-import { getSiteDocument } from './SiteFrame';
+import { BgPane } from './pane/BgPane'
+import { BorderPane } from './pane/BorderPane'
+import { ElementState } from '../element-store/types'
+import { GeneralStylePane } from './pane/GeneralStylePane'
+import { PagePane } from './pane/PagePane'
+import { PropertyPane } from './pane/PropertyPane'
+import { StyleEditorPane } from './pane/StyleEditorPane'
+import { StylePane } from './pane/StylePane'
+import { Toolboxes } from '../ui-store/types'
+import { browse, editLink } from '../element-store/utils'
+import { getDomElement } from '../element-store/dom'
+import { getElements, subscribeElements } from '../element-store/index'
+import { getSite } from '../site-store/index'
+import { getSiteDocument } from './SiteFrame'
 import { getUiElements } from '../ui-store/UiElements'
 import {
   isComponent,
   openComponentEditor,
   resetComponentEditor
-} from '../element-store/component';
-import { openToolbox } from '../ui-store/dispatchers';
-import { subscribeUi } from '../ui-store/index';
-import { updateElements } from '../element-store/index';
+} from '../element-store/component'
+import { openToolbox } from '../ui-store/dispatchers'
+import { subscribeUi } from '../ui-store/index'
+import { updateElements } from '../element-store/index'
 
 /**
  * @fileoverview the Silex PropertyTool class handles the panes actually displaying the
@@ -69,7 +69,7 @@ function buildUi() {
   const stylePane = new StylePane(element.querySelector('.style-editor'))
 
   // Style editor
-  const styleEditorMenu = element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu') as HTMLElement;
+  const styleEditorMenu = element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu') as HTMLElement
   const styleEditorPane = new StyleEditorPane(styleEditorMenu)
 
   // display component when possible
@@ -83,27 +83,27 @@ function buildUi() {
   })
 
   // expandables
-  const expandables = element.querySelectorAll('.expandable legend');
+  const expandables = element.querySelectorAll('.expandable legend')
   for (let idx = 0; idx < expandables.length; idx++) {
-    const el: HTMLElement = expandables[idx] as HTMLElement;
-    const lsKey = 'silex-expand-property-' + idx;
-    const isExpand = window.localStorage.getItem(lsKey) === 'true';
+    const el: HTMLElement = expandables[idx] as HTMLElement
+    const lsKey = 'silex-expand-property-' + idx
+    const isExpand = window.localStorage.getItem(lsKey) === 'true'
     if (isExpand) {
-      togglePanel(el);
+      togglePanel(el)
     }
     el.onclick = (e) => {
-      togglePanel(el);
-      window.localStorage.setItem(lsKey, (el.parentElement as HTMLElement).classList.contains('expanded').toString());
-    };
+      togglePanel(el)
+      window.localStorage.setItem(lsKey, (el.parentElement as HTMLElement).classList.contains('expanded').toString())
+    }
   }
 
   // tabs
-  const designTab = element.querySelector('.design');
-  const paramsTab = element.querySelector('.params');
-  const styleTab = element.querySelector('.style');
-  designTab.addEventListener('click', () => openToolbox(Toolboxes.PROPERTIES));
-  paramsTab.addEventListener('click', () => openToolbox(Toolboxes.PARAMS));
-  styleTab.addEventListener('click', () => openToolbox(Toolboxes.STYLES));
+  const designTab = element.querySelector('.design')
+  const paramsTab = element.querySelector('.params')
+  const styleTab = element.querySelector('.style')
+  designTab.addEventListener('click', () => openToolbox(Toolboxes.PROPERTIES))
+  paramsTab.addEventListener('click', () => openToolbox(Toolboxes.PARAMS))
+  styleTab.addEventListener('click', () => openToolbox(Toolboxes.STYLES))
 
   // observer
   subscribeUi((prevState, nextState) => {
@@ -117,11 +117,11 @@ function buildUi() {
  * toggle a property panel
  */
 function togglePanel(el: HTMLElement) {
-  (el.parentElement as HTMLElement).classList.toggle('expanded');
-  const caret = el.querySelector('.fa-inverse');
+  (el.parentElement as HTMLElement).classList.toggle('expanded')
+  const caret = el.querySelector('.fa-inverse')
   if (caret) {
-    caret.classList.toggle('fa-caret-right');
-    caret.classList.toggle('fa-caret-down');
+    caret.classList.toggle('fa-caret-right')
+    caret.classList.toggle('fa-caret-down')
   }
 }
 
@@ -129,8 +129,8 @@ function togglePanel(el: HTMLElement) {
  * open the desired tab
  */
 function openTab(cssClass) {
-  const tab = element.querySelector('.' + cssClass);
-  selectTab(tab);
+  const tab = element.querySelector('.' + cssClass)
+  selectTab(tab)
   // element.classList.remove('params-tab');
   // element.classList.remove('style-tab');
   // element.classList.add('design-tab');
@@ -160,16 +160,16 @@ function openTab(cssClass) {
 
 function selectTab(tab) {
   Array.from(element.querySelectorAll('.tab'))
-  .forEach((el) => el.classList.remove('on'));
-  tab.classList.add('on');
+  .forEach((el) => el.classList.remove('on'))
+  tab.classList.add('on')
 }
 
 /**
  * @param element, the component to edit
  */
-function editComponent(element: ElementState) {
-  if (element && element.data.component) {
-    const componentData = element.data.component
+function editComponent(component: ElementState) {
+  if (component && component.data.component) {
+    const componentData = component.data.component
     openComponentEditor({
       data: componentData,
       dataSources: getSite().dataSources,
@@ -179,15 +179,15 @@ function editComponent(element: ElementState) {
           // undo checkpoint
           // undoCheckPoint()
 
-          const domEl = getDomElement(getSiteDocument(), element)
+          const domEl = getDomElement(getSiteDocument(), component)
 
           // store the component's data for later edition
           updateElements([{
-            ...element,
+            ...component,
             data: {
-              ...element.data,
+              ...component.data,
               component: {
-                ...element.data.component,
+                ...component.data.component,
                 ...newData,
               },
             },

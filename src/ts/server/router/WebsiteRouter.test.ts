@@ -1,6 +1,6 @@
 
-import { JSDOM } from 'jsdom';
-import { prepareWebsite } from './WebsiteRouter';
+import { JSDOM } from 'jsdom'
+import { prepareWebsite } from './WebsiteRouter'
 
 test('open website', () => {
   // const router = WebsiteRouter({port: 0, rootUrl: ''}, null)

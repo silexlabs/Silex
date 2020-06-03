@@ -1,6 +1,6 @@
-import { PAGE1, PAGE2, PAGE3 } from '../../test-utils/data-set';
-import { PageState } from './types';
-import { subscribePages, fromPageData, createPages, deletePages, getPages, initializePages, movePage, updatePages } from './index';
+import { PAGE1, PAGE2, PAGE3 } from '../../test-utils/data-set'
+import { PageState } from './types'
+import { subscribePages, fromPageData, createPages, deletePages, getPages, initializePages, movePage, updatePages } from './index'
 
 beforeEach(() => {
   initializePages([])

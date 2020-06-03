@@ -11,16 +11,16 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-'use strict';
+'use strict'
 
-import 'source-map-support/register';
-import { Config } from './ServerConfig';
-import SilexServer from './SilexServer';
+import 'source-map-support/register'
+import { Config } from './ServerConfig'
+import SilexServer from './SilexServer'
 
-const config = new Config();
+const config = new Config()
 // here you can change config,
 // e.g. use config.publishRouterOptions.enableHostingGhPages
-const silex = new SilexServer(config);
+const silex = new SilexServer(config)
 // here you can change routers,
 // e.g. add unifile services `silex.unifile.use(unifileConnector)`
 // and use `silex.app.get(...)` to add callbacks
@@ -29,4 +29,4 @@ const silex = new SilexServer(config);
 
 silex.start(() => {
   // server started
-});
+})

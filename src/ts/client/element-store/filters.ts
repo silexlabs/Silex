@@ -10,7 +10,7 @@
  */
 
 import { ElementId, ElementState } from './types'
-import { getElements } from './index';
+import { getElements } from './index'
 import { getDomElement } from './dom'
 
 /**

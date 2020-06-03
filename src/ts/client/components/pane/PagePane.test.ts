@@ -5,14 +5,14 @@ import {
   ELEM_TEXT,
   PAGE1,
   mockUiElements
-} from '../../../test-utils/data-set';
-import { ElementData } from '../../element-store/types';
-import { LOADING } from '../../ui-store/types';
-import { PagePane } from './PagePane';
-import { PageState } from '../../page-store/types';
-import { fromData } from '../../store/crud-store';
-import { getElements, updateElements } from '../../element-store';
-import { getPages, subscribePages } from '../../page-store';
+} from '../../../test-utils/data-set'
+import { ElementData } from '../../element-store/types'
+import { LOADING } from '../../ui-store/types'
+import { PagePane } from './PagePane'
+import { PageState } from '../../page-store/types'
+import { fromData } from '../../store/crud-store'
+import { getElements, updateElements } from '../../element-store'
+import { getPages, subscribePages } from '../../page-store'
 
 jest.mock('../../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => ({}))
 
@@ -100,9 +100,9 @@ test('init page pane', () => {
 })
 
 test('view on all pages', () => {
-  const pane = new PagePane(document.body);
+  const pane = new PagePane(document.body)
 
-	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, ELEM_HTML_SELECTED])
+	(getElements as any).mockReturnValue([ELEM_TEXT_STATE, ELEM_HTML_SELECTED])
   document.body.querySelector('.view-on-allpages-label').dispatchEvent(new MouseEvent('click'))
   expect(updateElements).toHaveBeenCalledTimes(1)
   expect(updateElements).toHaveBeenCalledWith([ELEM_HTML_SELECTED])
@@ -138,9 +138,9 @@ test('view on all pages', () => {
 
 test('view on 1 page', () => {
   const updateElementsMock = updateElements as any
-  const pane = new PagePane(document.body);
+  const pane = new PagePane(document.body)
 
-	;(getPages as any).mockReturnValue([PAGE1_STATE])
+	(getPages as any).mockReturnValue([PAGE1_STATE])
 	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, ELEM_HTML_SELECTED])
 
 	pane.setPages([PAGE1_STATE])
@@ -197,9 +197,9 @@ test('view on 1 page', () => {
 
 test('sections and section content', () => {
   const updateElementsMock = updateElements as any
-  const pane = new PagePane(document.body);
+  const pane = new PagePane(document.body)
 
-  ;(getPages as any).mockReturnValue([PAGE1_STATE, fakePage])
+  (getPages as any).mockReturnValue([PAGE1_STATE, fakePage])
 	;(getElements as any).mockReturnValue([ELEM_SECTION, ELEM_SECTION_CONTENT_SELECTED])
 
 	pane.setPages([PAGE1_STATE, fakePage])
@@ -259,11 +259,11 @@ test('sections and section content', () => {
 
 test('update selection', () => {
   const updateElementsMock = updateElements as any
-  const pane = new PagePane(document.body);
+  const pane = new PagePane(document.body)
 
   // element is visible on all pages
   // element is selected
-	;(getElements as any).mockReturnValue([ELEM_TEXT_STATE, {
+	(getElements as any).mockReturnValue([ELEM_TEXT_STATE, {
     ...ELEM_HTML_SELECTED,
     pageNames: [],
   }])
@@ -298,12 +298,12 @@ test('update selection', () => {
 
 test('selection with sections', () => {
   const updateElementsMock = updateElements as any
-  const pane = new PagePane(document.body);
+  const pane = new PagePane(document.body)
 
   // element is a section
   // it is selected
   // it is visible on the other page
-	;(getElements as any).mockReturnValue([{
+	(getElements as any).mockReturnValue([{
     ...ELEM_SECTION_SELECTED,
     pageNames: [fakePage.id],
   }])

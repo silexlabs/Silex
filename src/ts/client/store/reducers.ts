@@ -9,11 +9,11 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { ElementState } from '../element-store/types';
-import { LOADING, Toolboxes, UiState } from '../ui-store/types';
-import { PageAction, SiteAction, UiAction } from './actions';
-import { PageState } from '../page-store/types';
-import { SiteState } from '../site-store/types';
+import { ElementState } from '../element-store/types'
+import { LOADING, Toolboxes, UiState } from '../ui-store/types'
+import { PageAction, SiteAction, UiAction } from './actions'
+import { PageState } from '../page-store/types'
+import { SiteState } from '../site-store/types'
 
 export const elementReducer = (state: ElementState[] = [], action: any): any => {
   switch (action.type) {

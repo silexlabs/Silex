@@ -1,13 +1,13 @@
-import { ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_TEXT } from '../../test-utils/data-set';
-import { ElementRect, ElementState } from './types';
+import { ELEM_CONTAINER, ELEM_SECTION, ELEM_SECTION_CONTENT, ELEM_TEXT } from '../../test-utils/data-set'
+import { ElementRect, ElementState } from './types'
 import {
   getAllStyles,
   getBoundingBox,
   getElementSize,
   getElementStyle
-} from './utils';
-import { getSite, updateSite } from '../site-store/index';
-import { initializeElements } from './index';
+} from './utils'
+import { getSite, updateSite } from '../site-store/index'
+import { initializeElements } from './index'
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
 const ELEM_TEXT_STATE = ELEM_TEXT as ElementState

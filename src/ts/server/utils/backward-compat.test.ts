@@ -2,10 +2,10 @@ import { mockUiElements } from '../../test-utils/data-set'
 
 const {siteIFrame} = mockUiElements()
 
-import * as fs from 'fs';
-import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from './BackwardCompatV2.5.60';
-import { ElementType } from '../../client/element-store/types';
-import BackwardCompat from './BackwardCompat';
+import * as fs from 'fs'
+import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom } from './BackwardCompatV2.5.60'
+import { ElementType } from '../../client/element-store/types'
+import BackwardCompat from './BackwardCompat'
 
 test('remove useless elements', () => {
   const bc = new BackwardCompat('root url', __dirname + '/../../../..')
@@ -54,7 +54,7 @@ test('convert from 2.5.60', () => {
     // 'editable-style',
     'test-custom-class',
   ])
-  expect(elements.find((el) => el.id === TEXT_ELEMENT_ID).innerHtml).toContain('www.silex.me');
+  expect(elements.find((el) => el.id === TEXT_ELEMENT_ID).innerHtml).toContain('www.silex.me')
 
   // body
   const body = elements.find((el) => el.id === BODY_ID)

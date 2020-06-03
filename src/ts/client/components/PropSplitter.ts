@@ -4,9 +4,9 @@
  *
  */
 
-import { Splitter } from './Splitter';
-import { getUiElements } from '../ui-store/UiElements';
-import { resizeWindow } from './StageWrapper';
+import { Splitter } from './Splitter'
+import { getUiElements } from '../ui-store/UiElements'
+import { resizeWindow } from './StageWrapper'
 
 let propSplitter
 

@@ -14,4 +14,4 @@ export function insertAt<T>(array: T[], index: number, ...values: T[]) {
  * flat is missing on array in UT because silex is compatible with node 10
  * TODO: ask for a different version of node for the runtime and the build
  */
-export const flat = (arr) => arr.reduce((acc, val) => acc.concat(val), []);
+export const flat = (arr) => arr.reduce((acc, val) => acc.concat(val), [])

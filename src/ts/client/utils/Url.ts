@@ -9,7 +9,7 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { FileInfo } from "../io/CloudStorage";
+import { FileInfo } from '../io/CloudStorage'
 
 /**
  * @fileoverview Helper class for common tasks
@@ -20,7 +20,7 @@ export class Url {
   /**
    * name of the get param used to store the timestamp (cache control)
    */
-  static CACHE_CONTROL_PARAM_NAME = 'silex-cache-control';
+  static CACHE_CONTROL_PARAM_NAME = 'silex-cache-control'
 
   /**
    * get the GET params from the URL
@@ -30,12 +30,12 @@ export class Url {
     .substr(1)
     .split('&')
     .reduce((aggr, next) => {
-      const split = next.split('=');
+      const split = next.split('=')
       if (split.length === 2) {
-        aggr[split[0]] = split[1];
+        aggr[split[0]] = split[1]
       }
-      return aggr;
-    }, {});
+      return aggr
+    }, {})
   }
   /**
    * set a field in a FileInfo object, and update the `url` attribute accordingly
@@ -44,19 +44,19 @@ export class Url {
   static updateFileInfo(
       fileInfo: FileInfo, attributes: any): FileInfo {
     if (!fileInfo) {
-      return null;
+      return null
     }
-    const fileInfoNew = Object.assign({}, fileInfo, attributes);
+    const fileInfoNew = Object.assign({}, fileInfo, attributes)
     return (Object.assign({}, fileInfoNew, {
       url: Url.getBaseUrl() + fileInfoNew.service + '/get/' + fileInfoNew.path,
-    }) as FileInfo);
+    }) as FileInfo)
   }
 
   /**
    * Get base URL of Silex server
    */
   static getBaseUrl() {
-    return window.location.href;
+    return window.location.href
   }
 
   /**
@@ -70,12 +70,12 @@ export class Url {
    * example: https://duckduckgo.com/abc/ returns https://duckduckgo.com
    */
   static getRootUrl(opt_url?: string): string {
-    const url = opt_url || window.location.href;
+    const url = opt_url || window.location.href
 
     // const rootUrl = /http.?:\/\/(.*)\//.match()[0];
-    const start = url.indexOf('//');
-    const end = url.indexOf('/', start + 2);
-    return url.substr(0, end);
+    const start = url.indexOf('//')
+    const end = url.indexOf('/', start + 2)
+    return url.substr(0, end)
   }
 
   /**
@@ -88,9 +88,9 @@ export class Url {
    * example: https://duckduckgo.com/abc/ returns duckduckgo.com
    */
   static getHost(opt_url?: string): string {
-    const root = Url.getRootUrl(opt_url);
-    const host = root.substr(root.indexOf('//') + 2);
-    return host;
+    const root = Url.getRootUrl(opt_url)
+    const host = root.substr(root.indexOf('//') + 2)
+    return host
   }
 
   /**
@@ -98,7 +98,7 @@ export class Url {
    * @return true if the url is absolute
    */
   static isAbsoluteUrl(url: string): boolean {
-    return url.indexOf('http') === 0 || url.indexOf('//') === 0;
+    return url.indexOf('http') === 0 || url.indexOf('//') === 0
   }
 
   /**
@@ -111,40 +111,40 @@ export class Url {
   static removeUrlKeyword(url: string): string {
     // removes the url() keyword
     if (url.startsWith('url(')) {
-      url = url.substr(4);
+      url = url.substr(4)
     }
     if (url.endsWith(')')) {
-      url = url.substr(0, url.length - 1);
+      url = url.substr(0, url.length - 1)
     }
 
     // remove the ''
     if (url.startsWith('\'') || url.startsWith('"')) {
-      url = url.substr(1);
+      url = url.substr(1)
     }
     if (url.endsWith('\'') || url.endsWith('"')) {
-      url = url.substr(0, url.length - 1);
+      url = url.substr(0, url.length - 1)
     }
 
     // workaround firefox going crazy
     if (url.startsWith('&quot;')) {
-      url = url.substr(6);
+      url = url.substr(6)
     }
     if (url.endsWith('&quot;')) {
-      url = url.substr(0, url.length - 6);
+      url = url.substr(0, url.length - 6)
     }
     if (url.startsWith('%5C')) {
-      url = url.substr(3);
+      url = url.substr(3)
     }
     if (url.startsWith('%22')) {
-      url = url.substr(3);
+      url = url.substr(3)
     }
     if (url.endsWith('%22')) {
-      url = url.substr(0, url.length - 3);
+      url = url.substr(0, url.length - 3)
     }
     if (url.endsWith('%5C')) {
-      url = url.substr(0, url.length - 3);
+      url = url.substr(0, url.length - 3)
     }
-    return url;
+    return url
   }
 
   /**
@@ -155,7 +155,7 @@ export class Url {
    * @return url + keyword as for background-image
    */
   static addUrlKeyword(url: string): string {
-    return `url('${url}')`;
+    return `url('${url}')`
   }
 
   /**
@@ -166,20 +166,20 @@ export class Url {
    */
   static addCacheControl(url: string): string {
     // remove existing cache control if any
-    url = Url.removeCacheControl(url);
+    url = Url.removeCacheControl(url)
 
     // add an url separator
     if (url.indexOf('?') > 0) {
-      url += '&';
+      url += '&'
     } else {
-      url += '?';
+      url += '?'
     }
 
     // add the timestamp
-    url += Url.CACHE_CONTROL_PARAM_NAME + '=' + Date.now();
+    url += Url.CACHE_CONTROL_PARAM_NAME + '=' + Date.now()
 
     // return the new url
-    return url;
+    return url
   }
 
   /**
@@ -195,7 +195,7 @@ export class Url {
     if (url.indexOf(Url.CACHE_CONTROL_PARAM_NAME) > 0) {
       const re = new RegExp(
           '([?|&|&amp;]' + Url.CACHE_CONTROL_PARAM_NAME + '=[0-9]*[&*]?)',
-          'gi');
+          'gi')
       url = url.replace(re, (match, group1, group2) => {
         // if there is a ? or & then return ?
         // aaaaaaaa.com?silex-cache-control=09238734&ccsqcqsc&
@@ -204,19 +204,19 @@ export class Url {
         // aaaaaaaa.com?xxx&silex-cache-control=09238734&ccsqcqsc&
         if (group1.charAt(0) === '?' &&
             group1.charAt(group1.length - 1) === '&') {
-          return '?';
+          return '?'
         } else {
           if (group1.charAt(group1.length - 1) === '&' ||
               group1.charAt(0) === '&') {
-            return '&';
+            return '&'
           } else {
-            return '';
+            return ''
           }
         }
-      });
+      })
     }
 
     // return the new url
-    return url;
+    return url
   }
 }

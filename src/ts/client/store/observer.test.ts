@@ -1,5 +1,5 @@
-import { PAGE1, PAGE2, PAGE3 } from '../../test-utils/data-set';
-import { PageData, PageState } from '../page-store/types';
+import { PAGE1, PAGE2, PAGE3 } from '../../test-utils/data-set'
+import { PageData, PageState } from '../page-store/types'
 import {
   getPages,
   initializePages,
@@ -7,8 +7,8 @@ import {
   subscribePages,
   updatePages,
   fromPageData
-} from '../page-store/index';
-import { onCrudChange } from '../store/crud-store';
+} from '../page-store/index'
+import { onCrudChange } from '../store/crud-store'
 
 beforeEach(() => {
   initializePages([])

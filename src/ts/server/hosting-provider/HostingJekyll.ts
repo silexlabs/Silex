@@ -9,41 +9,41 @@
 // http://www.silexlabs.org/silex/silex-licensing/
 //////////////////////////////////////////////////
 
-import { Action } from '../publication/DomPublisher';
-import HostingUnifile from './HostingUnifile';
+import { Action } from '../publication/DomPublisher'
+import HostingUnifile from './HostingUnifile'
 
 export default class HostingJekyll extends HostingUnifile {
   constructor(unifile) {
-    super(unifile);
+    super(unifile)
   }
   getOptions(session) {
-    const options = super.getOptions(session);
+    const options = super.getOptions(session)
     return Object.assign({}, options, {
       name: 'jekyll',
       displayName: 'Jekyll layout',
       pleaseCreateAVhost: 'create a Jekyll template.',
 
-    });
+    })
   }
   getHtmlFolder(context, defaultFolder) {
-    return '_layouts';
+    return '_layouts'
   }
   getDefaultPageFileName(context) {
-    return null;
+    return null
   }
   getRootUrl(context, rootUrl) {
-    return '{{ site.url }}{{ site.baseurl }}/';
+    return '{{ site.url }}{{ site.baseurl }}/'
   }
   beforeWrite(context, actions: Action[]) {
-    const action = actions.find((a) => a.name === 'writefile' && a.path.endsWith('/styles.css'));
+    const action = actions.find((a) => a.name === 'writefile' && a.path.endsWith('/styles.css'))
     if (action) {
-      action.content = '---\n---' + (action.content as Buffer).toString('utf-8');
+      action.content = '---\n---' + (action.content as Buffer).toString('utf-8')
     } else {
-      throw new Error('Could not make the file style.css a Jekyll file with front matter');
+      throw new Error('Could not make the file style.css a Jekyll file with front matter')
     }
-    return actions;
+    return actions
   }
   getPermalink(pageName) {
-    return pageName === 'index.html' ? '/' : pageName;
+    return pageName === 'index.html' ? '/' : pageName
   }
 }

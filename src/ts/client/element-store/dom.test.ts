@@ -1,6 +1,6 @@
-import { createDomElement } from './dom';
-import { Constants } from '../../constants';
-import { ElementType } from './types';
+import { createDomElement } from './dom'
+import { Constants } from '../../constants'
+import { ElementType } from './types'
 
 let nextId = 0
 const getRandomId = () => 'testId' + (nextId++)

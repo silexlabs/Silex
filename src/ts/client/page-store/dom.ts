@@ -9,8 +9,8 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { Constants } from '../../constants';
-import { PageState } from './types';
+import { Constants } from '../../constants'
+import { PageState } from './types'
 
 /**
  * get the currently opened page from the dom

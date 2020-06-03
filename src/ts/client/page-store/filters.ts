@@ -9,9 +9,9 @@
  * http://www.silexlabs.org/silex/silex-licensing/
  */
 
-import { PageState } from './types';
+import { PageState } from './types'
 import { getPages } from './index'
-import { getUi } from '../ui-store/index';
+import { getUi } from '../ui-store/index'
 
 /**
  * @fileoverview Useful filters used to retrieve items in the store

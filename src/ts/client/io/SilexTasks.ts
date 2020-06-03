@@ -16,8 +16,8 @@
  *
  */
 
-import {Hosting, Provider, VHost} from '../site-store/types';
-import {PublicationOptions} from '../site-store/types';
+import {Hosting, Provider, VHost} from '../site-store/types'
+import {PublicationOptions} from '../site-store/types'
 /**
  * the Silex SilexTasks singleton
  * based on http://www.inkfilepicker.com/
@@ -26,10 +26,10 @@ import {PublicationOptions} from '../site-store/types';
  */
 export class SilexTasks {
 
-  static instance: SilexTasks;
+  static instance: SilexTasks
   static getInstance() {
-    SilexTasks.instance = SilexTasks.instance || new SilexTasks();
-    return SilexTasks.instance;
+    SilexTasks.instance = SilexTasks.instance || new SilexTasks()
+    return SilexTasks.instance
   }
   /**
    * publish a website to a given folder
@@ -37,7 +37,7 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   publish(options: PublicationOptions, cbk: (p1: string) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer('/tasks/publish', JSON.stringify(options), 'POST', (json) => cbk(json), opt_errCbk);
+    this.callServer('/tasks/publish', JSON.stringify(options), 'POST', (json) => cbk(json), opt_errCbk)
   }
 
   /**
@@ -46,7 +46,7 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   publishState(cbk: (p1: {message: string, stop: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer('/tasks/publishState', '', 'GET', cbk, opt_errCbk);
+    this.callServer('/tasks/publishState', '', 'GET', cbk, opt_errCbk)
   }
 
   /**
@@ -55,7 +55,7 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   hosting(cbk: (p1: Hosting) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer('/hosting/', '', 'GET', cbk, opt_errCbk);
+    this.callServer('/hosting/', '', 'GET', cbk, opt_errCbk)
   }
 
   /**
@@ -63,7 +63,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   authorize(provider: Provider, cbk: (p1: string) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(provider.authorizeUrl, '', 'POST', cbk, opt_errCbk);
+    this.callServer(provider.authorizeUrl, '', 'POST', cbk, opt_errCbk)
   }
 
   /**
@@ -71,7 +71,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   vhosts(provider: Provider, cbk: (p1: VHost[]) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(provider.vhostsUrl, '', 'GET', cbk, opt_errCbk);
+    this.callServer(provider.vhostsUrl, '', 'GET', cbk, opt_errCbk)
   }
 
   /**
@@ -79,7 +79,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   domain(vhost: VHost, cbk: (p1?: {domain: string, url: string, status: string}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost.domainUrl, '', 'GET', cbk, opt_errCbk);
+    this.callServer(vhost.domainUrl, '', 'GET', cbk, opt_errCbk)
   }
 
   /**
@@ -87,7 +87,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   updateDomain(vhost: VHost, newDomain: string, cbk: (p1: {domain: string, https: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'POST', cbk,   opt_errCbk);
+    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'POST', cbk,   opt_errCbk)
   }
 
   /**
@@ -95,7 +95,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    */
   removeDomain(vhost: VHost, newDomain: string, cbk: (p1: {domain: string, https: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'DELETE',   cbk, opt_errCbk);
+    this.callServer(vhost.domainUrl, JSON.stringify({domain: newDomain}), 'DELETE',   cbk, opt_errCbk)
   }
 
   /**
@@ -103,13 +103,13 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   callServer(url: string, data: string, method: string, cbk, opt_errCbk?: (p1: string) => any) {
-    const oReq = new XMLHttpRequest();
+    const oReq = new XMLHttpRequest()
     oReq.addEventListener('load', (e) => {
-      let message: string = oReq.responseText;
-      let json: any = null;
+      let message: string = oReq.responseText
+      let json: any = null
       try {
-        json = (JSON.parse(oReq.responseText));
-        message = (json.message as string);
+        json = (JSON.parse(oReq.responseText))
+        message = (json.message as string)
       } catch (e) {
       }
 
@@ -119,23 +119,23 @@ export class SilexTasks {
       // may be an empty response or a "Internal Server Error" string
       // success of the request
       if (oReq.status === 200) {
-        cbk(json || oReq.responseText);
+        cbk(json || oReq.responseText)
       } else {
-        console.error('Error while trying to connect with back end', message);
+        console.error('Error while trying to connect with back end', message)
         if (opt_errCbk) {
-          opt_errCbk(json ? json.message : message);
+          opt_errCbk(json ? json.message : message)
         }
       }
-    });
+    })
     oReq.addEventListener('error', (e) => {
-      console.error('could not load website', e);
+      console.error('could not load website', e)
       if (opt_errCbk) {
         opt_errCbk(
-            'Network error, please check your internet connection or try again later.');
+            'Network error, please check your internet connection or try again later.')
       }
-    });
-    oReq.open(method, url);
-    oReq.setRequestHeader('Content-Type', 'application/json');
-    oReq.send(data);
+    })
+    oReq.open(method, url)
+    oReq.setRequestHeader('Content-Type', 'application/json')
+    oReq.send(data)
   }
 }

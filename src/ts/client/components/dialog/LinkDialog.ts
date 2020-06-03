@@ -13,13 +13,13 @@
  * @fileoverview The dialog to edit links
  *
  */
-import { Constants } from '../../../constants';
+import { Constants } from '../../../constants'
 import { LinkData } from '../../element-store/types'
-import {SilexNotification} from '../Notification';
-import { getPages } from '../../page-store/index';
+import {SilexNotification} from '../Notification'
+import { getPages } from '../../page-store/index'
 
 export const LINK_ATTRIBUTES =
-    ['href', 'rel', 'target', 'type', 'title', 'download'];
+    ['href', 'rel', 'target', 'type', 'title', 'download']
 const DEFAULT_LINK_DATA = {
   href: '',
   target: '',
@@ -27,7 +27,7 @@ const DEFAULT_LINK_DATA = {
   rel: '',
   type: '',
   download: '',
-};
+}
 
 ///////////////////
 // API for the outside world
@@ -49,75 +49,75 @@ class LinkDialog {
 
   open(linkDataArg: LinkData, cbk: (p1: LinkData) => any) {
     // default values for new link
-    const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {});
+    const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {})
 
     // external link data
-    const isExternal = !linkData.href.startsWith(Constants.PAGE_NAME_PREFIX);
+    const isExternal = !linkData.href.startsWith(Constants.PAGE_NAME_PREFIX)
     SilexNotification.prompt(`
       Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor"> Help</a>
     `, 'unused', 'unused', 'unused', (accept, unused) => {
       if (accept) {
         // get new values
         const newData: LinkData = LINK_ATTRIBUTES.reduce((acc, attr) => {
-          const el = dialogBody.querySelector('.' + attr) as HTMLInputElement;
+          const el = dialogBody.querySelector('.' + attr) as HTMLInputElement
           if (!el) {
-            console.error('could not get data from for attribute', attr);
+            console.error('could not get data from for attribute', attr)
           } else {
-            acc[attr] = el.value;
+            acc[attr] = el.value
           }
-          return acc;
-        }, {});
+          return acc
+        }, {})
 
         // internal link info
-        const newIsExternal = (dialogBody.querySelector('#link-editor-external') as HTMLInputElement).checked;
-        const page = (dialogBody.querySelector('.page') as HTMLInputElement).value;
-        const options: LinkData = {href: newIsExternal ? newData.href : page};
+        const newIsExternal = (dialogBody.querySelector('#link-editor-external') as HTMLInputElement).checked
+        const page = (dialogBody.querySelector('.page') as HTMLInputElement).value
+        const options: LinkData = {href: newIsExternal ? newData.href : page}
         if (newData.target !== '') {
-          options.target = newData.target;
+          options.target = newData.target
         }
         if (newData.rel !== '') {
-          options.rel = newData.rel;
+          options.rel = newData.rel
         }
         if (newData.title !== '') {
-          options.title = newData.title;
+          options.title = newData.title
         }
         if (newData.type !== '') {
-          options.type = newData.type;
+          options.type = newData.type
         }
         if (newData.download !== '') {
-          options.download = newData.download;
+          options.download = newData.download
         }
-        cbk(options);
+        cbk(options)
       } else {
-        cbk(linkDataArg);
+        cbk(linkDataArg)
       }
-    });
+    })
 
     // add a remove link button
-    const fragmentButtons = document.createElement('fragment');
+    const fragmentButtons = document.createElement('fragment')
     fragmentButtons.innerHTML = `
       <button class="alertify-button alertify-button-cancel alertify-button-remove">remove link</button>
     `;
     (fragmentButtons.querySelector('.alertify-button-remove') as HTMLElement).onclick = (e) => {
-      SilexNotification.close();
-      cbk(null);
-    };
-    SilexNotification.addButton(fragmentButtons);
+      SilexNotification.close()
+      cbk(null)
+    }
+    SilexNotification.addButton(fragmentButtons)
 
     // add info about the link
-    const dialogBody = document.createElement('div');
-    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal, linkData}));
+    const dialogBody = document.createElement('div')
+    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal, linkData}))
     Array.from(dialogBody.querySelectorAll('.link-editor-tab-label'))
     .forEach((el: HTMLElement) => {
       el.onclick = (_) => {
       Array
       .from(dialogBody.querySelectorAll(
         '.link-editor-tab-label.checked'))
-        .forEach((selected) => selected.classList.remove('checked'));
-      el.classList.add('checked');
-      };
-    });
-    SilexNotification.setContent(dialogBody);
+        .forEach((selected) => selected.classList.remove('checked'))
+      el.classList.add('checked')
+      }
+    })
+    SilexNotification.setContent(dialogBody)
   }
 
   getDialogHtml({isExternal, linkData}) {
@@ -178,6 +178,6 @@ class LinkDialog {
         </div>
         </div>
       </section>
-    `;
+    `
   }
 }

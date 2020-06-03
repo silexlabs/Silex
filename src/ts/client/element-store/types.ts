@@ -120,12 +120,12 @@ export interface ElementState extends CrudState {
  * @see LinkDialog
  */
 export interface LinkData {
-  href?: string;
-  target?: string;
-  title?: string;
-  rel?: string;
-  type?: string;
-  download?: string;
+  href?: string
+  target?: string
+  title?: string
+  rel?: string
+  type?: string
+  download?: string
 }
 
 export enum LinkType {
@@ -140,17 +140,17 @@ export interface Link {
 }
 
 // prodotype template names are strings
-export type TemplateName = string;
+export type TemplateName = string
 
 /**
  * Components
  * @see client.element.component
  */
 export interface ComponentData {
-  name: string;
-  displayName?: string;
-  templateName: TemplateName;
-  data: any;
+  name: string
+  displayName?: string
+  templateName: TemplateName
+  data: any
 }
 
 // FIXME: the site should not have this array of deps, but each component should have its deps

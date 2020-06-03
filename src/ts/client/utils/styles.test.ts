@@ -1,4 +1,4 @@
-import { addToMobileOrDesktopStyle, fixStyleForElement } from './styles';
+import { addToMobileOrDesktopStyle, fixStyleForElement } from './styles'
 import { ELEM_TEXT, ELEM_SECTION, ELEM_CONTAINER } from '../../test-utils/data-set'
 import { ElementState } from '../element-store/types'
 

@@ -12,9 +12,9 @@
 import { Store } from 'redux'
 import { StateWithHistory } from 'redux-undo'
 
-import { ElementState, ElementData } from '../element-store/types';
-import { PageState, PageData } from '../page-store/types';
-import { SiteState } from '../site-store/types';
+import { ElementState, ElementData } from '../element-store/types'
+import { PageState, PageData } from '../page-store/types'
+import { SiteState } from '../site-store/types'
 import { UiState } from '../ui-store/types'
 
 /**

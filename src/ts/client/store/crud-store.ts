@@ -17,7 +17,7 @@
 
 export const crudIdKey = Symbol('crudId key')
 export interface CrudState {
-  [crudIdKey]: symbol;
+  [crudIdKey]: symbol
 }
 export interface CrudAction<T> {
   type: string,
