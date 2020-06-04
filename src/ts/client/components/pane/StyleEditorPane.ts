@@ -1,4 +1,8 @@
-
+/**
+ * @fileoverview The style editor pane is displayed in the property panel on the
+ * right. It is a prodotype component used to edit the css styles
+ *
+ */
 
 import { Constants } from '../../../constants'
 import { ElementState, ElementType } from '../../element-store/types'
@@ -57,11 +61,8 @@ function editStyle(className: StyleName, pseudoClass: PseudoClass, visibility: V
       onBrowse: (e, url, cbk) => browse(e, cbk),
     },
   })
-}/**
- * @fileoverview The style editor pane is displayed in the property panel on the
- * right. It is a prodotype component used to edit the css styles
- *
- */
+}
+
 export class StyleEditorPane extends PaneBase {
 
   styleComboPrevValue: StyleName = ''

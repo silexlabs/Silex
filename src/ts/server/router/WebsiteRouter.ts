@@ -1,15 +1,16 @@
-
+import { JSDOM } from 'jsdom'
 import * as CloudExplorer from 'cloud-explorer'
 import * as express from 'express'
-import * as fs from 'fs'
-import { JSDOM } from 'jsdom'
 import * as nodeModules from 'node_modules-path'
-import * as Path from 'path'
+
 import { URL } from 'url'
+import * as Path from 'path'
+import * as fs from 'fs'
+
 import { Constants } from '../../constants'
+import { PersistantData } from '../../client/store/types'
 import BackwardCompat from '../utils/BackwardCompat'
 import DomTools from '../utils/DomTools'
-import { PersistantData } from '../../client/store/types'
 
 export default function({ port, rootUrl }: { port: number, rootUrl: string}, unifile) {
   const backwardCompat = new BackwardCompat(rootUrl)
@@ -205,7 +206,7 @@ export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData
   // update context classes
   Array.from(dom.window.document
     .querySelectorAll('.' + Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME))
-    .forEach((el) => el.classList.remove(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME))
+    .forEach((el: HTMLElement) => el.classList.remove(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME))
   dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME)
   deactivateScripts(dom)
   // add /css/editable.css
