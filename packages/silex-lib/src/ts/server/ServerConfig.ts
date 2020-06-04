@@ -14,10 +14,6 @@ export interface ServerOptions {
   sessionSecret: string
   cePath: string
 }
-// electron app
-export interface ElectronOptions {
-  enabled: boolean
-}
 // SSL options
 export interface SslOptions {
   forceHttps: boolean
@@ -57,7 +53,6 @@ export interface PublisherOptions {
   skipHostingSelection: boolean
   enableHostingGhPages: boolean
   enableHostingUnifile: boolean
-  enableHostingJekyll: boolean
 }
 
 export type StaticOptions = any
@@ -66,7 +61,6 @@ export class Config {
   ceOptions: CeOptions
   serverOptions: ServerOptions
   publisherOptions: PublisherOptions
-  electronOptions: ElectronOptions
   sslOptions: SslOptions
   staticOptions: StaticOptions
   constructor() {
@@ -77,9 +71,6 @@ export class Config {
       rootUrl: process.env.SERVER_URL || `http://localhost:${PORT}`,
       sessionSecret: process.env.SILEX_SESSION_SECRET || 'test session secret',
       cePath: '/ce',
-    }
-    this.electronOptions = {
-      enabled: process.env.SILEX_ELECTRON  === 'true',
     }
     this.sslOptions = {
       forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
@@ -96,7 +87,7 @@ export class Config {
       githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
       dropboxClientId: process.env.DROPBOX_CLIENT_ID,
       dropboxClientSecret: process.env.DROPBOX_CLIENT_SECRET,
-      enableFs: this.serverOptions.debug || this.electronOptions.enabled || process.env.ENABLE_FS === 'true',
+      enableFs: this.serverOptions.debug || process.env.ENABLE_FS === 'true',
       fsRoot: process.env.FS_ROOT,
       rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
       unsplash: {
@@ -116,7 +107,6 @@ export class Config {
       skipHostingSelection: process.env.SKIP_HOSTING_SELECTION === 'true',
       enableHostingGhPages: process.env.ENABLE_HOSTING_GH_PAGES === 'true',
       enableHostingUnifile: process.env.ENABLE_HOSTING_UNIFILE !== 'false', // true by default
-      enableHostingJekyll: process.env.ENABLE_HOSTING_JEKYLL === 'true',
     }
     this.staticOptions = {}
   }
