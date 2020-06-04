@@ -1,14 +1,13 @@
 
 import * as express from 'express'
 import HostingGhPages from '../hosting-provider/HostingGhPages'
-import HostingJekyll from '../hosting-provider/HostingJekyll'
 import HostingUnifile from '../hosting-provider/HostingUnifile'
 import PublishJob from '../publication/PublishJob'
 
 const hostingProviders = []
 const router = express.Router()
 
-export default function PublishRouter({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, enableHostingJekyll, skipHostingSelection }, unifile) {
+export default function PublishRouter({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection }, unifile) {
   if (enableHostingUnifile) {
     const hostingUnifile = new HostingUnifile(unifile)
     addHostingProvider(hostingUnifile)
@@ -19,12 +18,7 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
     addHostingProvider(hostingGhPages)
   }
 
-  if (enableHostingJekyll) {
-    const hostingJekyll = new HostingJekyll(unifile)
-    addHostingProvider(hostingJekyll)
-  }
-
-    // **
+  // **
   // publication tasks
   router.post('/tasks/publish', (req, res, next) => {
     if (!req.body.provider || !req.body.provider.name) {

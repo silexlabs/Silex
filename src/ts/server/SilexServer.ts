@@ -66,11 +66,6 @@ SilexServer.prototype.start = function(cbk) {
   this.app.use(noCache, this.publishRouter)
   this.app.use(this.sslRouter)
 
-  // Start Silex as an Electron app
-  if (this.config.electronOptions.enabled) {
-    require(Path.join(__dirname, 'silex_electron'))
-  }
-
   // server 'loop'
   this.app.listen(this.config.serverOptions.port, () => {
     console.info(`\nI'm ready, listening to port ${this.config.serverOptions.port}\n`)
