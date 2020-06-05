@@ -7,12 +7,12 @@
 import { ColorPicker } from '../ColorPicker'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types';
+import { Toolboxes } from '../../ui-store/types'
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getSelectedElements } from '../../element-store/filters'
 import { getUi } from '../../ui-store/index'
-import { subscribeElements, updateElements } from '../../element-store/index';
-import { subscribeUi } from '../../ui-store/index';
+import { subscribeElements, updateElements } from '../../element-store/index'
+import { subscribeUi } from '../../ui-store/index'
 
 /**
  * on of Silex Editors class
