@@ -3,11 +3,10 @@ import {
   ELEM_SECTION,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
-  PAGE1,
-  mockUiElements
-} from '../../../test-utils/data-set'
+  PAGE1
+} from '../../../test-utils/data-set';
 import { ElementData } from '../../element-store/types'
-import { LOADING } from '../../ui-store/types'
+import { LOADING, Toolboxes } from '../../ui-store/types';
 import { PagePane } from './PagePane'
 import { PageState } from '../../page-store/types'
 import { fromData } from '../../store/crud-store'
@@ -47,6 +46,7 @@ jest.mock('../../ui-store/index', () => ({
     loading: LOADING.NONE,
     currentPageId: 'page-1',
     clipboard: null,
+    currentToolbox: Toolboxes.PROPERTIES,
   }),
   subscribeUi: jest.fn(),
 }))
