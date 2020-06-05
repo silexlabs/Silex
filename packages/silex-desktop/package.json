@@ -1,6 +1,6 @@
 {
   "name": "silex-desktop",
-  "version": "2.5.60",
+  "version": "2.6.0",
   "description": "Silex website builder as a windows/mac/linux app",
   "main": "index.js",
   "engines": {
@@ -36,6 +36,6 @@
     "electron-rebuild": "1.11.0"
   },
   "dependencies": {
-    "silex-website-builder": "2.5.60"
+    "silex-website-builder": "lexoyo/Silex#develop"
   }
 }
