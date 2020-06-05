@@ -5,6 +5,7 @@
 
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
+import { Toolboxes } from '../../ui-store/types';
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils'
 import { getUi, subscribeUi } from '../../ui-store/index'
@@ -140,131 +141,141 @@ export class PropertyPane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const body = getBody()
-    const mobile = getUi().mobileEditor
+    const { currentToolbox } = getUi()
+    if (currentToolbox === Toolboxes.PROPERTIES) {
+      ;(this.element.querySelector('.position-editor') as HTMLElement).style.display = ''
+      ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = ''
 
-    // useful filters
-    const elementsNoBody = selectedElements
-      .filter((el) => el !== body)
+      const body = getBody()
+      const mobile = getUi().mobileEditor
 
-    const elementsNoBodyNoSection = elementsNoBody
-      .filter((el) => el.type !== ElementType.SECTION)
+      // useful filters
+      const elementsNoBody = selectedElements
+        .filter((el) => el !== body)
 
-    // useful values
-    const elementsDisplay = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'display', mobile))
-    const elementsPosition = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'position', mobile))
+      const elementsNoBodyNoSection = elementsNoBody
+        .filter((el) => el.type !== ElementType.SECTION)
 
-    // bounding box
-    const bb = getBoundingBox(elementsNoBodyNoSection.map((el) => getElementRect(el, mobile)))
+      // useful values
+      const elementsDisplay = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'display', mobile))
+      const elementsPosition = this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'position', mobile))
 
-    const computeValue = new Map([
-      [LeftInput, () => Math.round(bb.left || 0).toString()],
-        [TopInput, () => Math.round(bb.top || 0).toString()],
-        [WidthInput, () => Math.round(bb.width || 0).toString()],
-        [HeightInput, () => Math.round(bb.height || 0).toString()],
-        [MarginTopInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-top', mobile))],
-        [MarginRightInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-right', mobile))],
-        [MarginBottomInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-bottom', mobile))],
-        [MarginLeftInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-left', mobile))],
-        [PaddingTopInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-top', mobile))],
-        [PaddingRightInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-right', mobile))],
-        [PaddingBottomInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-bottom', mobile))],
-        [PaddingLeftInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-left', mobile))],
-        [PositionSelect, () => elementsPosition],
-        [DisplaySelect, () => elementsDisplay],
-        [FlexDirectionSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-direction', mobile))],
-        [AlignItemsSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'align-items', mobile))],
-        [JustifyContentSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'justify-content', mobile))],
-        [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
-    ])
-    // compute visibility
-    if (elementsNoBodyNoSection.length > 0) {
-      const elementsNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection
-        .filter((el) => !el.isSectionContent)
+      // bounding box
+      const bb = getBoundingBox(elementsNoBodyNoSection.map((el) => getElementRect(el, mobile)))
 
-        this.titleInput.disabled = false
-      if (!elementsNoBodyNoSection.length) {
-        // only sections and body
-        this.onInputPxChanged(WidthInput, null)
-        this.onInputPxChanged(HeightInput, null)
-      } else {
-        // other than sections
-        this.onInputPxChanged(WidthInput, computeValue.get(WidthInput)())
-        this.onInputPxChanged(HeightInput, computeValue.get(HeightInput)())
-      }
-      // body and sections and section content and static content
-      if (elementsPosition === 'static' || !elementsNoBodyNoSectionNoSectionContent.length) {
-        this.onInputPxChanged(TopInput, null)
-        this.onInputPxChanged(LeftInput, null)
-      } else {
-        this.onInputPxChanged(TopInput, computeValue.get(TopInput)())
-        this.onInputPxChanged(LeftInput, computeValue.get(LeftInput)())
-      }
+      const computeValue = new Map([
+        [LeftInput, () => Math.round(bb.left || 0).toString()],
+          [TopInput, () => Math.round(bb.top || 0).toString()],
+          [WidthInput, () => Math.round(bb.width || 0).toString()],
+          [HeightInput, () => Math.round(bb.height || 0).toString()],
+          [MarginTopInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-top', mobile))],
+          [MarginRightInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-right', mobile))],
+          [MarginBottomInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-bottom', mobile))],
+          [MarginLeftInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-left', mobile))],
+          [PaddingTopInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-top', mobile))],
+          [PaddingRightInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-right', mobile))],
+          [PaddingBottomInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-bottom', mobile))],
+          [PaddingLeftInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-left', mobile))],
+          [PositionSelect, () => elementsPosition],
+          [DisplaySelect, () => elementsDisplay],
+          [FlexDirectionSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-direction', mobile))],
+          [AlignItemsSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'align-items', mobile))],
+          [JustifyContentSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'justify-content', mobile))],
+          [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
+      ])
+      // compute visibility
+      if (elementsNoBodyNoSection.length > 0) {
+        const elementsNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection
+          .filter((el) => !el.isSectionContent)
 
-      // only images
-      const elementsType = this.getCommonProperty(elementsNoBodyNoSection, (element) => element.type)
-      if (elementsType === ElementType.IMAGE) {
-        this.altInput.disabled = false
-        const alt = this.getCommonProperty(elementsNoBodyNoSection, (el) => {
-          return el.alt
-        })
-        if (alt) {
-          this.altInput.value = alt
+          this.titleInput.disabled = false
+        if (!elementsNoBodyNoSection.length) {
+          // only sections and body
+          this.onInputPxChanged(WidthInput, null)
+          this.onInputPxChanged(HeightInput, null)
+        } else {
+          // other than sections
+          this.onInputPxChanged(WidthInput, computeValue.get(WidthInput)())
+          this.onInputPxChanged(HeightInput, computeValue.get(HeightInput)())
+        }
+        // body and sections and section content and static content
+        if (elementsPosition === 'static' || !elementsNoBodyNoSectionNoSectionContent.length) {
+          this.onInputPxChanged(TopInput, null)
+          this.onInputPxChanged(LeftInput, null)
+        } else {
+          this.onInputPxChanged(TopInput, computeValue.get(TopInput)())
+          this.onInputPxChanged(LeftInput, computeValue.get(LeftInput)())
+        }
+
+        // only images
+        const elementsType = this.getCommonProperty(elementsNoBodyNoSection, (element) => element.type)
+        if (elementsType === ElementType.IMAGE) {
+          this.altInput.disabled = false
+          const alt = this.getCommonProperty(elementsNoBodyNoSection, (el) => {
+            return el.alt
+          })
+          if (alt) {
+            this.altInput.value = alt
+          } else {
+            this.altInput.value = ''
+          }
         } else {
           this.altInput.value = ''
+          this.altInput.disabled = true
         }
-      } else {
-        this.altInput.value = ''
-        this.altInput.disabled = true
-      }
 
-      // not for sections or sections content
-      if (!!elementsNoBodyNoSectionNoSectionContent.length) {
-        this.onInputPxChanged(PositionSelect, computeValue.get(PositionSelect)())
-      } else {
-        this.onInputPxChanged(PositionSelect, null)
-      }
+        // not for sections or sections content
+        if (!!elementsNoBodyNoSectionNoSectionContent.length) {
+          this.onInputPxChanged(PositionSelect, computeValue.get(PositionSelect)())
+        } else {
+          this.onInputPxChanged(PositionSelect, null)
+        }
 
-      // containers but no sections
-      if (elementsType === ElementType.CONTAINER && elementsNoBodyNoSection.length) {
-        this.onInputPxChanged(DisplaySelect, computeValue.get(DisplaySelect)())
-      } else {
-        this.onInputPxChanged(DisplaySelect, null)
-      }
+        // containers but no sections
+        if (elementsType === ElementType.CONTAINER && elementsNoBodyNoSection.length) {
+          this.onInputPxChanged(DisplaySelect, computeValue.get(DisplaySelect)())
+        } else {
+          this.onInputPxChanged(DisplaySelect, null)
+        }
 
-      // containers but no sections and flex only
-      if (elementsType === ElementType.CONTAINER && elementsNoBodyNoSection.length && elementsDisplay === 'flex') {
-        this.onInputPxChanged(FlexDirectionSelect, computeValue.get(FlexDirectionSelect)())
-        this.onInputPxChanged(AlignItemsSelect, computeValue.get(AlignItemsSelect)())
-        this.onInputPxChanged(JustifyContentSelect, computeValue.get(JustifyContentSelect)())
-        this.onInputPxChanged(FlexWrapSelect, computeValue.get(FlexWrapSelect)())
-      } else {
-        this.onInputPxChanged(FlexDirectionSelect, null)
-        this.onInputPxChanged(AlignItemsSelect, null)
-        this.onInputPxChanged(JustifyContentSelect, null)
-        this.onInputPxChanged(FlexWrapSelect, null)
-      }
+        // containers but no sections and flex only
+        if (elementsType === ElementType.CONTAINER && elementsNoBodyNoSection.length && elementsDisplay === 'flex') {
+          this.onInputPxChanged(FlexDirectionSelect, computeValue.get(FlexDirectionSelect)())
+          this.onInputPxChanged(AlignItemsSelect, computeValue.get(AlignItemsSelect)())
+          this.onInputPxChanged(JustifyContentSelect, computeValue.get(JustifyContentSelect)())
+          this.onInputPxChanged(FlexWrapSelect, computeValue.get(FlexWrapSelect)())
+        } else {
+          this.onInputPxChanged(FlexDirectionSelect, null)
+          this.onInputPxChanged(AlignItemsSelect, null)
+          this.onInputPxChanged(JustifyContentSelect, null)
+          this.onInputPxChanged(FlexWrapSelect, null)
+        }
 
-      // title
-      const title = this.getCommonProperty(elementsNoBodyNoSection, (el) => el.title)
-      if (title) {
-        this.titleInput.value = title
-      } else {
-        this.titleInput.value = ''
-      }
+        // title
+        const title = this.getCommonProperty(elementsNoBodyNoSection, (el) => el.title)
+        if (title) {
+          this.titleInput.value = title
+        } else {
+          this.titleInput.value = ''
+        }
 
+      } else {
+        // could not find a bounding box or seclection contains only the body
+        this.disableDimensions()
+      }
+      this.onInputPxChanged(MarginTopInput, computeValue.get(MarginTopInput)())
+      this.onInputPxChanged(MarginLeftInput, computeValue.get(MarginLeftInput)())
+      this.onInputPxChanged(MarginRightInput, computeValue.get(MarginRightInput)())
+      this.onInputPxChanged(MarginBottomInput, computeValue.get(MarginBottomInput)())
+      this.onInputPxChanged(PaddingTopInput, computeValue.get(PaddingTopInput)())
+      this.onInputPxChanged(PaddingLeftInput, computeValue.get(PaddingLeftInput)())
+      this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)())
+      this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)())
     } else {
-      // could not find a bounding box or seclection contains only the body
-      this.disableDimensions()
+      ;(this.element.querySelector('.position-editor') as HTMLElement).style.display = 'none'
+      ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = 'none'
+
     }
-    this.onInputPxChanged(MarginTopInput, computeValue.get(MarginTopInput)())
-    this.onInputPxChanged(MarginLeftInput, computeValue.get(MarginLeftInput)())
-    this.onInputPxChanged(MarginRightInput, computeValue.get(MarginRightInput)())
-    this.onInputPxChanged(MarginBottomInput, computeValue.get(MarginBottomInput)())
-    this.onInputPxChanged(PaddingTopInput, computeValue.get(PaddingTopInput)())
-    this.onInputPxChanged(PaddingLeftInput, computeValue.get(PaddingLeftInput)())
-    this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)())
-    this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)())
   }
   disableDimensions() {
     this.onInputPxChanged(FlexWrapSelect, null)

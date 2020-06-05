@@ -25,6 +25,7 @@ import {
   resetComponentEditor
 } from '../element-store/component'
 import { openToolbox } from '../ui-store/dispatchers'
+import { getUi } from '../ui-store/index'
 import { subscribeUi } from '../ui-store/index'
 import { updateElements } from '../element-store/index'
 
@@ -50,18 +51,8 @@ function buildUi() {
   const stylePane = new StylePane(element.querySelector('.style-editor'))
 
   // Style editor
-  const styleEditorMenu = element.querySelector('.prodotype-style-editor .prodotype-style-editor-menu') as HTMLElement
+  const styleEditorMenu = element.querySelector('.prodotype-style-editor') as HTMLElement
   const styleEditorPane = new StyleEditorPane(styleEditorMenu)
-
-  // display component when possible
-  subscribeElements(() => {
-    const selectedComponents = getElements().filter((el) => el.selected && isComponent(el))
-    if (selectedComponents.length === 1) {
-      editComponent(selectedComponents[0])
-    } else {
-      resetComponentEditor()
-    }
-  })
 
   // expandables
   const expandables = element.querySelectorAll('.expandable legend')
@@ -86,12 +77,32 @@ function buildUi() {
   paramsTab.addEventListener('click', () => openToolbox(Toolboxes.PARAMS))
   styleTab.addEventListener('click', () => openToolbox(Toolboxes.STYLES))
 
-  // observer
+  // display component when possible
+  const componentEditorMenu = element.querySelector('.prodotype-component-editor') as HTMLElement
+  subscribeElements(() => updateComponentTool(componentEditorMenu))
+
   subscribeUi((prevState, nextState) => {
     if(prevState.currentToolbox !== nextState.currentToolbox) {
+      // hide or show when click on tabs
+      updateComponentTool(componentEditorMenu)
+
+      //  update selected tab
       openTab(nextState.currentToolbox)
     }
   })
+}
+
+function updateComponentTool(el: HTMLElement) {
+  const selectedComponents = getElements().filter((el) => el.selected && isComponent(el))
+  const { currentToolbox } = getUi()
+
+  if (currentToolbox === Toolboxes.PARAMS && selectedComponents.length === 1) {
+    editComponent(selectedComponents[0])
+    el.style.display = ''
+  } else {
+    el.style.display = 'none'
+    resetComponentEditor()
+  }
 }
 
 /**

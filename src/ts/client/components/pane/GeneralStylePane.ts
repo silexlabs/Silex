@@ -6,9 +6,11 @@
 
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
+import { Toolboxes } from '../../ui-store/types';
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getUi } from '../../ui-store/index'
 import { subscribeElements } from '../../element-store/index'
+import { subscribeUi } from '../../ui-store/index';
 
 /**
  * on of Silex Editors class
@@ -25,6 +27,10 @@ export class GeneralStylePane extends PaneBase {
     super(element)
 
     this.opacityInput = this.initInput('.opacity-input', (e) => this.onInputChanged(e))
+
+    subscribeUi(() => {
+      this.redraw(getSelectedElements())
+    })
 
     subscribeElements(() => {
       this.redraw(getSelectedElements())
@@ -46,28 +52,37 @@ export class GeneralStylePane extends PaneBase {
    */
   protected redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
-    const body = getBody()
-    const elementsNoBody = selectedElements.filter((el) => el !== body)
-    if (elementsNoBody.length > 0) {
-      // not stage element only
-      this.opacityInput.removeAttribute('disabled')
 
-      // get the opacity
-      const opacity = this.getCommonProperty<ElementState, string>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity)
+    const { currentToolbox } = getUi()
+    if (currentToolbox === Toolboxes.PROPERTIES) {
+      this.element.style.display = ''
 
-      if (opacity === null) {
-        this.opacityInput.value = ''
-      } else {
-        if (opacity === '') {
-          this.opacityInput.value = '100'
+
+      const body = getBody()
+      const elementsNoBody = selectedElements.filter((el) => el !== body)
+      if (elementsNoBody.length > 0) {
+        // not stage element only
+        this.opacityInput.removeAttribute('disabled')
+
+        // get the opacity
+        const opacity = this.getCommonProperty<ElementState, string>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity)
+
+        if (opacity === null) {
+          this.opacityInput.value = ''
         } else {
-          this.opacityInput.value = Math.round(parseFloat(opacity) * 100).toString()
+          if (opacity === '') {
+            this.opacityInput.value = '100'
+          } else {
+            this.opacityInput.value = Math.round(parseFloat(opacity) * 100).toString()
+          }
         }
+      } else {
+        // stage element only
+        this.opacityInput.value = ''
+        this.opacityInput.setAttribute('disabled', 'true')
       }
     } else {
-      // stage element only
-      this.opacityInput.value = ''
-      this.opacityInput.setAttribute('disabled', 'true')
+      this.element.style.display = 'none'
     }
   }
 }

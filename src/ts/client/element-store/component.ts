@@ -204,7 +204,6 @@ export function updateDepenedencies(type: string) {
     return false
   })()
 
-  console.log('updateDepenedencies', {prodotypeDependencies, type, isDifferent, components, oldDependencies})
   if(isDifferent) {
     updateSite({
       ...getSite(),

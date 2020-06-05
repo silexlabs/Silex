@@ -10,6 +10,7 @@ import { Dom } from '../../utils/Dom'
 import { ElementState, ElementType, LinkType } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
+import { Toolboxes } from '../../ui-store/types';
 import {
   getBody,
   getSelectedElements,
@@ -232,112 +233,120 @@ export class PagePane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const body = getBody()
-    const noSectionContentNoBody = selectedElements
+    const { currentToolbox } = getUi()
+    if (currentToolbox === Toolboxes.PROPERTIES) {
+      this.element.style.display = ''
+
+
+      const body = getBody()
+      const noSectionContentNoBody = selectedElements
       .filter((el) => el !== body)
       .map((el) => noSectionContent(el))
-    const noSectionNoBody = noSectionContentNoBody
+      const noSectionNoBody = noSectionContentNoBody
       .filter((el) => el.type !== ElementType.SECTION)
 
-    // View on mobile checkbox
-    Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-        .forEach((el: HTMLInputElement) => el.disabled = !getSite().enableMobile)
+      // View on mobile checkbox
+      Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+      .forEach((el: HTMLInputElement) => el.disabled = !getSite().enableMobile)
 
-    if (noSectionContentNoBody.length > 0) {
-      // update the "view on mobile" checkbox
-      const visibility = this.getCommonProperty(noSectionContentNoBody, (element) => {
-        if (!element.visibility.mobile) {
-          return 'desktop'
-        } else {
-          if (!element.visibility.desktop) {
-            return 'mobile'
+      if (noSectionContentNoBody.length > 0) {
+        // update the "view on mobile" checkbox
+        const visibility = this.getCommonProperty(noSectionContentNoBody, (element) => {
+          if (!element.visibility.mobile) {
+            return 'desktop'
           } else {
-            return 'both'
+            if (!element.visibility.desktop) {
+              return 'mobile'
+            } else {
+              return 'both'
+            }
           }
-        }
-      })
-      if (!!visibility) {
-        Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-        .forEach((el: HTMLInputElement) => {
-          el.checked = visibility === el.value
-          el.indeterminate = false
         })
+        if (!!visibility) {
+          Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+          .forEach((el: HTMLInputElement) => {
+            el.checked = visibility === el.value
+            el.indeterminate = false
+          })
+        } else {
+          Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+          .forEach((el: HTMLInputElement) => el.indeterminate = true)
+        }
+
+        // refresh page checkboxes
+        let isInNoPage = true
+        this.pageCheckboxes.forEach((item) => {
+          // there is a selection
+          item.checkbox.disabled = false
+
+          // compute common pages
+          const page = getPages().find((p) => p.id === item.page.id)
+          const isInPage = this.getCommonProperty(noSectionContentNoBody, (el) => el.pageNames.includes(page.id))
+
+          // set visibility
+          isInNoPage = isInNoPage && isInPage === false
+          if (isInPage === null) {
+            // multiple elements selected with different values
+            item.checkbox.indeterminate = true
+          } else {
+            item.checkbox.indeterminate = false
+            item.checkbox.checked = isInPage
+          }
+        })
+        this.viewOnAllPagesCheckbox.disabled = false
+
+        // this.checkAllPages()
+        if (isInNoPage) {
+          this.viewOnAllPagesCheckbox.checked = true
+        } else {
+          this.viewOnAllPagesCheckbox.checked = false
+        }
+
+        // refresh the link inputs
+        // get the link of the element
+        const link = this.getCommonProperty(noSectionNoBody, (el) => el.link)
+
+        // link drop down only for elements which are not sections, section content or body
+        if(noSectionNoBody.length) this.linkDropdown.disabled = false
+          else this.linkDropdown.disabled = true
+            // TODO: handle this with link.type instead of guessing from link.value
+            if (!link || link.value === '') {
+              this.linkDropdown.value = 'none'
+              this.linkInputTextField.value = ''
+            } else {
+              if (link.value.indexOf(Constants.PAGE_NAME_PREFIX) === 0) {
+                // case of an internal link
+                // select a page
+                this.linkDropdown.value =link.value
+              } else {
+                // in case it is a custom link
+                this.linkInputTextField.value =link.value
+                this.linkDropdown.value = 'custom'
+              }
+            }
+            if (this.linkDropdown.value === 'custom') {
+              this.linkInputTextField.style.display = 'inherit'
+            } else {
+              this.linkInputTextField.style.display = 'none'
+            }
       } else {
-        Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-        .forEach((el: HTMLInputElement) => el.indeterminate = true)
-      }
-
-      // refresh page checkboxes
-      let isInNoPage = true
-      this.pageCheckboxes.forEach((item) => {
-        // there is a selection
-        item.checkbox.disabled = false
-
-        // compute common pages
-        const page = getPages().find((p) => p.id === item.page.id)
-        const isInPage = this.getCommonProperty(noSectionContentNoBody, (el) => el.pageNames.includes(page.id))
-
-        // set visibility
-        isInNoPage = isInNoPage && isInPage === false
-        if (isInPage === null) {
-          // multiple elements selected with different values
+        // body element only
+        this.pageCheckboxes.forEach((item) => {
+          item.checkbox.disabled = true
           item.checkbox.indeterminate = true
-        } else {
-          item.checkbox.indeterminate = false
-          item.checkbox.checked = isInPage
-        }
-      })
-      this.viewOnAllPagesCheckbox.disabled = false
-
-      // this.checkAllPages()
-      if (isInNoPage) {
-        this.viewOnAllPagesCheckbox.checked = true
-      } else {
-        this.viewOnAllPagesCheckbox.checked = false
-      }
-
-      // refresh the link inputs
-      // get the link of the element
-      const link = this.getCommonProperty(noSectionNoBody, (el) => el.link)
-
-      // link drop down only for elements which are not sections, section content or body
-      if(noSectionNoBody.length) this.linkDropdown.disabled = false
-      else this.linkDropdown.disabled = true
-      // TODO: handle this with link.type instead of guessing from link.value
-      if (!link || link.value === '') {
+        })
         this.linkDropdown.value = 'none'
-        this.linkInputTextField.value = ''
-      } else {
-        if (link.value.indexOf(Constants.PAGE_NAME_PREFIX) === 0) {
-          // case of an internal link
-          // select a page
-          this.linkDropdown.value =link.value
-        } else {
-          // in case it is a custom link
-          this.linkInputTextField.value =link.value
-          this.linkDropdown.value = 'custom'
-        }
-      }
-      if (this.linkDropdown.value === 'custom') {
-        this.linkInputTextField.style.display = 'inherit'
-      } else {
+        this.linkDropdown.disabled = true
         this.linkInputTextField.style.display = 'none'
+        this.viewOnAllPagesCheckbox.disabled = true
+        this.viewOnAllPagesCheckbox.checked = true
+
+        Array
+        .from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
+        .forEach((el: HTMLInputElement) => el.disabled = true)
       }
     } else {
-      // body element only
-      this.pageCheckboxes.forEach((item) => {
-        item.checkbox.disabled = true
-        item.checkbox.indeterminate = true
-      })
-      this.linkDropdown.value = 'none'
-      this.linkDropdown.disabled = true
-      this.linkInputTextField.style.display = 'none'
-      this.viewOnAllPagesCheckbox.disabled = true
-      this.viewOnAllPagesCheckbox.checked = true
-
-      Array
-      .from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
-      .forEach((el: HTMLInputElement) => el.disabled = true)
+      this.element.style.display = 'none'
     }
   }
 }
