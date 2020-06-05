@@ -6,13 +6,22 @@ head
     .loading-pending .silex-workspace {
       opacity: 0;
     }
+    .loading-pending .loader {
+      display: block;
+      color: #DDD;
+      text-align: center;
+      margin-top: 50vh;
+      height: auto;
+      animation: fadein 1s;
+    }
+    @keyframes fadein {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
     body {
       background-color: #444;
+      font-family: 'Roboto', sans-serif;
     }
-
-  block styles
-    // all the css in the head with _styles.less imports
-    link(rel='stylesheet', type='text/css', href='css/admin.css')
 
   block customizable-head
     title='Silex'
@@ -21,19 +30,22 @@ head
 
 
   block head-end
-    include ./templates/head.jade
 
 body.loading-pending.advanced-mode-off
-  block body-start
-    include ./templates/body.jade
+  .loader.
+    Loading...
 
+  block includes
+    include ./templates/includes.jade
+
+  block body-start
+    include ./templates/workspace.jade
 
   block body-end
-    script(type='text/javascript' src='js/index.js')
+    script(type='text/javascript' src='js/main.js')
 
   block silex-init
-    script.
-      window.silex.init();
+    // this is now deprecated
 
   block silex-options
     // Here you can use silex.config to hook into silex options before silex starts
