@@ -17,6 +17,7 @@ import {
   VisibilityData,
   PseudoClassData
 } from '../../site-store/types'
+import { Toolboxes } from '../../ui-store/types';
 import { browse } from '../../element-store/utils'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getComponentsDef, openStyleEditor } from '../../element-store/component'
@@ -27,9 +28,9 @@ import {
   updateElements
 } from '../../element-store/index'
 import { getSite } from '../../site-store/index'
+import { getUi, subscribeUi, updateUi } from '../../ui-store/index';
 import { initStyle, removeStyle, componentStyleChanged } from '../../site-store/dispatchers'
 import { store } from '../../store/index'
-import { updateUi, getUi } from '../../ui-store/index'
 
 /**
  * @param className, the css class to edit the style for
@@ -143,6 +144,11 @@ export class StyleEditorPane extends PaneBase {
     // this.styleCombo.value, this.getPseudoClass(), this.getVisibility())
     // rename style
     ;(this.element.querySelector('.edit-style') as HTMLElement).onclick = (e) => this.renameStyle(this.styleCombo.value)
+
+    subscribeUi(() => {
+      this.redraw(getSelectedElements())
+    })
+
     subscribeElements(() => {
       this.redraw(getSelectedElements())
     })
@@ -441,38 +447,46 @@ export class StyleEditorPane extends PaneBase {
   protected redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    // mobile mode
-    this.mobileOnlyCheckbox.checked = getUi().mobileEditor
+    const { currentToolbox } = getUi()
+    if (currentToolbox === Toolboxes.STYLES) {
+      this.element.style.display = ''
 
-    // edit the style of the selection
-    if (selectedElements.length > 0) {
-      // get the selected elements style, i.e. which style applies to them
-      const selectionStyle = (() => {
-        // get the class names common to the selection
-        const classNames = this.getStyles(selectedElements)
 
-        // choose the style to edit
-        if (classNames.length >= 1) {
-          return classNames[0]
-        }
-        return Constants.BODY_STYLE_CSS_CLASS
-      })()
-      this.updateStyleList(selectionStyle)
+      // mobile mode
+      this.mobileOnlyCheckbox.checked = getUi().mobileEditor
 
-      // show text styles only when a text box is selected
-      const onlyTexts = selectedElements.length > 0
+      // edit the style of the selection
+      if (selectedElements.length > 0) {
+        // get the selected elements style, i.e. which style applies to them
+        const selectionStyle = (() => {
+          // get the class names common to the selection
+          const classNames = this.getStyles(selectedElements)
+
+          // choose the style to edit
+          if (classNames.length >= 1) {
+            return classNames[0]
+          }
+          return Constants.BODY_STYLE_CSS_CLASS
+        })()
+        this.updateStyleList(selectionStyle)
+
+        // show text styles only when a text box is selected
+        const onlyTexts = selectedElements.length > 0
         && selectedElements.filter((el) => el.type !== ElementType.TEXT).length === 0
-      if (onlyTexts) {
-        this.element.classList.remove('style-editor-notext')
+        if (onlyTexts) {
+          this.element.classList.remove('style-editor-notext')
+        } else {
+          this.element.classList.add('style-editor-notext')
+        }
       } else {
-        this.element.classList.add('style-editor-notext')
+        // FIXME: no need to recreate the whole style list every time the
+        // selection changes
+        this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS)
+        // show the text styles in the case of "all style" so that the user can edit text styles, even when no text box is selected
+        this.element.classList.remove('style-editor-notext')
       }
     } else {
-      // FIXME: no need to recreate the whole style list every time the
-      // selection changes
-      this.updateStyleList(Constants.BODY_STYLE_CSS_CLASS)
-      // show the text styles in the case of "all style" so that the user can edit text styles, even when no text box is selected
-      this.element.classList.remove('style-editor-notext')
+      this.element.style.display = 'none'
     }
   }
 

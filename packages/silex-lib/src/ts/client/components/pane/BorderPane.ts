@@ -7,11 +7,12 @@
 import { ColorPicker } from '../ColorPicker'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
+import { Toolboxes } from '../../ui-store/types';
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getSelectedElements } from '../../element-store/filters'
 import { getUi } from '../../ui-store/index'
-import { subscribeElements } from '../../element-store/index'
-import { updateElements } from '../../element-store/index'
+import { subscribeElements, updateElements } from '../../element-store/index';
+import { subscribeUi } from '../../ui-store/index';
 
 /**
  * on of Silex Editors class
@@ -71,6 +72,10 @@ export class BorderPane extends PaneBase {
     this.borderStyleComboBox = this.initComboBox('.border-type-combo-box', (e) => this.onBorderStyleChanged())
     this.borderRadiusInput = this.initInput('.corner-radius-input', (e) => this.onBorderCornerChanged())
 
+    subscribeUi(() => {
+      this.redraw(getSelectedElements())
+    })
+
     subscribeElements(() => {
       this.redraw(getSelectedElements())
     })
@@ -82,43 +87,50 @@ export class BorderPane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const isMobile = getUi().mobileEditor ? 'mobile' : 'desktop'
+    const { currentToolbox } = getUi()
+    if (currentToolbox === Toolboxes.PROPERTIES) {
+      this.element.style.display = ''
 
-    // border width, this builds a string like "0px 1px 2px 3px"
-    // FIXME: should not build a string which is then split in redrawBorderWidth
-    const borderWidth = this.getCommonProperty<ElementState, string>(selectedElements, (el) => {
-      const w = el.style[isMobile]['border-width']
-      if (w && w !== '') {
-        return w
+      const isMobile = getUi().mobileEditor ? 'mobile' : 'desktop'
+
+      // border width, this builds a string like "0px 1px 2px 3px"
+      // FIXME: should not build a string which is then split in redrawBorderWidth
+      const borderWidth = this.getCommonProperty<ElementState, string>(selectedElements, (el) => {
+        const w = el.style[isMobile]['border-width']
+        if (w && w !== '') {
+          return w
+        } else {
+          return null
+        }
+      })
+
+      // display width or reset borders if width is null
+      if (borderWidth) {
+        this.redrawBorderWidth(borderWidth)
+        this.redrawBorderColor(selectedElements)
       } else {
-        return null
+        this.resetBorder()
       }
-    })
 
-    // display width or reset borders if width is null
-    if (borderWidth) {
-      this.redrawBorderWidth(borderWidth)
-      this.redrawBorderColor(selectedElements)
+      // border style
+      const borderStyle = this.getCommonProperty(selectedElements, (el) => el.style[isMobile]['border-style'])
+
+      if (borderStyle) {
+        this.borderStyleComboBox.value = borderStyle
+      } else {
+        this.borderStyleComboBox.selectedIndex = 0
+      }
+
+      // border radius
+      const borderRadiusStr = this.getCommonProperty(selectedElements, (el) => el.style[isMobile]['border-radius'])
+
+      if (borderRadiusStr) {
+        this.redrawBorderRadius(borderRadiusStr)
+      } else {
+        this.resetBorderRadius()
+      }
     } else {
-      this.resetBorder()
-    }
-
-    // border style
-    const borderStyle = this.getCommonProperty(selectedElements, (el) => el.style[isMobile]['border-style'])
-
-    if (borderStyle) {
-      this.borderStyleComboBox.value = borderStyle
-    } else {
-      this.borderStyleComboBox.selectedIndex = 0
-    }
-
-    // border radius
-    const borderRadiusStr = this.getCommonProperty(selectedElements, (el) => el.style[isMobile]['border-radius'])
-
-    if (borderRadiusStr) {
-      this.redrawBorderRadius(borderRadiusStr)
-    } else {
-      this.resetBorderRadius()
+      this.element.style.display = 'none'
     }
   }
 

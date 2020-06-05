@@ -8,12 +8,17 @@ import { ElementState } from '../../element-store/types'
 import { FileExplorer } from '../dialog/FileExplorer'
 import { PaneBase } from './PaneBase'
 import { SilexNotification } from '../Notification'
+import { Toolboxes } from '../../ui-store/types';
 import { Url } from '../../utils/Url'
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getBody, getSelectedElements } from '../../element-store/filters'
-import { getElements, updateElements } from '../../element-store/index'
+import { subscribeUi } from '../../ui-store/index';
+import {
+  getElements,
+  subscribeElements,
+  updateElements
+} from '../../element-store/index';
 import { getUi } from '../../ui-store/index'
-import { subscribeElements } from '../../element-store/index'
 
 /**
  * on of Silex Editors class
@@ -41,6 +46,10 @@ export class BgPane extends PaneBase {
 
     // init bg image
     this.buildBgImage()
+
+    subscribeUi(() => {
+      this.redraw(getSelectedElements())
+    })
 
     subscribeElements(() => {
       this.redraw(getSelectedElements())
@@ -100,86 +109,93 @@ export class BgPane extends PaneBase {
   redraw(selectElements: ElementState[]) {
     super.redraw(selectElements)
 
-    const mobileOrDesktop = getUi().mobileEditor ? 'mobile' : 'desktop'
+    const { currentToolbox } = getUi()
+    if (currentToolbox === Toolboxes.PROPERTIES) {
+      this.element.style.display = ''
 
-    // BG color
-    if (selectElements.length > 0) {
-      this.colorPicker.setDisabled(false)
+      const mobileOrDesktop = getUi().mobileEditor ? 'mobile' : 'desktop'
 
-      const color = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-color'] || '')
+      // BG color
+      if (selectElements.length > 0) {
+        this.colorPicker.setDisabled(false)
 
-      // indeterminate state
-      this.colorPicker.setIndeterminate(color === null)
+        const color = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-color'] || '')
 
-      // display color
-      if (color != null ) {
-        this.colorPicker.setColor(color)
-      }
-    } else {
-      this.colorPicker.setDisabled(true)
-    }
+        // indeterminate state
+        this.colorPicker.setIndeterminate(color === null)
 
-    // BG image
-    const enableBgComponents = (enable) => {
-      if (enable) {
-        this.bgClearBgImage.classList.remove('disabled')
+        // display color
+        if (color != null ) {
+          this.colorPicker.setColor(color)
+        }
       } else {
-        this.bgClearBgImage.classList.add('disabled')
+        this.colorPicker.setDisabled(true)
       }
-      this.attachmentComboBox.disabled = !enable
-      this.vPositionComboBox.disabled = !enable
-      this.hPositionComboBox.disabled = !enable
-      this.repeatComboBox.disabled = !enable
-      this.sizeComboBox.disabled = !enable
-    }
 
-    // bg image
-    const bgImage = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-image'])
+      // BG image
+      const enableBgComponents = (enable) => {
+        if (enable) {
+          this.bgClearBgImage.classList.remove('disabled')
+        } else {
+          this.bgClearBgImage.classList.add('disabled')
+        }
+        this.attachmentComboBox.disabled = !enable
+        this.vPositionComboBox.disabled = !enable
+        this.hPositionComboBox.disabled = !enable
+        this.repeatComboBox.disabled = !enable
+        this.sizeComboBox.disabled = !enable
+      }
 
-    if (bgImage != null  && bgImage !== 'none' && bgImage !== '') {
-      enableBgComponents(true)
+      // bg image
+      const bgImage = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-image'])
+
+      if (bgImage != null  && bgImage !== 'none' && bgImage !== '') {
+        enableBgComponents(true)
+      } else {
+        enableBgComponents(false)
+      }
+
+      // bg image attachment
+      const bgImageAttachment = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-attachment'])
+      if (bgImageAttachment) {
+        this.attachmentComboBox.value = bgImageAttachment
+      } else {
+        this.attachmentComboBox.selectedIndex = 0
+      }
+
+      // bg image position
+      const bgImagePosition: string = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-position'])
+      if (bgImagePosition && bgImagePosition !== '') {
+        const hPosition = bgImagePosition.includes('left') ? 'left' : bgImagePosition.includes('right') ? 'right' : bgImagePosition.includes('center') ? 'center' : ''
+        const vPosition = bgImagePosition.includes('top') ? 'top' : bgImagePosition.includes('bottom') ? 'bottom' : bgImagePosition.includes('center') ? 'center' : ''
+
+        // update the drop down lists to display the bg image position
+        this.vPositionComboBox.value = vPosition
+        this.hPositionComboBox.value = hPosition
+      } else {
+        this.vPositionComboBox.selectedIndex = 0
+        this.hPositionComboBox.selectedIndex = 0
+      }
+
+      // bg image repeat
+      const bgImageRepeat = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-repeat'])
+
+      if (bgImageRepeat) {
+        this.repeatComboBox.value = bgImageRepeat
+      } else {
+        this.repeatComboBox.selectedIndex = 0
+      }
+
+      // bg image size
+      const bgImageSize = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-size'])
+
+      if (bgImageSize) {
+        this.sizeComboBox.value = bgImageSize
+      } else {
+        this.sizeComboBox.selectedIndex = 0
+      }
     } else {
-      enableBgComponents(false)
-    }
-
-    // bg image attachment
-    const bgImageAttachment = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-attachment'])
-    if (bgImageAttachment) {
-      this.attachmentComboBox.value = bgImageAttachment
-    } else {
-      this.attachmentComboBox.selectedIndex = 0
-    }
-
-    // bg image position
-    const bgImagePosition: string = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-position'])
-    if (bgImagePosition && bgImagePosition !== '') {
-      const hPosition = bgImagePosition.includes('left') ? 'left' : bgImagePosition.includes('right') ? 'right' : bgImagePosition.includes('center') ? 'center' : ''
-      const vPosition = bgImagePosition.includes('top') ? 'top' : bgImagePosition.includes('bottom') ? 'bottom' : bgImagePosition.includes('center') ? 'center' : ''
-
-      // update the drop down lists to display the bg image position
-      this.vPositionComboBox.value = vPosition
-      this.hPositionComboBox.value = hPosition
-    } else {
-      this.vPositionComboBox.selectedIndex = 0
-      this.hPositionComboBox.selectedIndex = 0
-    }
-
-    // bg image repeat
-    const bgImageRepeat = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-repeat'])
-
-    if (bgImageRepeat) {
-      this.repeatComboBox.value = bgImageRepeat
-    } else {
-      this.repeatComboBox.selectedIndex = 0
-    }
-
-    // bg image size
-    const bgImageSize = this.getCommonProperty(selectElements, (el) => el.style[mobileOrDesktop]['background-size'])
-
-    if (bgImageSize) {
-      this.sizeComboBox.value = bgImageSize
-    } else {
-      this.sizeComboBox.selectedIndex = 0
+      this.element.style.display = 'none'
     }
   }
 
