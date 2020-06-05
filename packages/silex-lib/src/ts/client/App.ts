@@ -1,9 +1,6 @@
 /**
- * @fileoverview This file defines the entry point of Silex
- *
- * a view holds a reference to the controllers so that it can order changes on
- * the models a controller holds a reference to the models so that it can change
- * them a model holds a reference to the views so that it can update them
+ * @fileoverview
+ * Defines the entry point of Silex client side application
  *
  */
 
@@ -13,7 +10,6 @@ import { Config } from './ClientConfig'
 import { LOADING } from './ui-store/types'
 import { SilexNotification } from './components/Notification'
 import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
-import { exposeModule } from './expose'
 import { getUi, updateUi } from './ui-store/index'
 import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
@@ -26,19 +22,6 @@ interface AppOptions {
 
 let initDone = false
 
-/**
- * @fileoverview
- * Defines the entry point of Silex client side application
- *
- */
-
-// expose start and config for the host HTML page
-exposeModule(window, {
-  config: Config,
-  start: (options: AppOptions = { debug: false }) => start(options),
-  init: () => { console.warn('calling window.silex.init() is deprecated') },
-})
-
 // called when Silex has started
 // hide loading and show the UI
 function afterInit() {
@@ -49,8 +32,11 @@ function afterInit() {
   resetDirty()
 }
 
+export function init() { console.warn('calling window.silex.init() is deprecated') }
+
 // start Silex, called from host HTML page with window.silex.start()
-function start({ debug }: AppOptions) {
+export function start(options: AppOptions) {
+  const { debug } = options || {}
   // make sure Silex is instanciated only once
   if (initDone) throw new Error('Silex has already been instanciated')
   initDone = true
