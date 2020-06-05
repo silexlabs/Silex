@@ -4,9 +4,9 @@ import {
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
   PAGE1
-} from '../../../test-utils/data-set';
+} from '../../../test-utils/data-set'
 import { ElementData } from '../../element-store/types'
-import { LOADING, Toolboxes } from '../../ui-store/types';
+import { LOADING, Toolboxes } from '../../ui-store/types'
 import { PagePane } from './PagePane'
 import { PageState } from '../../page-store/types'
 import { fromData } from '../../store/crud-store'
