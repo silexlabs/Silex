@@ -15,9 +15,10 @@ import { StylePane } from './pane/StylePane'
 import { Toolboxes } from '../ui-store/types'
 import { browse, editLink } from '../element-store/utils'
 import { getDomElement } from '../element-store/dom'
-import { getElements, subscribeElements } from '../element-store/index'
+import { getSelectedElements } from '../element-store/filters'
 import { getSite } from '../site-store/index'
 import { getSiteDocument } from './SiteFrame'
+import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 import {
   isComponent,
@@ -25,9 +26,7 @@ import {
   resetComponentEditor
 } from '../element-store/component'
 import { openToolbox } from '../ui-store/dispatchers'
-import { getUi } from '../ui-store/index'
-import { subscribeUi } from '../ui-store/index'
-import { updateElements } from '../element-store/index'
+import { subscribeElements, updateElements } from '../element-store/index'
 
 // element which contains the UI
 const element = getUiElements().propertyTool
@@ -93,7 +92,7 @@ function buildUi() {
 }
 
 function updateComponentTool(el: HTMLElement) {
-  const selectedComponents = getElements().filter((el) => el.selected && isComponent(el))
+  const selectedComponents = getSelectedElements().filter((e) => isComponent(e))
   const { currentToolbox } = getUi()
 
   if (currentToolbox === Toolboxes.PARAMS && selectedComponents.length === 1) {

@@ -8,16 +8,16 @@ import { ElementState } from '../../element-store/types'
 import { FileExplorer } from '../dialog/FileExplorer'
 import { PaneBase } from './PaneBase'
 import { SilexNotification } from '../Notification'
-import { Toolboxes } from '../../ui-store/types';
+import { Toolboxes } from '../../ui-store/types'
 import { Url } from '../../utils/Url'
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getBody, getSelectedElements } from '../../element-store/filters'
-import { subscribeUi } from '../../ui-store/index';
+import { subscribeUi } from '../../ui-store/index'
 import {
   getElements,
   subscribeElements,
   updateElements
-} from '../../element-store/index';
+} from '../../element-store/index'
 import { getUi } from '../../ui-store/index'
 
 /**

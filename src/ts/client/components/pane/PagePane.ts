@@ -10,7 +10,7 @@ import { Dom } from '../../utils/Dom'
 import { ElementState, ElementType, LinkType } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types';
+import { Toolboxes } from '../../ui-store/types'
 import {
   getBody,
   getSelectedElements,

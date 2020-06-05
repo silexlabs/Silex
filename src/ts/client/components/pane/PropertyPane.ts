@@ -5,7 +5,7 @@
 
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types';
+import { Toolboxes } from '../../ui-store/types'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils'
 import { getUi, subscribeUi } from '../../ui-store/index'
@@ -143,7 +143,7 @@ export class PropertyPane extends PaneBase {
 
     const { currentToolbox } = getUi()
     if (currentToolbox === Toolboxes.PROPERTIES) {
-      ;(this.element.querySelector('.position-editor') as HTMLElement).style.display = ''
+      (this.element.querySelector('.position-editor') as HTMLElement).style.display = ''
       ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = ''
 
       const body = getBody()
@@ -272,7 +272,7 @@ export class PropertyPane extends PaneBase {
       this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)())
       this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)())
     } else {
-      ;(this.element.querySelector('.position-editor') as HTMLElement).style.display = 'none'
+      (this.element.querySelector('.position-editor') as HTMLElement).style.display = 'none'
       ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = 'none'
 
     }
