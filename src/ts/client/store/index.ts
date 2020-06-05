@@ -1,5 +1,3 @@
-
-
 import { combineReducers, createStore } from 'redux'
 import undoable, { includeAction } from 'redux-undo'
 
@@ -104,3 +102,4 @@ export function subscribeTo<T>(name: string, cbk: (prevState: T, nextState: T) =
  * used to save the state for example
  */
 export const getState = (): State => store.getState().present
+
