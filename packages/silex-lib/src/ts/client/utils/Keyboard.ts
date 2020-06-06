@@ -100,11 +100,11 @@ export class Keyboard {
     return shortcuts.filter((shortcut) => {
       return (
         // accept all modifiers if modifiers is set to false
-        shortcut.s.modifiers === false || (
+        (shortcut.s.modifiers === false || (
         // otherwise check the modifiers
-        !!(shortcut.s.shiftKey) === !!(e.shiftKey) &&
-        !!(shortcut.s.altKey) === !!(e.altKey) &&
-        !!(shortcut.s.ctrlKey) === !!(e.ctrlKey)) &&
+        !!(shortcut.s.shiftKey) === e.shiftKey &&
+        !!(shortcut.s.altKey) === e.altKey &&
+        !!(shortcut.s.ctrlKey) === (e.ctrlKey || e.metaKey))) &&
         // not when in an input field
         (shortcut.s.input !== false || !Keyboard.isInput(e.target as HTMLElement))
       )
