@@ -11,6 +11,7 @@ import { deletePages, getPages, movePage, subscribePages } from '../page-store/i
 import { getCurrentPage } from '../page-store/filters'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
+import { keyboardAddShortcut } from './Menu'
 import { openPage } from '../ui-store/dispatchers'
 import Sortable from '../../../../node_modules/sortablejs/modular/sortable.core.esm.js'
 
@@ -27,6 +28,18 @@ class PageTool {
   constructor(public element: HTMLElement) {
     subscribePages((_, pages) => this.redraw())
     subscribeUi(() => this.redraw())
+
+    // add shortcuts for pages
+    ;[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    .forEach((num) => keyboardAddShortcut({
+      label: 'Go to page',
+      key: num.toString(),
+      modifiers: false,
+      input: false,
+    }, (e) => {
+      const page = getPages()[(num + 9) % 10]
+      if (page) openPage(page)
+    }))
 
     // listen for the click on a page
     this.element.addEventListener('click', (e) => {
