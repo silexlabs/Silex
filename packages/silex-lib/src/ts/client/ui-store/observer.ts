@@ -33,9 +33,10 @@ export function onChangeUi(prev: UiState, ui: UiState) {
       document.body.classList.remove(Constants.LOADING_SILEX_CSS_CLASS)
   }
 
-  openPageDom(getSiteWindow(), getCurrentPage())
-
   if (prev && prev.currentPageId !== ui.currentPageId) {
+    // open the new current page
+    openPageDom(getSiteWindow(), getCurrentPage())
+
     // FIXME: observer should not update store
     setTimeout(() => {
       const selection = getSelectedElements()
