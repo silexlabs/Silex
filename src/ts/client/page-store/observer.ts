@@ -3,9 +3,9 @@ import { PageState } from './types'
 import { SilexNotification } from '../components/Notification'
 import { StateChange } from '../store/crud-store'
 import { deleteElements, getElements, updateElements } from '../element-store/index'
-import { getSiteDocument } from '../components/SiteFrame';
+import { getSiteDocument } from '../components/SiteFrame'
 import { getState } from '../store/index'
-import { getUi, updateUi } from '../ui-store/index';
+import { getUi, updateUi } from '../ui-store/index'
 import { writeDataToDom } from '../store/dom'
 
 export function onAddPages(pages: PageState[]) {

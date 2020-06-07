@@ -1,5 +1,3 @@
-
-
 /**
  * @fileoverview
  * the Silex menu on the left
@@ -8,7 +6,6 @@
  */
 
 import { Config } from '../ClientConfig'
-import { Constants } from '../../constants'
 import { ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
 import {
@@ -34,12 +31,11 @@ import {
   updateElements
 } from '../element-store/index'
 import { getBody } from '../element-store/filters'
-import { getComponentsDef, prodotypeReady } from '../element-store/component'
 import { getDomElement, setImageUrl } from '../element-store/dom'
 import { getSite, subscribeSite } from '../site-store/index'
 import { getSiteDocument, getSiteIFrame } from './SiteFrame'
 import { getStage } from './StageWrapper'
-import { getUi, updateUi } from '../ui-store/index'
+import { getUi, subscribeUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 import { hasRedo, hasUndo, redo, undo } from '../undo'
 import { openCssEditor } from './dialog/CssEditor'
@@ -49,7 +45,6 @@ import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { preview, previewResponsize } from '../preview'
 import { subscribePages } from '../page-store/index'
-import { subscribeUi } from '../ui-store/index'
 
 ///////////////////
 // API for the outside world
@@ -110,12 +105,11 @@ function elFromCompDef(comp, id) {
   const iconClassName = comp.faIconClass || 'prodotype-icon'
   const baseElementType = comp.baseElement || 'html'
   const el = document.createElement('div')
-  el.classList.add('sub-menu-item')
+  el.classList.add('sub-menu-item', 'component-item')
   el.title = `${comp.name}`
   el.setAttribute('data-menu-action', 'insert.' + baseElementType)
   el.setAttribute('data-comp-id', id)
-  el.innerHTML = `
-  <span class="icon fa-inverse ${iconClassName}"></span>
+  el.innerHTML = `<span class="icon fa-inverse ${iconClassName}"></span>
   ${comp.name}
   `
   return el
@@ -131,32 +125,41 @@ function buildUi() {
   })
 
   // components
-  prodotypeReady(() => {
-    // **
-    const list = element.querySelector('.add-menu-container')
-    const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE)
+  subscribeUi((prevState, nextState) => {
+    if(prevState.components !== nextState.components) {
+      const list = element.querySelector('.add-menu-container')
 
-    // build a list of component categories
-    const elements = {}
-    for (const id in componentsDef) {
-      const comp = componentsDef[id]
-      if (comp.isPrivate !== true) {
-        if (!elements[comp.category]) {
-          elements[comp.category] = [elFromCompDef(comp, id)]
-        } else {
-          elements[comp.category].push(elFromCompDef(comp, id))
+      // remove previous buttons
+      Array.from(list.querySelectorAll('.component-item,.component-category'))
+      .forEach((el) => el.remove())
+
+      // get the new components
+      const componentsDef = getUi().components
+
+      // build a list of component categories
+      const elements = {}
+      for (const id in componentsDef) {
+        const comp = componentsDef[id]
+        if (comp.isPrivate !== true) {
+          if (!elements[comp.category]) {
+            elements[comp.category] = [elFromCompDef(comp, id)]
+          } else {
+            elements[comp.category].push(elFromCompDef(comp, id))
+          }
         }
       }
-    }
-    for (const id in elements) {
-      // create a label for the category
-      const label = document.createElement('div')
-      label.classList.add('label')
-      label.innerHTML = id
-      list.appendChild(label)
 
-      // attach each comp's element
-      elements[id].forEach((el) => list.appendChild(el))
+      // create the corresponding dom
+      for (const id in elements) {
+        // create a label for the category
+        const label = document.createElement('div')
+        label.classList.add('label', 'component-category')
+        label.innerHTML = id
+        list.appendChild(label)
+
+        // attach each comp's element
+        elements[id].forEach((el) => list.appendChild(el))
+      }
     }
   })
 

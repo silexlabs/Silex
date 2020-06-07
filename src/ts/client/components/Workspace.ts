@@ -4,7 +4,7 @@
  * It refreshes the view when the window size changes
  */
 
- import { SilexNotification } from './Notification'
+import { SilexNotification } from './Notification'
 import { Url } from '../utils/Url'
 import { getPropertySplitter } from './PropSplitter'
 import { getSiteIFrame } from './SiteFrame'
@@ -13,6 +13,7 @@ import { initBreadCrumbs } from './BreadCrumbs'
 import { initContextMenu } from './ContextMenu'
 import { initMenu } from './Menu'
 import { initPageTool } from './PageTool'
+import { initProdotype } from '../element-store/component'
 import { initPropertyTool } from './PropertyTool'
 import { isDirty } from '../dirty'
 import { openRecent } from '../file'
@@ -21,12 +22,16 @@ import { openRecent } from '../file'
  * create the workspace, start listening to window events
  */
 export function createWorkspace(element: HTMLElement) {
+  console.trace('createWorkspace')
   // creation of the view instances
   initMenu()
   initContextMenu()
   initBreadCrumbs()
   initPageTool()
   initPropertyTool()
+
+  // init style editor and component editor
+  initProdotype()
 
   // // code editors need to start listening to store
   // // was done in the Workspace component but the later the better

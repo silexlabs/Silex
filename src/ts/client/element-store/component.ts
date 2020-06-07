@@ -1,16 +1,20 @@
 import {
   ComponentData,
   ElementState,
-  TemplateName
 } from '../element-store/types'
+import {
+  ComponentDefinition,
+  ComponentsDefinition,
+  Prodotype
+} from '../externs'
 import { Config } from '../ClientConfig'
 import { Constants } from '../../constants'
-import { Prodotype, ProdotypeCompDef } from '../externs'
 import { PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../site-store/types'
 import { addMediaQuery, renderWithProdotype } from '../element-store/dom'
 import { getElements } from '../element-store/index'
 import { getPseudoClassData } from '../site-store/utils'
 import { getSite, updateSite } from '../site-store/index'
+import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 
 /**
@@ -21,27 +25,27 @@ import { getUiElements } from '../ui-store/UiElements'
 
 let prodotypeComponent: Prodotype
 let prodotypeStyle: Prodotype
-let readyCbkArr = []
-let styleEditorElement
-let componentEditorElement
+let styleEditorElement: HTMLElement
+let componentEditorElement: HTMLElement
+let prodotypeLoaded = false
 
 // wait for the Prodotype library to be loaded
 // FIXME: this is useless, it can be done directly on module import
-function initProdotype() {
+export function initProdotype() {
+  console.log('initProdotype')
+  // init style editor
   styleEditorElement = getUiElements().propertyTool.querySelector('.prodotype-style-editor .prodotype-container')
-  componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor')
 
   // tslint:disable:no-string-literal
-  prodotypeComponent = new window['Prodotype'](componentEditorElement, Config.componentFolders)
   prodotypeStyle = new window['Prodotype'](styleEditorElement, './prodotype/styles')
+  // tslint:enable:no-string-literal
 
-  prodotypeComponent.ready((err) => {
-    readyCbkArr.forEach((cbk) => cbk(err))
-    readyCbkArr = []
-  })
+  // init component editor
+  loadComponents(Config.componentFolders)
 }
 
 function getProdotypeComponent(): Prodotype {
+  console.log('getProdotypeComponent')
   if(!prodotypeComponent) initProdotype()
   return prodotypeComponent
 }
@@ -51,25 +55,34 @@ function getProdotypeStyle(): Prodotype {
   return prodotypeStyle
 }
 
-/**
- * notify when Prodotype library is ready
- * @param cbk callback to be called when prodotype is ready
- */
-export function prodotypeReady(cbk: (p1: any) => any) {
-  if (getProdotypeComponent()) {
-    getProdotypeComponent().ready((err) => cbk(err))
-  } else {
-    readyCbkArr.push(cbk)
-  }
+export function loadComponents(paths: string[]) {
+  console.log('loadComponents')
+  // store the element in which to render
+  componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor')
+  // tslint:disable:no-string-literal
+  const compEd: Prodotype = new window['Prodotype'](componentEditorElement, paths)
+  // tslint:enable:no-string-literal
+  // first load
+  if (!prodotypeComponent) prodotypeComponent = compEd
+  // wait for prodotype to load the components.json files
+  prodotypeComponent.ready((err) => {
+    console.log('ready', getComponentsDef(Constants.COMPONENT_TYPE))
+    prodotypeComponent = compEd
+    prodotypeLoaded = true
+    updateUi({
+      ...getUi(),
+      components: getComponentsDef(Constants.COMPONENT_TYPE),
+    })
+  })
 }
 
 /**
  * get Prodotype descriptor of the components
  * @return component descriptors
  */
-export function getComponentsDef(type: string): ProdotypeCompDef {
+export function getComponentsDef(type: string): ComponentsDefinition {
   const obj = type === Constants.COMPONENT_TYPE ? getProdotypeComponent() : getProdotypeStyle()
-  return obj ? obj.componentsDef : ({} as ProdotypeCompDef)
+  return obj ? obj.componentsDef : ({} as ComponentsDefinition)
 }
 
 export function isComponent(element: ElementState) {
@@ -146,7 +159,7 @@ export function initComponent(element: ElementState, templateName: string): Prom
  */
 export function getComponentClassName(element) {
   if (isComponent(element)) {
-    const templateName = (element.data.component.templateName as TemplateName)
+    const templateName = (element.data.component.templateName as string)
     return getCssClasses(templateName)
   }
   return []
@@ -160,7 +173,7 @@ export function getComponentClassName(element) {
  */
 export function getCssClasses(templateName: string): string[] {
   const componentsDef = getComponentsDef(Constants.COMPONENT_TYPE)
-  const comp = componentsDef[templateName]
+  const comp: ComponentDefinition = componentsDef[templateName]
   let cssClasses = [Constants.COMPONENT_CLASS_NAME + '-' + templateName]
   if (comp) {
     // class name is either an array
@@ -217,7 +230,7 @@ export function updateDepenedencies(type: string) {
  * FIXME: this should be in the component
  */
 export function resetComponentEditor() {
-  if (getProdotypeComponent()) {
+  if (prodotypeLoaded) {
     componentEditorElement.classList.add('hide-panel')
     getProdotypeComponent().edit()
   }
@@ -233,7 +246,7 @@ export function openComponentEditor(options: {
   templateName?: string,
   events?: any
 }) {
-  if (getProdotypeComponent()) {
+  if (prodotypeLoaded) {
     getProdotypeComponent().edit(options.data, options.dataSources, options.templateName, options.events)
     componentEditorElement.classList.remove('hide-panel')
   }
@@ -248,7 +261,7 @@ export function openStyleEditor(options: {
   templateName?: string,
   events?: any
 }) {
-  if (getProdotypeStyle()) {
+  if (prodotypeLoaded) {
     getProdotypeStyle().edit(options.data, options.dataSources, options.templateName, options.events)
   }
 }

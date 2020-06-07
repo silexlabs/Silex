@@ -128,9 +128,6 @@ export interface Link {
   value: string,
 }
 
-// prodotype template names are strings
-export type TemplateName = string
-
 /**
  * Components
  * @see client.element.component
@@ -138,7 +135,7 @@ export type TemplateName = string
 export interface ComponentData {
   name: string
   displayName?: string
-  templateName: TemplateName
+  templateName: string
   data: any
 }
 

@@ -1,5 +1,3 @@
-
-
 import { ElementState } from '../element-store/types'
 import { LOADING, Toolboxes, UiState } from '../ui-store/types'
 import { PageAction, SiteAction, UiAction } from './actions'
@@ -68,6 +66,7 @@ export const uiReducer = (state: UiState = {
   currentPageId: null,
   currentToolbox: Toolboxes.PROPERTIES,
   clipboard: null,
+  components: {},
 }, action: any) => {
   switch (action.type) {
     case UiAction.INITIALIZE: return {

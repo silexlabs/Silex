@@ -3,6 +3,7 @@
  *
  */
 
+import { ComponentsDefinition } from '../externs'
 import { ElementState } from '../element-store/types'
 
 export enum LOADING {
@@ -26,5 +27,5 @@ export interface UiState {
   currentPageId: string,
   clipboard: null|[ElementState[], ElementState[]] // array of 2 elements: [allElements, rootElements]
   currentToolbox: string,
+  components: ComponentsDefinition,
 }
-

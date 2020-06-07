@@ -3,7 +3,7 @@
  *
  */
 
-import { TemplateName, ProdotypeDependency } from '../element-store/types'
+import { ProdotypeDependency } from '../element-store/types'
 import { FileInfo } from '../io/CloudStorage'
 
 export interface SiteState {
@@ -113,7 +113,7 @@ export interface CssRule {
 export interface StyleData {
   className: StyleName
   displayName: string
-  templateName: TemplateName
+  templateName: string
   styles: {[key: string]: VisibilityData}
 }
 
@@ -122,7 +122,7 @@ export interface VisibilityData {
 }
 
 export interface PseudoClassData {
-  [key: string]: CssRule|TemplateName|StyleName
+  [key: string]: CssRule|string|StyleName
 }
 
 export interface CSSRuleInfo {
