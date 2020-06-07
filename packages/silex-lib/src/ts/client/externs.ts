@@ -2,30 +2,32 @@
  * @fileoverview define externs for libs used in Silex
  */
 
+import { CssRule } from './site-store/types'
 import { ProdotypeDependency } from './element-store/types'
 
-/**
- * @typedef {{
- *          faIconClass:?string,
- *          initialCss:?Array,
- *          initialCssContentContainer:?Array,
- *          initialCssClass:?Array,
- *          baseElement:?string,
- *          name:?string,
- *          category:?string,
- *          isPrivate:?boolean
- *          }}
- */
-export interface ProdotypeCompDef {
+export interface ComponentProps {
+  name: string,
+  type: any,
+  expandable?: boolean,
+  default?: any,
+  description?: string,
+}
+
+export interface ComponentDefinition {
   faIconClass?: string
-  initialCss?: any[]
+  initialCss?: CssRule,
   initialCssContentContainer?: any[]
-  initialCssClass?: any[]
+  initialCssClass?: string|string[]
   baseElement?: string
   name?: string
   category?: string
   isPrivate?: boolean
-  text: any // FIXME: why? this is only used in StyleEditorPane
+  props: ComponentProps[],
+  // text: any // FIXME: why? this is only used in StyleEditorPane
+}
+
+export interface ComponentsDefinition {
+  [templateName: string]: ComponentDefinition
 }
 
 /**
@@ -34,7 +36,7 @@ export interface ProdotypeCompDef {
  * @constructor
  */
 export interface Prodotype {
-  componentsDef: ProdotypeCompDef
+  componentsDef: ComponentsDefinition,
 
   decorate(templateName: string, data: any, dataSources?: object): Promise<string>
   ready(cbk: (any) => void)
