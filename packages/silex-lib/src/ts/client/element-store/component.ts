@@ -7,7 +7,7 @@ import {
   ComponentsDefinition,
   Prodotype
 } from '../externs'
-import { Config } from '../ClientConfig'
+import { config } from '../ClientConfig'
 import { Constants } from '../../constants'
 import { PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../site-store/types'
 import { addMediaQuery, renderWithProdotype } from '../element-store/dom'
@@ -41,7 +41,7 @@ export function initProdotype() {
   // tslint:enable:no-string-literal
 
   // init component editor
-  loadComponents(Config.componentFolders)
+  loadComponents(config.componentFolders)
 }
 
 function getProdotypeComponent(): Prodotype {
@@ -65,14 +65,18 @@ export function loadComponents(paths: string[]) {
   // first load
   if (!prodotypeComponent) prodotypeComponent = compEd
   // wait for prodotype to load the components.json files
-  prodotypeComponent.ready((err) => {
+  compEd.ready((err) => {
     console.log('ready', getComponentsDef(Constants.COMPONENT_TYPE))
-    prodotypeComponent = compEd
-    prodotypeLoaded = true
-    updateUi({
-      ...getUi(),
-      components: getComponentsDef(Constants.COMPONENT_TYPE),
-    })
+    if (err) {
+      console.error(err)
+    } else {
+      prodotypeComponent = compEd
+      prodotypeLoaded = true
+      updateUi({
+        ...getUi(),
+        components: getComponentsDef(Constants.COMPONENT_TYPE),
+      })
+    }
   })
 }
 

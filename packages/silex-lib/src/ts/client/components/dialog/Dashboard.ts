@@ -2,7 +2,7 @@
  * @fileoverview Silex Dashboard / "new website" dialog which displays templates
  *
  */
-import { Config } from '../../ClientConfig'
+import { config } from '../../ClientConfig'
 import { ModalDialog } from '../ModalDialog'
 import { TipOfTheDay } from '../TipOfTheDay'
 import { getUiElements } from '../../ui-store/UiElements'
@@ -66,7 +66,7 @@ class Dashboard {
       onClose: () => {},
     })
 
-    if (Config.singleSiteMode) {
+    if (config.singleSiteMode) {
       return
     }
 
@@ -176,7 +176,7 @@ class Dashboard {
    * @param options   options object
    */
   openDialog(options: DashboardOptions) {
-    if (Config.singleSiteMode) {
+    if (config.singleSiteMode) {
       if (options.ready) {
         options.ready()
       }

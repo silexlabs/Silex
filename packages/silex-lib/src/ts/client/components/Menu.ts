@@ -5,7 +5,7 @@
  *
  */
 
-import { Config } from '../ClientConfig'
+import { config } from '../ClientConfig'
 import { ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
 import {
@@ -120,7 +120,7 @@ function elFromCompDef(comp, id) {
  */
 function buildUi() {
   // Shortcuts
-  Config.shortcuts.forEach((shortcut) => {
+  config.shortcuts.forEach((shortcut) => {
     keyboard.addShortcut(shortcut, (e) => onMenuEvent(shortcut.id))
   })
 
@@ -420,40 +420,40 @@ function onMenuEvent(type: string, componentName?: string) {
       break
     // Help menu
     case 'help.wiki':
-      window.open(Config.WIKI_SILEX)
+      window.open(config.WIKI_SILEX)
       break
     case 'help.crowdfunding':
-      window.open(Config.CROWD_FUNDING)
+      window.open(config.CROWD_FUNDING)
       break
     case 'help.issues':
-      window.open(Config.ISSUES_SILEX)
+      window.open(config.ISSUES_SILEX)
       break
     case 'help.downloads.widget':
-      window.open(Config.DOWNLOADS_WIDGET_SILEX)
+      window.open(config.DOWNLOADS_WIDGET_SILEX)
       break
     case 'help.downloads.template':
-      window.open(Config.DOWNLOADS_TEMPLATE_SILEX)
+      window.open(config.DOWNLOADS_TEMPLATE_SILEX)
       break
     case 'help.aboutSilexLabs':
-      window.open(Config.ABOUT_SILEX_LABS)
+      window.open(config.ABOUT_SILEX_LABS)
       break
     case 'help.newsLetter':
-      window.open(Config.SUBSCRIBE_SILEX_LABS)
+      window.open(config.SUBSCRIBE_SILEX_LABS)
       break
     case 'help.diaspora':
-      window.open(Config.SOCIAL_DIASPORA)
+      window.open(config.SOCIAL_DIASPORA)
       break
     case 'help.twitter':
-      window.open(Config.SOCIAL_TWITTER)
+      window.open(config.SOCIAL_TWITTER)
       break
     case 'help.facebook':
-      window.open(Config.SOCIAL_FB)
+      window.open(config.SOCIAL_FB)
       break
     case 'help.forkMe':
-      window.open(Config.FORK_CODE)
+      window.open(config.FORK_CODE)
       break
     case 'help.contribute':
-      window.open(Config.CONTRIBUTE)
+      window.open(config.CONTRIBUTE)
       break
       default:
       console.warn('menu type not found', type)
