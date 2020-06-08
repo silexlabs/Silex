@@ -94,7 +94,6 @@ export class DomPublisher {
     const initialFirstPageName = this.data.pages[0].id
     return this.data.pages
     .map((page) => {
-      console.log('xxyyy', page)
       return  {
         name: page.id,
         displayName: page.displayName,

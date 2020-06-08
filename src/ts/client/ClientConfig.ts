@@ -1,109 +1,91 @@
 /**
- * @fileoverview Silex config
+ * @fileoverview Silex config available to index.pug as silex.config
  */
 
-import { Shortcut } from './utils/Keyboard'
-
-export class Config {
+export const config = {
 
   /**
-   * The debug data
-   * @struct
+   * debug mode
    */
-  static debug = {
-    /**
-     * debugMode is set by App.ts
-     * true if the app is in debug mode
-     * if false then all other params are not used
-     * debug mode is set to true in debug.html (src/html/debug.jade)
-     */
-    debugMode: false,
-    preventQuit: false,
-    debugScript: '/js/debug.js',
-  }
+  debug: false,
 
   /**
    * Link of the menu
    */
-  static WIKI_SILEX = 'https://github.com/silexlabs/Silex/wiki'
+  WIKI_SILEX: 'https://github.com/silexlabs/Silex/wiki',
 
   /**
    * Link in property tool dialog
    * this is also hard coded in property-tool.jade
    */
-  static WIKI_SILEX_CUSTOM_CSS_CLASS =
-      'https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes'
+  WIKI_SILEX_CUSTOM_CSS_CLASS: 'https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes',
 
   /**
    * Link of the menu
    */
-  static CROWD_FUNDING = 'http://crowdfunding.silex.me/'
+  CROWD_FUNDING: 'http://crowdfunding.silex.me/',
 
   /**
    * Link of the menu
    */
-  static ISSUES_SILEX =
-      'https://github.com/silexlabs/Silex/issues?state=open'
+  ISSUES_SILEX: 'https://github.com/silexlabs/Silex/issues?state=open',
 
   /**
    * Link of the menu
    */
-  static DOWNLOADS_TEMPLATE_SILEX =
-      'https://github.com/silexlabs/Silex/issues?labels=template&state=open'
+  DOWNLOADS_TEMPLATE_SILEX: 'https://github.com/silexlabs/Silex/issues?labels=template&state=open',
 
   /**
    * Link of the menu
    */
-  static DOWNLOADS_WIDGET_SILEX =
-      'https://github.com/silexlabs/Silex/issues?labels=widget&state=open'
+  DOWNLOADS_WIDGET_SILEX: 'https://github.com/silexlabs/Silex/issues?labels=widget&state=open',
 
   /**
    * Link of the menu
    */
-  static ABOUT_SILEX_LABS = 'http://www.silexlabs.org/'
+  ABOUT_SILEX_LABS: 'http://www.silexlabs.org/',
 
   /**
    * Link of the menu
    */
-  static SUBSCRIBE_SILEX_LABS = 'http://eepurl.com/F48q5'
+  SUBSCRIBE_SILEX_LABS: 'http://eepurl.com/F48q5',
 
   /**
    * Link of the menu
    */
-  static SOCIAL_DIASPORA =
-      'https://diasp.org/people/f37438103a9b013250aa2a0000053625'
+  SOCIAL_DIASPORA: 'https://diasp.org/people/f37438103a9b013250aa2a0000053625',
 
   /**
    * Link of the menu
    */
-  static SOCIAL_TWITTER = 'http://twitter.com/silexlabs'
+  SOCIAL_TWITTER: 'http://twitter.com/silexlabs',
 
   /**
    * Link of the menu
    */
-  static SOCIAL_FB = 'http://www.facebook.com/silexlabs'
+  SOCIAL_FB: 'http://www.facebook.com/silexlabs',
 
   /**
    * Link of the menu
    */
-  static FORK_CODE = 'https://github.com/silexlabs/Silex'
+  FORK_CODE: 'https://github.com/silexlabs/Silex',
 
   /**
    * Link of the menu
    */
-  static CONTRIBUTE = 'https://github.com/silexlabs/Silex/wiki/Contribute'
+  CONTRIBUTE: 'https://github.com/silexlabs/Silex/wiki/Contribute',
 
   /**
    * Single site mode, skip the dashboard and get the site from the URL
    * Option to be provided by the client side
    */
-  static singleSiteMode = false
-  static componentFolders = ['./prodotype/components']
+  singleSiteMode: false,
+  componentFolders: ['./prodotype/components'],
 
   /**
    * The main application menu
    */
-  static shortcuts: Shortcut[] = [
+  shortcuts: [
     {
       label: 'New File',
       id: 'file.new',
@@ -327,5 +309,5 @@ export class Config {
     //   label: 'Source code and download Silex',
     //   id: 'help.forkMe',
     // }
-  ]
+  ],
 }

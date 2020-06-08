@@ -1,5 +1,5 @@
 import { CloudStorage, FileInfo } from './io/CloudStorage'
-import { Config } from './ClientConfig'
+import { config } from './ClientConfig'
 import { FileExplorer } from './components/dialog/FileExplorer'
 import { LOADING } from './ui-store/types'
 import { PersistantData } from './store/types'
@@ -37,7 +37,7 @@ export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: an
   // tracker.trackAction('controller-events', 'request', 'file.save', 0);
   if (fileInfo && !getSite().isTemplate) {
     doSave((fileInfo as FileInfo), cbk, errorCbk)
-  } else if (Config.singleSiteMode) {
+  } else if (config.singleSiteMode) {
     // do nothing in single site mode
     throw new Error('File has no name and can not "save as" in single site mode')
   } else {
@@ -217,7 +217,7 @@ export function openDashboardToLoadAWebsite(cbk?: (() => any), errorCbk?: ((p1: 
  * open a file
  */
 export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) => any), cancelCbk?: (() => any)) {
-  if (Config.singleSiteMode) {
+  if (config.singleSiteMode) {
     return
   }
 
@@ -285,7 +285,7 @@ function publishError(message) {
   console.error('Error: I did not manage to publish the file.', message)
   SilexNotification.alert('Publication',
       `<strong>An error occured.</strong><p>I did not manage to publish the website. ${
-          message}</p><p><a href="${ Config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`,
+          message}</p><p><a href="${ config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`,
       () => {})
 }
 
@@ -340,7 +340,7 @@ export function publish() {
 function doPublish(
     publicationOptions: PublicationOptions,
     cbk: (p1: string, p2: string, p3: PublicationOptions) => any) {
-  if (Config.singleSiteMode && publicationOptions.file) {
+  if (config.singleSiteMode && publicationOptions.file) {
     publicationOptions.publicationPath = {
       ...publicationOptions.publicationPath,
       path: publicationOptions.file.path.split('/').slice(0, -1).join('/'),

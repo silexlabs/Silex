@@ -6,7 +6,7 @@
 
 import { detect } from 'detect-browser'
 
-import { Config } from './ClientConfig'
+import { config } from './ClientConfig'
 import { LOADING } from './ui-store/types'
 import { SilexNotification } from './components/Notification'
 import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
@@ -15,10 +15,6 @@ import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
 import { openDashboardToLoadAWebsite } from './file'
 import { resetDirty } from './dirty'
-
-interface AppOptions {
-  debug: boolean,
-}
 
 let initDone = false
 
@@ -35,15 +31,12 @@ function afterInit() {
 export function init() { console.warn('calling window.silex.init() is deprecated') }
 
 // start Silex, called from host HTML page with window.silex.start()
-export function start(options: AppOptions) {
-  const { debug } = options || {}
+export function start() {
   // make sure Silex is instanciated only once
   if (initDone) throw new Error('Silex has already been instanciated')
   initDone = true
 
-  // the debug flag comes from index.jade or debug.jade
-  Config.debug.debugMode = debug
-  if (Config.debug.debugMode) {
+  if (config.debug) {
     console.warn('Silex starting in debug mode.')
   }
 
@@ -71,7 +64,7 @@ export function start(options: AppOptions) {
   initObservers()
 
   // the build type
-  if (!Config.debug.debugMode) {
+  if (!config.debug) {
     // warn when closing window if changes are not saved yet
     preventQuit()
 
@@ -80,7 +73,7 @@ export function start(options: AppOptions) {
   }
 
   // application start, open a file
-  if (Config.singleSiteMode) {
+  if (config.singleSiteMode) {
     initSingleSiteMode()
     .then(() => afterInit())
   } else {
