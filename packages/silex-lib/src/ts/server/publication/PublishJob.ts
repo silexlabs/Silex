@@ -1,4 +1,3 @@
-
 import { JSDOM } from 'jsdom'
 import * as request from 'request'
 import * as sequential from 'promise-sequential'
@@ -9,6 +8,7 @@ import * as assert from 'assert'
 import * as uuid from 'uuid'
 
 import { Action, DomPublisher, File } from './DomPublisher'
+import { FileInfo } from '../../client/io/CloudStorage'
 import { PersistantData } from '../../client/store/types'
 import DomTools from '../utils/DomTools'
 
@@ -37,6 +37,15 @@ setInterval(() => {
   }
 }, 60 * 1000)
 
+interface PublishContext {
+  from: FileInfo,
+  to: FileInfo,
+  url: string,
+  session: object,
+  cookies: object,
+  hostingProvider: any,
+}
+
 export default class PublishJob {
   static get(id) {
     return publishJobs.get(id)
@@ -45,7 +54,7 @@ export default class PublishJob {
    * factory to create a publish job
    */
   static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider): PublishJob {
-    const context = {
+    const context: PublishContext = {
       from: file,
       to: publicationPath,
       url: rootUrl,
@@ -102,8 +111,7 @@ export default class PublishJob {
   private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]}
   private pageActions: Action[]
 
-  constructor(public id: string, private unifile, private context) {
-    console.log('---------------\nNew Publish Job', id, '\nPublish to:', context.to.url, '\nSilex instance:', context.url, '\n--------------')
+  constructor(public id: string, private unifile, private context: PublishContext) {
     this.setStatus('Publication starting.')
 
     // files and folders paths
@@ -114,6 +122,11 @@ export default class PublishJob {
     this.assetsFolder = this.rootPath + '/' + this.getAssetsFolder()
     this.jsFile = this.jsFolder + '/script.js'
     this.cssFile = this.cssFolder + '/styles.css'
+
+    console.log('--------------------------')
+    console.log('Publish Job', id)
+    console.log('Publish to:', this.rootPath, this.htmlFolder, this.cssFolder, this.assetsFolder, this.jsFolder)
+    console.log('Silex instance:', context.url)
 
     this.pleaseDeleteMe = false
 
@@ -230,7 +243,9 @@ export default class PublishJob {
           return
         }
         this.setStatus(`Splitting file ${this.context.from.name}`)
-        const url = new URL(this.context.from.url)
+        // this also works as url is set by cloud explorer's UnifileService::getUrl method
+        //  const url = new URL((this.context.from as any).url)
+        const url = new URL(`${this.context.url}/${this.context.from.service}/get/${this.context.from.path}`)
         const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/')
 
         // build the dom
@@ -245,9 +260,10 @@ export default class PublishJob {
         // hide website before styles.css is loaded
         dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
         // split into pages
-        const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context) : null
+        const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, data) : null
         const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName
         this.pageActions = domPublisher.split(newFirstPageName, permalinkHook)
+
         // release the dom object
         dom.window.close()
       })

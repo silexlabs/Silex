@@ -24,7 +24,7 @@ export default class DomTools {
           // do nothing with <link> tags unless it is an external stylesheet or the favicon
           continue
         }
-        if (el.hasAttribute('data-silex-static')) {
+        if (el.hasAttribute(Constants.STATIC_ASSET_ATTR)) {
           continue
         }
         const val = el.getAttribute(attr)

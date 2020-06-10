@@ -153,13 +153,15 @@ export default class BackwardCompat {
    */
   updateStatic(doc) {
     // update //{{host}}/2.x/... to latest version
-    const elements = doc.querySelectorAll('[data-silex-static]')
+    const elements = doc.querySelectorAll('[' + Constants.STATIC_ASSET_ATTR + ']')
     for (const element of elements) {
       const propName = element.src ? 'src' : 'href'
-      const newUrl = this.getStaticResourceUrl(element[propName])
-      const oldUrl = element.getAttribute(propName)
-      if (oldUrl !== newUrl) {
-        element.setAttribute(propName, newUrl)
+      if (element.hasAttribute(propName)) {
+        const newUrl = this.getStaticResourceUrl(element[propName])
+        const oldUrl = element.getAttribute(propName)
+        if (oldUrl !== newUrl) {
+          element.setAttribute(propName, newUrl)
+        }
       }
     }
   }

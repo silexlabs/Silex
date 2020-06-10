@@ -12,13 +12,19 @@ export function writeDataToDom(doc: HTMLDocument, data: PersistantData) {
   let tag: HTMLScriptElement = doc.querySelector('.' + Constants.JSON_STYLE_TAG_CLASS_NAME)
   if (!tag) {
     tag = doc.createElement('script')
-    tag.type = 'application/json'
     tag.classList.add(Constants.JSON_STYLE_TAG_CLASS_NAME)
-    doc.head.appendChild(tag)
   }
-  tag.innerHTML = JSON.stringify({
+  // prevent from beeing deactivated in WebsiteRouter
+  tag.setAttribute(Constants.STATIC_ASSET_ATTR, '')
+  // set its content
+  tag.innerHTML = `
+    window.silex = window.silex || {}
+    window.silex.data = ` + JSON.stringify({
     site: data.site,
     pages: data.pages,
     // elements: data.elements, // not this one as it is huge and useless at runtime
   })
+  // always insert as first child before all scripts
+  tag.type = 'text/javascript'
+  doc.head.insertBefore(tag, doc.head.firstChild)
 }

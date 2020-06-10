@@ -69,6 +69,7 @@ export function getEditMode(): boolean {
   if (!stage) { return false }
   return stage.catchingEvents
 }
+// setEditMode is used to hide the UI while editing text on stage
 export function setEditMode(mode: boolean) {
   if (!stage) { return }
   if (stage.visible === mode) {
@@ -79,10 +80,10 @@ export function resizeWindow() {
   if (!stage) { return }
   stage.resizeWindow()
 }
-export function hideUi(hide: boolean) {
-  if (!stage) { return }
-  stage.hideUi(hide)
-}
+// export function hideUi(hide: boolean) {
+//   if (!stage) { return }
+//   stage.hideUi(hide)
+// }
 
 /**
  * safe subscribe to mouse event
@@ -258,15 +259,15 @@ class StageWrapper {
         // reset the stage after switch to/from mobile editor
         setTimeout(() => resetStage(), 0)
       }
-      if (!prevState || prevState.loading !== nextState.loading) {
-        if (nextState.loading === LOADING.NONE) {
-          hideUi(false)
-          setEditMode(true)
-        } else {
-          hideUi(true)
-          setEditMode(false)
-        }
-      }
+      // if (!prevState || prevState.loading !== nextState.loading) {
+      //   if (nextState.loading === LOADING.NONE) {
+      //     hideUi(false)
+      //     setEditMode(true)
+      //   } else {
+      //     hideUi(true)
+      //     setEditMode(false)
+      //   }
+      // }
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         resizeWindow()
       }
@@ -505,7 +506,7 @@ class StageWrapper {
   // }
   private applyStyle(change) {
     if (stoped) {
-      console.trace('prevent update elements with stoped in stage')
+      // console.trace('prevent update elements with stoped in stage')
       return
     }
     // do not mess up the css translation applyed by stage during drag
