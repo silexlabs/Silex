@@ -97,7 +97,7 @@ export class DomPublisher {
       return  {
         name: page.id,
         displayName: page.displayName,
-        fileName: page.id === initialFirstPageName && newFirstPageName ? 'index.html' : page.id + '.html',
+        fileName: page.id === initialFirstPageName ? newFirstPageName || 'index.html' : page.id + '.html',
       }
     })
     // TODO: use page.link.type and page.link.value instead of adding 'page-' to page id

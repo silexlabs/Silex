@@ -7,7 +7,12 @@ import { ElementId, ElementState } from './types'
 import { getElements } from './index'
 import { getDomElement } from './dom'
 
-export const getElementById = (id: ElementId, elements = getElements()): ElementState => elements.find((el) => el.id === id)
+export const getElementById = (id: ElementId, elements = getElements()): ElementState => {
+  const element = elements.find((el) => el.id === id)
+  if (element) return element
+  console.warn('Warning: element not found with id', id)
+  return null
+}
 export const getElementByDomElement = (doc: HTMLDocument, element: HTMLElement, elements = getElements()) => elements.find((el) => element === getDomElement(doc, el))
 
 export const getChildren = (element: ElementState, elements = getElements()): ElementState[] => element.children.map((id) => getElementById(id, elements))
@@ -15,7 +20,12 @@ export const getChildren = (element: ElementState, elements = getElements()): El
 export const getChildrenRecursive = (element: ElementState, elements = getElements()): ElementState[] => {
   return element.children
   .map((id) => getElementById(id, elements))
-  .concat(element.children.reduce((prev, id) => getChildrenRecursive(getElementById(id, elements), elements), []))
+  .filter((el) => !!el)
+  .concat(element.children.reduce((prev, id) => {
+    const el = getElementById(id, elements)
+    if (el) return prev.concat(getChildrenRecursive(el, elements))
+    return prev
+  }, []))
 }
 
 export const getParent = (element: ElementState, elements = getElements()): ElementState => elements.find((parent) => {

@@ -50,3 +50,12 @@ test('find children', () => {
   expect(elem4ChildrenRecursive[2]).toBe(ELEM_IMAGE_STATE)
   expect(elem4ChildrenRecursive[3]).toBe(ELEM_HTML_STATE)
 })
+
+test('getChildrenRecursive', () => {
+  expect(getChildrenRecursive(ELEM_TEXT_STATE, ELEMENTS)).toEqual([])
+  expect(getChildrenRecursive(ELEM_CONTAINER_STATE, ELEMENTS)).toEqual([ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_HTML])
+  expect(getChildrenRecursive(ELEM_SECTION_CONTENT_STATE, ELEMENTS)).toEqual(expect.arrayContaining(ELEMENTS))
+  expect(getChildrenRecursive(ELEM_SECTION_CONTENT_STATE, ELEMENTS).map(e => e.id).sort()).toEqual(ELEMENTS.map(e => e.id).sort())
+
+  expect(getChildrenRecursive(ELEM_SECTION_CONTENT_STATE, ELEMENTS).map(e => e.id).sort()).toEqual(ELEMENTS.map(e => e.id).sort())
+})

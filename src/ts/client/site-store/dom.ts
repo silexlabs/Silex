@@ -99,7 +99,7 @@ export function setWebsiteWidthInDom(doc: HTMLDocument, width: number) {
   .${Constants.WEBSITE_WIDTH_CLASS_NAME} {
     width: ${width}px;
   }
-  @media (min-width:481px) {
+  @media (max-width: ${width}px) {
     .silex-editor {
       min-width: ${width + 200}px;
     }

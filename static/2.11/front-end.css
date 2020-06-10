@@ -2,6 +2,11 @@
  * This file holds the styles of websites while editing
  */
 
+body {
+  min-height: 100vh;
+  min-width: 100vw;
+}
+
 /* prevent-auto-z-index is to let the components handle their z-index */
 .section-element > .silex-element-content > *:not(.prevent-auto-z-index):not(.fixed) {
   /* put the elements of a section on top of sections bellow */
@@ -118,6 +123,7 @@ body.enable-mobile .editable-style.hide-on-desktop {
 .silex-element-content-full-height .silex-element-content {
   height: 100%;
 }
+silex-template,
 .prodotype-preview {
   display: none;
 }

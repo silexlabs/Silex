@@ -26,8 +26,7 @@ export function withCrudReducer<State extends CrudState>(options: { actionEnum: 
     switch (action.type) {
       case actionEnum.INITIALIZE: return action.items
       case actionEnum.CREATE: return action.items.length ? reducer(state.concat(action.items) as any as State[], action) : state
-      case actionEnum.DELETE:
-        return action.items.length ? reducer(state.filter((item) => !action.items.find((i) => i[crudIdKey] === item[crudIdKey])) as any as State[], action) : state
+      case actionEnum.DELETE: return action.items.length ? reducer(state.filter((item) => !action.items.find((i) => i[crudIdKey] === item[crudIdKey])) as any as State[], action) : state
       case actionEnum.UPDATE:
         if (action.items.length === 0) return state
         return reducer(state.map((item) => {

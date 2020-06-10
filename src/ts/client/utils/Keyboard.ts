@@ -75,8 +75,8 @@ export class Keyboard {
   handleKeyDown(e) {
     if (!e.defaultPrevented) {
       if (SilexNotification.isActive) {
-        if (e.key === 'Enter') { SilexNotification.close(true); e.preventDefault() }
-        if (e.key === 'Escape') { SilexNotification.close(false); e.preventDefault() }
+        if (e.key === 'Enter') SilexNotification.close(true, e)
+        if (e.key === 'Escape') SilexNotification.close(false, e)
       } else {
         const shortcuts = this.getShortcutsFromEvent(e)
         if (shortcuts.length > 0) {

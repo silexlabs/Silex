@@ -1,11 +1,12 @@
+import { ComponentDefinition, ComponentsDefinition } from '../externs'
 import { SITE1, mockUiElements } from '../../test-utils/data-set'
+
 const { siteIFrame } = mockUiElements()
 
 import { initializeSite } from './index'
 import { onChangeSite } from './observer'
 import { createStore } from 'redux'
 import { Store } from 'redux'
-import { ProdotypeCompDef } from '../externs'
 import { ProdotypeDependency } from '../element-store/types'
 import { State } from '../store/types'
 
@@ -13,9 +14,6 @@ import { State } from '../store/types'
 class Prodotype {
   constructor(element: HTMLElement, folder: string) {
     // console.log('[Prodotype] constructor', {folder})
-  }
-  componentsDef: ProdotypeCompDef = {
-    text: '',
   }
   decorate(templateName: string, data: any, dataSources?: object): Promise<string> {
     // console.log('[Prodotype] decorate', {templateName, data})

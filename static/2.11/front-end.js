@@ -10,13 +10,18 @@ $(function() {
 
   // expose data to components
   window.silex = window.silex || {};
-  window.silex.data = JSON.parse($('.silex-json-styles').text());
+  // set directcly by the script tag:
+  // window.silex.data
+
+  // init the data updated later
   window.silex.scale = 1;
   window.silex.scroll = {top: 0, left: 0};
+
+  // front end API
   window.silex.getCurrentPage = function() {
     var pageable = $body.pageable;
-    var currentPageName = pageable ? $body.pageable().data()['silexlabs-pageable'].options.currentPage : $body.attr('data-current-page');
-    var currentPage = silex.pages.filter(function(idx, el2) { return el2.name === currentPageName })[0];
+    var currentPageName = pageable ? pageable().data()['silexlabs-pageable'].options.currentPage : $body.attr('data-current-page');
+    var currentPage = window.silex.data.pages.filter(function(el) { return el.id === currentPageName })[0];
     return currentPage;
   };
 
@@ -30,7 +35,7 @@ $(function() {
   // the page system is only for preview and inside the editor
   if(!$body.hasClass('silex-published')) {
     // get the first page name from silex data
-    var firstPageName = silex.data.pages[0].link.value;
+    var firstPageName = window.silex.data.pages[0].link.value;
     /**
      * callback for change events
      * called when a page is opened
@@ -82,21 +87,12 @@ $(function() {
   // ************************************
   // Resize system (scale down when screen is smaller than content)
   // ************************************
-
   if(!$body.hasClass('silex-editor')) {
     onScroll();
     onResize();
     $win.resize(onResize);
     $win.scroll(onScroll);
   }
-
-  // if(!$body.hasClass('silex-published')) {
-  //   $body.on('pageChanged', function() {
-  //     initFixedPositions();
-  //     onScroll();
-  //     onResize();
-  //   });
-  // }
 
   // cross browser get scroll (even IE)
   function getScroll() {
@@ -117,21 +113,12 @@ $(function() {
     var scroll = getScroll();
 
     // notify the components that the resize will occure
-    $doc.trigger('silex.preresize', {
-      scrollTop: scroll.top/ratio,
-      scrollLeft: scroll.left/ratio,
-      scale: ratio
-    });
-    window.data = {
-      scrollTop: scroll.top/ratio,
-      scrollLeft: scroll.left/ratio,
-      scale: ratio
-    };
+    $doc.trigger('silex.preresize');
 
-    // expose the ratio to components
+    // expose computed data to components
+    window.silex.scrollTop = scroll.top/ratio;
+    window.silex.scrollLeft = scroll.left/ratio;
     window.silex.scale = ratio;
-    window.silex.scrollTop = scroll.top;
-    window.silex.scrollLeft = scroll.left;
 
     if(ratio === 1) {
       // reset scale
@@ -153,7 +140,6 @@ $(function() {
         'transform': 'scale(' + ratio + ')',
         'transform-origin': '0 0',
         'min-width': getScaleBreakPoint() + 'px',
-        'height': $body.height() * ratio
       });
       // unscale some elements
       $('.prevent-scale').css({
@@ -161,11 +147,7 @@ $(function() {
         'transform-origin': '0 0'
       })
     }
-    $doc.trigger('silex.resize', {
-      scrollTop: scroll.top/ratio,
-      scrollLeft: scroll.left/ratio,
-      scale: ratio
-    });
+    $doc.trigger('silex.resize');
   }
 
   function onScroll() {
@@ -177,13 +159,16 @@ $(function() {
       scrollLeft: scroll.left/ratio,
       scale: ratio
     });
-    window.data = {
-      scrollTop: scroll.top/ratio,
-      scrollLeft: scroll.left/ratio,
-      scale: ratio
-    };
+
     var offsetTop = scroll.top / ratio;
     var offsetLeft = scroll.left / ratio;
+
+    // expose computed data to components
+    window.silex.scrollTop = offsetTop;
+    window.silex.scrollLeft = offsetLeft;
+    window.silex.scale = ratio;
+
+    // update the body scale
     $('.fixed').css({
       'position': '',
       'transform': 'translate(' + offsetLeft + 'px, ' + offsetTop + 'px)',
@@ -194,11 +179,7 @@ $(function() {
       'transform': 'translate(' + offsetLeft + 'px, ' + offsetTop + 'px) scale(' + (1/ratio) + ')',
       'transform-origin': '0 0'
     });
-    $doc.trigger('silex.scroll', {
-      scrollTop: scroll.top/ratio,
-      scrollLeft: scroll.left/ratio,
-      scale: ratio
-    });
+    $doc.trigger('silex.scroll');
   }
 
   // utility functions
@@ -218,3 +199,4 @@ $(function() {
     return isBellowBreakPoint() ? 480 : window.silex.data.site.width;
   }
 });
+

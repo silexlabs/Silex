@@ -276,7 +276,7 @@ function deactivateScripts(dom) {
   .forEach((el: HTMLElement) => {
     // do not execute scripts, unless they are silex's static scripts
     // and leave it alone if it has a type different from 'text/javascript'
-    if (!el.hasAttribute('data-silex-static') && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript')) {
+    if (!el.hasAttribute(Constants.STATIC_ASSET_ATTR) && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript')) {
       el.setAttribute('type', 'text/notjavascript')
     }
   })

@@ -32,7 +32,6 @@ let prodotypeLoaded = false
 // wait for the Prodotype library to be loaded
 // FIXME: this is useless, it can be done directly on module import
 export function initProdotype() {
-  console.log('initProdotype')
   // init style editor
   styleEditorElement = getUiElements().propertyTool.querySelector('.prodotype-style-editor .prodotype-container')
 
@@ -45,7 +44,6 @@ export function initProdotype() {
 }
 
 function getProdotypeComponent(): Prodotype {
-  console.log('getProdotypeComponent')
   if(!prodotypeComponent) initProdotype()
   return prodotypeComponent
 }
@@ -56,7 +54,6 @@ function getProdotypeStyle(): Prodotype {
 }
 
 export function loadComponents(paths: string[]) {
-  console.log('loadComponents')
   // store the element in which to render
   componentEditorElement = getUiElements().propertyTool.querySelector('.prodotype-component-editor')
   // tslint:disable:no-string-literal
@@ -66,7 +63,6 @@ export function loadComponents(paths: string[]) {
   if (!prodotypeComponent) prodotypeComponent = compEd
   // wait for prodotype to load the components.json files
   compEd.ready((err) => {
-    console.log('ready', getComponentsDef(Constants.COMPONENT_TYPE))
     if (err) {
       console.error(err)
     } else {

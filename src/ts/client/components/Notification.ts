@@ -3,13 +3,6 @@
  *
  */
 
-interface Dialog {
-  set(optoins: any)
-  close()
-  destroy()
-  setContent(el: HTMLElement|DocumentFragment)
-}
-
 interface Options {
   labelOk?: string
   labelCancel?: string
@@ -36,7 +29,7 @@ export class SilexNotification {
   /**
    * close (cancel) the current notification
    */
-  static close(isOk= false) {
+  static close(isOk = false, e: Event = null): boolean {
     if (SilexNotification.currentDialog) {
       // hide dialogs
       const container: HTMLElement = document.querySelector('.alerts')
@@ -50,6 +43,11 @@ export class SilexNotification {
 
       // all done, we can open another one or do something
       cbk()
+
+      // prevent propagation of the event
+      if (e) e.preventDefault()
+      if (e) e.stopPropagation()
+      return false
     }
   }
 
@@ -64,7 +62,7 @@ export class SilexNotification {
       content,
     }))
     SilexNotification.cbkCancel = SilexNotification.cbkOk = () => ok();
-    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = (e) => SilexNotification.close()
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = (e) => SilexNotification.close(false, e)
   }
 
   /**
@@ -87,8 +85,8 @@ export class SilexNotification {
     SilexNotification.cbkCancel = () => {
       cbk(false, null)
     }
-    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = (e) => SilexNotification.close(true);
-    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel`) as HTMLElement).onclick = (e) => SilexNotification.close(false)
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = (e) => SilexNotification.close(true, e);
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel`) as HTMLElement).onclick = (e) => SilexNotification.close(false, e)
   }
 
   /**
@@ -105,8 +103,8 @@ export class SilexNotification {
     SilexNotification.cbkOk = () => cbk(true)
     SilexNotification.cbkCancel = () => cbk(false);
 
-    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = (e) => SilexNotification.close(true);
-    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel`) as HTMLElement).onclick = (e) => SilexNotification.close(false)
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_ok`) as HTMLElement).onclick = (e) => SilexNotification.close(true, e);
+    (SilexNotification.currentDialog.querySelector(`#${SilexNotification.NOTIFICATION_CSS_CLASS}_cancel`) as HTMLElement).onclick = (e) => SilexNotification.close(false, e)
   }
 
   /**
