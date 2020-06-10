@@ -46,7 +46,8 @@ function createWindow() {
     minWidth: 950,
     minHeight: 630,
     icon: Path.join(__dirname, 'node_modules/silex-website-builder/dist/public/assets/logo-silex-small.png'),
-    titleBarStyle: 'hidden',
+    // titleBarStyle: 'hidden',
+    frame: true,
     webPreferences: {
       nodeIntegration: false,
       // Needed by CE callback
