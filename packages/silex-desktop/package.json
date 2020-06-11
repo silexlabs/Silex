@@ -9,7 +9,7 @@
   "scripts": {
     "postinstall": "electron-rebuild",
     "start": "electron .",
-    "build": ""
+    "build": "echo 'pass (no build for this app)'"
   },
   "repository": {
     "type": "git",
@@ -31,11 +31,11 @@
   },
   "homepage": "https://www.silex.me",
   "devDependencies": {
-    "electron": "9.0.0",
+    "electron": "9.0.3",
     "electron-builder": "22.7.0",
     "electron-rebuild": "1.11.0"
   },
   "dependencies": {
-    "silex-website-builder": "lexoyo/Silex#develop"
+    "silex-website-builder": "silexlabs/Silex#develop"
   }
 }
