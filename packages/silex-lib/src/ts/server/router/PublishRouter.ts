@@ -1,37 +1,40 @@
-
 import * as express from 'express'
+
 import HostingGhPages from '../hosting-provider/HostingGhPages'
 import HostingUnifile from '../hosting-provider/HostingUnifile'
 import PublishJob from '../publication/PublishJob'
+import { Config } from '../ServerConfig'
 
 const hostingProviders = []
 const router = express.Router()
 
-export default function PublishRouter({ port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection }, unifile) {
+export default function PublishRouter(config: Config, unifile) {
+  const { port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection } = config.publisherOptions
+
   if (enableHostingUnifile) {
-    const hostingUnifile = new HostingUnifile(unifile)
+    const hostingUnifile = new HostingUnifile(unifile, config)
     addHostingProvider(hostingUnifile)
   }
 
   if (enableHostingGhPages) {
-    const hostingGhPages = new HostingGhPages(unifile)
+    const hostingGhPages = new HostingGhPages(unifile, config)
     addHostingProvider(hostingGhPages)
   }
 
   // **
   // publication tasks
-  router.post('/tasks/publish', (req, res, next) => {
+  router.post('/tasks/publish', (req: express.Request, res: express.Response) => {
     if (!req.body.provider || !req.body.provider.name) {
       res.status(400).send({
         message: 'Error in the request, hosting provider required',
       })
     } else {
-      PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl, getHostingProvider(req.session.unifile, req.body.provider.name))
+      PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl, getHostingProvider(req.session.unifile, req.body.provider.name), config)
       res.end()
     }
   })
 
-  router.get('/tasks/publishState', (req, res, next) => {
+  router.get('/tasks/publishState', (req: express.Request, res: express.Response) => {
     const publishJob = PublishJob.get(req.session.publicationId)
     if (publishJob) {
       if (publishJob.error) { res.status(500) }
@@ -47,7 +50,7 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
     }
   })
 
-  router.get('/hosting/', (req, res, next) => {
+  router.get('/hosting/', (req: express.Request, res: express.Response) => {
     const session = !!req.session && !!req.session.unifile ? req.session.unifile : {}
     res.json({
       providers: hostingProviders.map((hostingProvider) => hostingProvider.getOptions(session)),
@@ -56,7 +59,7 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
   })
 
   // vhosts
-  router.get('/hosting/:hostingProviderName/vhost', (req, res, next) => {
+  router.get('/hosting/:hostingProviderName/vhost', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
     const hostingProviderInfo = hostingProvider.getOptions(req.session.unifile)
     hostingProvider.getVhosts(req.session.unifile)
@@ -72,7 +75,7 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
       })
     })
   })
-  router.get('/hosting/:hostingProviderName/vhost/:name', (req, res, next) => {
+  router.get('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
     hostingProvider.getVhostData(req.session.unifile, req.params.name)
     .then((result) => {
@@ -85,7 +88,7 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
       })
     })
   })
-  router.post('/hosting/:hostingProviderName/vhost/:name', (req, res, next) => {
+  router.post('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
     const data = {
       domain: req.body.domain,
@@ -102,7 +105,7 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
       })
     })
   })
-  router.delete('/hosting/:hostingProviderName/vhost/:name', (req, res, next) => {
+  router.delete('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
     hostingProvider.setVhostData(req.session.unifile, req.params.name, null)
     .then((result) => {
@@ -116,7 +119,8 @@ export default function PublishRouter({ port, rootUrl, enableHostingGhPages, ena
       })
     })
   })
-  router.addHostingProvider = (hostingProvider) => addHostingProvider(hostingProvider)
+  // expose addHostingProvider to apps adding hosting providers with silex.publishRouter.addHostingProvider(...))
+  router['addHostingProvider'] = (hostingProvider) => addHostingProvider(hostingProvider)
   return router
 }
 

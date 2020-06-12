@@ -1,19 +1,16 @@
-
-Error.stackTraceLimit = Infinity
-
 // node modules
 import * as bodyParser from 'body-parser'
 import * as compression from 'compression'
 import * as cookieParser from 'cookie-parser'
-import * as session from 'cookie-session'
 import * as express from 'express'
-import * as Path from 'path'
+import * as session from 'cookie-session'
+
+import { Config } from './ServerConfig'
 import CloudExplorerRouter from './router/CloudExplorerRouter'
 import PublishRouter from './router/PublishRouter'
 import SslRouter from './router/SslRouter'
 import StaticRouter from './router/StaticRouter'
 import WebsiteRouter from './router/WebsiteRouter'
-import { Config } from './ServerConfig'
 
 function noCache(req, res, next) {
   res.header('Cache-Control', 'private,no-cache,no-store,must-revalidate,proxy-revalidate')
@@ -53,7 +50,7 @@ export default function SilexServer(config: Config) {
   this.staticRouter = StaticRouter(this.config.staticOptions)
   this.ceRouter = CloudExplorerRouter(this.config.ceOptions)
   this.websiteRouter = WebsiteRouter(this.config.serverOptions, this.ceRouter.unifile)
-  this.publishRouter = PublishRouter(this.config.publisherOptions, this.ceRouter.unifile)
+  this.publishRouter = PublishRouter(this.config, this.ceRouter.unifile)
   this.sslRouter = SslRouter(this.config.sslOptions, this.app)
   this.unifile = this.ceRouter.unifile // for access by third party
 }
