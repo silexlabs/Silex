@@ -8,6 +8,7 @@ import * as assert from 'assert'
 import * as uuid from 'uuid'
 
 import { Action, DomPublisher, File } from './DomPublisher'
+import { Config } from '../ServerConfig';
 import { FileInfo } from '../../client/io/CloudStorage'
 import { PersistantData } from '../../client/store/types'
 import DomTools from '../utils/DomTools'
@@ -44,6 +45,7 @@ interface PublishContext {
   session: object,
   cookies: object,
   hostingProvider: any,
+  config: Config,
 }
 
 export default class PublishJob {
@@ -53,7 +55,7 @@ export default class PublishJob {
   /**
    * factory to create a publish job
    */
-  static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider): PublishJob {
+  static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider, config: Config): PublishJob {
     const context: PublishContext = {
       from: file,
       to: publicationPath,
@@ -61,6 +63,7 @@ export default class PublishJob {
       session: session.unifile,
       cookies,
       hostingProvider,
+      config,
     }
     // stop other publications from the same user
     session.publicationId = session.publicationId || uuid.v4()
@@ -245,7 +248,7 @@ export default class PublishJob {
         this.setStatus(`Splitting file ${this.context.from.name}`)
         // this also works as url is set by cloud explorer's UnifileService::getUrl method
         //  const url = new URL((this.context.from as any).url)
-        const url = new URL(`${this.context.url}/${this.context.from.service}/get/${this.context.from.path}`)
+        const url = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.from.service}/get/${this.context.from.path}`)
         const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/')
 
         // build the dom

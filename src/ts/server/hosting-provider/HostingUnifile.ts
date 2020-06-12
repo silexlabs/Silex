@@ -1,6 +1,7 @@
+import { Config } from '../ServerConfig';
 
 export default class HostingUnifile {
-  constructor(private unifile) {}
+  constructor(protected unifile, protected config: Config) {}
   getOptions(session) {
     return {
       name: 'unifile',

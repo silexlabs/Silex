@@ -1,6 +1,8 @@
+import * as request from 'request'
 
 import * as assert from 'assert'
-import * as request from 'request'
+
+import { Config } from '../ServerConfig';
 
 //////////////////////////////
 // Utils
@@ -43,7 +45,7 @@ function callServer(path, method, token): Promise<{status: string, html_url: str
 // Exported class
 //////////////////////////////
 
-export default function HostingGhPages(unifile) {
+export default function HostingGhPages(unifile, config: Config) {
   this.unifile = unifile
   assert(
     this.unifile.listConnectors().find((connectorName) => connectorName === 'github'),
