@@ -15,8 +15,8 @@
   "author": "lexoyo",
   "license": "MPL",
   "dependencies": {
-    "got": "^9.6.0",
-    "pug": "^2.0.4",
+    "got": "^11.3.0",
+    "pug": "^3.0.0",
     "pug-cli": "^1.0.0-alpha6",
     "silex-website-builder": "silexlabs/Silex#develop"
   },
