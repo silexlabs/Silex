@@ -140,6 +140,7 @@ $(function() {
         'transform': 'scale(' + ratio + ')',
         'transform-origin': '0 0',
         'min-width': getScaleBreakPoint() + 'px',
+        'height': Math.round($win.height() * ratio),
       });
       // unscale some elements
       $('.prevent-scale').css({
