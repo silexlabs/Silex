@@ -3,7 +3,6 @@ import { ElementRect, ElementState } from './types'
 import {
   getAllStyles,
   getBoundingBox,
-  getElementSize,
   getElementStyle
 } from './utils'
 import { getSite, updateSite } from '../site-store/index'
@@ -87,32 +86,32 @@ test('get element styles', () => {
   expect(getElementStyle(ELEM_CONTAINER_STATE, 'top', true)).toBeUndefined()
 })
 
-test('get element size on desktop', () => {
-  // element with style
-  expect(getElementSize(null, ELEM_TEXT_STATE, false, [ELEM_TEXT_STATE])).toEqual({
-    width: 100,
-    height: 100,
-  })
-  // section width
-  expect(getElementSize(null, ELEM_CONTAINER_STATE, false, [ELEM_CONTAINER_STATE])).toEqual({
-    width: 1000,
-    height: 1000,
-  })
-  // section height
-  expect(getElementSize({innerWidth: 9999} as Window, ELEM_SECTION_STATE, false, [ELEM_SECTION_CONTENT_STATE, ELEM_SECTION_STATE])).toEqual({
-    width: 9999,
-    height: 500,
-  })
-  // section container whidth
-  updateSite({
-    ...getSite(),
-    width: 1234,
-  })
-  expect(getElementSize({innerWidth: 9999} as Window, ELEM_SECTION_CONTENT_STATE, false, [ELEM_SECTION_CONTENT_STATE])).toEqual({
-    width: 1234,
-    height: 500,
-  })
-})
+// test('get element size on desktop', () => {
+//   // element with style
+//   expect(getElementSize(null, ELEM_TEXT_STATE, false, [ELEM_TEXT_STATE])).toEqual({
+//     width: 100,
+//     height: 100,
+//   })
+//   // section width
+//   expect(getElementSize(null, ELEM_CONTAINER_STATE, false, [ELEM_CONTAINER_STATE])).toEqual({
+//     width: 1000,
+//     height: 1000,
+//   })
+//   // section height
+//   expect(getElementSize({innerWidth: 9999} as Window, ELEM_SECTION_STATE, false, [ELEM_SECTION_CONTENT_STATE, ELEM_SECTION_STATE])).toEqual({
+//     width: 9999,
+//     height: 500,
+//   })
+//   // section container whidth
+//   updateSite({
+//     ...getSite(),
+//     width: 1234,
+//   })
+//   expect(getElementSize({innerWidth: 9999} as Window, ELEM_SECTION_CONTENT_STATE, false, [ELEM_SECTION_CONTENT_STATE])).toEqual({
+//     width: 1234,
+//     height: 500,
+//   })
+// })
 
 test('get element size on mobile', () => {
   // element with style
