@@ -180,39 +180,36 @@ export function getElementStyle(element: ElementState, styleName: string, mobile
   return element.style.desktop[styleName]
 }
 
-/**
- * get an element size
- * this takes into account all cases, i.e. element with style, section width, section height, section container whidth
- * also takes the max width in mobile editor
- * TODO: make better UT, should not depend on getSite
- */
-export function getElementSize(win: Window, element: ElementState, mobile: boolean, elements = getElements()): Size {
-  const result: Size = {width: -1, height: -1}
-  const width = getElementStyle(element, 'width', mobile)
-  if (width) result.width = parseInt(width)
-  else if (element.type === ElementType.SECTION) result.width = win.innerWidth
-  else if (element.isSectionContent) result.width = getSite().width
-  else {
-    console.error('Error: container has no width', element)
-    throw new Error('Can not get size of this element as it has no width')
-  }
-  if (mobile) result.width = Math.min(result.width, Constants.MOBILE_BREAKPOINT)
-
-  console.warn('todo sections bg: take the height of section container')
-
-  const height = getElementStyle(element, 'height', mobile)
-  if (height) result.height = parseInt(height)
-  else if (element.type === ElementType.SECTION) {
-    const sectionContent = getChildren(element, elements).find((el) => el.isSectionContent)
-    if(sectionContent) result.height = getElementSize(win, sectionContent, mobile).height
-    else result.height = 0
-    // else result.height = parseInt(getStyle(sectionContent, 'height', mobile))
-  } else {
-    console.error('Error: container has no height', element)
-    throw new Error('Can not get size of this element as it has no height')
-  }
-  return result
-}
+// /**
+//  * get an element size
+//  * this takes into account all cases, i.e. element with style, section width, section height, section container whidth
+//  * also takes the max width in mobile editor
+//  */
+// export function getElementSize(win: Window, element: ElementState, mobile: boolean, elements = getElements()): Size {
+//   const result: Size = {width: -1, height: -1}
+//   const width = getElementStyle(element, 'width', mobile)
+//   if (width) result.width = parseInt(width)
+//   else if (element.type === ElementType.SECTION) result.width = win.innerWidth
+//   else if (element.isSectionContent) result.width = getSite().width
+//   else {
+//     console.error('Error: container has no width', element)
+//     throw new Error('Can not get size of this element as it has no width')
+//   }
+//   if (mobile) result.width = Math.min(result.width, Constants.MOBILE_BREAKPOINT)
+//
+//   const height = getElementStyle(element, 'height', mobile)
+//   if (height) result.height = parseInt(height)
+//   else if (element.type === ElementType.SECTION) {
+//     const sectionContent = getChildren(element, elements).find((el) => el.isSectionContent)
+//     if(sectionContent) result.height = getElementSize(win, sectionContent, mobile).height
+//     else result.height = 0
+//     // else result.height = parseInt(getStyle(sectionContent, 'height', mobile))
+//   } else {
+//     console.error('Error: container has no height', element)
+//     throw new Error('Can not get size of this element as it has no height')
+//   }
+//   return result
+// }
 
 // /**
 //  * compute new element data
