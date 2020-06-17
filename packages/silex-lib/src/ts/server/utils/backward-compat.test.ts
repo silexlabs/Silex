@@ -1,3 +1,4 @@
+import { LinkType } from '../../client/element-store/types';
 import { mockUiElements } from '../../test-utils/data-set'
 
 const {siteIFrame} = mockUiElements()
@@ -55,6 +56,19 @@ test('convert from 2.5.60', () => {
     'test-custom-class',
   ])
   expect(elements.find((el) => el.id === TEXT_ELEMENT_ID).innerHtml).toContain('www.silex.me')
+
+  // links
+  expect(elements.filter((el) => el.type === ElementType.HTML)[0].link).toBeNull()
+  expect(elements.filter((el) => el.type === ElementType.IMAGE)[0].link).not.toBeNull()
+  expect(elements.filter((el) => el.type === ElementType.IMAGE)[0].link).toEqual({
+    type: LinkType.PAGE,
+    value: '#!page-page-1',
+  })
+  expect(elements.filter((el) => el.type === ElementType.TEXT)[0].link).not.toBeNull()
+  expect(elements.filter((el) => el.type === ElementType.TEXT)[0].link).toEqual({
+    type: LinkType.URL,
+    value: 'https://www.silex.me',
+  })
 
   // body
   const body = elements.find((el) => el.id === BODY_ID)

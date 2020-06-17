@@ -1,21 +1,21 @@
 import {
-  ComponentData,
-  ElementState,
-} from '../element-store/types'
-import {
   ComponentDefinition,
   ComponentsDefinition,
   Prodotype
 } from '../externs'
-import { config } from '../ClientConfig'
 import { Constants } from '../../constants'
+import { ElementState } from '../element-store/types';
+import { ProdotypeDependency, ProdotypeDependencyTag } from './types';
 import { PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../site-store/types'
 import { addMediaQuery, renderWithProdotype } from '../element-store/dom'
+import { config } from '../ClientConfig'
 import { getElements } from '../element-store/index'
 import { getPseudoClassData } from '../site-store/utils'
 import { getSite, updateSite } from '../site-store/index'
 import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
+import { store } from '../store/index';
+import { updateElements } from './index'
 
 /**
  * @fileoverview
@@ -51,6 +51,44 @@ function getProdotypeComponent(): Prodotype {
 function getProdotypeStyle(): Prodotype {
   if(!prodotypeStyle) initProdotype()
   return prodotypeStyle
+}
+
+export async function updateComponents(components = getComponents()) {
+  const renderedComponents = await Promise.all<[ElementState, string]>(components
+    .map((el) => renderWithProdotype(
+      getProdotypeComponent(), {
+        templateName: el.data.component.templateName,
+        data: el.data.component,
+        dataSources: getSite().dataSources,
+      })
+      .then((innerHtml) => ([
+        el,
+        innerHtml,
+      ]))
+      .catch((err) => {
+        console.error('could not update component:', err)
+        return null
+      })
+    )
+  )
+  const renderedWithoutError = renderedComponents
+    .filter((el) => !!el)
+
+  // still the same, no component update
+  // just render the dom element
+  // renderedWithoutError
+  //   .filter(([el, innerHtml]) => el.innerHtml === innerHtml)
+  //   .forEach(([el, innerHtml]) => console.log('same', el))
+
+  // components may have changed
+  // sometimes the render includes an ID which changes every time
+  // this is like an update of all components
+  updateElements(renderedWithoutError
+    .filter(([el, innerHtml]) => el.innerHtml !== innerHtml)
+    .map(([el, innerHtml]) => ({
+      ...el,
+      innerHtml,
+    })))
 }
 
 export function loadComponents(paths: string[]) {
@@ -89,6 +127,10 @@ export function isComponent(element: ElementState) {
   return !!element.data.component && !!element.data.component.templateName
 }
 
+export function getComponents(elements = getElements()) {
+  return elements.filter((el) => isComponent(el))
+}
+
 /**
  * @param element component just added
  * @param templateName type of component
@@ -108,6 +150,10 @@ export function initComponent(element: ElementState, templateName: string): Prom
     // apply the style found in component definition
     // this includes the css class of the component (component-templateName)
     const cssClasses = getCssClasses(templateName) || []
+
+    // use min heigh or height depending on the component and the base element
+    // if set by component it overrides the default of the element
+    const useMinHeight = typeof comp.useMinHeight === 'undefined' ? element.useMinHeight : comp.useMinHeight
 
     // apply the style found in component definition
     const initialCss = comp.initialCss || {}
@@ -139,6 +185,7 @@ export function initComponent(element: ElementState, templateName: string): Prom
           },
         },
         innerHtml: html,
+        useMinHeight,
         style: {
           ...element.style,
           desktop: {
@@ -198,31 +245,45 @@ export function getCssClasses(templateName: string): string[] {
  * FIXME: should have a callback to know if/when scripts are loaded
  * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
  */
-export function updateDepenedencies(type: string) {
-  if (type !==  Constants.COMPONENT_TYPE) {
-    // TODO: cleanup since this would need to support several types of components?
-    throw new Error('Not supported, all dependencies are for components for now, not styles')
-  }
-  const components: ComponentData[] = getElements()
+export function updateComponentsDependencies(prodotype = prodotypeComponent, elements = getElements(), dispatch = store.dispatch) {
+
+  const components = elements
     .filter((el) => isComponent(el))
     .map((el) => el.data.component)
-  const prodotypeDependencies = getProdotypeComponent().getDependencies(components)
+
+  const prodotypeDependencies = prodotype.getDependencies(components)
+
+  // remove doubles dependencies
+  const filteredDependencies: ProdotypeDependency = Object.keys(prodotypeDependencies)
+    .reduce((aggr: ProdotypeDependency, tagName: string) => {
+      const unique = prodotypeDependencies[tagName]
+        .filter((tag, idx) => !prodotypeDependencies[tagName].find((existingTag, existingIdx) => idx > existingIdx && isSameTag(tag, existingTag)))
+      aggr[tagName] = aggr[tagName] || []
+      aggr[tagName] = aggr[tagName].concat(unique)
+      return aggr
+    }, {} as ProdotypeDependency)
 
   const oldDependencies = getSite().prodotypeDependencies
-  const isDifferent = (() => {
-    for(const compName in oldDependencies)
-      if(!prodotypeDependencies[compName]) return true
-    for(const compName in prodotypeDependencies)
-      if(!oldDependencies[compName]) return true
-    return false
-  })()
+  const isSame = Object.keys(oldDependencies)
+    .every((tagName) => {
+      const oldTags = oldDependencies[tagName]
+      const newTags = filteredDependencies[tagName]
+      // use length in order to avoid looping through both arrays
+      return !!newTags && newTags.length === oldTags.length && oldTags
+        .every((oldTag) => newTags.find((newTag) => isSameTag(oldTag, newTag)))
+    })
 
-  if(isDifferent) {
+  if(!isSame) {
     updateSite({
       ...getSite(),
-      prodotypeDependencies,
-    })
+      prodotypeDependencies: filteredDependencies,
+    }, dispatch)
   }
+}
+
+export function isSameTag(tag1: ProdotypeDependencyTag, tag2: ProdotypeDependencyTag): boolean {
+  return Object.keys(tag1).every((attrName) => tag1[attrName] === tag2[attrName])
+    && Object.keys(tag2).every((attrName) => tag1[attrName] === tag2[attrName])
 }
 
 /**

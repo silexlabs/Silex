@@ -24,6 +24,7 @@ export interface ComponentDefinition {
   isPrivate?: boolean
   props: ComponentProps[],
   // text: any // FIXME: why? this is only used in StyleEditorPane
+  useMinHeight?: boolean,
 }
 
 export interface ComponentsDefinition {
@@ -48,8 +49,6 @@ export interface Prodotype {
   reset()
   createName(type, list): string
   // "getDependencies" returns an object like this: {
-  //   test-comp:
-  //     [{
   //         "script": [{
   //             "src": "https://code.jquery.com/jquery-2.1.4.min.js"
   //         }],
@@ -57,15 +56,13 @@ export interface Prodotype {
   //             "rel": "stylesheet",
   //             "href": "https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css"
   //         }]
-  //     }]
-  //   }
   //  }
-  getDependencies(components: {name:string, displayName?:string, templateName:string}[]): {[key: string]: ProdotypeDependency[]}
+  getDependencies(components: {name:string, displayName?:string, templateName:string}[]): ProdotypeDependency
   getMissingDependencies(
     container: HTMLElement,
     componentNames: {templateName: string}[],
   ): HTMLElement[]
-  getUnusedDependencies(dependencyElements: HTMLElement[], componentNames: {templateName: string}[])
+  getUnusedDependencies(dependencyElements: HTMLElement[], componentNames: {templateName: string}[]): ProdotypeDependency
 }
 
 /**

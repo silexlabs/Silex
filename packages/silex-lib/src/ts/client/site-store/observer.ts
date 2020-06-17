@@ -1,13 +1,13 @@
-import * as objectPath from '../../../../node_modules/object-path/index.js'
+import { DataSources, SiteState } from '../site-store/types'
+import { SilexNotification } from '../components/Notification'
 import { getBody } from '../element-store/filters'
-import { updateElements } from '../element-store/index'
+import { getSiteDocument } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site-store/dom'
+import { setStyleToDom } from '../element-store/component';
+import { updateElements } from '../element-store/index';
 import { writeDataToDom } from '../store/dom'
-import { DataSources, SiteState } from '../site-store/types'
-import { getSiteDocument } from '../components/SiteFrame'
-import { SilexNotification } from '../components/Notification'
-import { setStyleToDom } from '../element-store/component'
+import * as objectPath from '../../../../node_modules/object-path/index.js'
 
 export function onChangeSite(prev: SiteState, site: SiteState) {
   const doc = getSiteDocument()
@@ -55,7 +55,7 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
       .forEach((tag: HTMLElement) => tag.remove())
 
     // and add them back
-    // prodotypeDependencies is the object returned by getDependencies: {
+    // Note: prodotypeDependencies is the object returned by getDependencies: {
     //   "test-comp":
     //     [{
     //         "script": [{
@@ -68,10 +68,12 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
     //     }]
     //   }
     //  }
+    console.log('========= observer', site.prodotypeDependencies)
     Object.keys(site.prodotypeDependencies)
     .forEach((tagName) => {
       const deps = site.prodotypeDependencies[tagName]
       deps.forEach((depObj) => {
+        console.log('===========', {depObj, tagName, deps})
         const el = doc.createElement(tagName)
         el.setAttribute('data-dependency', '')
         Object.keys(depObj)
@@ -85,7 +87,7 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
   if(!prev || prev.styles !== site.styles) {
     const head = getSiteDocument().head
 
-    // remove all dependencies
+    // remove all styles
     Array.from(head.querySelectorAll('[data-style-id]'))
       .forEach((tag: HTMLElement) => tag.remove())
 
@@ -102,7 +104,6 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
           setStyleToDom(getSiteDocument(), className, pseudoClassName, visibility, pseudoClassData, styleData.displayName)
         })
       })
-
     })
   }
   // save data to the dom for front-end.js

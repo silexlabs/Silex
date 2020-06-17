@@ -1,4 +1,8 @@
 
+html, body {
+  scroll-behavior: unset !important;
+}
+
 body {
   padding-bottom: 100px; /* leave space at the bottom */
   min-width: 100%; /* this makes sure that the body and sections are full width even when window is wider than minimum section width */

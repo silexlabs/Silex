@@ -218,6 +218,12 @@ export class Constants {
   static SILEX_SCRIPT_ELEMENT_CSS_CLASS = 'silex-script'
 
   /**
+   * attribute on prodotype dependencies
+   * these script and style tags are not prevented when preparing the site for edition, unlike normal scripts
+   */
+  static PRODOTYPE_DEPENDENCY_ATTR = 'data-dependency'
+
+  /**
    * css class which marks the tags added to load a custom font
    */
   static CUSTOM_FONTS_CSS_CLASS = 'silex-custom-font'

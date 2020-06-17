@@ -199,7 +199,10 @@ function writeWebsite(rootUrl, unifile, backwardCompat) {
  */
 export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData, baseUrl): PersistantData {
   // URLs
-  const transformedData = DomTools.transformPaths(dom, data, (path, el) => {
+  const transformedData = DomTools.transformPaths(dom, data, (path: string, el: HTMLElement, isInHead: boolean) => {
+    // page links
+    if (path.startsWith(Constants.PAGE_NAME_PREFIX)) return path
+    // make URLs absolute
     const url = new URL(path, baseUrl)
     return url.href
   })
@@ -276,7 +279,9 @@ function deactivateScripts(dom) {
   .forEach((el: HTMLElement) => {
     // do not execute scripts, unless they are silex's static scripts
     // and leave it alone if it has a type different from 'text/javascript'
-    if (!el.hasAttribute(Constants.STATIC_ASSET_ATTR) && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript')) {
+    if (!el.hasAttribute(Constants.STATIC_ASSET_ATTR)
+        && !el.hasAttribute(Constants.PRODOTYPE_DEPENDENCY_ATTR)
+        && (!el.hasAttribute('type') || el.getAttribute('type') === 'text/javascript')) {
       el.setAttribute('type', 'text/notjavascript')
     }
   })

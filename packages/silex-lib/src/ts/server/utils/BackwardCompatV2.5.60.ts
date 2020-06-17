@@ -348,8 +348,8 @@ export function getSiteFromDom(doc: HTMLDocument): SiteState {
   }
 }
 
-function getDependenciesFromDom(properties: DomData): {[key: string]: ProdotypeDependency[]} {
-  const res: {[key: string]: ProdotypeDependency[]} = {}
+function getDependenciesFromDom(properties: DomData): ProdotypeDependency {
+  const res: ProdotypeDependency = {}
 
   Object.keys(properties.prodotypeDataObj.component)
   .map((compName) => ({

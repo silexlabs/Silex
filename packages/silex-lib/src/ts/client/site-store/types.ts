@@ -39,7 +39,7 @@ export interface SiteState {
   //         }]
   //   }
   // FIXME: the site should not have this array of deps, but each component should have its deps
-  prodotypeDependencies: {[key: string]: ProdotypeDependency[]},
+  prodotypeDependencies: ProdotypeDependency,
 }
 
 /**

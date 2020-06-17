@@ -22,7 +22,6 @@ import { openRecent } from '../file'
  * create the workspace, start listening to window events
  */
 export function createWorkspace(element: HTMLElement) {
-  console.trace('createWorkspace')
   // creation of the view instances
   initMenu()
   initContextMenu()
