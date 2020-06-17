@@ -1,4 +1,3 @@
-
 import { Constants } from '../../constants'
 import { PersistantData } from '../../client/store/types'
 
@@ -8,7 +7,7 @@ export default class DomTools {
    * with a function you provide
    * The algorithm will call your function with the URLs found in the stylsheets, the html markup, and the JSON data stored by Silex
    */
-  static transformPaths(dom, data: PersistantData, fn): PersistantData {
+  static transformPaths(dom, data: PersistantData, fn: (path: string, el: HTMLElement, isInHead: boolean) => string): PersistantData {
     // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach((attr) => {
       const elements = dom.window.document.querySelectorAll(`[${attr}]`)
@@ -18,6 +17,7 @@ export default class DomTools {
           continue
         }
         if (el.tagName.toLowerCase() === 'link' &&
+          el.hasAttribute('rel') &&
           el.getAttribute('rel').toLowerCase() !== 'stylesheet' &&
           el.getAttribute('rel').toLowerCase() !== 'shortcut icon'
         ) {

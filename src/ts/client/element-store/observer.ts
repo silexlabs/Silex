@@ -24,7 +24,7 @@ import { getEmptyElementData } from './utils'
 import { getPages } from '../page-store/index'
 import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
-import { isComponent, updateDepenedencies } from './component'
+import { isComponent, updateComponentsDependencies } from './component'
 import { noSectionContent, getParent } from '../element-store/filters'
 import { openPageDom, setPages } from '../page-store/dom'
 import { writeDataToDom } from '../store/dom'
@@ -63,13 +63,9 @@ export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elemen
       })
     }
 
-    // execute the scripts
-    // FIXME: exec scripts in elements and components?
-    // this.model.component.executeScripts(domEl)
-
     // need to call Component:initComponent (adds default data)
     if(isComponent(element)) {
-      updateDepenedencies(Constants.COMPONENT_TYPE)
+      updateComponentsDependencies()
     }
   })
   if (added.length) {
@@ -163,18 +159,23 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
       // domEl.appendChild(tempElements)
 
       // FIXME: should exec scripts only after dependencies are loaded
-      // execute the scripts
-      executeScripts(win, domEl)
-
       // getStage().redrawSome([domEl]
       //   .map((el) => getStage().getState(el)))
     }
+    // update styles in the dom
     if (to.style !== from.style) {
       // write css rules
       writeStyleToDom(doc, to, true)
       writeStyleToDom(doc, to, false)
-      // ['mobile', 'desktop'].forEach((mobileOrDesktop) => {
-      // })
+    }
+    // execute the scripts
+    if (isComponent(to)
+      && (from.style.mobile.width !== to.style.mobile.width
+        || from.style.mobile.height !== to.style.mobile.height
+        || from.style.desktop.width !== to.style.desktop.width
+        || from.style.desktop.height !== to.style.desktop.height
+        || to.innerHtml !== from.innerHtml)) {
+      executeScripts(win, domEl)
     }
   })
   // save data to the dom for front-end.js

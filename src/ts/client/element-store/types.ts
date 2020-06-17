@@ -138,11 +138,10 @@ export interface ComponentData {
   templateName: string
   data: any
 }
-
 export interface ProdotypeDependency {
-  [key: string]: string,
+  [tagName: string]: ProdotypeDependencyTag[],
 }
 
-export interface ProdotypeDependencyTagAttr {
+export interface ProdotypeDependencyTag {
   [key: string]: string,
 }
