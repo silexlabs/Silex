@@ -1,11 +1,9 @@
 import { DataSources, SiteState } from '../site-store/types'
 import { SilexNotification } from '../components/Notification'
-import { getBody } from '../element-store/filters'
 import { getSiteDocument } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site-store/dom'
 import { setStyleToDom } from '../element-store/component';
-import { updateElements } from '../element-store/index';
 import { writeDataToDom } from '../store/dom'
 import * as objectPath from '../../../../node_modules/object-path/index.js'
 
@@ -29,24 +27,6 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
     // store a style to all section containers
     // TODO: set a min-width to all sections instead
     setWebsiteWidthInDom(doc, site.width)
-    // set a minimum width to the body
-    // TODO: is this useful?
-    const body = getBody()
-    if (body) { // FIXME: (!body) happens at start of Silex but it should not?
-      // FIXME: observer should not update store
-      setTimeout(() => {
-      updateElements([{
-        ...body,
-        style: {
-          ...body.style,
-          desktop: {
-            ...body.style.desktop,
-            'min-width': site.width + 'px',
-          },
-        },
-      }])
-      }, 0)
-    }
   }
   if(!prev || prev.prodotypeDependencies !== site.prodotypeDependencies) {
     const head = getSiteDocument().head
@@ -68,12 +48,10 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
     //     }]
     //   }
     //  }
-    console.log('========= observer', site.prodotypeDependencies)
     Object.keys(site.prodotypeDependencies)
     .forEach((tagName) => {
       const deps = site.prodotypeDependencies[tagName]
       deps.forEach((depObj) => {
-        console.log('===========', {depObj, tagName, deps})
         const el = doc.createElement(tagName)
         el.setAttribute('data-dependency', '')
         Object.keys(depObj)

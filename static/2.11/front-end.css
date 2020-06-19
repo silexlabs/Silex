@@ -29,12 +29,14 @@ body {
 	overflow: hidden;
 }
 */
-.silex-element-content {
-  min-height:inherit;
+.html-element .silex-element-content {
+  /* enable HTML content to have style="min-height: inherit;" */
+  /* removed because it makes components buggy, add it to silex if you need to
+  position: absolute;
+  min-height: inherit;
+  width: 100%; /* needed by slideshow components and probably others */
   /*
-	border-radius: initial;
-	width: 100%;
-  */
+  height: 100%; /* needed by slideshow kreview and probably others */
 }
 /* wysihtml text editor styles */
 .wysiwyg-float-left {
