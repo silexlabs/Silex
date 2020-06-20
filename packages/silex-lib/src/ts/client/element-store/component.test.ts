@@ -33,6 +33,50 @@ test('update dependencies, no change', () => {
   expect(dispatch).toHaveBeenCalledTimes(0)
 })
 
+test('update dependencies, from 0 to 1 dependency', () => {
+  const dispatch = jest.fn()
+  const elements = [ELEM_TEXT_STATE]
+
+  initializeSite({
+    ...SITE1,
+    prodotypeDependencies: {},
+  })
+  const prodotypeAdded = {
+    getDependencies: (components: ElementState[]) => SITE1.prodotypeDependencies,
+  } as any as Prodotype
+
+  updateComponentsDependencies(prodotypeAdded, elements, dispatch)
+
+  expect(dispatch).toHaveBeenCalledTimes(1)
+  expect(dispatch).toHaveBeenLastCalledWith({
+    type: 'SITE_UPDATE',
+    data: {
+      ...getSite(),
+      prodotypeDependencies: SITE1.prodotypeDependencies,
+    },
+  })
+})
+
+test('update dependencies, from 1 to 0 dependency', () => {
+  const dispatch = jest.fn()
+  const elements = [ELEM_TEXT_STATE]
+
+  const prodotypeAdded = {
+    getDependencies: (components: ElementState[]) => ({}),
+  } as any as Prodotype
+
+  updateComponentsDependencies(prodotypeAdded, elements, dispatch)
+
+  expect(dispatch).toHaveBeenCalledTimes(1)
+  expect(dispatch).toHaveBeenLastCalledWith({
+    type: 'SITE_UPDATE',
+    data: {
+      ...getSite(),
+      prodotypeDependencies: {},
+    },
+  })
+})
+
 test('update dependencies, some dependencies added', () => {
   const dispatch = jest.fn()
   const elements = [ELEM_TEXT_STATE]
@@ -99,6 +143,9 @@ test('update dependencies, add same dependencies', () => {
 })
 
 test('isSameTag', () => {
+  expect(isSameTag({}, {
+    a: 'a',
+  })).toBe(false)
   expect(isSameTag({
     a: 'a',
     b: 'b',
