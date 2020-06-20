@@ -246,7 +246,6 @@ export function getCssClasses(templateName: string): string[] {
  * @param type, Constants.COMPONENT_TYPE or Constants.STYLE_TYPE
  */
 export function updateComponentsDependencies(prodotype = prodotypeComponent, elements = getElements(), dispatch = store.dispatch) {
-
   const components = elements
     .filter((el) => isComponent(el))
     .map((el) => el.data.component)
@@ -264,7 +263,9 @@ export function updateComponentsDependencies(prodotype = prodotypeComponent, ele
     }, {} as ProdotypeDependency)
 
   const oldDependencies = getSite().prodotypeDependencies
-  const isSame = Object.keys(oldDependencies)
+  const oldKeys = Object.keys(oldDependencies)
+  const newKeys = Object.keys(filteredDependencies)
+  const isSame = oldKeys.length === newKeys.length && oldKeys
     .every((tagName) => {
       const oldTags = oldDependencies[tagName]
       const newTags = filteredDependencies[tagName]

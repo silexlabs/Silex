@@ -62,18 +62,21 @@ export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elemen
         to: element,
       })
     }
-
-    // need to call Component:initComponent (adds default data)
-    if(isComponent(element)) {
-      updateComponentsDependencies()
-    }
   })
   if (added.length) {
     onUpdateElements(win)(added, elements)
+    // setTimeout: observers are not supposed to dispatch
+    setTimeout(() => {
+      // update components dependencies if there is 1 or more components
+      if(added.find(({to}) => isComponent(to))) {
+        updateComponentsDependencies()
+      }
+    })
   }
 }
 
 export const onDeleteElements = (win: Window) => (elements: ElementState[]) => {
+  // remove elements from dom
   const doc = win.document
   elements
   .map((element) => {
@@ -85,6 +88,13 @@ export const onDeleteElements = (win: Window) => (elements: ElementState[]) => {
   .forEach((element) => {
     removeElement(element)
   })
+  // setTimeout: observers are not supposed to dispatch
+  setTimeout(() => {
+    // update components dependencies if there is 1 or more components
+    if(elements.find((el) => isComponent(el))) {
+      updateComponentsDependencies()
+    }
+  }, 0)
 }
 
 export const onUpdateElements = (win: Window) => (change: StateChange<ElementState>[], elements = getElements()) => {
