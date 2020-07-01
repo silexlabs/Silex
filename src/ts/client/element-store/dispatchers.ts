@@ -33,6 +33,8 @@ import {
   getSelectedElementsNoSectionContent
 } from './filters'
 import { getCreateAction } from './utils'
+import { getDomElement } from './dom';
+import { getSiteDocument } from '../components/SiteFrame';
 import { getUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { store } from '../store/index'
@@ -388,3 +390,33 @@ export function moveToBottom() {
   move(DomDirection.BOTTOM)
 }
 
+/**
+ * set/get the image URL of an image element
+ */
+export function setImageUrl(image: ElementState, url: string) {
+  updateElements([{
+    ...image,
+    // innerHtml: `<div class="${Constants.ELEMENT_CONTENT_CLASS_NAME}" ><img src="${url}" /></div>`
+    // innerHtml: `<img src="${url}" class="${Constants.ELEMENT_CONTENT_CLASS_NAME}" />`
+    innerHtml: `<img src="${url}" />`
+  }])
+  // get the image tag
+  const img: HTMLImageElement = getDomElement(getSiteDocument(), image)
+  .querySelector('img')
+  // when loaded, update the element size
+  img.addEventListener('load', () => {
+    // get the up to date image data
+    const updated = getElementById(image.id)
+    updateElements([{
+      ...updated,
+      style: {
+        ...updated.style,
+        desktop: {
+          ...updated.style.desktop,
+          width: img.naturalWidth + 'px',
+          height: img.naturalHeight + 'px',
+        },
+      },
+    }])
+  })
+}

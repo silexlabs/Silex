@@ -7,7 +7,6 @@ import { CSSRuleInfo, DataSources } from '../site-store/types'
 import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType, Link, ElementData } from './types'
 import { Prodotype } from '../externs'
-import { Url } from '../utils/Url'
 import { styleToString } from '../utils/styles'
 
 export function getDomElement(doc: HTMLDocument, element: ElementState): HTMLElement {
@@ -377,93 +376,6 @@ export function removeWysihtmlMarkup(root: HTMLElement|Document) {
     el.removeAttribute('contenteditable')
   })
 }
-
-/**
- * set/get the image URL of an image element
- * FIXME: html sould be set to flux store using element.innerHtml
- */
-export async function setImageUrl(
-    element: HTMLElement, url: string,
-    cbk: ((naturalWidth: number, naturalheight: number) => void),
-    errCbk: ((p1: HTMLElement, p2: string) => void)) {
-  if (element.getAttribute(Constants.TYPE_ATTR) === ElementType.IMAGE) {
-    // get the image tag
-    const img = getContentNode(element) as HTMLImageElement
-    if (img) {
-      // add loading asset
-      element.classList.add(Constants.LOADING_ELEMENT_CSS_CLASS)
-
-      // remove previous img tag
-      const imgTags = Array.from(element.querySelectorAll('img.' + Constants.ELEMENT_CONTENT_CLASS_NAME))
-      imgTags.forEach((imgTag: HTMLImageElement) => {
-        imgTag.parentElement.removeChild(imgTag)
-      })
-
-      try {
-        // load the new image
-        const loadedImg: HTMLImageElement = await loadImage(url)
-
-        // add the image to the element
-        element.appendChild(loadedImg)
-
-        // add a marker to find the inner content afterwards, with
-        // getContent
-        loadedImg.classList.add(Constants.ELEMENT_CONTENT_CLASS_NAME)
-
-        // remove loading asset
-        element.classList.remove(Constants.LOADING_ELEMENT_CSS_CLASS)
-
-        // callback
-        if (cbk) {
-          cbk(loadedImg.naturalWidth, loadedImg.naturalHeight)
-        }
-      } catch (e) {
-        console.error('An error occured while loading the image.', element, e)
-
-        // callback
-        if (errCbk) {
-          errCbk(element, 'An error occured while loading the image. ' + (e.message || ''))
-        }
-      }
-    } else {
-      console.error('The image could not be retrieved from the element.', element)
-      if (errCbk) {
-        errCbk(element, 'The image could not be retrieved from the element.')
-      }
-    }
-  } else {
-    console.error('The element is not an image.', element)
-    if (errCbk) {
-      errCbk(element, 'The element is not an image.')
-    }
-  }
-}
-
-/**
- * set the img.src and promise the events
- */
-async function loadImage(url: string): Promise<HTMLImageElement> {
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const img = new Image()
-    img.onload = (e) => {
-      img.onload = null
-      img.onerror = null
-      resolve(img)
-    }
-    img.onerror = (e: Event) => {
-      img.onload = null
-      img.onerror = null
-      reject(e)
-    }
-
-    // add cache control
-    const uncached = Url.addCacheControl(url)
-
-    // start loading
-    img.src = uncached
-  })
-}
-
 
 /**
  * prodotype render in dom

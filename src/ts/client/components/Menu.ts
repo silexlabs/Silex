@@ -5,7 +5,6 @@
  *
  */
 
-import { config } from '../ClientConfig'
 import { ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
 import {
@@ -21,19 +20,16 @@ import {
   moveToBottom,
   moveToTop,
   moveUp,
-  selectBody
-} from '../element-store/dispatchers'
+  selectBody,
+  setImageUrl
+} from '../element-store/dispatchers';
+import { config } from '../ClientConfig'
 import { copySelection, duplicateSelection, pasteClipBoard } from '../copy'
 import { createPage, editPage, removePage } from '../page-store/dispatchers'
-import {
-  deleteElements,
-  subscribeElements,
-  updateElements
-} from '../element-store/index'
 import { getBody } from '../element-store/filters'
-import { getDomElement, setImageUrl } from '../element-store/dom'
+import { getDomElement } from '../element-store/dom'
 import { getSite, subscribeSite } from '../site-store/index'
-import { getSiteDocument, getSiteIFrame } from './SiteFrame'
+import { getSiteIFrame } from './SiteFrame';
 import { getStage } from './StageWrapper'
 import { getUi, subscribeUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
@@ -44,6 +40,7 @@ import { openHtmlHeadEditor } from './dialog/HtmlEditor'
 import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { preview, previewResponsize } from '../preview'
+import { subscribeElements } from '../element-store/index';
 import { subscribePages } from '../page-store/index'
 
 ///////////////////
@@ -228,30 +225,8 @@ export async function browseAndAddImage(componentName: string) {
 
       // create the element
       const [imgData] = await addElementCentered(ElementType.IMAGE, componentName)
-      const img = getDomElement(getSiteDocument(), imgData)
-
       // load the image
-      setImageUrl(img, fileInfo.absPath,
-        (naturalWidth: number, naturalHeight: number) => {
-          // this.tracker.trackAction('controller-events', 'success', 'insert.image', 1)
-          updateElements([{
-            ...imgData,
-            style: {
-              ...imgData.style,
-              desktop: {
-                ...imgData.style.desktop,
-                width: naturalWidth + 'px',
-                height: naturalHeight + 'px',
-              },
-            },
-          }])
-        },
-        (_: HTMLElement, message: string) => {
-          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
-          deleteElements([imgData])
-          // this.tracker.trackAction('controller-events', 'error', 'insert.image', -1)
-        },
-      )
+      setImageUrl(imgData, fileInfo.absPath)
     }
   } catch(error) {
     SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))

@@ -66,8 +66,7 @@ export class GeneralStylePane extends PaneBase {
 
         // get the opacity
         const opacity = this.getCommonProperty<ElementState, string>(elementsNoBody, (el) => el.style[getUi().mobileEditor ? 'mobile' : 'desktop'].opacity)
-
-        if (opacity === null) {
+        if (typeof opacity === 'undefined') {
           this.opacityInput.value = ''
         } else {
           if (opacity === '') {
