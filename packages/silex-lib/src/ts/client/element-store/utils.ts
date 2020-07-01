@@ -3,7 +3,6 @@
  *
  */
 
-import { Constants } from '../../constants'
 import {
   ElementState,
   ElementId,
@@ -11,21 +10,19 @@ import {
   ElementType,
   FullBox,
   Rect,
-  Size,
   ElementData,
   LinkData
-} from './types'
+} from './types';
 import { FileExplorer } from '../components/dialog/FileExplorer'
+import { FileInfo } from '../io/CloudStorage'
 import { SilexNotification } from '../components/Notification'
 import { addMediaQuery, getDomElement } from './dom'
-import { getAllParents, getBody, getChildren, getElementById, getSelectedElements } from './filters'
+import { getAllParents, getBody, getElementById } from './filters';
 import { getElements, fromElementData } from './index'
 import { getSite } from '../site-store/index'
 import { initComponent, isComponent } from './component'
 import { openLinkDialog } from '../components/dialog/LinkDialog'
-import { removeElementsWithoutConfirm, selectBody } from './dispatchers'
 import { styleToString } from '../utils/styles'
-import { FileInfo } from '../io/CloudStorage'
 
 /**
  * constant for the prefix of the IDs given to Silex editable elements
@@ -399,31 +396,6 @@ export function isVisibleInPage(element: ElementState, pageId: string): boolean 
     .find((el) => el.pageNames.length > 0 && !el.pageNames.includes(pageId))
 }
 
-
-/**
- * remove selected elements from the stage
- */
-export function removeElements(elements = getSelectedElements()) {
-  const body = getBody()
-  const toDelete = elements.filter((el) => el !== body)
-  if (toDelete.length <= 0) {
-    SilexNotification.alert('Delete elements',
-      'Error: Please select an element to delete.',
-      () => {},
-    )
-  } else {
-    // confirm and delete
-    SilexNotification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
-      (accept) => {
-        if (accept) {
-          removeElementsWithoutConfirm(toDelete)
-          selectBody()
-        }
-      }, 'delete', 'cancel',
-    )
-  }
-}
-
 export function editLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
   e.preventDefault()
   openLinkDialog({
@@ -462,4 +434,3 @@ export function indexOfElement(element: HTMLElement): number {
   }
   return -1
 }
-

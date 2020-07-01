@@ -21,12 +21,12 @@ import {
   moveToBottom,
   moveToTop,
   moveUp,
+  removeElements,
   setImageUrl
 } from '../element-store/dispatchers';
 import { openHtmlEditor } from './dialog/HtmlEditor'
 import { openTextFormatBar } from './TextFormatBar'
 import { openToolbox } from '../ui-store/dispatchers'
-import { removeElements } from '../element-store/utils'
 import { showPages } from './Menu'
 import { subscribePages } from '../page-store/index'
 import { subscribeUi } from '../ui-store/index'

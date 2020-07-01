@@ -10,7 +10,6 @@ import { FileExplorer } from './dialog/FileExplorer'
 import {
   INITIAL_ELEMENT_SIZE,
   getCreationDropZone,
-  removeElements
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { SilexNotification } from './Notification'
@@ -20,6 +19,7 @@ import {
   moveToBottom,
   moveToTop,
   moveUp,
+  removeElements,
   selectBody,
   setImageUrl
 } from '../element-store/dispatchers';
