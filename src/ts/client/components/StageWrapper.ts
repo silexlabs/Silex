@@ -6,7 +6,7 @@ import { Stage } from 'drag-drop-stage-component/src/ts/index'
 import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType } from '../element-store/types'
 import { SilexNotification } from './Notification'
-import { UiState } from '../ui-store/types';
+import { UiState } from '../ui-store/types'
 import { editElement } from './ContextMenu'
 import { fixStyleForElement } from '../utils/styles'
 import {
@@ -143,6 +143,7 @@ function onDeleteElements(elements: ElementState[]) {
 // on update elements
 function onUpdateElement(change: StateChange<ElementState>[]) {
   if (!stage) { console.warn('onUpdateElement NO STAGE'); return }
+  // this should be here but makes adding elements bugguy: if (stoped) { console.warn('onUpdateElement stoped is true => do nothing'); return }
   const doc = getSiteDocument()
   let needReset = false
   const needResetSome = []
@@ -207,8 +208,9 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
       }
     }
     if (to.innerHtml !== from.innerHtml) {
-      getStage().redrawSome([domEl]
+      needResetSome.push(...[domEl]
         .map((el) => getStage().getState(el)))
+      needReset = true
     }
     if (to.style !== from.style) {
       // update stage for element and children

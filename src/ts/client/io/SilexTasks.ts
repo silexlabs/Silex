@@ -43,7 +43,7 @@ export class SilexTasks {
    * @param cbk to receive the json response
    * @param opt_errCbk to receive the json response
    */
-  hosting(cbk: (p1: Hosting) => any, opt_errCbk?: (p1: string) => any) {
+  hosting(cbk: (p1: Hosting) => void, opt_errCbk?: (p1: string) => void) {
     this.callServer('/hosting/', '', 'GET', cbk, opt_errCbk)
   }
 

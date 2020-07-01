@@ -22,14 +22,14 @@ import {
   removeElements,
   selectBody,
   setImageUrl
-} from '../element-store/dispatchers';
+} from '../element-store/dispatchers'
 import { config } from '../ClientConfig'
 import { copySelection, duplicateSelection, pasteClipBoard } from '../copy'
 import { createPage, editPage, removePage } from '../page-store/dispatchers'
 import { getBody } from '../element-store/filters'
 import { getDomElement } from '../element-store/dom'
 import { getSite, subscribeSite } from '../site-store/index'
-import { getSiteIFrame } from './SiteFrame';
+import { getSiteIFrame } from './SiteFrame'
 import { getStage } from './StageWrapper'
 import { getUi, subscribeUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
@@ -40,7 +40,7 @@ import { openHtmlHeadEditor } from './dialog/HtmlEditor'
 import { openJsEditor } from './dialog/JsEditor'
 import { openSettingsDialog } from './dialog/SettingsDialog'
 import { preview, previewResponsize } from '../preview'
-import { subscribeElements } from '../element-store/index';
+import { subscribeElements } from '../element-store/index'
 import { subscribePages } from '../page-store/index'
 
 ///////////////////

@@ -14,7 +14,7 @@ import {
   StyleObject
 } from './types'
 import { PageState } from '../page-store/types'
-import { SilexNotification } from '../components/Notification';
+import { SilexNotification } from '../components/Notification'
 import { addToMobileOrDesktopStyle } from '../utils/styles'
 import {
   createElements,
@@ -34,8 +34,8 @@ import {
   getSelectedElementsNoSectionContent
 } from './filters'
 import { getCreateAction } from './utils'
-import { getDomElement } from './dom';
-import { getSiteDocument } from '../components/SiteFrame';
+import { getDomElement } from './dom'
+import { getSiteDocument } from '../components/SiteFrame'
 import { getUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { store } from '../store/index'

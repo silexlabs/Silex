@@ -3,13 +3,18 @@
  *
  */
 
-import { SilexTasks } from '../../io/SilexTasks'
-import { SilexNotification } from '../Notification'
-import { updateUi, getUi } from '../../ui-store/index'
-import { getSite, updateSite } from '../../site-store/index'
-import { Provider, VHost, PublicationOptions } from '../../site-store/types'
 import { FileExplorer } from './FileExplorer'
+import {
+  Hosting,
+  Provider,
+  PublicationOptions,
+  VHost
+} from '../../site-store/types'
 import { LOADING } from '../../ui-store/types'
+import { SilexNotification } from '../Notification'
+import { SilexTasks } from '../../io/SilexTasks'
+import { getSite, updateSite } from '../../site-store/index'
+import { updateUi, getUi } from '../../ui-store/index'
 
 const service = SilexTasks.getInstance()
 
@@ -37,7 +42,7 @@ export function closePublishDialog() {
 export async function openPublishDialog(): Promise<PublicationOptions> {
   return (new Promise<PublicationOptions>((resolve, reject) => {
     setLoading(true)
-    service.hosting((hosting) => {
+    service.hosting((hosting: Hosting) => {
       setLoading(false)
       const site = getSite()
       const providerName = site.hostingProvider
@@ -73,7 +78,7 @@ export async function openPublishDialog(): Promise<PublicationOptions> {
   })
 }
 
-function doOpen(usePredifinedSettings, hosting, providerName): Promise<PublicationOptions> {
+function doOpen(usePredifinedSettings: boolean, hosting: Hosting, providerName: string): Promise<PublicationOptions> {
   return new Promise<PublicationOptions>((resolve, reject) => {
     if (usePredifinedSettings || hosting.providers.length === 0) {
       // use publication settings or send the user to publish settings

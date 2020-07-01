@@ -1,11 +1,14 @@
+import Request from 'request'
 import * as express from 'express'
 
+import { Config } from '../ServerConfig'
+import { Hosting } from '../../client/site-store/types'
+import { HostingProvider, VHostData } from '../types'
 import HostingGhPages from '../hosting-provider/HostingGhPages'
 import HostingUnifile from '../hosting-provider/HostingUnifile'
 import PublishJob from '../publication/PublishJob'
-import { Config } from '../ServerConfig'
 
-const hostingProviders = []
+const hostingProviders: HostingProvider[] = []
 const router = express.Router()
 
 export default function PublishRouter(config: Config, unifile) {
@@ -52,10 +55,11 @@ export default function PublishRouter(config: Config, unifile) {
 
   router.get('/hosting/', (req: express.Request, res: express.Response) => {
     const session = !!req.session && !!req.session.unifile ? req.session.unifile : {}
-    res.json({
+    const hosting: Hosting = {
       providers: hostingProviders.map((hostingProvider) => hostingProvider.getOptions(session)),
       skipHostingSelection,
-    })
+    }
+    res.json(hosting)
   })
 
   // vhosts
@@ -90,7 +94,7 @@ export default function PublishRouter(config: Config, unifile) {
   })
   router.post('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
-    const data = {
+    const data: VHostData = {
       domain: req.body.domain,
     }
     hostingProvider.setVhostData(req.session.unifile, req.params.name, data)
@@ -120,22 +124,22 @@ export default function PublishRouter(config: Config, unifile) {
     })
   })
   // expose addHostingProvider to apps adding hosting providers with silex.publishRouter.addHostingProvider(...))
-  router['addHostingProvider'] = (hostingProvider) => addHostingProvider(hostingProvider)
+  ;(router as any).addHostingProvider = (hostingProvider) => addHostingProvider(hostingProvider)
   return router
 }
 
-function addHostingProvider(hostingProvider) {
+function addHostingProvider(hostingProvider: HostingProvider) {
   console.log('> Adding hosting provider', hostingProvider.getOptions({}).displayName)
   hostingProviders.push(hostingProvider)
 }
 
-function getHostingProviderFromReq(req) {
+function getHostingProviderFromReq(req): HostingProvider {
   const hostingProviderName = req.params.hostingProviderName
   const hostingProvider = getHostingProvider(req.session.unifile, hostingProviderName)
   if (!hostingProvider) { throw new Error(('Could not find the hosting provider ' + hostingProviderName)) }
   return hostingProvider
 }
 
-function getHostingProvider(session, hostingProviderName) {
+function getHostingProvider(session, hostingProviderName: string) {
   return hostingProviders.find((hostingProvider) => hostingProvider.getOptions(session).name === hostingProviderName)
 }

@@ -9,7 +9,7 @@ import { SilexNotification } from './Notification'
 import { Toolboxes } from '../ui-store/types'
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'
-import { getElements, subscribeElements } from '../element-store/index';
+import { getElements, subscribeElements } from '../element-store/index'
 import { getEnableSticky, toggleSticky } from './StageWrapper'
 import { getParent } from '../element-store/filters'
 import { getSite } from '../site-store/index'
@@ -23,7 +23,7 @@ import {
   moveUp,
   removeElements,
   setImageUrl
-} from '../element-store/dispatchers';
+} from '../element-store/dispatchers'
 import { openHtmlEditor } from './dialog/HtmlEditor'
 import { openTextFormatBar } from './TextFormatBar'
 import { openToolbox } from '../ui-store/dispatchers'
