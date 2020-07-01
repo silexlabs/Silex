@@ -8,9 +8,9 @@ import * as assert from 'assert'
 import * as uuid from 'uuid'
 
 import { Action, DomPublisher, File } from './DomPublisher'
-import { Config } from '../ServerConfig';
-import { FileInfo } from '../../client/io/CloudStorage'
+import { Config } from '../ServerConfig'
 import { PersistantData } from '../../client/store/types'
+import { PublishContext } from '../types'
 import DomTools from '../utils/DomTools'
 
 // const TMP_FOLDER = '.tmp';
@@ -37,16 +37,6 @@ setInterval(() => {
     console.info('Cleaning publish jobs. Deleted', nDeleted, '/', nJobs)
   }
 }, 60 * 1000)
-
-interface PublishContext {
-  from: FileInfo,
-  to: FileInfo,
-  url: string,
-  session: object,
-  cookies: object,
-  hostingProvider: any,
-  config: Config,
-}
 
 export default class PublishJob {
   static get(id) {

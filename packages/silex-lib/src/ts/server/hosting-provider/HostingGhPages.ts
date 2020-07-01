@@ -2,7 +2,9 @@ import * as request from 'request'
 
 import * as assert from 'assert'
 
-import { Config } from '../ServerConfig';
+import { Config } from '../ServerConfig'
+import { VHost } from '../../client/site-store/types'
+import { VHostData } from '../types'
 
 //////////////////////////////
 // Utils
@@ -126,7 +128,7 @@ HostingGhPages.prototype.getOptions = function(session) {
   }
 }
 
-HostingGhPages.prototype.getVhosts = async function(session) {
+HostingGhPages.prototype.getVhosts = async function(session): Promise<VHost> {
   const repos = await (this.unifile.readdir(session, 'github', '/'))
   return repos
   .sort((a, b) => {
@@ -149,20 +151,18 @@ HostingGhPages.prototype.getVhosts = async function(session) {
   })
 }
 
-HostingGhPages.prototype.getVhostData = async (session, vhostName) => {
+HostingGhPages.prototype.getVhostData = async (session, vhostName: string): Promise<VHostData> => {
   const owner = session.github.account.login
   const path = `/repos/${owner}/${ vhostName }/pages`
-  return callServer(path, 'GET', session.github.token)
-  .then((result) => {
-    return {
-      domain: result.cname,
-      url: result.html_url,
-      status: result.status,
-    }
-  })
+  const result =  await callServer(path, 'GET', session.github.token)
+  return {
+    domain: result.cname,
+    url: result.html_url,
+    status: result.status,
+  }
 }
 
-HostingGhPages.prototype.setVhostData = async function(session, vhostName, data) {
+HostingGhPages.prototype.setVhostData = async function(session, vhostName: string, data: VHostData) {
   // TODO: use https://developer.github.com/v3/repos/pages/#update-information-about-a-pages-site
   if (data && data.domain && data.domain !== '') {
     return this.unifile.writeFile(session, 'github', `/${ vhostName }/gh-pages/CNAME`, data.domain)

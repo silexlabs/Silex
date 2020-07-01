@@ -4,8 +4,8 @@ import {
   Prodotype
 } from '../externs'
 import { Constants } from '../../constants'
-import { ElementState } from '../element-store/types';
-import { ProdotypeDependency, ProdotypeDependencyTag } from './types';
+import { ElementState } from '../element-store/types'
+import { ProdotypeDependency, ProdotypeDependencyTag } from './types'
 import { PseudoClass, PseudoClassData, StyleData, StyleName, Visibility } from '../site-store/types'
 import { addMediaQuery, renderWithProdotype } from '../element-store/dom'
 import { config } from '../ClientConfig'
@@ -14,7 +14,7 @@ import { getPseudoClassData } from '../site-store/utils'
 import { getSite, updateSite } from '../site-store/index'
 import { getUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
-import { store } from '../store/index';
+import { store } from '../store/index'
 import { updateElements } from './index'
 
 /**

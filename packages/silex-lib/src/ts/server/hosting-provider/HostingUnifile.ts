@@ -1,6 +1,7 @@
-import { Config } from '../ServerConfig';
+import { Config } from '../ServerConfig'
+import { HostingProvider } from '../types'
 
-export default class HostingUnifile {
+export default class HostingUnifile implements HostingProvider {
   constructor(protected unifile, protected config: Config) {}
   getOptions(session) {
     return {

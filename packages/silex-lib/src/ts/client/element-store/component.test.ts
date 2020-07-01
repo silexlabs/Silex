@@ -1,17 +1,17 @@
 import { ELEM_TEXT, SITE1 } from '../../test-utils/data-set'
-import { ElementState, ProdotypeDependency } from './types';
-import { Prodotype } from '../externs';
-import { getSite, initializeSite } from '../site-store/index';
-import { isSameTag, updateComponentsDependencies } from './component';
+import { ElementState, ProdotypeDependency } from './types'
+import { Prodotype } from '../externs'
+import { getSite, initializeSite } from '../site-store/index'
+import { isSameTag, updateComponentsDependencies } from './component'
 
 const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
 const FAKE_DEPENDENCIES: ProdotypeDependency = {
-  "script": [{
-    "src": "https://fake.script.com"
+  'script': [{
+    'src': 'https://fake.script.com'
   }],
-  "link": [{
-    "rel": "stylesheet",
-    "href": "https://fake.style.com"
+  'link': [{
+    'rel': 'stylesheet',
+    'href': 'https://fake.style.com'
   }]
 }
 
@@ -127,10 +127,10 @@ test('update dependencies, add same dependencies', () => {
   const dispatch = jest.fn()
   const elements = [ELEM_TEXT_STATE]
   const newDependencies = {
-    script: SITE1.prodotypeDependencies['script']
-      .concat(SITE1.prodotypeDependencies['script']),
-    link: SITE1.prodotypeDependencies['link']
-      .concat(SITE1.prodotypeDependencies['link']),
+    script: SITE1.prodotypeDependencies.script
+      .concat(SITE1.prodotypeDependencies.script),
+    link: SITE1.prodotypeDependencies.link
+      .concat(SITE1.prodotypeDependencies.link),
   }
 
   const prodotypeChanged = {
@@ -196,7 +196,7 @@ test('update dependencies, check exec time', () => {
   updateComponentsDependencies(prodotypeChanged, elements, dispatch)
   const stop = performance.now()
   const elapsed = stop - start
-  //console.log({start, stop, elapsed})
+  // console.log({start, stop, elapsed})
 
   expect(dispatch).toHaveBeenCalledTimes(1)
   // not the original since there is at least 1 double entry ({attr: 'val'})

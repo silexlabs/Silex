@@ -8,7 +8,7 @@ import { getAllStyles } from '../element-store/utils'
 import { initStageWrapper, stageCleanup } from './StageWrapper'
 import { removeWysihtmlMarkup } from '../element-store/dom'
 import { selectBody } from '../element-store/dispatchers'
-import { updateComponents } from '../element-store/component';
+import { updateComponents } from '../element-store/component'
 
 ///////////////////
 // API for the outside world

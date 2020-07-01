@@ -1,4 +1,4 @@
-import { LinkType } from '../../client/element-store/types';
+import { LinkType } from '../../client/element-store/types'
 import { mockUiElements } from '../../test-utils/data-set'
 
 const {siteIFrame} = mockUiElements()

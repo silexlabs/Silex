@@ -12,12 +12,12 @@ import {
   Rect,
   ElementData,
   LinkData
-} from './types';
+} from './types'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../io/CloudStorage'
 import { SilexNotification } from '../components/Notification'
 import { addMediaQuery, getDomElement } from './dom'
-import { getAllParents, getBody, getElementById } from './filters';
+import { getAllParents, getBody, getElementById } from './filters'
 import { getElements, fromElementData } from './index'
 import { getSite } from '../site-store/index'
 import { initComponent, isComponent } from './component'
