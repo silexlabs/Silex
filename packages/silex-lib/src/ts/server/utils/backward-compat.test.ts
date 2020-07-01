@@ -188,6 +188,7 @@ test('convert from 2.5.60', () => {
 
   const image = elements.find((el) => el.type === ElementType.IMAGE)
   expect(textBox.pageNames).toHaveLength(0)
+  expect(image.innerHtml).toBe('/ce/')
   expect(image.pageNames).toHaveLength(1)
   expect(image.pageNames).toEqual(['page-1'])
   expect(image.classList).not.toEqual(['page-1'])

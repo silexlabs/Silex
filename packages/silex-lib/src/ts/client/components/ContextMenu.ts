@@ -1,4 +1,3 @@
-
 /**
  * @fileoverview
  * the Silex context menu
@@ -10,20 +9,20 @@ import { SilexNotification } from './Notification'
 import { Toolboxes } from '../ui-store/types'
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'
-import { getDomElement, setImageUrl } from '../element-store/dom'
-import {
-  getElements,
-  subscribeElements,
-  updateElements
-} from '../element-store/index'
+import { getElements, subscribeElements } from '../element-store/index';
 import { getEnableSticky, toggleSticky } from './StageWrapper'
 import { getParent } from '../element-store/filters'
 import { getSite } from '../site-store/index'
-import { getSiteDocument } from './SiteFrame'
 import { getUiElements } from '../ui-store/UiElements'
 import { isComponent } from '../element-store/component'
 import { isDirty } from '../dirty'
-import { moveToTop, moveUp, moveDown, moveToBottom } from '../element-store/dispatchers'
+import {
+  moveDown,
+  moveToBottom,
+  moveToTop,
+  moveUp,
+  setImageUrl
+} from '../element-store/dispatchers';
 import { openHtmlEditor } from './dialog/HtmlEditor'
 import { openTextFormatBar } from './TextFormatBar'
 import { openToolbox } from '../ui-store/dispatchers'
@@ -64,28 +63,7 @@ export function editElement() {
           FileExplorer.getInstance().openFile(FileExplorer.IMAGE_EXTENSIONS)
         .then((blob) => {
           if (blob) {
-            // load the image
-            setImageUrl(
-              getDomElement(getSiteDocument(), element),
-              blob.absPath,
-              (naturalWidth: number, naturalHeight: number) => {
-                updateElements([{
-                  ...element,
-                  style: {
-                    ...element.style,
-                    desktop: {
-                      ...element.style.desktop,
-                      width: naturalWidth + 'px',
-                      height: naturalHeight + 'px',
-                    },
-                  },
-                }])
-              },
-              (el, message) => {
-                console.error('could not load the image', message)
-                SilexNotification.notifyError('Error: I did not manage to load the image. \n' + message)
-              },
-            )
+            setImageUrl(element, blob.absPath)
           }
         })
         .catch((error) => {
