@@ -6,11 +6,11 @@
     "watch": false,
     "inlineSourceMap": true,
     "module": "commonjs",
-    "removeComments": false,
+    "removeComments": false
   },
   "include": [
     "src/ts/server/silex_electron.ts",
     "src/ts/server/silex_web.ts",
-    "src/ts/server/index.ts",
-  ],
+    "src/ts/server/index.ts"
+  ]
 }

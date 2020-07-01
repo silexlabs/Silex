@@ -1,12 +1,12 @@
 // FIXME: thie hole file is a mess
 
-// import { Stage } from 'drag-drop-stage-component' // this is not recognized by my IDE
+import { ScrollData, SelectableState } from 'drag-drop-stage-component/src/ts/Types'
+import { Stage } from 'drag-drop-stage-component/src/ts/index'
+
 import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType } from '../element-store/types'
-import { LOADING, UiState } from '../ui-store/types'
-import { ScrollData, SelectableState } from '../../../../node_modules/drag-drop-stage-component/src/ts/Types'
 import { SilexNotification } from './Notification'
-import { Stage } from '../../../../node_modules/drag-drop-stage-component/src/ts/index'
+import { UiState } from '../ui-store/types';
 import { editElement } from './ContextMenu'
 import { fixStyleForElement } from '../utils/styles'
 import {

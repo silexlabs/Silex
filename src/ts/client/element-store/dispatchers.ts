@@ -14,6 +14,7 @@ import {
   StyleObject
 } from './types'
 import { PageState } from '../page-store/types'
+import { SilexNotification } from '../components/Notification';
 import { addToMobileOrDesktopStyle } from '../utils/styles'
 import {
   createElements,
@@ -262,7 +263,31 @@ export async function addElement({type, parent, style, componentName} : {
   return [getElementById(newElementStatePaged.id, getElements()), getElementById(updatedParentState.id, getElements())] // here it is important to use getElements(), not store elements of before the dispatch
 }
 
-export function removeElementsWithoutConfirm(selection, dispatch = store.dispatch) {
+/**
+ * remove selected elements from the stage
+ */
+export function removeElements(elements = getSelectedElements()) {
+  const body = getBody()
+  const toDelete: ElementState[] = elements.filter((el: ElementState) => el !== body)
+  if (toDelete.length <= 0) {
+    SilexNotification.alert('Delete elements',
+      'Error: Please select an element to delete.',
+      () => {},
+    )
+  } else {
+    // confirm and delete
+    SilexNotification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
+      (accept) => {
+        if (accept) {
+          removeElementsWithoutConfirm(toDelete)
+          selectBody()
+        }
+      }, 'delete', 'cancel',
+    )
+  }
+}
+
+export function removeElementsWithoutConfirm(selection: ElementState[], dispatch = store.dispatch) {
   // get the elements and their children
   const deleted = selection.concat(selection
     .reduce((prev, el) => prev.concat(getChildrenRecursive(el)), []))
@@ -274,11 +299,8 @@ export function removeElementsWithoutConfirm(selection, dispatch = store.dispatc
   updateElements(selection
     .filter((element: ElementState) => element.children.some((id) => !!deleted.find((el) => el.id === id))) // keep the parents
     .map((element: ElementState) => ({
-      from: element,
-      to: {
-        ...element,
-        children: element.children.filter((id) => !deleted.find((el) => el.id === id)),
-      }
+      ...element,
+      children: element.children.filter((id) => !deleted.find((el) => el.id === id)),
     })), dispatch)
 }
 
