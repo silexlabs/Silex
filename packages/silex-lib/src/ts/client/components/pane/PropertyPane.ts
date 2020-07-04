@@ -34,6 +34,10 @@ const WidthInput = '.width-input'
 const TopInput = '.top-input'
 const LeftInput = '.left-input'
 
+function removePxWithDefault(val: string, default_: string): string {
+  return val === null || typeof val === 'undefined' ? default_ : parseInt(val).toString()
+}
+
 /**
  * on of Silex Editors class
  * const user edit style of components
@@ -165,23 +169,23 @@ export class PropertyPane extends PaneBase {
 
       const computeValue = new Map([
         [LeftInput, () => Math.round(bb.left || 0).toString()],
-          [TopInput, () => Math.round(bb.top || 0).toString()],
-          [WidthInput, () => Math.round(bb.width || 0).toString()],
-          [HeightInput, () => Math.round(bb.height || 0).toString()],
-          [MarginTopInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-top', mobile))],
-          [MarginRightInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-right', mobile))],
-          [MarginBottomInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-bottom', mobile))],
-          [MarginLeftInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-left', mobile))],
-          [PaddingTopInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-top', mobile))],
-          [PaddingRightInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-right', mobile))],
-          [PaddingBottomInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-bottom', mobile))],
-          [PaddingLeftInput, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-left', mobile))],
-          [PositionSelect, () => elementsPosition],
-          [DisplaySelect, () => elementsDisplay],
-          [FlexDirectionSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-direction', mobile))],
-          [AlignItemsSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'align-items', mobile))],
-          [JustifyContentSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'justify-content', mobile))],
-          [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
+        [TopInput, () => Math.round(bb.top || 0).toString()],
+        [WidthInput, () => Math.round(bb.width || 0).toString()],
+        [HeightInput, () => Math.round(bb.height || 0).toString()],
+        [MarginTopInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-top', mobile)), '')],
+        [MarginRightInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-right', mobile)), '')],
+        [MarginBottomInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-bottom', mobile)), '')],
+        [MarginLeftInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'margin-left', mobile)), '')],
+        [PaddingTopInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-top', mobile)), '')],
+        [PaddingRightInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-right', mobile)), '')],
+        [PaddingBottomInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-bottom', mobile)), '')],
+        [PaddingLeftInput, () => removePxWithDefault(this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'padding-left', mobile)), '')],
+        [PositionSelect, () => elementsPosition],
+        [DisplaySelect, () => elementsDisplay],
+        [FlexDirectionSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-direction', mobile))],
+        [AlignItemsSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'align-items', mobile))],
+        [JustifyContentSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'justify-content', mobile))],
+        [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
       ])
       // compute visibility
       if (elementsNoBodyNoSection.length > 0) {
@@ -225,25 +229,27 @@ export class PropertyPane extends PaneBase {
         }
 
         // not for sections or sections content
-        if (!!elementsNoBodyNoSectionNoSectionContent.length) {
-          this.onInputPxChanged(PositionSelect, computeValue.get(PositionSelect)())
+        const allowPosition = !!elementsNoBodyNoSectionNoSectionContent.length
+        if (allowPosition) {
+          this.onInputPxChanged(PositionSelect, elementsPosition || '')
         } else {
           this.onInputPxChanged(PositionSelect, null)
         }
 
         // containers but no sections
+        // TODO: let sections handle other displays (requires section containers to be flex items)
         if (elementsType === ElementType.CONTAINER && elementsNoBodyNoSection.length) {
-          this.onInputPxChanged(DisplaySelect, computeValue.get(DisplaySelect)())
+          this.onInputPxChanged(DisplaySelect, elementsDisplay || '')
         } else {
           this.onInputPxChanged(DisplaySelect, null)
         }
 
         // containers but no sections and flex only
-        if (elementsType === ElementType.CONTAINER && elementsNoBodyNoSection.length && elementsDisplay === 'flex') {
-          this.onInputPxChanged(FlexDirectionSelect, computeValue.get(FlexDirectionSelect)())
-          this.onInputPxChanged(AlignItemsSelect, computeValue.get(AlignItemsSelect)())
-          this.onInputPxChanged(JustifyContentSelect, computeValue.get(JustifyContentSelect)())
-          this.onInputPxChanged(FlexWrapSelect, computeValue.get(FlexWrapSelect)())
+        if (elementsNoBodyNoSection.length && elementsDisplay === 'flex') {
+          this.onInputPxChanged(FlexDirectionSelect, computeValue.get(FlexDirectionSelect)() || '')
+          this.onInputPxChanged(AlignItemsSelect, computeValue.get(AlignItemsSelect)() || '')
+          this.onInputPxChanged(JustifyContentSelect, computeValue.get(JustifyContentSelect)() || '')
+          this.onInputPxChanged(FlexWrapSelect, computeValue.get(FlexWrapSelect)() || '')
         } else {
           this.onInputPxChanged(FlexDirectionSelect, null)
           this.onInputPxChanged(AlignItemsSelect, null)
@@ -259,18 +265,18 @@ export class PropertyPane extends PaneBase {
           this.titleInput.value = ''
         }
 
+        this.onInputPxChanged(MarginTopInput, computeValue.get(MarginTopInput)())
+        this.onInputPxChanged(MarginLeftInput, computeValue.get(MarginLeftInput)())
+        this.onInputPxChanged(MarginRightInput, computeValue.get(MarginRightInput)())
+        this.onInputPxChanged(MarginBottomInput, computeValue.get(MarginBottomInput)())
+        this.onInputPxChanged(PaddingTopInput, computeValue.get(PaddingTopInput)())
+        this.onInputPxChanged(PaddingLeftInput, computeValue.get(PaddingLeftInput)())
+        this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)())
+        this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)())
       } else {
         // could not find a bounding box or seclection contains only the body
         this.disableDimensions()
       }
-      this.onInputPxChanged(MarginTopInput, computeValue.get(MarginTopInput)())
-      this.onInputPxChanged(MarginLeftInput, computeValue.get(MarginLeftInput)())
-      this.onInputPxChanged(MarginRightInput, computeValue.get(MarginRightInput)())
-      this.onInputPxChanged(MarginBottomInput, computeValue.get(MarginBottomInput)())
-      this.onInputPxChanged(PaddingTopInput, computeValue.get(PaddingTopInput)())
-      this.onInputPxChanged(PaddingLeftInput, computeValue.get(PaddingLeftInput)())
-      this.onInputPxChanged(PaddingRightInput, computeValue.get(PaddingRightInput)())
-      this.onInputPxChanged(PaddingBottomInput, computeValue.get(PaddingBottomInput)())
     } else {
       (this.element.querySelector('.position-editor') as HTMLElement).style.display = 'none'
       ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = 'none'

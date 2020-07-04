@@ -10,7 +10,7 @@ import { getDomElement } from './dom'
 export const getElementById = (id: ElementId, elements = getElements()): ElementState => {
   const element = elements.find((el) => el.id === id)
   if (element) return element
-  console.warn('Warning: element not found with id', id)
+  // console.warn('Warning: element not found with id', id)
   return null
 }
 export const getElementByDomElement = (doc: HTMLDocument, element: HTMLElement, elements = getElements()) => elements.find((el) => element === getDomElement(doc, el))
@@ -50,8 +50,8 @@ export const getSelectedElements = (elements = getElements()) => elements
   .filter((el) => el.selected)
 
 export const getSelectedElementsNoSectionContent = (elements = getElements()) => elements
-  .map((el) => noSectionContent(el, elements))
-  .filter((el) => el.selected)
+  .filter((el) => el.selected) // first get selection
+  .map((el) => noSectionContent(el, elements)) // then replace section contents with sections
 
 /**
  * get the fist parent element which is "paged", i.e. not visible on all pages

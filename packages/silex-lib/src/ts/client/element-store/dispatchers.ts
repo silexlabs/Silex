@@ -372,7 +372,6 @@ export function removeLink(selection: ElementState[], dispatch = store.dispatch)
  * Move the selected elements in the DOM
  */
 function move(direction: DomDirection) {
-  // move all the elements in the selection
   moveElements(getSelectedElementsNoSectionContent(), direction)
 }
 

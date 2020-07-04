@@ -375,7 +375,6 @@ function onMenuEvent(type: string, componentName?: string) {
       redo()
       break
     case 'edit.move.up':
-      console.log('edit.move.up')
       moveUp()
       break
     case 'edit.move.down':

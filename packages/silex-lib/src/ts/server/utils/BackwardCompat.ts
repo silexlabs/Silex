@@ -3,13 +3,21 @@
  *
  */
 
-import * as fs from 'fs'
 import * as Path from 'path'
-import { writeDataToDom } from '../../client/store/dom'
+import * as fs from 'fs'
+
 import { Constants } from '../../constants'
-import { getElementsFromDomBC, getPagesFromDom, getSiteFromDom, writeSiteStyles, writeStyles } from './BackwardCompatV2.5.60'
-import { PersistantData } from '../../client/store/types'
 import { ElementType } from '../../client/element-store/types'
+import { PersistantData } from '../../client/store/types'
+import {
+  cleanupBefore,
+  getElementsFromDomBC,
+  getPagesFromDom,
+  getSiteFromDom,
+  writeSiteStyles,
+  writeStyles
+} from './BackwardCompatV2.5.60'
+import { writeDataToDom } from '../../client/store/dom'
 
 /**
  * class name for containers which are created with sections
@@ -297,6 +305,9 @@ export default class BackwardCompat {
           // the body is supposed to be an element too
           doc.body.classList.add(Constants.EDITABLE_CLASS_NAME)
           actions.push('I made the body editable.')
+
+          // prepare the dom
+          cleanupBefore(doc)
 
           // import elements
           const elements = getElementsFromDomBC(doc)

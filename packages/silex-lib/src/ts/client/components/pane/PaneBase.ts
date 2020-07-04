@@ -111,7 +111,7 @@ export class PaneBase {
         // freez: false,
         onChange: (value: string) => {
           // if (changeObj.freez) { return; }
-          if (typeof value !== 'undefined' && value !== 'auto') {
+          if (typeof value !== 'undefined' && value !== null && value !== 'auto') {
             if (value !== input.value) input.value = value
             input.disabled = false
           } else {

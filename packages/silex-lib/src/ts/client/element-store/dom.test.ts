@@ -1,6 +1,6 @@
-import { createDomElement } from './dom'
 import { Constants } from '../../constants'
 import { ElementType } from './types'
+import { createDomElement } from './dom'
 
 let nextId = 0
 const getRandomId = () => 'testId' + (nextId++)
@@ -81,3 +81,4 @@ test('element creation', () => {
     expect(e).not.toBeNull()
   }
 })
+

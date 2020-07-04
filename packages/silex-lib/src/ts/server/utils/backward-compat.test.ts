@@ -1,4 +1,5 @@
 import { LinkType } from '../../client/element-store/types'
+import { cleanupBefore } from './BackwardCompatV2.5.60'
 import { mockUiElements } from '../../test-utils/data-set'
 
 const {siteIFrame} = mockUiElements()
@@ -34,6 +35,7 @@ test('convert from 2.5.60', () => {
 
   // import elements
   siteIFrame.contentDocument.body.classList.add('editable-style')
+  cleanupBefore(siteIFrame.contentDocument)
   const elements = getElementsFromDomBC(siteIFrame.contentDocument)
   expect(elements).not.toBeNull()
   expect(elements).toHaveLength(11)
@@ -186,12 +188,14 @@ test('convert from 2.5.60', () => {
   expect(pages[0].id).toBe('page-1')
   expect(pages[0].displayName).toBe('Page 1')
 
-  const image = elements.find((el) => el.type === ElementType.IMAGE)
   expect(textBox.pageNames).toHaveLength(0)
-  expect(image.innerHtml).toBe('/ce/')
+  expect(siteIFrame.contentDocument.querySelector('.page-1')).toBeNull()
+
+  // image elements
+  const image = elements.find((el) => el.type === ElementType.IMAGE)
+  expect(image.innerHtml.trim()).toBe('<img src="assets/feed-icon-14x14.png" class="" alt="test alt">')
   expect(image.pageNames).toHaveLength(1)
   expect(image.pageNames).toEqual(['page-1'])
   expect(image.classList).not.toEqual(['page-1'])
 	expect(image.useMinHeight).toBe(false)
-  // expect(siteIFrame.contentDocument.querySelector('.page-1')).toBeNull()
 })

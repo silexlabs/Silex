@@ -19,7 +19,7 @@ body {
   display: none;
 }
 /* resize */
-.editable-style.image-element .silex-element-content {
+.editable-style.image-element img {
   border-radius: inherit; /* this is to follow the element's radius */
 	width: 100%;
 	height: 100%;
