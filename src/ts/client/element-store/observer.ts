@@ -146,7 +146,7 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
       }
     }
     if (to.alt !== from.alt) {
-      const img: HTMLImageElement = getContentNode(domEl) as HTMLImageElement
+      const img: HTMLImageElement = (domEl.querySelector('img')) as HTMLImageElement
       if (img) {
         img.alt = to.alt
       } else {

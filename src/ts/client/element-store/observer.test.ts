@@ -27,7 +27,7 @@ const elem1Html = `
 `
 const elem2Html = `
 <div data-silex-id="${ELEM_IMAGE_STATE.id}" class="editable-style ${ELEM_IMAGE_STATE.id} image-element" title="${ELEM_IMAGE_STATE.title}">
-  <img src="assets/feed-icon-14x14.png" class="silex-element-content" alt="test alt">
+  <img src="assets/feed-icon-14x14.png" class="" alt="test alt">
 </div>
 `
 const elem3Html = `

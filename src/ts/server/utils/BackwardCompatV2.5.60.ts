@@ -110,7 +110,7 @@ export function loadProperties(doc: HTMLDocument): DomData {
 
 const EDITABLE = [ElementType.HTML, ElementType.IMAGE, ElementType.TEXT]
 const DROPPABLE = [ElementType.CONTAINER, ElementType.SECTION]
-const HAVE_INNER_HTML = [ElementType.HTML, ElementType.TEXT]
+const HAVE_INNER_HTML = [ElementType.HTML, ElementType.TEXT, ElementType.IMAGE]
 const HAVE_ALT = [ElementType.IMAGE]
 
 
@@ -121,7 +121,6 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
   const type = getTypeBC(element)
   const isSectionContent = element.classList.contains(Constants.ELEMENT_CONTENT_CLASS_NAME)
   const isBody = element.classList.contains('body-initial')
-  const contentElement = getContentNode(element)
   const pages = getPagesForElementBC(doc, element)
   return {
     id,
@@ -134,7 +133,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
     type,
     isSectionContent,
     title: element.title,
-    alt: HAVE_ALT.includes(type) && !!contentElement ? (contentElement as HTMLImageElement).alt : null,
+    alt: HAVE_ALT.includes(type) ? (element.querySelector('img') as HTMLImageElement).alt : null,
     children: Array.from(element.children)
       .filter((child) => child.classList.contains(Constants.EDITABLE_CLASS_NAME))
       .map((el: HTMLElement) => getElementId(el)),
@@ -180,6 +179,14 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
     },
     innerHtml: HAVE_INNER_HTML.includes(type) ? getInnerHtml(element) : '',
   }
+}
+
+/**
+ * cleanup the dom before converting all elements
+ */
+export function cleanupBefore(doc: HTMLDocument) {
+  Array.from(doc.querySelectorAll('.image-element img'))
+  .forEach((element: HTMLImageElement) => element.classList.remove(Constants.ELEMENT_CONTENT_CLASS_NAME))
 }
 
 /**

@@ -34,52 +34,61 @@
         span.fa.fa-fw.fa-inverse.fa-caret-right
         span Layout
       .body
+        label.full-width Position
         select.position-select.combobox(tabindex='5')
           option(value='')
           option(value='absolute') Absolute
           option(value='static') Automatic
         hr
-        label.full-width Container content flow
+        label.full-width Content flow
         select.display-select.combobox(tabindex='6')
           option(value='')
           option(value='block') Normal
           option(value='flex') Flex
-        label.full-width Flex flow
+        label.full-width Flex content flow
         .two-col
-          select.flex-direction-select.combobox(tabindex='7')
-            option(value='')
-            option(value='row') Row
-            option(value='column') Column
-            option(value='row-reverse') Row reverse
-            option(value='column-reverse') Column reverse
-          select.flex-wrap-select.combobox(tabindex='8')
-            option(value='')
-            option(value='nowrap') No wrap
-            option(value='wrap') Wrap
-            option(value='wrap-reverse') Wrap reverse
-          select.align-items-select.combobox(tabindex='9')
-            option(value='')
-            option(value='normal') Normal
-            option(value='stretch') Stretch
-            option(value='center') Center
-            option(value='start') Start
-            option(value='end') End
-            option(value='flex-start') Flex start
-            option(value='flex-end') Flex end
-          select.justify-content-select.combobox(tabindex='10')
-            option(value='')
-            option(value='normal') Normal
-            option(value='stretch') Stretch
-            option(value='center') Center
-            option(value='start') Start
-            option(value='end') End
-            option(value='flex-start') Flex start
-            option(value='flex-end') Flex end
-            option(value='left') Left
-            option(value='right') Right
-            option(value='space-between') Space between
-            option(value='space-around') Space around
-            option(value='space-evenly') Space evenly
+          div
+            label Direction
+            label Wrap
+          div
+            select.flex-direction-select.combobox(tabindex='7')
+              option(value='')
+              option(value='row') Row
+              option(value='column') Column
+              option(value='row-reverse') Row reverse
+              option(value='column-reverse') Column reverse
+            select.flex-wrap-select.combobox(tabindex='8')
+              option(value='')
+              option(value='nowrap') No wrap
+              option(value='wrap') Wrap
+              option(value='wrap-reverse') Wrap reverse
+          div
+            label Vertical
+            label Horizontal
+          div
+            select.align-items-select.combobox(tabindex='9')
+              option(value='')
+              option(value='normal') Normal
+              option(value='stretch') Stretch
+              option(value='center') Center
+              option(value='start') Start
+              option(value='end') End
+              option(value='flex-start') Flex start
+              option(value='flex-end') Flex end
+            select.justify-content-select.combobox(tabindex='10')
+              option(value='')
+              option(value='normal') Normal
+              option(value='stretch') Stretch
+              option(value='center') Center
+              option(value='start') Start
+              option(value='end') End
+              option(value='flex-start') Flex start
+              option(value='flex-end') Flex end
+              option(value='left') Left
+              option(value='right') Right
+              option(value='space-between') Space between
+              option(value='space-around') Space around
+              option(value='space-evenly') Space evenly
         hr
         span Margin
         .two-col

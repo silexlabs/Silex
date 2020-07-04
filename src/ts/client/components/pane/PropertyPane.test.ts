@@ -8,7 +8,6 @@ import {
 import { PropertyPane } from './PropertyPane'
 import { fromData } from '../../store/crud-store'
 import { getElements, subscribeElements } from '../../element-store'
-import { getSite } from '../../site-store'
 
 const [
   ELEM_SECTION_STATE,
@@ -37,6 +36,10 @@ jest.mock('../../element-store/index', () => ({
   updateElements: jest.fn(),
   getElements: jest.fn(),
 }))
+
+function isDisabled(selector: string): boolean {
+  return (document.querySelector(selector) as HTMLInputElement).disabled
+}
 
 function getValue(selector: string): string {
   return (document.querySelector(selector) as HTMLInputElement).value
@@ -171,21 +174,108 @@ test('redraw pane for base elements', () => {
   // simple element
   new PropertyPane(document.body).redraw([ELEM_TEXT_STATE])
   expect(getValue('.top-input')).toBe('0')
+  expect(isDisabled('.top-input')).toBe(false)
   expect(getValue('.left-input')).toBe('0')
+  expect(isDisabled('.left-input')).toBe(false)
   expect(getValue('.width-input')).toBe('100')
+  expect(isDisabled('.width-input')).toBe(false)
   expect(getValue('.height-input')).toBe('100')
+  expect(isDisabled('.height-input')).toBe(false)
+
+  expect(isDisabled('.position-select')).toBe(false)
+  expect(isDisabled('.display-select')).toBe(true)
+  expect(isDisabled('.flex-direction-select')).toBe(true)
 
   // section
   new PropertyPane(document.body).redraw([ELEM_SECTION_STATE])
   expect(getValue('.top-input')).toBe('')
+  expect(isDisabled('.top-input')).toBe(true)
   expect(getValue('.left-input')).toBe('')
+  expect(isDisabled('.left-input')).toBe(true)
   expect(getValue('.width-input')).toBe('')
+  expect(isDisabled('.width-input')).toBe(true)
   expect(getValue('.height-input')).toBe('')
+  expect(isDisabled('.height-input')).toBe(true)
+
+  expect(isDisabled('.position-select')).toBe(true)
+  expect(isDisabled('.display-select')).toBe(true)
+  expect(isDisabled('.flex-direction-select')).toBe(true)
 
   // section content
   new PropertyPane(document.body).redraw([ELEM_SECTION_CONTENT_STATE])
   expect(getValue('.top-input')).toBe('')
+  expect(isDisabled('.top-input')).toBe(true)
   expect(getValue('.left-input')).toBe('')
+  expect(isDisabled('.left-input')).toBe(true)
   expect(getValue('.width-input')).toBe('1000')
+  expect(isDisabled('.width-input')).toBe(false)
   expect(getValue('.height-input')).toBe('500')
+  expect(isDisabled('.height-input')).toBe(false)
+
+  expect(isDisabled('.position-select')).toBe(true)
+  expect(isDisabled('.display-select')).toBe(false)
+  expect(isDisabled('.flex-direction-select')).toBe(true)
+
+  // container
+  new PropertyPane(document.body).redraw([ELEM_CONTAINER_STATE])
+  expect(getValue('.top-input')).toBe('10')
+  expect(isDisabled('.top-input')).toBe(false)
+  expect(getValue('.left-input')).toBe('10')
+  expect(isDisabled('.left-input')).toBe(false)
+  expect(getValue('.width-input')).toBe('1000')
+  expect(isDisabled('.width-input')).toBe(false)
+  expect(getValue('.height-input')).toBe('1000')
+  expect(isDisabled('.height-input')).toBe(false)
+
+  expect(isDisabled('.position-select')).toBe(false)
+  expect(isDisabled('.display-select')).toBe(false)
+  expect(isDisabled('.flex-direction-select')).toBe(true)
+})
+
+test('redraw pane for flex containers', () => {
+  const ELEM_SECTION_CONTENT_FLEX_STATE = {
+    ...ELEM_SECTION_CONTENT_STATE,
+    style: {
+      ...ELEM_SECTION_CONTENT_STATE.style,
+      desktop: {
+        ...ELEM_SECTION_CONTENT_STATE.style.desktop,
+        display: 'flex',
+      }
+    },
+  }
+  const ELEM_CONTAINER_FLEX_STATE = {
+    ...ELEM_CONTAINER_STATE,
+    style: {
+      ...ELEM_CONTAINER_STATE.style,
+      desktop: {
+        ...ELEM_CONTAINER_STATE.style.desktop,
+        display: 'flex',
+      }
+    },
+  }
+	;(getElements as any).mockReturnValue([
+    ELEM_SECTION_STATE,
+    ELEM_SECTION_CONTENT_FLEX_STATE,
+    ELEM_CONTAINER_FLEX_STATE,
+    ELEM_TEXT_STATE,
+    ELEM_HTML_STATE,
+  ])
+
+  // simple element
+  new PropertyPane(document.body).redraw([ELEM_CONTAINER_FLEX_STATE])
+  expect(getValue('.display-select')).toBe('flex')
+  expect(isDisabled('.display-select')).toBe(false)
+  expect(isDisabled('.flex-direction-select')).toBe(false)
+
+  // section
+  new PropertyPane(document.body).redraw([ELEM_SECTION_STATE])
+  expect(getValue('.display-select')).toBe('')
+  expect(isDisabled('.display-select')).toBe(true)
+  expect(isDisabled('.flex-direction-select')).toBe(true)
+
+  // section content
+  new PropertyPane(document.body).redraw([ELEM_SECTION_CONTENT_FLEX_STATE])
+  expect(getValue('.display-select')).toBe('flex')
+  expect(isDisabled('.display-select')).toBe(false)
+  expect(isDisabled('.flex-direction-select')).toBe(false)
 })
