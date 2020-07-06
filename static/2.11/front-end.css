@@ -103,7 +103,7 @@ body.enable-mobile .editable-style.hide-on-desktop {
     padding: 0;
     margin: 0;
   }
-  body.enable-mobile .container-element {
+  body.enable-mobile .container-element:not(.paged-element-hidden) {
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -113,7 +113,7 @@ body.enable-mobile .editable-style.hide-on-desktop {
   body.enable-mobile .editable-style.hide-on-mobile {
     display: none;
   }
-  body.enable-mobile .editable-style.hide-on-desktop {
+  body.enable-mobile .editable-style.hide-on-desktop:not(.paged-element-hidden) {
     display: initial;
   }
   body.silex-runtime.enable-mobile .background.background-initial {
