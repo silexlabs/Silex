@@ -20,7 +20,9 @@ export function writeDataToDom(doc: HTMLDocument, data: PersistantData) {
   tag.innerHTML = `
     window.silex = window.silex || {}
     window.silex.data = ` + JSON.stringify({
-    site: data.site,
+    site: { // this is huge and contains html tags - e.g. userHead
+      width: data.site.width,
+    },
     pages: data.pages,
     // elements: data.elements, // not this one as it is huge and useless at runtime
   })
