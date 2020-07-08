@@ -10,7 +10,7 @@ body {
 }
 @media (min-width:481px) {
   body {
-    position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
+    /* position: absolute; /* this make container element of sections full width, even when the window width is smaller than min-width of sections */
   }
   .section-element > .website-width {
     border-left: 1px dashed;
