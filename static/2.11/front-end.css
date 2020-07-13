@@ -4,7 +4,7 @@
 
 body {
   min-height: 100vh;
-  min-width: 100vw;
+  min-width: 98vw; /* remove approx size of vertical scroll bar */
 }
 
 /* prevent-auto-z-index is to let the components handle their z-index */
