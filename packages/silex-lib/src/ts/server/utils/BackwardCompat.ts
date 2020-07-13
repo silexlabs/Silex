@@ -306,6 +306,14 @@ export default class BackwardCompat {
           doc.body.classList.add(Constants.EDITABLE_CLASS_NAME)
           actions.push('I made the body editable.')
 
+          const oldBodyId = doc.body.getAttribute('data-silex-id')
+          if (oldBodyId !== 'body-initial') {
+            actions.push('I udpated the body class name from "' + oldBodyId + '" to "body-initial".')
+            doc.body.setAttribute('data-silex-id', 'body-initial')
+            doc.body.classList.remove(oldBodyId)
+            doc.body.classList.add('body-initial')
+          }
+
           // prepare the dom
           cleanupBefore(doc)
 
@@ -328,9 +336,9 @@ export default class BackwardCompat {
             }
             this.removeIfExist(doc, 'meta[name="website-width"]')
             this.removeIfExist(doc, 'meta[name="hostingProvider"]')
-            this.removeIfExist(doc, 'meta[name="publicationPath"]');
+            this.removeIfExist(doc, 'meta[name="publicationPath"]')
 
-            ['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
+            ;['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
 
             actions.push('I updated the model to the latest version of Silex.')
             // pages

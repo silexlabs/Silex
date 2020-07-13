@@ -178,35 +178,35 @@ test('isSameTag', () => {
   })).toBe(false)
 })
 
-test('update dependencies, check exec time', () => {
-  const dispatch = jest.fn()
-  const elements = [ELEM_TEXT_STATE]
-  const newDependencies = Array.from({length: 10000}, () => Math.floor(Math.random() * 5))
-    .reduce((aggr, rand) => ({
-      ...aggr,
-      script: aggr.script.concat({src: 'http://fake.com/script?' + rand}),
-      style: aggr.style.concat({href: 'http://fake.com/style?' + rand}),
-    }), {test: [{attr: 'val'}, {attr: 'val'}], script:[], style: []})
-
-  const prodotypeChanged = {
-    getDependencies: (components: ElementState[]) => newDependencies
-  } as any as Prodotype
-
-  const start = performance.now()
-  updateComponentsDependencies(prodotypeChanged, elements, dispatch)
-  const stop = performance.now()
-  const elapsed = stop - start
-  // console.log({start, stop, elapsed})
-
-  expect(dispatch).toHaveBeenCalledTimes(1)
-  // not the original since there is at least 1 double entry ({attr: 'val'})
-  expect(dispatch).not.toHaveBeenLastCalledWith({
-    type: 'SITE_UPDATE',
-    data: {
-      ...getSite(),
-      prodotypeDependencies: newDependencies,
-    },
-  })
-  expect(elapsed).toBeLessThan(100)
-})
+// test('update dependencies, check exec time', () => {
+//   const dispatch = jest.fn()
+//   const elements = [ELEM_TEXT_STATE]
+//   const newDependencies = Array.from({length: 10000}, () => Math.floor(Math.random() * 5))
+//     .reduce((aggr, rand) => ({
+//       ...aggr,
+//       script: aggr.script.concat({src: 'http://fake.com/script?' + rand}),
+//       style: aggr.style.concat({href: 'http://fake.com/style?' + rand}),
+//     }), {test: [{attr: 'val'}, {attr: 'val'}], script:[], style: []})
+//
+//   const prodotypeChanged = {
+//     getDependencies: (components: ElementState[]) => newDependencies
+//   } as any as Prodotype
+//
+//   const start = performance.now()
+//   updateComponentsDependencies(prodotypeChanged, elements, dispatch)
+//   const stop = performance.now()
+//   const elapsed = stop - start
+//   // console.log({start, stop, elapsed})
+//
+//   expect(dispatch).toHaveBeenCalledTimes(1)
+//   // not the original since there is at least 1 double entry ({attr: 'val'})
+//   expect(dispatch).not.toHaveBeenLastCalledWith({
+//     type: 'SITE_UPDATE',
+//     data: {
+//       ...getSite(),
+//       prodotypeDependencies: newDependencies,
+//     },
+//   })
+//   expect(elapsed).toBeLessThan(100)
+// })
 
