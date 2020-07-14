@@ -10,6 +10,7 @@ import { FileExplorer } from './dialog/FileExplorer'
 import {
   INITIAL_ELEMENT_SIZE,
   getCreationDropZone,
+  getDropStyle
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { SilexNotification } from './Notification'
@@ -30,7 +31,6 @@ import { getBody } from '../element-store/filters'
 import { getDomElement } from '../element-store/dom'
 import { getSite, subscribeSite } from '../site-store/index'
 import { getSiteIFrame, getSiteDocument } from './SiteFrame'
-import { getStage } from './StageWrapper'
 import { getUi, subscribeUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 import { hasRedo, hasUndo, redo, undo } from '../undo'
@@ -200,17 +200,15 @@ export async function addElementCentered(type: ElementType, componentName: strin
     const parentEl = getDomElement(getSiteDocument(), parent)
     const parentSize = parentEl.getBoundingClientRect()
 
-    // get coords of element to be in the center of the viewport
-    const topCenter = Math.round((stageSize.height / 2) - (INITIAL_ELEMENT_SIZE / 2) - parentSize.top)
-    const leftCenter = Math.round((stageSize.width / 2) - (INITIAL_ELEMENT_SIZE / 2) - parentSize.left)
-
-    // constrain the element to be inside the container
-    const topInside = Math.max(0, Math.min(topCenter, parentSize.height - INITIAL_ELEMENT_SIZE))
-    const leftInside = Math.max(0, Math.min(leftCenter, parentSize.width - INITIAL_ELEMENT_SIZE))
-
-    // add the unit
-    const top = topInside + 'px'
-    const left = leftInside + 'px'
+    // get the final style for the element to be centered in the viewport
+    const {left, top} = getDropStyle({
+      stageSize,
+      parentSize,
+      elementSize: {
+        width: INITIAL_ELEMENT_SIZE,
+        height: INITIAL_ELEMENT_SIZE,
+      }
+    })
 
     // add the element to the site
     const [el, updatedParentData] = await addElement({
@@ -220,8 +218,8 @@ export async function addElementCentered(type: ElementType, componentName: strin
       style: {
         mobile: {},
         desktop: {
-          top,
-          left,
+          top: top + 'px',
+          left: left + 'px',
         },
       },
     })

@@ -19,17 +19,11 @@ const ELEM_HTML_STATE = ELEM_HTML as ElementState
 
 jest.mock('./components/SiteFrame', () => ({
   getSiteDocument: () => document,
+  getSiteIFrame: () => document.body,
 }))
 
-jest.mock('./components/StageWrapper', () => ({
-  getStage: () => ({
-    getState: (doc, el) => ({ metrics: { computedStyleRect: {
-      top: 0,
-      left: 0,
-      width: 0,
-      height: 0,
-    }}}),
-  })
+jest.mock('./element-store/dom', () => ({
+  getDomElement: (doc, parent) => document.body,
 }))
 
 test('cloneElement 1 element', () => {

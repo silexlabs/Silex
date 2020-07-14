@@ -344,6 +344,30 @@ export function getCreationDropZone(isSection: boolean, stageEl: HTMLIFrameEleme
 }
 
 /**
+ * get the final style for the element to be centered in the viewport
+ */
+export function getDropStyle({
+  stageSize,
+  parentSize,
+  elementSize,
+  offset = 0
+}): {top: number, left: number} {
+  // get coords of element to be in the center of the viewport
+  const topCenter = Math.round((stageSize.height / 2) - (elementSize.height / 2) - parentSize.top)
+  const leftCenter = Math.round((stageSize.width / 2) - (elementSize.width / 2) - parentSize.left)
+
+  // apply offset
+  const topOffset = topCenter + offset
+  const leftOffset = leftCenter + offset
+
+  // constrain the element to be inside the container
+  const top = Math.max(0, Math.min(topOffset, parentSize.height - elementSize.height))
+  const left = Math.max(0, Math.min(leftOffset, parentSize.width - elementSize.width))
+
+  return {top, left}
+}
+
+/**
  * get a human readable name for this element
  */
 export function getDisplayName(element: ElementState): string {
