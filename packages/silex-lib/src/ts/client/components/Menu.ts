@@ -29,7 +29,7 @@ import { createPage, editPage, removePage } from '../page-store/dispatchers'
 import { getBody } from '../element-store/filters'
 import { getDomElement } from '../element-store/dom'
 import { getSite, subscribeSite } from '../site-store/index'
-import { getSiteIFrame } from './SiteFrame'
+import { getSiteIFrame, getSiteDocument } from './SiteFrame'
 import { getStage } from './StageWrapper'
 import { getUi, subscribeUi, updateUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
@@ -193,11 +193,26 @@ export async function addElementCentered(type: ElementType, componentName: strin
 
     return [el, updatedParentData]
   } else {
+    // get useful metrics
     const stageEl = getSiteIFrame()
+    const stageSize = stageEl.getBoundingClientRect()
     const parent = getCreationDropZone(false, stageEl)
-    const parentState = getStage().getState(getDomElement(stageEl.contentDocument, parent))
-    const parentRect = parentState.metrics.computedStyleRect
+    const parentEl = getDomElement(getSiteDocument(), parent)
+    const parentSize = parentEl.getBoundingClientRect()
 
+    // get coords of element to be in the center of the viewport
+    const topCenter = Math.round((stageSize.height / 2) - (INITIAL_ELEMENT_SIZE / 2) - parentSize.top)
+    const leftCenter = Math.round((stageSize.width / 2) - (INITIAL_ELEMENT_SIZE / 2) - parentSize.left)
+
+    // constrain the element to be inside the container
+    const topInside = Math.max(0, Math.min(topCenter, parentSize.height - INITIAL_ELEMENT_SIZE))
+    const leftInside = Math.max(0, Math.min(leftCenter, parentSize.width - INITIAL_ELEMENT_SIZE))
+
+    // add the unit
+    const top = topInside + 'px'
+    const left = leftInside + 'px'
+
+    // add the element to the site
     const [el, updatedParentData] = await addElement({
       type,
       parent,
@@ -205,8 +220,8 @@ export async function addElementCentered(type: ElementType, componentName: strin
       style: {
         mobile: {},
         desktop: {
-          top: Math.round((parentRect.height / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
-          left: Math.round((parentRect.width / 2) - (INITIAL_ELEMENT_SIZE / 2)) + 'px',
+          top,
+          left,
         },
       },
     })
