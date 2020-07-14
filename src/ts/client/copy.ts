@@ -20,10 +20,13 @@ import {
   getSelectedElements,
   noSectionContent
 } from './element-store/filters'
-import { getCreationDropZone, getNewId } from './element-store/utils'
+import {
+  getCreationDropZone,
+  getDropStyle,
+  getNewId
+} from './element-store/utils'
 import { getDomElement } from './element-store/dom'
 import { getSiteDocument, getSiteIFrame } from './components/SiteFrame'
-import { getStage } from './components/StageWrapper'
 import { getUi, updateUi } from './ui-store/index'
 import { store } from './store/index'
 
@@ -141,6 +144,9 @@ export function pasteClipBoard() {
   })
 }
 
+/**
+ * add duplicated elements to the site
+ */
 export function pasteElements({parent, rootElements, allElements, pageNames = null}: {
   parent: ElementState,
   rootElements: ElementData[],
@@ -159,10 +165,13 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
       .map((el) => ({
         ...el,
         selected: false,
-      }))
+    }))
 
-    const parentState = getStage().getState(getDomElement(getSiteDocument(), parent))
-    const parentRect = parentState.metrics.computedStyleRect
+    // get useful metrics
+    const stageEl = getSiteIFrame()
+    const stageSize = stageEl.getBoundingClientRect()
+    const parentEl = getDomElement(getSiteDocument(), parent)
+    const parentSize = parentEl.getBoundingClientRect()
 
     // do not paste in place so that the user sees the pasted elements
     let offset = 0
@@ -170,6 +179,16 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
     // add to the container
     createElements(fromElementData(allElements.map((element) => {
       const isRoot = rootElements.includes(element)
+      // get the final style for the element to be centered in the viewport
+      const {left, top} = getDropStyle({
+        stageSize,
+        parentSize,
+        elementSize: {
+          width: parseInt(element.style.desktop.width),
+          height: parseInt(element.style.desktop.height),
+        },
+        offset,
+      })
       if (isRoot) {
         offset += 20
       }
@@ -181,8 +200,8 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
           ...element.style,
           desktop: isRoot && element.style.desktop.position !== 'static' ? {
             ...element.style.desktop,
-            top: Math.round(offset + (parentRect.height / 2) - (parseInt(element.style.desktop.height) / 2)) + 'px',
-            left: Math.round(offset + (parentRect.width / 2) - (parseInt(element.style.desktop.width) / 2)) + 'px',
+            top: top + 'px',
+            left: left + 'px',
           } : element.style.desktop,
         },
         // here selected is true since the cloned element was selected
