@@ -1,4 +1,4 @@
-// FIXME: thie hole file is a mess
+// FIXME: this hole file is a mess
 
 import { ScrollData, SelectableState } from 'drag-drop-stage-component/src/ts/Types'
 import { Stage } from 'drag-drop-stage-component/src/ts/index'
@@ -6,20 +6,22 @@ import { Stage } from 'drag-drop-stage-component/src/ts/index'
 import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType } from '../element-store/types'
 import { SilexNotification } from './Notification'
+import { SiteState } from '../site-store/types'
 import { UiState } from '../ui-store/types'
 import { editElement } from './ContextMenu'
 import { fixStyleForElement } from '../utils/styles'
 import {
   getBody,
+  getChildrenRecursive,
   getElementByDomElement,
   getElementById,
   getParent,
   getSelectedElements
 } from '../element-store/filters'
-import { getDomElement, getDomElementById, getId } from '../element-store/dom'
+import { getDomElement, getId } from '../element-store/dom'
 import { getElements, subscribeElements, updateElements } from '../element-store/index'
-import { getSite, updateSite } from '../site-store/index'
-import { getSiteDocument, getSiteWindow } from '../components/SiteFrame'
+import { getSite, subscribeSite, updateSite } from '../site-store/index'
+import { getSiteDocument } from '../components/SiteFrame'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { insertAt } from '../utils/array'
 import { onCrudChange, StateChange } from '../store/crud-store'
@@ -78,12 +80,9 @@ export function setEditMode(mode: boolean) {
 }
 export function resizeWindow() {
   if (!stage) { return }
+  // useless because it is done by DOM observers stage.updateMetrics()
   stage.resizeWindow()
 }
-// export function hideUi(hide: boolean) {
-//   if (!stage) { return }
-//   stage.hideUi(hide)
-// }
 
 /**
  * safe subscribe to mouse event
@@ -131,6 +130,8 @@ function onAddElement(elements: ElementState[]) {
       // send the scroll to the target
       stage.center(elements.map((el) => getDomElement(doc, el)))
     }, 500)
+    // update selection, because it is not added in onUpdateElement (it should be but it seems like the dom element does not exist?)
+    stage.setSelection(getSelectedElements().map((el) => getDomElement(doc, el)))
   }
 }
 // on deleted elements
@@ -145,15 +146,14 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
   if (!stage) { console.warn('onUpdateElement NO STAGE'); return }
   // this should be here but makes adding elements bugguy: if (stoped) { console.warn('onUpdateElement stoped is true => do nothing'); return }
   const doc = getSiteDocument()
-  let needReset = false
-  const needResetSome = []
   change.forEach(({from, to}) => {
     const domEl = getDomElement(doc, to)
+    const state = getStage().getState(domEl)
     if(!domEl) {
       console.error('Why?', from, to)
       return
     }
-    const isStatic = getSiteWindow().getComputedStyle(domEl).position === 'static'
+    // const isStatic = getSiteWindow().getComputedStyle(domEl).position === 'static'
     // selection
     if (to.selected !== from.selected) {
       const selection = stage.getSelection()
@@ -169,19 +169,6 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
         }
       }
     }
-    if (to.pageNames !== from.pageNames) {
-      // FIXME: reset only if visibility changed
-      needReset = true
-    }
-    if (to.children !== from.children) {
-      // needs reset because children visibility may have changed (also when creating a section, when the parent is attached it has a container in it)
-      needReset = true
-      // why a timout here? looks like without it there is a problem when creating elements / pasting etc ?
-      setTimeout(() => scrollToContainSelection(), 500)
-    }
-    if (to.classList !== from.classList) {
-      needReset = true
-    }
     // element visibility destkop and mobile
     if (to.visibility.desktop !== from.visibility.desktop) {
       if (to.visibility.desktop) {
@@ -190,8 +177,9 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
         }
       } else {
         if (!getUi().mobileEditor) {
-          // there is a bug in stage => reset instead of  getStage().removeElement(domEl)
-          needReset = true
+          // there is a bug in stage => reset instead of
+          getStage().removeElement(state.id)
+          // needReset = true
         }
       }
     }
@@ -200,38 +188,26 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
         if (getUi().mobileEditor) {
           getStage().addElement(domEl)
         }
-      } else {
-        if (getUi().mobileEditor) {
-          // there is a bug in stage => reset instead of  getStage().removeElement(domEl)
-          needReset = true
-        }
       }
-    }
-    if (to.innerHtml !== from.innerHtml) {
-      needResetSome.push(...[domEl]
-        .map((el) => getStage().getState(el)))
-      needReset = true
     }
     if (to.style !== from.style) {
-      // update stage for element and children
-      if (isStatic || needReset) {
-        // FIXME: redraw only if position/layout/size changed
-        needReset = true
-      } else {
-        needResetSome.push(...[domEl]
-          .concat(to.children.map((id) => getDomElementById(doc, id)))
-          .map((el) => getStage().getState(el)))
-      }
       // why a timout here? looks like without it there is a problem when creating elements / pasting etc ?
-      setTimeout(() => scrollToContainSelection(), 500)
+      // setTimeout(() => scrollToContainSelection(), 500)
     }
   })
-  // re-compute the other elements metrics
-  if (needReset) {
-    setTimeout(() => resetStage(), 0)
-  } else {
-    getStage().redrawSome(needResetSome)
-  }
+
+  // update the position and size of the UI
+  const changedDomElements = change
+    .filter(({from, to}) => from.style !== to.style || from.classList !== to.classList /* add pageNames? children?*/)
+    .map(({to}) => getDomElement(getSiteDocument(), to))
+    // add the children may need UI update too
+    .concat(change
+      // .filter(({from, to}) => from.children != to.children)
+      .flatMap(({to}) => getChildrenRecursive(to))
+      .map((el) => getDomElement(getSiteDocument(), el)))
+
+
+  stage.updateMetrics(changedDomElements)
 }
 
 // TODO: get rid of the class, only methods
@@ -250,26 +226,12 @@ class StageWrapper {
   private toBeUnsubscribed = []
 
   constructor() {
-    window.addEventListener('resize', () => resizeWindow())
-
-    // subscribePages(() => {
-    //   // reset the stage after page creation
-    //   setTimeout(() => resetStage(), 0)
-    // })
     subscribeUi((prevState: UiState, nextState: UiState) => {
+      if (!stage) { return }
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         // reset the stage after switch to/from mobile editor
         setTimeout(() => resetStage(), 0)
       }
-      // if (!prevState || prevState.loading !== nextState.loading) {
-      //   if (nextState.loading === LOADING.NONE) {
-      //     hideUi(false)
-      //     setEditMode(true)
-      //   } else {
-      //     hideUi(true)
-      //     setEditMode(false)
-      //   }
-      // }
       if (!prevState || prevState.mobileEditor !== nextState.mobileEditor) {
         resizeWindow()
       }
@@ -278,33 +240,19 @@ class StageWrapper {
         setTimeout(() => resetStage(), 0)
       }
     })
+    subscribeSite((prevState: SiteState, nextState: SiteState) => {
+      if (!stage) { return }
+      if (prevState.headStyle !== nextState.headStyle) {
+        // update UI when the user uses CSS editor
+        stage.updateMetrics()
+      }
+    })
     subscribeElements(onCrudChange<ElementState>({
       onAdd: preventStageObservers(onAddElement),
       onDelete: preventStageObservers(onDeleteElements),
       onUpdate: preventStageObservers(onUpdateElement),
     }))
   }
-
-  // getState(el: HTMLElement): SelectableState {
-  //   if (!this.stage) { return null }
-  //   return this.stage.getState(el)
-  // }
-  // setState(el: HTMLElement, state: SelectableState) {
-  //   if (!this.stage) { return }
-  //   this.stage.setState(el, state)
-  // }
-  // getSelection(): SelectableState[] {
-  //   if (!this.stage) { return [] }
-  //   return this.stage.getSelection()
-  // }
-  // setSelection(elements: HTMLElement[]) {
-  //   if (!this.stage) { return }
-  //   this.stage.setSelection(elements)
-  // }
-  // getSelectionBox() {
-  //   if (!this.stage) { return }
-  //   return this.stage.getSelectionBox()
-  // }
 
   cleanup() {
     // cleanup
@@ -370,7 +318,7 @@ class StageWrapper {
       },
       onChange: (change) => this.applyStyle(change),
       onDrop: (change) => this.stopDrag(change),
-      onResizeEnd: (change) => this.stopResize(change, true),
+      onResizeEnd: (change) => this.stopResize(change),
       // onDrag: (change) => this.updateView(),
       // onResize: (change) => this.updateView(),
       onSelect: (change) => this.onSelectionChanged(change),
@@ -395,14 +343,6 @@ class StageWrapper {
     if (!this.stage) { return {x: 0, y: 0} }
     return this.stage.getScroll()
   }
-  // setScroll(scroll: ScrollData) {
-  //   if (!this.stage) { return }
-  //   this.stage.setScroll(scroll)
-  // }
-  redraw() {
-    if (!this.stage) { return }
-    this.stage.redraw()
-  }
   private startDragOrResize() {
     this.dragging = true
     // this.prepareUndo()
@@ -417,20 +357,19 @@ class StageWrapper {
     getSiteDocument().body.classList.add(Constants.DRAGGING_CLASS_NAME)
     this.startDragOrResize()
   }
-  private stopDragOrResize(changed: SelectableState[], redraw) {
+  private stopDragOrResize(changed: SelectableState[]) {
     this.dragging = false
     this.applyStyle(changed)
-    this.redraw()
   }
-  private stopResize(changed: SelectableState[], redraw = false) {
+  private stopResize(changed: SelectableState[]) {
     // FIXME: add a class to the body is slow
     getSiteDocument().body.classList.remove(Constants.RESIZING_CLASS_NAME)
-    this.stopDragOrResize(changed, redraw)
+    this.stopDragOrResize(changed)
   }
-  private stopDrag(changed: SelectableState[], redraw = false) {
+  private stopDrag(changed: SelectableState[]) {
     // FIXME: add a class to the body is slow
     getSiteDocument().body.classList.remove(Constants.DRAGGING_CLASS_NAME)
-    this.stopDragOrResize(changed, redraw)
+    this.stopDragOrResize(changed)
     // Handle parent change
     // build an array with all the changes (may contain several times the same parent)
     const changes: {element: ElementState, newParent: ElementState, oldParent: ElementState, idx: number}[] = changed
@@ -558,20 +497,4 @@ class StageWrapper {
       }))
     }
   }
-//   private addElement(element: HTMLElement) {
-//     if (!this.stage) { return }
-//     this.stage.addElement(element)
-//   }
-//   private removeElement(element: HTMLElement) {
-//     if (!this.stage) { return }
-//     this.stage.removeElement(element)
-//   }
-  // private center(elements: HTMLElement[]) {
-  //   if (!this.stage) { return }
-  //   this.stage.center(elements)
-  // }
-//   private getDropZone(posX: number, posY: number, element: HTMLElement): HTMLElement {
-//     if (!this.stage) { return getSiteDocument().body }
-//     return this.stage.getDropZone(posX, posY, element)
-//   }
 }
