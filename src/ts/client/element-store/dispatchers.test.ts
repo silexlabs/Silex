@@ -4,6 +4,7 @@ import {
   ELEM_CONTAINER_2_CHILDREN,
   ELEM_HTML,
   ELEM_IMAGE,
+  ELEM_SECTION,
   ELEM_SECTION_CONTENT,
   ELEM_TEXT,
 } from '../../test-utils/data-set'
@@ -15,9 +16,11 @@ import {
   selectBody,
   selectElements
 } from './dispatchers'
+import { fromElementData } from './'
 import { getElementById } from '../element-store/filters'
 import { initializeElements } from '../element-store/index'
 import { isBody } from './filters'
+import { store } from '../store'
 
 jest.mock('../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => jest.fn())
 
@@ -27,6 +30,7 @@ const ELEM_CONTAINER_2_CHILDREN_STATE = ELEM_CONTAINER_2_CHILDREN as ElementStat
 const ELEM_HTML_STATE = ELEM_HTML as ElementState
 const ELEM_IMAGE_STATE = ELEM_IMAGE as ElementState
 const ELEM_SECTION_CONTENT_STATE = ELEM_SECTION_CONTENT as ElementState
+const ELEM_SECTION_STATE = ELEM_SECTION as ElementState
 const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
 
 test('select elements', () => {
@@ -135,8 +139,13 @@ test('move 2 elements among 3', () => {
 })
 
 test('add element', async () => {
+  const [body] = fromElementData([{
+    ...ELEM_SECTION_STATE,
+    selected: true,
+  }])
   // TODO: refactore add element to be able to unit test
-  initializeElements([ELEM_CONTAINER_STATE])
+  initializeElements([body, ELEM_SECTION_CONTENT_STATE, ELEM_CONTAINER_STATE])
+  const dispatch = jest.fn(store.dispatch)
   const [element, updatedParentData] = await addElement({
     type: ElementType.HTML,
     parent: ELEM_CONTAINER_STATE,
@@ -148,7 +157,13 @@ test('add element', async () => {
         left: '450px',
       },
     },
-  })
+  }, dispatch)
+
+  // check that we de-selected the body
+  expect(dispatch.mock.calls[0][0].type).toBe('ELEMENT_CREATE')
+  expect(dispatch.mock.calls[1][0].type).toBe('ELEMENT_UPDATE')
+  expect(dispatch.mock.calls[1][0].items[0].id).toBe(body.id)
+  expect(dispatch.mock.calls[1][0].items[0].selected).toBe(false)
 
   expect(element).not.toBeNull()
   expect(element.selected).toBe(true)
@@ -156,6 +171,7 @@ test('add element', async () => {
   expect(element.style.desktop.top).toBe('450px')
   expect(element.style.desktop.left).toBe('450px')
 
+  expect(updatedParentData).not.toBeNull()
   expect(updatedParentData.id).toBe(ELEM_CONTAINER_STATE.id)
   expect(updatedParentData.innerHtml).toBe(ELEM_CONTAINER_STATE.innerHtml)
   expect(updatedParentData.pageNames).toBe(ELEM_CONTAINER_STATE.pageNames)
@@ -167,7 +183,7 @@ test('add element', async () => {
 
 })
 
-test('add a section in a selected element', async () => {
+test('add element in a selected element', async () => {
   const selectedContainer = {
     ...ELEM_CONTAINER_STATE,
     selected: true,
@@ -263,4 +279,3 @@ test('removeFromPage', () => {
   })
 
 })
-
