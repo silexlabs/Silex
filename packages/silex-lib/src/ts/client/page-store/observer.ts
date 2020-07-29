@@ -1,10 +1,13 @@
-import { LinkType, ElementState } from '../element-store/types'
+import { Constants } from '../../constants'
+import { ElementState, ElementType, LinkType } from '../element-store/types'
 import { PageState } from './types'
 import { SilexNotification } from '../components/Notification'
 import { StateChange } from '../store/crud-store'
 import { deleteElements, getElements, updateElements } from '../element-store/index'
+import { getElementByDomElement } from '../element-store/filters'
+import { getInnerHtml } from '../element-store/dom'
 import { getSiteDocument } from '../components/SiteFrame'
-import { getState } from '../store/index'
+import { getState, store } from '../store/index'
 import { getUi, updateUi } from '../ui-store/index'
 import { writeDataToDom } from '../store/dom'
 
@@ -52,12 +55,8 @@ export function onDeletePages(pages: PageState[]) {
           pageNames: element.pageNames.filter((id) => id !== page.id),
         })))
     }, 0)
-  })
 
-  // FIXME: observer should not update store
-  setTimeout(() => {
-    // remove the links to this page
-    // TODO: handle links in HTML boxes and texts?
+    // update the links to this page
     updateElements(pages
       .reduce((prev, cur) => {
         return prev.concat(getElements()
@@ -70,6 +69,7 @@ export function onDeletePages(pages: PageState[]) {
             },
           })))
       }, []))
+    // FIXME: handle links in texts
   }, 0)
 
   // save the changed data to the dom for front-end.js
@@ -77,25 +77,56 @@ export function onDeletePages(pages: PageState[]) {
 }
 
 const hasLinkToPage = (element: ElementState, page: PageState) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value
+
 const isVisibleOnPage = (element: ElementState, page: PageState) => !!element.pageNames.length && element.pageNames.includes(page.id)
 
-export function onUpdatePages(changes: StateChange<PageState>[]) {
+export function onUpdatePages(changes: StateChange<PageState>[], elements = getElements(), dispatch = store.dispatch) {
   changes.forEach(({from, to}) => {
     // page ID change
-    if (!from || from.id !== to.id) {
+    if (!from || from.id !== to.id || from.link !== to.link) {
       // FIXME: observer should not update store
       setTimeout(() => {
-        updateElements(getElements()
+        const updateEl: ElementState[] = elements
           // update elements visibility
           // + update links to this page
-          // TODO: handle links in HTML boxes and texts?
-          // FIXME: observer should not update store?
           .filter((element) => isVisibleOnPage(element, from) || hasLinkToPage(element, from))
           .map((element) => ({
             ...element,
             link: hasLinkToPage(element, from) ? to.link : element.link,
             pageNames: isVisibleOnPage(element, from) ? element.pageNames.map((name) => name === from.id ? to.id : name) : element.pageNames,
-          })))
+          }))
+        // handle links in texts
+        const updateDom = []
+        const doc = getSiteDocument()
+        // links which starts with the page link (could be an anchor after the page id)
+        Array.from(doc.querySelectorAll(`[href="${from.link.value}"], [href^="${from.link.value}#"]`))
+          .forEach((domEl: HTMLElement) => {
+            // replace in the dom
+            domEl.setAttribute('href', domEl.getAttribute('href').replace(from.link.value, to.link.value))
+            updateDom.push(domEl)
+          })
+        // unique DOM elements only (a link to a page may be in an element which is visible on the same page)
+        const changedDom: HTMLElement[] = [...new Set(updateDom)]
+        changedDom.forEach((domEl: HTMLElement) => {
+            // update in the model
+            const [silexEl, silexDomEl]: [ElementState, HTMLElement] = getSilexElement(doc, domEl, elements)
+            if (!!silexEl && (silexEl.type === ElementType.HTML || silexEl.type === ElementType.TEXT)) {
+              // unique DOM elements only (several links may be in the same silex element)
+              const found: ElementState = updateEl.find((el: ElementState) => el.id === silexEl.id)
+              if (!!found) {
+                // mutate the object
+                found.innerHtml = getInnerHtml(silexDomEl)
+              } else {
+                updateEl.push({
+                  ...silexEl,
+                  innerHtml: getInnerHtml(silexDomEl),
+                })
+              }
+            }
+          })
+        if (updateEl.length) {
+          updateElements(updateEl, dispatch)
+        }
       }, 0)
 
       // update the current page with the new page id
@@ -110,4 +141,20 @@ export function onUpdatePages(changes: StateChange<PageState>[]) {
 
   // save the changed data to the dom for front-end.js
   writeDataToDom(getSiteDocument(), getState())
+}
+
+/**
+ * @returns silex element which contanis the HTML DOM element
+ */
+function getSilexElement(doc: HTMLDocument, domEl: HTMLElement, elements: ElementState[]): [ElementState, HTMLElement] {
+  // get the first element in the dom
+  // which is a silex element
+  let tmp: HTMLElement = domEl
+  do {
+    const beTheOne: ElementState = getElementByDomElement(doc, tmp, elements)
+    if (beTheOne) return [beTheOne, tmp]
+      tmp = tmp.parentElement
+  } while (tmp)
+
+  return [null, null]
 }

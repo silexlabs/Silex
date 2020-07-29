@@ -6,7 +6,16 @@
 import { ElementType } from './client/element-store/types'
 
 export class Constants {
-  static PAGE_NAME_PREFIX = '#!page-'
+  /**
+   * value which starts a "deep link", i.e. the page name in the URL, in preview mode only
+   */
+  static PAGE_NAME_PREFIX = '#!'
+
+  /**
+   * prepended to page ids in order to minimize risks of collision, i.e. `page-page-1" for page "Page 1"
+   */
+  static PAGE_ID_PREFIX = 'page-'
+
   /**
    * constant for the ID of the HTML node used
    * to store Silex data as a JSON object

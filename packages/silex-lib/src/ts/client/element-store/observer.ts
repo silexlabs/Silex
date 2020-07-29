@@ -4,7 +4,6 @@ import {
   createDomElement,
   deleteStyleFromDom,
   executeScripts,
-  getContentNode,
   getDomElement,
   hideOnDesktop,
   hideOnMobile,
@@ -15,17 +14,17 @@ import {
   showOnDesktop,
   showOnMobile,
   writeStyleToDom
-} from './dom'
+} from './dom';
 import { getCurrentPage } from '../page-store/filters'
 import { getElementById } from './filters'
 import { getElements } from './index'
 import { getEmptyElementData } from './utils'
 import { getPages } from '../page-store/index'
+import { getParent } from '../element-store/filters';
 import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
-import { noSectionContent, getParent } from '../element-store/filters'
-import { openPageDom, setPages } from '../page-store/dom'
+import { openPageDom, removeFromPages, setPages } from '../page-store/dom';
 import { writeDataToDom } from '../store/dom'
 
 export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elements = getElements()) => {
@@ -104,7 +103,9 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
 
     if (to.pageNames !== from.pageNames) {
       // apply visibility
-      setPages(getPages(), domEl, to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
+      const pages = getPages()
+      removeFromPages(from.pageNames, domEl)
+      setPages(pages, domEl, to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
       // reopen the current page in case the element is not visible on the current page anymore
       openPageDom(getSiteWindow(), getCurrentPage())
     }

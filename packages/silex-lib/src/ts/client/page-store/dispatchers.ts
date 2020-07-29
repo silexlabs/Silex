@@ -13,29 +13,30 @@ export function createPage(): Promise<void> {
   //    tracker.trackAction('controller-events', 'request', 'insert.page', 0);
   return editPageSettings(null)
     .then(({id, displayName}) => {
-      // undo checkpoint
-        //  undoCheckPoint();
-
-      // create the page model
-      createPages(fromPageData([{
-        id,
-        displayName,
-        link: {
-          type: LinkType.PAGE,
-          value: Constants.PAGE_NAME_PREFIX + name,
-        },
-        canDelete: true,
-        canRename: true,
-        canMove: true,
-        canProperties: true,
-      }]))
-
-      // tracking
-      //    tracker.trackAction('controller-events', 'success', 'insert.page', 1);
+      // check if a page with this name exists
+      const existing = getPages().find((p) => p.id === id)
+      if (!!existing) {
+        // open the new page
+        openPage(existing)
+        SilexNotification.notifyError(`Page not created: page already exists`)
+      } else {
+        // create the page model
+        createPages(fromPageData([{
+          id,
+          displayName,
+          link: {
+            type: LinkType.PAGE,
+            value: Constants.PAGE_NAME_PREFIX + id,
+          },
+          canDelete: true,
+          canRename: true,
+          canMove: true,
+          canProperties: true,
+        }]))
+      }
     })
-    .catch((e) => {
-      // tracking
-      //    tracker.trackAction('controller-events', 'cancel', 'insert.page', 0);
+    .catch((reason) => {
+      // canceled by user
     })
 }
 
@@ -46,11 +47,8 @@ export function createPage(): Promise<void> {
 export function editPage(pageData: PageState = getCurrentPage()) {
   editPageSettings(pageData)
     .then(({id, displayName}) => {
-      // undo checkpoint
-        //  undoCheckPoint();
-
-      // update model
-      if (pageData.id !== id && pageData.canRename) {
+      if (pageData.canRename) {
+        // update model
         updatePages([
           {
             ...pageData,
@@ -62,9 +60,12 @@ export function editPage(pageData: PageState = getCurrentPage()) {
             },
           },
         ])
+      } else {
+        SilexNotification.alert('Error', 'I can not rename this page because <strong>it is a protected page</strong>.', () => {})
       }
     })
-    .catch((e) => {
+    .catch((reason) => {
+      // canceled by user
     })
 }
 
@@ -78,10 +79,6 @@ export function removePage(page: PageState = getCurrentPage()) {
     `I am about to <strong>delete the page "${page.displayName}"</strong>, are you sure?`,
       (accept) => {
       if (accept) {
-        // undo checkpoint
-          //  undoCheckPoint();
-
-        // update model
         doRemovePage(page)
       }
     }, 'delete', 'cancel',
@@ -138,17 +135,8 @@ export function editPageSettings(pageData: PageState = null): Promise<{id: strin
         if (accept && newName && newName.length > 0) {
           // cleanup the page name
           // add a prefix to prevent names which start with an dash or number (see css specifications)
-          const cleanName = 'page-' + newName.replace(/\W+/g, '-').toLowerCase()
-
-          // check if a page with this name exists
-          const existing = getPages().find((p) => p.id === newName)
-          if (!!existing) {
-            // open the new page
-            openPage(existing)
-            reject('Page already exists')
-          } else {
-            resolve({id: cleanName, displayName: newName})
-          }
+          const cleanName = Constants.PAGE_ID_PREFIX + newName.replace(/\W+/g, '-').toLowerCase()
+          resolve({id: cleanName, displayName: newName})
         } else {
           reject('Canceled')
         }
