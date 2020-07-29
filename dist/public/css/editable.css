@@ -17,7 +17,7 @@ body {
     border-right: 1px dashed;
     border-top: 1px dashed;
   }
-  .section-element:last-of-type > .website-width {
+  .section-element > .website-width {
     border-bottom: 1px dashed;
   }
   .section-element > .website-width:before {
