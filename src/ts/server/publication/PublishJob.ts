@@ -9,6 +9,7 @@ import * as uuid from 'uuid'
 
 import { Action, DomPublisher, File } from './DomPublisher'
 import { Config } from '../ServerConfig'
+import { Constants } from '../../constants';
 import { PersistantData } from '../../client/store/types'
 import { PublishContext } from '../types'
 import DomTools from '../utils/DomTools'
@@ -254,7 +255,7 @@ export default class PublishJob {
         dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
         // split into pages
         const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, data) : null
-        const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName
+        const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName.replace(new RegExp('^' + Constants.PAGE_ID_PREFIX), '')
         this.pageActions = domPublisher.split(newFirstPageName, permalinkHook)
 
         // release the dom object

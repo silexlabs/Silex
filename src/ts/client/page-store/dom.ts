@@ -28,7 +28,7 @@ export function openPageDom(win: Window, pageData: PageState) {
   const bodyElement = win.document.body
   if (win['jQuery'] && win['jQuery'](bodyElement).pageable) {
     win['jQuery'](bodyElement).pageable({
-      currentPage: 'page-' + pageData.id,
+      currentPage: pageData.id,
     })
   }
 }
@@ -38,9 +38,9 @@ export function openPageDom(win: Window, pageData: PageState) {
  * remove from all pages if visible in all pages
  */
 export function setPages(allPages: PageState[], element: HTMLElement, pages: PageState[]) {
-  removeFromAllPages(allPages, element)
+  removeFromPages(allPages.map((p) => p.id), element)
   pages.forEach((page) => {
-    element.classList.add('page-' + page.id)
+    element.classList.add(page.id)
     element.classList.add(Constants.PAGED_CLASS_NAME)
   })
 }
@@ -49,11 +49,10 @@ export function setPages(allPages: PageState[], element: HTMLElement, pages: Pag
  * remove an element from all the pages
  * make it visible on all pages
  */
-export function removeFromAllPages(pages: PageState[], element: HTMLElement) {
-  getPagesForElement(pages, element)
-    .forEach((pageData) => {
-      element.classList.remove('page-' + pageData.id)
-    })
+export function removeFromPages(pageIds: string[], element: HTMLElement) {
+  pageIds.forEach((id) => {
+    element.classList.remove(id)
+  })
 
   // the element is not "paged" anymore
   element.classList.remove(Constants.PAGED_CLASS_NAME)
@@ -67,6 +66,6 @@ export function removeFromAllPages(pages: PageState[], element: HTMLElement) {
  * get the pages on which this element is visible
  */
 function getPagesForElement(pages: PageState[], element: HTMLElement): PageState[] {
-  return pages.filter((pageData) => element.classList.contains('page-' + pageData.id))
+  return pages.filter((pageData) => element.classList.contains(pageData.id))
 }
 

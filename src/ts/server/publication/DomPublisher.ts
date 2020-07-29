@@ -7,6 +7,7 @@ import { URL } from 'url'
 import * as Path from 'path'
 
 import { Constants } from '../../constants'
+import { PageData } from '../../client/page-store/types';
 import { PersistantData } from '../../client/store/types'
 import DomTools from '../utils/DomTools'
 
@@ -93,7 +94,7 @@ export class DomPublisher {
     if (this.data.pages.length === 0) { throw new Error('The website has 0 pages.') }
     const initialFirstPageName = this.data.pages[0].id
     return this.data.pages
-    .map((page) => {
+    .map((page: PageData) => {
       return  {
         name: page.id,
         displayName: page.displayName,
@@ -111,7 +112,7 @@ export class DomPublisher {
       // remove elements from other pages
       Array.from(clone.querySelectorAll(`.${Constants.PAGED_CLASS_NAME}`))
       .forEach((el) => {
-        if (el.classList.contains('page-' + name)) {
+        if (el.classList.contains(name)) {
           el.classList.add(Constants.PAGED_VISIBLE_CLASS_NAME)
         } else {
           el.parentElement.removeChild(el)
@@ -119,7 +120,7 @@ export class DomPublisher {
       })
       // update links
       Array.from(clone.querySelectorAll('a'))
-      .filter((el) => el.hash.startsWith(Constants.PAGE_NAME_PREFIX))
+      .filter((el) => el.hash.startsWith(Constants.PAGE_NAME_PREFIX + Constants.PAGE_ID_PREFIX))
       .forEach((el) => {
         const [pageName, anchor] = el.hash.substr(Constants.PAGE_NAME_PREFIX.length).split('#')
         el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html') + (anchor ? '#' + anchor : '')

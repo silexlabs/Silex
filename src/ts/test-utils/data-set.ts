@@ -1,4 +1,5 @@
 import { ElementType, ElementData, LinkType } from '../client/element-store/types'
+import { PageData } from '../client/page-store/types'
 import { SiteState } from '../client/site-store/types'
 
 export function mockForAllTests() {
@@ -154,47 +155,38 @@ export const ELEM_SECTION: ElementData = {
   },
 }
 
-export const PAGE1 = {
-  id: 'page-1',
+export const PAGE1: PageData = {
+  id: 'page-page-1',
   displayName: 'Page 1',
-  element: document.createElement('a'),
   link: {
     type: LinkType.PAGE,
     value: '#!page-page-1',
   },
-  idx: 0,
-  opened: true,
   canDelete: true,
   canProperties: true,
   canMove: true,
   canRename: true,
 }
 
-export const PAGE2 = {
-  id: 'page-2',
+export const PAGE2: PageData = {
+  id: 'page-page-2',
   displayName: 'Page 2',
-  element: document.createElement('a'),
   link: {
     type: LinkType.PAGE,
     value: '#!page-page-2',
   },
-  idx: 1,
-  opened: false,
   canDelete: true,
   canProperties: true,
   canMove: true,
   canRename: true,
 }
-export const PAGE3 = {
-  id: 'page-3',
+export const PAGE3: PageData = {
+  id: 'page-page-3',
   displayName: 'Page 3',
-  element: document.createElement('a'),
   link: {
     type: LinkType.PAGE,
     value: '#!page-page-3',
   },
-  idx: 2,
-  opened: false,
   canDelete: true,
   canProperties: true,
   canMove: true,

@@ -47,7 +47,7 @@ beforeEach(() => {
   siteIFrame.contentDocument.body.innerHTML = elem1Html + elem2Html + elem3Html + elem4Html
 })
 
-test('update an element children with an element not in the store - this is an impossible case, FIXME: remove this test?', () => {
+test('update an element children with an element not in the store - this is an impossible case, remove this test?', () => {
   onUpdateElements(siteIFrame.contentWindow)([
     {
       from: ELEM_IMAGE_STATE,
