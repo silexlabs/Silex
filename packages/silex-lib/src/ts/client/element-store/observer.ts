@@ -103,13 +103,8 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
     const domEl = getDomElement(doc, to)
 
     if (to.pageNames !== from.pageNames) {
-      const noSection = noSectionContent(to, elements)
-      const noSectionDom = getDomElement(doc, noSection)
-      if (noSectionDom) {
-        setPages(getPages(), noSectionDom, to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
-      } else {
-        console.warn('no section dom, why?')
-      }
+      // apply visibility
+      setPages(getPages(), domEl, to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
       // reopen the current page in case the element is not visible on the current page anymore
       openPageDom(getSiteWindow(), getCurrentPage())
     }
