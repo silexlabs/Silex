@@ -47,6 +47,26 @@ export type StyleObject = {
   desktop: CssRule,
 }
 
+/**
+ * Links
+ * @see LinkDialog
+ */
+export interface Link {
+  href?: string
+  linkType: LinkType
+  target?: string // only valid for external links
+  title?: string // only valid for external links
+  rel?: string // only valid for external links
+  type?: string // only valid for external links
+  download?: string // only valid for external links
+}
+
+export enum LinkType {
+  PAGE = 'LinkTypePage',
+  URL= 'LinkTypeExternal',
+  // TODO: ANCHOR, EMAIL...
+}
+
 // Type with all the properties but the symbol used to compare them in the store
 // Use fromElementData to make it an ElementState
 export interface ElementData {
@@ -102,30 +122,6 @@ export interface ElementState extends CrudState {
     component: ComponentData,
   },
   innerHtml: string,
-}
-
-/**
- * Links
- * @see LinkDialog
- */
-export interface LinkData {
-  href?: string
-  target?: string
-  title?: string
-  rel?: string
-  type?: string
-  download?: string
-}
-
-export enum LinkType {
-  PAGE = 'LinkTypePage',
-  URL= 'LinkTypeExternal',
-  // TODO: ANCHOR, EMAIL...
-}
-
-export interface Link {
-  type: LinkType,
-  value: string,
 }
 
 /**

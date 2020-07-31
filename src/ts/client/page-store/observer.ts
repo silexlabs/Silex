@@ -60,7 +60,7 @@ export function onDeletePages(pages: PageState[]) {
     updateElements(pages
       .reduce((prev, cur) => {
         return prev.concat(getElements()
-          .filter((element) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === cur.link.value)
+          .filter((element) => !!element.link && element.link.linkType === LinkType.PAGE && element.link.href === cur.link.href)
           .map((element) => ({
             from: element,
             to: {
@@ -76,7 +76,7 @@ export function onDeletePages(pages: PageState[]) {
   writeDataToDom(getSiteDocument(), getState())
 }
 
-const hasLinkToPage = (element: ElementState, page: PageState) => !!element.link && element.link.type === LinkType.PAGE && element.link.value === page.link.value
+const hasLinkToPage = (element: ElementState, page: PageState) => !!element.link && element.link.linkType === LinkType.PAGE && element.link.href === page.link.href
 
 const isVisibleOnPage = (element: ElementState, page: PageState) => !!element.pageNames.length && element.pageNames.includes(page.id)
 
@@ -99,10 +99,10 @@ export function onUpdatePages(changes: StateChange<PageState>[], elements = getE
         const updateDom = []
         const doc = getSiteDocument()
         // links which starts with the page link (could be an anchor after the page id)
-        Array.from(doc.querySelectorAll(`[href="${from.link.value}"], [href^="${from.link.value}#"]`))
+        Array.from(doc.querySelectorAll(`[href="${from.link.href}"], [href^="${from.link.href}#"]`))
           .forEach((domEl: HTMLElement) => {
             // replace in the dom
-            domEl.setAttribute('href', domEl.getAttribute('href').replace(from.link.value, to.link.value))
+            domEl.setAttribute('href', domEl.getAttribute('href').replace(from.link.href, to.link.href))
             updateDom.push(domEl)
           })
         // unique DOM elements only (a link to a page may be in an element which is visible on the same page)

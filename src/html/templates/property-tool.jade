@@ -169,9 +169,9 @@
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right
         span Link
-      .body
-        select.link-combo-box.combobox
-        input.link-input-text(tabindex='25', placeholder='-', type='text')
+      .body.link-pane
+        input.link-state(placeholder='-', type='text', readonly)
+        input.link-button(tabindex='25', type='button', value='Edit')
 
   span.style-container
     span.tab-page

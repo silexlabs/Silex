@@ -202,7 +202,9 @@ export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData
   const transformedData = DomTools.transformPaths(dom, data, (path: string, el: HTMLElement, isInHead: boolean) => {
     // page links
     if (path.startsWith(Constants.PAGE_NAME_PREFIX)) return path
-    // make URLs absolute
+    // keep absolute paths because we do not want `/test` to become `http://localhost:6805/test`
+    if (Path.isAbsolute(path)) return path
+    // make relative URLs absolute
     const url = new URL(path, baseUrl)
     return url.href
   })
@@ -235,9 +237,11 @@ export function unprepareWebsite(dom: JSDOM, data: PersistantData, rootUrl: stri
   cleanupNoscripts(dom)
   // URLs
   const transformedData = DomTools.transformPaths(dom, data, (path, el) => {
-    const url = new URL(path, baseUrl)
-    if (url.href.startsWith(rootUrl)) {
+    if (path.startsWith(rootUrl)) {
+      // path is absolute and on the same server
+      // e.g an image url, not a path like `/test`
       // make it relative
+      const url = new URL(path, baseUrl)
       return Path.relative(baseUrl.pathname, url.pathname)
     }
     return path

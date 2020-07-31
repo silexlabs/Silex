@@ -3,7 +3,7 @@
  *
  */
 import { Constants } from '../../../constants'
-import { LinkData } from '../../element-store/types'
+import { Link, LinkType } from '../../element-store/types'
 import {SilexNotification} from '../Notification'
 import { getPages } from '../../page-store/index'
 
@@ -25,10 +25,21 @@ function initLinkDialog() {
   instance = instance || new LinkDialog()
   return instance
 }
-export function openLinkDialog(options: {data: LinkData, cbk: (p1: LinkData) => any}) {
+export function openLinkDialog(options: {data: Link, cbk: (p1: Link) => any}) {
   initLinkDialog()
   return instance.open(options.data, options.cbk)
 }
+
+/**
+ * external link data
+ * TODO: handle hash, for now this is treated as URL, not page link: `#!page-home#test` - see also TextFormatBar.ts comment
+ */
+export function getLinkType(url: string): LinkType {
+  const isPage = url.startsWith(Constants.PAGE_NAME_PREFIX)
+    && url.split('#').length <= 2 // this excludes links like `#!page-home#test`
+  return isPage ? LinkType.PAGE : LinkType.URL
+}
+
 
 /**
  * TODO: make this only methods and write tests
@@ -36,18 +47,16 @@ export function openLinkDialog(options: {data: LinkData, cbk: (p1: LinkData) => 
 class LinkDialog {
   constructor() {}
 
-  open(linkDataArg: LinkData, cbk: (p1: LinkData) => any) {
+  open(linkDataArg: Link, cbk: (p1: Link) => any) {
     // default values for new link
     const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {})
 
-    // external link data
-    const isExternal = !linkData.href.startsWith(Constants.PAGE_NAME_PREFIX)
     SilexNotification.prompt(`
       Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor"> Help</a>
     `, 'unused', 'unused', 'unused', (accept, unused) => {
       if (accept) {
         // get new values
-        const newData: LinkData = LINK_ATTRIBUTES.reduce((acc, attr) => {
+        const newData: any = LINK_ATTRIBUTES.reduce((acc, attr) => {
           const el = dialogBody.querySelector('.' + attr) as HTMLInputElement
           if (!el) {
             console.error('could not get data from for attribute', attr)
@@ -60,7 +69,10 @@ class LinkDialog {
         // internal link info
         const newIsExternal = (dialogBody.querySelector('#link-editor-external') as HTMLInputElement).checked
         const page = (dialogBody.querySelector('.page') as HTMLInputElement).value
-        const options: LinkData = {href: newIsExternal ? newData.href : page}
+        const options: Link = {
+          href: newIsExternal ? newData.href : page,
+          linkType: newIsExternal ? LinkType.URL : LinkType.PAGE,
+        }
         if (newData.target !== '') {
           options.target = newData.target
         }
@@ -95,7 +107,10 @@ class LinkDialog {
 
     // add info about the link
     const dialogBody = document.createElement('div')
-    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({isExternal, linkData}))
+    dialogBody.insertAdjacentHTML('afterbegin', this.getDialogHtml({
+      linkType: getLinkType(linkData.href),
+      linkData,
+    }))
     Array.from(dialogBody.querySelectorAll('.link-editor-tab-label'))
     .forEach((el: HTMLElement) => {
       el.onclick = (_) => {
@@ -109,21 +124,21 @@ class LinkDialog {
     SilexNotification.setContent(dialogBody)
   }
 
-  getDialogHtml({isExternal, linkData}) {
+  getDialogHtml({linkType, linkData}: {linkType: LinkType, linkData: any}) {
     return `
       <section class="link-editor">
         <div class="labels">
-          <label for="link-editor-external" title="External Link" class="link-editor-tab-label first-button fa fa-lg fa-link${isExternal ? ' checked ' : ''}"></label>
-          <label for="link-editor-internal" title="Link to a page" class="link-editor-tab-label last-button fa fa-lg fa-file"${isExternal ? '' : ' checked '}></label>
+          <label for="link-editor-external" title="External Link" class="link-editor-tab-label first-button fa fa-lg fa-link${linkType === LinkType.URL ? ' checked ' : ''}"></label>
+          <label for="link-editor-internal" title="Link to a page" class="link-editor-tab-label last-button fa fa-lg fa-file${linkType === LinkType.PAGE ? ' checked ' : ''}"></label>
           <div class="space"></div>
         </div>
         <div class="link-editor-body">
-        <input autocomplete="nope" id="link-editor-external" class="link-editor-radio" type="radio" name="link-editor-tab-group"${isExternal ? ' checked ' : ''}/>
+        <input autocomplete="nope" id="link-editor-external" class="link-editor-radio" type="radio" name="link-editor-tab-group"${linkType === LinkType.URL ? ' checked ' : ''}/>
         <div class="link-editor-tab link-editor-tab-external">
           <div class="link-editor-tab-container">
             <label for="link-editor-href">External link</label>
             <div class="flex">
-              <input autocomplete="nope" spellcheck="false" id="link-editor-href" class="big alertify-text href tabbed" type="url" value="${isExternal ? linkData.href : ''}">
+              <input autocomplete="nope" spellcheck="false" id="link-editor-href" class="big alertify-text href tabbed" type="url" value="${linkType === LinkType.URL ? linkData.href : ''}">
               <select autocomplete="nope" id="link-editor-target" class="alertify-text target">
                 <option${linkData.target === '' ? ' selected ' : ''} value=""></option>
                 <option${linkData.target === '_self' ? ' selected ' : ''} value="_self">_self</option>
@@ -134,13 +149,13 @@ class LinkDialog {
             </div>
           </div>
         </div>
-        <input autocomplete="nope" id="link-editor-internal" class="link-editor-radio" type="radio" name="link-editor-tab-group"${!isExternal ? ' checked ' : ''}/>
+        <input autocomplete="nope" id="link-editor-internal" class="link-editor-radio" type="radio" name="link-editor-tab-group"${linkType === LinkType.PAGE ? ' checked ' : ''}/>
         <div class="link-editor-tab link-editor-tab-internal">
           <div class="link-editor-tab-container">
             <label for="link-editor-page">Page</label>
             <select autocomplete="nope" class="tabbed alertify-text page big" id="link-editor-page">
-              <option value=""${isExternal ? ' selected ' : ''}></option>
-              ${getPages().map((page) => `<option value="${Constants.PAGE_NAME_PREFIX + page.id}"${        !isExternal && Constants.PAGE_NAME_PREFIX + page.id === linkData.href ? ' selected ' : ''} >
+              <option value=""${linkType === LinkType.URL ? ' selected ' : ''}></option>
+              ${getPages().map((page) => `<option value="${Constants.PAGE_NAME_PREFIX + page.id}"${linkType === LinkType.PAGE && Constants.PAGE_NAME_PREFIX + page.id === linkData.href ? ' selected ' : ''} >
                 ${page.displayName}
               </option>`)}
             </select>

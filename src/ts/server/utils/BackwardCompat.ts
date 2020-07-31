@@ -7,7 +7,13 @@ import * as Path from 'path'
 import * as fs from 'fs'
 
 import { Constants } from '../../constants'
-import { ElementType } from '../../client/element-store/types'
+import {
+  ElementData,
+  ElementType,
+  Link,
+  LinkType
+} from '../../client/element-store/types'
+import { PageData } from '../../client/page-store/types'
 import { PersistantData } from '../../client/store/types'
 import {
   cleanupBefore,
@@ -19,6 +25,31 @@ import {
 } from './BackwardCompatV2.5.60'
 import { writeDataToDom } from '../../client/store/dom'
 
+
+function updateLinks<T extends { link?: Link }>(items: T[]): T[] {
+  return items
+    .map((item: T) => {
+      if(!!item.link && !item.link.linkType) {
+        // add new props
+        const link: any = {
+          ...item.link,
+          linkType: item.link.type as LinkType,
+          href: (item.link as any).value,
+        }
+        // remove old props
+        delete link.type
+        delete link.value
+        // return the updated element
+        return {
+          ...item,
+          link,
+        }
+      } else {
+        return item
+      }
+    })
+}
+
 /**
  * class name for containers which are created with sections
  */
@@ -27,10 +58,9 @@ const SECTION_CONTAINER: string = 'silex-container-content'
 export default class BackwardCompat {
   private data: PersistantData = null
   private frontEndVersion: string[]
-  private silexVersion: string[]
+  private silexVersion: number[]
 
   constructor(private rootUrl: string, rootPath = __dirname + '/../../../..') {
-    // FIXME: path in constants
     /**
      * the version of the website is stored in the generator tag as "Silex v-X-Y-Z"
      * we get it from package.json
@@ -41,8 +71,7 @@ export default class BackwardCompat {
     this.silexVersion = packageJson['version:backwardcompat'].split('.').map((s) => parseInt(s))
 
     // const components = require('../../../dist/client/libs/prodotype/components/components.json')
-    console.log(`\nSilex starts with backward compat version ${this.silexVersion} and front end version ${this.frontEndVersion}\n`)
-
+    console.log(`\nStarting. Version is ${this.silexVersion} for the websites and ${this.frontEndVersion} for Silex\n`)
   }
 
   // remove all tags
@@ -148,22 +177,32 @@ export default class BackwardCompat {
   /**
    * Check for common errors in editable html files
    */
-  fixes(doc) {
+  fixes(doc: HTMLDocument) {
     // const pages: HTMLElement[] = Array.from(doc.querySelectorAll(`.${Constants.PAGES_CONTAINER_CLASS_NAME} a[${Constants.TYPE_ATTR}="page"]`));
     // if (pages.length > 0) {
     //   console.log('Fix error of wrong silex type for', pages.length, 'pages');
     //   pages.forEach((page) => page.setAttribute(Constants.TYPE_ATTR, Constants.TYPE_PAGE));
     // }
+
+    // the following is a fix following the beta version of 07-2020
+    // for elements and pages:
+    // link.value becomes href
+    // link.type becomes linkType
+    this.data = {
+      site: this.data.site,
+      pages: updateLinks<PageData>(this.data.pages),
+      elements: updateLinks<ElementData>(this.data.elements),
+    }
   }
 
   /**
    * update the static scripts to match the current server and latest version
    */
-  updateStatic(doc) {
+  updateStatic(doc: HTMLDocument) {
     // update //{{host}}/2.x/... to latest version
-    const elements = doc.querySelectorAll('[' + Constants.STATIC_ASSET_ATTR + ']')
-    for (const element of elements) {
-      const propName = element.src ? 'src' : 'href'
+    Array.from(doc.querySelectorAll('[' + Constants.STATIC_ASSET_ATTR + ']'))
+    .forEach((element: HTMLElement) => {
+      const propName = element.hasAttribute('src') ? 'src' : 'href'
       if (element.hasAttribute(propName)) {
         const newUrl = this.getStaticResourceUrl(element[propName])
         const oldUrl = element.getAttribute(propName)
@@ -171,7 +210,7 @@ export default class BackwardCompat {
           element.setAttribute(propName, newUrl)
         }
       }
-    }
+    })
   }
 
   /**
@@ -188,7 +227,7 @@ export default class BackwardCompat {
    * @param {string} url
    * @return {string}
    */
-  getStaticResourceUrl(url) {
+  getStaticResourceUrl(url: string): string {
     const pathRelativeToStaticMatch = url.match(/static\/[0-9]*\.[0-9]*\/(.*)/)
     if (pathRelativeToStaticMatch == null) {
       console.warn('Error: could not extract the path and file name of static asset', url)
@@ -204,7 +243,7 @@ export default class BackwardCompat {
    * @param {Array.<number>} targetVersion  a given Silex version
    * @return {boolean}
    */
-  amIObsolete(initialVersion, targetVersion) {
+  amIObsolete(initialVersion: number[], targetVersion: number[]): boolean {
     return !!initialVersion[2] && initialVersion[0] > targetVersion[0] ||
       initialVersion[1] > targetVersion[1] ||
       initialVersion[2] > targetVersion[2]
@@ -216,61 +255,61 @@ export default class BackwardCompat {
    * @param {Array.<number>} targetVersion  a given Silex version
    * @return {boolean}
    */
-  hasToUpdate(initialVersion, targetVersion) {
+  hasToUpdate(initialVersion: number[], targetVersion: number[]): boolean {
     return initialVersion[0] < targetVersion[0] ||
       initialVersion[1] < targetVersion[1] ||
       initialVersion[2] < targetVersion[2]
-    }
+  }
 
-    to2_2_8(version, doc): Promise<string[]> {
-      return new Promise((resolve, reject) => {
-        const actions = []
-        if (this.hasToUpdate(version, [2, 2, 8])) {
-          // cleanup the hamburger menu icon
-          const menuButton = doc.querySelector('.menu-button')
-          if (menuButton) {
-            menuButton.classList.remove('paged-element', 'paged-element-hidden', 'page-page-1', 'prevent-resizable')
-            menuButton.classList.add('hide-on-desktop')
-          }
-          // give the hamburger menu a size (TODO: add to the json model too)
-          doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}'
-          // pages need to have href set
-          Array.from(doc.querySelectorAll('.page-element'))
-          .forEach((el: HTMLLinkElement) => {
-            el.setAttribute('href', '#!' + el.getAttribute('id'))
-          })
-          actions.push('I fixed the mobile menu so that it is compatible with the new publication (now multiple pages are generated instead of 1 single page for the whole website).')
+  to2_2_8(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 8])) {
+        // cleanup the hamburger menu icon
+        const menuButton = doc.querySelector('.menu-button')
+        if (menuButton) {
+          menuButton.classList.remove('paged-element', 'paged-element-hidden', 'page-page-1', 'prevent-resizable')
+          menuButton.classList.add('hide-on-desktop')
         }
-        resolve(actions)
-      })
-    }
+        // give the hamburger menu a size (TODO: add to the json model too)
+        doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}'
+        // pages need to have href set
+        Array.from(doc.querySelectorAll('.page-element'))
+        .forEach((el: HTMLLinkElement) => {
+          el.setAttribute('href', '#!' + el.getAttribute('id'))
+        })
+        actions.push('I fixed the mobile menu so that it is compatible with the new publication (now multiple pages are generated instead of 1 single page for the whole website).')
+      }
+      resolve(actions)
+    })
+  }
 
-    to2_2_9(version, doc): Promise<string[]> {
-      return new Promise((resolve, reject) => {
-        const actions = []
-        if (this.hasToUpdate(version, [2, 2, 9])) {
-          // remove the hamburger menu icon
-          const menuButton = doc.querySelector('.menu-button')
-          if (menuButton) {
-            menuButton.parentElement.removeChild(menuButton)
-            actions.push(
-              'I removed the mobile menu as there is now a component for that. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Hamburger-menu">Read more about the Hamburger Menu component here</a>.',
-            )
-          }
+  to2_2_9(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 9])) {
+        // remove the hamburger menu icon
+        const menuButton = doc.querySelector('.menu-button')
+        if (menuButton) {
+          menuButton.parentElement.removeChild(menuButton)
+          actions.push(
+            'I removed the mobile menu as there is now a component for that. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Hamburger-menu">Read more about the Hamburger Menu component here</a>.',
+          )
         }
-        resolve(actions)
-      })
-    }
+      }
+      resolve(actions)
+    })
+  }
 
-    to2_2_10(version, doc): Promise<string[]> {
-      return new Promise((resolve, reject) => {
-        const actions = []
-        if (this.hasToUpdate(version, [2, 2, 10])) {
-          // the body is a drop zone, not selectable, not draggable, resizeable
-          doc.body.classList.add(
-            Constants.PREVENT_DRAGGABLE_CLASS_NAME,
-            Constants.PREVENT_RESIZABLE_CLASS_NAME,
-            Constants.PREVENT_SELECTABLE_CLASS_NAME)
+  to2_2_10(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 10])) {
+        // the body is a drop zone, not selectable, not draggable, resizeable
+        doc.body.classList.add(
+          Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+          Constants.PREVENT_RESIZABLE_CLASS_NAME,
+          Constants.PREVENT_SELECTABLE_CLASS_NAME)
 
           // each section background and foreground is a drop zone, not selectable, not draggable, resizeable
           const changedSections = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}`)) as HTMLElement[]
@@ -288,67 +327,67 @@ export default class BackwardCompat {
           ))
           actions.push(`Changed the body and ${changedSections.length} sections with new CSS classes to <a href="https://github.com/silexlabs/stage/" target="_blank">the new stage component.</a>`)
 
-          // types are now with a "-element" suffix
-          const changedElements = Array.from(doc.querySelectorAll(`[${Constants.TYPE_ATTR}]`))
+            // types are now with a "-element" suffix
+            const changedElements = Array.from(doc.querySelectorAll(`[${Constants.TYPE_ATTR}]`))
           changedElements.forEach((el: HTMLElement) => el.setAttribute(Constants.TYPE_ATTR, el.getAttribute(Constants.TYPE_ATTR) + '-element'))
 
           actions.push(`Updated ${ changedElements.length } elements, changed their types to match the new version of Silex.`)
+      }
+      resolve(actions)
+    })
+  }
+
+  to2_2_11(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 11])) {
+        // the body is supposed to be an element too
+        doc.body.classList.add(Constants.EDITABLE_CLASS_NAME)
+        actions.push('I made the body editable.')
+
+        const oldBodyId = doc.body.getAttribute('data-silex-id')
+        if (oldBodyId !== 'body-initial') {
+          actions.push('I udpated the body class name from "' + oldBodyId + '" to "body-initial".')
+          doc.body.setAttribute('data-silex-id', 'body-initial')
+          doc.body.classList.remove(oldBodyId)
+          doc.body.classList.add('body-initial')
         }
-        resolve(actions)
-      })
-    }
 
-    to2_2_11(version, doc): Promise<string[]> {
-      return new Promise((resolve, reject) => {
-        const actions = []
-        if (this.hasToUpdate(version, [2, 2, 11])) {
-          // the body is supposed to be an element too
-          doc.body.classList.add(Constants.EDITABLE_CLASS_NAME)
-          actions.push('I made the body editable.')
+        // prepare the dom
+        cleanupBefore(doc)
 
-          const oldBodyId = doc.body.getAttribute('data-silex-id')
-          if (oldBodyId !== 'body-initial') {
-            actions.push('I udpated the body class name from "' + oldBodyId + '" to "body-initial".')
-            doc.body.setAttribute('data-silex-id', 'body-initial')
-            doc.body.classList.remove(oldBodyId)
-            doc.body.classList.add('body-initial')
+        // import elements
+        const elements = getElementsFromDomBC(doc)
+        writeStyles(doc, elements)
+
+        // site
+        const site = getSiteFromDom(doc)
+        writeSiteStyles(doc, site)
+
+        // pages
+        const pages = getPagesFromDom(doc)
+
+        if (elements.length && pages.length && site) {
+          this.data = {
+            site,
+            pages,
+            elements,
           }
+          this.removeIfExist(doc, 'meta[name="website-width"]')
+          this.removeIfExist(doc, 'meta[name="hostingProvider"]')
+          this.removeIfExist(doc, 'meta[name="publicationPath"]')
 
-          // prepare the dom
-          cleanupBefore(doc)
+          ;['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
 
-          // import elements
-          const elements = getElementsFromDomBC(doc)
-          writeStyles(doc, elements)
-
-          // site
-          const site = getSiteFromDom(doc)
-          writeSiteStyles(doc, site)
-
+          actions.push('I updated the model to the latest version of Silex.')
           // pages
-          const pages = getPagesFromDom(doc)
-
-          if (elements.length && pages.length && site) {
-            this.data = {
-              site,
-              pages,
-              elements,
-            }
-            this.removeIfExist(doc, 'meta[name="website-width"]')
-            this.removeIfExist(doc, 'meta[name="hostingProvider"]')
-            this.removeIfExist(doc, 'meta[name="publicationPath"]')
-
-            ;['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
-
-            actions.push('I updated the model to the latest version of Silex.')
-            // pages
-            this.removeIfExist(doc, `.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
-            actions.push('I removed the old pages system.')
-          } else {
-            console.error('Could not import site from v2.2.11', {elements, pages, site})
-          }
+          this.removeIfExist(doc, `.${Constants.PAGES_CONTAINER_CLASS_NAME}`)
+          actions.push('I removed the old pages system.')
+        } else {
+          console.error('Could not import site from v2.2.11', {elements, pages, site})
         }
-        resolve(actions)
-      })
-    }
+      }
+      resolve(actions)
+    })
+  }
 }

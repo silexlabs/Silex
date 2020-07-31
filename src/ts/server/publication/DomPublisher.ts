@@ -7,7 +7,7 @@ import { URL } from 'url'
 import * as Path from 'path'
 
 import { Constants } from '../../constants'
-import { PageData } from '../../client/page-store/types';
+import { PageData } from '../../client/page-store/types'
 import { PersistantData } from '../../client/store/types'
 import DomTools from '../utils/DomTools'
 
@@ -101,7 +101,7 @@ export class DomPublisher {
         fileName: page.id === initialFirstPageName ? newFirstPageName || 'index.html' : page.id + '.html',
       }
     })
-    // TODO: use page.link.type and page.link.value instead of adding 'page-' to page id
+    // TODO: use page.link.linkType and page.link.href instead of adding 'page-' to page id
     .map(({displayName, name, fileName}) => {
       // clone the document
       const clone = this.doc.cloneNode(true) as HTMLDocument;

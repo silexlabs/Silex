@@ -25,8 +25,8 @@ export function createPage(): Promise<void> {
           id,
           displayName,
           link: {
-            type: LinkType.PAGE,
-            value: Constants.PAGE_NAME_PREFIX + id,
+            linkType: LinkType.PAGE,
+            href: Constants.PAGE_NAME_PREFIX + id,
           },
           canDelete: true,
           canRename: true,
@@ -55,8 +55,8 @@ export function editPage(pageData: PageState = getCurrentPage()) {
             id,
             displayName,
             link: {
-              type: LinkType.PAGE,
-              value: Constants.PAGE_NAME_PREFIX + id,
+              linkType: LinkType.PAGE,
+              href: Constants.PAGE_NAME_PREFIX + id,
             },
           },
         ])

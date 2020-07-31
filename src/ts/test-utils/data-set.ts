@@ -159,8 +159,8 @@ export const PAGE1: PageData = {
   id: 'page-page-1',
   displayName: 'Page 1',
   link: {
-    type: LinkType.PAGE,
-    value: '#!page-page-1',
+    linkType: LinkType.PAGE,
+    href: '#!page-page-1',
   },
   canDelete: true,
   canProperties: true,
@@ -172,8 +172,8 @@ export const PAGE2: PageData = {
   id: 'page-page-2',
   displayName: 'Page 2',
   link: {
-    type: LinkType.PAGE,
-    value: '#!page-page-2',
+    linkType: LinkType.PAGE,
+    href: '#!page-page-2',
   },
   canDelete: true,
   canProperties: true,
@@ -184,8 +184,8 @@ export const PAGE3: PageData = {
   id: 'page-page-3',
   displayName: 'Page 3',
   link: {
-    type: LinkType.PAGE,
-    value: '#!page-page-3',
+    linkType: LinkType.PAGE,
+    href: '#!page-page-3',
   },
   canDelete: true,
   canProperties: true,

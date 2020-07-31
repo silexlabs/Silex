@@ -1,4 +1,6 @@
 import { Constants } from '../../constants'
+import { ElementData } from '../../client/element-store/types'
+import { PageData } from '../../client/page-store/types'
 import { PersistantData } from '../../client/store/types'
 
 export default class DomTools {
@@ -136,14 +138,20 @@ export default class DomTools {
       }
     }
     const { elements, site, pages } = data
-    const result = {
-      site, // FIXME: handle URLS here too
-      pages, // FIXME: handle URLS here too
-      elements: elements.map((el) => ({
+    const result: PersistantData = {
+      site,
+      pages: pages.map((page: PageData) => ({
+        ...page,
+        link: {
+          ...page.link,
+          href: checkItOut('href', page.link.href),
+        },
+      })),
+      elements: elements.map((el: ElementData) => ({
         ...el,
         link: el.link ? {
           ...el.link,
-          value: checkItOut('href', el.link.value),
+          href: checkItOut('href', el.link.href),
         } : null,
         data: recursiveCheck('data', el.data),
         style: recursiveCheck('data', el.style),
