@@ -9,7 +9,7 @@ import * as uuid from 'uuid'
 
 import { Action, DomPublisher, File } from './DomPublisher'
 import { Config } from '../ServerConfig'
-import { Constants } from '../../constants';
+import { Constants } from '../../constants'
 import { PersistantData } from '../../client/store/types'
 import { PublishContext } from '../types'
 import DomTools from '../utils/DomTools'

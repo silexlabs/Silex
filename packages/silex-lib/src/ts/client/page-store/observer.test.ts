@@ -61,7 +61,7 @@ test('page rename, update elements visibility', async () => {
       ...PAGE1_STATE,
       link: {
         ...PAGE1_STATE.link,
-        value: '#!new-page-id',
+        href: '#!new-page-id',
       }
     },
   }], [ELEM_TEXT_STATE], dispatch)
@@ -76,7 +76,7 @@ test('page rename, update elements links', async () => {
       ...PAGE1_STATE,
       link: {
         ...PAGE1_STATE.link,
-        value: '#!new-page-id',
+        href: '#!new-page-id',
       }
     },
   }], [ELEM_HTML_STATE], dispatch)
@@ -87,8 +87,8 @@ test('page rename, update elements links', async () => {
 test('page rename, update dom', async () => {
   const innerHtml = `
     <a href="not-important">Page 3</a>
-    <a href="${ PAGE1_STATE.link.value }">Page 3</a>
-    <a href="${ PAGE1_STATE.link.value }#anchor">Page 3</a>
+    <a href="${ PAGE1_STATE.link.href }">Page 3</a>
+    <a href="${ PAGE1_STATE.link.href }#anchor">Page 3</a>
   `
   const textHtml = `
     <div data-silex-id="${ELEM_TEXT_STATE.id}" class="editable-style ${ELEM_TEXT_STATE.id} text-element" title="${ELEM_TEXT_STATE.title}">
@@ -108,7 +108,7 @@ test('page rename, update dom', async () => {
       ...PAGE1_STATE,
       link: {
         ...PAGE1_STATE.link,
-        value: '#!new-page-id',
+        href: '#!new-page-id',
       }
     },
   }], [ELEM_STATE], dispatch)

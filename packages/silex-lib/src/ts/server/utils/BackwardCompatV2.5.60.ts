@@ -138,8 +138,8 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       .filter((child) => child.classList.contains(Constants.EDITABLE_CLASS_NAME))
       .map((el: HTMLElement) => getElementId(el)),
     link: linkType && linkValue ? {
-      type: linkType,
-      value: linkValue,
+      linkType,
+      href: linkValue,
     } : null,
     enableEdit: EDITABLE.includes(type),
     enableDrag: type === ElementType.SECTION || !element.classList.contains(Constants.PREVENT_DRAGGABLE_CLASS_NAME), // New feature: make all sections draggable
@@ -275,7 +275,7 @@ function getTypeBC(element: HTMLElement): ElementType {
  * get the pages on which this element is visible
  */
 function getPagesForElementBC(doc: HTMLDocument, element: HTMLElement): PageData[] {
-  return getPagesFromDom(doc).filter((pageData) => element.classList.contains('page-' + pageData.id))
+  return getPagesFromDom(doc).filter((pageData) => element.classList.contains(pageData.id))
 }
 
 ////////////////////////////////////////////////////////////
@@ -287,11 +287,11 @@ function getPagesForElementBC(doc: HTMLDocument, element: HTMLElement): PageData
 function getPageDataFromElement(element: HTMLAnchorElement): PageData {
   const pageName = element.getAttribute('id')
   return {
-    id: pageName.substr('page-'.length),
+    id: pageName,
     displayName: element.innerHTML,
     link: {
-      type: LinkType.PAGE,
-      value: '#!' + pageName,
+      linkType: LinkType.PAGE,
+      href: '#!' + pageName,
     },
     // opened: getCurrentPageName() === pageName,
     canDelete: !element.hasAttribute(Constants.PAGE_PREVENT_DELETE),

@@ -5,9 +5,13 @@
  *
  */
 
-import { Constants } from '../../../constants'
 import { Dom } from '../../utils/Dom'
-import { ElementState, ElementType, LinkType } from '../../element-store/types'
+import {
+  ElementState,
+  ElementType,
+  Link,
+  LinkType
+} from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
 import { Toolboxes } from '../../ui-store/types'
@@ -22,6 +26,7 @@ import {
   subscribeElements,
   updateElements
 } from '../../element-store/index'
+import { getLinkType, openLinkDialog } from '../dialog/LinkDialog'
 import { getSite } from '../../site-store/index'
 import { isVisibleInPage } from '../../element-store/utils'
 import { removeLink, addLink, addToPage, removeFromPage } from '../../element-store/dispatchers'
@@ -33,24 +38,11 @@ import { subscribeUi, getUi } from '../../ui-store/index'
  * let user edit style of selected elements
  */
 export class PagePane extends PaneBase {
-  static linkTemplate = `<option value='{{linkName}}'>{{displayName}}</option>`
-
   static selectorTemplate = `<div class='page-container'>
     <input class='page-check checkbox' type='checkbox' id='page-check-id-{{id}}' />
     <label class='page-label xsmall-font' for='page-check-id-{{id}}' >{{displayName}}</label>
   </div>
 	`
-
-  /**
-   * dropdown list to select a link
-   * link, select page or enter custom link
-   */
-  linkDropdown: HTMLInputElement
-
-  /**
-   * text field used to type an external link
-   */
-  linkInputTextField: HTMLInputElement
 
   /**
    * check box "view on mobile"
@@ -66,6 +58,16 @@ export class PagePane extends PaneBase {
    * Array of checkboxes used to add/remove the element from pages
    */
   pageCheckboxes: { checkbox: HTMLInputElement, page: PageState }[] = []
+
+  /**
+   * button to open link editor
+   */
+  linkBtn: HTMLButtonElement = null
+
+  /**
+   * display the link
+   */
+  linkStateEl: HTMLInputElement = null
 
   constructor(element: HTMLElement) {
 
@@ -84,18 +86,14 @@ export class PagePane extends PaneBase {
       this.redraw(getSelectedElements())
     })
 
-    // get dom elements of interest
-    this.linkDropdown = this.element.querySelector('.link-combo-box')
-    this.linkDropdown.onchange = () => this.onLinkChanged()
-    this.linkInputTextField = this.element.querySelector('.link-input-text')
-
-    // hide by default
-    this.linkInputTextField.style.display = 'none'
+    // link
+    this.linkStateEl = this.element.querySelector('.link-state') as HTMLInputElement
+    this.linkBtn = this.element.querySelector('.link-button') as HTMLButtonElement
+    this.linkBtn.onclick = () => this.editLink()
 
     // Watch for field changes, to display below.
-    this.linkInputTextField.oninput = () => this.onLinkTextChanged()
     this.viewOnDeviceEl = (this.element.querySelector('.view-on-mobile') as HTMLDivElement)
-    this.viewOnDeviceEl.onclick = (e) => {
+    this.viewOnDeviceEl.onclick = () => {
       const selected: HTMLInputElement = this.element.querySelector('.view-on-mobile input:checked')
       const value = selected.value
       const desktop = value !== 'mobile'
@@ -124,24 +122,48 @@ export class PagePane extends PaneBase {
     }
   }
 
+  getLinkElements(elements: ElementState[]) {
+    const body = getBody()
+    return elements
+      .filter((el) => el !== body && el.type !== ElementType.SECTION && !el.isSectionContent)
+  }
+
+  /**
+   * open the link editor and update selection link
+   */
+  editLink() {
+    const elements = this.getLinkElements(getSelectedElements())
+
+    // const hasLink = elements.some((el) => !!el.link)
+    const oldLink: Link = elements
+    .map((el) => el.link)
+    .reduce((prev, cur) => {
+      if (prev && cur) {
+        if (Object.keys(prev).every((key) => prev[key] === cur[key])
+            && Object.keys(cur).every((key) => prev[key] === cur[key])) {
+              // both are equal
+              return prev
+            }
+            // not equal
+            return null
+      }
+      // no link or previewly not equal
+      return null
+    })
+    this.openLinkEditor(oldLink, (link) => {
+      updateElements(elements
+        .map((el: ElementState) => ({
+          ...el,
+          link,
+        })))
+    })
+  }
+
   /**
    * refresh with new pages
    * @param pages   the new list of pages
    */
   setPages(pages: PageState[]) {
-    // link selector
-    const pageDataWithDefaultOptions = [
-      {id: 'none', displayName: '-', linkName: 'none'},
-      {id: 'custom', displayName: 'External link', linkName: 'custom'},
-    ].concat(pages.map(({id, displayName, link}) => ({
-      id,
-      displayName,
-      linkName: link.value,
-    })))
-
-    const linkContainer = this.element.querySelector('.link-combo-box')
-    linkContainer.innerHTML = Dom.renderList(PagePane.linkTemplate, pageDataWithDefaultOptions)
-
     // render page/visibility template
     // init page template
     const pagesContainer = this.element.querySelector('.pages-container')
@@ -171,41 +193,10 @@ export class PagePane extends PaneBase {
   }
 
   /**
-   * the user changed the link drop down
-   */
-  onLinkChanged() {
-    if (this.linkDropdown.value === 'none') {
-      removeLink(getSelectedElements())
-      this.linkInputTextField.style.display = 'none'
-    } else {
-      if (this.linkDropdown.value === 'custom') {
-        this.linkInputTextField.value = ''
-        this.linkInputTextField.style.display = 'inherit'
-      } else {
-        addLink(getSelectedElements(), {
-          type: LinkType.PAGE,
-          value: this.linkDropdown.value,
-        })
-      }
-    }
-  }
-
-  /**
-   * the user changed the link text field
-   */
-  onLinkTextChanged() {
-    addLink(getSelectedElements(), {
-      type: LinkType.URL,
-      value: this.linkInputTextField.value,
-    })
-  }
-
-  /**
    * callback for checkboxes click event
    * changes the visibility of the current component for the given page
    */
   checkPage(page: PageState, checkbox: HTMLInputElement) {
-    const { currentPageId } = getUi()
     // notify the toolbox
     if (checkbox.checked) {
       addToPage(getSelectedElements(), page)
@@ -242,8 +233,6 @@ export class PagePane extends PaneBase {
       const noSectionContentNoBody = selectedElements
       .filter((el) => el !== body)
       .map((el) => noSectionContent(el))
-      const noSectionNoBody = noSectionContentNoBody
-      .filter((el) => el.type !== ElementType.SECTION)
 
       // View on mobile checkbox
       Array.from(this.viewOnDeviceEl.querySelectorAll('.view-on-mobile input'))
@@ -301,43 +290,12 @@ export class PagePane extends PaneBase {
         } else {
           this.viewOnAllPagesCheckbox.checked = false
         }
-
-        // refresh the link inputs
-        // get the link of the element
-        const link = this.getCommonProperty(noSectionNoBody, (el) => el.link)
-
-        // link drop down only for elements which are not sections, section content or body
-        if(noSectionNoBody.length) this.linkDropdown.disabled = false
-          else this.linkDropdown.disabled = true
-            // TODO: handle this with link.type instead of guessing from link.value
-            if (!link || link.value === '') {
-              this.linkDropdown.value = 'none'
-              this.linkInputTextField.value = ''
-            } else {
-              if (link.value.indexOf(Constants.PAGE_NAME_PREFIX) === 0) {
-                // case of an internal link
-                // select a page
-                this.linkDropdown.value =link.value
-              } else {
-                // in case it is a custom link
-                this.linkInputTextField.value =link.value
-                this.linkDropdown.value = 'custom'
-              }
-            }
-            if (this.linkDropdown.value === 'custom') {
-              this.linkInputTextField.style.display = 'inherit'
-            } else {
-              this.linkInputTextField.style.display = 'none'
-            }
       } else {
         // body element only
         this.pageCheckboxes.forEach((item) => {
           item.checkbox.disabled = true
           item.checkbox.indeterminate = true
         })
-        this.linkDropdown.value = 'none'
-        this.linkDropdown.disabled = true
-        this.linkInputTextField.style.display = 'none'
         this.viewOnAllPagesCheckbox.disabled = true
         this.viewOnAllPagesCheckbox.checked = true
 
@@ -348,5 +306,33 @@ export class PagePane extends PaneBase {
     } else {
       this.element.style.display = 'none'
     }
+    const linkElements = this.getLinkElements(selectedElements)
+    if (linkElements.length > 0) {
+      // refresh the link inputs
+      // get the link of the element
+      const link = this.getCommonProperty<ElementState, Link>(linkElements, (el) => el.link)
+      this.linkStateEl.value = link ? link.href : ''
+      this.linkStateEl.disabled = false
+      this.linkBtn.disabled = false
+    } else {
+      this.linkBtn.disabled = true
+      this.linkStateEl.disabled = true
+      this.linkStateEl.value = ''
+    }
+  }
+
+  /**
+   * open the link editor, which uses SilexNotification
+   */
+  openLinkEditor(oldLink: Link, onChange: (link: Link) => void) {
+    openLinkDialog({
+      data: oldLink,
+      cbk: (newLink: Link) => {
+        // newLink is the same as oldLink when the user canceled the link editor
+        // therfore it is undefined when the selection is not a link
+        // and it will be undefined when the user clicks "remove link"
+        onChange(newLink)
+      },
+    })
   }
 }

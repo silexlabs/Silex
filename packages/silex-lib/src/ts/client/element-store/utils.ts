@@ -11,7 +11,7 @@ import {
   FullBox,
   Rect,
   ElementData,
-  LinkData
+  Link
 } from './types'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../io/CloudStorage'
@@ -420,7 +420,7 @@ export function isVisibleInPage(element: ElementState, pageId: string): boolean 
     .find((el) => el.pageNames.length > 0 && !el.pageNames.includes(pageId))
 }
 
-export function editLink(e: Event, linkData: LinkData, cbk: (p1: LinkData) => any) {
+export function editLink(e: Event, linkData: Link, cbk: (p1: Link) => any) {
   e.preventDefault()
   openLinkDialog({
     data: linkData,

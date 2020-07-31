@@ -5,7 +5,7 @@ import {
   ELEM_TEXT,
   PAGE1
 } from '../../../test-utils/data-set'
-import { ElementData } from '../../element-store/types'
+import { ElementData, LinkType } from '../../element-store/types'
 import { LOADING, Toolboxes } from '../../ui-store/types'
 import { PagePane } from './PagePane'
 import { PageState } from '../../page-store/types'
@@ -15,7 +15,7 @@ import { getPages, subscribePages } from '../../page-store'
 
 jest.mock('../../../../../node_modules/sortablejs/modular/sortable.core.esm.js', () => ({}))
 
-const fakePage = { id: 'fake-id', link: { value: 'fake-link' } } as PageState
+const fakePage = { id: 'fake-id', link: { href: 'fake-link', linkType: LinkType.URL } } as PageState
 const [ELEM_TEXT_STATE, ELEM_HTML_SELECTED, ELEM_SECTION_SELECTED, ELEM_SECTION_CONTENT_SELECTED] = fromData([ELEM_TEXT, {
   ...ELEM_HTML,
   selected: true,
@@ -72,20 +72,35 @@ function checkUpdate(elem: ElementData, pages: string[], calls, idx) {
 
 beforeEach(() => {
   document.body.innerHTML = `
-<span class="page-editor editor-container"><div class="expandable"><legend><span class="fa fa-fw fa-inverse fa-caret-right"></span><span>Visible on</span></legend>
-<div class="body">
-    <div class="view-on-mobile"><input class="checkbox" id="mobile" type="radio" name="visibility" value="mobile"><label class="xsmall-font" for="mobile">mobile</label><input class="checkbox" id="desktop" type="radio" name="visibility" value="desktop"><label class="xsmall-font" for="desktop">desktop</label><input class="checkbox" id="both" type="radio" name="visibility" value="both"><label class="xsmall-font" for="both">both</label>
-        <hr>
-    </div>
-    <div class="view-on-allpages"><input class="view-on-allpages-check checkbox" id="allpages" type="checkbox"><label class="view-on-allpages-label xsmall-font" for="allpages">all pages</label></div>
-    <div class="pages-container"></div>
-</div>
-</div>
-<div class="expandable">
-    <legend><span class="fa fa-fw fa-inverse fa-caret-right"></span><span>Link</span></legend>
-    <div class="body"><select class="link-combo-box combobox"></select><input class="link-input-text" placeholder="-" type="text"></div>
-</div>
-</span>
+<span class="page-editor editor-container"><div class="expandable"><legend><span class="fa fa-fw fa-inverse fa-caret-right"></span><span>Visible on</span></legend><div class="body"><div class="view-on-mobile"><input class="checkbox" id="mobile" tabindex="21" type="radio" name="visibility" value="mobile"><label class="xsmall-font" for="mobile">mobile</label><input class="checkbox" id="desktop" tabindex="22" type="radio" name="visibility" value="desktop"><label class="xsmall-font" for="desktop">desktop</label><input class="checkbox" id="both" tabindex="23" type="radio" name="visibility" value="both"><label class="xsmall-font" for="both">both</label><hr></div><div class="view-on-allpages"><input class="view-on-allpages-check checkbox" id="allpages" tabindex="24" type="checkbox"><label class="view-on-allpages-label xsmall-font" for="allpages">all pages</label></div><div class="pages-container"><div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-to-delete">
+    <label class="page-label xsmall-font" for="page-check-id-page-to-delete">to delete</label>
+  </div>
+	<div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-contact">
+    <label class="page-label xsmall-font" for="page-check-id-page-contact">Contact</label>
+  </div>
+	<div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-home">
+    <label class="page-label xsmall-font" for="page-check-id-page-home">Home</label>
+  </div>
+	<div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-post">
+    <label class="page-label xsmall-font" for="page-check-id-page-post">Post</label>
+  </div>
+	<div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-page">
+    <label class="page-label xsmall-font" for="page-check-id-page-page">Page</label>
+  </div>
+	<div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-archive">
+    <label class="page-label xsmall-font" for="page-check-id-page-archive">Archive</label>
+  </div>
+	<div class="page-container">
+    <input class="page-check checkbox" type="checkbox" id="page-check-id-page-default">
+    <label class="page-label xsmall-font" for="page-check-id-page-default">Default</label>
+  </div>
+	</div></div></div><div class="expandable expanded"><legend><span class="fa fa-fw fa-inverse fa-caret-down"></span><span>Link</span></legend><div class="body link-pane"><input class="link-state" placeholder="-" type="text" readonly=""><input class="link-button" tabindex="25" type="button" value="Edit"></div></div></span>
   `
   jest.clearAllMocks()
 

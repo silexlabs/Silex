@@ -162,7 +162,7 @@ function editComponent(component: ElementState) {
 
         },
         onBrowse: (e, url, cbk) => browse(e, cbk),
-        onEditLink: (e, linkData, cbk) => editLink(e, linkData, cbk),
+        onEditLink: (e, link, cbk) => editLink(e, link, cbk),
       }
     })
   } else {

@@ -63,13 +63,13 @@ test('convert from 2.5.60', () => {
   expect(elements.filter((el) => el.type === ElementType.HTML)[0].link).toBeNull()
   expect(elements.filter((el) => el.type === ElementType.IMAGE)[0].link).not.toBeNull()
   expect(elements.filter((el) => el.type === ElementType.IMAGE)[0].link).toEqual({
-    type: LinkType.PAGE,
-    value: '#!page-page-1',
+    linkType: LinkType.PAGE,
+    href: '#!page-page-1',
   })
   expect(elements.filter((el) => el.type === ElementType.TEXT)[0].link).not.toBeNull()
   expect(elements.filter((el) => el.type === ElementType.TEXT)[0].link).toEqual({
-    type: LinkType.URL,
-    value: 'https://www.silex.me',
+    linkType: LinkType.URL,
+    href: 'https://www.silex.me',
   })
 
   // body
@@ -182,20 +182,21 @@ test('convert from 2.5.60', () => {
     }
   )
 
-  // pages
-  const pages = getPagesFromDom(siteIFrame.contentDocument)
-  expect(pages).toHaveLength(1)
-  expect(pages[0].id).toBe('page-1')
-  expect(pages[0].displayName).toBe('Page 1')
-
-  expect(textBox.pageNames).toHaveLength(0)
-  expect(siteIFrame.contentDocument.querySelector('.page-1')).toBeNull()
-
   // image elements
   const image = elements.find((el) => el.type === ElementType.IMAGE)
   expect(image.innerHtml.trim()).toBe('<img src="assets/feed-icon-14x14.png" class="" alt="test alt">')
   expect(image.pageNames).toHaveLength(1)
-  expect(image.pageNames).toEqual(['page-1'])
-  expect(image.classList).not.toEqual(['page-1'])
+  expect(image.pageNames).toEqual(['page-page-1'])
+  expect(image.classList).not.toEqual(['page-page-1'])
 	expect(image.useMinHeight).toBe(false)
+
+  // pages
+  const pages = getPagesFromDom(siteIFrame.contentDocument)
+  expect(pages).toHaveLength(1)
+  expect(pages[0].id).toBe('page-page-1')
+  expect(pages[0].displayName).toBe('Page 1')
+
+  expect(textBox.pageNames).toHaveLength(0)
+  expect(siteIFrame.contentDocument.querySelector('.page-page-1')).not.toBeNull()
+  expect(siteIFrame.contentDocument.querySelector('.page-page-1').getAttribute('data-silex-id')).toBe(image.id)
 })

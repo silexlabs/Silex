@@ -68,10 +68,10 @@ function doPreview(inResponsize: boolean) {
     if (inResponsize) {
       setPreviewWindowLocation(
           'http://www.responsize.org/?url=' +
-          window.location.origin + getSite().file.absPath + page.link.value)
+          window.location.origin + getSite().file.absPath + page.link.href)
     } else {
       setPreviewWindowLocation(
-          window.location.origin + getSite().file.absPath + page.link.value)
+          window.location.origin + getSite().file.absPath + page.link.href)
     }
     //    tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }

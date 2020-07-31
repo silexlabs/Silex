@@ -1,8 +1,10 @@
-
-
-import { ElementState, LinkData } from '../element-store/types'
+import { ElementState, Link } from '../element-store/types'
 import { FileExplorer } from '../components/dialog/FileExplorer'
-import { LINK_ATTRIBUTES, openLinkDialog } from './dialog/LinkDialog'
+import {
+  LINK_ATTRIBUTES,
+  getLinkType,
+  openLinkDialog
+} from './dialog/LinkDialog'
 import { SilexNotification } from './Notification'
 import {
   getContentNode,
@@ -70,10 +72,10 @@ export class TextFormatBar {
    * this uses a hidden text field in the text format bar, which has a value set
    * by wysihtml
    */
-  getLink(): LinkData {
+  getLink(): Link {
     const isLink = this.element.querySelector('.create-link').classList.contains('wysihtml-command-active')
     if (isLink) {
-      return LINK_ATTRIBUTES.reduce((acc, attr) => {
+      const formData: any = LINK_ATTRIBUTES.reduce((acc, attr) => {
         const el = this.element.querySelector('.get-' + attr) as HTMLInputElement
         if (!el) {
           console.error('could not get data from link editor for attribute', attr)
@@ -82,6 +84,12 @@ export class TextFormatBar {
         }
         return acc
       }, {})
+
+      // update the link type
+      formData.linkType = getLinkType(formData.href)
+
+      // this is now a Link
+      return formData as Link
     }
     return null
   }

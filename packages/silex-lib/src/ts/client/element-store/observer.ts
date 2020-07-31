@@ -14,17 +14,17 @@ import {
   showOnDesktop,
   showOnMobile,
   writeStyleToDom
-} from './dom';
+} from './dom'
 import { getCurrentPage } from '../page-store/filters'
 import { getElementById } from './filters'
 import { getElements } from './index'
 import { getEmptyElementData } from './utils'
 import { getPages } from '../page-store/index'
-import { getParent } from '../element-store/filters';
+import { getParent } from '../element-store/filters'
 import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
-import { openPageDom, removeFromPages, setPages } from '../page-store/dom';
+import { openPageDom, removeFromPages, setPages } from '../page-store/dom'
 import { writeDataToDom } from '../store/dom'
 
 export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elements = getElements()) => {

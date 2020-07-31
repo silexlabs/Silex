@@ -40,7 +40,7 @@ export function reorderElements(parent: HTMLElement, elements: HTMLElement[]) {
  */
 export function setLink(element: HTMLElement, link: Link) {
   if (link) {
-    element.setAttribute(Constants.LINK_ATTR, link.value)
+    element.setAttribute(Constants.LINK_ATTR, link.href)
   } else {
     element.removeAttribute(Constants.LINK_ATTR)
   }
