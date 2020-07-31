@@ -19,7 +19,7 @@
     "pug": "^3.0.0",
     "pug-cli": "^1.0.0-alpha6",
     "serve-static": "^1.14.1",
-    "silex-website-builder": "silexlabs/Silex#5f0d79ec"
+    "silex-website-builder": "silexlabs/Silex#develop"
   },
   "repository": {
     "type": "git",
