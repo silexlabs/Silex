@@ -4,15 +4,29 @@ This is the official [Silex](https://www.silex.me) desktop version, an installab
 
 ![Silex desktop app](https://user-images.githubusercontent.com/715377/36344714-bf264de2-141e-11e8-8c87-f698e96d91c9.png)
 
+
+We are looking for someone to create the releases every 2 months, and for testers to test each new version on Windows and MacOS and linux after each release, [please apply here](https://github.com/silexlabs/Silex/issues/927)
+
 ## Instructions
 
 Go ahead and [download the version for your system here](https://github.com/lexoyo/silex-desktop/releases)
 
-**Windows**: download the .exe and run Silex
-**Mac**: download the .dmg and run Silex
-**linux**: downolad the .AppImage, make it executable and run it - you need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`)
+### Windows
 
-We are looking for someone to create the releases every 2 months, and for testers to test each new version on Windows and MacOS and linux after each release, [please apply here](https://github.com/silexlabs/Silex/issues/927)
+__The app is not build for windows anymore, for now__ 
+
+You can probably download the .AppImage and see [instructions here](https://discourse.appimage.org/t/run-appimage-on-windows/177)
+
+### Mac
+
+Download the .dmg and double click it to start Silex
+
+### Linux
+
+Downolad the .AppImage, make it executable and run it
+
+Note: you may need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`)
+
 
 ## Release a new version
 
