@@ -4,9 +4,19 @@
   "version": "2.6.2",
   "version:frontend": "2.11",
   "version:backwardcompat": "2.2.11",
-  "author": "Alex Hoyau <a.hoyau@silexlabs.org> (https://lexoyo.me/)",
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "contributors": [
-    "Jean-Baptiste Richardet <jeanbaptiste.richardet@gmail.com> (https://github.com/JbIPS)"
+    {
+      "name": "Jean-Baptiste Richardet",
+      "url": "https://github.com/JbIPS"
+    },
+    {
+      "name": "Tariq Benezza",
+      "url": "https://github.com/tariqbenezza"
+    }
   ],
   "main": "dist/server/server/index.js",
   "bin": {
