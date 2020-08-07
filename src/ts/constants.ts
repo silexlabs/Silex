@@ -113,6 +113,8 @@ export class Constants {
    */
   static STATIC_ASSET_ATTR = 'data-silex-static'
 
+  static ATTR_REMOVE_PUBLISH = 'data-silex-remove-publish'
+
   /**
    * constant for the class name of the element content
    */
@@ -372,5 +374,6 @@ export class Constants {
    */
   static ELEMENTS_TO_REMOVE_AT_PUBLISH = [
     '.prodotype-preview',
+    '[' + Constants.ATTR_REMOVE_PUBLISH + ']'
   ]
 }

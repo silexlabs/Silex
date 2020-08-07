@@ -25,7 +25,9 @@ import {
 } from './BackwardCompatV2.5.60'
 import { writeDataToDom } from '../../client/store/dom'
 
-
+/**
+ * util function for the "fixes", @see fixes
+ */
 function updateLinks<T extends { link?: Link }>(items: T[]): T[] {
   return items
     .map((item: T) => {
@@ -193,6 +195,9 @@ export default class BackwardCompat {
       pages: updateLinks<PageData>(this.data.pages),
       elements: updateLinks<ElementData>(this.data.elements),
     }
+    // remove juery-ui at publication, in case the website has been updated before the fix of 2.6.2
+    Array.from(doc.querySelectorAll('script[src$="pageable.js"], script[src$="jquery-ui.js"]'))
+    .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
   }
 
   /**
@@ -376,6 +381,10 @@ export default class BackwardCompat {
           this.removeIfExist(doc, 'meta[name="website-width"]')
           this.removeIfExist(doc, 'meta[name="hostingProvider"]')
           this.removeIfExist(doc, 'meta[name="publicationPath"]')
+
+          // remove juery-ui at publication
+          Array.from(doc.querySelectorAll('script[src$="pageable.js"], script[src$="jquery-ui.js"]'))
+          .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
 
           ;['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
 
