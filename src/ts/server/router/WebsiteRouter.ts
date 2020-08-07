@@ -197,7 +197,7 @@ function writeWebsite(rootUrl, unifile, backwardCompat) {
  * make all URLs absolute (so that images are still found when I "save as" my website to another folder)
  * exported for tests
  */
-export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData, baseUrl): PersistantData {
+export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData, baseUrl: URL): PersistantData {
   // URLs
   const transformedData = DomTools.transformPaths(dom.window, data, (path: string, el: HTMLElement, isInHead: boolean) => {
     // page links
