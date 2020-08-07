@@ -16,7 +16,7 @@ export default class DomTools {
     ['src', 'href'].forEach((attr) => {
       const elements: HTMLElement[] = Array.from(win.document.querySelectorAll(`[${attr}]`))
       for (const el of elements) {
-        if (el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
+        if (el.tagName.toLowerCase() === 'a' || el.hasAttribute('data-silex-href')) {
           // do nothing with <a> links
           continue
         }
@@ -142,19 +142,14 @@ export default class DomTools {
     const { elements, site, pages } = data
     const result: PersistantData = {
       site,
-      pages: pages.map((page: PageData) => ({
-        ...page,
-        link: {
-          ...page.link,
-          href: checkItOut('href', page.link.href),
-        },
-      })),
+      pages,
       elements: elements.map((el: ElementData) => ({
         ...el,
-        link: el.link ? {
-          ...el.link,
-          href: checkItOut('href', el.link.href),
-        } : null,
+        // do not change links:
+        // link: el.link ? {
+        //   ...el.link,
+        //   href: checkItOut('href', el.link.href),
+        // } : null,
         data: recursiveCheck('data', el.data),
         style: recursiveCheck('data', el.style),
       })),
