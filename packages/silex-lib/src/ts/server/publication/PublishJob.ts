@@ -7,11 +7,18 @@ import * as Path from 'path'
 import * as assert from 'assert'
 import * as uuid from 'uuid'
 
-import { Action, DomPublisher, File } from './DomPublisher'
+import {
+  Action,
+  File,
+  cleanup,
+  extractAssets,
+  splitInFiles,
+  splitPages
+} from './DomPublisher'
 import { Config } from '../ServerConfig'
 import { Constants } from '../../constants'
+import { HostingProvider, PublishContext } from '../types'
 import { PersistantData } from '../../client/store/types'
-import { PublishContext } from '../types'
 import DomTools from '../utils/DomTools'
 
 // const TMP_FOLDER = '.tmp';
@@ -46,7 +53,7 @@ export default class PublishJob {
   /**
    * factory to create a publish job
    */
-  static create({ publicationPath, file }, unifile, session, cookies, rootUrl, hostingProvider, config: Config): PublishJob {
+  static create({ publicationPath, file }, unifile, session, cookies, rootUrl: string, hostingProvider: HostingProvider, config: Config): PublishJob {
     const context: PublishContext = {
       from: file,
       to: publicationPath,
@@ -102,7 +109,8 @@ export default class PublishJob {
   private pleaseDeleteMe: boolean
   private jar: any
   private state: string
-  private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[], files: File[]}
+  private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[]}
+  private assets: File[]
   private pageActions: Action[]
 
   constructor(public id: string, private unifile, private context: PublishContext) {
@@ -160,28 +168,28 @@ export default class PublishJob {
   getHtmlFolder() {
     const defaultFolder = ''
     if (this.context.hostingProvider && this.context.hostingProvider.getHtmlFolder) {
-      return this.context.hostingProvider.getHtmlFolder(this.context, defaultFolder) || defaultFolder
+      return (this.context.hostingProvider.getHtmlFolder(this.context, defaultFolder)) || defaultFolder
     } else { return defaultFolder }
   }
   getJsFolder() {
     const defaultFolder = 'js'
     if (this.context.hostingProvider && this.context.hostingProvider.getJsFolder) {
-      return this.context.hostingProvider.getJsFolder(this.context, defaultFolder) || defaultFolder
+      return (this.context.hostingProvider.getJsFolder(this.context, defaultFolder)) || defaultFolder
     } else { return defaultFolder }
   }
   getCssFolder() {
     const defaultFolder = 'css'
     if (this.context.hostingProvider && this.context.hostingProvider.getCssFolder) {
-      return this.context.hostingProvider.getCssFolder(this.context, defaultFolder) || defaultFolder
+      return (this.context.hostingProvider.getCssFolder(this.context, defaultFolder)) || defaultFolder
     } else { return defaultFolder }
   }
   getAssetsFolder() {
     const defaultFolder = 'assets'
     if (this.context.hostingProvider && this.context.hostingProvider.getAssetsFolder) {
-      return this.context.hostingProvider.getAssetsFolder(this.context, defaultFolder) || defaultFolder
+      return (this.context.hostingProvider.getAssetsFolder(this.context, defaultFolder)) || defaultFolder
     } else { return defaultFolder }
   }
-  getDestFolder(ext, tagName) {
+  getDestFolder(ext: string, tagName: string): string {
     // tags
     if (tagName) {
       switch (tagName.toLowerCase()) {
@@ -206,7 +214,7 @@ export default class PublishJob {
   /**
    * the method called to publish a website to a location
    */
-  publish() {
+  async publish() {
     if (this.isStopped()) {
       console.warn('job is stopped', this.error, this.abort, this.success)
       return
@@ -231,7 +239,7 @@ export default class PublishJob {
       })
 
       // build folders tree
-      .then((bufferHTML) => {
+      .then(async (bufferHTML: Buffer) => {
         if (this.isStopped()) {
           console.warn('job is stopped', this.error, this.abort, this.success)
           return
@@ -241,22 +249,43 @@ export default class PublishJob {
         //  const url = new URL((this.context.from as any).url)
         const url = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.from.service}/get/${this.context.from.path}`)
         const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/')
+        const baseUrlStr = baseUrl.href
 
         // build the dom
         const data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
         const { html, userHead } = DomTools.extractUserHeadTag(bufferHTML.toString('utf-8'))
-        const dom = new JSDOM(html, { url: baseUrl.href })
-        const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => this.getDestFolder(ext, tagName), data)
+        const dom = new JSDOM(html, { url: baseUrlStr })
+        // const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => await this.getDestFolder(ext, tagName), data)
         // remove classes used by Silex during edition
-        domPublisher.cleanup()
+        cleanup(dom.window)
         // rewrite URLs and extract assets
-        this.tree = domPublisher.extractAssets(baseUrl, this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null)
+        const to = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.to.service}/get/${this.context.to.path}/`).href
+        const rootUrl = this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : to
+        this.assets = extractAssets({
+          baseUrl: baseUrlStr,
+          rootUrl,
+          win: dom.window,
+          rootPath: this.rootPath,
+          getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
+        })
+        this.tree = splitInFiles({
+          rootUrl,
+          win: dom.window,
+          userHead,
+        })
         // hide website before styles.css is loaded
         dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
         // split into pages
         const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, data) : null
         const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName.replace(new RegExp('^' + Constants.PAGE_ID_PREFIX), '')
-        this.pageActions = domPublisher.split(newFirstPageName, permalinkHook)
+        this.pageActions = splitPages({
+          newFirstPageName,
+          permalinkHook,
+          win: dom.window,
+          rootPath: this.rootPath,
+          getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
+          data,
+        })
 
         // release the dom object
         dom.window.close()
@@ -278,7 +307,7 @@ export default class PublishJob {
     })
     .catch((err) => {
       // FIXME: will never go through here
-      console.error('Publication error, could not download files:', this.tree.files.map((f) => f.displayName).join(', '), '. Error:', err)
+      console.error('Publication error, could not download files:', this.assets.map((f) => f.displayName).join(', '), '. Error:', err)
       this.error = true
       this.setStatus(err.message)
     })
@@ -303,7 +332,7 @@ export default class PublishJob {
       if (!this.context.hostingProvider) {
         return Promise.resolve()
       }
-      return this.context.hostingProvider.finalizePublication(this.context, (msg) => this.setStatus(msg))
+      return Promise.resolve(this.context.hostingProvider.finalizePublication(this.context, (msg) => this.setStatus(msg)))
     })
     // all operations done
     .then(() => {
@@ -342,7 +371,7 @@ export default class PublishJob {
       () => preventErr(this.unifile.stat(this.context.session, this.context.to.service, this.assetsFolder)),
     ]
     // add the promises to download each asset
-    .concat(this.downloadAllAssets(this.tree.files)))
+    .concat(this.downloadAllAssets(this.assets)))
   }
 
   writeOperations(statRoot: boolean, statHtml: boolean, statCss: boolean, statJs: boolean, statAssets: boolean, ...assets) {

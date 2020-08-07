@@ -1,3 +1,5 @@
+import { DOMWindow } from 'jsdom'
+
 import { Constants } from '../../constants'
 import { ElementData } from '../../client/element-store/types'
 import { PageData } from '../../client/page-store/types'
@@ -9,10 +11,10 @@ export default class DomTools {
    * with a function you provide
    * The algorithm will call your function with the URLs found in the stylsheets, the html markup, and the JSON data stored by Silex
    */
-  static transformPaths(dom, data: PersistantData, fn: (path: string, el: HTMLElement, isInHead: boolean) => string): PersistantData {
+  static transformPaths(win: DOMWindow, data: PersistantData, fn: (path: string, el: HTMLElement, isInHead: boolean) => string): PersistantData {
     // images, videos, stylesheets, iframes...
     ['src', 'href'].forEach((attr) => {
-      const elements = dom.window.document.querySelectorAll(`[${attr}]`)
+      const elements: HTMLElement[] = Array.from(win.document.querySelectorAll(`[${attr}]`))
       for (const el of elements) {
         if (el.tagName.toLowerCase() === 'a' || el.getAttribute('data-silex-href')) {
           // do nothing with <a> links
@@ -30,7 +32,7 @@ export default class DomTools {
           continue
         }
         const val = el.getAttribute(attr)
-        const newVal = fn(val, el, el.parentElement === dom.window.document.head)
+        const newVal = fn(val, el, el.parentElement === win.document.head)
         if (newVal) {
           el.setAttribute(attr, newVal)
         }
@@ -39,14 +41,14 @@ export default class DomTools {
     // CSS rules
     // FIXME: it would be safer (?) to use CSSStyleSheet::ownerNode instead of browsing the DOM
     // see the bug in jsdom: https://github.com/jsdom/jsdom/issues/992
-    const tags = dom.window.document.querySelectorAll('style')
-    const stylesheets = dom.window.document.styleSheets
+    const tags = win.document.querySelectorAll('style')
+    const stylesheets = win.document.styleSheets
     const matches = []
     for (let stylesheetIdx = 0; stylesheetIdx < stylesheets.length; stylesheetIdx++) {
       const stylesheet = stylesheets[stylesheetIdx]
       if (tags[stylesheetIdx]) { // seems to happen sometimes?
         const tag = tags[stylesheetIdx]
-        const cssText = DomTools.transformStylesheet(stylesheet, tag.parentElement === dom.window.document.head, fn)
+        const cssText = DomTools.transformStylesheet(stylesheet, tag.parentElement === win.document.head, fn)
         matches.push({
           tag,
           innerHTML: cssText,
@@ -86,9 +88,9 @@ export default class DomTools {
   /**
    * FIXME: this removes comments from CSS
    */
-  static transformStylesheet(stylesheet: CSSStyleSheet, isInHead, fn, isMediaQuerySubRule = false) {
+  static transformStylesheet(stylesheet: CSSStyleSheet, isInHead: boolean, fn, isMediaQuerySubRule = false) {
     let cssText = ''
-    for (const sheetOrRule of stylesheet.cssRules) {
+    for (const sheetOrRule of Array.from(stylesheet.cssRules) as CSSStyleRule[]) {
       // have to play with types
       const rule: CSSStyleRule = sheetOrRule as CSSStyleRule
       const sheet: CSSStyleSheet = sheetOrRule as any

@@ -199,7 +199,7 @@ function writeWebsite(rootUrl, unifile, backwardCompat) {
  */
 export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData, baseUrl): PersistantData {
   // URLs
-  const transformedData = DomTools.transformPaths(dom, data, (path: string, el: HTMLElement, isInHead: boolean) => {
+  const transformedData = DomTools.transformPaths(dom.window, data, (path: string, el: HTMLElement, isInHead: boolean) => {
     // page links
     if (path.startsWith(Constants.PAGE_NAME_PREFIX)) return path
     // keep absolute paths because we do not want `/test` to become `http://localhost:6805/test`
@@ -236,7 +236,7 @@ export function unprepareWebsite(dom: JSDOM, data: PersistantData, rootUrl: stri
   restoreIFrames(dom)
   cleanupNoscripts(dom)
   // URLs
-  const transformedData = DomTools.transformPaths(dom, data, (path, el) => {
+  const transformedData = DomTools.transformPaths(dom.window, data, (path, el) => {
     if (path.startsWith(rootUrl)) {
       // path is absolute and on the same server
       // e.g an image url, not a path like `/test`
