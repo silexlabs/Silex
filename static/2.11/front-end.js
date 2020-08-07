@@ -35,7 +35,7 @@ $(function() {
   // the page system is only for preview and inside the editor
   if(!$body.hasClass('silex-published')) {
     // get the first page name from silex data
-    var firstPageName = window.silex.data.pages[0].link.value;
+    var firstPageName = window.silex.data.pages[0].link.href;
     /**
      * callback for change events
      * called when a page is opened
