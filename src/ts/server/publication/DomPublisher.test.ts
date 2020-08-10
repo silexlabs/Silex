@@ -11,6 +11,7 @@ describe('extractAssets', () => {
     expect(extractAssets({
       baseUrl: 'baseUrl',
       rootUrl: 'rootUrl',
+      hookedRootUrl: null,
       rootPath: 'rootPath',
       win: window as any,
       getDestFolder,
@@ -27,6 +28,7 @@ describe('extractAssets', () => {
     expect(extractAssets({
       baseUrl: 'http://baseurl.com/base_src/',
       rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
       rootPath: 'rootPath',
       win: window as any,
       getDestFolder,
@@ -38,6 +40,7 @@ describe('extractAssets', () => {
       tagName: 'IMG',
     }])
     expect(getDestFolder).toHaveBeenCalledTimes(1)
+    expect(document.querySelector('img').getAttribute('src')).toEqual('destFolder/test.jpg')
   })
   test('body relative', () => {
     window.document.body.innerHTML = `
@@ -49,6 +52,7 @@ describe('extractAssets', () => {
     expect(extractAssets({
       baseUrl: 'http://baseurl.com/base_src/',
       rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
       rootPath: 'rootPath',
       win: window as any,
       getDestFolder,
@@ -60,6 +64,7 @@ describe('extractAssets', () => {
       tagName: 'IMG',
     }])
     expect(getDestFolder).toHaveBeenCalledTimes(1)
+    expect(document.querySelector('img').getAttribute('src')).toEqual('destFolder/test.jpg')
 
     window.document.body.innerHTML = `
       <img src="./srcfolder/test.jpg"/>
@@ -67,6 +72,7 @@ describe('extractAssets', () => {
     expect(extractAssets({
       baseUrl: 'http://baseurl.com/base_src/',
       rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
       rootPath: 'rootPath',
       win: window as any,
       getDestFolder,
@@ -89,6 +95,7 @@ describe('extractAssets', () => {
     expect(extractAssets({
       baseUrl: 'http://baseurl.com/base_src/',
       rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
       rootPath: 'rootPath',
       win: window as any,
       getDestFolder,
@@ -101,12 +108,52 @@ describe('extractAssets', () => {
     }])
     expect(getDestFolder).toHaveBeenCalledTimes(1)
   })
+  test('CSS stylesheet', () => {
+    window.document.head.innerHTML = `
+      <style>
+        body {
+          background-image: url(./srcfolder/test.jpg);
+        }
+      </style>
+    `
+    const getDestFolder = jest.fn((ext: string, tagName: string) => {
+      return 'destFolder'
+    })
+    extractAssets({
+      baseUrl: 'http://baseurl.com/base_src/',
+      rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
+      rootPath: 'rootPath',
+      win: window as any,
+      getDestFolder,
+    })
+    expect(window.getComputedStyle(document.body)['background-image']).toEqual('url(../destFolder/test.jpg)')
+    expect(getDestFolder).toHaveBeenCalledTimes(1)
+  })
+  test('Hooked root URL', () => {
+    window.document.head.innerHTML = `
+      <img src="./srcfolder/test.jpg"/>
+    `
+    const getDestFolder = jest.fn((ext: string, tagName: string) => {
+      return 'destFolder'
+    })
+    extractAssets({
+      baseUrl: 'http://baseurl.com/base_src/',
+      rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: '{hookedRootUrl}',
+      rootPath: 'rootPath',
+      win: window as any,
+      getDestFolder,
+    })
+    expect(document.querySelector('img').getAttribute('src')).toEqual('{hookedRootUrl}destFolder/test.jpg')
+    expect(getDestFolder).toHaveBeenCalledTimes(1)
+  })
 })
 
 describe('splitInFiles', () => {
   test('empty document', () => {
     expect(splitInFiles({
-      rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
       win: window as any,
       userHead: 'userHead',
     })).toEqual({'scriptTags': [], 'styleTags': []})
@@ -117,7 +164,7 @@ describe('splitInFiles', () => {
     script.type = 'text/NOT-javascript'
     window.document.head.appendChild(script)
     expect(splitInFiles({
-      rootUrl: 'http://baseurl.com/path/random/',
+      hookedRootUrl: null,
       win: window as any,
       userHead: 'userHead',
     })).toEqual({'scriptTags': [script], 'styleTags': []})
