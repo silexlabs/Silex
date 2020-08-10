@@ -62,19 +62,22 @@ export function cleanup(win: DOMWindow): void {
  * build an array of assets to be included in the publication, with their destination paths
  * baseUrl: url of the folder containing the website HTML file, e.g `http://localhost:6805/ce/fs/get/tmp/`
  * rootUrl: url of the folder where we will publish, e.g `http://localhost:6805/ce/fs/get/tmp/pub/`
+ * hookedRootUrl: url returned by getRootUrl from the hosting provider
  * rootPath: absolute path of the publication folder, e.g  `tmp/pub`
- * getDestFolder: hook to specify a destination folder for each file
+ * getDestFolder: destination folder for each file, possibly modified by the hosting probider hooks
  * win: the mutable DOM
  */
 export function extractAssets({
   baseUrl,
   rootUrl,
+  hookedRootUrl,
   rootPath,
   win,
   getDestFolder,
 }: {
   baseUrl: string,
   rootUrl: string,
+  hookedRootUrl: string,
   win: DOMWindow,
   rootPath: string,
   getDestFolder: (ext: string, tagName: string) => string,
@@ -102,8 +105,8 @@ export function extractAssets({
           tagName,
           displayName: fileName,
         })
-        if (!!rootUrl) {
-          return rootUrl + destPath
+        if (!!hookedRootUrl) {
+          return hookedRootUrl + destPath
         } else if (tagName) {
           // not an URL from a style sheet
           return destPath
@@ -128,11 +131,12 @@ export function extractAssets({
  * converts custom links of editable version to standard <a> tags
  */
 export function splitInFiles({
-  rootUrl,
+  hookedRootUrl,
   win,
   userHead,
 }: {
   rootUrl?: string,
+  hookedRootUrl: string,
   win: DOMWindow
   userHead: string,
 }): {
@@ -154,7 +158,7 @@ export function splitInFiles({
   // link the user's script
   if (scriptTags.length > 0) {
     const scriptTagSrc = doc.createElement('script')
-    scriptTagSrc.src = `${ rootUrl || '' }js/script.js`
+    scriptTagSrc.src = `${ hookedRootUrl || '' }js/script.js`
     scriptTagSrc.type = 'text/javascript'
     doc.head.appendChild(scriptTagSrc)
   }
@@ -170,7 +174,7 @@ export function splitInFiles({
   // link the user's stylesheet
   if (styleTags.length > 0) {
     const cssTagSrc = doc.createElement('link')
-    cssTagSrc.href = `${ rootUrl || '' }css/styles.css`
+    cssTagSrc.href = `${ hookedRootUrl || '' }css/styles.css`
     cssTagSrc.rel = 'stylesheet'
     cssTagSrc.type = 'text/css'
     doc.head.appendChild(cssTagSrc)
@@ -216,7 +220,7 @@ function isDownloadable(url: URL, rootUrl: string): boolean {
   return url.search === ''
     // do not download data:* images
     && url.protocol !== 'data:'
-    && rootUrl.startsWith(url.origin)
+    && (!rootUrl || rootUrl.startsWith(url.origin))
 }
 
 /**

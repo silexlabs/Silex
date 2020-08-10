@@ -260,16 +260,17 @@ export default class PublishJob {
         cleanup(dom.window)
         // rewrite URLs and extract assets
         const to = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.to.service}/get/${this.context.to.path}/`).href
-        const rootUrl = this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : to
+        const hookedRootUrl = this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null
         this.assets = extractAssets({
           baseUrl: baseUrlStr,
-          rootUrl,
+          rootUrl: to,
+          hookedRootUrl,
           win: dom.window,
           rootPath: this.rootPath,
           getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
         })
         this.tree = splitInFiles({
-          rootUrl,
+          hookedRootUrl,
           win: dom.window,
           userHead,
         })
