@@ -3,11 +3,11 @@ import { URL } from 'url'
 
 import {ELEM_TEXT} from '../../test-utils/data-set'
 import { ElementState, LinkType } from '../../client/element-store/types'
-import { prepareWebsite } from './WebsiteRouter'
+import { prepareWebsite, unprepareWebsite } from './WebsiteRouter'
 
 const ELEM_TEXT_STATE = ELEM_TEXT as ElementState
 
-describe('open website', () => {
+describe('open website (prepareWebsite)', () => {
   test('empty website', () => {
     // const router = WebsiteRouter({port: 0, rootUrl: ''}, null)
     // expect(router).not.toBeNull()
@@ -60,5 +60,48 @@ describe('open website', () => {
     expect(transformedData.elements[0].link.href).toBe('./a/b.html')
     // change stylesheets
     expect(dom.window.document.querySelector('.stylesheet').getAttribute('href')).toBe('http://test.com/source/a/b.html')
+  })
+})
+
+describe('save website (unprepareWebsite)', () => {
+  test('1 image with abs path', () => {
+    const dom = new JSDOM(`
+      <html class="silex-runtime"><body>
+        <div class="editable-element">
+          <img src="/ce/dropbox/get/assets/test.png" />
+        </div>
+      </body></html>
+    `)
+    const transformedData = unprepareWebsite(dom, {
+      site: null,
+      elements: [{
+        ...ELEM_TEXT_STATE,
+        link: {linkType: LinkType.URL, href: './a/b.html'},
+      }],
+      pages: [],
+    },
+    'https://editor.silex.me/', new URL('https://editor.silex.me/ce/dropbox/get/tmp/'))
+
+    expect(dom.window.document.querySelector('.editable-element img').getAttribute('src')).toBe('../assets/test.png')
+  })
+  test('1 image with abs URL', () => {
+    const dom = new JSDOM(`
+      <html class="silex-runtime"><body>
+        <div class="editable-element">
+          <img src="https://editor.silex.me/ce/dropbox/get/assets/test.png" />
+        </div>
+      </body></html>
+    `)
+    const transformedData = unprepareWebsite(dom, {
+      site: null,
+      elements: [{
+        ...ELEM_TEXT_STATE,
+        link: {linkType: LinkType.URL, href: './a/b.html'},
+      }],
+      pages: [],
+    },
+    'https://editor.silex.me/', new URL('https://editor.silex.me/ce/dropbox/get/tmp/'))
+
+    expect(dom.window.document.querySelector('.editable-element img').getAttribute('src')).toBe('../assets/test.png')
   })
 })

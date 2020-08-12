@@ -227,8 +227,10 @@ export function prepareWebsite(dom: JSDOM, rootUrl: string, data: PersistantData
  * prepare website for being saved
  * * make all URLs relative to current path
  * * remove useless markup and css classes
+ * @param rootUrl is the URL of Silex instance, e.g. `https://editor.silex.me/`
+ * @param baseUrl is the URL of the folder containing the website HTML page, e.g. `https://editor.silex.me/ce/dropbox/get/tmp/`
  */
-export function unprepareWebsite(dom: JSDOM, data: PersistantData, rootUrl: string, baseUrl): [PersistantData, JSDOM] {
+export function unprepareWebsite(dom: JSDOM, data: PersistantData, rootUrl: string, baseUrl: URL): [PersistantData, JSDOM] {
   // markup
   dom.window.document.body.classList.add(Constants.WEBSITE_CONTEXT_RUNTIME_CLASS_NAME)
   dom.window.document.body.classList.remove(Constants.WEBSITE_CONTEXT_EDITOR_CLASS_NAME)
@@ -237,11 +239,11 @@ export function unprepareWebsite(dom: JSDOM, data: PersistantData, rootUrl: stri
   cleanupNoscripts(dom)
   // URLs
   const transformedData = DomTools.transformPaths(dom.window, data, (path, el) => {
-    if (path.startsWith(rootUrl)) {
-      // path is absolute and on the same server
-      // e.g an image url, not a path like `/test`
+    const url = new URL(path, baseUrl)
+    if (url.href.startsWith(rootUrl)) {
+      // path is on the same server
+      // e.g an image url like '/ce/dropbox/get/assets/test.png'
       // make it relative
-      const url = new URL(path, baseUrl)
       return Path.relative(baseUrl.pathname, url.pathname)
     }
     return path
