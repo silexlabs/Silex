@@ -13,6 +13,7 @@ import {
   addElement,
   moveElements,
   removeFromPage,
+  removeElementsWithoutConfirm,
   selectBody,
   selectElements
 } from './dispatchers'
@@ -279,3 +280,81 @@ test('removeFromPage', () => {
   })
 
 })
+
+test('removeElements section', () => {
+  const dispatch = jest.fn()
+
+  const elemBody = {
+    ...ELEM_CONTAINER_STATE,
+    children: [ELEM_SECTION_STATE.id],
+  }
+  const sectionContent = {
+    ...ELEM_SECTION_CONTENT_STATE,
+    children: [ELEM_TEXT_STATE.id],
+  }
+
+  removeElementsWithoutConfirm([ELEM_SECTION_STATE], [
+    elemBody,
+    ELEM_TEXT_STATE,
+    ELEM_SECTION_STATE,
+    sectionContent,
+  ], dispatch)
+  expect(dispatch).toHaveBeenCalledTimes(2) // called for delete elements and update parents
+
+  expect(dispatch).toHaveBeenNthCalledWith(1, {
+    type: 'ELEMENT_UPDATE',
+    items: [{
+      ...elemBody,
+      children: [],
+    }],
+  })
+
+  expect(dispatch).toHaveBeenNthCalledWith(2, {
+    type: 'ELEMENT_DELETE',
+    items: [
+      ELEM_SECTION_STATE,
+      sectionContent,
+      ELEM_TEXT_STATE,
+    ],
+  })
+})
+
+test('removeElements section container', () => {
+  const dispatch = jest.fn()
+
+  const elemBody = {
+    ...ELEM_CONTAINER_STATE,
+    children: [ELEM_SECTION_STATE.id],
+  }
+  const sectionContent = {
+    ...ELEM_SECTION_CONTENT_STATE,
+    children: [ELEM_TEXT_STATE.id],
+  }
+
+  removeElementsWithoutConfirm([sectionContent], [
+    elemBody,
+    ELEM_TEXT_STATE,
+    ELEM_SECTION_STATE,
+    sectionContent,
+  ], dispatch)
+  expect(dispatch).toHaveBeenCalledTimes(2) // called for delete elements and update parents
+
+  expect(dispatch).toHaveBeenNthCalledWith(1, {
+    type: 'ELEMENT_UPDATE',
+    items: [{
+      ...elemBody,
+      children: [],
+    }],
+  })
+
+  expect(dispatch).toHaveBeenNthCalledWith(2, {
+    type: 'ELEMENT_DELETE',
+    items: [
+      ELEM_SECTION_STATE,
+      sectionContent,
+      ELEM_TEXT_STATE,
+    ],
+  })
+
+})
+

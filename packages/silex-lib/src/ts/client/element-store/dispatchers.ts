@@ -287,21 +287,26 @@ export function removeElements(elements = getSelectedElements()) {
   }
 }
 
-export function removeElementsWithoutConfirm(selection: ElementState[], dispatch = store.dispatch) {
+export function removeElementsWithoutConfirm(selection: ElementState[], elements = getElements(), dispatch = store.dispatch) {
   // get the elements and their children
-  const deleted = selection.concat(selection
-    .reduce((prev, el) => prev.concat(getChildrenRecursive(el)), []))
+  const selectionNoSectionContent = selection
+    .map((el) => noSectionContent(el, elements))
 
-  // delete the elements from the store
-  deleteElements(deleted, dispatch)
+  const deleted = selectionNoSectionContent
+    .concat(selectionNoSectionContent
+      .reduce((prev, el) => prev.concat(getChildrenRecursive(el, elements)), []))
 
   // update the parents to remove deleted elements from children lists
-  updateElements(selection
+  updateElements(elements
+    .filter((element: ElementState) => !deleted.includes(element)) // not in the deleted elements
     .filter((element: ElementState) => element.children.some((id) => !!deleted.find((el) => el.id === id))) // keep the parents
     .map((element: ElementState) => ({
       ...element,
       children: element.children.filter((id) => !deleted.find((el) => el.id === id)),
     })), dispatch)
+
+  // delete the elements from the store
+  deleteElements(deleted, dispatch)
 }
 
 /**
