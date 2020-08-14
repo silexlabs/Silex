@@ -261,10 +261,9 @@ export function splitPages({
     return  {
       name: page.id,
       displayName: page.displayName,
-      fileName: permalinkHook(page.id === initialFirstPageName ? newFirstPageName || 'index.html' : page.id + '.html'),
+      fileName: page.id === initialFirstPageName ? newFirstPageName || 'index.html' : page.id + '.html',
     }
   })
-  // TODO: use page.link.linkType and page.link.href instead of adding 'page-' to page id
   .map(({displayName, name, fileName}) => {
     // clone the document
     const clone = doc.cloneNode(true) as HTMLDocument;
