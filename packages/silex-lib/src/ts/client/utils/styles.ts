@@ -58,14 +58,18 @@ export function styleToObject(styleObj: CSSStyleDeclaration): object {
  */
 export function styleToString(style: {[key: string]: string}, useMinHeight: boolean, opt_tab = ''): string {
   return Object.keys(style)
-    .reduce((result: string, key:string) => {
-      const val = style[key]
-      if(typeof(val) !== 'undefined') {
-        if (useMinHeight && key === 'height') {
-          result += opt_tab + 'min-height: ' + val + '; '
-        } else {
-          result += `${opt_tab}${key}: ${val}; `
-        }
+    // remove undefined keys
+    // this removes properties with empty string value, on purpose
+    .filter((key) => !!style[key])
+    .map((key) => ({
+      key,
+      val: style[key],
+    }))
+    .reduce((result: string, {key, val}) => {
+      if (useMinHeight && key === 'height') {
+        result += opt_tab + 'min-height: ' + val + '; '
+      } else {
+        result += `${opt_tab}${key}: ${val}; `
       }
       return result
     }, '')

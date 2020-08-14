@@ -223,21 +223,14 @@ export class BgPane extends PaneBase {
         // update the model
         const element = getElements().find((el) => el.selected)
 
-        // undo checkpoint
-        //   //  this.undoCheckPoint();
-
         // load the image
         updateElements([{
           ...element,
           style: addToMobileOrDesktopStyle(getUi().mobileEditor, element.style, { 'background-image': Url.addUrlKeyword(fileInfo.absPath) }),
         }])
-
-        // tracking
-        // this.tracker.trackAction('controller-events', 'success', 'selectBgImage', 1);
       }
     } catch (error) {
       SilexNotification.notifyError(`Error: I could not load the image. \n${error.message || ''}`)
-      // this.tracker.trackAction('controller-events', 'error', 'selectBgImage', -1);
     }
   }
 
@@ -246,8 +239,5 @@ export class BgPane extends PaneBase {
    */
   onClearImageButton() {
     this.styleChanged('background-image', '')
-
-    // UI needs to be updated (which is prevented in this.styleChanged by the
-    // flag iAmSettingTheValue
   }
 }

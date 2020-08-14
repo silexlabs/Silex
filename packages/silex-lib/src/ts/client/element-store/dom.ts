@@ -224,17 +224,19 @@ export function writeStyleToDom(doc: HTMLDocument, element: ElementData, isMobil
 
   deleteStyleFromDom(doc, element.id, isMobile)
 
+  const styleStr =  styleToString(style, element.useMinHeight)
+
   // prevent empty rules
-  if (Object.keys(style).filter((key) => typeof(style[key]) !== 'undefined').length > 0) {
+  if (styleStr.length) {
     // convert style to string
     // we use the class name because elements have their ID as a css class too
-    const styleStr = '.' + elementId + '{' + styleToString(style, element.useMinHeight) + '} '
+    const ruleStr = `.${elementId} {${styleStr}}`
     if (isMobile) {
       // add the rule to the dom to see the changes, mobile rules after
       // desktop ones
-      styleSheet.insertRule(addMediaQuery(styleStr), styleSheet.cssRules.length)
+      styleSheet.insertRule(addMediaQuery(ruleStr), styleSheet.cssRules.length)
     } else {
-      styleSheet.insertRule(styleStr, 0)
+      styleSheet.insertRule(ruleStr, 0)
     }
   }
 }
