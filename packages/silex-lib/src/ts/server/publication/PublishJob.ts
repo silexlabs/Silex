@@ -11,6 +11,7 @@ import {
   Action,
   File,
   cleanup,
+  domToFileOperations,
   extractAssets,
   splitInFiles,
   splitPages
@@ -149,6 +150,7 @@ export default class PublishJob {
     return this.state
   }
   setStatus(status) {
+    console.info('Publication status:', status)
     this.state = status
   }
   cleanup() {
@@ -413,21 +415,15 @@ export default class PublishJob {
       })
     }
     if (this.tree.styleTags.length > 0) {
+      const cssAction = domToFileOperations(this.tree.styleTags, this.cssFile, 'CSS styles')
       // show website after styles.css is loaded
       const showBodyRule = 'body.silex-runtime {opacity: 1;}\n'
+      cssAction.content += showBodyRule
       // create the style.css file
-      batchActions.push({
-        name: 'writefile',
-        path: this.cssFile,
-        content: this.tree.styleTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, '') + showBodyRule,
-      })
+      batchActions.push(cssAction)
     }
     if (this.tree.scriptTags.length > 0) {
-      batchActions.push({
-        name: 'writefile',
-        path: this.jsFile,
-        content: this.tree.scriptTags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, ''),
-      })
+      batchActions.push(domToFileOperations(this.tree.scriptTags, this.jsFile, 'JS scripts'))
     }
     const batchActionsWithAssets = batchActions.concat(
       assets

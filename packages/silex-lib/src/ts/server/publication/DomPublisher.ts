@@ -224,6 +224,25 @@ function isDownloadable(url: URL, rootUrl: string): boolean {
 }
 
 /**
+ * get a page name, with a hook and default value (index.html for the first page)
+ */
+function getPageName(permalinkHook: (name: string) => string, pageName: string, initialFirstPageName: string, newFirstPageName: string) {
+  return permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html')
+}
+
+/**
+ * convert a list of html elements to unifile write operations
+ */
+export function domToFileOperations(tags: HTMLElement[], path: string, displayName: string): Action {
+  return {
+    name: 'writefile',
+    displayName,
+    path,
+    content: tags.reduce((prev, tag) => prev + '\n' + tag.innerHTML, ''),
+  }
+}
+
+/**
  * split the editable HTML into pages
  * @returns unifile actions to write files
  */
@@ -261,7 +280,7 @@ export function splitPages({
     return  {
       name: page.id,
       displayName: page.displayName,
-      fileName: page.id === initialFirstPageName ? newFirstPageName || 'index.html' : page.id + '.html',
+      fileName: getPageName(permalinkHook, page.id, initialFirstPageName, newFirstPageName),
     }
   })
   .map(({displayName, name, fileName}) => {
@@ -284,8 +303,13 @@ export function splitPages({
     Array.from(clone.querySelectorAll('a'))
     .filter((el) => el.hash.startsWith(Constants.PAGE_NAME_PREFIX + Constants.PAGE_ID_PREFIX))
     .forEach((el) => {
+      // split page name and anchor, e.g. #!page-page-1#anchor1
       const [pageName, anchor] = el.hash.substr(Constants.PAGE_NAME_PREFIX.length).split('#')
-      el.href = permalinkHook(pageName === initialFirstPageName && newFirstPageName ? newFirstPageName : pageName + '.html') + (anchor ? '#' + anchor : '')
+      // get the name of the page, with hook and default name (index.html for the first page)
+      const newName = getPageName(permalinkHook, pageName, initialFirstPageName, newFirstPageName) + (anchor ? '#' + anchor : '')
+      // links to ./ instead of index.html
+      el.href = newName === 'index.html' ? './' : newName
+      // mark link as active if it links to the current page
       if (pageName ===  name) {
         el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME)
       } else {
