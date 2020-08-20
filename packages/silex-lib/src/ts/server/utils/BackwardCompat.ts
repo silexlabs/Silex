@@ -198,6 +198,21 @@ export default class BackwardCompat {
     // remove juery-ui at publication, in case the website has been updated before the fix of 2.6.2
     Array.from(doc.querySelectorAll('script[src$="pageable.js"], script[src$="jquery-ui.js"]'))
     .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
+    // this does not work because sections can not be smaller than their content:
+    // // resizable sections
+    // this.data = {
+    //   ...this.data,
+    //   elements: this.data.elements
+    //     .map((el) => el.type === ElementType.SECTION ? {
+    //       ...el,
+    //       enableResize: {
+    //         bottom: true,
+    //         top: true,
+    //         left: false,
+    //         right: false,
+    //       }
+    //     } : el),
+    // }
   }
 
   /**
