@@ -258,7 +258,7 @@ export class TextFormatBar {
         currentTextBoxEl.addEventListener('blur', onBlurBinded)
         this.wysihtmlEditor.on('blur', (e) => this.onBlur(currentTextBoxEl))
         this.wysihtmlEditor.on('load', () => {
-          (this.element.querySelector('.insert-image') as HTMLElement).onclick = (e) => {
+          (this.element.querySelector('.insert-image') as HTMLElement).onmousedown = (e) => { // use onmousedown because we want to open fileExplorer before the onblur event
             const bookmarkNew = this.wysihtmlEditor.composer.selection.getBookmark()
             fileExplorer.openFile(FileExplorer.IMAGE_EXTENSIONS)
                 .then((fileInfo) => {
@@ -339,9 +339,9 @@ export class TextFormatBar {
     openLinkDialog({
       data: oldLink,
       cbk: (_options) => {
-      // _options is the same as oldLink when the user canceled the link editor
-      // therfore it is undefined when the selection is not a link
-      // and it will be undefined when the user clicks "remove link"
+        // _options is the same as oldLink when the user canceled the link editor
+        // therfore it is undefined when the selection is not a link
+        // and it will be undefined when the user clicks "remove link"
         if (_options) {
           this.wysihtmlEditor.composer.commands.exec('createLink', _options)
         } else {
