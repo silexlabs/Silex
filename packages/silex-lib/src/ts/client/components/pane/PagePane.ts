@@ -6,30 +6,27 @@
  */
 
 import { Dom } from '../../utils/Dom'
-import {
-  ElementState,
-  ElementType,
-  Link,
-  LinkType
-} from '../../element-store/types'
+import { ElementState, ElementType, Link } from '../../element-store/types';
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
+import { SilexNotification } from '../Notification';
 import { Toolboxes } from '../../ui-store/types'
+import { addToPage, removeFromPage } from '../../element-store/dispatchers';
 import {
   getBody,
+  getChildrenRecursive,
   getSelectedElements,
   noSectionContent
-} from '../../element-store/filters'
+} from '../../element-store/filters';
 import { getCurrentPage } from '../../page-store/filters'
 import {
   getElements,
   subscribeElements,
   updateElements
 } from '../../element-store/index'
-import { getLinkType, openLinkDialog } from '../dialog/LinkDialog'
 import { getSite } from '../../site-store/index'
 import { isVisibleInPage } from '../../element-store/utils'
-import { removeLink, addLink, addToPage, removeFromPage } from '../../element-store/dispatchers'
+import { openLinkDialog } from '../dialog/LinkDialog';
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'
 
@@ -321,18 +318,33 @@ export class PagePane extends PaneBase {
     }
   }
 
+  hasLink(el: ElementState): boolean {
+    return !!el.link || el.innerHtml.includes('<a')
+  }
+
   /**
    * open the link editor, which uses SilexNotification
    */
   openLinkEditor(oldLink: Link, onChange: (link: Link) => void) {
-    openLinkDialog({
-      data: oldLink,
-      cbk: (newLink: Link) => {
-        // newLink is the same as oldLink when the user canceled the link editor
-        // therfore it is undefined when the selection is not a link
-        // and it will be undefined when the user clicks "remove link"
-        onChange(newLink)
-      },
-    })
+    // check if the selection has links inside it
+    if (getSelectedElements()
+        .some((el) => this.hasLink(el))
+      // check the children of the current selection
+      || getSelectedElements()
+        .map((el) => getChildrenRecursive(el))
+        .some((children) => children
+          .some((child) => this.hasLink(child)))) {
+      SilexNotification.alert('Link error', 'It is impossible to add a link on this element, because the text inside the element has links. Please remove the links in the element and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
+    } else {
+      openLinkDialog({
+        data: oldLink,
+        cbk: (newLink: Link) => {
+          // newLink is the same as oldLink when the user canceled the link editor
+          // therfore it is undefined when the selection is not a link
+          // and it will be undefined when the user clicks "remove link"
+          onChange(newLink)
+        },
+      })
+    }
   }
 }

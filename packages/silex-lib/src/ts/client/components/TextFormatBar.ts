@@ -335,22 +335,26 @@ export class TextFormatBar {
    * open the link editor, which uses SilexNotification
    */
   openLinkEditor(e: Event) {
-    const oldLink = this.getLink()
-    openLinkDialog({
-      data: oldLink,
-      cbk: (_options) => {
-        // _options is the same as oldLink when the user canceled the link editor
-        // therfore it is undefined when the selection is not a link
-        // and it will be undefined when the user clicks "remove link"
-        if (_options) {
-          this.wysihtmlEditor.composer.commands.exec('createLink', _options)
-        } else {
-          this.wysihtmlEditor.composer.commands.exec('removeLink')
-        }
-        // give back the focus to the editor
-        this.wysihtmlEditor.focus(false) // seems to be needed only when _options is undefined
-      },
-    })
+    if (this.currentTextBox.link) {
+      SilexNotification.alert('Link error', 'It is impossible to add a link in this text, because the text box has a link in the properties. Please remove the link in the element property pannel and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
+    } else {
+      const oldLink = this.getLink()
+      openLinkDialog({
+        data: oldLink,
+        cbk: (_options) => {
+          // _options is the same as oldLink when the user canceled the link editor
+          // therfore it is undefined when the selection is not a link
+          // and it will be undefined when the user clicks "remove link"
+          if (_options) {
+            this.wysihtmlEditor.composer.commands.exec('createLink', _options)
+          } else {
+            this.wysihtmlEditor.composer.commands.exec('removeLink')
+          }
+          // give back the focus to the editor
+          this.wysihtmlEditor.focus(false) // seems to be needed only when _options is undefined
+        },
+      })
+    }
     // prevent click on the button
     e.preventDefault()
   }
