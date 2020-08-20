@@ -12,12 +12,13 @@ import { editElement } from './ContextMenu'
 import { fixStyleForElement } from '../utils/styles'
 import {
   getBody,
+  getChildren,
   getChildrenRecursive,
   getElementByDomElement,
   getElementById,
   getParent,
   getSelectedElements
-} from '../element-store/filters'
+} from '../element-store/filters';
 import { getDomElement, getId } from '../element-store/dom'
 import { getElements, subscribeElements, updateElements } from '../element-store/index'
 import { getSite, subscribeSite, updateSite } from '../site-store/index'
@@ -320,7 +321,7 @@ class StageWrapper {
       onDrop: (change) => this.stopDrag(change),
       onResizeEnd: (change) => this.stopResize(change),
       // onDrag: (change) => this.updateView(),
-      // onResize: (change) => this.updateView(),
+      // onResize: (change) => this.applyStyle(change),
       onSelect: (change) => this.onSelectionChanged(change),
       onStartDrag: (change) => this.startDrag(),
       onStartResize: (change) => this.startResize(),
@@ -471,15 +472,33 @@ class StageWrapper {
       updateElements(change.map((s) => {
         // FIXME: find a more optimal way to get the data from DOM element
         const element = getElements().find((el) => getDomElement(getSiteDocument(), el) === s.el)
-        // website width is also section containers width
-        //  && s.metrics.computedStyleRect.width + 'px' !== element.style.desktop.width
-        if (!getUi().mobileEditor && element.isSectionContent) {
+        if (!getUi().mobileEditor) {
+          // website width is also section containers width
+          //  && s.metrics.computedStyleRect.width + 'px' !== element.style.desktop.width
+          const width = s.metrics.computedStyleRect.width
+          if (element.isSectionContent && getSite().width !== width) {
             // set website width
-            const width = s.metrics.computedStyleRect.width
             updateSite({
               ...getSite(),
               width,
             })
+          }
+          // this does not work because sections can not be smaller than their content:
+          // // sectçion height needs to be applied to section content
+          // if (element.type === ElementType.SECTION) {
+          //   const sectionContent = getChildren(element).find((child) => child.isSectionContent)
+          //   console.log('applyStyle', element, sectionContent)
+          //   updateElements([{
+          //     ...sectionContent,
+          //     style: {
+          //       ...sectionContent.style,
+          //       desktop: {
+          //         ...sectionContent.style.desktop,
+          //         height: s.metrics.computedStyleRect.height + 'px',
+          //       },
+          //     },
+          //   }])
+          // }
         }
         return {
           ...element,
