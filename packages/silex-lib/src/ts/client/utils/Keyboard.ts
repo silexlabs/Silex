@@ -96,15 +96,19 @@ export class Keyboard {
     if (!this.shortcuts.has(key)) {
       return []
     }
+    const ctrlKey = e.ctrlKey || e.metaKey
     const shortcuts = this.shortcuts.get(key)
     return shortcuts.filter((shortcut) => {
       return (
         // accept all modifiers if modifiers is set to false
-        (shortcut.s.modifiers === false || (
-        // otherwise check the modifiers
-        !!(shortcut.s.shiftKey) === e.shiftKey &&
-        !!(shortcut.s.altKey) === e.altKey &&
-        !!(shortcut.s.ctrlKey) === (e.ctrlKey || e.metaKey))) &&
+        (
+          shortcut.s.modifiers === false || (
+            // otherwise check the modifiers
+            (shortcut.s.shiftKey || false === e.shiftKey) &&
+            (shortcut.s.altKey || false === e.altKey) &&
+            (shortcut.s.ctrlKey || false === ctrlKey)
+          )
+        ) &&
         // not when in an input field
         (shortcut.s.input !== false || !Keyboard.isInput(e.target as HTMLElement))
       )
