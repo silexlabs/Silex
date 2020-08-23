@@ -143,6 +143,7 @@ class PageTool {
       .map((p, idx) => Object.assign({
         className: (p.id === currentPageId ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
         idx,
+        shortcutText: p.id !== currentPageId && idx < 9 ? `Click to open this page (⇧ ${idx+1})` : '',
       }, p))
     // refresh the list with new pages
     const container = this.element.querySelector('.page-tool-container')
