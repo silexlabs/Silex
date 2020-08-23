@@ -167,8 +167,8 @@ export class PaneBase {
    * Init a combo box or text input
    * FIXME: use createInput instead as in PropertyPane
    */
-  protected initInput(selector: string, onChange: (e: Event) => void): HTMLInputElement {
-    return this.initEventTarget(selector, 'input', onChange)
+  protected initInput(selector: string, onChange: (e: Event) => void, eventName = 'input'): HTMLInputElement {
+    return this.initEventTarget(selector, eventName, onChange)
   }
 
   /**
