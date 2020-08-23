@@ -51,6 +51,24 @@ export function resetStage() {
   stage.setSelection(getSelectedElements().map((el) => getDomElement(doc, el)))
   startStageObserver()
 }
+/**
+ * unset all the inline properties that can be set by the stage component
+ * on a draggable element after drop
+ */
+function resetEl(el: HTMLElement) {
+  el.style.top = ''
+  el.style.left = ''
+  el.style.right = ''
+  el.style.bottom = ''
+  el.style.width = ''
+  el.style.height = ''
+  el.style.margin = ''
+  el.style.padding = ''
+  el.style.border = ''
+  el.style.minHeight = ''
+  el.style.position = ''
+}
+
 function scrollToContainSelection() {
   stage.show(getSelectedElements()
     .map((el) => getDomElement(getSiteDocument(), el)))
@@ -446,7 +464,7 @@ class StageWrapper {
   // private prepareUndo() {
   //   this.controller.stageController.undoCheckPoint()
   // }
-  private applyStyle(change) {
+  private applyStyle(change: SelectableState[]) {
     if (stoped) {
       // console.trace('prevent update elements with stoped in stage')
       return
@@ -455,18 +473,12 @@ class StageWrapper {
     if (!this.dragging) {
       // removed the inline styles
       change.forEach((s) => {
-        // these are all the properties that can be set by the stage component
-        s.el.style.top = ''
-        s.el.style.left = ''
-        s.el.style.right = ''
-        s.el.style.bottom = ''
-        s.el.style.width = ''
-        s.el.style.height = ''
-        s.el.style.margin = ''
-        s.el.style.padding = ''
-        s.el.style.border = ''
-        s.el.style.minHeight = ''
-        s.el.style.position = ''
+        // reset all properties set by the stage component on the element
+        resetEl(s.el)
+        // reset all children properties
+        // FIXME: this is a workaround, the stage component should not set the properties on these children
+        Array.from(s.el.querySelectorAll('.' + Constants.EDITABLE_CLASS_NAME))
+        .forEach((el: HTMLElement) => resetEl(el))
       })
       // apply the style
       updateElements(change.map((s) => {
@@ -487,7 +499,6 @@ class StageWrapper {
           // // sectçion height needs to be applied to section content
           // if (element.type === ElementType.SECTION) {
           //   const sectionContent = getChildren(element).find((child) => child.isSectionContent)
-          //   console.log('applyStyle', element, sectionContent)
           //   updateElements([{
           //     ...sectionContent,
           //     style: {
