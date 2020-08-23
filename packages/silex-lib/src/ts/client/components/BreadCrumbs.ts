@@ -1,9 +1,12 @@
-
-
+import { Constants } from '../../constants';
 import { ElementState } from '../element-store/types'
 import { getDisplayName } from '../element-store/utils'
 import { getDomElement } from '../element-store/dom'
-import { getParent, getSelectedElements } from '../element-store/filters'
+import {
+  getParent,
+  getSelectedElements,
+  isBody
+} from '../element-store/filters';
 import { getSiteDocument } from './SiteFrame'
 import { getUiElements } from '../ui-store/UiElements'
 import { isComponent } from '../element-store/component'
@@ -87,9 +90,12 @@ class BreadCrumbs {
     if(!domEl) return // element is in the model but its parent has not been updated yet, so it is not yet in the dom
 
     const crumb = document.createElement('DIV')
-    const cssClasses = element.classList.length ? '.' + element.classList.join('.') : ''
+    const filteredClasses = element.classList
+      .filter((className) => !Constants.SILEX_CLASS_NAMES.includes(className))
+    const cssClasses = filteredClasses.length ? '.' + filteredClasses.join('.') : ''
 
-    const displayName = domEl.tagName.toLowerCase() === 'body' ? 'Body' : isComponent(element) ? 'Component' : getDisplayName(element)
+    const _isBody = isBody(element)
+    const displayName = _isBody ? 'Body' : isComponent(element) ? 'Component' : getDisplayName(element)
     crumb.classList.add('crumb')
     crumb.innerHTML = displayName + cssClasses
     crumb.style.zIndex = (100 - this.element.childNodes.length).toString()

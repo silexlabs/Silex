@@ -5,14 +5,14 @@
  */
 import tagsInput from 'tags-input'
 
+import { Constants } from '../../../constants';
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import { Toolboxes } from '../../ui-store/types'
 import { getSelectedElements } from '../../element-store/filters'
-import { getUi } from '../../ui-store/index'
+import { getUi, subscribeUi } from '../../ui-store/index';
 import { setClassName } from '../../element-store/dispatchers'
 import { subscribeElements } from '../../element-store/index'
-import { subscribeUi } from '../../ui-store/index'
 
 /**
  * on of Silex Editors class
@@ -33,7 +33,7 @@ export class StylePane extends PaneBase {
 
     super(element)
 
-    const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged())
+    const cssClassesInput = this.initInput('.style-css-classes-input', () => this.onInputChanged(), 'blur')
     tagsInput(cssClassesInput)
     this.cssClassesTagsInput = cssClassesInput.nextElementSibling
     this.cssClassesTagsInput.classList.add('silex-input')
@@ -53,11 +53,14 @@ export class StylePane extends PaneBase {
     return this.cssClassesTagsInput.getValue().split(',').join(' ')
   }
 
-  setClassesTags(cssClasses) {
+  setClassesTags(cssClasses: string) {
     if (this.iAmChanging) return
     if (this.getClassesTags() !== cssClasses) {
       this.iAmChanging = true
-      this.cssClassesTagsInput.setValue(cssClasses.split(' ').join(','))
+      this.cssClassesTagsInput.setValue(cssClasses
+        .split(' ')
+        .filter((className: string) => !Constants.SILEX_CLASS_NAMES.includes(className))
+        .join(','))
       this.iAmChanging = false
     }
   }
@@ -70,7 +73,9 @@ export class StylePane extends PaneBase {
     if (this.cssClassesTagsInput.classList.contains('off')) {
       this.setClassesTags('')
     } else {
-      setClassName(this.getClassesTags())
+      const filteredClasses = getSelectedElements()[0].classList
+        .filter((className: string) => Constants.SILEX_CLASS_NAMES.includes(className))
+      setClassName(this.getClassesTags() + ' ' + filteredClasses)
     }
   }
 

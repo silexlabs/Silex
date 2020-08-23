@@ -169,7 +169,10 @@ export function setClassName(name: string, elements = getElements(), dispatch = 
   updateElements(getSelectedElements(elements)
     .map((el) => ({
       ...el,
-      classList: name.split(' '),
+      // note: `new Set` to make sure names are unique
+      classList: [...new Set(name
+        .split(' ')
+        .filter((className) => className !== ''))],
     })), dispatch)
 }
 
