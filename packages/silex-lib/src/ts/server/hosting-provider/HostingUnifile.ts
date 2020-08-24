@@ -1,5 +1,5 @@
 import { Config } from '../ServerConfig'
-import { HostingProvider } from '../types'
+import { HostingProvider, PublishContext } from '../types'
 
 export default class HostingUnifile implements HostingProvider {
   constructor(protected unifile, protected config: Config) {}
@@ -23,12 +23,12 @@ export default class HostingUnifile implements HostingProvider {
     return Promise.resolve()
   }
 
+  // prevent replace index.html with ./
+  getPageLink(pageUrl: string, context: PublishContext) {
+    return pageUrl
+  }
+
   getDefaultPageFileName(context) {
     return 'index.html'
   }
-
-  // this is commented out because with FS we need to explicitely link to index.html, not to the ./ folder
-  // getPermalink(pageName) {
-  //   return pageName === 'index.html' ? './' : pageName;
-  // }
 }
