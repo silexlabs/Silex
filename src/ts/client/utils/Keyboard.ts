@@ -104,9 +104,9 @@ export class Keyboard {
         (
           shortcut.s.modifiers === false || (
             // otherwise check the modifiers
-            (shortcut.s.shiftKey || false === e.shiftKey) &&
-            (shortcut.s.altKey || false === e.altKey) &&
-            (shortcut.s.ctrlKey || false === ctrlKey)
+            (shortcut.s.shiftKey || false) === e.shiftKey &&
+            (shortcut.s.altKey || false) === e.altKey &&
+            (shortcut.s.ctrlKey || false) === ctrlKey
           )
         ) &&
         // not when in an input field
