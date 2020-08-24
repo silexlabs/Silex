@@ -1,4 +1,4 @@
-import { Constants } from '../../constants';
+import { Constants } from '../../constants'
 import { ElementState } from '../element-store/types'
 import { getDisplayName } from '../element-store/utils'
 import { getDomElement } from '../element-store/dom'
@@ -6,7 +6,7 @@ import {
   getParent,
   getSelectedElements,
   isBody
-} from '../element-store/filters';
+} from '../element-store/filters'
 import { getSiteDocument } from './SiteFrame'
 import { getUiElements } from '../ui-store/UiElements'
 import { isComponent } from '../element-store/component'
