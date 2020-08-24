@@ -3,30 +3,16 @@
  *
  */
 
+import { DOMWindow } from 'jsdom'
+
 import { URL } from 'url'
 import * as Path from 'path'
 
-import { DOMWindow } from 'jsdom'
-
+import { Action, File } from '../types'
 import { Constants } from '../../constants'
 import { PageData } from '../../client/page-store/types'
 import { PersistantData } from '../../client/store/types'
 import DomTools from '../utils/DomTools'
-
-export interface File {
-  original: string
-  srcPath: string
-  destPath: string
-  tagName: string
-  displayName: string
-}
-
-export interface Action {
-  name: string
-  path: string
-  displayName: string
-  content: string|Buffer
-}
 
 /**
  * cleanup the provided dom from markup useless outside the editor
@@ -249,6 +235,8 @@ export function domToFileOperations(tags: HTMLElement[], path: string, displayNa
 export function splitPages({
   newFirstPageName,
   permalinkHook,
+  pageTitleHook,
+  pageLinkHook,
   win,
   data,
   rootPath,
@@ -256,6 +244,8 @@ export function splitPages({
 }: {
   newFirstPageName: string,
   permalinkHook: (pageName: string) => string,
+  pageTitleHook: (page: PageData) => string,
+  pageLinkHook: (href: string) => string,
   win: DOMWindow,
   data: PersistantData,
   rootPath: string,
@@ -279,15 +269,18 @@ export function splitPages({
   .map((page: PageData) => {
     return  {
       name: page.id,
-      displayName: page.displayName,
       fileName: getPageName(permalinkHook, page.id, initialFirstPageName, newFirstPageName),
+      page,
     }
   })
-  .map(({displayName, name, fileName}) => {
+  .map(({name, fileName, page}) => {
     // clone the document
-    const clone = doc.cloneNode(true) as HTMLDocument;
+    const clone = doc.cloneNode(true) as HTMLDocument
     // update title
-    (clone.head.querySelector('title') || ({} as HTMLTitleElement)).innerHTML += ' - ' + displayName
+    const titleTag: HTMLTitleElement = clone.head.querySelector('title')
+    if (titleTag) {
+      titleTag.innerHTML = pageTitleHook(page)
+    }
     // add page name on the body (used in front-end.js)
     clone.body.setAttribute('data-current-page', name)
     // remove elements from other pages
@@ -306,9 +299,8 @@ export function splitPages({
       // split page name and anchor, e.g. #!page-page-1#anchor1
       const [pageName, anchor] = el.hash.substr(Constants.PAGE_NAME_PREFIX.length).split('#')
       // get the name of the page, with hook and default name (index.html for the first page)
-      const newName = getPageName(permalinkHook, pageName, initialFirstPageName, newFirstPageName) + (anchor ? '#' + anchor : '')
-      // links to ./ instead of index.html
-      el.href = newName === 'index.html' ? './' : newName
+      const newName = getPageName(permalinkHook, pageName, initialFirstPageName, newFirstPageName)
+      el.href = pageLinkHook(newName) + (anchor ? '#' + anchor : '')
       // mark link as active if it links to the current page
       if (pageName ===  name) {
         el.classList.add(Constants.PAGE_LINK_ACTIVE_CLASS_NAME)
@@ -348,5 +340,4 @@ export function splitPages({
 //     })
 //   })
 // }
-
 

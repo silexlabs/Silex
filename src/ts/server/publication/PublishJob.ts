@@ -1,3 +1,4 @@
+import { dirname } from 'path'
 import { JSDOM } from 'jsdom'
 import * as request from 'request'
 import * as sequential from 'promise-sequential'
@@ -7,19 +8,18 @@ import * as Path from 'path'
 import * as assert from 'assert'
 import * as uuid from 'uuid'
 
+import { Action, File, HostingProvider, PublishContext } from '../types'
+import { Config } from '../ServerConfig'
+import { Constants } from '../../constants'
+import { PageData } from '../../client/page-store/types'
+import { PersistantData } from '../../client/store/types'
 import {
-  Action,
-  File,
   cleanup,
   domToFileOperations,
   extractAssets,
   splitInFiles,
   splitPages
 } from './DomPublisher'
-import { Config } from '../ServerConfig'
-import { Constants } from '../../constants'
-import { HostingProvider, PublishContext } from '../types'
-import { PersistantData } from '../../client/store/types'
 import DomTools from '../utils/DomTools'
 
 // const TMP_FOLDER = '.tmp';
@@ -278,12 +278,39 @@ export default class PublishJob {
         })
         // hide website before styles.css is loaded
         dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
-        // split into pages
+        // get the first page name, i.e. the default, e.g. index.html
         const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, data) : null
-        const permalinkHook = this.context.hostingProvider && this.context.hostingProvider.getPermalink ? this.context.hostingProvider.getPermalink : (pageName) => pageName.replace(new RegExp('^' + Constants.PAGE_ID_PREFIX), '')
+        // define hooks
+        const permalinkHook = (pageName: string) => {
+          if (this.context.hostingProvider && this.context.hostingProvider.getPermalink) {
+            return this.context.hostingProvider.getPermalink(pageName, this.context)
+          }
+          return pageName.replace(new RegExp('^' + Constants.PAGE_ID_PREFIX), '')
+        }
+        const pageTitleHook = (page: PageData) => {
+          if (this.context.hostingProvider && this.context.hostingProvider.getPageTitle) {
+            return this.context.hostingProvider.getPageTitle(data.site.title, this.context)
+          }
+          // default hook adds the page display name
+          return data.site.title + ' - ' + page.displayName
+        }
+        const pageLinkHook = (href: string) => {
+          if (this.context.hostingProvider && this.context.hostingProvider.getPageLink) {
+            // let the hosting provider create links
+            return this.context.hostingProvider.getPageLink(href, this.context)
+          } else if (href.endsWith('index.html')) {
+            // links to ./ instead of index.html
+            return dirname(href) + '/'
+          }
+          // do nothing
+          return href
+        }
+        // split into pages
         this.pageActions = splitPages({
           newFirstPageName,
           permalinkHook,
+          pageTitleHook,
+          pageLinkHook,
           win: dom.window,
           rootPath: this.rootPath,
           getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
