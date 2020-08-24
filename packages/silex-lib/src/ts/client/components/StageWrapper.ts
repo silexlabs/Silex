@@ -18,7 +18,7 @@ import {
   getElementById,
   getParent,
   getSelectedElements
-} from '../element-store/filters';
+} from '../element-store/filters'
 import { getDomElement, getId } from '../element-store/dom'
 import { getElements, subscribeElements, updateElements } from '../element-store/index'
 import { getSite, subscribeSite, updateSite } from '../site-store/index'

@@ -301,7 +301,7 @@ export class Constants {
    */
   static SILEX_CLASS_NAMES: string[] = [
     Constants.WEBSITE_WIDTH_CLASS_NAME,
-  ];
+  ]
   /**
    * Classes to remove when saving
    * This seems to be useless

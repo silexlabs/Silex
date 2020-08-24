@@ -5,12 +5,12 @@
  */
 import tagsInput from 'tags-input'
 
-import { Constants } from '../../../constants';
+import { Constants } from '../../../constants'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import { Toolboxes } from '../../ui-store/types'
 import { getSelectedElements } from '../../element-store/filters'
-import { getUi, subscribeUi } from '../../ui-store/index';
+import { getUi, subscribeUi } from '../../ui-store/index'
 import { setClassName } from '../../element-store/dispatchers'
 import { subscribeElements } from '../../element-store/index'
 

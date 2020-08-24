@@ -6,18 +6,18 @@
  */
 
 import { Dom } from '../../utils/Dom'
-import { ElementState, ElementType, Link } from '../../element-store/types';
+import { ElementState, ElementType, Link } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
-import { SilexNotification } from '../Notification';
+import { SilexNotification } from '../Notification'
 import { Toolboxes } from '../../ui-store/types'
-import { addToPage, removeFromPage } from '../../element-store/dispatchers';
+import { addToPage, removeFromPage } from '../../element-store/dispatchers'
 import {
   getBody,
   getChildrenRecursive,
   getSelectedElements,
   noSectionContent
-} from '../../element-store/filters';
+} from '../../element-store/filters'
 import { getCurrentPage } from '../../page-store/filters'
 import {
   getElements,
@@ -26,7 +26,7 @@ import {
 } from '../../element-store/index'
 import { getSite } from '../../site-store/index'
 import { isVisibleInPage } from '../../element-store/utils'
-import { openLinkDialog } from '../dialog/LinkDialog';
+import { openLinkDialog } from '../dialog/LinkDialog'
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'
 
