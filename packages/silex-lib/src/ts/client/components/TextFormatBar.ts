@@ -138,10 +138,8 @@ export class TextFormatBar {
       // reset focus
       resetFocus()
 
-      // use array acces for getSelection as a workaround for google closure
-      // warning 'Property getSelection never defined on Document' cleanup
+      // update the model
       const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
-
       const editable = getContentNode(currentTextBoxEl)
       editable.removeAttribute('contenteditable')
       editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor')
@@ -226,6 +224,8 @@ export class TextFormatBar {
         }
         this.wysihtmlEditor = new wysihtml.Editor(editable, options)
 
+        this.wysihtmlEditor.on('paste', (e) => this.onPaste(e.clipboardData.getData('text')))
+
         // CSS classes
         currentTextBoxEl.classList.add('text-editor-focus')
         currentTextBoxEl.setAttribute('data-allow-silex-shortcuts', 'true')
@@ -253,6 +253,7 @@ export class TextFormatBar {
           () => currentTextBoxEl.removeEventListener('blur', onBlurBinded),
           () => this.wysihtmlEditor.off('blur'),
           () => this.wysihtmlEditor.off('load'),
+          () => this.wysihtmlEditor.off('paste'),
         )
         win.addEventListener('scroll', onKeyScrollBinded)
         currentTextBoxEl.addEventListener('blur', onBlurBinded)
@@ -305,6 +306,19 @@ export class TextFormatBar {
       }
     } else {
       console.error('Error, can not edit selection with format pane', selectedElements)
+    }
+  }
+
+  onPaste(content: string) {
+    if (content.match(/[^\x00-\xFF]/)) {
+      SilexNotification.confirm('Paste warning', 'Warning: you have pasted text. There are strange characters in the text you pasted. These are unicode chars, which may behave differently depending on the site visitor browser. I can clear these chars for you or leave them as is.', (ok) => {
+        if (ok) {
+          const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
+          const editable = getContentNode(currentTextBoxEl)
+          const cleanContent = editable.innerHTML.replace(/[^\x00-\xFF]/, '')
+          editable.innerHTML = cleanContent
+        }
+      }, 'Cleanup', 'Paste as is')
     }
   }
 
