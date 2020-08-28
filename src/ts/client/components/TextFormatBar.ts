@@ -349,7 +349,8 @@ export class TextFormatBar {
    * open the link editor, which uses SilexNotification
    */
   openLinkEditor(e: Event) {
-    if (this.currentTextBox.link) {
+    if (!!this.currentTextBox.link) {
+      // Warning: this same error message is also in PagePane.ts
       SilexNotification.alert('Link error', 'It is impossible to add a link in this text, because the text box has a link in the properties. Please remove the link in the element property pannel and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
     } else {
       const oldLink = this.getLink()
