@@ -328,12 +328,13 @@ export class PagePane extends PaneBase {
   openLinkEditor(oldLink: Link, onChange: (link: Link) => void) {
     // check if the selection has links inside it
     if (getSelectedElements()
-        .some((el) => this.hasLink(el))
+      .some((el) => el.innerHtml.includes('<a'))
       // check the children of the current selection
       || getSelectedElements()
         .map((el) => getChildrenRecursive(el))
         .some((children) => children
           .some((child) => this.hasLink(child)))) {
+      // Warning: this same error message is also in TextFormatBar.ts
       SilexNotification.alert('Link error', 'It is impossible to add a link on this element, because the text inside the element has links. Please remove the links in the element and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
     } else {
       openLinkDialog({
