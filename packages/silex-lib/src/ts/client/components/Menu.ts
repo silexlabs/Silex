@@ -14,6 +14,7 @@ import {
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { SilexNotification } from './Notification'
+import { Toolboxes } from '../ui-store/types';
 import {
   addElement,
   moveDown,
@@ -323,13 +324,14 @@ function onMenuEvent(type: string, componentName?: string) {
     case 'view.open.htmlHeadEditor':
       openHtmlHeadEditor()
       break
-    case 'tools.mobile.mode':
+    case 'tools.mobile.mode': {
       const ui = getUi()
       updateUi({
         ...ui,
         mobileEditor: !ui.mobileEditor,
       })
       break
+    }
     case 'tools.mobile.mode.on':
       updateUi({
         ...getUi(),
@@ -342,6 +344,40 @@ function onMenuEvent(type: string, componentName?: string) {
         mobileEditor: false,
       })
       break
+    case 'tools.next.property': {
+      const ui = getUi()
+      updateUi({
+        ...ui,
+        currentToolbox: (() => {
+          switch(ui.currentToolbox) {
+            case Toolboxes.PROPERTIES: return Toolboxes.STYLES
+            case Toolboxes.STYLES: return Toolboxes.PARAMS
+            case Toolboxes.PARAMS: return Toolboxes.PROPERTIES
+            default:
+              console.error('Toolboxe name not found')
+              return Toolboxes.PROPERTIES
+          }
+        })(),
+      })
+      break
+    }
+    case 'tools.prev.property': {
+      const ui = getUi()
+      updateUi({
+        ...ui,
+        currentToolbox: (() => {
+          switch(ui.currentToolbox) {
+            case Toolboxes.PROPERTIES: return Toolboxes.PARAMS
+            case Toolboxes.STYLES: return Toolboxes.PROPERTIES
+            case Toolboxes.PARAMS: return Toolboxes.STYLES
+            default:
+              console.error('Toolboxe name not found')
+              return Toolboxes.PROPERTIES
+          }
+        })(),
+      })
+      break
+    }
     case 'insert.page':
       createPage()
       break
