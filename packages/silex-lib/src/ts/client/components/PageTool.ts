@@ -30,16 +30,9 @@ class PageTool {
     subscribeUi(() => this.redraw())
 
     // add shortcuts for pages
-    ;[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    .forEach((num) => keyboardAddShortcut({
-      label: 'Go to page',
-      key: num.toString(),
-      modifiers: false,
-      input: false,
-    }, (e) => {
-      const page = getPages()[(num + 9) % 10]
-      if (page) openPage(page)
-    }))
+    this.pageShortcuts(['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'], { modifiers: false })
+    // this will not work if you have to press "shift" to type a number
+    // this.pageShortcuts(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], { ctrlkey: true })
 
     // listen for the click on a page
     this.element.addEventListener('click', (e) => {
@@ -89,6 +82,19 @@ class PageTool {
         movePage({page: pages[e.oldIndex], idx: e.newIndex})
       },
     })
+  }
+
+  pageShortcuts(keys: string[], options: any) {
+    keys.forEach((key, idx) => keyboardAddShortcut({
+      label: 'Go to page ' + (idx + 1),
+      key,
+      input: true,
+      ...options,
+    }, (e) => {
+      const page = getPages()[idx]
+      if (page) openPage(page)
+    }))
+
   }
 
   /**
