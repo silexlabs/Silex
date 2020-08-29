@@ -14,7 +14,7 @@ import {
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { SilexNotification } from './Notification'
-import { Toolboxes } from '../ui-store/types';
+import { Toolboxes } from '../ui-store/types'
 import {
   addElement,
   moveDown,
