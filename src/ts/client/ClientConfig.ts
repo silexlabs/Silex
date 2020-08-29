@@ -205,6 +205,19 @@ export const config = {
       key: 'm',
       altKey: true,
     },
+    {
+      label: 'Next tab in the property tool',
+      id: 'tools.next.property',
+      key: 'l',
+      altKey: true,
+    },
+    {
+      label: 'Previous tab in the property tool',
+      id: 'tools.prev.property',
+      key: 'l',
+      shiftKey: true,
+      altKey: true,
+    },
     /////////////////////////////////////////////////
     {
       label: 'HTML <head> editor',
