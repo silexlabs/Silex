@@ -478,7 +478,7 @@ function onMenuEvent(type: string, componentName?: string) {
     case 'help.contribute':
       window.open(config.CONTRIBUTE)
       break
-      default:
+    default:
       console.warn('menu type not found', type)
   }
 }

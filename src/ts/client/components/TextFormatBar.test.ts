@@ -23,8 +23,14 @@ import {TextFormatBar} from './TextFormatBar'
 // results in the text box to contain only the non-unicod chars
 test('paste unicode chars', () => {
   const textFormatBar = new TextFormatBar(document.body)
+  // 1 unicode character
   document.body.innerHTML = 'ab\u2028cd'
   textFormatBar.onPaste('ab\u2028cd')
   expect(confirm).toHaveBeenCalledTimes(1)
+  expect(document.body.innerHTML).toBe('abcd')
+  // 2 unicode characters
+  document.body.innerHTML = 'ab\u2028c\u2029d'
+  textFormatBar.onPaste('ab\u2028c\u2029d')
+  expect(confirm).toHaveBeenCalledTimes(2)
   expect(document.body.innerHTML).toBe('abcd')
 })
