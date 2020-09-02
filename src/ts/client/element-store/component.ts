@@ -58,7 +58,7 @@ export async function updateComponents(components = getComponents()) {
     .map((el) => renderWithProdotype(
       getProdotypeComponent(), {
         templateName: el.data.component.templateName,
-        data: el.data.component,
+        data: el.data.component.data,
         dataSources: getSite().dataSources,
       })
       .then((innerHtml) => ([
