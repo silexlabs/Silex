@@ -30,6 +30,7 @@ test('convert from 2.5.60', () => {
   const IMAGE_ELEMENT_ID = 'silex-id-1439573539993-24'
   const BODY_ID = 'body-initial'
   const COMPONENT_ID = 'silex-id-1526234059780-5'
+  const COMPONENT2_ID = 'silex-id-1585068099307-0'
   const SECTION_ID = 'silex-id-1478366450713-3'
   const SECTION_CONTAINER_ID = 'silex-id-1478366450713-2'
 
@@ -81,7 +82,13 @@ test('convert from 2.5.60', () => {
   expect(component.type).toBe(ElementType.HTML)
   expect(component.data.component.templateName).toBe('form')
   expect(component.data.component.data).not.toBeNull()
-  expect(component.data.component.data.buttonBackgroundColor).toBe('#000000')
+  expect(component.data.component.data.buttonBackgroundColor).toBe('#FF0000')
+
+  const component2 = elements.find((el) => el.id === COMPONENT2_ID)
+  expect(component2.type).toBe(ElementType.HTML)
+  expect(component2.data.component.templateName).toBe('slideshow')
+  expect(component2.data.component.data).not.toBeNull()
+  expect(component2.data.component.data.slides).toHaveLength(1)
 
   // data
   const allSections = elements.filter((el) => el.type === ElementType.SECTION)

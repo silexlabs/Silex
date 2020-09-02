@@ -137,16 +137,11 @@ function editComponent(component: ElementState) {
   if (component && component.data.component) {
     const componentData = component.data.component
     openComponentEditor({
-      data: componentData,
+      data: componentData.data,
       dataSources: getSite().dataSources,
       templateName: componentData.templateName,
       events: {
         onChange: (newData, html) => {
-          // undo checkpoint
-          // undoCheckPoint()
-
-          const domEl = getDomElement(getSiteDocument(), component)
-
           // store the component's data for later edition
           updateElements([{
             ...component,
@@ -154,7 +149,10 @@ function editComponent(component: ElementState) {
               ...component.data,
               component: {
                 ...component.data.component,
-                ...newData,
+                data: {
+                  ...component.data.component.data,
+                  ...newData,
+                },
               },
             },
             innerHtml: html,
