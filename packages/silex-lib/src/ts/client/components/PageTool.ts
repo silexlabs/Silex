@@ -30,9 +30,12 @@ class PageTool {
     subscribeUi(() => this.redraw())
 
     // add shortcuts for pages
+    // on PC
     this.pageShortcuts(['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'], { modifiers: false })
-    // this will not work if you have to press "shift" to type a number
-    // this.pageShortcuts(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], { ctrlkey: true })
+    // on mac, for keyboard without F* keys
+    this.pageShortcuts(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], { ctrlKey: true })
+    // in case you have to press "shift" to type a number
+    this.pageShortcuts(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'], { ctrlKey: true, shiftKey: true })
 
     // listen for the click on a page
     this.element.addEventListener('click', (e) => {
@@ -149,7 +152,7 @@ class PageTool {
       .map((p, idx) => Object.assign({
         className: (p.id === currentPageId ? ' ui-selected' : '') + (p.canDelete ? ' ui-can-delete' : ' ui-can-not-delete') + (p.canProperties ? ' ui-can-properties' : ' ui-can-not-properties') + (p.canMove ? ' ui-can-move' : ' ui-can-not-move'),
         idx,
-        shortcutText: p.id !== currentPageId && idx < 9 ? `Click to open this page (⇧ ${idx+1})` : '',
+        shortcutText: p.id !== currentPageId && idx < 9 ? `Click to open this page (Ctrl+${idx+1} or F${idx+1})` : '',
       }, p))
     // refresh the list with new pages
     const container = this.element.querySelector('.page-tool-container')

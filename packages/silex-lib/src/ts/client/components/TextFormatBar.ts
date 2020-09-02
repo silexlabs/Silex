@@ -315,7 +315,7 @@ export class TextFormatBar {
         if (ok) {
           const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
           const editable = getContentNode(currentTextBoxEl)
-          const cleanContent = editable.innerHTML.replace(/[^\x00-\xFF]/, '')
+          const cleanContent = editable.innerHTML.replace(/[^\x00-\xFF]/g, '')
           editable.innerHTML = cleanContent
         }
       }, 'Cleanup', 'Paste as is')
