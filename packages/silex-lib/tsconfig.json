@@ -2,14 +2,20 @@
   "compileOnSave": true,
   "compilerOptions": {
     "outDir": "dist/client/",
-    "target": "es6",
+    "target": "esnext",
     "watch": true,
     "sourceMap": true,
-    "module": "es6",
+    "module": "esnext",
     "removeComments": false,
-    "typeRoots": ["src/types"],
+    "typeRoots": [
+      "src/ts/types",
+      "node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "esModuleInterop": true
   },
   "include": [
-    "src/client/App.ts",
-  ],
+    "src/ts/client/App.ts",
+    "node_modules/redux-undo/typings.d.ts"
+  ]
 }

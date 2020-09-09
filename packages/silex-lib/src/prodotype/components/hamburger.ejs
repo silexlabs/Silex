@@ -149,9 +149,9 @@
     });
   }
   $('.hamburger-menu_<%- uid %> .hamburger-btn').click(function() { toggle(); });
-  $(document).on('silex.scroll silex.resize', function(e, data) {
+  $(document).on('silex.scroll silex.resize', function(e) {
     close();
-    move(data);
+    move(window.silex);
   });
   close();
 })();

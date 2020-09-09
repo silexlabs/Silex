@@ -1,13 +1,18 @@
 script.page-tool-template(type="text/x-handlebars-template").
-  <a class="page-container {{className}}" href="{{linkName}}" data-page-name="{{name}}" data-page-idx="{{idx}}">
+  <a class="page-container {{className}}"
+    data-page-name="{{id}}"
+    data-page-idx="{{idx}}"
+    title="{{shortcutText}}"
+    >
     <div class="page-preview xsmall-font">
+      <div class="page-icon page-handle fa fa-arrows" title="Drag to reoder pages"></div>
+      <div class="page-icon page-properties fa fa-cog" title="Page settings (Alt R)"></div>
+      <div class="page-icon page-delete fa fa-trash" title="Delete page"></div>
       <div class="label">{{displayName}}</div>
     </div>
   </a>
-.label Pages
+.label
+  span Pages
+  .add-page.fa.fa-lg.fa-inverse.fa-plus-square(title="Add a page")
 .page-tool-container
-.ui-container
-  .icon.add-page.fa-fw.fa-inverse.fa-plus-square(title="Add a page")
-  .icon.remove-page.fa-fw.fa-inverse.fa-minus-square(title="Delete page")
-  .icon.move-page-up.fa-fw.fa-inverse.fa-caret-square-o-up(title="Move page up")
-  .icon.move-page-down.fa-fw.fa-inverse.fa-caret-square-o-down(title="Move page down")
+

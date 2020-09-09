@@ -26,27 +26,28 @@
     .labels {
       .format-buttons;
       label {
-      width: 40px;
-      height: 18px;
-      background-color: transparent;
-      border: none;
-      &.first-button {
-        clear: none;
-        border: none;
-      }
-      &.last-button {
-        border-radius: 0;
-      }
-      &.wysihtml-command-active {
-        .button-template-selected;
+        width: 40px;
+        height: 18px;
         background-color: transparent;
+        border: none;
+        &.first-button {
+          clear: none;
+          border: none;
+        }
+        &.last-button {
+          border-radius: 0;
+        }
+        &.wysihtml-command-active {
+          .button-template-selected;
+          background-color: transparent;
+        }
       }
-    }
     }
   }
   div.image-details {
     display: flex;
     clear: both;
+    align-items: center;
 
     & > * {
       margin: 5px;
@@ -54,21 +55,10 @@
       font-size: 13px;
       line-height: 1.5;
     }
-    /* the "alt" label */
-    label {
-      position: absolute;
-      margin: 0;
-      top: 34px;
-      left: 5px;
-      color: @silexlightblue;
-    }
     // the alt input
     input {
-      padding-left: 30px;
       flex: 1 1 auto;
-    }
-    // all inputs
-    input, select, label {
     }
   }
 }
+
