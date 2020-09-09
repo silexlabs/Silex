@@ -121,7 +121,7 @@
     "@types/jsdom": "16.2.4",
     "@types/node": "14.6.4",
     "babel-jest": "26.3.0",
-    "css-loader": "4.2.2",
+    "css-loader": "4.3.0",
     "detect-browser": "5.1.1",
     "eslint": "7.8.1",
     "file-loader": "6.1.0",
