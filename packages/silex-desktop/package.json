@@ -36,6 +36,6 @@
     "electron-rebuild": "1.11.0"
   },
   "dependencies": {
-    "silex-website-builder": "silexlabs/Silex#develop"
+    "silex-website-builder": "silexlabs/Silex#master"
   }
 }
