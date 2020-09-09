@@ -74,47 +74,73 @@ export class FileExplorer {
   async openFile(opt_extensions?: string[]): Promise<FileInfo> {
     this.open()
     const fileInfo = await this.ce.openFile(opt_extensions)
-    if (fileInfo && fileInfo.attribution) { await this.promptAttribution(fileInfo.attribution) }
+    if (fileInfo) {
+      const absPath = await this.promptAttributionAndGetSize(fileInfo.attribution, fileInfo.urls)
+      this.close()
+      return {
+        ...fileInfo,
+        absPath,
+      }
+    }
     this.close()
     return this.addAbsPath(fileInfo)
   }
 
-  async promptAttribution(attribution) {
+  async promptAttributionAndGetSize(attribution, urls) {
     return new Promise((resolve, reject) => {
-      SilexNotification.confirm('Attribution for his image', `
+      const attributionText = attribution ? `
+        <h3>About this image and the author</h3>
         <p>
           ${attribution.message}
         </p><br/>
         <code>
           ${attribution.content}
         </code>
-      `, (ok) => {
+        <button class="copy-btn">Copy</button>
+      ` : ''
+      const sizeText = `
+        <h3>Image size</h3>
+        <p>You need to choose an image size to continue</p>
+        <ul>
+          <li>Open the <a target="_blank" href="${urls.big}">big version</a> in a new tab</li>
+          <li>Or the <a target="_blank" href="${urls.small}">small version</a></li>
+        </ul>
+      `
+      const form: HTMLElement = document.createElement('div')
+      form.innerHTML = attributionText + sizeText
+      const copyBtn: HTMLButtonElement = form.querySelector('.copy-btn')
+      copyBtn.onclick = () => this.copy(attribution.content)
+      SilexNotification.confirm('Insert image', '', (ok) => {
         if (ok) {
-          resolve()
-          const copyText = document.createElement('div')
-          document.body.appendChild(copyText)
-          try {
-            copyText.innerHTML = attribution.content
-            const range = document.createRange()
-            range.selectNode(copyText)
-            window.getSelection().addRange(range)
-            const success = document.execCommand('copy')
-            if (success) {
-              SilexNotification.notifySuccess('Attribution copied to clipboard')
-            } else {
-              SilexNotification.notifyError('Attribution has not been copied to clipboard')
-              console.error('Could not copy to clipboard', attribution)
-            }
-          } catch (err) {
-            SilexNotification.notifyError('Attribution has not been copied to clipboard')
-            console.error('Could not copy to clipboard', err, attribution)
-          }
-          document.body.removeChild(copyText)
+          resolve(urls.big)
         } else {
-          resolve()
+          resolve(urls.small)
         }
-      }, 'Copy', 'Ignore')
+      }, 'Big size', 'Small size')
+      SilexNotification.setContent(form, false)
     })
+  }
+
+  copy(text: string) {
+    const copyText = document.createElement('div')
+    document.body.appendChild(copyText)
+    try {
+      copyText.innerHTML = text
+      const range = document.createRange()
+      range.selectNode(copyText)
+      window.getSelection().addRange(range)
+      const success = document.execCommand('copy')
+      if (success) {
+        SilexNotification.notifySuccess('Attribution copied to clipboard')
+      } else {
+        SilexNotification.notifyError('Attribution has not been copied to clipboard')
+        console.error('Could not copy to clipboard', text)
+      }
+    } catch (err) {
+      SilexNotification.notifyError('Attribution has not been copied to clipboard')
+      console.error('Could not copy to clipboard', err, text)
+    }
+    document.body.removeChild(copyText)
   }
 
   /**
