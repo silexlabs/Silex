@@ -12,7 +12,7 @@ Brought to you by Silex Labs team, promoting free software. Feel free to [use th
 Silex for DIY and passionate people who want a free alternative to Wix or other closed source website builders:
 
 * [Use Silex online for free](https://editor.silex.me)
-* [Silex desktop app (works offline, with your local files)](https://github.com/silexlabs/Silex/releases)
+* [Silex desktop app (works offline, with your local files)](https://github.com/silexlabs/silex-desktop/)
 * [Silex official website](http://www.silex.me/)
 * [Documentation wiki](https://github.com/silexlabs/Silex/wiki)
 * [Silex forums](https://github.com/silexlabs/Silex/issues)
