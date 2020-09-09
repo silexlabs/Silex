@@ -2,41 +2,20 @@
   /* ************** */
   /* pane selection */
   /* ************** */
-  .right-pane > div {
-    display: none;
+  .right-pane {
+    /* pane visibility */
+    .pane { display: none; }
+    input:checked + .pane { display: initial; }
   }
-  &.general-pane-visible {
-    .right-pane .general-pane {
-      display: initial;
-    }
-    .left-pane .general-pane {
-      font-weight: bold;
-    }
-  }
-  &.publish-pane-visible {
-    .right-pane .publish-pane {
-      display: initial;
-    }
-    .left-pane .publish-pane {
-      font-weight: bold;
-    }
-  }
-  &.fonts-pane-visible {
-    .right-pane .fonts-pane {
-      display: initial;
-    }
-    .left-pane .fonts-pane {
-      font-weight: bold;
-    }
-  }
-  &.social-pane-visible {
-    .right-pane .social-pane {
-      display: initial;
-    }
-    .left-pane .social-pane {
-      font-weight: bold;
-    }
-  }
+
+  /* current pane highlight */
+  .opened-label { color: @silexlightblue; }
+  &.general-pane-visible [for=settings-general-pane] { .opened-label; }
+  &.publish-pane-visible [for=settings-publish-pane] { .opened-label; }
+  &.fonts-pane-visible [for=settings-fonts-pane] { .opened-label; }
+  &.data-sources-pane-visible [for=settings-data-sources-pane] { .opened-label; }
+  &.social-pane-visible [for=settings-social-pane] { .opened-label; }
+
   /* **************** */
   /* left pane styles */
   /* **************** */
@@ -74,6 +53,11 @@
     flex: 1 1 auto;
     .pane > p {
       margin: 10px;
+    }
+    label.mobile-check {
+      // the label "enable mobile version"
+      vertical-align: top;
+      line-height: 2.5;
     }
     ul {
       list-style: none;
@@ -123,14 +107,14 @@
         display: block;
       }
     }
-    .fonts-pane {
+    .fonts-pane, .data-sources-pane {
       button {
         padding: 5px;
         margin: 5px;
-        border: 1px solid @silexlightergrey;
-        border-radius: 2px;
-        background-color: transparent;
-        color: @silexlightergrey;
+        // border: 1px solid @silexlightergrey;
+        // border-radius: 2px;
+        // background-color: transparent;
+        // color: @silexlightergrey;
         min-width: 25px;
         min-height: 25px;
       }
@@ -139,7 +123,7 @@
         & > legend, & > p { padding: 10px; }
         & > legend { margin: 10px; }
       }
-      .fonts-list ul li {
+      .fonts-list ul li, .data-sources-list ul li {
         display: flex;
         border-bottom: 1px solid;
         &:last-child { border-bottom: none; }

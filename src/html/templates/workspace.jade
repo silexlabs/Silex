@@ -1,6 +1,6 @@
 .silex-workspace
   // file explorer
-  iframe#silex-file-explorer.notranslate(
+  iframe#silex-file-explorer.silex-hide-dialog.silex-modal-dialog.notranslate(
     src='/ce/cloud-explorer/cloud-explorer.html'
     frameborder='no',
     scrolling='no',
@@ -14,13 +14,13 @@
     .knob
 
   // properties tool
-  .silex-property-tool.design-tab.notranslate
+  .silex-property-tool.notranslate
     include ./property-tool.jade
 
   // stage
   .silex-stage
     // notranslate is to prevent chrome automatic translation
-    iframe#silex-stage-iframe.silex-stage-iframe.notranslate
+    //- iframe#silex-stage-iframe.silex-stage-iframe.notranslate(src="about:blank")
 
   // bread crumbs
   .silex-bread-crumbs
@@ -64,12 +64,6 @@
     .ace-editor
     .dock-btn.buttons
     .close-btn.js-editor-close-btn.buttons
-
-  // Displayed div on right click
-  // .rightClick
-  //   .parentImgRightClick
-  //     img.imgRightClick(src='../assets/logo-silex-small.png')
-  //   a.textRightClick(href='http://www.silex.me', target='_blank') Powered by Silex
 
   .alerts.closed
   .alerts-notify

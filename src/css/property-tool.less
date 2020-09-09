@@ -70,18 +70,8 @@
     clear: both;
   }
 
-  &.design-tab {
-    input {
-      display: block;
-    }
-  }
-
   /* visibility of the content depends on tabs */
   &.params-tab .main-container > span {
-    display: none;
-    &.prodotype-component-editor {
-      display: initial;
-    }
     .image-preview {
       min-height: 100px;
       background-size: cover;
@@ -91,19 +81,7 @@
       color: @silexdarkgrey; /* no need to display "no file chosen" */
     }
   }
-  .main-container span.prodotype-component-editor {
-    display: none;
-  }
-  .main-container span.prodotype-style-editor {
-    display: none;
-  }
   /* visibility of the content depends on tabs */
-  &.style-tab .main-container > span {
-    display: none;
-    &.prodotype-style-editor {
-      display: initial;
-    }
-  }
   .tabs {
     border-bottom: 1px solid @silexdarkergrey;
     z-index: 1; /* over the scroll bar */
@@ -187,11 +165,6 @@
       width: 93%;
       overflow: hidden;
       // margin-left: 2.5%;
-
-      &:focus {
-        outline: none;
-        border: 1px solid @silexdarkgrey;
-      }
     }
     > span {
       clear: both;
@@ -233,6 +206,18 @@
       }
     }
 
+    /* link editor */
+    .expanded .link-pane {
+      display: flex;
+      input:disabled { cursor: default; }
+      .link-state {
+        cursor: pointer;
+      }
+      .link-button {
+        width: 50px;
+        margin-left: 5px;
+      }
+    }
   }
 
   fieldset {
@@ -402,12 +387,19 @@
       text-align: right;
       color: @silexlightergrey;
       font-size: 11px;
+      &.full-width {
+        float: unset;
+      }
     }
+    .two-col select,
     .two-col label,
     .two-col input {
       width: 42%;
       margin: 5px;
       text-align: left;
+    }
+    .two-col select {
+      margin-top: 0; /* for flex direction etc */
     }
 
     .right-bottom {

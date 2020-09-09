@@ -8,19 +8,24 @@ tags:
 - contact
 - geoloc
 isPrivate: false
+useMinHeight: false
 baseElement: html
 faIconClass: fa-map
 dependencies:
+  link:
+  - href: https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css
+    rel: stylesheet
+    type: 'text/css'
   script:
-  - src: /static/2.7/osm/ol.js
-    data-silex-static: ''
+  - type: 'text/javascript'
+    src: https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js
 initialCssClass:
   silex-use-height-not-minheight
   silex-element-content-full-height
 initialCss:
   height: 400px
   width: 400px
-  background-color: 'transparent'
+  background-color: transparent
 props:
 - name: url
   expandable: true
@@ -30,5 +35,4 @@ props:
 - name: marker
   expandable: true
   type: file
-  default: [{url: 'https://openlayers.org/en/v4.0.1/examples/data/icon.png'}]
   description: Image to display at the center of the map (called a marker)

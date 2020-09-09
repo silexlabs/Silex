@@ -1,13 +1,3 @@
-//////////////////////////////////////////////////
-// Silex, live web creation
-// http://projects.silexlabs.org/?/silex/
-//
-// Copyright (c) 2012 Silex Labs
-// http://www.silexlabs.org/
-//
-// Silex is available under the GPL license
-// http://www.silexlabs.org/silex/silex-licensing/
-//////////////////////////////////////////////////
 $(function() {
   // allow HTML5 tags used by Silex to be styled with CSS (polyfill)
   document.createElement('HEADER');
@@ -24,6 +14,23 @@ $(function() {
   window.silex.siteWidth = siteWidth;
   window.silex.scale = 1;
   window.silex.scroll = {top: 0, left: 0};
+  window.silex.getCurrentPage = function() {
+    var pageable = $body.pageable;
+    var currentPageName = pageable ? $body.pageable().data()['silexlabs-pageable'].options.currentPage : $body.attr('data-current-page');
+    var currentPage = silex.getPages().filter(function(idx, el2) { return el2.name === currentPageName })[0];
+    return currentPage;
+  };
+  window.silex.getPages = function() {
+    var pages = $('a[data-silex-type="page-element"]').map(function(idx, el) {
+      return {
+        name: el.id,
+        displayName: el.innerHTML,
+        idx: idx,
+        href: el.getAttribute('href')
+      };
+    });
+    return pages;
+  };
 
   // FIXME: why is it needed?
   window.silex.resizeBody = function() {};
@@ -171,7 +178,7 @@ $(function() {
        * and open the 1st one by default
        */
       var firstPageName = null;
-      var pages = $('a[data-silex-type="page"]');
+      var pages = $('a[data-silex-type="page-element"]');
       if (pages && pages.length>0){
         var firstPage = pages[0];
         firstPageName = firstPage.getAttribute('id');

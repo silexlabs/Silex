@@ -1,4 +1,4 @@
-<div id="mapdiv_<%= uid %>"></div>
+<div id="mapdiv_<%= uid %>" class="map"></div>
 <style>
     #mapdiv_<%= uid %> {
         width: 100%;
@@ -9,11 +9,15 @@
 
 
 function init_<%= uid %>() {
-    if(!$('body').hasClass('silex-runtime') && typeof(ol) === 'undefined') {
+    if(typeof(ol) === 'undefined') {
+        // console.warn('Map not ready, restart later')
         // wait for dependencies to be loaded
-        setTimeout(init_<%= uid %>, 100);
+        setTimeout(init_<%= uid %>, 1000);
         return;
     }
+
+    // empty the div before adding the map again
+    $('#mapdiv_<%= uid %>').empty();
 
     // apply position and zoom
     // from map URL http://www.openstreetmap.org/#map=18/48.88680/2.34235&layers=C
@@ -62,9 +66,9 @@ function init_<%= uid %>() {
     }
 }
 init_<%= uid %>();
-$(document).on('silex.resize', function() {
-    $('#mapdiv_<%= uid %>').empty();
-    init_<%= uid %>();
-});
+// $(document).on('silex.resize', function() {
+//     $('#mapdiv_<%= uid %>').empty();
+//     init_<%= uid %>();
+// });
 
 </script>

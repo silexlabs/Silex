@@ -4,6 +4,7 @@
   font-family: 'Roboto';
   font-style: normal;
   font-weight: lighter;
+  font-display: swap;
   src: local('Roboto'), url('../ce/cloud-explorer/fonts/Regular/OpenSans-Regular.woff2') format('woff2');
 }
 
@@ -40,10 +41,22 @@ body {
     text-decoration: none;
     cursor: pointer;
   }
-  button, input[disabled], select[disabled] {
-    background-color: @silexmediumdarkgrey;
+
+  button[disabled], input[disabled], select[disabled] {
+    background-color: @silexmediumdarkgrey; // this does not work in properties because it is overriden
+    opacity: .5;
+  }
+  button, input[type=button] {
+    cursor: pointer;
   }
   button, input, select, .silex-input {
+    &:not([disabled]) {
+      &:hover, &:focus {
+        border-width: 1px;
+        border-color: @silexlightblue;
+        outline: none;
+      }
+    }
     border: 1px solid @silexmediumgrey;
     color: @silexlightergrey;
     background-color: @silexdarkgrey;
@@ -68,6 +81,15 @@ body {
   }
   input[type="number"] {
     -moz-appearance: textfield;
+  }
+  details {
+    summary {
+      cursor: pointer;
+      outline: none;
+    }
+    p {
+      margin-left: 18px;
+    }
   }
 }
 
@@ -143,10 +165,6 @@ body {
 .modal-dialog {
   z-index: 220;
 }
-label {
-  vertical-align: top;
-}
-
 .advanced-mode-off {
 
   .advanced-only {
