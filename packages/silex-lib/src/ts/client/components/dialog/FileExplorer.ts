@@ -75,7 +75,12 @@ export class FileExplorer {
     this.open()
     const fileInfo = await this.ce.openFile(opt_extensions)
     if (fileInfo) {
-      const absPath = await this.promptAttributionAndGetSize(fileInfo.attribution, fileInfo.urls)
+      const absPath = await (async () => {
+        if (fileInfo.urls && fileInfo.urls.big && fileInfo.urls.small) {
+          return await this.promptAttributionAndGetSize(fileInfo.attribution, fileInfo.urls)
+        }
+        return fileInfo.url
+      })()
       this.close()
       return {
         ...fileInfo,
