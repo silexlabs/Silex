@@ -55,13 +55,13 @@ export class FileExplorer {
    * silex
    */
   addAbsPath(fileInfo: FileInfo): FileInfo {
-    if (fileInfo === null) {
-      return fileInfo
+    if (fileInfo) {
+      const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath
+      return {
+        ...fileInfo,
+        absPath,
+      }
     }
-    const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath
-    return (Object.assign(
-      {absPath},
-      fileInfo) as FileInfo)
   }
 
   /**
@@ -75,23 +75,22 @@ export class FileExplorer {
     this.open()
     const fileInfo = await this.ce.openFile(opt_extensions)
     if (fileInfo) {
-      const absPath = await (async () => {
-        if (fileInfo.urls && fileInfo.urls.big && fileInfo.urls.small) {
-          return await this.promptAttributionAndGetSize(fileInfo.attribution, fileInfo.urls)
+      if (fileInfo.urls && fileInfo.urls.big && fileInfo.urls.small) {
+        const absPath = await this.promptAttributionAndGetSize(fileInfo.attribution, fileInfo.urls)
+        this.close()
+        return {
+          ...fileInfo,
+          absPath,
         }
-        return fileInfo.url
-      })()
-      this.close()
-      return {
-        ...fileInfo,
-        absPath,
       }
+      this.close()
+      return this.addAbsPath(fileInfo)
     }
     this.close()
-    return this.addAbsPath(fileInfo)
+    return null
   }
 
-  async promptAttributionAndGetSize(attribution, urls) {
+  async promptAttributionAndGetSize(attribution, urls): Promise<string> {
     return new Promise((resolve, reject) => {
       const attributionText = attribution ? `
         <h3>About this image and the author</h3>
