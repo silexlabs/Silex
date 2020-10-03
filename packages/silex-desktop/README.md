@@ -7,6 +7,11 @@ This is the official [Silex](https://www.silex.me) desktop version, an installab
 
 We are looking for someone to create the releases every 2 months, and for testers to test each new version on Windows and MacOS and linux after each release, [please apply here](https://github.com/silexlabs/Silex/issues/927)
 
+
+## Support and documentation
+
+Please use the mother project's [Silex issues](https://github.com/silexlabs/Silex/issues) and [Silex documentation](https://github.com/silexlabs/Silex/wiki)
+
 ## Instructions
 
 Go ahead and [download the version for your system here](https://github.com/lexoyo/silex-desktop/releases)
