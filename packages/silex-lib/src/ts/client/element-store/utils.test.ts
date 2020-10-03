@@ -118,5 +118,6 @@ test('get element size on mobile', () => {
   // section width
   // section height
   // section container whidth
-  console.error('FIXME: test mobile too')
+  // FIXME: test mobile too
+  console.warn('FIXME: test mobile too')
 })
