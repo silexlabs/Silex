@@ -58,12 +58,19 @@ body.enable-mobile .editable-style.hide-on-desktop {
   display: none;
 }
 /* only outside the editor */
-.silex-runtime .fixed {
+/* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+body.silex-runtime.body-initial .fixed {
   position: absolute;
   z-index: 20;
 }
 /* Mobile styles */
 @media (max-width:480px) {
+  /* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+  body.silex-runtime.body-initial .fixed {
+    /* on mobile (chrome, this is needed to be on top of other content) */
+    position: relative;
+  }
+
   /* hide horizontal scroll bar which appears because of residual values in css
   html {
     overflow-x: hidden;
@@ -118,6 +125,21 @@ body.enable-mobile .editable-style.hide-on-desktop {
   }
   body.silex-runtime.enable-mobile .background.background-initial {
     max-width: 100%;
+  }
+}
+
+/* only outside the editor */
+/* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+body.silex-runtime.body-initial .fixed {
+  position: absolute;
+  z-index: 20;
+}
+/* Mobile styles */
+@media (max-width:480px) {
+  /* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+  body.silex-runtime.body-initial .fixed {
+    /* on mobile (chrome, this is needed to be on top of other content) */
+    position: relative;
   }
 }
 
