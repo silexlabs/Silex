@@ -140,7 +140,7 @@ $(function() {
         'transform': 'scale(' + ratio + ')',
         'transform-origin': '0 0',
         'min-width': getScaleBreakPoint() + 'px',
-        'min-height': Math.round(window.innerHeight * ratio),
+        'height': Math.round(window.innerHeight * ratio), // min-height does not work here since content is bigger before transform
       });
       // unscale some elements
       $('.prevent-scale').css({
