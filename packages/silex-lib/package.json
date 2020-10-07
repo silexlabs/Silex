@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.7.2",
+  "version": "2.7.4",
   "version:frontend": "2.11",
   "version:backwardcompat": "2.2.11",
   "author": {
@@ -90,7 +90,7 @@
     "cookie-parser": "1.4.5",
     "cookie-session": "2.0.0-beta.3",
     "cross-env": "7.0.2",
-    "drag-drop-stage-component": "1.0.31",
+    "drag-drop-stage-component": "1.0.32",
     "express": "4.17.1",
     "express-force-ssl": "0.3.2",
     "font-awesome": "4.7.0",

@@ -150,8 +150,8 @@ export default class DomTools {
         //   ...el.link,
         //   href: checkItOut('href', el.link.href),
         // } : null,
-        data: recursiveCheck('data', el.data),
-        style: recursiveCheck('data', el.style),
+        // I remove this since it mess up the links in the hamburger menu component when they start with "/": data: recursiveCheck('', el.data),
+        style: recursiveCheck('', el.style),
       })),
     }
     return result

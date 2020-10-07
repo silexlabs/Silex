@@ -84,6 +84,7 @@ function readWebsite(rootUrl, unifile, backwardCompat) {
       const htmlBuffer = await unifile.readFile(req.session.unifile || {}, connector, path)
       try {
         const jsonBuffer = await unifile.readFile(req.session.unifile || {}, connector, path + '.json')
+        // FIXME: handle error from unifile (e.g. json too big on github)
         return sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, jsonBuffer, url, false)
       } catch (err) {
         // old websites
