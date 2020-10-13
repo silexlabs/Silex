@@ -139,6 +139,25 @@ test('move 2 elements among 3', () => {
   expect(dispatch.mock.calls[0][0].items[0].children[2]).toBe(ELEM_TEXT_STATE.id)
 })
 
+test('move 1 element among invisible elements', () => {
+  const dispatch = jest.fn()
+  const ELEMENTS = [{
+    ...ELEM_IMAGE_STATE,
+    pageNames: ['invisible-page']
+  }, {
+    ...ELEM_HTML_STATE,
+  }, ELEM_TEXT_STATE, ELEM_CONTAINER_STATE]
+
+  // here ELEM_CONTAINER_STATE.children is [ 'testId0Text', 'testId1Image', 'testId2Html' ]
+  moveElements([ELEM_TEXT_STATE], DomDirection.DOWN, ELEMENTS, dispatch)
+  expect(dispatch).toHaveBeenCalledTimes(1)
+
+  // the text element is expected to have moved 2 elements down
+  expect(dispatch.mock.calls[0][0].items[0].children[0]).toBe(ELEM_IMAGE_STATE.id)
+  expect(dispatch.mock.calls[0][0].items[0].children[1]).toBe(ELEM_HTML_STATE.id)
+  expect(dispatch.mock.calls[0][0].items[0].children[2]).toBe(ELEM_TEXT_STATE.id)
+})
+
 test('add element', async () => {
   const [body] = fromElementData([{
     ...ELEM_SECTION_STATE,

@@ -46,9 +46,9 @@ export function mockUiElements(): {siteIFrame: HTMLIFrameElement, uiIFrame: HTML
 }
 
 let nextId = 0
-function getNextId() { return 'testId' + (nextId++) }
+function getNextId(label='') { return 'testId' + (nextId++) + label }
 export const ELEM_TEXT: ElementData = {
-  id: getNextId(),
+  id: getNextId('Text'),
   pageNames: [],
   classList: [],
   type: ElementType.TEXT,
@@ -89,7 +89,7 @@ export const ELEM_TEXT: ElementData = {
 
 export const ELEM_IMAGE: ElementData = {
   ...ELEM_TEXT,
-  id: getNextId(),
+  id: getNextId('Image'),
   type: ElementType.IMAGE,
   useMinHeight: false,
   innerHtml: '',
@@ -97,14 +97,14 @@ export const ELEM_IMAGE: ElementData = {
 
 export const ELEM_HTML: ElementData = {
   ...ELEM_TEXT,
-  id: getNextId(),
+  id: getNextId('Html'),
   type: ElementType.HTML,
   innerHtml: '',
 }
 
 export const ELEM_CONTAINER: ElementData = {
   ...ELEM_TEXT,
-  id: getNextId(),
+  id: getNextId('Container'),
   type: ElementType.CONTAINER,
   innerHtml: '',
   children: [ELEM_TEXT.id, ELEM_IMAGE.id, ELEM_HTML.id],
@@ -129,7 +129,7 @@ export const ELEM_CONTAINER_2_CHILDREN: ElementData = {
 
 export const ELEM_SECTION_CONTENT: ElementData = {
   ...ELEM_CONTAINER,
-  id: getNextId(),
+  id: getNextId('SectionContent'),
   type: ElementType.CONTAINER,
   isSectionContent: true,
   innerHtml: '',
@@ -144,7 +144,7 @@ export const ELEM_SECTION_CONTENT: ElementData = {
 
 export const ELEM_SECTION: ElementData = {
   ...ELEM_SECTION_CONTENT,
-  id: getNextId(),
+  id: getNextId('Section'),
   type: ElementType.SECTION,
   isSectionContent: false,
   innerHtml: '',
