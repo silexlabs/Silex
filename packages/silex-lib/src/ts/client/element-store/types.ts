@@ -35,6 +35,13 @@ export interface FullBox<T=number> extends Rect<T> {
   width: T,
   height: T,
 }
+// move elements position
+export enum Direction {
+  UP = 'UP',
+  DOWN = 'DOWN',
+  LEFT = 'LEFT',
+  RIGHT = 'RIGHT',
+}
 // move elements in the dom
 export enum DomDirection {
   UP = 'UP',
