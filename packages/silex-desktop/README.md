@@ -30,7 +30,7 @@ Download the .dmg and double click it to start Silex
 
 Downolad the .AppImage, make it executable and run it
 
-Note: you may need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`)
+Note: in order to have the "thumbnails" in cloud explorer, you may need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`) and/or glib2.0-dev installed (`apt install glib2.0-dev` or `dnf install glib-devel`)
 
 
 ## Release a new version
