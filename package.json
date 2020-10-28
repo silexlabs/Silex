@@ -72,7 +72,7 @@
     "build:css:release": "lessc src/css/_styles.less dist/html/css/admin.css",
     "build:css:debug": "lessc src/css/_styles.less dist/html/css/admin.css --source-map",
     "build:html": "echo TMP HTML",
-    "build:html:debug": "echo TMP HTML DEBUG",
+    "build:html:debug": "rm dist/html/index.html ; pug src/html/debug.jade --out dist/html/",
     "build:client:release": "webpack --config webpack.config.js",
     "build:client:debug": "webpack --display-error-details --config webpack.config.js",
     "build:server:release": "tsc -p tsconfig-server-release.json",
