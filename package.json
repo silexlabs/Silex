@@ -77,7 +77,7 @@
     "build:client:debug": "webpack --display-error-details --config webpack.config.js",
     "build:server:release": "tsc -p tsconfig-server-release.json",
     "build:server:debug": "tsc -p tsconfig-server-debug.json",
-    "build:monaco-editor": "echo TMP",
+    "build:monaco-editor": "webpack --config webpack-monaco-editor.config.js",
     "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest",
