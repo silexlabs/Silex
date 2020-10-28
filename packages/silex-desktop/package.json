@@ -36,6 +36,6 @@
     "electron-rebuild": "2.3.2"
   },
   "dependencies": {
-    "silex-website-builder": "lexoyo/Silex#wip_test_win2"
+    "silex-website-builder": "2.7.5"
   }
 }
