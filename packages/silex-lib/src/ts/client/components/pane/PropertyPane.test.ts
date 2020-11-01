@@ -150,7 +150,7 @@ beforeEach(() => {
   <span class="seo-editor old-advanced-only editor-container">
      <div class="expandable expanded">
         <legend><span class="fa fa-fw fa-inverse fa-caret-down"></span><span>SEO (search engines)</span></legend>
-        <div class="body"><label class="alt-label">Alt (images only)</label><input class="alt-input" placeholder="-" type="text"><label class="title-label">Title and tooltip</label><input class="title-input" placeholder="-" type="text"></div>
+        <div class="body"><select id="tag-name-input"></select><label class="alt-label">Alt (images only)</label><input id="alt-input" placeholder="-" type="text"><label class="title-label">Title and tooltip</label><input id="title-input" placeholder="-" type="text"></div>
      </div>
   </span>
   `

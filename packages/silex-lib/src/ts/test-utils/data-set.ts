@@ -51,6 +51,7 @@ export const ELEM_TEXT: ElementData = {
   id: getNextId('Text'),
   pageNames: [],
   classList: [],
+  tagName: 'DIV',
   type: ElementType.TEXT,
   enableEdit: true,
   isSectionContent: false,
@@ -145,6 +146,7 @@ export const ELEM_SECTION_CONTENT: ElementData = {
 export const ELEM_SECTION: ElementData = {
   ...ELEM_SECTION_CONTENT,
   id: getNextId('Section'),
+  tagName: 'SECTION',
   type: ElementType.SECTION,
   isSectionContent: false,
   innerHtml: '',

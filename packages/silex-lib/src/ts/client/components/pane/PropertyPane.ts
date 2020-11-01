@@ -106,7 +106,6 @@ export class PropertyPane extends PaneBase {
 
   onTagNameChanged(e: Event) {
     const input = e.target as HTMLSelectElement
-    console.log('xxxxxx', input.value)
     updateElements(getSelectedElements()
       .map((el) => ({
         ...el,
@@ -200,7 +199,6 @@ export class PropertyPane extends PaneBase {
       ])
 
       const tagName = this.getCommonProperty(elementsNoBody, (element) => element.tagName)
-      console.log('tag name', {tagName, elementsNoBody})
       if (tagName) {
         this.tagNameInput.value = tagName
       } else {
