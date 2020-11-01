@@ -5,7 +5,7 @@
  *
  */
 
-import { Dom } from '../utils/Dom'
+import { renderList } from '../utils/dom'
 import { createPage, removePage, movePageTo, editPage } from '../page-store/dispatchers'
 import { deletePages, getPages, movePage, subscribePages } from '../page-store/index'
 import { getCurrentPage } from '../page-store/filters'
@@ -157,6 +157,6 @@ class PageTool {
     // refresh the list with new pages
     const container = this.element.querySelector('.page-tool-container')
     const templateHtml = this.element.querySelector('.page-tool-template').innerHTML
-    container.innerHTML = Dom.renderList(templateHtml, templateData)
+    container.innerHTML = renderList(templateHtml, templateData)
   }
 }

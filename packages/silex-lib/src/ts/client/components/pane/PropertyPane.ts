@@ -50,6 +50,7 @@ function removePxWithDefault(val: string, default_: string): string {
  */
 export class PropertyPane extends PaneBase {
 
+  tagNameInput: HTMLSelectElement
   /**
    * UI for alt and title
    * only used for images
@@ -98,10 +99,20 @@ export class PropertyPane extends PaneBase {
       { selector: FlexWrapSelect, styleName: 'flex-wrap', eventName: 'change', unit: '' },
     ])
 
-    this.altInput = this.initInput('.alt-input', (e) => this.onAltChanged(e))
-    this.titleInput = this.initInput('.title-input', (e) => this.onTitleChanged(e))
+    this.tagNameInput = this.initComboBox('#tag-name-input', (e) => this.onTagNameChanged(e))
+    this.altInput = this.initInput('#alt-input', (e) => this.onAltChanged(e))
+    this.titleInput = this.initInput('#title-input', (e) => this.onTitleChanged(e))
   }
 
+  onTagNameChanged(e: Event) {
+    const input = e.target as HTMLSelectElement
+    console.log('xxxxxx', input.value)
+    updateElements(getSelectedElements()
+      .map((el) => ({
+        ...el,
+        tagName: input.value,
+      })))
+  }
   /**
    * alt changed
    * callback for inputs
@@ -187,6 +198,15 @@ export class PropertyPane extends PaneBase {
         [JustifyContentSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'justify-content', mobile))],
         [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
       ])
+
+      const tagName = this.getCommonProperty(elementsNoBody, (element) => element.tagName)
+      console.log('tag name', {tagName, elementsNoBody})
+      if (tagName) {
+        this.tagNameInput.value = tagName
+      } else {
+        this.tagNameInput.value = ''
+      }
+
       // compute visibility
       if (elementsNoBodyNoSection.length > 0) {
         const elementsNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection
