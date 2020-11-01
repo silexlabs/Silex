@@ -6,6 +6,7 @@
 
 import { BgPane } from './pane/BgPane'
 import { BorderPane } from './pane/BorderPane'
+import { ComponentPane } from './pane/ComponentPane'
 import { ElementState } from '../element-store/types'
 import { GeneralStylePane } from './pane/GeneralStylePane'
 import { PagePane } from './pane/PagePane'
@@ -44,6 +45,7 @@ export function initPropertyTool() {
 function buildUi() {
   const bgPane = new BgPane(element.querySelector('.background-editor'))
   const borderPane = new BorderPane(element.querySelector('.border-editor'))
+  const componentPane = new ComponentPane(element.querySelector('.component-generic-editor'))
   const propertyPane = new PropertyPane(element)
   const pagePane = new PagePane(element.querySelector('.page-editor'))
   const generalStylePane = new GeneralStylePane(element.querySelector('.general-editor'))
@@ -106,6 +108,7 @@ function updateComponentTool(el: HTMLElement) {
 
 /**
  * toggle a property panel
+ * TODO: use details tag instead of css classes
  */
 function togglePanel(el: HTMLElement) {
   (el.parentElement as HTMLElement).classList.toggle('expanded')
