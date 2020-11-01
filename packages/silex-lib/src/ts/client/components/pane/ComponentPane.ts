@@ -3,19 +3,19 @@ import {unsafeHTML} from 'lit-html/directives/unsafe-html.js'
 
 import { ComponentsDefinition } from '../../externs'
 import { Constants } from '../../../constants'
-import { ElementState, ElementType } from '../../element-store/types';
+import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import { Toolboxes } from '../../ui-store/types'
 import {
   getBody,
   getSelectedElements,
   isBody
-} from '../../element-store/filters';
+} from '../../element-store/filters'
 import {
   getComponentsDef,
   updateComponents,
   updateComponentsDependencies
-} from '../../element-store/component';
+} from '../../element-store/component'
 import { getUi } from '../../ui-store'
 import { subscribeElements } from '../../element-store/index'
 import { subscribeUi } from '../../ui-store/index'
