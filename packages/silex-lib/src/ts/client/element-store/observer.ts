@@ -25,7 +25,7 @@ import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
 import { openPageDom, removeFromPages, setPages } from '../page-store/dom'
-import { setTagName } from '../utils/dom';
+import { setTagName } from '../utils/dom'
 import { writeDataToDom } from '../store/dom'
 
 export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elements = getElements()) => {

@@ -1,20 +1,20 @@
 import {html, render} from 'lit-html'
 import {unsafeHTML} from 'lit-html/directives/unsafe-html.js'
 
-import { ComponentsDefinition } from '../../externs';
-import { Constants } from '../../../constants';
+import { ComponentsDefinition } from '../../externs'
+import { Constants } from '../../../constants'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types';
-import { getBody, getSelectedElements } from '../../element-store/filters';
+import { Toolboxes } from '../../ui-store/types'
+import { getBody, getSelectedElements } from '../../element-store/filters'
 import {
   getComponentsDef,
   updateComponents
-} from '../../element-store/component';
-import { getUi } from '../../ui-store';
-import { subscribeElements } from '../../element-store/index';
+} from '../../element-store/component'
+import { getUi } from '../../ui-store'
+import { subscribeElements } from '../../element-store/index'
 import { subscribeUi } from '../../ui-store/index'
-import { updateElements } from '../../element-store';
+import { updateElements } from '../../element-store'
 
 export class ComponentPane extends PaneBase {
   template = (componentsDef: ComponentsDefinition, selected: string, listener: (e: InputEvent) => void) => html`

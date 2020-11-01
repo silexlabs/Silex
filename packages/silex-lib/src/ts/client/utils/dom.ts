@@ -44,11 +44,11 @@ export function renderList(itemTemplateString: string, data: any[]): string {
 }
 
 export function setTagName(el: HTMLElement, tag: string) {
-  const replacement = el.ownerDocument.createElement(tag);
+  const replacement = el.ownerDocument.createElement(tag)
   el.getAttributeNames()
   .forEach((attr) => replacement.setAttribute(attr, el.getAttribute(attr)))
   while(el.firstChild) {
-    replacement.appendChild(el.firstChild);
+    replacement.appendChild(el.firstChild)
   }
   el.parentNode.replaceChild(replacement, el)
   return replacement
