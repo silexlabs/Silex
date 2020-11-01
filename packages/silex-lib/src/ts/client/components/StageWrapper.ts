@@ -167,7 +167,7 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
   const doc = getSiteDocument()
   change.forEach(({from, to}) => {
     const domEl = getDomElement(doc, to)
-    const state = getStage().getState(domEl)
+    const state = getStage().getStateById(to.id)
     if(!domEl) {
       console.error('Why?', from, to)
       return
@@ -201,6 +201,13 @@ function onUpdateElement(change: StateChange<ElementState>[]) {
           // needReset = true
         }
       }
+    }
+    if (to.tagName !== from.tagName) {
+      // the state.el needs to be updated
+      stage.removeElement(state.id)
+      stage.addElement(domEl)
+      // somehow we loose the selection here
+      stage.setSelection(getSelectedElements().map((el) => getDomElement(doc, el)))
     }
     if (to.visibility.mobile !== from.visibility.mobile) {
       if (to.visibility.mobile) {

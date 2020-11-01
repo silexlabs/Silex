@@ -25,6 +25,7 @@ import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
 import { openPageDom, removeFromPages, setPages } from '../page-store/dom'
+import { setTagName } from '../utils/dom';
 import { writeDataToDom } from '../store/dom'
 
 export const onAddElements = (win: Window) => (toBeAdded: ElementState[], elements = getElements()) => {
@@ -140,6 +141,9 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
       } else {
         hideOnMobile(domEl)
       }
+    }
+    if (to.tagName !== from.tagName) {
+      setTagName(getDomElement(doc, to), to.tagName)
     }
     if (to.alt !== from.alt) {
       const img: HTMLImageElement = (domEl.querySelector('img')) as HTMLImageElement
