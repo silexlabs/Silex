@@ -13,7 +13,7 @@ import {
   ElementType,
   Link,
   LinkType
-} from '../../client/element-store/types';
+} from '../../client/element-store/types'
 import { PageData } from '../../client/page-store/types'
 import { PersistantData } from '../../client/store/types'
 import {
@@ -24,8 +24,8 @@ import {
   writeSiteStyles,
   writeStyles
 } from './BackwardCompatV2.5.60'
-import { getDomElement } from '../../client/element-store/dom';
-import { setTagName } from '../../client/utils/dom';
+import { getDomElement } from '../../client/element-store/dom'
+import { setTagName } from '../../client/utils/dom'
 import { writeDataToDom } from '../../client/store/dom'
 
 /**
