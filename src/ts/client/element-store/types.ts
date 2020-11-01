@@ -79,6 +79,7 @@ export enum LinkType {
 export interface ElementData {
   pageNames: string[],
   classList: string[],
+  tagName: string,
   type: ElementType,
   link?: Link,
   id: ElementId,
@@ -107,6 +108,7 @@ export interface ElementData {
 export interface ElementState extends CrudState {
   pageNames: string[],
   classList: string[],
+  tagName: string,
   type: ElementType,
   link?: Link,
   id: ElementId,

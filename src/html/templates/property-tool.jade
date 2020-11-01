@@ -138,12 +138,42 @@
     .expandable
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right
-        span SEO (search engines)
+        span SEO &amp; Accessibility
       .body
-        label.alt-label Alt (images only)
-        input.alt-input(tabindex='19', placeholder='-', type='text')
-        label.title-label Title and tooltip
-        input.title-input(tabindex='20', placeholder='-', type='text')
+        label.tag-name-label(for='tag-name-input') Tag Name
+        select#tag-name-input
+          option(value='', disabled=true) -
+          option(value='SECTION') SECTION
+          option(value='DIV') DIV
+          option(value='ADDRESS') ADDRESS
+          option(value='ARTICLE') ARTICLE
+          option(value='ASIDE') ASIDE
+          option(value='FOOTER') FOOTER
+          option(value='HEADER') HEADER
+          option(value='H1') H1
+          option(value='H2') H2
+          option(value='H3') H3
+          option(value='H4') H4
+          option(value='H5') H5
+          option(value='H6') H6
+          option(value='HGROUP') HGROUP
+          option(value='MAIN') MAIN
+          option(value='NAV') NAV
+          option(value='BLOCKQUOTE') BLOCKQUOTE
+          option(value='DD') DD
+          option(value='DL') DL
+          option(value='DT') DT
+          option(value='FIGCAPTION') FIGCAPTION
+          option(value='FIGURE') FIGURE
+          option(value='MAIN') MAIN
+          option(value='P') P
+          option(value='PRE') PRE
+        br
+        br
+        label.alt-label(for='alt-input') Alt (images only)
+        input#alt-input(tabindex='19', placeholder='-', type='text')
+        label.title-label(for='title-input') Title and tooltip
+        input#title-input(tabindex='20', placeholder='-', type='text')
 
 
   section.page-editor.editor-container

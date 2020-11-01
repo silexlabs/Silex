@@ -79,6 +79,7 @@ export async function getCreateAction({type, parent, isSectionContent, component
 export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: ElementId, type: ElementType, isSectionContent: boolean, isBody: boolean}): ElementData {
   return {
     id,
+    tagName: type === ElementType.SECTION ? 'SECTION' : 'DIV',
     type,
     alt: null,
     title: null,
