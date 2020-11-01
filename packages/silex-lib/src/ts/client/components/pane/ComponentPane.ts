@@ -3,35 +3,51 @@ import {unsafeHTML} from 'lit-html/directives/unsafe-html.js'
 
 import { ComponentsDefinition } from '../../externs'
 import { Constants } from '../../../constants'
-import { ElementState } from '../../element-store/types'
+import { ElementState, ElementType } from '../../element-store/types';
 import { PaneBase } from './PaneBase'
 import { Toolboxes } from '../../ui-store/types'
-import { getBody, getSelectedElements } from '../../element-store/filters'
+import {
+  getBody,
+  getSelectedElements,
+  isBody
+} from '../../element-store/filters';
 import {
   getComponentsDef,
-  updateComponents
-} from '../../element-store/component'
+  updateComponents,
+  updateComponentsDependencies
+} from '../../element-store/component';
 import { getUi } from '../../ui-store'
 import { subscribeElements } from '../../element-store/index'
 import { subscribeUi } from '../../ui-store/index'
 import { updateElements } from '../../element-store'
 
 export class ComponentPane extends PaneBase {
-  template = (componentsDef: ComponentsDefinition, selected: string, listener: (e: InputEvent) => void) => html`
-    <label for="select-component-type">Component type</label>
-    <select @change=${listener} id="select-component-type">
-      <option value="" ?selected=${selected===''}>-</option>
-      ${
-        unsafeHTML(
-          Object.entries(componentsDef)
-          .filter(([id, def]) => !def.isPrivate)
-          .map(([id, def]) => `
-            <option value=${id}${selected === id ? ' selected' : ''}>${def.name}</option>
-          `)
-          .join('')
-        )
-      }
-    </select>
+  template = (
+    componentsDef: ComponentsDefinition,
+    selected: string,
+    disabled: boolean,
+    listener: (e: InputEvent) => void
+  ) => html`
+    <div title=${
+      disabled ? 'Currently disabled because you have selected a container' : ''
+    }>
+      <label for="select-component-type">Component type selector${
+        disabled ? unsafeHTML('&nbsp;<small>- disabled for selection</small>') : ''
+      }</label>
+      <select @change=${listener} ?disabled=${disabled} id="select-component-type">
+        <option value="" ?selected=${selected===''}>-</option>
+        ${
+          unsafeHTML(
+            Object.entries(componentsDef)
+            .filter(([id, def]) => !def.isPrivate)
+            .map(([id, def]) => `
+              <option value=${id}${selected === id ? ' selected' : ''}>${def.name}</option>
+            `)
+            .join('')
+          )
+        }
+      </select>
+    </div>
   `
   constructor(element: HTMLElement) {
     super(element)
@@ -59,10 +75,17 @@ export class ComponentPane extends PaneBase {
     const first = selectElements.length ? selectElements[0].data.component?.templateName : undefined
     const same = selectElements
       .every((el) => first === el.data.component?.templateName)
+    const disabled = selectElements
+      .some((el) => [
+        ElementType.CONTAINER,
+        ElementType.SECTION]
+        .includes(el.type) || isBody(el))
     const selected = same && first ? first : ''
+    console.log({disabled, selected})
     render(
       this.template(componentsDef,
       selected,
+      disabled,
       (e) => this.applyComponent((e.target as HTMLSelectElement).value))
     , this.element)
   }
@@ -102,6 +125,8 @@ export class ComponentPane extends PaneBase {
         )
         // update selection since it just changed
         const newSelection = getSelectedElements().filter((el) => el !== body)
+        // render component
+        updateComponentsDependencies()
         updateComponents(newSelection)
       }
     }
