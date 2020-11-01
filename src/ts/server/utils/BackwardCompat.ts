@@ -431,10 +431,10 @@ export default class BackwardCompat {
           elements: this.data.elements
             .map((el) => ({
               ...el,
-              tagName: getDomElement(doc, el as ElementState).tagName,
+              tagName: getDomElement(doc, el as ElementState) ? getDomElement(doc, el as ElementState).tagName : 'DIV',
             }))
         }
-        actions.push('All sections have a <SECTION> tag name')
+        actions.push('All sections have a &lt;SECTION&gt; tag name')
       }
       resolve(actions)
     })
