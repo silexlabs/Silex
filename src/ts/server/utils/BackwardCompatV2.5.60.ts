@@ -130,6 +130,7 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
       .filter((c) => c !== id)
       .filter((c) => !pages.find((p) => p.id === c))
       .filter((c) => !SILEX_CLASS_NAMES_TO_IGNORE.includes(c)),
+    tagName: 'DIV',
     type,
     isSectionContent,
     title: element.title,
