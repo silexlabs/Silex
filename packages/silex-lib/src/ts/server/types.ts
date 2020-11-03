@@ -39,6 +39,7 @@ export interface PublishContext {
   cookies: object,
   hostingProvider: HostingProvider,
   config: Config,
+  data?: PersistantData,
 }
 
 export interface File {
