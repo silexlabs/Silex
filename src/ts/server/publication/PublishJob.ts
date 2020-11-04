@@ -254,9 +254,11 @@ export default class PublishJob {
         const baseUrlStr = baseUrl.href
 
         // build the dom
-        this.context.data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
         const { html, userHead } = DomTools.extractUserHeadTag(bufferHTML.toString('utf-8'))
         const dom = new JSDOM(html, { url: baseUrlStr })
+        // store useful data in the context, for hosting providers hooks
+        this.context.data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
+        this.context.document = dom.window.document
         // const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => await this.getDestFolder(ext, tagName), this.context.data)
         // remove classes used by Silex during edition
         cleanup(dom.window)
@@ -304,6 +306,9 @@ export default class PublishJob {
           }
           // do nothing
           return href
+        }
+        if (this.context.hostingProvider && this.context.hostingProvider.beforeSplit) {
+          await this.context.hostingProvider.beforeSplit(this.context)
         }
         // split into pages
         this.pageActions = splitPages({
