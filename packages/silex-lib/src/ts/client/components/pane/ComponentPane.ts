@@ -81,7 +81,6 @@ export class ComponentPane extends PaneBase {
         ElementType.SECTION]
         .includes(el.type) || isBody(el))
     const selected = same && first ? first : ''
-    console.log({disabled, selected})
     render(
       this.template(componentsDef,
       selected,
