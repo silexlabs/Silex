@@ -39,5 +39,5 @@ For developers, here is how to create a new release for the latest version of Si
 
 ```
 $ npm version patch
-$ git push origin develop --follow-tags
+$ git push origin master --follow-tags
 ```
