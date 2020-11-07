@@ -37,7 +37,7 @@ Note: in order to have the "thumbnails" in cloud explorer, you may need libvips-
 
 For developers, here is how to create a new release for the latest version of Silex
 
-1. edit `package.json` and set `version` to the same version as Silex version, e.g. `2.10.5`, commit the changes and push them
-2. create a git tag with this version, e.g. `git tag -a v2.10.5`
-3. push the tag to github with `git push origin 2.10.5`
-
+```
+$ npm version patch
+$ git push origin develop --follow-tags
+```

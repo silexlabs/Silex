@@ -9,7 +9,8 @@
   "scripts": {
     "postinstall": "electron-rebuild",
     "start": "electron .",
-    "build": "echo 'pass (no build for this app)'"
+    "build": "echo 'pass (no build for this app)'",
+    "electron-builder": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,7 @@
   },
   "homepage": "https://www.silex.me",
   "devDependencies": {
-    "electron": "10.1.4",
+    "electron": "10.1.5",
     "electron-builder": "22.9.1",
     "electron-rebuild": "2.3.2"
   },
