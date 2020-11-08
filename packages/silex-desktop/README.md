@@ -37,7 +37,7 @@ The next time you want to open Silex, just click on Silex in your apps.
 
 ### Linux
 
-Downolad the .AppImage, make it executable (`chmod +x` the file) and run it.
+[Downolad the .AppImage](https://github.com/lexoyo/silex-desktop/releases), make it executable (`chmod +x` the file) and run it.
 
 Note: in order to have the "thumbnails" in cloud explorer, you may need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`) and/or glib2.0-dev installed (`apt install glib2.0-dev` or `dnf install glib-devel`)
 
