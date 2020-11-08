@@ -70,7 +70,7 @@
     "build:folders": "mkdir -p dist/prodotype/components dist/prodotype/styles",
     "build:components": "prodotype src/prodotype/components dist/prodotype/components/",
     "build:styles": "prodotype src/prodotype/styles dist/prodotype/styles/",
-    "build:prodotype": "run-s build:components build:styles",
+    "build:prodotype": "run-s build:folders build:components build:styles",
     "build:css:release": "lessc src/css/_styles.less dist/html/css/admin.css",
     "build:css:debug": "lessc src/css/_styles.less dist/html/css/admin.css --source-map",
     "build:html": "pug src/html/index.jade --out dist/html/ --no-debug",
