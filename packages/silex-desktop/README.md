@@ -18,17 +18,26 @@ Go ahead and [download the version for your system here](https://github.com/lexo
 
 ### Windows
 
-__The app is not build for windows anymore, for now__ 
-
-You can probably download the .AppImage and see [instructions here](https://discourse.appimage.org/t/run-appimage-on-windows/177)
+[Download the .exe](https://github.com/lexoyo/silex-desktop/releases) and double click it to start Silex.
 
 ### Mac
 
-Download the .dmg and double click it to start Silex
+1. [Download the .dmg](https://github.com/lexoyo/silex-desktop/releases)
+1. Double click the .dmg file
+1. Drag and drop Silex icon to the Application folder
+
+The first time you want to open Silex:
+
+1. Go to your Application folder
+1. Right-click silex app and select "open"
+1. Accept "the risk" in the security dialog
+1. Silex will show up
+
+The next time you want to open Silex, just click on Silex in your apps.
 
 ### Linux
 
-Downolad the .AppImage, make it executable and run it
+Downolad the .AppImage, make it executable (`chmod +x` the file) and run it.
 
 Note: in order to have the "thumbnails" in cloud explorer, you may need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`) and/or glib2.0-dev installed (`apt install glib2.0-dev` or `dnf install glib-devel`)
 
