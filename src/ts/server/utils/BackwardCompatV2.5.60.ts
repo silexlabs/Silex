@@ -118,9 +118,9 @@ export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTML
   const linkValue = element.getAttribute(Constants.LINK_ATTR)
   const linkType = linkValue ? linkValue.startsWith('#!page-') ? LinkType.PAGE : LinkType.URL : null
   const id = getElementId(element)
-  const type = getTypeBC(element)
-  const isSectionContent = element.classList.contains(Constants.ELEMENT_CONTENT_CLASS_NAME)
   const isBody = element.classList.contains('body-initial')
+  const type = isBody ? ElementType.CONTAINER : getTypeBC(element) // sometimes body has no type attr
+  const isSectionContent = element.classList.contains(Constants.ELEMENT_CONTENT_CLASS_NAME)
   const pages = getPagesForElementBC(doc, element)
   return {
     id,
@@ -269,6 +269,7 @@ function getTypeBC(element: HTMLElement): ElementType {
     case ElementType.TEXT.toString(): return ElementType.TEXT
     case ElementType.HTML.toString(): return ElementType.HTML
   }
+  console.error('unknown type', element)
   throw new Error('unknown type ' + element.getAttribute(Constants.TYPE_ATTR))
 }
 
