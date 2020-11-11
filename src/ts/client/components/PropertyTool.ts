@@ -95,7 +95,7 @@ function buildUi() {
     const prevVisible = getVisibleDialogs('properties', prevState)
     const nextVisible = getVisibleDialogs('properties', nextState)
     const opened = nextVisible.filter(d1 => !prevVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
-    //const closed = prevVisible.filter(d1 => !nextVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
+    // const closed = prevVisible.filter(d1 => !nextVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
     if(opened.length) {
       // hide or show when click on tabs
       updateComponentTool(componentEditorMenu)
