@@ -13,12 +13,10 @@ import { PagePane } from './pane/PagePane'
 import { PropertyPane } from './pane/PropertyPane'
 import { StyleEditorPane } from './pane/StyleEditorPane'
 import { StylePane } from './pane/StylePane'
-import { Toolboxes } from '../ui-store/types'
+import { isDialogVisible } from '../ui-store/utils'
 import { browse, editLink } from '../element-store/utils'
-import { getDomElement } from '../element-store/dom'
 import { getSelectedElements } from '../element-store/filters'
 import { getSite } from '../site-store/index'
-import { getSiteDocument } from './SiteFrame'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 import {
@@ -26,7 +24,9 @@ import {
   openComponentEditor,
   resetComponentEditor
 } from '../element-store/component'
-import { openToolbox } from '../ui-store/dispatchers'
+import { openDialog } from '../ui-store/dispatchers'
+import { getVisibleDialogs } from '../ui-store/utils'
+import { Dialog } from '../ui-store/types'
 import { subscribeElements, updateElements } from '../element-store/index'
 
 // element which contains the UI
@@ -35,8 +35,11 @@ const element = getUiElements().propertyTool
 // init once to create all panes and attach events to the UI
 let initDone = false
 export function initPropertyTool() {
-  if(!initDone) buildUi()
-  initDone = true
+  // setTimeout to let simplebar lib initialize
+  setTimeout(() => {
+    if(!initDone) buildUi()
+    initDone = true
+  }, 0)
 }
 
 /**
@@ -70,34 +73,44 @@ function buildUi() {
     }
   }
 
-  // tabs
-  const designTab = element.querySelector('.design')
-  const paramsTab = element.querySelector('.params')
-  const styleTab = element.querySelector('.style')
-  designTab.addEventListener('click', () => openToolbox(Toolboxes.PROPERTIES))
-  paramsTab.addEventListener('click', () => openToolbox(Toolboxes.PARAMS))
-  styleTab.addEventListener('click', () => openToolbox(Toolboxes.STYLES))
+  // default tabs
+  getUi().dialogs.filter(d => d.type === 'properties')
+  .forEach(d => addTab(d))
 
   // display component when possible
   const componentEditorMenu = element.querySelector('.prodotype-component-editor') as HTMLElement
   subscribeElements(() => updateComponentTool(componentEditorMenu))
 
   subscribeUi((prevState, nextState) => {
-    if(prevState.currentToolbox !== nextState.currentToolbox) {
+    const removed = prevState.dialogs
+    .filter(d => d.type === 'properties')
+    .filter(d1 => !nextState.dialogs.find(d2 => d2.type === d1.type && d2.id === d1.id))
+    removed.forEach((t) => removeTab(t))
+
+    const created = nextState.dialogs
+    .filter(d => d.type === 'properties')
+    .filter(d1 => !prevState.dialogs.find(d2 => d2.type === d1.type && d2.id === d1.id))
+    created.forEach((t) => addTab(t))
+
+    const prevVisible = getVisibleDialogs('properties', prevState)
+    const nextVisible = getVisibleDialogs('properties', nextState)
+    const opened = nextVisible.filter(d1 => !prevVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
+    //const closed = prevVisible.filter(d1 => !nextVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
+    if(opened.length) {
       // hide or show when click on tabs
       updateComponentTool(componentEditorMenu)
 
       //  update selected tab
-      openTab(nextState.currentToolbox)
+      openTab(opened[0])
     }
   })
 }
 
 function updateComponentTool(el: HTMLElement) {
   const selectedComponents = getSelectedElements().filter((e) => isComponent(e))
-  const { currentToolbox } = getUi()
+  const [currentToolbox] = getVisibleDialogs('properties')
 
-  if (currentToolbox === Toolboxes.PARAMS && selectedComponents.length === 1) {
+  if (currentToolbox.id === 'params' && selectedComponents.length === 1) {
     editComponent(selectedComponents[0])
     el.style.display = ''
   } else {
@@ -119,18 +132,50 @@ function togglePanel(el: HTMLElement) {
   }
 }
 
-/**
- * open the desired tab
- */
-function openTab(cssClass) {
-  const tab = element.querySelector('.' + cssClass)
-  selectTab(tab)
+// ////////////
+// helpers to manage tab elements
+// ////////////
+
+const cbkBinded = new Map<string, () => void>()
+
+function addTab(dialog: Dialog) {
+  const tabEl = getTabElement(dialog.id) || document.createElement('div')
+  tabEl.classList.add(dialog.id, 'tab', 'fa', 'fa-lg', dialog.data?.className)
+  tabEl.innerHTML = dialog.data?.displayName || ''
+
+  const tabs = element.querySelector('.tabs .simplebar-content')
+  tabs.appendChild(tabEl)
+
+  const openBinded = () => openDialog(dialog)
+  tabEl.addEventListener('click', openBinded)
+  cbkBinded.set(dialog.id, openBinded)
 }
 
-function selectTab(tab) {
-  Array.from(element.querySelectorAll('.tab'))
+function removeTab(dialog: Dialog) {
+  const tabEl = getTabElement(dialog.id)
+  if (tabEl) {
+    const openBinded = cbkBinded.get(dialog.id)
+    cbkBinded.delete(dialog.id)
+    tabEl.removeEventListener('click', openBinded)
+    tabEl.remove()
+  }
+}
+
+function getTabElement(dialogId: string): HTMLElement {
+  const tabs = element.querySelector('.tabs .simplebar-content')
+  return tabs.querySelector('.' + dialogId)
+}
+
+function openTab(dialog: Dialog) {
+  const tabEl = getTabElement(dialog.id)
+  selectTab(tabEl)
+}
+
+function selectTab(tabEl: HTMLElement) {
+  const tabs = element.querySelector('.tabs .simplebar-content')
+  Array.from(tabs.querySelectorAll('.tab'))
   .forEach((el) => el.classList.remove('on'))
-  tab.classList.add('on')
+  tabEl.classList.add('on')
 }
 
 /**

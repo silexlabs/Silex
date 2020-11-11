@@ -8,7 +8,6 @@ import { ElementState } from '../../element-store/types'
 import { FileExplorer } from '../dialog/FileExplorer'
 import { PaneBase } from './PaneBase'
 import { SilexNotification } from '../Notification'
-import { Toolboxes } from '../../ui-store/types'
 import { Url } from '../../utils/Url'
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getBody, getSelectedElements } from '../../element-store/filters'
@@ -19,6 +18,7 @@ import {
   updateElements
 } from '../../element-store/index'
 import { getUi } from '../../ui-store/index'
+import { isDialogVisible } from '../../ui-store/utils'
 
 /**
  * on of Silex Editors class
@@ -109,8 +109,7 @@ export class BgPane extends PaneBase {
   redraw(selectElements: ElementState[]) {
     super.redraw(selectElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       this.element.style.display = ''
 
       const mobileOrDesktop = getUi().mobileEditor ? 'mobile' : 'desktop'

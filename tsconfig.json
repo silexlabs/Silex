@@ -2,7 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "outDir": "dist/client/",
-    "target": "esnext",
+    "target": "ES2019",
     "watch": true,
     "sourceMap": true,
     "module": "esnext",

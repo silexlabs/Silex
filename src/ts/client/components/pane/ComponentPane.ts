@@ -5,7 +5,7 @@ import { ComponentsDefinition } from '../../externs'
 import { Constants } from '../../../constants'
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types'
+import { isDialogVisible } from '../../ui-store/utils'
 import {
   getBody,
   getSelectedElements,
@@ -52,7 +52,7 @@ export class ComponentPane extends PaneBase {
   constructor(element: HTMLElement) {
     super(element)
     subscribeUi(() => {
-      if(getUi().currentToolbox === Toolboxes.PARAMS) {
+      if (isDialogVisible('params', 'properties')) {
         this.redraw(getSelectedElements())
         this.element.style.display = ''
       } else {

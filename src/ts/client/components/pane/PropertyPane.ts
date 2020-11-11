@@ -5,7 +5,7 @@
 
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types'
+import { isDialogVisible } from '../../ui-store/utils'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils'
 import { getUi, subscribeUi } from '../../ui-store/index'
@@ -155,8 +155,7 @@ export class PropertyPane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       (this.element.querySelector('.position-editor') as HTMLElement).style.display = ''
       ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = ''
 

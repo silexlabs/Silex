@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Utilities to manupulate site data
+ *
+ */
+
 import { StyleData, Visibility, PseudoClass, PseudoClassData } from './types'
 import { Constants } from '../../constants'
 

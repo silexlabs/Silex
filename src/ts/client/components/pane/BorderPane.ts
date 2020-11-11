@@ -7,12 +7,12 @@
 import { ColorPicker } from '../ColorPicker'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types'
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getSelectedElements } from '../../element-store/filters'
 import { getUi } from '../../ui-store/index'
 import { subscribeElements, updateElements } from '../../element-store/index'
 import { subscribeUi } from '../../ui-store/index'
+import { isDialogVisible } from '../../ui-store/utils'
 
 /**
  * on of Silex Editors class
@@ -87,8 +87,7 @@ export class BorderPane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       this.element.style.display = ''
 
       const isMobile = getUi().mobileEditor ? 'mobile' : 'desktop'

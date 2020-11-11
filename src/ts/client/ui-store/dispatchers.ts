@@ -1,20 +1,34 @@
 /**
- * @fileoverview helpers to dispatch common actions on the store
- * TODO: 1- remove all references to the store or dispatch => every function should take ElementState[] and return the changes to be made as an ElementState[]
- * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
+ * @fileoverview helpers to dispatch common actions on the store - this file is cross platform
+ * TODO: move this file to a cross platform package (e.g. in src/ts/helpers/)
  */
 
 import { PageState } from '../page-store/types'
 import { getUi, updateUi } from './index'
 import { store } from '../store/index'
+import { Dialog } from './types'
 
 export const openPage = (item: PageState, ui = getUi(), dispatch = store.dispatch) => updateUi({
   ...ui,
   currentPageId: item.id,
 }, dispatch)
 
-export const openToolbox = (toolboxName: string, ui = getUi(), dispatch = store.dispatch) => updateUi({
+export const addDialog = (dialog: Dialog, ui = getUi(), dispatch = store.dispatch) => updateUi({
   ...ui,
-  currentToolbox: toolboxName,
+  dialogs: ui.dialogs.concat(dialog),
+}, dispatch)
+
+export const removeDialog = (dialog: Dialog, ui = getUi(), dispatch = store.dispatch) => updateUi({
+  ...ui,
+  dialogs: ui.dialogs.filter(d => d.id !== dialog.id || d.type !== dialog.type),
+}, dispatch)
+
+// 1 dialog only can be open at a time for a given type
+export const openDialog = (dialog: Dialog, ui = getUi(), dispatch = store.dispatch) => updateUi({
+  ...ui,
+  dialogs: ui.dialogs.map(d => d.type === dialog.type && d.visible !== (d.id === dialog.id) ? {
+    ...d,
+    visible: d.id === dialog.id,
+  } : d),
 }, dispatch)
 
