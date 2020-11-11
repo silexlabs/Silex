@@ -4,6 +4,7 @@
  *
  */
 
+import 'simplebar'
 import { detect } from 'detect-browser'
 
 import { config } from './ClientConfig'

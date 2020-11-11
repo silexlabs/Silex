@@ -8,9 +8,9 @@ import tagsInput from 'tags-input'
 import { Constants } from '../../../constants'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types'
 import { getSelectedElements } from '../../element-store/filters'
-import { getUi, subscribeUi } from '../../ui-store/index'
+import { subscribeUi } from '../../ui-store/index'
+import { isDialogVisible } from '../../ui-store/utils'
 import { setClassName } from '../../element-store/dispatchers'
 import { subscribeElements } from '../../element-store/index'
 
@@ -85,11 +85,8 @@ export class StylePane extends PaneBase {
   protected redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       this.element.style.display = ''
-
-
 
       // edit classes only if there is 1 element
       if (selectedElements.length === 1) {

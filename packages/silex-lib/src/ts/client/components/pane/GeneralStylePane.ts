@@ -6,7 +6,7 @@
 
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types'
+import { isDialogVisible } from '../../ui-store/utils'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getUi } from '../../ui-store/index'
 import { subscribeElements } from '../../element-store/index'
@@ -53,8 +53,7 @@ export class GeneralStylePane extends PaneBase {
   protected redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       this.element.style.display = ''
 
 

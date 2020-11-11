@@ -14,7 +14,8 @@ import {
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { SilexNotification } from './Notification'
-import { Toolboxes } from '../ui-store/types'
+import { isDialogVisible, getVisibleDialogs } from '../ui-store/utils'
+import { openDialog } from '../ui-store/dispatchers'
 import {
   addElement,
   position,
@@ -350,37 +351,17 @@ function onMenuEvent(type: string, event: Event, componentName?: string) {
       })
       break
     case 'tools.next.property': {
-      const ui = getUi()
-      updateUi({
-        ...ui,
-        currentToolbox: (() => {
-          switch(ui.currentToolbox) {
-            case Toolboxes.PROPERTIES: return Toolboxes.STYLES
-            case Toolboxes.STYLES: return Toolboxes.PARAMS
-            case Toolboxes.PARAMS: return Toolboxes.PROPERTIES
-            default:
-              console.error('Toolboxe name not found')
-              return Toolboxes.PROPERTIES
-          }
-        })(),
-      })
+      const dialogs = getUi().dialogs.filter(d => d.type === 'properties')
+      const currentIdx = dialogs.findIndex(d => d.visible)
+      const next = dialogs[(currentIdx + 1) % dialogs.length]
+      openDialog(next)
       break
     }
     case 'tools.prev.property': {
-      const ui = getUi()
-      updateUi({
-        ...ui,
-        currentToolbox: (() => {
-          switch(ui.currentToolbox) {
-            case Toolboxes.PROPERTIES: return Toolboxes.PARAMS
-            case Toolboxes.STYLES: return Toolboxes.PROPERTIES
-            case Toolboxes.PARAMS: return Toolboxes.STYLES
-            default:
-              console.error('Toolboxe name not found')
-              return Toolboxes.PROPERTIES
-          }
-        })(),
-      })
+      const dialogs = getUi().dialogs.filter(d => d.type === 'properties')
+      const currentIdx = dialogs.findIndex(d => d.visible)
+      const prev = dialogs[(currentIdx - 1 + dialogs.length) % dialogs.length]
+      openDialog(prev)
       break
     }
     case 'insert.page':

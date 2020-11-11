@@ -91,11 +91,17 @@
     height: @contextMenuHeight;
     background-color: @silexdarkgrey;
 
+    // horizontal scroll
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+
     .tab {
       cursor: pointer;
       padding: 12px;
       border-right: 1px solid @silexdarkgrey;
       background-color: @silexmediumdarkgrey;
+      font-weight: bold;
       &.on {
         background-color: @silexmediumgrey;
         border: 1px solid @silexdarkgrey;

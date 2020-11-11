@@ -6,7 +6,6 @@
 import { ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
 import { SilexNotification } from './Notification'
-import { Toolboxes } from '../ui-store/types'
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'
 import { getElements, subscribeElements } from '../element-store/index'
@@ -26,10 +25,10 @@ import {
 } from '../element-store/dispatchers'
 import { openHtmlEditor } from './dialog/HtmlEditor'
 import { openTextFormatBar } from './TextFormatBar'
-import { openToolbox } from '../ui-store/dispatchers'
 import { showPages } from './Menu'
 import { subscribePages } from '../page-store/index'
-import { subscribeUi } from '../ui-store/index'
+import { openDialog } from '../ui-store/dispatchers'
+import { getUi, subscribeUi } from '../ui-store/index'
 
 ///////////////////
 // API for the outside world
@@ -46,7 +45,8 @@ export function editElement() {
 
   if (element) {
     if (isComponent(element)) {
-      openToolbox(Toolboxes.PARAMS)
+      const params = getUi().dialogs.find(d => d.id === 'params')
+      openDialog(params)
     } else {
       // open the params tab for the components
       // or the editor for the elements

@@ -1,5 +1,5 @@
 import { ElementState } from '../element-store/types'
-import { LOADING, Toolboxes, UiState } from '../ui-store/types'
+import { LOADING, UiState } from '../ui-store/types'
 import { PageAction, SiteAction, UiAction } from './actions'
 import { PageState } from '../page-store/types'
 import { SiteState } from '../site-store/types'
@@ -64,7 +64,19 @@ export const uiReducer = (state: UiState = {
   dirty: false,
   mobileEditor: false,
   currentPageId: null,
-  currentToolbox: Toolboxes.PROPERTIES,
+  dialogs: [{
+    id: 'design',
+    type: 'properties',
+    visible: true,
+  }, {
+    id: 'style',
+    type: 'properties',
+    visible: false,
+  }, {
+    id: 'params',
+    type: 'properties',
+    visible: false,
+  }],
   clipboard: null,
   components: {},
 }, action: any) => {
