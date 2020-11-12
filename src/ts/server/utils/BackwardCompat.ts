@@ -423,6 +423,15 @@ export default class BackwardCompat {
     return new Promise((resolve, reject) => {
       const actions = []
       if (this.hasToUpdate(version, [2, 2, 12])) {
+        // add empty metadata to the website object
+        this.data = {
+          ...this.data,
+          site: {
+            ...this.data.site,
+            data: {},
+          }
+        }
+        actions.push('add empty metadata to the website object')
         // sections are now section tag
         const changedSections = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}`)) as HTMLElement[]
         changedSections.forEach((el: HTMLElement) => setTagName(el, 'section'))

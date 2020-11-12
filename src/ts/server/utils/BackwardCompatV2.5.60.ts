@@ -354,6 +354,7 @@ export function getSiteFromDom(doc: HTMLDocument): SiteState {
     isTemplate: false, // backward compat is only about loaded websites, not templates
     file: null,
     prodotypeDependencies: getDependenciesFromDom(properties),
+    data: {},
   }
 }
 

@@ -215,6 +215,7 @@ export const SITE1: SiteState = {
   twitterSocial: 'twitterSocial',
   dataSources: {},
   fonts: [],
+  data: {},
   styles: {
     'all-style': {
       'className': 'all-style',
