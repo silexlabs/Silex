@@ -45,7 +45,8 @@ export const siteReducer = (state: SiteState = {
   fonts: [],
   styles: {},
   file: null,
-  prodotypeDependencies: {}
+  prodotypeDependencies: {},
+  data: {},
 }, action: any) => {
   switch (action.type) {
     case SiteAction.INITIALIZE: return {
