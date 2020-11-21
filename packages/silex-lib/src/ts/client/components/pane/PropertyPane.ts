@@ -5,7 +5,7 @@
 
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { Toolboxes } from '../../ui-store/types'
+import { isDialogVisible } from '../../ui-store/utils'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getBoundingBox, getElementStyle, getElementRect } from '../../element-store/utils'
 import { getUi, subscribeUi } from '../../ui-store/index'
@@ -50,6 +50,7 @@ function removePxWithDefault(val: string, default_: string): string {
  */
 export class PropertyPane extends PaneBase {
 
+  tagNameInput: HTMLSelectElement
   /**
    * UI for alt and title
    * only used for images
@@ -98,10 +99,19 @@ export class PropertyPane extends PaneBase {
       { selector: FlexWrapSelect, styleName: 'flex-wrap', eventName: 'change', unit: '' },
     ])
 
-    this.altInput = this.initInput('.alt-input', (e) => this.onAltChanged(e))
-    this.titleInput = this.initInput('.title-input', (e) => this.onTitleChanged(e))
+    this.tagNameInput = this.initComboBox('#tag-name-input', (e) => this.onTagNameChanged(e))
+    this.altInput = this.initInput('#alt-input', (e) => this.onAltChanged(e))
+    this.titleInput = this.initInput('#title-input', (e) => this.onTitleChanged(e))
   }
 
+  onTagNameChanged(e: Event) {
+    const input = e.target as HTMLSelectElement
+    updateElements(getSelectedElements()
+      .map((el) => ({
+        ...el,
+        tagName: input.value,
+      })))
+  }
   /**
    * alt changed
    * callback for inputs
@@ -145,8 +155,7 @@ export class PropertyPane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       (this.element.querySelector('.position-editor') as HTMLElement).style.display = ''
       ;(this.element.querySelector('.seo-editor') as HTMLElement).style.display = ''
 
@@ -187,6 +196,14 @@ export class PropertyPane extends PaneBase {
         [JustifyContentSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'justify-content', mobile))],
         [FlexWrapSelect, () => this.getCommonProperty(elementsNoBody, (element) => getElementStyle(element, 'flex-wrap', mobile))],
       ])
+
+      const tagName = this.getCommonProperty(elementsNoBody, (element) => element.tagName)
+      if (tagName) {
+        this.tagNameInput.value = tagName
+      } else {
+        this.tagNameInput.value = ''
+      }
+
       // compute visibility
       if (elementsNoBodyNoSection.length > 0) {
         const elementsNoBodyNoSectionNoSectionContent = elementsNoBodyNoSection

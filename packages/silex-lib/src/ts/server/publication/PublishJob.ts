@@ -254,10 +254,12 @@ export default class PublishJob {
         const baseUrlStr = baseUrl.href
 
         // build the dom
-        const data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
         const { html, userHead } = DomTools.extractUserHeadTag(bufferHTML.toString('utf-8'))
         const dom = new JSDOM(html, { url: baseUrlStr })
-        // const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => await this.getDestFolder(ext, tagName), data)
+        // store useful data in the context, for hosting providers hooks
+        this.context.data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
+        this.context.document = dom.window.document
+        // const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => await this.getDestFolder(ext, tagName), this.context.data)
         // remove classes used by Silex during edition
         cleanup(dom.window)
         // rewrite URLs and extract assets
@@ -279,7 +281,7 @@ export default class PublishJob {
         // hide website before styles.css is loaded
         dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
         // get the first page name, i.e. the default, e.g. index.html
-        const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, data) : null
+        const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, this.context.data) : null
         // define hooks
         const permalinkHook = (pageName: string) => {
           if (this.context.hostingProvider && this.context.hostingProvider.getPermalink) {
@@ -289,10 +291,10 @@ export default class PublishJob {
         }
         const pageTitleHook = (page: PageData) => {
           if (this.context.hostingProvider && this.context.hostingProvider.getPageTitle) {
-            return this.context.hostingProvider.getPageTitle(data.site.title, this.context)
+            return this.context.hostingProvider.getPageTitle(this.context.data.site.title, this.context)
           }
           // default hook adds the page display name
-          return data.site.title + ' - ' + page.displayName
+          return this.context.data.site.title + ' - ' + page.displayName
         }
         const pageLinkHook = (href: string) => {
           if (this.context.hostingProvider && this.context.hostingProvider.getPageLink) {
@@ -305,6 +307,9 @@ export default class PublishJob {
           // do nothing
           return href
         }
+        if (this.context.hostingProvider && this.context.hostingProvider.beforeSplit) {
+          await this.context.hostingProvider.beforeSplit(this.context)
+        }
         // split into pages
         this.pageActions = splitPages({
           newFirstPageName,
@@ -314,7 +319,7 @@ export default class PublishJob {
           win: dom.window,
           rootPath: this.rootPath,
           getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
-          data,
+          data: this.context.data,
         })
 
         // release the dom object

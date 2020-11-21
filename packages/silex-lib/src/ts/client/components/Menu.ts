@@ -5,7 +5,7 @@
  *
  */
 
-import { ElementState, ElementType } from '../element-store/types'
+import { Direction, ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
 import {
   INITIAL_ELEMENT_SIZE,
@@ -14,9 +14,11 @@ import {
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
 import { SilexNotification } from './Notification'
-import { Toolboxes } from '../ui-store/types'
+import { isDialogVisible, getVisibleDialogs } from '../ui-store/utils'
+import { openDialog } from '../ui-store/dispatchers'
 import {
   addElement,
+  position,
   moveDown,
   moveToBottom,
   moveToTop,
@@ -119,7 +121,7 @@ function elFromCompDef(comp, id) {
 function buildUi() {
   // Shortcuts
   config.shortcuts.forEach((shortcut) => {
-    keyboard.addShortcut(shortcut, (e) => onMenuEvent(shortcut.id))
+    keyboard.addShortcut(shortcut, (e) => onMenuEvent(shortcut.id, e))
   })
 
   // components
@@ -167,7 +169,7 @@ function buildUi() {
     (e.target as HTMLElement).parentElement.getAttribute('data-menu-action')
     const componentId = (e.target as HTMLElement).getAttribute('data-comp-id') ||
     (e.target as HTMLElement).parentElement.getAttribute('data-comp-id')
-    onMenuEvent(action, componentId)
+    onMenuEvent(action, e, componentId)
     if ((e.target as HTMLElement).parentElement &&
     !(e.target as HTMLElement).parentElement.classList.contains('menu-container') &&
     !(e.target as HTMLElement).parentElement.classList.contains('silex-menu')) {
@@ -266,9 +268,13 @@ function redraw() {
 /**
  * handles click events
  * calls onStatus to notify the controller
+ * @param type is the "id" key in the ClientConfig object
+ * @param event object which needs to have {altKey: boolean, ctrlKey: boolean, shiftKey: boolean}
  * @param componentName the component type if it is a component
+ * @see ClientConfig
  */
-function onMenuEvent(type: string, componentName?: string) {
+function onMenuEvent(type: string, event: Event, componentName?: string) {
+  const mouseEvent = event as MouseEvent
   switch (type) {
     case 'show.pages':
       toggleSubMenu('page-tool-visible')
@@ -345,37 +351,17 @@ function onMenuEvent(type: string, componentName?: string) {
       })
       break
     case 'tools.next.property': {
-      const ui = getUi()
-      updateUi({
-        ...ui,
-        currentToolbox: (() => {
-          switch(ui.currentToolbox) {
-            case Toolboxes.PROPERTIES: return Toolboxes.STYLES
-            case Toolboxes.STYLES: return Toolboxes.PARAMS
-            case Toolboxes.PARAMS: return Toolboxes.PROPERTIES
-            default:
-              console.error('Toolboxe name not found')
-              return Toolboxes.PROPERTIES
-          }
-        })(),
-      })
+      const dialogs = getUi().dialogs.filter(d => d.type === 'properties')
+      const currentIdx = dialogs.findIndex(d => d.visible)
+      const next = dialogs[(currentIdx + 1) % dialogs.length]
+      openDialog(next)
       break
     }
     case 'tools.prev.property': {
-      const ui = getUi()
-      updateUi({
-        ...ui,
-        currentToolbox: (() => {
-          switch(ui.currentToolbox) {
-            case Toolboxes.PROPERTIES: return Toolboxes.PARAMS
-            case Toolboxes.STYLES: return Toolboxes.PROPERTIES
-            case Toolboxes.PARAMS: return Toolboxes.STYLES
-            default:
-              console.error('Toolboxe name not found')
-              return Toolboxes.PROPERTIES
-          }
-        })(),
-      })
+      const dialogs = getUi().dialogs.filter(d => d.type === 'properties')
+      const currentIdx = dialogs.findIndex(d => d.visible)
+      const prev = dialogs[(currentIdx - 1 + dialogs.length) % dialogs.length]
+      openDialog(prev)
       break
     }
     case 'insert.page':
@@ -422,6 +408,18 @@ function onMenuEvent(type: string, componentName?: string) {
       break
     case 'edit.redo':
       redo()
+      break
+    case 'edit.position.left':
+      position(Direction.LEFT, mouseEvent)
+      break
+    case 'edit.position.right':
+      position(Direction.RIGHT, mouseEvent)
+      break
+    case 'edit.position.up':
+      position(Direction.UP, mouseEvent)
+      break
+    case 'edit.position.down':
+      position(Direction.DOWN, mouseEvent)
       break
     case 'edit.move.up':
       moveUp()

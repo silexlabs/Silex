@@ -9,6 +9,7 @@ import { Provider, VHost } from '../client/site-store/types'
 // FIXME: the hooks should have a default function defined here
 export interface HostingProvider {
   getOptions: (session: any) => Provider,
+  beforeSplit?: (context: PublishContext) => Promise<void>,
   beforeWrite?: (context: PublishContext, actions: any[]) => any[],
   finalizePublication?: (context: PublishContext, onStatus: (msg: string) => void) => Promise<void>,
   getDefaultPageFileName?: (context: PublishContext, data: PersistantData) => string,
@@ -39,6 +40,8 @@ export interface PublishContext {
   cookies: object,
   hostingProvider: HostingProvider,
   config: Config,
+  data?: PersistantData,
+  document?: HTMLDocument,
 }
 
 export interface File {
