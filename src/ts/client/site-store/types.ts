@@ -27,19 +27,9 @@ export interface SiteState {
   dataSources: DataSources,
   fonts: Font[],
   styles: StyleDataObject,
-  // file holds the URL, service and unifile/CE info of the site currently opened
-  file: FileInfo,
-  // prodotypeDependencies is the object returned by getDependencies: {
-  //         "script": [{
-  //             "src": "https://code.jquery.com/jquery-2.1.4.min.js"
-  //         }],
-  //         "link": [{
-  //             "rel": "stylesheet",
-  //             "href": "https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css"
-  //         }]
-  //   }
-  // FIXME: the site should not have this array of deps, but each component should have its deps
+  file: FileInfo, // file holds the URL, service and unifile/CE info of the site currently opened
   prodotypeDependencies: ProdotypeDependency,
+  data: SiteMeta,
 }
 
 /**
@@ -51,6 +41,11 @@ export interface DataSource {
   data?: object
   structure?: object
 }
+
+/**
+ * Site meta data, used by parent app to customize Silex
+ */
+interface SiteMeta { [key: string]: any}
 
 export interface DataSources { [key: string]: DataSource }
 

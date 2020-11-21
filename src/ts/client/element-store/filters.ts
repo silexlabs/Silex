@@ -28,9 +28,7 @@ export const getChildrenRecursive = (element: ElementState, elements = getElemen
   }, []))
 }
 
-export const getParent = (element: ElementState, elements = getElements()): ElementState => elements.find((parent) => {
-  return parent.children.includes(element.id)
-})
+export const getParent = (element: ElementState, elements = getElements()): ElementState => elements.find((parent) => parent.children.includes(element.id))
 
 export const getAllParents = (element: ElementState, elements = getElements()): ElementState[] => {
   const parent = getParent(element, elements)
@@ -57,7 +55,7 @@ export const getSelectedElementsNoSectionContent = (elements = getElements()) =>
  * get the fist parent element which is "paged", i.e. not visible on all pages
  */
 export function getFirstPagedParent(element: ElementState, elements = getElements()): ElementState {
-  const parent = getParent(element)
+  const parent = getParent(element, elements)
   if (!!parent) {
     if (parent.pageNames.length) {
       return parent

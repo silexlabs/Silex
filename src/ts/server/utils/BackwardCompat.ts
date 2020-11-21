@@ -9,6 +9,7 @@ import * as fs from 'fs'
 import { Constants } from '../../constants'
 import {
   ElementData,
+  ElementState,
   ElementType,
   Link,
   LinkType
@@ -23,6 +24,8 @@ import {
   writeSiteStyles,
   writeStyles
 } from './BackwardCompatV2.5.60'
+import { getDomElement } from '../../client/element-store/dom'
+import { setTagName } from '../../client/utils/dom'
 import { writeDataToDom } from '../../client/store/dom'
 
 /**
@@ -134,6 +137,7 @@ export default class BackwardCompat {
         '2.2.9': await this.to2_2_9(version, doc),
         '2.2.10': await this.to2_2_10(version, doc),
         '2.2.11': await this.to2_2_11(version, doc), // this will set this.data
+        '2.2.12': await this.to2_2_12(version, doc),
       }
       // update the static scripts to match the current server and latest version
       this.updateStatic(doc)
@@ -410,6 +414,36 @@ export default class BackwardCompat {
         } else {
           console.error('Could not import site from v2.2.11', {elements, pages, site})
         }
+      }
+      resolve(actions)
+    })
+  }
+
+  to2_2_12(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 12])) {
+        // add empty metadata to the website object
+        this.data = {
+          ...this.data,
+          site: {
+            ...this.data.site,
+            data: {},
+          }
+        }
+        actions.push('add empty metadata to the website object')
+        // sections are now section tag
+        const changedSections = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}`)) as HTMLElement[]
+        changedSections.forEach((el: HTMLElement) => setTagName(el, 'section'))
+        this.data = {
+          ...this.data,
+          elements: this.data.elements
+            .map((el) => ({
+              ...el,
+              tagName: getDomElement(doc, el as ElementState) ? getDomElement(doc, el as ElementState).tagName : 'DIV',
+            }))
+        }
+        actions.push('All sections have a &lt;SECTION&gt; tag name')
       }
       resolve(actions)
     })

@@ -17,7 +17,7 @@ import {
   VisibilityData,
   PseudoClassData
 } from '../../site-store/types'
-import { Toolboxes } from '../../ui-store/types'
+import { isDialogVisible } from '../../ui-store/utils'
 import { browse } from '../../element-store/utils'
 import { getBody, getSelectedElements } from '../../element-store/filters'
 import { getComponentsDef, openStyleEditor } from '../../element-store/component'
@@ -447,8 +447,7 @@ export class StyleEditorPane extends PaneBase {
   protected redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.STYLES) {
+    if (isDialogVisible('style', 'properties')) {
       this.element.style.display = ''
 
 

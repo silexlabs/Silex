@@ -1,9 +1,9 @@
-.tabs
+.tabs(data-simplebar)
   .tab.design.fa.fa-lg.fa-pencil.on
   .tab.style.fa.fa-lg.fa-paint-brush
   .tab.params.fa.fa-lg.fa-cog
 .main-container
-  span.position-editor.editor-container
+  section.position-editor.editor-container
     .expandable
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right
@@ -134,19 +134,49 @@
             input.position-input.padding-bottom-input(placeholder='-', type='number', tabindex='18', min='0')
             label.unit PX
 
-  span.seo-editor.old-advanced-only.editor-container
+  section.seo-editor.old-advanced-only.editor-container
     .expandable
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right
-        span SEO (search engines)
+        span SEO &amp; Accessibility
       .body
-        label.alt-label Alt (images only)
-        input.alt-input(tabindex='19', placeholder='-', type='text')
-        label.title-label Title and tooltip
-        input.title-input(tabindex='20', placeholder='-', type='text')
+        label.tag-name-label(for='tag-name-input') Tag Name
+        select#tag-name-input
+          option(value='', disabled=true) -
+          option(value='SECTION') SECTION
+          option(value='DIV') DIV
+          option(value='ADDRESS') ADDRESS
+          option(value='ARTICLE') ARTICLE
+          option(value='ASIDE') ASIDE
+          option(value='FOOTER') FOOTER
+          option(value='HEADER') HEADER
+          option(value='H1') H1
+          option(value='H2') H2
+          option(value='H3') H3
+          option(value='H4') H4
+          option(value='H5') H5
+          option(value='H6') H6
+          option(value='HGROUP') HGROUP
+          option(value='MAIN') MAIN
+          option(value='NAV') NAV
+          option(value='BLOCKQUOTE') BLOCKQUOTE
+          option(value='DD') DD
+          option(value='DL') DL
+          option(value='DT') DT
+          option(value='FIGCAPTION') FIGCAPTION
+          option(value='FIGURE') FIGURE
+          option(value='MAIN') MAIN
+          option(value='P') P
+          option(value='PRE') PRE
+        br
+        br
+        label.alt-label(for='alt-input') Alt (images only)
+        input#alt-input(tabindex='19', placeholder='-', type='text')
+        label.title-label(for='title-input') Title and tooltip
+        input#title-input(tabindex='20', placeholder='-', type='text')
 
 
-  span.page-editor.editor-container
+  section.page-editor.editor-container
     .expandable
       legend
         span.fa.fa-fw.fa-inverse.fa-caret-right
@@ -173,7 +203,7 @@
         input.link-state(placeholder='-', type='text', readonly)
         input.link-button(tabindex='25', type='button', value='Edit')
 
-  span.style-container
+  section.style-container
     span.tab-page
       .general-editor.editor-container
         .expandable.opacity-property.old-advanced-only
@@ -291,8 +321,9 @@
               a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes', title='about Silex and CSS', target='_blank') Help
             input.style-css-classes-input(tabindex='45', type='tags')
             .element-style-editor.editor-container
-  span.prodotype-component-editor.editor-container
-  span.prodotype-style-editor.editor-container
+  section.component-generic-editor
+  section.prodotype-component-editor.editor-container
+  section.prodotype-style-editor.editor-container
     .expendable.prodotype-style-editor-menu
       label.class-name-style-label(for='class-name-style-combo-box')
         span Style name:

@@ -7,6 +7,7 @@
 import { Constants } from '../../constants'
 import { CssRule } from '../site-store/types'
 import {
+  Direction,
   DomDirection,
   ElementState,
   ElementType,
@@ -63,12 +64,19 @@ export const selectElements = (selection: ElementState[], elements = getElements
 /**
  * move elements order in their parent's children array
  * @return the parent elements to be updated
+ * FIXME: the elements hidden on mobile or desktop interfeer and they should not - see how hidden on current page is handled here
  */
 export const moveElements = (selection: ElementState[], direction: DomDirection, elements = getElements(), dispatch = store.dispatch, debug = false) => {
+  const { currentPageId } = getUi()
   const getIdx = (el, children) => children.findIndex((c) => c === el.id)
   const getTargetIdx = (el, parent) => {
-    const idx = getIdx(el, parent.children)
-    return direction === DomDirection.UP ? idx - 1 : direction === DomDirection.DOWN ? idx + 1 : direction === DomDirection.TOP ? 0 : parent.children.length - 1
+    let idx = getIdx(el, parent.children)
+    let target = null
+    do {
+      idx = direction === DomDirection.UP ? idx - 1 : direction === DomDirection.DOWN ? idx + 1 : direction === DomDirection.TOP ? 0 : parent.children.length - 1
+      target = getElementById(parent.children[idx], elements)
+    } while(!!target && target.pageNames.length && !target.pageNames.includes(currentPageId))
+    return idx
   }
   const changes = selection
     .map((el) => ({
@@ -377,10 +385,86 @@ export function removeLink(selection: ElementState[], dispatch = store.dispatch)
 }
 
 /**
- * Move the selected elements in the DOM
+ * @return the opposit direction
  */
-function move(direction: DomDirection) {
-  moveElements(getSelectedElementsNoSectionContent(), direction)
+function opposit(direction: DomDirection): DomDirection {
+  switch(direction) {
+    case DomDirection.UP: return DomDirection.DOWN
+    case DomDirection.DOWN: return DomDirection.UP
+    case DomDirection.TOP: return DomDirection.BOTTOM
+    case DomDirection.BOTTOM: return DomDirection.TOP
+  }
+}
+
+function toDomDir(direction: Direction): DomDirection {
+  switch(direction) {
+    case Direction.UP: return DomDirection.UP
+    case Direction.DOWN: return DomDirection.DOWN
+    case Direction.LEFT: return DomDirection.TOP
+    case Direction.RIGHT: return DomDirection.BOTTOM
+  }
+}
+
+/**
+ * Move the selected elements in the DOM
+ * Move it up or down the DOM depending on the direction and the popsition property
+ * A static position means that the user is moving the element compared to other static elements
+ * A non-static position means that the user expect the z-order to change
+ */
+function move(direction: DomDirection, elements = getSelectedElementsNoSectionContent()) {
+  const desktopOrMobile = getUi().mobileEditor ? 'mobile' : 'desktop'
+  moveElements(elements
+    .filter((el) => el.style[desktopOrMobile].position === 'static'), direction)
+  moveElements(elements
+    .filter((el) => el.style[desktopOrMobile].position !== 'static'), opposit(direction))
+}
+
+/**
+ * useful method to shift the position of an element, keeping the "px" unit
+ */
+function updatePosition(options: {value: string, inc: boolean, dec: boolean, multiply: boolean, divide: boolean}): string {
+  if(options.inc || options.dec) {
+    const num = parseInt(options.value)
+    const offset = options.multiply ? 10 : (options.divide ? 1 : 5)
+    return (num + (options.inc ? offset : -offset)) + 'px'
+  }
+  return options.value
+}
+
+/**
+ * move an element up, down, left or right. the amount is 1px, 5px or 10px depending on the key modifiers
+ */
+export function position(direction: Direction, { altKey, ctrlKey, shiftKey }: { altKey: boolean, ctrlKey: boolean, shiftKey: boolean }) {
+  if (altKey) return
+  const desktopOrMobile = getUi().mobileEditor ? 'mobile' : 'desktop'
+  updateElements(getSelectedElementsNoSectionContent()
+    .filter((el) => el.style[desktopOrMobile].position !== 'static')
+    .map((el) => ({
+      ...el,
+      style: {
+        ...el.style,
+        [desktopOrMobile]: {
+          ...el.style[desktopOrMobile],
+          top: updatePosition({
+            value: el.style[desktopOrMobile].top,
+            inc: direction === Direction.DOWN,
+            dec: direction === Direction.UP,
+            multiply: ctrlKey,
+            divide: shiftKey,
+          }),
+          left: updatePosition({
+            value: el.style[desktopOrMobile].left,
+            inc: direction === Direction.RIGHT,
+            dec: direction === Direction.LEFT,
+            multiply: ctrlKey,
+            divide: shiftKey,
+          }),
+        },
+      },
+    }))
+  )
+  // the elements with a position set to "static" need to move in the DOM
+  move(toDomDir(direction), getSelectedElementsNoSectionContent().filter((el) => el.style[desktopOrMobile].position === 'static'))
 }
 
 /**

@@ -5,12 +5,12 @@
  *
  */
 
-import { Dom } from '../../utils/Dom'
+import { renderList } from '../../utils/dom'
 import { ElementState, ElementType, Link } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
 import { SilexNotification } from '../Notification'
-import { Toolboxes } from '../../ui-store/types'
+import { isDialogVisible } from '../../ui-store/utils'
 import { addToPage, removeFromPage } from '../../element-store/dispatchers'
 import {
   getBody,
@@ -164,7 +164,7 @@ export class PagePane extends PaneBase {
     // render page/visibility template
     // init page template
     const pagesContainer = this.element.querySelector('.pages-container')
-    pagesContainer.innerHTML = Dom.renderList(PagePane.selectorTemplate, pages)
+    pagesContainer.innerHTML = renderList(PagePane.selectorTemplate, pages)
 
     // reset page checkboxes
     if (this.pageCheckboxes) {
@@ -221,8 +221,7 @@ export class PagePane extends PaneBase {
   redraw(selectedElements: ElementState[]) {
     super.redraw(selectedElements)
 
-    const { currentToolbox } = getUi()
-    if (currentToolbox === Toolboxes.PROPERTIES) {
+    if (isDialogVisible('design', 'properties')) {
       this.element.style.display = ''
 
 
