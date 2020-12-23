@@ -87,8 +87,15 @@ function readWebsite(rootUrl, unifile, backwardCompat) {
         // FIXME: handle error from unifile (e.g. json too big on github)
         return sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, jsonBuffer, url, false)
       } catch (err) {
-        // old websites
-        sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, null, url, false)
+        const dom = new JSDOM(htmlBuffer.toString('utf-8'), { url: url.href })
+        if(backwardCompat.hasDataFile(dom.window.document)) {
+          // error loading website data file
+          console.error('error loading website data file', err)
+          CloudExplorer.handleError(res, err)
+        } else {
+          // old websites
+          sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, null, url, false)
+        }
       }
     } catch (err) {
       console.error('unifile error catched:', err)
