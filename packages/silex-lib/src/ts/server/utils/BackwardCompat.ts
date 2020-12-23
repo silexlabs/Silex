@@ -93,6 +93,25 @@ export default class BackwardCompat {
     .forEach((el) => el.classList.remove(className))
   }
 
+  getVersion(doc): number[] {
+    // if no generator tag, create one
+    let metaNode = doc.querySelector('meta[name="generator"]')
+    if (!metaNode) {
+      metaNode = doc.createElement('meta')
+      metaNode.setAttribute('name', 'generator')
+      doc.head.appendChild(metaNode)
+    }
+    // retrieve the website version from generator tag
+    return (metaNode.getAttribute('content') || '')
+    .replace('Silex v', '')
+    .split('.')
+    .map((str) => parseInt(str, 10) || 0)
+  }
+
+  hasDataFile(doc): boolean {
+    return !this.hasToUpdate(this.getVersion(doc), [2, 2, 11])
+  }
+
   /**
    * handle backward compatibility issues
    * Backwardcompatibility process takes place after opening a file
@@ -108,19 +127,7 @@ export default class BackwardCompat {
     // we need this.data as to2_2_11 will extract it and set it from the dom
     this.data = data
 
-    // if no generator tag, create one
-    let metaNode = doc.querySelector('meta[name="generator"]')
-    if (!metaNode) {
-      metaNode = doc.createElement('meta')
-      metaNode.setAttribute('name', 'generator')
-      doc.head.appendChild(metaNode)
-    }
-    // retrieve the website version from generator tag
-    const version = (metaNode.getAttribute('content') || '')
-      .replace('Silex v', '')
-      .split('.')
-      .map((str) => parseInt(str, 10) || 0)
-
+    const version = this.getVersion(doc)
     const hasToUpdate = this.hasToUpdate(version, this.silexVersion)
 
     // warn the user
@@ -142,6 +149,7 @@ export default class BackwardCompat {
       // update the static scripts to match the current server and latest version
       this.updateStatic(doc)
       // store the latest version
+      const metaNode = doc.querySelector('meta[name="generator"]')
       metaNode.setAttribute('content', 'Silex v' + this.silexVersion.join('.'))
       // apply all-time fixes
       this.fixes(doc)
