@@ -116,8 +116,10 @@ class Dashboard {
     const loadNext = (toLoad) => {
       if (toLoad.length > 0) {
         const item = toLoad.pop()
-        createList(
-            this.element.querySelector(item.selector), item.className,
+        const listElement = this.element.querySelector(item.selector)
+        if (listElement) {
+          createList(
+            listElement, item.className,
             item.repo, () => loadNext(toLoad), (e) => {
               this.state = 'error'
               if (this.errorCbk) {
@@ -126,6 +128,9 @@ class Dashboard {
               this.readyCbk = null
               this.errorCbk = null
             })
+        } else {
+          loadNext(toLoad)
+        }
       } else {
         this.state = 'ready'
         if (this.readyCbk) {
@@ -168,7 +173,9 @@ class Dashboard {
 
     // tip of the day
     const tipOfTheDayElement = this.element.querySelector('.tip-of-the-day') as HTMLElement
-    const tipOfTheDay: TipOfTheDay = new TipOfTheDay(tipOfTheDayElement)
+    if (tipOfTheDayElement) {
+      new TipOfTheDay(tipOfTheDayElement)
+    }
   }
 
   /**

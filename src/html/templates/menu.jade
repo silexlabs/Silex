@@ -1,148 +1,170 @@
 .silex-menu
-  block customizable-menu
+  block menu-logo
     img.show-about-menu.silex-logo(title='About Silex', data-menu-action='show.about.menu', src='assets/logo-silex-small.png')
   .menu-container
-    .show-file-menu.fa-fw.icon.fa-inverse.fa-cloud(title='File menu', data-menu-action='show.file.menu')
-    .show-add-menu.fa-fw.icon.fa-inverse.fa-plus-square(title='Add elements', data-menu-action='show.add.menu')
-    .show-code-menu.fa-fw.icon.fa-inverse.fa-code(title='Code', data-menu-action='show.code.menu')
-    .show-pages.fa-fw.fa-fw.icon.fa-inverse.fa-file(title='Pages', data-menu-action='show.pages')
-    .icon.sep
-    .icon.undo.fa-fw.fa-inverse.fa-undo.off(title='Undo (Ctrl Z)', data-menu-action='edit.undo')
-    .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo (Ctrl ⇧ Z)', data-menu-action='edit.redo')
-    .icon.sep
-    .view-file.fa-fw.icon.fa-inverse.fa-eye(title='Preview (Alt V)', data-menu-action='view.file')
-    .view-file-responsize.icon.previewResponsize(title='Preview in Responsize (⇧ Alt V)', data-menu-action='view.file.responsize')
-    .right.mobile.fa-fw.icon.fa-inverse.fa-mobile(title='Mobile editor (Alt M)', data-menu-action="tools.mobile.mode.on")
-    .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor (Alt M)', data-menu-action="tools.mobile.mode.off")
-    .icon.sep
-    .show-settings.fa-fw.icon.fa-inverse.fa-cogs(title='Settings (Alt O)', data-menu-action='file.publish.settings')
-    .show-fonts.fa-fw.icon.fa-inverse.fa-font(title='Fonts', data-menu-action='file.fonts')
-    .show-about-menu.fa-fw.icon.fa-inverse.fa-question-circle(title='About Silex', data-menu-action='show.about.menu')
+    block menu-icons
+      block menu-show-file-menu
+        .show-file-menu.fa-fw.icon.fa-inverse.fa-cloud(title='File menu', data-menu-action='show.file.menu')
+      block menu-show-add-menu
+        .show-add-menu.fa-fw.icon.fa-inverse.fa-plus-square(title='Add elements', data-menu-action='show.add.menu')
+      block menu-show-code-menu
+        .show-code-menu.fa-fw.icon.fa-inverse.fa-code(title='Code', data-menu-action='show.code.menu')
+      block menu-show-pages
+        .show-pages.fa-fw.fa-fw.icon.fa-inverse.fa-file(title='Pages', data-menu-action='show.pages')
+        .icon.sep
+      block menu-undo
+        .icon.undo.fa-fw.fa-inverse.fa-undo.off(title='Undo (Ctrl Z)', data-menu-action='edit.undo')
+      block menu-redo
+        .icon.redo.fa-fw.fa-inverse.fa-repeat.off(title='Redo (Ctrl ⇧ Z)', data-menu-action='edit.redo')
+        .icon.sep
+      block menu-view-file
+        .view-file.fa-fw.icon.fa-inverse.fa-eye(title='Preview (Alt V)', data-menu-action='view.file')
+        .view-file-responsize.icon.previewResponsize(title='Preview in Responsize (⇧ Alt V)', data-menu-action='view.file.responsize')
+      block menu-mobile
+        .right.mobile.fa-fw.icon.fa-inverse.fa-mobile(title='Mobile editor (Alt M)', data-menu-action="tools.mobile.mode.on")
+        .right.desktop.fa-fw.icon.fa-inverse.fa-desktop(title='Desktop editor (Alt M)', data-menu-action="tools.mobile.mode.off")
+        .icon.sep
+      block menu-show-settings
+        .show-settings.fa-fw.icon.fa-inverse.fa-cogs(title='Settings (Alt O)', data-menu-action='file.publish.settings')
+        .show-fonts.fa-fw.icon.fa-inverse.fa-font(title='Fonts', data-menu-action='file.fonts')
+      block menu-show-about-menu
+        .show-about-menu.fa-fw.icon.fa-inverse.fa-question-circle(title='About Silex', data-menu-action='show.about.menu')
 
   .about-menu-container
-    .label About Silex
-    .sub-menu-item(title='get help here!', data-menu-action="help.wiki")
-      span.icon.fa-inverse.fa-fw.fa-ambulance
-      span Silex wiki
-    .sub-menu-item(title='Silex forums', data-menu-action="help.issues")
-      span.icon.fa-inverse.fa-fw.fa-bug
-      span Silex forums
-    .sub-menu-item(title='Download widgets', data-menu-action="help.downloads.widget")
-      span.icon.fa-inverse.fa-fw.fa-download
-      span Download widgets
-    .sub-menu-item(title='Download templates', data-menu-action="help.downloads.template")
-      span.icon.fa-inverse.fa-fw.fa-download
-      span Download templates
-    .icon.sep
-    .sub-menu-item(title='Silex Labs non profit organization', data-menu-action="help.aboutSilexLabs")
-      span.icon.fa-inverse.fa-fw.fa-external-link
-      span Silex Labs
-    .sub-menu-item(title='Subscribe now!', data-menu-action="help.newsLetter")
-      span.icon.fa-inverse.fa-fw.fa-external-link
-      span News letter
-    .sub-menu-item(title='Diaspora*', data-menu-action="help.diaspora")
-      span.icon.fa-inverse.fa-fw.fa-heart-o
-      span Diaspora*
-    .sub-menu-item(title='Twitter', data-menu-action="help.twitter")
-      span.icon.fa-inverse.fa-fw.fa-twitter
-      span Twitter
-    .sub-menu-item(title='Facebook', data-menu-action="help.facebook")
-      span.icon.fa-inverse.fa-fw.fa-facebook
-      span Facebook
-    .icon.sep
-    .sub-menu-item(title='Source code', data-menu-action="help.forkMe")
-      span.icon.fa-inverse.fa-fw.fa-code
-      span Source code
-    .sub-menu-item(title='Contribute', data-menu-action="help.contribute")
-      span.icon.fa-inverse.fa-fw.fa-share
-      span Contribute
-    .sub-menu-item(title='Crowdfunding', data-menu-action="help.crowdfunding")
-      span.icon.fa-inverse.fa-fw.fa-credit-card
-      span Crowdfund a feature
+    block menu-help
+      .label About Silex
+      .sub-menu-item(title='get help here!', data-menu-action="help.wiki")
+        span.icon.fa-inverse.fa-fw.fa-ambulance
+        span Silex wiki
+      .sub-menu-item(title='Silex forums', data-menu-action="help.issues")
+        span.icon.fa-inverse.fa-fw.fa-bug
+        span Silex forums
+      .sub-menu-item(title='Download widgets', data-menu-action="help.downloads.widget")
+        span.icon.fa-inverse.fa-fw.fa-download
+        span Download widgets
+      .sub-menu-item(title='Download templates', data-menu-action="help.downloads.template")
+        span.icon.fa-inverse.fa-fw.fa-download
+        span Download templates
+      .icon.sep
+      .sub-menu-item(title='Silex Labs non profit organization', data-menu-action="help.aboutSilexLabs")
+        span.icon.fa-inverse.fa-fw.fa-external-link
+        span Silex Labs
+      .sub-menu-item(title='Subscribe now!', data-menu-action="help.newsLetter")
+        span.icon.fa-inverse.fa-fw.fa-external-link
+        span News letter
+      .sub-menu-item(title='Diaspora*', data-menu-action="help.diaspora")
+        span.icon.fa-inverse.fa-fw.fa-heart-o
+        span Diaspora*
+      .sub-menu-item(title='Twitter', data-menu-action="help.twitter")
+        span.icon.fa-inverse.fa-fw.fa-twitter
+        span Twitter
+      .sub-menu-item(title='Facebook', data-menu-action="help.facebook")
+        span.icon.fa-inverse.fa-fw.fa-facebook
+        span Facebook
+      .icon.sep
+      .sub-menu-item(title='Source code', data-menu-action="help.forkMe")
+        span.icon.fa-inverse.fa-fw.fa-code
+        span Source code
+      .sub-menu-item(title='Contribute', data-menu-action="help.contribute")
+        span.icon.fa-inverse.fa-fw.fa-share
+        span Contribute
+      .sub-menu-item(title='Crowdfunding', data-menu-action="help.crowdfunding")
+        span.icon.fa-inverse.fa-fw.fa-credit-card
+        span Crowdfund a feature
 
   .file-menu-container
-    .label File Menu
-    .sub-menu-item.single-site-mode-hidden(data-menu-action='file.new')
-      span.icon.fa-inverse.fa-fw.fa-home
-      span Dashboard
-      .shortcut Alt N
-    .sub-menu-item(data-menu-action='view.open.fileExplorer')
-      span.icon.fa-inverse.fa-fw.fa-cloud-upload
-      span File explorer
-    .icon.sep.single-site-mode-hidden
-    .sub-menu-item.single-site-mode-hidden(data-menu-action='file.open')
-      span.icon.fa-inverse.fa-fw.fa-folder-open
-      span Open website
-      .shortcut Ctrl O
-    .sub-menu-item(data-menu-action='file.save')
-      span.icon.fa-inverse.fa-fw.fa-floppy-o
-      span Save website
-      .shortcut Ctrl S
-    .file-save-as.sub-menu-item.single-site-mode-hidden(data-menu-action='file.saveas')
-      .icon.svg
-        include ./save-as.svg
-      span Save website as
-      .shortcut Ctrl ⇪ S
-    .icon.sep.single-site-mode-hidden
-    .sub-menu-item(data-menu-action='file.publish')
-      span.icon.fa-inverse.fa-fw.fa-rocket
-      span Publish
-      .shortcut Ctrl P
+    block menu-file
+      .label File Menu
+      .sub-menu-item.single-site-mode-hidden(data-menu-action='file.new')
+        span.icon.fa-inverse.fa-fw.fa-home
+        span Dashboard
+        .shortcut Alt N
+      .sub-menu-item(data-menu-action='view.open.fileExplorer')
+        span.icon.fa-inverse.fa-fw.fa-cloud-upload
+        span File explorer
+      .icon.sep.single-site-mode-hidden
+      .sub-menu-item.single-site-mode-hidden(data-menu-action='file.open')
+        span.icon.fa-inverse.fa-fw.fa-folder-open
+        span Open website
+        .shortcut Ctrl O
+      .sub-menu-item(data-menu-action='file.save')
+        span.icon.fa-inverse.fa-fw.fa-floppy-o
+        span Save website
+        .shortcut Ctrl S
+      .file-save-as.sub-menu-item.single-site-mode-hidden(data-menu-action='file.saveas')
+        .icon.svg
+          include ./save-as.svg
+        span Save website as
+        .shortcut Ctrl ⇪ S
+      .icon.sep.single-site-mode-hidden
+      .sub-menu-item(data-menu-action='file.publish')
+        span.icon.fa-inverse.fa-fw.fa-rocket
+        span Publish
+        .shortcut Ctrl P
 
   .add-menu-container.add-menu-icons
-    .label Elements
-    .sub-menu-item(title='Text', data-menu-action='insert.text')
-      span.icon.text
-      span Text
-      .shortcut Alt T
-    .sub-menu-item(title='Image', data-menu-action='insert.image')
-      span.icon.image
-      span Image
-      .shortcut Alt I
-    .sub-menu-item(title='Container', data-menu-action='insert.container')
-      span.icon.container
-      span Container
-      .shortcut Alt C
-    .sub-menu-item(title='Html', data-menu-action='insert.html')
-      span.icon.html.fa-inverse.fa-code
-      span Html
-      .shortcut Alt H
-    .sub-menu-item(title='Section', data-menu-action='insert.section')
-      span.icon.fa-inverse.fa-fw.fa-list-alt
-      span Section
-      .shortcut Alt S
+    block menu-elements
+      .label Elements
+      .sub-menu-item(title='Text', data-menu-action='insert.text')
+        span.icon.text
+        span Text
+        .shortcut Alt T
+      .sub-menu-item(title='Image', data-menu-action='insert.image')
+        span.icon.image
+        span Image
+        .shortcut Alt I
+      .sub-menu-item(title='Container', data-menu-action='insert.container')
+        span.icon.container
+        span Container
+        .shortcut Alt C
+      .sub-menu-item(title='Html', data-menu-action='insert.html')
+        span.icon.html.fa-inverse.fa-code
+        span Html
+        .shortcut Alt H
+      .sub-menu-item(title='Section', data-menu-action='insert.section')
+        span.icon.fa-inverse.fa-fw.fa-list-alt
+        span Section
+        .shortcut Alt S
 
   .code-menu-container
-    .label Code Menu
-    .sub-menu-item(data-menu-action='view.open.htmlHeadEditor')
-      span.icon.fa-inverse.fa-fw.fa-html5
-      span HTML HEAD editor
-      .shortcut Alt E
-    .sub-menu-item(data-menu-action='view.open.jsEditor')
-      span.icon.fa-inverse.fa-fw.fa-terminal
-      span Javascript editor
-      .shortcut Alt J
-    .sub-menu-item(data-menu-action='view.open.cssEditor')
-      span.icon.fa-inverse.fa-fw.fa-css3
-      span CSS editor
-      .shortcut Alt D
+    block menu-code
+      .label Code Menu
+      .sub-menu-item(data-menu-action='view.open.htmlHeadEditor')
+        span.icon.fa-inverse.fa-fw.fa-html5
+        span HTML HEAD editor
+        .shortcut Alt E
+      .sub-menu-item(data-menu-action='view.open.jsEditor')
+        span.icon.fa-inverse.fa-fw.fa-terminal
+        span Javascript editor
+        .shortcut Alt J
+      .sub-menu-item(data-menu-action='view.open.cssEditor')
+        span.icon.fa-inverse.fa-fw.fa-css3
+        span CSS editor
+        .shortcut Alt D
 
 // page tool
 .silex-page-tool.notranslate
   include ./page-tool.jade
 
 .silex-context-menu
-  .current-page
-  .icon.edit.fa-inverse.fa-pencil.off(title='Edit (↵)')
-  .icon.delete.fa-inverse.fa-trash.off(title='Delete (SUPPR)')
-  .icon.sep
-  .icon.copy.off(title='Copy (Ctrl C)')
-  .icon.paste.off(title='Paste (Ctrl V)')
-  .icon.duplicate.fa-inverse.fa-clone.off(title='Duplicate (Ctrl D)')
-  .icon.sep
-  .icon.top.fa-inverse.fa-angle-double-up.off(title='To top (⇧ Alt UP)')
-  .icon.up.fa-inverse.fa-angle-up.off(title='Above (Alt UP)')
-  .icon.down.fa-inverse.fa-angle-down.off(title='Under (Alt DOWN)')
-  .icon.bottom.fa-inverse.fa-angle-double-down.off(title='To bottom (⇧ Alt DOWN)')
-  .icon.sep
-  .icon.sticky-elements.fa-inverse.fa-magnet.off(title='Auto magnet, stick to elements')
+  block menu-context
+    block menu-context-current-page
+      .current-page
+    block menu-context-edit
+      .icon.edit.fa-inverse.fa-pencil.off(title='Edit (↵)')
+    block menu-context-delete
+      .icon.delete.fa-inverse.fa-trash.off(title='Delete (SUPPR)')
+      .icon.sep
+    block menu-context-copy
+      .icon.copy.off(title='Copy (Ctrl C)')
+      .icon.paste.off(title='Paste (Ctrl V)')
+      .icon.duplicate.fa-inverse.fa-clone.off(title='Duplicate (Ctrl D)')
+      .icon.sep
+    block menu-context-move
+      .icon.top.fa-inverse.fa-angle-double-up.off(title='To top (⇧ Alt UP)')
+      .icon.up.fa-inverse.fa-angle-up.off(title='Above (Alt UP)')
+      .icon.down.fa-inverse.fa-angle-down.off(title='Under (Alt DOWN)')
+      .icon.bottom.fa-inverse.fa-angle-double-down.off(title='To bottom (⇧ Alt DOWN)')
+      .icon.sep
+    block menu-context-sticky
+      .icon.sticky-elements.fa-inverse.fa-magnet.off(title='Auto magnet, stick to elements')
