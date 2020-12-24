@@ -34,6 +34,7 @@ export interface CeOptions {
   dropboxClientSecret: string
   enableFs: boolean
   fsRoot: string
+  fsShowHidden: boolean
   rootUrl: string
   unsplash?: {
     accessKey: string;
@@ -89,6 +90,7 @@ export class Config {
       dropboxClientSecret: process.env.DROPBOX_CLIENT_SECRET,
       enableFs: this.serverOptions.debug || process.env.ENABLE_FS === 'true',
       fsRoot: process.env.FS_ROOT,
+      fsShowHidden: process.env.FS_SHOW_HIDDEN === 'true',
       rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
       unsplash: {
         accessKey: process.env.UNSPLASH_ACCESS_KEY,
