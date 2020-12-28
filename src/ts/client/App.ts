@@ -21,6 +21,7 @@ let initDone = false
 
 // called when Silex has started
 // hide loading and show the UI
+// not called when single site mode
 function afterInit() {
   updateUi({
     ...getUi(),
@@ -75,8 +76,8 @@ export function start() {
 
   // application start, open a file
   if (config.singleSiteMode) {
+    resetDirty()
     initSingleSiteMode()
-    .then(() => afterInit())
   } else {
     openDashboardToLoadAWebsite(() => afterInit(), () => afterInit())
   }
