@@ -9,7 +9,7 @@ import { VHostData } from '../types'
 //////////////////////////////
 // Utils
 //////////////////////////////
-function setTimeoutPromise(time) {
+function setTimeoutPromise(time): Promise<void> {
   return new Promise((resolve) => setTimeout(() => resolve(), time))
 }
 

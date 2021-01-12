@@ -101,7 +101,7 @@ div.icon, a.icon, span.icon {
     margin-top: 7px;
     margin-left: 15px;
     font-style: italic;
-    .off;
+    .off();
   }
   .prodotype-icon {
     background-image: url(../libs/prodotype/prodotype-logo-small.png);
@@ -226,7 +226,7 @@ body .silex-menu {
     font-size: 27px;
   }
 }
-body .silex-menu .mobile {.on}
-body .silex-menu .desktop {.on; .selected}
-body.mobile-mode .silex-menu .mobile {.on; .selected}
-body.mobile-mode .silex-menu .desktop {.on}
+body .silex-menu .mobile {.on()}
+body .silex-menu .desktop {.on(); .selected()}
+body.mobile-mode .silex-menu .mobile {.on(); .selected()}
+body.mobile-mode .silex-menu .desktop {.on()}

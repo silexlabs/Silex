@@ -485,7 +485,7 @@ export default class PublishJob {
         return new Promise((resolve, reject) => {
           if (this.isStopped()) {
             console.warn('job is stopped', this.error, this.abort, this.success)
-            resolve()
+            resolve(null)
             return
           }
           this.setStatus(`Downloading file ${ shortSrcPath }...`)
