@@ -1,5 +1,6 @@
 import Request from 'request'
 import * as express from 'express'
+import * as session from 'express-session'
 
 import { Config } from '../ServerConfig'
 import { Hosting } from '../../client/site-store/types'
@@ -10,6 +11,13 @@ import PublishJob from '../publication/PublishJob'
 
 const hostingProviders: HostingProvider[] = []
 const router = express.Router()
+
+declare module 'express-session' {
+  export interface SessionData {
+    unifile: any
+    publicationId: any
+  }
+}
 
 export default function PublishRouter(config: Config, unifile) {
   const { port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection } = config.publisherOptions

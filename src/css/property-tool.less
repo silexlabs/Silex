@@ -203,7 +203,7 @@
       }
     }
     .button {
-      .small-combo;
+      .small-combo();
       display: inline;
       &.disabled {
         color: graytext;
@@ -337,7 +337,7 @@
   .background-editor {
     .background-image {
       select.combobox {
-        .small-combo;
+        .small-combo();
         margin-right: 5px;
         margin-top: 5px;
       }
@@ -497,10 +497,10 @@
       }
     }
     select.combobox {
-      .small-combo;
+      .small-combo();
     }
     select.combobox {
-      .small-combo;
+      .small-combo();
       margin: 5px 10px;
     }
 
@@ -546,7 +546,7 @@
     padding: 10px;
   }
   .prodotype-style-editor-menu .labels {
-    .format-buttons;
+    .format-buttons();
     label {
       &.h1 {
         font-size: 16px;
@@ -561,9 +561,9 @@
     margin: 20px 0;
   }
   .prodotype-component-editor, .prodotype-style-editor {
-    .expandable;
+    .expandable();
     .style-editor-tag-form {
-      .button-bar-container-template;
+      .button-bar-container-template();
       // margin-left: 2.5%;
       padding-bottom: 15px;
       label {
@@ -584,7 +584,7 @@
     }
     /* prodotype editors labels, e.g. Heading1 */
     .prop-editor-base > label, .class-name-style-label {
-      .expandable-legend;
+      .expandable-legend();
       display: block;
       padding-bottom: 5px;
     }
@@ -598,7 +598,7 @@
   .prodotype-style-editor {
     /* buttons */
     .icon-btn {
-      .button-template;
+      .button-template();
       width: 13px;
       height: 7px;
       padding: 7px 7px 13px 7px;
@@ -640,7 +640,7 @@
     .loop(@counter) when (@counter > 0) {
       /* highlight selected label, e.g. H1 */
       .style-editor-tag-form input:checked:nth-child(@{counter}) ~
-      .labels label:nth-child(@{counter}) { .button-template-selected }
+      .labels label:nth-child(@{counter}) { .button-template-selected() }
 
       /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
       .style-editor-tag-form input:checked:nth-child(@{counter}) ~
@@ -661,7 +661,7 @@
 
     /* vivibility checkbox (mobile only or not) */
     .visibility-style-label {
-      .button-template;
+      .button-template();
       margin: 0;
       padding: 0;
       height: 28px;
@@ -669,7 +669,7 @@
       font-size: 25px;
     }
     .visibility-style-checkbox:checked ~ .visibility-style-label {
-      .button-template-selected;
+      .button-template-selected();
     }
     .class-name-block {
       display: flex;
@@ -711,20 +711,20 @@
       }
     }
     .toggle-button {
-      .button-bar-template;
+      .button-bar-template();
       height: 30px;
       min-width: 30px;
       background-repeat: no-repeat;
       background-position: 50%;
       background-size: 18px;
       &:first-child {
-        .button-bar-first;
+        .button-bar-first();
       }
       &:last-child {
-        .button-bar-last;
+        .button-bar-last();
       }
       &[data-selected=true] {
-        .button-template-selected;
+        .button-template-selected();
       }
     }
     .prop-editor-container {
