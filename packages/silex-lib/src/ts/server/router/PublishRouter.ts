@@ -1,6 +1,6 @@
 import Request from 'request'
 import * as express from 'express'
-import * as session from 'express-session'
+import * as ExpressSession from 'express-session'
 
 import { Config } from '../ServerConfig'
 import { Hosting } from '../../client/site-store/types'
