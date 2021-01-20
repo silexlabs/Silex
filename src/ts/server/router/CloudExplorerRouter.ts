@@ -66,7 +66,7 @@ export default function(ceOptions: CeOptions) {
     console.log('> Local file system service enabled')
     console.warn('Warning local file system is writable, use FS_ROOT as root (', fsRoot, ')')
     routerOptions.fs = {
-      showHiddenFile: false,
+      showHiddenFile: ceOptions.fsShowHidden,
       sandbox: fsRoot,
       infos: {
         displayName: 'fs',

@@ -10,6 +10,7 @@ import * as uuid from 'uuid'
 
 import { Action, File, HostingProvider, PublishContext } from '../types'
 import { Config } from '../ServerConfig'
+import { getSite } from '../router/WebsiteRouter'
 import { Constants } from '../../constants'
 import { PageData } from '../../client/page-store/types'
 import { PersistantData } from '../../client/store/types'
@@ -217,171 +218,198 @@ export default class PublishJob {
    * the method called to publish a website to a location
    */
   async publish() {
+    // check the state
     if (this.isStopped()) {
       console.warn('job is stopped', this.error, this.abort, this.success)
       return
     }
 
-    // download json file
     this.setStatus(`Downloading website ${this.context.from.name}`)
-    return this.unifile.readFile(this.context.session, this.context.from.service, this.context.from.path + '.json')
-    .catch((err) => {
-      console.error('Publication error, could not download website JSON file:', err)
+
+    // download site html and data
+    let siteHtmlStr: string
+    let siteDataStr: string
+    try {
+      const [siteHtml, siteData] = await getSite(this.unifile, this.context.session, this.context.from.service, this.context.from.path)
+      siteHtmlStr = siteHtml.toString('utf-8')
+      siteDataStr = siteData.toString('utf-8')
+    } catch(err) {
+      console.error('Publication error, could not get website files:', err)
       this.error = true
       this.setStatus(err.message)
-    })
+      return
+    }
 
-    // download html file
-    .then((bufferJSON) => {
-      return this.unifile.readFile(this.context.session, this.context.from.service, this.context.from.path)
-      .catch((err) => {
-        console.error('Publication error, could not download HTML file:', err)
-        this.error = true
-        this.setStatus(err.message)
-      })
+    // check the state
+    if (this.isStopped()) {
+      console.warn('job is stopped', this.error, this.abort, this.success)
+      return
+    }
 
-      // build folders tree
-      .then(async (bufferHTML: Buffer) => {
-        if (this.isStopped()) {
-          console.warn('job is stopped', this.error, this.abort, this.success)
-          return
-        }
-        this.setStatus(`Splitting file ${this.context.from.name}`)
-        // this also works as url is set by cloud explorer's UnifileService::getUrl method
-        //  const url = new URL((this.context.from as any).url)
-        const url = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.from.service}/get/${this.context.from.path}`)
-        const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/')
-        const baseUrlStr = baseUrl.href
+    // build folders tree
+    this.setStatus(`Splitting file ${this.context.from.name}`)
 
-        // build the dom
-        const { html, userHead } = DomTools.extractUserHeadTag(bufferHTML.toString('utf-8'))
-        const dom = new JSDOM(html, { url: baseUrlStr })
-        // store useful data in the context, for hosting providers hooks
-        this.context.data = JSON.parse(bufferJSON.toString('utf-8')) as PersistantData
-        this.context.document = dom.window.document
-        // const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => await this.getDestFolder(ext, tagName), this.context.data)
-        // remove classes used by Silex during edition
-        cleanup(dom.window)
-        // rewrite URLs and extract assets
-        const to = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.to.service}/get/${this.context.to.path}/`).href
-        const hookedRootUrl = this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null
-        this.assets = extractAssets({
-          baseUrl: baseUrlStr,
-          rootUrl: to,
-          hookedRootUrl,
-          win: dom.window,
-          rootPath: this.rootPath,
-          getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
-        })
-        this.tree = splitInFiles({
-          hookedRootUrl,
-          win: dom.window,
-          userHead,
-        })
-        // hide website before styles.css is loaded
-        dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
-        // get the first page name, i.e. the default, e.g. index.html
-        const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, this.context.data) : null
-        // define hooks
-        const permalinkHook = (pageName: string) => {
-          if (this.context.hostingProvider && this.context.hostingProvider.getPermalink) {
-            return this.context.hostingProvider.getPermalink(pageName, this.context)
-          }
-          return pageName.replace(new RegExp('^' + Constants.PAGE_ID_PREFIX), '')
-        }
-        const pageTitleHook = (page: PageData) => {
-          if (this.context.hostingProvider && this.context.hostingProvider.getPageTitle) {
-            return this.context.hostingProvider.getPageTitle(this.context.data.site.title, this.context)
-          }
-          // default hook adds the page display name
-          return this.context.data.site.title + ' - ' + page.displayName
-        }
-        const pageLinkHook = (href: string) => {
-          if (this.context.hostingProvider && this.context.hostingProvider.getPageLink) {
-            // let the hosting provider create links
-            return this.context.hostingProvider.getPageLink(href, this.context)
-          } else if (href.endsWith('index.html')) {
-            // links to ./ instead of index.html
-            return dirname(href) + '/'
-          }
-          // do nothing
-          return href
-        }
-        if (this.context.hostingProvider && this.context.hostingProvider.beforeSplit) {
-          await this.context.hostingProvider.beforeSplit(this.context)
-        }
-        // split into pages
-        this.pageActions = splitPages({
-          newFirstPageName,
-          permalinkHook,
-          pageTitleHook,
-          pageLinkHook,
-          win: dom.window,
-          rootPath: this.rootPath,
-          getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
-          data: this.context.data,
-        })
+    // this also works as url is set by cloud explorer's UnifileService::getUrl method
+    //  const url = new URL((this.context.from as any).url)
+    const url = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.from.service}/get/${this.context.from.path}`)
+    const baseUrl = new URL(url.origin + Path.dirname(url.pathname) + '/')
+    const baseUrlStr = baseUrl.href
 
-        // release the dom object
-        dom.window.close()
-      })
-    })
-    .catch((err) => {
-      console.error('Publication error, could not extract assets from file:', err)
+    // build the dom
+    const { html, userHead } = DomTools.extractUserHeadTag(siteHtmlStr)
+
+    // store site DOM in the context, for hosting providers hooks
+    let dom
+    try {
+      dom = new JSDOM(html, { url: baseUrlStr })
+    } catch(err) {
+      console.error('Publication error, could not parse the website HTML:', err)
       this.error = true
       this.setStatus(err.message)
-    })
-    // download all assets
-    // check existing folder structure
-    .then(() => {
-      if (this.isStopped()) {
-        console.warn('job is stopped', 'error:', this.error, 'abort:', this.abort, 'success:', this.success)
-        return []
+      return
+    }
+
+    // store site data in the context, for hosting providers hooks
+    try {
+      this.context.data = JSON.parse(siteDataStr) as PersistantData
+    } catch(err) {
+      console.error('Publication error, could not parse the website JSON data:', err)
+      this.error = true
+      this.setStatus(err.message)
+      return
+    }
+    try {
+      this.context.document = dom.window.document
+      // const domPublisher = new DomPublisher(dom, userHead, this.context.url, this.rootPath, (ext, tagName) => await this.getDestFolder(ext, tagName), this.context.data)
+      // remove classes used by Silex during edition
+      cleanup(dom.window)
+      // rewrite URLs and extract assets
+      const to = new URL(`${this.context.config.ceOptions.rootUrl}/${this.context.to.service}/get/${this.context.to.path}/`).href
+      const hookedRootUrl = this.context.hostingProvider.getRootUrl ? this.context.hostingProvider.getRootUrl(this.context, baseUrl) : null
+      this.assets = extractAssets({
+        baseUrl: baseUrlStr,
+        rootUrl: to,
+        hookedRootUrl,
+        win: dom.window,
+        rootPath: this.rootPath,
+        getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
+      })
+      this.tree = splitInFiles({
+        hookedRootUrl,
+        win: dom.window,
+        userHead,
+      })
+      // hide website before styles.css is loaded
+      dom.window.document.head.innerHTML += '<style>body { opacity: 0; transition: .25s opacity ease; }</style>'
+      // get the first page name, i.e. the default, e.g. index.html
+      const newFirstPageName = this.context.hostingProvider && this.context.hostingProvider.getDefaultPageFileName ? this.context.hostingProvider.getDefaultPageFileName(this.context, this.context.data) : null
+      // define hooks
+      const permalinkHook = (pageName: string) => {
+        if (this.context.hostingProvider && this.context.hostingProvider.getPermalink) {
+          return this.context.hostingProvider.getPermalink(pageName, this.context)
+        }
+        return pageName.replace(new RegExp('^' + Constants.PAGE_ID_PREFIX), '')
       }
-      return this.readOperations()
-    })
-    .catch((err) => {
+      const pageTitleHook = (page: PageData) => {
+        if (this.context.hostingProvider && this.context.hostingProvider.getPageTitle) {
+          return this.context.hostingProvider.getPageTitle(this.context.data.site.title, this.context)
+        }
+        // default hook adds the page display name
+        return this.context.data.site.title + ' - ' + page.displayName
+      }
+      const pageLinkHook = (href: string) => {
+        if (this.context.hostingProvider && this.context.hostingProvider.getPageLink) {
+          // let the hosting provider create links
+          return this.context.hostingProvider.getPageLink(href, this.context)
+        } else if (href.endsWith('index.html')) {
+          // links to ./ instead of index.html
+          return dirname(href) + '/'
+        }
+        // do nothing
+        return href
+      }
+      if (this.context.hostingProvider && this.context.hostingProvider.beforeSplit) {
+        await this.context.hostingProvider.beforeSplit(this.context)
+      }
+      // split into pages
+      this.pageActions = splitPages({
+        newFirstPageName,
+        permalinkHook,
+        pageTitleHook,
+        pageLinkHook,
+        win: dom.window,
+        rootPath: this.rootPath,
+        getDestFolder: (ext: string, tagName: string) => this.getDestFolder(ext, tagName),
+          data: this.context.data,
+      })
+
+      // release the dom object
+      dom.window.close()
+    } catch(err) {
+      console.error('Publication error, could not optimize the DOM:', err)
+      this.error = true
+      this.setStatus(err.message)
+      return
+    }
+
+    // check the state
+    if (this.isStopped()) {
+      console.warn('job is stopped', 'error:', this.error, 'abort:', this.abort, 'success:', this.success)
+      return
+    }
+
+    // check existing folder structure (with stat) and download all assets
+    let statRoot, statHtml, statCss, statJs, statAssets, assets
+    try {
+      [statRoot, statHtml, statCss, statJs, statAssets, ...assets] = await this.readOperations()
+    } catch(err) {
       // FIXME: will never go through here
       console.error('Publication error, could not download files:', this.assets.map((f) => f.displayName).join(', '), '. Error:', err)
       this.error = true
       this.setStatus(err.message)
-    })
+      return
+    }
+
+    // check the state
+    if (this.isStopped()) {
+      console.warn('job is stopped', 'error:', this.error, 'abort:', this.abort, 'success:', this.success)
+      return
+    }
+
     // write and upload all files in a batch operation
-    .then(([statRoot, statHtml, statCss, statJs, statAssets, ...assets]) => {
-      if (this.isStopped()) {
-        console.warn('job is stopped', this.error, this.abort, this.success)
-        return
-      }
-      return this.writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets)
-    })
-    .catch((err) => {
-      console.error('An error occured in unifile batch', err, err)
+    try {
+      await this.writeOperations(statRoot, statHtml, statCss, statJs, statAssets, ...assets)
+    } catch(err) {
+      console.error('An error occured in write operations', err)
       this.error = true
       this.setStatus(err.message)
-    })
-    .then(() => {
-      if (this.isStopped()) {
-        console.warn('job is stopped', this.error, this.abort, this.success)
-        return Promise.resolve()
+      return
+    }
+
+    // check the state
+    if (this.isStopped()) {
+      console.warn('job is stopped', 'error:', this.error, 'abort:', this.abort, 'success:', this.success)
+      return
+    }
+
+    try {
+      if (this.context.hostingProvider) {
+        await this.context.hostingProvider.finalizePublication(this.context, (msg) => this.setStatus(msg))
       }
-      if (!this.context.hostingProvider) {
-        return Promise.resolve()
-      }
-      return Promise.resolve(this.context.hostingProvider.finalizePublication(this.context, (msg) => this.setStatus(msg)))
-    })
+    } catch(err) {
+      console.error('An error occured in hosting provider hook', err)
+      this.error = true
+      this.setStatus(err.message)
+      return
+    }
+
     // all operations done
-    .then(() => {
-      if (this.isStopped()) {
-        console.warn('job is stopped', this.error, this.abort, this.success)
-        return
-      }
-      console.log('Publication done with success')
-      this.setStatus(this.getSuccessMessage())
-      this.success = true
-    })
+    console.log('Publication done with success')
+    this.setStatus(this.getSuccessMessage())
+    this.success = true
   }
 
-  readOperations() {
+  readOperations(): Promise<[statRoot: boolean, statHtml: boolean, statCss: boolean, statJs: boolean, statAssets: boolean, assets: Action[]]>  {
     this.setStatus(`Looking for folders: <ul><li>${this.cssFolder}</li><li>${this.jsFolder}</li><li>${this.assetsFolder}</li></ul>`)
 
     // do not throw an error if the folder is not found, this is what we want to test
@@ -409,7 +437,7 @@ export default class PublishJob {
     .concat(this.downloadAllAssets(this.assets)))
   }
 
-  writeOperations(statRoot: boolean, statHtml: boolean, statCss: boolean, statJs: boolean, statAssets: boolean, ...assets) {
+  writeOperations(statRoot: boolean, statHtml: boolean, statCss: boolean, statJs: boolean, statAssets: boolean, ...assets: Action[]) {
     // build the batch actions
     this.setStatus(`Creating files <ul>${this.pageActions.map((action) => '<li>' + action.displayName + '</li>').join('')}<li>${this.cssFile}</li><li>${this.jsFile}</li></ul>And uploading ${ assets.length } assets.`)
     // create an object to describe a batch of actions
@@ -485,7 +513,7 @@ export default class PublishJob {
         return new Promise((resolve, reject) => {
           if (this.isStopped()) {
             console.warn('job is stopped', this.error, this.abort, this.success)
-            resolve()
+            resolve(null)
             return
           }
           this.setStatus(`Downloading file ${ shortSrcPath }...`)

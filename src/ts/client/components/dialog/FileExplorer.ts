@@ -21,7 +21,7 @@ export class FileExplorer {
     return ['.jpg', '.jpeg', '.png', '.gif', '.svg']
   }
   static get HTML_EXTENSIONS() {
-    return ['.html', '.htm']
+    return ['.html', '.zip']
   }
 
   // singleton pattern
