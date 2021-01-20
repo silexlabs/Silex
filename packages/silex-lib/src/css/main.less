@@ -121,7 +121,7 @@ body {
   }
 }
 .button-bar-template {
-  .button-template;
+  .button-template();
   font-weight: lighter;
   float: left;
   border-left: initial;
@@ -144,13 +144,13 @@ body {
     display: inline-block; /* push the elements underneeth dispite it is floated */
     width: 100%;
     label {
-      .button-bar-template;
+      .button-bar-template();
       margin-top: 5px;
       &.last-button {
-        .button-bar-last;
+        .button-bar-last();
       }
       &.first-button {
-        .button-bar-first;
+        .button-bar-first();
       }
     }
   }

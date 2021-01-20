@@ -20,7 +20,9 @@
     "no-conditional-assignment": false,
     "semicolon": [true, "never"],
     "curly": false,
-    "only-arrow-functions": false
+    "only-arrow-functions": false,
+    "no-unused-expression": false,
+    "one-variable-per-declaration": false
   },
   "rulesDirectory": []
 }

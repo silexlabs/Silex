@@ -47,8 +47,8 @@ export function createWorkspace(element: HTMLElement) {
   propSplitter.addRight(uiElements.propertyTool)
 }
 
-export async function initSingleSiteMode() {
-  return new Promise((resolve, reject) => {
+export async function initSingleSiteMode(): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     // hide menu items
     document.body.classList.add('single-site-mode')
     // open the website from url

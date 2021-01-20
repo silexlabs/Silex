@@ -6,6 +6,7 @@ import * as nodeModules from 'node_modules-path'
 import { URL } from 'url'
 import * as Path from 'path'
 import * as fs from 'fs'
+import * as Zip from 'adm-zip'
 
 import { Constants } from '../../constants'
 import { PersistantData } from '../../client/store/types'
@@ -72,6 +73,45 @@ function getTemplatesList(req, res, next) {
     }
   })
 }
+
+
+/**
+ * get the JSON and HTML data of the website to publish
+ */
+export async function getSite(unifile, session: any, service: string, path: string): Promise<[html: Buffer, data: Buffer]> {
+  if(path.endsWith(SILEX_ZIP_EXT)) {
+    const fileBuffer = await unifile.readFile(unifile, service, path)
+    const zip = new Zip(fileBuffer)
+    const bufferHTML = zip.getEntry('editable.html').getData()
+    const bufferJSON = zip.getEntry('editable.html.json').getData()
+    return [bufferHTML, bufferJSON]
+  } else {
+    // download html file
+    const bufferHTML = await unifile.readFile(session, service, path)
+
+    let bufferJSON
+    try {
+      // download json file
+      bufferJSON = await unifile.readFile(session, service, path + '.json')
+    } catch(err) {
+      // handle the old sites without a JSON file
+      const dom = new JSDOM(bufferHTML.toString('utf-8'))
+      const backwardCompat = new BackwardCompat('') // FIXME: useless construct the whole BC object, hasDataFile should be static
+      if(backwardCompat.hasDataFile(dom.window.document)) {
+        // error loading website data file
+        console.error('error loading website data file', err)
+        // re-throw
+        throw err
+      } else {
+        // old websites
+        return [bufferHTML, null]
+      }
+    }
+    // return both
+    return [bufferHTML, bufferJSON]
+  }
+}
+
 /**
  * load a website from the cloud storage of the user
  */
@@ -81,17 +121,10 @@ function readWebsite(rootUrl, unifile, backwardCompat) {
     const path = req.params[1]
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`)
     try {
-      const htmlBuffer = await unifile.readFile(req.session.unifile || {}, connector, path)
-      try {
-        const jsonBuffer = await unifile.readFile(req.session.unifile || {}, connector, path + '.json')
-        // FIXME: handle error from unifile (e.g. json too big on github)
-        return sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, jsonBuffer, url, false)
-      } catch (err) {
-        // old websites
-        sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, null, url, false)
-      }
+      const [siteHtml, siteData] = await getSite(unifile, req.session.unifile, connector, path)
+      return sendWebsiteData(res, rootUrl, backwardCompat, siteHtml, siteData, url, false)
     } catch (err) {
-      console.error('unifile error catched:', err)
+      console.error('Publication error, could not get website files:', err)
       CloudExplorer.handleError(res, err)
     }
   }
@@ -116,7 +149,7 @@ function readTemplate(rootUrl, unifile, backwardCompat) {
               sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, null, url, true)
             } else {
               sendWebsiteData(res, rootUrl, backwardCompat, htmlBuffer, jsonBuffer, url, true)
-              // CloudExplorer.handleError(res, err2);
+              // CloudExplorer.handleError(res, err2)
             }
           })
         }
@@ -161,6 +194,7 @@ async function sendWebsiteData(res, rootUrl: string, backwardCompat: BackwardCom
     }
   }
 }
+const SILEX_ZIP_EXT = '.zip'
 /**
  * save a website to the cloud storage of the user
  */
@@ -175,22 +209,39 @@ function writeWebsite(rootUrl, unifile, backwardCompat) {
     const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headUser)
     dom.window.close()
 
-    unifile.batch(req.session.unifile || {}, connector, [{
-      name: 'writeFile',
-      path: req.params[1],
-      content: fullHtml,
-    }, {
-      name: 'writeFile',
-      path: req.params[1] + '.json',
-      content: JSON.stringify(unpreparedData),
-    }])
-    .then((result) => {
-      res.send(result)
-    })
-    .catch((err) => {
-      console.error('unifile error catched:', err)
-      CloudExplorer.handleError(res, err)
-    })
+    if(path.endsWith(SILEX_ZIP_EXT)) {
+      try {
+        const zip = new Zip()
+        zip.addFile('editable.html', Buffer.from(fullHtml))
+        zip.addFile('editable.html.json', Buffer.from(JSON.stringify(unpreparedData)))
+        unifile.writeFile(req.session.unifile || {}, connector, path, zip.toBuffer())
+        .catch((err) => {
+          console.error('unifile error catched:', err)
+          CloudExplorer.handleError(res, err)
+        })
+        res.send('Ok')
+      } catch (err) {
+        console.error('Zip file error:', err)
+        CloudExplorer.handleError(res, err)
+      }
+    } else {
+      unifile.batch(req.session.unifile || {}, connector, [{
+        name: 'writeFile',
+        path,
+        content: fullHtml,
+      }, {
+        name: 'writeFile',
+        path: path + '.json',
+        content: JSON.stringify(unpreparedData),
+      }])
+      .then((result) => {
+        res.send(result)
+      })
+      .catch((err) => {
+        console.error('unifile error catched:', err)
+        CloudExplorer.handleError(res, err)
+      })
+    }
   }
 }
 /**
