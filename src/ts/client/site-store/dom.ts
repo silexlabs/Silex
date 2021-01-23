@@ -197,29 +197,19 @@ export function setTwitterSocial(doc: HTMLDocument, opt_data?: string) {
 }
 
 export function setFonts(doc: HTMLDocument, fonts: Font[]) {
-  /**
-   * @return true if the fonts are the same
-   */
-  function compareFonts(f1: Font, f2: Font): boolean {
-    return f1.family === f2.family && f1.href === f2.href
-  }
-
-  // remove fonts which are not in fonts anymore
-  const head = doc.head
-  Array.from(head.querySelectorAll(`a.${Constants.CUSTOM_FONTS_CSS_CLASS}`))
-    .filter((tag: HTMLAnchorElement) => !fonts.find((font: Font) => font.href === tag.href))
+  // remove all fonts
+  Array.from(doc.head.querySelectorAll(`link.${Constants.CUSTOM_FONTS_CSS_CLASS}`))
     .forEach((tag) => {
       tag.remove()
     })
 
   // add new fonts
   fonts
-    .filter((font) => !head.querySelector(`link[href="${font.href}"]`))
     .forEach((font) => {
       const link = doc.createElement('link')
       link.href = font.href
       link.rel = 'stylesheet'
       link.className = Constants.CUSTOM_FONTS_CSS_CLASS
-      head.appendChild(link)
+      doc.head.appendChild(link)
     })
 }
