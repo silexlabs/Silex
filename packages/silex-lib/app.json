@@ -59,10 +59,6 @@
     "ENABLE_HOSTING_UNIFILE": {
       "description": "[Optional, default is 'true'] Enable the user to select a folder to publish to. This is a publication setting. Set this value to false if you do not want your users to be able to manually select a folder when they try to publsh a website.",
       "required": false
-    },
-    "ENABLE_HOSTING_JEKYLL": {
-      "description": "[Optional] Enable Jekyll hosting provider. This is a publication setting. Set this value to true if you want the user to be able to publish their website as a template for a <a href='https://jekyllrb.com/'>Jekyll website</a>",
-      "required": false
     }
 	},
   "keywords": [
