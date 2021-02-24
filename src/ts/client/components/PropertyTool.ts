@@ -7,27 +7,28 @@
 import { BgPane } from './pane/BgPane'
 import { BorderPane } from './pane/BorderPane'
 import { ComponentPane } from './pane/ComponentPane'
+import { Dialog } from '../ui-store/types'
 import { ElementState } from '../element-store/types'
 import { GeneralStylePane } from './pane/GeneralStylePane'
 import { PagePane } from './pane/PagePane'
 import { PropertyPane } from './pane/PropertyPane'
 import { StyleEditorPane } from './pane/StyleEditorPane'
 import { StylePane } from './pane/StylePane'
-import { isDialogVisible } from '../ui-store/utils'
+import { TreePane } from './pane/TreePane';
 import { browse, editLink } from '../element-store/utils'
 import { getSelectedElements } from '../element-store/filters'
 import { getSite } from '../site-store/index'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
+import { getVisibleDialogs } from '../ui-store/utils';
 import {
   isComponent,
   openComponentEditor,
   resetComponentEditor
 } from '../element-store/component'
 import { openDialog } from '../ui-store/dispatchers'
-import { getVisibleDialogs } from '../ui-store/utils'
-import { Dialog } from '../ui-store/types'
 import { subscribeElements, updateElements } from '../element-store/index'
+import { updateUi } from '../ui-store';
 
 // element which contains the UI
 const element = getUiElements().propertyTool
@@ -104,6 +105,27 @@ function buildUi() {
       openTab(opened[0])
     }
   })
+
+  setTimeout(() => {
+    // additional panes
+    // TODO: all panes should be created like this
+    const ui = getUi()
+    updateUi({
+      ...ui,
+      dialogs: ui.dialogs.concat({
+        id: 'tree-editor',
+        type: 'properties',
+        visible: false,
+        data: {
+          className: 'fa-list',
+        },
+      })
+    })
+    const container = document.createElement('section')
+    container.classList.add('editor-container', 'tree-editor-container')
+    element.querySelector('.main-container').appendChild(container)
+    new TreePane(container)
+  }, 100)
 }
 
 function updateComponentTool(el: HTMLElement) {
@@ -140,7 +162,7 @@ const cbkBinded = new Map<string, () => void>()
 
 function addTab(dialog: Dialog) {
   const tabEl = getTabElement(dialog.id) || document.createElement('div')
-  tabEl.classList.add(dialog.id, 'tab', 'fa', 'fa-lg', dialog.data?.className)
+  tabEl.classList.add(dialog.id, 'tab', 'fa', 'fa-lg', dialog.data?.className || 'no-dialog-class')
   tabEl.innerHTML = dialog.data?.displayName || ''
 
   const tabs = element.querySelector('.tabs .simplebar-content')
