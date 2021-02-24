@@ -12,6 +12,12 @@ body {
   /* put the elements of a section on top of sections bellow */
   z-index: 10;
 }
+/* workaround a bug of the 2.11 version (front end) */
+/* sections used to hava margin-top: -1; which can not be edited in the UI */
+.editable-style.section-element {
+  margin-top: 0;
+}
+/****************************************************/
 .website-width {
   width: 960px;
 }
