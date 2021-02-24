@@ -315,11 +315,15 @@
         .expandable.style-property.old-advanced-only
           legend
             span.fa.fa-fw.fa-inverse.fa-caret-right
-            span CSS
+            span Element
           .body
             label CSS classes
-              a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes', title='about Silex and CSS', target='_blank') Help
+              a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#custom-css-classes', title='about Silex and CSS, custom css classes', target='_blank') Help
             input.style-css-classes-input(tabindex='45', type='tags')
+            br
+            label HTML attributes
+              a.help-icon(href='https://github.com/silexlabs/Silex/wiki/Silex-CSS-editor#html-attributes', placeholder='-', title='about Silex and CSS, custom attributes', target='_blank') Help
+            input.style-css-attr-input(tabindex='45', type='text')
             .element-style-editor.editor-container
   section.component-generic-editor
   section.tree-editor

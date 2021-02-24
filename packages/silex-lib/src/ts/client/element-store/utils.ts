@@ -103,6 +103,7 @@ export function getEmptyElementData({id, type, isSectionContent, isBody}: {id: E
     children: [],
     pageNames: [],
     classList: [],
+    attr: [],
     link: null,
     enableEdit: type !== ElementType.SECTION && type !== ElementType.CONTAINER,
     enableDrag: /* type !== ElementType.SECTION && */ !isSectionContent,

@@ -155,9 +155,6 @@ export const styleChanged = (name: string, value: string, selection: ElementStat
  * set a set of styles to the current selection
  */
 export const multipleStylesChanged = (style: CssRule, selection: ElementState[], isMobile = getUi().mobileEditor, dispatch = store.dispatch) => {
-  // undo checkpoint
-    //  undoCheckPoint();
-
   // apply the change to all elements
   updateElements(selection.map((el) => ({
     ...el,
@@ -167,12 +164,21 @@ export const multipleStylesChanged = (style: CssRule, selection: ElementState[],
 
 
 /**
+ * set html attributes
+ */
+export function setAttributes(attr: string[], elements = getElements(), dispatch = store.dispatch) {
+  // apply the change to all elements
+  updateElements(getSelectedElements(elements)
+    .map((el) => ({
+      ...el,
+      attr,
+    })), dispatch)
+}
+
+/**
  * set css class names
  */
 export function setClassName(name: string, elements = getElements(), dispatch = store.dispatch) {
-  // undo checkpoint
-    //  undoCheckPoint();
-
   // apply the change to all elements
   updateElements(getSelectedElements(elements)
     .map((el) => ({
@@ -348,8 +354,6 @@ export function removeFromPage(selection: ElementState[], page: PageState, eleme
  * add provided elements to all pages
  */
 export function visibleOnAllPages(selection: ElementState[], dispatch = store.dispatch) {
-  // undo checkpoint
-    //  undoCheckPoint();
   updateElements(selection
     .map((el) => ({
       ...el,
@@ -361,8 +365,6 @@ export function visibleOnAllPages(selection: ElementState[], dispatch = store.di
  * add link to the provided elements
  */
 export function addLink(selection: ElementState[], link: Link, dispatch = store.dispatch) {
-  // undo checkpoint
-    //  undoCheckPoint();
   updateElements(selection
     .map((el) => ({
       ...el,
@@ -375,8 +377,6 @@ export function addLink(selection: ElementState[], link: Link, dispatch = store.
  * remove link from the provided elements
  */
 export function removeLink(selection: ElementState[], dispatch = store.dispatch) {
-  // undo checkpoint
-    //  undoCheckPoint();
   updateElements(selection
     .map((el) => ({
       ...el,

@@ -121,6 +121,29 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
     if (to.link !== from.link) {
       setLink(domEl, to.link)
     }
+    if (to.attr !== from.attr) {
+      const fromAttr = from.attr || []
+      fromAttr
+      .filter((c) => !!c) // remove empty strings
+      .forEach((c) => {
+        try {
+          domEl.removeAttribute(c.split('=')[0])
+        } catch(e) {
+          console.error('could not remove HTML attr', {c, domEl})
+        }
+      })
+      const toAttr = to.attr || []
+      toAttr
+      .filter((c) => !!c) // remove empty strings
+      .forEach((c) => {
+        const [name, val] = c.split('=')
+        try {
+          domEl.setAttribute(name, val || '')
+        } catch(e) {
+          console.error('could not add HTML attr', {name, val, domEl})
+        }
+      })
+    }
     if (to.classList !== from.classList) {
       // remove only the old css classes
       // this will keep the element SilexId, type,  etc.
