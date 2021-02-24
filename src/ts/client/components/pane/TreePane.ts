@@ -2,17 +2,17 @@ import {html, render} from 'lit-html'
 
 import { ComponentsDefinition } from '../../externs'
 import { Constants } from '../../../constants'
-import { ElementState } from '../../element-store/types';
+import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import {
   getBody,
   getChildren,
   getSelectedElements
-} from '../../element-store/filters';
-import { getComponentsDef } from '../../element-store/component';
-import { getElements } from '../../element-store';
+} from '../../element-store/filters'
+import { getComponentsDef } from '../../element-store/component'
+import { getElements } from '../../element-store'
 import { isDialogVisible } from '../../ui-store/utils'
-import { selectElements } from '../../element-store/dispatchers';
+import { selectElements } from '../../element-store/dispatchers'
 import { subscribeElements } from '../../element-store/index'
 import { subscribeUi } from '../../ui-store/index'
 

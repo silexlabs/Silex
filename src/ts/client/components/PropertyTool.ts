@@ -14,13 +14,13 @@ import { PagePane } from './pane/PagePane'
 import { PropertyPane } from './pane/PropertyPane'
 import { StyleEditorPane } from './pane/StyleEditorPane'
 import { StylePane } from './pane/StylePane'
-import { TreePane } from './pane/TreePane';
+import { TreePane } from './pane/TreePane'
 import { browse, editLink } from '../element-store/utils'
 import { getSelectedElements } from '../element-store/filters'
 import { getSite } from '../site-store/index'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
-import { getVisibleDialogs } from '../ui-store/utils';
+import { getVisibleDialogs } from '../ui-store/utils'
 import {
   isComponent,
   openComponentEditor,
@@ -28,7 +28,7 @@ import {
 } from '../element-store/component'
 import { openDialog } from '../ui-store/dispatchers'
 import { subscribeElements, updateElements } from '../element-store/index'
-import { updateUi } from '../ui-store';
+import { updateUi } from '../ui-store'
 
 // element which contains the UI
 const element = getUiElements().propertyTool

@@ -9,10 +9,10 @@ import { Constants } from '../../../constants'
 import { ElementState } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import { getSelectedElements } from '../../element-store/filters'
-import { subscribeUi } from '../../ui-store/index'
 import { isDialogVisible } from '../../ui-store/utils'
-import { setClassName } from '../../element-store/dispatchers'
+import { setAttributes, setClassName } from '../../element-store/dispatchers'
 import { subscribeElements } from '../../element-store/index'
+import { subscribeUi } from '../../ui-store/index'
 
 /**
  * on of Silex Editors class
@@ -23,6 +23,7 @@ export class StylePane extends PaneBase {
    * css class tags-input component
    */
   cssClassesTagsInput: any
+  htmlAttrInput: any
 
   /**
    * prevent loops and stage reset while updating the value from store
@@ -39,6 +40,10 @@ export class StylePane extends PaneBase {
     this.cssClassesTagsInput.classList.add('silex-input')
     // add a listener for the delete event
     this.initComboBox('.style-css-classes-input', () => this.onInputChanged())
+
+    // HTML attribute input
+    this.htmlAttrInput = this.element.querySelector('.style-css-attr-input')
+    this.initInput('.style-css-attr-input', () => this.onInputChanged())
 
     subscribeUi(() => {
       this.redraw(getSelectedElements())
@@ -70,6 +75,10 @@ export class StylePane extends PaneBase {
    */
   onInputChanged() {
     if (this.iAmChanging) return
+    // HTML attributes
+    setAttributes(this.htmlAttrInput.value.split(' '))
+
+    // CSS classes
     if (this.cssClassesTagsInput.classList.contains('off')) {
       this.setClassesTags('')
     } else {
@@ -97,35 +106,14 @@ export class StylePane extends PaneBase {
         this.setClassesTags('')
       }
 
-      // if (selectedElements.length) {
-      //   const cssClasses = selectedElements
-      //     .map((el) => el.classList)
-      //     .reduce((a, b) => a.filter((c) => !!b.find((d) => d === c)));
-      //   console.trace('StylePane redraw', cssClasses, this.getClassesTags())
-
-      //   if (this.getClassesTags() !== cssClasses) {
-      //     if (cssClasses) {
-      //       this.setClassesTags(cssClasses);
-      //     } else {
-      //       this.setClassesTags('');
-      //     }
-      //   }
-      // }
-
-      // css inline style
-      // const cssInlineStyle = this.getCommonProperty(states, (state) => this.model.element.getAllStyles(state.el));
-
-      // if (cssInlineStyle) {
-      //   const str = '.element{\n' + cssInlineStyle.replace(/; /gi, ';\n') + '\n}';
-      //   const pos = this.ace.getCursorPosition();
-      //   this.ace.setValue(str, 1);
-      //   this.ace.gotoLine(pos.row + 1, pos.column, false);
-      // } else {
-      //   this.ace.setValue('.element{\n/' + '* multiple elements selected *' + '/\n}', 1);
-      // }
+      // HTML attributes
+      const attr = this.getCommonProperty<ElementState, string>(selectedElements, (el) => el.attr?.sort().join(' '))
+      if (!attr || attr !== this.htmlAttrInput.value.split(' ').sort().join(' ')) {
+        this.htmlAttrInput.value = attr || ''
+      }
     } else {
       this.element.style.display = 'none'
     }
   }
-
 }
+
