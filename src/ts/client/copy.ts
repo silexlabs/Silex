@@ -104,7 +104,9 @@ export function cloneElement(element: ElementState, parentId: ElementId = null, 
       ...toElementData([element])[0],
       id: newId,
       selected: parentId === null,
-      children: children.map((el) => el.id),
+      children: children
+        .filter((el, idx) => idx < element.children.length) // keep only the direct descendents
+        .map((el) => el.id),
     }].concat(children)
 
   } else {
