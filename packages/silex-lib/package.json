@@ -88,7 +88,7 @@
   "dependencies": {
     "adm-zip": "^0.5.1",
     "body-parser": "1.19.0",
-    "cloud-explorer": "2.1.7",
+    "cloud-explorer": "2.1.8",
     "compression": "1.7.4",
     "cookie-parser": "1.4.5",
     "cookie-session": "2.0.0-beta.3",
