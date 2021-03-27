@@ -40,8 +40,14 @@ export function openPageDom(win: Window, pageData: PageState) {
 export function setPages(allPages: PageState[], element: HTMLElement, pages: PageState[]) {
   removeFromPages(allPages.map((p) => p.id), element)
   pages.forEach((page) => {
-    element.classList.add(page.id)
-    element.classList.add(Constants.PAGED_CLASS_NAME)
+    if(page) {
+      element.classList.add(page.id)
+      element.classList.add(Constants.PAGED_CLASS_NAME)
+    } else {
+      // this should never happen
+      // fixed 2021-03
+      console.error('This page does not exist anymore')
+    }
   })
 }
 
