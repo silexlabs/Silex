@@ -21,20 +21,23 @@ test('create a style', () => {
 
 test('create a style with initial styles', () => {
   const FAKE_CLASS_NAME =  'fake-class-name'
-  expect(Object.keys(getSite().styles)).toHaveLength(1)
-  initStyle('Fake display name', FAKE_CLASS_NAME, {
+  const initialStyle = {
     className: FAKE_CLASS_NAME,
     displayName: 'Fake display name',
     templateName: 'fake-class-name',
     styles: {desktop: {hover: {
       'height': '10px',
     }}},
-  })
-  expect(getSite().styles[FAKE_CLASS_NAME]).not.toBeUndefined()
-  expect(getSite().styles[FAKE_CLASS_NAME].styles).not.toBeUndefined()
-  expect(getSite().styles[FAKE_CLASS_NAME].styles.desktop).not.toBeUndefined()
-  expect(getSite().styles[FAKE_CLASS_NAME].styles.desktop.hover).not.toBeUndefined()
-  expect(getSite().styles[FAKE_CLASS_NAME].styles.desktop.hover.height).toBe('10px')
+  }
+  expect(Object.keys(getSite().styles)).toHaveLength(1)
+  initStyle('Fake display name', FAKE_CLASS_NAME, initialStyle)
+  const created = getSite().styles[FAKE_CLASS_NAME]
+  expect(created).not.toBeUndefined()
+  expect(created.styles).not.toBeUndefined()
+  expect(created.styles.desktop).not.toBeUndefined()
+  expect(created.styles.desktop.hover).not.toBeUndefined()
+  expect(created.styles.desktop.hover.height).toBe('10px')
+  expect(created).not.toBe(initialStyle)
 })
 
 test('update a style', () => {
@@ -49,10 +52,9 @@ test('update a style', () => {
 })
 
 test('delete a style', () => {
-  // reference eleents
+  // reference elements
   const ELEM_TEXT_STATE = {
     ...ELEM_TEXT,
-    classList: ['a-style'],
   } as ElementState
   const styles = {
     'a-style': {},

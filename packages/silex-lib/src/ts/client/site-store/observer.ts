@@ -24,8 +24,7 @@ export function onChangeSite(prev: SiteState, site: SiteState) {
   if (!prev || prev.dataSources !== site.dataSources) { loadDataSources(site.dataSources, true) }
   if (!prev || prev.fonts !== site.fonts) { setFonts(doc, site.fonts) }
   if (!prev || prev.width !== site.width) {
-    // store a style to all section containers
-    // TODO: set a min-width to all sections instead
+    // store a style for all section containers
     setWebsiteWidthInDom(doc, site.width)
   }
   if(!prev || prev.prodotypeDependencies !== site.prodotypeDependencies) {
