@@ -5,14 +5,14 @@
  *
  */
 
-import { renderList } from '../utils/dom'
 import { createPage, removePage, movePageTo, editPage } from '../page-store/dispatchers'
-import { deletePages, getPages, movePage, subscribePages } from '../page-store/index'
 import { getCurrentPage } from '../page-store/filters'
+import { getPages, movePage, subscribePages } from '../page-store/index'
 import { getUi, subscribeUi } from '../ui-store/index'
 import { getUiElements } from '../ui-store/UiElements'
 import { keyboardAddShortcut } from './Menu'
 import { openPage } from '../ui-store/dispatchers'
+import { renderList } from '../utils/dom'
 import Sortable from '../../../../node_modules/sortablejs/modular/sortable.core.esm.js'
 
 ///////////////////
@@ -105,7 +105,7 @@ class PageTool {
    * @param idx index of the page
    */
   removePageAtIndex(idx: number) {
-    deletePages([getPages()[idx]])
+    removePage(getPages()[idx])
   }
 
   /**

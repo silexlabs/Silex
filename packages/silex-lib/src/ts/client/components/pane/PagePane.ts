@@ -5,12 +5,10 @@
  *
  */
 
-import { renderList } from '../../utils/dom'
 import { ElementState, ElementType, Link } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
 import { SilexNotification } from '../Notification'
-import { isDialogVisible } from '../../ui-store/utils'
 import { addToPage, removeFromPage } from '../../element-store/dispatchers'
 import {
   getBody,
@@ -19,14 +17,12 @@ import {
   noSectionContent
 } from '../../element-store/filters'
 import { getCurrentPage } from '../../page-store/filters'
-import {
-  getElements,
-  subscribeElements,
-  updateElements
-} from '../../element-store/index'
 import { getSite } from '../../site-store/index'
+import { isDialogVisible } from '../../ui-store/utils'
 import { isVisibleInPage } from '../../element-store/utils'
 import { openLinkDialog } from '../dialog/LinkDialog'
+import { renderList } from '../../utils/dom'
+import { subscribeElements, updateElements } from '../../element-store/index'
 import { subscribePages, getPages } from '../../page-store/index'
 import { subscribeUi, getUi } from '../../ui-store/index'
 
@@ -95,9 +91,9 @@ export class PagePane extends PaneBase {
       const value = selected.value
       const desktop = value !== 'mobile'
       const mobile = value !== 'desktop'
-      updateElements(getElements()
+      updateElements(getSelectedElements()
         .map((el) => noSectionContent(el))
-        .filter((el) => el.selected && (el.visibility.desktop !== desktop || el.visibility.mobile !== mobile))
+        .filter((el) => el.visibility.desktop !== desktop || el.visibility.mobile !== mobile)
         .map((el) => ({
           ...el,
           selected: getUi().mobileEditor ? mobile : desktop,

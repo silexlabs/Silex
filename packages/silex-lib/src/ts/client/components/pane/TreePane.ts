@@ -2,7 +2,7 @@ import {html, render} from 'lit-html'
 
 import { ComponentsDefinition } from '../../externs'
 import { Constants } from '../../../constants'
-import { ElementState } from '../../element-store/types'
+import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
 import {
   getBody,
@@ -10,12 +10,23 @@ import {
   getSelectedElements
 } from '../../element-store/filters'
 import { getComponentsDef } from '../../element-store/component'
+import { getCurrentPage } from '../../page-store/filters'
 import { getElements } from '../../element-store'
 import { isDialogVisible } from '../../ui-store/utils'
+import { isVisibleInPage } from '../../element-store/utils'
 import { selectElements } from '../../element-store/dispatchers'
 import { subscribeElements } from '../../element-store/index'
 import { subscribeUi } from '../../ui-store/index'
 
+const ELEMENT_ICONS = {
+  [ElementType.CONTAINER]: 'container',
+  [ElementType.SECTION]: 'fa-inverse fa-fw fa-list-alt',
+  [ElementType.IMAGE]: 'image',
+  [ElementType.TEXT]: 'text',
+  [ElementType.HTML]: 'fa-inverse fa-code',
+  [Constants.COMPONENT_TYPE]: 'fa-inverse fa-square',
+  body: 'body',
+}
 export class TreePane extends PaneBase {
   template = (
     componentsDef: ComponentsDefinition,
@@ -23,15 +34,20 @@ export class TreePane extends PaneBase {
     elements: ElementState[],
     listener: (e: ElementState) => void
   ) => root ? html`
-    <details style="padding: 5px 15px;" key=${root.id} open>
-      <summary class="${root.selected ? 'selected' : ''}${root.children.length ? '' : ' hide-details-marker'}">
+    <details style="padding: 5px 15px; ${getCurrentPage() && isVisibleInPage(root, getCurrentPage().id) ? '' : 'opacity: .5;'}" key=${root.id} open>
+      <summary class="${root.selected ? 'selected' : ''}${root.children.length ? '' : ' hide-details-marker'}" style="display: flex;">
+        <span class="small-icon icon ${ELEMENT_ICONS[root.tagName.toLowerCase() === 'body' ? 'body' : root.data.component ? Constants.COMPONENT_TYPE : root.type]}"></span>
         <span @click=${(e) => {
             listener(root)
             e.preventDefault()
             e.stopPropagation()
             return false
-          }}>
-          ${root.tagName}.${root.classList.join('.')}
+          }} style="
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+          ">
+          ${root.tagName.toLowerCase().replace(/^\w/, (c) => c.toUpperCase())}${root.classList.length ? '.' : ''}${root.classList.join('.')}
         </span>
       </summary>
       ${

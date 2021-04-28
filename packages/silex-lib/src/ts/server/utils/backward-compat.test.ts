@@ -113,7 +113,6 @@ test('convert from 2.5.60', () => {
   expect(section.style.desktop).toEqual({
     'background-color': 'transparent',
     'position': 'static',
-    'margin-top': '-1px',
   })
   expect(section.style.mobile).toEqual({
     'background-color': 'red',

@@ -225,6 +225,14 @@ export default class BackwardCompat {
     //       }
     //     } : el),
     // }
+
+    // remove pages which do not exist (was caused by a bug in deletePages, fix 2021-03)
+    // also remove css classes which are pages  (was caused by a bug??)
+    this.data.elements = this.data.elements.map(el => ({
+      ...el,
+      pageNames: el.pageNames.filter(name => this.data.pages.some(p => p.id === name)),
+      classList: el.classList.filter(name => !this.data.pages.some(p => p.id === name)),
+    }))
   }
 
   /**

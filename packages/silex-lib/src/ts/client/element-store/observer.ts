@@ -24,7 +24,7 @@ import { getParent } from '../element-store/filters'
 import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
-import { openPageDom, removeFromPages, setPages } from '../page-store/dom'
+import { openPageDom, setPages } from '../page-store/dom'
 import { setTagName } from '../utils/dom'
 import { writeDataToDom } from '../store/dom'
 
@@ -105,8 +105,7 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
     if (to.pageNames !== from.pageNames) {
       // apply visibility
       const pages = getPages()
-      removeFromPages(from.pageNames, domEl)
-      setPages(pages, domEl, to.pageNames.map((pageName) => getPages().find((p) => p.id === pageName)))
+      setPages(pages, domEl, to.pageNames.map((pageName) => pages.find((p) => p.id === pageName)))
       // reopen the current page in case the element is not visible on the current page anymore
       openPageDom(getSiteWindow(), getCurrentPage())
     }

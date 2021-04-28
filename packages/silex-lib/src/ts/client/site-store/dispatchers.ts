@@ -15,9 +15,7 @@ import { updateElements } from '../element-store/index'
  * save an empty style or reset a style
  */
 export function initStyle(displayName: string, className: StyleName, opt_data?: StyleData, site = getSite(), dispatch = store.dispatch) {
-  const newData = opt_data ? {
-    ...opt_data,
-  } : ({
+  const newData = !!opt_data ? JSON.parse(JSON.stringify(opt_data)) : ({
     className: '',
     displayName: '',
     templateName: '',
