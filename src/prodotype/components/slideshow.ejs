@@ -64,6 +64,10 @@
 <% } %>
 /* *********************** */
 /* styles for all the slides */
+#parent_<%= uid %> .unslider {
+    /* needed for the UI on mobile */
+    position: relative;
+}
 #parent_<%= uid %> .slide-image {
     width: 100%;
     display: flex;

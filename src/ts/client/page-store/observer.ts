@@ -16,9 +16,16 @@ export function onAddPages(pages: PageState[]) {
   writeDataToDom(getSiteDocument(), getState())
 }
 
-export function onDeletePages(pages: PageState[]) {
+export function onDeletePages(pages: PageState[], preventConfirm = false, elements = getElements(), dispatch = store.dispatch) {
+  function doDelete(elementsOnlyOnThisPage) {
+    elementsOnlyOnThisPage.forEach((element) => {
+      // remove these elements
+      deleteElements([element], dispatch)
+    })
+  }
+
   pages.forEach((page) => {
-    const elementsOnThisPage = getElements()
+    const elementsOnThisPage = elements
       .filter((element) => element.pageNames.includes(page.id))
 
     const elementsOnlyOnThisPage = elementsOnThisPage
@@ -26,51 +33,48 @@ export function onDeletePages(pages: PageState[]) {
 
     // handle elements which should be deleted
     if (elementsOnlyOnThisPage.length > 0) {
-      SilexNotification.confirm('Delete elements' , `
-        ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.id}).
-        <br /><ul>
-          <li>Do you want me to <strong>delete these elements?</strong><br /></li>
-          <li>or keep them and <strong>make them visible on all pages?</strong></li>
-        </ul>
-      `,
-      (accept) => {
-        if (accept) {
-          elementsOnlyOnThisPage.forEach((element) => {
-            // remove these elements
-            deleteElements([element])
-          })
-        } else {
-          // the element will be made visible on all pages by the code bellow
-        }
-      }, 'delete', 'keep')
+      if (!preventConfirm) {
+        SilexNotification.confirm('Delete elements' , `
+          ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.id}).
+          <br /><ul>
+            <li>Do you want me to <strong>delete these elements?</strong><br /></li>
+            <li>or keep them and <strong>make them visible on all pages?</strong></li>
+          </ul>
+        `, (accept) => {
+          if (accept) doDelete(elementsOnlyOnThisPage)
+          // else: the element will be made visible on all pages by the code bellow
+        }, 'delete', 'keep')
+      } else {
+        doDelete(elementsOnlyOnThisPage)
+      }
     }
 
     // FIXME: observer should not update store
     setTimeout(() => {
       // remove "visibility" on this page
       // elements may be deleted afterwards by the code above
-      updateElements(elementsOnlyOnThisPage
+      updateElements(elementsOnThisPage
         .map((element) => ({
           ...element,
           pageNames: element.pageNames.filter((id) => id !== page.id),
-        })))
-    }, 0)
+        })), dispatch)
 
-    // update the links to this page
-    updateElements(pages
-      .reduce((prev, cur) => {
-        return prev.concat(getElements()
-          .filter((element) => !!element.link && element.link.linkType === LinkType.PAGE && element.link.href === cur.link.href)
-          .map((element) => ({
-            from: element,
-            to: {
-              ...element,
-              link: null,
-            },
-          })))
-      }, []))
-    // FIXME: handle links in texts
-  }, 0)
+      // update the links to this page
+      updateElements(pages
+        .reduce((prev, cur) => {
+          return prev.concat(getElements()
+            .filter((element) => !!element.link && element.link.linkType === LinkType.PAGE && element.link.href === cur.link.href)
+            .map((element) => ({
+              from: element,
+              to: {
+                ...element,
+                link: null,
+              },
+            })))
+        }, []))
+      // FIXME: handle links in texts
+    }, 0)
+  })
 
   // save the changed data to the dom for front-end.js
   writeDataToDom(getSiteDocument(), getState())

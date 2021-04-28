@@ -129,7 +129,6 @@ export function getDefaultStyle({type, isSectionContent, isBody}: {type: Element
     }
     const section = { // sections
       'position': 'static',
-      'margin-top': '-1px',
       'top': undefined,
       'left': undefined,
       'height': undefined,

@@ -47,6 +47,19 @@ test('cloneElements root', () => {
   expect(root).toHaveLength(0)
 })
 
+test('copy elements with 2 containers inside one another', () => {
+  const initial = [ELEM_SECTION_CONTENT_STATE, ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE, ELEM_CONTAINER_STATE]
+  const cloned = cloneElement(ELEM_SECTION_CONTENT_STATE, null, initial)
+  expect(cloned).toHaveLength(5)
+  expect(cloned[0].type).toBe(ElementType.CONTAINER)
+  expect(cloned[1].type).toBe(ElementType.CONTAINER)
+  expect(cloned[0].children[0]).toBe(cloned[1].id)
+  expect(cloned[0].children).toHaveLength(1)
+  expect(cloned[1].children[0]).toBe(cloned[2].id)
+  expect(cloned[1].children[0]).not.toBe(ELEM_TEXT_STATE.id)
+  expect(cloned[1].children).toHaveLength(3)
+})
+
 test('cloneElements 1 element', () => {
   const [all, root] = cloneElements([ELEM_TEXT_STATE], [ELEM_TEXT_STATE, ELEM_IMAGE_STATE, ELEM_HTML_STATE, ELEM_CONTAINER_STATE])
   expect(all).toHaveLength(1)
@@ -114,4 +127,3 @@ test('pasteElements 3 elements with 1 root element', () => {
   expect(dispatch.mock.calls[1][0].items).toHaveLength(1)
   expect(dispatch.mock.calls[1][0].items.map((i) => i.id)).toEqual([ELEM_SECTION_STATE.id])
 })
-
