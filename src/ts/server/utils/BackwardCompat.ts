@@ -145,6 +145,7 @@ export default class BackwardCompat {
         '2.2.10': await this.to2_2_10(version, doc),
         '2.2.11': await this.to2_2_11(version, doc), // this will set this.data
         '2.2.12': await this.to2_2_12(version, doc),
+        '2.2.13': await this.to2_2_13(version, doc),
       }
       // update the static scripts to match the current server and latest version
       this.updateStatic(doc)
@@ -460,6 +461,22 @@ export default class BackwardCompat {
             }))
         }
         actions.push('All sections have a &lt;SECTION&gt; tag name')
+      }
+      resolve(actions)
+    })
+  }
+
+  to2_2_13(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 13])) {
+        Array.from(doc.querySelectorAll('[data-silex-href]'))
+        .forEach((tag: HTMLElement) => {
+          const newEl = setTagName(tag, 'A') as HTMLLinkElement
+          newEl.href = tag.getAttribute('data-silex-href')
+          newEl.removeAttribute('data-silex-href')
+        })
+        actions.push('Replaced old Silex links with standard HTML links.')
       }
       resolve(actions)
     })

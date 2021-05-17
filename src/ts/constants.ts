@@ -129,7 +129,7 @@ export class Constants {
   /**
    * constant for the attribute name of the links
    */
-  static LINK_ATTR: string = 'data-silex-href'
+  static LINK_ATTR: string = 'href'
 
   /**
    * Not sure why this is added, must be ignored
