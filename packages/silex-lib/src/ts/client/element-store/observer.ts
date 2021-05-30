@@ -121,21 +121,18 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
       setLink(domEl, to.link)
     }
     if (to.attr !== from.attr) {
-      const fromAttr = from.attr || []
-      fromAttr
-      .filter((c) => !!c) // remove empty strings
-      .forEach((c) => {
+      const fromAttr = from.attr || {}
+      Object.entries(fromAttr)
+      .forEach(([name, val]) => {
         try {
-          domEl.removeAttribute(c.split('=')[0])
+          domEl.removeAttribute(name)
         } catch(e) {
-          console.error('could not remove HTML attr', {c, domEl})
+          console.error('could not remove HTML attr', {name, val, domEl})
         }
       })
-      const toAttr = to.attr || []
-      toAttr
-      .filter((c) => !!c) // remove empty strings
-      .forEach((c) => {
-        const [name, val] = c.split('=')
+      const toAttr = to.attr || {}
+      Object.entries(toAttr)
+      .forEach(([name, val]) => {
         try {
           domEl.setAttribute(name, val || '')
         } catch(e) {

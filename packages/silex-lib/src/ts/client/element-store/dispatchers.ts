@@ -4,9 +4,8 @@
  * TODO: 2- move this file to a cross platform package (e.g. in src/ts/helpers/)
  */
 
-import { Constants } from '../../constants'
-import { CssRule } from '../site-store/types'
 import {
+  Attr,
   Direction,
   DomDirection,
   ElementState,
@@ -14,6 +13,8 @@ import {
   Link,
   StyleObject
 } from './types'
+import { Constants } from '../../constants'
+import { CssRule } from '../site-store/types'
 import { PageState } from '../page-store/types'
 import { SilexNotification } from '../components/Notification'
 import { addToMobileOrDesktopStyle } from '../utils/styles'
@@ -166,7 +167,7 @@ export const multipleStylesChanged = (style: CssRule, selection: ElementState[],
 /**
  * set html attributes
  */
-export function setAttributes(attr: string[], elements = getElements(), dispatch = store.dispatch) {
+export function setAttributes(attr: Attr, elements = getElements(), dispatch = store.dispatch) {
   // apply the change to all elements
   updateElements(getSelectedElements(elements)
     .map((el) => ({
