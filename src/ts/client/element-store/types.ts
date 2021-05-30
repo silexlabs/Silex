@@ -74,12 +74,16 @@ export enum LinkType {
   // TODO: ANCHOR, EMAIL...
 }
 
+export interface Attr {
+  [name: string]: string,
+}
+
 // Type with all the properties but the symbol used to compare them in the store
 // Use fromElementData to make it an ElementState
 export interface ElementData {
   pageNames: string[],
   classList: string[],
-  attr: string[],
+  attr: Attr,
   tagName: string,
   type: ElementType,
   link?: Link,
@@ -109,7 +113,7 @@ export interface ElementData {
 export interface ElementState extends CrudState {
   pageNames: string[],
   classList: string[],
-  attr: string[],
+  attr: Attr,
   tagName: string,
   type: ElementType,
   link?: Link,
