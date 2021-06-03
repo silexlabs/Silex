@@ -134,7 +134,7 @@ export class StylePane extends PaneBase {
   stringToAttr(text: string): Attr {
     if(text == null) return {}
 
-    const attributes = text.match(/\b([a-z,A-Z,-]+)(="(.*?)")?/g)
+    const attributes = text.match(/\b([a-z,A-Z,\-,:,\{,\}]+)(="(.*?)")?/g)
     if (attributes == null) return {}
 
     const result = {}
