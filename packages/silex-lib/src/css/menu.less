@@ -146,22 +146,33 @@ div.icon, a.icon, span.icon {
     line-height: 1.8;
   }
 }
-.add-menu-icons {
-  span.icon {
-    padding: 10px;
-    margin: 18px;
-    &.fa-inverse {
-      padding-left: 0;
-      padding-right: 0;
-    }
+span.icon {
+  padding: 10px;
+  margin: 18px;
+  &.fa-inverse {
+    padding-left: 0;
+    padding-right: 0;
   }
-  .text {background-image: url(../assets/context-menu/glyphicons-108-text-resize.png);}
-  .image {background-image: url(../assets/context-menu/glyphicons-139-picture.png);}
-  .container {background-image: url(../assets/context-menu/glyphicons-95-vector-path-square.png);}
-  .small-icon {
+  &.text {background-image: url(../assets/context-menu/glyphicons-108-text-resize.png);}
+  &.image {background-image: url(../assets/context-menu/glyphicons-139-picture.png);}
+  &.container {background-image: url(../assets/context-menu/glyphicons-95-vector-path-square.png);}
+  &.small-icon {
     background-repeat: no-repeat;
     background-position: center;
     background-size: 40%;
+
+    margin: 0;
+    padding: 0 5px;
+    font-size: medium;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+  }
+  &.body::before {
+    content: 'B';
+    font-size: small;
+    border: 1px solid;
+    padding: 0 3px;
   }
 }
 /* sub menus visibility */
