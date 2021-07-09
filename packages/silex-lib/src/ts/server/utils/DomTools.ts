@@ -16,7 +16,7 @@ export default class DomTools {
     ['src', 'href'].forEach((attr) => {
       const elements: HTMLElement[] = Array.from(win.document.querySelectorAll(`[${attr}]`))
       for (const el of elements) {
-        if (el.tagName.toLowerCase() === 'a' || el.hasAttribute('data-silex-href')) {
+        if (el.tagName.toLowerCase() === 'a') {
           // do nothing with <a> links
           continue
         }

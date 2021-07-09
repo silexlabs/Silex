@@ -354,6 +354,7 @@ class StageWrapper {
     // init => the dom needs time to load
     setTimeout(() => resetStage(), 1000)
     // give time to iframes to initialize
+    // FIXME: use onload
     setTimeout(() => {
       this.toBeUnsubscribed.push(
         subscribeMouseEvent('mousedown', (e: MouseEvent) => {
