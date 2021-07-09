@@ -25,6 +25,7 @@ import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
 import { openPageDom, setPages } from '../page-store/dom'
+import { resetStage } from '../components/StageWrapper';
 import { setTagName } from '../utils/dom'
 import { writeDataToDom } from '../store/dom'
 
@@ -141,8 +142,18 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
         hideOnMobile(domEl)
       }
     }
-    if (to.tagName !== from.tagName) {
-      setTagName(getDomElement(doc, to), to.tagName)
+    if (to.link) {
+      if (domEl.tagName !== 'A') {
+        setTagName(domEl, 'A')
+        // reset the stage because stage component holds references to dom elements
+        // of selected Silex elements
+        // FIXME: this is a problem in drag-drop-stage-component module
+        resetStage()
+      }
+    } else if (to.tagName.toUpperCase() !== domEl.tagName.toUpperCase()) {
+      // Here to.tagName may be the same as from.tagName and still the node can have a tag name "A"
+      // This happens when we remove a link
+      setTagName(domEl, to.tagName)
     }
     if (to.alt !== from.alt) {
       const img: HTMLImageElement = (domEl.querySelector('img')) as HTMLImageElement
