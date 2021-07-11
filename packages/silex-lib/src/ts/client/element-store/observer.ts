@@ -25,7 +25,7 @@ import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
 import { openPageDom, setPages } from '../page-store/dom'
-import { resetStage } from '../components/StageWrapper';
+import { resetStage } from '../components/StageWrapper'
 import { setTagName } from '../utils/dom'
 import { writeDataToDom } from '../store/dom'
 
