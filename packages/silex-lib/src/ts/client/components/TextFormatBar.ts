@@ -138,14 +138,18 @@ export class TextFormatBar {
       // reset focus
       resetFocus()
 
-      // update the model
+      // cleanup the DOM
       const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
       const editable = getContentNode(currentTextBoxEl)
       editable.removeAttribute('contenteditable')
       editable.classList.remove('wysihtml-sandbox', 'wysihtml-editor')
       currentTextBoxEl.classList.remove('text-editor-focus')
       currentTextBoxEl.removeAttribute('data-allow-silex-shortcuts')
-      currentTextBoxEl.onclick = null
+      // do not remove the onclick event
+      // so that the link is not followed (currently we are in the moudedown)
+      // currentTextBoxEl.onclick = null
+
+      // Update the model
       updateElements([{
         ...this.currentTextBox,
         innerHtml: getInnerHtml(currentTextBoxEl),
@@ -200,7 +204,7 @@ export class TextFormatBar {
               li: {},
               a: {
                 check_attributes: {
-                  href: 'href',
+                  href: 'any', // allow any string, useful for template languages
                   download: 'href',
                   target: 'any',
                   title: 'any',
@@ -236,6 +240,19 @@ export class TextFormatBar {
         const win = getSiteWindow()
         const onKeyScrollBinded = (e) => this.onScroll(e)
         const onBlurBinded = () => this.onBlur(currentTextBoxEl)
+
+        // workaround for the wisihtml editor
+        // prevent problems when the root is a link
+        // this is the casse when the element has a link in the properties
+        currentTextBoxEl.setAttribute('data-href', currentTextBoxEl.getAttribute('href'))
+        currentTextBoxEl.removeAttribute('href')
+        currentTextBoxEl.onclick = (e) => e.preventDefault()
+        this.onStopEditCbks.push(
+          () => {
+            currentTextBoxEl.setAttribute('href', currentTextBoxEl.getAttribute('data-href'))
+            currentTextBoxEl.removeAttribute('data-href')
+          }
+        )
 
         // events and shortcuts
         this.onStopEditCbks.push(
