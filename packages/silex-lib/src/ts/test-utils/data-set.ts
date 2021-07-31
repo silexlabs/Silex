@@ -51,6 +51,7 @@ export const ELEM_TEXT: ElementData = {
   id: getNextId('Text'),
   pageNames: [],
   classList: [],
+  attr: {},
   tagName: 'DIV',
   type: ElementType.TEXT,
   enableEdit: true,

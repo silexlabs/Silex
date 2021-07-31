@@ -114,7 +114,7 @@ const HAVE_INNER_HTML = [ElementType.HTML, ElementType.TEXT, ElementType.IMAGE]
 const HAVE_ALT = [ElementType.IMAGE]
 
 
-export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTMLElement): ElementData {
+export function getElementDataBC(doc: HTMLDocument, data: DomData, element: HTMLElement): any {
   const linkValue = element.getAttribute('data-silex-href')
   const linkType = linkValue ? linkValue.startsWith('#!page-') ? LinkType.PAGE : LinkType.URL : null
   const id = getElementId(element)
