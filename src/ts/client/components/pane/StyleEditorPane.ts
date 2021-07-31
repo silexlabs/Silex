@@ -174,9 +174,10 @@ export class StyleEditorPane extends PaneBase {
    * a new style has been created, now update all elements and delete the old one
    */
   doRenameStyle(oldClassName: string, name: string, styles: StyleDataObject = getSite().styles, elements = getElements(), dispatch = store.dispatch) {
+    const className = this.getClassNameFromClassName(name)
 
     // update the style name in all elements
-    this.doApplyStyle(this.getElementsWithStyle(oldClassName, null, elements), name, styles, dispatch)
+    this.doApplyStyle(this.getElementsWithStyle(oldClassName, null, elements), className, styles, dispatch)
 
     // delete the old one from model
     removeStyle(oldClassName)
@@ -184,15 +185,15 @@ export class StyleEditorPane extends PaneBase {
 
   /**
    * Get all the elements which have a given style
-   * @param includeOffPage, if false it excludes the elements which are not
+   * @currentPageId if null it excludes the elements which are not
    *     visible in the current page
    */
-  getElementsWithStyle(styleName: StyleName, currentPageId = (getCurrentPage() || {}).id, elements = getElements()): ElementState[] {
+  getElementsWithStyle(styleName: StyleName, currentPageId, elements = getElements()): ElementState[] {
     if (currentPageId) {
       return elements
         .filter((el) => el.classList.includes(styleName)
           && el.pageNames.length === 0
-          || !!el.pageNames.includes(currentPageId))
+          || el.pageNames.includes(currentPageId))
     } else {
       return elements
         .filter((el) => el.classList.includes(styleName))
@@ -310,7 +311,7 @@ export class StyleEditorPane extends PaneBase {
       editStyle(styleNameNotNull, this.getPseudoClass(), this.getVisibility())
 
       // update selection count
-      const total = this.getElementsWithStyle(styleNameNotNull).length
+      const total = this.getElementsWithStyle(styleNameNotNull, getCurrentPage()?.id).length
       const onPage = total === 0 ? 0 : this.getElementsWithStyle(styleNameNotNull, null).length
       this.selectionCountPage.innerHTML = `${onPage} on this page (<span>select</span>),&nbsp;`
       this.selectionCountTotal.innerHTML = `${total} total (<span>select</span>)`
@@ -399,12 +400,18 @@ export class StyleEditorPane extends PaneBase {
   }
 
   /**
+   * build a new css class name for the style
+   */
+  getClassNameFromClassName(name) {
+    return 'style-' + name.replace(/ /g, '-').toLowerCase()
+  }
+
+  /**
    * called after prompts and alerts
    * to create a style
    */
   doCreateStyle({name, opt_data}: {name: string, opt_data?: StyleData}, styles: StyleDataObject = getSite().styles, elements = getElements(), dispatch = store.dispatch) {
-    // build a new css class name for the style
-    const className = 'style-' + name.replace(/ /g, '-').toLowerCase()
+    const className = this.getClassNameFromClassName(name)
 
     // create the new style
     initStyle(name, className, opt_data)
