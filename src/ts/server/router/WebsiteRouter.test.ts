@@ -40,7 +40,7 @@ describe('open website (prepareWebsite)', () => {
   test('links from relative to absolute', () => {
     const dom = new JSDOM(`
       <html class="silex-runtime"><body>
-        <div class="editable-element" data-silex-href="./a/b.html"></div>
+        <a class="editable-element" href="./a/b.html"></a>
         <a class="link-in-text" href="./a/b.html"></a>
         <style class="stylesheet" href="./a/b.html"></a>
       </body></html>
@@ -55,7 +55,7 @@ describe('open website (prepareWebsite)', () => {
     }, new URL('http://test.com/source/'))
 
     // no change for links
-    expect(dom.window.document.querySelector('.editable-element').getAttribute('data-silex-href')).toBe('./a/b.html')
+    expect(dom.window.document.querySelector('.editable-element').getAttribute('href')).toBe('./a/b.html')
     expect(dom.window.document.querySelector('.link-in-text').getAttribute('href')).toBe('./a/b.html')
     expect(transformedData.elements[0].link.href).toBe('./a/b.html')
     // change stylesheets

@@ -170,27 +170,6 @@ export function splitInFiles({
   doc.head.innerHTML += userHead
   // doc.head.appendChild(doc.createTextNode(userHead));
 
-  // replace internal links <div data-silex-href="..." by <a href="..."
-  // do a first pass, in order to avoid replacing the elements in the <a> containers
-  Array.from(doc.body.querySelectorAll(`.${Constants.EDITABLE_CLASS_NAME}[${Constants.LINK_ATTR}]`))
-  .forEach((element: HTMLElement) => {
-    const href = element.getAttribute(Constants.LINK_ATTR)
-    element.removeAttribute(Constants.LINK_ATTR)
-
-    const replacement = doc.createElement('a')
-    replacement.setAttribute('href', href)
-    replacement.innerHTML = element.innerHTML
-    for (let attrIdx = 0; attrIdx < element.attributes.length; attrIdx++) {
-      const nodeName = element.attributes.item(attrIdx).nodeName
-      const nodeValue = element.attributes.item(attrIdx).nodeValue
-      replacement.setAttribute(nodeName, nodeValue)
-    }
-    // insert the clone at the place of the original and remove the original
-    // FIXME: bug when there is a link in the content of an element with an external link set
-    // see issue https://github.com/silexlabs/Silex/issues/56
-    element.parentElement.replaceChild(replacement, element)
-  })
-
   return {
     scriptTags,
     styleTags,

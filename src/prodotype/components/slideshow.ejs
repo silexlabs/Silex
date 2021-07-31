@@ -171,39 +171,44 @@
 </style>
 <script type="text/javascript">
   (function() {
-    function initUnslider() {
-      // do not start in the editor (it would mess with the markup)
-      if(!$('body').hasClass('silex-runtime')) return;
+    // do not start in the editor (it would mess with the markup)
+    if(!$('body').hasClass('silex-runtime')) return;
 
-      var slider = $('#id_<%= uid %>').unslider({
-        'autoplay': <%= autoplay %>,
-        'speed': <%= speed %>,
-        'delay': <%= delay %>,
-        'index': <%= index %>,
-        'nav': <%= nav %>,
-        'animation': '<%= animation %>',
-        'arrows': <%= arrows %>
-      });
-      //  Listen to slide changes
-      <% if(onchange) { %>
-      slider.on('unslider.change', function(event, index, slide) {
-        <%- onchange %>
-      });
+    var $slider = $('#id_<%= uid %>')
+    var slider = $slider.unslider({
+      'autoplay': <%= autoplay %>,
+      'speed': <%= speed %>,
+      'delay': <%= delay %>,
+      'index': <%= index %>,
+      'nav': <%= nav %>,
+      'animation': '<%= animation %>',
+      'arrows': <%= arrows %>
+    });
+    //  Listen to slide changes
+    <% if(onchange) { %>
+    slider.on('unslider.change', function(event, index, slide) {
+      <%- onchange %>
+    });
+  <% } %>
+    // apply element height to the images
+    var silexElement = $slider.closest('.editable-style');
+    var elementMinHeight = silexElement.css('height');
+    var elementWidth = silexElement.css('width');
+    $('#id_<%= uid %> li .slide-image').css({
+      'height': elementMinHeight
+    });
+    <% if(animation === 'fade' ) { %>
+    // apply element height to the container (useful for fade only)
+    $('#id_<%= uid %> ul').css({
+      'height': elementMinHeight
+    });
     <% } %>
-      // apply element height to the images
-      var silexElement = $('#id_<%= uid %>').closest('.editable-style');
-      var elementMinHeight = silexElement.css('height');
-      var elementWidth = silexElement.css('width');
-      $('#id_<%= uid %> li .slide-image').css({
-        'height': elementMinHeight
-      });
-      <% if(animation === 'fade' ) { %>
-      // apply element height to the container (useful for fade only)
-      $('#id_<%= uid %> ul').css({
-        'height': elementMinHeight
-      });
-      <% } %>
-  }
-    initUnslider();
+
+    setTimeout(function(){
+      // use onswipe.js
+      // Fix #1127
+      window.onSwipe('left', function(){ $slider.data('unslider').next()})
+      window.onSwipe('right', function(){ $slider.data('unslider').prev()})
+    }, 0)
   })();
 </script>
