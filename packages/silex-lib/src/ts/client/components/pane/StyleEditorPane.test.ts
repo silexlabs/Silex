@@ -221,7 +221,7 @@ test('rename style', () => {
     type: 'ELEMENT_UPDATE',
     items: [{
       ...ELEM_TEXT_STATE,
-      classList: ['new-test-style'],
+      classList: ['style-new-test-style'],
     }],
   })
 })
@@ -243,10 +243,10 @@ test('rename style with 2 elements with this style', () => {
     type: 'ELEMENT_UPDATE',
     items: [{
       ...ELEM_TEXT_STATE,
-      classList: ['new-test-style'],
+      classList: ['style-new-test-style'],
     }, {
       ...BODY_STATE,
-      classList: ['new-test-style'],
+      classList: ['style-new-test-style'],
     }],
   })
 })
