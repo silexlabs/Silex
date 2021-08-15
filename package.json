@@ -104,7 +104,7 @@
     "node_modules-path": "*",
     "normalize.css": "8.0.1",
     "object-path": "0.11.5",
-    "prodotype": "1.0.23",
+    "prodotype": "1.0.24",
     "promise-sequential": "1.1.1",
     "redux": "4.0.5",
     "redux-undo": "1.0.1",
