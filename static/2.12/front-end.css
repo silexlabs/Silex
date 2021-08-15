@@ -1,0 +1,202 @@
+/**
+ * This file holds the styles of websites while editing
+ */
+
+body {
+  min-height: 100vh;
+  min-width: 98vw; /* remove approx size of vertical scroll bar */
+}
+
+/* prevent-auto-z-index is to let the components handle their z-index */
+.section-element > .silex-element-content > *:not(.prevent-auto-z-index):not(.fixed) {
+  /* put the elements of a section on top of sections bellow */
+  z-index: 10;
+}
+/* workaround a bug of the 2.11 version (front end) */
+/* sections used to hava margin-top: -1; which can not be edited in the UI */
+.editable-style.section-element {
+  margin-top: 0;
+}
+/****************************************************/
+.website-width {
+  width: 960px;
+}
+.paged-element-hidden {
+  display: none;
+}
+/* resize */
+.editable-style.image-element img {
+  border-radius: inherit; /* this is to follow the element's radius */
+	width: 100%;
+	height: 100%;
+}
+/*
+ .image-element > .silex-element-content {
+	overflow: hidden;
+}
+*/
+.html-element .silex-element-content {
+  /* enable HTML content to have style="min-height: inherit;" */
+  /* removed because it makes components buggy, add it to silex if you need to
+  position: absolute;
+  min-height: inherit;
+  width: 100%; /* needed by slideshow components and probably others */
+  /*
+  height: 100%; /* needed by slideshow kreview and probably others */
+}
+/* wysihtml text editor styles */
+.wysiwyg-float-left {
+  float: left;
+  margin: 0 8px 8px 0;
+}
+.wysiwyg-float-right {
+  float: right;
+  margin: 0 0 8px 8px;
+}
+/* Remove dots surrounding links in Firefox
+    because of normalize.css */
+a:focus{ outline: none;}
+
+body .editable-style[data-silex-href] {
+  cursor: pointer;
+}
+body.enable-mobile .editable-style.hide-on-desktop {
+  display: none;
+}
+/* only outside the editor */
+/* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+body.silex-runtime.body-initial .fixed {
+  position: absolute;
+  z-index: 20;
+}
+/* Mobile styles */
+@media (max-width:480px) {
+  /* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+  body.silex-runtime.body-initial .fixed {
+    /* on mobile (chrome, this is needed to be on top of other content) */
+    position: relative;
+  }
+
+  /* hide horizontal scroll bar which appears because of residual values in css
+  html {
+    overflow-x: hidden;
+  }
+  */
+  body {
+    position: initial; /* used to be absolute but now only in editor (editable.css), when position is absolute the body has the size of its content */
+  }
+  /* mobile mode */
+  body.enable-mobile .editable-style:not(.prevent-mobile-style),
+  body.enable-mobile .background.background-initial {
+    position: static;
+    top: auto;
+    left: auto;
+    max-width: 100%;
+    min-width: auto; /* this is to remove sections min-width, since section min-width is set to the witdh of its content in Element::setStyle() */
+    margin-left: auto;
+    margin-right: auto;
+  }
+  body.enable-mobile .editable-style.container-element {
+    padding: 10px; /* leave space between a container and its content */
+  }
+  body.enable-mobile .editable-style.section-element {
+    padding: 0;
+  }
+  body.enable-mobile .editable-style.section-element > .silex-element-content {
+    padding: 10px 0; /* leave space between a container and its content */
+  }
+  body.enable-mobile.silex-resizing .editable-style:not(.prevent-mobile-style) {
+    max-width: unset; /* while dragging let the user size the elements freely */
+  }
+  body.enable-mobile .image-element.editable-style:not(.prevent-mobile-style) {
+    position: relative;
+  }
+  body.enable-mobile .editable-style.section-element {
+    max-width: 100%; /* section bg should be 100% width because user do not need to grab the side and resize */
+    padding: 0;
+    margin: 0;
+  }
+  body.enable-mobile .container-element:not(.paged-element-hidden) {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
+  /* but still hide paged elements or desktop only elements */
+  body.enable-mobile .editable-style.hide-on-mobile {
+    display: none;
+  }
+  body.enable-mobile .editable-style.hide-on-desktop:not(.paged-element-hidden) {
+    display: initial;
+  }
+  body.silex-runtime.enable-mobile .background.background-initial {
+    max-width: 100%;
+  }
+}
+
+/* only outside the editor */
+/* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+body.silex-runtime.body-initial .fixed {
+  position: absolute;
+  z-index: 20;
+}
+/* Mobile styles */
+@media (max-width:480px) {
+  /* needs to be more qualified than body.enable-mobile .editable-style:not(.prevent-mobile-style) */
+  body.silex-runtime.body-initial .fixed {
+    /* on mobile (chrome, this is needed to be on top of other content) */
+    position: relative;
+  }
+}
+
+/**
+ * prodotype components
+ */
+.silex-element-content-full-height .silex-element-content {
+  height: 100%;
+}
+silex-template,
+.prodotype-preview {
+  display: none;
+}
+.prodotype-runtime,
+.prodotype-runtime-strict {
+  display: none;
+}
+.prodotype-published {
+  display: none;
+}
+body.silex-editor .prodotype-preview {
+  display: block;
+}
+body.silex-runtime .prodotype-runtime,
+body.silex-runtime .prodotype-runtime-strict {
+  display: block;
+}
+body.silex-published .prodotype-published {
+  display: block;
+}
+body.silex-publish .prodotype-runtime-strict {
+  display: none;
+}
+.prodotype-force-size {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.silex-component-button button {
+  width: 100%;
+}
+/* full-width component*/
+div.editable-style.full-width-section {
+  min-height: 100px;
+}
+
+div.editable-style.full-width-section>.editable-style {
+  position: static;
+  min-width: 100%;
+}
+
+div.editable-style.full-width-section>.editable-style.silex-element-content {
+  display: none;
+}
