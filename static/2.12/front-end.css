@@ -22,7 +22,7 @@ body {
   width: 960px;
 }
 .paged-element-hidden {
-  display: none;
+  display: none !important;
 }
 /* resize */
 .editable-style.image-element img {
