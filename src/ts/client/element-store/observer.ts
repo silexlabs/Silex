@@ -25,6 +25,7 @@ import { getSiteWindow } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { isComponent, updateComponentsDependencies } from './component'
 import { openPageDom, setPages } from '../page-store/dom'
+import { resetStage } from '../components/StageWrapper'
 import { setTagName } from '../utils/dom'
 import { writeDataToDom } from '../store/dom'
 
@@ -120,6 +121,26 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
     if (to.link !== from.link) {
       setLink(domEl, to.link)
     }
+    if (to.attr !== from.attr) {
+      const fromAttr = from.attr || {}
+      Object.entries(fromAttr)
+      .forEach(([name, val]) => {
+        try {
+          domEl.removeAttribute(name)
+        } catch(e) {
+          console.error('could not remove HTML attr', {name, val, domEl})
+        }
+      })
+      const toAttr = to.attr || {}
+      Object.entries(toAttr)
+      .forEach(([name, val]) => {
+        try {
+          domEl.setAttribute(name, val || '')
+        } catch(e) {
+          console.error('could not add HTML attr', {name, val, domEl})
+        }
+      })
+    }
     if (to.classList !== from.classList) {
       // remove only the old css classes
       // this will keep the element SilexId, type,  etc.
@@ -141,8 +162,18 @@ export const onUpdateElements = (win: Window) => (change: StateChange<ElementSta
         hideOnMobile(domEl)
       }
     }
-    if (to.tagName !== from.tagName) {
-      setTagName(getDomElement(doc, to), to.tagName)
+    if (to.link) {
+      if (domEl.tagName !== 'A') {
+        setTagName(domEl, 'A')
+        // reset the stage because stage component holds references to dom elements
+        // of selected Silex elements
+        // FIXME: this is a problem in drag-drop-stage-component module
+        resetStage()
+      }
+    } else if (to.tagName.toUpperCase() !== domEl.tagName.toUpperCase()) {
+      // Here to.tagName may be the same as from.tagName and still the node can have a tag name "A"
+      // This happens when we remove a link
+      setTagName(domEl, to.tagName)
     }
     if (to.alt !== from.alt) {
       const img: HTMLImageElement = (domEl.querySelector('img')) as HTMLImageElement

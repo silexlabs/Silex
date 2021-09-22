@@ -13,11 +13,14 @@ baseElement: html
 faIconClass: fa-slideshare
 dependencies:
   script:
-  - src: /static/2.7/unslider/unslider-min.js
+  - src: /static/2.11/unslider/onswipe.js
+    type: 'module'
+    data-silex-static: ''
+  - src: /static/2.11/unslider/unslider-min.js
     data-silex-static: ''
   link:
   - rel: stylesheet
-    href: /static/2.7/unslider/unslider.css
+    href: /static/2.11/unslider/unslider.css
     data-silex-static: ''
 initialCssClass:
   silex-use-height-not-minheight

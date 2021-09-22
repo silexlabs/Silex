@@ -43,7 +43,7 @@ export function renderList(itemTemplateString: string, data: any[]): string {
   return res
 }
 
-export function setTagName(el: HTMLElement, tag: string) {
+export function setTagName(el: HTMLElement, tag: string): HTMLElement {
   if(el.tagName.toLowerCase() === 'body') throw new Error('Forbidden to change tag name of body')
   const replacement = el.ownerDocument.createElement(tag)
   el.getAttributeNames()

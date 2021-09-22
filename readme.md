@@ -1,5 +1,5 @@
 [![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
-[![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://editor.silex.me)
+[![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://editor.silex.me) [![Join the chat at https://gitter.im/silex-website-builder/community](https://badges.gitter.im/silex-website-builder/community.svg)](https://gitter.im/silex-website-builder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## About Silex, live web creation.
 
