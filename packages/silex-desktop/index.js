@@ -19,6 +19,10 @@ config.publisherOptions.skipHostingSelection = true;
 // create the Silex server
 const silex = new SilexServer(config);
 
+// serve modified html - serving it as index.html may not override Silex's index.html in electron
+const INDEX_HTML_PATH = '/custom.html'
+silex.app.use(INDEX_HTML_PATH, serveStatic(path.resolve('./dist/', INDEX_HTML_PATH)))
+
 // start Silex
 silex.start(function() {
   console.log('server started');
@@ -58,7 +62,7 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  const url = 'http://localhost:' + (process.env.PORT || 6805) + '/';
+  const url = 'http://localhost:' + (process.env.PORT || 6805) + INDEX_HTML_PATH;
   console.log('Sarting app on ' + url);
   win.loadURL(url);
 

@@ -7,9 +7,9 @@
     "node": ">=10.16.3 <=11.15.0"
   },
   "scripts": {
-    "postinstall": "electron-rebuild",
+    "postinstall": "npm run build && electron-rebuild",
     "start": "electron .",
-    "build": "echo 'pass (no build for this app)'",
+    "build": "pug -O env.js index.pug -o dist/custom.html",
     "electron-builder": "electron-builder"
   },
   "repository": {
@@ -37,6 +37,8 @@
     "electron-rebuild": "2.3.2"
   },
   "dependencies": {
+    "pug": "^3.0.2",
+    "pug-cli": "^1.0.0-alpha6",
     "silex-website-builder": "silexlabs/Silex#develop"
   }
 }
