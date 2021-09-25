@@ -37,7 +37,7 @@
       "patterns": [
         "src/html/"
       ],
-      "extensions": "jade"
+      "extensions": "pug"
     },
     "build:prodotype": {
       "patterns": [
@@ -73,8 +73,8 @@
     "build:prodotype": "run-s build:folders build:components build:styles",
     "build:css:release": "lessc src/css/_styles.less dist/html/css/admin.css",
     "build:css:debug": "lessc src/css/_styles.less dist/html/css/admin.css --source-map",
-    "build:html": "pug src/html/index.jade --out dist/html/ --no-debug",
-    "build:html:debug": "rm dist/html/index.html ; pug src/html/debug.jade --out dist/html/",
+    "build:html": "pug src/html/index.pug --out dist/html/ --no-debug",
+    "build:html:debug": "rm dist/html/index.html ; pug src/html/debug.pug --out dist/html/",
     "build:client:release": "webpack --config webpack.config.js",
     "build:client:debug": "webpack --config webpack.config.js",
     "build:server:release": "tsc -p tsconfig-server-release.json",
