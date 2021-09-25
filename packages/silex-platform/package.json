@@ -7,8 +7,7 @@
     "start": "node index.js",
     "postinstall": "npm run build",
     "build": "npm run build:html",
-    "build:html": "pug -O env.js index.pug -o dist/",
-    "deploy": "rm -rf node_modules package-lock.json && npm i && git commit -am 'deploy' && git push"
+    "build:html": "pug -O env.js index.pug -o dist/"
   },
   "engines": {
     "node": ">=10.15.3 <=11.15.0"
