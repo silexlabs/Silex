@@ -1,0 +1,56 @@
+doctype html
+html(lang="en", translate="no")
+  head
+    block head-start
+
+    style.
+      .loading-pending .silex-workspace {
+        opacity: 0;
+      }
+      .loading-pending .loader {
+        display: block;
+        color: #DDD;
+        text-align: center;
+        margin-top: 50vh;
+        height: auto;
+        animation: fadein 1s;
+      }
+      @keyframes fadein {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+      }
+      body {
+        background-color: #444;
+        font-family: 'Roboto', sans-serif;
+      }
+
+    block customizable-head
+      title='Silex'
+      meta(name='description', content='This is a public instance of Silex website builder. Build websites in the browser')
+      link(rel="shortcut icon", href="assets/favicon.png")
+
+
+    block head-end
+
+  body.loading-pending.advanced-mode-off
+    .loader.
+      Loading...
+
+    block includes
+      include ./templates/includes.jade
+
+    block body-start
+      include ./templates/workspace.jade
+
+    block body-end
+      script(type='text/javascript' src='js/main.js')
+
+    block silex-init
+      // this is now deprecated
+
+    block silex-options
+      // Here you can use silex.config to hook into silex options before silex starts
+
+    block silex-start
+      script.
+        window.silex.start()
