@@ -9,7 +9,7 @@
   "scripts": {
     "postinstall": "npm run build && electron-rebuild",
     "start": "electron .",
-    "build": "pug -O env.js index.pug -o dist/custom.html",
+    "build": "pug -O env.js index.pug -o dist/",
     "electron-builder": "electron-builder"
   },
   "repository": {
