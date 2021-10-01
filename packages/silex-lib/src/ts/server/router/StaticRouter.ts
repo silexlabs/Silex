@@ -15,6 +15,8 @@ export default function(staticOptions: StaticOptions) {
   router.use('/prodotype', serveStatic(Path.join(__dirname, '../../../../dist/prodotype')))
   // the scripts which have to be available in all versions (v2.1, v2.2, v2.3, ...)
   router.use('/static', serveStatic(Path.join(__dirname, '../../../../static')))
+  // serve robots.txt against SEO
+  router.use('/robots.txt', serveStatic(Path.join(__dirname, '../../../../static/robots.txt')))
   // wysihtml
   router.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/parser_rules')))
   router.use('/libs/wysihtml', serveStatic(Path.resolve(nodeModules('wysihtml'), 'wysihtml/dist/minified')))
