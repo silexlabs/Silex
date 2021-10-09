@@ -39,19 +39,21 @@ export function setHeadStyle(doc: HTMLDocument, cssString: string) {
 /**
  * get/set a meta data
  */
-export function setMeta(doc: HTMLDocument, name: string, opt_value?: string) {
+export function setMeta(doc: HTMLDocument, name: string, opt_value: string, opt_propertyOrName: string='property') {
   // update the DOM element
-  let metaNode = doc.querySelector('meta[name="' + name + '"]') as HTMLMetaElement
+  let metaNode = doc.querySelector(`meta[${opt_propertyOrName}="${name}"], meta[name="${name}"]`) as HTMLMetaElement // additional `meta[name="${name}]"` is for backward compat
   if (!metaNode && opt_value && opt_value !== '') {
     // create the DOM element
     metaNode = doc.createElement('meta')
-    metaNode.name = name
+    metaNode.setAttribute(opt_propertyOrName, name)
     metaNode.content = opt_value
     doc.head.appendChild(metaNode)
   } else {
     if (opt_value && opt_value !== '') {
       // update opt_value
       metaNode.setAttribute('content', opt_value)
+      metaNode.removeAttribute('name') // for backward compat
+      metaNode.setAttribute(opt_propertyOrName, name) // for backward compat
     } else {
       // remove the opt_value
       if (metaNode) { metaNode.parentElement.removeChild(metaNode) }
@@ -165,7 +167,8 @@ export function setFaviconPath(doc: HTMLDocument, opt_path?: string) {
  * get/set the title for social networks
  */
 export function setTitleSocial(doc: HTMLDocument, opt_data?: string) {
-  setMeta(doc, 'twitter:card', opt_data ? 'summary' : '')
+  setMeta(doc, 'twitter:card', opt_data ? 'summary_large_image' : '', 'name')
+  setMeta(doc, 'og:type', opt_data ? 'website' : '')
   setMeta(doc, 'twitter:title', opt_data)
   setMeta(doc, 'og:title', opt_data)
 }
