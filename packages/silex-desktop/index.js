@@ -23,7 +23,7 @@ const silex = new SilexServer(config);
 
 // serve modified html - serving it as index.html may not override Silex's index.html in electron
 const INDEX_HTML_PATH = '/custom.html'
-silex.app.use(INDEX_HTML_PATH, serveStatic(path.resolve('./dist/index.html')))
+silex.app.use(INDEX_HTML_PATH, serveStatic(path.resolve(__dirname, 'static/index.html')))
 
 // start Silex
 silex.start(function() {
