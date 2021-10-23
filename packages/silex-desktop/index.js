@@ -22,6 +22,7 @@ config.publisherOptions.skipHostingSelection = true;
 const silex = new SilexServer(config);
 
 // serve modified html - serving it as index.html may not override Silex's index.html in electron
+// Also note that /static is a special folder for electron, @see https://webpack.electron.build/project-structure
 const INDEX_HTML_PATH = '/custom.html'
 silex.app.use(INDEX_HTML_PATH, serveStatic(path.resolve(__dirname, 'static/index.html')))
 
