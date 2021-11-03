@@ -91,21 +91,38 @@ export function cloneElements(selection: ElementState[], elements = getElements(
 
 /**
  * clone elements
- * reset the ID of the element and its children
- * the elements need to be in the store already (and dom)
+ * simply returns the result of cloneElement_ after cleaning up temporary values
  * this method is exported only for unit tests, only cloneElements is supposed to be used
  */
 export function cloneElement(element: ElementState, parentId: ElementId = null, elements = getElements()): ElementData[] {
+  return cloneElement_(element, parentId, elements)
+    .map(el => {
+      // remote parentId temporary value (not in ElementData, used to filter by parent ID and get direct descendents)
+      const {parentId, ...newEl} = el as any
+      return newEl
+    })
+}
+
+/**
+ * clone elements
+ * reset the ID of the element and its children
+ * the elements need to be in the store already (and dom)
+ */
+function cloneElement_(element: ElementState, parentId: ElementId, elements: ElementState[]): ElementData[] {
   if(element) {
     const newId = getNewId()
     const children = flat(element.children
-      .map((id) => cloneElement(getElementById(id, elements), newId, elements)))
+      .map((id) => cloneElement_(getElementById(id, elements), newId, elements)))
+    // keep only the direct descendents
+    const descendents = children
+        .filter((el) => el.parentId === newId)
+
     return [{
       ...toElementData([element])[0],
       id: newId,
+      parentId,
       selected: parentId === null,
-      children: children
-        .filter((el, idx) => idx < element.children.length) // keep only the direct descendents
+      children: descendents
         .map((el) => el.id),
     }].concat(children)
 
@@ -140,9 +157,10 @@ export function pasteClipBoard() {
   })
 
   // copy again so that we can paste several times (elements will be duplicated again)
+  const clipboard = cloneElements(rootElements)
   updateUi({
     ...getUi(),
-    clipboard: cloneElements(rootElements),
+    clipboard,
   })
 }
 
@@ -155,12 +173,7 @@ export function pasteElements({parent, rootElements, allElements, pageNames = nu
   allElements: ElementData[],
   pageNames?: string[],
 }, elements = getElements(), dispatch = store.dispatch) {
-  // this.tracker.trackAction('controller-events', 'info', 'paste', 0)
-
   if (allElements.length > 0) {
-    // undo checkpoint
-    // this.undoCheckPoint()
-
     // reset selection
     const resetSelection = elements
       .filter((el) => el.selected)
