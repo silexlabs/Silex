@@ -7,7 +7,7 @@ import {
   ELEM_TEXT,
 } from '../test-utils/data-set'
 import { ElementState, ElementType } from './element-store/types'
-import { cloneElement, cloneElements, pasteElements } from './copy'
+import { cloneElement, cloneElements, pasteElements, ElementStateaWithParentId } from './copy'
 
 // in this file we do not use the store, so crudId is not needed, ElementData and ElementState can be used
 const ELEM_CONTAINER_STATE = ELEM_CONTAINER as ElementState
@@ -103,10 +103,10 @@ test('clone 1 root element', () => {
 
   const [all, root] = cloneElements([c3], elements)
 
-  const c3_ = all.find(el => el.innerHtml === 'c3')
-  const c1_ = all.find(el => el.innerHtml === 'c1')
-  const c2_ = all.find(el => el.innerHtml === 'c2')
-  const txt1_ = all.find(el => el.innerHtml === 'txt1')
+  const c3_ = all.find(el => el.innerHtml === 'c3') as ElementStateaWithParentId
+  const c1_ = all.find(el => el.innerHtml === 'c1') as ElementStateaWithParentId
+  const c2_ = all.find(el => el.innerHtml === 'c2') as ElementStateaWithParentId
+  const txt1_ = all.find(el => el.innerHtml === 'txt1') as ElementStateaWithParentId
 
   // check that all elements have been duplicated
   expect(all).toHaveLength(4)
@@ -124,10 +124,10 @@ test('clone 1 root element', () => {
   expect(c1_.children).toContain(txt1_.id)
 
   // make sure temporary value is not present anymore
-  expect(c1_['parentId']).toBeUndefined()
-  expect(c2_['parentId']).toBeUndefined()
-  expect(c3_['parentId']).toBeUndefined()
-  expect(txt1_['parentId']).toBeUndefined()
+  expect(c1_.parentId).toBeUndefined()
+  expect(c2_.parentId).toBeUndefined()
+  expect(c3_.parentId).toBeUndefined()
+  expect(txt1_.parentId).toBeUndefined()
 })
 
 test('pasteElements 1 root elements', () => {

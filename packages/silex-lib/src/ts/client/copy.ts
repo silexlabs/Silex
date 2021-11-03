@@ -89,6 +89,10 @@ export function cloneElements(selection: ElementState[], elements = getElements(
   return [all, all.filter((el) => el.selected)]
 }
 
+export interface ElementStateaWithParentId extends ElementState {
+  parentId: ElementId,
+}
+
 /**
  * clone elements
  * simply returns the result of cloneElement_ after cleaning up temporary values
@@ -97,9 +101,12 @@ export function cloneElements(selection: ElementState[], elements = getElements(
 export function cloneElement(element: ElementState, parentId: ElementId = null, elements = getElements()): ElementData[] {
   return cloneElement_(element, parentId, elements)
     .map(el => {
-      // remote parentId temporary value (not in ElementData, used to filter by parent ID and get direct descendents)
-      const {parentId, ...newEl} = el as any
-      return newEl
+      // remote parentId temporary value
+      // parentId is not in ElementData
+      // It is used to filter by parent ID and get direct descendents
+      const elWithId = el as ElementStateaWithParentId
+      delete elWithId.parentId
+      return elWithId
     })
 }
 
@@ -115,7 +122,7 @@ function cloneElement_(element: ElementState, parentId: ElementId, elements: Ele
       .map((id) => cloneElement_(getElementById(id, elements), newId, elements)))
     // keep only the direct descendents
     const descendents = children
-        .filter((el) => el.parentId === newId)
+        .filter((el) => (el as ElementStateaWithParentId).parentId === newId)
 
     return [{
       ...toElementData([element])[0],
