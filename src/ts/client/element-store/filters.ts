@@ -10,7 +10,7 @@ import { getDomElement } from './dom'
 export const getElementById = (id: ElementId, elements = getElements()): ElementState => {
   const element = elements.find((el) => el.id === id)
   if (element) return element
-  console.warn('Warning: element not found with id', id)
+  // Element not found, this happens when we generate a new ID and want to check that it does not exist
   return null
 }
 export const getElementByDomElement = (doc: HTMLDocument, element: HTMLElement, elements = getElements()) => elements.find((el) => element === getDomElement(doc, el))
