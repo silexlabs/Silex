@@ -1,10 +1,10 @@
 {
   "name": "silex-desktop",
-  "version": "2.7.24",
+  "version": "2.7.25",
   "description": "Silex website builder as a windows/mac/linux app",
   "main": "./index.js",
   "engines": {
-    "node": ">=12.22.1"
+    "node": ">=15.0.1"
   },
   "scripts": {
     "postinstall": "npm run build && electron-rebuild",
