@@ -4,7 +4,7 @@
   "description": "Silex website builder as a windows/mac/linux app",
   "main": "./index.js",
   "engines": {
-    "node": ">=12.22.1"
+    "node": ">=10.16.3 <=11.15.0"
   },
   "scripts": {
     "postinstall": "npm run build && electron-rebuild",
@@ -32,9 +32,9 @@
   },
   "homepage": "https://www.silex.me",
   "devDependencies": {
-    "electron": "16.0.4",
-    "electron-builder": "22.14.5",
-    "electron-rebuild": "3.2.5"
+    "electron": "10.1.5",
+    "electron-builder": "22.9.1",
+    "electron-rebuild": "2.3.2"
   },
   "dependencies": {
     "pug": "^3.0.2",
