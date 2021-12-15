@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.7.22",
+  "version": "2.7.23",
   "version:frontend": "2.12",
   "version:backwardcompat": "2.2.13",
   "author": {
