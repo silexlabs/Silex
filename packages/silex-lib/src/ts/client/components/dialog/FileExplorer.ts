@@ -9,7 +9,7 @@
 import { ModalDialog } from '../../components/ModalDialog'
 import { CloudExplorer } from '../../externs'
 import { CloudStorage, FileInfo } from '../../io/CloudStorage'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 import { getUiElements } from '../../ui-store/UiElements'
 
 /**
@@ -114,14 +114,14 @@ export class FileExplorer {
       form.innerHTML = attributionText + sizeText
       const copyBtn: HTMLButtonElement = form.querySelector('.copy-btn')
       copyBtn.onclick = () => this.copy(attribution.content)
-      SilexNotification.confirm('Insert image', '', (ok) => {
+      Notification.confirm('Insert image', '', (ok) => {
         if (ok) {
           resolve(urls.big)
         } else {
           resolve(urls.small)
         }
       }, 'Big size', 'Small size')
-      SilexNotification.setContent(form, false)
+      Notification.setContent(form, false)
     })
   }
 
@@ -135,13 +135,13 @@ export class FileExplorer {
       window.getSelection().addRange(range)
       const success = document.execCommand('copy')
       if (success) {
-        SilexNotification.notifySuccess('Attribution copied to clipboard')
+        Notification.notifySuccess('Attribution copied to clipboard')
       } else {
-        SilexNotification.notifyError('Attribution has not been copied to clipboard')
+        Notification.notifyError('Attribution has not been copied to clipboard')
         console.error('Could not copy to clipboard', text)
       }
     } catch (err) {
-      SilexNotification.notifyError('Attribution has not been copied to clipboard')
+      Notification.notifyError('Attribution has not been copied to clipboard')
       console.error('Could not copy to clipboard', err, text)
     }
     document.body.removeChild(copyText)

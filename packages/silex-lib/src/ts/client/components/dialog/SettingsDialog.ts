@@ -7,7 +7,7 @@
 
 import { getSite, subscribeSite, updateSite } from '../../site-store/index'
 import { CloudStorage, FileInfo } from '../../io/CloudStorage'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 import { Url } from '../../utils/Url'
 import { ModalDialog } from '../ModalDialog'
 import { FileExplorer } from './FileExplorer'
@@ -171,7 +171,7 @@ class SettingsDialog {
         }
       })
       .catch((error) => {
-        SilexNotification.notifyError(
+        Notification.notifyError(
             'Error: I could not select the favicon. <br /><br />' +
             (error.message || ''))
       })
@@ -190,7 +190,7 @@ class SettingsDialog {
         }
       })
       .catch((error) => {
-          SilexNotification.notifyError(
+          Notification.notifyError(
               'Error: I could not select the publication path. <br /><br />' +
               (error.message || ''))
       })
@@ -436,7 +436,7 @@ class SettingsDialog {
           const dataSources = { ...getSite().dataSources }
           if (dataSources[name]) {
             console.warn('This data source already exists in this website')
-            SilexNotification.alert('Error', 'This data source already exists in this website', () => {})
+            Notification.alert('Error', 'This data source already exists in this website', () => {})
           } else {
             dataSources[name] = dataSource
             updateSite({
@@ -448,15 +448,15 @@ class SettingsDialog {
   }
 
   editDataSource(oldName: string, dataSource: DataSource, cbk: (name: string, dataSource: DataSource) => void) {
-    SilexNotification.prompt('Edit Data Source',
+    Notification.prompt('Edit Data Source',
       'What is the URL of your data source?',
       dataSource.href, 'https://jsonplaceholder.typicode.com/photos', (ok, href) => {
         if (ok) {
-          SilexNotification.prompt('Edit Data Source',
+          Notification.prompt('Edit Data Source',
             'What is the name of your data source?',
             oldName, 'My photos', (_ok, name) => {
               if (_ok) {
-                SilexNotification.prompt('Edit Data Source',
+                Notification.prompt('Edit Data Source',
                   'What is the root of your data source?',
                   dataSource.root, '', (__ok, root) => {
                     if (__ok) {
@@ -524,11 +524,11 @@ class SettingsDialog {
   }
 
   editFont(font, cbk) {
-    SilexNotification.prompt('Edit font',
+    Notification.prompt('Edit font',
       'What is the CSS stylesheet for your font, e.g. https://fonts.googleapis.com/css?family=Roboto',
       font.href, 'https://fonts.googleapis.com/css?family=Roboto', (ok, href) => {
         if (ok) {
-          SilexNotification.prompt('Edit font',
+          Notification.prompt('Edit font',
             'What is the name of your font, e.g. \'Roboto\', sans-serif',
             font.family, '\'Roboto\', sans-serif', (_ok, family) => {
               if (_ok) {

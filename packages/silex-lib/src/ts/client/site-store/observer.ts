@@ -1,5 +1,5 @@
 import { DataSources, SiteState } from '../site-store/types'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { getSiteDocument } from '../components/SiteFrame'
 import { getState } from '../store/index'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site-store/dom'
@@ -107,7 +107,7 @@ async function loadDataSources(dataSources: DataSources, reload): Promise<DataSo
     }))).reduce((prev, cur) => prev[cur.name] = cur.dataSource, {})
   } catch (err) {
     console.error('could not load data sources', err)
-    SilexNotification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err })
+    Notification.alert('Error', `There was an error loading the data sources: ${err}`, () => { throw err })
   }
 }
 function getDataSourceType(value) {

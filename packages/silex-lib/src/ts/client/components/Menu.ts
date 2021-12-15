@@ -13,7 +13,7 @@ import {
   getDropStyle
 } from '../element-store/utils'
 import { Keyboard, Shortcut } from '../utils/Keyboard'
-import { SilexNotification } from './Notification'
+import { Notification } from './Notification'
 import { isDialogVisible, getVisibleDialogs } from '../ui-store/utils'
 import { openDialog } from '../ui-store/dispatchers'
 import {
@@ -245,7 +245,7 @@ export async function browseAndAddImage(componentName: string) {
       setImageUrl(imgData, fileInfo.absPath)
     }
   } catch(error) {
-    SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+    Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
   }
 }
 

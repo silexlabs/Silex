@@ -15,7 +15,7 @@ import {
 } from './types'
 import { FileExplorer } from '../components/dialog/FileExplorer'
 import { FileInfo } from '../io/CloudStorage'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { addMediaQuery, getDomElement } from './dom'
 import { getAllParents, getBody, getElementById } from './filters'
 import { getElements, fromElementData } from './index'
@@ -443,7 +443,7 @@ export function browse(e: Event, cbk: (p1: FileInfo[]) => any) {
     }
   })
   .catch((error) => {
-    SilexNotification.notifyError('Error: I could not select the file. <br /><br />' + (error.message || ''))
+    Notification.notifyError('Error: I could not select the file. <br /><br />' + (error.message || ''))
   })
 }
 

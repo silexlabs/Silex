@@ -8,7 +8,7 @@
 import { ElementState, ElementType, Link } from '../../element-store/types'
 import { PageState } from '../../page-store/types'
 import { PaneBase } from './PaneBase'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 import { addToPage, removeFromPage } from '../../element-store/dispatchers'
 import {
   getBody,
@@ -318,7 +318,7 @@ export class PagePane extends PaneBase {
   }
 
   /**
-   * open the link editor, which uses SilexNotification
+   * open the link editor, which uses Notification
    */
   openLinkEditor(oldLink: Link, onChange: (link: Link) => void) {
     // check if the selection has links inside it
@@ -330,7 +330,7 @@ export class PagePane extends PaneBase {
         .some((children) => children
           .some((child) => this.hasLink(child)))) {
       // Warning: this same error message is also in TextFormatBar.ts
-      SilexNotification.alert('Link error', 'It is impossible to add a link on this element, because the text inside the element has links. Please remove the links in the element and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
+      Notification.alert('Link error', 'It is impossible to add a link on this element, because the text inside the element has links. Please remove the links in the element and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
     } else {
       openLinkDialog({
         data: oldLink,

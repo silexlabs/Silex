@@ -5,7 +5,7 @@
  */
 import { ElementState, ElementType } from '../element-store/types'
 import { FileExplorer } from './dialog/FileExplorer'
-import { SilexNotification } from './Notification'
+import { Notification } from './Notification'
 import { copySelection, pasteClipBoard, duplicateSelection, hasElementsToPaste } from '../copy'
 import { getCurrentPage } from '../page-store/filters'
 import { getElements, subscribeElements } from '../element-store/index'
@@ -67,7 +67,7 @@ export function editElement() {
           }
         })
         .catch((error) => {
-          SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+          Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
         })
         break
       }

@@ -11,7 +11,7 @@ import {
   VHost
 } from '../../site-store/types'
 import { LOADING } from '../../ui-store/types'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 import { SilexTasks } from '../../io/SilexTasks'
 import { getSite, updateSite } from '../../site-store/index'
 import { updateUi, getUi } from '../../ui-store/index'
@@ -33,7 +33,7 @@ function setLoading(loading: boolean) {
  */
 export function closePublishDialog() {
   setLoading(false)
-  SilexNotification.close()
+  Notification.close()
 }
 
 /**
@@ -50,7 +50,7 @@ export async function openPublishDialog(): Promise<PublicationOptions> {
       if (providerName && publicationPath) {
         const provider: Provider = hosting.providers.find((p) => p.name === providerName)
         const providerDisplayName = provider ? provider.displayName || provider.name : publicationPath.service
-        SilexNotification.confirm('Publication', `
+        Notification.confirm('Publication', `
           I am about to publish your website to <strong>${providerDisplayName}</strong>, in the folder ${publicationPath.path || '/'}.
         `, (ok) => {
           if (ok) {
@@ -62,10 +62,10 @@ export async function openPublishDialog(): Promise<PublicationOptions> {
         const editBtn = document.createElement('button')
         editBtn.innerHTML = 'Edit'
         editBtn.onclick = () => {
-          SilexNotification.close()
+          Notification.close()
           resolve(doOpen(false, hosting, providerName))
         }
-        SilexNotification.addButton(editBtn)
+        Notification.addButton(editBtn)
       } else {
         // no publish settings
         resolve(doOpen(false, hosting, providerName))
@@ -103,7 +103,7 @@ function doOpen(usePredifinedSettings: boolean, hosting: Hosting, providerName: 
 function selectProvider(providers: Provider[], providerName: string): Promise<PublicationOptions> {
 
   return new Promise<PublicationOptions>((resolve, reject) => {
-    SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
+    Notification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
       if (ok) {
         const idx = selectEl.selectedIndex
         const provider = providers[idx]
@@ -124,7 +124,7 @@ function selectProvider(providers: Provider[], providerName: string): Promise<Pu
       </select>
       <br />
     `)
-    SilexNotification.setContent(body)
+    Notification.setContent(body)
     const selectEl = body.querySelector('.providers') as HTMLSelectElement
     if (providerName) {
       selectEl.value = providerName
@@ -163,7 +163,7 @@ function onSelectProvider(provider: Provider): Promise<PublicationOptions> {
       setLoading(true)
       service.authorize(provider, (loginUrl) => {
         setLoading(false)
-        SilexNotification.confirm('Publication', `
+        Notification.confirm('Publication', `
           Please&nbsp;<a href="${loginUrl}" target="_blank">click here and login to ${provider.displayName}.</a>, then click "next".
         `, () => {
           resolve(selectVhost(provider))
@@ -181,7 +181,7 @@ function selectVhost(provider: Provider): Promise<PublicationOptions> {
       service.vhosts(provider, (vhosts: VHost[]) => {
         setLoading(false)
         if (vhosts.length === 0) {
-          SilexNotification.alert('Publication', `Please click here to
+          Notification.alert('Publication', `Please click here to
             <a href="${provider.dashboardUrl}" target="_blank">
               ${provider.pleaseCreateAVhost}
             </a>
@@ -193,7 +193,7 @@ function selectVhost(provider: Provider): Promise<PublicationOptions> {
           if (provider.skipVhostSelection === true) {
             resolve(selectDomain(provider, vhosts[0]))
           } else {
-            SilexNotification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
+            Notification.prompt('Publication', 'unused', 'unused', 'unused', (ok) => {
               if (ok) {
                 const idx = selectEl.selectedIndex
                 const vhost = vhosts[idx]
@@ -210,7 +210,7 @@ function selectVhost(provider: Provider): Promise<PublicationOptions> {
               </select>
               <br />
             `)
-            SilexNotification.setContent(body)
+            Notification.setContent(body)
             const selectEl = body.querySelector('.vhosts') as HTMLSelectElement
             const publicationPath = getSite().publicationPath
             if (publicationPath) {
@@ -255,7 +255,7 @@ function selectDomain(provider: Provider, vhost: VHost): Promise<PublicationOpti
         setLoading(false)
         const initialDomain = domain || ''
 
-        SilexNotification.prompt('Publication', `
+        Notification.prompt('Publication', `
           <h3>Optional: provide your domain name<h3>
           <p>Choose the domain you want associated with this website. Leave blank and you will be provided with a generic domain.</p>
         ` + (provider.buyDomainUrl ? `
@@ -271,7 +271,7 @@ function selectDomain(provider: Provider, vhost: VHost): Promise<PublicationOpti
               })
             }
             setLoading(false)
-            SilexNotification.notifySuccess('Domain updated')
+            Notification.notifySuccess('Domain updated')
             resolve({
               file: getSite().file,
               publicationPath: vhost.publicationPath,
@@ -312,7 +312,7 @@ export function startPublish(options: PublicationOptions): Promise<string> {
     const publicationPath = options.publicationPath
     const provider = options.provider
     let timer = -1
-    SilexNotification.alert('Publication', '<strong>I am about to publish your site. This may take several minutes.</strong>',
+    Notification.alert('Publication', '<strong>I am about to publish your site. This may take several minutes.</strong>',
       () => {
         if (timer > 0) {
           clearInterval(timer)
@@ -327,7 +327,7 @@ export function startPublish(options: PublicationOptions): Promise<string> {
       //   // tip of the day
       //   const tipOfTheDayElement = (document.createElement('div') as HTMLElement);
       //   new TipOfTheDay(tipOfTheDayElement);
-      //   SilexNotification.setInfoPanel(tipOfTheDayElement);
+      //   Notification.setInfoPanel(tipOfTheDayElement);
       // }, 2000);
       timer = window.setInterval(() => {
         service.publishState(
@@ -342,7 +342,7 @@ export function startPublish(options: PublicationOptions): Promise<string> {
               `
               resolve(msg)
             } else {
-              SilexNotification.setText(msg)
+              Notification.setText(msg)
             }
           },
           (msg) => {

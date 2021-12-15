@@ -2,7 +2,7 @@ const confirm = jest.fn().mockImplementation((title, text, cbk, ok, cancel) => {
   cbk(true)
 })
 jest.mock('./Notification', () => ({
-  SilexNotification: {
+  Notification: {
     confirm,
   },
 }))
