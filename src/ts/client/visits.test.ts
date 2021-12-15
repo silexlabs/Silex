@@ -1,4 +1,4 @@
-import { count, once } from './visits';
+import { count, once } from './visits'
 
 test('Count visits', () => {
   expect(count()).toBe(1)
