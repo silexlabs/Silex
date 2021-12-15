@@ -7,7 +7,7 @@ import { ColorPicker } from '../ColorPicker'
 import { ElementState } from '../../element-store/types'
 import { FileExplorer } from '../dialog/FileExplorer'
 import { PaneBase } from './PaneBase'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 import { Url } from '../../utils/Url'
 import { addToMobileOrDesktopStyle } from '../../utils/styles'
 import { getBody, getSelectedElements } from '../../element-store/filters'
@@ -229,7 +229,7 @@ export class BgPane extends PaneBase {
         }])
       }
     } catch (error) {
-      SilexNotification.notifyError(`Error: I could not load the image. \n${error.message || ''}`)
+      Notification.notifyError(`Error: I could not load the image. \n${error.message || ''}`)
     }
   }
 

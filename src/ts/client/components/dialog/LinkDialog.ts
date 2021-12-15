@@ -4,7 +4,7 @@
  */
 import { Constants } from '../../../constants'
 import { Link, LinkType } from '../../element-store/types'
-import {SilexNotification} from '../Notification'
+import {Notification} from '../Notification'
 import { getPages } from '../../page-store/index'
 
 export const LINK_ATTRIBUTES =
@@ -51,7 +51,7 @@ class LinkDialog {
     // default values for new link
     const linkData = Object.assign({}, DEFAULT_LINK_DATA, linkDataArg || {})
 
-    SilexNotification.prompt(`
+    Notification.prompt(`
       Link editor <a class="link-editor-help-button fa fa-question-circle" target="_blank" href="https://github.com/silexlabs/Silex/wiki/Editor-UI#link-editor"> Help</a>
     `, 'unused', 'unused', 'unused', (accept, unused) => {
       if (accept) {
@@ -100,10 +100,10 @@ class LinkDialog {
       <button class="alertify-button alertify-button-cancel alertify-button-remove">remove link</button>
     `;
     (fragmentButtons.querySelector('.alertify-button-remove') as HTMLElement).onclick = (e) => {
-      SilexNotification.close()
+      Notification.close()
       cbk(null)
     }
-    SilexNotification.addButton(fragmentButtons)
+    Notification.addButton(fragmentButtons)
 
     // add info about the link
     const dialogBody = document.createElement('div')
@@ -121,7 +121,7 @@ class LinkDialog {
       el.classList.add('checked')
       }
     })
-    SilexNotification.setContent(dialogBody)
+    Notification.setContent(dialogBody)
   }
 
   getDialogHtml({linkType, linkData}: {linkType: LinkType, linkData: any}) {

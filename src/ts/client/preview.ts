@@ -2,7 +2,7 @@
  * @fileoverview these functions show preview
  */
 
-import { SilexNotification } from './components/Notification'
+import { Notification } from './components/Notification'
 import { getCurrentPage } from './page-store/filters'
 import { getSite } from './site-store/index'
 import { isDirty } from './dirty'
@@ -96,7 +96,7 @@ function doPreview(inResponsize: boolean) {
       doSaveTheFile()
     }
   } else {
-    SilexNotification.alert(
+    Notification.alert(
       'Preview website',
       'You need to save the website before I can show a preview',
       () => {
