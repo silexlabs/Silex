@@ -10,14 +10,14 @@ import { detect } from 'detect-browser'
 import { config } from './ClientConfig'
 import { LOADING } from './ui-store/types'
 import { Notification } from './components/Notification'
-import { rating } from './components/rating';
+import { rating } from './components/rating'
 import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
 import { getUi, updateUi } from './ui-store/index'
 import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
 import { openDashboardToLoadAWebsite } from './file'
 import { resetDirty } from './dirty'
-import { once } from './visits';
+import { once } from './visits'
 
 let initDone = false
 
