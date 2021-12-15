@@ -5,7 +5,7 @@ import { Stage } from 'drag-drop-stage-component/src/ts/index'
 
 import { Constants } from '../../constants'
 import { ElementState, ElementId, ElementType } from '../element-store/types'
-import { SilexNotification } from './Notification'
+import { Notification } from './Notification'
 import { SiteState } from '../site-store/types'
 import { UiState } from '../ui-store/types'
 import { editElement } from './ContextMenu'
@@ -338,7 +338,7 @@ class StageWrapper {
           || dropZone.tagName.toLowerCase() === 'body'
       }),
       onEdit: () => {
-        if (!SilexNotification.isActive) {
+        if (!Notification.isActive) {
           editElement()
         }
       },

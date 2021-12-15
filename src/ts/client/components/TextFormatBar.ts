@@ -5,7 +5,7 @@ import {
   getLinkType,
   openLinkDialog
 } from './dialog/LinkDialog'
-import { SilexNotification } from './Notification'
+import { Notification } from './Notification'
 import {
   getContentNode,
   getDomElement,
@@ -287,7 +287,7 @@ export class TextFormatBar {
                   })
                 })
                 .catch((error) => {
-                  SilexNotification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
+                  Notification.notifyError('Error: I did not manage to load the image. \n' + (error.message || ''))
                   this.startEditing(fileExplorer, bookmarkNew)
                 })
           }
@@ -328,7 +328,7 @@ export class TextFormatBar {
 
   onPaste(content: string) {
     if (content.match(/[^\x00-\xFF]/)) {
-      SilexNotification.confirm('Paste warning', 'Warning: you have pasted text. There are strange characters in the text you pasted. These are unicode chars, which may behave differently depending on the site visitor browser. I can clear these chars for you or leave them as is.', (ok) => {
+      Notification.confirm('Paste warning', 'Warning: you have pasted text. There are strange characters in the text you pasted. These are unicode chars, which may behave differently depending on the site visitor browser. I can clear these chars for you or leave them as is.', (ok) => {
         if (ok) {
           const currentTextBoxEl = getDomElement(getSiteDocument(), this.currentTextBox)
           const editable = getContentNode(currentTextBoxEl)
@@ -343,7 +343,7 @@ export class TextFormatBar {
     // leave time for the onclick events to fire
     // note: events in the toolbar always come after blur + huge dekay
     setTimeout(() => {
-      if (!SilexNotification.isActive
+      if (!Notification.isActive
         && document.activeElement !== currentTextBoxEl
         && !document.activeElement.classList.contains('keep-text-format-bar-open')) {
         this.stopEditing()
@@ -363,12 +363,12 @@ export class TextFormatBar {
   }
 
   /**
-   * open the link editor, which uses SilexNotification
+   * open the link editor, which uses Notification
    */
   openLinkEditor(e: Event) {
     if (!!this.currentTextBox.link) {
       // Warning: this same error message is also in PagePane.ts
-      SilexNotification.alert('Link error', 'It is impossible to add a link in this text, because the text box has a link in the properties. Please remove the link in the element property pannel and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
+      Notification.alert('Link error', 'It is impossible to add a link in this text, because the text box has a link in the properties. Please remove the link in the element property pannel and try again. <a target="_blank" href="https://github.com/silexlabs/Silex/wiki/Errors#link-error">More info here</a>', () => {})
     } else {
       const oldLink = this.getLink()
       openLinkDialog({

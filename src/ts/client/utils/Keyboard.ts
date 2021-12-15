@@ -1,4 +1,4 @@
-import {SilexNotification} from '../components/Notification'
+import {Notification} from '../components/Notification'
 
 export interface Shortcut {
   label?: string
@@ -74,9 +74,9 @@ export class Keyboard {
 
   handleKeyDown(e) {
     if (!e.defaultPrevented) {
-      if (SilexNotification.isActive) {
-        if (e.key === 'Enter') SilexNotification.close(true, e)
-        if (e.key === 'Escape') SilexNotification.close(false, e)
+      if (Notification.isActive) {
+        if (e.key === 'Enter') Notification.close(true, e)
+        if (e.key === 'Escape') Notification.close(false, e)
       } else {
         const shortcuts = this.getShortcutsFromEvent(e)
         if (shortcuts.length > 0) {
