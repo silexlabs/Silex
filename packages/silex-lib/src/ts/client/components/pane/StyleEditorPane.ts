@@ -7,7 +7,7 @@
 import { Constants } from '../../../constants'
 import { ElementState, ElementType } from '../../element-store/types'
 import { PaneBase } from './PaneBase'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 import {
   StyleData,
   StyleDataObject,
@@ -160,7 +160,7 @@ export class StyleEditorPane extends PaneBase {
 
   renameStyle(oldClassName: string) {
     if (oldClassName === Constants.BODY_STYLE_CSS_CLASS) {
-      SilexNotification.alert(
+      Notification.alert(
         'Rename a style',
         `The style '${Constants.BODY_STYLE_NAME}' is a special style, you can not rename it.`,
         () => {})
@@ -215,14 +215,14 @@ export class StyleEditorPane extends PaneBase {
     const noBody = getSelectedElements(elements)
       .filter((el) => el !== body) // remove body
     if (newStyle === Constants.BODY_STYLE_CSS_CLASS) {
-      SilexNotification.alert('Apply a style', `
+      Notification.alert('Apply a style', `
         The style '${Constants.BODY_STYLE_NAME}' is a special style, it is already applyed to all elements.
       `,
       () => {})
     } else if (noBody.length) {
       this.doApplyStyle(noBody, newStyle, styles, dispatch)
     } else {
-      SilexNotification.alert('Apply a style', 'Error: you need to select at least 1 element for this action.', () => {})
+      Notification.alert('Apply a style', 'Error: you need to select at least 1 element for this action.', () => {})
     }
   }
 
@@ -386,9 +386,9 @@ export class StyleEditorPane extends PaneBase {
     const body = getBody()
     const noBody = getElements().filter((el) => el !== body)
     if (noBody.length <= 0) {
-      SilexNotification.alert('Create a style', 'Error: you need to select at least 1 element for this action.', () => {})
+      Notification.alert('Create a style', 'Error: you need to select at least 1 element for this action.', () => {})
     } else {
-      SilexNotification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data.displayName : '', 'Your Style', (accept, name) => {
+      Notification.prompt('Create a style', 'Enter a name for your style!', opt_data ? opt_data.displayName : '', 'Your Style', (accept, name) => {
         if (accept && name && name !== '') {
           this.doCreateStyle({name, opt_data})
           if (opt_cbk) {
@@ -433,11 +433,11 @@ export class StyleEditorPane extends PaneBase {
       this.doDeleteStyle(name)
     } else {
       if (name === Constants.BODY_STYLE_CSS_CLASS) {
-        SilexNotification.alert('Delete a style', `
+        Notification.alert('Delete a style', `
           The style '${Constants.BODY_STYLE_NAME}' is a special style, you can not delete it.
         `, () => {})
       } else {
-        SilexNotification.confirm('Delete a style', `
+        Notification.confirm('Delete a style', `
           I am about to delete the style <b>${name}</b>!<br><br>Are you sure?
         `, (accept) => {
           if (accept) {

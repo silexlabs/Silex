@@ -1,7 +1,7 @@
 import { Constants } from '../../constants'
 import { ElementState, ElementType, LinkType } from '../element-store/types'
 import { PageState } from './types'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { StateChange } from '../store/crud-store'
 import { deleteElements, getElements, updateElements } from '../element-store/index'
 import { getElementByDomElement } from '../element-store/filters'
@@ -34,7 +34,7 @@ export function onDeletePages(pages: PageState[], preventConfirm = false, elemen
     // handle elements which should be deleted
     if (elementsOnlyOnThisPage.length > 0) {
       if (!preventConfirm) {
-        SilexNotification.confirm('Delete elements' , `
+        Notification.confirm('Delete elements' , `
           ${elementsOnlyOnThisPage.length} elements were only visible on this page (${page.id}).
           <br /><ul>
             <li>Do you want me to <strong>delete these elements?</strong><br /></li>

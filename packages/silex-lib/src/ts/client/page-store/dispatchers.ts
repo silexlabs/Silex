@@ -1,7 +1,7 @@
 import { Constants } from '../../constants'
 import { LinkType } from '../element-store/types'
 import { PageState } from './types'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { createPages, getPages, updatePages, deletePages, movePage, fromPageData } from './index'
 import { getCurrentPage } from './filters'
 import { openPage } from '../ui-store/dispatchers'
@@ -18,7 +18,7 @@ export function createPage(): Promise<void> {
       if (!!existing) {
         // open the new page
         openPage(existing)
-        SilexNotification.notifyError(`Page not created: page already exists`)
+        Notification.notifyError(`Page not created: page already exists`)
       } else {
         // create the page model
         createPages(fromPageData([{
@@ -61,7 +61,7 @@ export function editPage(pageData: PageState = getCurrentPage()) {
           },
         ])
       } else {
-        SilexNotification.alert('Error', 'I can not rename this page because <strong>it is a protected page</strong>.', () => {})
+        Notification.alert('Error', 'I can not rename this page because <strong>it is a protected page</strong>.', () => {})
       }
     })
     .catch((reason) => {
@@ -74,7 +74,7 @@ export function editPage(pageData: PageState = getCurrentPage()) {
  */
 export function removePage(page: PageState = getCurrentPage()) {
   // confirm and delete
-  SilexNotification.confirm(
+  Notification.confirm(
     'Delete page',
     `I am about to <strong>delete the page "${page.displayName}"</strong>, are you sure?`,
       (accept) => {
@@ -88,12 +88,12 @@ export function removePage(page: PageState = getCurrentPage()) {
 function doRemovePage(pageData: PageState) {
   const pages = getPages()
   if (pages.length < 2) {
-    SilexNotification.alert('Error', 'I can not delete this page because <strong>it is the only page</strong>.', () => {})
+    Notification.alert('Error', 'I can not delete this page because <strong>it is the only page</strong>.', () => {})
   } else {
     if (pageData.canDelete) {
       deletePages([pageData])
     } else {
-      SilexNotification.alert('Error', 'I can not delete this page because <strong>it is a protected page</strong>.', () => {})
+      Notification.alert('Error', 'I can not delete this page because <strong>it is a protected page</strong>.', () => {})
     }
   }
 }
@@ -127,7 +127,7 @@ export function editPageSettings(pageData: PageState = null): Promise<{id: strin
         />
     `
     const nameInput = form.querySelector('#page-property-name') as HTMLInputElement
-    SilexNotification.confirm(
+    Notification.confirm(
       pageData ? 'Page Properties' : 'New page',
       '',
       (accept) => {
@@ -142,6 +142,6 @@ export function editPageSettings(pageData: PageState = null): Promise<{id: strin
         }
       },
     )
-    SilexNotification.setContent(form)
+    Notification.setContent(form)
   })
 }

@@ -16,7 +16,7 @@ import {
 import { Constants } from '../../constants'
 import { CssRule } from '../site-store/types'
 import { PageState } from '../page-store/types'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { addToMobileOrDesktopStyle } from '../utils/styles'
 import {
   createElements,
@@ -288,13 +288,13 @@ export function removeElements(elements = getSelectedElements()) {
   const body = getBody()
   const toDelete: ElementState[] = elements.filter((el: ElementState) => el !== body)
   if (toDelete.length <= 0) {
-    SilexNotification.alert('Delete elements',
+    Notification.alert('Delete elements',
       'Error: Please select an element to delete.',
       () => {},
     )
   } else {
     // confirm and delete
-    SilexNotification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
+    Notification.confirm('Delete elements', `I am about to <strong>delete ${toDelete.length} element(s)</strong>, are you sure?`,
       (accept) => {
         if (accept) {
           removeElementsWithoutConfirm(toDelete)

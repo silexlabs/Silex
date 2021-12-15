@@ -4,7 +4,7 @@ import { FileExplorer } from './components/dialog/FileExplorer'
 import { LOADING } from './ui-store/types'
 import { PersistantData } from './store/types'
 import { Provider, PublicationOptions } from './site-store/types'
-import { SilexNotification } from './components/Notification'
+import { Notification } from './components/Notification'
 import { SilexTasks } from './io/SilexTasks'
 import { addToLatestFiles } from './io/latest-files'
 import { closePublishDialog, openPublishDialog, startPublish } from './components/dialog/PublishDialog'
@@ -91,7 +91,7 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
   saveAs(file, rawHtml, getState(), () => {
     // tracker.trackAction('controller-events', 'success', 'file.save', 1);
     // ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
-    SilexNotification.notifySuccess('File is saved.')
+    Notification.notifySuccess('File is saved.')
     setPreviewWindowLocation()
 
     // reset dirty flag
@@ -102,7 +102,7 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
     }
   },
   (error, msg) => {
-    SilexNotification.alert('Save website', 'Error: I did not manage to save the file. \n' + (msg || error.message || ''),
+    Notification.alert('Save website', 'Error: I did not manage to save the file. \n' + (msg || error.message || ''),
     () => {
       if (errorCbk) {
         errorCbk(error)
@@ -148,17 +148,17 @@ export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
         // handle the error
         if (code === 403) {
           // user not logged in
-          SilexNotification.confirm(
+          Notification.confirm(
             'Open recent file', `Could not open this recent file, you probably need to connect to ${fileInfo.service} again.`,
             (ok) => {
-              SilexNotification.alert('Open recent file', `
+              Notification.alert('Open recent file', `
               I am trying to connect you to ${fileInfo.service} again,
               please accept the connection in the popup I have just opened then <strong>please wait</strong>.
               `, () => {})
               const ce = CloudStorage.getInstance().ce
               // tslint:disable:no-string-literal
               ce['auth'](fileInfo.service).then((res) => {
-                SilexNotification.close()
+                Notification.close()
                 if (ok) {
                   openRecent(fileInfo, cbk)
                 }
@@ -166,7 +166,7 @@ export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
             },
           )
         } else {
-          SilexNotification.confirm('Open recent file', `Could not open this recent file. ${ message }`, (ok) => {})
+          Notification.confirm('Open recent file', `Could not open this recent file. ${ message }`, (ok) => {})
         }
       })
 }
@@ -232,7 +232,7 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
               fileInfo,
               (rawHtml, data: PersistantData) => {
                 // display and redraw
-                SilexNotification.notifySuccess((getSite().title || 'Untitled website') + ' opened.')
+                Notification.notifySuccess((getSite().title || 'Untitled website') + ' opened.')
 
                 // track success
                 // tracker.trackAction('controller-events', 'success', 'file.open', 1);
@@ -242,7 +242,7 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
               },
               // with loader
               (error: any, message) => {
-                SilexNotification.alert('Open file', 'Error: I did not manage to open this file. \n' + (message || error.message || ''),
+                Notification.alert('Open file', 'Error: I did not manage to open this file. \n' + (message || error.message || ''),
                 () => {
                   if (errorCbk) {
                     errorCbk(error)
@@ -270,7 +270,7 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
 
 function onOpenError(err: any, msg: string, errorCbk?: ((p1: any) => any), loadBlankOnError: boolean = true) {
   console.error('opening template error', err)
-  SilexNotification.alert('Open file', 'An error occured. ' + msg, () => {})
+  Notification.alert('Open file', 'An error occured. ' + msg, () => {})
   if (errorCbk) {
     errorCbk(err)
   }
@@ -283,7 +283,7 @@ function onOpenError(err: any, msg: string, errorCbk?: ((p1: any) => any), loadB
 function publishError(message) {
   // tracker.trackAction('controller-events', 'error', 'file.publish', -1);
   console.error('Error: I did not manage to publish the file.', message)
-  SilexNotification.alert('Publication',
+  Notification.alert('Publication',
       `<strong>An error occured.</strong><p>I did not manage to publish the website. ${
           message}</p><p><a href="${ config.ISSUES_SILEX }" target="_blank">Get help in Silex forums.</a></p>`,
       () => {})
@@ -298,7 +298,7 @@ function publishError(message) {
  * handle tracking and call the Dom helper
  */
 export function publish() {
-  if (SilexNotification.isActive) {
+  if (Notification.isActive) {
     console.warn(
         'Publish canceled because a modal dialog is opened already.')
     return
@@ -314,14 +314,14 @@ export function publish() {
             } else {
               if (warningMsg) {
                 closePublishDialog()
-                SilexNotification.alert('Publication', warningMsg, () => {})
+                Notification.alert('Publication', warningMsg, () => {})
                 // tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
               } else {
                 startPublish((finalPublicationOptions as PublicationOptions))
                 .then((msg: string) => {
                   // tracker.trackAction('controller-events', 'success', 'file.publish', 1);
                   closePublishDialog()
-                  SilexNotification.alert('Publication', msg, () => {})
+                  Notification.alert('Publication', msg, () => {})
                 })
                 .catch((msg) => {
                   closePublishDialog()
@@ -379,7 +379,7 @@ function doPublish(
             const storedProvider: Provider =
                 hosting.providers.find((p) => p.name === providerName)
             if (!storedProvider) {
-              SilexNotification.alert('Publication', `
+              Notification.alert('Publication', `
                 <p>Unknown provider ${providerName}.</p>
                 <p>Is it configured on this servier? Here are the hosting providers I know:
                 ${hosting.providers.map((p) => p.name).join(', ')}</p>
@@ -455,7 +455,7 @@ function loadBlankTemplate(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
 function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantData) => any,
     errCbk?: ((p1: any, msg: string, code?: number) => any)) {
   if (isDirty()) {
-    SilexNotification.confirm('Open a file', `You have unsaved modifications, are you sure you want to open the file "${ file.name }" ?`, (ok) => {
+    Notification.confirm('Open a file', `You have unsaved modifications, are you sure you want to open the file "${ file.name }" ?`, (ok) => {
       if(ok) doLoadFromUserFiles(file, cbk, errCbk)
     }, 'Continue', 'Abort')
   } else {

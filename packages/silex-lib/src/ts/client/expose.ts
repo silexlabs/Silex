@@ -28,5 +28,7 @@ export * from './ui-store/observer'
 export * from './ui-store/utils'
 export * from './io/SilexTasks'
 export * from './io/CloudStorage'
+export * from './components/Notification'
+export * from './visits'
 // export * from './utils'
 

@@ -1,5 +1,5 @@
 import { Constants } from '../../constants'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { UiState, LOADING } from './types'
 import { getBody, getSelectedElements } from '../element-store/filters'
 import { getCurrentPage } from '../page-store/filters'
@@ -12,7 +12,7 @@ export function onChangeUi(prev: UiState, ui: UiState) {
   if (ui.mobileEditor) {
     document.body.classList.add(Constants.MOBILE_MODE_CSS_CLASS)
     if (!getSite().enableMobile) {
-      SilexNotification.alert('Mobile editor warning', `
+      Notification.alert('Mobile editor warning', `
         Warning: you are entering the mobile editor, but your website is not configured to support it,
         so you need to open the menu "File", then "Settings" and "Enable mobile version".
       `, () => {})

@@ -23,7 +23,7 @@ declare namespace monaco.editor {
 
 import { ModalDialog } from '../ModalDialog'
 import { getUiElements } from '../../ui-store/UiElements'
-import { SilexNotification } from '../Notification'
+import { Notification } from '../Notification'
 
 /**
  * @class {silex.view.dialog.CodeEditorBase}
@@ -99,7 +99,7 @@ export class CodeEditorBase {
         onClose: () => {},
       })
     } else {
-      SilexNotification.alert('Error', 'The monaco editor did not load. This is required by Silex, please try reloading the page or build Silex again.', () => {})
+      Notification.alert('Error', 'The monaco editor did not load. This is required by Silex, please try reloading the page or build Silex again.', () => {})
     }
   }
 

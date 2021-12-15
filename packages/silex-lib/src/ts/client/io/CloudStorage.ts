@@ -5,7 +5,7 @@
  */
 import { getUiElements } from '../ui-store/UiElements'
 import { CloudExplorer } from '../externs'
-import { SilexNotification } from '../components/Notification'
+import { Notification } from '../components/Notification'
 import { PersistantData } from '../store/types'
 
 // FIXME: choose between path and folder + name, remove absPath
@@ -141,7 +141,7 @@ export class CloudStorage {
 
         // warn the user
         if (json.message) {
-          SilexNotification.alert('Open a website', json.message, () => {})
+          Notification.alert('Open a website', json.message, () => {})
         }
         cbk(json.html, json.data as PersistantData)
       } else {

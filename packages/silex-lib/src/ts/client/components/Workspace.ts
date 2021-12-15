@@ -4,7 +4,7 @@
  * It refreshes the view when the window size changes
  */
 
-import { SilexNotification } from './Notification'
+import { Notification } from './Notification'
 import { Url } from '../utils/Url'
 import { getPropertySplitter } from './PropSplitter'
 import { getSiteIFrame } from './SiteFrame'
@@ -67,7 +67,7 @@ export async function initSingleSiteMode(): Promise<void> {
         resolve()
       })
     } else {
-      SilexNotification.alert('Open a file', `
+      Notification.alert('Open a file', `
           Could not open the file ${params.path}.<br /><br />
           You need to specify which website I am supposed to open with the variables "path" and "service" in the URL. Please <a href="https://github.com/silexlabs/Silex/wiki/Single-site-mode" target="_blank">check this document</a> or <a href="https://github.com/silexlabs/Silex/issues" target="_blank">get in touch in Silex forums"</a>
       `,
@@ -99,7 +99,7 @@ export function warnIfWindowTooSmall() {
   const minWinSizeWidth = 950
   const minWinSizeHeight = 630
   if (winSizeHeight < minWinSizeHeight || winSizeWidth < minWinSizeWidth) {
-    SilexNotification.alert('Warning',
+    Notification.alert('Warning',
         `Your window is very small (${winSizeWidth}x${
             winSizeHeight}) and Silex may not display correctly.<br><br>Considere maximizing the window or use a bigger screen to use Silex at its best. A window size of ${
             minWinSizeWidth}x${

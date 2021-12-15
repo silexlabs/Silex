@@ -9,13 +9,15 @@ import { detect } from 'detect-browser'
 
 import { config } from './ClientConfig'
 import { LOADING } from './ui-store/types'
-import { SilexNotification } from './components/Notification'
+import { Notification } from './components/Notification'
+import { rating } from './components/rating'
 import { createWorkspace, initSingleSiteMode, preventQuit, warnIfWindowTooSmall } from './components/Workspace'
 import { getUi, updateUi } from './ui-store/index'
 import { getUiElements } from './ui-store/UiElements'
 import { initObservers } from './store/observer'
 import { openDashboardToLoadAWebsite } from './file'
 import { resetDirty } from './dirty'
+import { once } from './visits'
 
 let initDone = false
 
@@ -48,7 +50,7 @@ export function start() {
   const isChrome = browser && browser.name === 'chrome'
 
   if (!isFirefox && !isChrome) {
-    SilexNotification.alert('Warning',
+    Notification.alert('Warning',
       `Your browser is not supported yet.
       <br><br>
       Considere using <a href="https://www.mozilla.org/firefox/" target="_blank">Firefox</a>
@@ -64,6 +66,9 @@ export function start() {
 
   // start observers
   initObservers()
+
+  // display rating message once
+  once(10, 60, 'rating', () => rating())
 
   // the build type
   if (!config.debug) {
