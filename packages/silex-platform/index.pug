@@ -2,3 +2,12 @@ extends ./node_modules/silex-website-builder/src/html/index.pug
 
 append head-start
   | <script data-host="https://microanalytics.io" data-dnt="false" src="https://microanalytics.io/js/script.js" id="ZwSg9rf6GA" async defer></script>
+
+append silex-start
+  script.
+    silex.once(10, 60, 'rating', () => Notification.lightDialog(`
+      <p>
+        Do you like Silex? I need your feedback!&nbsp;
+        <a href="https://www.trustpilot.com/evaluate/silex.me" target="_blank">Rate Silex on Trustpilot</a>
+      </p>
+    `, () => {}))
