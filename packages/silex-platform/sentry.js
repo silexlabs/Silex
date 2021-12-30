@@ -22,10 +22,6 @@ module.exports.before = function(app) {
   app.use(Sentry.Handlers.requestHandler())
   // TracingHandler creates a trace for every incoming request
   app.use(Sentry.Handlers.tracingHandler())
-
-  app.get("/debug-sentry", function mainHandler(req, res) {
-    throw new Error("My first Sentry error!")
-  })
 }
 
 module.exports.after = function(app) {
