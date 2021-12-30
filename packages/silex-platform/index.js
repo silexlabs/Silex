@@ -4,8 +4,12 @@ const { SilexServer, Config } = require('silex-website-builder')
 const serveStatic = require('serve-static')
 const path = require('path')
 
+const sentry = require('./sentry')
+
 const config = new Config()
 const silex = new SilexServer(config)
+
+sentry.before(silex.app)
 
 // logs for debugging prod version
 silex.app.use('/static', (req, res, next) => {
@@ -22,4 +26,6 @@ silex.app.use('/', serveStatic(path.resolve('./dist/')))
 silex.start(function() {
   console.log('server started')
 })
+
+sentry.after(silex.app)
 
