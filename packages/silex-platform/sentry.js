@@ -15,6 +15,9 @@ module.exports.before = function(app) {
     // of transactions for performance monitoring.
     // We recommend adjusting this value in production
     tracesSampleRate: 1.0,
+
+    // sentry environment is the domain name
+    environment: (process.env.SERVER_URL || 'not.set').replace(/^http.?:\/\//, ''),
   })
 
   // RequestHandler creates a separate execution context using domains, so that every
