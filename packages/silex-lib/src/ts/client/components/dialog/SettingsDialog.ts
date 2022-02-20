@@ -122,9 +122,10 @@ class SettingsDialog {
       onOpen: (args) => {
         this.onClose = args.cbk
         if (args.pane) {
+          const latest = getUi()
           updateUi({
-            ...ui,
-            dialogs: ui.dialogs
+            ...latest,
+            dialogs: latest.dialogs
             .filter(({type}) => type === 'settings')
             .map(dialog => ({
               ...dialog,
