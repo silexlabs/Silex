@@ -325,9 +325,10 @@ export function unprepareWebsite(dom: JSDOM, data: PersistantData, rootUrl: stri
     .forEach((el: HTMLElement) => el.classList.remove(className))
   })
   // cleanup inline styles
+  dom.window.document.body.style.overflow = '' // set by stage
+  // cleanup for common bugs, FIXME: remove this
   dom.window.document.body.style.minWidth = '' // not needed?
   dom.window.document.body.style.minHeight = '' // not needed?
-  dom.window.document.body.style.overflow = '' // set by stage
 
   return [cleanedUp, dom]
 }

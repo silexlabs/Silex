@@ -70,10 +70,7 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
   // look for bug of firefox inserting quotes in url("")
   // FIXME: remove this!!
   if (rawHtml.indexOf('url(\'&quot;') > -1) {
-    console.warn('I have found HTML entities in some urls, there us probably an error in the save process.')
-
-    // log this (QA)
-    // tracker.trackAction('controller-events', 'warning', 'file.save.corrupted', -1);
+    console.warn('I have found HTML entities in some urls, there is probably an error in the save process.')
 
     // try to cleanup the mess
     rawHtml = rawHtml.replace(/url\('&quot;()(.+?)\1&quot;'\)/gi, (match, group1, group2) => {

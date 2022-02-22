@@ -36,11 +36,19 @@ export function cleanup(win: DOMWindow): void {
   // remove data-silex-static (will then be downloaded like any other script, not striped by DomTools.transformPath)
   // remove data-dependency
   // do NOT remove data-silex-type because it is used by front-end.js at runtime
-  Array.from(doc.querySelectorAll(`[${Constants.TYPE_ATTR}], [${Constants.ELEMENT_ID_ATTR_NAME}], [${Constants.STATIC_ASSET_ATTR}]`))
-  .forEach((tagToClean: HTMLElement) => {
-    tagToClean.removeAttribute(Constants.ELEMENT_ID_ATTR_NAME)
-    tagToClean.removeAttribute(Constants.STATIC_ASSET_ATTR)
-    tagToClean.removeAttribute('data-dependency')
+  // remove linktype
+  ;[
+    Constants.TYPE_ATTR,
+    Constants.ELEMENT_ID_ATTR_NAME,
+    Constants.STATIC_ASSET_ATTR,
+    Constants.PRODOTYPE_DEPENDENCY_ATTR,
+    'linktype',
+  ]
+  .forEach((attr: string) => {
+    Array.from(doc.querySelectorAll(`[${attr}]`))
+    .forEach(el => {
+      el.removeAttribute(attr)
+    })
   })
 }
 
