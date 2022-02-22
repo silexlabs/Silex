@@ -3,7 +3,7 @@
   "description": "Free and easy website builder for everyone.",
   "version": "2.7.24",
   "version:frontend": "2.12",
-  "version:backwardcompat": "2.2.13",
+  "version:backwardcompat": "2.2.14",
   "author": {
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
