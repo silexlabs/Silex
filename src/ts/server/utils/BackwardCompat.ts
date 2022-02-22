@@ -487,11 +487,11 @@ export default class BackwardCompat {
     return new Promise((resolve, reject) => {
       const actions = []
       if (this.hasToUpdate(version, [2, 2, 14])) {
-        // remove w3c warning "The type attribute is unnecessary for JavaScript resources"
-        const jsTags = Array.from(doc.querySelectorAll('script[type="text/javascript"]'))
-        if(jsTags.length) {
-          jsTags.forEach(el => el.removeAttribute('type'))
-          actions.push(`Fixed ${jsTags.length} w3c warning 'The type attribute is unnecessary for JavaScript resources'`)
+        // remove w3c warning "The type attribute for the style element is not needed and should be omitted."
+        const styles = Array.from(doc.querySelectorAll('style[type="text/css"]'))
+        if(styles.length) {
+          styles.forEach(el => el.removeAttribute('type'))
+          actions.push(`Fixed ${styles.length} w3c warning 'The type attribute for the style element is not needed and should be omitted.'`)
         }
         // This should not be useful (previous BC bug?)
         // Remove empty attributes

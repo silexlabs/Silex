@@ -50,6 +50,13 @@ export function cleanup(win: DOMWindow): void {
       el.removeAttribute(attr)
     })
   })
+  // remote type attribute of JS script tags
+  // remove w3c warning "The type attribute is unnecessary for JavaScript resources"
+  // FIXME: we should just remove type from all the components and silex script tags, but for now it is useful to keep it during edition as some selectors rely on it for now
+  Array.from(doc.querySelectorAll('script[type="text/javascript"]'))
+  .forEach(el => {
+    el.removeAttribute('type)')
+  })
 }
 
 /**
@@ -153,7 +160,6 @@ export function splitInFiles({
   if (scriptTags.length > 0) {
     const scriptTagSrc = doc.createElement('script')
     scriptTagSrc.src = `${ hookedRootUrl || '' }js/script.js`
-    scriptTagSrc.type = 'text/javascript'
     doc.head.appendChild(scriptTagSrc)
   }
 
@@ -170,7 +176,6 @@ export function splitInFiles({
     const cssTagSrc = doc.createElement('link')
     cssTagSrc.href = `${ hookedRootUrl || '' }css/styles.css`
     cssTagSrc.rel = 'stylesheet'
-    cssTagSrc.type = 'text/css'
     doc.head.appendChild(cssTagSrc)
   }
 

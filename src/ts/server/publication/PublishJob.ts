@@ -581,12 +581,9 @@ export default class PublishJob {
       this.pageActions.map(page => {
         return () => new Promise<void>((resolve, reject) => {
           w3cjs.validate({
-            //file: 'demo.html', // file can either be a local file or a remote file
-            //file: 'http://html5boilerplate.com/',
-            //input: '<html>...</html>',
             input: page.content,
-            output: 'json', // Defaults to 'json', other option includes html
-            callback: function (err, result) {
+            output: 'json',
+            callback (err, result) {
               if(err) {
                 console.error('Validation error: could not validate the web page ' + page.path, err)
                 reject(`Validation error: could not validate the web page ${page.path}: ${err.message} (${err.code})`)
