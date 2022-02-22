@@ -1,13 +1,13 @@
 import { CloudStorage, FileInfo } from './io/CloudStorage'
-import { config } from './ClientConfig'
 import { FileExplorer } from './components/dialog/FileExplorer'
 import { LOADING } from './ui-store/types'
+import { Notification } from './components/Notification'
 import { PersistantData } from './store/types'
 import { Provider, PublicationOptions } from './site-store/types'
-import { Notification } from './components/Notification'
 import { SilexTasks } from './io/SilexTasks'
 import { addToLatestFiles } from './io/latest-files'
 import { closePublishDialog, openPublishDialog, startPublish } from './components/dialog/PublishDialog'
+import { config } from './ClientConfig'
 import { fromElementData } from './element-store/index'
 import { fromPageData } from './page-store/index'
 import { getHtml, getSiteDocument, setHtml } from './components/SiteFrame'
@@ -20,7 +20,6 @@ import { initializeData } from './store/dispatchers'
 import { isDirty, resetDirty } from './dirty'
 import { openDashboard } from './components/dialog/Dashboard'
 import { openPage } from './ui-store/dispatchers'
-import { openSettingsDialog } from './components/dialog/SettingsDialog'
 import { resetUndo } from './undo'
 import { setPreviewWindowLocation } from './preview'
 import { startObservers, stopObservers } from './store/observer'
@@ -34,12 +33,11 @@ import { updateUi, getUi } from './ui-store/index'
  * save or save-as
  */
 export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
-  // tracker.trackAction('controller-events', 'request', 'file.save', 0);
   if (fileInfo && !getSite().isTemplate) {
     doSave((fileInfo as FileInfo), cbk, errorCbk)
   } else if (config.singleSiteMode) {
     // do nothing in single site mode
-    throw new Error('File has no name and can not "save as" in single site mode')
+    throw new Error('Website has no name and can not "save as" in single site mode')
   } else {
     // choose a new name
     FileExplorer.getInstance()
@@ -52,7 +50,6 @@ export function save(fileInfo?: FileInfo, cbk?: (() => any), errorCbk?: ((p1: an
           }
         })
         .catch((error) => {
-          // tracker.trackAction('controller-events', 'error', 'file.save', -1);
           if (errorCbk) {
             errorCbk(error)
           }
@@ -86,8 +83,6 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
 
   // save to file
   saveAs(file, rawHtml, getState(), () => {
-    // tracker.trackAction('controller-events', 'success', 'file.save', 1);
-    // ControllerBase.lastSaveUndoIdx = ControllerBase.undoHistory.length - 1;
     Notification.notifySuccess('File is saved.')
     setPreviewWindowLocation()
 
@@ -105,7 +100,6 @@ function doSave(file: FileInfo, cbk?: (() => any), errorCbk?: ((p1: any) => any)
         errorCbk(error)
       }
     })
-    // tracker.trackAction('controller-events', 'error', 'file.save', -1);
   })
 }
 
@@ -173,7 +167,6 @@ export function openRecent(fileInfo: FileInfo, cbk?: (() => any)) {
  * TODO: move this to the Dashboard component
  */
 export function openDashboardToLoadAWebsite(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
-  // tracker.trackAction('controller-events', 'request', 'file.new', 0);
   openDashboard({
     openFileInfo: (fileInfo: FileInfo) => {
       if (!fileInfo && !hasContent()) {
@@ -218,9 +211,6 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
     return
   }
 
-  // track success
-  // tracker.trackAction('controller-events', 'request', 'file.open', 0);
-
   // let the user choose the file
   FileExplorer.getInstance().openFile(FileExplorer.HTML_EXTENSIONS)
       .then((fileInfo) => {
@@ -231,8 +221,6 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
                 // display and redraw
                 Notification.notifySuccess((getSite().title || 'Untitled website') + ' opened.')
 
-                // track success
-                // tracker.trackAction('controller-events', 'success', 'file.open', 1);
                 if (cbk) {
                   cbk((fileInfo as FileInfo))
                 }
@@ -245,7 +233,6 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
                     errorCbk(error)
                   }
                 })
-                // tracker.trackAction('controller-events', 'error', 'file.open', -1);
               })
         } else {
           if (cancelCbk) {
@@ -254,7 +241,6 @@ export function openFile(cbk?: ((p1: FileInfo) => any), errorCbk?: ((p1: any) =>
         }
       })
       .catch((error) => {
-        // tracker.trackAction('controller-events', 'error', 'file.open', -1);
         if (errorCbk) {
           errorCbk(error)
         }
@@ -274,11 +260,9 @@ function onOpenError(err: any, msg: string, errorCbk?: ((p1: any) => any), loadB
   if (loadBlankOnError && !hasContent()) {
     loadBlankTemplate()
   }
-  // tracker.trackAction('controller-events', 'error', 'file.new', -1);
 }
 
 function publishError(message) {
-  // tracker.trackAction('controller-events', 'error', 'file.publish', -1);
   console.error('Error: I did not manage to publish the file.', message)
   Notification.alert('Publication',
       `<strong>An error occured.</strong><p>I did not manage to publish the website. ${
@@ -300,7 +284,6 @@ export function publish() {
         'Publish canceled because a modal dialog is opened already.')
     return
   }
-  // tracker.trackAction('controller-events', 'request', 'file.publish', 0);
   openPublishDialog()
       .then((publishOptions: PublicationOptions) => {
         if (publishOptions) {
@@ -312,11 +295,9 @@ export function publish() {
               if (warningMsg) {
                 closePublishDialog()
                 Notification.alert('Publication', warningMsg, () => {})
-                // tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
               } else {
                 startPublish((finalPublicationOptions as PublicationOptions))
                 .then((msg: string) => {
-                  // tracker.trackAction('controller-events', 'success', 'file.publish', 1);
                   closePublishDialog()
                   Notification.alert('Publication', msg, () => {})
                 })
@@ -327,8 +308,6 @@ export function publish() {
               }
               }
           })
-        } else {
-          // tracker.trackAction('controller-events', 'cancel', 'file.publish', 0);
         }
       })
       .catch((msg) => publishError(msg))
@@ -452,7 +431,7 @@ function loadBlankTemplate(cbk?: (() => any), errorCbk?: ((p1: any) => any)) {
 function loadFromUserFiles(file: FileInfo, cbk: (p1: string, data: PersistantData) => any,
     errCbk?: ((p1: any, msg: string, code?: number) => any)) {
   if (isDirty()) {
-    Notification.confirm('Open a file', `You have unsaved modifications, are you sure you want to open the file "${ file.name }" ?`, (ok) => {
+    Notification.confirm('Close current website', `You have unsaved modifications, are you sure you want to open the website "${ file.name }" ?`, (ok) => {
       if(ok) doLoadFromUserFiles(file, cbk, errCbk)
     }, 'Continue', 'Abort')
   } else {
