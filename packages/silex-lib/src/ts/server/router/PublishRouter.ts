@@ -152,12 +152,9 @@ export default function PublishRouter(config: Config, unifile) {
     })()
     if(bufferHTML) {
       w3cjs.validate({
-        //file: 'demo.html', // file can either be a local file or a remote file
-        //file: 'http://html5boilerplate.com/',
-        //input: '<html>...</html>',
         input: bufferHTML,
-        output: 'html', //'json', // Defaults to 'json', other option includes html
-        callback: function (err, result) {
+        output: 'html',
+        callback (err, result) {
           if(err) {
             console.error('Validation error: could not validate the web page ' + path, err)
             res.status(400).send(`Validation error: could not validate the web page ${path}: ${err.message} (${err.code})`)

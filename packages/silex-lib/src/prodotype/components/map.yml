@@ -15,10 +15,8 @@ dependencies:
   link:
   - href: https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/css/ol.css
     rel: stylesheet
-    type: 'text/css'
   script:
-  - type: 'text/javascript'
-    src: https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js
+  - src: https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.3.1/build/ol.js
 initialCssClass:
   silex-use-height-not-minheight
   silex-element-content-full-height

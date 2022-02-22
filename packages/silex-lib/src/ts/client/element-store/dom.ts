@@ -247,7 +247,6 @@ function getInlineStyleSheet(doc: Document): CSSStyleSheet {
   if (!styleTag) {
     styleTag = doc.createElement('style')
     styleTag.classList.add(Constants.INLINE_STYLE_TAG_CLASS_NAME)
-    styleTag.setAttribute('type', 'text/css')
     doc.head.appendChild(styleTag)
   }
   for (const s of doc.styleSheets) {
@@ -333,6 +332,7 @@ export function getInnerHtml(element: HTMLElement): string {
 
 /**
  * prevent scripts from executing in components, html boxes...
+ * FIXME: script tags without type should also be "deactivated", @see WebsiteRouter::deactivateScripts
  * @return a safe html string
  */
 function deactivateScripts(html: string): string {
