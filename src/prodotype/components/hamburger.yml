@@ -2,7 +2,7 @@
 name: Hamburger Menu
 description: 'A "hamburger" menu for your site. Apply styles to the links with the style editor.'
 doc: https://github.com/silexlabs/Silex/wiki/Hamburger-menu
-category: UI
+category: Components
 tags:
 - menu
 - ui
