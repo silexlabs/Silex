@@ -1,11 +1,3 @@
 .git
-/packages/cloud-explorer/
-/packages/silex-website-builder/
-/packages/drag-drop-stage-component/
-/packages/silex-blank-templates/
-/packages/silex-templates/
-/packages/prodotype/
-/packages/responsize/
-/packages/unifile/
-/packages/unifile-webdav/
-/packages/unifile-common-tools/
+node_modules
+/packages/*

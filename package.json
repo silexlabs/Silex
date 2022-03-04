@@ -1,0 +1,26 @@
+{
+  "name": "silex-meta",
+  "version": "1.0.0",
+  "description": "Sub projects needed for Silex development",
+  "engines": {
+    "node": ">=10.15.3 <=16.14.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/silexlabs/silex-meta.git"
+  },
+  "keywords": [
+    "Silex website builder",
+    "dev"
+  ],
+  "author": "lexoyo",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/silexlabs/silex-meta/issues"
+  },
+  "homepage": "https://github.com/silexlabs/silex-meta#readme",
+  "devDependencies": {
+    "meta-bump": "^0.2.0",
+    "meta-npm": "^1.2.7"
+  }
+}
