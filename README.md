@@ -4,6 +4,8 @@ This is a [meta repository](https://github.com/mateodelnorte/meta#readme) for Si
 
 It includes all sub projects needed for Silex development, this is the repo you need to contribute to Silex.
 
+There is no issue on this repo, please use the individual project's issues
+
 ## Included repositories in this meta repo
 
 | Name | Folder | Website | Description | Repo | npm | Docs | License |
@@ -25,7 +27,7 @@ To contribute to Silex you need to clone this repo.
 1. Cd in the repo: `cd silex-meta`
 1. Use the recommended version of node: `nvm use`
 1. Install all dependencies: `npm install && meta npm install --parallel`
-1. Make each project uses the development version of any other project in the meta repo: `meta npm link && meta exec "npm link --all"`
+1. Make each project uses the development version of any other project in the meta repo: `meta npm link && meta npm link --all`
 
 Useful commands
 
