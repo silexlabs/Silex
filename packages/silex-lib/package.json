@@ -3,7 +3,7 @@
   "description": "Free and easy website builder for everyone.",
   "version": "2.7.28",
   "version:frontend": "2.12",
-  "version:backwardcompat": "2.2.13",
+  "version:backwardcompat": "2.2.14",
   "author": {
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
@@ -115,6 +115,7 @@
     "sortablejs": "1.13.0",
     "source-map-support": "0.5.19",
     "tags-input": "1.1.1",
+    "w3cjs": "^0.4.0",
     "wysihtml": "0.6.0-beta1"
   },
   "devDependencies": {

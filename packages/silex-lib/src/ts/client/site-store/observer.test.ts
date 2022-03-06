@@ -54,7 +54,7 @@ const dependenciesString = `
   <link data-dependency="" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/unslider/2.0.3/css/unslider.css">
 `
 const styleString = `
-  <style class="silex-prodotype-style" type="text/css" data-style-id="all-style">.text-element > .silex-element-content {font-family: 'Roboto', sans-serif;}</style>
+  <style class="silex-prodotype-style" data-style-id="all-style">.text-element > .silex-element-content {font-family: 'Roboto', sans-serif;}</style>
 `
 
 beforeEach(() => {
