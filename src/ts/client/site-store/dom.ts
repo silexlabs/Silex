@@ -29,7 +29,6 @@ export function setHeadStyle(doc: HTMLDocument, cssString: string) {
   let silexStyle = doc.head.querySelector('.' + Constants.SILEX_STYLE_ELEMENT_CSS_CLASS) as HTMLStyleElement
   if (!silexStyle) {
     silexStyle = doc.createElement('style')
-    silexStyle.type = 'text/css'
     silexStyle.className = Constants.SILEX_STYLE_ELEMENT_CSS_CLASS
     doc.head.appendChild(silexStyle)
   }
@@ -93,7 +92,6 @@ export function setWebsiteWidthInDom(doc: HTMLDocument, width: number) {
   let silexStyle = doc.head.querySelector('.silex-style-settings') as HTMLStyleElement
   if (!silexStyle) {
     silexStyle = doc.createElement('style')
-    silexStyle.type = 'text/css'
     silexStyle.className = 'silex-style-settings'
     doc.head.appendChild(silexStyle)
   }

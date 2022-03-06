@@ -146,6 +146,7 @@ export default class BackwardCompat {
         '2.2.11': await this.to2_2_11(version, doc), // this will set this.data
         '2.2.12': await this.to2_2_12(version, doc),
         '2.2.13': await this.to2_2_13(version, doc),
+        '2.2.14': await this.to2_2_14(version, doc),
       }
       // update the static scripts to match the current server and latest version
       this.updateStatic(doc)
@@ -477,6 +478,52 @@ export default class BackwardCompat {
           newEl.removeAttribute('data-silex-href')
         })
         actions.push('Replaced old Silex links with standard HTML links.')
+      }
+      resolve(actions)
+    })
+  }
+
+  to2_2_14(version: number[], doc: HTMLDocument): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      const actions = []
+      if (this.hasToUpdate(version, [2, 2, 14])) {
+        // remove w3c warning "The type attribute for the style element is not needed and should be omitted."
+        const styles = Array.from(doc.querySelectorAll('style[type="text/css"]'))
+        if(styles.length) {
+          styles.forEach(el => el.removeAttribute('type'))
+          actions.push(`Fixed ${styles.length} w3c warning 'The type attribute for the style element is not needed and should be omitted.'`)
+        }
+        // This should not be useful (previous BC bug?)
+        // Remove empty attributes
+        // Sometimes we have style="", title=""...
+        let numEmpty = 0
+        const attrs = [
+          'href',
+          'style',
+          'rel',
+          'target',
+          'type',
+          'title',
+        ]
+        attrs.forEach((attr: string) => {
+          Array.from(doc.querySelectorAll(`[${attr}]`))
+          .forEach(el => {
+            if(el.hasAttribute(attr) && el.getAttribute(attr) === '') {
+              el.removeAttribute(attr)
+              numEmpty++
+            }
+          })
+        })
+        if(numEmpty) actions.push(`Removed ${numEmpty} empty attributes (${attrs.join(', ')})`)
+
+        // This should not be useful (previous BC bug?)
+        // Remove the href attribute from non <a> tags
+        // Sometimes we have href="null" on non a tags
+        const tagsWithWrongHref = Array.from(doc.querySelectorAll('[href]:not(a, link, base)'))
+        tagsWithWrongHref.forEach(el => {
+          el.removeAttribute('href')
+        })
+        if(tagsWithWrongHref.length) actions.push(`Removed ${tagsWithWrongHref.length} href attributes on non links tags`)
       }
       resolve(actions)
     })

@@ -337,7 +337,7 @@ export function startPublish(options: PublicationOptions): Promise<string> {
               clearInterval(timer)
               const websiteUrl = getSite().websiteUrl || publicationPath.absPath + '/index.html'
               msg += `
-                <p>Please visit <a target="_blanck" href="${websiteUrl}">your published website here</a>.
+                <p>Here is a link to <a target="_blanck" href="${websiteUrl}">your published website here</a>.
                 ${provider && provider.afterPublishMessage ? provider.afterPublishMessage : ''}</p>
               `
               resolve(msg)

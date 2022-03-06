@@ -2,7 +2,7 @@
 name: Slideshow
 description: 'Display a series of texts and images.'
 doc: https://github.com/silexlabs/Silex/wiki/Slideshow-component
-category: Utils
+category: Components
 tags:
 - form
 - input
