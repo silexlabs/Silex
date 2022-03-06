@@ -43,7 +43,7 @@ Other links
 
 [Silex source code repository](https://github.com/silexlabs/Silex/) is organized with 2 git branches:
 
-* `master` is the stable version, you can see it in action here: [editor.silex.me](https://editor.silex.me)
+* `main` is the stable version, you can see it in action here: [editor.silex.me](https://editor.silex.me)
 
 * `develop` is the "preprod" or "staging" version, it is deployed on [preprod.silex.me](https://preprod.silex.me) for anyone to test (this is a good contribution, thx in advance, open an issue for each bug)
 
