@@ -59,6 +59,7 @@
     }
   },
   "scripts": {
+    "release": "",
     "watch": "npm-watch",
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
