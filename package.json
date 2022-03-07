@@ -19,10 +19,9 @@
     "url": "https://github.com/silexlabs/silex-meta/issues"
   },
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "meta-bump": "^0.2.0",
-    "meta-npm": "^1.2.7"
+    "meta-npm": "^1.2.7",
+    "meta-release": "^0.1.2"
   }
 }
