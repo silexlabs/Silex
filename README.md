@@ -32,7 +32,7 @@ To contribute to Silex you need to clone this repo.
 Useful commands
 
 * Start Silex: `cd packages/silex-website-builder/ && npm start` (or use `npm run start:debug`)
-* Bump the version of a library `meta bump-npm prodotype`, see [Meta bump plugin](https://github.com/patrykzurawik/meta-bump)
+* Release and bump version of a library and all its dependents: `meta release-version unifile`, see [Meta release plugin](https://github.com/alqh/meta-release)
 
 
 ## Third party dependencies
