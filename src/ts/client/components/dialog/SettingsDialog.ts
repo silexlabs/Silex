@@ -13,11 +13,30 @@ import { ModalDialog } from '../ModalDialog'
 import { FileExplorer } from './FileExplorer'
 import { DataSources, DataSource, Font } from '../../site-store/types'
 import { getUiElements } from '../../ui-store/UiElements'
+import { getUi, subscribeUi, updateUi } from '../../ui-store'
+import { getVisibleDialogs } from '../../ui-store/utils'
+import { tabbed } from '../tabbed'
 
 /**
  * constant for all pane css classes
  */
-const PANE_CSS_CLASSES: string[] = ['general-pane', 'social-pane', 'publish-pane', 'fonts-pane', 'data-sources-pane']
+const PANE_CSS_CLASSES = [{
+  displayName: 'General',
+  id: 'general-pane',
+}, {
+  displayName: 'Social Networks',
+  id: 'social-pane',
+
+}, {
+  displayName: 'Publish settings',
+  id: 'publish-pane',
+}, {
+  displayName: 'Fonts',
+  id: 'fonts-pane',
+}, {
+  displayName: 'Data sources',
+  id: 'data-sources-pane',
+}]
 
 ///////////////////
 // API for the outside world
@@ -62,15 +81,57 @@ class SettingsDialog {
    * the controller instances
    */
   constructor(protected element: HTMLElement) {
+    // tabbed behavior
+    subscribeUi(() => {
+      const [currentToolbox] = getVisibleDialogs('settings')
+      const rightPane: HTMLElement = element.querySelector('.right-pane')
+      Array.from(rightPane.querySelectorAll('.on'))
+      .forEach((el) => el.classList.remove('on'))
+      const pane = rightPane.querySelector('.' + currentToolbox.id)
+      if(pane) {
+        pane.classList.add('on')
+      } else {
+        // could be a pane added by a plugin
+        console.warn('Error in settings dialog: no pane found with ID')
+      }
+    })
+    // add the tabs to the store
+    const ui = getUi()
+    updateUi({
+      ...ui,
+      dialogs: ui.dialogs.concat(
+        PANE_CSS_CLASSES
+        .map(({displayName, id}, idx) => ({
+          id,
+          type: 'settings',
+          visible: idx === 0,
+          data: {
+            displayName,
+            tag: 'li',
+          },
+        }))
+      )
+    })
+    const leftPaneUl: HTMLElement = element.querySelector('.left-pane ul')
+    tabbed(leftPaneUl, 'settings')
+
+    // modal dialog behavior
     this.modalDialog = new ModalDialog({
       name: 'Settings dialog',
       element,
       onOpen: (args) => {
         this.onClose = args.cbk
         if (args.pane) {
-          this.openPane(args.pane)
-        } else {
-          this.openPane(PANE_CSS_CLASSES[0])
+          const latest = getUi()
+          updateUi({
+            ...latest,
+            dialogs: latest.dialogs
+            .filter(({type}) => type === 'settings')
+            .map(dialog => ({
+              ...dialog,
+              visible: dialog.id === args.pane,
+            }))
+          })
         }
         this.unsub = subscribeSite(() => this.redraw())
         this.redraw()
@@ -85,8 +146,6 @@ class SettingsDialog {
         }
       },
     })
-    const leftPane = document.querySelector('.left-pane')
-    leftPane.addEventListener('click', (e) => this.onNavClick(e), false)
 
     // input text fields
     this.bindTextField(
@@ -288,24 +347,10 @@ class SettingsDialog {
   }
 
   /**
-   * click in the navigation
-   */
-  onNavClick(e: Event) {
-    const paneCssClass = (e.target as HTMLElement).getAttribute('data-pane')
-    if (paneCssClass) {
-      this.openPane(paneCssClass)
-    }
-  }
-
-  /**
    * open the given pane
    * adds the desired pane class + '-visible' to this.element
    */
   openPane(paneCssClass: string) {
-    // close all panes
-    PANE_CSS_CLASSES.forEach((className) => this.element.classList.remove(className + '-visible'))
-
-    // open the one we want
     this.element.classList.add(paneCssClass + '-visible')
     // change the selection in case it is not from a user click
     const input = this.element.querySelector(`#settings-${paneCssClass}`) as HTMLInputElement

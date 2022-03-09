@@ -141,7 +141,7 @@ export class CloudStorage {
 
         // warn the user
         if (json.message) {
-          Notification.alert('Open a website', json.message, () => {})
+          Notification.alert('Website updated', json.message, () => {})
         }
         cbk(json.html, json.data as PersistantData)
       } else {

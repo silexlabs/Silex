@@ -22,9 +22,15 @@ export interface UiState {
   components: ComponentsDefinition,
 }
 
+/**
+ * This is a mechanism for all tabbed UI
+ * For example the properties pane has tabs (style, components...)
+ * Each tab is an element in getUi().dialogs list which has type === 'properties'
+ * @see components/Tabbed.ts
+ */
 export interface Dialog {
   id: string, // e.g. 'styles
   type: string, // e.g. 'properties'
   visible: boolean,
-  data?: any, // e.g. { displayName: 'test' }
+  data?: any, // e.g. { displayName: 'test', className: 'fa-list', tag: 'li'}
 }
