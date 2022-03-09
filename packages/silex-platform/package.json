@@ -11,7 +11,7 @@
     "build:html": "pug -O env.js index.pug -o dist/"
   },
   "engines": {
-    "node": ">=10.16.3 <=11.15.0"
+    "node": ">=11.5.0 <=12.22.10"
   },
   "author": "lexoyo",
   "license": "MPL",
