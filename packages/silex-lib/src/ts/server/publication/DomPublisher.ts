@@ -36,11 +36,26 @@ export function cleanup(win: DOMWindow): void {
   // remove data-silex-static (will then be downloaded like any other script, not striped by DomTools.transformPath)
   // remove data-dependency
   // do NOT remove data-silex-type because it is used by front-end.js at runtime
-  Array.from(doc.querySelectorAll(`[${Constants.TYPE_ATTR}], [${Constants.ELEMENT_ID_ATTR_NAME}], [${Constants.STATIC_ASSET_ATTR}]`))
-  .forEach((tagToClean: HTMLElement) => {
-    tagToClean.removeAttribute(Constants.ELEMENT_ID_ATTR_NAME)
-    tagToClean.removeAttribute(Constants.STATIC_ASSET_ATTR)
-    tagToClean.removeAttribute('data-dependency')
+  // remove linktype
+  ;[
+    Constants.TYPE_ATTR,
+    Constants.ELEMENT_ID_ATTR_NAME,
+    Constants.STATIC_ASSET_ATTR,
+    Constants.PRODOTYPE_DEPENDENCY_ATTR,
+    'linktype',
+  ]
+  .forEach((attr: string) => {
+    Array.from(doc.querySelectorAll(`[${attr}]`))
+    .forEach(el => {
+      el.removeAttribute(attr)
+    })
+  })
+  // remote type attribute of JS script tags
+  // remove w3c warning "The type attribute is unnecessary for JavaScript resources"
+  // FIXME: we should just remove type from all the components and silex script tags, but for now it is useful to keep it during edition as some selectors rely on it for now
+  Array.from(doc.querySelectorAll('script[type="text/javascript"]'))
+  .forEach(el => {
+    el.removeAttribute('type)')
   })
 }
 
@@ -145,7 +160,6 @@ export function splitInFiles({
   if (scriptTags.length > 0) {
     const scriptTagSrc = doc.createElement('script')
     scriptTagSrc.src = `${ hookedRootUrl || '' }js/script.js`
-    scriptTagSrc.type = 'text/javascript'
     doc.head.appendChild(scriptTagSrc)
   }
 
@@ -162,7 +176,6 @@ export function splitInFiles({
     const cssTagSrc = doc.createElement('link')
     cssTagSrc.href = `${ hookedRootUrl || '' }css/styles.css`
     cssTagSrc.rel = 'stylesheet'
-    cssTagSrc.type = 'text/css'
     doc.head.appendChild(cssTagSrc)
   }
 

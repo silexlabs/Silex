@@ -386,7 +386,6 @@ export function setStyleToDom(doc: HTMLDocument, className: StyleName, pseudoCla
   if (!elStyle) {
     elStyle = doc.createElement('style')
     elStyle.className = Constants.STYLE_CLASS_NAME
-    elStyle.setAttribute('type', 'text/css')
     elStyle.setAttribute('data-style-id', className)
     head.appendChild(elStyle)
   }

@@ -7,7 +7,6 @@
 import { BgPane } from './pane/BgPane'
 import { BorderPane } from './pane/BorderPane'
 import { ComponentPane } from './pane/ComponentPane'
-import { Dialog } from '../ui-store/types'
 import { ElementState } from '../element-store/types'
 import { GeneralStylePane } from './pane/GeneralStylePane'
 import { PagePane } from './pane/PagePane'
@@ -26,8 +25,8 @@ import {
   openComponentEditor,
   resetComponentEditor
 } from '../element-store/component'
-import { openDialog } from '../ui-store/dispatchers'
 import { subscribeElements, updateElements } from '../element-store/index'
+import { tabbed } from './tabbed'
 import { updateUi } from '../ui-store'
 
 // element which contains the UI
@@ -74,37 +73,12 @@ function buildUi() {
     }
   }
 
-  // default tabs
-  getUi().dialogs.filter(d => d.type === 'properties')
-  .forEach(d => addTab(d))
+  const tabContainer: HTMLElement = element.querySelector('.tabs .simplebar-content')
+  tabbed(tabContainer, 'properties')
 
   // display component when possible
-  const componentEditorMenu = element.querySelector('.prodotype-component-editor') as HTMLElement
-  subscribeElements(() => updateComponentTool(componentEditorMenu))
-
-  subscribeUi((prevState, nextState) => {
-    const removed = prevState.dialogs
-    .filter(d => d.type === 'properties')
-    .filter(d1 => !nextState.dialogs.find(d2 => d2.type === d1.type && d2.id === d1.id))
-    removed.forEach((t) => removeTab(t))
-
-    const created = nextState.dialogs
-    .filter(d => d.type === 'properties')
-    .filter(d1 => !prevState.dialogs.find(d2 => d2.type === d1.type && d2.id === d1.id))
-    created.forEach((t) => addTab(t))
-
-    const prevVisible = getVisibleDialogs('properties', prevState)
-    const nextVisible = getVisibleDialogs('properties', nextState)
-    const opened = nextVisible.filter(d1 => !prevVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
-    // const closed = prevVisible.filter(d1 => !nextVisible.find(d2 => d2.id === d1.id && d2.type === d1.type))
-    if(opened.length) {
-      // hide or show when click on tabs
-      updateComponentTool(componentEditorMenu)
-
-      //  update selected tab
-      openTab(opened[0])
-    }
-  })
+  subscribeElements(() => updateComponentTool())
+  subscribeUi(() => updateComponentTool())
 
   setTimeout(() => {
     // additional panes
@@ -117,7 +91,7 @@ function buildUi() {
         type: 'properties',
         visible: false,
         data: {
-          className: 'fa-list',
+          className: 'fa fa-lg fa-list',
         },
       })
     })
@@ -128,15 +102,16 @@ function buildUi() {
   }, 100)
 }
 
-function updateComponentTool(el: HTMLElement) {
+function updateComponentTool() {
+  const componentEditorMenu = element.querySelector('.prodotype-component-editor') as HTMLElement
   const selectedComponents = getSelectedElements().filter((e) => isComponent(e))
   const [currentToolbox] = getVisibleDialogs('properties')
 
   if (currentToolbox.id === 'params' && selectedComponents.length === 1) {
     editComponent(selectedComponents[0])
-    el.style.display = ''
+    componentEditorMenu.style.display = ''
   } else {
-    el.style.display = 'none'
+    componentEditorMenu.style.display = 'none'
     resetComponentEditor()
   }
 }
@@ -152,52 +127,6 @@ function togglePanel(el: HTMLElement) {
     caret.classList.toggle('fa-caret-right')
     caret.classList.toggle('fa-caret-down')
   }
-}
-
-// ////////////
-// helpers to manage tab elements
-// ////////////
-
-const cbkBinded = new Map<string, () => void>()
-
-function addTab(dialog: Dialog) {
-  const tabEl = getTabElement(dialog.id) || document.createElement('div')
-  tabEl.classList.add(dialog.id, 'tab', 'fa', 'fa-lg', dialog.data?.className || 'no-dialog-class')
-  tabEl.innerHTML = dialog.data?.displayName || ''
-
-  const tabs = element.querySelector('.tabs .simplebar-content')
-  tabs.appendChild(tabEl)
-
-  const openBinded = () => openDialog(dialog)
-  tabEl.addEventListener('click', openBinded)
-  cbkBinded.set(dialog.id, openBinded)
-}
-
-function removeTab(dialog: Dialog) {
-  const tabEl = getTabElement(dialog.id)
-  if (tabEl) {
-    const openBinded = cbkBinded.get(dialog.id)
-    cbkBinded.delete(dialog.id)
-    tabEl.removeEventListener('click', openBinded)
-    tabEl.remove()
-  }
-}
-
-function getTabElement(dialogId: string): HTMLElement {
-  const tabs = element.querySelector('.tabs .simplebar-content')
-  return tabs.querySelector('.' + dialogId)
-}
-
-function openTab(dialog: Dialog) {
-  const tabEl = getTabElement(dialog.id)
-  selectTab(tabEl)
-}
-
-function selectTab(tabEl: HTMLElement) {
-  const tabs = element.querySelector('.tabs .simplebar-content')
-  Array.from(tabs.querySelectorAll('.tab'))
-  .forEach((el) => el.classList.remove('on'))
-  tabEl.classList.add('on')
 }
 
 /**
