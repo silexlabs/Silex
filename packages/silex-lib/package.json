@@ -1,7 +1,7 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.7.28",
+  "version": "2.7.32",
   "version:frontend": "2.12",
   "version:backwardcompat": "2.2.14",
   "author": {
@@ -24,7 +24,7 @@
   },
   "license": "(GPL-3.0 OR MPL-2.0)",
   "engines": {
-    "node": ">=10.15.3 <=11.15.0"
+    "node": ">=10.15.3 <=12.22.10"
   },
   "watch": {
     "build:css:debug": {
@@ -89,7 +89,7 @@
   "dependencies": {
     "adm-zip": "^0.5.1",
     "body-parser": "1.19.0",
-    "cloud-explorer": "2.1.8",
+    "cloud-explorer": "^2.1.11",
     "compression": "1.7.4",
     "cookie-parser": "1.4.5",
     "cookie-session": "2.0.0-beta.3",
@@ -105,14 +105,14 @@
     "node_modules-path": "*",
     "normalize.css": "8.0.1",
     "object-path": "0.11.5",
-    "prodotype": "1.0.25",
+    "prodotype": "^1.0.27",
     "promise-sequential": "1.1.1",
     "redux": "4.0.5",
     "redux-undo": "1.0.1",
     "request": "2.88.2",
     "serve-static": "1.14.1",
-    "silex-blank-templates": "1.6.6",
-    "silex-templates": "1.0.10",
+    "silex-blank-templates": "^1.6.7",
+    "silex-templates": "^1.0.11",
     "sortablejs": "1.13.0",
     "source-map-support": "0.5.19",
     "tags-input": "1.1.1",
