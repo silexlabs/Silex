@@ -24,7 +24,7 @@
   },
   "license": "(GPL-3.0 OR MPL-2.0)",
   "engines": {
-    "node": ">=10.15.3 <=11.15.0"
+    "node": ">=10.15.3 <=12.22.10"
   },
   "watch": {
     "build:css:debug": {
