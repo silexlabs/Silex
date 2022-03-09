@@ -62,18 +62,16 @@ export function setPreviewWindowLocation(opt_location?: string) {
  *   if false it will open the website in a new window
  */
 function doPreview(inResponsize: boolean) {
-  //    tracker.trackAction('controller-events', 'request', 'view.file', 0);
   const doOpenPreview = () => {
     const page = getCurrentPage()
     if (inResponsize) {
       setPreviewWindowLocation(
-          'http://www.responsize.org/?url=' +
+          'http://responsize.org/?url=' +
           window.location.origin + getSite().file.absPath + page.link.href)
     } else {
       setPreviewWindowLocation(
           window.location.origin + getSite().file.absPath + page.link.href)
     }
-    //    tracker.trackAction('controller-events', 'success', 'view.file', 1);
   }
 
   // save before preview
@@ -82,7 +80,6 @@ function doPreview(inResponsize: boolean) {
         getSite().file,
         () => {},
         (err) => {
-          //    tracker.trackAction('controller-events', 'error', 'view.file', -1);
         })
   }
   if (getSite().file && !getSite().isTemplate) {
