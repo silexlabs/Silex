@@ -7,6 +7,7 @@
     "node": ">=10.16.3 <=11.15.0"
   },
   "scripts": {
+    "release": "",
     "postinstall": "npm run build && electron-rebuild",
     "start": "electron .",
     "build": "pug -O env.js index.pug -o static/",
