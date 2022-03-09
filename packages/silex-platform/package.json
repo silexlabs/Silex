@@ -11,7 +11,7 @@
     "build:html": "pug -O env.js index.pug -o dist/"
   },
   "engines": {
-    "node": "16.13.1"
+    "node": ">=10.16.3 <=11.15.0"
   },
   "author": "lexoyo",
   "license": "MPL",
@@ -22,7 +22,7 @@
     "pug": "^3.0.2",
     "pug-cli": "^1.0.0-alpha6",
     "serve-static": "^1.14.1",
-    "silex-website-builder": "silexlabs/Silex#master"
+    "silex-website-builder": "2.7.32"
   },
   "repository": {
     "type": "git",
