@@ -8,8 +8,6 @@ import * as Path from 'path'
 import * as assert from 'assert'
 import * as uuid from 'uuid'
 
-import * as w3cjs from 'w3cjs'
-
 import { Action, File, HostingProvider, PublishContext } from '../types'
 import { Config } from '../ServerConfig'
 import { getSite } from '../router/WebsiteRouter'
@@ -116,7 +114,6 @@ export default class PublishJob {
   private tree: {scriptTags: HTMLElement[], styleTags: HTMLElement[]}
   private assets: File[]
   private pageActions: Action[]
-  private w3c:Map<string, any> = new Map()
 
   constructor(public id: string, private unifile, private context: PublishContext) {
     this.setStatus('Publication starting.')
@@ -166,21 +163,6 @@ export default class PublishJob {
     }
   }
   getSuccessMessage() {
-    // pages validation
-    const w3cMessage = `<h3>W3C validation</h3><p><ul>
-      ${this.pageActions.map(page => `
-        <li>
-          ${page.displayName}:
-          <a target="_blank" href="${this.context.url}/validate/${this.context.to.service}/get/${page.path}">
-            ${
-              this.w3c.has(page.path) ?
-              this.w3c.get(page.path).filter(message => message.type = 'error').length + 'errors' :
-              'Validation service failed, check this link'
-            }
-          </a>
-        </li>
-      `).join('')}
-    </ul></p>`
     // download errors
     const downloadMessage = this.filesNotDownloaded.length > 0 ? `
       Warning: these files could not be downloaded:
@@ -189,7 +171,7 @@ export default class PublishJob {
       </ul>
     ` : ''
     // final message
-    return `<p>Done.</p><p>${downloadMessage}</p><p>${w3cMessage}</p>`
+    return `<p>Done.</p><p>${downloadMessage}</p>`
   }
   getHtmlFolder() {
     const defaultFolder = ''
@@ -426,14 +408,6 @@ export default class PublishJob {
       return
     }
 
-    // validations
-    try {
-      await this.validationOperations()
-    } catch(err) {
-      console.warn('Warning: could not validate pages after publication', err)
-      this.setStatus('Warning: could not validate pages after publication. ' + err)
-    }
-
     // all operations done
     console.log('Publication done with success')
     this.setStatus(this.getSuccessMessage())
@@ -572,30 +546,5 @@ export default class PublishJob {
         })
       }
     })
-  }
-
-  validationOperations(): Promise<void>  {
-    const w3c = this.w3c
-    this.setStatus(`Validating files <ul>${this.pageActions.map((action) => '<li>' + action.displayName + '</li>').join('')}`)
-    return sequential(
-      this.pageActions.map(page => {
-        return () => new Promise<void>((resolve, reject) => {
-          w3cjs.validate({
-            input: page.content,
-            output: 'json',
-            callback (err, result) {
-              if(err) {
-                console.error('Validation error: could not validate the web page ' + page.path, err)
-                reject(`Validation error: could not validate the web page ${page.path}: ${err.message} (${err.code})`)
-              } else {
-                // depending on the output type, res will either be a json object or a html string
-                w3c.set(page.path, result.messages)
-                resolve()
-              }
-            }
-          })
-        })
-      })
-    )
   }
 }

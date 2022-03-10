@@ -9,7 +9,6 @@ import HostingGhPages from '../hosting-provider/HostingGhPages'
 import HostingUnifile from '../hosting-provider/HostingUnifile'
 import PublishJob from '../publication/PublishJob'
 
-import * as w3cjs from 'w3cjs'
 import { JSDOM } from 'jsdom'
 
 const hostingProviders: HostingProvider[] = []
@@ -133,44 +132,6 @@ export default function PublishRouter(config: Config, unifile) {
         err,
       })
     })
-  })
-  // Checks after publish
-  router.get(/\/validate\/(.*)\/get\/(.*)/, async (req: express.Request, res: express.Response) => {
-    const connector = req.params[0]
-    const path = req.params[1]
-    const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`)
-    const bufferHTML = await (async function() {
-      try {
-        return await unifile.readFile(req.session.unifile, connector, path) // keep await here because of the try catch
-      } catch (err) {
-        console.error('Validation error: could not get the web page ' + path, err)
-        res.status(404).send({
-          message: `Validation error: could not get the web page ${path}: ${err.message} (${err.code})`,
-        })
-        return null
-      }
-    })()
-    if(bufferHTML) {
-      w3cjs.validate({
-        input: bufferHTML,
-        output: 'html',
-        callback (err, result) {
-          if(err) {
-            console.error('Validation error: could not validate the web page ' + path, err)
-            res.status(400).send(`Validation error: could not validate the web page ${path}: ${err.message} (${err.code})`)
-          } else {
-            // depending on the output type, res will either be a json object or a html string
-            const html = result.toString('utf-8')
-            const dom = new JSDOM(html, { url: 'https://validator.w3.org/nu/'})
-            const doc = dom.window.document
-            const base = doc.createElement('base')
-            base.setAttribute('href', 'https://validator.w3.org/nu/')
-            doc.head.insertBefore(base, doc.head.firstChild)
-            res.send(dom.serialize())
-          }
-        }
-      })
-    }
   })
   // expose addHostingProvider to apps adding hosting providers with silex.publishRouter.addHostingProvider(...))
   ;(router as any).addHostingProvider = (hostingProvider) => addHostingProvider(hostingProvider)
