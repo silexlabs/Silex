@@ -102,17 +102,6 @@ class Site {
     const contentDocument = getSiteDocument()
     const contentWindow = getSiteWindow()
 
-    // wait for the webste to be loaded
-    // can not rely on the load event of the iframe because there may be missing
-    // assets
-    // tslint:disable:no-string-literal
-    if (contentDocument.body === null || contentWindow === null || contentWindow['jQuery'] === null) {
-      setTimeout(() => {
-        this.contentChanged(opt_cbk)
-      }, 10)
-      return
-    }
-
     // notify the caller
     if (opt_cbk) {
       opt_cbk()
