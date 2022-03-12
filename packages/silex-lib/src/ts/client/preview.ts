@@ -66,7 +66,7 @@ function doPreview(inResponsize: boolean) {
     const page = getCurrentPage()
     if (inResponsize) {
       setPreviewWindowLocation(
-          'http://responsize.org/?url=' +
+          './responsize/?url=' +
           window.location.origin + getSite().file.absPath + page.link.href)
     } else {
       setPreviewWindowLocation(

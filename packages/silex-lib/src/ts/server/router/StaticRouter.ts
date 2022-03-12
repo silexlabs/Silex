@@ -32,6 +32,8 @@ export default function(staticOptions: StaticOptions) {
   // templates
   router.use('/libs/templates/silex-templates', serveStatic(Path.resolve(nodeModules('silex-templates'), 'silex-templates')))
   router.use('/libs/templates/silex-blank-templates', serveStatic(Path.resolve(nodeModules('silex-blank-templates'), 'silex-blank-templates')))
+  // responsize for previews
+  router.use('/responsize', serveStatic(Path.resolve(nodeModules('responsize'), 'responsize/dist')))
 
   return router
 }
