@@ -66,7 +66,9 @@ function getTemplatesList(req, res, next) {
       res.send({success: false, error: 'Error while trying to get the json representation of the folder ' + req.params.folder + ' - ' + err})
     } else {
       const templateList = result.filter((entry) => {
-        return fs.statSync(Path.join(templateFolder, entry)).isDirectory()
+        const path = Path.join(templateFolder, entry)
+        return !(/(^|\/)\.[^\/\.]/g).test(path) // hide hidden files
+          && fs.statSync(path).isDirectory() // keep only directories
       })
 
       res.send(templateList)
