@@ -487,6 +487,9 @@ export default class BackwardCompat {
     return new Promise((resolve, reject) => {
       const actions = []
       if (this.hasToUpdate(version, [2, 2, 14])) {
+        // do not fix this: remove w3c warning "The type attribute is unnecessary for JavaScript resources"
+        //  because silex uses script type attr in WebsiteRouter
+        //  instead we remove the type at publication time in DomPublisher
         // remove w3c warning "The type attribute for the style element is not needed and should be omitted."
         const styles = Array.from(doc.querySelectorAll('style[type="text/css"]'))
         if(styles.length) {
