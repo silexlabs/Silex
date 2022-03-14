@@ -55,7 +55,7 @@ export function cleanup(win: DOMWindow): void {
   // FIXME: we should just remove type from all the components and silex script tags, but for now it is useful to keep it during edition as some selectors rely on it for now
   Array.from(doc.querySelectorAll('script[type="text/javascript"]'))
   .forEach(el => {
-    el.removeAttribute('type)')
+    el.removeAttribute('type')
   })
 }
 
@@ -164,8 +164,9 @@ export function splitInFiles({
   }
 
   // add head css
+  // and components css
   const styleTags = []
-  Array.from(doc.head.querySelectorAll('style'))
+  Array.from(doc.querySelectorAll('style'))
   .forEach((tag) => {
     tag.parentElement.removeChild(tag)
     styleTags.push(tag)
@@ -317,19 +318,4 @@ export function splitPages({
     }
   })
 }
-
-// /**
-//  * remove the javascript and css files which firefox inlines
-//  * the inlined tags are script type="text/javascript" style="display:none"
-//  * @param {Document} doc
-//  */
-// cleanupFirefoxInlines() {
-//   // remove inlined scripts and styles
-//   ['script', 'style'].forEach((tagName) => {
-//     Array.from(doc.querySelectorAll(`${tagName}[style="display:none"]`))
-//     .forEach((element) => {
-//       element.parentElement.removeChild(element)
-//     })
-//   })
-// }
 
