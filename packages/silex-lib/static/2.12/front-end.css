@@ -17,6 +17,14 @@ body {
 .editable-style.section-element {
   margin-top: 0;
 }
+
+/* in case the element is not position: absolute */
+:not(.section-element) > .silex-element-content {
+    width: inherit;
+    min-height: inherit;
+    height: inherit;
+}
+
 /****************************************************/
 .website-width {
   width: 960px;
@@ -29,20 +37,6 @@ body {
   border-radius: inherit; /* this is to follow the element's radius */
 	width: 100%;
 	height: 100%;
-}
-/*
- .image-element > .silex-element-content {
-	overflow: hidden;
-}
-*/
-.html-element .silex-element-content {
-  /* enable HTML content to have style="min-height: inherit;" */
-  /* removed because it makes components buggy, add it to silex if you need to
-  position: absolute;
-  min-height: inherit;
-  width: 100%; /* needed by slideshow components and probably others */
-  /*
-  height: 100%; /* needed by slideshow kreview and probably others */
 }
 /* wysihtml text editor styles */
 .wysiwyg-float-left {

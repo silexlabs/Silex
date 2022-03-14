@@ -36,6 +36,17 @@
 </div>
 <style>
 /* *********************** */
+/* in case the element is not position: absolute */
+#parent_<%= uid %> {
+    width: inherit;
+    min-height: inherit;
+}
+#parent_<%= uid %> .prodotype-preview {
+    position: absolute;
+    width: inherit;
+    min-height: inherit;
+}
+/* *********************** */
 /* "Preview" label always on top of the slideshow in silex */
 #parent_<%= uid %> .prodotype-preview {
     list-style-type: none;
