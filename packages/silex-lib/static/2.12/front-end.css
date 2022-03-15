@@ -20,10 +20,14 @@ body {
 
 /* in case the element is not position: absolute */
 :not(.section-element) > .silex-element-content {
+    display: inline;
+    /* useless since it is inline now but keep it because the container meight use inherit too */
     width: inherit;
     min-width: inherit;
-    min-height: inherit;
+    max-width: inherit;
     height: inherit;
+    min-height: inherit;
+    max-height: inherit;
 }
 
 /****************************************************/
@@ -91,9 +95,11 @@ body.silex-runtime.body-initial .fixed {
     margin-left: auto;
     margin-right: auto;
   }
+  /* leave space between a container and its content *
   body.enable-mobile .editable-style.container-element {
-    padding: 10px; /* leave space between a container and its content */
+    padding: 10px;
   }
+  */
   body.enable-mobile .editable-style.section-element {
     padding: 0;
   }
