@@ -111,14 +111,11 @@ export function extractAssets({
         } else if (tagName) {
           // not an URL from a style sheet
           return destPath
-        } else if (isInHead) {
+        } else  {
           // URL from a style sheet
           // called from '/css'
           return '../' + destPath
         }
-        // URL from a style sheet
-        // called from './' because it is in the body and not moved to an external CSS
-        return destPath
       }
     }
     return null

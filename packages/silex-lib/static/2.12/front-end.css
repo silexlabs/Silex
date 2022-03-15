@@ -21,6 +21,7 @@ body {
 /* in case the element is not position: absolute */
 :not(.section-element) > .silex-element-content {
     width: inherit;
+    min-width: inherit;
     min-height: inherit;
     height: inherit;
 }
