@@ -28,8 +28,9 @@ To contribute to Silex you need to clone this repo.
 1. Clone this repo with `meta git clone git@github.com:silexlabs/silex-meta.git` or `meta git clone https://github.com/silexlabs/silex-meta.git`
 1. Cd in the repo: `cd silex-meta`
 1. Use the recommended version of node: `nvm use`
-1. Install all dependencies: `npm install && meta npm install --parallel`
-1. Make each project uses the development version of any other project in the meta repo: `meta npm link && meta npm link --all`
+1. Install all dependencies: `npm install && meta exec "npm install"`
+1. ~Make each project uses the development version of any other project in the meta repo: `meta npm link && meta npm link --all`~
+1. Make each project uses the development version of any other project in the meta repo: `meta exec "npm link" && node link-all.js`
 
 Useful commands
 

@@ -21,7 +21,7 @@
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "dependencies": {},
   "devDependencies": {
-    "meta-npm": "^1.2.7",
+    "meta-loop": "^1.2.5",
     "meta-release": "^0.1.2"
   }
 }
