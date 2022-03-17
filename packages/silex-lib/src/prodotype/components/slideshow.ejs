@@ -207,8 +207,12 @@
     setTimeout(function(){
       // use onswipe.js
       // Fix #1127
-      window.onSwipe('left', function(){ $slider.data('unslider').next()})
-      window.onSwipe('right', function(){ $slider.data('unslider').prev()})
+      if(window.onSwipe) {
+        window.onSwipe('left', function(){ $slider.data('unslider').next()})
+        window.onSwipe('right', function(){ $slider.data('unslider').prev()})
+      } else {
+        console.warn('onswipe.js script is not found, swipe gestures might no work')
+      }
     }, 0)
   })();
 </script>
