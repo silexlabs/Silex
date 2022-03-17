@@ -42,6 +42,14 @@ export function cleanup(win: DOMWindow): void {
     Constants.ELEMENT_ID_ATTR_NAME,
     Constants.STATIC_ASSET_ATTR,
     Constants.PRODOTYPE_DEPENDENCY_ATTR,
+    Constants.PREVENT_RESIZABLE_CLASS_NAME,
+    Constants.PREVENT_RESIZABLE_TOP_CLASS_NAME,
+    Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME,
+    Constants.PREVENT_RESIZABLE_BOTTOM_CLASS_NAME,
+    Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME,
+    Constants.PREVENT_SELECTABLE_CLASS_NAME,
+    Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+    Constants.PREVENT_DROPPABLE_CLASS_NAME,
     'linktype',
   ]
   .forEach((attr: string) => {
@@ -56,6 +64,11 @@ export function cleanup(win: DOMWindow): void {
   Array.from(doc.querySelectorAll('script[type="text/javascript"]'))
   .forEach(el => {
     el.removeAttribute('type')
+  })
+  // remove empty style attributes
+  Array.from(doc.querySelectorAll('[style=""]'))
+  .forEach(el => {
+    el.removeAttribute('style')
   })
 }
 
