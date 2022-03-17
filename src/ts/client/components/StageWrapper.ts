@@ -451,7 +451,7 @@ class StageWrapper {
         selectable,
       }
     })
-    .filter(({element, selectable}) => element.selected !== selectable.selected)
+    .filter(({element, selectable}) => element && element.selected !== selectable.selected)
     .map(({element, selectable}) => {
       return {
         ...element,
