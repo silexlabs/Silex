@@ -6,7 +6,7 @@ import {
   openLinkDialog
 } from './dialog/LinkDialog'
 import { Notification } from './Notification'
-import { getAllParents, getSelectedElements } from '../element-store/filters';
+import { getAllParents, getSelectedElements } from '../element-store/filters'
 import {
   getContentNode,
   getDomElement,
