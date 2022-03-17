@@ -6,12 +6,12 @@ import {
   openLinkDialog
 } from './dialog/LinkDialog'
 import { Notification } from './Notification'
+import { getAllParents, getSelectedElements } from '../element-store/filters';
 import {
   getContentNode,
   getDomElement,
   getInnerHtml
 } from '../element-store/dom'
-import { getSelectedElements } from '../element-store/filters'
 import { getSiteDocument, getSiteIFrame, getSiteWindow } from './SiteFrame'
 import { getUiElements } from '../ui-store/UiElements'
 import { keyboardAttach, keyboardAddShortcut } from './Menu'
@@ -243,16 +243,24 @@ export class TextFormatBar {
 
         // workaround for the wisihtml editor
         // prevent problems when the root is a link
-        // this is the casse when the element has a link in the properties
-        currentTextBoxEl.setAttribute('data-href', currentTextBoxEl.getAttribute('href'))
-        currentTextBoxEl.removeAttribute('href')
-        currentTextBoxEl.onclick = (e) => e.preventDefault()
-        this.onStopEditCbks.push(
-          () => {
-            currentTextBoxEl.setAttribute('href', currentTextBoxEl.getAttribute('data-href'))
-            currentTextBoxEl.removeAttribute('data-href')
+        // this is the case when the element has a link in the properties
+        // the bug is that you can not click in the text while editing text
+        const textBoxParents = getAllParents(this.currentTextBox)
+        new Array(this.currentTextBox, ...textBoxParents)
+        .map(el => getDomElement(getSiteDocument(), el))
+        .forEach(domEl => {
+          if(domEl.hasAttribute('href')) {
+            domEl.setAttribute('data-tmp-href', domEl.getAttribute('href'))
+            domEl.removeAttribute('href')
+            domEl.onclick = (e) => e.preventDefault()
+            this.onStopEditCbks.push(
+              () => {
+                domEl.setAttribute('href', domEl.getAttribute('data-tmp-href'))
+                domEl.removeAttribute('data-tmp-href')
+              }
+            )
           }
-        )
+        })
 
         // events and shortcuts
         this.onStopEditCbks.push(
