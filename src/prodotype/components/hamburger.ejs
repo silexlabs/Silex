@@ -129,30 +129,37 @@
   var isOpen = false;
   function close() {
     isOpen = false;
-    $('.hamburger-menu_<%- uid %>').removeClass('open');
-    $('.hamburger-menu_<%- uid %>').addClass('closed');
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.remove('open');
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.add('closed');
   }
   function open() {
     isOpen = true;
-    $('.hamburger-menu_<%- uid %>').addClass('open');
-    $('.hamburger-menu_<%- uid %>').removeClass('closed');
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.add('open');
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.remove('closed');
   }
   function toggle() {
     if(isOpen) close();
     else open();
   }
-  var silexElement = $('.hamburger-menu_<%- uid %>').closest('.editable-style');
-  function move(data) {
-    var offset = silexElement.offset();
-    $('.hamburger-menu_<%- uid %> .nav-container').css({
-      'transform': 'translate(' + (data.scrollLeft - (offset.left/data.scale)) + 'px, ' + (data.scrollTop - (offset.top/data.scale)) + 'px)'
-    });
-  }
-  $('.hamburger-menu_<%- uid %> .hamburger-btn').click(function() { toggle(); });
-  $(document).on('silex.scroll silex.resize', function(e) {
+  function scrollOrResize() {
     close();
-    move(window.silex);
-  });
-  close();
+    move();
+  }
+  var silexElement = document.querySelector('.hamburger-menu_<%- uid %>').closest('.editable-style');
+  function move() {
+    var data = window.silex
+    var rect = silexElement.getBoundingClientRect();
+    var offset = {
+      top: rect.top + data.scrollTop,
+      left: rect.left + data.scrollLeft,
+    };
+    var container = document.querySelector('.hamburger-menu_<%- uid %> .nav-container');
+    container.style.transform = 'translate(' + (data.scrollLeft - (offset.left/data.scale)) + 'px, ' + (data.scrollTop - (offset.top/data.scale)) + 'px)';
+  }
+  document.querySelector('.hamburger-menu_<%- uid %> .hamburger-btn').addEventListener('click', function() { toggle(); });
+  document.addEventListener('resize', scrollOrResize);
+  document.addEventListener('scroll', scrollOrResize);
+  scrollOrResize()
+  setTimeout(() => scrollOrResize(), 0)
 })();
 </script>
