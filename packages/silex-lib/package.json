@@ -113,7 +113,7 @@
     "request": "2.88.2",
     "responsize": "0.0.7",
     "serve-static": "1.14.1",
-    "silex-blank-templates": "^1.6.7",
+    "silex-blank-templates": "^1.6.8",
     "silex-templates": "^1.0.11",
     "sortablejs": "1.13.0",
     "source-map-support": "0.5.19",
