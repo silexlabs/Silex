@@ -1,14 +1,6 @@
-.silex-workspace {
-  transition: opacity .5s ease-out .25s;
-  opacity: 1;
-}
-// initial loader state, overriden by the css in index.pug
-.loader {
-  display: none;
-}
-// hide the whole workspace wile loading silex
-.loading-pending {
-  .silex-workspace {
-    opacity: 0; // also in index.pug
-  }
+.silex-loader {
+  display: flex;
+  color: #DDD;
+  justify-content: center;
+  align-items: center;
 }

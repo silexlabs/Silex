@@ -5,12 +5,12 @@ import * as cookieParser from 'cookie-parser'
 import * as express from 'express'
 import * as session from 'cookie-session'
 
-import { Config } from './ServerConfig'
+import Config from './config'
 import CloudExplorerRouter from './router/CloudExplorerRouter'
-import PublishRouter from './router/PublishRouter'
 import SslRouter from './router/SslRouter'
 import StaticRouter from './router/StaticRouter'
-import WebsiteRouter from './router/WebsiteRouter'
+// import PublishRouter from './router/PublishRouter'
+// import WebsiteRouter from './router/WebsiteRouter'
 
 function noCache(req, res, next) {
   res.header('Cache-Control', 'private,no-cache,no-store,must-revalidate,proxy-revalidate')
@@ -49,8 +49,8 @@ export default function SilexServer(config: Config) {
   // and for Silex tasks
   this.staticRouter = StaticRouter(this.config.staticOptions)
   this.ceRouter = CloudExplorerRouter(this.config.ceOptions)
-  this.websiteRouter = WebsiteRouter(this.config.serverOptions, this.ceRouter.unifile)
-  this.publishRouter = PublishRouter(this.config, this.ceRouter.unifile)
+  // this.websiteRouter = WebsiteRouter(this.config.serverOptions, this.ceRouter.unifile)
+  // this.publishRouter = PublishRouter(this.config, this.ceRouter.unifile)
   this.sslRouter = SslRouter(this.config.sslOptions, this.app)
   this.unifile = this.ceRouter.unifile // for access by third party
 }
@@ -59,8 +59,8 @@ SilexServer.prototype.start = function(cbk) {
   // use routers
   this.app.use(this.config.serverOptions.cePath, this.ceRouter) // CE handles cache headers
   this.app.use(withCache, this.staticRouter)
-  this.app.use(noCache, this.websiteRouter)
-  this.app.use(noCache, this.publishRouter)
+  // this.app.use(noCache, this.websiteRouter)
+  // this.app.use(noCache, this.publishRouter)
   this.app.use(this.sslRouter)
 
   // server 'loop'

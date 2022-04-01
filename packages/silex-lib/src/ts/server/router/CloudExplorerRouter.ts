@@ -1,6 +1,6 @@
 import * as CloudExplorer from 'cloud-explorer'
 import * as Os from 'os'
-import {CeOptions} from '../ServerConfig'
+import {CeOptions} from '../config'
 
 export default function(ceOptions: CeOptions) {
 

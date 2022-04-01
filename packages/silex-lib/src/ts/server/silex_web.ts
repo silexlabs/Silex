@@ -4,7 +4,7 @@
 'use strict'
 
 import 'source-map-support/register'
-import { Config } from './ServerConfig'
+import Config from './config'
 import SilexServer from './SilexServer'
 
 const config = new Config()

@@ -1,26 +1,15 @@
 {
   "name": "silex-website-builder",
   "description": "Free and easy website builder for everyone.",
-  "version": "2.7.34",
-  "version:frontend": "2.12",
-  "version:backwardcompat": "2.2.14",
+  "version": "3.0.0",
+  "version:backwardcompat": "3.0.0",
   "author": {
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "contributors": [
-    {
-      "name": "Jean-Baptiste Richardet",
-      "url": "https://github.com/JbIPS"
-    },
-    {
-      "name": "Tariq Benezza",
-      "url": "https://github.com/tariqbenezza"
-    }
-  ],
-  "main": "dist/server/server/index.js",
+  "main": "dist/server/index.js",
   "bin": {
-    "silex": "./dist/server/server/silex_web.js"
+    "silex": "./dist/server/silex_web.js"
   },
   "license": "(GPL-3.0 OR MPL-2.0)",
   "engines": {
@@ -39,12 +28,6 @@
       ],
       "extensions": "pug"
     },
-    "build:prodotype": {
-      "patterns": [
-        "src/prodotype/"
-      ],
-      "extensions": "*"
-    },
     "build:client:debug": {
       "patterns": [
         "src/ts/client/"
@@ -61,27 +44,20 @@
   "scripts": {
     "release": "",
     "watch": "npm-watch",
-    "start": "node dist/server/server/silex_web.js",
-    "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
+    "start": "node dist/server/silex_web.js",
+    "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/silex_web.js",
     "prepublishOnly": "npm run lint:fix && npm run build",
     "prepare": "npm run build",
-    "build": "run-s cleanup build:css:release build:html build:prodotype build:client:release build:server:release build:monaco-editor",
-    "cleanup": "mkdirp tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
+    "build": "run-s build:css:release build:html build:client:release build:server:release",
     "webpack": "webpack --config webpack.config.js",
-    "build:folders": "mkdirp dist/prodotype/components dist/prodotype/styles",
-    "build:components": "prodotype src/prodotype/components dist/prodotype/components/",
-    "build:styles": "prodotype src/prodotype/styles dist/prodotype/styles/",
-    "build:prodotype": "run-s build:folders lint:prodotype build:components build:styles",
-    "lint:prodotype": "ejslint src/prodotype/**/*.ejs",
-    "build:css:release": "lessc src/css/_styles.less dist/html/css/admin.css",
-    "build:css:debug": "lessc src/css/_styles.less dist/html/css/admin.css --source-map",
-    "build:html": "pug src/html/index.pug --out dist/html/ --no-debug",
-    "build:html:debug": "rm dist/html/index.html ; pug src/html/debug.pug --out dist/html/",
+    "build:css:release": "lessc src/css/index.less dist/client/css/admin.css",
+    "build:css:debug": "lessc src/css/index.less dist/client/css/admin.css --source-map",
+    "build:html": "pug src/html/index.pug --name dist/client/ --no-debug",
+    "build:html:debug": "pug src/html/debug.pug --pretty --out dist/client/ && mv dist/client/debug.html dist/client/index.html",
     "build:client:release": "webpack --config webpack.config.js",
     "build:client:debug": "webpack --config webpack.config.js",
     "build:server:release": "tsc -p tsconfig-server-release.json",
     "build:server:debug": "tsc -p tsconfig-server-debug.json",
-    "build:monaco-editor": "webpack --config webpack-monaco-editor.config.js",
     "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
     "lint:fix": "npm run lint -- --fix",
     "test": "jest",
@@ -95,27 +71,21 @@
     "cookie-parser": "1.4.5",
     "cookie-session": "2.0.0-beta.3",
     "cross-env": "7.0.3",
-    "drag-drop-stage-component": "1.0.34",
     "express": "4.17.1",
     "express-force-ssl": "0.3.2",
-    "font-awesome": "4.7.0",
-    "js-beautify": "1.13.2",
     "jsdom": "16.4.0",
     "lit-html": "^1.3.0",
     "mkdirp": "^1.0.4",
     "node_modules-path": "*",
     "normalize.css": "8.0.1",
     "object-path": "0.11.5",
-    "prodotype": "^1.0.27",
     "promise-sequential": "1.1.1",
     "redux": "4.0.5",
     "redux-undo": "1.0.1",
     "request": "2.88.2",
-    "responsize": "0.0.7",
     "serve-static": "1.14.1",
     "silex-blank-templates": "^1.6.8",
     "silex-templates": "^1.0.12",
-    "sortablejs": "1.13.0",
     "source-map-support": "0.5.19",
     "tags-input": "1.1.1",
     "wysihtml": "0.6.0-beta1"
@@ -128,14 +98,10 @@
     "@types/node": "14.14.20",
     "babel-jest": "26.6.3",
     "css-loader": "5.0.1",
-    "detect-browser": "5.2.0",
-    "ejs-lint": "^1.2.1",
     "eslint": "7.17.0",
     "file-loader": "6.2.0",
     "jest": "26.6.3",
     "less": "4.1.0",
-    "monaco-editor": "0.21.2",
-    "monaco-editor-webpack-plugin": "2.1.0",
     "nodemon": "2.0.7",
     "npm-run-all": "^4.1.5",
     "npm-watch": "0.7.0",
