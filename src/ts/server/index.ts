@@ -1,11 +1,9 @@
 'use strict'
 
-import { Config } from './ServerConfig'
+import Config from './config'
 import SilexServer from './SilexServer'
-import * as Api from './expose'
 
 export {
   Config,
   SilexServer,
-  Api,
 }

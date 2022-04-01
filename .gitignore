@@ -7,7 +7,5 @@
 node_modules
 *.log
 .vscode
-dist/client
-dist/server
-dist/prodotype
-dist/html
+dist
+.git

@@ -1,5 +1,7 @@
 extends index.pug
 
-block silex-options
-  script(type='text/javascript').
-    silex.Config = true
+block silex-start
+  script.
+    window.silex.start({
+      debug: true,
+    })
