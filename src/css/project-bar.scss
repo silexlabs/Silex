@@ -1,0 +1,52 @@
+@use "variables" as *;
+
+// button bar
+.#{$pn-prefix}project-bar-panel {
+  width: $projectBarWidth;
+  padding: 0;
+  .#{$pn-prefix}buttons {
+    flex-direction: column;
+    .#{$pn-prefix}btn {
+      margin: 5px 0;
+      padding: 5px;
+      &.#{$pn-prefix}active {
+        background-color: $lighterPrimaryColor;
+        width: $projectBarWidth;
+        box-shadow: none;
+     }
+    }
+  }
+  .logo {
+    background-image: url('../assets/logo-silex-small.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-color: transparent;
+  }
+}
+
+// panels
+.#{$pn-prefix}project-bar-container {
+  top: $topBarHeight;
+  width: $pagePanelWidth;
+  min-width: $pagePanelMinWidth;
+  height: calc(100% - $topBarHeight);
+  background-color: $lighterPrimaryColor;
+  &:not(.gjs-hidden) {
+    display: flex; // let the child take the whole height
+    flex-direction: column;
+  }
+  .project-bar__panel:not(.gjs-hidden) {
+    flex: 1;
+    display: flex; // let the child take the whole height
+    flex-direction: column;
+    background-color: $primaryColor;
+    .gjs-layer {
+      background-color: $primaryColor;
+    }
+  }
+  .project-bar__panel > * {
+    flex: 1;
+    display: initial;
+   }
+}
+

@@ -1,0 +1,11 @@
+@use "variables";
+@use "mixins";
+
+.silex-dialog {
+  transition: opacity variables.$transitionSpeedMedium ease;
+}
+.silex-dialog-hide {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity variables.$transitionSpeedMedium ease, visibility variables.$transitionSpeedSlow 1s ease;
+}

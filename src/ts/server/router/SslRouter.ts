@@ -1,17 +1,20 @@
 import * as express from 'express'
+
 import * as fs from 'fs'
 import * as https from 'https'
 
-export default function(sslOptions, app) {
+import { Config } from '../types';
+
+export default function(config: Config, app) {
   const router = express.Router()
 
   // SSL
   // force ssl if the env var SILEX_FORCE_HTTPS is set
-  if (sslOptions.forceHttps) {
+  if (config.sslOptions.forceHttps) {
     console.log('> Force SSL option is enabled')
     const forceSSL = require('express-force-ssl')
     app.set('forceSSLOptions', {
-      trustXFPHeader: !!sslOptions.trustXFPHeader,
+      trustXFPHeader: !!config.sslOptions.trustXFPHeader,
     })
     router.use(forceSSL)
   } else {
@@ -19,11 +22,11 @@ export default function(sslOptions, app) {
   }
 
   // SSL certificate
-  if (sslOptions.privateKey && sslOptions.certificate) {
-    console.log('> SSL certificate is enabled, found certificate:', sslOptions.certificate)
+  if (config.sslOptions.privateKey && config.sslOptions.certificate) {
+    console.log('> SSL certificate is enabled, found certificate:', config.sslOptions.certificate)
     try {
-      const privateKey = fs.readFileSync(sslOptions.privateKey).toString()
-      const certificate = fs.readFileSync(sslOptions.certificate).toString()
+      const privateKey = fs.readFileSync(config.sslOptions.privateKey).toString()
+      const certificate = fs.readFileSync(config.sslOptions.certificate).toString()
 
       const options = {
         key: privateKey,
@@ -32,8 +35,8 @@ export default function(sslOptions, app) {
         rejectUnauthorized: false,
       }
 
-      https.createServer(options, this).listen(sslOptions.sslPort, () => {
-        console.log('SSL: listening on port ', sslOptions.sslPort)
+      https.createServer(options, this).listen(config.sslOptions.sslPort, () => {
+        console.log('SSL: listening on port ', config.sslOptions.sslPort)
       })
     } catch (e) {
       console.error('SSL: load certificate failed.', e)

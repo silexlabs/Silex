@@ -11,7 +11,8 @@ html(lang="en", translate="no")
     block loading
       style.
         body {
-          background-color: #463a3c;
+          background-color: #444444;
+          font-family: Helvetica,sans-serif;
         }
         .silex-loader {
           display: none;
@@ -27,7 +28,6 @@ html(lang="en", translate="no")
       include ./templates/includes.pug
 
     block body-start
-      include ./templates/cloud-explorer.pug
       include ./templates/workspace.pug
 
     block body-end
@@ -36,4 +36,4 @@ html(lang="en", translate="no")
     block silex-start
       // Here you can use silex.config to hook into silex options before silex starts
       script.
-        window.silex.start({})
+        window.silex.start()

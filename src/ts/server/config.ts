@@ -6,137 +6,67 @@
  * @see {@link https://github.com/silexlabs/Silex/wiki/How-to-Host-An-Instance-of-Silex#environment-variables|Silex env vars}
  */
 
-// server options
-export interface ServerOptions {
-  debug: boolean
-  port: string
-  rootUrl: string
-  sessionSecret: string
-  cePath: string
-}
-// SSL options
-export interface SslOptions {
-  forceHttps: boolean
-  trustXFPHeader: boolean
-  privateKey: string
-  certificate: string
-  sslPort: string
-}
-
-// cloud explorer options
-export interface CeOptions {
-  enableFtp: boolean
-  enableSftp: boolean
-  enableWebdav: boolean
-  githubClientId: string
-  githubClientSecret: string
-  dropboxClientId: string
-  dropboxClientSecret: string
-  enableFs: boolean
-  fsRoot: string
-  fsShowHidden: boolean
-  rootUrl: string
-  unsplash?: {
-    accessKey: string;
-    appName: string;
-    offlineTestPath: string;
-  }
-  thumbnails?: {
-    width: number;
-    height: number;
-    extensions: string[];
-  }
-}
-
-export interface PublisherOptions {
-  rootUrl: string
-  port: string
-  skipHostingSelection: boolean
-  enableHostingGhPages: boolean
-  enableHostingUnifile: boolean
-}
-
-export type StaticOptions = {
-  routes: Array<{
-    route: string
-    path: string
-    module?: string
-  }>
-}
-
 /**
  * default config for Silex server
  */
-export default class Config {
-  ceOptions: CeOptions
-  serverOptions: ServerOptions
-  publisherOptions: PublisherOptions
-  sslOptions: SslOptions
-  staticOptions: StaticOptions
-  constructor() {
-    const PORT = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
-    this.serverOptions = {
-      debug: process.env.SILEX_DEBUG === 'true',
-      port: PORT,
-      rootUrl: process.env.SERVER_URL || `http://localhost:${PORT}`,
-      sessionSecret: process.env.SILEX_SESSION_SECRET || 'test session secret',
-      cePath: '/ce',
-    }
-    this.sslOptions = {
-      forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
-      trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER === 'true',
-      privateKey: process.env.SILEX_SSL_PRIVATE_KEY,
-      certificate: process.env.SILEX_SSL_CERTIFICATE,
-      sslPort: process.env.SSL_PORT || '443',
-    }
-    this.ceOptions = {
-      enableFtp: process.env.ENABLE_FTP === 'true',
-      enableSftp: process.env.ENABLE_SFTP !== 'false', // true by default
-      enableWebdav: process.env.ENABLE_WEBDAV === 'true',
-      githubClientId: process.env.GITHUB_CLIENT_ID,
-      githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
-      dropboxClientId: process.env.DROPBOX_CLIENT_ID,
-      dropboxClientSecret: process.env.DROPBOX_CLIENT_SECRET,
-      enableFs: this.serverOptions.debug || process.env.ENABLE_FS === 'true',
-      fsRoot: process.env.FS_ROOT,
-      fsShowHidden: process.env.FS_SHOW_HIDDEN === 'true',
-      rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
-      unsplash: {
-        accessKey: process.env.UNSPLASH_ACCESS_KEY,
-        appName: process.env.UNSPLASH_APP_NAME,
-        offlineTestPath: process.env.UNSPLASH_OFFLINE_TEST_PATH,
+import { Config } from './types';
+
+const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
+const debug = process.env.SILEX_DEBUG === 'true'
+
+export const config: Config = {
+  port,
+  debug,
+  url: process.env.SERVER_URL || `http://localhost:${port}`,
+  apiPath: '/api',
+  sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
+  sslOptions: {
+    forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
+    trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER === 'true',
+    privateKey: process.env.SILEX_SSL_PRIVATE_KEY,
+    certificate: process.env.SILEX_SSL_CERTIFICATE,
+    sslPort: process.env.SSL_PORT || '443',
+  },
+  staticOptions: {
+    routes: [
+      {
+        route: '/',
+        path: 'public',
+      }, {
+        route: '/',
+        path: 'dist/client',
+      }, {
+        route: '/libs/templates/silex-templates',
+        module: 'silex-templates',
+      }, {
+        route: '/libs/templates/silex-blank-templates',
+        module: 'silex-blank-templates',
       },
-      thumbnails: {
-        width: 255,
-        height: 255,
-        extensions: ['jpg', 'jpeg', 'png', 'svg'], // unsupported extensions will be replaced with an icon
+      {
+        path: 'dist',
+        module: 'grapesjs',
       },
-    }
-    this.publisherOptions = {
-      rootUrl: this.serverOptions.rootUrl,
-      port: this.serverOptions.port,
-      skipHostingSelection: process.env.SKIP_HOSTING_SELECTION === 'true',
-      enableHostingGhPages: process.env.ENABLE_HOSTING_GH_PAGES === 'true',
-      enableHostingUnifile: process.env.ENABLE_HOSTING_UNIFILE !== 'false', // true by default
-    }
-    this.staticOptions = {
-      routes: [
-        {
-          route: '/',
-          path: 'public',
-        }, {
-          route: '/',
-          path: 'dist/client',
-        }, {
-          route: '/libs/templates/silex-templates',
-          path: '',
-          module: 'silex-templates',
-        }, {
-          route: '/libs/templates/silex-blank-templates',
-          path: '',
-          module: 'silex-blank-templates',
-        },
-      ],
-    }
-  }
+      {
+        path: 'dist',
+        module: 'grapesjs-blocks-basic',
+      },
+      {
+        path: 'dist',
+        module: 'grapesjs-plugin-header',
+      },
+      {
+        path: 'dist',
+        module: 'grapesjs-plugin-header',
+      },
+      {
+        path: 'node_modules/grapesjs/dist/fonts',
+        route: '/fonts',
+      },
+    ]
+    // add project route for source maps
+    .concat(debug ? {
+      route: '/',
+      path: './',
+    } : []),
+  },
 }
