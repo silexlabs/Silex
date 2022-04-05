@@ -1,7 +1,7 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    "outDir": "dist/server/",
+    "outDir": "dist/",
     "target": "esnext",
     "watch": false,
     "inlineSourceMap": true,
@@ -9,8 +9,6 @@
     "removeComments": false
   },
   "include": [
-    "src/ts/server/silex_electron.ts",
-    "src/ts/server/silex_web.ts",
     "src/ts/server/index.ts"
   ]
 }

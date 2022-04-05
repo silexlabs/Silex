@@ -1,0 +1,42 @@
+@use "variables" as *;
+@use "mixins";
+
+.silex-workspace {
+  @include mixins.silex-ui-full;
+  display: flex;
+}
+
+button.silex-button, input.silex-button[type="button"], input.silex-button[type="submit"] {
+  cursor: pointer;
+  font-family: inherit;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e9ebeb;
+  border-bottom-color: #e1e3e3;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px 0 rgba(14, 30, 37, .12);
+  background-color: $lighterPrimaryColor;
+  border-color: transparent;
+  padding: 5px;
+}
+
+form.silex-form {
+  display: flex;
+  flex-direction: column;
+  .silex-form__element {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+  }
+  .silex-form__group {
+    column-count: 2;
+  }
+  footer {
+    border-top: 1px solid $lighterPrimaryColor;
+    padding: 10px 0;
+    margin-top: 30px;
+    text-align: right;
+  }
+}

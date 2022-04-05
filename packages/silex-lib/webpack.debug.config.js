@@ -3,8 +3,8 @@ const path = require('path');
 module.exports = {
   entry: './src/ts/client/expose.ts',
   //devtool: 'inline-source-map',
-  // devtool: 'source-map',
-  mode: 'production',
+  devtool: 'source-map',
+  mode: 'development',
   module: {
     rules: [
       {

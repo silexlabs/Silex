@@ -3,5 +3,6 @@ extends index.pug
 block silex-start
   script.
     window.silex.start({
+      ...silex.defaultConfig,
       debug: true,
     })

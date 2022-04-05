@@ -1,19 +1,23 @@
 import * as express from 'express'
 import * as nodeModules from 'node_modules-path'
-import * as Path from 'path'
 import * as serveStatic from 'serve-static'
-import { StaticOptions } from '../config'
+
+import * as Path from 'path'
+
+import { Config } from '../types';
 
 const rootPath = Path.join(__dirname, '../../..')
 
-export default function(staticOptions: StaticOptions) {
+export default function(config: Config) {
   const router = express.Router()
-  staticOptions.routes
+  config.staticOptions.routes
   .forEach(folder => {
     // either the module root folder or silex root folder
     const rootFolder = folder.module ? `${nodeModules(folder.module)}/${folder.module}` : rootPath
-    const path = Path.join(rootFolder, folder.path)
-    router.use(folder.route, serveStatic(path))
+    const path = Path.join(rootFolder, folder.path || '')
+    const route = folder.module && !folder.route ? `/libs/${ folder.module }` : folder.route
+    if (!route) throw new Error(`The config for static module requires either \`route\` or \`module\``)
+    router.use(route, serveStatic(path))
   })
   return router
 }

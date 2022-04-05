@@ -1,0 +1,13 @@
+/* Normalize css */
+@use "../../node_modules/normalize.css/normalize";
+@use "../../node_modules/grapesjs/dist/css/grapes.min";
+//@use "../../node_modules/grapesjs/src/styles/scss/main";
+
+/* Silex styles imports */
+@use "silex";
+@use "loader";
+@use "dialog";
+@use "grapesjs";
+@use "project-bar";
+@use "page-panel";
+
