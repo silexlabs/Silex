@@ -17,12 +17,36 @@ export const defaultSite: WebsiteData = {
   pages: [],
   assets: [],
   styles: [],
+  name: 'New website',
+  settings: {
+    description: '',
+    title: '',
+    head: '',
+    lang: 'en',
+    favicon: 'https://editor.silex.me/assets/favicon.png',
+    'og:title': '',
+    'og:description': '',
+    'og:image': '',
+  },
+}
+
+export interface WebsiteSettings {
+  description: string,
+  title: string,
+  lang: string,
+  head: string,
+  favicon: string,
+  'og:title': string,
+  'og:description': string,
+  'og:image': string,
 }
 
 export interface WebsiteData {
   pages: Page[],
   assets: Asset[],
   styles: Style[],
+  name: string,
+  settings: WebsiteSettings,
 }
 
 export interface Settings {

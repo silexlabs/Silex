@@ -7,6 +7,7 @@ let editor
 export function initEditor(config) {
   if(editor) throw new Error('Grapesjs editor already created')
   editor = grapesjs.init(config)
+
   // customize the editor
   ;['text', 'link']
   .forEach(id => editor.Blocks.get(id).set('category', 'Texts'))
@@ -27,6 +28,7 @@ export function initEditor(config) {
       editor.Panels.getPanel('views').buttons.remove('open-blocks')
       editor.Panels.getPanel('views').buttons.remove('open-layers')
       editor.Panels.getPanel('views').view.el.firstChild.style.justifyContent = 'initial' // align left
+      editor.Panels.getPanel('options').buttons.remove('export-template')
     })
   })
 }

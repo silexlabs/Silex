@@ -18,7 +18,7 @@ function addPage(editor, config) {
     name = `${newPageName} ${idx++}`
   }
   const page = editor.Pages.add({ name })
-  settingsPage(editor, config, page)
+  editor.runCommand(config.cmdOpenNewPageDialog, {page})
 }
 
 function removePage(editor, page) {
@@ -35,7 +35,7 @@ function removePage(editor, page) {
 }
 
 function settingsPage(editor, config, page) {
-  editor.runCommand(config.cmdOpenPageSettings, {page})
+  editor.runCommand(config.cmdOpenSettings, {page})
 }
 
 function renderPages(editor, config) {
