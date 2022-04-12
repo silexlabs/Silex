@@ -50,7 +50,7 @@
     "prepare": "npm run build",
     "build": "run-s build:css:release build:html build:client:release build:server:release",
     "webpack": "webpack --config webpack.config.js",
-    "build:css:release": "sass –no-source-map src/css/index.scss dist/client/css/admin.css",
+    "build:css:release": "sass --no-source-map src/css/index.scss dist/client/css/admin.css",
     "build:css:debug": "sass src/css/index.scss dist/client/css/admin.css",
     "build:html": "pug src/html/index.pug --out dist/client/ --no-debug",
     "build:html:debug": "pug src/html/debug.pug --pretty --out dist/client/ && mv dist/client/debug.html dist/client/index.html",
@@ -60,7 +60,7 @@
     "build:server:debug": "tsc -p tsconfig-server-debug.json",
     "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
     "lint:fix": "npm run lint -- --fix",
-    "test": "jest",
+    "test": "jest ; echo no tests yet",
     "test:watch": "jest --watch"
   },
   "dependencies": {
