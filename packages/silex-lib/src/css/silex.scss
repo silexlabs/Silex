@@ -4,9 +4,47 @@
 .silex-workspace {
   @include mixins.silex-ui-full;
   display: flex;
+  a {
+    color: inherit;
+  }
+  h2 {
+    font-size: 18px;
+    background: $lighterPrimaryColor;
+    padding: 8px;
+    margin: 0;
+    font-weight: normal;
+  }
+  h3 {
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: normal;
+  }
 }
 
-button.silex-button, input.silex-button[type="button"], input.silex-button[type="submit"] {
+// full screen settings
+.settings-dialog > div {
+  max-width: none;
+  width: 100%;
+  max-height: 100vh;
+  overflow: auto;
+  footer {
+    border-top: 1px solid $lighterPrimaryColor;
+    padding: 20px 0;
+    text-align: right;
+    position: fixed;
+    background-color: $primaryColor;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    &>*:last-child {
+      margin-right: 30px;
+    }
+  }
+}
+
+button.silex-button,
+input.silex-button[type="button"],
+input.silex-button[type="submit"] {
   cursor: pointer;
   font-family: inherit;
   color: #fff;
@@ -25,18 +63,25 @@ button.silex-button, input.silex-button[type="button"], input.silex-button[type=
 form.silex-form {
   display: flex;
   flex-direction: column;
+  padding-bottom: 100px; // leave space for fixed footer
+  button, input, optgroup, select, textarea {
+    background-color: $darkerPrimaryColor;
+    color: $secondaryColor;
+    padding: 5px;
+    border: none;
+  }
+  textarea {
+    width: 98% !important;
+  }
   .silex-form__element {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
-    padding: 10px 0;
+    padding: 10px 5px;
+    border: 1px solid $lighterPrimaryColor;
+    margin: 10px 0;
+    width: 98%;
   }
-  .silex-form__group {
+  .silex-form__group.col2 {
     column-count: 2;
-  }
-  footer {
-    border-top: 1px solid $lighterPrimaryColor;
-    padding: 10px 0;
-    margin-top: 30px;
-    text-align: right;
   }
 }

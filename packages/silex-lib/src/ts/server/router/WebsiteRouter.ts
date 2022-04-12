@@ -7,7 +7,7 @@ import * as _fs from 'fs'
 
 const fs = _fs.promises
 
-import { defaultSettings, defaultSite, Settings, Asset, Page, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
+import { WebsiteSettings, defaultSettings, defaultSite, Settings, Asset, Page, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
 
 //import BackwardCompat from '../utils/BackwardCompat'
 
@@ -82,6 +82,8 @@ async function writeWebsite(req, res) {
     assets: JSON.parse(req.body['assets']) as Asset[],
     pages: JSON.parse(req.body['pages']) as Page[],
     styles: JSON.parse(req.body['styles']) as Style[],
+    settings: req.body['settings'] as WebsiteSettings,
+    name: req.body['name'],
   } as WebsiteData
   try {
     const dataFile = Path.resolve(projectId, '.silex.data.json')
@@ -92,7 +94,7 @@ async function writeWebsite(req, res) {
     return
   }
 
-  const settings = await getSettings(projectId)
+  const settings = await getSettings(projectId) as Settings
   const htmlFolder = Path.resolve(projectId, settings.html.path)
   const cssFolder = Path.resolve(projectId, settings.css.path)
   try {
@@ -108,8 +110,22 @@ async function writeWebsite(req, res) {
     const name = page.type === 'main' ? 'index' : page.name
     let html
     try {
+      // add the settings to the HTML
       const $ = cheerio.load(page.frames[0].html)
       $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${name}.css" />`)
+      $('head').append(data.settings.head)
+      if(!$('head > title').length) $('head').append('<title/>')
+      $('head > title').html(data.settings.title)
+      if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
+      $('link[rel="icon"]').attr('href', data.settings.favicon)
+      // all metas
+      ;['description', 'og:title', 'og:description', 'og:image'].forEach(name => {
+        const sel = `meta[property="${name}"]`
+        if(!$(sel).length) $('head').append(`<meta property="${name}" />`)
+        $(sel).attr('content', data.settings[name])
+      })
+      $('html').attr('lang', data.settings.lang)
+      // render the HTML as string
       html = $.html()
     } catch (err) {
       console.error('Error manipulating DOM', page, err)

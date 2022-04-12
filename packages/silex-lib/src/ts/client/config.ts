@@ -1,8 +1,10 @@
 import * as blocksBasicPlugin from 'grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js'
 import * as headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
+
+import { pagePanelPlugin } from './grapesjs/page-panel';
+import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
-import { pagePanelPlugin, cmdTogglePages } from './grapesjs/page-panel'
-import { pageSettings, cmdOpenPageSettings } from './grapesjs/page-settings'
+import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
 
 /**
  * @fileoverview Silex config overridable from index.pug
@@ -19,7 +21,8 @@ blocksBasicPlugin
 headerPlugin
 projectBarPlugin
 pagePanelPlugin
-pageSettings
+newPageDialog
+settingsDialog
 
 export const defaultConfig = {
 
@@ -81,7 +84,8 @@ export const defaultConfig = {
       'gjs-blocks-basic',
       'project-bar',
       'page-panel',
-      'page-settings',
+      'new-page-dialog',
+      'settings-dialog',
     ],
     pluginsOpts: {
       'gjs-blocks-basic': {
@@ -107,27 +111,32 @@ export const defaultConfig = {
             command: 'open-dash',
           }, {
             id: 'block-manager-btn',
-            className: 'block-manager-btn fa fa-fw fa-plus',
+            className: 'block-manager-btn fa fa-fw fa-plus-square',
             attributes: { title: 'Insert new elements', containerClassName: 'block-manager-container', },
             command: 'open-blocks',
           }, {
             id: 'layer-manager-btn',
             className: 'layer-manager-btn fa fa-fw fa-list',
-            attributes: { title: 'Site layers', containerClassName: 'layer-manager-container', },
+            attributes: { title: 'Layers', containerClassName: 'layer-manager-container', },
             command: 'open-layers',
           }, {
             id: 'page-panel-btn',
             className: 'page-panel-btn fa fa-fw fa-file',
-            attributes: { title: 'Show pages', containerClassName: 'page-panel-container', },
+            attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
             command: 'open-pages',
+          }, {
+            id: 'settings-dialog-btn',
+            className: 'page-panel-btn fa fa-fw fa-cog',
+            attributes: { title: 'Settings' },
+            command: 'open-settings',
           },
         ],
       },
       'page-panel': {
-        cmdOpenPageSettings,
+        cmdOpenNewPageDialog,
+        cmdOpenSettings,
         appendTo: '.page-panel-container',
       }
     },
   },
 }
-
