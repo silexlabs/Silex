@@ -4,7 +4,7 @@ import * as serveStatic from 'serve-static'
 
 import * as Path from 'path'
 
-import { Config } from '../types';
+import { Config } from '../types'
 
 const rootPath = Path.join(__dirname, '../../..')
 

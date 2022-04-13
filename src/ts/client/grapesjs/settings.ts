@@ -2,17 +2,17 @@ import {html, render} from 'lit-html'
 import {live} from 'lit-html/directives/live.js'
 import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 
-import { WebsiteSettings } from '../../types';
+import { WebsiteSettings } from '../../types'
 
-const name = 'settings-dialog'
+const pluginName = 'settings-dialog'
 const el = document.createElement('div')
 let modal
 
 export const cmdOpenSettings = 'open-settings'
 
-export const settingsDialog = grapesjs.plugins.add(name, (editor, opts) => {
+export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) => {
   editor.Commands.add(cmdOpenSettings, {
-    run: (editor, sender, {page}) => {
+    run: (_, sender, {page}) => {
       modal = editor.Modal.open({
         title: page ? 'Page settings' : 'Site Settings',
         content: '',

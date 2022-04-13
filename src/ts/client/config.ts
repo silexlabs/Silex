@@ -1,7 +1,7 @@
 import * as blocksBasicPlugin from 'grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js'
 import * as headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
 
-import { pagePanelPlugin } from './grapesjs/page-panel';
+import { pagePanelPlugin } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'

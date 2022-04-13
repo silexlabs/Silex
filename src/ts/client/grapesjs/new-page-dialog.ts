@@ -11,7 +11,7 @@ export const cmdOpenNewPageDialog = 'new-page-dialog'
 
 export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
   editor.Commands.add(cmdOpenNewPageDialog, {
-    run: (editor, sender, {page}) => {
+    run: (_, sender, {page}) => {
       modal = editor.Modal.open({
         title: 'New Page',
         content: '',
@@ -33,7 +33,7 @@ export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
     },
     stop: () => {
       modal.close()
-      //el.innerHTML = ''
+      // el.innerHTML = ''
     },
   })
 })

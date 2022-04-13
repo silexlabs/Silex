@@ -3,7 +3,7 @@ import * as express from 'express'
 import * as fs from 'fs'
 import * as https from 'https'
 
-import { Config } from '../types';
+import { Config } from '../types'
 
 export default function(config: Config, app) {
   const router = express.Router()

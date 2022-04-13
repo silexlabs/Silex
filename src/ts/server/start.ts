@@ -23,7 +23,7 @@ function withCache(req, res, next) {
   next()
 }
 
-let isReady = false
+const isReady = false
 export async function start(config): Promise<Application> {
   return new Promise((resolve, reject) => {
     const app = express()
