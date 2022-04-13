@@ -41,13 +41,10 @@ export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
 function displayDialog(editor, config, page) {
   render(html`
     <form class="silex-form">
-      <div class="silex-form__group">
-        <label class="silex-form__element">
-          <h3>Name</h3>
-          <p>Site name for you and your team.</p>
-          <input type="text" name="name" .value=${live(page.getName() || '')}/>
-        </label>
-      </div>
+      <label class="silex-form__element">
+        <h3>Name</h3>
+        <input type="text" name="name" .value=${live(page.getName() || '')}/>
+      </label>
       <footer>
         <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenNewPageDialog)} value="Cancel">
         <input class="silex-button" type="submit" value="Ok">
