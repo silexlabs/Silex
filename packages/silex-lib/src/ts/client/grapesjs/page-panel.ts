@@ -1,7 +1,7 @@
 import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 import {html, render} from 'lit-html'
 
-const name = 'page-panel'
+const pluginName = 'page-panel'
 let open
 
 export const cmdTogglePages = 'open-page-panel'
@@ -13,11 +13,11 @@ function addPage(editor, config) {
   const pages = editor.Pages.getAll()
   let idx = 1
   const newPageName = config.newPageName || 'New page'
-  let name = newPageName
-  while(pages.find(p => p.getName() === name)) {
-    name = `${newPageName} ${idx++}`
+  let pageName = newPageName
+  while(pages.find(p => p.getName() === pageName)) {
+    pageName = `${newPageName} ${idx++}`
   }
-  const page = editor.Pages.add({ name })
+  const page = editor.Pages.add({ name: pageName })
   editor.runCommand(config.cmdOpenNewPageDialog, {page})
 }
 
@@ -80,7 +80,7 @@ function renderPages(editor, config) {
   </div>`
 }
 
-export const pagePanelPlugin = grapesjs.plugins.add(name, (editor, opts) => {
+export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
   const el = document.createElement('div')
   el.classList.add('pages__wrapper')
   // update

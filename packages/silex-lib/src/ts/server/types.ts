@@ -17,10 +17,10 @@ export interface SslOptions {
 }
 
 export type StaticOptions = {
-  routes: Array<{
+  routes: {
     path?: string
     route?: string
     module?: string
-  }>
+  }[]
 }
 

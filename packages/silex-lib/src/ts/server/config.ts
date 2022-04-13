@@ -9,7 +9,7 @@
 /**
  * default config for Silex server
  */
-import { Config } from './types';
+import { Config } from './types'
 
 const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
 const debug = process.env.SILEX_DEBUG === 'true'

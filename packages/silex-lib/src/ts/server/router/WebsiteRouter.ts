@@ -9,7 +9,7 @@ const fs = _fs.promises
 
 import { WebsiteSettings, defaultSettings, defaultSite, Settings, Asset, Page, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
 
-//import BackwardCompat from '../utils/BackwardCompat'
+// import BackwardCompat from '../utils/BackwardCompat'
 
 export default function WebsiteRouter() {
   // const backwardCompat = new BackwardCompat(rootUrl)
@@ -79,11 +79,11 @@ async function getSettings(projectId): Promise<Settings> {
 async function writeWebsite(req, res) {
   const projectId = req.query.projectId
   const data = {
-    assets: JSON.parse(req.body['assets']) as Asset[],
-    pages: JSON.parse(req.body['pages']) as Page[],
-    styles: JSON.parse(req.body['styles']) as Style[],
-    settings: req.body['settings'] as WebsiteSettings,
-    name: req.body['name'],
+    assets: JSON.parse(req.body.assets) as Asset[],
+    pages: JSON.parse(req.body.pages) as Page[],
+    styles: JSON.parse(req.body.styles) as Style[],
+    settings: req.body.settings as WebsiteSettings,
+    name: req.body.name,
   } as WebsiteData
   try {
     const dataFile = Path.resolve(projectId, '.silex.data.json')
@@ -107,22 +107,22 @@ async function writeWebsite(req, res) {
   }
   data.pages
   .forEach(async page => {
-    const name = page.type === 'main' ? 'index' : page.name
+    const pageName = page.type === 'main' ? 'index' : page.name
     let html
     try {
       // add the settings to the HTML
       const $ = cheerio.load(page.frames[0].html)
-      $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${name}.css" />`)
+      $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${pageName}.css" />`)
       $('head').append(data.settings.head)
       if(!$('head > title').length) $('head').append('<title/>')
       $('head > title').html(data.settings.title)
       if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
       $('link[rel="icon"]').attr('href', data.settings.favicon)
       // all metas
-      ;['description', 'og:title', 'og:description', 'og:image'].forEach(name => {
-        const sel = `meta[property="${name}"]`
-        if(!$(sel).length) $('head').append(`<meta property="${name}" />`)
-        $(sel).attr('content', data.settings[name])
+      ;['description', 'og:title', 'og:description', 'og:image'].forEach(prop => {
+        const sel = `meta[property="${prop}"]`
+        if(!$(sel).length) $('head').append(`<meta property="${prop}" />`)
+        $(sel).attr('content', data.settings[prop])
       })
       $('html').attr('lang', data.settings.lang)
       // render the HTML as string
@@ -133,8 +133,8 @@ async function writeWebsite(req, res) {
       return
     }
     try {
-      await fs.writeFile(Path.resolve(htmlFolder, name + '.html'), html)
-      await fs.writeFile(Path.resolve(cssFolder, name + '.css'), page.frames[0].css)
+      await fs.writeFile(Path.resolve(htmlFolder, pageName + '.html'), html)
+      await fs.writeFile(Path.resolve(cssFolder, pageName + '.css'), page.frames[0].css)
     } catch (err) {
       console.error('Error writing file', page, err)
       res.status(400).json({ message: 'Error writing file', error: JSON.stringify(err)})
@@ -211,10 +211,10 @@ async function writeAsset(req, res) {
   await fs.mkdir(uploadDir, { recursive: true,})
   const form = formidable({
     uploadDir,
-    filename: (name, ext, part, form) => `${name}${ext}`,
+    filename: (name, ext, part, _form) => `${name}${ext}`,
     multiples: true,
     keepExtensions: true,
-  });
+  })
 
   form.parse(req, (err, fields, files) => {
     if (err) {
@@ -222,7 +222,7 @@ async function writeAsset(req, res) {
       res
       .status(400)
       .json({ message: 'Error parsing upload data', error: JSON.stringify(err)})
-      return;
+      return
     }
     const data = [].concat(files['files[]']) // may be an array or 1 element
     .map(file => {
@@ -230,5 +230,5 @@ async function writeAsset(req, res) {
       return `${settings.prefix}${settings.assets.path}/${originalFilename}?projectId=${projectId}`
     })
     res.json({ data })
-  });
+  })
 }
