@@ -11,3 +11,13 @@
 @use "project-bar";
 @use "page-panel";
 
+.container-png::before {
+  content: " ";
+  background-image: url("../assets/container.png");
+  height: 30px;
+  width: 30px;
+  margin: auto;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
