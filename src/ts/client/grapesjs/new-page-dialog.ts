@@ -38,6 +38,11 @@ export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
   })
 })
 
+function onImport(editor, page) {
+  editor.Pages.select(page)
+  editor.runCommand('gjs-open-import-webpage')
+}
+
 function displayDialog(editor, config, page) {
   render(html`
     <form class="silex-form">
@@ -46,6 +51,7 @@ function displayDialog(editor, config, page) {
         <input type="text" name="name" .value=${live(page.getName() || '')}/>
       </label>
       <footer>
+        <input class="silex-button" type="button" @click=${e => onImport(editor, page)} value="Import from website">
         <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenNewPageDialog)} value="Cancel">
         <input class="silex-button" type="submit" value="Ok">
       </footer>
