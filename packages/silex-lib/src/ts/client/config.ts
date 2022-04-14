@@ -5,6 +5,7 @@ import { pagePanelPlugin } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
+import { blocksPlugin } from './grapesjs/blocks'
 
 /**
  * @fileoverview Silex config overridable from index.pug
@@ -23,6 +24,7 @@ projectBarPlugin
 pagePanelPlugin
 newPageDialog
 settingsDialog
+blocksPlugin
 
 export const defaultConfig = {
 
@@ -81,6 +83,7 @@ export const defaultConfig = {
 
     plugins: [
       'grapesjs-plugin-header',
+      'blocks',
       'gjs-blocks-basic',
       'project-bar',
       'page-panel',
@@ -142,7 +145,7 @@ export const defaultConfig = {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
-      }
+      },
     },
   },
 }
