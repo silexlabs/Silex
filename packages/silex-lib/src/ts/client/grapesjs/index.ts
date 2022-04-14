@@ -1,4 +1,5 @@
 import * as grapesjs from 'grapesjs/dist/grapes.min.js'
+import openImport from './openImport'
 
 // import { initStorage } from './storage'
 
@@ -16,6 +17,7 @@ export function initEditor(config) {
   ;['map']
   .forEach(id => editor.Blocks.get(id).set('category', 'Components'))
 
+  editor.Commands.add('gjs-open-import-webpage', openImport(editor, config.importWebpage))
   editor.on('load', () => {
      // // move the options panel to the sidebar
      // const optionsEl = editor.Panels.getPanel('options').view.el

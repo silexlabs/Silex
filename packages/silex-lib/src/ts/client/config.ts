@@ -87,6 +87,12 @@ export const defaultConfig = {
       'new-page-dialog',
       'settings-dialog',
     ],
+    importWebpage: {
+      modalImportLabel: '',
+      modalImportContent: 'Paste a web page HTML code here.',
+      modalImportButton: 'Import',
+      modalImportTitle: 'Import from website',
+    },
     pluginsOpts: {
       'gjs-blocks-basic': {
         category: catBasic,
