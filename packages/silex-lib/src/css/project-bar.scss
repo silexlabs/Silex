@@ -34,12 +34,14 @@
   &:not(.gjs-hidden) {
     display: flex; // let the child take the whole height
     flex-direction: column;
+    min-width: 200px;
   }
   .project-bar__panel:not(.gjs-hidden) {
     flex: 1;
     display: flex; // let the child take the whole height
     flex-direction: column;
     background-color: $primaryColor;
+    overflow: auto;
     .gjs-layer {
       background-color: $primaryColor;
     }
