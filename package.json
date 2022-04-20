@@ -76,6 +76,7 @@
     "formidable": "^2.0.1",
     "grapesjs": "^0.18.4",
     "grapesjs-blocks-basic": "^0.1.8",
+    "grapesjs-lory-slider": "^0.1.5",
     "grapesjs-plugin-forms": "^2.0.1",
     "grapesjs-plugin-header": "^0.1.54",
     "lit-html": "^2.2.2",

@@ -60,6 +60,7 @@ export const blocksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
           type: 'link',
           editable: false,
           droppable: true,
+          resizable: true,
           style:{
             display: 'inline-block',
             padding: '5px',
