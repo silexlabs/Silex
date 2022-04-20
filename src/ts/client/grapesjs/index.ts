@@ -32,6 +32,9 @@ export function initEditor(config) {
       editor.Panels.getPanel('views').view.el.firstChild.style.justifyContent = 'initial' // align left
       editor.Panels.getPanel('options').buttons.remove('export-template')
     })
+
+    // use the style filter plugin
+    editor.StyleManager.addProperty('extra',{ extend: 'filter' })
   })
 }
 
