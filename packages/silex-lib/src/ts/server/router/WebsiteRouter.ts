@@ -107,24 +107,30 @@ async function writeWebsite(req, res) {
   }
   data.pages
   .forEach(async page => {
+    // page settings override site settings
+    function getSetting(name) {
+      if(page.settings && page.settings[name]) return page.settings[name]
+        return data.settings[name]
+    }
+    // update HTML with data from the settings
     const pageName = page.type === 'main' ? 'index' : page.name
     let html
     try {
       // add the settings to the HTML
       const $ = cheerio.load(page.frames[0].html)
       $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${pageName}.css" />`)
-      $('head').append(data.settings.head)
+      $('head').append(getSetting('head'))
       if(!$('head > title').length) $('head').append('<title/>')
-      $('head > title').html(data.settings.title)
+      $('head > title').html(getSetting('title'))
       if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
-      $('link[rel="icon"]').attr('href', data.settings.favicon)
+      $('link[rel="icon"]').attr('href', getSetting('favicon'))
       // all metas
       ;['description', 'og:title', 'og:description', 'og:image'].forEach(prop => {
         const sel = `meta[property="${prop}"]`
         if(!$(sel).length) $('head').append(`<meta property="${prop}" />`)
-        $(sel).attr('content', data.settings[prop])
+        $(sel).attr('content', getSetting(prop))
       })
-      $('html').attr('lang', data.settings.lang)
+      $('html').attr('lang', getSetting('lang'))
       // render the HTML as string
       html = $.html()
     } catch (err) {

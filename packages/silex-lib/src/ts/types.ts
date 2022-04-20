@@ -67,6 +67,7 @@ export interface Page {
   id: string,
   type?: string,
   frames: Frame[],
+  settings?: WebsiteSettings,
 }
 
 export interface Frame {

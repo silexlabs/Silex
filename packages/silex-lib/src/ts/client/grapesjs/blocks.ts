@@ -49,7 +49,26 @@ export const blocksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
         },
       },
     },
-    createContainerDef(editor)
+    createContainerDef(editor),
+    {
+      id: 'link-block',
+      def: {
+        category: 'Containers',
+        label: 'Link Block',
+        attributes: { class: 'fa fa-link' },
+        content: {
+          type: 'link',
+          editable: false,
+          droppable: true,
+          style:{
+            display: 'inline-block',
+            padding: '5px',
+            'min-height': '100px',
+            'width': '100px'
+          }
+        },
+      },
+    },
   ]
   .forEach(block => editor.BlockManager.add(block.id, block.def))
 })

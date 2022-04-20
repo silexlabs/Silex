@@ -51,7 +51,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
   const settings = model.get('settings') || {} as WebsiteSettings
   model.set('settings', settings)
   render(html`
-    <p>The page settings and the site settings will be merged, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
+    <p>The page settings will override site settings, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
     <form class="silex-form">
       <h2>General settings</h2>
       <div class="silex-form__group col2">
