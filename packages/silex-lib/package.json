@@ -79,6 +79,7 @@
     "grapesjs-lory-slider": "^0.1.5",
     "grapesjs-plugin-forms": "^2.0.1",
     "grapesjs-plugin-header": "^0.1.54",
+    "grapesjs-touch": "^0.1.1",
     "lit-html": "^2.2.2",
     "mkdirp": "^1.0.4",
     "node_modules-path": "*",

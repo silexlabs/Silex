@@ -1,6 +1,7 @@
-import * as blocksBasicPlugin from 'grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js'
-import * as headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
-import * as sliderPlugin from 'grapesjs-lory-slider/dist/grapesjs-lory-slider.min.js'
+import blocksBasicPlugin from 'grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js'
+import headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
+import sliderPlugin from 'grapesjs-lory-slider/dist/grapesjs-lory-slider.min.js'
+import touchPlugin from 'grapesjs-touch/dist/grapesjs-touch.min.js'
 
 import { pagePanelPlugin } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -18,16 +19,6 @@ const catMedia = 'Media'
 const projectId = new URL(location.href).searchParams.get('projectId')
 const loadEndpoint = `/website/?projectId=${projectId}`
 const uploadEndpoint = `/assets/?projectId=${projectId}`
-
-// reference to avoid removal by typescript
-blocksBasicPlugin
-headerPlugin
-projectBarPlugin
-pagePanelPlugin
-newPageDialog
-settingsDialog
-blocksPlugin
-sliderPlugin
 
 export const defaultConfig = {
 
@@ -63,14 +54,15 @@ export const defaultConfig = {
     container: '#gjs',
 
     plugins: [
-      'grapesjs-plugin-header',
-      'blocks',
-      'gjs-blocks-basic',
-      'project-bar',
-      'page-panel',
-      'new-page-dialog',
-      'settings-dialog',
-      'grapesjs-lory-slider',
+      settingsDialog,
+      newPageDialog,
+      pagePanelPlugin,
+      projectBarPlugin,
+      headerPlugin,
+      blocksBasicPlugin,
+      blocksPlugin,
+      sliderPlugin,
+      touchPlugin,
     ],
     importWebpage: {
       modalImportLabel: '',
@@ -79,11 +71,11 @@ export const defaultConfig = {
       modalImportTitle: 'Import from website',
     },
     pluginsOpts: {
-      'gjs-blocks-basic': {
+      [blocksBasicPlugin]: {
         category: catBasic,
         flexGrid: true,
       },
-      'grapesjs-plugin-header': {
+      [headerPlugin]: {
         category: catText,
         labelN1: 'Heading 1 (H1)',
         labelN2: 'Heading 2 (H2)',
@@ -92,7 +84,7 @@ export const defaultConfig = {
         labelN5: 'Heading 5 (H5)',
         labelN6: 'Heading 6 (H6)',
       },
-      'project-bar': {
+      [projectBarPlugin]: {
         panels: [
           {
             id: 'dash',
@@ -123,17 +115,17 @@ export const defaultConfig = {
           },
         ],
       },
-      'page-panel': {
+      [pagePanelPlugin]: {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
       },
 
-      'grapesjs-lory-slider': {
+      [sliderPlugin]: {
         sliderBlock: {
           category: catMedia,
         },
-      }
+      },
     },
   },
 }
