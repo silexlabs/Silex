@@ -2,6 +2,9 @@ import blocksBasicPlugin from 'grapesjs-blocks-basic/dist/grapesjs-blocks-basic.
 import headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
 import sliderPlugin from 'grapesjs-lory-slider/dist/grapesjs-lory-slider.min.js'
 import touchPlugin from 'grapesjs-touch/dist/grapesjs-touch.min.js'
+import styleFilterPlugin from 'grapesjs-style-filter'
+import formPlugin from 'grapesjs-plugin-forms/dist/grapesjs-plugin-forms.min.js'
+import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
 
 import { pagePanelPlugin } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -31,13 +34,17 @@ export const defaultConfig = {
    * Grapesjs config
    */
   editor: {
+    container: '#gjs',
     height: '100%',
     showOffsets: 1,
     showDevices: 1,
+
     pageManager: true,
+
     layerManager: {
       appendTo: '.layer-manager-container',
     },
+
     blockManager: {
       appendTo: '.block-manager-container',
     },
@@ -45,13 +52,13 @@ export const defaultConfig = {
     assetManager: {
       upload: uploadEndpoint,
     },
+
     storageManager: {
       id: '', // do not add a prefix to the saved object
       type: 'remote',
       urlStore: loadEndpoint,
       urlLoad: loadEndpoint,
     },
-    container: '#gjs',
 
     plugins: [
       settingsDialog,
@@ -63,6 +70,9 @@ export const defaultConfig = {
       blocksPlugin,
       sliderPlugin,
       touchPlugin,
+      styleFilterPlugin,
+      formPlugin,
+      codePlugin,
     ],
     importWebpage: {
       modalImportLabel: '',
@@ -125,6 +135,12 @@ export const defaultConfig = {
         sliderBlock: {
           category: catMedia,
         },
+      },
+      [codePlugin]: {
+        blockLabel: 'HTML',
+        blockCustomCode: {
+          category: 'Components',
+        }
       },
     },
   },
