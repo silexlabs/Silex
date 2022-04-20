@@ -56,8 +56,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
       <h2>General settings</h2>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
-          <h3>Name</h3>
-          <p>Site name for you and your team.</p>
+          <h3>${model.getHtml ? 'Site name' : 'Page name'}</h3>
+          <p>${model.getHtml ? 'The project name in the editor, for you and your team.' : 'Label of the page in the editor, and file name of the HTML page.'}</p>
           <input type="text" name="name" .value=${live(model.get('name') || '')}/>
         </label>
         <label class="silex-form__element">
