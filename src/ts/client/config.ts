@@ -6,11 +6,12 @@ import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms/dist/grapesjs-plugin-forms.min.js'
 import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
 
-import { pagePanelPlugin } from './grapesjs/page-panel'
+import { pagePanelPlugin, cmdTogglePages } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
 import { blocksPlugin } from './grapesjs/blocks'
+import { internalLinksPlugin } from './grapesjs/internal-links'
 
 /**
  * @fileoverview Silex config overridable from index.pug
@@ -19,6 +20,7 @@ import { blocksPlugin } from './grapesjs/blocks'
 const catBasic = 'Containers'
 const catText = 'Texts'
 const catMedia = 'Media'
+const catComponents = 'Components'
 const projectId = new URL(location.href).searchParams.get('projectId')
 const loadEndpoint = `/website/?projectId=${projectId}`
 const uploadEndpoint = `/assets/?projectId=${projectId}`
@@ -61,10 +63,10 @@ export const defaultConfig = {
     },
 
     plugins: [
+      projectBarPlugin, // has to be before panels and dialogs
       settingsDialog,
       newPageDialog,
       pagePanelPlugin,
-      projectBarPlugin,
       headerPlugin,
       blocksBasicPlugin,
       blocksPlugin,
@@ -73,6 +75,7 @@ export const defaultConfig = {
       styleFilterPlugin,
       formPlugin,
       codePlugin,
+      internalLinksPlugin,
     ],
     importWebpage: {
       modalImportLabel: '',
@@ -116,12 +119,12 @@ export const defaultConfig = {
             id: 'page-panel-btn',
             className: 'page-panel-btn fa fa-fw fa-file',
             attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
-            command: 'open-pages',
+            command: cmdTogglePages,
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa fa-fw fa-cog',
             attributes: { title: 'Settings' },
-            command: 'open-settings',
+            command: cmdOpenSettings,
           },
         ],
       },
@@ -139,7 +142,7 @@ export const defaultConfig = {
       [codePlugin]: {
         blockLabel: 'HTML',
         blockCustomCode: {
-          category: 'Components',
+          category: catComponents,
         }
       },
     },

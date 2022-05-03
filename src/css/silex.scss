@@ -68,6 +68,14 @@ input.silex-button[type="submit"] {
   padding: 5px;
 }
 
+.silex-input {
+  appearance: initial;
+}
+
+.silex-label {
+  display: block;
+}
+
 form.silex-form {
   display: flex;
   flex-direction: column;

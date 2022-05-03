@@ -85,7 +85,7 @@ export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =
   el.classList.add('pages__wrapper')
   // update
   const doRender = () => render(renderPages(editor, opts), el)
-  editor.on('page', (...args) => {
+  editor.on('page', () => {
     doRender()
   })
   editor.on('load', () => {
