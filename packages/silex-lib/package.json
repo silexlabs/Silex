@@ -60,8 +60,8 @@
     "build:server:debug": "tsc -p tsconfig-server-debug.json",
     "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
     "lint:fix": "npm run lint -- --fix",
-    "test": "jest ; echo no tests yet",
-    "test:watch": "jest --watch"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },
   "dependencies": {
     "adm-zip": "^0.5.9",
