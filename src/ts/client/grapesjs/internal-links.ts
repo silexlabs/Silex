@@ -1,6 +1,6 @@
 import {html, render} from 'lit-html'
 import {map} from 'lit-html/directives/map.js'
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
+import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { Page } from '../../types';
 
@@ -17,32 +17,45 @@ const options: grapesjs.SelectOption = [
 export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
   // utility functions
   function getPageLink(pageName: string = 'index') {
-    return `./${pageName}.html`
+    const slug = pageName
+      .toLowerCase()
+      .replace(/[^a-z0-9 -]/g, '')
+      // Collapse whitespace and replace by -
+      .replace(/\s+/g, '-')
+      // Collapse dashes
+      .replace(/-+/g, '-')
+    return `./${slug}.html`
   }
   // update links when a page link changes
-  function getAllComponents(models = editor.getComponents().models) {
-    if(models && models.length) {
-      const children = models.map(m => m.components().models).flat()
-      const allChildren = getAllComponents(children)
-      return models.concat(allChildren)
-    }
-    return []
+  // FIXME: replace with component.onAll
+  function onAll(cbk) {
+    editor.Pages.getAll()
+    .forEach(page => {
+      page.getMainComponent()
+      .onAll(cbk)
+    })
   }
   editor.on('page', ({ event, page }) => {
     switch (event) {
       case 'change:name':
-        console.info('renamed page from', page.previous('name'), 'to', page.get('name'), '=> updating links:', getAllComponents().filter(c => c.getAttributes().href === getPageLink(page.previous('name'))))
         // update all links to this page
-        getAllComponents()
-          .filter(c => c.getAttributes().href === getPageLink(page.previous('name')))
-          .forEach(c => c.setAttributes({
-            href: getPageLink(page.get('name')),
-          }))
+        onAll(component => {
+          if(component.getAttributes().href === getPageLink(page.previous('name'))) {
+            component.setAttributes({
+              href: getPageLink(page.get('name')),
+            })
+          }
+        })
         break
       case 'remove':
         // mark all links as issues
-        const issues = getAllComponents()
-          .filter(c => c.getAttributes().href === getPageLink(page.previous('name')))
+        const issues = []
+        onAll(component => {
+          console.log(component.getAttributes().href, getPageLink(page.previous('name')), page.previous('name'))
+          if(component.getAttributes().href === getPageLink(page.previous('name'))) {
+            issues.push(component)
+          }
+        })
         // FIXME: warn the user about links in error
         console.error('FIXME: warn the user about', issues.length, 'links in error')
         break
