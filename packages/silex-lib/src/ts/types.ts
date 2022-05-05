@@ -5,12 +5,12 @@
 export const WEBSITE_CONTEXT_RUNTIME_CLASS_NAME = 'silex-runtime'
 export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
 
-// paths with beginning and eding **without** slash
+// Note: paths begin and end **without** slash
 export const defaultSettings: Settings = {
   assets: { path: 'assets' },
   html: { path: '' },
   css: { path: 'css' },
-  prefix: '', // src="${settings.prefix}${settings.assets.path}/image.jpg"
+  prefix: '', // for images src: src="${settings.prefix}${settings.assets.path}/image.jpg"
 }
 
 export const defaultSite: WebsiteData = {
