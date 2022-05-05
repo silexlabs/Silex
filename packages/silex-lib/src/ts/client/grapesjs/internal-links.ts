@@ -3,6 +3,7 @@ import {map} from 'lit-html/directives/map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { Page } from '../../types';
+import { getPageLink } from '../../utils';
 
 // constants
 const pluginName = 'internal-links'
@@ -15,19 +16,7 @@ const options: grapesjs.SelectOption = [
 
 // plugin code
 export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
-  // utility functions
-  function getPageLink(pageName: string = 'index') {
-    const slug = pageName
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      // Collapse whitespace and replace by -
-      .replace(/\s+/g, '-')
-      // Collapse dashes
-      .replace(/-+/g, '-')
-    return `./${slug}.html`
-  }
   // update links when a page link changes
-  // FIXME: replace with component.onAll
   function onAll(cbk) {
     editor.Pages.getAll()
     .forEach(page => {

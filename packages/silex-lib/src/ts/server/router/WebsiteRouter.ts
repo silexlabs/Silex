@@ -5,6 +5,8 @@ import * as formidable from 'formidable'
 import * as Path from 'path'
 import * as _fs from 'fs'
 
+import { getPageSlug } from '../../utils';
+
 const fs = _fs.promises
 
 import { WebsiteSettings, defaultSettings, defaultSite, Settings, Asset, Page, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
@@ -106,7 +108,7 @@ async function writeWebsite(req, res) {
     try {
       // add the settings to the HTML
       const $ = cheerio.load(page.frames[0].html)
-      $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${pageName}.css" />`)
+      $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${getPageSlug(pageName)}.css" />`)
       $('head').append(getSetting('head'))
       if(!$('head > title').length) $('head').append('<title/>')
       $('head > title').html(getSetting('title'))
@@ -127,8 +129,8 @@ async function writeWebsite(req, res) {
       return
     }
     try {
-      await fs.writeFile(Path.resolve(htmlFolder, pageName + '.html'), html)
-      await fs.writeFile(Path.resolve(cssFolder, pageName + '.css'), page.frames[0].css)
+      await fs.writeFile(Path.resolve(htmlFolder, getPageSlug(pageName) + '.html'), html)
+      await fs.writeFile(Path.resolve(cssFolder, getPageSlug(pageName) + '.css'), page.frames[0].css)
     } catch (err) {
       console.error('Error writing file', page, err)
       res.status(400).json({ message: 'Error writing file', error: JSON.stringify(err)})
