@@ -45,19 +45,7 @@ async function readWebsite(req, res): Promise<void> {
       res.status(400).json({ message: 'Read file error', error: JSON.stringify(err)})
     }
   }
-
 }
-
-// function styleToString(s: Style): string {
-//   return `${ s.selectors
-//     .map(sel => typeof sel === 'string' ? sel : ((sel.type && sel.type === 2 ? '#' : '.') + sel.name)) // selectors can be objects or strings
-//     .join(', ') } {
-//     ${ Object.keys(s.style).map((key, value) => {{
-//       `${ key }: ${ value };`
-//     }}).join('\n')}
-//   }
-//   `
-// }
 
 async function getSettings(projectId): Promise<Settings> {
   const path = Path.resolve(projectId, '.silex.json')
