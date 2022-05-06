@@ -5,6 +5,7 @@ import touchPlugin from 'grapesjs-touch/dist/grapesjs-touch.min.js'
 import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms/dist/grapesjs-plugin-forms.min.js'
 import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
+import uiSuggestClasses from 'grapesjs-ui-suggest-classes'
 
 import { pagePanelPlugin, cmdTogglePages } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -76,6 +77,7 @@ export const defaultConfig = {
       formPlugin,
       codePlugin,
       internalLinksPlugin,
+      uiSuggestClasses,
     ],
     importWebpage: {
       modalImportLabel: '',
@@ -145,6 +147,7 @@ export const defaultConfig = {
           category: catComponents,
         }
       },
+      [uiSuggestClasses]: {},
     },
   },
 }
