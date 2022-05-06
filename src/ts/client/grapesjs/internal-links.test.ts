@@ -1,4 +1,4 @@
-import { internalLinksPlugin } from './internal-links';
+import { internalLinksPlugin } from './internal-links'
 import grapesjs from '../../../../node_modules/grapesjs/dist/grapes.min.js'
 
 let editor
@@ -60,7 +60,7 @@ beforeEach(() => {
 test('init', () => {
   expect(editor.getComponents()).toHaveLength(pageMain.component.components.length)
 })
-//test('rename page and rewrite links in current page', () => {
+// test('rename page and rewrite links in current page', () => {
 //  const page = editor.Pages.getSelected()
 //  expect(page.id).toBe(pageMain.id)
 //  expect(page.getName()).toBeUndefined()
@@ -72,7 +72,7 @@ test('init', () => {
 //  const comp1Model = page.getMainComponent().components().find(c => c.attributes.content === comp1.content)
 //  expect(comp1Model).toBeTruthy()
 //  expect(comp1Model.attributes.attributes.href).toBe(newPath)
-//})
+// })
 
 test('rename page and rewrite links in another page', () => {
   const page = editor.Pages.get(page2.id)
