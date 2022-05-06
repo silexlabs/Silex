@@ -1,8 +1,6 @@
 {
   "projects": {
     "packages/silex-website-builder": "git@github.com:silexlabs/Silex.git",
-    "packages/editor.silex.me": "git@github.com:silexlabs/editor.silex.me.git",
-    "packages/silex-desktop": "git@github.com:silexlabs/silex-desktop.git",
     "packages/grapesjs-ui-suggest-classes": "git@github.com:lexoyo/grapesjs-ui-suggest-classes.git"
   }
 }
