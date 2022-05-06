@@ -5,7 +5,7 @@ import * as formidable from 'formidable'
 import * as Path from 'path'
 import * as _fs from 'fs'
 
-import { getPageSlug } from '../../utils';
+import { getPageSlug } from '../../utils'
 
 const fs = _fs.promises
 
