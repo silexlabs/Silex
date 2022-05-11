@@ -1,0 +1,35 @@
+{
+  "type": "module",
+  "name": "grapesjs-sympbols",
+  "version": "1.0.28",
+  "description": "Symbols for GrapesJS",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lexoyo/grapesjs-sympbols.git"
+  },
+  "engines": {
+    "node": ">=12.22.10"
+  },
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "bump": "npm version patch -m 'Bump v%s'"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin"
+  ],
+  "devDependencies": {
+    "@types/jest": "^27.5.0",
+    "grapesjs": "^0.18.4",
+    "grapesjs-cli": "^3.0.0",
+    "jest": "^28.1.0"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "lit-html": "^2.2.3"
+  }
+}
