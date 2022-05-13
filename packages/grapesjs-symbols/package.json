@@ -1,5 +1,5 @@
 {
-  "type": "module",
+  "xtype": "module",
   "name": "grapesjs-sympbols",
   "version": "1.0.28",
   "description": "Symbols for GrapesJS",
@@ -14,8 +14,8 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test": "node --input-type=module node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules --input-type=module node_modules/jest/bin/jest.js --watch",
     "bump": "npm version patch -m 'Bump v%s'"
   },
   "keywords": [
@@ -30,6 +30,8 @@
   },
   "license": "MIT",
   "dependencies": {
+    "backbone": "^1.4.1",
+    "jquery": "^3.6.0",
     "lit-html": "^2.2.3"
   }
 }

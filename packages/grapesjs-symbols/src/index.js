@@ -1,44 +1,21 @@
-import { initSymbols } from './symbol';
-import list from './list'
+import Symbols from './model/Symbols'
+import Storage from './storage'
+import SymbolsView from './view/SymbolsView'
 
 export default (editor, opts = {}) => {
   const options = { ...{
-    // default options
-    appendTo: '.gjs-pn-views-container',
-  },  ...opts };
+    appendTo: '#symbols',
+    selectColor: '#EEE',
+  },  ...opts }
 
-  editor.on('load', () => {
-    editor.addComponents([{
-      tagName: 'nav',
-      content: 'Content text', // Text inside component
-      style: { color: 'red'},
-      title: 'symbol3',
-      symbolId: true,
-    },
-{
-      tagName: 'nav',
-      content: 'Content text', // Text inside component
-      style: { color: 'red'},
-      title: 'symbol1',
-      symbolId: true,
-    },
-{
-      tagName: 'nav',
-      content: 'Content text', // Text inside component
-      style: { color: 'red'},
-      title: 'symbol2',
-      symbolId: true,
-    },
-      `<div style="margin:100px; padding:25px;">
-            Content loaded from the plugin
-        </div>`,
-    ],
-    )
+  // store the symbols data with the site
+  Storage(editor, opts)
 
-    // keep track of symbols and changes
-    initSymbols(editor, options)
+  // keep track of symbols and changes
+  editor.Symbols = new Symbols([], { options, editor })
 
-    // display the list of symbols
-    list(editor, options)
+  editor.on('load', (...args) => {
+    // Display symbols
+    new SymbolsView(editor.Symbols, { options, editor })
   })
-};
+}
