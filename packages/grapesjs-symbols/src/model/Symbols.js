@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import Symbol, { getSymbolId, isSymbol } from './Symbol';
+import Symbol, { getSymbolId, isSymbol } from './Symbol.js';
 
 /**
  * parse all pages and retrieve all website components

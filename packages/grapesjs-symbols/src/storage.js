@@ -1,4 +1,4 @@
-import Symbols from './model/Symbols';
+import Symbols from './model/Symbols.js'
 
 export default (editor, opts = {}) => {
   editor.on('storage:start:store', (objectToStore) => {

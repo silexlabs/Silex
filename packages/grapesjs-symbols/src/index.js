@@ -1,7 +1,7 @@
-import Storage from './storage'
-import Symbols from './model/Symbols'
-import SymbolsView from './view/SymbolsView'
-import SymbolsCommands from './SymbolsCommands'
+import Storage from './storage.js'
+import Symbols from './model/Symbols.js'
+import SymbolsView from './view/SymbolsView.js'
+import SymbolsCommands from './SymbolsCommands.js'
 
 export default (editor, opts = {}) => {
   const options = { ...{

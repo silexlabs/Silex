@@ -1,4 +1,4 @@
-import { setSymbolId } from './model/Symbol'
+import { setSymbolId } from './model/Symbol.js'
 
 export default function({ editor, options }) {
   editor.Commands.add('symbols:add', function (editor, sender, {id, label, icon, content}) {
