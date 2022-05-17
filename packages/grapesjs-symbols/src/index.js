@@ -1,6 +1,7 @@
-import Symbols from './model/Symbols'
 import Storage from './storage'
+import Symbols from './model/Symbols'
 import SymbolsView from './view/SymbolsView'
+import SymbolsCommands from './SymbolsCommands'
 
 export default (editor, opts = {}) => {
   const options = { ...{
@@ -17,5 +18,8 @@ export default (editor, opts = {}) => {
   editor.on('load', (...args) => {
     // Display symbols
     new SymbolsView(editor.Symbols, { options, editor })
+
+    // Commands to create/delete symbols
+    new SymbolsCommands({options, editor})
   })
 }

@@ -5,6 +5,7 @@ export default class extends Backbone.View {
     //this.listenTo(this.model, "change", this.render)
     model.on('add update remove', () => this.render())
     editor.on('component:selected', () => this.render())
+    editor.on('sorter:drag', ({targetModel}) => console.log('xxx', targetModel.view))
     // store useful vars
     this.model = model
     this.editor = editor
@@ -25,6 +26,16 @@ export default class extends Backbone.View {
       .symbols__symbol-selected {
         border: 1px solid ${ this.options.selectColor };
       }
+      .symbols__symbol {
+        position: relative;
+      }
+      .symbols__num {
+        font-size: xx-small;
+      }
+      .symbols__empty {
+        text-align: center;
+        width: 100%;
+      }
     </style>
     <main class="symbols__list" @dragend=${event => this.onDrop(event)}>
       <div class="gjs-blocks-c">
@@ -41,14 +52,14 @@ export default class extends Backbone.View {
             symbol-id=${s.id}>
             <div class="gjs-block-label">
               ${s.attributes.label}
-              <span class="symbols__num">
-               ${s.get('components').size}
-              </span>
+              <div class="symbols__num">
+                ${s.get('components').size} instances
+              </div>
             </div>
           </div>
          `)
        }
-       ${symbols.length ? '' : html`<div class="flex-row">
+       ${symbols.length ? '' : html`<div class="symbols__empty">
          No symbol yet.
        </div>`}
        </div>
@@ -58,15 +69,16 @@ export default class extends Backbone.View {
   onDrop(event) {
     const symbolId = event.target.getAttribute('symbol-id')
     if(symbolId) {
-      const s = editor.Symbols.get(symbolId)
-      if(s) {
-        const c = editor.addComponents(s.get('json'))
+      const symbol = editor.Symbols.get(symbolId)
+      if(symbol) {
+        const c = editor.runCommand('symbols:create', { symbol })
       } else {
         console.error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
       }
     } else {
-      console.log('not a symbol creation')
+      console.log('not a symbol creation', symbolId)
     }
+    console.log('ON DROP', symbolId, this.editor.getModel('dragResult').view)
   }
 }
 
