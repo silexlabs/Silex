@@ -14,6 +14,7 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build",
+    "lint": "eslint src",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "bump": "npm version patch -m 'Bump v%s'"
@@ -24,6 +25,7 @@
   ],
   "devDependencies": {
     "@types/jest": "^27.5.0",
+    "eslint": "^8.15.0",
     "grapesjs": "^0.18.4",
     "grapesjs-cli": "^3.0.0",
     "jest": "^28.1.0"

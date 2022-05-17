@@ -6,7 +6,7 @@ export default function({ editor, options }) {
       // add the symbol
       const s = editor.Symbols.add({ id, label, icon, content })
       // set editor as dirty
-      setDirty()
+      setDirty(editor)
       // return the symbol to the caller
       return s
     } else {
@@ -21,7 +21,7 @@ export default function({ editor, options }) {
     Array.from(s.get('components'))
       .forEach(([id, component]) => editor.runCommand('symbols:unlink', { component }))
     // set editor as dirty
-    setDirty()
+    setDirty(editor)
     // return the symbol to the caller
     return s
   })
@@ -49,7 +49,7 @@ export default function({ editor, options }) {
 /**
  * set editor as dirty
  */
-function setDirty() {
+function setDirty(editor) {
   const curr = editor.getDirtyCount() || 0
   editor.getModel().set('changesCount', curr + 1)
 }

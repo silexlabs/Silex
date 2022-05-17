@@ -1,4 +1,5 @@
 import { render, html } from 'lit-html'
+import Backbone from 'backbone'
 
 export default class extends Backbone.View {
   initialize(model, { editor, options }) {
@@ -40,9 +41,9 @@ export default class extends Backbone.View {
     <main class="symbols__list" @dragend=${event => this.onDrop(event)}>
       <div class="gjs-blocks-c">
       ${
-        // keep the same structure as the layers panel
-        symbols
-        .map(s => html`
+  // keep the same structure as the layers panel
+  symbols
+    .map(s => html`
           <div
             class="gjs-block gjs-one-bg gjs-four-color-h symbols__symbol
               ${s.get('components').has(selected?.getId()) ? 'symbols__symbol-selected' : ''}
@@ -58,7 +59,7 @@ export default class extends Backbone.View {
             </div>
           </div>
          `)
-       }
+}
        ${symbols.length ? '' : html`<div class="symbols__empty">
          No symbol yet.
        </div>`}
@@ -69,9 +70,9 @@ export default class extends Backbone.View {
   onDrop(event) {
     const symbolId = event.target.getAttribute('symbol-id')
     if(symbolId) {
-      const symbol = editor.Symbols.get(symbolId)
+      const symbol = this.editor.Symbols.get(symbolId)
       if(symbol) {
-        const c = editor.runCommand('symbols:create', { symbol })
+        const c = this.editor.runCommand('symbols:create', { symbol })
       } else {
         console.error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
       }
@@ -81,4 +82,3 @@ export default class extends Backbone.View {
     console.log('ON DROP', symbolId, this.editor.getModel('dragResult').view)
   }
 }
-
