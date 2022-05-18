@@ -51,3 +51,17 @@ test('Test data to save has only needed data', () => {
   expect(symbol.toJSON()).toEqual(s)
 })
 
+test('Test getComponents method', () => {
+  const symbol = new Symbol(s1, { options: {}})
+  expect(() => symbol.getComponents()).not.toThrow()
+  expect(symbol.getComponents() instanceof Backbone.Collection).toBe(true)
+  expect(symbol.getComponents()).toHaveLength(2)
+})
+
+test('Test update method', () => {
+  const symbol = new Symbol(s1, { options: {}})
+  const component = symbol.getComponents().models[0]
+  expect(component).not.toBeUndefined()
+  expect(() => symbol.update(component)).not.toThrow()
+})
+

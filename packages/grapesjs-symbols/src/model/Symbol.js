@@ -28,9 +28,9 @@ export default Backbone.Model.extend({
    */
   update(c) {
     this.set('content', c.get('content'))
-    Array.from(this.getComponents())
-      .filter(([id, comp]) => comp != c)
-      .forEach(([id, comp]) => comp.set('content', this.get('content')))
+    this.get('components')
+      .filter(comp => comp != c)
+      .forEach(comp => comp.set('content', this.get('content')))
   },
 
   getComponents() {
