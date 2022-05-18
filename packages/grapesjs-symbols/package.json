@@ -16,6 +16,7 @@
     "build": "grapesjs-cli build",
     "release": "",
     "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "bump": "npm version patch -m 'Bump v%s'"
@@ -25,7 +26,7 @@
     "plugin"
   ],
   "devDependencies": {
-    "@types/jest": "^27.5.0",
+    "@types/jest": "^27.5.1",
     "eslint": "^8.15.0",
     "grapesjs": "^0.18.4",
     "grapesjs-cli": "^3.0.0",
@@ -33,8 +34,9 @@
   },
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.27.2",
     "backbone": "^1.4.1",
     "jquery": "^3.6.0",
-    "lit-html": "^2.2.3"
+    "lit-html": "^2.2.4"
   }
 }

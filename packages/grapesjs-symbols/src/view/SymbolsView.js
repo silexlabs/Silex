@@ -46,7 +46,7 @@ export default class extends Backbone.View {
     .map(s => html`
           <div
             class="gjs-block gjs-one-bg gjs-four-color-h symbols__symbol
-              ${s.get('components').has(selected?.getId()) ? 'symbols__symbol-selected' : ''}
+              ${s.getComponents().has(selected?.getId()) ? 'symbols__symbol-selected' : ''}
               fa ${s.attributes.icon}
             "
             title="" draggable="true"
@@ -54,7 +54,7 @@ export default class extends Backbone.View {
             <div class="gjs-block-label">
               ${s.attributes.label}
               <div class="symbols__num">
-                ${s.get('components').size} instances
+                ${s.getComponents().size} instances
               </div>
             </div>
           </div>

@@ -25,6 +25,20 @@ export default Backbone.Collection.extend({
     editor.on('component:update', c => onUpdate(this.editor, c))
     // editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
     // editor.on('all', (...args) => console.log('ALL', ...args))
+    function logEvent(name) {
+      //editor.on(name, (...args) => console.log('[SYMBOL] ' + name, ...args, args[0]?.changed))
+    }
+    logEvent('component:selected')
+    logEvent('component:deselected')
+    logEvent('component:create')
+    logEvent('component:mount')
+    logEvent('component:add')
+    logEvent('component:remove')
+    logEvent('component:clone')
+    logEvent('component:update')
+    logEvent('component:update-inside')
+    logEvent('component:styleUpdate')
+    logEvent('component:drag')
   },
   /**
    * update sybols with existing components
@@ -46,7 +60,7 @@ function onAdd(editor, c) {
     const id = getSymbolId(c)
     const s = editor.Symbols.get(id)
     if(s) {
-      const components = s.get('components')
+      const components = s.getComponents()
       if(!components.has(c.getId())) {
         components.set(c.getId(), c)
       } else {
@@ -67,7 +81,7 @@ function onRemove(editor, c) {
     const id = getSymbolId(c)
     const s = editor.Symbols.get(id)
     if(s) {
-      const components = s.get('components')
+      const components = s.getComponents()
       if(components.has(c.getId())) {
         components.delete(c.getId())
       } else {
@@ -90,7 +104,7 @@ function onUpdate(editor, c) {
     const id = getSymbolId(c)
     const s = editor.Symbols.get(id)
     if(s) {
-      const components = s.get('components')
+      const components = s.getComponents()
       if(components.has(c.getId())) {
         // apply change to all other symbols
         updating = true
