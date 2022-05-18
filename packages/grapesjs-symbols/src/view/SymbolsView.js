@@ -54,7 +54,7 @@ export default class extends Backbone.View {
             <div class="gjs-block-label">
               ${s.attributes.label}
               <div class="symbols__num">
-                ${s.getComponents().size} instances
+                ${s.getComponents().length} instances
               </div>
             </div>
           </div>
