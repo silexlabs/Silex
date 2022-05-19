@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import Symbol, { getSymbolId, isSymbol, initAsSymbol, removeAsSymbol } from './Symbol.js'
+import Symbol, { getSymbolId, isSymbol } from './Symbol.js'
 
 /**
  * parse all pages and retrieve all website components
@@ -39,23 +39,28 @@ export default Backbone.Collection.extend({
     editor.on('component:update', c => onUpdate(this.editor, c))
     // editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
     // editor.on('all', (...args) => console.log('ALL', ...args))
-    function logEvent(name) {
-      editor.on(name, component => console.log('[SYMBOL] ' + name, component.changed, component._changing, component._previousAttributes, component.attributes, component.toHTML()))
-    }
-    logEvent('component:selected')
-    logEvent('component:deselected')
-    logEvent('component:create')
-    logEvent('component:mount')
-    logEvent('component:add')
-    logEvent('component:remove')
-    logEvent('component:remove:before')
-    logEvent('component:clone')
-    logEvent('component:update')
-    logEvent('component:update-inside')
-    logEvent('component:styleUpdate')
-    logEvent('component:drag')
+    //function logEvent(name) {
+    //  editor.on(name, component => {
+    //    const { changed, _changing, _previousAttributes, attributes } = component
+    //    console.log('[SYMBOL] ' + name, { changed, _changing, _previousAttributes, attributes }, component.toHTML())
+    //  })
+    //}
+    //logEvent('component:selected')
+    //logEvent('component:deselected')
+    //logEvent('component:create')
+    //logEvent('component:mount')
+    //logEvent('component:add')
+    //logEvent('component:remove')
+    //logEvent('component:remove:before')
+    //logEvent('component:clone')
+    //logEvent('component:update')
+    //logEvent('component:update-inside')
+    //logEvent('component:styleUpdate')
+    //logEvent('component:drag')
+
     // editor.on('component:create', c => updateCreate(c))
     // editor.on('component:remove:before', c => updateRemove(c))
+    editor.on('component:update', c => this.updateAttributes(c))
   },
   /**
    * update sybols with existing components
@@ -64,6 +69,16 @@ export default Backbone.Collection.extend({
   updateComponents() {
     getAllComponentsFromEditor(this.editor)
       .forEach(c => onAdd(this.editor, c))
+  },
+  /**
+   * A component attributes have changed
+   */
+  updateAttributes(child) {
+    const comp = closestSymbol(child)
+    if(comp) {
+      this.editor.Symbols.get(getSymbolId(comp))
+        .syncAttributes(comp, child)
+    }
   },
 })
 
@@ -82,7 +97,6 @@ export function onAdd(editor, c) {
       const components = s.get('components')
       if(!components.has(cid)) {
         components.set(cid, c)
-        initAsSymbol(c, s)
       } else {
         console.info(`Can not add component ${cid} to symbol ${sid}: this element is already in symbol`)
       }
@@ -95,9 +109,10 @@ export function onAdd(editor, c) {
 
 /**
  * remove a component from its symbol
+ * Exported for tests
  * @private
  */
-function onRemove(editor, c) {
+export function onRemove(editor, c) {
   if(isSymbol(c) || !!c._previousAttributes.symbolId) {
     const cid = c.cid
     const id = getSymbolId(c)
@@ -146,3 +161,15 @@ function onUpdate(editor, c) {
   }
 }
 
+/**
+ * find the first symbol in the parents (or the element itself)
+ * exported for unit tests
+ * @private
+ */
+export function closestSymbol(c) {
+  let ptr = c
+  while(ptr && !isSymbol(ptr)) {
+    ptr = ptr.parent()
+  }
+  return ptr
+}

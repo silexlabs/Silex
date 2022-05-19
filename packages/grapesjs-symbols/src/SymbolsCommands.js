@@ -1,3 +1,4 @@
+import { initAsSymbol } from './model/Symbol.js'
 import { setSymbolId } from './model/Symbol.js'
 
 // exported plugin
@@ -65,10 +66,12 @@ export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
   if(symbol && pos && target) {
     const parentId = target ? target.getAttribute('id') : undefined
     const parent = editor.Components.allById()[parentId]
+    // create the new component
     const [c] = parent.append([{
       ...symbol.get('content'),
-      symbolId: symbol.get('id'),
     }], { at: pos.index })
+    // make it a symbol instance
+    initAsSymbol(c, symbol)
     // select the new component
     editor.select(c, { scroll: true })
     return c
@@ -76,4 +79,3 @@ export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
     throw new Error('Can not create the symbol: missing param symbol, pos or target')
   }
 }
-

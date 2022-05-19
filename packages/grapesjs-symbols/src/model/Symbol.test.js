@@ -1,67 +1,71 @@
-import Backbone from 'backbone'
-import Symbol from './Symbol.js'
+import { jest } from '@jest/globals';
 
-const comp1 = new Backbone.Model({
-  tagName: 'div',
-  content: 'comp1 S1',
-  symbolId: 'S1',
-})
-
-const comp2 = new Backbone.Model({
-  tagName: 'div',
-  content: 'comp2 S1',
-  symbolId: 'S1',
-})
-
-const s1 = {
-  id: 'S1',
-  icon: 'fa-cog',
-  label: 'S1',
-  components: [comp1, comp2],
-}
-
-const s2 = {}
+import { getTestSymbols } from '../test-utils';
 
 test('Initialize symbol with values', () => {
-  const symbol = new Symbol(s1, { options: {}})
-  expect(symbol.get('id')).not.toBeUndefined()
-  expect(symbol.get('id')).toBe(s1.id)
-  expect(symbol.get('components')).not.toBeUndefined()
-  expect(symbol.get('components') instanceof Map).toBe(true)
-  expect(symbol.get('components').size).toBe(2)
-  expect(symbol.get('label')).not.toBeUndefined()
-  expect(symbol.get('icon')).not.toBeUndefined()
+  const { s1 } = getTestSymbols()
+  expect(s1.get('id')).not.toBeUndefined()
+  expect(s1.get('id')).toBe(s1.id)
+  expect(s1.get('components')).not.toBeUndefined()
+  expect(s1.get('components') instanceof Map).toBe(true)
+  expect(s1.get('components').size).toBe(2)
+  expect(s1.get('label')).not.toBeUndefined()
+  expect(s1.get('icon')).not.toBeUndefined()
 })
 
 test('Initialize symbol with default values', () => {
-  const symbol = new Symbol(s2, { options: {}})
-  expect(symbol.get('id')).not.toBeUndefined()
-  expect(symbol.get('id')).toBe(symbol.cid)
-  expect(symbol.get('components')).not.toBeUndefined()
-  expect(symbol.get('components') instanceof Map).toBe(true)
-  expect(symbol.get('components').size).toBe(0)
-  expect(symbol.get('label')).not.toBeUndefined()
-  expect(symbol.get('icon')).not.toBeUndefined()
+  const { s2 } = getTestSymbols()
+  expect(s2.get('id')).not.toBeUndefined()
+  expect(s2.get('id')).toBe(s2.cid)
+  expect(s2.get('components')).not.toBeUndefined()
+  expect(s2.get('components') instanceof Map).toBe(true)
+  expect(s2.get('components').size).toBe(0)
+  expect(s2.get('label')).not.toBeUndefined()
+  expect(s2.get('icon')).not.toBeUndefined()
 })
 
 test('Test data to save has only needed data', () => {
-  const s = { ...s1 }
-  delete s.components
-  const symbol = new Symbol(s1, { options: {}})
-  expect(symbol.toJSON()).toEqual(s)
+  const { s1, s1Data } = getTestSymbols()
+  expect(s1.toJSON()).toEqual(s1Data)
 })
 
 test('Test getComponents method', () => {
-  const symbol = new Symbol(s1, { options: {}})
-  expect(() => symbol.getComponents()).not.toThrow()
-  expect(symbol.getComponents() instanceof Map).toBe(true)
-  expect(symbol.getComponents().size).toBe(2)
+  const { s1 } = getTestSymbols()
+  expect(() => s1.getComponents()).not.toThrow()
+  expect(s1.getComponents() instanceof Map).toBe(true)
+  expect(s1.getComponents().size).toBe(2)
 })
 
-test('Test update method', () => {
-  const symbol = new Symbol(s1, { options: {}})
-  const component = symbol.getComponents().get(comp1.cid)
+test('Test sync method', () => {
+  const { s1, comp1 } = getTestSymbols()
+  const component = s1.getComponents().get(comp1.cid)
   expect(component).not.toBeUndefined()
-  expect(() => symbol.update(component)).not.toThrow()
+  expect(() => s1.sync(jest.fn(), component)).not.toThrow()
+  const cbk = jest.fn()
+  // all components
+  s1.sync(cbk)
+  expect(cbk).toHaveBeenCalledTimes(2)
+  // all components but 1
+  cbk.mockClear()
+  s1.sync(cbk, component)
+  expect(cbk).toHaveBeenCalledTimes(1)
 })
 
+test('Test syncAttributes method', () => {
+  let { s1, comp1, comp2, child21 } = getTestSymbols()
+  //s1.sync = jest.fn((cbk) => cbk(comp1))
+  // update attributes of comp2
+  const changed = { test: 'test' }
+  const _previousAttributes = comp1.attributes
+  comp1.changed = changed
+  comp1._previousAttributes = _previousAttributes
+  child21.changed = changed
+  child21._previousAttributes = _previousAttributes
+
+  expect(() => s1.syncAttributes(comp1, comp1)).not.toThrow()
+  s1.syncAttributes(comp1, comp1)
+  expect(comp2.get('test')).toBe('test')
+  // update attribute of  child1 in comp2 (child21)
+  s1.syncAttributes(comp1, child21)
+  expect(child21.get('test')).toBe('test')
+})

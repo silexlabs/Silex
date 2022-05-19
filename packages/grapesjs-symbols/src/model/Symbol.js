@@ -8,7 +8,7 @@ export default Backbone.Model.extend({
 
   initialize(attributes, options) {
     if(!this.has('id')) this.set('id', this.cid)
-    this.set('components', new Map(attributes.components ? attributes.components.map(c => [c.cid, c]) : []))
+    this.set('components', new Map()) // this will be initialized with attributes.components when the components are actually created and the components:create is dispatched by editor
   },
 
   /**
@@ -24,19 +24,53 @@ export default Backbone.Model.extend({
   },
 
   /**
+   * Browse all symbol instances
+   * @param excluded optionally exclude one component
+   * @private
+   */
+  sync(cbk, excluded = null) {
+    const arr = Array.from(this.get('components'))
+    const filtered = excluded ? arr.filter(([id, comp]) => comp != excluded) : arr
+    filtered.forEach(([id, comp]) => cbk(comp))
+  },
+
+  /**
    * Update according to changes of a component
    */
-  update(c) {
-    this.set('content', c.get('content'))
-    Array.from(this.get('components'))
-      .filter(([id, comp]) => comp != c)
-      .forEach(([id, comp]) => comp.set('content', this.get('content')))
+  syncAttributes(comp, child) {
+    const { changed, _previousAttributes } = child
+    this.sync(comp => {
+      const newChild = find(comp, child)
+      if(newChild) {
+        Object.keys(changed).forEach(attr => {
+          if(!_previousAttributes || _previousAttributes[attr] !== changed[attr]) {
+            newChild.set(attr, changed[attr])
+          }
+        })
+      } else {
+        console.error(`Could not sync attributes of component ${child} which was supposed to be a child of ${comp} which is an instance of the symbol ${this}`)
+      }
+    }, comp)
   },
 
   getComponents() {
     return this.get('components')
   }
 })
+
+export function find(c, child) {
+  if(child.has('symbolId') && c.get('symbolId') === child.get('symbolId')) {
+    // case of a symbol
+    return c
+  } else if(child.has('symbolChildId') && c.get('symbolChildId') === child.get('symbolChildId')){
+    // case of an element in the current component
+    return c
+  } else {
+    // check the children components
+    return c.get('components')
+      .find(comp => find(comp, child))
+  }
+}
 
 /**
  * @param {object} c, a component
@@ -66,13 +100,21 @@ export function initAsSymbol(c, s) {
   if(!c.has('symbol:init')) {
     c.set('pre-symbol:icon', c.get('icon'))
     c.set('icon', `<span class="fa ${s.get('icon')}"></span>`)
+    c.set('symbolId', s.get('id') || s.cid) // optionally take id from attributes in case we specified it (e.g in tests)
     c.set('symbol:init', true)
+    c.components()
+      .forEach(child => initAsSymbolChild(child))
   }
   // c.get('toolbar').push({ attributes: {class: 'fa fa-ban on fa-diamond'}, command: 'symbols:remove' })
 }
 
 export function initAsSymbolChild(c) {
-  if(!c.has('symbolChildId')) c.set('symbolChildId', c.cid)
+  // FIXME: the key symbolChildId should have the symbolId in it, to avoid conflicts when a symbol is in multiple symbols
+  if(!c.has('symbolChildId')) {
+    c.set('symbolChildId', c.cid)
+  } else {
+    console.error(`Could not init the component ${c} as a child of a symbol, it has already a symbolChildId set to ${c.get('symbolChildId')}`)
+  }
   c.components()
     .forEach(child => initAsSymbolChild(child))
 }

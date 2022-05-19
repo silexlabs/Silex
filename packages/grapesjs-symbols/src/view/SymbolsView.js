@@ -3,17 +3,14 @@ import Backbone from 'backbone'
 
 export default class extends Backbone.View {
   initialize(model, { editor, options }) {
-    //this.listenTo(this.model, "change", this.render)
+    // listen to redraw UI
     model.on('add update remove', () => this.render())
     editor.on('component:selected', () => this.render())
-    editor.on('sorter:drag', (...args) => console.log('FIXME: USE SORTER DRAG', ...args))
+    // listen to drag event in order to have access to the drop target
     editor.on('sorter:drag', event => {
       this.lastPos = event.pos
       this.lastTarget = event.target
     })
-    editor.on('sorter:drag:end', event => console.log('DRAG END', event))
-    editor.on('sorter:drag:start', event => console.log('DRAG START', event))
-    editor.on('sorter:drag:validation', event => console.log('DRAG VALIDATION', event))
     // store useful vars
     this.model = model
     this.editor = editor
