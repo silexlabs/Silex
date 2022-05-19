@@ -1,5 +1,5 @@
 import Backbone from 'backbone'
-import Symbols from './Symbols.js'
+import Symbols, { onAdd } from './Symbols.js'
 
 const comp1 = {
   tagName: 'div',
@@ -54,6 +54,32 @@ describe('Make sure everything has the correct data type and default values', ()
     expect(symbol.getComponents()).not.toBeNull()
     expect(symbol.getComponents() instanceof Backbone.Collection).toBe(true)
     expect(symbol.getComponents()).toHaveLength(s1.components.length)
+  })
+})
+
+describe('Test event listeners which maintain the components list up to date', () => {
+  let editor
+  beforeEach(() => {
+    editor = { 
+      on: () => {},
+    }
+    editor.Symbols = new Symbols([s1, s2], { options: {}, editor})
+  })
+
+  test('onAdd method', () => {
+    const comp = {
+      tagName: 'div',
+      content: 'comp S1',
+      symbolId: 'S1',
+    }
+
+    const components = editor.Symbols.get(s1.id).getComponents()
+    expect(components).toHaveLength(2)
+    const c = new Backbone.Model(comp)
+    const added = onAdd(editor, c)
+    expect(added.cid).not.toBe(c.cid)
+    expect(added.attributes).toEqual(c.attributes)
+    expect(components).toHaveLength(3)
   })
 })
 

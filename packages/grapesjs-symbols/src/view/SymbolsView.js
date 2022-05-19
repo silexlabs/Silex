@@ -46,7 +46,7 @@ export default class extends Backbone.View {
     .map(s => html`
           <div
             class="gjs-block gjs-one-bg gjs-four-color-h symbols__symbol
-              ${s.getComponents().has(selected?.getId()) ? 'symbols__symbol-selected' : ''}
+              ${selected && s.getComponents().has(selected) ? 'symbols__symbol-selected' : ''}
               fa ${s.attributes.icon}
             "
             title="" draggable="true"

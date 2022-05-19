@@ -53,23 +53,26 @@ export default Backbone.Collection.extend({
 // utils
 /**
  * remove a component from its symbol
+ * Export this method for unit tests
  * @private
  */
-function onAdd(editor, c) {
+export function onAdd(editor, c) {
   if(isSymbol(c)) {
-    const id = getSymbolId(c)
-    const s = editor.Symbols.get(id)
+    const cid = c.get('id')
+    const sid = getSymbolId(c)
+    const s = editor.Symbols.get(sid)
     if(s) {
-      const components = s.getComponents()
-      if(!components.has(c.getId())) {
-        components.set(c.getId(), c)
+      const components = s.get('components')
+      if(!components.has(cid)) {
+        return components.add(c.attributes)
       } else {
-        console.info(`Can not add component ${c.getId()} to symbol ${id}: this element is already in symbol`)
+        console.info(`Can not add component ${cid} to symbol ${sid}: this element is already in symbol`)
       }
     } else {
-      console.log(`Can not add component ${c.getId()} to symbol ${id}: this symbol does not exist (yet?)`)
+      console.log(`Can not add component ${cid} to symbol ${sid}: this symbol does not exist (yet?)`)
     }
   }
+  return null
 }
 
 /**
@@ -78,17 +81,18 @@ function onAdd(editor, c) {
  */
 function onRemove(editor, c) {
   if(isSymbol(c)) {
+    const cid = c.get('id')
     const id = getSymbolId(c)
     const s = editor.Symbols.get(id)
     if(s) {
       const components = s.getComponents()
-      if(components.has(c.getId())) {
-        components.delete(c.getId())
+      if(components.has(cid)) {
+        components.remove(cid)
       } else {
-        console.info(`Can not remove component ${c.getId()} from symbol ${id}: this element is not in symbol`)
+        console.info(`Can not remove component ${cid} from symbol ${id}: this element is not in symbol`)
       }
     } else {
-      console.info(`Can not remove component ${c.getId()} from symbol ${id}: this symbol does not exist`)
+      console.info(`Can not remove component ${cid} from symbol ${id}: this symbol does not exist`)
     }
   }
 }
@@ -101,20 +105,21 @@ let updating = false
 function onUpdate(editor, c) {
   if(updating) return
   if(isSymbol(c)) {
+    const cid = c.get('id')
     const id = getSymbolId(c)
     const s = editor.Symbols.get(id)
     if(s) {
       const components = s.getComponents()
-      if(components.has(c.getId())) {
+      if(components.has(cid)) {
         // apply change to all other symbols
         updating = true
         s.update(c)
         updating = false
       } else {
-        console.info(`Can not update component ${c.getId()} from symbol ${id}: this element is not in symbol`)
+        console.info(`Can not update component ${cid} from symbol ${id}: this element is not in symbol`)
       }
     } else {
-      console.info(`Can not update component ${c.getId()} from symbol ${id}: this symbol does not exist`)
+      console.info(`Can not update component ${cid} from symbol ${id}: this symbol does not exist`)
     }
   }
 }
