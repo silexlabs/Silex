@@ -8,7 +8,7 @@ export default Backbone.Model.extend({
 
   initialize(attributes, options) {
     if(!this.has('id')) this.set('id', this.cid)
-    this.set('components', new Backbone.Collection(attributes.components))
+    this.set('components', new Map(attributes.components ? attributes.components.map(c => [c.cid, c]) : []))
   },
 
   /**
@@ -28,9 +28,9 @@ export default Backbone.Model.extend({
    */
   update(c) {
     this.set('content', c.get('content'))
-    this.get('components')
-      .filter(comp => comp != c)
-      .forEach(comp => comp.set('content', this.get('content')))
+    Array.from(this.get('components'))
+      .filter(([id, comp]) => comp != c)
+      .forEach(([id, comp]) => comp.set('content', this.get('content')))
   },
 
   getComponents() {
@@ -59,6 +59,6 @@ export function getSymbolId(c) {
  * @param {object} symbolId, a symbol ID
  */
 export function setSymbolId(c, symbolId) {
-  c.set('symbolId', symbolId)
+  return c.set('symbolId', symbolId)
 }
 

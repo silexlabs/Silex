@@ -64,7 +64,7 @@ export function onAdd(editor, c) {
     if(s) {
       const components = s.get('components')
       if(!components.has(cid)) {
-        return components.add(c.attributes)
+        components.set(cid, c)
       } else {
         console.info(`Can not add component ${cid} to symbol ${sid}: this element is already in symbol`)
       }
