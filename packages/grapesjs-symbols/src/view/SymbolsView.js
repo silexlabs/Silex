@@ -6,7 +6,14 @@ export default class extends Backbone.View {
     //this.listenTo(this.model, "change", this.render)
     model.on('add update remove', () => this.render())
     editor.on('component:selected', () => this.render())
-    editor.on('sorter:drag', ({targetModel}) => console.log('xxx', targetModel.view))
+    editor.on('sorter:drag', (...args) => console.log('FIXME: USE SORTER DRAG', ...args))
+    editor.on('sorter:drag', event => {
+      this.lastPos = event.pos
+      this.lastTarget = event.target
+    })
+    editor.on('sorter:drag:end', event => console.log('DRAG END', event))
+    editor.on('sorter:drag:start', event => console.log('DRAG START', event))
+    editor.on('sorter:drag:validation', event => console.log('DRAG VALIDATION', event))
     // store useful vars
     this.model = model
     this.editor = editor
@@ -46,7 +53,7 @@ export default class extends Backbone.View {
     .map(s => html`
           <div
             class="gjs-block gjs-one-bg gjs-four-color-h symbols__symbol
-              ${selected && s.getComponents().has(selected) ? 'symbols__symbol-selected' : ''}
+              ${s.getComponents().has(selected?.cid) ? 'symbols__symbol-selected' : ''}
               fa ${s.attributes.icon}
             "
             title="" draggable="true"
@@ -54,7 +61,7 @@ export default class extends Backbone.View {
             <div class="gjs-block-label">
               ${s.attributes.label}
               <div class="symbols__num">
-                ${s.getComponents().length} instances
+                ${s.getComponents().size} instances
               </div>
             </div>
           </div>
@@ -67,18 +74,18 @@ export default class extends Backbone.View {
      </main>
    `, this.el)
   }
-  onDrop(event) {
+  onDrop(...args) {
+    const event = args[0]
     const symbolId = event.target.getAttribute('symbol-id')
     if(symbolId) {
       const symbol = this.editor.Symbols.get(symbolId)
       if(symbol) {
-        const c = this.editor.runCommand('symbols:create', { symbol })
+        const c = this.editor.runCommand('symbols:create', { symbol, pos: this.lastPos, target: this.lastTarget })
       } else {
         console.error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
       }
     } else {
       console.log('not a symbol creation', symbolId)
     }
-    console.log('ON DROP', symbolId, this.editor.getModel('dragResult').view)
   }
 }

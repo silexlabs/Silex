@@ -3,13 +3,19 @@ import Backbone from 'backbone'
 
 import { addSymbol, removeSymbol, unlinkSymbolInstance, createSymbolInstance } from './SymbolsCommands.js'
 
-let commands, editor
+let commands, editor, append
 
 beforeEach(() => {
+  append = jest.fn(([attr]) => [new Backbone.Model(attr)])
   editor = {
     Symbols: new Backbone.Collection(),
     runCommand: jest.fn(),
-    addComponents: jest.fn(([attr]) => [new Backbone.Model(attr)]),
+    Components: {
+      allById: jest.fn(() => {return { parentId: {
+        append,
+      } }}),
+    },
+    select: jest.fn(),
   }
 })
 
@@ -40,11 +46,15 @@ test('Command symbols:unlink', () => {
 })
 
 test('Command symbols:create', () => {
-  const sender = {}, id = 's1', content = {components: ['<p>content</p>']}
+  const sender = {},
+    id = 's1',
+    content = {components: ['<p>content</p>']},
+    pos = {},
+    target = { getAttribute: jest.fn((name) => 'parentId') }
   expect(() => createSymbolInstance(editor, sender, {})).toThrow('missing param symbol')
   const symbol = new Backbone.Model({id, content})
-  expect(() => createSymbolInstance(editor, sender, {symbol})).not.toThrow()
-  expect(editor.addComponents).toHaveBeenCalledTimes(1)
-  expect(createSymbolInstance(editor, sender, {symbol}).get('symbolId')).toBe(id)
+  expect(() => createSymbolInstance(editor, sender, {symbol, pos, target})).not.toThrow()
+  expect(append).toHaveBeenCalledTimes(1)
+  expect(createSymbolInstance(editor, sender, {symbol, pos, target}).get('symbolId')).toBe(id)
 })
 

@@ -68,20 +68,17 @@ describe('Test event listeners which maintain the components list up to date', (
   })
 
   test('onAdd method', () => {
-    const comp = {
+    const comp = new Backbone.Model({
       tagName: 'div',
       content: 'comp S1',
       symbolId: 'S1',
-      id: 'xxx',
-    }
+    })
 
     const components = editor.Symbols.get(s1.id).getComponents()
     expect(components.size).toBe(2)
-    const c = new Backbone.Model(comp)
-    onAdd(editor, c)
-    const added = components.get(comp.id)
-    expect(added).toBe(c)
-    expect(added).toEqual(c)
+    onAdd(editor, comp)
+    const added = components.get(comp.cid)
+    expect(added).toBe(comp)
     expect(components.size).toBe(3)
   })
 })

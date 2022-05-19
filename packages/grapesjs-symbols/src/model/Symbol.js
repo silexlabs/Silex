@@ -62,3 +62,23 @@ export function setSymbolId(c, symbolId) {
   return c.set('symbolId', symbolId)
 }
 
+export function initAsSymbol(c, s) {
+  if(!c.has('symbol:init')) {
+    c.set('pre-symbol:icon', c.get('icon'))
+    c.set('icon', `<span class="fa ${s.get('icon')}"></span>`)
+    c.set('symbol:init', true)
+  }
+  // c.get('toolbar').push({ attributes: {class: 'fa fa-ban on fa-diamond'}, command: 'symbols:remove' })
+}
+
+export function initAsSymbolChild(c) {
+  if(!c.has('symbolChildId')) c.set('symbolChildId', c.cid)
+  c.components()
+    .forEach(child => initAsSymbolChild(child))
+}
+
+export function removeAsSymbol(c) {
+  // no symbol id
+  setSymbolId(c)
+}
+

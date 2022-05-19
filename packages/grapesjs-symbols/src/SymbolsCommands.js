@@ -49,22 +49,31 @@ export function removeSymbol(editor, sender, {id}, _getComponents = null) {
 
 export function unlinkSymbolInstance(editor, sender, { component }) {
   if(component) {
-    // no symbol id
+    // Remove symbol id
+    // The component will be removed from the symbol in Symbols::onRemove
     setSymbolId(component, undefined)
   } else {
     throw new Error('Can not unlink the component: missing param component')
   }
 }
 
-export function createSymbolInstance(editor, sender, { symbol }) {
-  if(symbol) {
-    const [c] = editor.addComponents([{
+/**
+ * @param {{index, indexEl, method}} pos Where to insert the component, as [defined by the Sorter](https://github.com/artf/grapesjs/blob/0842df7c2423300f772e9e6cdc88c6ae8141c732/src/utils/Sorter.js#L871)
+ */
+export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
+  pos = pos || { }
+  if(symbol && pos && target) {
+    const parentId = target ? target.getAttribute('id') : undefined
+    const parent = editor.Components.allById()[parentId]
+    const [c] = parent.append([{
       ...symbol.get('content'),
       symbolId: symbol.get('id'),
-    }])
+    }], { at: pos.index })
+    // select the new component
+    editor.select(c, { scroll: true })
     return c
   } else {
-    throw new Error('Can not create the symbol: missing param symbol')
+    throw new Error('Can not create the symbol: missing param symbol, pos or target')
   }
 }
 
