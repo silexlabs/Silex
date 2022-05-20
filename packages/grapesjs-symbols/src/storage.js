@@ -1,4 +1,4 @@
-import Symbols from './model/Symbols.js'
+import { getAllComponentsFromEditor } from './utils.js'
 
 export default (editor, opts = {}) => {
   editor.on('storage:start:store', (objectToStore) => {
@@ -14,7 +14,7 @@ export default (editor, opts = {}) => {
       // update sybols with existing components
       // call setSymbols on load because
       // the `storage:end:load` event is fired after the components are loaded
-      editor.Symbols.updateComponents()
+      editor.Symbols.updateComponents(getAllComponentsFromEditor(editor))
     }
   })
 }

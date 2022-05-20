@@ -9,7 +9,7 @@ To help you in this process here below you will find the necessary HTML/CSS/JS, 
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="https://unpkg.com/grapesjs-sympbols"></script>
+<script src="https://unpkg.com/grapesjs-symbols"></script>
 
 <div id="gjs"></div>
 ```
@@ -21,7 +21,7 @@ const editor = grapesjs.init({
   height: '100%',
   fromElement: true,
   storageManager: false,
-  plugins: ['grapesjs-sympbols'],
+  plugins: ['grapesjs-symbols'],
 });
 ```
 
@@ -36,7 +36,7 @@ body, html {
 
 ## Summary
 
-* Plugin name: `grapesjs-sympbols`
+* Plugin name: `grapesjs-symbols`
 * Components
     * `component-id-1`
     * `component-id-2`
@@ -46,6 +46,27 @@ body, html {
     * `block-id-2`
     * ...
 
+### Vocabulary
+
+A **symbol** is a structure holding the symbol data, see [the comment in the Symbol module](./src/model/Symbol.js)
+
+A **symbol model** is a grapesjs Component which is not attached to the DOM and is used to create instances of a symbol
+
+An **instance** is a grapesjs Component which is in sync with a Symbol
+
+### About IDs
+
+These are the IDs we need in models attributes
+
+* Each Symbol has `symbolId`
+* Each instance has `symbolId`
+* Each model has `symbolId`
+* Each child of an instance has `symbolChildId`
+
+Notes
+
+* `symbolChildId` attributes are not synced between symbol instances since it can be different when an instance is in two different other symbols
+* In a collection of Symbol, you can get the symbol with `.get(symbolId)` since the symbols have their cid set to their initial `symbolId` - see [the initialize method in Symbol.js](./src/model/Symbol.js)
 
 
 ## Options
@@ -59,11 +80,11 @@ body, html {
 ## Download
 
 * CDN
-  * `https://unpkg.com/grapesjs-sympbols`
+  * `https://unpkg.com/grapesjs-symbols`
 * NPM
-  * `npm i grapesjs-sympbols`
+  * `npm i grapesjs-symbols`
 * GIT
-  * `git clone https://github.com/lexoyo/grapesjs-sympbols.git`
+  * `git clone https://github.com/lexoyo/grapesjs-symbols.git`
 
 
 
@@ -73,7 +94,7 @@ Directly in the browser
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/grapesjs-sympbols.min.js"></script>
+<script src="path/to/grapesjs-symbols.min.js"></script>
 
 <div id="gjs"></div>
 
@@ -81,9 +102,9 @@ Directly in the browser
   var editor = grapesjs.init({
       container: '#gjs',
       // ...
-      plugins: ['grapesjs-sympbols'],
+      plugins: ['grapesjs-symbols'],
       pluginsOpts: {
-        'grapesjs-sympbols': { /* options */ }
+        'grapesjs-symbols': { /* options */ }
       }
   });
 </script>
@@ -92,7 +113,7 @@ Directly in the browser
 Modern javascript
 ```js
 import grapesjs from 'grapesjs';
-import plugin from 'grapesjs-sympbols';
+import plugin from 'grapesjs-symbols';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
@@ -116,8 +137,8 @@ const editor = grapesjs.init({
 Clone the repository
 
 ```sh
-$ git clone https://github.com/lexoyo/grapesjs-sympbols.git
-$ cd grapesjs-sympbols
+$ git clone https://github.com/lexoyo/grapesjs-symbols.git
+$ cd grapesjs-symbols
 ```
 
 Install dependencies

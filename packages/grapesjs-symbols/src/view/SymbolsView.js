@@ -50,15 +50,15 @@ export default class extends Backbone.View {
     .map(s => html`
           <div
             class="gjs-block gjs-one-bg gjs-four-color-h symbols__symbol
-              ${s.getComponents().has(selected?.cid) ? 'symbols__symbol-selected' : ''}
+              ${s.get('instances').has(selected?.cid) ? 'symbols__symbol-selected' : ''}
               fa ${s.attributes.icon}
             "
             title="" draggable="true"
-            symbol-id=${s.id}>
+            symbol-id=${s.get('symbolId')}>
             <div class="gjs-block-label">
               ${s.attributes.label}
               <div class="symbols__num">
-                ${s.getComponents().size} instances
+                ${s.get('instances').size} instances
               </div>
             </div>
           </div>
@@ -71,8 +71,7 @@ export default class extends Backbone.View {
      </main>
    `, this.el)
   }
-  onDrop(...args) {
-    const event = args[0]
+  onDrop(event) {
     const symbolId = event.target.getAttribute('symbol-id')
     if(symbolId) {
       const symbol = this.editor.Symbols.get(symbolId)

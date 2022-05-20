@@ -1,7 +1,6 @@
-import { initAsSymbol } from './model/Symbol.js'
-import { setSymbolId } from './model/Symbol.js'
-
 // exported plugin
+import { createSymbol, unlink } from './model/Symbol.js'
+
 export default function({ editor, options }) {
   editor.Commands.add('symbols:add', addSymbol)
   editor.Commands.add('symbols:remove', removeSymbol)
@@ -14,45 +13,42 @@ export default function({ editor, options }) {
 
 /**
  * Create a new symbol
+ * @param {Component} options.component - the symbol which will become the first instance of the symbol
+ * @returns {Symbol}
  */
-export function addSymbol(editor, sender, {id, label, icon, content}) {
-  if(content) {
+export function addSymbol(editor, sender, {label, icon, component = editor.getSelected()}) {
+  if(component) {
     // add the symbol
-    const s = editor.Symbols.add({ id, label, icon, content })
+    const s = editor.Symbols.add(createSymbol(component, { label, icon }, editor))
     // return the symbol to the caller
     return s
   } else {
-    throw new Error('Can not create the symbol: missing param content')
+    throw new Error('Can not create the symbol: missing param component')
   }
 }
 
 /**
  * Delete a symbol
- * @param _getComponents a mock getComponents method for unit test, this is a workaround as jest refuses to mock
+ * @param {symbolId: string} - object containing the symbolId
  */
-export function removeSymbol(editor, sender, {id}, _getComponents = null) {
-  if(id) {
-    // remove the symbol
-    const s = editor.Symbols.remove(id)
-    if(s) {
-      // unlink all components
-      (_getComponents ? _getComponents() : s.getComponents())
-        .forEach(component => unlinkSymbolInstance(editor, sender, { component }))
+export function removeSymbol(editor, sender, {symbolId}) {
+  if(symbolId) {
+    if(editor.Symbols.has(symbolId)) {
+      // remove the symbol
+      const s = editor.Symbols.remove(symbolId)
+      // return the symbol to the caller
+      return s
     } else {
-      throw new Error(`Cound not remove the symbol: symbol not found with id ${id}`)
+      throw new Error('Could not remove symbol: symbol not found')
     }
-    // return the symbol to the caller
-    return s
   } else {
-    throw new Error('Could not remove symbol: missing param id')
+    throw new Error('Could not remove symbol: missing param symbolId')
   }
 }
 
 export function unlinkSymbolInstance(editor, sender, { component }) {
   if(component) {
-    // Remove symbol id
-    // The component will be removed from the symbol in Symbols::onRemove
-    setSymbolId(component, undefined)
+    unlink(component)
   } else {
     throw new Error('Can not unlink the component: missing param component')
   }
@@ -67,11 +63,7 @@ export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
     const parentId = target ? target.getAttribute('id') : undefined
     const parent = editor.Components.allById()[parentId]
     // create the new component
-    const [c] = parent.append([{
-      ...symbol.get('content'),
-    }], { at: pos.index })
-    // make it a symbol instance
-    initAsSymbol(c, symbol)
+    const [c] = parent.append([symbol.get('model')], { at: pos.index })
     // select the new component
     editor.select(c, { scroll: true })
     return c

@@ -1,32 +1,18 @@
 import Backbone from 'backbone'
 
-import Symbol, { getSymbolId, isSymbol } from './Symbol.js'
+import Symbol, { getSymbolId, isInstance } from './Symbol.js'
 
 /**
- * parse all pages and retrieve all website components
+ * find the first symbol in the parents (or the element itself)
+ * exported for unit tests
+ * @private
  */
-function getAllComponentsFromEditor(editor) {
-  const res = []
-  editor.Pages.getAll()
-    .forEach(page => {
-      page.getMainComponent()
-        .onAll(c => res.push(c))
-    })
-  return res
-}
-
-/**
- * parse all pages and retrieve all website components
- */
-function getParentSymbols(editor, c) {
-  const res = []
-  let p = c
-  do {
-    if(isSymbol(p)) res.push(p)
-    p = p.parent()
-  } while(p)
-
-  return res
+export function closestInstance(c) {
+  let ptr = c
+  while(ptr && !isInstance(ptr)) {
+    ptr = ptr.parent()
+  }
+  return ptr
 }
 
 export default Backbone.Collection.extend({
@@ -34,142 +20,110 @@ export default Backbone.Collection.extend({
   initialize(models, {editor, options}) {
     this.editor = editor
     this.options = options
-    editor.on('component:create', c => onAdd(this.editor, c))
-    editor.on('component:remove', c => onRemove(this.editor, c))
-    editor.on('component:update', c => onUpdate(this.editor, c))
-    // editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
-    // editor.on('all', (...args) => console.log('ALL', ...args))
-    //function logEvent(name) {
-    //  editor.on(name, component => {
-    //    const { changed, _changing, _previousAttributes, attributes } = component
-    //    console.log('[SYMBOL] ' + name, { changed, _changing, _previousAttributes, attributes }, component.toHTML())
-    //  })
-    //}
-    //logEvent('component:selected')
-    //logEvent('component:deselected')
-    //logEvent('component:create')
-    //logEvent('component:mount')
-    //logEvent('component:add')
-    //logEvent('component:remove')
-    //logEvent('component:remove:before')
-    //logEvent('component:clone')
-    //logEvent('component:update')
-    //logEvent('component:update-inside')
-    //logEvent('component:styleUpdate')
-    //logEvent('component:drag')
-
-    // editor.on('component:create', c => updateCreate(c))
-    // editor.on('component:remove:before', c => updateRemove(c))
-    editor.on('component:update', c => this.updateAttributes(c))
+    if(!options.headless) {
+      this.initEvents()
+    }
   },
+
+  logEvent(name) {
+    this.editor.on(name, component => {
+      const { changed, _changing, _previousAttributes, attributes } = component
+      console.log('[SYMBOL] ' + name, { changed, _changing, _previousAttributes, attributes }, component.toHTML())
+    })
+  },
+
+  initEvents() {
+    this.logEvent('component:create')
+    this.logEvent('component:remove')
+    this.logEvent('component:update')
+    this.editor.on('component:create', c => this.onAdd(c))
+    this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
+    this.editor.on('component:update', c => this.onUpdate(c))
+    this.on('remove', console.log('FIXME: cleanup all instances'))
+    // this.editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
+    // this.editor.on('all', (...args) => console.log('ALL', ...args))
+    
+    //this.logEvent('component:selected')
+    //this.logEvent('component:deselected')
+    //this.logEvent('component:create')
+    //this.logEvent('component:mount')
+    //this.logEvent('component:add')
+    //this.logEvent('component:remove')
+    //this.logEvent('component:remove:before')
+    //this.logEvent('component:clone')
+    //this.logEvent('component:update')
+    //this.logEvent('component:update-inside')
+    //this.logEvent('component:styleUpdate')
+    //this.logEvent('component:drag')
+
+    // this.editor.on('component:create', c => updateCreate(c))
+    // this.editor.on('component:remove:before', c => updateRemove(c))
+  },
+
   /**
    * update sybols with existing components
    * this is used on load because the `storage:end:load` event is fired after the components are loaded
+   * @param {Array.<Component>} components
    */
-  updateComponents() {
-    getAllComponentsFromEditor(this.editor)
-      .forEach(c => onAdd(this.editor, c))
+  updateComponents(components) {
+    components.forEach(c => this.onAdd(c))
   },
   /**
    * A component attributes have changed
    */
-  updateAttributes(child) {
-    const comp = closestSymbol(child)
-    if(comp) {
-      this.editor.Symbols.get(getSymbolId(comp))
-        .syncAttributes(comp, child)
+  onUpdate(c) {
+    if(this.updating) return
+    const inst = closestInstance(c)
+    if(inst) {
+      if(inst === c) { // && c.getChangedProps().hasOwnProperty('symbolId')) {
+        // case of an instance
+        // handle unlinking
+        if(!c.get('symbolId') && c._previousAttributes.symbolId) {
+          this.onRemove(c._previousAttributes.symbolId, c)
+        }
+      }
+      // call apply method on the instance
+      const s = this.get(getSymbolId(inst))
+      if(s) {
+        this.updating = true
+        s.applyAttributes(inst, c)
+        this.updating = false
+      } else {
+        console.warn('could not update the symbol', s, 'for the instance', c)
+      }
+    }
+  },
+
+  /**
+   * remove a component from its symbol
+   * Export this method for unit tests
+   * @private
+   */
+  onAdd(c) {
+    if(isInstance(c)) {
+      const symbolId = getSymbolId(c)
+      if(this.has(symbolId)) {
+        this.get(symbolId).addInstance(c)
+      } else {
+        console.warn(`Could not add instance ${c}: could not find the symbol with id ${symbolId} (maybe later?)`)
+      }
+    }
+  },
+
+  /**
+   * Remove an instance from a symbol
+   * This happens when an instance is deleted or when it is unlinked
+   * Exported for tests
+   * @private
+   */
+  onRemove(symbolId, c) {
+    if(symbolId) {
+      if(this.has(symbolId)) {
+        this.get(symbolId).removeInstance(c)
+      } else {
+        console.warn(`Could not remove instance ${c}: could not find the symbol with id ${symbolId}`)
+      }
     }
   },
 })
 
-// utils
-/**
- * remove a component from its symbol
- * Export this method for unit tests
- * @private
- */
-export function onAdd(editor, c) {
-  if(isSymbol(c)) {
-    const cid = c.cid
-    const sid = getSymbolId(c)
-    const s = editor.Symbols.get(sid)
-    if(s) {
-      const components = s.get('components')
-      if(!components.has(cid)) {
-        components.set(cid, c)
-      } else {
-        console.info(`Can not add component ${cid} to symbol ${sid}: this element is already in symbol`)
-      }
-    } else {
-      console.log(`Can not add component ${cid} to symbol ${sid}: this symbol does not exist (yet?)`)
-    }
-  }
-  return null
-}
-
-/**
- * remove a component from its symbol
- * Exported for tests
- * @private
- */
-export function onRemove(editor, c) {
-  if(isSymbol(c) || !!c._previousAttributes.symbolId) {
-    const cid = c.cid
-    const id = getSymbolId(c)
-    const s = editor.Symbols.get(id)
-    if(s) {
-      const components = s.getComponents()
-      if(components.has(cid)) {
-        components.delete(cid)
-      } else {
-        console.info(`Can not remove component ${cid} from symbol ${id}: this element is not in symbol`)
-      }
-    } else {
-      console.info(`Can not remove component ${cid} from symbol ${id}: this symbol does not exist`)
-    }
-  }
-}
-
-let updating = false
-/**
- * remove a component from its symbol
- * @private
- */
-function onUpdate(editor, c) {
-  if(!c.get('symbolId') && c._previousAttributes.symbolId) {
-    onRemove(editor, c)
-  } else {
-    if(updating) return
-    if(isSymbol(c)) {
-      const cid = c.get('id')
-      const id = getSymbolId(c)
-      const s = editor.Symbols.get(id)
-      if(s) {
-        const components = s.getComponents()
-        if(components.has(cid)) {
-          // apply change to all other symbols
-          updating = true
-          s.update(c)
-          updating = false
-        } else {
-          console.info(`Can not update component ${cid} from symbol ${id}: this element is not in symbol`)
-        }
-      } else {
-        console.info(`Can not update component ${cid} from symbol ${id}: this symbol does not exist`)
-      }
-    }
-  }
-}
-
-/**
- * find the first symbol in the parents (or the element itself)
- * exported for unit tests
- * @private
- */
-export function closestSymbol(c) {
-  let ptr = c
-  while(ptr && !isSymbol(ptr)) {
-    ptr = ptr.parent()
-  }
-  return ptr
-}
