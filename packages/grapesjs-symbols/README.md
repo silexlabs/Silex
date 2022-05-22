@@ -52,20 +52,20 @@ A **symbol** is a structure holding the symbol data, see [the comment in the Sym
 
 A **symbol model** is a grapesjs Component which is not attached to the DOM and is used to create instances of a symbol
 
-An **instance** is a grapesjs Component which is in sync with a Symbol
+An **instance** is a grapesjs Component which is in sync with a Symbol, it is a root component with child components which are also synced between symbols
 
 ### About IDs
 
 These are the IDs we need in models attributes
 
 * Each Symbol has `symbolId`
-* Each instance has `symbolId`
-* Each model has `symbolId`
-* Each child of an instance has `symbolChildId`
+* Each instance (the root component) has `symbolId` set to its symbol cid, this is used to find the symbol associated to this instance
+* Each model also has the `symbolId` set to its symbol cid
+* Each child of an instance has `symbolChildId` set to the same ID in all the symbols, this is used to sync the symbol instances children
 
 Notes
 
-* `symbolChildId` attributes are not synced between symbol instances since it can be different when an instance is in two different other symbols
+* `symbolChildId` attributes are not synced between symbol instances (the root of a symbol instance) since it can be different when an instance is in two different other symbols
 * In a collection of Symbol, you can get the symbol with `.get(symbolId)` since the symbols have their cid set to their initial `symbolId` - see [the initialize method in Symbol.js](./src/model/Symbol.js)
 
 

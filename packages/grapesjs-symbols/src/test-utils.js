@@ -11,30 +11,23 @@ const editor = grapesjs.init({
 
 export function getTestSymbols() {
   const [comp1, comp2, comp3] = editor.addComponents([{
-    content: 'comp1 S1',
-    test: 'test attr comp1',
+    test: 'comp1 S1',
   }, {
-    content: 'comp2 S1',
-    test: 'test attr comp2',
+    test: 'comp2 S1',
   }, {
-    content: 'comp3 S2',
-    test: 'test attr comp3',
+    test: 'comp3 S2',
   }])
 
   const [child11, child12] = comp1.append([{
-    content: 'child1 comp1 S1',
-    test: 'test attr child11',
+    test: 'child11',
   }, {
-    content: 'child2 comp1 S1',
-    test: 'test attr child12',
+    test: 'child12',
   }])
 
   const [child21, child22] = comp2.append([{
-    content: 'child1 comp2 S1',
-    test: 'test attr child21',
+    test: 'child21',
   }, {
-    content: 'child2 comp2 S1',
-    test: 'test attr child22',
+    test: 'child22',
   }])
 
   const s1Data = {
@@ -54,6 +47,7 @@ export function getTestSymbols() {
   s1.get('instances')
     .set(comp1.cid, comp1)
     .set(comp2.cid, comp2)
+  s1.get('model').set('test', 'S1 model')
 
   const s2 = createSymbol(comp3)
   s2.get('instances')

@@ -1,19 +1,7 @@
 import Backbone from 'backbone'
 
+import { closestInstance } from '../utils.js';
 import Symbol, { getSymbolId, isInstance } from './Symbol.js'
-
-/**
- * find the first symbol in the parents (or the element itself)
- * exported for unit tests
- * @private
- */
-export function closestInstance(c) {
-  let ptr = c
-  while(ptr && !isInstance(ptr)) {
-    ptr = ptr.parent()
-  }
-  return ptr
-}
 
 export default Backbone.Collection.extend({
   model: Symbol,
@@ -28,7 +16,7 @@ export default Backbone.Collection.extend({
   logEvent(name) {
     this.editor.on(name, component => {
       const { changed, _changing, _previousAttributes, attributes } = component
-      console.log('[SYMBOL] ' + name, { changed, _changing, _previousAttributes, attributes }, component.toHTML())
+      //console.log('[SYMBOL] ' + name, { changed, _changing, _previousAttributes, attributes }, component.toHTML())
     })
   },
 
@@ -126,4 +114,3 @@ export default Backbone.Collection.extend({
     }
   },
 })
-

@@ -1,5 +1,7 @@
 import Backbone from 'backbone'
 
+import { find } from '../utils.js'
+
 /**
  * A Symbol class holds the data about a symbol: label, icon
  * The `model` attribute is a grapesjs Component used to create new instances
@@ -50,15 +52,15 @@ const SymbolModel = Backbone.Model.extend({
     // convert model to a real component
     const model = this.get('model')
     if(!model.cid) {
-      console.log('NEW SYMBOL?', this, {model})
+      console.log('CONVERT DATA TO COMPONENT', {model})
       const { editor } = this.collection
       const [modelComp] = editor.addComponents([model])
       this.set('model', modelComp)
-      if(!modelComp.has('symbolId')) {
-        console.log('?????????????')
-        // case of a symbol creation with `createSymbol`
-        this.initModel(modelComp)
-      }
+    }
+    if(!this.get('model').has('symbolId')) {
+      console.log('?NEED TO CALL INIT MODEL?')
+      // case of a symbol creation with `createSymbol`
+      this.initModel(this.get('model'))
     }
   },
 
@@ -88,28 +90,31 @@ const SymbolModel = Backbone.Model.extend({
   },
 
   /**
-   * Update the instances and their children according to changes of a component
+   * Update all symbol instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
    * Will not update the provided instance `inst` as it is the one which changed
    * @param {Component} inst - the instance of this symbol containing `child`
    * @param {Component} child - the child which has the changes, with `_previousAttributes` and `getChangedProps` props
    */
-  applyAttributes(inst, child) {
-    const { _previousAttributes } = child
-    const cid = child.get('symbolChildId') || child.get('symbolId')
-    const changed = child.getChangedProps()
-    this.getAll(this.get('model'), inst)
-      .forEach(inst => {
-        const newChild = find(inst, cid)
-        if(newChild) {
+  applyAttributes(srcInst, srcChild) {
+    const { _previousAttributes } = srcChild
+    const symbolChildId = srcChild.get('symbolChildId')
+    const changed = srcChild.getChangedProps()
+    this.getAll(this.get('model'), srcInst)
+      .forEach(dstInst => {
+        // update a child or the root
+        const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
+        // check that we found a component to update
+        if(dstChild) {
+          console.log(srcChild.get('test'), '-', srcInst.get('test'), '-', dstChild.get('test'), '-', dstInst.get('test'))
+          // update each attribute
           Object.keys(changed).forEach(attr => {
             if(!_previousAttributes || _previousAttributes[attr] !== changed[attr]) {
-              console.log('[SYMBOL] do update', {attr, changed, _previousAttributes}, attr, _previousAttributes[attr], changed[attr])
-              newChild.set(attr, changed[attr])
+              dstChild.set(attr, changed[attr])
             }
           })
         } else {
-          console.error(`Could not sync attributes of component ${child} which was supposed to be a child of ${inst} which is an instance of the symbol ${this}`)
+          throw new Error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
         }
       })
   },
@@ -165,7 +170,7 @@ const SymbolModel = Backbone.Model.extend({
    */
   initSymbolChild(c) {
     // store this symbol's ID
-    c.set('symbolChildId', this.get('symbolId'))
+    if(!c.has('symbolChildId')) c.set('symbolChildId', c.cid)
 
     // if this component is not a symbol's instance
     if(!isInstance(c)) {
@@ -177,23 +182,6 @@ const SymbolModel = Backbone.Model.extend({
     }
   },
 })
-
-/**
- * Find a component in a component's children
- * @param {Component} c - the root component
- * @param {string} cid - the ID we are looking for
- * @returns {(Component|null)} the component itself or one of its children
- */
-export function find(c, symbolChildId) {
-  console.log('find', c, symbolChildId)
-  if(c.get('symbolChildId') === symbolChildId || c.get('symbolId') === symbolChildId) {
-    return c
-  } else {
-    // check the children components
-    return c.components()
-      .find(comp => find(comp, symbolChildId))
-  }
-}
 
 /**
  * @param {Component} c - a component
@@ -227,14 +215,12 @@ export function unlink(c) {
  * @return {SymbolModel}
  */
 export function createSymbol(c, attributes) {
-  const model = c.clone()
   const s = new SymbolModel({
     ...attributes,
-    model,
+    model: c.clone(),
   })
   s.initSymbolInstance(c)
   return s
 }
 
 export default SymbolModel
-

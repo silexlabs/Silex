@@ -1,5 +1,5 @@
 import { getTestSymbols } from '../test-utils'
-import Symbols, { closestInstance } from './Symbols.js'
+import Symbols from './Symbols.js'
 
 describe('Make sure everything has the correct data type and default values', () => {
   // mock editor
