@@ -176,7 +176,7 @@ const SymbolModel = Backbone.Model.extend({
     if(!isInstance(c)) {
       // handle the component's children
       c.components()
-        .forEach(child => this.initAsSymbolChild(child))
+        .forEach(child => this.initSymbolChild(child))
     } else {
       console.info('the symbol', this, 'has a symbol instance in it', c)
     }
