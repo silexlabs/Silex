@@ -69,15 +69,10 @@ function renderPages(editor, config) {
         })}
       </div>
       ${pages.length ? '' : html`<div class="flex-row">
-          <input
-              class="tm-input sm"
-              type="text"
-              placeholder="No page yet."
-          />
+        No page yet.
       </div>
-    </main>
     `}
-  </div>`
+    </main></section>`
 }
 
 export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
