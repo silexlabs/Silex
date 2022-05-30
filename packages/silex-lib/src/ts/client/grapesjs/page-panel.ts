@@ -4,7 +4,8 @@ import {html, render} from 'lit-html'
 const pluginName = 'page-panel'
 let open
 
-export const cmdTogglePages = 'open-page-panel'
+export const cmdTogglePages = 'pages:open-panel'
+export const cmdAddPage = 'pages:add'
 
 function selectPage(editor, page) {
   editor.Pages.select(page)
@@ -47,10 +48,6 @@ function renderPages(editor, config) {
     return editor.Pages.get(el.getAttribute('data-page-id'))
   }
   return html`<section class="pages">
-    <header class="pages__header">
-      <h3 class="pages__title">Pages</h3>
-      <div class="pages__add-page fa fa-file" @click=${e => addPage(editor, config)}><span>+</span></div>
-    </header>
     <main class="pages__main ${pages.length === 1 ? 'pages__single-page' : ''}">
       <div class="pages__list">
         ${ pages.map(page => {
@@ -76,6 +73,7 @@ function renderPages(editor, config) {
 }
 
 export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
+  // create wrapper
   const el = document.createElement('div')
   el.classList.add('pages__wrapper')
   // update
@@ -96,6 +94,8 @@ export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =
     //   }
     // }
     // document.addEventListener('mousedown', close)
+    // add command to add pages
+    editor.Commands.add(cmdAddPage, () => addPage(editor, opts))
   })
 })
 

@@ -1,4 +1,5 @@
 import * as grapesjs from 'grapesjs/dist/grapes.min.js'
+import {html, render} from 'lit-html'
 
 const name = 'project-bar'
 const panelId = 'project-bar-panel'
@@ -17,11 +18,29 @@ export const projectBarPlugin = grapesjs.plugins.add(name, (editor, opts) => {
     visible  : true,
   })
   const panelsEl = opts.panels.map(panel => {
-    // create container for panel
     const el = document.createElement('div')
-    el.classList.add('project-bar__panel', panel.attributes.containerClassName, 'gjs-hidden')
 
+    // create container for panel
     if(panel.attributes.containerClassName) {
+      el.classList.add('project-bar__panel', panel.attributes.containerClassName, 'gjs-hidden')
+
+      // add header
+      if(panel.attributes.title) {
+        render(html`
+          <header class="project-bar__panel-header">
+            <h3 class="project-bar__panel-header-title">${ panel.attributes.title }</h3>
+            ${ panel.buttons?.map(button => {
+              return html`
+                <div
+                  class="project-bar__panel-header-button ${ button.className }"
+                  @click=${e => editor.runCommand(button.command)}
+                ><span>+</span></div>
+              `
+            }) }
+          </header>
+        `, el)
+      }
+
       // temporarily attach it to the body
       // this lets the block manager and other plugins attach to their container
       document.body.appendChild(el)
