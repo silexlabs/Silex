@@ -6,6 +6,8 @@ import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms/dist/grapesjs-plugin-forms.min.js'
 import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
 import uiSuggestClasses from 'grapesjs-ui-suggest-classes'
+import symbolsPlugin from 'grapesjs-symbols/src/'
+
 
 import { pagePanelPlugin, cmdTogglePages } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -78,6 +80,7 @@ export const defaultConfig = {
       codePlugin,
       internalLinksPlugin,
       uiSuggestClasses,
+      symbolsPlugin,
     ],
     importWebpage: {
       modalImportLabel: '',
@@ -109,7 +112,7 @@ export const defaultConfig = {
             command: 'open-dash',
           }, {
             id: 'block-manager-btn',
-            className: 'block-manager-btn fa fa-fw fa-plus-square',
+            className: 'block-manager-btn fa fa-fw fa-plus',
             attributes: { title: 'Insert new elements', containerClassName: 'block-manager-container', },
             command: 'open-blocks',
           }, {
@@ -122,6 +125,11 @@ export const defaultConfig = {
             className: 'page-panel-btn fa fa-fw fa-file',
             attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
             command: cmdTogglePages,
+          }, {
+            id: 'symbols-btn',
+            className: 'symbols-btn fa fa-fw fa-diamond',
+            attributes: { title: 'Symbols', containerClassName: 'symbols-list-container', },
+            command: 'open-symbols',
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa fa-fw fa-cog',
@@ -148,6 +156,9 @@ export const defaultConfig = {
         }
       },
       [uiSuggestClasses]: {},
+      [symbolsPlugin]: {
+        appendTo: '.symbols-list-container',
+      }
     },
   },
 }
