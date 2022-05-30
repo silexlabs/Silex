@@ -7,7 +7,7 @@
   .#{$pn-prefix}buttons {
     flex-direction: column;
     .#{$pn-prefix}btn {
-      margin: 5px 0;
+      margin: 5px 0 0;
       padding: 5px;
       &.#{$pn-prefix}active {
         background-color: $lighterPrimaryColor;
@@ -46,9 +46,44 @@
       background-color: $primaryColor;
     }
   }
-  .project-bar__panel > * {
+  .project-bar__panel > *:not(header) {
     flex: 1;
     display: initial;
    }
-}
+   .project-bar__panel-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 5px;
+      border-bottom: 1px solid $lighterPrimaryColor;
+      .project-bar__panel-header-title {
+        flex: 1 1 auto;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding: 3px 0;
+        margin: 0;
+        font-size: large;
+        font-weight: 600;
+      }
+      .project-bar__panel-header-button {
+        cursor: pointer;
+        font-size: large;
+        font-weight: 400;
+        span {
+          position: relative;
+          left: -6px;
+          top: 6px;
+          font-weight: bolder;
+          background-color: #444;
+          border-radius: 100%;
+          display: inline-block;
+          line-height: 13px;
+        }
+      }
+      .project-bar__panel-header-button:hover {
+        color: $quaternaryColor;
+      }
+    }
+  }
 

@@ -8,41 +8,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    .pages__header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 5px;
-    }
-    .pages__title {
-      flex: 1 1 auto;
-      overflow-x: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      padding: 3px 0;
-      margin: 0;
-      text-align: left;
-      font-size: large;
-      font-weight: 400;
-    }
-    .pages__add-page {
-      cursor: pointer;
-      font-size: large;
-      font-weight: 400;
-      span {
-        position: relative;
-        left: -6px;
-        top: 6px;
-        font-weight: bolder;
-        background-color: #444;
-        border-radius: 100%;
-        display: inline-block;
-        line-height: 13px;
-      }
-    }
-    .pages__add-page:hover {
-      color: $quaternaryColor;
-    }
     .pages__main {
       flex: 1; // take the available space in height
       border: 1px solid $darkerPrimaryColor;
