@@ -1,11 +1,16 @@
 // exported plugin
 import { createSymbol, unlink } from './model/Symbol.js'
 
+export const cmdAdd = 'symbols:add'
+export const cmdRemove = 'symbols:remove'
+export const cmdUnlink = 'symbols:unlink'
+export const cmdCreate = 'symbols:create'
+
 export default function({ editor, options }) {
-  editor.Commands.add('symbols:add', addSymbol)
-  editor.Commands.add('symbols:remove', removeSymbol)
-  editor.Commands.add('symbols:unlink', unlinkSymbolInstance)
-  editor.Commands.add('symbols:create', createSymbolInstance)
+  editor.Commands.add(cmdAdd, addSymbol)
+  editor.Commands.add(cmdRemove, removeSymbol)
+  editor.Commands.add(cmdUnlink, unlinkSymbolInstance)
+  editor.Commands.add(cmdCreate, createSymbolInstance)
 }
 
 // Symbol management functions

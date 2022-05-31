@@ -38,6 +38,7 @@ export default class extends Backbone.View {
         font-size: xx-small;
       }
       .symbols__empty {
+        padding: 10px;
         text-align: center;
         width: 100%;
       }
@@ -65,7 +66,7 @@ export default class extends Backbone.View {
          `)
 }
        ${symbols.length ? '' : html`<div class="symbols__empty">
-         No symbol yet.
+        ${ this.options.emptyText }
        </div>`}
        </div>
      </main>
