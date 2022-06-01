@@ -62,14 +62,33 @@ export const projectBarPlugin = grapesjs.plugins.add(name, (editor, opts) => {
         if(panel.attributes.containerClassName) {
           containerPanel.set('visible', true)
           el.classList.remove('gjs-hidden')
+          editor.Canvas.getFrameEl().classList.add('silex-squeeze-left')
         }
       },
       stop() {
         if(panel.attributes.containerClassName) {
           containerPanel.set('visible', false)
           el.classList.add('gjs-hidden')
+          editor.Canvas.getFrameEl().classList.remove('silex-squeeze-left')
         }
       },
     })
+  })
+  function updateSqueez() {
+    const containerPanelEl = containerPanel.view.el
+    const iframe = editor.Canvas.getFrameEl()
+    iframe.classList.remove('enable-squeeze')
+    setTimeout(() => {
+      const left = iframe.getClientRects()[0]?.left
+      const right = containerPanelEl.getClientRects()[0]?.right
+      if(left < right || !right) iframe.classList.add('enable-squeeze')
+      else iframe.classList.remove('enable-squeeze')
+    }, 400) // More than the transition duration
+  }
+  editor.on('load', () => {
+    updateSqueez()
+  })
+  editor.on('device:select', device => {
+    updateSqueez()
   })
 })
