@@ -1,5 +1,14 @@
 @use "variables" as *;
 
+// squeeze the stage iframe when panel is open
+iframe.enable-squeeze.gjs-frame {
+  transition: width $transitionSpeedMedium, height $transitionSpeedMedium, left $transitionSpeedMedium;
+}
+iframe.enable-squeeze.silex-squeeze-left {
+  --project-panel-width: max(150px, 15.7%); /* Why 16? Also sass vars do not work here */
+  left: var(--project-panel-width);
+  width: calc(100% - var(--project-panel-width));
+}
 // button bar
 .#{$pn-prefix}project-bar-panel {
   width: $projectBarWidth;
@@ -27,14 +36,13 @@
 // panels
 .#{$pn-prefix}project-bar-container {
   top: $topBarHeight;
-  width: $pagePanelWidth;
-  min-width: $pagePanelMinWidth;
+  width: $projectPanelWidth;
+  min-width: $projectPanelMinWidth;
   height: calc(100% - $topBarHeight);
   background-color: $lighterPrimaryColor;
   &:not(.gjs-hidden) {
     display: flex; // let the child take the whole height
     flex-direction: column;
-    min-width: 200px;
   }
   .project-bar__panel:not(.gjs-hidden) {
     flex: 1;
