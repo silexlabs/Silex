@@ -22,7 +22,7 @@
     "pug": "^3.0.2",
     "pug-cli": "^1.0.0-alpha6",
     "serve-static": "^1.15.0",
-    "silex-website-builder": "^2.7.37"
+    "silex-website-builder": "^2.7.38"
   },
   "repository": {
     "type": "git",
