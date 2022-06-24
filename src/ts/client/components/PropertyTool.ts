@@ -107,7 +107,7 @@ function updateComponentTool() {
   const selectedComponents = getSelectedElements().filter((e) => isComponent(e))
   const [currentToolbox] = getVisibleDialogs('properties')
 
-  if (currentToolbox.id === 'params' && selectedComponents.length === 1) {
+  if (currentToolbox?.id === 'params' && selectedComponents.length === 1) {
     editComponent(selectedComponents[0])
     componentEditorMenu.style.display = ''
   } else {
