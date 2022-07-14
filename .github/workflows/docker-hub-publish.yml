@@ -1,4 +1,5 @@
 name: Publish DockerHub image
+# from https://itsmetommy.com/2021/07/05/push-to-docker-hub-using-github-actions/
 
 on:
   push:
