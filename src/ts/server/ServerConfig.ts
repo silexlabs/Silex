@@ -13,6 +13,7 @@ export interface ServerOptions {
   rootUrl: string
   sessionSecret: string
   cePath: string
+  beautifyEditable: boolean
 }
 // SSL options
 export interface SslOptions {
@@ -71,6 +72,7 @@ export class Config {
       port: PORT,
       rootUrl: process.env.SERVER_URL || `http://localhost:${PORT}`,
       sessionSecret: process.env.SILEX_SESSION_SECRET || 'test session secret',
+      beautifyEditable: process.env.SILEX_BEAUTIFY_EDITABLE === 'true',
       cePath: '/ce',
     }
     this.sslOptions = {

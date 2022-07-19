@@ -2,6 +2,7 @@ import { JSDOM } from 'jsdom'
 import * as CloudExplorer from 'cloud-explorer'
 import * as express from 'express'
 import * as nodeModules from 'node_modules-path'
+import * as beautify from 'beautify'
 
 import { URL } from 'url'
 import * as Path from 'path'
@@ -13,14 +14,14 @@ import { PersistantData } from '../../client/store/types'
 import BackwardCompat from '../utils/BackwardCompat'
 import DomTools from '../utils/DomTools'
 
-export default function({ port, rootUrl }: { port: number, rootUrl: string}, unifile) {
+export default function({ port, rootUrl, beautifyEditable }: { port: number, rootUrl: string, beautifyEditable: boolean }, unifile) {
   const backwardCompat = new BackwardCompat(rootUrl)
   const router = express.Router()
 
   // website specials
   router.get(/\/website\/ce\/(.*)\/get\/(.*)/, readWebsite(rootUrl, unifile, backwardCompat))
   router.get(/\/website\/libs\/templates\/(.*)/, readTemplate(rootUrl, unifile, backwardCompat))
-  router.put(/\/website\/ce\/(.*)\/put\/(.*)/, writeWebsite(rootUrl, unifile, backwardCompat))
+  router.put(/\/website\/ce\/(.*)\/put\/(.*)/, writeWebsite(rootUrl, unifile, backwardCompat, beautifyEditable))
 
   // **
   // list templates
@@ -200,7 +201,7 @@ const SILEX_ZIP_EXT = '.zip'
 /**
  * save a website to the cloud storage of the user
  */
-function writeWebsite(rootUrl, unifile, backwardCompat) {
+function writeWebsite(rootUrl, unifile, backwardCompat, beautifyEditable) {
   return function (req, res, next) {
     const connector = req.params[0]
     const path = req.params[1]
@@ -209,13 +210,17 @@ function writeWebsite(rootUrl, unifile, backwardCompat) {
     const [unpreparedData, dom] = unprepareWebsite(new JSDOM(html, { url: url.href }), data, rootUrl, url)
     const str = dom.serialize()
     const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headUser)
+    const beautifiedHtml = beautifyEditable ? beautify(fullHtml, { format: 'html' }) : fullHtml
+    const jsonString = JSON.stringify(unpreparedData)
+    const beautifiedJson = beautifyEditable ? beautify(jsonString, { format: 'json' }) : jsonString
+
     dom.window.close()
 
     if(path.endsWith(SILEX_ZIP_EXT)) {
       try {
         const zip = new Zip()
-        zip.addFile('editable.html', Buffer.from(fullHtml))
-        zip.addFile('editable.html.json', Buffer.from(JSON.stringify(unpreparedData)))
+        zip.addFile('editable.html', Buffer.from(beautifiedHtml))
+        zip.addFile('editable.html.json', Buffer.from(beautifiedJson))
         unifile.writeFile(req.session.unifile || {}, connector, path, zip.toBuffer())
         .catch((err) => {
           console.error('unifile error catched:', err)
@@ -230,11 +235,11 @@ function writeWebsite(rootUrl, unifile, backwardCompat) {
       unifile.batch(req.session.unifile || {}, connector, [{
         name: 'writeFile',
         path,
-        content: fullHtml,
+        content: beautifiedHtml,
       }, {
         name: 'writeFile',
         path: path + '.json',
-        content: JSON.stringify(unpreparedData),
+        content: beautifiedJson,
       }])
       .then((result) => {
         res.send(result)
