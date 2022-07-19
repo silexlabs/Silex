@@ -198,6 +198,23 @@ async function sendWebsiteData(res, rootUrl: string, backwardCompat: BackwardCom
   }
 }
 const SILEX_ZIP_EXT = '.zip'
+
+/**
+ * Beautify inline <script> and <style> tags
+ */
+function beautifyDom(dom: JSDOM) {
+  Array.from(dom.window.document.querySelectorAll(`script`))
+  .forEach(el => {
+    if(!el.hasAttribute('src')) {
+      el.innerHTML = beautify(el.innerHTML, { format: 'js' })
+    }
+  })
+  Array.from(dom.window.document.querySelectorAll(`style`))
+  .forEach(el => {
+    el.textContent = beautify(el.textContent, { format: 'css' })
+  })
+}
+
 /**
  * save a website to the cloud storage of the user
  */
@@ -207,7 +224,11 @@ function writeWebsite(rootUrl, unifile, backwardCompat, beautifyEditable) {
     const path = req.params[1]
     const { data, html }: { data: PersistantData, html: string} = JSON.parse(req.body)
     const url = new URL(`${ rootUrl }/ce/${ connector }/get/${ Path.dirname(path) }/`)
-    const [unpreparedData, dom] = unprepareWebsite(new JSDOM(html, { url: url.href }), data, rootUrl, url)
+    const htmlDom = new JSDOM(html, { url: url.href })
+    const [unpreparedData, dom] = unprepareWebsite(htmlDom, data, rootUrl, url)
+    if(beautifyEditable) {
+      beautifyDom(dom)
+    }
     const str = dom.serialize()
     const fullHtml = DomTools.insertUserHeadTag(str, unpreparedData.site.headUser)
     const beautifiedHtml = beautifyEditable ? beautify(fullHtml, { format: 'html' }) : fullHtml
