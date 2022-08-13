@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for future development
 title: ''
-labels: bug, feature
+labels: bug, feature, in french
 assignees: ''
 
 ---
