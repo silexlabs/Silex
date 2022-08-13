@@ -1,8 +1,8 @@
 ---
 name: Bug report or question about Silex
-about: Create a report to help us improve
+about: Ask for help or help make Silex better by finding bugs
 title: 'I found a bug: ...'
-labels: bug
+labels: bug, widget
 assignees: ''
 
 ---
