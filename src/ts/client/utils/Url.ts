@@ -42,10 +42,19 @@ export class Url {
   }
 
   /**
+   * Get path of Silex server
+   * Remove the file name from location.pathname
+   */
+  static getPath() {
+    return window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/"))
+  }
+
+  /**
    * Get base URL of Silex server
+   * Remove the file name from location.href
    */
   static getBaseUrl() {
-    return window.location.href
+    return window.location.href.substr(0, window.location.href.lastIndexOf("/"))
   }
 
   /**

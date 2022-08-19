@@ -11,6 +11,7 @@ import { CloudExplorer } from '../../externs'
 import { CloudStorage, FileInfo } from '../../io/CloudStorage'
 import { Notification } from '../Notification'
 import { getUiElements } from '../../ui-store/UiElements'
+import { Url } from '../../utils/Url'
 
 /**
  * the Silex FileExplorer class
@@ -56,7 +57,7 @@ export class FileExplorer {
    */
   addAbsPath(fileInfo: FileInfo): FileInfo {
     if (fileInfo) {
-      const absPath = fileInfo.service ? `/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath
+      const absPath = fileInfo.service ? `${ Url.getPath() }/ce/${fileInfo.service}/get/${fileInfo.path}` : fileInfo.absPath
       return {
         ...fileInfo,
         absPath,

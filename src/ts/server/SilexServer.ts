@@ -58,14 +58,14 @@ export default function SilexServer(config: Config) {
 SilexServer.prototype.start = function(cbk) {
   // use routers
   this.app.use(this.config.serverOptions.cePath, this.ceRouter) // CE handles cache headers
-  this.app.use(withCache, this.staticRouter)
-  this.app.use(noCache, this.websiteRouter)
-  this.app.use(noCache, this.publishRouter)
-  this.app.use(this.sslRouter)
+  this.app.use(this.config.serverOptions.rootPath, withCache, this.staticRouter)
+  this.app.use(this.config.serverOptions.rootPath, noCache, this.websiteRouter)
+  this.app.use(this.config.serverOptions.rootPath, noCache, this.publishRouter)
+  this.app.use(this.config.serverOptions.rootPath, this.sslRouter)
 
   // server 'loop'
   this.app.listen(this.config.serverOptions.port, () => {
-    console.info(`\nI'm ready, listening to port ${this.config.serverOptions.port}\n`)
+    console.info(`\nI'm ready, serving Silex on ${this.config.serverOptions.rootUrl}\n`)
     if (cbk) { cbk() }
   })
 }

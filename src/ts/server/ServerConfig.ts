@@ -12,6 +12,7 @@ export interface ServerOptions {
   port: string
   rootUrl: string
   sessionSecret: string
+  rootPath: string
   cePath: string
   beautifyEditable: boolean
 }
@@ -67,13 +68,15 @@ export class Config {
   staticOptions: StaticOptions
   constructor() {
     const PORT = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
+    const rootPath = process.env.SILEX_PATH || '' // e.g. /subfolder
     this.serverOptions = {
       debug: process.env.SILEX_DEBUG === 'true',
       port: PORT,
-      rootUrl: process.env.SERVER_URL || `http://localhost:${PORT}`,
+      rootUrl: (process.env.SERVER_URL || `http://localhost:${PORT}`) + rootPath,
       sessionSecret: process.env.SILEX_SESSION_SECRET || 'test session secret',
       beautifyEditable: process.env.SILEX_BEAUTIFY_EDITABLE === 'true',
-      cePath: '/ce',
+      rootPath,
+      cePath: `${rootPath}/ce`, // `ce` as in CloudExplorer is hardcoded here and in the iframe url in workspace.pug
     }
     this.sslOptions = {
       forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',

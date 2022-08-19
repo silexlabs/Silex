@@ -58,7 +58,7 @@ export async function initSingleSiteMode(): Promise<void> {
       openRecent({
         path,
         service,
-        absPath: `/ce/${service}/get${path}`,
+        absPath: `${ Url.getPath() }/ce/${service}/get${path}`,
         name: path.split('/').pop(),
         mime: '',
         isDir: false,

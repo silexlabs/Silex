@@ -7,6 +7,7 @@
 
 import {Hosting, Provider, VHost} from '../site-store/types'
 import {PublicationOptions} from '../site-store/types'
+import { Url } from '../utils/Url'
 /**
  * the Silex SilexTasks singleton
  * based on http://www.inkfilepicker.com/
@@ -26,7 +27,7 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   publish(options: PublicationOptions, cbk: (p1: string) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer('/tasks/publish', JSON.stringify(options), 'POST', (json) => cbk(json), opt_errCbk)
+    this.callServer(Url.getPath() + '/tasks/publish', JSON.stringify(options), 'POST', (json) => cbk(json), opt_errCbk) // add base url in case we serve silex with a rootPath
   }
 
   /**
@@ -35,7 +36,7 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   publishState(cbk: (p1: {message: string, stop: boolean}) => any, opt_errCbk?: (p1: string) => any) {
-    this.callServer('/tasks/publishState', '', 'GET', cbk, opt_errCbk)
+    this.callServer(Url.getPath() + '/tasks/publishState', '', 'GET', cbk, opt_errCbk) // add base url in case we serve silex with a rootPath
   }
 
   /**
@@ -44,7 +45,7 @@ export class SilexTasks {
    * @param opt_errCbk to receive the json response
    */
   hosting(cbk: (p1: Hosting) => void, opt_errCbk?: (p1: string) => void) {
-    this.callServer('/hosting/', '', 'GET', cbk, opt_errCbk)
+    this.callServer(Url.getPath() + '/hosting/', '', 'GET', cbk, opt_errCbk) // add base url in case we serve silex with a rootPath
   }
 
   /**

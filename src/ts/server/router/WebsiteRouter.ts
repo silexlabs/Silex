@@ -13,8 +13,9 @@ import { Constants } from '../../constants'
 import { PersistantData } from '../../client/store/types'
 import BackwardCompat from '../utils/BackwardCompat'
 import DomTools from '../utils/DomTools'
+import { ServerOptions } from '../ServerConfig'
 
-export default function({ port, rootUrl, beautifyEditable }: { port: number, rootUrl: string, beautifyEditable: boolean }, unifile) {
+export default function({ port, rootPath, rootUrl, beautifyEditable }: ServerOptions, unifile) {
   const backwardCompat = new BackwardCompat(rootUrl)
   const router = express.Router()
 

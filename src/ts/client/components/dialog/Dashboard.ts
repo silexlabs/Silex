@@ -9,6 +9,7 @@ import { getUiElements } from '../../ui-store/UiElements'
 import { clearLatestFiles, getLatestFiles } from '../../io/latest-files'
 import { openFile } from '../../file'
 import { FileInfo } from '../../io/CloudStorage'
+import { Url } from '../../utils/Url'
 
 export interface DashboardOptions {
   openFileInfo: (p1: FileInfo) => any
@@ -71,7 +72,7 @@ class Dashboard {
     }
 
     const createList = (ul, className, repo, success, error) => {
-      const repoUrl = `/get/${repo}`
+      const repoUrl = `./get/${repo}` // add "./" in case we serve silex with a rootPath
       const oReq = new XMLHttpRequest()
       oReq.addEventListener('error', (e) => {
         ul.innerHTML = 'It looks like you are offline. I could not load data from github issues'
@@ -250,7 +251,7 @@ class Dashboard {
             const templateFolder = `/libs/templates/${repo}/${item}`
             thumbnail.classList.add('thumbnail')
             thumbnail.style.backgroundImage =
-                `url(${templateFolder}/screenshot.png)`
+                `url(${ Url.getPath() }${templateFolder}/screenshot.png)` // add base url in case we serve silex with a rootPath
             thumbnail.setAttribute(
                 'data-editable', `${templateFolder}/editable.html`)
             thumbnail.setAttribute('data-is-template', 'true')

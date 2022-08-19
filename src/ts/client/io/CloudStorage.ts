@@ -7,6 +7,7 @@ import { getUiElements } from '../ui-store/UiElements'
 import { CloudExplorer } from '../externs'
 import { Notification } from '../components/Notification'
 import { PersistantData } from '../store/types'
+import { Url } from '../utils/Url'
 
 // FIXME: choose between path and folder + name, remove absPath
 // This comes from Cloud Explorer
@@ -87,7 +88,7 @@ export class CloudStorage {
         }
       }
     }
-    const url = `/website/ce/${fileInfo.service}/put/${fileInfo.path}`
+    const url = Url.getBaseUrl() + `/website/ce/${fileInfo.service}/put/${fileInfo.path}` // add base url in case we serve silex with a rootPath
     oReq.open('PUT', url)
     oReq.setRequestHeader('Content-Type', 'text/plain; charset=utf-8')
     oReq.send(JSON.stringify({html, data}))
@@ -132,7 +133,7 @@ export class CloudStorage {
   loadWebsite(
       absPath: string, cbk: (p1: string, data: PersistantData) => any,
       opt_errCbk?: ((p1: any, p2: string, code: number) => any)) {
-    const url = '/website' + absPath
+    const url = Url.getBaseUrl() + '/website' + absPath  // add base url in case we serve silex with a rootPath
     const oReq = new XMLHttpRequest()
     oReq.addEventListener('load', (e) => {
       // success of the request

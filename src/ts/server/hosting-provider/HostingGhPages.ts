@@ -115,7 +115,7 @@ HostingGhPages.prototype.getOptions = function(session) {
     displayName: 'Github Pages',
     isLoggedIn: infos.isLoggedIn,
     username: infos.username,
-    authorizeUrl: '/ce/github/authorize',
+    authorizeUrl: './ce/github/authorize', // add "./" in case we serve silex with a rootPath
     dashboardUrl: 'https://www.github.com',
     pleaseCreateAVhost: 'create an empty repository.',
     vhostsUrl: '/hosting/ghpages/vhost',
