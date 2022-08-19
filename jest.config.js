@@ -133,7 +133,13 @@ module.exports = {
   // snapshotSerializers: [],
 
   // The test environment that will be used for testing
+  //
+  // FIXME: remove this settings as it is a temporary workaround for a bug in jsdom/whatwg-url
   // testEnvironment: "jest-environment-jsdom",
+  // Fix from here https://github.com/influxdata/ui/commit/5e113e32f47a5242d0b1246caf406d9af14fbaa7
+  // Workaround issue ReferenceError: TextEncoder is not defined
+  // @see jsdom-custom.js
+  testEnvironment: './jsdom-custom.js',
 
   // Options that will be passed to the testEnvironment
   // testEnvironmentOptions: {},
