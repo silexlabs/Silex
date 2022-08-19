@@ -96,7 +96,7 @@ export class Config {
       enableFs: this.serverOptions.debug || process.env.ENABLE_FS === 'true',
       fsRoot: process.env.FS_ROOT,
       fsShowHidden: process.env.FS_SHOW_HIDDEN === 'true',
-      rootUrl: this.serverOptions.rootUrl + this.serverOptions.cePath,
+      rootUrl: this.serverOptions.rootUrl,
       unsplash: {
         accessKey: process.env.UNSPLASH_ACCESS_KEY,
         appName: process.env.UNSPLASH_APP_NAME,
