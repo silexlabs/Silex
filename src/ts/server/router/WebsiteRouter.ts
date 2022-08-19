@@ -1,8 +1,3 @@
-// from https://github.com/jsdom/whatwg-url/issues/209
-const { TextEncoder, TextDecoder } = require('util')
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
-
 import { JSDOM } from 'jsdom'
 import * as CloudExplorer from 'cloud-explorer'
 import * as express from 'express'

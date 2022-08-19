@@ -46,7 +46,7 @@ export class Url {
    * Remove the file name from location.pathname
    */
   static getPath() {
-    return window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/"))
+    return window.location.pathname.substr(0, window.location.pathname.lastIndexOf('/'))
   }
 
   /**
@@ -54,7 +54,7 @@ export class Url {
    * Remove the file name from location.href
    */
   static getBaseUrl() {
-    return window.location.href.substr(0, window.location.href.lastIndexOf("/"))
+    return window.location.href.substr(0, window.location.href.lastIndexOf('/'))
   }
 
   /**

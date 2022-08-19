@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom'
 import { URL } from 'url'
 
-import {ELEM_TEXT} from '../../test-utils/data-set'
+import { ELEM_TEXT } from '../../test-utils/data-set'
 import { ElementState, LinkType } from '../../client/element-store/types'
 import { prepareWebsite, unprepareWebsite } from './WebsiteRouter'
 
