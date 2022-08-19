@@ -38,6 +38,7 @@ export interface CeOptions {
   fsRoot: string
   fsShowHidden: boolean
   rootUrl: string
+  rootPath: string
   unsplash?: {
     accessKey: string;
     appName: string;
@@ -97,6 +98,7 @@ export class Config {
       fsRoot: process.env.FS_ROOT,
       fsShowHidden: process.env.FS_SHOW_HIDDEN === 'true',
       rootUrl: this.serverOptions.rootUrl,
+      rootPath: this.serverOptions.cePath,
       unsplash: {
         accessKey: process.env.UNSPLASH_ACCESS_KEY,
         appName: process.env.UNSPLASH_APP_NAME,

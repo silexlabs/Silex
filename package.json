@@ -91,7 +91,7 @@
     "adm-zip": "^0.5.9",
     "beautify": "^0.0.8",
     "body-parser": "1.20.0",
-    "cloud-explorer": "^2.1.14",
+    "cloud-explorer": "^2.1.15",
     "compression": "1.7.4",
     "cookie-parser": "1.4.6",
     "cookie-session": "2.0.0",
