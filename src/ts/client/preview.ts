@@ -39,11 +39,11 @@ export function setPreviewWindowLocation(opt_location?: string) {
       try {
         if (previewWindow.location.href !== 'about:blank') {
           // only when loaded, reload
-          previewWindow.location.reload(true)
+          previewWindow.location.reload()
         }
       } catch (e) {
         // case of responsize
-        previewWindow.frames[1].location.reload(true)
+        previewWindow.frames[1].location.reload()
       }
     }
     previewWindow.focus()
