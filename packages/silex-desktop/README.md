@@ -14,7 +14,7 @@ Please use the mother project's [Silex issues](https://github.com/silexlabs/Sile
 
 ## Instructions
 
-Go ahead and [download the version for your system here](https://github.com/lexoyo/silex-desktop/releases)
+Go ahead and [download the version for your system here](https://github.com/silexlabs/silex-desktop/releases/latest)
 
 ### Windows
 
