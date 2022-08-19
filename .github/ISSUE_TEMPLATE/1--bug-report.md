@@ -1,6 +1,6 @@
 ---
-name: Bug report or question about Silex
-about: Ask for help or help make Silex better by finding bugs
+name: 1. Bug report
+about: Help make Silex better by finding bugs
 title: 'I found a bug: ...'
 labels: bug, widget
 assignees: ''
