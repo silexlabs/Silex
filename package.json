@@ -60,11 +60,11 @@
   },
   "scripts": {
     "release": "",
+    "postinstall": "npm run build",
     "watch": "npm-watch",
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
     "prepublishOnly": "npm run lint:fix && npm run build",
-    "prepare": "npm run build",
     "build": "run-s cleanup build:css:release build:html build:prodotype build:client:release build:server:release build:monaco-editor",
     "cleanup": "mkdirp tmp && mv dist/public tmp/ && rm -rf dist && mv tmp dist",
     "webpack": "webpack --config webpack.config.js",
