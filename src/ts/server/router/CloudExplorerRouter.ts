@@ -10,7 +10,7 @@ export default function(ceOptions: CeOptions) {
   if (ceOptions.enableFtp) {
     console.log('> FTP service enabled')
     routerOptions.ftp = {
-      redirectUri: ceOptions.rootUrl + '/ftp/signin',
+      redirectUri: ceOptions.rootUrl + ceOptions.rootPath + '/ftp/signin',
     }
   } else {
     console.log('> FTP service disabled, env vars ENABLE_FTP not set')
@@ -20,7 +20,7 @@ export default function(ceOptions: CeOptions) {
   if (ceOptions.enableSftp) {
     console.log('> SFTP service enabled')
     routerOptions.sftp = {
-      redirectUri: ceOptions.rootUrl + '/sftp/signin',
+      redirectUri: ceOptions.rootUrl + ceOptions.rootPath + '/sftp/signin',
     }
   } else {
     console.log('> SFTP service disabled, env vars ENABLE_SFTP not set')
@@ -30,7 +30,7 @@ export default function(ceOptions: CeOptions) {
   if (ceOptions.enableWebdav) {
     console.log('> Webdav service enabled')
     routerOptions.webdav = {
-      redirectUri: ceOptions.rootUrl + '/webdav/signin',
+      redirectUri: ceOptions.rootUrl + ceOptions.rootPath + '/webdav/signin',
     }
   } else {
     console.log('> Webdav service disabled, env vars ENABLE_WEBDAV not set')
@@ -42,7 +42,7 @@ export default function(ceOptions: CeOptions) {
     routerOptions.github = {
       clientId: ceOptions.githubClientId,
       clientSecret: ceOptions.githubClientSecret,
-      redirectUri: ceOptions.rootUrl + '/github/oauth_callback',
+      redirectUri: ceOptions.rootUrl + ceOptions.rootPath + '/github/oauth_callback',
     }
   } else {
     console.log('> Github service disabled, env vars GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET not set')
@@ -54,7 +54,7 @@ export default function(ceOptions: CeOptions) {
     routerOptions.dropbox = {
       clientId: ceOptions.dropboxClientId,
       clientSecret: ceOptions.dropboxClientSecret,
-      redirectUri: ceOptions.rootUrl + '/dropbox/oauth_callback',
+      redirectUri: ceOptions.rootUrl + ceOptions.rootPath + '/dropbox/oauth_callback',
     }
   } else {
     console.log('> Dropbox service disabled, env vars DROPBOX_CLIENT_ID and DROPBOX_CLIENT_SECRET not set')
