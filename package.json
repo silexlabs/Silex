@@ -61,7 +61,7 @@
   "scripts": {
     "release": "",
     "prepare": "npm run build",
-    "postinstall": "npm run build ; exit 0",
+    "postinstall": "npm run build",
     "watch": "npm-watch",
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
