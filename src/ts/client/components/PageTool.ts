@@ -13,7 +13,7 @@ import { getUiElements } from '../ui-store/UiElements'
 import { keyboardAddShortcut } from './Menu'
 import { openPage } from '../ui-store/dispatchers'
 import { renderList } from '../utils/dom'
-import Sortable from '../../../../node_modules/sortablejs/modular/sortable.core.esm.js'
+import Sortable from 'sortablejs/modular/sortable.core.esm.js'
 
 ///////////////////
 // API for the outside world

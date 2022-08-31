@@ -5,7 +5,7 @@ import { getState } from '../store/index'
 import { setDescription, setDescriptionSocial, setEnableMobile, setFaviconPath, setFonts, setHeadScript, setHeadStyle, setLang, setThumbnailSocialPath, setTitle, setTitleSocial, setTwitterSocial, setWebsiteWidthInDom } from '../site-store/dom'
 import { setStyleToDom } from '../element-store/component'
 import { writeDataToDom } from '../store/dom'
-import * as objectPath from '../../../../node_modules/object-path/index.js'
+import * as objectPath from 'object-path/index.js'
 
 export function onChangeSite(prev: SiteState, site: SiteState) {
   const doc = getSiteDocument()
