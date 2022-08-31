@@ -205,13 +205,13 @@ const SILEX_ZIP_EXT = '.zip'
  */
 function beautifyDom(dom: JSDOM) {
   Array.from(dom.window.document.querySelectorAll(`script`))
-  .forEach(el => {
+  .forEach((el: HTMLElement) => {
     if(!el.hasAttribute('src')) {
       el.innerHTML = beautify(el.innerHTML, { format: 'js' })
     }
   })
   Array.from(dom.window.document.querySelectorAll(`style`))
-  .forEach(el => {
+  .forEach((el: HTMLElement) => {
     el.textContent = beautify(el.textContent, { format: 'css' })
   })
 }

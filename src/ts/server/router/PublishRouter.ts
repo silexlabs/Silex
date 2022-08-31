@@ -14,12 +14,12 @@ import { JSDOM } from 'jsdom'
 const hostingProviders: HostingProvider[] = []
 const router = express.Router()
 
-declare module 'express-session' {
-  export interface SessionData {
-    unifile: any
-    publicationId: any
-  }
-}
+// declare module 'express-session' {
+//   export interface SessionData {
+//     unifile: any
+//     publicationId: any
+//   }
+// }
 
 export default function PublishRouter(config: Config, unifile) {
   const { port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection } = config.publisherOptions

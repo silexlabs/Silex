@@ -54,7 +54,7 @@ export function cleanup(win: DOMWindow): void {
   ]
   .forEach((attr: string) => {
     Array.from(doc.querySelectorAll(`[${attr}]`))
-    .forEach(el => {
+    .forEach((el: HTMLElement) => {
       el.removeAttribute(attr)
     })
   })
@@ -62,12 +62,12 @@ export function cleanup(win: DOMWindow): void {
   // remove w3c warning "The type attribute is unnecessary for JavaScript resources"
   // FIXME: we should just remove type from all the components and silex script tags, but for now it is useful to keep it during edition as some selectors rely on it for now
   Array.from(doc.querySelectorAll('script[type="text/javascript"]'))
-  .forEach(el => {
+  .forEach((el: HTMLElement) => {
     el.removeAttribute('type')
   })
   // remove empty style attributes
   Array.from(doc.querySelectorAll('[style=""]'))
-  .forEach(el => {
+  .forEach((el: HTMLElement) => {
     el.removeAttribute('style')
   })
 }
@@ -159,7 +159,7 @@ export function splitInFiles({
   // final js script to store in js/script.js
   const scriptTags = []
   Array.from(doc.head.querySelectorAll('script'))
-  .forEach((tag) => {
+  .forEach((tag: HTMLScriptElement) => {
     if (!tag.src && tag.innerHTML) {
       tag.parentElement.removeChild(tag)
       scriptTags.push(tag)
@@ -177,7 +177,7 @@ export function splitInFiles({
   // and components css
   const styleTags = []
   Array.from(doc.querySelectorAll('style'))
-  .forEach((tag) => {
+  .forEach((tag: HTMLElement) => {
     tag.parentElement.removeChild(tag)
     styleTags.push(tag)
   })
