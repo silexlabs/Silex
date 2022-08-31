@@ -11,6 +11,10 @@ import { getVisibleDialogs } from '../ui-store/utils'
 import { openDialog } from '../ui-store/dispatchers'
 
 export function tabbed(container: HTMLElement, type: string) {
+  if(!container) {
+    console.error('Incorrect input', {container, type})
+    throw new Error('Incorrect input, missing container')
+  }
   // initial tabs
   getUi().dialogs
   .filter(d => d.type === type)
