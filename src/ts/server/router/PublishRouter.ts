@@ -11,15 +11,17 @@ import PublishJob from '../publication/PublishJob'
 
 import { JSDOM } from 'jsdom'
 
+import * as session from 'express-session'
+
 const hostingProviders: HostingProvider[] = []
 const router = express.Router()
 
-// declare module 'express-session' {
-//   export interface SessionData {
-//     unifile: any
-//     publicationId: any
-//   }
-// }
+declare module 'express-session' {
+  export interface SessionData {
+    unifile: any
+    publicationId: any
+  }
+}
 
 export default function PublishRouter(config: Config, unifile) {
   const { port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection } = config.publisherOptions
@@ -64,9 +66,9 @@ export default function PublishRouter(config: Config, unifile) {
   })
 
   router.get('/hosting/', (req: express.Request, res: express.Response) => {
-    const session = !!req.session && !!req.session.unifile ? req.session.unifile : {}
+    const sess = !!req.session && !!req.session.unifile ? req.session.unifile : {}
     const hosting: Hosting = {
-      providers: hostingProviders.map((hostingProvider) => hostingProvider.getOptions(session)),
+      providers: hostingProviders.map((hostingProvider) => hostingProvider.getOptions(sess)),
       skipHostingSelection,
     }
     res.json(hosting)
@@ -150,6 +152,6 @@ function getHostingProviderFromReq(req): HostingProvider {
   return hostingProvider
 }
 
-function getHostingProvider(session, hostingProviderName: string) {
-  return hostingProviders.find((hostingProvider) => hostingProvider.getOptions(session).name === hostingProviderName)
+function getHostingProvider(sess, hostingProviderName: string) {
+  return hostingProviders.find((hostingProvider) => hostingProvider.getOptions(sess).name === hostingProviderName)
 }
