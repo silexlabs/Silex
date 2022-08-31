@@ -74,6 +74,8 @@ function buildUi() {
   }
 
   const tabContainer: HTMLElement = element.querySelector('.tabs .simplebar-content')
+  console.log('WIP #1194', {element, tabContainer})
+  setTimeout(() => console.log('WIP #1194', element.querySelector('.tabs .simplebar-content')), 10000)
   tabbed(tabContainer, 'properties')
 
   // display component when possible
