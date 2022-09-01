@@ -11,10 +11,7 @@ import PublishJob from '../publication/PublishJob'
 
 import { JSDOM } from 'jsdom'
 
-import * as session from 'express-session'
-
-const hostingProviders: HostingProvider[] = []
-const router = express.Router()
+import {SessionData} from 'express-session'
 
 declare module 'express-session' {
   export interface SessionData {
@@ -22,6 +19,9 @@ declare module 'express-session' {
     publicationId: any
   }
 }
+
+const hostingProviders: HostingProvider[] = []
+const router = express.Router()
 
 export default function PublishRouter(config: Config, unifile) {
   const { port, rootUrl, enableHostingGhPages, enableHostingUnifile, skipHostingSelection } = config.publisherOptions
