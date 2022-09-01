@@ -1,3 +1,4 @@
+/* tslint:disable:no-string-literal */
 import Request from 'request'
 import * as express from 'express'
 import * as Path from 'path'
