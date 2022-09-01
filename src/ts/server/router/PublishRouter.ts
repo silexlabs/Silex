@@ -11,6 +11,9 @@ import PublishJob from '../publication/PublishJob'
 
 import { JSDOM } from 'jsdom'
 
+/* FIXME: this typing throws this error **when silex is installed as a dependency in another project: src/ts/server/router/PublishRouter.ts(16,16): error TS2665: Invalid module name in augmentation. Module 'express-session' resolves to an untyped module at '/home/lexoyo/Documents/silex/stastic-designer/node_modules/express-session/index.js', which cannot be augmented.
+=> I changed all `req.session.unifile` to `req.session['unifile']`
+
 import {SessionData} from 'express-session'
 
 declare module 'express-session' {
@@ -19,6 +22,7 @@ declare module 'express-session' {
     publicationId: any
   }
 }
+*/
 
 const hostingProviders: HostingProvider[] = []
 const router = express.Router()
@@ -44,13 +48,13 @@ export default function PublishRouter(config: Config, unifile) {
         message: 'Error in the request, hosting provider required',
       })
     } else {
-      PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl, getHostingProvider(req.session.unifile, req.body.provider.name), config)
+      PublishJob.create(req.body, unifile, req.session, req.cookies, rootUrl, getHostingProvider(req.session['unifile'], req.body.provider.name), config)
       res.end()
     }
   })
 
   router.get('/tasks/publishState', (req: express.Request, res: express.Response) => {
-    const publishJob = PublishJob.get(req.session.publicationId)
+    const publishJob = PublishJob.get(req.session['publicationId'])
     if (publishJob) {
       if (publishJob.error) { res.status(500) }
       res.send({
@@ -66,7 +70,7 @@ export default function PublishRouter(config: Config, unifile) {
   })
 
   router.get('/hosting/', (req: express.Request, res: express.Response) => {
-    const sess = !!req.session && !!req.session.unifile ? req.session.unifile : {}
+    const sess = !!req.session && !!req.session['unifile'] ? req.session['unifile'] : {}
     const hosting: Hosting = {
       providers: hostingProviders.map((hostingProvider) => hostingProvider.getOptions(sess)),
       skipHostingSelection,
@@ -77,8 +81,8 @@ export default function PublishRouter(config: Config, unifile) {
   // vhosts
   router.get('/hosting/:hostingProviderName/vhost', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
-    const hostingProviderInfo = hostingProvider.getOptions(req.session.unifile)
-    hostingProvider.getVhosts(req.session.unifile)
+    const hostingProviderInfo = hostingProvider.getOptions(req.session['unifile'])
+    hostingProvider.getVhosts(req.session['unifile'])
     .then((vhosts) => {
       res.json(vhosts,
         // .slice(0, 10) // max number of vhosts
@@ -93,7 +97,7 @@ export default function PublishRouter(config: Config, unifile) {
   })
   router.get('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
-    hostingProvider.getVhostData(req.session.unifile, req.params.name)
+    hostingProvider.getVhostData(req.session['unifile'], req.params.name)
     .then((result) => {
       res.json(result)
     })
@@ -109,7 +113,7 @@ export default function PublishRouter(config: Config, unifile) {
     const data: VHostData = {
       domain: req.body.domain,
     }
-    hostingProvider.setVhostData(req.session.unifile, req.params.name, data)
+    hostingProvider.setVhostData(req.session['unifile'], req.params.name, data)
     .then((result) => {
       res.json(result)
     })
@@ -123,7 +127,7 @@ export default function PublishRouter(config: Config, unifile) {
   })
   router.delete('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
-    hostingProvider.setVhostData(req.session.unifile, req.params.name, null)
+    hostingProvider.setVhostData(req.session['unifile'], req.params.name, null)
     .then((result) => {
       res.json(result)
     })
@@ -147,7 +151,7 @@ function addHostingProvider(hostingProvider: HostingProvider) {
 
 function getHostingProviderFromReq(req): HostingProvider {
   const hostingProviderName = req.params.hostingProviderName
-  const hostingProvider = getHostingProvider(req.session.unifile, hostingProviderName)
+  const hostingProvider = getHostingProvider(req.session['unifile'], hostingProviderName)
   if (!hostingProvider) { throw new Error(('Could not find the hosting provider ' + hostingProviderName)) }
   return hostingProvider
 }
