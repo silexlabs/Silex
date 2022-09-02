@@ -60,12 +60,11 @@
   },
   "scripts": {
     "release": "",
-    "prepare": "yarn-or-npm run build",
-    "xpostinstall": "yarn-or-npm run build",
+    "prepare": "npm run build",
     "watch": "npm-watch",
     "start": "node dist/server/server/silex_web.js",
     "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/server/silex_web.js",
-    "prepublishOnly": "yarn-or-npm run lint:fix ; yarn-or-npm run build",
+    "prepublishOnly": "npm run lint:fix ; npm run build",
     "build": "run-s cleanup build:css:release build:html build:prodotype build:client:release build:server:release build:monaco-editor",
     "cleanup": "mkdirp tmp ; mv dist/public tmp/ ; rm -rf dist ; mv tmp dist",
     "webpack": "webpack --config webpack.config.js",
@@ -84,7 +83,7 @@
     "build:server:debug": "tsc -p tsconfig-server-debug.json",
     "build:monaco-editor": "webpack --config webpack-monaco-editor.config.js",
     "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
-    "lint:fix": "yarn-or-npm run lint -- --fix",
+    "lint:fix": "npm run lint -- --fix",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -135,8 +134,7 @@
     "uuid": "^8.3.2",
     "webpack": "5.74.0",
     "webpack-cli": "4.10.0",
-    "wysihtml": "0.6.0-beta1",
-    "yarn-or-npm": "^3.0.1"
+    "wysihtml": "0.6.0-beta1"
   },
   "devDependencies": {
     "@types/express": "4.17.13",
