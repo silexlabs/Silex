@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:16
 
 # see doc about how to use this docker image here:
 # https://github.com/silexlabs/Silex/wiki/How-to-Host-An-Instance-of-Silex#docker
