@@ -30,5 +30,5 @@ export * from './io/SilexTasks'
 export * from './io/CloudStorage'
 export * from './components/Notification'
 export * from './visits'
-// export * from './utils'
+export { Url } from './utils/Url'
 
