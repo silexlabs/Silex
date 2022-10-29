@@ -1,3 +1,5 @@
+> This code is very early stage, it is not working as expected yet
+
 # Symbols for GrapesJS
 
 [DEMO](##)
