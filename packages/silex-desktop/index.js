@@ -67,10 +67,7 @@ function createWindow() {
   // and load the index.html of the app.
   const url = 'http://localhost:' + (process.env.PORT || 6805) + INDEX_HTML_PATH;
   console.log('Sarting app on ' + url);
-  win.loadURL(url, {
-    referrer: 'http://silex.desktop',
-    headers: ['Content-Type: text/html'],
-  });
+  win.loadURL(url);
 
   // Open the DevTools.
   // win.webContents.openDevTools();
