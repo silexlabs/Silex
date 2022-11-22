@@ -5,14 +5,27 @@ append head-start
 
 append silex-start
   script.
-    silex.once(10, 60, 'rating', () => Notification.lightDialog(`
+    silex.once(5, 10, 'newsletter', () => silex.Notification.lightDialog(`
+      <p>
+      The team behind Silex is now working on Silex v3. <a href="https://mail-list.silexlabs.org/subscription/cemnfkaVrK?locale=en-US" title="Subscribe to silex news">Join the community newsletter</a>.
+      </p>
+    `, () => {}))
+    silex.once(10, 20, 'producthunt', () => silex.Notification.lightDialog(`
+      <p>
+        Help me build Silex, let people know about it on ProductHunt!&nbsp;
+        <a href="https://www.producthunt.com/posts/silex?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-silex" target="_blank">Upvote Silex on ProductHunt</a>
+      </p>
+    `, () => {}))
+    silex.once(15, 30, 'twitter', () => silex.Notification.lightDialog(`
+      <p>
+        Show Silex Some ❤!&nbsp;
+        <a href="https://www.facebook.com/sharer/sharer.php?u=www.silex.me&amp;t=Silex,%20html%20website%20builder">Share</a> and <a href="https://www.facebook.com/silexlabs/">like</a> on <strong>Facebook</strong>,
+        <a href="https://twitter.com/intent/tweet?source=//www.silex.me/&amp;text=Silex,%20html%20website%20builder:%20http://www.silex.me/&amp;via=silexlabs">share</a> and <a href="https://twitter.com/silexlabs">follow</a> on <strong>Twitter</strong>
+      </p>
+    `, () => {}))
+    silex.once(20, 40, 'trustpilot', () => silex.Notification.lightDialog(`
       <p>
         Do you like Silex? I need your feedback!&nbsp;
         <a href="https://www.trustpilot.com/evaluate/silex.me" target="_blank">Rate Silex on Trustpilot</a>
-      </p>
-    `, () => {}))
-    silex.once(5, 30, 'newsletter', () => Notification.lightDialog(`
-      <p>
-      The team behind Silex is now working on Silex v3. <a href="https://mail-list.silexlabs.org/subscription/cemnfkaVrK?locale=en-US" title="Subscribe to silex news">Join the community newsletter</a>.
       </p>
     `, () => {}))
