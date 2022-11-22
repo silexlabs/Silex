@@ -1,6 +1,6 @@
 {
   "name": "editor.silex.me",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "main": "index.js",
   "scripts": {
