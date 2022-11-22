@@ -11,3 +11,8 @@ append silex-start
         <a href="https://www.trustpilot.com/evaluate/silex.me" target="_blank">Rate Silex on Trustpilot</a>
       </p>
     `, () => {}))
+    silex.once(5, 30, 'newsletter', () => Notification.lightDialog(`
+      <p>
+      The team behind Silex is now working on Silex v3. <a href="https://mail-list.silexlabs.org/subscription/cemnfkaVrK?locale=en-US" title="Subscribe to silex news">Join the community newsletter</a>.
+      </p>
+    `, () => {}))
