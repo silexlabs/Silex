@@ -1,12 +1,12 @@
 {
   "type": "module",
-  "name": "grapesjs-sympbols",
+  "name": "@silexlabs/grapesjs-sympbols",
   "version": "1.0.0",
   "description": "Symbols for GrapesJS",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lexoyo/grapesjs-sympbols.git"
+    "url": "https://github.com/silexlabs/grapesjs-sympbols.git"
   },
   "engines": {
     "node": ">=12.22.10"

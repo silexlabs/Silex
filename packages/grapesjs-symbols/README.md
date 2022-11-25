@@ -86,7 +86,7 @@ Notes
 * NPM
   * `npm i grapesjs-symbols`
 * GIT
-  * `git clone https://github.com/lexoyo/grapesjs-symbols.git`
+  * `git clone https://github.com/silexlabs/grapesjs-symbols.git`
 
 
 
@@ -139,7 +139,7 @@ const editor = grapesjs.init({
 Clone the repository
 
 ```sh
-$ git clone https://github.com/lexoyo/grapesjs-symbols.git
+$ git clone https://github.com/silexlabs/grapesjs-symbols.git
 $ cd grapesjs-symbols
 ```
 
