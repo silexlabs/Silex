@@ -1,5 +1,6 @@
 // exported plugin
 import { createSymbol, unlink } from './model/Symbol.js'
+import { setDirty } from './utils.js'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
@@ -25,6 +26,7 @@ export function addSymbol(editor, sender, {label, icon, component = editor.getSe
   if(component) {
     // add the symbol
     const s = editor.Symbols.add(createSymbol(component, { label, icon }, editor))
+    setDirty(editor)
     // return the symbol to the caller
     return s
   } else {
@@ -41,6 +43,9 @@ export function removeSymbol(editor, sender, {symbolId}) {
     if(editor.Symbols.has(symbolId)) {
       // remove the symbol
       const s = editor.Symbols.remove(symbolId)
+      // Unlink all instances
+      s.unlinkAll()
+      setDirty(editor)
       // return the symbol to the caller
       return s
     } else {
@@ -54,6 +59,7 @@ export function removeSymbol(editor, sender, {symbolId}) {
 export function unlinkSymbolInstance(editor, sender, { component }) {
   if(component) {
     unlink(component)
+    setDirty(editor)
   } else {
     throw new Error('Can not unlink the component: missing param component')
   }

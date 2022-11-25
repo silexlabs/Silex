@@ -36,11 +36,11 @@ test('Command symbols:remove', () => {
 })
 
 test('Command symbols:unlink', () => {
-  const { editor, s1, s2 } = getTestSymbols()
+  const { editor, s1, s2, comp1 } = getTestSymbols()
   editor.Symbols = new Backbone.Collection([s1, s2])
   const sender = {}, symbolId = 'symbolId'
   expect(() => unlinkSymbolInstance(editor, sender, {})).toThrow('missing param component')
-  const component = new Backbone.Model({symbolId: 's1'})
+  const component = comp1.clone()
   expect(() => unlinkSymbolInstance(editor, sender, {component})).not.toThrow()
   expect(component.get('symbolId')).toBeUndefined()
 })

@@ -1,6 +1,14 @@
 import { render, html } from 'lit-html'
 import Backbone from 'backbone'
 
+function closestHtml(child, attr) {
+  let ptr = child
+  while(ptr && !ptr.getAttribute(attr)) {
+    ptr = ptr.parentElement
+  }
+  return ptr
+}
+
 export default class extends Backbone.View {
   initialize(model, { editor, options }) {
     // listen to redraw UI
@@ -42,6 +50,13 @@ export default class extends Backbone.View {
         text-align: center;
         width: 100%;
       }
+      .symbols__remove {
+        position: absolute;
+        top: 0; right: 0;
+        width: 20px;
+        line-height: 1;
+        cursor: pointer;
+      }
     </style>
     <main class="symbols__list" @dragend=${event => this.onDrop(event)}>
       <div class="gjs-blocks-c">
@@ -56,6 +71,9 @@ export default class extends Backbone.View {
             "
             title="" draggable="true"
             symbol-id=${s.get('symbolId')}>
+            <div class="symbols__remove" @click=${event => this.onRemove(event)}>
+              <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+            </div>
             <div class="gjs-block-label">
               ${s.attributes.label}
               <div class="symbols__num">
@@ -82,7 +100,16 @@ export default class extends Backbone.View {
         console.error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
       }
     } else {
-      console.log('not a symbol creation', symbolId)
+      // not a symbol creation
+    }
+  }
+  onRemove(event) {
+    const symbolId = closestHtml(event.target, 'symbol-id')
+      ?.getAttribute('symbol-id')
+    if(symbolId) {
+      const c = this.editor.runCommand('symbols:remove', { symbolId })
+    } else {
+      console.error('not a symbol', symbolId)
     }
   }
 }

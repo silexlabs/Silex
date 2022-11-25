@@ -13,30 +13,41 @@ export default Backbone.Collection.extend({
     }
   },
 
+  /**
+   * The method I use to observe events
+   */
   logEvent(name) {
-    this.editor.on(name, component => {
-      const { changed, _changing, _previousAttributes, attributes } = component
-      //console.log('[SYMBOL] ' + name, { changed, _changing, _previousAttributes, attributes }, component.toHTML())
-    })
+    // this.editor.on(name, (...args) => {
+    //   setTimeout(() => console.log('%c[EVENT] ' + name, 'color: grey', args, args.map(c => c?.view?.el)), 100)
+    //   
+    // })
   },
 
   initEvents() {
     this.logEvent('component:create')
     this.logEvent('component:remove')
-    this.logEvent('component:update')
+    this.logEvent('component:update:components')
+    this.logEvent('component:update:classes')
+    this.logEvent('component:update:attributes')
+    this.logEvent('component:input')
+    this.logEvent('component:change:content')
+
     this.editor.on('component:create', c => this.onAdd(c))
     this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
-    this.editor.on('component:update', c => this.onUpdate(c))
+    this.editor.on('component:update component:update:classes', c => this.onUpdate(c))
     this.on('remove', console.log('FIXME: cleanup all instances'))
+
+    // this.logEvent('all')
+
     // this.editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
-    // this.editor.on('all', (...args) => console.log('ALL', ...args))
-    
+    //this.editor.on('all', (...args) => console.log('ALL', ...args))
+    //this.logEvent('remove')
+    //this.logEvent('component:update')
     //this.logEvent('component:selected')
     //this.logEvent('component:deselected')
     //this.logEvent('component:create')
     //this.logEvent('component:mount')
     //this.logEvent('component:add')
-    //this.logEvent('component:remove')
     //this.logEvent('component:remove:before')
     //this.logEvent('component:clone')
     //this.logEvent('component:update')
@@ -83,7 +94,7 @@ export default Backbone.Collection.extend({
   },
 
   /**
-   * remove a component from its symbol
+   * Remove a component from its symbol
    * Export this method for unit tests
    * @private
    */

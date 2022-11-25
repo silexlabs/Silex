@@ -4,8 +4,12 @@ import { isInstance } from './model/Symbol.js'
  * set editor as dirty
  */
 export function setDirty(editor) {
-  const curr = editor.getDirtyCount() || 0
-  editor.getModel().set('changesCount', curr + 1)
+  try {
+    const curr = editor.getDirtyCount() || 0
+    editor.getModel().set('changesCount', curr + 1)
+  } catch(e) {
+    // this occures in headless mode and UT
+  }
 }
 
 /**
@@ -19,6 +23,22 @@ export function getAllComponentsFromEditor(editor) {
         .onAll(c => res.push(c))
     })
   return res
+}
+
+/**
+ * Get all the children excluding symbols children (will return the component itself, all of its children including symbols but excluding their children)
+ * @param {Component} c - the root component
+ * @returns {(Component|null)} the component itself and its children
+ */
+export function instanceComponents(c) {
+  const children = Array.from(c.components())
+  return [c]
+    .concat(children
+      .flatMap(child => {
+        if(isInstance(child)) return [child]
+        return instanceComponents(child)
+      })
+    )
 }
 
 /**

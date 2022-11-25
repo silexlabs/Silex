@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import { find } from '../utils.js'
+import { find, instanceComponents } from '../utils.js'
 
 /**
  * A Symbol class holds the data about a symbol: label, icon
@@ -52,13 +52,13 @@ const SymbolModel = Backbone.Model.extend({
     // convert model to a real component
     const model = this.get('model')
     if(!model.cid) {
-      console.log('CONVERT DATA TO COMPONENT', {model})
       const { editor } = this.collection
       const [modelComp] = editor.addComponents([model])
       this.set('model', modelComp)
     }
     if(!this.get('model').has('symbolId')) {
-      console.log('?NEED TO CALL INIT MODEL?')
+      //console.log('?WHY NEED TO CALL INIT MODEL? it shoudld be done by backbone?', this)
+      // FIXME: ?WHY NEED TO CALL INIT MODEL? it shoudld be done by backbone?
       // case of a symbol creation with `createSymbol`
       this.initModel(this.get('model'))
     }
@@ -106,7 +106,6 @@ const SymbolModel = Backbone.Model.extend({
         const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
         // check that we found a component to update
         if(dstChild) {
-          console.log(srcChild.get('test'), '-', srcInst.get('test'), '-', dstChild.get('test'), '-', dstInst.get('test'))
           // update each attribute
           Object.keys(changed).forEach(attr => {
             if(!_previousAttributes || _previousAttributes[attr] !== changed[attr]) {
@@ -149,7 +148,7 @@ const SymbolModel = Backbone.Model.extend({
     // show that this is a symbol
     c.get('toolbar').push({ attributes: {class: 'fa fa-ban on fa-diamond'}, command: 'do:nothing' })
     // init children
-    c.components()
+    instanceComponents(c)
       .forEach(child => this.initSymbolChild(child))
   },
 
@@ -165,22 +164,19 @@ const SymbolModel = Backbone.Model.extend({
 
   /**
    * Init a component to be this symbol's `model`'s child
-   * Also init the component's children
    * @param {Component} c
    */
   initSymbolChild(c) {
     // store this symbol's ID
     if(!c.has('symbolChildId')) c.set('symbolChildId', c.cid)
-
-    // if this component is not a symbol's instance
-    if(!isInstance(c)) {
-      // handle the component's children
-      c.components()
-        .forEach(child => this.initSymbolChild(child))
-    } else {
-      console.info('the symbol', this, 'has a symbol instance in it', c)
-    }
   },
+
+  /**
+   * unlink all instances of a symbol
+   */
+  unlinkAll() {
+    this.get('instances').forEach(c => unlink(c))
+  }
 })
 
 /**
@@ -202,10 +198,15 @@ export function getSymbolId(c) {
 /**
  * unlink an instance from a symbol
  * this just removes the symbol ID from the attributes
+ * also remove `symbolChildId` from all the children
  * which in turn will trigger a component:change and remove it from the `instances`
  */
 export function unlink(c) {
-  c.set('symbolId')
+  instanceComponents(c)
+  .forEach(cc => {
+    cc.set('symbolId')
+    cc.set('symbolChildId')
+  })
 }
 
 /**
