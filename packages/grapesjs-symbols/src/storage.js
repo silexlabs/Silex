@@ -4,9 +4,6 @@ export default (editor, opts = {}) => {
   editor.on('storage:start:store', (objectToStore) => {
     objectToStore.symbols = JSON.stringify(editor.Symbols.toJSON())
   })
-  editor.on('storage:start:load', keys => {
-    keys.push('symbols')
-  })
   editor.on('storage:end:load', (resultObject) => {
     if(resultObject.symbols) {
       editor.Symbols.reset()

@@ -1,15 +1,15 @@
 {
   "type": "module",
-  "name": "@silexlabs/grapesjs-sympbols",
-  "version": "1.0.0",
+  "name": "@silexlabs/grapesjs-symbols",
+  "version": "1.0.1",
   "description": "Symbols for GrapesJS",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/silexlabs/grapesjs-sympbols.git"
+    "url": "https://github.com/silexlabs/grapesjs-symbols.git"
   },
   "engines": {
-    "node": ">=12.22.10"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "start": "grapesjs-cli serve",
@@ -26,17 +26,17 @@
     "plugin"
   ],
   "devDependencies": {
-    "@types/jest": "^27.5.1",
-    "eslint": "^8.15.0",
-    "grapesjs": "^0.18.4",
-    "grapesjs-cli": "^3.0.0",
-    "jest": "^28.1.0"
+    "@types/jest": "^29.2.3",
+    "eslint": "^8.28.0",
+    "grapesjs": "^0.20.1",
+    "grapesjs-cli": "^3.0.1",
+    "jest": "^29.3.1"
   },
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.2.0",
     "backbone": "^1.4.1",
-    "jquery": "^3.6.0",
-    "lit-html": "^2.2.4"
+    "jquery": "^3.6.1",
+    "lit-html": "^2.4.0"
   }
 }

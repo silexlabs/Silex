@@ -11,7 +11,7 @@ To help you in this process here below you will find the necessary HTML/CSS/JS, 
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="https://unpkg.com/grapesjs-symbols"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-symbols"></script>
 
 <div id="gjs"></div>
 ```
@@ -82,9 +82,9 @@ Notes
 ## Download
 
 * CDN
-  * `https://unpkg.com/grapesjs-symbols`
+  * `https://unpkg.com/@silexlabs/grapesjs-symbols`
 * NPM
-  * `npm i grapesjs-symbols`
+  * `npm i @silexlabs/grapesjs-symbols`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-symbols.git`
 
@@ -115,7 +115,7 @@ Directly in the browser
 Modern javascript
 ```js
 import grapesjs from 'grapesjs';
-import plugin from 'grapesjs-symbols';
+import plugin from '@silexlabs/grapesjs-symbols';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
