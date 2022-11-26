@@ -55,9 +55,10 @@ export default Backbone.Collection.extend({
 
     this.editor.on('component:create', c => this.onAdd(c))
     this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
-    // this.editor.on('component:update component:update:classes', c => this.onUpdate(c))
+    this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
+    this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
     this.on('remove', console.log('FIXME: cleanup all instances'))
-    this.editor.on('component:input', c => this.onInput(c))
+    this.editor.on('component:input', c => this.onUpdateContent(c))
   },
 
   /**
@@ -71,18 +72,11 @@ export default Backbone.Collection.extend({
   /**
    * A component attributes have changed
    */
-  onUpdate(c) {
+  onUpdateAttributes(c) {
+    console.log('onUpdateAttributes', c, this.updating)
     if(this.updating) return
     const inst = closestInstance(c)
     if(inst) {
-      if(inst === c) { // && c.getChangedProps().hasOwnProperty('symbolId')) {
-        // case of an instance
-        // handle unlinking
-        if(!c.get('symbolId') && c._previousAttributes.symbolId) {
-          this.onRemove(c._previousAttributes.symbolId, c)
-        }
-      }
-      // call apply method on the instance
       const s = this.get(getSymbolId(inst))
       if(s) {
         this.updating = true
@@ -94,8 +88,24 @@ export default Backbone.Collection.extend({
     }
   },
 
-  onInput(c) {
-    console.log('onInput', c, this.updating)
+  onUpdateClasses(c) {
+    console.log('onUpdateClasses', c, this.updating)
+    if(this.updating) return
+    const inst = closestInstance(c)
+    if(inst) {
+      const s = this.get(getSymbolId(inst))
+      if(s) {
+        this.updating = true
+        s.applyClasses(inst, c)
+        this.updating = false
+      } else {
+        console.warn('could not update the symbol', s, 'for the instance', c)
+      }
+    }
+  },
+
+  onUpdateContent(c) {
+    console.log('onUpdateContent', c, this.updating)
     if(this.updating) return
     const inst = closestInstance(c)
     if(inst) {

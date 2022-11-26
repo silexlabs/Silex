@@ -90,46 +90,72 @@ const SymbolModel = Backbone.Model.extend({
   },
 
   /**
-   * Update all symbol instances and their children according to changes of a component
+   * Apply css classes to all instances and their children according to changes of a component
+   * Also update the `model` attribute of this symbol
+   * Will not update the provided instance `inst` as it is the one which changed
+   * @param {Component} inst - the instance of this symbol containing `child`
+   * @param {Component} child - the child which has the changes
+   */
+  applyClasses(srcInst, srcChild) {
+    const symbolChildId = srcChild.get('symbolChildId')
+    this.getAll(this.get('model'), srcInst)
+      .forEach(dstInst => {
+        // update a child or the root
+        const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
+        // check that we found a component to update
+        if(dstChild) {
+          // update css classes
+          dstChild.setClass(srcChild.getClasses())
+        } else {
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        }
+      })
+  },
+
+  /**
+   * Update attributes of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
    * Will not update the provided instance `inst` as it is the one which changed
    * @param {Component} inst - the instance of this symbol containing `child`
    * @param {Component} child - the child which has the changes, with `_previousAttributes` and `getChangedProps` props
    */
   applyAttributes(srcInst, srcChild) {
-    const { _previousAttributes } = srcChild
     const symbolChildId = srcChild.get('symbolChildId')
-    const changed = srcChild.getChangedProps()
     this.getAll(this.get('model'), srcInst)
       .forEach(dstInst => {
         // update a child or the root
         const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
         // check that we found a component to update
         if(dstChild) {
-          // update each attribute
-          Object.keys(changed).forEach(attr => {
-            if(!_previousAttributes || _previousAttributes[attr] !== changed[attr]) {
-              dstChild.set(attr, changed[attr])
-            }
-          })
+          dstChild.setAttributes(srcChild.getAttributes())
         } else {
-          throw new Error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
         }
       })
   },
 
+
+  /**
+   * Update text content of all instances and their children according to changes of a component
+   * Also update the `model` attribute of this symbol
+   * Will not update the provided instance `inst` as it is the one which changed
+   * @param {Component} inst - the instance of this symbol containing `child`
+   * @param {Component} child - the child which has the changes, with `_previousAttributes` and `getChangedProps` props
+   */
   applyContent(srcInst, srcChild) {
     const symbolChildId = srcChild.get('symbolChildId')
-    console.log('apply content to', srcInst, srcChild, symbolChildId)
     this.getAll(this.get('model'), srcInst)
       .forEach(dstInst => {
         // update a child or the root
         const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
         // check that we found a component to update
         if(dstChild) {
-          console.log('=========>', dstChild)
+          if(dstChild.attributes.type === 'text') {
+            console.log('applyContent', {srcInst, srcChild, dstInst, dstChild})
+            dstChild.components(srcChild.toHTML())
+          }
         } else {
-          throw new Error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
         }
       })
 
