@@ -1,5 +1,3 @@
-import { isInstance } from './model/Symbol.js'
-
 /**
  * set editor as dirty
  */
@@ -26,16 +24,27 @@ export function getAllComponentsFromEditor(editor) {
 }
 
 /**
- * Get all the children excluding symbols children (will return the component itself, all of its children including symbols but excluding their children)
+ * Get all the children excluding symbols children
  * @param {Component} c - the root component
- * @returns {(Component|null)} the component itself and its children
+ * @returns {(Component|null)} the root component's children
+ */
+export function instanceChildren(c) {
+  const children = Array.from(c.components())
+  return children
+    .flatMap(child => instanceComponents(child))
+}
+
+/**
+ * Get all the children excluding symbols children
+ * @param {Component} c - the root component
+ * @returns {(Component|null)} the root component itself and its children
  */
 export function instanceComponents(c) {
   const children = Array.from(c.components())
   return [c]
     .concat(children
       .flatMap(child => {
-        if(isInstance(child)) return [child]
+        if(hasSymbolId(child)) return [child]
         return instanceComponents(child)
       })
     )
@@ -64,9 +73,17 @@ export function find(c, symbolChildId) {
  */
 export function closestInstance(c) {
   let ptr = c
-  while(ptr && !isInstance(ptr)) {
+  while(ptr && !hasSymbolId(ptr)) {
     ptr = ptr.parent()
   }
   return ptr
+}
+
+/**
+ * @param {Component} c - a component
+ * @return {Boolean} true if the component has a symbol id
+ */
+export function hasSymbolId(c) {
+  return !!c.get('symbolId')
 }
 

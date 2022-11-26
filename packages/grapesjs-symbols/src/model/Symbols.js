@@ -1,7 +1,7 @@
 import Backbone from 'backbone'
 
 import { closestInstance } from '../utils.js';
-import Symbol, { getSymbolId, isInstance } from './Symbol.js'
+import Symbol, { getSymbolId, cleanup } from './Symbol.js'
 
 export default Backbone.Collection.extend({
   model: Symbol,
@@ -17,25 +17,20 @@ export default Backbone.Collection.extend({
    * The method I use to observe events
    */
   logEvent(name) {
-    // this.editor.on(name, (...args) => {
-    //   setTimeout(() => console.log('%c[EVENT] ' + name, 'color: grey', args, args.map(c => c?.view?.el)), 100)
-    //   
-    // })
+    this.editor.on(name, (...args) => {
+      setTimeout(() => console.log('%c[EVENT] ' + name, 'color: grey', args, args.map(c => c?.view?.el)), 100)
+      
+    })
   },
 
   initEvents() {
-    this.logEvent('component:create')
-    this.logEvent('component:remove')
-    this.logEvent('component:update:components')
-    this.logEvent('component:update:classes')
-    this.logEvent('component:update:attributes')
-    this.logEvent('component:input')
-    this.logEvent('component:change:content')
-
-    this.editor.on('component:create', c => this.onAdd(c))
-    this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
-    this.editor.on('component:update component:update:classes', c => this.onUpdate(c))
-    this.on('remove', console.log('FIXME: cleanup all instances'))
+    // this.logEvent('component:create')
+    // this.logEvent('component:remove')
+    // this.logEvent('component:update:components')
+    // this.logEvent('component:update:classes')
+    // this.logEvent('component:update:attributes')
+    // this.logEvent('component:input')
+    // this.logEvent('component:change:content')
 
     // this.logEvent('all')
 
@@ -43,7 +38,7 @@ export default Backbone.Collection.extend({
     //this.editor.on('all', (...args) => console.log('ALL', ...args))
     //this.logEvent('remove')
     //this.logEvent('component:update')
-    //this.logEvent('component:selected')
+    this.editor.on('component:selected', c => console.log(c, c.cid, c.get('symbolId'), c.get('symbolChildId')))
     //this.logEvent('component:deselected')
     //this.logEvent('component:create')
     //this.logEvent('component:mount')
@@ -57,6 +52,12 @@ export default Backbone.Collection.extend({
 
     // this.editor.on('component:create', c => updateCreate(c))
     // this.editor.on('component:remove:before', c => updateRemove(c))
+
+    this.editor.on('component:create', c => this.onAdd(c))
+    this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
+    // this.editor.on('component:update component:update:classes', c => this.onUpdate(c))
+    this.on('remove', console.log('FIXME: cleanup all instances'))
+    this.editor.on('component:input', c => this.onInput(c))
   },
 
   /**
@@ -93,18 +94,42 @@ export default Backbone.Collection.extend({
     }
   },
 
+  onInput(c) {
+    console.log('onInput', c, this.updating)
+    if(this.updating) return
+    const inst = closestInstance(c)
+    if(inst) {
+      const s = this.get(getSymbolId(inst))
+      if(s) {
+        this.updating = true
+        s.applyContent(inst, c)
+        this.updating = false
+      } else {
+        console.warn('could not update the symbol', s, 'for the instance', c)
+      }
+    }
+  },
+
   /**
    * Remove a component from its symbol
    * Export this method for unit tests
    * @private
    */
   onAdd(c) {
-    if(isInstance(c)) {
-      const symbolId = getSymbolId(c)
-      if(this.has(symbolId)) {
-        this.get(symbolId).addInstance(c)
+    const symbolId = getSymbolId(c)
+    if(symbolId) {
+      const symbol = this.get(symbolId)
+      if(symbol) {
+        if(symbol.isInstance(c)) {
+          console.warn(`Could not add instance`, c, `It is already an instance of symbol with id ${symbolId}`)
+        } else {
+          // This is probably a duplication of a symbol
+          // Or we have just loaded the website
+          // Make it an instance
+          symbol.addInstance(c)
+        }
       } else {
-        console.warn(`Could not add instance ${c}: could not find the symbol with id ${symbolId} (maybe later?)`)
+        console.warn(`Could not add instance`, c, `Could not find the symbol with id ${symbolId} (maybe later?)`)
       }
     }
   },
@@ -118,7 +143,7 @@ export default Backbone.Collection.extend({
   onRemove(symbolId, c) {
     if(symbolId) {
       if(this.has(symbolId)) {
-        this.get(symbolId).removeInstance(c)
+        this.get(symbolId).unlink(c)
       } else {
         console.warn(`Could not remove instance ${c}: could not find the symbol with id ${symbolId}`)
       }
