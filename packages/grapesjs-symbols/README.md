@@ -20,7 +20,7 @@ const editor = grapesjs.init({
   height: '100%',
   fromElement: true,
   storageManager: false,
-  plugins: ['grapesjs-symbols'],
+  plugins: ['@silexlabs/grapesjs-symbols'],
   pluginsOpts: {
     '@silexlabs/grapesjs-symbols': {
       appendTo: '.gjs-pn-views-container',
@@ -92,7 +92,7 @@ editor.addComponents([{
 
 ## Summary
 
-* Plugin name: `grapesjs-symbols`
+* Plugin name: `@silexlabs/grapesjs-symbols`
 * Components
     * `component-id-1`
     * `component-id-2`

@@ -22,60 +22,56 @@
     </div>
 
     <script type="text/javascript">
-      // Wait for the plugin to be injected by the dev server
-      window.onload = function() {
-        window.editor = grapesjs.init({
-          container: '#gjs',
-          noticeOnUnload: false,
-          plugins: [
-            'grapesjs-preset-webpage',
-            '@silexlabs/grapesjs-symbols',
-          ],
-          pluginsOpts: {
-            'grapesjs-preset-webpage': {},
-            '@silexlabs/grapesjs-symbols': {
-              appendTo: '.gjs-pn-views-container',
-            },
+      window.editor = grapesjs.init({
+        container: '#gjs',
+        noticeOnUnload: false,
+        plugins: [
+          'grapesjs-preset-webpage',
+          '@silexlabs/grapesjs-symbols',
+        ],
+        pluginsOpts: {
+          'grapesjs-preset-webpage': {},
+          '@silexlabs/grapesjs-symbols': {
+            appendTo: '.gjs-pn-views-container',
           },
-        })
+        },
+      })
 
-        var idx = 0
-        editor.on('load', () => {
-          editor.Panels.addPanel({
-            id: 'basic-actions',
-            el: '.panel__basic-actions',
-            buttons: [
-              {
-                id: 'alert-button',
-                className: 'btn-alert-button',
-                label: 'Create symbol pink',
-                command(editor) {
-                  var label = prompt('Label', 'Symbol ' + ++idx)
-                  var icon = prompt('Icon', 'fa-list')
-                  editor.runCommand('symbols:add', { label, icon })
-                }
-              },
-            ]
-          })
-        })
-        editor.addComponents([{
-          tagName: 'div',
-          components: [
+      var idx = 0
+      editor.on('load', () => {
+        editor.Panels.addPanel({
+          id: 'basic-actions',
+          el: '.panel__basic-actions',
+          buttons: [
             {
-              tagName: 'h1',
-              content: 'Content text',
-              style: { color: 'red'},
-              attributes: { title: 'here' }
-            },{
-              tagName: 'p',
-              content: 'Content text',
-              style: { color: 'red'},
-              attributes: { title: 'here' }
-            }, ],
-          style: { "background-color": 'blue', "padding": "20px"},
-        }])
-
-      }
+              id: 'alert-button',
+              className: 'btn-alert-button',
+              label: 'Create symbol pink',
+              command(editor) {
+                var label = prompt('Label', 'Symbol ' + ++idx)
+                var icon = prompt('Icon', 'fa-list')
+                editor.runCommand('symbols:add', { label, icon })
+              }
+            },
+          ]
+        })
+      })
+      editor.addComponents([{
+        tagName: 'div',
+        components: [
+          {
+            tagName: 'h1',
+            content: 'Content text',
+            style: { color: 'red'},
+            attributes: { title: 'here' }
+          },{
+            tagName: 'p',
+            content: 'Content text',
+            style: { color: 'red'},
+            attributes: { title: 'here' }
+          }, ],
+        style: { "background-color": 'blue', "padding": "20px"},
+      }])
     </script>
   </body>
 </html>
