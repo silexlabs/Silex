@@ -127,7 +127,8 @@ const SymbolModel = Backbone.Model.extend({
         const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
         // check that we found a component to update
         if(dstChild) {
-          dstChild.setAttributes(srcChild.getAttributes())
+          // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
+          dstChild.attributes = srcChild.attributes
         } else {
           console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
         }
@@ -151,7 +152,6 @@ const SymbolModel = Backbone.Model.extend({
         // check that we found a component to update
         if(dstChild) {
           if(dstChild.attributes.type === 'text') {
-            console.log('applyContent', {srcInst, srcChild, dstInst, dstChild})
             dstChild.components(srcChild.toHTML())
           }
         } else {
