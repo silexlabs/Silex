@@ -90,13 +90,13 @@ const SymbolModel = Backbone.Model.extend({
   },
 
   /**
-   * Apply css classes to all instances and their children according to changes of a component
-   * Also update the `model` attribute of this symbol
-   * Will not update the provided instance `inst` as it is the one which changed
-   * @param {Component} inst - the instance of this symbol containing `child`
-   * @param {Component} child - the child which has the changes
+   * Browse all instances and their children matching the changed component
+   * Includes the `model` of this symbol
+   * Will not include the provided instance `srcInst` nor `srcChild` as they are the ones which changed
+   * @param {Component} srcInst - the instance of this symbol containing `child`
+   * @param {Component} srcChild - the child which has the changes
    */
-  applyClasses(srcInst, srcChild) {
+  browseInstancesAndModel(srcInst, srcChild, cbk, err) {
     const symbolChildId = srcChild.get('symbolChildId')
     this.getAll(this.get('model'), srcInst)
       .forEach(dstInst => {
@@ -104,35 +104,41 @@ const SymbolModel = Backbone.Model.extend({
         const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
         // check that we found a component to update
         if(dstChild) {
-          // update css classes
-          dstChild.setClass(srcChild.getClasses())
+          cbk(dstChild)
         } else {
-          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+          console.error(`Could not apply changes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+          err({srcInst, dstInst, srcChild})
         }
       })
   },
 
   /**
+   * Apply css classes to all instances and their children according to changes of a component
+   * Also update the `model` attribute of this symbol
+   * @param {Component} srcInst - the instance of this symbol containing `child`
+   * @param {Component} srcChild - the child which has the changes
+   */
+  applyClasses(srcInst, srcChild) {
+    this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
+      dstChild.setClass(srcChild.getClasses())
+    }, ({srcInst, dstInst, srcChild}) => {
+      console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+    })
+  },
+
+  /**
    * Update attributes of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
-   * Will not update the provided instance `inst` as it is the one which changed
-   * @param {Component} inst - the instance of this symbol containing `child`
-   * @param {Component} child - the child which has the changes, with `_previousAttributes` and `getChangedProps` props
+   * @param {Component} srcInst - the instance of this symbol containing `child`
+   * @param {Component} srcChild - the child which has the changes
    */
   applyAttributes(srcInst, srcChild) {
-    const symbolChildId = srcChild.get('symbolChildId')
-    this.getAll(this.get('model'), srcInst)
-      .forEach(dstInst => {
-        // update a child or the root
-        const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
-        // check that we found a component to update
-        if(dstChild) {
-          // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
-          dstChild.attributes = srcChild.attributes
-        } else {
-          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
-        }
-      })
+    this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
+      // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
+      dstChild.attributes = srcChild.attributes
+    }, ({srcInst, dstInst, srcChild}) => {
+      console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+    })
   },
 
 
@@ -140,25 +146,19 @@ const SymbolModel = Backbone.Model.extend({
    * Update text content of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
    * Will not update the provided instance `inst` as it is the one which changed
-   * @param {Component} inst - the instance of this symbol containing `child`
-   * @param {Component} child - the child which has the changes, with `_previousAttributes` and `getChangedProps` props
+   * @param {Component} srcInst - the instance of this symbol containing `child`
+   * @param {Component} srcChild - the child which has the changes
    */
   applyContent(srcInst, srcChild) {
-    const symbolChildId = srcChild.get('symbolChildId')
-    this.getAll(this.get('model'), srcInst)
-      .forEach(dstInst => {
-        // update a child or the root
-        const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
-        // check that we found a component to update
-        if(dstChild) {
-          if(dstChild.attributes.type === 'text') {
-            dstChild.components(srcChild.toHTML())
-          }
-        } else {
-          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
-        }
-      })
-
+    this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
+      if(dstChild.attributes.type === 'text') {
+        //dstChild.components(srcChild.toHTML())
+        dstChild.components(srcChild.getCurrentView().getContent())
+        console.log(srcChild.cid, dstChild.cid)
+      }
+    }, ({srcInst, dstInst, srcChild}) => {
+      console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+    })
   },
 
   /**

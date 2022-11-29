@@ -38,7 +38,7 @@ export default Backbone.Collection.extend({
     //this.editor.on('all', (...args) => console.log('ALL', ...args))
     //this.logEvent('remove')
     //this.logEvent('component:update')
-    this.editor.on('component:selected', c => console.log(c, c.cid, c.get('symbolId'), c.get('symbolChildId')))
+    //this.editor.on('component:selected', c => console.log(c, c.cid, c.get('symbolId'), c.get('symbolChildId')))
     //this.logEvent('component:deselected')
     //this.logEvent('component:create')
     //this.logEvent('component:mount')
@@ -57,7 +57,7 @@ export default Backbone.Collection.extend({
     this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
     this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
-    this.on('remove', console.log('FIXME: cleanup all instances'))
+    // this.on('remove', console.log('FIXME: cleanup all instances'))
     this.editor.on('component:input', c => this.onUpdateContent(c))
   },
 
@@ -73,7 +73,6 @@ export default Backbone.Collection.extend({
    * A component attributes have changed
    */
   onUpdateAttributes(c) {
-    console.log('onUpdateAttributes', c, this.updating)
     if(this.updating) return
     const inst = closestInstance(c)
     if(inst) {
@@ -89,7 +88,6 @@ export default Backbone.Collection.extend({
   },
 
   onUpdateClasses(c) {
-    console.log('onUpdateClasses', c, this.updating)
     if(this.updating) return
     const inst = closestInstance(c)
     if(inst) {
@@ -105,7 +103,6 @@ export default Backbone.Collection.extend({
   },
 
   onUpdateContent(c) {
-    console.log('onUpdateContent', c, this.updating)
     if(this.updating) return
     const inst = closestInstance(c)
     if(inst) {
