@@ -90,7 +90,15 @@ editor.addComponents([{
 }])
 ```
 
+### Test the plugin
+
+Select a component on the stage, click on "Create symbol", then duplicate the component or drag and drop the symbol on the stage
+
+Finally change the content of the compoenent or add/remove classes or attributes for all the instances to be updated as well
+
 ## Summary
+
+> TBD
 
 * Plugin name: `@silexlabs/grapesjs-symbols`
 * Components
@@ -126,6 +134,8 @@ Notes
 
 
 ## Options
+
+> TBD
 
 | Option | Description | Default |
 |-|-|-
