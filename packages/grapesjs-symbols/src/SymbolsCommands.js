@@ -65,7 +65,7 @@ export function unlinkSymbolInstance(editor, sender, { component }) {
       // notify the editor that a change occured
       setDirty(editor)
     } else {
-      console.warn('Can not unlink component', c, 'Symbol not found')
+      console.warn('Can not unlink component', component, 'Symbol not found')
     }
   } else {
     throw new Error('Can not unlink the component: missing param component')

@@ -154,7 +154,6 @@ const SymbolModel = Backbone.Model.extend({
       if(dstChild.attributes.type === 'text') {
         //dstChild.components(srcChild.toHTML())
         dstChild.components(srcChild.getCurrentView().getContent())
-        console.log(srcChild.cid, dstChild.cid)
       }
     }, ({srcInst, dstInst, srcChild}) => {
       console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)

@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import { closestInstance } from '../utils.js';
+import { closestInstance } from '../utils.js'
 import Symbol, { getSymbolId, cleanup } from './Symbol.js'
 
 export default Backbone.Collection.extend({
@@ -128,7 +128,7 @@ export default Backbone.Collection.extend({
       const symbol = this.get(symbolId)
       if(symbol) {
         if(symbol.isInstance(c)) {
-          console.warn(`Could not add instance`, c, `It is already an instance of symbol with id ${symbolId}`)
+          console.warn('Could not add instance', c, `It is already an instance of symbol with id ${symbolId}`)
         } else {
           // This is probably a duplication of a symbol
           // Or we have just loaded the website
@@ -136,7 +136,7 @@ export default Backbone.Collection.extend({
           symbol.addInstance(c)
         }
       } else {
-        console.warn(`Could not add instance`, c, `Could not find the symbol with id ${symbolId} (maybe later?)`)
+        console.warn('Could not add instance', c, `Could not find the symbol with id ${symbolId} (maybe later?)`)
       }
     }
   },
