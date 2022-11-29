@@ -83,7 +83,7 @@ export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
     // create the new component
     const [c] = parent.append([symbol.get('model')], { at: pos.index })
     // select the new component
-    editor.select(c, { scroll: true })
+    // Break unit tests? editor.select(c, { scroll: true })
     return c
   } else {
     throw new Error('Can not create the symbol: missing param symbol, pos or target')
