@@ -2,10 +2,7 @@
 
 # Symbols for GrapesJS
 
-[DEMO](##)
-> **Provide a live demo of your plugin**
-For a better user engagement create a simple live demo by using services like [JSFiddle](https://jsfiddle.net) [CodeSandbox](https://codesandbox.io) [CodePen](https://codepen.io) and link it here in your README (attaching a screenshot/gif will also be a plus).
-To help you in this process here below you will find the necessary HTML/CSS/JS, so it just a matter of copy-pasting on some of those services. After that delete this part and update the link above
+[DEMO on Codepen](https://codepen.io/lexo1000/pen/gOKjNdz)
 
 ### HTML
 ```html
@@ -24,7 +21,12 @@ const editor = grapesjs.init({
   fromElement: true,
   storageManager: false,
   plugins: ['grapesjs-symbols'],
-});
+  pluginsOpts: {
+    '@silexlabs/grapesjs-symbols': {
+      appendTo: '.gjs-pn-views-container',
+    },
+  },
+})
 ```
 
 ### CSS
@@ -35,6 +37,58 @@ body, html {
 }
 ```
 
+### Add a UI
+
+Add a button to create a new symbol
+
+```html
+<div id='basic-actions' class="panel__basic-actions" style="z-index: 9; background: red; position: absolute; min-height: 500px"></div>
+```
+
+And the JS for the button
+
+```js
+var idx = 0
+editor.on('load', () => {
+  editor.Panels.addPanel({
+    id: 'basic-actions',
+    el: '.panel__basic-actions',
+    buttons: [
+      {
+        id: 'alert-button',
+        className: 'btn-alert-button',
+        label: 'Create symbol pink',
+        command(editor) {
+          var label = prompt('Label', 'Symbol ' + ++idx)
+          var icon = prompt('Icon', 'fa-list')
+          editor.runCommand('symbols:add', { label, icon })
+        }
+      },
+    ]
+  })
+})
+```
+
+Add some content programmatically if you need to
+
+```js
+editor.addComponents([{
+  tagName: 'div',
+  components: [
+    {
+      tagName: 'h1',
+      content: 'Content text',
+      style: { color: 'red'},
+      attributes: { title: 'here' }
+    },{
+      tagName: 'p',
+      content: 'Content text',
+      style: { color: 'red'},
+      attributes: { title: 'here' }
+    }, ],
+  style: { "background-color": 'blue', "padding": "20px"},
+}])
+```
 
 ## Summary
 
@@ -87,52 +141,6 @@ Notes
   * `npm i @silexlabs/grapesjs-symbols`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-symbols.git`
-
-
-
-## Usage
-
-Directly in the browser
-```html
-<link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
-<script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/grapesjs-symbols.min.js"></script>
-
-<div id="gjs"></div>
-
-<script type="text/javascript">
-  var editor = grapesjs.init({
-      container: '#gjs',
-      // ...
-      plugins: ['grapesjs-symbols'],
-      pluginsOpts: {
-        'grapesjs-symbols': { /* options */ }
-      }
-  });
-</script>
-```
-
-Modern javascript
-```js
-import grapesjs from 'grapesjs';
-import plugin from '@silexlabs/grapesjs-symbols';
-import 'grapesjs/dist/css/grapes.min.css';
-
-const editor = grapesjs.init({
-  container : '#gjs',
-  // ...
-  plugins: [plugin],
-  pluginsOpts: {
-    [plugin]: { /* options */ }
-  }
-  // or
-  plugins: [
-    editor => plugin(editor, { /* options */ }),
-  ],
-});
-```
-
-
 
 ## Development
 

@@ -18,16 +18,13 @@
   <body>
 
     <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; background: red;"></div>
-    <div id="gjs" style="height:0px; overflow:hidden">
+    <div id="gjs">
     </div>
-
 
     <script type="text/javascript">
       // Wait for the plugin to be injected by the dev server
-      var idx = 0
-      setTimeout(() => {
+      window.onload = function() {
         window.editor = grapesjs.init({
-          height: '100%',
           container: '#gjs',
           noticeOnUnload: false,
           plugins: [
@@ -40,7 +37,9 @@
               appendTo: '.gjs-pn-views-container',
             },
           },
-        });
+        })
+
+        var idx = 0
         editor.on('load', () => {
           editor.Panels.addPanel({
             id: 'basic-actions',
@@ -55,20 +54,28 @@
                   var icon = prompt('Icon', 'fa-list')
                   editor.runCommand('symbols:add', { label, icon })
                 }
-              }, {
-                id: 'alert-button2',
-                className: 'btn-alert-button2',
-                label: 'Create symbol green',
-                command(editor) {
-                  var label = prompt('Label', 'Symbol ' + ++idx)
-                  var icon = prompt('Icon', 'fa-list')
-                  editor.runCommand('symbols:add', { label, icon })
-                }
               },
             ]
-          });
+          })
         })
-      }, 100);
+        editor.addComponents([{
+          tagName: 'div',
+          components: [
+            {
+              tagName: 'h1',
+              content: 'Content text',
+              style: { color: 'red'},
+              attributes: { title: 'here' }
+            },{
+              tagName: 'p',
+              content: 'Content text',
+              style: { color: 'red'},
+              attributes: { title: 'here' }
+            }, ],
+          style: { "background-color": 'blue', "padding": "20px"},
+        }])
+
+      }
     </script>
   </body>
 </html>

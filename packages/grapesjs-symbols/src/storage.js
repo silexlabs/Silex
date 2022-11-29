@@ -7,7 +7,6 @@ export default (editor, opts = {}) => {
   editor.on('storage:end:load', (resultObject) => {
     if(resultObject.symbols) {
       editor.Symbols.reset()
-      console.log({resultObject})
       editor.Symbols.set(resultObject.symbols)
       // update sybols with existing components
       // call setSymbols on load because
