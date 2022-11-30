@@ -8,3 +8,6 @@ contact_links:
   - name: 5. Community chat
     url: https://gitter.im/silex-website-builder/community
     about: "Let's get in touch and talk about Silex" 
+  - name: 6. Documentation
+    url: https://github.com/silexlabs/Silex/wiki
+    about: "Read the f**ng manual ;) This is a collaborative effort, please document what you learned" 
