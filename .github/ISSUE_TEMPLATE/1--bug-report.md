@@ -2,7 +2,7 @@
 name: 1. Bug report
 about: Help make Silex better by finding bugs
 title: 'I found a bug: ...'
-labels: bug, widget
+labels: bug, in french, widget
 assignees: ''
 
 ---

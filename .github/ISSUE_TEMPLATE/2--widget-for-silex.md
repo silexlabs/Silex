@@ -1,5 +1,5 @@
 ---
-name: 5. Widget for Silex
+name: 2. Widget for Silex
 about: A widget is like a tutorial for users to achieve a feature by copy pasting
   code
 title: XYZ widget for Silex
