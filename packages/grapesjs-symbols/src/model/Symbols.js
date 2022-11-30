@@ -38,7 +38,7 @@ export default Backbone.Collection.extend({
     //this.editor.on('all', (...args) => console.log('ALL', ...args))
     //this.logEvent('remove')
     //this.logEvent('component:update')
-    //this.editor.on('component:selected', c => console.log(c, c.cid, c.get('symbolId'), c.get('symbolChildId')))
+    //this.editor.on('component:selected', c => console.log(c, c.cid, c.get('symbolId'), c.get('symbolChildId'), this.get(getSymbolId(c))))
     //this.logEvent('component:deselected')
     //this.logEvent('component:create')
     //this.logEvent('component:mount')

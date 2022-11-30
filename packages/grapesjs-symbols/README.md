@@ -85,7 +85,8 @@ editor.addComponents([{
       content: 'Content text',
       style: { color: 'red'},
       attributes: { title: 'here' }
-    }, ],
+    },
+],
   style: { "background-color": 'blue', "padding": "20px"},
 }])
 ```

@@ -18,9 +18,30 @@ test('Command symbols:add', () => {
   const sender = {}, label = 'label', icon = 'icon'
   expect(() => addSymbol(editor, sender, {label, icon})).toThrow('missing param component')
   expect(editor.Symbols).toHaveLength(0)
-  const [component] = editor.addComponents([{}])
+  const [component] = editor.addComponents([{
+    tagName: 'div',
+    components: [
+      {
+        tagName: 'h1',
+        content: 'Content text',
+        style: { color: 'red'},
+        attributes: { title: 'here' }
+      },{
+        tagName: 'p',
+        content: 'Content text',
+        style: { color: 'red'},
+        attributes: { title: 'here' }
+      },
+    ],
+    style: { "background-color": 'blue', "padding": "20px"},
+  }])
   expect(() => addSymbol(editor, sender, {label, icon, component})).not.toThrow()
   expect(editor.Symbols).toHaveLength(1)
+  const model = editor.Symbols.models[0].get('model')
+  expect(model.attributes.symbolId).not.toBeUndefined()
+  expect(model.components().models[0].attributes.symbolChildId).not.toBeUndefined()
+  expect(component.attributes.symbolId).not.toBeUndefined()
+  expect(component.components().models[0].attributes.symbolChildId).not.toBeUndefined()
 })
 
 test('Command symbols:remove', () => {
@@ -54,4 +75,5 @@ test('Command symbols:create', () => {
   expect(() => createSymbolInstance(editor, sender, {})).toThrow('missing param symbol')
   expect(() => createSymbolInstance(editor, sender, {symbol: s1, pos, target})).not.toThrow()
   expect(createSymbolInstance(editor, sender, {symbol: s1, pos, target}).get('symbolId')).toBe('S1')
+  expect(component.attributes.symbolId).not.toBeUndefined()
 })
