@@ -17,7 +17,7 @@ Silex for DIY and passionate people who want a free alternative to Wix or other 
 * [Documentation wiki](https://github.com/silexlabs/Silex/wiki)
 * [Bug report](https://github.com/silexlabs/Silex/issues)
 * [Silex forums](https://github.com/silexlabs/Silex/discussions)
-* [subscribe to Silex news by email (a few messages per year)](http://eepurl.com/F48q5) and follow us on [Facebook](http://www.facebook.com/silexlabs), [Twitter](https://twitter.com/silexlabs)
+* [subscribe to Silex news by email (a few messages per year)](https://mail-list.silexlabs.org/subscription/cemnfkaVrK) and follow us on [Facebook](http://www.facebook.com/silexlabs), [Twitter](https://twitter.com/silexlabs)
 
 
 Silex for professionals, agencies and hosting companies:
