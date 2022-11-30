@@ -15,7 +15,8 @@ Silex for DIY and passionate people who want a free alternative to Wix or other 
 * [Silex desktop app (works offline, with your local files)](https://github.com/silexlabs/silex-desktop/)
 * [Silex official website](http://www.silex.me/)
 * [Documentation wiki](https://github.com/silexlabs/Silex/wiki)
-* [Silex forums](https://github.com/silexlabs/Silex/issues)
+* [Bug report](https://github.com/silexlabs/Silex/issues)
+* [Silex forums](https://github.com/silexlabs/Silex/discussions)
 * [subscribe to Silex news by email (a few messages per year)](http://eepurl.com/F48q5) and follow us on [Facebook](http://www.facebook.com/silexlabs), [Twitter](https://twitter.com/silexlabs)
 
 
