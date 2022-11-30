@@ -54,7 +54,7 @@ export default Backbone.Collection.extend({
     // this.editor.on('component:remove:before', c => updateRemove(c))
 
     this.editor.on('component:create', c => this.onAdd(c))
-    this.editor.on('component:remove', c => this.onRemove(getSymbolId(c), c))
+    this.editor.on('component:remove', c => this.onRemove(c))
     this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
     // this.on('remove', console.log('FIXME: cleanup all instances'))
@@ -147,7 +147,8 @@ export default Backbone.Collection.extend({
    * Exported for tests
    * @private
    */
-  onRemove(symbolId, c) {
+  onRemove(c) {
+    const symbolId = getSymbolId(c)
     if(symbolId) {
       if(this.has(symbolId)) {
         this.get(symbolId).unlink(c)

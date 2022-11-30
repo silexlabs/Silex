@@ -31,14 +31,7 @@ test('Test data to save has only needed data', () => {
   expect(s1.get('model').get('symbolId')).toBe(comp1.get('symbolId'))
   expect(s1.toJSON().instances).toBeUndefined()
   expect(s1.toJSON().symbolId).toBe(s1Data.symbolId)
-  //expect(s1.toJSON().attributes.symbolId).toBe(s1Data.symbolId)
   expect(s1.toJSON().model.attributes.symbolId).toBe(s1Data.symbolId)
-  // this test makes jest crash:
-  // expect(s1.toJSON()).toEqual({
-  //   ...s1Data,
-  //   symbolId,
-  //   model: comp1,
-  // })
 })
 
 test('Test getAll method', () => {

@@ -36,49 +36,42 @@ describe('Make sure everything has the correct data type and default values', ()
   })
 })
 
-// describe('Test event listeners which maintain the components list up to date', () => {
-//   let s1, s2, comp1
-//   let editor, options
-//   beforeEach(() => {
-//     // mock editor
-//     editor = {}
-//     options =  {
-//       headless: true,
-//     }
-//     const symbols = getTestSymbols()
-//     s1 = symbols.s1
-//     s2 = symbols.s2
-//     comp1 = symbols.comp1
-//     editor.Symbols = new Symbols([s1, s2], { options, editor})
-//   })
-// 
-//   test('onAdd method', () => {
-//     const comp = new Backbone.Model({
-//       tagName: 'div',
-//       content: 'comp S1',
-//       symbolId: 'S1',
-//     })
-// 
-//     const components = s1.getComponents()
-//     expect(components.size).toBe(2)
-//     onAdd(editor, comp)
-//     const added = components.get(comp.cid)
-//     expect(added).toBe(comp)
-//     expect(components.size).toBe(3)
-//   })
-// 
-//   test('onRemove method', () => {
-//     const components = s1.getComponents()
-//     onRemove(editor, comp1)
-//     expect(components.size).toBe(1)
-//     expect(components.get(comp1.cid)).toBeUndefined()
-//   })
-// })
-// 
-// test('Test closestSymbol', () => {
-//   const { child11, child12, child21, child22, comp1, comp2, s1, s2, s1Data } = getTestSymbols()
-//   expect(() => closestSymbol(child11)).not.toThrow()
-//   expect(closestSymbol(comp1)).toBe(comp1)
-//   expect(closestSymbol(child11)).toBe(comp1)
-//   expect(closestSymbol(child21)).toBe(comp2)
-// })
+describe('Test event listeners which maintain the components list up to date', () => {
+  let s1, s2, comp1
+  let editor, options
+  beforeEach(() => {
+    // mock editor
+    editor = {}
+    options =  {
+      headless: true,
+    }
+    const symbols = getTestSymbols()
+    s1 = symbols.s1
+    s2 = symbols.s2
+    comp1 = symbols.comp1
+    editor.Symbols = new Symbols([s1, s2], { options, editor})
+  })
+
+  test('onAdd method', () => {
+    const comp = new Backbone.Model({
+      tagName: 'div',
+      content: 'comp S1',
+      symbolId: 'S1',
+    })
+
+    const components = s1.attributes.instances
+    expect(components.size).toBe(2)
+    editor.Symbols.onAdd(comp)
+    const added = components.get(comp.cid)
+    expect(added).toBe(comp)
+    expect(components.size).toBe(3)
+  })
+
+  test('onRemove method', () => {
+    const components = s1.attributes.instances
+    editor.Symbols.onRemove(comp1)
+    expect(components.size).toBe(1)
+    expect(components.get(comp1.cid)).toBeUndefined()
+  })
+})
+
