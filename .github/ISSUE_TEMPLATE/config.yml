@@ -1,7 +1,10 @@
 contact_links:
-  - name: Silex PRO
+  - name: 3. Discussions / forums
+    url: https://github.com/silexlabs/Silex/discussions
+    about: Ask your questions, share ideas, showcase your work
+  - name: 4. Silex PRO
     url: http://eepurl.com/gjYnib
     about: To be listed as a professional selling Silex websites please join this group
-  - name: Community chat
+  - name: 5. Community chat
     url: https://gitter.im/silex-website-builder/community
     about: "Let's get in touch and talk about Silex" 
