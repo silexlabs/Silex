@@ -72,23 +72,12 @@ editor.on('load', () => {
 Add some content programmatically if you need to
 
 ```js
-editor.addComponents([{
-  tagName: 'div',
-  components: [
-    {
-      tagName: 'h1',
-      content: 'Content text',
-      style: { color: 'red'},
-      attributes: { title: 'here' }
-    },{
-      tagName: 'p',
-      content: 'Content text',
-      style: { color: 'red'},
-      attributes: { title: 'here' }
-    },
-],
-  style: { "background-color": 'blue', "padding": "20px"},
-}])
+editor.addComponents(`
+  <div class="main">
+    <h1 class="title">Test title</h1>
+    <p class="content">Test content text lorem ipsum</p>
+  </div>
+`)
 ```
 
 ### Test the plugin
