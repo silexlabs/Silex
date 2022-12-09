@@ -34,11 +34,13 @@ export default Backbone.Collection.extend({
 
     // this.logEvent('all')
 
+    // Display symbol info in badge:
+    // this.editor.on('component:hover:before', c => c.set('name', `${ c.cid } - ${c.get('symbolId') || ''} - ${c.get('symbolChildId') || ''}`))
+
     // this.editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
     //this.editor.on('all', (...args) => console.log('ALL', ...args))
     //this.logEvent('remove')
     //this.logEvent('component:update')
-    //this.editor.on('component:selected', c => console.log(c, c.cid, c.get('symbolId'), c.get('symbolChildId'), this.get(getSymbolId(c))))
     //this.logEvent('component:deselected')
     //this.logEvent('component:create')
     //this.logEvent('component:mount')
@@ -57,7 +59,6 @@ export default Backbone.Collection.extend({
     this.editor.on('component:remove', c => this.onRemove(c))
     this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
-    // this.on('remove', console.log('FIXME: cleanup all instances'))
     this.editor.on('component:input', c => this.onUpdateContent(c))
   },
 
@@ -118,7 +119,7 @@ export default Backbone.Collection.extend({
   },
 
   /**
-   * Remove a component from its symbol
+   * Add a component to a symbol
    * Export this method for unit tests
    * @private
    */

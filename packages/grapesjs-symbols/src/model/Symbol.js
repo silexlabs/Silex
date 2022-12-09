@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import { find, instanceComponents, instanceChildren } from '../utils.js'
+import { find, children } from '../utils.js'
 
 /**
  * A Symbol class holds the data about a symbol: label, icon
@@ -8,7 +8,6 @@ import { find, instanceComponents, instanceChildren } from '../utils.js'
  * The `instances` attribute is a Map of grapesjs Components kept in sync with the model
  * The model is kept up to date by calling the apply* methods
  * 
- * @member {string} attributes.symbolId
  * @member {string} attributes.label
  * @member {string} attributes.icon
  * @member {Component} attributes.model
@@ -26,7 +25,7 @@ const SymbolModel = Backbone.Model.extend({
   },
 
   /**
-   * @param {{ symbolId: ?string, label: ?string, icon: ?string }} attributes
+   * @param {{ label: ?string, icon: ?string }} attributes
    * @param {Object} model - to be converted to Component and stored in attributes.model
    * Notes:
    * - `attributes.instances` will initially be empty until addInstance is called by the Symbols class (onAdd method)
@@ -38,29 +37,14 @@ const SymbolModel = Backbone.Model.extend({
     if(!this.has('instances')) {
       this.set('instances', new Map())
     }
-    // Check the required symbolId on the symbol
-    if(!this.has('symbolId')) {
-      // Case of a symbol creation with `createSymbol`
-      this.set('symbolId', this.cid)
-    } else {
-      // Otherwise take the symbolId as cid
-      // This is useful to get the symbol out of a symbolId in the Symbols collection
-      this.cid = this.get('symbolId')
-    }
-    // check the required symbolId and symbolChildId on the model
+    // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
     if(!this.has('model')) throw new Error('Could not create Symbol: model is required')
     // convert model to a real component
     const model = this.get('model')
-    if(!model.cid) {
+    if(!model.cid) { // FIXME: should be typeof model = 'string'
       const { editor } = this.collection
       const [modelComp] = editor.addComponents([model])
       this.set('model', modelComp)
-    }
-    if(!this.get('model').has('symbolId')) {
-      //console.log('?WHY NEED TO CALL INIT MODEL? it shoudld be done by backbone?', this)
-      // FIXME: ?WHY NEED TO CALL INIT MODEL? it shoudld be done by backbone?
-      // case of a symbol creation with `createSymbol`
-      this.initModel(this.get('model'))
     }
   },
 
@@ -170,43 +154,6 @@ const SymbolModel = Backbone.Model.extend({
   },
 
   /**
-   * Init a component to be this symbol's `model`
-   * Also init the component's children
-   * @param {Component} c
-   */
-  initModel(c) {
-    // check that it is not part of a Symbol already
-    if(c.has('symbolId')) throw new Error('Could not init Symbol model: the model has already been init')
-    // add symbol data
-    c.set('icon', `<span class="fa ${this.get('icon')}"></span>`)
-    c.set('symbolId', this.get('symbolId'))
-    // show that this is a symbol
-    c.get('toolbar').push({ attributes: {class: 'fa fa-ban on fa-diamond'}, command: 'do:nothing' })
-    // init children
-    instanceChildren(c)
-      .forEach(child => this.initSymbolChild(child))
-  },
-
-  /**
-   * Init a component to be this symbol's `model`
-   * Also init the component's children
-   * @param {Component} c
-   */
-  initSymbolInstance(c) {
-    this.initModel(c)
-    this.get('instances').set(c.cid, c)
-  },
-
-  /**
-   * Init a component to be this symbol's `model`'s child
-   * @param {Component} c
-   */
-  initSymbolChild(c) {
-    // store this symbol's ID
-    if(!c.has('symbolChildId')) c.set('symbolChildId', c.cid)
-  },
-
-  /**
    * @param {Component} c - a component
    * @return {Boolean} true if the component is a symbol
    */
@@ -229,15 +176,10 @@ const SymbolModel = Backbone.Model.extend({
    * - remove the reference in instances
    */
   unlink(c) {
-    instanceComponents(c)
-      .forEach(cc => {
-        if(cc === c) {
-          c.set('symbolId')
-          this.get('instances').delete(c.cid)
-        } else {
-          c.set('symbolChildId')
-        }
-      })
+    c.set('symbolId')
+    this.get('instances').delete(c.cid)
+    children(c)
+      .forEach(child => child.set('symbolChildId'))
   },
 })
 
@@ -258,17 +200,71 @@ export function cleanup(c) {
 }
 
 /**
+ * Init a component to be this symbol's `model`
+ * Also init the component's children
+ * @param {Component} c
+ */
+export function initModel(c, { icon, label, symbolId }) {
+  // check that it is not part of a Symbol already
+  if(c.has('symbolId')) {
+    throw new Error('Could not init Symbol model: the model has already been init')
+  }
+  // This is the symbol cid
+  c.set('symbolId', symbolId)
+  // add symbol data
+  c.set('icon', `<span class="fa ${ icon }"></span>`)
+  // Show that this is a symbol, add an icon to the toolbar UI
+  const toolbar = c.get('toolbar')
+  if(!toolbar.find(t => !!t.isSymbol)) {
+    // FIXME: somehow this happens twice
+    toolbar.push({
+      attributes: {
+        class: 'fa fa-ban on fa-diamond',
+        title: label,
+      },
+      command: 'do:nothing',
+      isSymbol: true,
+    })
+  }
+  // init children
+  children(c)
+    .forEach(child => initSymbolChild(child))
+}
+
+/**
+ * Init a component to be this symbol's `model`'s child
+ * @param {Component} c
+ */
+export function initSymbolChild(c) {
+  if(!c.has('symbolChildId')) {
+    c.set('symbolChildId', c.cid)
+  }
+}
+
+/**
  * create a new symbol ou of a component
  * the component and its children will be init
  * the component will be cloned and stored as the model
  * @return {SymbolModel}
  */
 export function createSymbol(c, attributes) {
+  // Init component with symbolId and children
+  initModel(c, {
+    ...attributes,
+    // temporary symbol ID
+    symbolId: 'temporary symbol ID',
+  })
+  // Create a Symbol
   const s = new SymbolModel({
     ...attributes,
+    // Clone the component, store a model
     model: c.clone(),
   })
-  s.initSymbolInstance(c)
+  // Now that we have s.cid, set the symbolId
+  c.set('symbolId', s.cid)
+  s.get('model').set('symbolId', s.cid)
+  // Store a ref
+  s.addInstance(c)
   return s
 }
 

@@ -1,5 +1,5 @@
 import grapesjs from 'grapesjs'
-import Symbol, { createSymbol } from './model/Symbol.js'
+import Symbol, { createSymbol, initModel } from './model/Symbol.js'
 
 // Since I can not import the types from grapes
 //  let's use the editor in headless mode
@@ -31,22 +31,15 @@ export function getTestSymbols() {
   }])
 
   const s1Data = {
-    symbolId: 'S1',
     icon: 'fa-cog',
     label: 'S1',
   }
 
   // This is equivalent to
   // const s1 = createSymbol(comp1, s1Data)
-  const s1 = new Symbol({
-    ...s1Data,
-    model: comp1.clone(),
-  })
-  s1.initSymbolInstance(comp1)
-  s1.initSymbolInstance(comp2)
-  s1.get('instances')
-    .set(comp1.cid, comp1)
-    .set(comp2.cid, comp2)
+  const s1 = createSymbol(comp1, s1Data)
+  s1.addInstance(comp2)
+  initModel(comp2, { symbolId: s1Data.symbolId })
   s1.get('model').set('test', 'S1 model')
 
   const s2 = createSymbol(comp3)

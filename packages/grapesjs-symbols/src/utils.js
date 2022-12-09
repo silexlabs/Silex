@@ -28,10 +28,10 @@ export function getAllComponentsFromEditor(editor) {
  * @param {Component} c - the root component
  * @returns {(Component|null)} the root component's children
  */
-export function instanceChildren(c) {
+export function children(c) {
   const children = Array.from(c.components())
   return children
-    .flatMap(child => instanceComponents(child))
+    .flatMap(child => all(child))
 }
 
 /**
@@ -39,13 +39,13 @@ export function instanceChildren(c) {
  * @param {Component} c - the root component
  * @returns {(Component|null)} the root component itself and its children
  */
-export function instanceComponents(c) {
+export function all(c) {
   const children = Array.from(c.components())
   return [c]
     .concat(children
       .flatMap(child => {
         if(hasSymbolId(child)) return [child]
-        return instanceComponents(child)
+        return all(child)
       })
     )
 }
