@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import { closestInstance } from '../utils.js'
+import { closestInstance, wait } from '../utils.js'
 import Symbol, { getSymbolId, cleanup } from './Symbol.js'
 
 export default Backbone.Collection.extend({
@@ -18,7 +18,7 @@ export default Backbone.Collection.extend({
    */
   logEvent(name) {
     this.editor.on(name, (...args) => {
-      setTimeout(() => console.log('%c[EVENT] ' + name, 'color: grey', args, args.map(c => c?.view?.el)), 100)
+      setTimeout(() => console.log('%c[EVENT] ' + name, 'color: orange', args, args.map(c => c?.view?.el)), 100)
       
     })
   },
@@ -26,7 +26,6 @@ export default Backbone.Collection.extend({
   initEvents() {
     // this.logEvent('component:create')
     // this.logEvent('component:remove')
-    // this.logEvent('component:update:components')
     // this.logEvent('component:update:classes')
     // this.logEvent('component:update:attributes')
     // this.logEvent('component:input')
@@ -56,71 +55,31 @@ export default Backbone.Collection.extend({
     // this.editor.on('component:remove:before', c => updateRemove(c))
 
     this.editor.on('component:create', c => this.onAdd(c))
-    this.editor.on('component:remove', c => this.onRemove(c))
+    this.editor.on('component:update:components', (parent, comp) => this.onUpdateChildren(parent, comp))
     this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
     this.editor.on('component:input', c => this.onUpdateContent(c))
   },
 
   /**
-   * update sybols with existing components
-   * this is used on load because the `storage:end:load` event is fired after the components are loaded
+   * Update sybols with existing components
+   * This is used on load only
+   * TODO: Use `storage:end:load`? But this event is fired after the components are loaded
+   * TODO: Needs review
    * @param {Array.<Component>} components
+   * @private
    */
   updateComponents(components) {
     components.forEach(c => this.onAdd(c))
   },
-  /**
-   * A component attributes have changed
-   */
-  onUpdateAttributes(c) {
-    if(this.updating) return
-    const inst = closestInstance(c)
-    if(inst) {
-      const s = this.get(getSymbolId(inst))
-      if(s) {
-        this.updating = true
-        s.applyAttributes(inst, c)
-        this.updating = false
-      } else {
-        console.warn('could not update the symbol', s, 'for the instance', c)
-      }
-    }
-  },
-
-  onUpdateClasses(c) {
-    if(this.updating) return
-    const inst = closestInstance(c)
-    if(inst) {
-      const s = this.get(getSymbolId(inst))
-      if(s) {
-        this.updating = true
-        s.applyClasses(inst, c)
-        this.updating = false
-      } else {
-        console.warn('could not update the symbol', s, 'for the instance', c)
-      }
-    }
-  },
-
-  onUpdateContent(c) {
-    if(this.updating) return
-    const inst = closestInstance(c)
-    if(inst) {
-      const s = this.get(getSymbolId(inst))
-      if(s) {
-        this.updating = true
-        s.applyContent(inst, c)
-        this.updating = false
-      } else {
-        console.warn('could not update the symbol', s, 'for the instance', c)
-      }
-    }
-  },
 
   /**
    * Add a component to a symbol
+   * This is useful only when loading new HTML content
+   * When loading a new component which is a symbol,
+   *   add a ref to the component in its symbol.get('instances')
    * Export this method for unit tests
+   * TODO: Needs review
    * @private
    */
   onAdd(c) {
@@ -143,19 +102,83 @@ export default Backbone.Collection.extend({
   },
 
   /**
-   * Remove an instance from a symbol
-   * This happens when an instance is deleted or when it is unlinked
-   * Exported for tests
-   * @private
+   * A component's components() has changed
    */
-  onRemove(c) {
-    const symbolId = getSymbolId(c)
-    if(symbolId) {
-      if(this.has(symbolId)) {
-        this.get(symbolId).unlink(c)
+  async onUpdateChildren(parent, component) {
+    if(this.updating) return
+    const inst = closestInstance(parent)
+    if(inst) {
+      const symbolId = getSymbolId(inst)
+      const s = this.get(symbolId)
+      if(s) {
+        // wait for the component's children to be changed
+        // I couldn't find an event like `component:update:components:after`
+        // TODO: need review
+        await wait()
+        this.updating = true
+        s.applyChild(inst, component)
+        this.updating = false
       } else {
-        console.warn(`Could not remove instance ${c}: could not find the symbol with id ${symbolId}`)
+        console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
+      }
+    }
+  },
+
+  /**
+   * A component's attributes has changed
+   */
+  onUpdateAttributes(c) {
+    if(this.updating) return
+    const inst = closestInstance(c)
+    if(inst) {
+      const symbolId = getSymbolId(inst)
+      const s = this.get(symbolId)
+      if(s) {
+        this.updating = true
+        s.applyAttributes(inst, c)
+        this.updating = false
+      } else {
+        console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
+      }
+    }
+  },
+
+  /**
+   * A component's css classes have changed
+   */
+  onUpdateClasses(c) {
+    if(this.updating) return
+    const inst = closestInstance(c)
+    if(inst) {
+      const symbolId = getSymbolId(inst)
+      const s = this.get(symbolId)
+      if(s) {
+        this.updating = true
+        s.applyClasses(inst, c)
+        this.updating = false
+      } else {
+        console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
+      }
+    }
+  },
+
+  /**
+   * A component's text content has changed
+   */
+  onUpdateContent(c) {
+    if(this.updating) return
+    const inst = closestInstance(c)
+    if(inst) {
+      const symbolId = getSymbolId(inst)
+      const s = this.get(symbolId)
+      if(s) {
+        this.updating = true
+        s.applyContent(inst, c)
+        this.updating = false
+      } else {
+        console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
       }
     }
   },
 })
+

@@ -1,6 +1,7 @@
 import Backbone from 'backbone'
 
-import { find, children } from '../utils.js'
+import { find, all, children } from '../utils.js'
+import { uniqueId } from 'underscore'
 
 /**
  * A Symbol class holds the data about a symbol: label, icon
@@ -37,8 +38,9 @@ const SymbolModel = Backbone.Model.extend({
     if(!this.has('instances')) {
       this.set('instances', new Map())
     }
-    // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
     if(!this.has('model')) throw new Error('Could not create Symbol: model is required')
+    // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
+    // TODO: Needs review
     // convert model to a real component
     const model = this.get('model')
     if(!model.cid) { // FIXME: should be typeof model = 'string'
@@ -116,6 +118,42 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcInst - the instance of this symbol containing `child`
    * @param {Component} srcChild - the child which has the changes
    */
+  applyChild(srcInst, srcChild) {
+    const parent = srcChild.parent()
+    const allInst = all(srcInst)
+    console.log({srcChild, parent, srcInst, allInst})
+    if(allInst.includes(parent)) {
+      // the child is still there
+      console.log('Child is there', {allInst, parent, srcInst})
+      if(!allInst.includes(srcChild)) {
+        // this is a new child
+        initSymbolChild(srcChild)
+        this.browseInstancesAndModel(srcInst, parent, dstChild => {
+          dstChild.append(srcChild.clone())
+        }, ({srcInst, dstInst, srcChild}) => {
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        })
+      }
+      // TODO: reorder after insert 
+      // or even if it is not a new child
+    } else {
+      // Child is not there anymore
+      console.log('Child is not there', {allInst, parent, srcInst})
+      srcChild.set('symbolChildId')
+      this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
+        dstChild.remove()
+      }, ({srcInst, dstInst, srcChild}) => {
+        console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+      })
+    }
+  },
+
+  /**
+   * Update attributes of all instances and their children according to changes of a component
+   * Also update the `model` attribute of this symbol
+   * @param {Component} srcInst - the instance of this symbol containing `child`
+   * @param {Component} srcChild - the child which has the changes
+   */
   applyAttributes(srcInst, srcChild) {
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
       // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
@@ -124,7 +162,6 @@ const SymbolModel = Backbone.Model.extend({
       console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
     })
   },
-
 
   /**
    * Update text content of all instances and their children according to changes of a component
@@ -223,7 +260,7 @@ export function initModel(c, { icon, label, symbolId }) {
         title: label,
       },
       command: 'do:nothing',
-      isSymbol: true,
+      isSymbol: true, // prevent add 2 buttons
     })
   }
   // init children
@@ -248,21 +285,19 @@ export function initSymbolChild(c) {
  * @return {SymbolModel}
  */
 export function createSymbol(c, attributes) {
+  const symbolId = attributes.symbolId ?? uniqueId()
   // Init component with symbolId and children
   initModel(c, {
     ...attributes,
-    // temporary symbol ID
-    symbolId: 'temporary symbol ID',
+    symbolId,
   })
   // Create a Symbol
   const s = new SymbolModel({
     ...attributes,
+    id: symbolId,
     // Clone the component, store a model
     model: c.clone(),
   })
-  // Now that we have s.cid, set the symbolId
-  c.set('symbolId', s.cid)
-  s.get('model').set('symbolId', s.cid)
   // Store a ref
   s.addInstance(c)
   return s

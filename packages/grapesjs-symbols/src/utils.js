@@ -87,3 +87,6 @@ export function hasSymbolId(c) {
   return !!c.get('symbolId')
 }
 
+export async function wait(ms = 0) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}

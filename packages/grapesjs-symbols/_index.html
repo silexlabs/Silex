@@ -25,7 +25,8 @@
       window.onload = () => {
       window.editor = grapesjs.init({
         container: '#gjs',
-        storageManager: false,
+        //storageManager: false,
+        autosave: false,
         noticeOnUnload: false,
         plugins: [
           'grapesjs-preset-webpage',
@@ -59,7 +60,7 @@
         })
       })
       editor.addComponents([`
-        <div class="main">
+        <div class="main" style="padding: 20px; background: lightblue;">
           <h1 class="title">Test title</h1>
           <p class="content">Test content text lorem ipsum</p>
         </div>
