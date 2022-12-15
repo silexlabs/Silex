@@ -42,7 +42,10 @@ export function getTestSymbols() {
   initModel(comp2, { symbolId: s1Data.symbolId })
   s1.get('model').set('test', 'S1 model')
 
-  const s2 = createSymbol(comp3)
+  const s2 = createSymbol(comp3, {
+    icon: 'fa-cog',
+    label: 'S2',
+  })
   s2.get('instances')
     .set(comp3.cid, comp3)
 

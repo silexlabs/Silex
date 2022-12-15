@@ -34,7 +34,7 @@ export default Backbone.Collection.extend({
     // this.logEvent('all')
 
     // Display symbol info in badge:
-    // this.editor.on('component:hover:before', c => c.set('name', `${ c.cid } - ${c.get('symbolId') || ''} - ${c.get('symbolChildId') || ''}`))
+    this.editor.on('component:hover:before', c => c.set('name', `${ c.cid } - ${c.get('symbolId') || ''} - ${c.get('symbolChildId') || ''}`))
 
     // this.editor.on('component:change:content', (...args) => console.log('ALL COMP', ...args))
     //this.editor.on('all', (...args) => console.log('ALL', ...args))

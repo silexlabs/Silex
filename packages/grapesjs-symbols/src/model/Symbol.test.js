@@ -7,13 +7,13 @@ test('Initialize symbol with values', () => {
   expect(s1.get('instances').size).toBe(2)
   expect(s1.get('label')).toBe('S1')
   expect(s1.get('icon')).toBe('fa-cog')
-  expect(comp1.get('symbolId')).toBe(s1.cid)
+  expect(comp1.get('symbolId')).toBe(s1.id)
   expect(comp1.get('symbolChildId')).toBeUndefined()
   expect(child11.get('symbolChildId')).not.toBeUndefined()
   expect(child11.get('symbolId')).toBeUndefined()
 
-  expect(s1.get('model').get('symbolId')).toBe(s1.cid)
-  expect(comp1.get('symbolId')).toBe(s1.cid)
+  expect(s1.get('model').get('symbolId')).toBe(s1.id)
+  expect(comp1.get('symbolId')).toBe(s1.id)
   expect(child11.get('symbolChildId')).toBe(child11.cid)
   expect(child12.get('symbolChildId')).toBe(child12.cid)
 })
@@ -26,10 +26,10 @@ test('Initialize symbol with default values', () => {
 
 test('Test data to save has only needed data', () => {
   const { s1, s1Data, comp1, child11, child12 } = getTestSymbols()
-  expect(s1.get('model').get('symbolId')).toBe(s1.cid)
+  expect(s1.get('model').get('symbolId')).toBe(s1.id)
   expect(s1.get('model').get('symbolId')).toBe(comp1.get('symbolId'))
   expect(s1.toJSON().instances).toBeUndefined()
-  expect(s1.toJSON().model.attributes.symbolId).toBe(s1.cid)
+  expect(s1.toJSON().model.attributes.symbolId).toBe(s1.id)
 })
 
 test('Test getAll method', () => {

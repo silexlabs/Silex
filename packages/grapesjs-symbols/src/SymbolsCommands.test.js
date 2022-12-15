@@ -52,7 +52,7 @@ test('Command symbols:remove', () => {
   expect(() => removeSymbol(editor, sender, {symbolId})).toThrow('symbol not found')
   editor.Symbols = new Backbone.Collection([s1, s2])
   expect(editor.Symbols).toHaveLength(2)
-  expect(() => removeSymbol(editor, sender, {symbolId: s1.cid})).not.toThrow()
+  expect(() => removeSymbol(editor, sender, {symbolId: s1.id})).not.toThrow()
   expect(editor.Symbols).toHaveLength(1)
 })
 
@@ -74,6 +74,6 @@ test('Command symbols:create', () => {
     target = { getAttribute: jest.fn((name) => comp1.getId()) }
   expect(() => createSymbolInstance(editor, sender, {})).toThrow('missing param symbol')
   expect(() => createSymbolInstance(editor, sender, {symbol: s1, pos, target})).not.toThrow()
-  expect(createSymbolInstance(editor, sender, {symbol: s1, pos, target}).get('symbolId')).toBe(s1.cid)
+  expect(createSymbolInstance(editor, sender, {symbol: s1, pos, target}).get('symbolId')).toBe(s1.id)
   expect(component.attributes.symbolId).not.toBeUndefined()
 })
