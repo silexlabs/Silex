@@ -1,4 +1,5 @@
 import { getTestSymbols } from '../test-utils'
+import {jest} from '@jest/globals'
 
 test('Initialize symbol with values', () => {
   const { s1, comp1, child11, child12, s1Data } = getTestSymbols()
@@ -30,6 +31,51 @@ test('Test data to save has only needed data', () => {
   expect(s1.get('model').get('symbolId')).toBe(comp1.get('symbolId'))
   expect(s1.toJSON().instances).toBeUndefined()
   expect(s1.toJSON().model.attributes.symbolId).toBe(s1.id)
+})
+
+test('Test browseInstancesAndModel  method', () => {
+  // In this test:
+  // - s1 is a symbol
+  // - comp1 and comp2 are instances of s1
+  // - child11 and child12 are children of comp1
+  // - child21 and child22 are children of comp2
+  const { s1, comp1, child11, child12, comp2, child21, child22 } = getTestSymbols()
+  const model = s1.get('model')
+  const model11 = model.components().models[0]
+  const model12 = model.components().models[1]
+  // console.log([
+  //   {name: 's1', cid: s1.cid},
+  //   {name: 'comp1', cid: comp1.cid},
+  //   {name: 'child11', cid: child11.cid},
+  //   {name: 'child12', cid: child12.cid},
+  //   {name: 'comp2', cid: comp2.cid},
+  //   {name: 'child21', cid: child21.cid},
+  //   {name: 'child22', cid: child22.cid},
+  //   {name: 'model', cid: model.cid},
+  //   {name: 'model11', cid: model11.cid},
+  //   {name: 'model12', cid: model12.cid},
+  // ])
+
+  // First make sure the structure is right
+  expect(comp1.get('symbolId')).toBe(s1.id)
+  expect(child12.get('symbolChildId')).toBe(child12.cid)
+  expect(child11.get('symbolChildId')).toBe(child11.cid)
+  expect(comp2.get('symbolId')).toBe(s1.id)
+  expect(child21.get('symbolChildId')).toBe(child11.cid)
+  expect(child22.get('symbolChildId')).toBe(child12.cid)
+  expect(model.get('symbolId')).toBe(s1.id)
+  expect(model11.get('symbolChildId')).toBe(child11.cid)
+  expect(model12.get('symbolChildId')).toBe(child12.cid)
+
+  // Find the 2 symbols in s1 which correspond to child11 in the model and in comp2
+  const cbk = jest.fn()
+  s1.browseInstancesAndModel(comp1, child11, cbk)
+  expect(cbk).toHaveBeenCalledTimes(2)
+  expect(cbk.mock.calls[0][0].cid).toBe(model11.cid)
+  expect(cbk.mock.calls[1][0].cid).toBe(child21.cid)
+  // This makes jest crash:
+  //expect(cbk).toHaveBeenCalledWith(child11)
+  //expect(cbk).toHaveBeenCalledWith(child12)
 })
 
 test('Test getAll method', () => {

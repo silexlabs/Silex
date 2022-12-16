@@ -14,6 +14,7 @@ export function getTestSymbols() {
     test: 'comp1 S1',
   }, {
     test: 'comp2 S1',
+    symbolId: 'S1',
   }, {
     test: 'comp3 S2',
   }])
@@ -26,20 +27,22 @@ export function getTestSymbols() {
 
   const [child21, child22] = comp2.append([{
     test: 'child21',
+    symbolChildId: child11.cid,
   }, {
     test: 'child22',
+    symbolChildId: child12.cid,
   }])
 
   const s1Data = {
     icon: 'fa-cog',
     label: 'S1',
+    symbolId: 'S1',
   }
 
   // This is equivalent to
   // const s1 = createSymbol(comp1, s1Data)
   const s1 = createSymbol(comp1, s1Data)
   s1.addInstance(comp2)
-  initModel(comp2, { symbolId: s1Data.symbolId })
   s1.get('model').set('test', 'S1 model')
 
   const s2 = createSymbol(comp3, {

@@ -72,7 +72,7 @@ const SymbolModel = Backbone.Model.extend({
    */
   getAll(addOne = null, excludeOne = null) {
     const values = Array.from(this.get('instances').values())
-    return (addOne ? [addOne] : []).concat(excludeOne ? values.filter(inst => inst != excludeOne) : values)
+    return (addOne ? [addOne] : []).concat(excludeOne ? values.filter(inst => inst.cid != excludeOne.cid) : values)
   },
 
   /**
@@ -105,6 +105,7 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyClasses(srcInst, srcChild) {
+    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
       dstChild.setClass(srcChild.getClasses())
     }, ({srcInst, dstInst, srcChild}) => {
@@ -119,17 +120,25 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyChild(srcInst, srcChild) {
+    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     const parent = srcChild.parent()
     const allInst = all(srcInst)
     console.log({srcChild, parent, srcInst, allInst})
     if(allInst.includes(parent)) {
       // the child is still there
       console.log('Child is there', {allInst, parent, srcInst})
-      if(!allInst.includes(srcChild)) {
+      if(allInst.includes(srcChild)) { // FIXME: the child has already been droped so it will be true
+        // Case of a moving child inside the instance
+        // TODO
+        console.log('child is moving')
+      } else {
+        console.log('Child is NEW')
         // this is a new child
         initSymbolChild(srcChild)
         this.browseInstancesAndModel(srcInst, parent, dstChild => {
-          dstChild.append(srcChild.clone())
+          const clone = srcChild.clone()
+          console.log('add', {srcChild, clone})
+          dstChild.append(clone)
         }, ({srcInst, dstInst, srcChild}) => {
           console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
         })
@@ -138,13 +147,16 @@ const SymbolModel = Backbone.Model.extend({
       // or even if it is not a new child
     } else {
       // Child is not there anymore
-      console.log('Child is not there', {allInst, parent, srcInst})
-      srcChild.set('symbolChildId')
+      console.log('Child is not there', {allInst, parent, srcInst, srcChild})
       this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
+        console.log('remove', dstChild)
         dstChild.remove()
       }, ({srcInst, dstInst, srcChild}) => {
         console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       })
+      // this child is not part of a symbol anymore
+      // TODO: what if it was dropped in another symbol?
+      srcChild.set('symbolChildId')
     }
   },
 
@@ -155,6 +167,7 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyAttributes(srcInst, srcChild) {
+    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
       // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
       dstChild.attributes = srcChild.attributes
@@ -171,6 +184,7 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyContent(srcInst, srcChild) {
+    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
       if(dstChild.attributes.type === 'text') {
         //dstChild.components(srcChild.toHTML())
