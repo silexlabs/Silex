@@ -4,7 +4,10 @@
 
 # Symbols for GrapesJS
 
-[DEMO on Codepen](https://codepen.io/lexo1000/pen/gOKjNdz)
+Links
+
+* [DEMO on Codepen](https://codepen.io/lexo1000/pen/gOKjNdz)
+* [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
 
 ### HTML
 ```html
