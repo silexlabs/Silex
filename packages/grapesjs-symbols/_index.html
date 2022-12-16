@@ -58,6 +58,11 @@
             },
           ]
         })
+        setTimeout(() => {
+          const data = JSON.parse(localStorage.getItem('init'))
+          console.log({data})
+          if(data) editor.loadData(data)
+        })
       })
       editor.addComponents([`
         <div class="main" style="padding: 20px; background: lightblue;">

@@ -119,7 +119,7 @@ export default Backbone.Collection.extend({
         s.applyChild(inst, component)
         this.updating = false
       } else {
-        console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
+        console.warn('Could not update instance', component, ': could not find the symbol with id', symbolId)
       }
     }
   },

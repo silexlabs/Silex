@@ -35,7 +35,7 @@ export function children(c) {
 }
 
 /**
- * Get all the children excluding symbols children
+ * Get an array of the component + its children excluding symbols children
  * @param {Component} c - the root component
  * @returns {(Component|null)} the root component itself and its children
  */

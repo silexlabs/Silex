@@ -105,12 +105,15 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyClasses(srcInst, srcChild) {
-    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
       dstChild.setClass(srcChild.getClasses())
     }, ({srcInst, dstInst, srcChild}) => {
       console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
     })
+  },
+
+  getIndex(parent, symbolChildId) {
+    return Array.from(parent.components()).findIndex(c => c.get('symbolChildId') === symbolChildId)
   },
 
   /**
@@ -120,36 +123,40 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyChild(srcInst, srcChild) {
-    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     const parent = srcChild.parent()
     const allInst = all(srcInst)
-    console.log({srcChild, parent, srcInst, allInst})
     if(allInst.includes(parent)) {
-      // the child is still there
-      console.log('Child is there', {allInst, parent, srcInst})
-      if(allInst.includes(srcChild)) { // FIXME: the child has already been droped so it will be true
+      // the child is in the instance
+      const symbolChildId = srcChild.get('symbolChildId')
+      //if(allInst.includes(srcChild)) {
+      //if(find(this.get('model'), symbolChildId)) {
+      if(symbolChildId) {
         // Case of a moving child inside the instance
         // TODO
         console.log('child is moving')
       } else {
-        console.log('Child is NEW')
         // this is a new child
-        initSymbolChild(srcChild)
-        this.browseInstancesAndModel(srcInst, parent, dstChild => {
+        all(srcChild)
+        .forEach(c => initSymbolChild(c))
+        this.browseInstancesAndModel(srcInst, parent, dstParent => {
           const clone = srcChild.clone()
-          console.log('add', {srcChild, clone})
-          dstChild.append(clone)
+          dstParent.append(clone)
         }, ({srcInst, dstInst, srcChild}) => {
           console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
         })
       }
-      // TODO: reorder after insert 
-      // or even if it is not a new child
+      // Reorder
+      this.browseInstancesAndModel(srcInst, parent, dstParent => {
+        dstParent.components(
+          Array.from(dstParent.components()).sort((c1, c2) => {
+            return this.getIndex(parent, c1.get('symbolChildId'))
+              - this.getIndex(parent, c2.get('symbolChildId'))
+          })
+        )
+      })
     } else {
       // Child is not there anymore
-      console.log('Child is not there', {allInst, parent, srcInst, srcChild})
       this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
-        console.log('remove', dstChild)
         dstChild.remove()
       }, ({srcInst, dstInst, srcChild}) => {
         console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
@@ -167,7 +174,6 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyAttributes(srcInst, srcChild) {
-    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
       // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
       dstChild.attributes = srcChild.attributes
@@ -184,12 +190,12 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyContent(srcInst, srcChild) {
-    console.log('Is an instance being changed?', srcInst === srcChild, srcChild.has('symbolId'), !srcChild.has('symbolChildId'))
     this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
-      if(dstChild.attributes.type === 'text') {
+      if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
         //dstChild.components(srcChild.toHTML())
         dstChild.components(srcChild.getCurrentView().getContent())
       }
+      else { console.log('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
     }, ({srcInst, dstInst, srcChild}) => {
       console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
     })
