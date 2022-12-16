@@ -137,7 +137,7 @@ const SymbolModel = Backbone.Model.extend({
       } else {
         // this is a new child
         all(srcChild)
-        .forEach(c => initSymbolChild(c))
+          .forEach(c => initSymbolChild(c))
         this.browseInstancesAndModel(srcInst, parent, dstParent => {
           const clone = srcChild.clone()
           dstParent.append(clone)
