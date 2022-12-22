@@ -214,6 +214,18 @@ const SymbolModel = Backbone.Model.extend({
   },
 
   /**
+   * @return {Component} The created instance, ready to be added to a component
+   */
+  createInstance() {
+    // Clone the model
+    const inst = this.get('model').clone()
+    // Add the component to the symbol instances
+    this.addInstance(inst)
+    // Let the caller add it to a component
+    return inst
+  },
+
+  /**
    * @param {Component} c - a component
    * @return {Boolean} true if the component is a symbol
    */

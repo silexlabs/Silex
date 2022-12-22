@@ -61,8 +61,13 @@ export function find(c, symbolChildId) {
     return c
   } else {
     // check the children components
-    return c.components()
-      .find(comp => find(comp, symbolChildId))
+    let found = null
+    c.components()
+      // Does not work properly, why? .find(comp => find(comp, symbolChildId))
+      .forEach(comp => {
+        if(!found) found = find(comp, symbolChildId)
+      })
+    return found
   }
 }
 

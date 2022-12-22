@@ -2,15 +2,18 @@ import { find, closestInstance } from './utils.js'
 import { getTestSymbols } from './test-utils.js'
 
 test('Test find', () =>{
-  const { comp1, child11, s1 } = getTestSymbols()
-  // all components have symbolId or symbolChildId set
-  expect(find(comp1, null)).toBeUndefined()
+  const { comp1, child11, child111, s1 } = getTestSymbols()
+  // all children have symbolChildId set
+  expect(find(comp1, null)).toBeNull()
+  // unknown symbolChildId
+  expect(find(comp1, 'unknown')).toBeNull()
   // find one child
-  const id = 'testChildId'
-  const oldId = child11.get('symbolChildId')
-  child11.set('symbolChildId', id)
-  expect(find(comp1, id)).toBe(child11)
-  child11.set('symbolChildId', oldId)
+  expect(find(comp1, child11.get('symbolChildId'))).toBe(child11)
+  // find one child of a child
+  expect(find(comp1, child111.get('symbolChildId'))).not.toBeNull()
+  const found = find(comp1, child111.get('symbolChildId'))
+  expect(found.cid).toBe(child111.cid)
+  // This makes jest crash: expect(find(comp1, child111.get('symbolChildId'))).toBe(child111)
 })
 
 test('Test closestInstance', () =>{

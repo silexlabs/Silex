@@ -81,9 +81,7 @@ export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
     const parentId = target ? target.getAttribute('id') : undefined
     const parent = editor.Components.allById()[parentId]
     // create the new component
-    const [c] = parent.append([symbol.get('model').clone()], { at: pos.index })
-    // Add the component to the symbol instances
-    symbol.addInstance(c)
+    const [c] = parent.append([symbol.createInstance()], { at: pos.index })
     // Select the new component
     // Break unit tests? editor.select(c, { scroll: true })
     return c

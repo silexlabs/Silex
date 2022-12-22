@@ -25,12 +25,21 @@ export function getTestSymbols() {
     test: 'child12',
   }])
 
+  const [child111] = child11.append([{
+    test: 'child111',
+  }])
+
   const [child21, child22] = comp2.append([{
     test: 'child21',
     symbolChildId: child11.cid,
   }, {
     test: 'child22',
     symbolChildId: child12.cid,
+  }])
+
+  const [child211] = child21.append([{
+    test: 'child211',
+    symbolChildId: child111.cid,
   }])
 
   const s1Data = {
@@ -52,6 +61,6 @@ export function getTestSymbols() {
   s2.get('instances')
     .set(comp3.cid, comp3)
 
-  return {child11, child12, child21, child22, comp1, comp2, s1, s2, s1Data, editor}
+  return {child11, child12, child21, child22, child111, child211, comp1, comp2, s1, s2, s1Data, editor}
 }
 
