@@ -6,7 +6,7 @@
 
 Links
 
-* [DEMO on Codepen](https://codepen.io/lexo1000/pen/gOKjNdz)
+* [DEMO on Codepen](https://codepen.io/lexoyo/pen/xxJGEwo)
 * [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
 
 ### HTML
