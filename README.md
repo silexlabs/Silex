@@ -19,6 +19,7 @@ There is no issue on this repo, please use the individual project's issues
 | Silex desktop | `/packages/silex-desktop` | [Website](https://github.com/silexlabs/silex-desktop/releases/latest) | Silex desktop version, an installable application for Windows, MacOS and linux. | [Github repo](https://github.com/silexlabs/silex-desktop) | - | [docs](https://github.com/silexlabs/Silex/wiki) | GPL |
 | Stage component (drag'n drop) | `/packages/drag-drop-stage-component/` | [Website](http://projects.silexlabs.org/drag-drop-stage-component/pub/) | This "stage" component enables the user select elements, drag and drop them, resize them. | [Github repo](https://github.com/silexlabs/drag-drop-stage-component) | [npm package](https://www.npmjs.com/package/drag-drop-stage-component) | [docs](https://github.com/silexlabs/drag-drop-stage-component) | MIT |
 | Unifile and unifile-* | `/packages/unifile*` | [Website](http://projects.silexlabs.org/unifile/) | Nodejs library to access cloud storage services with a common API. | [Github repo](https://github.com/silexlabs/unifile) | [npm package](https://www.npmjs.com/package/unifile) | [docs](http://projects.silexlabs.org/unifile/) | MIT |
+| eleventy-plugin-directus | `/packages/eleventy-plugin-directus` | - | Expose Directus collections as global data in 11ty | https://github.com/silexlabs/eleventy-plugin-directus | [npm package]() | https://github.com/silexlabs/eleventy-plugin-directus | MIT |
 
 ## Instructions
 
