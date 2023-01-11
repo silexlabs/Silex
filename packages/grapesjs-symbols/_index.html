@@ -38,6 +38,17 @@
             appendTo: '.gjs-pn-views-container',
           },
         },
+        pageManager: {
+          pages: [{
+              id: 'page-1',
+              name: 'Page 1',
+            },
+            {
+              id: 'page-2',
+              name: 'Page 2',
+            },
+          ],
+        }
       })
 
       var idx = 0
@@ -47,16 +58,30 @@
           el: '.panel__basic-actions',
           buttons: [
             {
-              id: 'alert-button',
-              className: 'btn-alert-button',
+              id: 'create-button',
               label: 'Create symbol',
               command(editor) {
                 var label = prompt('Label', 'Symbol ' + ++idx)
                 var icon = prompt('Icon', 'fa-list')
                 editor.runCommand('symbols:add', { label, icon })
-              }
+              },
             },
-          ]
+            {
+              id: 'separator',
+              label: '|',
+            },
+          ].concat(editor.Pages.getAll().flatMap(p => ([{
+            id: 'button' + p.cid,
+            label: p.getName() || 'no name?',
+            command(editor) {
+              editor.Pages.select(p)
+            },
+          },
+            {
+              id: 'separator' + p.cid,
+              label: '|',
+            },
+          ])))
         })
         setTimeout(() => {
           const data = JSON.parse(localStorage.getItem('init'))

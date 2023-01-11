@@ -6,8 +6,21 @@
 
 Links
 
-* [DEMO on Codepen](https://codepen.io/lexoyo/pen/xxJGEwo)
+* [DEMO on Codepen](https://codepen.io/lexoyo/full/xxJGEwo)
 * [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
+* [Discussion about ongoing developments](https://github.com/silexlabs/grapesjs-symbols/issues/1)
+
+Features
+
+* Create a symbol from an element
+* Create symbol instances
+* Sync instances: when one instance is modified, update all other instances
+* "unlink" an instance so that is stops syncing
+* Symbol have a name and an icon
+* View symbol icon for all instances in the layer manager
+* Optional list of symbols which support draging symbols to the stage
+* Support for symbols in symbols
+* Support sync accross grapesjs pages
 
 ### HTML
 ```html
