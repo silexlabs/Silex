@@ -7,6 +7,7 @@
 Links
 
 * [DEMO on Codepen](https://codepen.io/lexoyo/full/xxJGEwo)
+* [Npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-symbols)
 * [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
 * [Discussion about ongoing developments](https://github.com/silexlabs/grapesjs-symbols/issues/1)
 
