@@ -3,10 +3,11 @@ import headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min
 import sliderPlugin from 'grapesjs-lory-slider/dist/grapesjs-lory-slider.min.js'
 import touchPlugin from 'grapesjs-touch/dist/grapesjs-touch.min.js'
 import styleFilterPlugin from 'grapesjs-style-filter'
-import formPlugin from 'grapesjs-plugin-forms/dist/grapesjs-plugin-forms.min.js'
+import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
-import uiSuggestClasses from 'grapesjs-ui-suggest-classes'
-import symbolsPlugin, { cmdAddSymbol } from 'grapesjs-symbols/src/'
+import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
+import symbolsPlugin from '@silexlabs/grapesjs-symbols'
+import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -79,6 +80,7 @@ export const defaultConfig = {
       codePlugin,
       internalLinksPlugin,
       uiSuggestClasses,
+      symbolDialogsPlugin,
       symbolsPlugin,
     ],
     importWebpage: {
@@ -134,10 +136,14 @@ export const defaultConfig = {
             className: 'symbols-btn fa fa-fw fa-diamond',
             attributes: { title: 'Symbols', containerClassName: 'symbols-list-container', },
             command: 'open-symbols',
-            buttons: [{
-              className: 'pages__add-page fa fa-plus',
-              command: cmdAddSymbol,
-            }],
+            buttons: [
+              {
+                id: 'symbol-create-button',
+                className: 'pages__add-page fa fa-plus',
+                label: 'Create symbol from selection',
+                command: cmdPromptAddSymbol,
+              },
+            ],
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa fa-fw fa-cog',
