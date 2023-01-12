@@ -8,10 +8,9 @@ const cp = require('child_process')
 const {projects} = JSON.parse(fs.readFileSync('./.meta').toString())
 const all = Object.keys(projects).map(path => ({
   path,
-  name: path.split('/').pop(),
+  name: JSON.parse(fs.readFileSync(`${path}/package.json`)).name,
   git: projects[path],
 }))
-
 const command = (package) => `npm link ${all.map(p => p.name).filter(name => name !== package).join(' ')}`
 
 Promise.all(all.map(p => new Promise((resolve, reject) => {
