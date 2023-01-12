@@ -29,7 +29,7 @@ export function getAllComponentsFromEditor(editor) {
  * @returns {(Component|null)} the root component's children
  */
 export function children(c) {
-  const children = Array.from(c.components())
+  const children = c.components().toArray()
   return children
     .flatMap(child => all(child))
 }
@@ -40,7 +40,7 @@ export function children(c) {
  * @returns {(Component|null)} the root component itself and its children
  */
 export function all(c) {
-  const children = Array.from(c.components())
+  const children = c.components().toArray()
   return [c]
     .concat(children
       .flatMap(child => {

@@ -114,7 +114,7 @@ const SymbolModel = Backbone.Model.extend({
 
   getIndex(parent, symbolChildId) {
     // TODO: Needs review
-    return Array.from(parent.components())
+    return parent.components().toArray()
       .findIndex(c => c.get('symbolChildId') === symbolChildId)
   },
 
@@ -151,7 +151,7 @@ const SymbolModel = Backbone.Model.extend({
       this.browseInstancesAndModel(srcInst, parent, dstParent => {
         dstParent.components(
           // TODO: Needs review
-          Array.from(dstParent.components()).sort((c1, c2) => {
+          dstParent.components().toArray().sort((c1, c2) => {
             return this.getIndex(parent, c1.get('symbolChildId'))
               - this.getIndex(parent, c2.get('symbolChildId'))
           })
