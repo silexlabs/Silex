@@ -68,13 +68,15 @@ async function getSettings(projectId): Promise<Settings> {
 
 async function writeWebsite(req, res) {
   const projectId = req.query.projectId
-  const data = {
+  const data: WebsiteData = {
     assets: JSON.parse(req.body.assets) as Asset[],
     pages: JSON.parse(req.body.pages) as Page[],
     styles: JSON.parse(req.body.styles) as Style[],
     settings: req.body.settings as WebsiteSettings,
     name: req.body.name,
-  } as WebsiteData
+    fonts: req.body.fonts,
+    symbols: req.body.symbols,
+  }
   try {
     const dataFile = Path.resolve(projectId, '.silex.data.json')
     await fs.writeFile(dataFile, JSON.stringify(data))

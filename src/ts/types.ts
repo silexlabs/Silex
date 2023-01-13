@@ -28,6 +28,11 @@ export const defaultSite: WebsiteData = {
     'og:description': '',
     'og:image': '',
   },
+  fonts: [
+    { name: 'Arial', value: 'Arial, Helvetica, sans-serif', variants: [] },
+    { name: 'Times New Roman', value: '"Times New Roman", Times, serif', variants: [] },
+  ],
+  symbols: [],
 }
 
 export interface WebsiteSettings {
@@ -47,8 +52,15 @@ export interface WebsiteData {
   styles: Style[],
   name: string,
   settings: WebsiteSettings,
+  fonts: Font[],
+  symbols: Symbol[],
 }
 
+export interface Font {
+  name: string,
+  value: string,
+  variants: string[],
+}
 export interface Settings {
   assets: {
     path: string,
