@@ -42,7 +42,7 @@ export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) =>
     data.name = editor.getModel().get('name')
   })
   editor.on('storage:end:load', (data) => {
-    editor.getModel().set('settings', data.settings)
+    editor.getModel().set('settings', data.settings || {})
     editor.getModel().set('name', data.name)
   })
 })

@@ -13,6 +13,7 @@ import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './grapesjs/page-pan
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
+import { fontsDialog, cmdOpenFonts } from './grapesjs/fonts'
 import { blocksPlugin } from './grapesjs/blocks'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 
@@ -68,6 +69,7 @@ export const defaultConfig = {
     plugins: [
       projectBarPlugin, // has to be before panels and dialogs
       settingsDialog,
+      fontsDialog,
       newPageDialog,
       pagePanelPlugin,
       headerPlugin,
@@ -117,21 +119,6 @@ export const defaultConfig = {
             attributes: { title: 'Blocks', containerClassName: 'block-manager-container', },
             command: 'open-blocks',
           }, {
-            id: 'layer-manager-btn',
-            className: 'layer-manager-btn fa fa-fw fa-list',
-            attributes: { title: 'Layers', containerClassName: 'layer-manager-container', },
-            command: 'open-layers',
-          }, {
-            id: 'page-panel-btn',
-            className: 'page-panel-btn fa fa-fw fa-file',
-            attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
-            command: cmdTogglePages,
-            buttons: [{
-              className: 'pages__add-page fa fa-file',
-              command: cmdAddPage,
-              text: '+',
-            }],
-          }, {
             id: 'symbols-btn',
             className: 'symbols-btn fa fa-fw fa-diamond',
             attributes: { title: 'Symbols', containerClassName: 'symbols-list-container', },
@@ -144,6 +131,26 @@ export const defaultConfig = {
                 command: cmdPromptAddSymbol,
               },
             ],
+          }, {
+            id: 'page-panel-btn',
+            className: 'page-panel-btn fa fa-fw fa-file',
+            attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
+            command: cmdTogglePages,
+            buttons: [{
+              className: 'pages__add-page fa fa-file',
+              command: cmdAddPage,
+              text: '+',
+            }],
+          }, {
+            id: 'layer-manager-btn',
+            className: 'layer-manager-btn fa fa-fw fa-list',
+            attributes: { title: 'Layers', containerClassName: 'layer-manager-container', },
+            command: 'open-layers',
+          }, {
+            id: 'font-dialog-btn',
+            className: 'font-manager-btn fa fa-fw fa-font',
+            attributes: { title: 'Fonts' },
+            command: cmdOpenFonts,
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa fa-fw fa-cog',

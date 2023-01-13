@@ -68,12 +68,29 @@ input.silex-button[type="submit"] {
   padding: 5px;
 }
 
+.silex-button[disabled] {
+  opacity: .8;
+  cursor: unset;
+}
+
 .silex-input {
   appearance: initial;
 }
 
 .silex-label {
   display: block;
+}
+
+.silex-bar {
+  display: flex;
+  &>* {
+    margin: 5px;
+  }
+}
+
+ol.silex-list,
+ul.silex-list {
+  list-style: none;
 }
 
 form.silex-form {
