@@ -22,6 +22,10 @@
   }
 }
 
+.full-width {
+  width: 100%;
+}
+
 // full screen settings
 .settings-dialog > div {
   max-width: none;
@@ -91,6 +95,39 @@ input.silex-button[type="submit"] {
 ol.silex-list,
 ul.silex-list {
   list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: #575757;
+  &>li {
+    padding: 5px;
+    border-bottom: 1px solid #575757;
+    background-color: #444;
+    margin: 5px;
+  }
+  fieldset {
+    border-color: #575757;
+  }
+  h4 { // badge-like
+    display: inline-block;
+    padding: 5px;
+    padding-bottom: 2px;
+    margin: 10px 5px;
+    font-weight: normal;
+    color: #3d3d3d;
+    background-color: #c4c4c4;
+  }
+  .silex-list__item__body {
+    display: flex;
+  }
+  .silex-list__item__footer {
+    display: flex;
+    justify-content: flex-end;
+    button {
+      padding: 5px;
+      margin: 5px;
+      padding-top: 8px;
+    }
+  }
 }
 
 form.silex-form {
@@ -107,6 +144,9 @@ form.silex-form {
     color: $secondaryColor;
     padding: 5px;
     border: none;
+  }
+  input[type=checkbox] {
+    margin: 5px;
   }
   textarea {
     width: 98% !important;
