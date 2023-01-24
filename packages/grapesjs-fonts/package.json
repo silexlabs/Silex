@@ -1,0 +1,34 @@
+{
+  "name": "@silexlabs/grapesjs-fonts",
+  "version": "0.0.0",
+  "description": "GrapesJS Fonts",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/grapesjs-fonts.git"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build",
+    "lint": "eslint src",
+    "release": "",
+    "bump": "npm version patch -m 'Bump v%s'"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin"
+  ],
+  "devDependencies": {
+    "eslint": "^8.28.0",
+    "grapesjs-cli": "^3.0.1"
+  },
+  "dependencies": {
+    "backbone": "^1.4.1",
+    "grapesjs": "^0.20.3",
+    "lit-html": "^2.4.0"
+  },
+  "license": "MIT"
+}
