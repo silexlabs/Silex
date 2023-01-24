@@ -7,13 +7,13 @@ import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
+import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
-import { fontsDialog, cmdOpenFonts } from './grapesjs/fonts'
 import { blocksPlugin } from './grapesjs/blocks'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 
@@ -69,7 +69,7 @@ export const defaultConfig = {
     plugins: [
       projectBarPlugin, // has to be before panels and dialogs
       settingsDialog,
-      fontsDialog,
+      fontsDialogPlugin,
       newPageDialog,
       pagePanelPlugin,
       headerPlugin,
@@ -179,6 +179,9 @@ export const defaultConfig = {
       [uiSuggestClasses]: {},
       [symbolsPlugin]: {
         appendTo: '.symbols-list-container',
+      },
+      [fontsDialogPlugin]: {
+        api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
       },
     },
   },

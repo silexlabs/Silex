@@ -64,6 +64,9 @@
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
   },
   "dependencies": {
+    "@silexlabs/grapesjs-fonts": "^1.0.1",
+    "@silexlabs/grapesjs-symbols": "^1.0.6",
+    "@silexlabs/grapesjs-ui-suggest-classes": "^1.0.19",
     "adm-zip": "^0.5.9",
     "body-parser": "1.19.2",
     "cheerio": "^1.0.0-rc.10",
@@ -82,8 +85,6 @@
     "grapesjs-plugin-header": "^0.1.54",
     "grapesjs-style-filter": "^1.0.1",
     "grapesjs-touch": "^0.1.1",
-    "@silexlabs/grapesjs-ui-suggest-classes": "^1.0.19",
-    "@silexlabs/grapesjs-symbols": "^1.0.6",
     "lit-html": "^2.2.2",
     "mkdirp": "^1.0.4",
     "node_modules-path": "*",
