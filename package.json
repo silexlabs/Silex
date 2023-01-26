@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Sub projects needed for Silex development",
   "engines": {
-    "node": ">=10.15.3 <=12.22.10"
+    "node": ">=10.15.3 <17.0.0"
   },
   "repository": {
     "type": "git",

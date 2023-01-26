@@ -31,13 +31,14 @@ To contribute to Silex you need to clone this repo.
 1. Use the recommended version of node: `nvm use`
 1. Install all dependencies: `npm install && meta exec "npm install"`
 1. ~Make each project uses the development version of any other project in the meta repo: `meta npm link && meta npm link --all`~
-1. Make each project uses the development version of any other project in the meta repo: `meta exec "npm link" && node scripts/link-all.js`
+1. Make each project uses the development version of any other project in the meta repo: `meta exec "npm link" && node scripts/link-all.js` (all your repo need to be installed with the same npm version for this to work)
 
 Useful commands
 
 * Start Silex: `cd packages/silex-website-builder/ && npm start` (or use `npm run start:debug`)
 * Release and bump version of a library and all its dependents: `meta release-version unifile`, see [Meta release plugin](https://github.com/alqh/meta-release)
 * Detect which package needs a release: `node scripts/detect-changes.js`
+* Add a project: meta project import $FOLDER $GIT_URL
 
 
 ## Third party dependencies

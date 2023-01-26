@@ -6,6 +6,7 @@
     "packages/grapesjs-ui-suggest-classes": "git@github.com:silexlabs/grapesjs-ui-suggest-classes.git",
     "packages/grapesjs": "git@github.com:artf/grapesjs.git",
     "packages/grapesjs-symbols": "git@github.com:silexlabs/grapesjs-sympbols.git",
-    "packages/eleventy-plugin-directus": "git@github.com:silexlabs/eleventy-plugin-directus.git"
+    "packages/eleventy-plugin-directus": "git@github.com:silexlabs/eleventy-plugin-directus.git",
+    "packages/grapesjs-fonts": "git@github.com:silexlabs/grapesjs-fonts.git"
   }
 }
