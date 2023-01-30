@@ -1,8 +1,10 @@
 [![Run tests](https://github.com/silexlabs/grapesjs-symbols/actions/workflows/test.yml/badge.svg)](https://github.com/silexlabs/grapesjs-symbols/actions/workflows/test.yml)
 
-> This code is very early stage, it is not working as expected yet. It is part of a bigger project for me: [Silex v3](https://github.com/silexlabs/Silex/tree/v3)
+> This code is very early stage, it is not working as expected yet. It is part of a bigger project: [Silex v3](https://github.com/silexlabs/Silex/tree/v3)
 
-# Symbols for GrapesJS
+# Symbols plugin for GrapesJS
+
+This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages
 
 Links
 
