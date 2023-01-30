@@ -10,7 +10,6 @@ Links
 
 * [DEMO on Codepen](https://codepen.io/lexoyo/pen/zYLWdxY)
 * [Npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-fonts)
-* [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
 * [Discussion about ongoing developments](https://github.com/artf/grapesjs/discussions/4858#discussioncomment-4756119)
 
 It looks like this:
