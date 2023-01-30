@@ -2,7 +2,7 @@
 
 Custom Fonts plugin for grapesjs
 
-> This code is part of a bigger project for me (@lexoyo): [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+> This code is part of a bigger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 
 ## About this plugin
 
