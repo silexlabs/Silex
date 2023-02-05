@@ -15,6 +15,7 @@ import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
 import { blocksPlugin } from './grapesjs/blocks'
+import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 
 /**
@@ -75,6 +76,7 @@ export const defaultConfig = {
       headerPlugin,
       blocksBasicPlugin,
       blocksPlugin,
+      richTextPlugin,
       sliderPlugin,
       touchPlugin,
       styleFilterPlugin,
