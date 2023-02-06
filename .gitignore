@@ -1,8 +1,2 @@
 .git
 node_modules
-/packages/*
-/packages/editor.silex.me/
-/packages/silex-desktop/
-/packages/grapesjs-ui-suggest-classes/
-/packages/eleventy-plugin-directus/
-/packages/grapesjs-fonts/

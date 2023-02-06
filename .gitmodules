@@ -1,0 +1,30 @@
+[submodule "packages/editor.silex.me"]
+	path = packages/editor.silex.me
+	url = git@github.com:silexlabs/editor.silex.me.git
+[submodule "packages/silex-desktop"]
+	path = packages/silex-desktop
+	url = git@github.com:silexlabs/silex-desktop.git
+[submodule "packages/grapesjs-ui-suggest-classes"]
+	path = packages/grapesjs-ui-suggest-classes
+	url = git@github.com:silexlabs/grapesjs-ui-suggest-classes.git
+[submodule "packages/grapesjs-symbols"]
+	path = packages/grapesjs-symbols
+	url = git@github.com:silexlabs/grapesjs-sympbols.git
+[submodule "packages/eleventy-plugin-directus"]
+	path = packages/eleventy-plugin-directus
+	url = git@github.com:silexlabs/eleventy-plugin-directus.git
+[submodule "packages/grapesjs-fonts"]
+	path = packages/grapesjs-fonts
+	url = git@github.com:silexlabs/grapesjs-fonts.git
+[submodule "packages/Silex"]
+	path = packages/Silex
+	url = git@github.com:silexlabs/Silex.git
+[submodule "packages/node_modules-path"]
+	path = packages/node_modules-path
+	url = git@github.com:lexoyo/node_modules-path.git
+[submodule "packages/silex-doc"]
+	path = packages/silex-doc
+	url = git@github.com:silexlabs/silex-doc.git
+[submodule "packages/Silex.wiki"]
+	path = packages/Silex.wiki
+	url = https://github.com/silexlabs/Silex.wiki.git
