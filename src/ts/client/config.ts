@@ -1,10 +1,10 @@
-import blocksBasicPlugin from 'grapesjs-blocks-basic/dist/grapesjs-blocks-basic.min.js'
+import blocksBasicPlugin from 'grapesjs-blocks-basic'
 import headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
 import sliderPlugin from 'grapesjs-lory-slider/dist/grapesjs-lory-slider.min.js'
 import touchPlugin from 'grapesjs-touch/dist/grapesjs-touch.min.js'
 import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
-import codePlugin from 'grapesjs-custom-code/dist/grapesjs-custom-code.min.js'
+import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
@@ -94,11 +94,11 @@ export const defaultConfig = {
       modalImportTitle: 'Import from website',
     },
     pluginsOpts: {
-      [blocksBasicPlugin]: {
+      [blocksBasicPlugin as any]: {
         category: catBasic,
         flexGrid: true,
       },
-      [headerPlugin]: {
+      [headerPlugin as any]: {
         category: catText,
         labelN1: 'Heading 1 (H1)',
         labelN2: 'Heading 2 (H2)',
@@ -107,7 +107,7 @@ export const defaultConfig = {
         labelN5: 'Heading 5 (H5)',
         labelN6: 'Heading 6 (H6)',
       },
-      [projectBarPlugin]: {
+      [projectBarPlugin as any]: {
         panels: [
           {
             id: 'dash',
@@ -161,28 +161,28 @@ export const defaultConfig = {
           },
         ],
       },
-      [pagePanelPlugin]: {
+      [pagePanelPlugin as any]: {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
       },
 
-      [sliderPlugin]: {
+      [sliderPlugin as any]: {
         sliderBlock: {
           category: catMedia,
         },
       },
-      [codePlugin]: {
+      [codePlugin as any]: {
         blockLabel: 'HTML',
         blockCustomCode: {
           category: catComponents,
         }
       },
-      [uiSuggestClasses]: {},
-      [symbolsPlugin]: {
+      [uiSuggestClasses as any]: {},
+      [symbolsPlugin as any]: {
         appendTo: '.symbols-list-container',
       },
-      [fontsDialogPlugin]: {
+      [fontsDialogPlugin as any]: {
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
       },
     },

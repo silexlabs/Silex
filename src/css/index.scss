@@ -1,7 +1,6 @@
 /* Normalize css */
-@use "../../node_modules/normalize.css/normalize";
-@use "../../node_modules/grapesjs/dist/css/grapes.min";
-//@use "../../node_modules/grapesjs/src/styles/scss/main";
+@use "normalize.css/normalize";
+@use "grapesjs/src/styles/scss/main";
 
 /* Silex styles imports */
 @use "silex";
