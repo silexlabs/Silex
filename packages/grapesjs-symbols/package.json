@@ -13,12 +13,12 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build",
-    "release": "",
+    "prepublish": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "bump": "npm version patch -m 'Bump v%s'"
+    "bump": "$npm_execpath version patch -m 'Bump v%s'"
   },
   "keywords": [
     "grapesjs",
