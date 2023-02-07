@@ -23,6 +23,8 @@
     "start": "node packages/Silex/"
   },
   "wip": [
+    "packages/grapesjs",
+    "packages/grapesjs-cli",
     "packages/editor.silex.me",
     "packages/silex-desktop",
     "packages/node_modules-path"
