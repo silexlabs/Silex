@@ -1,7 +1,4 @@
 import blocksBasicPlugin from 'grapesjs-blocks-basic'
-import headerPlugin from 'grapesjs-plugin-header/dist/grapesjs-plugin-header.min.js'
-import sliderPlugin from 'grapesjs-lory-slider/dist/grapesjs-lory-slider.min.js'
-import touchPlugin from 'grapesjs-touch/dist/grapesjs-touch.min.js'
 import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
@@ -17,6 +14,31 @@ import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
 import { blocksPlugin } from './grapesjs/blocks'
 import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
+
+const plugins = [
+  {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
+  {name: './grapesjs/settings', value: settingsDialog},
+  {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
+  {name: './grapesjs/new-page-dialog', value: newPageDialog},
+  {name: './grapesjs/page-panel', value: pagePanelPlugin},
+  {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
+  {name: './grapesjs/blocks', value: blocksPlugin},
+  {name: './grapesjs/rich-text', value: richTextPlugin},
+  {name: 'grapesjs-style-filter', value: styleFilterPlugin},
+  {name: 'grapesjs-plugin-forms', value: formPlugin},
+  {name: 'grapesjs-custom-code', value: codePlugin},
+  {name: './grapesjs/internal-links', value: internalLinksPlugin},
+  {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
+  {name: './grapesjs/symbolDialogs', value: symbolDialogsPlugin},
+  {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
+]
+
+// Check that all plugins are loaded correctly
+plugins
+.filter(p => !p.value)
+.forEach(p => {
+  throw new Error(`Plugin ${p.name} could not be loaded correctly`)
+})
 
 /**
  * @fileoverview Silex config overridable from index.pug
@@ -63,30 +85,15 @@ export const defaultConfig = {
     storageManager: {
       id: '', // do not add a prefix to the saved object
       type: 'remote',
-      urlStore: loadEndpoint,
-      urlLoad: loadEndpoint,
+      options: {
+        remote: {
+          urlStore: loadEndpoint,
+          urlLoad: loadEndpoint,
+        },
+      },
     },
 
-    plugins: [
-      projectBarPlugin, // has to be before panels and dialogs
-      settingsDialog,
-      fontsDialogPlugin,
-      newPageDialog,
-      pagePanelPlugin,
-      headerPlugin,
-      blocksBasicPlugin,
-      blocksPlugin,
-      richTextPlugin,
-      sliderPlugin,
-      touchPlugin,
-      styleFilterPlugin,
-      formPlugin,
-      codePlugin,
-      internalLinksPlugin,
-      uiSuggestClasses,
-      symbolDialogsPlugin,
-      symbolsPlugin,
-    ],
+    plugins: plugins.map(p => p.value),
     importWebpage: {
       modalImportLabel: '',
       modalImportContent: 'Paste a web page HTML code here.',
@@ -97,15 +104,6 @@ export const defaultConfig = {
       [blocksBasicPlugin as any]: {
         category: catBasic,
         flexGrid: true,
-      },
-      [headerPlugin as any]: {
-        category: catText,
-        labelN1: 'Heading 1 (H1)',
-        labelN2: 'Heading 2 (H2)',
-        labelN3: 'Heading 3 (H3)',
-        labelN4: 'Heading 4 (H4)',
-        labelN5: 'Heading 5 (H5)',
-        labelN6: 'Heading 6 (H6)',
       },
       [projectBarPlugin as any]: {
         panels: [
@@ -166,19 +164,12 @@ export const defaultConfig = {
         cmdOpenSettings,
         appendTo: '.page-panel-container',
       },
-
-      [sliderPlugin as any]: {
-        sliderBlock: {
-          category: catMedia,
-        },
-      },
       [codePlugin as any]: {
         blockLabel: 'HTML',
         blockCustomCode: {
           category: catComponents,
         }
       },
-      [uiSuggestClasses as any]: {},
       [symbolsPlugin as any]: {
         appendTo: '.symbols-list-container',
       },
