@@ -15,6 +15,7 @@ export const defaultSettings: Settings = {
 
 export const defaultSite: WebsiteData = {
   pages: [],
+  files: [],
   assets: [],
   styles: [],
   name: 'New website',
@@ -48,6 +49,7 @@ export interface WebsiteSettings {
 
 export interface WebsiteData {
   pages: Page[],
+  files: File[],
   assets: Asset[],
   styles: Style[],
   name: string,
@@ -74,6 +76,11 @@ export interface Settings {
   prefix: string,
 }
 
+export interface File {
+  html: string,
+  css: string,
+}
+
 export interface Page {
   name?: string,
   id: string,
@@ -85,8 +92,6 @@ export interface Page {
 export interface Frame {
   component: { type: string, stylable: string[] },
   components: Component[],
-  html: string,
-  css: string,
 }
 
 export interface Component {

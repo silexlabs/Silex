@@ -2,16 +2,16 @@ import * as cheerio from 'cheerio'
 import * as express from 'express'
 import * as formidable from 'formidable'
 
-import * as Path from 'path'
-import * as _fs from 'fs'
+import { join }from 'path'
+import { homedir } from 'os'
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 
 import { getPageSlug } from '../../utils'
 
-const fs = _fs.promises
-
-import { WebsiteSettings, defaultSettings, defaultSite, Settings, Asset, Page, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
+import { WebsiteSettings, defaultSettings, defaultSite, Settings, Asset, Page, File, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
 
 // import BackwardCompat from '../utils/BackwardCompat'
+const FS_ROOT = join(homedir(), '.silex')
 
 export default function WebsiteRouter() {
   // const backwardCompat = new BackwardCompat(rootUrl)
@@ -23,36 +23,50 @@ export default function WebsiteRouter() {
   router.get(/\/assets\/(.*)/, readAsset)
   router.post('/assets', writeAsset)
 
-  // router.get(/\/website\/libs\/templates\/(.*)/, readTemplate)
+  // Create encessary folders, assyncronously
+  mkdirIfExists(FS_ROOT)
 
-  // **
-  // list templates
-  // router.use('/get/:folder', getTemplatesList)
-
+  // Return a router to the caller
   return router
+}
+
+async function mkdirIfExists(path, options = null) {
+  try {
+    return await mkdir(path, options)
+  } catch(err) {
+    if(err.code === 'EEXIST') {
+      return;
+    } else {
+      throw err
+    }
+  }
+}
+
+const PROJECT_FILE_NAME = '.silex.data.json'
+const SETTINGS_FILE_NAME = '.silex.json'
+export function projectPath(projectId) {
+  return join(FS_ROOT, projectId)
 }
 
 async function readWebsite(req, res): Promise<void> {
   try {
-    const path = Path.resolve(req.query.projectId, '.silex.data.json')
-    const data = await fs.readFile(path)
+    const data = await readFile(projectPath(req.query.projectId) + PROJECT_FILE_NAME)
     res
     .type('application/json')
     .send(data)
   } catch (err) {
     if(err.code === 'ENOENT') {
-      res.json(defaultSite)
+      res.json({})
     } else {
       console.error('Read file error', err)
-      res.status(400).json({ message: 'Read file error', error: JSON.stringify(err)})
+      res.status(400).json({ message: 'Read file error: ' + err.message, code: err.code})
     }
   }
 }
 
 async function getSettings(projectId): Promise<Settings> {
-  const path = Path.resolve(projectId, '.silex.json')
   try {
-    const settingsBuffer = await fs.readFile(path)
+    const settingsBuffer = await readFile(projectPath(projectId) + SETTINGS_FILE_NAME)
     return {
       ...defaultSettings,
       ...JSON.parse(settingsBuffer.toString()),
@@ -66,39 +80,53 @@ async function getSettings(projectId): Promise<Settings> {
   }
 }
 
+function fromBody(body) {
+  try {
+    return [{
+      assets: body.assets as Asset[],
+      pages: body.pages as Page[],
+      files: body.files as File[],
+      styles: body.styles as Style[],
+      settings: body.settings as WebsiteSettings,
+      name: body.name,
+      fonts: body.fonts,
+      symbols: body.symbols,
+    }, null]
+  } catch(err) {
+    console.error('Could not parse body data', body, err)
+    return [null, err]
+  }
+}
+
 async function writeWebsite(req, res) {
   const projectId = req.query.projectId
-  const data: WebsiteData = {
-    assets: JSON.parse(req.body.assets) as Asset[],
-    pages: JSON.parse(req.body.pages) as Page[],
-    styles: JSON.parse(req.body.styles) as Style[],
-    settings: req.body.settings as WebsiteSettings,
-    name: req.body.name,
-    fonts: req.body.fonts,
-    symbols: req.body.symbols,
+  const [data, err] = fromBody(req.body)
+  if(err) {
+    res.status(400).json({ message: 'Error writing data file, could not parse the provided body: ' + err.message, code: err.code})
+    return
   }
   try {
-    const dataFile = Path.resolve(projectId, '.silex.data.json')
-    await fs.writeFile(dataFile, JSON.stringify(data))
+    await writeFile(projectPath(projectId) + PROJECT_FILE_NAME, JSON.stringify(data))
   } catch (err) {
     console.error('Error writing data file', err)
-    res.status(400).json({ message: 'Error writing data file', error: JSON.stringify(err)})
+    res.status(500).json({ message: 'Error writing data file: ' + err.message, code: err.code})
     return
   }
 
   const settings = await getSettings(projectId) as Settings
-  const htmlFolder = Path.resolve(projectId, settings.html.path)
-  const cssFolder = Path.resolve(projectId, settings.css.path)
+  const htmlFolder = join(projectPath(projectId), settings.html.path)
+  const cssFolder = join(projectPath(projectId), settings.css.path)
   try {
-    await fs.mkdir(htmlFolder, { recursive: true,})
-    await fs.mkdir(cssFolder, { recursive: true,})
+    // FIXME: recursive will auto create projects
+    await mkdirIfExists(htmlFolder, { recursive: true,})
+    await mkdirIfExists(cssFolder, { recursive: true,})
   } catch (err) {
     console.error('Error: could not create folder ', cssFolder, err)
-    res.status(400).json({ message: 'Error: could not create folder', error: JSON.stringify(err)})
+    res.status(400).json({ message: 'Error: could not create folder: ' + err.message, code: err.code})
     return
   }
   data.pages
-  .forEach(async page => {
+  .forEach(async (page, idx) => {
     // page settings override site settings
     function getSetting(name) {
       if(page.settings && page.settings[name]) return page.settings[name]
@@ -109,7 +137,7 @@ async function writeWebsite(req, res) {
     let html
     try {
       // add the settings to the HTML
-      const $ = cheerio.load(page.frames[0].html)
+      const $ = cheerio.load(data.files[idx].html)
       $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${getPageSlug(pageName)}.css" />`)
       $('head').append(getSetting('head'))
       if(!$('head > title').length) $('head').append('<title/>')
@@ -127,15 +155,15 @@ async function writeWebsite(req, res) {
       html = $.html()
     } catch (err) {
       console.error('Error manipulating DOM', page, err)
-      res.status(400).json({ message: 'Error manipulating DOM', error: JSON.stringify(err)})
+      res.status(400).json({ message: 'Error manipulating DOM: ' + err.message, code: err.code})
       return
     }
     try {
-      await fs.writeFile(Path.resolve(htmlFolder, getPageSlug(pageName) + '.html'), html)
-      await fs.writeFile(Path.resolve(cssFolder, getPageSlug(pageName) + '.css'), page.frames[0].css)
+      await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
+      await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), data.files[idx].css)
     } catch (err) {
       console.error('Error writing file', page, err)
-      res.status(400).json({ message: 'Error writing file', error: JSON.stringify(err)})
+      res.status(400).json({ message: 'Error writing file: ' + err.message, code: err.code})
       return
     }
   })
@@ -157,20 +185,20 @@ async function writeWebsite(req, res) {
   //     const zip = new Zip()
   //     zip.addFile('editable.html', Buffer.from(str))
   //     zip.addFile('editable.html.json', Buffer.from(JSON.stringify(unpreparedData)))
-  //     await fs.writeFile(path, zip.toBuffer())
+  //     await writeFile(path, zip.toBuffer())
   //     res.send('Ok')
   //   } catch (err) {
   //     console.error('Zip file error:', err)
-  //     res.status(400).json({ message: 'Zip file error', error: JSON.stringify(err)})
+  //     res.status(400).json({ message: 'Zip file error: ' + err.message, code: err.code})
   //   }
   // } else {
   //   try {
-  //     await fs.writeFile(path, str)
-  //     await fs.writeFile(path + '.json', unpreparedData)
+  //     await writeFile(path, str)
+  //     await writeFile(path + '.json', unpreparedData)
   //     res.send('Ok')
   //   } catch (err) {
   //     console.error('Read file error', err)
-  //     res.status(400).json({ message: 'Read file error', error: JSON.stringify(err)})
+  //     res.status(400).json({ message: 'Read file error: ' + err.message, code: err.code})
   //   }
   // }
 }
@@ -197,16 +225,16 @@ async function writeWebsite(req, res) {
 async function readAsset(req, res) {
   const projectId = req.query.projectId
   const settings = await getSettings(projectId)
-  const uploadDir = Path.resolve(projectId, settings.assets.path)
+  const uploadDir = join(projectId, settings.assets.path)
   const fileName = req.params[0]
-  res.sendFile(Path.resolve(uploadDir, fileName))
+  res.sendFile(join(uploadDir, fileName))
 }
 
 async function writeAsset(req, res) {
   const projectId = req.query.projectId
   const settings = await getSettings(projectId)
-  const uploadDir = Path.resolve(projectId, settings.assets.path)
-  await fs.mkdir(uploadDir, { recursive: true,})
+  const uploadDir = join(projectPath(projectId), settings.assets.path)
+  await mkdirIfExists(uploadDir, { recursive: true,})
   const form = formidable({
     uploadDir,
     filename: (name, ext, part, _form) => `${name}${ext}`,
@@ -219,7 +247,7 @@ async function writeAsset(req, res) {
       console.error('Error parsing upload data', err)
       res
       .status(400)
-      .json({ message: 'Error parsing upload data', error: JSON.stringify(err)})
+      .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
       return
     }
     const data = [].concat(files['files[]']) // may be an array or 1 element
