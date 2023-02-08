@@ -11,11 +11,9 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build",
-    "lint": "eslint src",
-    "release": "",
-    "bump": "npm version patch -m 'Bump v%s'"
+    "start": "grapesjs-cli serve --patch=false",
+    "build": "grapesjs-cli build --patch=false",
+    "lint": "eslint src"
   },
   "keywords": [
     "grapesjs",
