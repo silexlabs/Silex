@@ -15,6 +15,10 @@ if(process.env.SILEX_DEBUG) {
   const livereload = require('livereload')
   const { resolve } = require('path')
   const dist = resolve(__dirname, '../client')
-  const server = livereload.createServer()
+  const server = livereload.createServer({
+    delay: 0,
+  }, () => {
+    console.info(`\nDebug mode\nLive reload server is running.\nWatching ${dist}`)
+  })
   server.watch(dist)
 }

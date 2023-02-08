@@ -45,7 +45,7 @@
     "release": "",
     "watch": "npm-watch",
     "start": "node dist/server/index.js",
-    "start:debug": "cross-env SILEX_DEBUG=true nodemon dist/server/index.js",
+    "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/index.js",
     "prepublishOnly": "npm run lint:fix && npm run build",
     "prepare": "npm run build",
     "build": "run-s build:css:release build:html build:client:release build:server:release",
