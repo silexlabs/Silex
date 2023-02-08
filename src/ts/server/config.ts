@@ -35,38 +35,12 @@ export const config: Config = {
       }, {
         route: '/',
         path: 'dist/client',
-      }, {
-        route: '/libs/templates/silex-templates',
-        module: 'silex-templates',
-      }, {
-        route: '/libs/templates/silex-blank-templates',
-        module: 'silex-blank-templates',
-      },
-      {
-        path: 'dist',
-        module: 'grapesjs',
-      },
-      {
-        path: 'dist',
-        module: 'grapesjs-blocks-basic',
-      },
-      {
-        path: 'dist',
-        module: 'grapesjs-plugin-header',
-      },
-      {
-        path: 'dist',
-        module: 'grapesjs-plugin-header',
-      },
-      {
-        path: 'node_modules/grapesjs/dist/fonts',
-        route: '/fonts',
       },
     ]
     // add project route for source maps
-    .concat(debug ? {
+    .concat(debug ? [{
       route: '/',
       path: './',
-    } : []),
+    }] : []),
   },
 }

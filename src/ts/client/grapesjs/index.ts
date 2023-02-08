@@ -1,4 +1,4 @@
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
+import grapesjs from 'grapesjs'
 import openImport from './openImport'
 
 // import { initStorage } from './storage'

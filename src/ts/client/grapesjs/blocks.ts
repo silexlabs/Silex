@@ -108,37 +108,33 @@ function createContainerDef(editor) {
     'PRE',
   ]
   domc.addType('container', {
-    model: type.model.extend(
-      {
-        defaults: Object.assign({}, type.model.prototype.defaults, {
-          tagName: 'div', // by default
-          resizable: true,
-          attributes: {
-            'data-silex-container': '',
-          },
-          traits: [
-            {
-              type: 'select',
-              options: tags.map(tag => ({value: tag, name: tag })),
+    model: {
+      defaults: {
+        tagName: 'div', // by default
+        resizable: true,
+        attributes: {
+          'data-silex-container': '',
+        },
+        traits: [
+          {
+            type: 'select',
+            options: tags.map(tag => ({value: tag, name: tag })),
               label: 'Tag name',
-              name: 'tagName',
-              changeProp: 1,
-            },
-          ],
-        }),
-      },
-      {
+            name: 'tagName',
+            changeProp: 1,
+          },
+        ],
         isComponent(el) {
           if (
             el &&
             el.hasAttribute &&
-            el.hasAttribute('data-silex-container')
+          el.hasAttribute('data-silex-container')
           ) {
             return { type: 'container' }
           }
         },
       },
-    ),
+    },
     view: type.view,
   })
   return {
