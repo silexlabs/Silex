@@ -11,8 +11,8 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build",
+    "start": "grapesjs-cli serve --patch=false",
+    "build": "grapesjs-cli build --patch=false",
     "prepublish": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
