@@ -228,7 +228,7 @@ async function writeWebsite(req, res) {
 async function readAsset(req, res) {
   const projectId = req.query.projectId
   const settings = await getSettings(projectId)
-  const uploadDir = join(projectId, settings.assets.path)
+  const uploadDir = join(projectPath(projectId), settings.assets.path)
   const fileName = req.params[0]
   res.sendFile(join(uploadDir, fileName))
 }
