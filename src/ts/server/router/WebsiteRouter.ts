@@ -1,6 +1,8 @@
-import * as cheerio from 'cheerio'
-import * as express from 'express'
-import * as formidable from 'formidable'
+import { load } from 'cheerio'
+import { URLRewriter, URLTranslator } from 'cssurl'
+
+import { Router } from 'express'
+import formidable from 'formidable'
 
 import { join }from 'path'
 import { homedir } from 'os'
@@ -15,7 +17,7 @@ const FS_ROOT = join(homedir(), '.silex')
 
 export default function WebsiteRouter() {
   // const backwardCompat = new BackwardCompat(rootUrl)
-  const router = express.Router()
+  const router = Router()
 
   // website specials
   router.get('/website', readWebsite)
@@ -117,8 +119,9 @@ async function writeWebsite(req, res) {
   }
 
   const settings = await getSettings(projectId) as Settings
-  const htmlFolder = join(projectPath(projectId), settings.html.path)
-  const cssFolder = join(projectPath(projectId), settings.css.path)
+  const projectFolder = projectPath(projectId)
+  const htmlFolder = join(projectFolder, settings.html.path)
+  const cssFolder = join(projectFolder, settings.css.path)
   try {
     // FIXME: recursive will auto create projects
     await mkdirIfExists(htmlFolder, { recursive: true,})
@@ -137,10 +140,10 @@ async function writeWebsite(req, res) {
     }
     // update HTML with data from the settings
     const pageName = page.type === 'main' ? 'index' : page.name
+    // Process the page HTML to include all settings
     let html
     try {
-      // add the settings to the HTML
-      const $ = cheerio.load(data.files[idx].html)
+      const $ = load(data.files[idx].html)
       $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${getPageSlug(pageName)}.css" />`)
       $('head').append(getSetting('head'))
       if(!$('head > title').length) $('head').append('<title/>')
@@ -157,13 +160,28 @@ async function writeWebsite(req, res) {
       // render the HTML as string
       html = $.html()
     } catch (err) {
-      console.error('Error manipulating DOM', page, err)
-      res.status(400).json({ message: 'Error manipulating DOM: ' + err.message, code: err.code})
+      console.error('Error processing HTML', page, err)
+      res.status(400).json({ message: 'Error processing HTML: ' + err.message, code: err.code})
+      return
+    }
+    // Process the page CSS to have correct relative URLs
+    let css = data.files[idx].css
+    try {
+      if(cssFolder != projectFolder) {
+        const rewriter = new URLRewriter(function(url) {
+          const translator = new URLTranslator();
+          return translator.translate(url, projectFolder, cssFolder);
+        })
+        css = rewriter.rewrite(css);
+      }
+    } catch (err) {
+      console.error('Error processing CSS', page, err)
+      res.status(400).json({ message: 'Error processing CSS: ' + err.message, code: err.code})
       return
     }
     try {
       await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
-      await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), data.files[idx].css)
+      await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), css)
     } catch (err) {
       console.error('Error writing file', page, err)
       res.status(400).json({ message: 'Error writing file: ' + err.message, code: err.code})
