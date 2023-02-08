@@ -1,8 +1,6 @@
 import grapesjs from 'grapesjs'
 import openImport from './openImport'
 
-// import { initStorage } from './storage'
-
 let editor
 
 export function initEditor(config) {

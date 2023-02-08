@@ -6,6 +6,7 @@ import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
+import storagePlugin from './grapesjs/storage'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -16,6 +17,7 @@ import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 
 const plugins = [
+  {name: './grapesjs/storage', value: storagePlugin},
   {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
   {name: './grapesjs/settings', value: settingsDialog},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
