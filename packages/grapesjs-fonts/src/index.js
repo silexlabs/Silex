@@ -1,4 +1,4 @@
-import { fontsDialogPlugin, cmdOpenFonts } from './fonts'
+import { fontsDialogPlugin as _fontsDialogPlugin, cmdOpenFonts as _cmdOpenFonts } from './fonts'
 import en from './locale/en';
 
 export default (editor, opts = {}) => {
@@ -15,5 +15,8 @@ export default (editor, opts = {}) => {
       ...options.i18n,
   });
 
-  fontsDialogPlugin(editor, opts)
+  _fontsDialogPlugin(editor, opts)
 };
+
+export const fontsDialogPlugin = _fontsDialogPlugin;
+export const cmdOpenFonts = _cmdOpenFonts;

@@ -110,10 +110,11 @@ export const fontsDialogPlugin = (editor, opts) => {
     data.fonts = editor.getModel().get('fonts')
   })
   editor.on('storage:end:load', (data) => {
-    editor.getModel().set('fonts', data.fonts || [])
+    const fonts = data.fonts || []
+    editor.getModel().set('fonts', fonts)
     setTimeout(() => {
-      updateHead(editor, data.fonts)
-      updateUi(editor, data.fonts)
+      updateHead(editor, fonts)
+      updateUi(editor, fonts)
     })
   })
 }
