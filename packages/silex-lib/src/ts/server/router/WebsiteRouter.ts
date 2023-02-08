@@ -42,8 +42,8 @@ async function mkdirIfExists(path, options = null) {
   }
 }
 
-const PROJECT_FILE_NAME = '.silex.data.json'
-const SETTINGS_FILE_NAME = '.silex.json'
+// Project paths
+const PROJECT_FILE_NAME = '/.silex.data.json'
 export function projectPath(projectId) {
   return join(FS_ROOT, projectId)
 }
@@ -64,6 +64,9 @@ async function readWebsite(req, res): Promise<void> {
   }
 }
 
+// Settings come from an optional file at the website root
+// FIXME: settings should come from data file and be modified by apps
+const SETTINGS_FILE_NAME = '/.silex.json'
 async function getSettings(projectId): Promise<Settings> {
   try {
     const settingsBuffer = await readFile(projectPath(projectId) + SETTINGS_FILE_NAME)
