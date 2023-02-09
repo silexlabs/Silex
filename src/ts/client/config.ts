@@ -104,8 +104,9 @@ export const defaultConfig = {
     },
     pluginsOpts: {
       [blocksBasicPlugin as any]: {
+        blocks: ['text', 'image', 'video', 'map'],
         category: catBasic,
-        flexGrid: true,
+        //flexGrid: true,
       },
       [projectBarPlugin as any]: {
         panels: [

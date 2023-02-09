@@ -8,12 +8,13 @@ export function initEditor(config) {
   editor = grapesjs.init(config)
 
   // customize the editor
-  ;['text', 'link']
-  .forEach(id => editor.Blocks.get(id).set('category', 'Texts'))
+  ;['text']
+  .forEach(id => editor.Blocks.get(id)?.set('category', 'Texts'))
   ;['image', 'video']
-  .forEach(id => editor.Blocks.get(id).set('category', 'Media'))
+  .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
   ;['map']
-  .forEach(id => editor.Blocks.get(id).set('category', 'Components'))
+  .forEach(id => editor.Blocks.get(id)?.set('category', 'Components'))
+  editor.Blocks.render()
 
   editor.Commands.add('gjs-open-import-webpage', openImport(editor, config.importWebpage))
   editor.on('load', () => {
