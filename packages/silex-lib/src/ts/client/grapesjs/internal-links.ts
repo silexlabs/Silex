@@ -45,8 +45,7 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
             issues.push(component)
           }
         })
-        // FIXME: warn the user about links in error
-        console.error('FIXME: warn the user about', issues.length, 'links in error')
+        opts?.onError(issues)
         break
     }
   })
@@ -123,20 +122,29 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
   function doRenderCurrent(el) {
     doRender(el, editor.getSelected()?.getAttributes().href || '')
   }
-  // add the traits to links
-  editor.DomComponents.addType('link', {
-    model: {
-      defaults: {
-        traits: [
-          {
-            type: 'href-next',
-            name: 'href',
-            label: 'href',
-          },
-        ]
+
+  // Add the new trait to all component types
+  editor.DomComponents.getTypes().map(type => {
+    editor.DomComponents.addType(type.id, {
+      model: {
+        defaults: {
+          traits: [
+            // Keep the type original traits
+            ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits
+              // Filter original href trait
+              .filter(trait => trait.name ? trait.name !== 'href' : trait !== 'href'),
+            // Add the new trait
+            {
+              label: 'Link',
+              type: 'href-next',
+              name: 'href',
+            },
+          ]
+        }
       }
-    }
+    })
   })
+
   editor.TraitManager.addType('href-next', {
     createInput({ trait }) {
       // Create a new element container and add some content
@@ -152,6 +160,7 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
     onEvent({ elInput, component, event }) {
       const inputType = elInput.querySelector('.href-next__type')
       let href = ''
+      // Compute the new HREF value
       switch (inputType.value) {
         case 'page':
           const valPage = elInput.querySelector('.href-next__page')?.value
@@ -169,7 +178,27 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
         default:
           href = ''
       }
+
+      // Store the new HREF value
       component.addAttributes({ href })
+
+      // Handle the tag name
+      if(href === '') {
+        // Not a link
+        if(component.get('tagName').toUpperCase() === 'A'){
+          // Retrieve the original stored value
+          const original = component.get('originalTagName') ?? 'DIV'
+          // Case of the inline A tags inserted by the text bar
+          const value = original.toUpperCase() === 'A' ? 'SPAN' : original
+          component.set('tagName', value)
+        }
+      } else {
+        // Link
+        if(component.get('tagName').toUpperCase() !== 'A') {
+          component.set('originalTagName', component.get('tagName'))
+          component.set('tagName', 'A')
+        }
+      }
     },
     // Update UI on the component change
     onUpdate({ elInput, component }) {

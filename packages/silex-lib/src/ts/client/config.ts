@@ -13,6 +13,7 @@ import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
 import { projectBarPlugin } from './grapesjs/project-bar'
 import { settingsDialog, cmdOpenSettings } from './grapesjs/settings'
 import { blocksPlugin } from './grapesjs/blocks'
+import { semanticPlugin } from './grapesjs/semantic'
 import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 
@@ -25,6 +26,7 @@ const plugins = [
   {name: './grapesjs/page-panel', value: pagePanelPlugin},
   {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
   {name: './grapesjs/blocks', value: blocksPlugin},
+  {name: './grapesjs/semantic', value: semanticPlugin},
   {name: './grapesjs/rich-text', value: richTextPlugin},
   {name: 'grapesjs-style-filter', value: styleFilterPlugin},
   {name: 'grapesjs-plugin-forms', value: formPlugin},
@@ -166,6 +168,10 @@ export const defaultConfig = {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
+      },
+      [internalLinksPlugin as any]: {
+        // FIXME: warn the user about links in error
+        onError: (errors) => console.log('Links errors:', errors),
       },
       [codePlugin as any]: {
         blockLabel: 'HTML',
