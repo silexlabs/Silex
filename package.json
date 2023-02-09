@@ -35,5 +35,8 @@
     "packages/eleventy-plugin-directus",
     "packages/grapesjs-fonts",
     "packages/Silex"
-  ]
+  ],
+  "devDependencies": {
+    "lerna": "^6.4.1"
+  }
 }
