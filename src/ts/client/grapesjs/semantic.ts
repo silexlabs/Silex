@@ -14,7 +14,6 @@ const tags = [
   'H4',
   'H5',
   'H6',
-  'A',
   'SPAN',
   'MAIN',
   'ASIDE',
@@ -28,7 +27,6 @@ const tags = [
   'SUMMARY',
   'PRE',
   'BLOCKQUOTE',
-  'IMG',
 ]
 
 // plugin code
@@ -53,10 +51,11 @@ export const semanticPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
   })
 
   function doRender(el: HTMLElement, tagName: string) {
+    const tagsWithCurrent = tags.includes(tagName.toUpperCase()) ? tags : tags.concat(tagName.toUpperCase())
     render(html`
       <label for="semantic__select" class="gjs-one-bg silex-label">Type</label>
       <select id="semantic__select" @change=${event => doRender(el, event.target.value)}>
-        ${map<string>(tags, tag => html`
+        ${map<string>(tagsWithCurrent, tag => html`
           <option value="${tag}" ?selected=${tagName.toUpperCase() === tag}>${tag}</option>
         `)}
       </select>
