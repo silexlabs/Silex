@@ -23,7 +23,6 @@ export const blocksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
     //     draggable: 'body',
     //     content: {
     //       tagName: 'section',
-    //       attributes: { class: clsSectionBackground },
     //       styles: `
     //       .${clsSectionBackground} {
     //         display: flex;
@@ -34,7 +33,7 @@ export const blocksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
     //         {
     //           tagName: 'div',
     //           name: 'Section container',
-    //           attributes: { class: [clsSection, 'website-width'] },
+    //           attributes: { class: ['website-width'] },
     //           draggable: false,
     //           removable: false,
     //           resizable: true,
@@ -53,17 +52,13 @@ export const blocksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
       id: 'container',
       def: {
         label: 'Container',
-        category: 'Containers',
+        category: 'Basics',
         attributes: { class: 'container-png' },
         content: {
           type: 'container',
-          attributes: { class: clsContainer },
-          styles: `
-          .${clsContainer} {
-            min-height: 100px;
-            width: 100px;
-          }
-          `,
+          style: {
+            'min-height': '100px',
+          },
         },
       },
     },

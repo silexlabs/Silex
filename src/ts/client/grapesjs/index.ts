@@ -9,7 +9,7 @@ export function initEditor(config) {
 
   // customize the editor
   ;['text']
-  .forEach(id => editor.Blocks.get(id)?.set('category', 'Texts'))
+  .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
   ;['image', 'video']
   .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
   ;['map']
