@@ -8,7 +8,7 @@
     "url": "git+ssh://git@github.com/silexlabs/silex-meta.git"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=16"
   },
   "keywords": [
     "contribution",
