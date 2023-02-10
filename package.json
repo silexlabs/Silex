@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@silexlabs/grapesjs-fonts": "1.0.1",
-    "@silexlabs/grapesjs-symbols": "1.0.6",
+    "@silexlabs/grapesjs-symbols": "1.0.8",
     "@silexlabs/grapesjs-ui-suggest-classes": "1.0.19",
     "adm-zip": "0.5.10",
     "body-parser": "1.20.1",
