@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-fonts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GrapesJS Fonts",
   "main": "src/index.js",
   "repository": {
