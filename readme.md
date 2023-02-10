@@ -39,16 +39,6 @@ Other links
 * [Become a core contributor with these issues to get started](https://github.com/silexlabs/Silex/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 * [Testers, docs and other help wanted annoucements](https://github.com/silexlabs/Silex/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 
-## About the git repo
-
-[Silex source code repository](https://github.com/silexlabs/Silex/) is organized with 2 git branches:
-
-* `main` is the stable version, you can see it in action here: [editor.silex.me](https://editor.silex.me)
-
-* `develop` is the "preprod" or "staging" version, it is deployed on [preprod.silex.me](https://preprod.silex.me) for anyone to test (this is a good contribution, thx in advance, open an issue for each bug)
-
-During your development, you may need to rebase your work on the latest version of Silex develop branch. To do so you can git stash your changes or commit the work in progress, and then use `git pull --rebase upstream develop` to get the latest changes of Silex repo. The rerun `npm install`
-
 ## Dependencies
 
 The upstream projects we use in Silex are all listed in [Silex meta package](https://github.com/silexlabs/silex-meta)
