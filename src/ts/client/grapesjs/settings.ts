@@ -102,7 +102,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
         </label>
         <label class="silex-form__element">
           <h3>Image</h3>
-          <p>Description displayed when a user shares your website on a social network. Make it catchy, and invite readers to visit your website too, e.g. "Sam's website about fishing, check it out!" Title should be between 60 and 90 characters long.</p>
+          <p>Thumbnail image which is displayed when your website is shared on a social network. The optimal size is 1200×627 pixels. At this size, your thumbnail will be big and stand out from the crowd. But do not exceed the 5MB size limit. If you use an image that is smaller than 400 pixels x 209 pixels, it will render as a much smaller thumbnail.</p>
+          <p>Please enter the full URL here, e.g. "http://mysite.com/path/to/image.jpg"</p>
           <input type="text" name="og:image" .value=${live(settings['og:image'] || '')}/>
         </label>
       </div>

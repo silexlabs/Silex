@@ -13,7 +13,13 @@ import { getPageSlug } from '../../utils'
 import { WebsiteSettings, defaultSettings, defaultSite, Settings, Asset, Page, File, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../../types'
 
 // import BackwardCompat from '../utils/BackwardCompat'
-const FS_ROOT = join(homedir(), '.silex')
+
+// Project paths
+const FS_ROOT = process.env.FS_ROOT || join(homedir(), '.silex')
+const PROJECT_FILE_NAME = '/.silex.data.json'
+export function projectPath(projectId) {
+  return join(FS_ROOT, projectId)
+}
 
 export default function WebsiteRouter() {
   // const backwardCompat = new BackwardCompat(rootUrl)
@@ -42,12 +48,6 @@ async function mkdirIfExists(path, options = null) {
       throw err
     }
   }
-}
-
-// Project paths
-const PROJECT_FILE_NAME = '/.silex.data.json'
-export function projectPath(projectId) {
-  return join(FS_ROOT, projectId)
 }
 
 async function readWebsite(req, res): Promise<void> {
