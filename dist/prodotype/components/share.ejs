@@ -1,0 +1,77 @@
+<%
+  var styleUrl = '/static/2.7/simplesharingbuttons';
+  switch(style) {
+    case 'Flat Web Icon Set - Color':
+      styleUrl += '/flat_web_icon_set/color';
+    break;
+    case 'Flat Web Icon Set - Black':
+      styleUrl += '/flat_web_icon_set/black';
+    break;
+    case 'Flat Web Icon Set - Inverted':
+      styleUrl += '/flat_web_icon_set/inverted';
+    break;
+    case 'Simple Icons':
+      styleUrl += '/simple_icons';
+    break;
+    case 'Simple Icons - Black':
+      styleUrl += '/simple_icons_black';
+    break;
+  }
+%>
+<ul class="share-buttons" id="id_<%= uid %>">
+  <% if(networks.indexOf("Facebook") >= 0) { %>
+  <li><a href="https://www.facebook.com/sharer/sharer.php?u=<%= url %>&t=<%= encodeURI(title) %>" title="Share on Facebook" target="_blank"><img alt="Share on Facebook" data-silex-static="" src="<%= styleUrl %>/Facebook.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Twitter") >= 0) { %>
+  <li><a href="https://twitter.com/intent/tweet?source=<%= url %>&text=<%= encodeURI(title) %>:%20<%= url %>&via=<%= twitter %>" target="_blank" title="Share on Twitter"><img alt="Twitt" data-silex-static="" src="<%= styleUrl %>/Twitter.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Google+") >= 0) { %>
+  <li><a href="https://plus.google.com/share?url=<%= url %>" target="_blank" title="Share on Google+"><img alt="Share on Google+" data-silex-static="" src="<%= styleUrl %>/Google%2B.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Tumblr") >= 0) { %>
+  <li><a href="http://www.tumblr.com/share?v=3&u=<%= url %>&t=<%= encodeURI(title) %>&s=" target="_blank" title="Post to Tumblr"><img alt="Post to Tumblr" data-silex-static="" src="<%= styleUrl %>/Tumblr.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Pinterest") >= 0) { %>
+  <li><a href="http://pinterest.com/pin/create/button/?url=<%= url %>&description=<%= encodeURI(description) %>" target="_blank" title="Pin it"><img alt="Pin it" data-silex-static="" src="<%= styleUrl %>/Pinterest.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Pocket") >= 0) { %>
+  <li><a href="https://getpocket.com/save?url=<%= url %>&title=<%= encodeURI(title) %>" target="_blank" title="Add to Pocket"><img alt="Add to Pocket" data-silex-static="" src="<%= styleUrl %>/Pocket.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Reddit") >= 0) { %>
+  <li><a href="http://www.reddit.com/submit?url=<%= url %>&title=<%= encodeURI(title) %>" target="_blank" title="Submit to Reddit"><img alt="Submit to Reddit" data-silex-static="" src="<%= styleUrl %>/Reddit.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("LinkedIn") >= 0) { %>
+  <li><a href="http://www.linkedin.com/shareArticle?mini=true&url=<%= url %>&title=<%= encodeURI(title) %>&summary=<%= encodeURI(description) %>&source=<%= url %>" target="_blank" title="Share on LinkedIn"><img alt="Share on LinkedIn" data-silex-static="" src="<%= styleUrl %>/LinkedIn.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("WordPress") >= 0) { %>
+  <li><a href="http://wordpress.com/press-this.php?u=<%= url %>&t=<%= encodeURI(title) %>&s=<%= encodeURI(description) %>" target="_blank" title="Publish on WordPress"><img alt="Publish on WordPress" data-silex-static="" src="<%= styleUrl %>/Wordpress.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Pinboard") >= 0) { %>
+  <li><a href="https://pinboard.in/popup_login/?url=<%= url %>&title=<%= encodeURI(title) %>&description=<%= encodeURI(description) %>" target="_blank" title="Save to Pinboard"><img alt="Save to Pinboard" data-silex-static="" src="<%= styleUrl %>/Pinboard.png"></a></li>
+  <% } %>
+  <% if(networks.indexOf("Email") >= 0) { %>
+  <li><a href="mailto:?subject=<%= encodeURI(title) %>&body=<%= encodeURI(description) %>:%20<%= url %>" target="_blank" title="Send email"><img alt="Send by email" data-silex-static="" src="<%= styleUrl %>/Email.png"></a></li>
+  <% } %>
+</ul>
+</div>
+<style>
+#id_<%= uid %>.share-buttons{
+  list-style: none;
+  padding: 0;
+}
+
+#id_<%= uid %>.share-buttons li{
+  display: inline;
+}
+
+#id_<%= uid %>.share-buttons .sr-only {
+  position: absolute;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 0;
+  border: 0;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
+</style>

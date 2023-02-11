@@ -1,0 +1,218 @@
+<div id="parent_<%= uid %>">
+<!-- preview -->
+<div class="prodotype-preview">
+  <% if(slides && slides.length) { %>
+  <div class="preview-text prodotype-force-size"><p>~ Preview ~</p></div>
+  <figure class="slide-0">
+    <div class="slide-image prodotype-force-size">
+      <% if(slides[0].text) { %>
+        <figcaption><%- slides[0].text %></figcaption>
+      <% } %>
+    </div>
+  </figure>
+  <% } %>
+</div>
+<div id="id_<%= uid %>">
+  <!-- runtime -->
+  <!-- the whole slideshow -->
+  <ul class="prodotype-runtime">
+  <% for(var idx in slides) { %>
+    <li><figure class="slide-<%= idx %>">
+      <% if(slides[idx].link) { %>
+      <a href="<%= slides[idx].link %>">
+      <% } %>
+      <div class="slide-image">
+        <% if(slides[idx].text) { %>
+          <figcaption><%- slides[idx].text %></figcaption>
+        <% } %>
+      </div>
+      <% if(slides[idx].link) { %>
+      </a>
+      <% } %>
+    </figure></li>
+  <% } %>
+  </ul>
+</div>
+</div>
+<style>
+/* *********************** */
+/* "Preview" label always on top of the slideshow in silex */
+#parent_<%= uid %> .prodotype-preview {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#parent_<%= uid %> .prodotype-preview .preview-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#parent_<%= uid %> .prodotype-preview .preview-text p {
+    z-index: 1;
+    background-color: black;
+    color: white;
+}
+/* *********************** */
+/* styles for each slide */
+<% for(var idx in slides) { %>
+  #parent_<%= uid %> .slide-<%= idx %> .slide-image {
+  <% if(slides[idx].bgColor) { %>background-color: <%= slides[idx].bgColor %>; <% } %>
+  <% if(slides[idx].image && slides[idx].image[0]) { %>
+      background-image:url('<%= slides[idx].image[0].url %>');
+  <% } %>
+  }
+<% } %>
+/* *********************** */
+/* styles for all the slides */
+#parent_<%= uid %> .unslider {
+    /* needed for the UI on mobile */
+    position: relative;
+}
+#parent_<%= uid %> .slide-image {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50%;
+    <% if(captionAlignV === 'top') { %>
+      align-items: flex-start;
+    <% } %>
+    <% if(captionAlignV === 'center') { %>
+      align-items: center;
+    <% } %>
+    <% if(captionAlignV === 'bottom') { %>
+      align-items: flex-end;
+    <% } %>
+    <% if(captionAlignH === 'left') { %>
+      justify-content: flex-start;
+    <% } %>
+    <% if(captionAlignH === 'center') { %>
+      justify-content: center;
+    <% } %>
+    <% if(captionAlignH === 'right') { %>
+      justify-content: flex-end;
+    <% } %>
+}
+#parent_<%= uid %> figcaption {
+    padding: 50px;
+    <% if(captionColor) { %>color:<%= captionColor %>; <% } %>
+    <% if(captionBgColor) { %>background-color:<%= captionBgColor %>; <% } %>
+    <% if(captionAlignV === 'top' || captionAlignV === 'bottom') { %>
+      width: 100%;
+    <% } %>
+    <% if(captionAlignH === 'left') { %>
+      text-align: left;
+    <% } %>
+    <% if(captionAlignH === 'center') { %>
+      text-align: center;
+    <% } %>
+    <% if(captionAlignH === 'right') { %>
+      text-align: right;
+    <% } %>
+}
+/* *********************** */
+/* UI style */
+#parent_<%= uid %> .unslider-nav {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    top: auto;
+    margin: 0;
+}
+#parent_<%= uid %> .unslider-nav ol {
+    text-align: center;
+}
+#parent_<%= uid %> .unslider-nav ol li.unslider-active {
+    background: #fff;
+    cursor: default;
+    opacity: 1;
+}
+#parent_<%= uid %> .unslider-nav ol li {
+    display: inline-block;
+    float: none;
+    width: 6px;
+    height: 6px;
+    margin: 0 4px;
+    padding: 3px;
+    background: transparent;
+    border-radius: 10px;
+    overflow: hidden;
+    text-indent: -999em;
+    border: 2px solid #fff;
+    cursor: pointer;
+    opacity: .4;
+}
+#parent_<%= uid %> .unslider-arrow {
+    display: block;
+    width: 32px;
+    height: 32px;
+    top: 50%;
+    right: 16px;
+    left: auto;
+    margin-top: -16px;
+    overflow: hidden;
+    background: rgba(0,0,0,.2) no-repeat 50% 50%;
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAQCAQAAABuQZ3IAAAAi0lEQVR4AU3OISBEQQBAwS0AACS9NxqQgCZpkiYBVddFvWhAAUABAPQCAGC4g/0vTnrBqCfDIZl70J+kMUBPpEwT4FNXxBxz4F1HxHyr4EVTxBLb4EFNxEon4CJSlVNw9AcV9sC16h8osgke1P1ArgXwouVvdQq86ww/GQefusNf7kBviBlxpT8k+gL/Wox4r1d4MwAAAABJRU5ErkJggg==');
+    background-size: 7px 11px;
+    border-radius: 32px;
+    text-indent: -999em;
+    opacity: .6;
+    transition: opacity .2s;
+}
+#parent_<%= uid %> .unslider-arrow.prev {
+    left: 16px;
+    right: auto;
+    -ms-transform: rotate(-180deg);
+    transform: rotate(-180deg);
+}
+/* *********************** */
+</style>
+<script type="text/javascript">
+  (function() {
+    // do not start in the editor (it would mess with the markup)
+    if(!$('body').hasClass('silex-runtime')) return;
+
+    var $slider = $('#id_<%= uid %>')
+    var slider = $slider.unslider({
+      'autoplay': <%= autoplay %>,
+      'speed': <%= speed %>,
+      'delay': <%= delay %>,
+      'index': <%= index %>,
+      'nav': <%= nav %>,
+      'animation': '<%= animation %>',
+      'arrows': <%= arrows %>
+    });
+    //  Listen to slide changes
+    <% if(onchange) { %>
+    slider.on('unslider.change', function(event, index, slide) {
+      <%- onchange %>
+    });
+  <% } %>
+    // apply element height to the images
+    var silexElement = $slider.closest('.editable-style');
+    var elementMinHeight = silexElement.css('height');
+    var elementWidth = silexElement.css('width');
+    $('#id_<%= uid %> li .slide-image').css({
+      'height': elementMinHeight
+    });
+    <% if(animation === 'fade' ) { %>
+    // apply element height to the container (useful for fade only)
+    $('#id_<%= uid %> ul').css({
+      'height': elementMinHeight
+    });
+    <% } %>
+
+    setTimeout(function(){
+      // use onswipe.js
+      // Fix #1127
+      if(window.onSwipe) {
+        window.onSwipe('left', function(){ $slider.data('unslider').next()})
+        window.onSwipe('right', function(){ $slider.data('unslider').prev()})
+      } else {
+        console.warn('onswipe.js script is not found, swipe gestures might no work')
+      }
+    }, 0)
+  })();
+</script>
