@@ -1,4 +1,3 @@
-import 'source-map-support/register'
 import { config } from './config'
 import { start } from './start'
 
@@ -11,11 +10,11 @@ ${config.url}
 })
 
 // livereload
-import livereload from 'livereload'
+import { createServer } from 'livereload'
 import { resolve } from 'path'
 if(process.env.SILEX_DEBUG) {
   const dist = resolve(__dirname, '../client')
-  const server = livereload.createServer({
+  const server = createServer({
     delay: 0,
   }, () => {
     console.info(`\nDebug mode\nLive reload server is running.\nWatching ${dist}`)

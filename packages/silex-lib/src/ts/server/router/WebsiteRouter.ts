@@ -2,7 +2,7 @@ import { load } from 'cheerio'
 import { URLRewriter, URLTranslator } from 'cssurl'
 
 import { Router } from 'express'
-import formidable from 'formidable'
+import * as formidable from 'formidable'
 
 import { join }from 'path'
 import { homedir } from 'os'
