@@ -25,105 +25,106 @@ let fonts
  * Use local storage
  */
 try {
-  _fontsList = JSON.parse(localStorage.getItem(LS_FONTS))
+    _fontsList = JSON.parse(localStorage.getItem(LS_FONTS))
 } catch(e) {
-  console.error('Could not get fonts from local storage:', e)
+    console.error('Could not get fonts from local storage:', e)
 }
 
 /**
  * Promised wait function
  */
 async function wait(ms = 0) {
-  return new Promise(resolve => setTimeout(() => resolve(), ms))
+    return new Promise(resolve => setTimeout(() => resolve(), ms))
 }
 
 /**
  * When the dialog is opened
  */
 async function loadFonts(editor) {
-  fonts = structuredClone(editor.getModel().get('fonts') || [])
+    fonts = structuredClone(editor.getModel().get('fonts') || [])
 }
 
 /**
  * When the dialog is closed
  */
-function saveFonts(editor, config) {
-  const model = editor.getModel()
+function saveFonts(editor/*, config*/) {
+    const model = editor.getModel()
 
-  // Store the modified fonts
-  model.set('fonts', fonts)
+    // Store the modified fonts
+    model.set('fonts', fonts)
 
-  // Update the HTML head with style sheets to load
-  updateHead(editor, fonts)
+    // Update the HTML head with style sheets to load
+    updateHead(editor, fonts)
 
-  // Update the "font family" dropdown
-  updateUi(editor, fonts)
+    // Update the "font family" dropdown
+    updateUi(editor, fonts)
 
-  // Save website if auto save is on
-  model.set('changesCount', editor.getDirtyCount() + 1)
+    // Save website if auto save is on
+    model.set('changesCount', editor.getDirtyCount() + 1)
 }
 
 /**
  * Load the available fonts from google
  */
 async function loadFontList(url) {
-  _fontsList = _fontsList ?? (await (await fetch(url)).json())?.items
-  localStorage.setItem(LS_FONTS, JSON.stringify(_fontsList))
-  await wait() // let the dialog open
-  return _fontsList
+    _fontsList = _fontsList ?? (await (await fetch(url)).json())?.items
+    localStorage.setItem(LS_FONTS, JSON.stringify(_fontsList))
+    await wait() // let the dialog open
+    return _fontsList
 }
 
 export const fontsDialogPlugin = (editor, opts) => {
-  if(!opts.api_key) throw new Error('You must provide Google font api key, see https://developers.google.com/fonts/docs/developer_api#APIKey')
-  editor.Commands.add(cmdOpenFonts, {
-    run: (_, sender) => {
-      modal = editor.Modal.open({
-        title: 'Fonts',
-        content: '',
-        attributes: { class: 'fonts-dialog' },
-      })
-      .onceClose(() => {
-        editor.stopCommand(cmdOpenFonts) // apparently this is needed to be able to run the command several times
-      })
-      modal.setContent(el)
-      loadFonts(editor)
-      displayFonts(editor, opts, [])
-      loadFontList('https://www.googleapis.com/webfonts/v1/webfonts?key=' + opts.api_key)
-      .then(fontsList => { // the run command will terminate before this is done, better for performance
-        displayFonts(editor, opts, fontsList)
-        const form = el.querySelector('form')
-        form.onsubmit = event => {
-          event.preventDefault()
-          saveFonts(editor, opts)
-          editor.stopCommand(cmdOpenFonts)
-        }
-        form.querySelector('input')?.focus()
-      })
-      return modal
-    },
-    stop: () => {
-      modal.close()
-    },
-  })
-  // add fonts to the website
-  editor.on('storage:start:store', (data) => {
-    data.fonts = editor.getModel().get('fonts')
-  })
-  editor.on('storage:end:load', (data) => {
-    const fonts = data.fonts || []
-    editor.getModel().set('fonts', fonts)
-    setTimeout(() => {
-      updateHead(editor, fonts)
-      updateUi(editor, fonts)
+    if(!opts.api_key) throw new Error('You must provide Google font api key, see https://developers.google.com/fonts/docs/developer_api#APIKey')
+    editor.Commands.add(cmdOpenFonts, {
+        /* eslint-disable-next-line */
+        run: (_, sender) => {
+            modal = editor.Modal.open({
+                title: 'Fonts',
+                content: '',
+                attributes: { class: 'fonts-dialog' },
+            })
+                .onceClose(() => {
+                    editor.stopCommand(cmdOpenFonts) // apparently this is needed to be able to run the command several times
+                })
+            modal.setContent(el)
+            loadFonts(editor)
+            displayFonts(editor, opts, [])
+            loadFontList('https://www.googleapis.com/webfonts/v1/webfonts?key=' + opts.api_key)
+                .then(fontsList => { // the run command will terminate before this is done, better for performance
+                    displayFonts(editor, opts, fontsList)
+                    const form = el.querySelector('form')
+                    form.onsubmit = event => {
+                        event.preventDefault()
+                        saveFonts(editor, opts)
+                        editor.stopCommand(cmdOpenFonts)
+                    }
+                    form.querySelector('input')?.focus()
+                })
+            return modal
+        },
+        stop: () => {
+            modal.close()
+        },
     })
-  })
+    // add fonts to the website
+    editor.on('storage:start:store', (data) => {
+        data.fonts = editor.getModel().get('fonts')
+    })
+    editor.on('storage:end:load', (data) => {
+        const fonts = data.fonts || []
+        editor.getModel().set('fonts', fonts)
+        setTimeout(() => {
+            updateHead(editor, fonts)
+            updateUi(editor, fonts)
+        })
+    })
 }
 
 function match(hay, s) {
     const h = hay.toLowerCase()
-    let i = 0, n = -1, l
-    s = s.toLowerCase()
-    for (; l = s[i++] ;) if (!~(n = h.indexOf(l, n + 1))) return false
+    let n = -1
+    s = s.toLowerCase().split()
+    for (let l in s) if (!~(n = h.indexOf(l, n + 1))) return false
     return true
 }
 
@@ -131,32 +132,31 @@ const searchInputRef = createRef()
 const fontRef = createRef()
 
 function displayFonts(editor, config, fontsList) {
-  const model = editor.getModel()
-  const searchInput = searchInputRef.value
-  const activeFonts = fontsList.filter(f => match(f.family, searchInput?.value || ''))
-  searchInput?.focus()
-  function findFont(font) {
-    return fontsList.find(f => font.name === f.family)
-  }
-  render(html`
+    const searchInput = searchInputRef.value
+    const activeFonts = fontsList.filter(f => match(f.family, searchInput?.value || ''))
+    searchInput?.focus()
+    function findFont(font) {
+        return fontsList.find(f => font.name === f.family)
+    }
+    render(html`
     <form class="silex-form grapesjs-fonts">
       <div class="silex-form__group">
         <div class="silex-bar">
           <input
             style=${styleMap({
-              width: '100%',
-            })}
+        width: '100%',
+    })}
             placeholder="Search fonts..."
             type="text"
             ${ref(searchInputRef)}
-            @keydown=${e => {
-              //(fontRef.value as HTMLSelectElement).selectedIndex = 0
-              setTimeout(() => displayFonts(editor, config, fontsList))
-            }}/>
+            @keydown=${() => {
+        //(fontRef.value as HTMLSelectElement).selectedIndex = 0
+        setTimeout(() => displayFonts(editor, config, fontsList))
+    }}/>
           <select
             style=${styleMap({
-              width: '150px',
-            })}
+        width: '150px',
+    })}
             ${ref(fontRef)}
           >
             ${ map(activeFonts, f => html`
@@ -165,15 +165,15 @@ function displayFonts(editor, config, fontsList) {
           </select>
           <button class="silex-button"
             ?disabled=${!fontRef.value || activeFonts.length === 0}
-            type="button" @click=${e => {
-              addFont(
-                editor,
-                config,
-                fonts,
-                activeFonts[fontRef.value.selectedIndex]
-              )
-              displayFonts(editor, config, fontsList)
-            }}>
+            type="button" @click=${() => {
+        addFont(
+            editor,
+            config,
+            fonts,
+            activeFonts[fontRef.value.selectedIndex]
+        )
+        displayFonts(editor, config, fontsList)
+    }}>
             Add&nbsp;to&nbsp;website
           </button>
         </div>
@@ -197,18 +197,18 @@ function displayFonts(editor, config, fontsList) {
                   name="name"
                   .value=${live(f.value)}
                   @change=${e => {
-                    updateRules(editor, fonts, f, e.target.value)
-                    displayFonts(editor, config, fontsList)
-                  }}
+        updateRules(editor, fonts, f, e.target.value)
+        displayFonts(editor, config, fontsList)
+    }}
                 />
               </fieldset>
               <fieldset class="silex-group--simple full-width">
                 <legend>Variants</legend>
                 ${ map(
-                  // keep only variants which are letters, no numbers
-                  // FIXME: we need the weights
-                  findFont(f)?.variants.filter(v => v.replace(/[a-z]/g, '') === ''),
-                  v => html`
+        // keep only variants which are letters, no numbers
+        // FIXME: we need the weights
+        findFont(f)?.variants.filter(v => v.replace(/[a-z]/g, '') === ''),
+        v => html`
                   <div>
                     <input
                       id=${ f.name + v }
@@ -216,26 +216,26 @@ function displayFonts(editor, config, fontsList) {
                       value=${v}
                       ?checked=${f.variants?.includes(v)}
                       @change=${e => {
-                        updateVariant(editor, fonts, f, v, e.target.checked)
-                        displayFonts(editor, config, fontsList)
-                      }}
+        updateVariant(editor, fonts, f, v, e.target.checked)
+        displayFonts(editor, config, fontsList)
+    }}
                     /><label for=${ f.name + v }>${v}</label>
                   </div>
                 `)}
               </fieldset>
             </div>
             <div class="silex-list__item__footer">
-              <button class="silex-button" type="button" @click=${e => {
-                removeFont(editor, fonts, f)
-                displayFonts(editor, config, fontsList)
-              }}>Remove</button>
+              <button class="silex-button" type="button" @click=${() => {
+        removeFont(editor, fonts, f)
+        displayFonts(editor, config, fontsList)
+    }}>Remove</button>
             </div>
           </li>
         `) }
         </ol>
       </div>
       <footer>
-        <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenFonts)} value="Cancel">
+        <input class="silex-button" type="button" @click=${() => editor.stopCommand(cmdOpenFonts)} value="Cancel">
         <input class="silex-button" type="submit" value="Ok">
       </footer>
     </form>
@@ -243,73 +243,73 @@ function displayFonts(editor, config, fontsList) {
 }
 
 function addFont(editor, config, fonts, font) {
-  const name = font.family
-  const value = `"${font.family}", ${font.category}`
-  fonts.push({ name, value, variants: [] })
+    const name = font.family
+    const value = `"${font.family}", ${font.category}`
+    fonts.push({ name, value, variants: [] })
 }
 
 function removeFont(editor, fonts, font) {
-  const idx = fonts.findIndex(f => f === font)
-  fonts.splice(idx, 1)
+    const idx = fonts.findIndex(f => f === font)
+    fonts.splice(idx, 1)
 }
 
 function insertOnce(doc, attr, tag, attributes) {
-  if(!doc.head.querySelector(`[${ attr }]`)) {
-    insert(doc, attr, tag, attributes)
-  }
+    if(!doc.head.querySelector(`[${ attr }]`)) {
+        insert(doc, attr, tag, attributes)
+    }
 }
 function insert(doc, attr, tag, attributes) {
-  const el = doc.createElement(tag)
-  el.setAttribute(attr, '')
-  Object.keys(attributes).forEach(key => el.setAttribute(key, attributes[key]))
-  doc.head.appendChild(el)
+    const el = doc.createElement(tag)
+    el.setAttribute(attr, '')
+    Object.keys(attributes).forEach(key => el.setAttribute(key, attributes[key]))
+    doc.head.appendChild(el)
 }
 function removeAll(doc, attr) {
-  Array.from(doc.head.querySelector(`[${ attr }]`))
-  .forEach((el) => el.remove())
+    Array.from(doc.head.querySelector(`[${ attr }]`))
+        .forEach((el) => el.remove())
 }
 const GOOGLE_APIS_ATTR = 'data-silex-google-apis'
 const GSTATIC_ATTR = 'data-silex-gstatic'
 const GOOGLE_FONTS_ATTR = 'data-silex-gstatic'
 function updateHead(editor, fonts) {
-  const doc = editor.Canvas.getDocument()
-  insertOnce(doc, GOOGLE_APIS_ATTR, 'link', { 'href': 'https://fonts.googleapis.com', 'rel': 'preconnect' })
-  insertOnce(doc, GSTATIC_ATTR, 'link', { 'href': 'https://fonts.gstatic.com', 'rel': 'preconnect', 'crossorigin': '' })
-  removeAll(doc, GOOGLE_FONTS_ATTR)
+    const doc = editor.Canvas.getDocument()
+    insertOnce(doc, GOOGLE_APIS_ATTR, 'link', { 'href': 'https://fonts.googleapis.com', 'rel': 'preconnect' })
+    insertOnce(doc, GSTATIC_ATTR, 'link', { 'href': 'https://fonts.gstatic.com', 'rel': 'preconnect', 'crossorigin': '' })
+    removeAll(doc, GOOGLE_FONTS_ATTR)
 
-  // FIXME: how to use google fonts v2?
-  // google fonts V2: https://developers.google.com/fonts/docs/css2
-  //fonts.forEach(f => {
-  //  const prefix = f.variants.length ? ':' : ''
-  //  const variants = prefix + f.variants.map(v => {
-  //    const weight = parseInt(v)
-  //    const axis = v.replace(/\d+/g, '')
-  //    return `${axis},wght@${weight}`
-  //  }).join(',')
-  //  insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css2?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
-  //})
+    // FIXME: how to use google fonts v2?
+    // google fonts V2: https://developers.google.com/fonts/docs/css2
+    //fonts.forEach(f => {
+    //  const prefix = f.variants.length ? ':' : ''
+    //  const variants = prefix + f.variants.map(v => {
+    //    const weight = parseInt(v)
+    //    const axis = v.replace(/\d+/g, '')
+    //    return `${axis},wght@${weight}`
+    //  }).join(',')
+    //  insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css2?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
+    //})
 
-  // Google fonts v1
-  // https://developers.google.com/fonts/docs/getting_started#a_quick_example
-  fonts.forEach(f => {
-    const prefix = f.variants.length ? ':' : ''
-    const variants = prefix + f.variants.map(v => v.replace(/\d+/g, '')).filter(v => !!v).join(',')
-    insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
-  })
+    // Google fonts v1
+    // https://developers.google.com/fonts/docs/getting_started#a_quick_example
+    fonts.forEach(f => {
+        const prefix = f.variants.length ? ':' : ''
+        const variants = prefix + f.variants.map(v => v.replace(/\d+/g, '')).filter(v => !!v).join(',')
+        insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
+    })
 }
 
 function updateUi(editor, fonts) {
-  const styleManager = editor.StyleManager
-  const fontProperty = styleManager.getProperty('typography', 'font-family')
-  fontProperty.setOptions(fonts)
-  styleManager.render()
+    const styleManager = editor.StyleManager
+    const fontProperty = styleManager.getProperty('typography', 'font-family')
+    fontProperty.setOptions(fonts)
+    styleManager.render()
 }
 function updateRules(editor, fonts, font, value) {
-  font.value = value
+    font.value = value
 }
 function updateVariant(editor, fonts, font, variant, checked) {
-  const has = font.variants?.includes(variant)
-  if(has && !checked) font.variants = font.variants.filter(v => v !== variant)
-  else if(!has && checked) font.variants.push(variant)
+    const has = font.variants?.includes(variant)
+    if(has && !checked) font.variants = font.variants.filter(v => v !== variant)
+    else if(!has && checked) font.variants.push(variant)
 }
 
