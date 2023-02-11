@@ -51,9 +51,9 @@ function renderPages(editor, config) {
     <main class="pages__main ${pages.length === 1 ? 'pages__single-page' : ''}">
       <div class="pages__list">
         ${ pages.map(page => {
-          const name = page.getName() || page.attributes.type
-          // keep the same structure as the layers panel
-          return html`
+    const name = page.getName() || page.attributes.type
+    // keep the same structure as the layers panel
+    return html`
            <div class="pages__page ${selected === page ? 'pages__page-selected' : ''}" data-page-id=${page.id} @click=${e => selectPage(editor, getPageFromEvent(e))}>
              <div class="pages__page-name">
                ${ name }
@@ -63,7 +63,7 @@ function renderPages(editor, config) {
            </div>
           </div>
           `
-        })}
+  })}
       </div>
       ${pages.length ? '' : html`<div class="flex-row">
         No page yet.
@@ -84,7 +84,7 @@ export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =
   editor.on('load', () => {
     open = false
     document.querySelector(opts.appendTo)
-    .appendChild(el)
+      .appendChild(el)
     doRender()
     // click anywhere close it
     // const close = (event) => {

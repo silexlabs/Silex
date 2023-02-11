@@ -57,7 +57,7 @@
     "build:client:debug": "webpack --config webpack.debug.config.js",
     "build:server:release": "tsc -p tsconfig-server-release.json",
     "build:server:debug": "SILEX_DEBUG=true tsc -p tsconfig-server-debug.json",
-    "lint": "tslint -c tslint.json 'src/ts/**/*.ts'",
+    "lint": "eslint 'src/ts/**/*.ts'",
     "lint:fix": "npm run lint -- --fix",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js --watch"
@@ -89,8 +89,7 @@
     "object-path": "0.11.8",
     "promise-sequential": "1.1.1",
     "sass": "1.58.0",
-    "serve-static": "1.15.0",
-    "source-map-support": "0.5.21"
+    "serve-static": "1.15.0"
   },
   "devDependencies": {
     "@types/express": "4.17.17",
@@ -98,6 +97,8 @@
     "@types/jest": "29.4.0",
     "@types/jquery": "3.5.16",
     "@types/node": "18.13.0",
+    "@typescript-eslint/eslint-plugin": "^5.51.0",
+    "@typescript-eslint/parser": "^5.51.0",
     "babel-jest": "29.4.2",
     "css-loader": "6.7.3",
     "eslint": "8.34.0",

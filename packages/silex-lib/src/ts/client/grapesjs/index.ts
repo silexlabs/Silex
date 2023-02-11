@@ -9,21 +9,21 @@ export function initEditor(config) {
 
   // customize the editor
   ;['text']
-  .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
+    .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
   ;['image', 'video']
-  .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
+    .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
   ;['map']
-  .forEach(id => editor.Blocks.get(id)?.set('category', 'Components'))
+    .forEach(id => editor.Blocks.get(id)?.set('category', 'Components'))
   editor.Blocks.render()
 
   editor.Commands.add('gjs-open-import-webpage', openImport(editor, config.importWebpage))
   editor.on('load', () => {
-     // // move the options panel to the sidebar
-     // const optionsEl = editor.Panels.getPanel('options').view.el
-     // editor.Panels.getPanel('project-bar-panel').view.el
-     // .appendChild(options)
-     // options.style.width = 0
-     // options.style.position = 'static'
+    // // move the options panel to the sidebar
+    // const optionsEl = editor.Panels.getPanel('options').view.el
+    // editor.Panels.getPanel('project-bar-panel').view.el
+    // .appendChild(options)
+    // options.style.width = 0
+    // options.style.position = 'static'
     // remove blocks and layers buttons from the properties
     setTimeout(() => {
       editor.Panels.getPanel('views').buttons.remove('open-blocks')

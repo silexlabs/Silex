@@ -32,7 +32,7 @@ export async function start(config): Promise<Application> {
       resolve(app)
     } else {
       if (config.debug) {
-        require('source-map-support').install()
+        // FIXME: enable sourcemap
       }
 
       // compress gzip when possible

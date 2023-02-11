@@ -30,13 +30,13 @@ export const projectBarPlugin = grapesjs.plugins.add(name, (editor, opts) => {
           <header class="project-bar__panel-header">
             <h3 class="project-bar__panel-header-title">${ panel.attributes.title }</h3>
             ${ panel.buttons?.map(button => {
-              return html`
+    return html`
                 <div
                   class="project-bar__panel-header-button ${ button.className }"
                   @click=${e => editor.runCommand(button.command)}
                 ><span>${ button.text }</span></div>
               `
-            }) }
+  }) }
           </header>
         `, el)
       }

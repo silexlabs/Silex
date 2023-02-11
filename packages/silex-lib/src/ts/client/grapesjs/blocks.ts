@@ -83,6 +83,6 @@ export const blocksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
     //   },
     // },
   ]
-  .forEach(block => editor.BlockManager.add(block.id, block.def))
+    .forEach(block => editor.BlockManager.add(block.id, block.def))
 })
 

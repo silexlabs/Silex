@@ -4,7 +4,7 @@ export default function(editor, opts) {
   // add symbols to the website
   editor.on('storage:start:store', (data: WebsiteData) => {
     data.files = editor.Pages.getAll().map(page => {
-      const component = page.getMainComponent();
+      const component = page.getMainComponent()
       return {
         html: editor.getHtml({ component }),
         css: editor.getCss({ component })

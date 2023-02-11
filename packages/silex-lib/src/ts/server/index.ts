@@ -11,9 +11,9 @@ ${config.url}
 })
 
 // livereload
+import livereload from 'livereload'
+import { resolve } from 'path'
 if(process.env.SILEX_DEBUG) {
-  const livereload = require('livereload')
-  const { resolve } = require('path')
   const dist = resolve(__dirname, '../client')
   const server = livereload.createServer({
     delay: 0,

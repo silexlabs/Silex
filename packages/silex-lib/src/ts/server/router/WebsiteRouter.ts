@@ -6,7 +6,7 @@ import formidable from 'formidable'
 
 import { join }from 'path'
 import { homedir } from 'os'
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir } from 'node:fs/promises'
 
 import { getPageSlug } from '../../utils'
 
@@ -43,7 +43,7 @@ async function mkdirIfExists(path, options = null) {
     return await mkdir(path, options)
   } catch(err) {
     if(err.code === 'EEXIST') {
-      return;
+      return
     } else {
       throw err
     }
@@ -54,8 +54,8 @@ async function readWebsite(req, res): Promise<void> {
   try {
     const data = await readFile(projectPath(req.query.projectId) + PROJECT_FILE_NAME)
     res
-    .type('application/json')
-    .send(data)
+      .type('application/json')
+      .send(data)
   } catch (err) {
     if(err.code === 'ENOENT') {
       res.json({})
@@ -132,62 +132,62 @@ async function writeWebsite(req, res) {
     return
   }
   data.pages
-  .forEach(async (page, idx) => {
-    // page settings override site settings
-    function getSetting(name) {
-      if(page.settings && page.settings[name]) return page.settings[name]
+    .forEach(async (page, idx) => {
+      // page settings override site settings
+      function getSetting(name) {
+        if(page.settings && page.settings[name]) return page.settings[name]
         return data.settings[name]
-    }
-    // update HTML with data from the settings
-    const pageName = page.type === 'main' ? 'index' : page.name
-    // Process the page HTML to include all settings
-    let html
-    try {
-      const $ = load(data.files[idx].html)
-      $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${getPageSlug(pageName)}.css" />`)
-      $('head').append(getSetting('head'))
-      if(!$('head > title').length) $('head').append('<title/>')
-      $('head > title').html(getSetting('title'))
-      if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
-      $('link[rel="icon"]').attr('href', getSetting('favicon'))
-      // all metas
-      ;['description', 'og:title', 'og:description', 'og:image'].forEach(prop => {
-        const sel = `meta[property="${prop}"]`
-        if(!$(sel).length) $('head').append(`<meta property="${prop}" />`)
-        $(sel).attr('content', getSetting(prop))
-      })
-      $('html').attr('lang', getSetting('lang'))
-      // render the HTML as string
-      html = $.html()
-    } catch (err) {
-      console.error('Error processing HTML', page, err)
-      res.status(400).json({ message: 'Error processing HTML: ' + err.message, code: err.code})
-      return
-    }
-    // Process the page CSS to have correct relative URLs
-    let css = data.files[idx].css
-    try {
-      if(cssFolder != projectFolder) {
-        const rewriter = new URLRewriter(function(url) {
-          const translator = new URLTranslator();
-          return translator.translate(url, projectFolder, cssFolder);
-        })
-        css = rewriter.rewrite(css);
       }
-    } catch (err) {
-      console.error('Error processing CSS', page, err)
-      res.status(400).json({ message: 'Error processing CSS: ' + err.message, code: err.code})
-      return
-    }
-    try {
-      await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
-      await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), css)
-    } catch (err) {
-      console.error('Error writing file', page, err)
-      res.status(400).json({ message: 'Error writing file: ' + err.message, code: err.code})
-      return
-    }
-  })
+      // update HTML with data from the settings
+      const pageName = page.type === 'main' ? 'index' : page.name
+      // Process the page HTML to include all settings
+      let html
+      try {
+        const $ = load(data.files[idx].html)
+        $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${getPageSlug(pageName)}.css" />`)
+        $('head').append(getSetting('head'))
+        if(!$('head > title').length) $('head').append('<title/>')
+        $('head > title').html(getSetting('title'))
+        if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
+        $('link[rel="icon"]').attr('href', getSetting('favicon'))
+        // all metas
+        ;['description', 'og:title', 'og:description', 'og:image'].forEach(prop => {
+          const sel = `meta[property="${prop}"]`
+          if(!$(sel).length) $('head').append(`<meta property="${prop}" />`)
+          $(sel).attr('content', getSetting(prop))
+        })
+        $('html').attr('lang', getSetting('lang'))
+        // render the HTML as string
+        html = $.html()
+      } catch (err) {
+        console.error('Error processing HTML', page, err)
+        res.status(400).json({ message: 'Error processing HTML: ' + err.message, code: err.code})
+        return
+      }
+      // Process the page CSS to have correct relative URLs
+      let css = data.files[idx].css
+      try {
+        if(cssFolder != projectFolder) {
+          const rewriter = new URLRewriter(function(url) {
+            const translator = new URLTranslator()
+            return translator.translate(url, projectFolder, cssFolder)
+          })
+          css = rewriter.rewrite(css)
+        }
+      } catch (err) {
+        console.error('Error processing CSS', page, err)
+        res.status(400).json({ message: 'Error processing CSS: ' + err.message, code: err.code})
+        return
+      }
+      try {
+        await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
+        await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), css)
+      } catch (err) {
+        console.error('Error writing file', page, err)
+        res.status(400).json({ message: 'Error writing file: ' + err.message, code: err.code})
+        return
+      }
+    })
 
   res.json({
     message: 'OK',
@@ -267,15 +267,15 @@ async function writeAsset(req, res) {
     if (err) {
       console.error('Error parsing upload data', err)
       res
-      .status(400)
-      .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
+        .status(400)
+        .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
       return
     }
     const data = [].concat(files['files[]']) // may be an array or 1 element
-    .map(file => {
-      const { originalFilename, filepath } = file
-      return `${settings.prefix}${settings.assets.path}/${originalFilename}?projectId=${projectId}`
-    })
+      .map(file => {
+        const { originalFilename, filepath } = file
+        return `${settings.prefix}${settings.assets.path}/${originalFilename}?projectId=${projectId}`
+      })
     res.json({ data })
   })
 }
