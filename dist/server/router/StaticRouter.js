@@ -13,7 +13,7 @@ function default_1(config) {
         const path = Path.join(rootFolder, folder.path || '');
         const route = folder.module && !folder.route ? `/libs/${folder.module}` : folder.route;
         if (!route)
-            throw new Error(`The config for static module requires either \`route\` or \`module\``);
+            throw new Error('The config for static module requires either `route` or `module`');
         router.use(route, serveStatic(path));
     });
     return router;

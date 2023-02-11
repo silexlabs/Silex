@@ -28,7 +28,6 @@ async function start(config) {
         }
         else {
             if (config.debug) {
-                require('source-map-support').install();
             }
             app.use(compression());
             app.use(bodyParser.json({ limit: '1mb' }));
