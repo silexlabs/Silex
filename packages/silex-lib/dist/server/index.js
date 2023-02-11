@@ -9,11 +9,11 @@ I'm ready, listening to port ${config_1.config.port}
 ${config_1.config.url}
   `);
 });
+const livereload_1 = require("livereload");
+const path_1 = require("path");
 if (process.env.SILEX_DEBUG) {
-    const livereload = require('livereload');
-    const { resolve } = require('path');
-    const dist = resolve(__dirname, '../client');
-    const server = livereload.createServer({
+    const dist = (0, path_1.resolve)(__dirname, '../client');
+    const server = livereload_1.default.createServer({
         delay: 0,
     }, () => {
         console.info(`\nDebug mode\nLive reload server is running.\nWatching ${dist}`);
