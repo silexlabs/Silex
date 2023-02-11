@@ -23,6 +23,7 @@
     "start": "node packages/Silex/"
   },
   "wip": [
+    "packages/grapesjs-links",
     "packages/grapesjs",
     "packages/grapesjs-cli",
     "packages/editor.silex.me",
@@ -35,8 +36,5 @@
     "packages/eleventy-plugin-directus",
     "packages/grapesjs-fonts",
     "packages/Silex"
-  ],
-  "devDependencies": {
-    "lerna": "^6.4.1"
-  }
+  ]
 }
