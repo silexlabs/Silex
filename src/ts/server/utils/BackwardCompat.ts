@@ -58,7 +58,7 @@ function updateLinks<T extends { link?: Link }>(items: T[]): T[] {
 /**
  * class name for containers which are created with sections
  */
-const SECTION_CONTAINER: string = 'silex-container-content'
+const SECTION_CONTAINER = 'silex-container-content'
 
 export default class BackwardCompat {
   private data: PersistantData = null
@@ -83,14 +83,14 @@ export default class BackwardCompat {
   // export for tests
   removeIfExist(doc: HTMLDocument, selector: string) {
     Array.from(doc.querySelectorAll(selector))
-    .forEach((tag) => tag.remove())
+      .forEach((tag) => tag.remove())
   }
 
   // remove all useless css class
   // export for tests
   removeUselessCSSClass(doc: HTMLDocument, className: string) {
     Array.from(doc.querySelectorAll('.' + className))
-    .forEach((el) => el.classList.remove(className))
+      .forEach((el) => el.classList.remove(className))
   }
 
   getVersion(doc): number[] {
@@ -103,9 +103,9 @@ export default class BackwardCompat {
     }
     // retrieve the website version from generator tag
     return (metaNode.getAttribute('content') || '')
-    .replace('Silex v', '')
-    .split('.')
-    .map((str) => parseInt(str, 10) || 0)
+      .replace('Silex v', '')
+      .split('.')
+      .map((str) => parseInt(str, 10) || 0)
   }
 
   hasDataFile(doc): boolean {
@@ -157,12 +157,12 @@ export default class BackwardCompat {
       this.fixes(doc)
       // build the report for the user
       const report = Object.keys(allActions)
-      .filter((_version) => allActions[_version].length > 0)
-      .map((_version) => {
-        return `<p>Update to version ${ _version }:
+        .filter((_version) => allActions[_version].length > 0)
+        .map((_version) => {
+          return `<p>Update to version ${ _version }:
             <ul>${ allActions[_version].map((_action) => `<li class="no-list">${ _action }</li>`).join('') }</ul>
         </p>`
-      }).join('')
+        }).join('')
       // save data to dom for front-end.js and other scripts
       // in case data has been changed
       // FIXME: should not have this.data mutated but returned by update scripts
@@ -178,7 +178,7 @@ export default class BackwardCompat {
           </small>
         </details>
       `,
-        this.data,
+      this.data,
       ]
     } else {
       // update the static scripts to match the current server URL
@@ -211,7 +211,7 @@ export default class BackwardCompat {
     }
     // remove juery-ui at publication, in case the website has been updated before the fix of 2.6.2
     Array.from(doc.querySelectorAll('script[src$="pageable.js"], script[src$="jquery-ui.js"]'))
-    .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
+      .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
     // this does not work because sections can not be smaller than their content:
     // // resizable sections
     // this.data = {
@@ -243,16 +243,16 @@ export default class BackwardCompat {
   updateStatic(doc: HTMLDocument) {
     // update //{{host}}/2.x/... to latest version
     Array.from(doc.querySelectorAll('[' + Constants.STATIC_ASSET_ATTR + ']'))
-    .forEach((element: HTMLElement) => {
-      const propName = element.hasAttribute('src') ? 'src' : 'href'
-      if (element.hasAttribute(propName)) {
-        const newUrl = this.getStaticResourceUrl(element[propName])
-        const oldUrl = element.getAttribute(propName)
-        if (oldUrl !== newUrl) {
-          element.setAttribute(propName, newUrl)
+      .forEach((element: HTMLElement) => {
+        const propName = element.hasAttribute('src') ? 'src' : 'href'
+        if (element.hasAttribute(propName)) {
+          const newUrl = this.getStaticResourceUrl(element[propName])
+          const oldUrl = element.getAttribute(propName)
+          if (oldUrl !== newUrl) {
+            element.setAttribute(propName, newUrl)
+          }
         }
-      }
-    })
+      })
   }
 
   /**
@@ -317,9 +317,9 @@ export default class BackwardCompat {
         doc.querySelector('.silex-inline-styles').innerHTML += '.silex-id-hamburger-menu {width: 50px;min-height: 40px;}'
         // pages need to have href set
         Array.from(doc.querySelectorAll('.page-element'))
-        .forEach((el: HTMLLinkElement) => {
-          el.setAttribute('href', '#!' + el.getAttribute('id'))
-        })
+          .forEach((el: HTMLLinkElement) => {
+            el.setAttribute('href', '#!' + el.getAttribute('id'))
+          })
         actions.push('I fixed the mobile menu so that it is compatible with the new publication (now multiple pages are generated instead of 1 single page for the whole website).')
       }
       resolve(actions)
@@ -353,27 +353,27 @@ export default class BackwardCompat {
           Constants.PREVENT_RESIZABLE_CLASS_NAME,
           Constants.PREVENT_SELECTABLE_CLASS_NAME)
 
-          // each section background and foreground is a drop zone, not selectable, not draggable, resizeable
-          const changedSections = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}`)) as HTMLElement[]
-          changedSections.forEach((el: HTMLElement) => el.classList.add(
-            Constants.PREVENT_DRAGGABLE_CLASS_NAME,
-            Constants.PREVENT_RESIZABLE_CLASS_NAME,
-          ))
+        // each section background and foreground is a drop zone, not selectable, not draggable, resizeable
+        const changedSections = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}`)) as HTMLElement[]
+        changedSections.forEach((el: HTMLElement) => el.classList.add(
+          Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+          Constants.PREVENT_RESIZABLE_CLASS_NAME,
+        ))
 
-          // we add classes to the elements so that we can tell the stage component if an element is draggable, resizeable, selectable...
-          const changedSectionsContent = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}, .${ElementType.SECTION} .${SECTION_CONTAINER}`))
-          changedSectionsContent.forEach((el: HTMLElement) => el.classList.add(
-            Constants.PREVENT_DRAGGABLE_CLASS_NAME,
-            // Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME,
-            // Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME
-          ))
-          actions.push(`Changed the body and ${changedSections.length} sections with new CSS classes to <a href="https://github.com/silexlabs/stage/" target="_blank">the new stage component.</a>`)
+        // we add classes to the elements so that we can tell the stage component if an element is draggable, resizeable, selectable...
+        const changedSectionsContent = Array.from(doc.querySelectorAll(`.${ElementType.SECTION}, .${ElementType.SECTION} .${SECTION_CONTAINER}`))
+        changedSectionsContent.forEach((el: HTMLElement) => el.classList.add(
+          Constants.PREVENT_DRAGGABLE_CLASS_NAME,
+          // Constants.PREVENT_RESIZABLE_LEFT_CLASS_NAME,
+          // Constants.PREVENT_RESIZABLE_RIGHT_CLASS_NAME
+        ))
+        actions.push(`Changed the body and ${changedSections.length} sections with new CSS classes to <a href="https://github.com/silexlabs/stage/" target="_blank">the new stage component.</a>`)
 
-            // types are now with a "-element" suffix
-            const changedElements = Array.from(doc.querySelectorAll(`[${Constants.TYPE_ATTR}]`))
-          changedElements.forEach((el: HTMLElement) => el.setAttribute(Constants.TYPE_ATTR, el.getAttribute(Constants.TYPE_ATTR) + '-element'))
+        // types are now with a "-element" suffix
+        const changedElements = Array.from(doc.querySelectorAll(`[${Constants.TYPE_ATTR}]`))
+        changedElements.forEach((el: HTMLElement) => el.setAttribute(Constants.TYPE_ATTR, el.getAttribute(Constants.TYPE_ATTR) + '-element'))
 
-          actions.push(`Updated ${ changedElements.length } elements, changed their types to match the new version of Silex.`)
+        actions.push(`Updated ${ changedElements.length } elements, changed their types to match the new version of Silex.`)
       }
       resolve(actions)
     })
@@ -421,7 +421,7 @@ export default class BackwardCompat {
 
           // remove juery-ui at publication
           Array.from(doc.querySelectorAll('script[src$="pageable.js"], script[src$="jquery-ui.js"]'))
-          .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
+            .forEach((tag) => tag.setAttribute(Constants.ATTR_REMOVE_PUBLISH, ''))
 
           ;['prevent-draggable', SECTION_CONTAINER].forEach((className) => this.removeUselessCSSClass(doc, className))
 
@@ -472,11 +472,11 @@ export default class BackwardCompat {
       const actions = []
       if (this.hasToUpdate(version, [2, 2, 13])) {
         Array.from(doc.querySelectorAll('[data-silex-href]'))
-        .forEach((tag: HTMLElement) => {
-          const newEl = setTagName(tag, 'A') as HTMLLinkElement
-          newEl.href = tag.getAttribute('data-silex-href')
-          newEl.removeAttribute('data-silex-href')
-        })
+          .forEach((tag: HTMLElement) => {
+            const newEl = setTagName(tag, 'A') as HTMLLinkElement
+            newEl.href = tag.getAttribute('data-silex-href')
+            newEl.removeAttribute('data-silex-href')
+          })
         actions.push('Replaced old Silex links with standard HTML links.')
       }
       resolve(actions)
@@ -510,12 +510,12 @@ export default class BackwardCompat {
         ]
         attrs.forEach((attr: string) => {
           Array.from(doc.querySelectorAll(`[${attr}]`))
-          .forEach(el => {
-            if(el.hasAttribute(attr) && el.getAttribute(attr) === '') {
-              el.removeAttribute(attr)
-              numEmpty++
-            }
-          })
+            .forEach(el => {
+              if(el.hasAttribute(attr) && el.getAttribute(attr) === '') {
+                el.removeAttribute(attr)
+                numEmpty++
+              }
+            })
         })
         if(numEmpty) actions.push(`Removed ${numEmpty} empty attributes (${attrs.join(', ')})`)
 

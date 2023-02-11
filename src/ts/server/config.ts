@@ -38,9 +38,9 @@ export const config: Config = {
       },
     ]
     // add project route for source maps
-    .concat(debug ? [{
-      route: '/',
-      path: './',
-    }] : []),
+      .concat(debug ? [{
+        route: '/',
+        path: './',
+      }] : []),
   },
 }

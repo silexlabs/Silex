@@ -39,10 +39,10 @@ const plugins = [
 
 // Check that all plugins are loaded correctly
 plugins
-.filter(p => !p.value)
-.forEach(p => {
-  throw new Error(`Plugin ${p.name} could not be loaded correctly`)
-})
+  .filter(p => !p.value)
+  .forEach(p => {
+    throw new Error(`Plugin ${p.name} could not be loaded correctly`)
+  })
 
 /**
  * @fileoverview Silex config overridable from index.pug

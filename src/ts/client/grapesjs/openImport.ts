@@ -48,7 +48,7 @@ export default function openImport(editor, config) {
       const cnt = typeof importCnt === 'function' ? importCnt(editor) : importCnt
       codeViewer.setContent(cnt || '')
       modal.open().getModel()
-      .once('change:open', () => editor.stopCommand(this.id))
+        .once('change:open', () => editor.stopCommand(this.id))
       viewerEditor.refresh()
     },
 

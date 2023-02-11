@@ -17,9 +17,9 @@ export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
         content: '',
         attributes: { class: 'new-page-dialog' },
       })
-      .onceClose(() => {
-        editor.stopCommand(cmdOpenNewPageDialog) // apparently this is needed to be able to run the command several times
-      })
+        .onceClose(() => {
+          editor.stopCommand(cmdOpenNewPageDialog) // apparently this is needed to be able to run the command several times
+        })
       displayDialog(editor, opts, page)
       modal.setContent(el)
       const form = el.querySelector('form')
@@ -63,10 +63,10 @@ function saveDialog(editor, config, page) {
   const form = el.querySelector('form')
   const formData = new FormData(form)
   const data = Array.from(formData)
-  .reduce((aggregate, [key, value]) => {
-    aggregate[key] = value
-    return aggregate
-  }, {})
+    .reduce((aggregate, [key, value]) => {
+      aggregate[key] = value
+      return aggregate
+    }, {})
   page.set(data)
   // save if auto save is on
   editor.getModel().set('changesCount', editor.getDirtyCount() + 1)

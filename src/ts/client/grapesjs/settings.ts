@@ -18,9 +18,9 @@ export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) =>
         content: '',
         attributes: { class: 'settings-dialog' },
       })
-      .onceClose(() => {
-        editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
-      })
+        .onceClose(() => {
+          editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
+        })
       displaySettings(editor, opts, page)
       modal.setContent(el)
       const form = el.querySelector('form')
@@ -127,11 +127,11 @@ function saveSettings(editor, config, model = editor.getModel()) {
   const form = el.querySelector('form')
   const formData = new FormData(form)
   const data = Array.from(formData as any)
-  .reduce((aggregate, [key, value]) => {
-    aggregate[key] = value
-    return aggregate
-  }, {}) as {[key: string]: any}
-  // take the name out to the main model (by design in grapesjs pages)
+    .reduce((aggregate, [key, value]) => {
+      aggregate[key] = value
+      return aggregate
+    }, {}) as {[key: string]: any}
+    // take the name out to the main model (by design in grapesjs pages)
   const { name, ...settings } = data
   model.set({
     settings,

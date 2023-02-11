@@ -77,30 +77,30 @@ export default function PublishRouter(config: Config, unifile) {
     const hostingProvider = getHostingProviderFromReq(req)
     const hostingProviderInfo = hostingProvider.getOptions(req.session.unifile)
     hostingProvider.getVhosts(req.session.unifile)
-    .then((vhosts) => {
-      res.json(vhosts,
-        // .slice(0, 10) // max number of vhosts
-      )
-    })
-    .catch((err) => {
-      res.status(400).send({
-        message: `Error from hosting provider "${ hostingProviderInfo.displayName }": ${ err.message }`,
-        err,
+      .then((vhosts) => {
+        res.json(vhosts,
+          // .slice(0, 10) // max number of vhosts
+        )
       })
-    })
+      .catch((err) => {
+        res.status(400).send({
+          message: `Error from hosting provider "${ hostingProviderInfo.displayName }": ${ err.message }`,
+          err,
+        })
+      })
   })
   router.get('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
     hostingProvider.getVhostData(req.session.unifile, req.params.name)
-    .then((result) => {
-      res.json(result)
-    })
-    .catch((err) => {
-      res.json({
-        domain: '',
-        msg: err,
+      .then((result) => {
+        res.json(result)
       })
-    })
+      .catch((err) => {
+        res.json({
+          domain: '',
+          msg: err,
+        })
+      })
   })
   router.post('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
@@ -108,30 +108,30 @@ export default function PublishRouter(config: Config, unifile) {
       domain: req.body.domain,
     }
     hostingProvider.setVhostData(req.session.unifile, req.params.name, data)
-    .then((result) => {
-      res.json(result)
-    })
-    .catch((err) => {
-      console.error('Error when trying to attach a domain', req.params.name, data, err)
-      res.status(400).send({
-        message: `Error when trying to attach a domain to "${ req.params.name }". Error details: ${ err.message }`,
-        err,
+      .then((result) => {
+        res.json(result)
       })
-    })
+      .catch((err) => {
+        console.error('Error when trying to attach a domain', req.params.name, data, err)
+        res.status(400).send({
+          message: `Error when trying to attach a domain to "${ req.params.name }". Error details: ${ err.message }`,
+          err,
+        })
+      })
   })
   router.delete('/hosting/:hostingProviderName/vhost/:name', (req: express.Request, res: express.Response) => {
     const hostingProvider = getHostingProviderFromReq(req)
     hostingProvider.setVhostData(req.session.unifile, req.params.name, null)
-    .then((result) => {
-      res.json(result)
-    })
-    .catch((err) => {
-      console.error('Error when trying to delete a domain', req.params.name, err)
-      res.status(400).send({
-        message: `Error when trying to remove domain from "${ req.params.name }". Error details: ${ err.message }`,
-        err,
+      .then((result) => {
+        res.json(result)
       })
-    })
+      .catch((err) => {
+        console.error('Error when trying to delete a domain', req.params.name, err)
+        res.status(400).send({
+          message: `Error when trying to remove domain from "${ req.params.name }". Error details: ${ err.message }`,
+          err,
+        })
+      })
   })
   // expose addHostingProvider to apps adding hosting providers with silex.publishRouter.addHostingProvider(...))
   ;(router as any).addHostingProvider = (hostingProvider) => addHostingProvider(hostingProvider)

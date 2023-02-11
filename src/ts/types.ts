@@ -55,7 +55,7 @@ export interface WebsiteData {
   name: string,
   settings: WebsiteSettings,
   fonts: Font[],
-  symbols: Symbol[],
+  symbols: symbol[],
 }
 
 export interface Font {
