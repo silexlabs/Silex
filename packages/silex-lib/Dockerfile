@@ -8,7 +8,7 @@ COPY . /silex
 WORKDIR /silex
 RUN apt-get update
 RUN npm install
-RUN npm run build
+#RUN npm run build
 
 EXPOSE 6805
 CMD ["npm", "start"]
