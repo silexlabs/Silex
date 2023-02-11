@@ -52,9 +52,9 @@ const catBasic = 'Containers'
 const catText = 'Texts'
 const catMedia = 'Media'
 const catComponents = 'Components'
-const projectId = new URL(location.href).searchParams.get('projectId')
-const loadEndpoint = `/website/?projectId=${projectId}`
-const uploadEndpoint = `/assets/?projectId=${projectId}`
+const projectId = new URL(location.href).searchParams.get('projectId') || 'default'
+const loadEndpoint = `./website/?projectId=${projectId}`
+const uploadEndpoint = `./assets/?projectId=${projectId}`
 
 export const defaultConfig = {
 
