@@ -1,0 +1,3470 @@
+/* Normalize css */
+@import url(../libs/font-awesome/css/font-awesome.min.css);
+/*! normalize.css v8.0.1 | MIT License | github.com/necolas/normalize.css */
+
+/* Document
+   ========================================================================== */
+
+/**
+ * 1. Correct the line height in all browsers.
+ * 2. Prevent adjustments of font size after orientation changes in iOS.
+ */
+
+html {
+  line-height: 1.15; /* 1 */
+  -webkit-text-size-adjust: 100%; /* 2 */
+}
+
+/* Sections
+   ========================================================================== */
+
+/**
+ * Remove the margin in all browsers.
+ */
+
+body {
+  margin: 0;
+}
+
+/**
+ * Render the `main` element consistently in IE.
+ */
+
+main {
+  display: block;
+}
+
+/**
+ * Correct the font size and margin on `h1` elements within `section` and
+ * `article` contexts in Chrome, Firefox, and Safari.
+ */
+
+h1 {
+  font-size: 2em;
+  margin: 0.67em 0;
+}
+
+/* Grouping content
+   ========================================================================== */
+
+/**
+ * 1. Add the correct box sizing in Firefox.
+ * 2. Show the overflow in Edge and IE.
+ */
+
+hr {
+  box-sizing: content-box; /* 1 */
+  height: 0; /* 1 */
+  overflow: visible; /* 2 */
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+pre {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/* Text-level semantics
+   ========================================================================== */
+
+/**
+ * Remove the gray background on active links in IE 10.
+ */
+
+a {
+  background-color: transparent;
+}
+
+/**
+ * 1. Remove the bottom border in Chrome 57-
+ * 2. Add the correct text decoration in Chrome, Edge, IE, Opera, and Safari.
+ */
+
+abbr[title] {
+  border-bottom: none; /* 1 */
+  text-decoration: underline; /* 2 */
+  text-decoration: underline dotted; /* 2 */
+}
+
+/**
+ * Add the correct font weight in Chrome, Edge, and Safari.
+ */
+
+b,
+strong {
+  font-weight: bolder;
+}
+
+/**
+ * 1. Correct the inheritance and scaling of font size in all browsers.
+ * 2. Correct the odd `em` font sizing in all browsers.
+ */
+
+code,
+kbd,
+samp {
+  font-family: monospace, monospace; /* 1 */
+  font-size: 1em; /* 2 */
+}
+
+/**
+ * Add the correct font size in all browsers.
+ */
+
+small {
+  font-size: 80%;
+}
+
+/**
+ * Prevent `sub` and `sup` elements from affecting the line height in
+ * all browsers.
+ */
+
+sub,
+sup {
+  font-size: 75%;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+sup {
+  top: -0.5em;
+}
+
+/* Embedded content
+   ========================================================================== */
+
+/**
+ * Remove the border on images inside links in IE 10.
+ */
+
+img {
+  border-style: none;
+}
+
+/* Forms
+   ========================================================================== */
+
+/**
+ * 1. Change the font styles in all browsers.
+ * 2. Remove the margin in Firefox and Safari.
+ */
+
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit; /* 1 */
+  font-size: 100%; /* 1 */
+  line-height: 1.15; /* 1 */
+  margin: 0; /* 2 */
+}
+
+/**
+ * Show the overflow in IE.
+ * 1. Show the overflow in Edge.
+ */
+
+button,
+input { /* 1 */
+  overflow: visible;
+}
+
+/**
+ * Remove the inheritance of text transform in Edge, Firefox, and IE.
+ * 1. Remove the inheritance of text transform in Firefox.
+ */
+
+button,
+select { /* 1 */
+  text-transform: none;
+}
+
+/**
+ * Correct the inability to style clickable types in iOS and Safari.
+ */
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+}
+
+/**
+ * Remove the inner border and padding in Firefox.
+ */
+
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/**
+ * Restore the focus styles unset by the previous rule.
+ */
+
+button:-moz-focusring,
+[type="button"]:-moz-focusring,
+[type="reset"]:-moz-focusring,
+[type="submit"]:-moz-focusring {
+  outline: 1px dotted ButtonText;
+}
+
+/**
+ * Correct the padding in Firefox.
+ */
+
+fieldset {
+  padding: 0.35em 0.75em 0.625em;
+}
+
+/**
+ * 1. Correct the text wrapping in Edge and IE.
+ * 2. Correct the color inheritance from `fieldset` elements in IE.
+ * 3. Remove the padding so developers are not caught out when they zero out
+ *    `fieldset` elements in all browsers.
+ */
+
+legend {
+  box-sizing: border-box; /* 1 */
+  color: inherit; /* 2 */
+  display: table; /* 1 */
+  max-width: 100%; /* 1 */
+  padding: 0; /* 3 */
+  white-space: normal; /* 1 */
+}
+
+/**
+ * Add the correct vertical alignment in Chrome, Firefox, and Opera.
+ */
+
+progress {
+  vertical-align: baseline;
+}
+
+/**
+ * Remove the default vertical scrollbar in IE 10+.
+ */
+
+textarea {
+  overflow: auto;
+}
+
+/**
+ * 1. Add the correct box sizing in IE 10.
+ * 2. Remove the padding in IE 10.
+ */
+
+[type="checkbox"],
+[type="radio"] {
+  box-sizing: border-box; /* 1 */
+  padding: 0; /* 2 */
+}
+
+/**
+ * Correct the cursor style of increment and decrement buttons in Chrome.
+ */
+
+[type="number"]::-webkit-inner-spin-button,
+[type="number"]::-webkit-outer-spin-button {
+  height: auto;
+}
+
+/**
+ * 1. Correct the odd appearance in Chrome and Safari.
+ * 2. Correct the outline style in Safari.
+ */
+
+[type="search"] {
+  -webkit-appearance: textfield; /* 1 */
+  outline-offset: -2px; /* 2 */
+}
+
+/**
+ * Remove the inner padding in Chrome and Safari on macOS.
+ */
+
+[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+/**
+ * 1. Correct the inability to style clickable types in iOS and Safari.
+ * 2. Change font properties to `inherit` in Safari.
+ */
+
+::-webkit-file-upload-button {
+  -webkit-appearance: button; /* 1 */
+  font: inherit; /* 2 */
+}
+
+/* Interactive
+   ========================================================================== */
+
+/*
+ * Add the correct display in Edge, IE 10+, and Firefox.
+ */
+
+details {
+  display: block;
+}
+
+/*
+ * Add the correct display in all browsers.
+ */
+
+summary {
+  display: list-item;
+}
+
+/* Misc
+   ========================================================================== */
+
+/**
+ * Add the correct display in IE 10+.
+ */
+
+template {
+  display: none;
+}
+
+/**
+ * Add the correct display in IE 10.
+ */
+
+[hidden] {
+  display: none;
+}
+
+[data-simplebar] {
+  position: relative;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-content: flex-start;
+  align-items: flex-start;
+}
+
+.simplebar-wrapper {
+  overflow: hidden;
+  width: inherit;
+  height: inherit;
+  max-width: inherit;
+  max-height: inherit;
+}
+
+.simplebar-mask {
+  direction: inherit;
+  position: absolute;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: auto !important;
+  height: auto !important;
+  z-index: 0;
+}
+
+.simplebar-offset {
+  direction: inherit !important;
+  box-sizing: inherit !important;
+  resize: none !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  padding: 0;
+  margin: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.simplebar-content-wrapper {
+  direction: inherit;
+  box-sizing: border-box !important;
+  position: relative;
+  display: block;
+  height: 100%; /* Required for horizontal native scrollbar to not appear if parent is taller than natural height */
+  width: auto;
+  max-width: 100%; /* Not required for horizontal scroll to trigger */
+  max-height: 100%; /* Needed for vertical scroll to trigger */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.simplebar-content-wrapper::-webkit-scrollbar,
+.simplebar-hide-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.simplebar-content:before,
+.simplebar-content:after {
+  content: ' ';
+  display: table;
+}
+
+.simplebar-placeholder {
+  max-height: 100%;
+  max-width: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.simplebar-height-auto-observer-wrapper {
+  box-sizing: inherit !important;
+  height: 100%;
+  width: 100%;
+  max-width: 1px;
+  position: relative;
+  float: left;
+  max-height: 1px;
+  overflow: hidden;
+  z-index: -1;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
+  flex-grow: inherit;
+  flex-shrink: 0;
+  flex-basis: 0;
+}
+
+.simplebar-height-auto-observer {
+  box-sizing: inherit;
+  display: block;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1000%;
+  width: 1000%;
+  min-height: 1px;
+  min-width: 1px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.simplebar-track {
+  z-index: 1;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+[data-simplebar].simplebar-dragging .simplebar-content {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+[data-simplebar].simplebar-dragging .simplebar-track {
+  pointer-events: all;
+}
+
+.simplebar-scrollbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  min-height: 10px;
+}
+
+.simplebar-scrollbar:before {
+  position: absolute;
+  content: '';
+  background: black;
+  border-radius: 7px;
+  left: 2px;
+  right: 2px;
+  opacity: 0;
+  transition: opacity 0.2s linear;
+}
+
+.simplebar-scrollbar.simplebar-visible:before {
+  /* When hovered, remove all transitions from drag handle */
+  opacity: 0.5;
+  transition: opacity 0s linear;
+}
+
+.simplebar-track.simplebar-vertical {
+  top: 0;
+  width: 11px;
+}
+
+.simplebar-track.simplebar-vertical .simplebar-scrollbar:before {
+  top: 2px;
+  bottom: 2px;
+}
+
+.simplebar-track.simplebar-horizontal {
+  left: 0;
+  height: 11px;
+}
+
+.simplebar-track.simplebar-horizontal .simplebar-scrollbar:before {
+  height: 100%;
+  left: 2px;
+  right: 2px;
+}
+
+.simplebar-track.simplebar-horizontal .simplebar-scrollbar {
+  right: auto;
+  left: 0;
+  top: 2px;
+  height: 7px;
+  min-height: 0;
+  min-width: 10px;
+  width: auto;
+}
+
+/* Rtl support */
+[data-simplebar-direction='rtl'] .simplebar-track.simplebar-vertical {
+  right: auto;
+  left: 0;
+}
+
+.hs-dummy-scrollbar-size {
+  direction: rtl;
+  position: fixed;
+  opacity: 0;
+  visibility: hidden;
+  height: 500px;
+  width: 500px;
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+.simplebar-hide-scrollbar {
+  position: fixed;
+  left: 0;
+  visibility: hidden;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Silex styles imports */
+/* colors */
+/* imports custom fonts */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: lighter;
+  font-display: swap;
+  src: local('Roboto'), url('../ce/cloud-explorer/fonts/Regular/OpenSans-Regular.woff2') format('woff2');
+}
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background-color: #2F2F2F;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #444;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #393939;
+}
+::selection {
+  background: #444;
+  color: #DDD;
+}
+::-moz-selection {
+  background: #444;
+  color: #DDD;
+}
+.hide-details-marker {
+  margin-left: 18px;
+  list-style: none;
+}
+.hide-details-marker::-webkit-details-marker {
+  display: none;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  overflow: hidden;
+  height: inherit;
+  /* without this, there is a white space bellow the dialogs background */
+  background-color: #444;
+}
+body .fa,
+body .fa-inverse {
+  font-family: FontAwesome;
+  text-decoration: none;
+  cursor: pointer;
+}
+body button[disabled],
+body input[disabled],
+body select[disabled] {
+  background-color: #393939;
+  opacity: 0.5;
+}
+body button,
+body input[type=button] {
+  cursor: pointer;
+}
+body button,
+body input,
+body select,
+body .silex-input {
+  border: 1px solid #444;
+  background-color: #2F2F2F;
+  border: 1px solid #2A2A2A;
+  box-shadow: 1px 1px 0 #535353;
+  color: #DDD;
+  border-radius: 2px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  height: 35px;
+}
+body button:not([disabled]):hover,
+body input:not([disabled]):hover,
+body select:not([disabled]):hover,
+body .silex-input:not([disabled]):hover,
+body button:not([disabled]):focus,
+body input:not([disabled]):focus,
+body select:not([disabled]):focus,
+body .silex-input:not([disabled]):focus {
+  border-width: 1px;
+  border-color: #7BC0FF;
+  outline: none;
+}
+body input[type=checkbox],
+body select,
+body label[for] {
+  cursor: pointer;
+}
+body input[type=checkbox] {
+  opacity: 0.8;
+}
+body input[type=number]::-webkit-inner-spin-button,
+body input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+body input[type="number"] {
+  -moz-appearance: textfield;
+}
+body details summary {
+  cursor: pointer;
+  outline: none;
+}
+body details p {
+  margin-left: 18px;
+}
+.hidden {
+  display: none;
+}
+/* "apollo mode" UI */
+.advanced-mode-on .silex-property-tool .switch-apollo-mode button:after {
+  content: '\f205';
+}
+.small-combo {
+  width: 45%;
+  padding: 2px;
+  cursor: pointer;
+}
+/* button templates to be used in this stylesheet, not referenced in the HTML */
+.button-template-selected {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.button-template {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+}
+.button-template:hover {
+  background-color: #2F2F2F;
+}
+.button-bar-template {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  font-weight: lighter;
+  float: left;
+  border-left: initial;
+}
+.button-bar-template:hover {
+  background-color: #2F2F2F;
+}
+.button-bar-first {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid #2F2F2F;
+  clear: left;
+}
+.button-bar-last {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid #2F2F2F;
+  margin-right: 2px;
+}
+.button-bar-container-template {
+  /* tags H1, H2, H3, P, A */
+}
+.button-bar-container-template .labels {
+  display: inline-block;
+  /* push the elements underneeth dispite it is floated */
+  width: 100%;
+}
+.button-bar-container-template .labels label {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  font-weight: lighter;
+  float: left;
+  border-left: initial;
+  margin-top: 5px;
+}
+.button-bar-container-template .labels label:hover {
+  background-color: #2F2F2F;
+}
+.button-bar-container-template .labels label.last-button {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid #2F2F2F;
+  margin-right: 2px;
+}
+.button-bar-container-template .labels label.first-button {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid #2F2F2F;
+  clear: left;
+}
+.small-font {
+  font-size: 12px;
+}
+.silex-logo-small {
+  vertical-align: middle;
+}
+.modal-dialog {
+  z-index: 220;
+}
+.advanced-mode-off .advanced-only {
+  display: none;
+}
+.advanced-mode-off h1,
+.advanced-mode-off h2,
+.advanced-mode-off h3 {
+  font-family: sans-serif;
+  color: #DDD;
+  font-weight: normal;
+}
+.advanced-mode-off .xsmall-font {
+  font-size: 13px;
+  font-weight: lighter;
+  color: #DDD;
+}
+/* less definitions */
+/* */
+/* generic styles  */
+/*
+  hidden-dialog is used instead of display none,
+  so that dialogs load normally even when the dialog is hidden
+*/
+.hidden-dialog {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  bottom: initial;
+  right: initial;
+}
+.visible-dialog {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+}
+.silex-modal-dialog {
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background-color: #393939;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  /* for CE iframe */
+  height: 100%;
+  /* for CE iframe */
+}
+.silex-modal-dialog.silex-hide-dialog {
+  display: none;
+}
+.silex-modal-dialog .header,
+.silex-modal-dialog .body {
+  padding: 0 35px;
+  color: #DDD;
+  font-size: 20px;
+  font-weight: lighter;
+}
+.silex-modal-dialog .header h1 {
+  display: inline-block;
+  padding: 17px 20px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+}
+.silex-modal-dialog .header .help-btn {
+  margin-left: 20px;
+  font-weight: 100;
+  font-size: 16px;
+  text-decoration: none;
+  color: #DDD;
+  opacity: 0.7;
+}
+.silex-modal-dialog .header .help-btn:hover {
+  opacity: 1;
+}
+.silex-modal-dialog .header .help-btn .icon:before {
+  padding: 0 5px;
+}
+.silex-modal-dialog .header .help-btn .label:hover {
+  text-decoration: underline;
+}
+.silex-modal-dialog .body {
+  overflow: auto;
+  flex: 1 1 auto;
+  height: 100%;
+  border-top: 1px solid #2F2F2F;
+  background-color: #444;
+}
+.silex-modal-dialog .body h2 {
+  font-size: 18px;
+}
+.silex-modal-dialog .pane > ul {
+  padding: 0;
+}
+.silex-modal-dialog .close-btn {
+  background: url("../assets/goog-ui/close.png") no-repeat center center;
+  width: 30px;
+  display: inline-block;
+  border: 0;
+  padding: 0;
+  height: 30px;
+  cursor: pointer;
+  right: 15px;
+  top: 15px;
+  position: absolute;
+  box-shadow: none;
+}
+.tip-of-the-day {
+  margin: 10px;
+  border: 1px solid #535353;
+  flex: 0 1 auto;
+  width: 300px;
+  height: 250px;
+}
+.tip-of-the-day > * {
+  text-align: center;
+}
+.tip-of-the-day::before {
+  content: "Info";
+  font-size: 15px;
+  margin: 0;
+  padding: 3px;
+  float: left;
+  background-color: #535353;
+  color: #DDD;
+}
+.tip-of-the-day a {
+  text-decoration: none;
+}
+.silex-dashboard .pane {
+  font-weight: lighter;
+  font-size: 13px;
+  font-style: normal;
+  margin-bottom: 50px;
+}
+.silex-dashboard .top {
+  display: flex;
+  justify-content: space-between;
+}
+.silex-dashboard .top .pane {
+  flex: 1 1 auto;
+  width: 50%;
+}
+.silex-dashboard .top .info-pane {
+  margin: 10px;
+  border: 1px solid #535353;
+  flex: 0 1 auto;
+  width: 300px;
+  height: 250px;
+  transition: opacity 0.5s ease-out;
+}
+.silex-dashboard .top .info-pane > * {
+  text-align: center;
+}
+.silex-dashboard .top .info-pane::before {
+  content: "Info";
+  font-size: 15px;
+  margin: 0;
+  padding: 3px;
+  float: left;
+  background-color: #535353;
+  color: #DDD;
+}
+.silex-dashboard .top .info-pane a {
+  text-decoration: none;
+}
+.silex-dashboard .top .info-pane.loading {
+  opacity: 0.5;
+}
+.silex-dashboard .top .info-pane a {
+  background-size: cover;
+  background-position: 50%;
+}
+.silex-dashboard .top .info-pane a:focus {
+  outline: none;
+}
+.silex-dashboard .top .info-pane .container {
+  margin: 40px 20px;
+}
+.silex-dashboard .top .open-pane {
+  max-width: 520px;
+  min-width: 300px;
+  margin-right: 10px;
+}
+@media (max-width: 800px) {
+  .silex-dashboard .top .open-pane {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+  }
+  .silex-dashboard .top .info-pane {
+    display: none;
+    margin: 0;
+  }
+}
+.silex-dashboard .pane h3 {
+  font-size: 16px;
+  margin: 0;
+}
+.silex-dashboard .pane a {
+  color: #DDD;
+  text-decoration: none;
+}
+.silex-dashboard .pane > ul.rendered-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.silex-dashboard .pane > ul.rendered-list li.silex-blank-templates .thumbnail {
+  background-size: initial;
+}
+.silex-dashboard .pane > ul.rendered-list li.silex-blank-templates .ui a {
+  display: none;
+}
+.silex-dashboard .pane .btn:hover,
+.silex-dashboard .pane .list-item:hover {
+  background-color: #393939;
+}
+.silex-dashboard .pane .btn {
+  padding: 6px;
+  border: 1px solid;
+  border-radius: 5px;
+  width: 100px;
+  text-align: center;
+  cursor: pointer;
+  display: inline-block;
+  margin: 0 5px;
+}
+.silex-dashboard .pane.emty-list .clear-btn {
+  display: none;
+}
+.silex-dashboard .pane li {
+  list-style: none;
+}
+.silex-dashboard .pane li.list-item {
+  display: block;
+  border: 1px solid #2F2F2F;
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 #535353;
+  padding: 10px;
+  cursor: pointer;
+  /* display ellipsis at the beginning of the line to truncate */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+}
+.silex-dashboard .pane li.list-item .fa {
+  padding-right: 10px;
+  float: left;
+}
+.silex-dashboard .pane li.list-item:last-child {
+  border-bottom: 1px solid #2F2F2F;
+}
+.silex-dashboard .pane li.rendered-item {
+  height: 300px;
+  width: 300px;
+  flex: 1 0 auto;
+  margin: 5px;
+}
+.silex-dashboard .pane li.rendered-item .thumbnail,
+.silex-dashboard .pane li.rendered-item h2,
+.silex-dashboard .pane li.rendered-item .ui {
+  margin: 0;
+}
+.silex-dashboard .pane li.rendered-item .thumbnail {
+  width: 100%;
+  height: 260px;
+  cursor: pointer;
+  background-position: 50%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #393939;
+}
+.silex-dashboard .pane li.rendered-item .ui {
+  height: 40px;
+  margin: 5px;
+  display: flex;
+}
+.silex-dashboard .pane li.rendered-item .ui h3 {
+  cursor: pointer;
+  flex: 1 1 auto;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.silex-dashboard .pane li.rendered-item .ui a {
+  padding: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.silex-dashboard .pane li.rendered-item .ui a:before {
+  padding: 0 5px;
+}
+.silex-dashboard .pane li.rendered-item .ui a:hover {
+  opacity: 1;
+}
+/* hide auto completion box when closed */
+.ace_autocomplete {
+  display: none;
+}
+.js-editor-opened .ace_autocomplete,
+.css-editor-opened .ace_autocomplete,
+.html-editor-opened .ace_autocomplete,
+.settings-editor-opened .ace_autocomplete {
+  display: initial;
+}
+/* */
+.ace-editor-container {
+  position: absolute;
+  width: auto;
+  z-index: 110;
+}
+.ace-editor-container .buttons.dock-btn {
+  background-image: url("../assets/dock.png");
+  right: 40px;
+  height: 15px;
+  width: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  top: 21px;
+}
+.ace-editor-container .buttons.close-btn {
+  background-image: url("../assets/goog-ui/close.png");
+  right: 0;
+  height: 38px;
+  width: 39px;
+  top: 11px;
+}
+.ace-editor-container .buttons {
+  cursor: pointer;
+  position: absolute;
+}
+.ace-editor-container .ace-editor {
+  flex: 1 1 auto;
+}
+.ace-editor-container .title-bar {
+  border-top: 1px solid #2F2F2F;
+  font-size: 20px;
+  height: 21px;
+  padding: 17px 20px;
+  color: white;
+  background-color: #393939;
+}
+.ace-editor-container .title-bar .help-icon {
+  color: #a9a9a9;
+  font-size: medium;
+  margin-left: 10px;
+}
+.tr_bubble {
+  z-index: 999 !important;
+}
+.silex-workspace {
+  transition: opacity 0.5s ease-out 0.25s;
+  opacity: 1;
+}
+.loader {
+  display: none;
+}
+.loading-pending .silex-workspace {
+  opacity: 0;
+}
+.silex-icons-menu {
+  background-color: #444;
+  /* hide sub menu during opening */
+  position: fixed;
+  z-index: 4;
+  /* over the sub menus */
+}
+.icon {
+  cursor: pointer;
+  width: 25px;
+  height: 18px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: contain;
+  transition: opacity 0.1s linear 0s;
+  text-decoration: none;
+}
+.off {
+  opacity: 0.5;
+}
+.on {
+  opacity: 1;
+  color: white;
+}
+.selected {
+  color: #7BC0FF;
+}
+.icon:hover {
+  opacity: 1;
+  color: white;
+  color: #7BC0FF;
+}
+div.icon,
+a.icon,
+span.icon {
+  font-size: large;
+}
+.sep {
+  border: 1px solid #393939;
+}
+.single-site-mode .single-site-mode-hidden {
+  display: none;
+}
+.silex-menu .menu-container {
+  background-color: #444;
+  /* hide sub menu during opening */
+  position: fixed;
+  z-index: 4;
+  /* over the sub menus */
+  overflow-x: hidden;
+  overflow-y: auto;
+  top: 38px;
+  bottom: 0;
+  width: 35px;
+}
+.silex-menu .menu-container .previewResponsize {
+  background-image: url(../assets/context-menu/responsize-small.png);
+}
+.silex-menu .menu-container .sep {
+  height: 0;
+}
+.silex-menu .menu-container .icon {
+  margin: 15px 5px 20px;
+}
+.goog-menubar.goog-menubar-horizontal,
+.crowdfundgin-button.menubar.goog-menubar.goog-menubar-horizontal {
+  display: none !important;
+}
+.silex-sub-menu-text {
+  padding: 10px;
+  min-width: 180px;
+  top: 38px;
+}
+.silex-sub-menu-text .sub-menu-item:hover {
+  background-color: #393939;
+  cursor: pointer;
+}
+.silex-sub-menu-text > *:last-child {
+  border-bottom: 1px solid #2F2F2F;
+}
+.about-menu-container,
+.file-menu-container,
+.code-menu-container,
+.add-menu-container {
+  background-color: #444;
+  /* hide sub menu during opening */
+  position: fixed;
+  z-index: 4;
+  /* over the sub menus */
+  transition: left 0.2s ease, opacity 0.2s ease;
+  left: -200px;
+  bottom: 27px;
+  opacity: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* the width is an approximation */
+  z-index: 3;
+  padding: 10px;
+  min-width: 180px;
+  top: 38px;
+}
+.about-menu-container .icon,
+.file-menu-container .icon,
+.code-menu-container .icon,
+.add-menu-container .icon {
+  margin: 9px 9px 20px;
+}
+.about-menu-container .sep,
+.file-menu-container .sep,
+.code-menu-container .sep,
+.add-menu-container .sep {
+  border: none;
+  border-top: 1px solid #2F2F2F;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0;
+}
+.about-menu-container > .label,
+.file-menu-container > .label,
+.code-menu-container > .label,
+.add-menu-container > .label {
+  background-color: #2A2A2A;
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 8px;
+  padding-left: 8px;
+  cursor: default;
+  line-height: 2;
+  color: #DDD;
+  text-align: center;
+}
+.about-menu-container > div,
+.file-menu-container > div,
+.code-menu-container > div,
+.add-menu-container > div,
+.about-menu-container > a,
+.file-menu-container > a,
+.code-menu-container > a,
+.add-menu-container > a {
+  min-height: 32px;
+  padding-top: 2px;
+  padding-right: 11px;
+  padding-bottom: 0px;
+  border: 1px solid #2F2F2F;
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 #535353;
+  color: #DDD;
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+.about-menu-container .shortcut,
+.file-menu-container .shortcut,
+.code-menu-container .shortcut,
+.add-menu-container .shortcut {
+  float: right;
+  margin-top: 7px;
+  margin-left: 15px;
+  font-style: italic;
+  opacity: 0.5;
+}
+.about-menu-container .prodotype-icon,
+.file-menu-container .prodotype-icon,
+.code-menu-container .prodotype-icon,
+.add-menu-container .prodotype-icon {
+  background-image: url(../libs/prodotype/prodotype-logo-small.png);
+}
+.about-menu-container .sub-menu-item:hover,
+.file-menu-container .sub-menu-item:hover,
+.code-menu-container .sub-menu-item:hover,
+.add-menu-container .sub-menu-item:hover {
+  background-color: #393939;
+  cursor: pointer;
+}
+.about-menu-container > *:last-child,
+.file-menu-container > *:last-child,
+.code-menu-container > *:last-child,
+.add-menu-container > *:last-child {
+  border-bottom: 1px solid #2F2F2F;
+}
+.silex-logo {
+  cursor: pointer;
+  position: relative;
+  z-index: 3;
+  margin: 6px 3px;
+}
+.file-menu-container .icon.svg {
+  position: absolute;
+  margin: 0 8px;
+  width: 20px;
+}
+.file-menu-container .file-save-as {
+  padding-top: 6px;
+}
+.file-menu-container .file-save-as span {
+  margin-left: 34px;
+  line-height: 1.8;
+}
+span.icon {
+  padding: 10px;
+  margin: 18px;
+}
+span.icon.fa-inverse {
+  padding-left: 0;
+  padding-right: 0;
+}
+span.icon.text {
+  background-image: url(../assets/context-menu/glyphicons-108-text-resize.png);
+}
+span.icon.image {
+  background-image: url(../assets/context-menu/glyphicons-139-picture.png);
+}
+span.icon.container {
+  background-image: url(../assets/context-menu/glyphicons-95-vector-path-square.png);
+}
+span.icon.small-icon {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 40%;
+  margin: 0;
+  padding: 0 5px;
+  font-size: medium;
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+}
+span.icon.body::before {
+  content: 'B';
+  font-size: small;
+  border: 1px solid;
+  padding: 0 3px;
+}
+/* sub menus visibility */
+body.page-tool-visible .silex-menu .show-pages.icon {
+  opacity: 1;
+}
+body.page-tool-visible .silex-page-tool {
+  left: 35px;
+  width: inherit;
+  opacity: 1;
+}
+body.about-menu-visible .silex-menu .show-about-menu.icon {
+  opacity: 1;
+}
+body.about-menu-visible .about-menu-container {
+  left: 35px;
+  width: inherit;
+  opacity: 1;
+}
+body.file-menu-visible .silex-menu .show-file-menu.icon {
+  opacity: 1;
+}
+body.file-menu-visible .file-menu-container {
+  left: 35px;
+  width: inherit;
+  opacity: 1;
+}
+body.code-menu-visible .silex-menu .show-code-menu.icon {
+  opacity: 1;
+}
+body.code-menu-visible .code-menu-container {
+  left: 35px;
+  width: inherit;
+  opacity: 1;
+}
+body.add-menu-visible .silex-menu .show-add-menu.icon {
+  opacity: 1;
+}
+body.add-menu-visible .add-menu-container {
+  left: 35px;
+  width: inherit;
+  opacity: 1;
+}
+/* *** */
+body .silex-menu .mobile.icon.fa-inverse.fa-mobile {
+  height: 32px;
+  font-size: 27px;
+}
+body .silex-menu .mobile {
+  opacity: 1;
+  color: white;
+}
+body .silex-menu .desktop {
+  opacity: 1;
+  color: white;
+  color: #7BC0FF;
+}
+body.mobile-mode .silex-menu .mobile {
+  opacity: 1;
+  color: white;
+  color: #7BC0FF;
+}
+body.mobile-mode .silex-menu .desktop {
+  opacity: 1;
+  color: white;
+}
+.silex-context-menu {
+  background-color: #444;
+  /* hide sub menu during opening */
+  position: fixed;
+  z-index: 4;
+  /* over the sub menus */
+  left: 35px;
+  right: 250px;
+  top: 0;
+  height: 38px;
+  padding-left: 10px;
+  display: flex;
+  justify-content: center;
+}
+.silex-context-menu .icon {
+  margin: 9px;
+}
+.silex-context-menu .sep {
+  width: 0px;
+}
+.silex-context-menu .copy {
+  background-image: url(../assets/context-menu/glyphicons-512-copy.png);
+}
+.silex-context-menu .paste {
+  background-image: url(../assets/context-menu/glyphicons-513-paste.png);
+}
+.silex-context-menu .current-page {
+  margin: 5px 30px;
+  padding: 3px 10px;
+  font-size: 14px;
+  border: 1px solid #2A2A2A;
+  color: #DDD;
+  cursor: pointer;
+  /* elipsis at the begining when overflow */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  direction: rtl;
+  /* */
+}
+.silex-context-menu .current-page label {
+  cursor: pointer;
+  opacity: 0.5;
+}
+.silex-context-menu .current-page:hover {
+  border-style: inset;
+}
+/* uses styles from context-menu */
+.silex-bread-crumbs {
+  background-color: #444;
+  /* hide sub menu during opening */
+  position: fixed;
+  z-index: 4;
+  /* over the sub menus */
+  left: 35px;
+  right: 250px;
+  top: 0;
+  height: 38px;
+  padding-left: 10px;
+  display: flex;
+  top: initial;
+  padding-left: initial;
+  bottom: 0;
+  height: 27px;
+}
+.silex-bread-crumbs .crumb {
+  display: inline-flex;
+  height: 20px;
+  position: relative;
+  color: #DDD;
+  padding: 7px 10px 0 20px;
+  margin-left: -10px;
+  font-size: small;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.silex-bread-crumbs .sep {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+.silex-bread-crumbs .sep .svg {
+  color: #444;
+}
+.silex-page-tool {
+  background-color: #444;
+  /* hide sub menu during opening */
+  position: fixed;
+  z-index: 4;
+  /* over the sub menus */
+  transition: left 0.2s ease, opacity 0.2s ease;
+  left: -200px;
+  opacity: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* the width is an approximation */
+  z-index: 3;
+  padding: 8px 10px 0 10px;
+  top: 38px;
+  display: flex;
+  flex-direction: column;
+  bottom: 27px;
+}
+.silex-page-tool .icon {
+  margin: 9px 9px 20px;
+}
+.silex-page-tool .sep {
+  border: none;
+  border-top: 1px solid #2F2F2F;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0;
+}
+.silex-page-tool > .label {
+  background-color: #2A2A2A;
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 8px;
+  padding-left: 8px;
+  cursor: default;
+  line-height: 2;
+  color: #DDD;
+  text-align: center;
+}
+.silex-page-tool > div,
+.silex-page-tool > a {
+  min-height: 32px;
+  padding-top: 2px;
+  padding-right: 11px;
+  padding-bottom: 0px;
+  border: 1px solid #2F2F2F;
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 #535353;
+  color: #DDD;
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: none;
+}
+.silex-page-tool .shortcut {
+  float: right;
+  margin-top: 7px;
+  margin-left: 15px;
+  font-style: italic;
+  opacity: 0.5;
+}
+.silex-page-tool .prodotype-icon {
+  background-image: url(../libs/prodotype/prodotype-logo-small.png);
+}
+.silex-page-tool .add-page {
+  position: absolute;
+  right: 0;
+  margin: 4px 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+.silex-page-tool .add-page:hover {
+  color: #7BC0FF;
+}
+.silex-page-tool .page-ghost {
+  opacity: 0.5;
+}
+.silex-page-tool .page-icon {
+  color: #535353;
+  padding: 4px;
+  float: right;
+  cursor: pointer;
+}
+.silex-page-tool .page-icon:hover {
+  color: #7BC0FF;
+}
+.silex-page-tool .page-handle {
+  cursor: move;
+}
+.silex-page-tool .page-preview {
+  width: 131px;
+  height: 80px;
+  position: relative;
+  margin-bottom: 15px;
+  margin-left: 5px;
+  background-color: #FFF;
+  cursor: pointer;
+  /*
+    .delete {
+      opacity: 0;
+      right: 4px;
+      top: 3px;
+      position: absolute;
+      cursor: pointer;
+      color: #333;
+      font-size: 18px;
+      transition: all .2s;
+
+      &:hover {
+        color: #F00;
+      }
+    }
+    */
+}
+.silex-page-tool .page-preview:before {
+  pointer-events: none;
+  position: absolute;
+  content: '';
+  height: 0;
+  width: 0;
+  top: 0;
+  left: 0;
+  background: white;
+  /* IE9 */
+  background: linear-gradient(135deg, #444 45%, #aaaaaa 50%, #cccccc 56%, white 80%);
+  filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr='#ffffff', endColorstr='#000000');
+  /*For IE7-8-9*/
+  z-index: 1000;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+  -webkit-transition-duration: 0.3s;
+  transition-duration: 0.3s;
+  -webkit-transition-property: width, height;
+  transition-property: width, height;
+}
+.silex-page-tool .page-container.ui-selected .page-preview:before,
+.silex-page-tool .page-container .page-preview:hover:before {
+  width: 25px;
+  height: 25px;
+}
+.silex-page-tool .page-container.ui-can-not-delete .page-delete {
+  display: none;
+}
+.silex-page-tool .page-container.ui-can-not-properties .page-properties {
+  display: none;
+}
+.silex-page-tool .page-container.ui-can-not-move .page-handle {
+  display: none;
+}
+.silex-page-tool .ui-selected .page-preview {
+  cursor: default;
+  margin-left: 0;
+  width: 141px;
+  height: 89px;
+  border: none;
+}
+.silex-page-tool .ui-selected .page-preview .label {
+  font-weight: bold;
+}
+.silex-page-tool .page-tool-container {
+  flex: 1 1 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 10px;
+  min-width: 150px;
+}
+.silex-page-tool .page-container {
+  margin-top: 5px;
+  text-decoration: none;
+  outline: none;
+  display: block;
+}
+.silex-page-tool .page-container .label {
+  bottom: 0;
+  padding: 5px;
+  position: absolute;
+  width: 100%;
+  overflow: hidden;
+  color: #333;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  color: #2A2A2A;
+}
+.silex-page-tool .icon.fa-fw.fa-inverse {
+  font-size: initial;
+  font-weight: lighter;
+  cursor: pointer;
+  margin: auto;
+  padding: 0;
+  line-height: 1.25;
+  padding-right: 5px;
+  display: inline-block;
+}
+.silex-page-tool .ui-container {
+  padding: 0;
+  display: flex;
+}
+.format-buttons label.p {
+  font-size: 13px;
+}
+.format-buttons label.b {
+  font-weight: bold;
+}
+.format-buttons label.u {
+  text-decoration: underline;
+}
+.format-buttons label.i {
+  font-style: italic;
+}
+.format-buttons label.h1 {
+  font-weight: bold;
+  font-size: 18px;
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+.format-buttons label.h {
+  font-weight: bold;
+  font-size: 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.format-buttons label.h {
+  font-weight: bold;
+  font-size: 14px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+.format-buttons label.a {
+  font-size: 14px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+.small-text-input {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+}
+.silex-property-tool {
+  color: #DDD;
+  position: fixed;
+  right: 0;
+  left: 250px;
+  top: 0;
+  overflow: hidden;
+  bottom: 0;
+  background-color: #444;
+  font-size: small;
+  /* visibility of the content depends on tabs */
+  /* visibility of the content depends on tabs */
+  /* */
+  /* only the inline editor stays 100% width */
+  /*
+    a box to edit color:
+    * label + text for alpha
+    * color input tag
+   */
+  /* */
+}
+.silex-property-tool a.help-section,
+.silex-property-tool a.help-section:visited {
+  /* help links */
+  color: #DDD;
+  outline: none;
+  text-align: right;
+  display: block;
+  padding: 0 10px;
+}
+.silex-property-tool hr {
+  margin: 7px 0 3px;
+  max-width: none;
+  border: none;
+  border-top: 1px solid #2A2A2A;
+  clear: both;
+}
+.silex-property-tool.params-tab .main-container > span .image-preview {
+  min-height: 100px;
+  background-size: cover;
+  background-position: center;
+}
+.silex-property-tool.params-tab .main-container > span input[type=file] {
+  color: #2F2F2F;
+  /* no need to display "no file chosen" */
+}
+.silex-property-tool .tabs {
+  z-index: 1;
+  /* over the scroll bar */
+  position: absolute;
+  width: 100%;
+  height: 38px;
+  background-color: #2F2F2F;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.silex-property-tool .tabs .tab {
+  display: inline-block;
+  cursor: pointer;
+  padding: 12px;
+  border-right: 1px solid #2F2F2F;
+  background-color: #393939;
+  font-weight: bold;
+}
+.silex-property-tool .tabs .tab.on {
+  background-color: #444;
+  border: 1px solid #2F2F2F;
+  border-bottom-color: #444;
+}
+.silex-property-tool .main-container {
+  padding: 0;
+  width: 100%;
+  border-bottom: 1px solid #2F2F2F;
+  flex: 1 0 auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  bottom: 0;
+  top: 38px;
+  position: absolute;
+  /* size set by workspace.js when the user resizes the property tool */
+  /* link editor */
+}
+.silex-property-tool .main-container .expandable > *,
+.silex-property-tool .main-container section > * {
+  max-width: 97%;
+  /* avoid horizontal scroll bar in the property tool */
+}
+.silex-property-tool .main-container h1.name {
+  display: inline-block;
+  margin-top: 10px;
+}
+.silex-property-tool .main-container .help {
+  float: right;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  line-height: 0;
+}
+.silex-property-tool .main-container .prop-editor-base {
+  width: 100%;
+  flex: 1 1 auto;
+}
+.silex-property-tool .main-container .prop-editor-base.half-col {
+  width: 50%;
+}
+.silex-property-tool .main-container .prodotype-component-editor .sub-editors .prop-editor-base {
+  padding: 5px 0;
+  border: none;
+}
+.silex-property-tool .main-container select {
+  background-color: #535353;
+}
+.silex-property-tool .main-container input,
+.silex-property-tool .main-container select {
+  height: 30px;
+  width: 93%;
+  overflow: hidden;
+}
+.silex-property-tool .main-container > span {
+  clear: both;
+}
+.silex-property-tool .main-container input.checkbox {
+  width: 15px;
+  height: 15px;
+  margin: 6px;
+  float: left;
+  min-width: 0;
+}
+.silex-property-tool .main-container .pages-container {
+  margin-top: 10px;
+}
+.silex-property-tool .main-container .pages-container input.checkbox + label {
+  display: block;
+  padding: 13px 0;
+  line-height: 0;
+}
+.silex-property-tool .main-container .pages-container .page-label {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  padding-left: 0;
+  line-height: 1px;
+}
+.silex-property-tool .main-container .view-on-mobile input.checkbox + label {
+  float: left;
+}
+.silex-property-tool .main-container .button {
+  width: 45%;
+  padding: 2px;
+  cursor: pointer;
+  display: inline;
+}
+.silex-property-tool .main-container .button.disabled {
+  color: graytext;
+  background-color: #393939;
+}
+.silex-property-tool .main-container .expanded .link-pane {
+  display: flex;
+}
+.silex-property-tool .main-container .expanded .link-pane input:disabled {
+  cursor: default;
+}
+.silex-property-tool .main-container .expanded .link-pane .link-state {
+  cursor: pointer;
+}
+.silex-property-tool .main-container .expanded .link-pane .link-button {
+  width: 50px;
+  margin-left: 5px;
+}
+.silex-property-tool fieldset {
+  margin: 15px 0;
+  border: 1px solid #DDD;
+  display: inline;
+}
+.silex-property-tool fieldset.style-property {
+  max-width: none;
+}
+.silex-property-tool .help-icon {
+  color: #a9a9a9;
+  font-size: medium;
+  margin-left: 10px;
+}
+.silex-property-tool .xsmall-font {
+  font-size: 13px;
+  font-weight: lighter;
+  color: #FFF;
+  line-height: 22px;
+}
+.silex-property-tool .color-button {
+  display: block;
+  width: 30px;
+  float: left;
+  padding-top: 2px;
+}
+.silex-property-tool .color-button .goog-inline-block {
+  display: block;
+}
+.silex-property-tool .image-url-input {
+  float: left;
+  margin-top: 2px;
+  width: 185px;
+}
+.silex-property-tool .expandable {
+  margin-top: -4px;
+  display: inline-block;
+  width: 100%;
+}
+.silex-property-tool .expandable legend,
+.silex-property-tool .expandable .expandable-legend {
+  background-color: #444;
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 8px;
+  cursor: default;
+  line-height: 2;
+  width: 100%;
+  cursor: pointer;
+  border-top: 1px solid #2F2F2F;
+  margin-top: 2px;
+}
+.silex-property-tool .expandable legend .fa,
+.silex-property-tool .expandable .expandable-legend .fa {
+  margin-right: 5px;
+}
+.silex-property-tool .expandable .body {
+  margin: 0;
+  margin-top: 5px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+.silex-property-tool .expandable.expanded .body {
+  max-height: inherit;
+  margin: 10px;
+}
+.silex-property-tool .expandable:last-child,
+.silex-property-tool .prodotype-component-editor .prop-editor-base:last-child {
+  border-bottom: 1px solid #2F2F2F;
+  /* last "accordion" header has a border */
+}
+.silex-property-tool .tab-page .border-placement-container {
+  border-bottom: 1px solid #2F2F2F;
+  margin-bottom: 5px;
+  padding-bottom: 15px;
+  clear: both;
+}
+.silex-property-tool .tab-page label.corner-placement-label,
+.silex-property-tool .tab-page label.border-placement-label {
+  display: block;
+  width: 100%;
+  margin: 0;
+  line-height: 22px;
+}
+.silex-property-tool .tab-page .half-col {
+  display: inline-block;
+  width: 45%;
+}
+.silex-property-tool .background-property {
+  line-height: 22px;
+}
+.silex-property-tool .background-property input.checkbox {
+  margin: 3px;
+}
+.silex-property-tool .background-editor .background-image select.combobox {
+  width: 45%;
+  padding: 2px;
+  cursor: pointer;
+  margin-right: 5px;
+  margin-top: 5px;
+}
+.silex-property-tool .opacity-input {
+  width: 91px;
+}
+.silex-property-tool fieldset {
+  margin-bottom: 10px;
+}
+.silex-property-tool .color-edit-container .color-edit-label {
+  float: left;
+  margin: 4px;
+}
+.silex-property-tool .color-edit-container .color-edit-label.alpha {
+  margin: 6px 0;
+}
+.silex-property-tool .color-edit-container .color-edit-color-input,
+.silex-property-tool .color-edit-container .color-edit-text-input {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+}
+.silex-property-tool .color-edit-container .color-edit-text-input {
+  clear: left;
+}
+.silex-property-tool .color-edit-container .color-edit-transparent-check {
+  clear: left;
+  margin: 6px;
+  float: left;
+  width: 15px;
+  height: 15px;
+}
+.silex-property-tool .position-editor label {
+  float: left;
+  margin: 5px 5px 5px 0px;
+  width: 10px;
+  text-align: right;
+  color: #DDD;
+  font-size: 11px;
+}
+.silex-property-tool .position-editor label.full-width {
+  float: unset;
+}
+.silex-property-tool .position-editor .two-col select,
+.silex-property-tool .position-editor .two-col label,
+.silex-property-tool .position-editor .two-col input {
+  width: 42%;
+  margin: 5px;
+  text-align: left;
+}
+.silex-property-tool .position-editor .two-col select {
+  margin-top: 0;
+  /* for flex direction etc */
+}
+.silex-property-tool .position-editor .right-bottom {
+  width: 25px;
+}
+.silex-property-tool .position-editor .z-index-label {
+  text-align: center;
+  width: 69px;
+}
+.silex-property-tool .position-editor .new-line {
+  clear: left;
+}
+.silex-property-tool .position-editor .input-with-unit {
+  display: inline-block;
+  width: 44%;
+  margin: 0px 10px 0px 0;
+}
+.silex-property-tool .position-editor .input-with-unit label.unit {
+  font-size: 70%;
+  margin-left: 0;
+  margin-top: 5px;
+  padding: 4px;
+  width: 0;
+}
+.silex-property-tool .position-editor .input-with-unit input {
+  width: 75%;
+  float: left;
+  font-size: 12px;
+  text-align: left;
+  margin: 0;
+}
+.silex-property-tool .page-container {
+  margin: 4px 0;
+}
+.silex-property-tool .title1 {
+  color: #DDD;
+  margin: 0;
+  font-weight: bold;
+  padding: 10px 0 0 19px;
+  height: 15px;
+  font-size: 14px;
+  text-transform: uppercase;
+  background-color: #444;
+}
+.silex-property-tool .element-style-editor {
+  margin-top: 10px;
+  height: 400px;
+}
+.silex-property-tool .silex-input {
+  height: auto;
+}
+.silex-property-tool .silex-input .tag {
+  color: #DDD;
+  background-color: #444;
+  border: none;
+  padding-bottom: 3px;
+}
+.silex-property-tool .opacity-property .opacity-input {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+}
+.silex-property-tool .border-property .border-width-container {
+  width: 100%;
+  clear: both;
+  display: block;
+}
+.silex-property-tool .border-property .border-width-container label {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+  margin: 4px;
+}
+.silex-property-tool .border-property .border-width-container input.border-width-input {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+  clear: left;
+}
+.silex-property-tool .border-property select.combobox {
+  width: 45%;
+  padding: 2px;
+  cursor: pointer;
+}
+.silex-property-tool .border-property select.combobox {
+  width: 45%;
+  padding: 2px;
+  cursor: pointer;
+  margin: 5px 10px;
+}
+.silex-property-tool .border-property .border-type-conainer {
+  float: left;
+  width: 100%;
+}
+.silex-property-tool .border-property .border-type-conainer div.border-type-label {
+  float: left;
+  margin: 8px;
+}
+.silex-property-tool .border-property .border-type-conainer .border-type-combo-box {
+  background: #FFF;
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+}
+.silex-property-tool .border-property .border-radius-container .border-radius-width-container {
+  float: left;
+  width: 100%;
+  margin: 5px 0;
+}
+.silex-property-tool .border-property .border-radius-container .border-radius-width-container label.border-radius-label {
+  float: left;
+  margin: 8px;
+}
+.silex-property-tool .border-property .border-radius-container .border-radius-width-container input.corner-radius-input {
+  width: 52px;
+  float: left;
+  margin: 0 4px;
+}
+.silex-property-tool .editor-container {
+  top: 38px;
+  bottom: 0;
+}
+.silex-property-tool .prodotype-style-editor-menu > div {
+  padding: 10px;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.p {
+  font-size: 13px;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.b {
+  font-weight: bold;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.u {
+  text-decoration: underline;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.i {
+  font-style: italic;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.h1 {
+  font-weight: bold;
+  font-size: 18px;
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.h {
+  font-weight: bold;
+  font-size: 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.h {
+  font-weight: bold;
+  font-size: 14px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.a {
+  font-size: 14px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.h1 {
+  font-size: 16px;
+  height: 0;
+}
+.silex-property-tool .prodotype-style-editor-menu .labels label.h2,
+.silex-property-tool .prodotype-style-editor-menu .labels label.h3 {
+  font-weight: bold;
+}
+.silex-property-tool .component-generic-editor {
+  margin: 20px 0;
+}
+.silex-property-tool .prodotype-component-editor,
+.silex-property-tool .prodotype-style-editor {
+  margin-top: -4px;
+  display: inline-block;
+  width: 100%;
+  border-top: 1px solid #2F2F2F;
+  /* prodotype editors labels, e.g. Heading1 */
+}
+.silex-property-tool .prodotype-component-editor legend,
+.silex-property-tool .prodotype-style-editor legend,
+.silex-property-tool .prodotype-component-editor .expandable-legend,
+.silex-property-tool .prodotype-style-editor .expandable-legend {
+  background-color: #444;
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 8px;
+  cursor: default;
+  line-height: 2;
+  width: 100%;
+  cursor: pointer;
+  border-top: 1px solid #2F2F2F;
+  margin-top: 2px;
+}
+.silex-property-tool .prodotype-component-editor legend .fa,
+.silex-property-tool .prodotype-style-editor legend .fa,
+.silex-property-tool .prodotype-component-editor .expandable-legend .fa,
+.silex-property-tool .prodotype-style-editor .expandable-legend .fa {
+  margin-right: 5px;
+}
+.silex-property-tool .prodotype-component-editor .body,
+.silex-property-tool .prodotype-style-editor .body {
+  margin: 0;
+  margin-top: 5px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease;
+}
+.silex-property-tool .prodotype-component-editor.expanded .body,
+.silex-property-tool .prodotype-style-editor.expanded .body {
+  max-height: inherit;
+  margin: 10px;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form {
+  /* tags H1, H2, H3, P, A */
+  padding-bottom: 15px;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form .labels,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form .labels {
+  display: inline-block;
+  /* push the elements underneeth dispite it is floated */
+  width: 100%;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form .labels label,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form .labels label {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  font-weight: lighter;
+  float: left;
+  border-left: initial;
+  margin-top: 5px;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form .labels label:hover,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form .labels label:hover {
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form .labels label.last-button,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form .labels label.last-button {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid #2F2F2F;
+  margin-right: 2px;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form .labels label.first-button,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form .labels label.first-button {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid #2F2F2F;
+  clear: left;
+}
+.silex-property-tool .prodotype-component-editor .style-editor-tag-form label,
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form label {
+  width: 15.8%;
+  min-width: 30px;
+  min-height: 17px;
+}
+.silex-property-tool .prodotype-component-editor.hide-panel,
+.silex-property-tool .prodotype-style-editor.hide-panel {
+  display: none;
+}
+.silex-property-tool .prodotype-component-editor > section > div,
+.silex-property-tool .prodotype-style-editor > section > div,
+.silex-property-tool .prodotype-component-editor > .prodotype-container > section > div,
+.silex-property-tool .prodotype-style-editor > .prodotype-container > section > div {
+  padding-left: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+.silex-property-tool .prodotype-component-editor .prop-editor-base > label,
+.silex-property-tool .prodotype-style-editor .prop-editor-base > label,
+.silex-property-tool .prodotype-component-editor .class-name-style-label,
+.silex-property-tool .prodotype-style-editor .class-name-style-label {
+  background-color: #444;
+  font-weight: 700;
+  font-size: 13px;
+  padding-top: 8px;
+  cursor: default;
+  line-height: 2;
+  width: 100%;
+  cursor: pointer;
+  border-top: 1px solid #2F2F2F;
+  margin-top: 2px;
+  display: block;
+  padding-bottom: 5px;
+}
+.silex-property-tool .prodotype-component-editor .prop-editor-base > label .fa,
+.silex-property-tool .prodotype-style-editor .prop-editor-base > label .fa,
+.silex-property-tool .prodotype-component-editor .class-name-style-label .fa,
+.silex-property-tool .prodotype-style-editor .class-name-style-label .fa {
+  margin-right: 5px;
+}
+.silex-property-tool .prodotype-component-editor .prop-editor-base.prop-editor-no-expandable > label,
+.silex-property-tool .prodotype-style-editor .prop-editor-base.prop-editor-no-expandable > label {
+  font-size: 10px;
+}
+.silex-property-tool .prodotype-style-editor .prodotype-style-editor-menu > label:first-child {
+  border-top: none;
+  /* no border just bellow the tabs */
+}
+.silex-property-tool .prodotype-style-editor {
+  /* buttons */
+  /* all labels in the style editor */
+  /* style the title of the ditor, i.e. "Paragraph", "Link"... */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* highlight selected label, e.g. H1 */
+  /* Pure CSS to show / hide prodotype editors (tags H1, H2, H3, P, A) */
+  /* vivibility checkbox (mobile only or not) */
+}
+.silex-property-tool .prodotype-style-editor .icon-btn {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  width: 13px;
+  height: 7px;
+  padding: 7px 7px 13px 7px;
+  margin: 4px 2px 10px 0;
+}
+.silex-property-tool .prodotype-style-editor .icon-btn:hover {
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .icon-btn-first {
+  margin-left: 7px;
+}
+.silex-property-tool .prodotype-style-editor .icon-btn-last {
+  margin-right: 8px;
+}
+.silex-property-tool .prodotype-style-editor .icon-btn-left {
+  float: left;
+}
+.silex-property-tool .prodotype-style-editor .icon-btn-right {
+  float: right;
+}
+.silex-property-tool .prodotype-style-editor .prodotype-container .prop-editor-name.prop-editor-no-expandable {
+  cursor: default;
+  border-top: none;
+}
+.silex-property-tool .prodotype-style-editor .prodotype-container > .editor > div > .prop-editor-base > .prop-editor-name {
+  border-top: 1px solid #2A2A2A;
+  font-size: 12px;
+  text-align: center;
+  color: #7BC0FF;
+  font-weight: normal;
+  cursor: default;
+}
+.silex-property-tool .prodotype-style-editor .hidden {
+  display: none;
+}
+.silex-property-tool .prodotype-style-editor .prodotype-container .editor > div > .prop-editor-base {
+  display: none;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(18) ~ .labels label:nth-child(18) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(18) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(18) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(17) ~ .labels label:nth-child(17) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(17) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(17) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(16) ~ .labels label:nth-child(16) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(16) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(16) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(15) ~ .labels label:nth-child(15) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(15) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(15) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(14) ~ .labels label:nth-child(14) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(14) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(14) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(13) ~ .labels label:nth-child(13) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(13) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(13) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(12) ~ .labels label:nth-child(12) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(12) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(12) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(11) ~ .labels label:nth-child(11) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(11) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(11) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(10) ~ .labels label:nth-child(10) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(10) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(10) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(9) ~ .labels label:nth-child(9) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(9) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(9) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(8) ~ .labels label:nth-child(8) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(8) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(8) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(7) ~ .labels label:nth-child(7) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(7) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(7) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(6) ~ .labels label:nth-child(6) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(6) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(6) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(5) ~ .labels label:nth-child(5) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(5) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(5) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(4) ~ .labels label:nth-child(4) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(4) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(4) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(3) ~ .labels label:nth-child(3) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(3) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(3) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(2) ~ .labels label:nth-child(2) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(2) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(2) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(1) ~ .labels label:nth-child(1) {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-tag-form input:checked:nth-child(1) ~ .prodotype-container .editor > div > .prop-editor-base:nth-child(1) {
+  display: initial;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-notext .style-editor-text {
+  display: none !important;
+}
+.silex-property-tool .prodotype-style-editor .style-editor-notext .style-editor-tag-notext {
+  display: block !important;
+}
+.silex-property-tool .prodotype-style-editor .visibility-style-label {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  height: 28px;
+  width: 28px;
+  font-size: 25px;
+}
+.silex-property-tool .prodotype-style-editor .visibility-style-label:hover {
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .visibility-style-checkbox:checked ~ .visibility-style-label {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .class-name-block {
+  display: flex;
+  padding: 0 2.5%;
+  /* select boxes have width:95% => padding of this container is 5% => 2.5% each side */
+}
+.silex-property-tool .prodotype-style-editor .class-name-block select {
+  border-left: none;
+  margin: 0;
+}
+.silex-property-tool .prodotype-style-editor .class-name-style-label {
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+  margin: 5px auto;
+  width: 95%;
+}
+.silex-property-tool .prodotype-style-editor select.combobox.pseudoclass-style-combo-box {
+  width: 103px;
+  height: 25px;
+  text-align: center;
+  background-color: #535353;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
+  margin-top: 2px;
+}
+.silex-property-tool .prodotype-style-editor .selection-info-container .dot {
+  margin: 0 7px;
+  cursor: default;
+}
+.silex-property-tool .prodotype-style-editor .selection-info-container span {
+  cursor: pointer;
+  margin-right: 3px;
+}
+.silex-property-tool .prodotype-style-editor .selection-info-container span:hover span {
+  text-decoration: underline;
+}
+.silex-property-tool .prodotype-style-editor .toggle-button {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  font-weight: lighter;
+  float: left;
+  border-left: initial;
+  height: 30px;
+  min-width: 30px;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-size: 18px;
+}
+.silex-property-tool .prodotype-style-editor .toggle-button:hover {
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .toggle-button:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid #2F2F2F;
+  clear: left;
+}
+.silex-property-tool .prodotype-style-editor .toggle-button:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid #2F2F2F;
+  margin-right: 2px;
+}
+.silex-property-tool .prodotype-style-editor .toggle-button[data-selected=true] {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+}
+.silex-property-tool .prodotype-style-editor .prop-editor-container {
+  display: inline-block;
+  /* for toggle buttons which are floated */
+  width: 100%;
+}
+.silex-property-tool .prodotype-style-editor .half-width {
+  width: 49%;
+  display: inline-block;
+}
+.silex-property-tool .prodotype-style-editor .quarter-width {
+  width: 24%;
+  display: inline-block;
+}
+.silex-property-tool .prodotype-style-editor .medium-width {
+  width: 66%;
+  display: inline-block;
+}
+.silex-property-tool .prodotype-style-editor .small-width {
+  width: 33%;
+  float: right;
+}
+.silex-property-tool .prodotype-style-editor .no-style .style-editor-tag-form {
+  visibility: hidden;
+}
+/* array of object editor */
+.prodotype-component-editor .prop-editor-base.prop-editor-expand > .prop-editor-container,
+.prodotype-style-editor .prop-editor-base.prop-editor-expand > .prop-editor-container {
+  padding-bottom: 10px;
+  margin-left: 5px;
+}
+.prodotype-component-editor .prop-editor-base.prop-editor-expand > .prop-editor-container input,
+.prodotype-style-editor .prop-editor-base.prop-editor-expand > .prop-editor-container input {
+  display: inline !important;
+}
+.prodotype-component-editor .prop-editor-base.prop_links .prop-editor-base,
+.prodotype-style-editor .prop-editor-base.prop_links .prop-editor-base {
+  padding: 10px;
+  border: none;
+}
+.prodotype-component-editor .prop-editor-base.prop_links .prop_properties .prop-editor-container > div,
+.prodotype-style-editor .prop-editor-base.prop_links .prop_properties .prop-editor-container > div {
+  display: flex;
+}
+.prodotype-component-editor .prop-editor-base.prop_links .prop_properties input,
+.prodotype-style-editor .prop-editor-base.prop_links .prop_properties input {
+  width: unset;
+}
+.prodotype-component-editor .prop-editor-base.prop_links .prop_properties input[type="url"],
+.prodotype-style-editor .prop-editor-base.prop_links .prop_properties input[type="url"] {
+  flex: 1 1 auto;
+}
+.prodotype-component-editor .prop-editor-base.prop_links .prop_properties input[type="button"],
+.prodotype-style-editor .prop-editor-base.prop_links .prop_properties input[type="button"] {
+  padding: 0 10px;
+}
+.prodotype-component-editor .prop-editor-no-expandable .prop-editor-container > input[type=checkbox],
+.prodotype-style-editor .prop-editor-no-expandable .prop-editor-container > input[type=checkbox] {
+  float: right;
+  width: 30px;
+  top: -34px;
+  position: relative;
+  right: 5px;
+}
+.prodotype-component-editor .prop-editor-container > input[type=color],
+.prodotype-style-editor .prop-editor-container > input[type=color] {
+  width: 15%;
+  padding: 2px;
+  float: left;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.prodotype-component-editor .prop-editor-container > input[type=color] + input,
+.prodotype-style-editor .prop-editor-container > input[type=color] + input {
+  width: 80%;
+  margin: 0;
+  padding-left: 0;
+}
+.prodotype-component-editor .prop-editor-base .number-editor .prop-editor-container > .unit-selector,
+.prodotype-style-editor .prop-editor-base .number-editor .prop-editor-container > .unit-selector {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-align: center;
+  margin-left: -24px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+  width: auto;
+  /* override styles Silex's combo boxes */
+  display: inline;
+  background-color: #2F2F2F;
+  border-left: 1px solid #444;
+  font-size: 10px;
+  height: 28px;
+}
+.prodotype-component-editor .btn,
+.prodotype-style-editor .btn {
+  width: 90%;
+  cursor: pointer;
+  display: inline;
+  margin: 10px;
+  opacity: 0.8;
+  font-size: 1.4em;
+}
+.prodotype-component-editor .btn:hover,
+.prodotype-style-editor .btn:hover {
+  opacity: 1;
+}
+.prodotype-component-editor ul,
+.prodotype-style-editor ul {
+  padding-left: 0;
+  /* override default ul value for style editor which has only sub editors */
+}
+.prodotype-component-editor .sub-editors-container {
+  border-bottom: 1px solid #2F2F2F;
+  border-left: 1px solid #2F2F2F;
+  border-right: 1px solid #2F2F2F;
+  margin-bottom: 10px;
+  padding-left: 5px;
+  padding-bottom: 10px;
+  /* *************************************** */
+  /* override silex property editor's styles */
+  /* *************************************** */
+}
+.prodotype-component-editor .sub-editors-container .prop-editor-base > .prop-editor-container {
+  padding-bottom: 0;
+}
+.prodotype-component-editor .sub-editors-container .sub-editors {
+  border-bottom: 1px solid #2F2F2F;
+  margin-bottom: 9px;
+}
+.prodotype-component-editor .sub-editors-container .prop-editor-name {
+  padding: 0;
+}
+.vertical-splitter {
+  top: 0;
+  bottom: 0;
+  right: 300px;
+  width: 5px;
+  position: absolute;
+  cursor: ew-resize;
+  z-index: 109;
+  background-color: #535353;
+}
+.dock-editors {
+  /* above text editor only when an editor is opened and docked */
+}
+.dock-editors.js-editor-opened .vertical-splitter,
+.dock-editors.css-editor-opened .vertical-splitter,
+.dock-editors.html-editor-opened .vertical-splitter {
+  z-index: 110;
+}
+.vertical-splitter .knob {
+  height: 100px;
+  width: 100%;
+  position: absolute;
+  background-color: #2F2F2F;
+  top: 50%;
+  margin-top: -50px;
+}
+.tip-of-the-day {
+  transition: opacity 0.5s ease-out;
+}
+.tip-of-the-day.loading {
+  opacity: 0.5;
+}
+.tip-of-the-day a {
+  background-size: cover;
+  background-position: 50%;
+}
+.tip-of-the-day a:focus {
+  outline: none;
+}
+.silex-settings-dialog {
+  /* ************** */
+  /* pane selection */
+  /* ************** */
+  /* current pane highlight */
+  /* **************** */
+  /* left pane styles */
+  /* **************** */
+  /* hide the labels and inputs when publication path is not set */
+}
+.silex-settings-dialog .right-pane {
+  /* pane visibility */
+}
+.silex-settings-dialog .right-pane .pane {
+  display: none;
+}
+.silex-settings-dialog .right-pane .pane.on {
+  display: initial;
+}
+.silex-settings-dialog .opened-label {
+  color: #7BC0FF;
+}
+.silex-settings-dialog.general-pane-visible [for=settings-general-pane] {
+  color: #7BC0FF;
+}
+.silex-settings-dialog.publish-pane-visible [for=settings-publish-pane] {
+  color: #7BC0FF;
+}
+.silex-settings-dialog.fonts-pane-visible [for=settings-fonts-pane] {
+  color: #7BC0FF;
+}
+.silex-settings-dialog.data-sources-pane-visible [for=settings-data-sources-pane] {
+  color: #7BC0FF;
+}
+.silex-settings-dialog.social-pane-visible [for=settings-social-pane] {
+  color: #7BC0FF;
+}
+.silex-settings-dialog .left-pane {
+  border-right: 1px solid #2F2F2F;
+  min-width: 210px;
+}
+.silex-settings-dialog .left-pane ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.silex-settings-dialog .left-pane ul li {
+  padding: 15px 0;
+  cursor: pointer;
+}
+.silex-settings-dialog .dialog a:link,
+.silex-settings-dialog .dialog a:visited {
+  color: white;
+}
+.silex-settings-dialog .dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.silex-settings-dialog .dialog a:link,
+.silex-settings-dialog .dialog .silex-settings-dialog .dialog a:visited {
+  color: #DDD;
+}
+.silex-settings-dialog .body {
+  overflow: hidden;
+  display: flex;
+}
+.silex-settings-dialog .right-pane {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+}
+.silex-settings-dialog .right-pane .pane > p {
+  margin: 10px;
+}
+.silex-settings-dialog .right-pane label.mobile-check {
+  vertical-align: top;
+  line-height: 2.5;
+}
+.silex-settings-dialog .right-pane ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.silex-settings-dialog .right-pane ul li {
+  color: white;
+  font-style: normal;
+  font-size: 13px;
+  line-height: normal;
+}
+.silex-settings-dialog .right-pane ul li .input-text {
+  width: 100%;
+}
+.silex-settings-dialog .right-pane ul li .input-text {
+  background-color: #2F2F2F;
+  color: white;
+}
+.silex-settings-dialog .right-pane ul li fieldset {
+  border: 1px solid #DDD;
+  margin: 10px;
+  padding: 10px;
+}
+.silex-settings-dialog .right-pane ul li input[type="checkbox"] {
+  margin-right: 5px;
+  margin-top: 1px;
+}
+.silex-settings-dialog .right-pane .publish-pane .input-service,
+.silex-settings-dialog .right-pane .publish-pane .input-path {
+  display: block;
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+.silex-settings-dialog .right-pane .publish-pane label {
+  margin-bottom: 20px;
+  display: inline-block;
+}
+.silex-settings-dialog .right-pane .publish-pane label.service {
+  width: 29%;
+}
+.silex-settings-dialog .right-pane .publish-pane label.path {
+  width: 69%;
+}
+.silex-settings-dialog .right-pane .publish-pane button.browse-publication-path {
+  display: block;
+}
+.silex-settings-dialog .right-pane .fonts-pane button,
+.silex-settings-dialog .right-pane .data-sources-pane button {
+  padding: 5px;
+  margin: 5px;
+  min-width: 25px;
+  min-height: 25px;
+}
+.silex-settings-dialog .right-pane .fonts-pane fieldset,
+.silex-settings-dialog .right-pane .data-sources-pane fieldset {
+  padding: 0;
+}
+.silex-settings-dialog .right-pane .fonts-pane fieldset > legend,
+.silex-settings-dialog .right-pane .data-sources-pane fieldset > legend,
+.silex-settings-dialog .right-pane .fonts-pane fieldset > p,
+.silex-settings-dialog .right-pane .data-sources-pane fieldset > p {
+  padding: 10px;
+}
+.silex-settings-dialog .right-pane .fonts-pane fieldset > legend,
+.silex-settings-dialog .right-pane .data-sources-pane fieldset > legend {
+  margin: 10px;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li {
+  display: flex;
+  border-bottom: 1px solid;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li:last-child,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li:last-child,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li:last-child,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li:last-child {
+  border-bottom: none;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li:first-child,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li:first-child,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li:first-child,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li:first-child {
+  border-top: 1px solid;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li .ui,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li .ui,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li .ui,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li .ui {
+  display: flex;
+  flex-direction: column;
+  border-right: #535353;
+  justify-content: center;
+  padding: 5px;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li .ui .del-btn,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li .ui .del-btn,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li .ui .del-btn,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li .ui .del-btn {
+  background-image: url("../assets/goog-ui/close.png");
+  background-position: 55% 40%;
+  background-repeat: no-repeat;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li .content,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li .content,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li .content,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li .content {
+  flex: 1 1 auto;
+}
+.silex-settings-dialog .right-pane .fonts-pane .fonts-list ul li .content iframe,
+.silex-settings-dialog .right-pane .data-sources-pane .fonts-list ul li .content iframe,
+.silex-settings-dialog .right-pane .fonts-pane .data-sources-list ul li .content iframe,
+.silex-settings-dialog .right-pane .data-sources-pane .data-sources-list ul li .content iframe {
+  width: 100%;
+  height: 100px;
+  border: none;
+}
+.silex-settings-dialog h1.title {
+  border-top: 1px solid #2F2F2F;
+  height: 20px;
+  padding: 17px 20px;
+  margin: 0;
+  font-size: 20px;
+}
+.silex-settings-dialog h3.title {
+  font-weight: 100;
+}
+.silex-settings-dialog.publication-path-not-set .publish-pane label {
+  display: none;
+}
+.silex-stage-iframe {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 0;
+  border: none;
+}
+.silex-stage {
+  background-color: #2F2F2F;
+  position: absolute;
+  top: 38px;
+  bottom: 27px;
+  left: 35px;
+  right: 250px;
+}
+.silex-stage iframe {
+  transition: opacity 0.1s linear;
+}
+.loading-website-light {
+  opacity: 0.57;
+  pointer-events: none;
+}
+.loading-website {
+  opacity: 0.001;
+  pointer-events: none;
+}
+.silex-stage {
+  background-image: url(../assets/image-loader.gif);
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+.mobile-mode .silex-stage-iframe {
+  max-width: 479px;
+  position: initial;
+}
+.mobile-mode .silex-stage {
+  text-align: center;
+  background-image: url('../assets/stripe.png');
+  background-color: #535353;
+}
+.light-dialog {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  display: flex;
+  margin-right: 10px;
+  align-items: start;
+}
+.light-dialog__content {
+  padding: 10px;
+  margin: 0 10px 0 0;
+  background-color: #444;
+  border: 1px solid #2A2A2A;
+  border-top: none;
+  color: #DDD;
+  margin-top: -100px;
+  opacity: 0;
+  transition: all 0.1s ease-in;
+}
+.light-dialog__content a {
+  color: #7BC0FF;
+}
+.light-dialog__content--open {
+  margin-top: 0;
+  opacity: 1;
+}
+.light-dialog__close {
+  text-align: right;
+  border: 1px solid;
+  float: right;
+  border-radius: 100%;
+  height: 20px;
+  width: 20px;
+  font-size: small;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 10px;
+  cursor: pointer;
+}
+.alerts-notify {
+  position: fixed;
+  width: 400px;
+  bottom: 0;
+  right: 0;
+  z-index: 210;
+}
+.alerts-notify > p {
+  background: rgba(0, 0, 0, 0.9);
+  color: #DDD;
+  padding: 20px;
+  margin: 10px;
+  text-align: center;
+  border: 1px solid white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.alerts {
+  background-color: rgba(0, 0, 0, 0.9);
+  position: fixed;
+  z-index: 200;
+  width: 100vw;
+  height: 100vh;
+  overflow: auto;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.1s ease;
+}
+.alerts.closed {
+  width: 0;
+  height: 0;
+  top: -9999px;
+  left: -9999px;
+  opacity: 0;
+}
+.alerts .notification-dialog {
+  color: #DDD;
+  position: absolute;
+  padding: 50px;
+  width: 50%;
+  min-width: 400px;
+  max-height: 100%;
+}
+.alerts .notification-dialog,
+.alerts .notification-dialog a {
+  color: #DDD;
+}
+.alerts .notification-dialog input,
+.alerts .notification-dialog select,
+.alerts .notification-dialog button {
+  border: 1px solid #DDD;
+}
+.alerts .notification-dialog .notification-dialog_content .block-dialog {
+  display: block;
+  margin: 20px 0;
+  min-width: 48%;
+}
+.alerts .notification-dialog .notification-dialog_content strong,
+.alerts .notification-dialog .notification-dialog_content b,
+.alerts .notification-dialog .notification-dialog_content a {
+  font-style: italic;
+}
+.alerts .notification-dialog .notification-dialog_buttons {
+  border-top-color: #535353;
+  box-shadow: inset 0 1px 0 #444;
+  padding-top: 15px;
+}
+.alerts .notification-dialog .notification-dialog_buttons input,
+.alerts .notification-dialog .notification-dialog_buttons select,
+.alerts .notification-dialog .notification-dialog_buttons button {
+  color: #DDD;
+  background-color: transparent;
+  cursor: pointer;
+}
+.alerts .notification-dialog .notification-dialog_info {
+  width: 99%;
+  height: 600px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-color: #444;
+}
+.alerts .notification-dialog .notification-dialog_info .tip-of-the-day * {
+  color: #DDD;
+  margin: 10px;
+}
+.alerts code {
+  border: 1px solid;
+  padding: 10px;
+}
+.link-editor {
+  padding-bottom: 30px;
+}
+.link-editor hr {
+  border-color: #444;
+}
+.link-editor .flex {
+  display: flex;
+  justify-content: space-between;
+}
+.link-editor .big {
+  flex: 1 1 auto;
+  margin-right: 5px;
+  min-width: 50%;
+}
+.link-editor input.alertify-text,
+.link-editor select.alertify-text {
+  border: 1px solid #DDD;
+}
+.link-editor .link-editor-body {
+  border: 1px solid #DDD;
+  border-top: none;
+  padding-top: 1px;
+}
+.link-editor .link-editor-body > div {
+  margin: 10px;
+}
+.link-editor .labels {
+  margin: 0;
+  display: flex;
+  width: 100%;
+}
+.link-editor .labels label {
+  border: 1px solid white;
+  background-color: transparent;
+  padding: 10px;
+  color: #DDD;
+}
+.link-editor .labels label.checked {
+  border-bottom: none;
+}
+.link-editor .labels .space {
+  flex: 1 1 auto;
+  border-bottom: 1px solid;
+}
+.link-editor .link-editor-tab {
+  display: none;
+}
+.link-editor .link-editor-radio {
+  display: none;
+}
+.link-editor .link-editor-radio:checked + .link-editor-tab {
+  display: flex;
+  border-bottom: none;
+}
+.link-editor .link-editor-tab-container {
+  flex: 1 1 auto;
+}
+.link-editor .link-editor-tab-container label {
+  display: block;
+  margin-bottom: 5px;
+}
+.link-editor .link-editor-advanced-container label {
+  display: block;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.link-editor .link-editor-advanced-container > label:first-of-type {
+  margin-bottom: 20px;
+  display: inline-block;
+  margin-top: 10px;
+  padding: 5px;
+}
+.link-editor .link-editor-advanced-container #link-editor-show-advanced {
+  display: none;
+}
+.link-editor .link-editor-advanced-container #link-editor-show-advanced:checked ~ .link-editor-advanced {
+  display: block;
+}
+.link-editor .link-editor-advanced-container .link-editor-advanced {
+  display: none;
+}
+.link-editor-help-button {
+  margin-left: 10px;
+}
+.silex-text-format-bar {
+  position: absolute;
+  z-index: 150;
+  color: #DDD;
+  padding-left: 5px;
+  padding-right: 3px;
+  border: 1px solid #2A2A2A;
+  border-radius: 3px;
+  background-color: #444;
+  opacity: 0;
+  pointer-events: none;
+  /* text inline format pane, keep selection */
+}
+.silex-text-format-bar.text-editor-editing {
+  opacity: 1;
+  pointer-events: auto;
+}
+.silex-text-format-bar form {
+  /* tags H1, H2, H3, P, A */
+}
+.silex-text-format-bar form .labels {
+  display: inline-block;
+  /* push the elements underneeth dispite it is floated */
+  width: 100%;
+}
+.silex-text-format-bar form .labels label {
+  background-color: #535353;
+  border: 1px solid #2F2F2F;
+  display: block;
+  text-align: center;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+  font-weight: lighter;
+  float: left;
+  border-left: initial;
+  margin-top: 5px;
+}
+.silex-text-format-bar form .labels label:hover {
+  background-color: #2F2F2F;
+}
+.silex-text-format-bar form .labels label.last-button {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-right: 1px solid #2F2F2F;
+  margin-right: 2px;
+}
+.silex-text-format-bar form .labels label.first-button {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-left: 1px solid #2F2F2F;
+  clear: left;
+}
+.silex-text-format-bar form .labels label.p {
+  font-size: 13px;
+}
+.silex-text-format-bar form .labels label.b {
+  font-weight: bold;
+}
+.silex-text-format-bar form .labels label.u {
+  text-decoration: underline;
+}
+.silex-text-format-bar form .labels label.i {
+  font-style: italic;
+}
+.silex-text-format-bar form .labels label.h1 {
+  font-weight: bold;
+  font-size: 18px;
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+.silex-text-format-bar form .labels label.h {
+  font-weight: bold;
+  font-size: 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+.silex-text-format-bar form .labels label.h {
+  font-weight: bold;
+  font-size: 14px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+.silex-text-format-bar form .labels label.a {
+  font-size: 14px;
+  padding-top: 7px;
+  padding-bottom: 3px;
+}
+.silex-text-format-bar form .labels label {
+  width: 40px;
+  height: 18px;
+  background-color: transparent;
+  border: none;
+}
+.silex-text-format-bar form .labels label.first-button {
+  clear: none;
+  border: none;
+}
+.silex-text-format-bar form .labels label.last-button {
+  border-radius: 0;
+}
+.silex-text-format-bar form .labels label.wysihtml-command-active {
+  color: #7BC0FF;
+  background-color: #2F2F2F;
+  background-color: transparent;
+}
+.silex-text-format-bar div.image-details {
+  display: flex;
+  clear: both;
+  align-items: center;
+}
+.silex-text-format-bar div.image-details > * {
+  margin: 5px;
+  line-height: 2;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.silex-text-format-bar div.image-details input {
+  flex: 1 1 auto;
+}
+/*# sourceMappingURL=admin.css.map */

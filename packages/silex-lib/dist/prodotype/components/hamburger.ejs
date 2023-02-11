@@ -1,0 +1,165 @@
+<style>
+/* nav */
+.hamburger-menu_<%- uid %> {
+  position: absolute;
+  z-index: 20; /* above normal silex elements */
+}
+.silex-editor .hamburger-menu_<%- uid %> nav {
+  left: -9999px;
+}
+.hamburger-menu_<%- uid %> nav ul {
+  margin-top: 80px;
+}
+.hamburger-menu_<%- uid %> nav {
+  opacity: 0; /* avoid flicker at start */
+  position: absolute;
+  background-color: <%- locals['background-color'] %>;
+  transition: left 1s ease, height 0s ease 1s;
+  left: -300px;
+  width: 300px;
+  height: 20px
+}
+.hamburger-menu_<%- uid %>.open nav {
+  opacity: 1;
+  height: 100vh;
+  left: 0;
+  transition: left 1s ease, height 0s ease 0s;
+}
+
+.hamburger-menu_<%- uid %> .nav-container {
+  z-index: 10;
+  position: absolute;
+}
+.hamburger-menu_<%- uid %>.open .nav-container {
+}
+
+/* hamburger button */
+.hamburger-menu_<%- uid %> .hamburger-btn {
+    z-index: 20;
+    cursor: pointer;
+    position: absolute;
+}
+.hamburger-menu_<%- uid %> .hamburger-btn span {
+    display: block;
+    width: 30px;
+    height: 5px;
+    margin-bottom: 3px;
+    position: relative;
+    background-color: <%- locals['button-background-color'] %>;
+    border: 1px solid <%- locals['button-border-color'] %>;
+    border-radius: 3px;
+    transition: border-color 0.1s ease-in,
+      opacity 0.1s ease-in,
+      transform 0.1s ease-in,
+      background 0.1s ease-in
+}
+
+.hamburger-menu_<%- uid %>.open .hamburger-btn span {
+    border-color: rgba(255, 255, 255, 0);
+}
+
+.hamburger-menu_<%- uid %> .hamburger-btn span:first-child {
+    transform-origin: 4px -2px;
+}
+.hamburger-menu_<%- uid %>.open .hamburger-btn span:first-child {
+    transform: rotate(45deg) translate(7px, -4px);
+}
+
+.hamburger-menu_<%- uid %>.open .hamburger-btn span:nth-last-child(2) {
+    opacity: 0;
+}
+
+.hamburger-menu_<%- uid %> .hamburger-btn span:nth-child(3) {
+    transform-origin: -11px 4px;
+}
+.hamburger-menu_<%- uid %>.open .hamburger-btn span:nth-child(3) {
+    transform: rotate(-45deg) translate(0, 12px);
+}
+
+/* themes */
+<% if(style === 'full-width') { %>
+.hamburger-menu_<%- uid %> ul li {
+  padding: 20px 4px;
+  border-bottom: 1px solid #b3b3b3;
+  list-style-type: none;
+  color: #4B4B4B;
+  margin: 0 60px 0 20px;
+}
+
+.hamburger-menu_<%- uid %> ul li a {
+  color: #4B4B4B;
+}
+
+.hamburger-menu_<%- uid %>.open nav {
+  top: -20px;
+}
+
+.hamburger-menu_<%- uid %> nav {
+  width: 101vw !important;
+  margin: 0 -1px;
+}
+<% } %>
+
+</style>
+<!-- inspired by https://codepen.io/erikterwan/pen/EVzeRP -->
+<div class="hamburger-menu_<%- uid %> closed">
+    <div class="hamburger-btn <% if(fixed) { %>fixed<% } %>">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="nav-container">
+      <div class="prevent-scale">
+        <nav class="">
+            <ul>
+            <% for(var idx in links) { %>
+                <li><a
+                    <% for(var attrName in links[idx].properties) { %>
+                        <%- attrName %>="<%- links[idx].properties[attrName] %>"
+                    <% } %>
+                ><%- links[idx].text %></a></li>
+            <% } %>
+            </ul>
+        </nav>
+      </div>
+  </div>
+</div>
+<script>
+(function() {
+  var isOpen = false;
+  function close() {
+    isOpen = false;
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.remove('open');
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.add('closed');
+  }
+  function open() {
+    isOpen = true;
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.add('open');
+    document.querySelector('.hamburger-menu_<%- uid %>').classList.remove('closed');
+  }
+  function toggle() {
+    if(isOpen) close();
+    else open();
+  }
+  function scrollOrResize() {
+    close();
+    move();
+  }
+  var silexElement = document.querySelector('.hamburger-menu_<%- uid %>').closest('.editable-style');
+  function move() {
+    var data = window.silex
+    var rect = silexElement.getBoundingClientRect();
+    var offset = {
+      top: rect.top + data.scrollTop,
+      left: rect.left + data.scrollLeft,
+    };
+    var container = document.querySelector('.hamburger-menu_<%- uid %> .nav-container');
+    container.style.transform = 'translate(' + (data.scrollLeft - (offset.left/data.scale)) + 'px, ' + (data.scrollTop - (offset.top/data.scale)) + 'px)';
+  }
+  document.querySelector('.hamburger-menu_<%- uid %> .hamburger-btn').addEventListener('click', function() { toggle(); });
+  document.addEventListener('resize', scrollOrResize);
+  document.addEventListener('scroll', scrollOrResize);
+  scrollOrResize()
+  setTimeout(() => scrollOrResize(), 0)
+})();
+</script>

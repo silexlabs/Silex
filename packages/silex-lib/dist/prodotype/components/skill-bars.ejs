@@ -1,0 +1,95 @@
+<% for(var idx in bars) { %>
+  <div class="skillbar clearfix " data-percent="<%= bars[idx].percentage %>%">
+    <div class="skillbar-title" style="background: <%= bars[idx].labelColor %>;"><span><%= bars[idx].label %></span></div>
+    <div class="skillbar-bar" style="background-color: <%= bars[idx].background %>;<% if(bars[idx].backgroundImage && bars[idx].backgroundImage[0]){ %>background-image: url('<%= bars[idx].backgroundImage[0].url %>');background-size: contain;background-repeat:repeat-x;<% } %>"></div>
+    <div class="skill-bar-percent"><%= bars[idx].value %></div>
+  </div>
+<% } %>
+<style>
+.skillbar {
+  position:relative;
+  display:block;
+  margin-bottom:15px;
+  width:100%;
+  background:#eee;
+  height:<%= barHeight %>px;
+  border-radius:3px;
+  -moz-border-radius:3px;
+  -webkit-border-radius:3px;
+  -webkit-transition:0.4s linear;
+  -moz-transition:0.4s linear;
+  -ms-transition:0.4s linear;
+  -o-transition:0.4s linear;
+  transition:0.4s linear;
+  -webkit-transition-property:width, background-color;
+  -moz-transition-property:width, background-color;
+  -ms-transition-property:width, background-color;
+  -o-transition-property:width, background-color;
+  transition-property:width, background-color;
+}
+
+.skillbar-title {
+  position:relative;
+  float: left;
+  width:<%= labelSize %>%;
+  font-weight:bold;
+  font-size:13px;
+  color:#ffffff;
+  background:#6adcfa;
+  -webkit-border-top-left-radius:3px;
+  -webkit-border-bottom-left-radius:4px;
+  -moz-border-radius-topleft:3px;
+  -moz-border-radius-bottomleft:3px;
+  border-top-left-radius:3px;
+  border-bottom-left-radius:3px;
+}
+
+.skillbar-title span {
+  display:block;
+  text-align: center;
+  background:rgba(0, 0, 0, 0.1);
+  height:<%= barHeight %>px;
+  line-height:<%= barHeight %>px;
+  -webkit-border-top-left-radius:3px;
+  -webkit-border-bottom-left-radius:3px;
+  -moz-border-radius-topleft:3px;
+  -moz-border-radius-bottomleft:3px;
+  border-top-left-radius:3px;
+  border-bottom-left-radius:3px;
+}
+
+.skillbar-bar {
+  float: left;
+  height:<%= barHeight %>px;
+  width:0px;
+  border-radius:0 3px 3px 0;
+  -moz-border-radius:0 3px 3px 0;
+  -webkit-border-radius:0 3px 3px 0;
+}
+
+.skill-bar-percent {
+  position:absolute;
+  right:10px;
+  top:0;
+  font-size:11px;
+  height:<%= barHeight %>px;
+  line-height:<%= barHeight %>px;
+  color:#ffffff;
+  color:rgba(0, 0, 0, 0.4);
+}
+</style>
+<script type="text/javascript">
+  var fillBarSize = $('.skillbar').width() * (1 - <%= labelSize %> / 100);
+  var doc = $(document);
+  doc.scroll(function() {
+    var skillbars = $('.skillbar');
+    // Start animation when the skillbars hit the middle of the screen
+    if (skillbars.offset().top <= (doc.scrollTop() + $(window).height()/2)) {
+      $('.skillbar').each(function(){
+        $(this).find('.skillbar-bar').delay(<%= delay %>).animate({
+          width: (fillBarSize * parseInt($(this).attr('data-percent')) / 100) + 'px'
+        },<%= speed %>);
+      });
+    }
+  });
+</script>

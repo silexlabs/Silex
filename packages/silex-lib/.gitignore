@@ -7,7 +7,6 @@
 node_modules
 *.log
 .vscode
-dist
 .git
 old
 

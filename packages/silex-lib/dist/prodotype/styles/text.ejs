@@ -1,0 +1,125 @@
+<%
+const pseudo = !pseudoClass || pseudoClass === 'normal' ? '' : pseudoClass;
+const props = [
+  {
+    obj: Heading1,
+    selector: ' h1' + pseudo,
+  }, {
+    obj: Heading2,
+    selector: ' h2' + pseudo,
+  }, {
+    obj: Heading3,
+    selector: ' h3' + pseudo,
+  }, {
+    obj: All,
+    selector: '.text-element > .silex-element-content' + pseudo,
+  }, {
+    obj: Paragraph,
+    selector: ' p' + pseudo,
+  }, {
+    obj: Link,
+    selector: ' a' + pseudo,
+  }, {
+    obj: Link,
+    selector: ' [data-silex-href]' + pseudo, /* this is for links in silex editor and preview, before publish only */
+  }, {
+    obj: Bold,
+    selector: ' b' + pseudo,
+  }, {
+    obj: Italic,
+    selector: ' i' + pseudo,
+  }, {
+    obj: Underline,
+    selector: ' u' + pseudo,
+  }, {
+    obj: UnorderedList,
+    selector: ' ul li' + pseudo,
+  }, {
+    obj: OrderedList,
+    selector: ' ol li' + pseudo,
+  }, {
+    obj: Active,
+    selector: ' .page-link-active' + pseudo,
+  }, {
+    obj: Element,
+    selector: '.editable-style' + pseudo,
+  }
+].filter(prop => typeof prop.obj !== 'undefined');
+function getProp(prop, propName, container) {
+  var obj = container ? prop.obj[container] : prop.obj;
+  if(typeof obj != 'undefined' && typeof obj[propName] != 'undefined' && obj[propName] != '')
+    return propName + ': ' + obj[propName] + ';';
+  return '';
+}
+%>
+<% props.forEach(prop => { %>
+  <%
+  let found = false;
+  for(name in prop.obj) {
+    if(prop.obj[name] !== '') found = true;
+  }
+  if(found) {
+  %>
+    <% if(className != 'all-style') { %>.<%= className %><% } %><%- prop.selector %> {
+      <%- getProp(prop, 'list-style-type') -%>
+      <% if(prop.obj['list-style-image']) { %>
+        list-style-image: url(<%= prop.obj['list-style-image'] -%>);
+      <% } %>
+      <%- getProp(prop, 'list-style-position') -%>
+      <%- getProp(prop, 'font-family') -%>
+      <%- getProp(prop, 'font-style') -%>
+      <%- getProp(prop, 'font-variant') -%>
+      <%- getProp(prop, 'font-weight') -%>
+      <%- getProp(prop, 'font-size') -%>
+      <%- getProp(prop, 'color') -%>
+      <%- getProp(prop, 'background-color') -%>
+      <%- getProp(prop, 'text-decoration') -%>
+      <%- getProp(prop, 'text-align') -%>
+      <%- getProp(prop, 'text-transform') -%>
+      <%- getProp(prop, 'line-height') -%>
+      <%- getProp(prop, 'word-spacing') -%>
+      <%- getProp(prop, 'letter-spacing') -%>
+      <%- getProp(prop, 'text-indent') -%>
+      <%- getProp(prop, 'direction') -%>
+
+      <%- getProp(prop, 'columns') -%>
+      <%- getProp(prop, 'column-rule-width') -%>
+      <%- getProp(prop, 'column-gap') -%>
+      <%- getProp(prop, 'column-rule-color') -%>
+      <%- getProp(prop, 'column-rule-style') -%>
+
+      <%- getProp(prop, 'margin-top', 'margin') -%>
+      <%- getProp(prop, 'margin-left', 'margin') -%>
+      <%- getProp(prop, 'margin-bottom', 'margin') -%>
+      <%- getProp(prop, 'margin-right', 'margin') -%>
+
+      <%- getProp(prop, 'padding-top', 'padding') -%>
+      <%- getProp(prop, 'padding-left', 'padding') -%>
+      <%- getProp(prop, 'padding-bottom', 'padding') -%>
+      <%- getProp(prop, 'padding-right', 'padding') -%>
+
+      <%- getProp(prop, 'border-style', 'border') -%>
+      <%- getProp(prop, 'border-width', 'border') -%>
+      <%- getProp(prop, 'border-color', 'border') -%>
+
+      <% if(prop.obj['gradient'] && prop.obj['gradient'].colors && prop.obj['gradient'].colors.length > 0) { %>
+        background: linear-gradient(<%- prop.obj['gradient'].orientation ? prop.obj['gradient'].orientation + ', ' : '' -%><%- prop.obj['gradient'].colors.map(g => g.color).join(', ') -%>);
+      <% } %>
+
+      <% if(prop.obj['transition'] && prop.obj['transition'].length > 0) { %>
+        <%-
+          ['-webkit-transition', '-moz-transition', '-o-transition', 'transition'].map(name => {
+            var trans = prop.obj['transition'].map(t => `${t.property || 'all'} ${t.duration || '1' }s ${t.func || 'ease'} ${t.delay ? t.delay + 's' : ''}`).join(', ');
+            return name + ': ' + trans + ';';
+          }).join(' ')
+        -%>
+      <% } %>
+
+      <%- getProp(prop, 'display') -%>
+      <%- getProp(prop, 'position') -%>
+
+    }
+  <% } %>
+<% }) %>
+
+
