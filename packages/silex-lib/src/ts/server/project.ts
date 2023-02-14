@@ -30,10 +30,6 @@ export async function assetsDir(projectId) {
   const settings = await getSettings(projectId)
   return join(projectPath(projectId), settings.assets.path)
 }
-export async function assetPath(projectId, fileName) {
-  const settings = await getSettings(projectId)
-  return join(projectPath(projectId), settings.assets.path, fileName)
-}
 export async function assetUrl(projectId, fileName) {
   const settings = await getSettings(projectId)
   return `${settings.prefix}${settings.assets.path}/${fileName}`
