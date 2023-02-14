@@ -8,7 +8,7 @@ import * as session from 'cookie-session'
 
 import SslRouter from './router/SslRouter'
 import StaticRouter from './router/StaticRouter'
-// import PublishRouter from './router/PublishRouter'
+import PublishRouter from './router/PublishRouter'
 import WebsiteRouter from './router/WebsiteRouter'
 
 function noCache(req, res, next) {
@@ -50,9 +50,9 @@ export async function start(config): Promise<Application> {
       // API routes
       app.use(withCache,  StaticRouter(config))
       const websiteRouter = WebsiteRouter()
-      // publishRouter = PublishRouter(config, ceRouter.unifile)
+      const publishRouter = PublishRouter(config)
       app.use(noCache, websiteRouter)
-      // app.use(noCache, publishRouter)
+      app.use(noCache, publishRouter)
       app.use(SslRouter(config, app))
 
       // start server
