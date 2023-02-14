@@ -107,18 +107,26 @@ export async function writeProjectData(projectId, data) {
   //   }
   // }
 }
-export async function publish(projectId, pages: Page[], siteSettings: WebsiteSettings, files: File[]) {
-  const settings = await getSettings(projectId)
+function required(prop, name) {
+  if(!prop ) throw new Error(`Error missing required param ${name}`)
+}
+export async function publish(projectId, files: File[], data: WebsiteData) {
+  const { pages, settings } = data
+  required(pages, 'pages')
+  required(settings, 'settings')
+  required(files, 'files')
+  required(projectId, 'projectId')
+  const projectSettings = await getSettings(projectId)
   const projectFolder = projectPath(projectId)
-  const htmlFolder = join(projectFolder, settings.html.path)
-  const cssFolder = join(projectFolder, settings.css.path)
-  const uploadDir = join(projectFolder, settings.assets.path)
+  const htmlFolder = join(projectFolder, projectSettings.html.path)
+  const cssFolder = join(projectFolder, projectSettings.css.path)
+  const uploadDir = join(projectFolder, projectSettings.assets.path)
   pages
   .forEach(async (page, idx) => {
     // page settings override site settings
     function getSetting(name) {
       if(page.settings && page.settings[name]) return page.settings[name]
-        return siteSettings[name]
+        return settings[name]
     }
     // update HTML with data from the settings
     const pageName = page.type === 'main' ? 'index' : page.name
@@ -126,7 +134,7 @@ export async function publish(projectId, pages: Page[], siteSettings: WebsiteSet
     let html
     try {
       const $ = load(files[idx].html)
-      $('head').append(`<link rel="stylesheet" href="${settings.prefix}${settings.css.path}/${getPageSlug(pageName)}.css" />`)
+      $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.path}/${getPageSlug(pageName)}.css" />`)
       $('head').append(getSetting('head'))
       if(!$('head > title').length) $('head').append('<title/>')
         $('head > title').html(getSetting('title'))

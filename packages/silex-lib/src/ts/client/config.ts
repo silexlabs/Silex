@@ -16,6 +16,7 @@ import { blocksPlugin } from './grapesjs/blocks'
 import { semanticPlugin } from './grapesjs/semantic'
 import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
+import { publishPlugin } from './grapesjs/publish'
 
 const plugins = [
   {name: './grapesjs/storage', value: storagePlugin},
@@ -35,6 +36,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
   {name: './grapesjs/symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
+  {name: './grapesjs/publish', value: publishPlugin},
 ]
 
 // Check that all plugins are loaded correctly
@@ -52,9 +54,10 @@ const catBasic = 'Containers'
 const catText = 'Texts'
 const catMedia = 'Media'
 const catComponents = 'Components'
-const projectId = new URL(location.href).searchParams.get('projectId') || 'default'
-const loadEndpoint = `./website/?projectId=${projectId}`
-const uploadEndpoint = `./assets/?projectId=${projectId}`
+export const projectId = new URL(location.href).searchParams.get('projectId') || 'default'
+export const ROOT_URL = '.'
+const loadEndpoint = `${ ROOT_URL }/website/?projectId=${projectId}`
+const uploadEndpoint = `${ ROOT_URL }/assets/?projectId=${projectId}`
 
 export const defaultConfig = {
 
@@ -163,6 +166,9 @@ export const defaultConfig = {
             command: cmdOpenSettings,
           },
         ],
+      },
+      [publishPlugin as any]: {
+        appendTo: 'options',
       },
       [pagePanelPlugin as any]: {
         cmdOpenNewPageDialog,

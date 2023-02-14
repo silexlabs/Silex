@@ -15,7 +15,6 @@ export const defaultSettings: Settings = {
 
 export const defaultSite: WebsiteData = {
   pages: [],
-  files: [],
   assets: [],
   styles: [],
   name: 'New website',
@@ -49,7 +48,6 @@ export interface WebsiteSettings {
 
 export interface WebsiteData {
   pages: Page[],
-  files: File[],
   assets: Asset[],
   styles: Style[],
   name: string,

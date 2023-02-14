@@ -1,3 +1,5 @@
+// Page related functions
+// This is used on the client and the server
 export function getPageSlug(pageName = 'index') {
   return pageName
     .toLowerCase()
