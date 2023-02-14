@@ -9,3 +9,20 @@
   visibility: hidden;
   transition: opacity variables.$transitionSpeedMedium ease, visibility variables.$transitionSpeedSlow 1s ease;
 }
+
+.silex-dialog-inline {
+  position: absolute;
+  background-color: variables.$primaryColor;
+  z-index: variables.$z-dialog-inline;
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  main {
+    flex-grow: 1;
+  }
+  footer {
+    padding: 5px;
+    text-align: right;
+  }
+}

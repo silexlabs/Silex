@@ -77,6 +77,23 @@ input.silex-button[type="submit"] {
   cursor: unset;
 }
 
+.silex-button.silex-button--primary {
+  background-color: $lighterPrimaryColor;
+}
+
+.silex-button.silex-button--secondary {
+  background-color: $primaryColor;
+}
+
+.silex-button--size {
+  max-height: 30px;
+}
+
+.silex-button--small {
+  font-size: .7em;
+  padding: 0 5px;
+}
+
 .silex-input {
   appearance: initial;
 }

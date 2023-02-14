@@ -3,7 +3,7 @@ import {map} from 'lit-html/directives/map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { Page } from '../../types'
-import { getPageLink } from '../../utils'
+import { getPageLink } from '../../page'
 
 // constants
 const pluginName = 'internal-links'
