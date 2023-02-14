@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { join } from 'path'
 import * as formidable from 'formidable'
 
-import { projectPath, assetPath, assetsDir, initProjects, initProject, writeProjectData, readProjectData } from '../project'
+import { projectPath, assetsDir, initProjects, initProject, writeProjectData, readProjectData } from '../project'
 
 import { WebsiteSettings, Asset, Page, File, Style, WebsiteData } from '../../types'
 
@@ -89,7 +89,8 @@ async function writeWebsite(req, res) {
 async function readAsset(req, res) {
   const projectId = req.query.projectId
   const fileName = req.params[0]
-  res.sendFile(await assetPath(projectId, fileName))
+  const uploadDir = await assetsDir(projectId)
+  res.sendFile(`${uploadDir}/${fileName}`)
 }
 
 async function writeAsset(req, res) {
