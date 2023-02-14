@@ -17,6 +17,7 @@ import { semanticPlugin } from './grapesjs/semantic'
 import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 import { publishPlugin } from './grapesjs/publish'
+import { templatePlugin } from './grapesjs/template'
 
 const plugins = [
   {name: './grapesjs/storage', value: storagePlugin},
@@ -37,6 +38,7 @@ const plugins = [
   {name: './grapesjs/symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
   {name: './grapesjs/publish', value: publishPlugin},
+  {name: './grapesjs/template', value: templatePlugin},
 ]
 
 // Check that all plugins are loaded correctly
