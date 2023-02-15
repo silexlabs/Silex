@@ -157,10 +157,10 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
       // Process the page CSS to have correct relative URLs
       let css = files[idx].css
       try {
-        if(projectSettings.html.url != projectSettings.css.url) {
+        if(projectSettings.html.path != projectSettings.css.path) {
           const rewriter = new URLRewriter(function(url) {
             const translator = new URLTranslator()
-            return translator.translate(url, projectSettings.html.url, projectSettings.css.url)
+            return translator.translate(url, projectSettings.html.path, projectSettings.css.path)
           })
           css = rewriter.rewrite(css)
         }
