@@ -93,5 +93,33 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     },
   })
 
+  // Apply templates on publish
+  function onAll(cbk) {
+    editor.Pages.getAll(
+    .forEach(page => {
+      page.getMainComponent()
+        .onAll(c => cbk(c))
+    })
+  }
+  editor.on(opts.eventStart || 'publish:before', () => {
+    onAll(c => {
+      const template = c.get(templateKey)
+      const toHTML = c.toHTML
+      c.set('tmpHtml', toHTML)
+      c.toHTML = () => {
+        return `
+          ${ template?.before || '' }
+          ${ template?.replace ? template.replace : toHTML.apply(c) }
+          ${ template?.after || '' }
+        `
+      }
+    })
+  })
+  editor.on(opts.eventStop || 'publish:stop', () => {
+    onAll(c => {
+      const toHTML = c.get('tmpHtml')
+      c.toHTML = toHTML
+    })
+  })
 })
 
