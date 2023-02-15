@@ -74,7 +74,7 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
       const inputReplace = elInput.querySelector('#template-replace')
       const inputAfter = elInput.querySelector('#template-after')
 
-      let template = {
+      const template = {
         before: inputBefore.value,
         replace: inputReplace.value,
         after: inputAfter.value,
@@ -95,11 +95,11 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
 
   // Apply templates on publish
   function onAll(cbk) {
-    editor.Pages.getAll(
-    .forEach(page => {
-      page.getMainComponent()
-        .onAll(c => cbk(c))
-    })
+    editor.Pages.getAll()
+      .forEach(page => {
+        page.getMainComponent()
+          .onAll(c => cbk(c))
+      })
   }
   editor.on(opts.eventStart || 'publish:before', () => {
     onAll(c => {

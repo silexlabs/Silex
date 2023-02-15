@@ -20,9 +20,9 @@ export default function WebsiteRouter() {
 
   // Create encessary folders, assyncronously
   initProjects()
-  .catch(err => {
-    console.error('Error: could not create folder ', err)
-  })
+    .catch(err => {
+      console.error('Error: could not create folder ', err)
+    })
 
   // Return a router to the caller
   return router
