@@ -18,6 +18,7 @@ import { richTextPlugin } from './grapesjs/rich-text'
 import { internalLinksPlugin } from './grapesjs/internal-links'
 import { publishPlugin } from './grapesjs/publish'
 import { templatePlugin } from './grapesjs/template'
+import { eleventyPlugin } from './grapesjs/eleventy'
 
 const plugins = [
   {name: './grapesjs/storage', value: storagePlugin},
@@ -39,6 +40,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
   {name: './grapesjs/publish', value: publishPlugin},
   {name: './grapesjs/template', value: templatePlugin},
+  {name: './grapesjs/eleventy', value: eleventyPlugin},
 ]
 
 // Check that all plugins are loaded correctly

@@ -7,9 +7,9 @@ export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
 
 // Note: paths begin and end **without** slash
 export const defaultSettings: Settings = {
-  assets: { path: 'assets' },
-  html: { path: '' },
-  css: { path: 'css' },
+  assets: { path: 'assets', url: '/assets' },
+  html: { path: '', url: '' },
+  css: { path: 'css', url: '/css' },
   prefix: '', // for images src: src="${settings.prefix}${settings.assets.path}/image.jpg"
 }
 
@@ -64,12 +64,15 @@ export interface Font {
 export interface Settings {
   assets: {
     path: string,
+    url: string,
   },
   html: {
     path: string,
+    url: string,
   },
   css: {
     path: string,
+    url: string,
   },
   prefix: string,
 }

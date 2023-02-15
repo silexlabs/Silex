@@ -32,7 +32,7 @@ export async function assetsDir(projectId) {
 }
 export async function assetUrl(projectId, fileName) {
   const settings = await getSettings(projectId)
-  return `${settings.prefix}${settings.assets.path}/${fileName}`
+  return `${settings.prefix}${settings.assets.url}/${fileName}`
 }
 
 // Project settings
@@ -134,7 +134,7 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
       let html
       try {
         const $ = load(files[idx].html)
-        $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.path}/${getPageSlug(pageName)}.css" />`)
+        $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.url}/${getPageSlug(pageName)}.css" />`)
         $('head').append(getSetting('head'))
         if(!$('head > title').length) $('head').append('<title/>')
         $('head > title').html(getSetting('title'))
@@ -157,10 +157,10 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
       // Process the page CSS to have correct relative URLs
       let css = files[idx].css
       try {
-        if(cssFolder != projectFolder) {
+        if(projectSettings.html.url != projectSettings.css.url) {
           const rewriter = new URLRewriter(function(url) {
             const translator = new URLTranslator()
-            return translator.translate(url, projectFolder, cssFolder)
+            return translator.translate(url, projectSettings.html.url, projectSettings.css.url)
           })
           css = rewriter.rewrite(css)
         }
