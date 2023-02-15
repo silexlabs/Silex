@@ -129,7 +129,7 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
         return settings[name]
       }
       // update HTML with data from the settings
-      const pageName = page.type === 'main' ? 'index' : page.name
+      const pageName = projectSettings.autoHomePage !== false && page.type === 'main' ? 'index' : page.name
       // Process the page HTML to include all settings
       let html
       try {
