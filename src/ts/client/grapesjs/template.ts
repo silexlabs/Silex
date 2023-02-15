@@ -1,4 +1,5 @@
 import {html, render} from 'lit-html'
+import {styleMap} from 'lit-html/directives/style-map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 const pluginName = 'template'
@@ -16,7 +17,7 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
             ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
             // Add the new trait
             {
-              label: null,
+              label: false,
               type: templateType,
               name: pluginName,
             },
@@ -28,10 +29,30 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
 
   function doRender(el) {
     const template = editor.getSelected()?.get(templateKey) || {}
+    const taStyle = opts.styles?.textarea ?? styleMap({
+      backgroundColor: 'var(--darkerPrimaryColor);',
+    })
+    const sepStyle = opts.styles?.sep ?? styleMap({ height: '10px' })
+    const labels = {
+      before: html`<strong>Before</strong> the element`,
+      replace: html`<strong>Replace</strong> the element`,
+      after: html`<strong>After</strong> the element`,
+    }
     render(html`
-      <textarea id="template-before" class="template-plugin__input" .value=${template.before || ''}></textarea>
-      <textarea id="template-replace" class="template-plugin__input" .value=${template.replace || ''}></textarea>
-      <textarea id="template-after" class="template-plugin__input" .value=${template.after || ''}></textarea>
+      <div>
+        <h3>Template</h3>
+        <p>This will be inserted in the published version</p>
+      </div>
+      ${['before', 'replace', 'after'].map(id => html`
+        <label
+          for="template-${id}"
+          >${labels[id]}</label>
+        <textarea
+          id="template-${id}"
+          style=${taStyle}
+          .value=${template[id] || ''}
+          ></textarea>
+      `)}
     `, el)
   }
 
@@ -39,6 +60,7 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     createInput({ trait }) {
       // Create a new element container and add some content
       const el = document.createElement('div')
+      el.classList.add('gjs-one-bg')
       // update the UI when a page is added/renamed/removed
       editor.on('page', () => doRender(el))
       doRender(el)

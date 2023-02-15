@@ -6,23 +6,28 @@
 // $silexdarkergrey: #2a2a2a;
 // $silexlightblue: #7bc0ff;
 
-$primaryColor:      #444;
-$secondaryColor:    #ddd;
-$tertiaryColor:     #5e85a8;
-$quaternaryColor:   #7bc0ff;
-$darkerPrimaryColor: #3d3d3d;
+$primaryColor: #444;
+$secondaryColor: #ddd;
+$tertiaryColor: #5e85a8;
+$quaternaryColor: #7bc0ff;
+$darkerPrimaryColor: #363636;
 $lighterPrimaryColor: #575757;
-
 $topBarHeight: 40px;
 $projectBarWidth: 35px;
 $projectPanelWidth: 13%;
 $projectPanelMinWidth: 150px;
-
 $transitionSpeedMedium: .35s;
 $transitionSpeedSlow: .5s;
-
 $prefix: 'gjs-';
 $pn-prefix: '#{$prefix}pn-';
 $cv-prefix: '#{$prefix}cv-';
-
 $z-dialog-inline: 10;
+
+:root {
+  --primaryColor: #444;
+  --secondaryColor: #ddd;
+  --tertiaryColor: #5e85a8;
+  --quaternaryColor: #7bc0ff;
+  --darkerPrimaryColor: #363636;
+  --lighterPrimaryColor: #575757;
+}
