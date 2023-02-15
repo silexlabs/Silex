@@ -100,7 +100,6 @@ export async function closeDialog(editor) {
   open = false
   update(editor)
 }
-
 export async function toggleDialog(editor) {
   if(open) closeDialog(editor)
   else openDialog(editor)
@@ -110,7 +109,7 @@ export async function openDialog(editor) {
 
   // Position
   const buttonEl = editor.Panels.getPanel('options').view.el
-  .querySelector('.publish-button')
+    .querySelector('.publish-button')
   const rect = buttonEl.getBoundingClientRect()
 
   const width = 350
@@ -172,7 +171,7 @@ export async function startPublication(editor) {
   }
   if(!res.ok) {
     displayError(editor, `An network error occured, your site is not published. ${json.message}`)
-    editor.trigger('publish:stop', {success: false, message: e.message})
+    editor.trigger('publish:stop', {success: false, message: json.message})
     return
   }
   status = STATUS_SUCCESS

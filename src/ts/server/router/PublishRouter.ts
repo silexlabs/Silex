@@ -24,9 +24,9 @@ export default function PublishRouter(config) {
       try {
         await publish(projectId, files, req.body)
       } catch (err) {
-        console.error('Error publishing the website', err);
-        res.status(500).json({ message: `Error publishing the website. ${err.message}`});
-        return;
+        console.error('Error publishing the website', err)
+        res.status(500).json({ message: `Error publishing the website. ${err.message}`})
+        return
       }
       //req.session.publicationId = createJob(req.body.files, config)
       res.json({})

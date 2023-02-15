@@ -122,57 +122,57 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
   const cssFolder = join(projectFolder, projectSettings.css.path)
   const uploadDir = join(projectFolder, projectSettings.assets.path)
   pages
-  .forEach(async (page, idx) => {
+    .forEach(async (page, idx) => {
     // page settings override site settings
-    function getSetting(name) {
-      if(page.settings && page.settings[name]) return page.settings[name]
+      function getSetting(name) {
+        if(page.settings && page.settings[name]) return page.settings[name]
         return settings[name]
-    }
-    // update HTML with data from the settings
-    const pageName = page.type === 'main' ? 'index' : page.name
-    // Process the page HTML to include all settings
-    let html
-    try {
-      const $ = load(files[idx].html)
-      $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.path}/${getPageSlug(pageName)}.css" />`)
-      $('head').append(getSetting('head'))
-      if(!$('head > title').length) $('head').append('<title/>')
-        $('head > title').html(getSetting('title'))
-      if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
-        $('link[rel="icon"]').attr('href', getSetting('favicon'))
-      // all metas
-      ;['description', 'og:title', 'og:description', 'og:image'].forEach(prop => {
-        const sel = `meta[property="${prop}"]`
-        if(!$(sel).length) $('head').append(`<meta property="${prop}" />`)
-        $(sel).attr('content', getSetting(prop))
-      })
-      $('html').attr('lang', getSetting('lang'))
-      // render the HTML as string
-      html = $.html()
-    } catch (err) {
-      console.error('Error processing HTML', page, err)
-      throw new Error(`Error processing HTML. ${err.message}`)
-      return
-    }
-    // Process the page CSS to have correct relative URLs
-    let css = files[idx].css
-    try {
-      if(cssFolder != projectFolder) {
-        const rewriter = new URLRewriter(function(url) {
-          const translator = new URLTranslator()
-          return translator.translate(url, projectFolder, cssFolder)
-        })
-        css = rewriter.rewrite(css)
       }
-    } catch (err) {
-      console.error('Error processing CSS', page, err)
-      throw new Error(`Error processing CSS. ${err.message}`)
-    }
-    try {
-      await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
-      await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), css)
-    } catch (err) {
-      throw new Error(`Publication error: could not write files ${pageName}.css and ${pageName}.html. ${err.message}`)
-    }
-  })
+      // update HTML with data from the settings
+      const pageName = page.type === 'main' ? 'index' : page.name
+      // Process the page HTML to include all settings
+      let html
+      try {
+        const $ = load(files[idx].html)
+        $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.path}/${getPageSlug(pageName)}.css" />`)
+        $('head').append(getSetting('head'))
+        if(!$('head > title').length) $('head').append('<title/>')
+        $('head > title').html(getSetting('title'))
+        if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
+        $('link[rel="icon"]').attr('href', getSetting('favicon'))
+        // all metas
+        ;['description', 'og:title', 'og:description', 'og:image'].forEach(prop => {
+          const sel = `meta[property="${prop}"]`
+          if(!$(sel).length) $('head').append(`<meta property="${prop}" />`)
+          $(sel).attr('content', getSetting(prop))
+        })
+        $('html').attr('lang', getSetting('lang'))
+        // render the HTML as string
+        html = $.html()
+      } catch (err) {
+        console.error('Error processing HTML', page, err)
+        throw new Error(`Error processing HTML. ${err.message}`)
+        return
+      }
+      // Process the page CSS to have correct relative URLs
+      let css = files[idx].css
+      try {
+        if(cssFolder != projectFolder) {
+          const rewriter = new URLRewriter(function(url) {
+            const translator = new URLTranslator()
+            return translator.translate(url, projectFolder, cssFolder)
+          })
+          css = rewriter.rewrite(css)
+        }
+      } catch (err) {
+        console.error('Error processing CSS', page, err)
+        throw new Error(`Error processing CSS. ${err.message}`)
+      }
+      try {
+        await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
+        await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), css)
+      } catch (err) {
+        throw new Error(`Publication error: could not write files ${pageName}.css and ${pageName}.html. ${err.message}`)
+      }
+    })
 }
