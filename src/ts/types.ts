@@ -11,6 +11,7 @@ export const defaultSettings: Settings = {
   html: { path: '', url: '' },
   css: { path: 'css', url: '/css' },
   prefix: '', // for images src: src="${settings.prefix}${settings.assets.path}/image.jpg"
+  autoHomePage: true,
 }
 
 export const defaultSite: WebsiteData = {
@@ -75,6 +76,7 @@ export interface Settings {
     url: string,
   },
   prefix: string,
+  autoHomePage: boolean,
 }
 
 export interface File {
