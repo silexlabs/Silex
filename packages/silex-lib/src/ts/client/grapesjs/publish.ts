@@ -135,6 +135,7 @@ export async function startPublication(editor) {
   if(status === STATUS_PENDING) throw new Error('Publication is already in progress')
   status = STATUS_PENDING
   update(editor)
+  editor.trigger('publish:before')
   const data = {
     ...editor.getProjectData(),
     settings: editor.getModel().get('settings'),
@@ -147,7 +148,7 @@ export async function startPublication(editor) {
       }
     })
   }
-  console.log('storage:start:store', data)
+  editor.trigger('publish:start', data)
   let res
   let json
   try {
@@ -166,14 +167,16 @@ export async function startPublication(editor) {
     json = await res.json()
   } catch(e) {
     displayError(editor, `Could not parse the server response, your site may be published. ${e.message}`)
+    editor.trigger('publish:stop', {success: false, message: e.message})
     return
   }
   if(!res.ok) {
     displayError(editor, `An network error occured, your site is not published. ${json.message}`)
+    editor.trigger('publish:stop', {success: false, message: e.message})
     return
   }
-  console.log('DONE', json)
   status = STATUS_SUCCESS
   update(editor)
+  editor.trigger('publish:stop', {success: true})
 }
 
