@@ -170,7 +170,7 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
       }
       try {
         await writeFile(join(htmlFolder, getPageSlug(pageName) + '.html'), html)
-        await writeFile(join(cssFolder, getPageSlug(pageName) + '.css'), css)
+        await writeFile(join(cssFolder, getPageSlug(pageName) + (page.ext || '.css')), css)
       } catch (err) {
         throw new Error(`Publication error: could not write files ${pageName}.css and ${pageName}.html. ${err.message}`)
       }

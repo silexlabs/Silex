@@ -13,6 +13,7 @@ permalink: /css/${getPageSlug(page.name)}.css
 ---
 ${file.css}
 `
+      page.ext = '.liquid'
     })
   })
 })
