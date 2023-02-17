@@ -148,7 +148,7 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
         })
         $('html').attr('lang', getSetting('lang'))
         // render the HTML as string
-        html = $.html()
+        html = `<!DOCTYPE html>${ $.html() }`
       } catch (err) {
         console.error('Error processing HTML', page, err)
         throw new Error(`Error processing HTML. ${err.message}`)
