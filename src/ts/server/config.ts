@@ -20,6 +20,9 @@ export class Config extends EventEmitter {
   url: string
   apiPath: string
   plugins: any[]
+  pluginsOpts: {
+    [key: string]: any
+  }
 }
 
 import expressPlugin from './plugins/ExpressPlugin'
@@ -46,5 +49,6 @@ export default function(): Config {
     publishPlugin,
     websitePlugin,
   ]
+  config.pluginsOpts = {}
   return config
 }

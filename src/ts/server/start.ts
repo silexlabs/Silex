@@ -6,15 +6,15 @@ import { EVENT_STARTUP_START, EVENT_STARTUP_END } from './events'
 
 export async function start(config: Config): Promise<Application> {
   // Plugins
-  Promise.all(config.plugins.map(async (plugin, idx) => {
+  Promise.all(config.plugins.map(async (plugin: any, idx) => {
     if(typeof plugin === 'string') {
       console.info(`Init plugin #${plugin}`)
-      const construct: (Config) => Promise<void> = await import(plugin as string)
-      await construct(config)
+      const construct: (config: Config, options: any) => Promise<void> = await import(plugin as string)
+      await construct(config, config.pluginsOpts[plugin as string])
     } else {
       console.info(`Init plugin #${idx}`)
-      const construct: (Config) => Promise<void> = plugin
-      await plugin(config)
+      const construct: (config: Config, options: any) => Promise<void> = plugin
+      await construct(config, config.pluginsOpts[plugin as string])
     }
   }))
 
