@@ -1,5 +1,7 @@
-import { config } from './config'
+import getConfig from './config'
 import { start } from './start'
+
+const config = getConfig()
 
 // start silex
 start(config).then((app) => {

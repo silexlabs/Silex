@@ -1,5 +1,5 @@
 /**
- * @fileoverview this is where the default config is defined
+ * @fileoverview This is where the default config is defined. Also use this object as an event emitter to listen to Silex events
  * The values can be overriden with env vars or before passing the config to Silex
  * @see {@link https://github.com/lexoyo/silex-for-hosting-company|example of customization with the config object}
  * @see {@link https://github.com/silexlabs/Silex/blob/develop/app.json|all the env vars in this definition file for heroku 1 click deploy}
@@ -9,38 +9,42 @@
 /**
  * default config for Silex server
  */
-import { Config } from './types'
+import { EventEmitter } from 'events'
 
-const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
-const debug = process.env.SILEX_DEBUG === 'true'
+/**
+ * Config types definitions
+ */
+export class Config extends EventEmitter {
+  debug: boolean
+  port: string
+  url: string
+  apiPath: string
+  plugins: any[]
+}
 
-export const config: Config = {
-  port,
-  debug,
-  url: process.env.SERVER_URL || `http://localhost:${port}`,
-  apiPath: '/api',
-  sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
-  sslOptions: {
-    forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
-    trustXFPHeader: process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER === 'true',
-    privateKey: process.env.SILEX_SSL_PRIVATE_KEY,
-    certificate: process.env.SILEX_SSL_CERTIFICATE,
-    sslPort: process.env.SSL_PORT || '443',
-  },
-  staticOptions: {
-    routes: [
-      {
-        route: '/',
-        path: 'public',
-      }, {
-        route: '/',
-        path: 'dist/client',
-      },
-    ]
-    // add project route for source maps
-      .concat(debug ? [{
-        route: '/',
-        path: './',
-      }] : []),
-  },
+import expressPlugin from './plugins/ExpressPlugin'
+import sslPlugin from './plugins/SslPlugin'
+import staticPlugin from './plugins/StaticPlugin'
+import publishPlugin from './plugins/PublishPlugin'
+import websitePlugin from './plugins/WebsitePlugin'
+
+export default function(): Config {
+  const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
+  const debug = process.env.SILEX_DEBUG === 'true'
+  const maxListeners = process.env.SILEX_MAX_LISTENERS ? parseInt(process.env.SILEX_MAX_LISTENERS) : 50
+
+  const config = new Config()
+  config.setMaxListeners(maxListeners)
+  config.port = port
+  config.debug = debug
+  config.url = process.env.SERVER_URL || `http://localhost:${port}`
+  config.apiPath = '/api'
+  config.plugins = [
+    expressPlugin,
+    sslPlugin,
+    staticPlugin,
+    publishPlugin,
+    websitePlugin,
+  ]
+  return config
 }

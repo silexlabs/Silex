@@ -3,29 +3,38 @@ import { join } from 'path'
 import * as formidable from 'formidable'
 
 import { projectPath, assetsDir, initProjects, initProject, writeProjectData, readProjectData } from '../project'
-
+import { noCache } from '../express'
+import { Config } from '../config'
+import { EVENT_STARTUP_START } from '../events'
 import { WebsiteSettings, Asset, Page, File, Style, WebsiteData } from '../../types'
 
 // import BackwardCompat from '../utils/BackwardCompat'
 
-export default function WebsiteRouter() {
-  // const backwardCompat = new BackwardCompat(rootUrl)
-  const router = Router()
+type WebsiteOptions = {
+}
 
-  // website specials
-  router.get('/website', readWebsite)
-  router.post('/website', writeWebsite)
-  router.get(/\/assets\/(.*)/, readAsset)
-  router.post('/assets', writeAsset)
+export default async function(config: Config, opts: WebsiteOptions = {}) {
+  // Options with defaults
+  const options: WebsiteOptions = {
+    ...opts
+  }
+  config.on(EVENT_STARTUP_START, ({app}) => {
+    // const backwardCompat = new BackwardCompat(rootUrl)
+    const router = Router()
 
-  // Create encessary folders, assyncronously
-  initProjects()
+    // website specials
+    router.get('/website', readWebsite)
+    router.post('/website', writeWebsite)
+    router.get(/\/assets\/(.*)/, readAsset)
+    router.post('/assets', writeAsset)
+
+    // Create encessary folders, assyncronously
+    initProjects()
     .catch(err => {
       console.error('Error: could not create folder ', err)
     })
-
-  // Return a router to the caller
-  return router
+    app.use(noCache,  router)
+  })
 }
 
 async function readWebsite(req, res): Promise<void> {
