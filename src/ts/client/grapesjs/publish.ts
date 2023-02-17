@@ -45,7 +45,6 @@ function move(rect) {
   Object.keys(rect).forEach(key => dialog.style[key] = rect[key] + 'px')
 }
 function update(editor) {
-  console.log('update', {state, status})
   render(html`
     ${ open ? html`
       <main>
@@ -59,26 +58,31 @@ function update(editor) {
           <p>Publication error</p>
           <div>${ errorMessage }</div>
         ` : ''}
+        ${ state?.running ? html`
+          <progress
+            value=""
+            style="width: 100%;"
+          ></progress>
+        ` : ''}
+        <details>
+          <pre style="
+            max-width: 100%;
+            max-height: 50vh;
+            overflow: auto;
+            font-size: x-small;
+            "
+          >${ state.error ? cleanup(state.errors) : cleanup(state.logs) }
+          </pre>
+        </details>
       </main>
       <footer>
-      ${ status === STATUS_PENDING ? '' : html`
-        <button
-          class="silex-button silex-button--primary"
-          id="publish-button--primary"
-          @click=${() => startPublication(editor)}
-        >Publish</button>
-      `}
-      ${ state?.running ? html`
-        <progress
-          value=""
-          style="width: 100%;"
-        ></progress>
-        <pre style="
-          max-width: 100%;
-          max-height: 50vh;
-          overflow: auto;"
-          >${ state.error ? state.errors[state.logs.length] : state.logs[state.logs.length] }</pre>
-      ` : '' }
+        ${ status === STATUS_PENDING ? '' : html`
+          <button
+            class="silex-button silex-button--primary"
+            id="publish-button--primary"
+            @click=${() => startPublication(editor)}
+          >Publish</button>
+        `}
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -109,6 +113,13 @@ let state = {
   errors: [],
 }
 
+function cleanup(arr: string[][]): string {
+  return arr[arr.length-1]
+    ?.map(str => str.replace(/\[.*\]/g, '').trim())
+    ?.filter(str => !!str)
+    ?.join('\n')
+}
+
 function displayError(editor, message) {
   console.error(message)
   errorMessage = message
@@ -131,7 +142,7 @@ export async function openDialog(editor) {
     .querySelector('.publish-button')
   const rect = buttonEl.getBoundingClientRect()
 
-  const width = 350
+  const width = 450
   const padding = 10 * 2
   const minHeight = 50
   if(!dialog) dialog = createDialogElements().dialog
