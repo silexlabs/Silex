@@ -15,8 +15,7 @@ declare module 'express-session' {
   }
 }
 
-type PublishOptions = {
-}
+type PublishOptions = object
 
 export const EVENT_PUBLISH_START = 'EVENT_STARTUP_START'
 export const EVENT_PUBLISH_END = 'EVENT_PUBLISH_END'

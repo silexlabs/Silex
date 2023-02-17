@@ -10,8 +10,7 @@ import { WebsiteSettings, Asset, Page, File, Style, WebsiteData } from '../../ty
 
 // import BackwardCompat from '../utils/BackwardCompat'
 
-type WebsiteOptions = {
-}
+type WebsiteOptions = object
 
 export const EVENT_READ_START = 'EVENT_READ_START'
 export const EVENT_READ_END = 'EVENT_READ_END'
@@ -39,9 +38,9 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
 
     // Create encessary folders, assyncronously
     initProjects()
-    .catch(err => {
-      console.error('Error: could not create folder ', err)
-    })
+      .catch(err => {
+        console.error('Error: could not create folder ', err)
+      })
     app.use(noCache,  router)
   })
 
@@ -52,8 +51,8 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
       const data = await readProjectData(projectId)
       config.emit(EVENT_READ_END, { req, res, data, projectId })
       res
-      .type('application/json')
-      .send(data)
+        .type('application/json')
+        .send(data)
     } catch (err) {
       if(err.code === 'ENOENT') {
         res.json({})
@@ -125,7 +124,7 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
     const form = formidable({
       uploadDir,
       filename: (name, ext, part, _form) => `${name}${ext}`,
-        multiples: true,
+      multiples: true,
       keepExtensions: true,
     })
 
@@ -133,15 +132,15 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
       if (err) {
         console.error('Error parsing upload data', err)
         res
-        .status(400)
-        .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
+          .status(400)
+          .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
         return
       }
       const data = [].concat(files['files[]']) // may be an array or 1 element
-      .map(file => {
-        const { originalFilename, filepath } = file
-        return `${uploadDir}/${originalFilename}`
-      })
+        .map(file => {
+          const { originalFilename, filepath } = file
+          return `${uploadDir}/${originalFilename}`
+        })
       config.emit(EVENT_ASSET_WRITE_START, { req, projectId, uploadDir, form, data })
       res.json({ data })
       config.emit(EVENT_ASSET_WRITE_END, { res, req, projectId, uploadDir, form, data })
