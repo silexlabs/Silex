@@ -53,7 +53,7 @@ async function hook(url, params = {}) {
     const urlObj = new URL(url)
     Object.keys(params)
       .forEach(key => urlObj.searchParams.append(key, params[key]))
-    const response = await fetch(urlObj)
+    const response = await fetch(urlObj.toString())
     console.log('Called hook', urlObj.toString(), response.status, response.statusText, response.ok)
     return response
   }
