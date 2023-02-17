@@ -30,6 +30,7 @@ import sslPlugin from './plugins/SslPlugin'
 import staticPlugin from './plugins/StaticPlugin'
 import publishPlugin from './plugins/PublishPlugin'
 import websitePlugin from './plugins/WebsitePlugin'
+import hooksPlugin from './plugins/HooksPlugin'
 
 export default function(): Config {
   const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
@@ -48,6 +49,7 @@ export default function(): Config {
     staticPlugin,
     publishPlugin,
     websitePlugin,
+    hooksPlugin,
   ]
   config.pluginsOpts = {}
   return config
