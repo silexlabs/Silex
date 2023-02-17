@@ -228,8 +228,8 @@ export async function trackProgress(editor, statusUrl) {
   if(state.running) {
     setTimeout(() => trackProgress(editor, statusUrl), 2000)
   } else {
-    status = STATUS_SUCCESS
-    editor.trigger('publish:stop', {success: true})
+    status = state.error ? STATUS_ERROR : STATUS_SUCCESS
+    editor.trigger('publish:stop', {success: state.error})
   }
   update(editor)
 }
