@@ -17,6 +17,7 @@ export default async function(config: Config, opts: HooksOptions = {}) {
     buildUrl: process.env.SILEX_HOOK_BUILD,
     ...opts
   }
+  console.log('Hooks', options)
   config.on(EVENT_WRITE_END, async ({ res, req, projectId, data }) => {
     console.log(EVENT_WRITE_END, {projectId})
     if(options.gitUrl) {
@@ -47,6 +48,7 @@ export default async function(config: Config, opts: HooksOptions = {}) {
 }
 
 async function hook(url, params = {}) {
+  console.log('Calling hook', url, params)
   if(url) {
     const urlObj = new URL(url)
     Object.keys(params)
