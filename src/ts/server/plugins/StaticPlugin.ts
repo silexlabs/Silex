@@ -31,24 +31,24 @@ export default async function(config: Config, opts: StaticOptions = {}) {
       },
     ]
     // add project route for source maps
-    .concat(config.debug ? [{
-      route: '/',
-      path: './',
-    }] : []),
+      .concat(config.debug ? [{
+        route: '/',
+        path: './',
+      }] : []),
     ...opts,
   }
 
   config.on(EVENT_STARTUP_START, ({app}) => {
     const router = express.Router()
     options.routes
-    .forEach(folder => {
+      .forEach(folder => {
       // either the module root folder or silex root folder
-      const rootFolder = folder.module ? `${nodeModules(folder.module)}/${folder.module}` : rootPath
-      const path = Path.join(rootFolder, folder.path || '')
-      const route = folder.module && !folder.route ? `/libs/${ folder.module }` : folder.route
-      if (!route) throw new Error('The config for static module requires either `route` or `module`')
+        const rootFolder = folder.module ? `${nodeModules(folder.module)}/${folder.module}` : rootPath
+        const path = Path.join(rootFolder, folder.path || '')
+        const route = folder.module && !folder.route ? `/libs/${ folder.module }` : folder.route
+        if (!route) throw new Error('The config for static module requires either `route` or `module`')
         router.use(route, serveStatic(path))
-    })
+      })
     app.use(withCache,  router)
   })
 }
