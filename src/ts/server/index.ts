@@ -12,7 +12,7 @@ ${config.url}
 // livereload
 import { createServer } from 'livereload'
 import { resolve } from 'path'
-if(process.env.SILEX_DEBUG) {
+if(config.debug) {
   const dist = resolve(__dirname, '../client')
   const server = createServer({
     delay: 0,
