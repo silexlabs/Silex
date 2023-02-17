@@ -77,7 +77,7 @@ function update(editor) {
           max-width: 100%;
           max-height: 50vh;
           overflow: auto;"
-          >${ state.error ? state.errors : state.logs }</pre>
+          >${ state.error ? state.errors[state.logs.length] : state.logs[state.logs.length] }</pre>
       ` : '' }
         <button
           class="silex-button silex-button--secondary"
