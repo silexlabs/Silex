@@ -10,10 +10,10 @@ export const eleventyPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
   //   data.pages.forEach((page: Page, idx) => {
   //     const file = data.files[idx]
   //     file.css = `---
-pe// rmalink: /css/${getPageSlug(page.name)}.css
---// -
-${// file.css}
-`
+// permalink: /css/${getPageSlug(page.name)}.css
+// ---
+// ${file.css}
+// `
   //     page.cssExt = '.liquid'
   //   })
   // })
