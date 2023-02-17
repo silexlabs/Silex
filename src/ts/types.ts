@@ -90,7 +90,8 @@ export interface Page {
   type?: string,
   frames: Frame[],
   settings?: WebsiteSettings,
-  ext?: string,
+  cssExt?: string,
+  htmlExt?: string,
 }
 
 export interface Frame {
