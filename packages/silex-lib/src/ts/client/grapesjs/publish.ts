@@ -45,6 +45,7 @@ function move(rect) {
   Object.keys(rect).forEach(key => dialog.style[key] = rect[key] + 'px')
 }
 function update(editor) {
+  console.log('update', {state, status})
   render(html`
     ${ open ? html`
       <main>
@@ -67,6 +68,17 @@ function update(editor) {
           @click=${() => startPublication(editor)}
         >Publish</button>
       `}
+      ${ state?.running ? html`
+        <progress
+          value=""
+          style="width: 100%;"
+        ></progress>
+        <pre style="
+          max-width: 100%;
+          max-height: 50vh;
+          overflow: auto;"
+          >${ state.error ? state.errors : state.logs }</pre>
+      ` : '' }
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -89,6 +101,13 @@ export let status = STATUS_NONE
 export let open = false
 let errorMessage = ''
 let dialog
+let state = {
+  queued: false,
+  error: false,
+  running: false,
+  logs: [],
+  errors: [],
+}
 
 function displayError(editor, message) {
   console.error(message)
@@ -160,6 +179,7 @@ export async function startPublication(editor) {
     })
   } catch(e) {
     displayError(editor, `An error occured, your site is not published. ${e.message}`)
+    editor.trigger('publish:stop', {success: false, message: e.message})
     return
   }
   try {
@@ -174,8 +194,42 @@ export async function startPublication(editor) {
     editor.trigger('publish:stop', {success: false, message: json.message})
     return
   }
-  status = STATUS_SUCCESS
-  update(editor)
-  editor.trigger('publish:stop', {success: true})
+  if(json.statusUrl) {
+    trackProgress(editor, json.statusUrl)
+  } else {
+    status = STATUS_SUCCESS
+    update(editor)
+    editor.trigger('publish:stop', {success: true})
+  }
 }
 
+export async function trackProgress(editor, statusUrl) {
+  let res
+  let json
+  try {
+    res = await fetch(statusUrl)
+  } catch(e) {
+    displayError(editor, `An error occured, your site is not published. ${e.message}`)
+    editor.trigger('publish:stop', {success: false, message: e.message})
+    return
+  }
+  try {
+    state = await res.json()
+  } catch(e) {
+    displayError(editor, `Could not parse the server response, your site may be published. ${e.message}`)
+    editor.trigger('publish:stop', {success: false, message: e.message})
+    return
+  }
+  if(!res.ok) {
+    displayError(editor, `An network error occured, your site is not published. ${res.statusText}`)
+    editor.trigger('publish:stop', {success: false, message: `An network error occured, your site is not published. ${res.statusText}`})
+    return
+  }
+  if(state.running) {
+    setTimeout(() => trackProgress(editor, statusUrl), 2000)
+  } else {
+    status = STATUS_SUCCESS
+    editor.trigger('publish:stop', {success: true})
+  }
+  update(editor)
+}

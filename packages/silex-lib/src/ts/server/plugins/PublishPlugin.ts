@@ -15,7 +15,9 @@ declare module 'express-session' {
   }
 }
 
-type PublishOptions = object
+type PublishOptions = {
+  statusUrl?: string
+}
 
 export const EVENT_PUBLISH_START = 'EVENT_STARTUP_START'
 export const EVENT_PUBLISH_END = 'EVENT_PUBLISH_END'
@@ -23,6 +25,7 @@ export const EVENT_PUBLISH_END = 'EVENT_PUBLISH_END'
 export default async function(config: Config, opts: PublishOptions = {}) {
   // Options with defaults
   const options = {
+    statusUrl: process.env.SILEX_PUBLICATION_STATUS_URL,
     ...opts,
   }
   config.on(EVENT_STARTUP_START, ({app}) => {
@@ -43,39 +46,15 @@ export default async function(config: Config, opts: PublishOptions = {}) {
           return
         }
         //req.session.publicationId = createJob(req.body.files, config)
-        res.json({})
+        res.json({
+          statusUrl: options.statusUrl,
+        })
 
         config.emit(EVENT_PUBLISH_END, { projectId, files, req, res })
       }
     })
-    //// Get status of publication
-    //router.get('/publish', (req: express.Request, res: express.Response) => {
-    //  const publishJob = getJob(req.session.publicationId)
-    //  if (publishJob) {
-    //    if (publishJob.error) { res.status(500) }
-    //    res.send({
-    //      message: publishJob.getStatus(),
-    //      stop: publishJob.isStopped(),
-    //    })
-    //  } else {
-    //    res.status(404).send({
-    //      message: 'No pending publication.',
-    //      stop: true,
-    //    })
-    //  }
-    //})
 
     app.use(noCache,  router)
   })
 }
 
-//let nextJobId = 0
-//const jobs = new Map()
-//function getJob(id) {
-//  return jobs.get(id)
-//}
-//function createJob(files: File[], config) {
-//  const id = `${nextJobId++}-${Math.round(Math.random() * 10000)}`
-//
-//  return id
-//}
