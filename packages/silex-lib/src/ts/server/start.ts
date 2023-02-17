@@ -20,7 +20,7 @@ export async function start(config: Config): Promise<Application> {
 
   // Plugins hook to create API routes
   const app = express()
-  config.emit(EVENT_STARTUP_START, { app })
+  await config.emit(EVENT_STARTUP_START, { app })
 
   // Start server
   return new Promise((resolve, reject) => {

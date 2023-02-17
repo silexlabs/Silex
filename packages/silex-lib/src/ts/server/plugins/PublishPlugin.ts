@@ -18,6 +18,9 @@ declare module 'express-session' {
 type PublishOptions = {
 }
 
+export const EVENT_PUBLISH_START = 'EVENT_STARTUP_START'
+export const EVENT_PUBLISH_END = 'EVENT_PUBLISH_END'
+
 export default async function(config: Config, opts: PublishOptions = {}) {
   // Options with defaults
   const options = {
@@ -32,6 +35,7 @@ export default async function(config: Config, opts: PublishOptions = {}) {
           message: 'Error in the request, pages and projectId parmas required',
         })
       } else {
+        config.emit(EVENT_PUBLISH_START, { projectId, files, req})
         try {
           await publish(projectId, files, req.body)
         } catch (err) {
@@ -41,6 +45,8 @@ export default async function(config: Config, opts: PublishOptions = {}) {
         }
         //req.session.publicationId = createJob(req.body.files, config)
         res.json({})
+
+        config.emit(EVENT_PUBLISH_END, { projectId, files, req, res })
       }
     })
     //// Get status of publication
