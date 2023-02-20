@@ -64,7 +64,7 @@
     "test:watch": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js --watch"
   },
   "dependencies": {
-    "@silexlabs/grapesjs-fonts": "1.0.3",
+    "@silexlabs/grapesjs-fonts": "1.0.4",
     "@silexlabs/grapesjs-symbols": "1.0.8",
     "@silexlabs/grapesjs-ui-suggest-classes": "1.0.19",
     "adm-zip": "0.5.10",
