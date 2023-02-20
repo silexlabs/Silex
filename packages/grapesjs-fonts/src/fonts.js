@@ -123,7 +123,7 @@ export const fontsDialogPlugin = (editor, opts) => {
 function match(hay, s) {
     const h = hay.toLowerCase()
     let n = -1
-    s = s.toLowerCase().split()
+    s = s.toLowerCase()
     for (let l in s) if (!~(n = h.indexOf(l, n + 1))) return false
     return true
 }
