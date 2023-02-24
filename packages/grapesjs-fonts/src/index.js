@@ -4,8 +4,9 @@ import en from './locale/en'
 export default (editor, opts = {}) => {
 
     const options = { ...{
+        // default options
         i18n: {},
-    // default options
+        preserveDefaultFonts: true,
     },  ...opts }
 
   
@@ -15,7 +16,7 @@ export default (editor, opts = {}) => {
         ...options.i18n,
     })
 
-    _fontsDialogPlugin(editor, opts)
+    _fontsDialogPlugin(editor, options)
 }
 
 export const fontsDialogPlugin = _fontsDialogPlugin

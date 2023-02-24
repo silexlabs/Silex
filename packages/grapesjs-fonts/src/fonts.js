@@ -19,6 +19,7 @@ const LS_FONTS = 'silex-loaded-fonts-list'
  */
 let _fontsList
 let fonts
+let defaults = []
 
 /**
  * Load available fonts only once per session
@@ -47,7 +48,7 @@ async function loadFonts(editor) {
 /**
  * When the dialog is closed
  */
-function saveFonts(editor/*, config*/) {
+function saveFonts(editor, opts) {
     const model = editor.getModel()
 
     // Store the modified fonts
@@ -57,7 +58,7 @@ function saveFonts(editor/*, config*/) {
     updateHead(editor, fonts)
 
     // Update the "font family" dropdown
-    updateUi(editor, fonts)
+    updateUi(editor, fonts, opts)
 
     // Save website if auto save is on
     model.set('changesCount', editor.getDirtyCount() + 1)
@@ -74,6 +75,7 @@ async function loadFontList(url) {
 }
 
 export const fontsDialogPlugin = (editor, opts) => {
+    defaults = editor.StyleManager.getBuiltIn('font-family').options
     if(!opts.api_key) throw new Error('You must provide Google font api key, see https://developers.google.com/fonts/docs/developer_api#APIKey')
     editor.Commands.add(cmdOpenFonts, {
         /* eslint-disable-next-line */
@@ -115,7 +117,7 @@ export const fontsDialogPlugin = (editor, opts) => {
         editor.getModel().set('fonts', fonts)
         setTimeout(() => {
             updateHead(editor, fonts)
-            updateUi(editor, fonts)
+            updateUi(editor, fonts, opts)
         })
     })
 }
@@ -298,12 +300,17 @@ function updateHead(editor, fonts) {
     })
 }
 
-function updateUi(editor, fonts) {
+function updateUi(editor, fonts, opts) {
     const styleManager = editor.StyleManager
     const fontProperty = styleManager.getProperty('typography', 'font-family')
+    if (opts.preserveDefaultFonts) {
+        fonts = defaults.concat(fonts)
+    } else if (fonts.length === 0) {
+        fonts = defaults
+    }
     fontProperty.setOptions(fonts)
-    styleManager.render()
 }
+
 function updateRules(editor, fonts, font, value) {
     font.value = value
 }
@@ -312,4 +319,3 @@ function updateVariant(editor, fonts, font, variant, checked) {
     if(has && !checked) font.variants = font.variants.filter(v => v !== variant)
     else if(!has && checked) font.variants.push(variant)
 }
-
