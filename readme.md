@@ -45,4 +45,7 @@ The upstream projects we use in Silex are all listed in [Silex meta package](htt
 
 ## Stars history
 
-<iframe style="width:100%;height:auto;min-width:600px;min-height:400px;" src="https://star-history.com/embed?secret=Z2hwX09KelphZFcxU3UzQmJhb2pQOHk4MmtmbkZjR3BTUTF5QWVFUA==#silexlabs/Silex&Date" frameBorder="0"></iframe>
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=silexlabs/Silex&type=Timeline)](https://star-history.com/#silexlabs/Silex&Timeline)
+
