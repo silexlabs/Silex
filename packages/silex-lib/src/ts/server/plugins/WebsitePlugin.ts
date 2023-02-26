@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { join } from 'path'
 import * as formidable from 'formidable'
 
-import { projectPath, assetsDir, initProjects, initProject, writeProjectData, readProjectData } from '../project'
+import { projectPath, assetsDir, assetUrl, initProjects, initProject, writeProjectData, readProjectData } from '../project'
 import { noCache } from '../express'
 import { Config } from '../config'
 import { EVENT_STARTUP_START } from '../events'
@@ -117,6 +117,7 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
 
   async function writeAsset(req, res) {
     const projectId = req.query.projectId
+    // FIXME: assetsDir and assetsUrl will both download the site settings file => get both in 1 call
     const uploadDir = await assetsDir(projectId)
 
     initProject(projectId)
@@ -136,14 +137,18 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
           .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
         return
       }
-      const data = [].concat(files['files[]']) // may be an array or 1 element
-        .map(file => {
-          const { originalFilename, filepath } = file
-          return `${uploadDir}/${originalFilename}`
+      Promise.all(
+        [].concat(files['files[]']) // may be an array or 1 element
+          .map(file => {
+            const { originalFilename, filepath } = file
+            return assetUrl(projectId, originalFilename)
+          })
+      )
+        .then(data => {
+          config.emit(EVENT_ASSET_WRITE_START, { req, projectId, uploadDir, form, data })
+          res.json({ data })
+          config.emit(EVENT_ASSET_WRITE_END, { res, req, projectId, uploadDir, form, data })
         })
-      config.emit(EVENT_ASSET_WRITE_START, { req, projectId, uploadDir, form, data })
-      res.json({ data })
-      config.emit(EVENT_ASSET_WRITE_END, { res, req, projectId, uploadDir, form, data })
     })
   }
 }
