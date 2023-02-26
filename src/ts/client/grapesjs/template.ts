@@ -109,22 +109,36 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
       default: return `${key}="${value}"`
     }
   }
+  // Remove empty lines in templates
+  function cleanup(template) {
+    return template
+      // split in lines
+      .split('\n')
+      // remove lines with only spaces
+      .map(line => line.trim())
+      .filter(line => !!line)
+      // put back together
+      .join('\n')
+  }
   editor.on(opts.eventStart || 'publish:before', () => {
     onAll(c => {
       const template = c.get(templateKey)
       const toHTML = c.toHTML
       const classes = c.getClasses()
+      const before = cleanup(template?.before || '')
+      const replace = cleanup(template?.replace || '')
+      const after = cleanup(template?.after || '')
       c.set('tmpHtml', toHTML)
       c.toHTML = () => {
         return `
-          ${ template?.before || '' }
-          ${ template?.replace ? `<${c.get('tagName')}
+          ${ before }
+          ${ replace ? `<${c.get('tagName')}
             ${Object.entries(c.get('attributes')).map(([key, value]) => makeAttribute(key, value)).join(' ')}
             ${classes.length ? `class="${classes.join(' ')}"` : ''}
             >
-            ${template.replace}
+            ${replace}
           </${c.get('tagName')}>` : toHTML.apply(c) }
-          ${ template?.after || '' }
+          ${ after }
         `
       }
     })
