@@ -105,8 +105,8 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
   // Quote strings, no values for boolean
   function makeAttribute(key, value) {
     switch(typeof value) {
-      case 'boolean': return value ? key : ''
-      default: return `${key}="${value}"`
+    case 'boolean': return value ? key : ''
+    default: return `${key}="${value}"`
     }
   }
   // Remove empty lines in templates
