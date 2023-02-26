@@ -135,7 +135,8 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
       try {
         const $ = load(files[idx].html)
         $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.url}/${getPageSlug(pageName)}.css" />`)
-        $('head').append(getSetting('head'))
+        $('head').append(settings.head)
+        $('head').append(page.settings?.head)
         if(!$('head > title').length) $('head').append('<title/>')
         $('head > title').html(getSetting('title'))
         if(!$('head > link[rel="icon"]').length) $('head').append('<link rel="icon" />')
