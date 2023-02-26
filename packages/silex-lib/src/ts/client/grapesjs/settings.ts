@@ -167,10 +167,10 @@ function updateDom(editor) {
   if(doc) {
     // Site head
     getHeadContainer(doc, 'site-head')
-    .innerHTML = editor.getModel().get('settings').head || ''
+      .innerHTML = editor.getModel().get('settings').head || ''
     // Pages head
     getHeadContainer(doc, 'page-head')
-    .innerHTML = editor.Pages.getSelected().get('settings')?.head || ''
+      .innerHTML = editor.Pages.getSelected().get('settings')?.head || ''
   } else {
     // No document??
   }
