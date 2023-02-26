@@ -35,7 +35,7 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     const sepStyle = opts.styles?.sep ?? styleMap({ height: '10px' })
     const labels = {
       before: html`<strong>Before</strong> the element`,
-      replace: html`<strong>Replace</strong> the element`,
+      replace: html`<strong>Replace</strong> the element's children`,
       after: html`<strong>After</strong> the element`,
     }
     render(html`
@@ -101,15 +101,29 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
           .onAll(c => cbk(c))
       })
   }
+  // Make html attribute
+  // Quote strings, no values for boolean
+  function makeAttribute(key, value) {
+    switch(typeof value) {
+      case 'boolean': return value ? key : ''
+      default: return `${key}="${value}"`
+    }
+  }
   editor.on(opts.eventStart || 'publish:before', () => {
     onAll(c => {
       const template = c.get(templateKey)
       const toHTML = c.toHTML
+      const classes = c.getClasses()
       c.set('tmpHtml', toHTML)
       c.toHTML = () => {
         return `
           ${ template?.before || '' }
-          ${ template?.replace ? template.replace : toHTML.apply(c) }
+          ${ template?.replace ? `<${c.get('tagName')}
+            ${Object.entries(c.get('attributes')).map(([key, value]) => makeAttribute(key, value)).join(' ')}
+            ${classes.length ? `class="${classes.join(' ')}"` : ''}
+            >
+            ${template.replace}
+          </${c.get('tagName')}>` : toHTML.apply(c) }
           ${ template?.after || '' }
         `
       }
