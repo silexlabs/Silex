@@ -42,10 +42,20 @@ export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) =>
     data.name = editor.getModel().get('name')
   })
   editor.on('storage:end:load', (data) => {
-    editor.getModel().set('settings', data.settings || {})
-    editor.getModel().set('name', data.name)
+    const model = editor.getModel()
+    model.set('settings', data.settings || {})
+    model.set('name', data.name)
+    updateDom(editor)
+  })
+  editor.on('page', (e) => {
+    editor.Canvas.getFrameEl().addEventListener('load', () => {
+      updateDom(editor)
+    })
   })
 })
+
+// Is the model a site or a page?
+function isSite(model) { return !!model.getHtml }
 
 function displaySettings(editor, config, model = editor.getModel()) {
   const settings = model.get('settings') || {} as WebsiteSettings
@@ -56,8 +66,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
       <h2>General settings</h2>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
-          <h3>${model.getHtml ? 'Site name' : 'Page name'}</h3>
-          <p>${model.getHtml ? 'The project name in the editor, for you and your team.' : 'Label of the page in the editor, and file name of the HTML page.'}</p>
+          <h3>${isSite(model) ? 'Site name' : 'Page name'}</h3>
+          <p>${isSite(model) ? 'The project name in the editor, for you and your team.' : 'Label of the page in the editor, and file name of the HTML page.'}</p>
           <input type="text" name="name" .value=${live(model.get('name') || '')}/>
         </label>
         <label class="silex-form__element">
@@ -139,4 +149,30 @@ function saveSettings(editor, config, model = editor.getModel()) {
   })
   // save if auto save is on
   editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
+  // update the DOM
+  updateDom(editor)
 }
+function getHeadContainer(doc, className) {
+  const container = doc.head.querySelector(`.${className}`)
+  if(container) {
+    return container
+  }
+  const newContainer = doc.createElement('div')
+  newContainer.classList.add(className)
+  doc.head.appendChild(newContainer)
+  return newContainer
+}
+function updateDom(editor) {
+  const doc = editor.Canvas.getDocument()
+  if(doc) {
+    // Site head
+    getHeadContainer(doc, 'site-head')
+    .innerHTML = editor.getModel().get('settings').head || ''
+    // Pages head
+    getHeadContainer(doc, 'page-head')
+    .innerHTML = editor.Pages.getSelected().get('settings')?.head || ''
+  } else {
+    // No document??
+  }
+}
+
