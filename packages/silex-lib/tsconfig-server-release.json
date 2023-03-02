@@ -6,7 +6,11 @@
     "watch": false,
     "sourceMap": false,
     "module": "commonjs",
-    "removeComments": true
+    "removeComments": true,
+    "typeRoots": [
+      "src/ts/types",
+      "node_modules/@types"
+    ]
   },
   "include": [
     "src/ts/server/index.ts"
