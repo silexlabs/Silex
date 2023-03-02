@@ -24,13 +24,13 @@
   },
   "wip": [
     "packages/grapesjs-links",
-    "packages/grapesjs",
     "packages/grapesjs-cli",
     "packages/editor.silex.me",
     "packages/silex-desktop",
     "packages/node_modules-path"
   ],
   "workspaces": [
+    "packages/grapesjs",
     "packages/grapesjs-symbols",
     "packages/grapesjs-ui-suggest-classes",
     "packages/eleventy-plugin-directus",

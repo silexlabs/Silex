@@ -28,3 +28,6 @@
 [submodule "packages/Silex.wiki"]
 	path = packages/Silex.wiki
 	url = https://github.com/silexlabs/Silex.wiki.git
+[submodule "packages/grapesjs"]
+	path = packages/grapesjs
+	url = git@github.com:GrapesJS/grapesjs.git
