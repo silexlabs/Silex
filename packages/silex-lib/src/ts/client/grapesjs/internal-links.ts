@@ -25,7 +25,7 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
       })
   }
   editor.on('page', ({ event, page }) => {
-    if(!page) return; // fixes UT
+    if(!page) return // fixes UT
     switch (event) {
     case 'change:name':
       // update all links to this page
