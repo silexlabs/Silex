@@ -2,7 +2,7 @@
   "name": "@silexlabs/grapesjs-fonts",
   "version": "1.0.6",
   "description": "GrapesJS Fonts",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-fonts.git"
