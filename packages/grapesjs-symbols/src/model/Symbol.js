@@ -82,19 +82,17 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcInst - the instance of this symbol containing `child`
    * @param {Component} srcChild - the child which has the changes
    */
-  browseInstancesAndModel(srcInst, srcChild, cbk, err) {
-    const symbolChildId = srcChild.get('symbolChildId')
+  browseInstancesAndModel(srcInst, srcChildren, cbk, err) {
     this.getAll(this.get('model'), srcInst)
       .forEach(dstInst => {
-        // update a child or the root
-        const dstChild = srcChild.has('symbolId') ? dstInst : find(dstInst, symbolChildId)
-        // check that we found a component to update
-        if(dstChild) {
-          cbk(dstChild)
-        } else {
-          console.error(`Could not apply changes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
-          err({srcInst, dstInst, srcChild})
-        }
+        const dstChildren = srcChildren
+          .map(srcChild => {
+          // Get a child or the root
+            return srcChild.has('symbolId')
+              ? dstInst // this is the root
+              : find(dstInst, srcChild.get('symbolChildId')) // this is a child
+          })
+        cbk(dstChildren, dstInst)
       })
   },
 
@@ -105,10 +103,12 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyClasses(srcInst, srcChild) {
-    this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
-      dstChild.setClass(srcChild.getClasses())
-    }, ({srcInst, dstInst, srcChild}) => {
-      console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+    this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstChild) {
+        dstChild.setClass(srcChild.getClasses())
+      } else {
+        console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+      }
     })
   },
 
@@ -124,48 +124,67 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcInst - the instance of this symbol containing `child`
    * @param {Component} srcChild - the child which has the changes
    */
-  applyChild(srcInst, srcChild) {
+  applyChildren(srcInst, srcChild) {
     const parent = srcChild.parent()
     const allInst = all(srcInst)
     if(allInst.includes(parent)) {
       // the child is in the instance
       const symbolChildId = srcChild.get('symbolChildId')
+      // Case of a child being duplicated inside the symbol
+      const isDuplicate = !!symbolChildId && allInst
+        .filter(c => c.get('symbolChildId') === symbolChildId && c.parent() === parent).length > 1
       //if(allInst.includes(srcChild)) {
       //if(find(this.get('model'), symbolChildId)) {
-      if(symbolChildId) {
+      if(symbolChildId && !isDuplicate) {
         // Case of a moving child inside the instance
-        // TODO
-        console.log('child is moving')
+        this.browseInstancesAndModel(srcInst, [srcChild, parent], ([dstChild, dstParent], dstInst) => {
+          if(dstChild && dstParent) {
+            dstParent.components(
+              // TODO: Needs review
+              dstParent.components()
+                .toArray().concat(dstChild)
+            )
+          } else {
+            console.error(`Could not sync child for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`, {dstChild, dstParent})
+          }
+        })
       } else {
         // this is a new child
         all(srcChild)
           .forEach(c => initSymbolChild(c))
-        this.browseInstancesAndModel(srcInst, parent, dstParent => {
-          const clone = srcChild.clone()
-          dstParent.append(clone)
-        }, ({srcInst, dstInst, srcChild}) => {
-          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        this.browseInstancesAndModel(srcInst, [parent], ([dstParent], dstInst) => {
+          if(dstParent) {
+            const clone = srcChild.clone()
+            dstParent.append(clone)
+          } else {
+            console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+          }
         })
       }
       // Reorder
-      this.browseInstancesAndModel(srcInst, parent, dstParent => {
-        dstParent.components(
-          // TODO: Needs review
-          dstParent.components().toArray().sort((c1, c2) => {
-            return this.getIndex(parent, c1.get('symbolChildId'))
-              - this.getIndex(parent, c2.get('symbolChildId'))
-          })
-        )
+      this.browseInstancesAndModel(srcInst, [parent], ([dstParent], dstInst) => {
+        if(dstParent) {
+          dstParent.components(
+            // TODO: Needs review
+            dstParent.components().toArray().sort((c1, c2) => {
+              return this.getIndex(parent, c1.get('symbolChildId'))
+                - this.getIndex(parent, c2.get('symbolChildId'))
+            })
+          )
+        } else {
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${parent.get('symbolChildId')} not found in ${dstInst.cid}`)
+        }
       })
     } else {
       // Child is not there anymore
-      this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
-        dstChild.remove()
-      }, ({srcInst, dstInst, srcChild}) => {
-        console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+      this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+        if(dstChild) {
+          dstChild.remove()
+        } else {
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        }
       })
       // this child is not part of a symbol anymore
-      // TODO: what if it was dropped in another symbol?
       srcChild.set('symbolChildId')
     }
   },
@@ -177,11 +196,13 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyAttributes(srcInst, srcChild) {
-    this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
-      // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
-      dstChild.attributes = srcChild.attributes
-    }, ({srcInst, dstInst, srcChild}) => {
-      console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+    this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstChild) {
+        // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
+        dstChild.attributes = srcChild.attributes
+      } else {
+        console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+      }
     })
   },
 
@@ -193,14 +214,16 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyContent(srcInst, srcChild) {
-    this.browseInstancesAndModel(srcInst, srcChild, dstChild => {
-      if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
-        //dstChild.components(srcChild.toHTML())
-        dstChild.components(srcChild.getCurrentView().getContent())
+    this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstChild) {
+        if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
+          //dstChild.components(srcChild.toHTML())
+          dstChild.components(srcChild.getCurrentView().getContent())
+        }
+        else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
+      } else {
+        console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       }
-      else { console.log('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
-    }, ({srcInst, dstInst, srcChild}) => {
-      console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
     })
   },
 
@@ -339,3 +362,4 @@ export function createSymbol(c, attributes) {
 }
 
 export default SymbolModel
+

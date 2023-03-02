@@ -63,23 +63,11 @@ test('Test browseInstancesAndModel  method', () => {
   // - comp1 and comp2 are instances of s1
   // - child11 and child12 are children of comp1
   // - child21 and child22 are children of comp2
-  const { s1, comp1, child11, child12, comp2, child21, child22, child111, child211 } = getTestSymbols()
+  const { s2, s1, comp1, child11, child12, comp2, child21, child22, child111, child211 } = getTestSymbols()
   const model = s1.get('model')
   const model11 = model.components().models[0]
   const model12 = model.components().models[1]
   const model111 = model11.components().models[0]
-  // console.log([
-  //   {name: 's1', cid: s1.cid},
-  //   {name: 'comp1', cid: comp1.cid},
-  //   {name: 'child11', cid: child11.cid},
-  //   {name: 'child12', cid: child12.cid},
-  //   {name: 'comp2', cid: comp2.cid},
-  //   {name: 'child21', cid: child21.cid},
-  //   {name: 'child22', cid: child22.cid},
-  //   {name: 'model', cid: model.cid},
-  //   {name: 'model11', cid: model11.cid},
-  //   {name: 'model12', cid: model12.cid},
-  // ])
 
   // First make sure the structure is right
   expect(comp1.get('symbolId')).toBe(s1.id)
@@ -96,15 +84,26 @@ test('Test browseInstancesAndModel  method', () => {
   // Find the 2 symbols in s1 which correspond to child11 in the model and in comp2
   // This makes jest crash: expect(cbk).toHaveBeenCalledWith(child11)
   const cbk = jest.fn()
-  s1.browseInstancesAndModel(comp1, child11, cbk)
+  s1.browseInstancesAndModel(comp1, [child11], cbk)
   expect(cbk).toHaveBeenCalledTimes(2)
-  expect(cbk.mock.calls[0][0].cid).toBe(model11.cid)
-  expect(cbk.mock.calls[1][0].cid).toBe(child21.cid)
+  expect(cbk.mock.calls[0][0][0].cid).toBe(model11.cid)
+  expect(cbk.mock.calls[1][0][0].cid).toBe(child21.cid)
   cbk.mockReset()
-  s1.browseInstancesAndModel(comp1, child111, cbk)
+  s1.browseInstancesAndModel(comp1, [child111], cbk)
   expect(cbk).toHaveBeenCalledTimes(2)
-  expect(cbk.mock.calls[0][0].cid).toBe(model111.cid)
-  expect(cbk.mock.calls[1][0].cid).toBe(child211.cid)
+  expect(cbk.mock.calls[0][0][0].cid).toBe(model111.cid)
+  expect(cbk.mock.calls[1][0][0].cid).toBe(child211.cid)
+  cbk.mockReset()
+  s2.browseInstancesAndModel(null, [child111], cbk)
+  expect(cbk).toHaveBeenCalledTimes(2) // called with model and 1 instance
+  // 1 result element correspondint to child111
+  expect(cbk.mock.calls[0][0]).toHaveLength(1)
+  // child111 not found in S3
+  expect(cbk.mock.calls[0][0][0]).toBe(null)
+  // 1 result element correspondint to child111
+  expect(cbk.mock.calls[1][0]).toHaveLength(1)
+  // child111 not found in S3
+  expect(cbk.mock.calls[1][0][0]).toBe(null)
 })
 
 test('Test getAll method', () => {

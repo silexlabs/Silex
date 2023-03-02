@@ -53,6 +53,10 @@
 
       var idx = 0
       editor.on('load', () => {
+        const colors = ['red', 'blue', 'grey', 'yello', 'black', 'orange', 'chocolate', 'cadetblue', 'blueviolet']
+        const color = colors[Math.floor(Math.random() * colors.length)]
+        editor.addComponents(`<div style="min-height: 100px; background: ${color};"></div>`);
+
         editor.Panels.addPanel({
           id: 'basic-actions',
           el: '.panel__basic-actions',

@@ -76,7 +76,7 @@ export default Backbone.Collection.extend({
         // TODO: need review
         await wait()
         this.updating = true
-        s.applyChild(inst, component)
+        s.applyChildren(inst, component)
         this.updating = false
       } else {
         console.warn('Could not update instance', component, ': could not find the symbol with id', symbolId)
@@ -134,6 +134,7 @@ export default Backbone.Collection.extend({
       if(s) {
         this.updating = true
         s.applyContent(inst, c)
+
         this.updating = false
       } else {
         console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
