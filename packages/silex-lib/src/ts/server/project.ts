@@ -133,7 +133,11 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
       // Process the page HTML to include all settings
       let html
       try {
-        const $ = load(files[idx].html)
+        const $ = load(files[idx].html, {
+          xml: {
+            decodeEntities: false, // prevent html entities in the template language
+          },
+        })
         $('head').append(`<link rel="stylesheet" href="${projectSettings.prefix}${projectSettings.css.url}/${getPageSlug(pageName)}.css" />`)
         $('head').append(settings.head)
         $('head').append(page.settings?.head)
