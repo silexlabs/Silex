@@ -172,7 +172,13 @@ export async function startPublication(editor) {
     files: editor.Pages.getAll().map(page => {
       const component = page.getMainComponent()
       return {
-        html: editor.getHtml({ component }),
+        html: `
+          <html>
+          <head>
+          </head>
+          ${editor.getHtml({ component })}
+          </html>
+        `,
         css: editor.getCss({ component })
       }
     })
