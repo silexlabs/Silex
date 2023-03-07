@@ -3,6 +3,7 @@ import {map} from 'lit-html/directives/map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 import { projectId, ROOT_URL } from '../config'
 import { getPageSlug } from '../../page'
+import { onAll } from '../utils'
 
 // constants
 const pluginName = 'publish'
@@ -182,6 +183,18 @@ export async function startPublication(editor) {
   const projectData = editor.getProjectData()
   const siteSettings = editor.getModel().get('settings')
   const publicationSettings = editor.getModel().get('publication')
+  // Update assets URL to display outside the editor
+  const assetsFolderUrl = publicationSettings?.assets?.url
+  if(assetsFolderUrl) {
+    onAll(editor, c => {
+      if(c.get('type') === 'image') {
+        const path = c.get('src')
+        c.set('tmp-src', path)
+        c.set('src', `${assetsFolderUrl}/${path.split('/').pop()}`)
+      }
+    })
+  }
+  // Create the data to send to the server
   const data = {
     ...projectData,
     settings: siteSettings,
@@ -216,6 +229,14 @@ export async function startPublication(editor) {
         css: editor.getCss({ component }),
         cssPath: `${ publicationSettings?.css?.path || '' }/${getPageSlug(pageName)}${publicationSettings?.css?.ext || '.css'}`,
         htmlPath: `${ publicationSettings?.html?.path || '' }/${getPageSlug(pageName)}${publicationSettings?.html?.ext || '.html'}`,
+      }
+    })
+  }
+  // Reset asset URLs
+  if(assetsFolderUrl) {
+    onAll(editor, c => {
+      if(c.get('type') === 'image') {
+        c.set('src', c.get('tmp-src'))
       }
     })
   }

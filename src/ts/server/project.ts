@@ -132,6 +132,7 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
   await mkdirIfExists(assetsFolder, { recursive: true,})
 
   assets.forEach(async asset => {
+    required(asset.src, 'asset\'s "src" attribute')
     const src = join(projectFolder, asset.src)
     const dst = join(assetsFolder, basename(asset.src))
     try {
