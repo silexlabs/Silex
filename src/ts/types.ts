@@ -9,7 +9,6 @@ export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
 export const defaultSettings: PublicationSettings = {
   path: 'publication',
   url: '',
-  prefix: '',
   autoHomePage: true,
   assets: { path: 'assets', url: '/assets' },
   html: { path: '' },
@@ -69,7 +68,6 @@ export interface Font {
 export interface PublicationSettings {
   path?: string, // Folder to publish to
   url?: string, // URL to display where the website is published to
-  prefix?: string, // Prefix to put in front of all URLs // for images src: src="${settings.prefix}${settings.assets.path}/image.jpg"
   autoHomePage?: boolean, // Name the first page `index` instead of its name
   assets?: {
     path?: string, // Folder to copy assets to
@@ -81,7 +79,7 @@ export interface PublicationSettings {
   },
   css?: {
     path?: string, // Folder where to generate the CSS files
-    url?: string, // URL where the CSS files are accessed
+    url?: string, // URL of the Folder where the CSS files are accessed
     ext?: string, // File extension for CSS files
   },
 }
