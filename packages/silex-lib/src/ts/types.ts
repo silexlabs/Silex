@@ -8,11 +8,12 @@ export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
 // Note: paths begin and end **without** slash
 export const defaultSettings: PublicationSettings = {
   path: 'publication',
-  assets: { path: 'assets', url: '/assets' },
-  html: { path: '', url: '' },
-  css: { path: 'css', url: '/css' },
-  prefix: '', // for images src: src="${settings.prefix}${settings.assets.path}/image.jpg"
+  url: '',
+  prefix: '',
   autoHomePage: true,
+  assets: { path: 'assets', url: '/assets' },
+  html: { path: '' },
+  css: { path: 'css', url: '/css' },
 }
 
 export const defaultSite: WebsiteData = {
@@ -66,23 +67,23 @@ export interface Font {
   variants: string[],
 }
 export interface PublicationSettings {
-  path?: string,
+  path?: string, // Folder to publish to
+  url?: string, // URL to display where the website is published to
+  prefix?: string, // Prefix to put in front of all URLs // for images src: src="${settings.prefix}${settings.assets.path}/image.jpg"
+  autoHomePage?: boolean, // Name the first page `index` instead of its name
   assets?: {
-    path?: string,
-    url?: string,
+    path?: string, // Folder to copy assets to
+    url?: string, // URL where assets are accessed
   },
   html?: {
-    path?: string,
-    url?: string,
-    ext?: string,
+    path?: string, // Folder where to generate the HTML pages
+    ext?: string, // File extension for HTML pages
   },
   css?: {
-    path?: string,
-    url?: string,
-    ext?: string,
+    path?: string, // Folder where to generate the CSS files
+    url?: string, // URL where the CSS files are accessed
+    ext?: string, // File extension for CSS files
   },
-  prefix?: string,
-  autoHomePage?: boolean,
 }
 
 export interface File {
