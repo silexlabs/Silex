@@ -6,7 +6,8 @@ export const WEBSITE_CONTEXT_RUNTIME_CLASS_NAME = 'silex-runtime'
 export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
 
 // Note: paths begin and end **without** slash
-export const defaultSettings: Settings = {
+export const defaultSettings: PublicationSettings = {
+  path: 'publication',
   assets: { path: 'assets', url: '/assets' },
   html: { path: '', url: '' },
   css: { path: 'css', url: '/css' },
@@ -34,6 +35,7 @@ export const defaultSite: WebsiteData = {
     { name: 'Times New Roman', value: '"Times New Roman", Times, serif', variants: [] },
   ],
   symbols: [],
+  publication: defaultSettings,
 }
 
 export interface WebsiteSettings {
@@ -55,6 +57,7 @@ export interface WebsiteData {
   settings: WebsiteSettings,
   fonts: Font[],
   symbols: symbol[],
+  publication: PublicationSettings,
 }
 
 export interface Font {
@@ -62,26 +65,31 @@ export interface Font {
   value: string,
   variants: string[],
 }
-export interface Settings {
-  assets: {
-    path: string,
-    url: string,
+export interface PublicationSettings {
+  path?: string,
+  assets?: {
+    path?: string,
+    url?: string,
   },
-  html: {
-    path: string,
-    url: string,
+  html?: {
+    path?: string,
+    url?: string,
+    ext?: string,
   },
-  css: {
-    path: string,
-    url: string,
+  css?: {
+    path?: string,
+    url?: string,
+    ext?: string,
   },
-  prefix: string,
-  autoHomePage: boolean,
+  prefix?: string,
+  autoHomePage?: boolean,
 }
 
 export interface File {
   html: string,
   css: string,
+  htmlPath: string,
+  cssPath: string,
 }
 
 export interface Page {

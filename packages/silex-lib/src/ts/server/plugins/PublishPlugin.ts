@@ -38,19 +38,20 @@ export default async function(config: Config, opts: PublishOptions = {}) {
         })
       } else {
         config.emit(EVENT_PUBLISH_START, { projectId, files, req})
+        let url
         try {
-          await publish(projectId, files, req.body)
+          url = await publish(projectId, files, req.body)
         } catch (err) {
           console.error('Error publishing the website', err)
           res.status(500).json({ message: `Error publishing the website. ${err.message}`})
           return
         }
-        //req.session.publicationId = createJob(req.body.files, config)
+        const mutable = { projectId, files, req, res, url, statusUrl: options.statusUrl }
+        config.emit(EVENT_PUBLISH_END, mutable)
         res.json({
-          statusUrl: options.statusUrl,
+          url: mutable.url,
+          statusUrl: mutable.statusUrl,
         })
-
-        config.emit(EVENT_PUBLISH_END, { projectId, files, req, res })
       }
     })
 

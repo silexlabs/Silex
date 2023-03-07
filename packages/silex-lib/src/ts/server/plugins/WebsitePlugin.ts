@@ -6,7 +6,7 @@ import { projectPath, assetsDir, assetUrl, initProjects, initProject, writeProje
 import { noCache } from '../express'
 import { Config } from '../config'
 import { EVENT_STARTUP_START } from '../events'
-import { WebsiteSettings, Asset, Page, File, Style, WebsiteData } from '../../types'
+import { WebsiteSettings, PublicationSettings, Asset, Page, File, Style, WebsiteData } from '../../types'
 
 // import BackwardCompat from '../utils/BackwardCompat'
 
@@ -71,6 +71,7 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
         files: body.files as File[],
         styles: body.styles as Style[],
         settings: body.settings as WebsiteSettings,
+        publication: body.publication as PublicationSettings,
         name: body.name,
         fonts: body.fonts,
         symbols: body.symbols,
@@ -83,7 +84,7 @@ export default async function(config: Config, opts: WebsiteOptions = {}) {
 
   async function writeWebsite(req, res) {
     const projectId = req.query.projectId
-    initProject(projectId)
+    await initProject(projectId)
 
     const [data, err] = fromBody(req.body)
     if(err) {

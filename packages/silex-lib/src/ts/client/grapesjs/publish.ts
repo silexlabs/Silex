@@ -2,6 +2,7 @@ import {html, render} from 'lit-html'
 import {map} from 'lit-html/directives/map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 import { projectId, ROOT_URL } from '../config'
+import { getPageSlug } from '../../page'
 
 // constants
 const pluginName = 'publish'
@@ -13,6 +14,14 @@ export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => 
     appendTo: 'options',
     ...opts,
   }
+  // add publication settings to the website
+  editor.on('storage:start:store', (data) => {
+    data.publication = editor.getModel().get('publication')
+  })
+  editor.on('storage:end:load', (data) => {
+    const model = editor.getModel()
+    model.set('publication', data.publication || {})
+  })
   editor.Panels.addButton(opts.appendTo, {
     id: 'publish-button',
     className: 'silex-button--size publish-button',
@@ -45,6 +54,7 @@ function move(rect) {
   Object.keys(rect).forEach(key => dialog.style[key] = rect[key] + 'px')
 }
 function update(editor) {
+  const logs =  state.error ? cleanup(state.errors) : cleanup(state.logs)
   render(html`
     ${ open ? html`
       <main>
@@ -53,6 +63,7 @@ function update(editor) {
         ` : ''}
         ${ status === STATUS_SUCCESS ? html`
           <p>Publication success</p>
+          ${ url ? html`<a href="${url}" target="_blank">Click here to view the published website</a>` : ''}
         ` : ''}
         ${ status === STATUS_ERROR ? html`
           <p>Publication error</p>
@@ -64,16 +75,18 @@ function update(editor) {
             style="width: 100%;"
           ></progress>
         ` : ''}
-        <details>
-          <pre style="
-            max-width: 100%;
-            max-height: 50vh;
-            overflow: auto;
-            font-size: x-small;
-            "
-          >${ state.error ? cleanup(state.errors) : cleanup(state.logs) }
-          </pre>
-        </details>
+        ${ logs ? `
+          <details>
+            <pre style="
+              max-width: 100%;
+              max-height: 50vh;
+              overflow: auto;
+              font-size: x-small;
+              "
+            >${ logs }
+            </pre>
+          </details>
+        ` : '' }
       </main>
       <footer>
         ${ status === STATUS_PENDING ? '' : html`
@@ -105,6 +118,7 @@ export let status = STATUS_NONE
 export let open = false
 let errorMessage = ''
 let dialog
+let url // from the result of the first fetch when publishing
 let state = {
   queued: false,
   error: false,
@@ -165,21 +179,43 @@ export async function startPublication(editor) {
   status = STATUS_PENDING
   update(editor)
   editor.trigger('publish:before')
+  const projectData = editor.getProjectData()
+  const siteSettings = editor.getModel().get('settings')
+  const publicationSettings = editor.getModel().get('publication')
   const data = {
-    ...editor.getProjectData(),
-    settings: editor.getModel().get('settings'),
+    ...projectData,
+    settings: siteSettings,
+    publication: publicationSettings,
     projectId,
     files: editor.Pages.getAll().map(page => {
+      const pageSettings = page.get('settings')
+      const pageName = publicationSettings?.autoHomePage !== false && page.type === 'main' ? 'index' : page.name
+      function getSetting(name) {
+        return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
+      }
       const component = page.getMainComponent()
       return {
         html: `
-          <html>
+          <!DOCTYPE html>
+          <html lang="${ getSetting('lang') }">
           <head>
+            <link rel="stylesheet" href="${publicationSettings?.prefix || ''}${publicationSettings?.css?.url || ''}${getPageSlug(pageName)}.css" />
+            ${ siteSettings?.head || '' }
+            ${ pageSettings?.head || '' }
+            <title>${ getSetting('title') }</title>
+            <link rel="icon" href="${ getSetting('favicon') }" />
+            ${
+  ['description', 'og:title', 'og:description', 'og:image']
+    .map(prop => `<meta property="${ prop }" content="${ getSetting(prop) }"/>`)
+    .join('\n')
+}
           </head>
-          ${editor.getHtml({ component })}
+          ${ editor.getHtml({ component }) }
           </html>
         `,
-        css: editor.getCss({ component })
+        css: editor.getCss({ component }),
+        cssPath: `${ publicationSettings?.css?.path || '' }/${getPageSlug(pageName)}${publicationSettings?.css?.ext || '.css'}`,
+        htmlPath: `${ publicationSettings?.html?.path || '' }/${getPageSlug(pageName)}${publicationSettings?.html?.ext || '.html'}`,
       }
     })
   }
@@ -211,6 +247,7 @@ export async function startPublication(editor) {
     editor.trigger('publish:stop', {success: false, message: json.message})
     return
   }
+  url = json.url
   if(json.statusUrl) {
     trackProgress(editor, json.statusUrl)
   } else {
