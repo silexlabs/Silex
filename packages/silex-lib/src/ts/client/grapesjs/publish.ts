@@ -189,7 +189,7 @@ export async function startPublication(editor) {
     projectId,
     files: editor.Pages.getAll().map(page => {
       const pageSettings = page.get('settings')
-      const pageName = publicationSettings?.autoHomePage !== false && page.type === 'main' ? 'index' : page.name
+      const pageName = publicationSettings?.autoHomePage !== false && page.get('type') === 'main' ? 'index' : (page.get('name') || page.get('type'))
       function getSetting(name) {
         return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
       }
@@ -199,7 +199,7 @@ export async function startPublication(editor) {
           <!DOCTYPE html>
           <html lang="${ getSetting('lang') }">
           <head>
-            <link rel="stylesheet" href="${publicationSettings?.prefix || ''}${publicationSettings?.css?.url || ''}${getPageSlug(pageName)}.css" />
+            <link rel="stylesheet" href="${publicationSettings?.css?.url || ''}${getPageSlug(pageName)}.css" />
             ${ siteSettings?.head || '' }
             ${ pageSettings?.head || '' }
             <title>${ getSetting('title') }</title>
