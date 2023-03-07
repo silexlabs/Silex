@@ -55,7 +55,6 @@ function move(rect) {
   Object.keys(rect).forEach(key => dialog.style[key] = rect[key] + 'px')
 }
 function update(editor) {
-  const logs =  state.error ? cleanup(state.errors) : cleanup(state.logs)
   render(html`
     ${ open ? html`
       <main>
@@ -76,15 +75,29 @@ function update(editor) {
             style="width: 100%;"
           ></progress>
         ` : ''}
-        ${ logs ? html`
+        ${ state.logs?.length ? html`
           <details>
+            <summary>Logs</summary>
             <pre style="
               max-width: 100%;
               max-height: 50vh;
               overflow: auto;
               font-size: x-small;
               "
-            >${ logs }
+            >${ cleanup(state.logs) }
+            </pre>
+          </details>
+        ` : '' }
+        ${ state.errors?.length ? html`
+          <details>
+            <summary>Errors</summary>
+            <pre style="
+              max-width: 100%;
+              max-height: 50vh;
+              overflow: auto;
+              font-size: x-small;
+              "
+            >${ cleanup(state.errors) }
             </pre>
           </details>
         ` : '' }
