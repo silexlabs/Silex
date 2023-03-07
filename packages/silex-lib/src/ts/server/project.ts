@@ -2,8 +2,6 @@ import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises'
 import { join, dirname, basename } from 'path'
 import { homedir } from 'os'
 
-import {rehype} from 'rehype'
-import {select} from 'unist-util-select'
 import { URLRewriter, URLTranslator } from 'cssurl'
 
 import { getPageSlug } from '../page'
