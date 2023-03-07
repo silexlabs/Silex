@@ -75,7 +75,7 @@ function update(editor) {
             style="width: 100%;"
           ></progress>
         ` : ''}
-        ${ logs ? `
+        ${ logs ? html`
           <details>
             <pre style="
               max-width: 100%;
