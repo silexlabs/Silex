@@ -1,6 +1,7 @@
 import {html, render} from 'lit-html'
 import {styleMap} from 'lit-html/directives/style-map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
+import { onAll } from '../utils'
 
 const pluginName = 'template'
 const templateType = 'templateType'
@@ -93,14 +94,6 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     },
   })
 
-  // Apply templates on publish
-  function onAll(cbk) {
-    editor.Pages.getAll()
-      .forEach(page => {
-        page.getMainComponent()
-          .onAll(c => cbk(c))
-      })
-  }
   // Make html attribute
   // Quote strings, no values for boolean
   function makeAttribute(key, value) {
@@ -121,14 +114,17 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
       .join('\n')
   }
   editor.on(opts.eventStart || 'publish:before', () => {
-    onAll(c => {
+    // Insert templates
+    onAll(editor, c => {
       const template = c.get(templateKey)
       const toHTML = c.toHTML
       const classes = c.getClasses()
       const before = cleanup(template?.before || '')
       const replace = cleanup(template?.replace || '')
       const after = cleanup(template?.after || '')
-      c.set('tmpHtml', toHTML)
+      // Store the initial method
+      if(!c.has('tmpHtml')) c.set('tmpHtml', toHTML)
+      // Override the method
       c.toHTML = () => {
         return `
           ${ before }
@@ -144,9 +140,9 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     })
   })
   editor.on(opts.eventStop || 'publish:stop', () => {
-    onAll(c => {
-      const toHTML = c.get('tmpHtml')
-      c.toHTML = toHTML
+    onAll(editor, c => {
+      // Restore the original method
+      c.toHTML = c.get('tmpHtml')
     })
   })
 })
