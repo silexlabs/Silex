@@ -14,7 +14,7 @@ permalink: /css/${getPageSlug(page.name)}.css
 ---
 ${file.css}
 `
-      page.cssExt = '.liquid'
+      file.cssPath += '.liquid'
     })
   })
 })
