@@ -199,14 +199,38 @@ export async function startPublication(editor) {
   // Update assets URL to display outside the editor
   const assetsFolderUrl = publicationSettings?.assets?.url
   if(assetsFolderUrl) {
+    const publishedUrl = path => `${assetsFolderUrl}/${path.split('/').pop()}`
     // New URLs for assets, according to site config
     onAll(editor, c => {
+      // Attributes
       if(c.get('type') === 'image') {
         const path = c.get('src')
         c.set('tmp-src', path)
-        c.set('src', `${assetsFolderUrl}/${path.split('/').pop()}`)
+        c.set('src', publishedUrl(path))
       }
+      //// Inline styles
+      //// This is handled by the editor.Css.getAll loop
+      //const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
+      //if(bgUrl) {
+      //  c.set('tmp-bg-url', bgUrl)
+      //  c.setStyle({
+      //    ...c.getStyle(),
+      //    'background-image': `url('${publishedUrl(bgUrl)}')`,
+      //  })
+      //}
     })
+    editor.Css.getAll()
+      .forEach(c => {
+        const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
+        console.log(c.getSelectorsString(), bgUrl)
+        if(bgUrl) {
+          c.setStyle({
+            ...c.getStyle(),
+            'background-image': `url('${publishedUrl(bgUrl)}')`,
+          })
+          c.set('tmp-bg-url-css', bgUrl)
+        }
+      })
   }
   // Build the files structure
   const files = await getFiles(editor, {siteSettings, publicationSettings})
@@ -222,11 +246,29 @@ export async function startPublication(editor) {
   // Reset asset URLs
   if(assetsFolderUrl) {
     onAll(editor, c => {
-      if(c.get('type') === 'image') {
+      if(c.get('type') === 'image' && c.has('tmp-src')) {
         c.set('src', c.get('tmp-src'))
         c.set('tmp-src')
       }
+      //// This is handled by the editor.Css.getAll loop
+      //if(c.getStyle()['background-image'] && c.has('tmp-bg-url')) {
+      //  c.setStyle({
+      //    ...c.getStyle(),
+      //    'background-image': `url('${c.get('tmp-bg-url')}')`,
+      //  })
+      //  c.set('tmp-bg-url')
+      //}
     })
+    editor.Css.getAll()
+      .forEach(c => {
+        if(c.has('tmp-bg-url-css')) {
+          c.setStyle({
+            ...c.getStyle(),
+            'background-image': `url('${c.get('tmp-bg-url-css')}')`,
+          })
+          c.set('tmp-bg-url-css')
+        }
+      })
   }
   editor.trigger('publish:start', data)
   let res
