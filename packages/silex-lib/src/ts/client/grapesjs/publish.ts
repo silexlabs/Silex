@@ -222,7 +222,6 @@ export async function startPublication(editor) {
     editor.Css.getAll()
       .forEach(c => {
         const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
-        console.log(c.getSelectorsString(), bgUrl)
         if(bgUrl) {
           c.setStyle({
             ...c.getStyle(),
