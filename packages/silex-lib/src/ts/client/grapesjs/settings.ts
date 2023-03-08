@@ -8,9 +8,20 @@ const pluginName = 'settings-dialog'
 const el = document.createElement('div')
 let modal
 
+// Get version from webpack (see plugin in webpack.config.js)
+declare const VERSION: string
+
 export const cmdOpenSettings = 'open-settings'
 
+let version = 'v3'
 export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) => {
+  // Display Silex version from package.json
+  try {
+    version = VERSION
+  } catch (error) {
+    // Cannot get version from webpack (see plugin in webpack.config.js)
+  }
+  console.log('Silex version:', version)
   editor.Commands.add(cmdOpenSettings, {
     run: (_, sender, {page}) => {
       modal = editor.Modal.open({
@@ -126,6 +137,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
         </label>
       </div>
       <footer>
+        <p class="silex-version">Silex ${version}</p>
         <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenSettings)} value="Cancel">
         <input class="silex-button" type="submit" value="Ok">
       </footer>
