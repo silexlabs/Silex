@@ -31,19 +31,32 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
   function doRender(el) {
     const template = editor.getSelected()?.get(templateKey) || {}
     const taStyle = opts.styles?.textarea ?? styleMap({
-      backgroundColor: 'var(--darkerPrimaryColor);',
+      backgroundColor: 'var(--darkerPrimaryColor)',
     })
     const sepStyle = opts.styles?.sep ?? styleMap({ height: '10px' })
     const labels = {
       before: html`<strong>Before</strong> the element`,
       replace: html`<strong>Replace</strong> the element's children`,
       after: html`<strong>After</strong> the element`,
+      attributes: html`HTML attributes`,
+      classname: html`CSS classes`,
+      style: html`CSS styles`,
     }
     render(html`
       <div>
         <h3>Template</h3>
         <p>This will be inserted in the published version</p>
       </div>
+      ${['classname', 'attributes', 'style'].map(id => html`
+      <label>
+        ${labels[id]}
+        <input
+          id="template-${id}"
+          .value=${template[id] || ''}
+          style=${taStyle}
+          />
+      </label>
+      `)}
       ${['before', 'replace', 'after'].map(id => html`
         <label
           for="template-${id}"
@@ -71,18 +84,17 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     // Update the component based on UI changes
     // `elInput` is the result HTMLElement you get from `createInput`
     onEvent({ elInput, component, event }) {
-      const inputBefore = elInput.querySelector('#template-before')
-      const inputReplace = elInput.querySelector('#template-replace')
-      const inputAfter = elInput.querySelector('#template-after')
-
       const template = {
-        before: inputBefore.value,
-        replace: inputReplace.value,
-        after: inputAfter.value,
+        before: elInput.querySelector('#template-before').value,
+        replace: elInput.querySelector('#template-replace').value,
+        after: elInput.querySelector('#template-after').value,
+        attributes: elInput.querySelector('#template-attributes').value,
+        classname: elInput.querySelector('#template-classname').value,
+        style: elInput.querySelector('#template-style').value,
       }
 
       // Store the new template
-      if(template.before || template.replace || template.after) {
+      if(Object.values(template).filter(val => !!val && !!cleanup(val)).length > 0) {
         component.set(templateKey, template)
       } else {
         component.set(templateKey)
@@ -122,18 +134,23 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
       const before = cleanup(template?.before || '')
       const replace = cleanup(template?.replace || '')
       const after = cleanup(template?.after || '')
+      const classname = cleanup(template?.classname || '')
+      const style = cleanup(template?.style || '')
+      const attributes = cleanup(template?.attributes || '')
       // Store the initial method
       if(!c.has('tmpHtml')) c.set('tmpHtml', toHTML)
       // Override the method
       c.toHTML = () => {
         return `
           ${ before }
-          ${ replace ? `<${c.get('tagName')}
+          <${c.get('tagName')}
             ${Object.entries(c.get('attributes')).map(([key, value]) => makeAttribute(key, value)).join(' ')}
-            ${classes.length ? `class="${classes.join(' ')}"` : ''}
+            ${classes.length || classname ? `class="${classes.join(' ')} ${classname}"` : ''}
+            ${attributes}
+            ${style ? `style="${style}"` : ''}
             >
-            ${replace}
-          </${c.get('tagName')}>` : toHTML.apply(c) }
+            ${replace || c.getInnerHTML()}
+          </${c.get('tagName')}>
           ${ after }
         `
       }
