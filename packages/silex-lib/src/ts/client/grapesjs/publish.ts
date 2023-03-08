@@ -199,6 +199,7 @@ export async function startPublication(editor) {
   // Update assets URL to display outside the editor
   const assetsFolderUrl = publicationSettings?.assets?.url
   if(assetsFolderUrl) {
+    // New URLs for assets, according to site config
     onAll(editor, c => {
       if(c.get('type') === 'image') {
         const path = c.get('src')
@@ -207,49 +208,23 @@ export async function startPublication(editor) {
       }
     })
   }
+  // Build the files structure
+  const files = await getFiles(editor, {siteSettings, publicationSettings})
+
   // Create the data to send to the server
   const data = {
     ...projectData,
     settings: siteSettings,
     publication: publicationSettings,
     projectId,
-    files: editor.Pages.getAll().map(page => {
-      const pageSettings = page.get('settings')
-      const pageName = publicationSettings?.autoHomePage !== false && page.get('type') === 'main' ? 'index' : (page.get('name') || page.get('type'))
-      function getSetting(name) {
-        return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
-      }
-      const component = page.getMainComponent()
-      return {
-        html: `
-          <!DOCTYPE html>
-          <html lang="${ getSetting('lang') }">
-          <head>
-            <link rel="stylesheet" href="${publicationSettings?.css?.url || ''}${getPageSlug(pageName)}.css" />
-            ${ siteSettings?.head || '' }
-            ${ pageSettings?.head || '' }
-            <title>${ getSetting('title') }</title>
-            <link rel="icon" href="${ getSetting('favicon') }" />
-            ${
-  ['description', 'og:title', 'og:description', 'og:image']
-    .map(prop => `<meta property="${ prop }" content="${ getSetting(prop) }"/>`)
-    .join('\n')
-}
-          </head>
-          ${ editor.getHtml({ component }) }
-          </html>
-        `,
-        css: editor.getCss({ component }),
-        cssPath: `${ publicationSettings?.css?.path || '' }/${getPageSlug(pageName)}${publicationSettings?.css?.ext || '.css'}`,
-        htmlPath: `${ publicationSettings?.html?.path || '' }/${getPageSlug(pageName)}${publicationSettings?.html?.ext || '.html'}`,
-      }
-    })
+    files,
   }
   // Reset asset URLs
   if(assetsFolderUrl) {
     onAll(editor, c => {
       if(c.get('type') === 'image') {
         c.set('src', c.get('tmp-src'))
+        c.set('tmp-src')
       }
     })
   }
@@ -289,6 +264,41 @@ export async function startPublication(editor) {
     update(editor)
     editor.trigger('publish:stop', {success: true})
   }
+}
+
+async function getFiles(editor, {siteSettings, publicationSettings, }) {
+  return editor.Pages.getAll().map(page => {
+    const pageSettings = page.get('settings')
+    const pageName = publicationSettings?.autoHomePage !== false && page.get('type') === 'main' ? 'index' : (page.get('name') || page.get('type'))
+    function getSetting(name) {
+      return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
+    }
+    const component = page.getMainComponent()
+    const slug = getPageSlug(pageName)
+    return {
+      html: `
+      <!DOCTYPE html>
+      <html lang="${ getSetting('lang') }">
+      <head>
+      <link rel="stylesheet" href="${publicationSettings?.css?.url || ''}/${slug}.css" />
+      ${ siteSettings?.head || '' }
+      ${ pageSettings?.head || '' }
+      <title>${ getSetting('title') }</title>
+      <link rel="icon" href="${ getSetting('favicon') }" />
+      ${
+  ['description', 'og:title', 'og:description', 'og:image']
+    .map(prop => `<meta property="${ prop }" content="${ getSetting(prop) }"/>`)
+    .join('\n')
+}
+      </head>
+      ${ editor.getHtml({ component }) }
+      </html>
+      `,
+      css: editor.getCss({ component }),
+      cssPath: `${ publicationSettings?.css?.path || '' }/${slug}${publicationSettings?.css?.ext || '.css'}`,
+      htmlPath: `${ publicationSettings?.html?.path || '' }/${slug}${publicationSettings?.html?.ext || '.html'}`,
+    }
+  })
 }
 
 export async function trackProgress(editor, statusUrl) {

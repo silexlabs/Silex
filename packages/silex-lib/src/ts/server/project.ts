@@ -4,7 +4,6 @@ import { homedir } from 'os'
 
 import { URLRewriter, URLTranslator } from 'cssurl'
 
-import { getPageSlug } from '../page'
 import { WebsiteSettings, defaultSettings, defaultSite, Asset, Page, File, Style, WebsiteData, WEBSITE_CONTEXT_RUNTIME_CLASS_NAME, WEBSITE_CONTEXT_EDITOR_CLASS_NAME } from '../types'
 
 async function mkdirIfExists(path, options = null) {
