@@ -24,9 +24,6 @@ export default async function(config: Config, opts: HooksOptions = {}) {
         message: 'Change from Silex',
       })
     }
-    if(options.buildUrl) {
-      await hook(options.buildUrl)
-    }
   })
   config.on(EVENT_ASSET_WRITE_END, async ({ res, req, projectId, uploadDir, form, data }) => {
     if(options.gitUrl) {
