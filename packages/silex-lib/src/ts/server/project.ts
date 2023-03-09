@@ -93,7 +93,6 @@ export async function publish(projectId, files: File[], data: WebsiteData) {
   required(projectId, 'projectId')
   const projectFolder = projectPath(projectId)
   const publicationDir = join(projectFolder, publication?.path || PUBLICATION_PATH)
-  console.log({publicationDir, publication})
 
   // HTML and CSS
   await Promise.all(files

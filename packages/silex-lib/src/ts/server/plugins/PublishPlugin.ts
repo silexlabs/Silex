@@ -33,11 +33,12 @@ export default async function(config: Config, opts: PublishOptions = {}) {
     router.post('/publish', async function(req: express.Request, res: express.Response) {
       const { pages, files, projectId } = req.body
       if (!pages || !projectId) {
+        console.error('Error in the request, pages and projectId parmas required', {projectId})
         res.status(400).send({
           message: 'Error in the request, pages and projectId parmas required',
         })
       } else {
-        config.emit(EVENT_PUBLISH_START, { projectId, files, req})
+        await config.emit(EVENT_PUBLISH_START, { projectId, files, req})
         let url
         try {
           url = await publish(projectId, files, req.body)
@@ -47,7 +48,7 @@ export default async function(config: Config, opts: PublishOptions = {}) {
           return
         }
         const mutable = { projectId, files, req, res, url, statusUrl: options.statusUrl }
-        config.emit(EVENT_PUBLISH_END, mutable)
+        await config.emit(EVENT_PUBLISH_END, mutable)
         res.json({
           url: mutable.url,
           statusUrl: mutable.statusUrl,
