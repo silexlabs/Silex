@@ -43,10 +43,15 @@ export default async function(config: Config, opts: HooksOptions = {}) {
 async function hook(url, params = {}) {
   if(url) {
     const urlObj = new URL(url)
-    Object.keys(params)
-      .forEach(key => urlObj.searchParams.append(key, params[key]))
-    const response = await fetch(urlObj.toString())
-    return response
+    console.log('Calling hook', {url})
+    try {
+      Object.keys(params)
+        .forEach(key => urlObj.searchParams.append(key, params[key]))
+      return fetch(urlObj.toString())
+    } catch(error) {
+      console.log('Hook call failed', {url, error})
+      return null
+    }
   }
 }
 
