@@ -133,17 +133,20 @@ const SymbolModel = Backbone.Model.extend({
       // Case of a child being duplicated inside the symbol
       const isDuplicate = !!symbolChildId && allInst
         .filter(c => c.get('symbolChildId') === symbolChildId && c.parent() === parent).length > 1
-      //if(allInst.includes(srcChild)) {
-      //if(find(this.get('model'), symbolChildId)) {
       if(symbolChildId && !isDuplicate) {
         // Case of a moving child inside the instance
         this.browseInstancesAndModel(srcInst, [srcChild, parent], ([dstChild, dstParent], dstInst) => {
           if(dstChild && dstParent) {
+            const style = srcChild.getStyle()
             dstParent.components(
               // TODO: Needs review
               dstParent.components()
                 .toArray().concat(dstChild)
             )
+            // FIXME: Keep the styles applied to the element directly, somehow styles are removed
+            setTimeout(() => {
+              dstChild.setStyle(style)
+            })
           } else {
             console.error(`Could not sync child for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`, {dstChild, dstParent})
           }
@@ -156,6 +159,10 @@ const SymbolModel = Backbone.Model.extend({
           if(dstParent) {
             const clone = srcChild.clone()
             dstParent.append(clone)
+            // FIXME: Keep the styles applied to the element directly, somehow styles are removed
+            setTimeout(() => {
+              clone.setStyle(srcChild.getStyle())
+            })
           } else {
             console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
           }
@@ -221,6 +228,26 @@ const SymbolModel = Backbone.Model.extend({
           dstChild.components(srcChild.getCurrentView().getContent())
         }
         else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
+      } else {
+        console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+      }
+    })
+  },
+
+  /**
+   * Update styles of all instances and their children according to changes of a component
+   * Also update the `model` attribute of this symbol
+   * Will not update the provided instance `inst` as it is the one which changed
+   * @param {Component} srcInst - the instance of this symbol containing `child`
+   * @param {Component} srcChild - the child which has the changes
+   * @param {Object} changed - the changed styles
+   * @param {Array.string} removed - the removed styles
+   */
+  applyStyle(srcInst, srcChild, changed, removed) {
+    this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstChild) {
+        dstChild.setStyle(changed)
+        removed.forEach(styleName => dstChild.removeStyle(styleName))
       } else {
         console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       }
@@ -310,8 +337,8 @@ export function initModel(c, { icon, label, symbolId }) {
   c.set('icon', `<span class="fa ${ icon }"></span>`)
   // Show that this is a symbol, add an icon to the toolbar UI
   const toolbar = c.get('toolbar')
+  // FIXME: somehow this happens twice => we should not have to do this check
   if(!toolbar.find(t => !!t.isSymbol)) {
-    // FIXME: somehow this happens twice
     toolbar.push({
       attributes: {
         class: 'fa fa-ban on fa-diamond',

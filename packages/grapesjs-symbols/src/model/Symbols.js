@@ -19,6 +19,7 @@ export default Backbone.Collection.extend({
     this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
     this.editor.on('component:input', c => this.onUpdateContent(c))
+    this.editor.on('styleable:change', cssRule => this.onStyleChanged(cssRule))
   },
 
   /**
@@ -134,10 +135,45 @@ export default Backbone.Collection.extend({
       if(s) {
         this.updating = true
         s.applyContent(inst, c)
-
         this.updating = false
       } else {
         console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
+      }
+    }
+  },
+
+  /**
+   * A component's style has changed
+   */
+  onStyleChanged(cssRule) {
+    if(this.updating) return
+    const c = cssRule.getComponent()
+    const { style } = cssRule.changed
+    if(c && style) {
+      const inst = closestInstance(c)
+      if(inst) {
+        const symbolId = getSymbolId(inst)
+        const s = this.get(symbolId)
+        if(s) {
+          // Keep only changed values
+          // TODO: Needs review - isn't cssRule.changed supposed to be only what changed?
+          const changed = Object.entries(style)
+            .filter(([key, value]) => cssRule.previousAttributes().style[key] !== value || !cssRule.previousAttributes().style[key])
+            .reduce((result, [key, value]) => {
+              result[key] = value
+              return result
+            }, {})
+          // Removed keys
+          const removed = Object.keys(cssRule.previousAttributes().style)
+            .filter(key => !style[key])
+          if(Object.values(changed).length > 0 || removed.length > 0) {
+            this.updating = true
+            s.applyStyle(inst, c, changed, removed)
+            this.updating = false
+          }
+        } else {
+          console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
+        }
       }
     }
   },
