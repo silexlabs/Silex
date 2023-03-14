@@ -144,6 +144,7 @@ export default Backbone.Collection.extend({
 
   /**
    * A component's style has changed
+   * TODO: Needs review: isn't the style supposed to be just an attribute => we should not need to sync it, just attributes?
    */
   onStyleChanged(cssRule) {
     if(this.updating) return
