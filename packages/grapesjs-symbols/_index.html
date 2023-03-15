@@ -89,7 +89,6 @@
         })
         setTimeout(() => {
           const data = JSON.parse(localStorage.getItem('init'))
-          console.log({data})
           if(data) editor.loadData(data)
         })
       })

@@ -137,16 +137,7 @@ const SymbolModel = Backbone.Model.extend({
         // Case of a moving child inside the instance
         this.browseInstancesAndModel(srcInst, [srcChild, parent], ([dstChild, dstParent], dstInst) => {
           if(dstChild && dstParent) {
-            const style = srcChild.getStyle()
-            dstParent.components(
-              // TODO: Needs review
-              dstParent.components()
-                .toArray().concat(dstChild)
-            )
-            // FIXME: Keep the styles applied to the element directly, somehow styles are removed
-            setTimeout(() => {
-              dstChild.setStyle(style)
-            })
+            dstParent.append(dstChild, { at: srcChild.index() })
           } else {
             console.error(`Could not sync child for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`, {dstChild, dstParent})
           }
@@ -158,30 +149,12 @@ const SymbolModel = Backbone.Model.extend({
         this.browseInstancesAndModel(srcInst, [parent], ([dstParent], dstInst) => {
           if(dstParent) {
             const clone = srcChild.clone()
-            dstParent.append(clone)
-            // FIXME: Keep the styles applied to the element directly, somehow styles are removed
-            setTimeout(() => {
-              clone.setStyle(srcChild.getStyle())
-            })
+            dstParent.append(clone, { at: srcChild.index() })
           } else {
             console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
           }
         })
       }
-      // Reorder
-      this.browseInstancesAndModel(srcInst, [parent], ([dstParent], dstInst) => {
-        if(dstParent) {
-          dstParent.components(
-            // TODO: Needs review
-            dstParent.components().toArray().sort((c1, c2) => {
-              return this.getIndex(parent, c1.get('symbolChildId'))
-                - this.getIndex(parent, c2.get('symbolChildId'))
-            })
-          )
-        } else {
-          console.error(`Could not sync attributes for symbol ${this.cid}: ${parent.get('symbolChildId')} not found in ${dstInst.cid}`)
-        }
-      })
     } else {
       // Child is not there anymore
       this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
@@ -246,7 +219,10 @@ const SymbolModel = Backbone.Model.extend({
   applyStyle(srcInst, srcChild, changed, removed) {
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
-        dstChild.setStyle(changed)
+        dstChild.setStyle({
+          ...dstChild.getStyle(),
+          ...changed,
+        })
         removed.forEach(styleName => dstChild.removeStyle(styleName))
       } else {
         console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
