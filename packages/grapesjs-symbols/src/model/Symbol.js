@@ -197,8 +197,24 @@ const SymbolModel = Backbone.Model.extend({
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
         if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
-          //dstChild.components(srcChild.toHTML())
+          // TODO: needs review
+          // Keep the caret position in the contenteditable container
+          const win = srcChild.view.el.ownerDocument.defaultView
+          const sel = win.getSelection()
+          const caret = sel.rangeCount ? sel.getRangeAt(0).endOffset : 0
+          // Sets the new content
           dstChild.components(srcChild.getCurrentView().getContent())
+          // Keep the caret position in the contenteditable container
+          setTimeout(() => {
+            // After dom update
+            const range = sel.rangeCount ? sel.getRangeAt(0) : null
+            // FIXME: this will work only if there is 1 and only 1 text node
+            const textNode = srcChild.view.el.firstChild
+            // Sets the caret position
+            range.setStart(textNode, caret)
+            range.setEnd(textNode, caret)
+            sel.addRange(range)
+          })
         }
         else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
       } else {
