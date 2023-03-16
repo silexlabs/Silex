@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import { find, all, children } from '../utils.js'
+import { find, all, children, getCaret, setCaret, getNodePath, getNode } from '../utils.js'
 import { uniqueId } from 'underscore'
 
 /**
@@ -194,33 +194,28 @@ const SymbolModel = Backbone.Model.extend({
    * @param {Component} srcChild - the child which has the changes
    */
   applyContent(srcInst, srcChild) {
+    // Store the caret position in the contenteditable container
+    const el = srcChild.getCurrentView().el
+    const caret = getCaret(el)
+
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
         if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
-          // TODO: needs review
-          // Keep the caret position in the contenteditable container
-          const win = srcChild.view.el.ownerDocument.defaultView
-          const sel = win.getSelection()
-          const caret = sel.rangeCount ? sel.getRangeAt(0).endOffset : 0
           // Sets the new content
           dstChild.components(srcChild.getCurrentView().getContent())
-          // Keep the caret position in the contenteditable container
-          setTimeout(() => {
-            // After dom update
-            const range = sel.rangeCount ? sel.getRangeAt(0) : null
-            // FIXME: this will work only if there is 1 and only 1 text node
-            const textNode = srcChild.view.el.firstChild
-            // Sets the caret position
-            range.setStart(textNode, caret)
-            range.setEnd(textNode, caret)
-            sel.addRange(range)
-          })
         }
         else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
       } else {
         console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       }
     })
+    // Restore the caret position in the contenteditable container
+    // TODO: need review
+    // FIXME: Why is the caret reset after we change the components which do not have the focus?
+    setTimeout(() => {
+      // After dom update
+      setCaret(el, caret)
+    }, 100)
   },
 
   /**

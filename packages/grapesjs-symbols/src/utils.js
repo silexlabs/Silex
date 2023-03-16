@@ -95,3 +95,67 @@ export function hasSymbolId(c) {
 export async function wait(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
+
+/**
+ * Get an array of the indexes of the node in its parent nodes
+ * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
+ */
+export function getNodePath(root, node) {
+  const path = []
+  let pointer = node
+  while (pointer && pointer !== root) {
+    const parent = pointer.parentNode
+    const children = Array.from(parent.childNodes)
+    const nodeIndex = children.indexOf(pointer)
+    path.push(nodeIndex)
+    pointer = parent
+  }
+  return path
+}
+
+/**
+ * Get an array of the indexes of the node in its parent nodes
+ * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
+ */
+export function getNode(root, path) {
+  const mutablePath = [...path]
+  let result = root
+  while (result && mutablePath.length) {
+    result = result.childNodes[mutablePath.pop()]
+  }
+  return result
+}
+
+/**
+ * Gets the caret position
+ */
+export function getCaret(el) {
+  const win = el.ownerDocument.defaultView
+  const sel = win.getSelection()
+  const range = sel.rangeCount ? sel.getRangeAt(0) : null
+  const pos = range?.startOffset ?? 0
+  const caretEl = range?.commonAncestorContainer ?? el
+  const path = getNodePath(el, caretEl)
+  return { path, pos }
+}
+
+/**
+ * Sets the caret position
+ */
+export function setCaret(el, { path, pos }) {
+  const textNode = getNode(el, path)
+  if(textNode) {
+    const win = el.ownerDocument.defaultView
+    const sel = win.getSelection()
+    sel.removeAllRanges()
+    const range = document.createRange()
+    range.selectNodeContents(textNode);
+    range.collapse(false);
+    range.setStart(textNode, pos)
+    range.setEnd(textNode, pos)
+    sel.addRange(range)
+  } else {
+    console.error('Could not keep the caret position', {el, path})
+  }
+
+}
