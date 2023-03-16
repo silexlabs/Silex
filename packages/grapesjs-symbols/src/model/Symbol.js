@@ -215,7 +215,7 @@ const SymbolModel = Backbone.Model.extend({
     setTimeout(() => {
       // After dom update
       setCaret(el, caret)
-    }, 100)
+    })
   },
 
   /**
