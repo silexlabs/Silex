@@ -84,11 +84,11 @@ export const projectBarPlugin = grapesjs.plugins.add(name, (editor, opts) => {
       if(left < right || !right) iframe.classList.add('enable-squeeze')
       else iframe.classList.remove('enable-squeeze')
     }, 400) // More than the transition duration
+    // make sure the squeez corresponds to the state (reset when change page)
+    if(containerPanel.get('visible')) iframe.classList.add('silex-squeeze-left')
+    else iframe.classList.remove('silex-squeeze-left')
   }
-  editor.on('load', () => {
-    updateSqueez()
-  })
-  editor.on('device:select', device => {
+  editor.on('load device:select page', () => {
     updateSqueez()
   })
 })
