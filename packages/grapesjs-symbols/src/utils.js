@@ -149,8 +149,8 @@ export function setCaret(el, { path, pos }) {
     const sel = win.getSelection()
     sel.removeAllRanges()
     const range = document.createRange()
-    range.selectNodeContents(textNode);
-    range.collapse(false);
+    range.selectNodeContents(textNode)
+    range.collapse(false)
     range.setStart(textNode, pos)
     range.setEnd(textNode, pos)
     sel.addRange(range)
