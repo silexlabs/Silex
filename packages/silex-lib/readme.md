@@ -1,4 +1,3 @@
-[![Build Status](https://circleci.com/gh/silexlabs/Silex.svg?style=svg)](https://circleci.com/gh/silexlabs/Silex)
 [![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://editor.silex.me) [![Join the chat at https://gitter.im/silex-website-builder/community](https://badges.gitter.im/silex-website-builder/community.svg)](https://gitter.im/silex-website-builder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## About Silex, live web creation.
@@ -7,9 +6,12 @@ Silex, is a free and open source website builder in the cloud. Create websites d
 
 Brought to you by Silex Labs team, promoting free software. Feel free to [use the free Silex instance](https://editor.silex.me/) provided by [Silex Labs foundation](https://www.silexlabs.org/).
 
+| :fire:        Developers can test silex v3 with `npx silex-website-builder`   |
+|-------------------------------------------------------------------------------|
+
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
-Silex for DIY and passionate people who want a free alternative to Wix or other closed source website builders:
+Silex for makers and web designers who want a free alternative to Webflow or other closed source website builders:
 
 * [Use Silex online for free](https://editor.silex.me)
 * [Silex desktop app (works offline, with your local files)](https://github.com/silexlabs/silex-desktop/)
@@ -43,9 +45,7 @@ Other links
 
 The upstream projects we use in Silex are all listed in [Silex meta package](https://github.com/silexlabs/silex-meta)
 
-## Stars history
-
-## Star History
+## Github stars history
 
 [![Star History Chart](https://api.star-history.com/svg?repos=silexlabs/Silex&type=Timeline)](https://star-history.com/#silexlabs/Silex&Timeline)
 
