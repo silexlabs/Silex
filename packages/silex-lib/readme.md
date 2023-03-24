@@ -1,15 +1,15 @@
 [![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://editor.silex.me) [![Join the chat at https://gitter.im/silex-website-builder/community](https://badges.gitter.im/silex-website-builder/community.svg)](https://gitter.im/silex-website-builder/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
+
 ## About Silex, live web creation.
-
-Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
-
-Brought to you by Silex Labs team, promoting free software. Feel free to [use the free Silex instance](https://editor.silex.me/) provided by [Silex Labs foundation](https://www.silexlabs.org/).
 
 | :fire:        Developers can test silex v3 with `npx silex-website-builder`   |
 |-------------------------------------------------------------------------------|
 
-![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
+Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
+
+Brought to you by Silex Labs team, promoting free software. Feel free to [use the free Silex instance](https://editor.silex.me/) provided by [Silex Labs foundation](https://www.silexlabs.org/).
 
 Silex for makers and web designers who want a free alternative to Webflow or other closed source website builders:
 
