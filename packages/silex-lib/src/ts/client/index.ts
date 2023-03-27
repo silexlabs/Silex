@@ -5,7 +5,7 @@
  */
 
 import { defaultConfig } from './config'
-import { initEditor } from './grapesjs/index'
+import { initEditor, getEditor } from './grapesjs/index'
 
 /**
  * Start Silex, called from host HTML page with window.silex.start()
@@ -17,8 +17,8 @@ export function start(config = defaultConfig) {
 
   initEditor(config.editor)
 
-  window.onload = () => {
+  getEditor().on('load', () => {
     document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
     document.querySelector('#gjs').classList.remove('silex-dialog-hide')
-  }
+  })
 }
