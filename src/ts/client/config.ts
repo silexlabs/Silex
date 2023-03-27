@@ -6,7 +6,6 @@ import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols/src'
 import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
-import storagePlugin from './grapesjs/storage'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './grapesjs/page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './grapesjs/new-page-dialog'
@@ -19,9 +18,9 @@ import { internalLinksPlugin } from './grapesjs/internal-links'
 import { publishPlugin } from './grapesjs/publish'
 import { templatePlugin } from './grapesjs/template'
 import { eleventyPlugin } from './grapesjs/eleventy'
+import { directusPlugin } from './grapesjs/directus'
 
 const plugins = [
-  {name: './grapesjs/storage', value: storagePlugin},
   {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
   {name: './grapesjs/settings', value: settingsDialog},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
@@ -41,6 +40,7 @@ const plugins = [
   {name: './grapesjs/publish', value: publishPlugin},
   {name: './grapesjs/template', value: templatePlugin},
   {name: './grapesjs/eleventy', value: eleventyPlugin},
+  {name: './grapesjs/directus', value: directusPlugin},
 ]
 
 // Check that all plugins are loaded correctly
@@ -89,19 +89,9 @@ export const defaultConfig = {
       appendTo: '.block-manager-container',
     },
 
-    assetManager: {
-      upload: uploadEndpoint,
-    },
-
     storageManager: {
-      id: '', // do not add a prefix to the saved object
-      type: 'remote',
-      options: {
-        remote: {
-          urlStore: loadEndpoint,
-          urlLoad: loadEndpoint,
-        },
-      },
+      autoload: false,
+      type: 'directus',
     },
 
     plugins: plugins.map(p => p.value),
