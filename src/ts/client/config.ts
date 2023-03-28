@@ -4,6 +4,7 @@ import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols/src'
+import directusPlugin from '@silexlabs/grapesjs-directus-storage'
 import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
 
@@ -18,7 +19,6 @@ import { internalLinksPlugin } from './grapesjs/internal-links'
 import { publishPlugin } from './grapesjs/publish'
 import { templatePlugin } from './grapesjs/template'
 import { eleventyPlugin } from './grapesjs/eleventy'
-import { directusPlugin } from './grapesjs/directus'
 
 const plugins = [
   {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -40,8 +40,11 @@ const plugins = [
   {name: './grapesjs/publish', value: publishPlugin},
   {name: './grapesjs/template', value: templatePlugin},
   {name: './grapesjs/eleventy', value: eleventyPlugin},
-  {name: './grapesjs/directus', value: directusPlugin},
+  {name: '@silexlabs/grapesjs-directus-storage', value: directusPlugin},
 ]
+
+// Get env var from webpack (see plugin in webpack.config.js)
+declare const DIRECTUS_URL: string
 
 // Check that all plugins are loaded correctly
 plugins
@@ -158,6 +161,15 @@ export const defaultConfig = {
             className: 'page-panel-btn fa fa-fw fa-cog',
             attributes: { title: 'Settings' },
             command: cmdOpenSettings,
+          }, {
+            id: 'spacer',
+            attributes: {},
+            className: 'project-bar-spacer',
+          }, {
+            id: 'logout-button',
+            className: 'page-panel-btn fa fa-fw fa-sign-out',
+            attributes: { title: 'Sign out' },
+            command: 'logout',
           },
         ],
       },
@@ -184,6 +196,9 @@ export const defaultConfig = {
       },
       [fontsDialogPlugin as any]: {
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
+      },
+      [directusPlugin as any]: {
+        directusUrl: DIRECTUS_URL || prompt('Directus URL'),
       },
     },
   },
