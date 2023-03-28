@@ -1,6 +1,9 @@
 @use "variables";
 @use "mixins";
 
+.silex-main {
+  transition: opacity variables.$transitionSpeedMedium .5s ease;
+}
 .silex-dialog {
   transition: opacity variables.$transitionSpeedMedium ease;
 }

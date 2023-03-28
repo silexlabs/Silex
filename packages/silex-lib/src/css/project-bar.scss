@@ -15,6 +15,11 @@ iframe.enable-squeeze.silex-squeeze-left {
   padding: 0;
   .#{$pn-prefix}buttons {
     flex-direction: column;
+    min-height: 100vh;
+    justify-content: flex-start;
+    .project-bar-spacer {
+      flex: 1;
+    }
     .#{$pn-prefix}btn {
       margin: 5px 0 0;
       padding: 5px;
