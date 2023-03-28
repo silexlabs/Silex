@@ -31,3 +31,6 @@
 [submodule "packages/grapesjs"]
 	path = packages/grapesjs
 	url = git@github.com:GrapesJS/grapesjs.git
+[submodule "packages/grapesjs-directus-storage"]
+	path = packages/grapesjs-directus-storage
+	url = git@github.com:silexlabs/grapesjs-directus-storage.git

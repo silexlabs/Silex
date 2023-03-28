@@ -35,6 +35,7 @@
     "packages/grapesjs-ui-suggest-classes",
     "packages/eleventy-plugin-directus",
     "packages/grapesjs-fonts",
+    "packages/grapesjs-directus-storage",
     "packages/Silex"
   ]
 }
