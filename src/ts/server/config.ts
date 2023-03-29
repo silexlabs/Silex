@@ -26,6 +26,7 @@ export class Config extends EventEmitter {
 }
 
 import expressPlugin from './plugins/ExpressPlugin'
+import authPlugin from './plugins/AuthPlugin'
 import sslPlugin from './plugins/SslPlugin'
 import staticPlugin from './plugins/StaticPlugin'
 import publishPlugin from './plugins/PublishPlugin'
@@ -45,12 +46,17 @@ export default function(): Config {
   config.apiPath = '/api'
   config.plugins = [
     expressPlugin,
+    authPlugin,
     sslPlugin,
     staticPlugin,
     publishPlugin,
     websitePlugin,
     hooksPlugin,
   ]
-  config.pluginsOpts = {}
+  config.pluginsOpts = {
+    [authPlugin as any]: {
+      directusUrl: process.env.DIRECTUS_URL,
+    },
+  }
   return config
 }

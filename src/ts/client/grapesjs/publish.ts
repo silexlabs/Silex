@@ -8,6 +8,7 @@ import { onAll } from '../utils'
 // constants
 const pluginName = 'publish'
 export const cmdPublish = 'publish-open-dialog'
+let _token = null
 
 // plugin code
 export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
@@ -15,6 +16,10 @@ export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => 
     appendTo: 'options',
     ...opts,
   }
+  // Keep track of the token
+  editor.on('login:success', async ({ getUser, getToken }) => {
+    _token = await getToken()
+  })
   // add publication settings to the website
   editor.on('storage:start:store', (data) => {
     data.publication = editor.getModel().get('publication')
@@ -275,7 +280,10 @@ export async function startPublication(editor) {
   try {
     res = await fetch(`${ ROOT_URL }/publish`, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        data,
+        token: _token,
+      }),
       headers: {
         'Content-Type': 'application/json'
       },

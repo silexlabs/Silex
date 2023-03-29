@@ -31,7 +31,7 @@ export default async function(config: Config, opts: PublishOptions = {}) {
   config.on(EVENT_STARTUP_START, ({app}) => {
     // Start publication
     router.post('/publish', async function(req: express.Request, res: express.Response) {
-      const { pages, files, projectId } = req.body
+      const { pages, files, projectId } = req.body.data
       if (!pages || !projectId) {
         console.error('Error in the request, pages and projectId parmas required', {projectId})
         res.status(400).send({
@@ -41,7 +41,7 @@ export default async function(config: Config, opts: PublishOptions = {}) {
         await config.emit(EVENT_PUBLISH_START, { projectId, files, req})
         let url
         try {
-          url = await publish(projectId, files, req.body)
+          url = await publish(projectId, files, req.body.data)
         } catch (err) {
           console.error('Error publishing the website', err)
           res.status(500).json({ message: `Error publishing the website. ${err.message}`})
