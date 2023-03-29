@@ -169,7 +169,7 @@ export const defaultConfig = {
             id: 'logout-button',
             className: 'page-panel-btn fa fa-fw fa-sign-out',
             attributes: { title: 'Sign out' },
-            command: 'logout',
+            command: 'relogin',
           },
         ],
       },
