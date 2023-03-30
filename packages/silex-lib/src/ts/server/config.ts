@@ -55,7 +55,7 @@ export default function(): Config {
   ]
   config.pluginsOpts = {
     [authPlugin as any]: {
-      directusUrl: process.env.DIRECTUS_URL,
+      directusUrl: process.env.DIRECTUS_SERVER_TO_SERVER_URL || process.env.DIRECTUS_URL,
     },
   }
   return config
