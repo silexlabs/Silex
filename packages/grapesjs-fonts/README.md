@@ -32,12 +32,6 @@ Limitations:
 
 For now this plugin supports only Goolge fonts and use the V2 API. It should be upgraded to V3 and take advantage of variable fonts.
 
-I would love help on this:
-
-* Code review and suggestions
-* Support Google fonts V3 API
-* Other providers than Google fonts
-
 See the "Development" section bellow to contribute
 
 ### Motivations
@@ -68,7 +62,7 @@ This is quite easy but here are the things which took me time as I implemented g
 
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="https://unpkg.com/grapesjs-fonts"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-fonts"></script>
 
 <div id="gjs"></div>
 ```
