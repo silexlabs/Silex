@@ -123,11 +123,8 @@ export const fontsDialogPlugin = (editor, opts) => {
 }
 
 function match(hay, s) {
-    const h = hay.toLowerCase()
-    let n = -1
-    s = s.toLowerCase()
-    for (let l in s) if (!~(n = h.indexOf(l, n + 1))) return false
-    return true
+    const regExp = new RegExp(s, 'i')
+    return hay.search(regExp) !== -1
 }
 
 const searchInputRef = createRef()
