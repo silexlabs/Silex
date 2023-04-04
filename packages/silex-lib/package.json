@@ -65,7 +65,7 @@
   },
   "dependencies": {
     "@directus/sdk": "^10.3.3",
-    "@silexlabs/grapesjs-directus-storage": "1.0.12",
+    "@silexlabs/grapesjs-directus-storage": "1.0.13",
     "@silexlabs/grapesjs-fonts": "1.0.8",
     "@silexlabs/grapesjs-symbols": "1.0.18",
     "@silexlabs/grapesjs-ui-suggest-classes": "1.0.19",
