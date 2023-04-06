@@ -1,5 +1,6 @@
 import { fontsDialogPlugin as _fontsDialogPlugin, cmdOpenFonts as _cmdOpenFonts } from './fonts'
 import en from './locale/en'
+import fr from './locale/fr'
 
 export default (editor, opts = {}) => {
 
@@ -13,6 +14,7 @@ export default (editor, opts = {}) => {
     // Load i18n files
     editor.I18n && editor.I18n.addMessages({
         en,
+        fr,
         ...options.i18n,
     })
 

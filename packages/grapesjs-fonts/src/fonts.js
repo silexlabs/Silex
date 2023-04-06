@@ -75,13 +75,14 @@ async function loadFontList(url) {
 }
 
 export const fontsDialogPlugin = (editor, opts) => {
+  console.log({editor}, editor)
     defaults = editor.StyleManager.getBuiltIn('font-family').options
-    if(!opts.api_key) throw new Error('You must provide Google font api key, see https://developers.google.com/fonts/docs/developer_api#APIKey')
+    if(!opts.api_key) throw new Error(editor.I18n.t('grapesjs-fonts.You must provide Google font api key'))
     editor.Commands.add(cmdOpenFonts, {
         /* eslint-disable-next-line */
         run: (_, sender) => {
             modal = editor.Modal.open({
-                title: 'Fonts',
+                title: editor.I18n.t('grapesjs-fonts.Fonts'),
                 content: '',
                 attributes: { class: 'fonts-dialog' },
             })
@@ -145,7 +146,7 @@ function displayFonts(editor, config, fontsList) {
             style=${styleMap({
         width: '100%',
     })}
-            placeholder="Search fonts..."
+            placeholder="${editor.I18n.t('grapesjs-fonts.Search')}"
             type="text"
             ${ref(searchInputRef)}
             @keydown=${() => {
@@ -173,14 +174,14 @@ function displayFonts(editor, config, fontsList) {
         )
         displayFonts(editor, config, fontsList)
     }}>
-            Add&nbsp;to&nbsp;website
+            ${editor.I18n.t('grapesjs-fonts.Add font')}
           </button>
         </div>
       </div>
       <hr/>
       <div
         class="silex-form__element">
-        <h2>Installed fonts</h2>
+        <h2>${editor.I18n.t('grapesjs-fonts.Installed fonts')}</h2>
         <ol class="silex-list">
         ${ map(fonts, f => html`
           <li>
@@ -227,15 +228,15 @@ function displayFonts(editor, config, fontsList) {
               <button class="silex-button" type="button" @click=${() => {
         removeFont(editor, fonts, f)
         displayFonts(editor, config, fontsList)
-    }}>Remove</button>
+    }}>${editor.I18n.t('grapesjs-fonts.Remove')}</button>
             </div>
           </li>
         `) }
         </ol>
       </div>
       <footer>
-        <input class="silex-button" type="button" @click=${() => editor.stopCommand(cmdOpenFonts)} value="Cancel">
-        <input class="silex-button" type="submit" value="Ok">
+        <input class="silex-button" type="button" @click=${() => editor.stopCommand(cmdOpenFonts)} value="${editor.I18n.t('grapesjs-fonts.Cancel')}">
+        <input class="silex-button" type="submit" value="${editor.I18n.t('grapesjs-fonts.Save')}">
       </footer>
     </form>
   `, el)
