@@ -75,7 +75,6 @@ async function loadFontList(url) {
 }
 
 export const fontsDialogPlugin = (editor, opts) => {
-  console.log({editor}, editor)
     defaults = editor.StyleManager.getBuiltIn('font-family').options
     if(!opts.api_key) throw new Error(editor.I18n.t('grapesjs-fonts.You must provide Google font api key'))
     editor.Commands.add(cmdOpenFonts, {
