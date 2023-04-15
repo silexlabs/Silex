@@ -1,6 +1,6 @@
 # Grapesjs Loading
 
-Shows a loading bar while the site is loaded or saved
+Shows a loading bar while the site is loaded or saved. By default it looks like the classic loading bar on top of the page, e.g. on github.com.
 
 [DEMO](https://codepen.io/lexoyo/full/GRYZBRN)
 
