@@ -2,6 +2,7 @@
 
 Shows a loading bar while the site is loaded or saved. By default it looks like the classic loading bar on top of the page, e.g. on github.com.
 
+Edit: this demo is not useful as it uses localstorage as storage and this is instant so the loading bar is not visible => todo: make it better
 [DEMO](https://codepen.io/lexoyo/full/GRYZBRN)
 
 ### HTML
