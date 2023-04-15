@@ -6,7 +6,7 @@ function applyStyle(el, style) {
   })
 }
 
-export const loadingPlugin = grapesjs.plugins.add('loading-bar', (editor, options = {}) => {
+export const loadingPlugin = grapesjs.plugins.add('grapesjs-loading', (editor, options = {}) => {
   const defaultOpts = {
     appendTo: document.body,
     start: true,
