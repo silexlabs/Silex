@@ -1,12 +1,10 @@
-import grapesjs from 'grapesjs/dist/grapes.min.js'
-
 function applyStyle(el, style) {
   Object.keys(style).forEach(key => {
     el.style[key] = style[key]
   })
 }
 
-export const loadingPlugin = grapesjs.plugins.add('grapesjs-loading', (editor, options = {}) => {
+export default (editor, options = {}) => {
   const defaultOpts = {
     appendTo: document.body,
     start: true,
@@ -50,5 +48,5 @@ export const loadingPlugin = grapesjs.plugins.add('grapesjs-loading', (editor, o
   editor.on('storage:end', () => {
     applyStyle(loadingEl, opts.hiddenStyle)
   })
-})
+}
 
