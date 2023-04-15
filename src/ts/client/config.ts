@@ -5,6 +5,7 @@ import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols/src'
 import directusPlugin from '@silexlabs/grapesjs-directus-storage'
+import loadingPlugin from '@silexlabs/grapesjs-loading'
 import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
 
@@ -40,6 +41,7 @@ const plugins = [
   {name: './grapesjs/publish', value: publishPlugin},
   {name: './grapesjs/template', value: templatePlugin},
   {name: './grapesjs/eleventy', value: eleventyPlugin},
+  {name: './grapesjs/loading', value: loadingPlugin},
   {name: '@silexlabs/grapesjs-directus-storage', value: directusPlugin},
 ]
 
