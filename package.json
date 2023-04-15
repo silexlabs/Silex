@@ -36,6 +36,7 @@
     "packages/eleventy-plugin-directus",
     "packages/grapesjs-fonts",
     "packages/grapesjs-directus-storage",
+    "packages/grapesjs-loading",
     "packages/Silex"
   ]
 }
