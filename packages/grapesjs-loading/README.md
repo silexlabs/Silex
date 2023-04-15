@@ -1,15 +1,14 @@
 # Grapesjs Loading
 
-[DEMO](##)
-> **Provide a live demo of your plugin**
-For a better user engagement create a simple live demo by using services like [JSFiddle](https://jsfiddle.net) [CodeSandbox](https://codesandbox.io) [CodePen](https://codepen.io) and link it here in your README (attaching a screenshot/gif will also be a plus).
-To help you in this process here below you will find the necessary HTML/CSS/JS, so it just a matter of copy-pasting on some of those services. After that delete this part and update the link above
+Shows a loading bar while the site is loaded or saved
+
+[DEMO](https://codepen.io/lexoyo/full/GRYZBRN)
 
 ### HTML
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="https://unpkg.com/grapesjs-loading"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-loading"></script>
 
 <div id="gjs"></div>
 ```
@@ -21,7 +20,7 @@ const editor = grapesjs.init({
   height: '100%',
   fromElement: true,
   storageManager: false,
-  plugins: ['grapesjs-loading'],
+  plugins: ['@silexlabs/grapesjs-loading'],
 });
 ```
 
@@ -36,17 +35,8 @@ body, html {
 
 ## Summary
 
-* Plugin name: `grapesjs-loading`
-* Components
-    * `component-id-1`
-    * `component-id-2`
-    * ...
-* Blocks
-    * `block-id-1`
-    * `block-id-2`
-    * ...
-
-
+* Plugin name: `@silexlabs/grapesjs-loading`
+* Shows a loading bar while the site is loaded or saved
 
 ## Options
 
@@ -59,9 +49,9 @@ body, html {
 ## Download
 
 * CDN
-  * `https://unpkg.com/grapesjs-loading`
+  * `https://unpkg.com/@silexlabs/grapesjs-loading`
 * NPM
-  * `npm i grapesjs-loading`
+  * `npm i @silexlabs/grapesjs-loading`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-loading.git`
 
@@ -73,7 +63,7 @@ Directly in the browser
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/grapesjs-loading.min.js"></script>
+<script src="path/to/@silexlabs/grapesjs-loading.min.js"></script>
 
 <div id="gjs"></div>
 
@@ -81,7 +71,7 @@ Directly in the browser
   var editor = grapesjs.init({
       container: '#gjs',
       // ...
-      plugins: ['grapesjs-loading'],
+      plugins: ['@silexlabs/grapesjs-loading'],
       pluginsOpts: {
         'grapesjs-loading': { /* options */ }
       }
@@ -92,7 +82,7 @@ Directly in the browser
 Modern javascript
 ```js
 import grapesjs from 'grapesjs';
-import plugin from 'grapesjs-loading';
+import plugin from '@silexlabs/grapesjs-loading';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
