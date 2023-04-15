@@ -1,0 +1,23 @@
+{
+  "name": "@silexlabs/grapesjs-loading",
+  "version": "1.0.0",
+  "description": "Grapesjs Loading",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/grapesjs-loading.git"
+  },
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build --patch=false"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin",
+    "loading"
+  ],
+  "devDependencies": {
+    "grapesjs-cli": "^4.0.1"
+  },
+  "license": "GPL-3.0"
+}
