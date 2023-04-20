@@ -8,13 +8,13 @@ export default async function(config: Config, opts: any = {}) {
     const router = express.Router()
     router.post('/publish', async function(req: express.Request, res: express.Response, next) {
       try {
-        const token = req.body.token
+        const token = req.body.token || process.env.DIRECTUS_TOKEN
         const directus = new Directus(opts.directusUrl)
         directus.storage.auth_token = token
         const me = await directus.users.me.read()
         next()
       } catch(err) {
-        console.error('Publish failed', err.message)
+        console.error('Publish failed in auth module. Did you provide a directus token?', err.message)
         res.status(403).json({ message: err.message })
       }
     })
