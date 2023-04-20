@@ -1,7 +1,6 @@
 import {html, render} from 'lit-html'
 import {map} from 'lit-html/directives/map.js'
 import grapesjs from 'grapesjs/dist/grapes.min.js'
-import { projectId, ROOT_URL } from '../config'
 import { getPageSlug } from '../../page'
 import { onAll } from '../utils'
 
@@ -9,6 +8,8 @@ import { onAll } from '../utils'
 const pluginName = 'publish'
 export const cmdPublish = 'publish-open-dialog'
 let _token = null
+let projectId
+let rootUrl
 
 // plugin code
 export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
@@ -16,6 +17,9 @@ export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => 
     appendTo: 'options',
     ...opts,
   }
+  // Global config
+  rootUrl = opts.rootUrl
+  projectId = opts.projectId
   // Keep track of the token
   editor.on('login:success', async ({ getUser, getToken }) => {
     _token = await getToken()
@@ -278,7 +282,7 @@ export async function startPublication(editor) {
   let res
   let json
   try {
-    res = await fetch(`${ ROOT_URL }/publish`, {
+    res = await fetch(`${ rootUrl }/publish`, {
       method: 'POST',
       body: JSON.stringify({
         data,

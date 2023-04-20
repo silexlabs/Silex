@@ -21,6 +21,13 @@ import { publishPlugin } from './grapesjs/publish'
 import { templatePlugin } from './grapesjs/template'
 import { eleventyPlugin } from './grapesjs/eleventy'
 
+/**
+ * @fileoverview Silex config overridable from index.pug
+ */
+
+// Get env var from webpack (see plugin in webpack.config.js)
+declare const DIRECTUS_URL: string
+
 const plugins = [
   {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
   {name: './grapesjs/settings', value: settingsDialog},
@@ -42,11 +49,9 @@ const plugins = [
   {name: './grapesjs/template', value: templatePlugin},
   {name: './grapesjs/eleventy', value: eleventyPlugin},
   {name: './grapesjs/loading', value: loadingPlugin},
-  {name: '@silexlabs/grapesjs-directus-storage', value: directusPlugin},
 ]
-
-// Get env var from webpack (see plugin in webpack.config.js)
-declare const DIRECTUS_URL: string
+// Optional plugins
+.concat(DIRECTUS_URL ? {name: '@silexlabs/grapesjs-directus-storage', value: directusPlugin} : [])
 
 // Check that all plugins are loaded correctly
 plugins
@@ -55,18 +60,13 @@ plugins
     throw new Error(`Plugin ${p.name} could not be loaded correctly`)
   })
 
-/**
- * @fileoverview Silex config overridable from index.pug
- */
-
 const catBasic = 'Containers'
 const catText = 'Texts'
 const catMedia = 'Media'
 const catComponents = 'Components'
-export const projectId = new URL(location.href).searchParams.get('projectId') || 'default'
-export const ROOT_URL = '.'
-const loadEndpoint = `${ ROOT_URL }/website/?projectId=${projectId}`
-const uploadEndpoint = `${ ROOT_URL }/assets/?projectId=${projectId}`
+
+const projectId = new URL(location.href).searchParams.get('projectId') || 'default'
+const rootUrl = '.'
 
 export const defaultConfig = {
 
@@ -95,8 +95,14 @@ export const defaultConfig = {
     },
 
     storageManager: {
-      autoload: false,
-      type: 'directus',
+      autoload: true,
+      type: DIRECTUS_URL ? 'directus' : 'remote',
+      options: {
+        remote: {
+          urlStore: `${ rootUrl }/website/?projectId=${projectId}`,
+          urlLoad: `${ rootUrl }/website/?projectId=${projectId}`,
+        },
+      },
     },
 
     plugins: plugins.map(p => p.value),
@@ -177,6 +183,8 @@ export const defaultConfig = {
       },
       [publishPlugin as any]: {
         appendTo: 'options',
+        rootUrl,
+        projectId,
       },
       [pagePanelPlugin as any]: {
         cmdOpenNewPageDialog,
@@ -200,7 +208,7 @@ export const defaultConfig = {
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
       },
       [directusPlugin as any]: {
-        directusUrl: DIRECTUS_URL || prompt('Directus URL'),
+        directusUrl: DIRECTUS_URL,
       },
     },
   },
