@@ -7,6 +7,8 @@ import { EVENT_STARTUP_START } from '../events'
 import { Config } from '../config'
 import { noCache } from '../express'
 
+import { minify } from 'html-minifier'
+
 const router = express.Router()
 
 declare module 'express-session' {
@@ -38,6 +40,18 @@ export default async function(config: Config, opts: PublishOptions = {}) {
           message: 'Error in the request, pages and projectId parmas required',
         })
       } else {
+        // Optim
+        files.forEach(file => {
+          file.html = minify(file.html, {
+            collapseInlineTagWhitespace: true,
+            collapseWhitespace: true,
+            minifyCSS: true,
+            minifyJS: true,
+            removeScriptTypeAttributes: true,
+            removeStyleLinkTypeAttributes: true,
+          })
+        })
+        // Publication
         await config.emit(EVENT_PUBLISH_START, { projectId, files, req})
         let url
         try {

@@ -85,6 +85,7 @@
     "grapesjs-custom-code": "1.0.1",
     "grapesjs-plugin-forms": "2.0.5",
     "grapesjs-style-filter": "1.0.1",
+    "html-minifier": "^4.0.0",
     "lit-html": "2.6.1",
     "mkdirp": "2.1.3",
     "node_modules-path": "2.0.7",
