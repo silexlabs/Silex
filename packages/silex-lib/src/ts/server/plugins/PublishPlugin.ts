@@ -7,7 +7,7 @@ import { EVENT_STARTUP_START } from '../events'
 import { Config } from '../config'
 import { noCache } from '../express'
 
-import { minify } from 'html-minifier'
+import { minify } from 'html-minifier'
 
 const router = express.Router()
 
@@ -42,7 +42,7 @@ export default async function(config: Config, opts: PublishOptions = {}) {
       } else {
         // Optim
         files.forEach(file => {
-          file.html = minify(file.html, {
+          file.html = minify(file.html, {
             collapseInlineTagWhitespace: true,
             collapseWhitespace: true,
             minifyCSS: true,

@@ -51,7 +51,7 @@ const plugins = [
   {name: './grapesjs/loading', value: loadingPlugin},
 ]
 // Optional plugins
-.concat(DIRECTUS_URL ? {name: '@silexlabs/grapesjs-directus-storage', value: directusPlugin} : [])
+  .concat(DIRECTUS_URL ? {name: '@silexlabs/grapesjs-directus-storage', value: directusPlugin} : [])
 
 // Check that all plugins are loaded correctly
 plugins
