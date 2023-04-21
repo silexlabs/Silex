@@ -43,13 +43,14 @@ export default async function(config: Config, opts: PublishOptions = {}) {
         // Optim
         files.forEach(file => {
           file.html = minify(file.html, {
+            continueOnParseError: true,
             collapseInlineTagWhitespace: true,
             collapseWhitespace: true,
             minifyCSS: true,
             minifyJS: true,
             removeScriptTypeAttributes: true,
             removeStyleLinkTypeAttributes: true,
-          })
+          }).trim()
         })
         // Publication
         await config.emit(EVENT_PUBLISH_START, { projectId, files, req})
