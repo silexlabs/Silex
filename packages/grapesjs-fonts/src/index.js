@@ -1,6 +1,6 @@
-import { fontsDialogPlugin as _fontsDialogPlugin, cmdOpenFonts as _cmdOpenFonts } from './fonts'
-import en from './locale/en'
-import fr from './locale/fr'
+import { fontsDialogPlugin as _fontsDialogPlugin, cmdOpenFonts as _cmdOpenFonts } from './fonts.js'
+import en from './locale/en.js'
+import fr from './locale/fr.js'
 
 export default (editor, opts = {}) => {
 
