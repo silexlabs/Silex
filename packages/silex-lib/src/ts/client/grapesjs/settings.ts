@@ -167,18 +167,15 @@ function saveSettings(editor, config, model = editor.getModel()) {
 function getHeadContainer(doc, className) {
   const container = doc.head.querySelector(`.${className}`)
   if(container) {
-    console.log('getHeadContainer', {className, container})
     return container
   }
   const newContainer = doc.createElement('div')
   newContainer.classList.add(className)
   doc.head.appendChild(newContainer)
-  console.log('getHeadContainer', { className, newContainer })
   return newContainer
 }
 function updateDom(editor) {
   const doc = editor.Canvas.getDocument()
-  console.log('updateDom', doc, editor.getModel().get('settings')?.head, editor.Pages.getSelected().get('settings')?.head)
   if(doc) {
     // Site head
     getHeadContainer(doc, 'site-head')

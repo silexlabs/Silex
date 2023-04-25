@@ -11,12 +11,6 @@ import { minify } from 'html-minifier'
 
 const router = express.Router()
 
-declare module 'express-session' {
-  export interface SessionData {
-    publicationId: string
-  }
-}
-
 type PublishOptions = {
   statusUrl?: string
 }
