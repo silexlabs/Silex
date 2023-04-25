@@ -1,5 +1,5 @@
 import { internalLinksPlugin } from './internal-links'
-import grapesjs from '../../../../node_modules/grapesjs/dist/grapes.min.js'
+import grapesjs from 'grapesjs'
 
 let editor
 let nextId = 1
@@ -49,7 +49,7 @@ const page2 = {
 beforeEach(() => {
   editor = grapesjs.init({
     headless: true,
-    storageManager: { autoload: 0 },
+    storageManager: { autoload: false },
     pageManager: {
       pages: [pageMain, page1, page2],
     },
