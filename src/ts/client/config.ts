@@ -6,7 +6,7 @@ import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols/src'
 import directusPlugin from '@silexlabs/grapesjs-directus-storage'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
-import { fontsDialogPlugin, cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
+import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './grapesjs/symbolDialogs'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './grapesjs/page-panel'
@@ -190,6 +190,10 @@ export const defaultConfig = {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
+      },
+      [uiSuggestClasses as any]: {
+        enableCount: false,
+        enablePerformance: true,
       },
       [internalLinksPlugin as any]: {
         // FIXME: warn the user about links in error
