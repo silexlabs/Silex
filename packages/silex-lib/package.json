@@ -101,10 +101,6 @@
     "@types/jest": "29.5.1",
     "@types/node": "18.16.0",
 
-    "@typescript-eslint/eslint-plugin": "^5.59.1",
-    "@typescript-eslint/parser": "^5.59.1",
-    "typescript": "3.8.3",
-    "@types/babel__core": "7.1.18",
     "@types/babel__traverse": "7.14.2",
 
     "css-loader": "6.7.3",
