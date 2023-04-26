@@ -66,7 +66,7 @@
   "dependencies": {
     "@directus/sdk": "^10.3.3",
     "@silexlabs/grapesjs-directus-storage": "1.0.15",
-    "@silexlabs/grapesjs-fonts": "1.0.11",
+    "@silexlabs/grapesjs-fonts": "1.0.12",
     "@silexlabs/grapesjs-loading": "1.0.7",
     "@silexlabs/grapesjs-symbols": "1.0.18",
     "@silexlabs/grapesjs-ui-suggest-classes": "1.0.22",
@@ -99,11 +99,14 @@
   "devDependencies": {
     "@types/express": "4.17.17",
     "@types/jest": "29.5.1",
-    "@types/jquery": "3.5.16",
     "@types/node": "18.16.0",
+
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
-    "babel-jest": "29.5.0",
+    "typescript": "3.8.3",
+    "@types/babel__core": "7.1.18",
+    "@types/babel__traverse": "7.14.2",
+
     "css-loader": "6.7.3",
     "eslint": "8.39.0",
     "file-loader": "6.2.0",
