@@ -193,7 +193,7 @@ export const defaultConfig = {
       },
       [uiSuggestClasses as any]: {
         enableCount: false,
-        enablePerformance: true,
+        enablePerformance: false,
       },
       [internalLinksPlugin as any]: {
         // FIXME: warn the user about links in error
