@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "@silexlabs/grapesjs-fonts",
   "version": "1.0.11",
   "description": "GrapesJS Fonts",
@@ -14,7 +13,6 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
-    "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "lint": "eslint src"
   },
   "keywords": [
@@ -25,10 +23,7 @@
   ],
   "devDependencies": {
     "eslint": "^8.28.0",
-    "grapesjs-cli": "^3.0.1",
-    "jest": "^29.5.0",
-    "jsdom": "^21.1.1",
-    "node_modules-path": "^2.0.7"
+    "grapesjs-cli": "^3.0.1"
   },
   "dependencies": {
     "backbone": "^1.4.1",
