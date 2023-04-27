@@ -1,2 +1,2 @@
-# eleventy-concat-styles-scripts
+# eleventy-plugin-concat
 Eleventy plugin to bundle your scripts and styles
