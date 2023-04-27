@@ -1,0 +1,20 @@
+{
+  "name": "eleventy-plugin-concat",
+  "version": "1.0.0",
+  "description": "Eleventy plugin to bundle your scripts and styles",
+  "main": ".eleventy.js",
+  "scripts": {
+    "start": "eleventy --serve --input=src",
+    "test": "mocha ./src/*.test.js",
+    "test:watch": "mocha --watch ./src/*.test.js"
+  },
+  "author": "lexoyo",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@11ty/eleventy": "^2.0.1",
+    "mocha": "^10.2.0"
+  },
+  "dependencies": {
+    "node-html-parser": "^6.1.5"
+  }
+}
