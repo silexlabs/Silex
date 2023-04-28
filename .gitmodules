@@ -37,3 +37,6 @@
 [submodule "packages/grapesjs-loading"]
 	path = packages/grapesjs-loading
 	url = git@github.com:silexlabs/grapesjs-loading.git
+[submodule "packages/eleventy-plugin-concat"]
+	path = packages/eleventy-plugin-concat
+	url = git@github.com:silexlabs/eleventy-plugin-concat.git

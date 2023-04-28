@@ -33,6 +33,7 @@
     "packages/grapesjs",
     "packages/grapesjs-symbols",
     "packages/grapesjs-ui-suggest-classes",
+    "packages/eleventy-plugin-concat",
     "packages/eleventy-plugin-directus",
     "packages/grapesjs-fonts",
     "packages/grapesjs-directus-storage",
