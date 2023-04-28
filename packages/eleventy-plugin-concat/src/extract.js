@@ -5,21 +5,21 @@ const fetch = require('node-fetch')
 module.exports = async function (node, attribute, options) {
   const result = await Promise.all(
     node
-    .map(async script => {
-      if(script.hasAttribute(attribute)) {
-        const src = script.getAttribute(attribute)
-        if(isExternal(src, options)) {
-          const response = await fetch(src)
-          return response.text()
+      .map(async script => {
+        if(script.hasAttribute(attribute)) {
+          const src = script.getAttribute(attribute)
+          if(isExternal(src, options)) {
+            const response = await fetch(src)
+            return response.text()
+          } else {
+            const localPath = getLocalPath(src, options)
+            const content = await readFile(localPath)
+            return content.toString()
+          }
         } else {
-          const localPath = getLocalPath(src, options)
-          const content = await readFile(localPath)
-          return content.toString()
+          return script.innerText
         }
-      } else {
-        return script.innerText
-      }
-    })
+      })
   )
   return result.join('\n')
 }
