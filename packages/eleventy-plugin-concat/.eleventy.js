@@ -1,6 +1,7 @@
-const fs = require('fs')
+const {writeFile, mkdir} = require('fs/promises')
+const {dirname, resolve} = require('path')
 const defaults = require('./src/defaults')
-const process = require('./src/index')
+const {process} = require('./src/index')
 
 module.exports = function (eleventyConfig, _options) {
   // merge default and options
@@ -8,28 +9,28 @@ module.exports = function (eleventyConfig, _options) {
     ...defaults,
     ..._options,
   }
-
-  // eleventyConfig.addLinter(
-  //   "eleventy-plugin-concat-linter",
-  //   async function(content) {
-  //     console.log('linter', content)
-  //     console.log( 'linter', this.inputPath )
-  //     console.log( 'linter', this.outputPath )
-  //     console.log( 'linter', this.page.inputPath )
-  //     console.log( 'linter', this.page.outputPath )
-  //   }
-  // )
   eleventyConfig.addTransform(
     'eleventy-plugin-concat-transform',
     async function(content) {
-      //console.log('transform', content )
-      //console.log('transform', this.inputPath )
-      //console.log('transform', this.outputPath )
-      //console.log('transform', this.page.inputPath )
-      //console.log('transform', this.page.outputPath )
-      const [html, js, css] = process(content, options)
-      // fs.writeSync(js, jsOutput)
-      // fs.writeSync(css, cssOutput)
+      const jsOutput = resolve(
+        eleventyConfig.dir.output,
+        options.jsPath
+      )
+      const cssOutput = resolve(
+        eleventyConfig.dir.output,
+        options.cssPath
+      )
+      await mkdir(
+        dirname(jsOutput),
+        { recursive: true }
+      )
+      await mkdir(
+        dirname(cssOutput),
+        { recursive: true }
+      )
+      const [html, js, css] = await process(content, options)
+      await writeFile(jsOutput, js)
+      await writeFile(cssOutput, css)
       return html
     }
   )

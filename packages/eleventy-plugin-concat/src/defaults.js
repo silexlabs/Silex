@@ -6,7 +6,7 @@ module.exports = {
   jsAttributes: '',
   cssUrl: 'css/styles.css',
   cssPath: 'css/styles.css',
-  cssSelector: 'head link[data-concat]',
+  cssSelector: 'head link[data-concat], head style[data-concat]',
   cssAttributes: '',
   baseUrl: 'http://localhost:8080',
 }
