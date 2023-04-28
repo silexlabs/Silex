@@ -6,7 +6,7 @@ This plugin is contributed by [Internet 2000 web studio](https://internet2000.ne
 
 ## Links
 
-* [The plugin on npm](https://www.npmjs.com/package/eleventy-plugin-concat) (`@silexlabs/eleventy-plugin-concat`)
+* [The plugin on npm](https://www.npmjs.com/package/@silexlabs/eleventy-plugin-concat) (`@silexlabs/eleventy-plugin-concat`)
 * [Github repo](https://github.com/silexlabs/eleventy-plugin-concat)
 
 ## Overview
