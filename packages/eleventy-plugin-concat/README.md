@@ -2,6 +2,13 @@
 
 Eleventy plugin to bundle your scripts and styles
 
+This plugin is contributed by [Internet 2000 web studio](https://internet2000.net/), it is used to create green websites with [Silex website builder](https://www.silex.me/)
+
+## Links
+
+* [The plugin on npm](https://www.npmjs.com/package/eleventy-plugin-concat) (`@silexlabs/eleventy-plugin-concat`)
+* [Github repo](https://github.com/silexlabs/eleventy-plugin-concat)
+
 ## Overview
 
 1. Add the plugin to your `.eleventy.js` config
