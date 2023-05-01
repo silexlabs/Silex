@@ -29,8 +29,6 @@ This is the roadmap and feature list:
 * [x] Concat inline styles
 * [x] Concat loaded stylesheets from base url and get their content from file system
 * [x] Concat loaded third-party stylesheets and fetch their content
-* [x] 
-* [x] 
 
 ## Example
 
