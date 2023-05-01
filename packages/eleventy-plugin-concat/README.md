@@ -77,6 +77,26 @@ Generated `_site/style.css`:
 /* ... content of page.css */
 body { background: blue; }
 ```
+### Usage
+
+1. Install the plugin using npm:
+
+   ```sh
+   npm install @silexlabs/eleventy-plugin-concat
+   ```
+
+2. Add the plugin to your `.eleventy.js` config:
+
+   ```js
+   const pluginConcat = require("@silexlabs/eleventy-plugin-concat")
+
+   module.exports = (eleventyConfig) => {
+     eleventyConfig.addPlugin(pluginConcat, {
+       baseUrl: 'http://localhost:8080',
+     })
+   }
+   ```
+3. Run or build your Eleventy project and use the global `directus.collections` data variable to access your collections
 
 ## Options
 
