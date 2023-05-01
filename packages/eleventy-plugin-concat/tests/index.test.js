@@ -50,7 +50,10 @@ it('concat local scripts', async () => {
       {attributes: `data-concat src="/tests/local2.js"`},
       {attributes: `data-concat src="./tests/local3.js"`},
     ])
-    const [html, js, css] = await process(init, defaults)
+    const [html, js, css] = await process(init, {
+      ...defaults,
+      output: '.', // No _site folder in tests
+    })
     assert.deepEqual(cleanup(html), getTestHtml([
       {attributes: `defer src="${defaults.jsUrl}"`},
     ]))
