@@ -38,7 +38,7 @@ it('concat inline scripts', async () => {
     ])
     const [html, js, css] = await process(init, defaults)
     assert.deepEqual(cleanup(html), getTestHtml([
-      {attributes: `src="${defaults.jsUrl}"`},
+      {attributes: `defer src="${defaults.jsUrl}"`},
     ]))
     assert.deepEqual(js, `script 1\nscript 2`)
   }
@@ -52,7 +52,7 @@ it('concat local scripts', async () => {
     ])
     const [html, js, css] = await process(init, defaults)
     assert.deepEqual(cleanup(html), getTestHtml([
-      {attributes: `src="${defaults.jsUrl}"`},
+      {attributes: `defer src="${defaults.jsUrl}"`},
     ]))
     assert.equal(cleanup(js), `test 1\ntest 2\ntest 3`)
   }
@@ -103,7 +103,7 @@ describe('remote scripts', () => {
       ])
       const [html, js, css] = await process(init, defaults)
       assert.deepEqual(cleanup(html), getTestHtml([
-        {attributes: `src="${defaults.jsUrl}"`},
+        {attributes: `defer src="${defaults.jsUrl}"`},
       ]))
       assert.equal(cleanup(js), 'test 1\ntest 2')
     }

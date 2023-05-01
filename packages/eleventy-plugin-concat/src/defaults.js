@@ -1,5 +1,7 @@
 
 module.exports = {
+  input: '.',
+  output: '_site',
   jsUrl: '/js/script.js',
   jsPath: 'js/script.js',
   jsSelector: 'head script[data-concat]',
