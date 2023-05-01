@@ -96,7 +96,7 @@ body { background: blue; }
      })
    }
    ```
-3. Run or build your Eleventy project and use the global `directus.collections` data variable to access your collections
+3. Use the global `data-concat` attribute in your templates
 
 ## Options
 
