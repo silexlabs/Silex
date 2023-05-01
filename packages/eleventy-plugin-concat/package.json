@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/eleventy-plugin-concat",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Eleventy plugin to bundle your scripts and styles",
   "main": ".eleventy.js",
   "scripts": {
