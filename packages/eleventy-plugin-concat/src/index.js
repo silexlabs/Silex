@@ -7,6 +7,7 @@ async function process(content, options) {
   const html = parse(content)
   const js = html.querySelectorAll(options.jsSelector)
   const css = html.querySelectorAll(options.cssSelector)
+  console.log(`[11ty][Concat Plugin] Concat ${js.length} JS files and ${css.length} CSS files`)
   return Promise.all([processHtml(html, js, css, options), processJs(js, options), processCss(css, options)])
 }
 

@@ -103,7 +103,7 @@ The default options are stored in `src/defaults.js`
 | Name | Description | Default |
 | -- | -- | -- |
 | jsUrl | Url of the generated script (what you want the plugin to insert in your HTML) | '/js/script.js' |
-| jsPath | Path of the generated script inside the output dir | 'js/script.js' |
+| jsPath | Path of the generated script inside the output dir | 'js/scripts.js' |
 | jsSelector | Selector used to find the scripts to be concatenated in the HTML page | 'head script[data-concat]' |
 | jsAttributes | Attributes you want the plugin to add to the JS tag in your HTML, e.g. `async` | '' |
 | cssUrl | Url of the generated stylesheet (what you want the plugin to insert in your HTML) | '/css/styles.css' |
