@@ -41,6 +41,7 @@ function getLocalPath(src, options) {
     // This is because urls like /a/b.js => ./js/b.js
     return src.replace(/^\//, '')
   })()
-  return resolve(options.input, urlPath)
+  // Use output here to get files after Passthrough Copy
+  return resolve(options.output, urlPath)
 }
 
