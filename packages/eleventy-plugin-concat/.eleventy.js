@@ -7,11 +7,14 @@ module.exports = function (eleventyConfig, _options) {
   // merge default and options
   const options = {
     ...defaults,
+    input: eleventyConfig.dir.input,
+    output: eleventyConfig.dir.output,
     ..._options,
   }
   eleventyConfig.addTransform(
     'eleventy-plugin-concat-transform',
     async function(content) {
+      console.log(`[11ty][Concat Plugin] Optimizing ${this.outputPath}`)
       const jsOutput = resolve(
         eleventyConfig.dir.output,
         options.jsPath

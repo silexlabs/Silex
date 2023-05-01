@@ -41,6 +41,6 @@ function getLocalPath(src, options) {
     // This is because urls like /a/b.js => ./js/b.js
     return src.replace(/^\//, '')
   })()
-  return resolve(urlPath)
+  return resolve(options.input, urlPath)
 }
 
