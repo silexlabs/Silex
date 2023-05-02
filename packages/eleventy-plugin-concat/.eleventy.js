@@ -14,15 +14,15 @@ module.exports = function (eleventyConfig, _options) {
   eleventyConfig.addTransform(
     'eleventy-plugin-concat-transform',
     async function(content) {
-      if( this.page.outputPath && this.page.outputPath.endsWith(".html") ) {
+      if(this.page.outputPath && this.page.outputPath.endsWith(".html")) {
         console.log(`[11ty][Concat Plugin] Optimizing ${this.outputPath}`)
         const jsOutput = resolve(
           eleventyConfig.dir.output,
-          options.jsPath
+          options.jsPath(this.page)
         )
         const cssOutput = resolve(
           eleventyConfig.dir.output,
-          options.cssPath
+          options.cssPath(this.page)
         )
         await mkdir(
           dirname(jsOutput),
@@ -32,7 +32,7 @@ module.exports = function (eleventyConfig, _options) {
           dirname(cssOutput),
           { recursive: true }
         )
-        const [html, js, css] = await process(content, options)
+        const [html, js, css] = await process(this.page, content, options)
         await writeFile(jsOutput, js)
         await writeFile(cssOutput, css)
         return html

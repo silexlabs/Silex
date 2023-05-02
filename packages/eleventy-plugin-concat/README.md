@@ -102,12 +102,12 @@ The default options are stored in `src/defaults.js`
 
 | Name | Description | Default |
 | -- | -- | -- |
-| jsUrl | Url of the generated script (what you want the plugin to insert in your HTML) | '/js/script.js' |
-| jsPath | Path of the generated script inside the output dir | 'js/scripts.js' |
+| jsUrl | Function which takes [the current page](https://www.11ty.dev/docs/data-eleventy-supplied/#page-variable) and returns the URL of the generated script (what you want the plugin to insert in your HTML) | `page => \`/js/${ basename(page.outputPath, '.html') }-concat.js\`` |
+| jsPath | Function which takes [the current page](https://www.11ty.dev/docs/data-eleventy-supplied/#page-variable) and returns the path of the generated script relative the output dir | `page => \`js/${ basename(page.outputPath, '.html') }-concat.js\`` |
 | jsSelector | Selector used to find the scripts to be concatenated in the HTML page | 'head script[data-concat]' |
 | jsAttributes | Attributes you want the plugin to add to the JS tag in your HTML, e.g. `async` | '' |
-| cssUrl | Url of the generated stylesheet (what you want the plugin to insert in your HTML) | '/css/styles.css' |
-| cssPath | Path of the generated stylesheet inside the output dir | 'css/styles.css' |
+| cssUrl | Function which takes [the current page](https://www.11ty.dev/docs/data-eleventy-supplied/#page-variable) and returns the URL of the generated stylesheet (what you want the plugin to insert in your HTML) | `page => \`/css/${ basename(page.outputPath, '.html') }-concat.css\`` |
+| cssPath | Function which takes [the current page](https://www.11ty.dev/docs/data-eleventy-supplied/#page-variable) and returns the path of the generated stylesheet relative to the output dir | `page => \`css/${ basename(page.outputPath, '.html') }-concat.css\`` |
 | cssSelector | Selector used to find the styles to be concatenated in the HTML page | 'head link[data-concat], head style[data-concat]' |
 | cssAttributes | Attributes you want the plugin to add to the CSS tag in your HTML, e.g. `data-custom="abcd"` | '' |
 | baseUrl | The URL where your site will be available, e.g. `https://www.silex.me` => `https://www.silex.me/js/test.js` will be read from file system in `./js` | 'http://localhost:8080' |

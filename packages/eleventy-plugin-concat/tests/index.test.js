@@ -8,23 +8,33 @@ console.log(`
 Tests starting
 --------------`)
 
+const page = {
+  outputPath: '_site',
+}
+
+it('test defaults', async () => {
+  assert.equal(defaults.jsPath({ outputPath: '_site/page.html' }), 'js/page-concat.js')
+  assert.equal(defaults.jsUrl({ outputPath: '_site/page.html' }), '/js/page-concat.js')
+  assert.equal(defaults.cssPath({ outputPath: '_site/page.html' }), 'css/page-concat.css')
+  assert.equal(defaults.cssUrl({ outputPath: '_site/page.html' }), '/css/page-concat.css')
+})
 it('should do nothing', async () => {
   {
-    const [html, js, css] = await process('', defaults)
+    const [html, js, css] = await process(page, '', defaults)
     assert.equal(html, '')
     assert.deepEqual(js, '')
     assert.deepEqual(css, '')
   }
   {
     const init = '<body><script></script><style></style></body>'
-    const [html, js, css] = await process(init, defaults)
+    const [html, js, css] = await process(page, init, defaults)
     assert.equal(html, init)
     assert.deepEqual(js, '')
     assert.deepEqual(css, '')
   }
   {
     const init = '<head><script></script><style></style></head>'
-    const [html, js, css] = await process(init, defaults)
+    const [html, js, css] = await process(page, init, defaults)
     assert.equal(html, init)
     assert.deepEqual(js, '')
     assert.deepEqual(css, '')
@@ -36,9 +46,9 @@ it('concat inline scripts', async () => {
       {attributes: 'data-concat', content: 'script 1'},
       {attributes: 'data-concat', content: 'script 2'},
     ])
-    const [html, js, css] = await process(init, defaults)
+    const [html, js, css] = await process(page, init, defaults)
     assert.deepEqual(cleanup(html), getTestHtml([
-      {attributes: `defer src="${defaults.jsUrl}"`},
+      {attributes: `defer src="${defaults.jsUrl(page)}"`},
     ]))
     assert.deepEqual(js, `script 1\nscript 2`)
   }
@@ -50,12 +60,12 @@ it('concat local scripts', async () => {
       {attributes: `data-concat src="/tests/local2.js"`},
       {attributes: `data-concat src="./tests/local3.js"`},
     ])
-    const [html, js, css] = await process(init, {
+    const [html, js, css] = await process(page, init, {
       ...defaults,
       output: '.', // No _site folder in tests
     })
     assert.deepEqual(cleanup(html), getTestHtml([
-      {attributes: `defer src="${defaults.jsUrl}"`},
+      {attributes: `defer src="${defaults.jsUrl(page)}"`},
     ]))
     assert.equal(cleanup(js), `test 1\ntest 2\ntest 3`)
   }
@@ -65,19 +75,19 @@ it('concat local scripts which do not exist', async () => {
     const init = getTestHtml([
       {attributes: `data-concat src="${defaults.baseUrl}/tests/not-exist.js"`},
     ])
-    shoudlThrow(async () => process(init, defaults))
+    shoudlThrow(async () => process(page, init, defaults))
   }
   {
     const init = getTestHtml([
       {attributes: `data-concat src="./tests/not-exist.js"`},
     ])
-    shoudlThrow(async () => process(init, defaults))
+    shoudlThrow(async () => process(page, init, defaults))
   }
   {
     const init = getTestHtml([
       {attributes: `data-concat src="/tests/not-exist.js"`},
     ])
-    shoudlThrow(async () => process(init, defaults))
+    shoudlThrow(async () => process(page, init, defaults))
   }
 })
 const PORT = 1904
@@ -104,9 +114,9 @@ describe('remote scripts', () => {
         {attributes: `data-concat src="http://0.0.0.0:${PORT}/local1.js"`},
         {attributes: `data-concat src="http://0.0.0.0:${PORT}/local2.js"`},
       ])
-      const [html, js, css] = await process(init, defaults)
+      const [html, js, css] = await process(page, init, defaults)
       assert.deepEqual(cleanup(html), getTestHtml([
-        {attributes: `defer src="${defaults.jsUrl}"`},
+        {attributes: `defer src="${defaults.jsUrl(page)}"`},
       ]))
       assert.equal(cleanup(js), 'test 1\ntest 2')
     }
@@ -118,9 +128,9 @@ it('concat inline styles', async () => {
       {attributes: 'data-concat', content: 'style 1'},
       {attributes: 'data-concat', content: 'style 2'},
     ])
-    const [html, js, css] = await process(init, defaults)
+    const [html, js, css] = await process(page, init, defaults)
     assert.deepEqual(cleanup(html), getTestHtml(null, [
-      {attributes: `href="${defaults.cssUrl}"`},
+      {attributes: `href="${defaults.cssUrl(page)}"`},
     ]))
     assert.deepEqual(cleanup(css), `style 1\nstyle 2`)
   }
