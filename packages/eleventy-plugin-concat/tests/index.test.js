@@ -50,7 +50,7 @@ it('concat inline scripts', async () => {
     assert.deepEqual(cleanup(html), getTestHtml([
       {attributes: `defer src="${defaults.jsUrl(page)}"`},
     ]))
-    assert.deepEqual(js, `script 1\nscript 2`)
+    assert.deepEqual(js, `script 1;\nscript 2`)
   }
 })
 it('concat local scripts', async () => {
@@ -67,7 +67,7 @@ it('concat local scripts', async () => {
     assert.deepEqual(cleanup(html), getTestHtml([
       {attributes: `defer src="${defaults.jsUrl(page)}"`},
     ]))
-    assert.equal(cleanup(js), `test 1\ntest 2\ntest 3`)
+    assert.equal(cleanup(js), `test 1\n;\ntest 2\n;\ntest 3`)
   }
 })
 it('concat local scripts which do not exist', async () => {
@@ -118,7 +118,7 @@ describe('remote scripts', () => {
       assert.deepEqual(cleanup(html), getTestHtml([
         {attributes: `defer src="${defaults.jsUrl(page)}"`},
       ]))
-      assert.equal(cleanup(js), 'test 1\ntest 2')
+      assert.equal(cleanup(js), 'test 1\n;\ntest 2')
     }
   })
 })
@@ -132,7 +132,7 @@ it('concat inline styles', async () => {
     assert.deepEqual(cleanup(html), getTestHtml(null, [
       {attributes: `href="${defaults.cssUrl(page)}"`},
     ]))
-    assert.deepEqual(cleanup(css), `style 1\nstyle 2`)
+    assert.deepEqual(cleanup(css), `style 1;\nstyle 2`)
   }
 })
 
