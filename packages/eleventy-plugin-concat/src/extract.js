@@ -21,7 +21,9 @@ module.exports = async function (node, attribute, options) {
         }
       })
   )
-  return result.join('\n')
+  // Add a ";" to avoid problems when scripts ends with a line without a ";"
+  // Add a "\n" to avoid problems when scripts end with a comment
+  return result.join(';\n')
 }
 
 function isExternal(src, options) {
