@@ -20,5 +20,11 @@
   "dependencies": {
     "node-fetch": "^2.6.9",
     "node-html-parser": "^6.1.5"
+  },
+  "keywords": [
+    "eleventy",
+    "plugin",
+    "elventy-plugin",
+    "optimization"
   }
 }
