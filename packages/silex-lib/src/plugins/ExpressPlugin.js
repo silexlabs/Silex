@@ -1,19 +1,9 @@
-import * as bodyParser from 'body-parser'
-import * as compression from 'compression'
-import * as cookieParser from 'cookie-parser'
-import * as session from 'cookie-session'
+const bodyParser = require('body-parser')
+const compression = require('compression')
+const cookieParser = require('cookie-parser')
+const session = require('cookie-session')
 
-import { EVENT_STARTUP_START } from '../events'
-import { Config } from '../config'
-
-type ExpressOptions = {
-  jsonLimit?: string
-  textLimit?: string
-  sessionName?: string
-  sessionSecret?: string
-}
-
-export default async function(config: Config, opts: ExpressOptions = {}) {
+module.exports = async function(config, opts = {}) {
   // Options with defaults
   const options = {
     jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT || '1mb',
@@ -23,7 +13,7 @@ export default async function(config: Config, opts: ExpressOptions = {}) {
     ...opts,
   }
 
-  config.on(EVENT_STARTUP_START, ({app}) => {
+  config.on('silex:startup:start', ({app}) => {
     // compress gzip when possible
     app.use(compression())
 

@@ -4,15 +4,16 @@ import { EVENT_PUBLISH_END } from './PublishPlugin'
 import fetch from 'node-fetch'
 import { projectPath, assetsDir } from '../project'
 
-type HooksOptions = {
-  gitUrl?: string
-  buildUrl?: string
-}
+// type HooksOptions = {
+//   gitUrl?: string
+//   buildUrl?: string
+// }
+
 const rootPath = process.env.DATA_FOLDER
 
-export default async function(config: Config, opts: HooksOptions = {}) {
+module.exports = async function(config, opts = {}) {
   // Options with defaults
-  const options: HooksOptions = {
+  const options = {
     gitUrl: process.env.SILEX_HOOK_GIT,
     buildUrl: process.env.SILEX_HOOK_BUILD,
     ...opts

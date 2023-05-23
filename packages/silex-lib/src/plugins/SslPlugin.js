@@ -1,21 +1,17 @@
-import * as express from 'express'
+const express = require('express')
+const { readFileSync } = require('fs')
+const { createServer } = require('https')
+const fromorceSSL = require('express-force-ssl')
 
-import { readFileSync } from 'fs'
-import { createServer } from 'https'
-import forceSSL from 'express-force-ssl'
+// interface SslOptions {
+//   forceHttps?: boolean
+//   trustXFPHeader?: boolean
+//   privateKey?: string
+//   certificate?: string
+//   sslPort?: string
+// }
 
-import { Config } from '../config'
-import { EVENT_STARTUP_START } from '../events'
-
-interface SslOptions {
-  forceHttps?: boolean
-  trustXFPHeader?: boolean
-  privateKey?: string
-  certificate?: string
-  sslPort?: string
-}
-
-export default async function(config: Config, opts: SslOptions = {}) {
+module.exports = async function(config, opts = {}) {
   // Options with defaults
   const options = {
     forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',
@@ -27,7 +23,7 @@ export default async function(config: Config, opts: SslOptions = {}) {
   }
 
   // Add routes on silex startup
-  config.on(EVENT_STARTUP_START, ({app}) => {
+  config.on('silex:startup:start', ({app}) => {
     const router = express.Router()
 
     // SSL
