@@ -61,11 +61,9 @@ plugins
   })
 
 const catBasic = 'Containers'
-const catText = 'Texts'
-const catMedia = 'Media'
 const catComponents = 'Components'
 
-const projectId = new URL(location.href).searchParams.get('projectId') || 'default'
+const id = new URL(location.href).searchParams.get('id') || 'default'
 const rootUrl = '.'
 
 export const defaultConfig = {
@@ -99,8 +97,8 @@ export const defaultConfig = {
       type: DIRECTUS_URL ? 'directus' : 'remote',
       options: {
         remote: {
-          urlStore: `${ rootUrl }/website/?projectId=${projectId}`,
-          urlLoad: `${ rootUrl }/website/?projectId=${projectId}`,
+          urlStore: `${ rootUrl }/website/?id=${id}`,
+          urlLoad: `${ rootUrl }/website/?id=${id}`,
         },
       },
     },
@@ -184,7 +182,7 @@ export const defaultConfig = {
       [publishPlugin as any]: {
         appendTo: 'options',
         rootUrl,
-        projectId,
+        id,
       },
       [pagePanelPlugin as any]: {
         cmdOpenNewPageDialog,
