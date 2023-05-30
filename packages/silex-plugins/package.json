@@ -13,6 +13,7 @@
     "watch": "$npm_execpath test -- --watch",
     "build": "tsc",
     "lint": "eslint src",
+    "fix": "$npm_execpath run lint -- --fix",
     "test": "jest"
   },
   "repository": {
