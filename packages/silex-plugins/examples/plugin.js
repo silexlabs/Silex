@@ -1,3 +1,5 @@
 module.exports = function(config) {
-  return config
+  return {
+    test: 'example',
+  }
 }

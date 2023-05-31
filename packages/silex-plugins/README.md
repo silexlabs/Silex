@@ -1,6 +1,8 @@
 # Silex plugins
 
-Open architecture / plugin system for node.js and the browser. Inspired by 11ty.dev config
+Environment agnostic (node.js and browser) open architecture (plugin system) inspired by 11ty.dev config
+
+## How it works
 
 1. Install with `npm i @silexlabs/silex-plugins`
 1. Use in your app to add a plugin system
@@ -14,6 +16,9 @@ import config from './config'
 
 // Add a first plugin which is the main config
 const userConfig = config().addPlugin('.myapp.js')
+
+// Notify plugins of important events
+userConfig.emit('ready')
 ```
 
 `.myapp.js`

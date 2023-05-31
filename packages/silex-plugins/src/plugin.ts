@@ -1,17 +1,9 @@
 import { Config } from "./config"
 /**
- * Plugins types
- */
-export type PluginType = string
-
-/**
  * Plugin struct
  */
 export interface Plugin {
-  type: PluginType[],
   require: string,
-  active: boolean,
-  hidden: boolean,
   options: Object,
 }
 
@@ -21,13 +13,10 @@ export interface Plugin {
  * @param plugins The plugins to load
  * @returns Merged results objects
  */
-export async function loadPlugins(config: Config, plugins: Plugin[], pluginType: PluginType, baseUrl: string): Promise<Config> {
+export async function loadPlugins(config: Config, plugins: Plugin[], baseUrl: string = null): Promise<Config> {
   return Promise.all<Config>(plugins
-    // Keep only the plugins for this context
-    .filter(plugin => plugin.type.includes(pluginType))
     // Load plugins
     .map(async (plugin: Plugin, idx) => {
-      console.info(`Init plugin ${plugin.require}`, plugin.options)
       const construct = await loadPlugin<(config: Config, options: any) => Promise<Config>>(plugin.require, baseUrl)
       return construct(config, plugin.options) as Promise<Config>
     }))
@@ -47,11 +36,19 @@ export async function loadPlugins(config: Config, plugins: Plugin[], pluginType:
  * @param location The path, absolute, relative or online
  * @returns The result of the plugin default function
  */
-export async function loadPlugin<T>(location: string, baseUrl: string): Promise<T> {
-  const path = new URL(location, baseUrl).toString()
+async function loadPlugin<T>(location: string, baseUrl: string): Promise<T> {
+  const path = getLocation(location, baseUrl)
   const imported: any = await dynamicImport(path)
   const result = imported?.default ?? imported
   return result
+}
+
+function getLocation(urlOrPath: string, baseUrl: string = null): string {
+  try {
+    return new URL(urlOrPath, baseUrl).toString()
+  } catch(e) {
+    return urlOrPath
+  }
 }
 
 /**
@@ -59,6 +56,6 @@ export async function loadPlugin<T>(location: string, baseUrl: string): Promise<
  * @param path The absolute path to laod
  * @returns The loaded module
  */
-export async function dynamicImport<T>(path: string): Promise<T> {
+async function dynamicImport<T>(path: string): Promise<T> {
   return import(path)
 }
