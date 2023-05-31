@@ -12,7 +12,7 @@ In your app
 
 `app.js`
 ```js
-import config from './config'
+import config from '@silexlabs/silex-plugins'
 
 // Add a first plugin which is the main config
 const userConfig = config().addPlugin('.myapp.js')
@@ -21,14 +21,24 @@ const userConfig = config().addPlugin('.myapp.js')
 userConfig.emit('ready')
 ```
 
-`.myapp.js`
+`.myapp.js`: This is a config file and a plugin
 ```js
 export default (config) => {
+  config.on('ready', () => 'do something')
   config.addPlugin('myplugin.js', {
     some: 'options',
   })
   return {
     defaultOption: 'value',
+  }
+}
+```
+`myplugin.js`: This is a plugin
+```js
+export default (config) => {
+  config.on('ready', () => 'do something else')
+  return {
+    defaultOption: 'override config',
   }
 }
 ```
