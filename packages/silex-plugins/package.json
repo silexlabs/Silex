@@ -9,6 +9,7 @@
     "src"
   ],
   "scripts": {
+    "preversion": "$npm_execpath run prepare",
     "prepare": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "watch": "$npm_execpath test -- --watch",
     "build": "tsc",

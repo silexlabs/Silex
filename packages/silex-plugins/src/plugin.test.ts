@@ -1,6 +1,6 @@
-import {describe, expect, test, beforeEach, jest} from '@jest/globals'
-import { Plugin, loadPlugins } from './plugin'
-import { Config } from '.'
+import {describe, expect, test, } from '@jest/globals'
+import { loadPlugins, } from './plugin'
+import { Config, } from '.'
 
 describe('Plugins test', () => {
   test('Test loading 0 plugins', async () => {
@@ -10,12 +10,12 @@ describe('Plugins test', () => {
   test('Test loadPlugins', async () => {
     const plugin = {
       require: '../examples/plugin.js',
-      type: ['test'],
+      type: ['test',],
       active: true,
       hidden: false,
       options: {},
     }
-    const result = await loadPlugins({} as Config, [plugin])
-    expect(result).toEqual({test: 'example'})
+    const result = await loadPlugins({} as Config, [plugin,])
+    expect(result).toEqual({test: 'example',})
   })
 })

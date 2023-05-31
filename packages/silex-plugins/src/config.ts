@@ -1,4 +1,4 @@
-import { Plugin, loadPlugins } from './plugin'
+import { Plugin, loadPlugins, } from './plugin'
 import EventEmitter from 'events'
 
 export default function( baseUrl: string = null) {
@@ -16,7 +16,7 @@ export class Config extends EventEmitter {
    * @returns A Config object which merges the objects returned by the plugin(s)
    */
   public async addPlugin(plugin: Plugin) {
-    const result = await loadPlugins(this, [].concat(plugin as any), this.baseUrl)
+    const result = await loadPlugins(this, [].concat(plugin), this.baseUrl)
     Object.assign(this, result)
     return this
   }

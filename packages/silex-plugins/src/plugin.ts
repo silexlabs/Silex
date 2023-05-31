@@ -1,10 +1,10 @@
-import { Config } from "./config"
+import { Config, } from './config'
 /**
  * Plugin struct
  */
 export interface Plugin {
   require: string,
-  options: Object,
+  options: object,
 }
 
 /**
@@ -16,8 +16,8 @@ export interface Plugin {
 export async function loadPlugins(config: Config, plugins: Plugin[], baseUrl: string = null): Promise<Config> {
   return Promise.all<Config>(plugins
     // Load plugins
-    .map(async (plugin: Plugin, idx) => {
-      const construct = await loadPlugin<(config: Config, options: any) => Promise<Config>>(plugin.require, baseUrl)
+    .map(async (plugin: Plugin) => {
+      const construct = await loadPlugin<(config: Config, options: object) => Promise<Config>>(plugin.require, baseUrl)
       return construct(config, plugin.options) as Promise<Config>
     }))
     // Merge the results
@@ -38,9 +38,9 @@ export async function loadPlugins(config: Config, plugins: Plugin[], baseUrl: st
  */
 async function loadPlugin<T>(location: string, baseUrl: string): Promise<T> {
   const path = getLocation(location, baseUrl)
-  const imported: any = await dynamicImport(path)
+  const imported: {default?: () => void} = await dynamicImport(path)
   const result = imported?.default ?? imported
-  return result
+  return result as T
 }
 
 function getLocation(urlOrPath: string, baseUrl: string = null): string {
