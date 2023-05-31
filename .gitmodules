@@ -40,3 +40,6 @@
 [submodule "packages/eleventy-plugin-concat"]
 	path = packages/eleventy-plugin-concat
 	url = git@github.com:silexlabs/eleventy-plugin-concat.git
+[submodule "packages/silex-plugins"]
+	path = packages/silex-plugins
+	url = git@github.com:silexlabs/silex-plugins.git
