@@ -26,7 +26,7 @@ userConfig.emit('ready')
 export default (config) => {
   config.on('ready', () => 'do something')
   config.addPlugin('myplugin.js', {
-    some: 'options',
+    text: 'some options',
   })
   return {
     defaultOption: 'value',
@@ -35,8 +35,8 @@ export default (config) => {
 ```
 `myplugin.js`: This is a plugin
 ```js
-export default (config) => {
-  config.on('ready', () => 'do something else')
+export default (config, options) => {
+  config.on('ready', () => `do something else with ${ options.text }`)
   return {
     defaultOption: 'override config',
   }
