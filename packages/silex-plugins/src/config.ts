@@ -6,7 +6,7 @@ export default function( baseUrl: string = null) {
 }
 
 export class Config extends EventEmitter {
-  constructor(private baseUrl: string = null) {
+  constructor(public baseUrl: string = null) {
     super()
   }
 
@@ -15,7 +15,8 @@ export class Config extends EventEmitter {
    * @param plugin One or more plugin definition object
    * @returns A Config object which merges the objects returned by the plugin(s)
    */
-  public async addPlugin(plugin: Plugin) {
+  public async addPlugin(plugin: Plugin | ((config: Config) => Config)) {
+    // Load plugin if necessary
     const result = await loadPlugins(this, [].concat(plugin), this.baseUrl)
     Object.assign(this, result)
     return this

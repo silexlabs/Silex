@@ -13,12 +13,12 @@ export interface Plugin {
  * @param plugins The plugins to load
  * @returns Merged results objects
  */
-export async function loadPlugins(config: Config, plugins: Plugin[], baseUrl: string = null): Promise<Config> {
+export async function loadPlugins(config: Config, plugins: Plugin[] | ((config: Config) => Config)[], baseUrl: string = null): Promise<Config> {
   return Promise.all<Config>(plugins
     // Load plugins
-    .map(async (plugin: Plugin) => {
-      const construct = await loadPlugin<(config: Config, options: object) => Promise<Config>>(plugin.require, baseUrl)
-      return construct(config, plugin.options) as Promise<Config>
+    .map(async (plugin: Plugin | ((config: Config) => Config)) => {
+      const construct = typeof plugin === 'function' ? plugin : await loadPlugin<(config: Config, options: object) => Promise<Config>>(plugin.require, baseUrl)
+      return construct(config, (plugin as Plugin)?.options) as Promise<Config>
     }))
     // Merge the results
     .then((results: Config[]): Config => {

@@ -2,7 +2,7 @@ import {describe, expect, test, beforeEach, jest,} from '@jest/globals'
 import config from './config'
 import * as plugin from './plugin'
 
-const PLUGIN_RESULT = { test: 'me', }
+const PLUGIN_RESULT = { test: 'any value?', }
 jest.mock('./plugin', () => ({
   loadPlugins: jest.fn().mockResolvedValue(PLUGIN_RESULT),
 }))
@@ -12,6 +12,7 @@ describe('Config test', () => {
   let instance
   let empty
   beforeEach(() => {
+    loadPlugins.mockClear()
     expect(config).not.toBeUndefined()
     instance = config('..')
     empty = config('..')

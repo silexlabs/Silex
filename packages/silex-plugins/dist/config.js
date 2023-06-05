@@ -59,9 +59,7 @@ var Config = /** @class */ (function (_super) {
     __extends(Config, _super);
     function Config(baseUrl) {
         if (baseUrl === void 0) { baseUrl = null; }
-        var _this = _super.call(this) || this;
-        _this.baseUrl = baseUrl;
-        return _this;
+        return _super.call(this) || this;
     }
     /**
      * Add one or multiple plugins

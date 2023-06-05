@@ -3,7 +3,6 @@ import { Plugin } from './plugin';
 import EventEmitter from 'events';
 export default function (baseUrl?: string): Config;
 export declare class Config extends EventEmitter {
-    private baseUrl;
     constructor(baseUrl?: string);
     /**
      * Add one or multiple plugins
