@@ -59,19 +59,22 @@ var Config = /** @class */ (function (_super) {
     __extends(Config, _super);
     function Config(baseUrl) {
         if (baseUrl === void 0) { baseUrl = null; }
-        return _super.call(this) || this;
+        var _this = _super.call(this) || this;
+        _this.baseUrl = baseUrl;
+        return _this;
     }
     /**
      * Add one or multiple plugins
      * @param plugin One or more plugin definition object
+     * @param options An object containing the plugin options or each plugin options in `options[pluginName]`
      * @returns A Config object which merges the objects returned by the plugin(s)
      */
-    Config.prototype.addPlugin = function (plugin) {
+    Config.prototype.addPlugin = function (plugin, options) {
         return __awaiter(this, void 0, void 0, function () {
             var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, loadPlugins(this, [].concat(plugin), this.baseUrl)];
+                    case 0: return [4 /*yield*/, loadPlugins(this, [].concat(plugin), options, this.baseUrl)];
                     case 1:
                         result = _a.sent();
                         Object.assign(this, result);

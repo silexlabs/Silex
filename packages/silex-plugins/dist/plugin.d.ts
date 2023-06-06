@@ -1,15 +1,12 @@
 import { Config } from './config';
 /**
- * Plugin struct
+ * Plugin type
  */
-export interface Plugin {
-    require: string;
-    options: object;
-}
+export type Plugin = (config: Config) => Config | string;
 /**
  *
  * @param config The initial config object
  * @param plugins The plugins to load
  * @returns Merged results objects
  */
-export declare function loadPlugins(config: Config, plugins: Plugin[], baseUrl?: string): Promise<Config>;
+export declare function loadPlugins(config: Config, plugins: Plugin[], options: object, baseUrl?: string): Promise<Config>;

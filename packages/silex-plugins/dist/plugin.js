@@ -51,7 +51,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
  * @param plugins The plugins to load
  * @returns Merged results objects
  */
-export function loadPlugins(config, plugins, baseUrl) {
+export function loadPlugins(config, plugins, options, baseUrl) {
     if (baseUrl === void 0) { baseUrl = null; }
     return __awaiter(this, void 0, void 0, function () {
         var _this = this;
@@ -59,13 +59,31 @@ export function loadPlugins(config, plugins, baseUrl) {
             return [2 /*return*/, Promise.all(plugins
                     // Load plugins
                     .map(function (plugin) { return __awaiter(_this, void 0, void 0, function () {
-                    var construct;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0: return [4 /*yield*/, loadPlugin(plugin.require, baseUrl)];
+                    var _a, construct, name;
+                    var _this = this;
+                    return __generator(this, function (_b) {
+                        switch (_b.label) {
+                            case 0: return [4 /*yield*/, (function () { return __awaiter(_this, void 0, void 0, function () {
+                                    var _a;
+                                    return __generator(this, function (_b) {
+                                        switch (_b.label) {
+                                            case 0:
+                                                _a = typeof plugin;
+                                                switch (_a) {
+                                                    case 'function': return [3 /*break*/, 1];
+                                                    case 'string': return [3 /*break*/, 2];
+                                                }
+                                                return [3 /*break*/, 4];
+                                            case 1: return [2 /*return*/, [plugin, plugin.name,]];
+                                            case 2: return [4 /*yield*/, loadPlugin(plugin, baseUrl)];
+                                            case 3: return [2 /*return*/, [_b.sent(), plugin]];
+                                            case 4: throw new Error("Unknown type for plugin: ".concat(typeof plugin));
+                                        }
+                                    });
+                                }); })()];
                             case 1:
-                                construct = _a.sent();
-                                return [2 /*return*/, construct(config, plugin.options)];
+                                _a = _b.sent(), construct = _a[0], name = _a[1];
+                                return [2 /*return*/, construct(config, name && options ? options[name] : options)];
                         }
                     });
                 }); }))
