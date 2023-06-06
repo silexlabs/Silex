@@ -2,6 +2,12 @@
 
 Environment agnostic (node.js and browser) open architecture (plugin system) inspired by 11ty.dev config
 
+## In a nutshell
+
+Plugins can be added as a function or loaded from absolute path, relative path or URL
+
+A plugin takes a Config object and returns an object which will be merged into the initial Config object. The config object emits events and has a method `addPlugin` to attach other plugins from a plugin on specific events.
+
 ## How it works
 
 1. Install with `npm i @silexlabs/silex-plugins`
@@ -14,8 +20,11 @@ In your app
 ```js
 import config from '@silexlabs/silex-plugins'
 
+// Create a config instance
+const userConfig = config()
+
 // Add a first plugin which is the main config
-const userConfig = config().addPlugin('.myapp.js')
+userConfig.addPlugin('.myapp.js')
 
 // Notify plugins of important events
 userConfig.emit('ready')
@@ -37,8 +46,37 @@ export default (config) => {
 ```js
 export default (config, options) => {
   config.on('ready', () => `do something else with ${ options.text }`)
+
   return {
     defaultOption: 'override config',
   }
 }
+```
+
+Other ways to add plugins:
+
+```js
+// Add a multiple plugins at once
+// Path or URL
+config.addPugin([
+  'https://unpkg.com/some-plugin',
+  'node_modules/some-plugin',
+  '.myappconfig',
+  function namedFunction(config, options) {
+    return {
+      text: 'returns some options to merge into the config',
+      other: `this is the ${options} object`,
+    }
+  },
+  (config, options) => ({
+    text: 'returns some options to merge into the config',
+    other: `this is the ${options} object`,
+  }),
+], {
+  'https://unpkg.com/some-plugin': {},
+  'node_modules/some-plugin': {},
+  '.myappconfig': {},
+  'namedFunction': {},
+})
+
 ```

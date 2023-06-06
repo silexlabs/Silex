@@ -1,11 +1,9 @@
 import { Config, } from './config'
+
 /**
- * Plugin struct
+ * Plugin type
  */
-export interface Plugin {
-  require: string,
-  options: object,
-}
+export type Plugin = (config: Config) => Config | string
 
 /**
  *
@@ -13,12 +11,18 @@ export interface Plugin {
  * @param plugins The plugins to load
  * @returns Merged results objects
  */
-export async function loadPlugins(config: Config, plugins: Plugin[] | ((config: Config) => Config)[], baseUrl: string = null): Promise<Config> {
+export async function loadPlugins(config: Config, plugins: Plugin[], options: object, baseUrl: string = null): Promise<Config> {
   return Promise.all<Config>(plugins
     // Load plugins
-    .map(async (plugin: Plugin | ((config: Config) => Config)) => {
-      const construct = typeof plugin === 'function' ? plugin : await loadPlugin<(config: Config, options: object) => Promise<Config>>(plugin.require, baseUrl)
-      return construct(config, (plugin as Plugin)?.options) as Promise<Config>
+    .map(async (plugin: Plugin) => {
+      const [construct, name,] = await ( async () => {
+        switch(typeof plugin) {
+        case 'function': return [plugin as (config: Config) => Config, plugin.name as string,]
+        case 'string': return [await loadPlugin<(config: Config, options: object) => Promise<Config>>(plugin, baseUrl), plugin as string,]
+        default: throw new Error(`Unknown type for plugin: ${typeof plugin}`)
+        }
+      })()
+      return construct(config, name && options ? options[name] : options) as Promise<Config>
     }))
     // Merge the results
     .then((results: Config[]): Config => {
