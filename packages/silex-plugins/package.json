@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/silex-plugins",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Open architecture for Silex plugins",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
