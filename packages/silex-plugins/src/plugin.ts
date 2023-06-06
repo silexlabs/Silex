@@ -15,7 +15,6 @@ export async function loadPlugins(config: Config, plugins: Plugin[], options: ob
   return Promise.all<Config>(plugins
     // Load plugins
     .map(async (plugin: Plugin) => {
-      console.log('Loading plugin', plugin)
       const [construct, name,] = await ( async () => {
         switch(typeof plugin) {
         case 'function': return [plugin as (config: Config) => Config, plugin.name as string,]
