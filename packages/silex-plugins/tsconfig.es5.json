@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES5",
+    "declaration": false,
+    "outDir": "./dist/es5",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "lib": ["ES2020", "DOM"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+      "src/**/*.test.ts",
+      "**/node_modules",
+      "lib"
+  ]
+}

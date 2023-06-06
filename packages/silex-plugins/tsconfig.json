@@ -1,22 +1,17 @@
 {
-    "compilerOptions": {
-        "target": "es5",
-        "module": "ESNext",
-        "lib": [
-            "es5"
-        ],
-        "strict": false,
-        "esModuleInterop": true,
-        "moduleResolution": "nodenext",
-        "outDir": "dist",
-        "declaration": true,
-    },
-    "include": [
-        "src/**/*.ts",
-    ],
-    "exclude": [
-        "src/**/*.test.ts",
-        "**/node_modules",
-        "lib"
-    ]
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES5",
+    "lib": ["ES2020", "DOM"],
+    "declaration": true,
+    "outDir": "./dist/es6",
+    "esModuleInterop": true,
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/**/*.test.ts",
+    "**/node_modules",
+    "lib"
+  ]
 }

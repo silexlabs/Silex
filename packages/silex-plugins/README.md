@@ -1,6 +1,6 @@
 # Silex plugins
 
-Environment agnostic (node.js and browser) open architecture (plugin system) inspired by 11ty.dev config
+Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config
 
 ## In a nutshell
 
