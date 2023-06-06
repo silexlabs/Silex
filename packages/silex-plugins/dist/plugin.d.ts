@@ -2,7 +2,7 @@ import { Config } from './config';
 /**
  * Plugin type
  */
-export type Plugin = (config: Config) => Config | string;
+export type Plugin = ((config: Config) => Config) | string;
 /**
  *
  * @param config The initial config object
