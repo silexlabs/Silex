@@ -27,7 +27,6 @@ module.exports = async function(config, opts = {}) {
   const { assetsDir, assetUrl, init, writeData, readData } = require(backend)
 
   config.on('silex:startup:start', ({app}) => {
-    // const backwardCompat = new BackwardCompat(rootUrl)
     const router = Router()
 
     // website specials

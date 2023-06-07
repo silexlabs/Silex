@@ -87,6 +87,7 @@ export function getEditorConfig(id: string, rootUrl: string) {
 
     storageManager: {
       autoload: true,
+      type: 'remote',
       options: {
         remote: {
           urlStore: `${rootUrl}/website/?id=${id}`,
