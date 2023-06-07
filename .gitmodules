@@ -43,3 +43,6 @@
 [submodule "packages/silex-plugins"]
 	path = packages/silex-plugins
 	url = git@github.com:silexlabs/silex-plugins.git
+[submodule "packages/silex-dashboard"]
+	path = packages/silex-dashboard
+	url = git@github.com:silexlabs/silex-dashboard.git
