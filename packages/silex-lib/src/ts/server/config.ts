@@ -46,8 +46,8 @@ export default async function(): Promise<ServerConfig> {
     }
   }
   // Optional config file
-  if (process.env.CONFIG_FILE) {
-    const userConfigPath: Plugin = process.env.CONFIG_FILE
+  if (process.env.CONFIG) {
+    const userConfigPath: Plugin = process.env.CONFIG
     console.log('Loading user config', userConfigPath)
     try {
       // Initiate the process with the config file which is just another plugin
