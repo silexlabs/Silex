@@ -67,4 +67,3 @@ module.exports = async function(config, opts = {}) {
     app.use(noCache,  router)
   })
 }
-

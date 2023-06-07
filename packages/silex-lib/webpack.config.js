@@ -3,8 +3,6 @@ const webpack = require("webpack")
 
 module.exports = {
   entry: './src/ts/client/expose.ts',
-  //devtool: 'inline-source-map',
-  // devtool: 'source-map',
   mode: 'production',
   module: {
     rules: [
@@ -25,7 +23,7 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       VERSION: JSON.stringify(require("./package.json").version),
-      DIRECTUS_URL: JSON.stringify(process.env.DIRECTUS_URL),
+      CONFIG_URL: process.env.CONFIG_URL && JSON.stringify(process.env.CONFIG_URL),
     }),
   ]
 };

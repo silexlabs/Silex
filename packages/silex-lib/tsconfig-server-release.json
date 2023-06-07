@@ -1,12 +1,13 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "dist/",
+    "outDir": "dist/server/",
     "target": "esnext",
     "watch": false,
     "sourceMap": false,
     "module": "commonjs",
     "removeComments": true,
+    "esModuleInterop": true, /* for import 'Events' in silex-plugins */
     "typeRoots": [
       "src/ts/types",
       "node_modules/@types"

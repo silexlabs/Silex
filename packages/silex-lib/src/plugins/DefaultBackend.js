@@ -2,7 +2,7 @@ const { readFile, writeFile, mkdir, copyFile } = require('node:fs/promises')
 const { join, dirname, basename } = require('path')
 const { homedir } = require('os')
 
-const { URLRewriter, URLTranslator } = require('cssurl')
+//const { URLRewriter, URLTranslator } = require('cssurl')
 
 async function mkdirIfNotExists(path, options = null) {
   try {

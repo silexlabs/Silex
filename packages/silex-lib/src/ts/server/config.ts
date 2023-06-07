@@ -7,77 +7,56 @@
  * @class default config for Silex server
  */
 
-import { InstanceConfig, Plugin, PluginType } from '../types'
-import { EventEmitter } from 'events'
+import { Config, Plugin } from '@silexlabs/silex-plugins'
 import { resolve } from 'path'
 
 /**
  * Config types definitions
  */
-export class Config extends EventEmitter {
-  debug: boolean
-  port: string
-  url: string
-  apiPath: string
-  _plugins: any[]
-  _pluginsData: Plugin[] = []
-  async addPlugin(plugin: Plugin) {
-    // After plugins loading
-    if(this._plugins) this._plugins.push(await initPlugins(this, [].concat(plugin as any)))
-    // In any case add the plugin data
-    this._pluginsData = this._pluginsData.concat(plugin)
+export class ServerConfig extends Config {
+  constructor(
+      public url: string,
+      public debug: boolean,
+      public port: string,
+      public apiPath: string
+    ) {
+      super()
   }
-}
-
-async function initPlugins(config: Config, plugins: Plugin[]) {
-  return Promise.all(plugins.map(async (plugin: Plugin, idx) => {
-    console.info(`Init plugin ${plugin.require}`, plugin.options)
-    const construct = await importDefault<(config: Config, options: any) => Promise<void>>(plugin.require)
-    return construct(config, plugin.options)
-  }))
-}
-
-async function importDefault<T>(location: string): Promise<T> {
-  const path = location.match(/http:\/\/|https:\/\//i) ? location : resolve(process.cwd(), location)
-  const imported = await import(path)
-  const result = imported?.default ?? imported
-  return result
 }
 
 // Get config async function
-export default async function(): Promise<Config> {
+export default async function(): Promise<ServerConfig> {
   const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
   const debug = process.env.SILEX_DEBUG === 'true'
-  const maxListeners = process.env.SILEX_MAX_LISTENERS ? parseInt(process.env.SILEX_MAX_LISTENERS) : 50
 
-  const config = new Config()
-  config.setMaxListeners(maxListeners)
-  config.port = port
-  config.debug = debug
-  config.url = process.env.SERVER_URL || `http://localhost:${port}`
-  config.apiPath = '/api'
+  const url = process.env.SERVER_URL || `http://localhost:${port}`
+  const config = new ServerConfig(url, debug, port, '/api')
 
-  // Handle optional config file in project root folder
-  const configFile = process.env.CONFIG_FILE ?? '.silex.js'
+  // Config file in root folder
+  const configFilePath: Plugin = resolve(__dirname, '../../.silex.js')
+  console.log('Loading config', configFilePath)
   try {
-    console.info('Init config', configFile)
-    const configDefault = await importDefault<(config: Config) => Promise<InstanceConfig>>(configFile)
-    await configDefault(config)
+    // Initiate the process with the config file which is just another plugin
+    await config.addPlugin(configFilePath, {})
   } catch(e) {
     if(e.code === 'MODULE_NOT_FOUND') {
-      console.info('No config found', configFile)
+      console.info('No config found', configFilePath)
     } else {
-      throw new Error(`Error in config file ${configFile}: ` + e.message)
+      throw new Error(`Error in config file ${configFilePath}: ${e.message}`)
+    }
+  }
+  // Optional config file
+  if (process.env.CONFIG_FILE) {
+    const userConfigPath: Plugin = process.env.CONFIG_FILE
+    console.log('Loading user config', userConfigPath)
+    try {
+      // Initiate the process with the config file which is just another plugin
+      await config.addPlugin(userConfigPath, {})
+    } catch (e) {
+      throw new Error(`User config file ${userConfigPath} not found: ${e.message}`)
     }
   }
 
-  // Add default plugins first
-  // config._pluginsData = [
-  // ].concat(config._pluginsData)
-
-  // Instanciate plugins
-  config._plugins = await initPlugins(config, config._pluginsData)
-
-  // Config is ready
+  // Return the config file
   return config
 }
