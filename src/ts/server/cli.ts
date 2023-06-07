@@ -5,6 +5,7 @@ import { parse } from 'cli'
 const options = parse({
   config: [ 'c', 'Path for the server side config file to load at startup', 'file'],
   port: [ 'p', 'Port to listen to', 'int'],
+  debug: [false, 'Debug mode, with live reload, source maps etc.', 'true'],
   'ssl-port': [ false, 'Port to listen to for SSL/HTTPS', 'int'],
   'force-https': [ false, 'Force HTTPS', 'true'],
   'ssl-private-key': [ false, 'Path to private key for SSL', 'file'],
@@ -15,6 +16,7 @@ const options = parse({
 
 if(options.config) process.env.CONFIG = options.config
 if(options.port) process.env.PORT = options.port
+if(options.debug) process.env.SILEX_DEBUG = options.debug
 if(options['ssl-port']) process.env.SSL_PORT = options['ssl-port']
 if(options['force-https']) process.env.SILEX_FORCE_HTTPS = options['force-https']
 if(options['ssl-private-key']) process.env.SILEX_SSL_PRIVATE_KEY = options['ssl-private-key']
