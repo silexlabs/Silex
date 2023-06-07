@@ -141,18 +141,18 @@ export const templatePlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
       if(!c.has('tmpHtml')) c.set('tmpHtml', toHTML)
       // Override the method
       c.toHTML = () => {
-        return `
-          ${ before }
-          ${ c.get('tagName') ? `<${c.get('tagName')}
+        return `${
+            before
+          }${ c.get('tagName') ? `<${c.get('tagName')}
             ${Object.entries(c.get('attributes')).map(([key, value]) => makeAttribute(key, value)).join(' ')}
             ${classes.length || classname ? `class="${classes.join(' ')} ${classname}"` : ''}
             ${attributes}
             ${style ? `style="${style}"` : ''}
-            >` : '' }
-            ${replace || c.getInnerHTML()}
-          ${ c.get('tagName') ? `</${c.get('tagName')}>` : '' }
-          ${ after }
-        `
+            >` : '' }${
+              replace || c.getInnerHTML()
+            }${ c.get('tagName') ? `</${c.get('tagName')}>` : '' }${
+              after
+            }`
       }
     })
   })

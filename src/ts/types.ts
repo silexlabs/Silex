@@ -2,35 +2,6 @@
  * @fileoverview define types for Silex client and server
  */
 
-/**
- * Plugins types
- */
-export enum PluginType {
-  SERVER = 'SERVER',
-  CLIENT_DASHBOARD = 'CLIENT_DASHBOARD',
-  CLIENT_DESIGNER = 'CLIENT_DESIGNER',
-  CLIENT_LOGIN = 'CLIENT_LOGIN',
-}
-
-/**
- * Plugin struct
- */
-export interface Plugin {
-  type: PluginType[],
-  require: string,
-  active: boolean,
-  hidden: boolean,
-  options: Object,
-}
-
-/**
- * Client and/or server config
- * This is what is loaded
- */
-export interface InstanceConfig {
-  plugins: Plugin[],
-}
-
 export const WEBSITE_CONTEXT_RUNTIME_CLASS_NAME = 'silex-runtime'
 export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
 

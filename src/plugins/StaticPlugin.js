@@ -5,8 +5,6 @@ const { withCache } = require('./Cache')
 
 const Path = require('path')
 
-const rootPath = Path.join(__dirname, '../..')
-
 // type StaticOptions = {
 //   routes?: {
 //     path?: string
@@ -18,6 +16,7 @@ const rootPath = Path.join(__dirname, '../..')
 module.exports = async function(config, opts = {}) {
   // Options with defaults
   const options = {
+    rootPath: Path.join(__dirname, '../..'),
     routes: [
       {
         route: '/',
@@ -28,10 +27,10 @@ module.exports = async function(config, opts = {}) {
       },
     ]
     // add project route for source maps
-      .concat(config.debug ? [{
-        route: '/',
-        path: './',
-      }] : []),
+    .concat(config.debug ? [{
+      route: '/',
+      path: './',
+    }] : []),
     ...opts,
   }
 
@@ -40,7 +39,7 @@ module.exports = async function(config, opts = {}) {
     options.routes
       .forEach(folder => {
         // either the module root folder or silex root folder
-        const path = Path.join(rootPath, folder.path || '')
+        const path = Path.join(options.rootPath, folder.path || '')
         if (!folder.route) throw new Error('The config for static module has no `route` attribute: ' + folder)
         router.use(folder.route, serveStatic(path))
       })

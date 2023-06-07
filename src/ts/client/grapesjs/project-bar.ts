@@ -1,11 +1,9 @@
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 import {html, render} from 'lit-html'
 
-const name = 'project-bar'
 const panelId = 'project-bar-panel'
 const containerPanelId = 'project-bar-container'
 
-export const projectBarPlugin = grapesjs.plugins.add(name, (editor, opts) => {
+export const projectBarPlugin = (editor, opts) => {
   // create the panels container for all panels in grapesjs
   const containerPanel = editor.Panels.addPanel({
     id: containerPanelId,
@@ -91,4 +89,4 @@ export const projectBarPlugin = grapesjs.plugins.add(name, (editor, opts) => {
   editor.on('load device:select page', () => {
     updateSqueez()
   })
-})
+}
