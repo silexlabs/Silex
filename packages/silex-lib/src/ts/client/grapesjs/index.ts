@@ -15,7 +15,7 @@ import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols/src'
-import loadingPlugin from '@silexlabs/grapesjs-loading/src'
+import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 
