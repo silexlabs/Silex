@@ -19,8 +19,8 @@ export class ServerConfig extends Config {
       public debug: boolean,
       public port: string,
       public apiPath: string
-    ) {
-      super()
+  ) {
+    super()
   }
 }
 

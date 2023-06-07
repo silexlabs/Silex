@@ -4,6 +4,6 @@
     "target": "ES2019",
     "sourceMap": true,
     "module": "esnext",
-    "esModuleInterop": true
+    "esModuleInterop": true,
   }
 }
