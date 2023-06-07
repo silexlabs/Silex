@@ -11,6 +11,7 @@
   "bin": {
     "silex": "./dist/server/cli.js"
   },
+  "files": ["src", "dist", "public", ".silex.js"],
   "license": "GPL-3.0",
   "engines": {
     "node": ">=12"
