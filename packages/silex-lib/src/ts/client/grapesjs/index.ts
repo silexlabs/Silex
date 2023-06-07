@@ -85,6 +85,10 @@ export function getEditorConfig(id: string, rootUrl: string) {
       appendTo: '.block-manager-container',
     },
 
+    assetManager: {
+      upload: `${rootUrl}/assets/`,
+    },
+
     storageManager: {
       autoload: true,
       type: 'remote',
