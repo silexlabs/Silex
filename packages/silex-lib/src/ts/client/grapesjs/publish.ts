@@ -8,7 +8,7 @@ import { onAll } from '../utils'
 const pluginName = 'publish'
 export const cmdPublish = 'publish-open-dialog'
 let _token = null
-let projectId
+let id
 let rootUrl
 
 // plugin code
@@ -19,7 +19,7 @@ export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => 
   }
   // Global config
   rootUrl = opts.rootUrl
-  projectId = opts.projectId
+  id = opts.id
   // Keep track of the token
   editor.on('login:success', async ({ getUser, getToken }) => {
     _token = await getToken()
@@ -248,7 +248,7 @@ export async function startPublication(editor) {
     ...projectData,
     settings: siteSettings,
     publication: publicationSettings,
-    projectId,
+    id,
     files,
   }
   // Reset asset URLs

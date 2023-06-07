@@ -28,9 +28,9 @@ module.exports = async function(config, opts = {}) {
     router.post('/publish', async function(req, res) {
       const { pages, files, id } = req.body.data
       if (!pages || !id) {
-        console.error('Error in the request, pages and id parmas required', {id})
+        console.error('Error in the request, pages and id params required', {id})
         res.status(400).send({
-          message: 'Error in the request, pages and id parmas required',
+          message: 'Error in the request, pages and id params required',
         })
       } else {
         // Optim
@@ -46,7 +46,7 @@ module.exports = async function(config, opts = {}) {
           }).trim()
         })
         // Publication
-        await config.emit(EVENT_PUBLISH_START, { id, files, req})
+        await config.emit('silex:publish:start', { id, files, req})
         let url
         try {
           url = await publish(id, files, req.body.data)
@@ -56,7 +56,7 @@ module.exports = async function(config, opts = {}) {
           return
         }
         const mutable = { id, files, req, res, url, statusUrl: options.statusUrl }
-        await config.emit(EVENT_PUBLISH_END, mutable)
+        await config.emit('silex:publish:end', mutable)
         res.json({
           url: mutable.url,
           statusUrl: mutable.statusUrl,
