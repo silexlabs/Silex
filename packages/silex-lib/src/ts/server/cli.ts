@@ -5,12 +5,12 @@ import { parse } from 'cli'
 const options = parse({
   config: [ 'c', 'Path for the server side config file to load at startup', 'file'],
   port: [ 'p', 'Port to listen to', 'int'],
-  debug: [false, 'Debug mode, with live reload, source maps etc.', 'true'],
+  debug: [false, 'Debug mode, with live reload, source maps etc.', 'boolean'],
   'ssl-port': [ false, 'Port to listen to for SSL/HTTPS', 'int'],
-  'force-https': [ false, 'Force HTTPS', 'true'],
+  'force-https': [ false, 'Force HTTPS', 'boolean'],
   'ssl-private-key': [ false, 'Path to private key for SSL', 'file'],
   'ssl-certificate': [ false, 'Path to SSL certificate', 'file'],
-  'force-https-trust-xfp-header': [ false, 'Sets the trustXFPHeader param of the express module "cookie-session". Use only with --force-https', 'true'],
+  'force-https-trust-xfp-header': [ false, 'Sets the trustXFPHeader param of the express module "cookie-session". Use only with --force-https', 'boolean'],
   'session-secret': ['s', 'Session secret', 'string'],
 }, {})
 
