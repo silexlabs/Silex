@@ -60,20 +60,19 @@ beforeEach(() => {
 test('init', () => {
   expect(editor.getComponents()).toHaveLength(pageMain.component.components.length)
 })
-// test('rename page and rewrite links in current page', () => {
-//  const page = editor.Pages.getSelected()
-//  expect(page.id).toBe(pageMain.id)
-//  expect(page.getName()).toBeUndefined()
-//  const newName = 'Home page'
-//  const newPath = './home-page.html'
-//  // Do not work: page.setName(newName)
-//  page.set('name', newName)
-//  expect(page.getName()).toBe(newName)
-//  const comp1Model = page.getMainComponent().components().find(c => c.attributes.content === comp1.content)
-//  expect(comp1Model).toBeTruthy()
-//  expect(comp1Model.attributes.attributes.href).toBe(newPath)
-// })
-
+test('rename page and rewrite links in current page', () => {
+  const page = editor.Pages.getSelected()
+  expect(page.id).toBe(pageMain.id)
+  expect(page.getName()).toBeUndefined()
+  const newName = 'Home page'
+  const newPath = './home-page.html'
+  // Do not work: page.setName(newName)
+  page.set('name', newName)
+  expect(page.getName()).toBe(newName)
+  const comp1Model = page.getMainComponent().components().find(c => c.attributes.content === comp1.content)
+  expect(comp1Model).toBeTruthy()
+  expect(comp1Model.attributes.attributes.href).toBe(newPath)
+})
 test('rename page and rewrite links in another page', () => {
   const page = editor.Pages.get(page2.id)
   expect(page.get('name')).toBe(page2.name)

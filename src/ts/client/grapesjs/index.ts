@@ -224,11 +224,11 @@ export function initEditor(config: EditorConfig) {
   editor.Blocks.render()
 
   editor.Commands.add('gjs-open-import-webpage', openImport(editor, {
-      modalImportLabel: '',
-      modalImportContent: 'Paste a web page HTML code here.',
-      modalImportButton: 'Import',
-      modalImportTitle: 'Import from website',
-    }))
+    modalImportLabel: '',
+    modalImportContent: 'Paste a web page HTML code here.',
+    modalImportButton: 'Import',
+    modalImportTitle: 'Import from website',
+  }))
 
   editor.on('load', () => {
     // // move the options panel to the sidebar

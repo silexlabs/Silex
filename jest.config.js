@@ -1,11 +1,10 @@
-/** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'jsdom',
+  "testMatch": ['<rootDir>/**/*.test.ts'],
+  "testEnvironment": 'jsdom',
   "extensionsToTreatAsEsm": [".ts"],
-  "globals": {
-    "ts-jest": {
-      "useESM": true
-    }
+  "transform": {
+    ".ts": ['ts-jest', {
+      "useESM": true,
+    }],
   },
 };
