@@ -1,3 +1,5 @@
+#!/usr/bin/node
+
 import { parse } from 'cli'
 
 const options = parse({
@@ -20,4 +22,4 @@ if(options['ssl-certificate']) process.env.SILEX_SSL_CERTIFICATE = options['ssl-
 if(options['force-https-trust-xfp-header']) process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER = options['force-https-trust-xfp-header']
 if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
 
-import('./index')
+import './index'
