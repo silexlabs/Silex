@@ -4,7 +4,7 @@
 
 ## About Silex, live web creation.
 
-| :fire:        Developers can test silex v3 with `npx silex-website-builder`   |
+| :fire:        Developers can test silex v3 with `npx @silexlabs/silex`   |
 |-------------------------------------------------------------------------------|
 
 Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.

@@ -8,9 +8,7 @@
     "url": "https://lexoyo.me/"
   },
   "main": "dist/server/index.js",
-  "bin": {
-    "silex": "./dist/server/cli.js"
-  },
+  "bin": "./dist/server/cli.js",
   "license": "GPL-3.0",
   "engines": {
     "node": ">=12"
