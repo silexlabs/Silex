@@ -40,12 +40,8 @@ $ npm start OR yarn start
 Useful commands
 
 * Start Silex: `npm start` (or use `npm run start:debug`)
-* Release a package (which is in $FOLDER) and bump version of a library and all its dependents: `scripts/release-version $FOLDER $VERSION`, then you probably want to `git push --follow-tags` the changed packages
-* Add a project:
-
-  1. `git submodules add $GIT_URL $FOLDER`
-  2. add $FOLDER to the `packages` array of `package.json`
-
+* Release a package (which is in packages/$PACKAGE_NAME) and bump version of a library and all its dependents: `scripts/release-version packages/$PACKAGE_NAME $VERSION`, then you probably want to `git push --follow-tags` the changed packages
+* Add a project: `git submodules add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`
 
 ## Third party dependencies
 

@@ -29,6 +29,9 @@
     "packages/silex-desktop",
     "packages/node_modules-path"
   ],
+  "xworkspaces": [
+    "packages/**/*"
+  ],
   "workspaces": [
     "packages/grapesjs",
     "packages/grapesjs-symbols",
@@ -39,6 +42,7 @@
     "packages/grapesjs-directus-storage",
     "packages/grapesjs-loading",
     "packages/silex-plugins",
+    "packages/silex-dashboard",
     "packages/Silex"
   ]
 }
