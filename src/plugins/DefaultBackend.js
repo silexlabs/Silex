@@ -1,4 +1,4 @@
-const { readFile, writeFile, mkdir, copyFile } = require('node:fs/promises')
+const { readFile, writeFile, mkdir, copyFile, readdir } = require('node:fs/promises')
 const { join, dirname, basename } = require('path')
 const { homedir } = require('os')
 
@@ -20,8 +20,6 @@ async function mkdirIfNotExists(path, options = null) {
 const FS_ROOT = process.env.FS_ROOT || join(homedir(), '.silex')
 const ASSETS_PATH = 'assets'
 const ASSETS_URL = 'assets'
-const HTML_PATH = ''
-const CSS_PATH = ''
 const DATA_FILE_NAME = '/.silex.data.json'
 const PUBLICATION_PATH = 'publication'
 
@@ -45,9 +43,18 @@ exports.init = async function (id) {
   await mkdirIfNotExists(uploadDir, { recursive: true, })
 }
 
+// List projects
+exports.list = async function () {
+  const ids = await readdir(FS_ROOT)
+  return Promise.all(ids.map(async id => ({
+    id,
+    ...await exports.readData(id),
+  })))
+}
 // Read project data
 exports.readData = async function (id) {
-  return readFile(path(id) + DATA_FILE_NAME)
+  const data = await readFile(path(id) + DATA_FILE_NAME)
+  return JSON.parse(data.toString())
 }
 // Write project data
 exports.writeData = async function (id, data) {
