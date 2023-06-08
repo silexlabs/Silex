@@ -24,7 +24,7 @@ module.exports = async function(config, opts = {}) {
 
   // Link to the desired backend
   const backend = resolve(__dirname, '../..', options.backend)
-  const { assetsDir, assetUrl, init, writeData, readData } = require(backend)
+  const { assetsDir, assetUrl, init, writeData, readData, list } = require(backend)
 
   config.on('silex:startup:start', ({app}) => {
     const router = Router()
@@ -39,21 +39,37 @@ module.exports = async function(config, opts = {}) {
   })
 
   async function readWebsite(req, res) {
-    const id = req.query.id
-    config.emit(EVENT_READ_START, { req, id })
-    try {
-      const data = await readData(id)
-      config.emit(EVENT_READ_END, { req, res, data, id })
-      res
-        .type('application/json')
-        .send(data)
-    } catch (err) {
-      if(err.code === 'ENOENT') {
-        console.error('Read file error, website does not exist', err)
-        res.status(404).json({ message: 'Read file error, website does not exist: ' + err.message, code: err.code})
-      } else {
-        console.error('Read file error', err)
-        res.status(400).json({ message: 'Read file error: ' + err.message, code: err.code})
+    const { id } = req.query
+    if(id) {
+      // Returns a website data
+      try {
+        config.emit(EVENT_READ_START, { req, id })
+        const data = await readData(id)
+        config.emit(EVENT_READ_END, { req, res, data, id })
+        res
+          .type('application/json')
+          .send(data)
+      } catch (err) {
+        if(err.code === 'ENOENT') {
+          console.error('Read file error, website does not exist', err)
+          res.status(404).json({ message: 'Read file error, website does not exist: ' + err.message, code: err.code})
+        } else {
+          console.error('Read file error', err)
+          res.status(400).json({ message: err.message, code: err.code})
+        }
+      }
+    } else {
+      // list websites
+      try {
+        config.emit(EVENT_READ_START, { req, id })
+        const data = await list()
+        config.emit(EVENT_READ_END, { req, res, data, id })
+        res
+          .type('application/json')
+          .send(data)
+      } catch (err) {
+        console.error('List sites error', err)
+        res.status(400).json({ message: err.message, code: err.code })
       }
     }
   }
@@ -79,8 +95,6 @@ module.exports = async function(config, opts = {}) {
 
   async function writeWebsite(req, res) {
     const id = req.query.id
-    await init(id)
-
     const [data, err] = fromBody(req.body)
     if(err) {
       res.status(400).json({ message: 'Error writing data file, could not parse the provided body: ' + err.message, code: err.code})
@@ -88,6 +102,7 @@ module.exports = async function(config, opts = {}) {
     }
     config.emit(EVENT_WRITE_START, { req, id, data })
     try {
+      await init(id)
       await writeData(id, data)
     } catch (err) {
       console.error('Error writing data file', err)
