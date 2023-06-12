@@ -56,18 +56,21 @@ export default (config, options) => {
 Other ways to add plugins:
 
 ```js
+// Define a function
+// The return value will be merged in the config object
+function namedFunction(config, options) {
+  return {
+    text: 'returns some options to merge into the config',
+    other: `this is the ${options} object`,
+  }
+}
 // Add a multiple plugins at once
 // Path or URL
 config.addPugin([
   'https://unpkg.com/some-plugin',
   'node_modules/some-plugin',
   '.myappconfig',
-  function namedFunction(config, options) {
-    return {
-      text: 'returns some options to merge into the config',
-      other: `this is the ${options} object`,
-    }
-  },
+  namedFunction,
   (config, options) => ({
     text: 'returns some options to merge into the config',
     other: `this is the ${options} object`,
@@ -76,7 +79,7 @@ config.addPugin([
   'https://unpkg.com/some-plugin': {},
   'node_modules/some-plugin': {},
   '.myappconfig': {},
-  'namedFunction': {},
+  [namedFunction]: {},
 })
 
 ```
