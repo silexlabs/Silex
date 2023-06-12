@@ -61,8 +61,9 @@ export function loadPlugins(config, plugins, options, baseUrl) {
                     .map(function (plugin) { return __awaiter(_this, void 0, void 0, function () {
                     var _a, construct, name;
                     var _this = this;
-                    return __generator(this, function (_b) {
-                        switch (_b.label) {
+                    var _b;
+                    return __generator(this, function (_c) {
+                        switch (_c.label) {
                             case 0: return [4 /*yield*/, (function () { return __awaiter(_this, void 0, void 0, function () {
                                     var _a;
                                     return __generator(this, function (_b) {
@@ -74,7 +75,7 @@ export function loadPlugins(config, plugins, options, baseUrl) {
                                                     case 'string': return [3 /*break*/, 2];
                                                 }
                                                 return [3 /*break*/, 4];
-                                            case 1: return [2 /*return*/, [plugin, plugin.name,]];
+                                            case 1: return [2 /*return*/, [plugin, plugin.toString(),]];
                                             case 2: return [4 /*yield*/, loadPlugin(plugin, baseUrl)];
                                             case 3: return [2 /*return*/, [_b.sent(), plugin]];
                                             case 4: throw new Error("Unknown type for plugin: ".concat(typeof plugin));
@@ -82,8 +83,8 @@ export function loadPlugins(config, plugins, options, baseUrl) {
                                     });
                                 }); })()];
                             case 1:
-                                _a = _b.sent(), construct = _a[0], name = _a[1];
-                                return [2 /*return*/, construct(config, name && options ? options[name] : options)];
+                                _a = _c.sent(), construct = _a[0], name = _a[1];
+                                return [2 /*return*/, construct(config, name && options ? (_b = options[name]) !== null && _b !== void 0 ? _b : options : options)];
                         }
                     });
                 }); }))
