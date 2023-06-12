@@ -12,7 +12,7 @@ describe('Plugins test', () => {
   })
   test('Load 1 plugin with just its options', async () => {
     const plugin = jest.fn().mockResolvedValue(TEST_VALUE)
-    const option = {test: "option directly in the option object"}
+    const option = {test: 'option directly in the option object',}
     const result = await loadPlugins(FAKE_CONFIG, [plugin,], option)
     expect(result).toEqual(TEST_VALUE)
     expect(plugin.mock.calls).toHaveLength(1)
@@ -28,7 +28,7 @@ describe('Plugins test', () => {
   test('Test add a function plugin', async () => {
     const option = {}
     const plugin = jest.fn().mockResolvedValue(TEST_VALUE)
-    const result = await loadPlugins(FAKE_CONFIG, [plugin], {[plugin.toString()]: option})
+    const result = await loadPlugins(FAKE_CONFIG, [plugin,], {[plugin.toString()]: option,})
     // Check that the config includes the plugin result
     expect(result).toEqual(TEST_VALUE)
 
