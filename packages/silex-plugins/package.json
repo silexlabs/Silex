@@ -10,8 +10,7 @@
     "src"
   ],
   "scripts": {
-    "preversion": "$npm_execpath run prepare",
-    "prepare": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
+    "preversion": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "watch": "$npm_execpath test -- --watch",
     "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json",
     "lint": "eslint src",
