@@ -14,6 +14,8 @@ A plugin takes a Config object and returns an object which will be merged into t
 1. Use in your app to add a plugin system
 1. Create plugins for your app
 
+## Example
+
 In your app
 
 `app.js`
@@ -53,33 +55,53 @@ export default (config, options) => {
 }
 ```
 
-Other ways to add plugins:
+## The many ways to add a plugin from a config object
 
-```js
-// Define a function
-// The return value will be merged in the config object
-function namedFunction(config, options) {
-  return {
-    text: 'returns some options to merge into the config',
-    other: `this is the ${options} object`,
+It can be done from a plugin or your app which creates the config object
+
+1. A plugin which is just a simple function
+  ```js
+  function plugin(config, options) { console.log(options.anoption) } // This will log "a value"
+  export default(config, _) {
+    config.addPlugin(plugin, { anoption: "a value" })
   }
-}
-// Add a multiple plugins at once
-// Path or URL
-config.addPugin([
-  'https://unpkg.com/some-plugin',
-  'node_modules/some-plugin',
-  '.myappconfig',
-  namedFunction,
-  (config, options) => ({
-    text: 'returns some options to merge into the config',
-    other: `this is the ${options} object`,
-  }),
-], {
-  'https://unpkg.com/some-plugin': {},
-  'node_modules/some-plugin': {},
-  '.myappconfig': {},
-  [namedFunction]: {},
-})
-
-```
+  ```
+1. A plugin from npm
+  ```js
+  export default(config, _) {
+    config.addPlugin('https://unpkg.com/some-plugin', { anoption: "a value" })
+  }
+  ```
+1. A plugin you import yourself
+  ```js
+  import plugin from 'a-plugin'
+  export default(config, _) {
+    config.addPlugin(plugin, { anoption: "a value" })
+  }
+  ```
+1. Multiple plugins at once
+  ```js
+  // Define a function
+  // The return value will be merged in the config object
+  function namedFunction(config, options) {
+    return {
+      text: 'returns some options to merge into the config',
+      other: `this is the ${options} object`,
+    }
+  }
+  export default(config, _) {
+    // Add a multiple plugins at once
+    // Path or URL
+    config.addPugin([
+      'https://unpkg.com/some-plugin',
+      'node_modules/some-plugin',
+      '.myappconfig',
+      namedFunction,
+    ], { // Here is how to pass options to the plugins
+      'https://unpkg.com/some-plugin': {},
+      'node_modules/some-plugin': {},
+      '.myappconfig': {},
+      [namedFunction]: {},
+    })
+  }
+  ```

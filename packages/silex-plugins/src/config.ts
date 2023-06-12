@@ -16,7 +16,7 @@ export class Config extends EventEmitter {
    * @param options An object containing the plugin options or each plugin options in `options[pluginName]`
    * @returns A Config object which merges the objects returned by the plugin(s)
    */
-  public async addPlugin(plugin: Plugin, options: object) {
+  public async addPlugin(plugin: Plugin | Plugin[], options: object) {
     // Load plugin if necessary
     const result = await loadPlugins(this, [].concat(plugin), options, this.baseUrl)
     Object.assign(this, result)

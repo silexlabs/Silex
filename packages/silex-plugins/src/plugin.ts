@@ -17,12 +17,12 @@ export async function loadPlugins(config: Config, plugins: Plugin[], options: ob
     .map(async (plugin: Plugin) => {
       const [construct, name,] = await ( async () => {
         switch(typeof plugin) {
-        case 'function': return [plugin as (config: Config) => Config, plugin.name as string,]
+        case 'function': return [plugin as (config: Config) => Config, plugin.toString(),]
         case 'string': return [await loadPlugin<(config: Config, options: object) => Promise<Config>>(plugin, baseUrl), plugin as string,]
         default: throw new Error(`Unknown type for plugin: ${typeof plugin}`)
         }
       })()
-      return construct(config, name && options ? options[name] : options) as Promise<Config>
+      return construct(config, name && options ? options[name] ?? options : options) as Promise<Config>
     }))
     // Merge the results
     .then((results: Config[]): Config => {
