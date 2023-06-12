@@ -3,7 +3,7 @@ import { Config, } from './config'
 /**
  * Plugin type
  */
-export type Plugin = ((config: Config) => Config) | string
+export type Plugin = ((config: Config, options?: object) => object) | Promise<(config: Config, options?: object) => object> | string
 
 /**
  *

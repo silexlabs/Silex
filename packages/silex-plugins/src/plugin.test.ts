@@ -25,7 +25,7 @@ describe('Plugins test', () => {
     const result = await loadPlugins(FAKE_CONFIG, [plugin,], options)
     expect(result).toEqual(TEST_VALUE)
   })
-  test('Test add a function plugin', async () => {
+  test('Add a function plugin', async () => {
     const option = {}
     const plugin = jest.fn().mockResolvedValue(TEST_VALUE)
     const result = await loadPlugins(FAKE_CONFIG, [plugin,], {[plugin.toString()]: option,})
@@ -37,5 +37,21 @@ describe('Plugins test', () => {
     expect(plugin.mock.calls).toHaveLength(1)
     expect(plugin.mock.calls[0][0]).toBe(FAKE_CONFIG)
     expect(plugin.mock.calls[0][1]).toBe(option)
+  })
+  test('Assync function support', async () => {
+    const option = {}
+    async function wait(ms = 100) {
+      return new Promise(resolve => setTimeout(resolve, ms))
+    }
+    let done = false
+    async function plugin(config) {
+      await wait(100)
+      done = true
+      return TEST_VALUE
+    }
+    const promise: Promise<any> = loadPlugins(FAKE_CONFIG, [plugin,], {[plugin.toString()]: option,})
+    expect(done).toBe(false)
+    await wait(200)
+    expect(done).toBe(true)
   })
 })
