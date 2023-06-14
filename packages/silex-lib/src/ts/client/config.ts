@@ -1,12 +1,13 @@
 import { Config } from '@silexlabs/silex-plugins'
 import { getEditorConfig } from './grapesjs'
+import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 
 /**
  * @fileoverview Silex client side config
  */
 
 const id = new URL(location.href).searchParams.get('id') || 'default'
-const rootUrl = '.'
+const rootUrl = location.href
 
 export class SilexConfig extends Config {
   /**
@@ -18,4 +19,10 @@ export class SilexConfig extends Config {
    * Grapesjs config
    */
   editor = getEditorConfig(id, rootUrl)
+
+  /**
+   * Client config url
+   * This is the url of the config file which is a plugin
+   */
+  clientConfigUrl = `${rootUrl}${CLIENT_CONFIG_FILE_NAME}`
 }

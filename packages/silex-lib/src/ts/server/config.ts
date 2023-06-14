@@ -9,16 +9,19 @@
 
 import { Config, Plugin } from '@silexlabs/silex-plugins'
 import { resolve } from 'path'
+import { CLIENT_CONFIG_FILE_NAME } from '../constants'
+import { Router } from 'express'
+import { readFile } from 'fs/promises'
 
 /**
  * Config types definitions
  */
 export class ServerConfig extends Config {
   constructor(
-      public url: string,
-      public debug: boolean,
-      public port: string,
-      public apiPath: string
+    public url: string,
+    public debug: boolean,
+    public port: string,
+    public apiPath: string,
   ) {
     super()
   }
@@ -28,13 +31,14 @@ export class ServerConfig extends Config {
 export default async function(): Promise<ServerConfig> {
   const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
   const debug = process.env.SILEX_DEBUG === 'true'
+  const clientConfigPath = process.env.SILEX_CLIENT_CONFIG
 
   const url = process.env.SERVER_URL || `http://localhost:${port}`
   const config = new ServerConfig(url, debug, port, '/api')
 
   // Config file in root folder
   const configFilePath: Plugin = resolve(__dirname, '../../.silex.js')
-  console.log('Loading config', configFilePath)
+  console.log('> Loading config', configFilePath)
   try {
     // Initiate the process with the config file which is just another plugin
     await config.addPlugin(configFilePath, {})
@@ -45,16 +49,35 @@ export default async function(): Promise<ServerConfig> {
       throw new Error(`Error in config file ${configFilePath}: ${e.message}`)
     }
   }
+
   // Optional config file
   if (process.env.CONFIG) {
     const userConfigPath: Plugin = process.env.CONFIG
-    console.log('Loading user config', userConfigPath)
+    console.log('> Loading user config', userConfigPath)
     try {
       // Initiate the process with the config file which is just another plugin
       await config.addPlugin(userConfigPath, {})
     } catch (e) {
       throw new Error(`User config file ${userConfigPath} not found: ${e.message}`)
     }
+  }
+
+  // Serve the client side config file
+  if (clientConfigPath) {
+    config.on('silex:startup:start', async ({ app }) => {
+      console.log(`> Serving client side config ${clientConfigPath} at ${CLIENT_CONFIG_FILE_NAME}`)
+      // Attach the route immediately
+      const router = Router()
+      app.use(router)
+      // Load the config file and serve it
+      let clientConfig = (await readFile(clientConfigPath as string)).toString()
+      router.get(`/${CLIENT_CONFIG_FILE_NAME}`, async (res, req, next) => {
+        // Reload each time in debug mode
+        if (config.debug) clientConfig = (await readFile(clientConfigPath as string)).toString()
+        // Send the config file
+        req.header('Content-Type', 'application/javascript').send(clientConfig)
+      })
+    })
   }
 
   // Return the config file

@@ -1,5 +1,5 @@
 import getConfig from './config'
-import start  from './start'
+import start  from './express'
 
 // Main app
 async function main() {
@@ -30,7 +30,7 @@ async function startLiverReload() {
   const server = createServer({
     delay: 0,
   }, () => {
-    console.info(`\nDebug mode\nLive reload server is running.\nWatching ${dist}`)
+    console.info(`\n> Debug mode\n> Live reload server is running.\n> Watching ${dist}`)
   })
   server.watch(dist)
 }

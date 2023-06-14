@@ -23,7 +23,6 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       VERSION: JSON.stringify(require("./package.json").version),
-      CONFIG_URL: process.env.CONFIG_URL && JSON.stringify(process.env.CONFIG_URL),
     }),
   ]
 };

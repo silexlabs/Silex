@@ -86,7 +86,7 @@ export function getEditorConfig(id: string, rootUrl: string) {
     },
 
     assetManager: {
-      upload: `${rootUrl}/assets/`,
+      upload: `${rootUrl}assets/`,
     },
 
     storageManager: {
@@ -94,8 +94,8 @@ export function getEditorConfig(id: string, rootUrl: string) {
       type: 'remote',
       options: {
         remote: {
-          urlStore: `${rootUrl}/website/?id=${id}`,
-          urlLoad: `${rootUrl}/website/?id=${id}`,
+          urlStore: `${rootUrl}website/?id=${id}`,
+          urlLoad: `${rootUrl}website/?id=${id}`,
         },
       },
     },
