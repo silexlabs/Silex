@@ -60,8 +60,6 @@ plugins
     throw new Error(`Plugin ${p.name} could not be loaded correctly`)
   })
 
-export function getPlugins() { return plugins }
-
 // ////////////////////
 // Config
 // ////////////////////
