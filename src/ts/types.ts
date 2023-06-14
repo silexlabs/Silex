@@ -2,9 +2,6 @@
  * @fileoverview define types for Silex client and server
  */
 
-export const WEBSITE_CONTEXT_RUNTIME_CLASS_NAME = 'silex-runtime'
-export const WEBSITE_CONTEXT_EDITOR_CLASS_NAME = 'silex-editor'
-
 // Note: paths begin and end **without** slash
 export const defaultSettings: PublicationSettings = {
   path: 'publication',

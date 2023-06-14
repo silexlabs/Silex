@@ -1,4 +1,4 @@
-const { readFile, writeFile, mkdir, copyFile, readdir } = require('node:fs/promises')
+const { readFile, writeFile, mkdir, copyFile, readdir, stat, rm } = require('node:fs/promises')
 const { join, dirname, basename } = require('path')
 const { homedir } = require('os')
 
@@ -43,12 +43,20 @@ exports.init = async function (id) {
   await mkdirIfNotExists(uploadDir, { recursive: true, })
 }
 
+exports.del = async function (id) {
+  const folder = path(id)
+  console.log('Delete', folder)
+  await rm(folder, {recursive: true})
+  return {ok: true}
+}
+
 // List projects
 exports.list = async function () {
   const ids = await readdir(FS_ROOT)
   return Promise.all(ids.map(async id => ({
     id,
     ...await exports.readData(id),
+    stats: await stat(path(id) + DATA_FILE_NAME),
   })))
 }
 // Read project data

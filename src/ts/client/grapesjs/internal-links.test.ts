@@ -1,4 +1,5 @@
 import { internalLinksPlugin } from './internal-links'
+import { expect, test, beforeEach } from '@jest/globals'
 import grapesjs from 'grapesjs'
 
 let editor

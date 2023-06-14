@@ -2,10 +2,10 @@
   "compileOnSave": true,
   "compilerOptions": {
     "outDir": "dist/client/",
-    "target": "ES2022",
+    "target": "ESNext",
     "watch": true,
     "sourceMap": true,
-    "module": "esnext",
+    "module": "ESNext",
     "removeComments": false,
     "allowJs": true,
     "typeRoots": [

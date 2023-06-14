@@ -12,6 +12,7 @@ const options = parse({
   'ssl-certificate': [ false, 'Path to SSL certificate', 'file'],
   'force-https-trust-xfp-header': [ false, 'Sets the trustXFPHeader param of the express module "cookie-session". Use only with --force-https', 'boolean'],
   'session-secret': ['s', 'Session secret', 'string'],
+  'client-config': ['', 'Path to client config file to be served on .silex-client.js', 'string'],
 }, {})
 
 if(options.config) process.env.CONFIG = options.config
@@ -23,5 +24,6 @@ if(options['ssl-private-key']) process.env.SILEX_SSL_PRIVATE_KEY = options['ssl-
 if(options['ssl-certificate']) process.env.SILEX_SSL_CERTIFICATE = options['ssl-certificate']
 if(options['force-https-trust-xfp-header']) process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER = options['force-https-trust-xfp-header']
 if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
+if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
 
 import './index'
