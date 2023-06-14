@@ -163,7 +163,7 @@ function getLocation(urlOrPath, baseUrl) {
 function dynamicImport(path) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, Promise.resolve("".concat(path)).then(function (s) { return __importStar(require(s)); })];
+            return [2 /*return*/, Promise.resolve("".concat(/* webpackIgnore: true */ path)).then(function (s) { return __importStar(require(s)); })];
         });
     });
 }

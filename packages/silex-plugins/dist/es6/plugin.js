@@ -136,7 +136,7 @@ function getLocation(urlOrPath, baseUrl) {
 function dynamicImport(path) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, import(path)];
+            return [2 /*return*/, import(/* webpackIgnore: true */ path)];
         });
     });
 }

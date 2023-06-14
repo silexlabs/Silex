@@ -6,6 +6,7 @@
     "declaration": true,
     "outDir": "./dist/es6",
     "esModuleInterop": true,
+    "skipLibCheck": true, // This is needed to avoid errors with the `@types/node` package (Found 89 errors in the same file, starting at: ../../node_modules/@types/webpack/index.d.ts:32)
     "moduleResolution": "node"
   },
   "include": ["src/**/*.ts"],

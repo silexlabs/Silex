@@ -61,5 +61,5 @@ function getLocation(urlOrPath: string, baseUrl: string = null): string {
  * @returns The loaded module
  */
 async function dynamicImport<T>(path: string): Promise<T> {
-  return import(path)
+  return import(/* webpackIgnore: true */path)
 }
