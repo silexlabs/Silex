@@ -27,7 +27,7 @@ export async function start(options = {}) {
   }
 
   // Start grapesjs
-  initEditor(config.editor)
+  initEditor(config.editor, config.grapesJsPlugins)
 
   // End of loading
   getEditor().on('load', () => {

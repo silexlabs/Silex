@@ -1,6 +1,7 @@
 import { Config } from '@silexlabs/silex-plugins'
 import { getEditorConfig } from './grapesjs'
 import { CLIENT_CONFIG_FILE_NAME } from '../constants'
+import { Plugin } from 'grapesjs'
 
 /**
  * @fileoverview Silex client side config

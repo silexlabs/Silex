@@ -1,3 +1,7 @@
+import directusStorage from 'https://unpkg.com/@silexlabs/grapesjs-directus-storage'
+console.log('directusStorage', directusStorage, directusStorage?.default)
+
+// Use the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config to override the default config with this file
 export default async function (config, options) {
   console.log('In example config')
   //await config.addPlugin('gjs-blocks-basic', 'https://unpkg.com/grapesjs-blocks-basic', {
@@ -26,6 +30,16 @@ export default async function (config, options) {
       storageManager: {
         autoload: false,
         type: 'directus',
+      },
+      plugins: [
+        ...config.editor.plugins,
+        directusStorage,
+      ],
+      pluginsOpts: {
+        ...config.editor.pluginsOpts,
+        [directusStorage]: {
+          directusUrl: 'http://localhost:8055',
+        },
       },
     },
   }
