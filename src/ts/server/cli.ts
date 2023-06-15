@@ -28,6 +28,6 @@ if(options['force-https-trust-xfp-header']) process.env.SILEX_FORCE_HTTPS_TRUST_
 if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
 if(options['cors-url']) process.env.SILEX_CORS_URL = options['cors-url']
 if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
-if(options['fs-root']) process.env.SILEX_FS_ROOT = options['fs-root']
+if(options['fs-root']) process.env.FS_ROOT = options['fs-root']
 
 import './index'
