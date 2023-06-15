@@ -57,21 +57,9 @@ export default async function(): Promise<ServerConfig> {
     })
   }
 
-  // Config file in root folder
-  const configFilePath: Plugin = resolve(__dirname, '../../.silex.js')
-  console.log('> Loading config', configFilePath)
-  try {
-    // Initiate the process with the config file which is just another plugin
-    await config.addPlugin(configFilePath, {})
-  } catch(e) {
-    if(e.code === 'MODULE_NOT_FOUND') {
-      console.info('No config found', configFilePath)
-    } else {
-      throw new Error(`Error in config file ${configFilePath}: ${e.message}`)
-    }
-  }
-
   // Optional config file
+  // Load this config file before the main config file so that routes can be overriden
+  // Or listen for event silex:config:end to add routes after the default ones
   if (process.env.CONFIG) {
     const userConfigPath: Plugin = process.env.CONFIG
     console.log('> Loading user config', userConfigPath)
@@ -79,7 +67,24 @@ export default async function(): Promise<ServerConfig> {
       // Initiate the process with the config file which is just another plugin
       await config.addPlugin(userConfigPath, {})
     } catch (e) {
-      throw new Error(`User config file ${userConfigPath} not found: ${e.message}`)
+      throw new Error(`User config file ${userConfigPath} error: ${e.message}`)
+    }
+  }
+
+  // Config file in root folder
+  const configFilePath: Plugin = resolve(__dirname, '../../.silex.js')
+  console.log('> Loading config', configFilePath)
+  try {
+    config.emit('silex:config:start', configFilePath)
+    // Initiate the process with the config file which is just another plugin
+    await config.addPlugin(configFilePath, {})
+    config.emit('silex:config:end', config)
+  } catch(e) {
+    config.emit('silex:config:error', e)
+    if(e.code === 'MODULE_NOT_FOUND') {
+      console.info('No config found', configFilePath)
+    } else {
+      throw new Error(`Error in config file ${configFilePath}: ${e.message}`)
     }
   }
 

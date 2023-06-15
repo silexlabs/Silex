@@ -8,7 +8,7 @@ import { Plugin } from 'grapesjs'
  */
 
 const id = new URL(location.href).searchParams.get('id') || 'default'
-const rootUrl = location.href
+const rootUrl = `${location.protocol}//${location.host}${location.pathname}`
 
 export class SilexConfig extends Config {
   /**
