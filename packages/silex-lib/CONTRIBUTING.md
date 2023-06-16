@@ -1,5 +1,7 @@
 ### Overview
 
+This page is about contributing code, but other types of contribution are welcome, [let's chat](https://github.com/silexlabs/Silex/discussions)!
+
 Useful links
 
 * [Silex meta repository](https://github.com/silexlabs/silex-meta)
@@ -10,6 +12,20 @@ Useful links
 To contribute code (features, bug fixes, design changes etc.) to the Silex code base, you'll need to complete a few steps to get a local working copy of our repository. Below are the steps you'll need to fork, clone, branch, and create a pull request.
 
 Please be sure to conform to the coding standards used throughout our project and bear in mind that, by contributing to this project, you agree to our [Code of Conduct](https://github.com/silexlabs/Silex/wiki/Silex-Code-of-Conduct).
+
+## Code base overview
+
+The Silex API is primarily divided into two parts: the client-side and the server-side.
+
+### Client-side
+
+The client-side is primarily handled by the files in the `src/ts/client` directory. The main entry point is defined in `index.ts`, which initializes the Silex application. The `config.ts` file contains the `SilexConfig` class that holds the configuration for the client-side application, including the GrapesJS editor configuration and the client config URL. The `grapesjs` directory contains the GrapesJS editor configuration and plugins. The `utils.ts` file contains utility functions.
+
+### Server-side
+
+The server-side is primarily handled by the files in the `src/ts/server` directory. The main entry point is defined in `index.ts`, which initializes the server-side application. The `config.ts` file contains the `ServerConfig` class that holds the configuration for the server-side application. The `express.ts` file sets up the Express.js application and starts the server. The `cli.ts` file handles the command-line interface for the server, parsing command-line arguments and setting environment variables accordingly. The `events.ts` file defines events for the startup process.
+
+## Code contribution process
 
 ### Steps
 
