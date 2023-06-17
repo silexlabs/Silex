@@ -6,6 +6,7 @@
 
 import { SilexConfig } from './config'
 import { initEditor, getEditor } from './grapesjs/index'
+import { EVENT_STARTUP_START, EVENT_STARTUP_END } from '../events'
 
 /**
  * Start Silex, called from host HTML page with window.silex.start()
@@ -26,12 +27,25 @@ export async function start(options = {}) {
     console.warn('Silex starting in debug mode.', {config})
   }
 
+  // Notify plugins that loading is over and Silex is starting
+  config.emit(EVENT_STARTUP_START)
+
   // Start grapesjs
-  initEditor(config.editor, config.grapesJsPlugins)
+  console.log('start', {config})
+  try{
+    initEditor(config.editor, config.grapesJsPlugins)
+  } catch(e) {
+    console.error('Error starting Silex', e)
+  }
+
+  // Init internationalization module
+  getEditor().I18n.setLocale(config.lang)
 
   // End of loading
   getEditor().on('load', () => {
+    console.log('Silex started')
     document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
     document.querySelector('#gjs').classList.remove('silex-dialog-hide')
+    config.emit(EVENT_STARTUP_END)
   })
 }

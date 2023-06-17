@@ -3,6 +3,7 @@ const { resolve } = require('path')
 const formidable = require('formidable')
 
 const { noCache } = require('./Cache')
+const { defaultSite } = require('@silexlabs/silex').default.types
 
 const EVENT_READ_START = 'EVENT_READ_START'
 const EVENT_READ_END = 'EVENT_READ_END'
@@ -20,6 +21,8 @@ module.exports = async function(config, opts = {}) {
   const options = {
     // Defaults
     backend: 'src/plugins/DefaultBackend.js',
+    // Default data for new websites
+    defaultSite,
     // Options
     ...opts
   }
@@ -51,7 +54,10 @@ module.exports = async function(config, opts = {}) {
         config.emit(EVENT_READ_END, { req, res, data, id })
         res
           .type('application/json')
-          .send(data)
+          .send({
+            ...options.defaultSite,
+            ...data,
+          })
       } catch (err) {
         if(err.code === 'ENOENT') {
           console.error('Read file error, website does not exist', err)

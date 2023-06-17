@@ -282,7 +282,7 @@ export async function startPublication(editor) {
   let res
   let json
   try {
-    res = await fetch(`${ rootUrl }/publish`, {
+    res = await fetch(`${ rootUrl }publish`, {
       method: 'POST',
       body: JSON.stringify({
         data,

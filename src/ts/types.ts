@@ -3,7 +3,7 @@
  */
 
 // Note: paths begin and end **without** slash
-export const defaultSettings: PublicationSettings = {
+export const defaultPublicationSettings: PublicationSettings = {
   path: 'publication',
   url: '',
   autoHomePage: true,
@@ -13,7 +13,7 @@ export const defaultSettings: PublicationSettings = {
 }
 
 export const defaultSite: WebsiteData = {
-  pages: [],
+  pages: [{name: 'Main', id: 'main', frames: [{component: {type: 'text', stylable: []}, components: []}]}],
   assets: [],
   styles: [],
   name: 'New website',
@@ -21,18 +21,15 @@ export const defaultSite: WebsiteData = {
     description: '',
     title: '',
     head: '',
-    lang: 'en',
-    favicon: 'https://editor.silex.me/assets/favicon.png',
+    lang: '',
+    favicon: '',
     'og:title': '',
     'og:description': '',
     'og:image': '',
   },
-  fonts: [
-    { name: 'Arial', value: 'Arial, Helvetica, sans-serif', variants: [] },
-    { name: 'Times New Roman', value: '"Times New Roman", Times, serif', variants: [] },
-  ],
+  fonts: [],
   symbols: [],
-  publication: defaultSettings,
+  publication: defaultPublicationSettings,
 }
 
 export interface WebsiteSettings {

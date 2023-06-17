@@ -1,7 +1,7 @@
 import express, { Application } from 'express'
 
 import { ServerConfig } from './config'
-import { EVENT_STARTUP_START, EVENT_STARTUP_END } from './events'
+import { EVENT_STARTUP_START, EVENT_STARTUP_END } from '../events'
 
 export default async function(config: ServerConfig): Promise<Application> {
   // Plugins hook to create API routes
