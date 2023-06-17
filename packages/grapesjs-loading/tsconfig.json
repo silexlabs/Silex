@@ -1,24 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "sourceMap": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
     "module": "esnext",
+    "target": "ES5",
+    "outDir": "./dist",
+    "declaration": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": false
+    "esModuleInterop": true,
+    "skipLibCheck": true, // This is needed to avoid errors with the `@types/node` package (Found 89 errors in the same file, starting at: ../../node_modules/@types/webpack/index.d.ts:32)
+    "lib": ["ES2020", "DOM"]
   },
   "include": [
     "src"
