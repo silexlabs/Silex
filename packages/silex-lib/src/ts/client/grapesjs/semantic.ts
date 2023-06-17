@@ -20,6 +20,7 @@ const tags = [
   'SECTION',
   'ADDRESS',
   'ARTICLE',
+  'BUTTON',
   'NAV',
   'HEADER',
   'FOOTER',

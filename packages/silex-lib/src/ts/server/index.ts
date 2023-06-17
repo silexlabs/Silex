@@ -1,6 +1,13 @@
 import getConfig from './config'
 import start  from './express'
 
+import * as config from './config'
+import * as types from '../types'
+import * as events from '../events'
+import * as constants from '../constants'
+import * as page from '../page'
+export default { config, types, events, constants, page }
+
 // Main app
 async function main() {
   // Get the default config object

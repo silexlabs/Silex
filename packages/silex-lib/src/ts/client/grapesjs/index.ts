@@ -212,10 +212,16 @@ export function getEditorConfig(id: string, rootUrl: string) {
 // Keep a ref to the editor singleton
 let editor
 
-export function initEditor(config: EditorConfig) {
+export function initEditor(config: EditorConfig, grapesJsPlugins) {
   if(editor) throw new Error('Grapesjs editor already created')
 
-  editor = grapesjs.init(config)
+  editor = grapesjs.init({
+    plugins: [
+      ...grapesJsPlugins,
+      ...config.plugins,
+    ],
+    ...config,
+  })
 
   // customize the editor
   ;['text']
@@ -251,6 +257,16 @@ export function initEditor(config: EditorConfig) {
     // use the style filter plugin
     editor.StyleManager.addProperty('extra',{ extend: 'filter' })
   })
+
+  editor.StorageManager.onError = (type: string, err: Error) => {
+    editor.Modal.open(type === 'load' ? {
+      title: 'Error loading website',
+      content: `This website could not be loaded.<br><hr>Error: ${err.message}`,
+    } : {
+      title: 'Error saving website',
+      content: `This website could not be saved.<br><hr>Error: ${err.message}`,
+    })
+  }
 }
 
 export function getEditor() {

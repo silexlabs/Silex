@@ -12,6 +12,7 @@ import { resolve } from 'path'
 import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Router } from 'express'
 import { readFile } from 'fs/promises'
+import { EVENT_STARTUP_START } from '../events'
 
 /**
  * Config types definitions
@@ -38,7 +39,7 @@ export default async function(): Promise<ServerConfig> {
 
   // Serve the client side config file
   if (clientConfigPath) {
-    config.on('silex:startup:start', async ({ app }) => {
+    config.on(EVENT_STARTUP_START, async ({ app }) => {
       console.log(`> Serving client side config ${clientConfigPath} at ${CLIENT_CONFIG_FILE_NAME}`)
       // Attach the route immediately
       const router = Router()
@@ -59,7 +60,7 @@ export default async function(): Promise<ServerConfig> {
 
   // Optional config file
   // Load this config file before the main config file so that routes can be overriden
-  // Or listen for event silex:config:end to add routes after the default ones
+  // Or listen for event silex:startup:end to add routes after the default ones
   if (process.env.CONFIG) {
     const userConfigPath: Plugin = process.env.CONFIG
     console.log('> Loading user config', userConfigPath)
@@ -75,12 +76,9 @@ export default async function(): Promise<ServerConfig> {
   const configFilePath: Plugin = resolve(__dirname, '../../.silex.js')
   console.log('> Loading config', configFilePath)
   try {
-    config.emit('silex:config:start', configFilePath)
     // Initiate the process with the config file which is just another plugin
     await config.addPlugin(configFilePath, {})
-    config.emit('silex:config:end', config)
   } catch(e) {
-    config.emit('silex:config:error', e)
     if(e.code === 'MODULE_NOT_FOUND') {
       console.info('No config found', configFilePath)
     } else {
