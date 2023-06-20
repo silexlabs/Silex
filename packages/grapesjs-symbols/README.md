@@ -123,7 +123,7 @@ Finally change the content of the compoenent or add/remove classes or attributes
 
 ### Vocabulary
 
-A **symbol** is a structure holding the symbol data, see [the comment in the Symbol module](./src/model/Symbol.js)
+A **symbol** is a structure holding the symbol data, see [the comment in the Symbol module](./src/model/Symbol.ts)
 
 A **symbol model** is a grapesjs Component which is not attached to the DOM and is used to create instances of a symbol
 
@@ -141,7 +141,7 @@ These are the IDs we need in models attributes
 Notes
 
 * `symbolChildId` attributes are not synced between symbol instances (the root of a symbol instance) since it can be different when an instance is in two different other symbols
-* In a collection of Symbol, you can get the symbol with `.get(symbolId)` since the symbols have their cid set to their initial `symbolId` - see [the initialize method in Symbol.js](./src/model/Symbol.js)
+* In a collection of Symbol, you can get the symbol with `.get(symbolId)` since the symbols have their cid set to their initial `symbolId` - see [the initialize method in Symbol.ts](./src/model/Symbol.ts)
 
 
 ## Options

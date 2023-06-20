@@ -1,14 +1,14 @@
-import Storage from './storage.js'
-import Symbols from './model/Symbols.js'
-import SymbolsView from './view/SymbolsView.js'
-import SymbolsCommands, * as cmd from './SymbolsCommands.js'
+import Storage from './storage'
+import { Symbols, SymbolEditor } from './model/Symbols'
+import SymbolsView from './view/SymbolsView'
+import initCommands, * as cmd from './SymbolsCommands'
 
 export const cmdAddSymbol = cmd.cmdAdd
 export const cmdRemoveSymbol = cmd.cmdRemove
 export const cmdUnlinkSymbol = cmd.cmdUnlink
 export const cmdCreateSymbol = cmd.cmdCreate
 
-export default (editor, opts = {}) => {
+export default (editor: SymbolEditor, opts: any = {}) => {
   const options = { ...{
     appendTo: '#symbols',
     selectColor: '#EEE',
@@ -16,16 +16,16 @@ export default (editor, opts = {}) => {
   },  ...opts }
 
   // store the symbols data with the site
-  Storage(editor, opts)
+  Storage(editor)
 
   // keep track of symbols and changes
   editor.Symbols = new Symbols([], { options, editor })
 
   editor.on('load', (...args) => {
     // Display symbols
-    new SymbolsView(editor.Symbols, { options, editor })
+    new SymbolsView({ ...options, editor, model: editor.Symbols, })
 
     // Commands to create/delete symbols
-    new SymbolsCommands({options, editor})
+    initCommands({options, editor})
   })
 }

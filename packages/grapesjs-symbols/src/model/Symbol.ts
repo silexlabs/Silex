@@ -1,7 +1,17 @@
-import Backbone from 'backbone'
+import Backbone, { Collection } from 'backbone'
+import { Component, ComponentProperties } from 'grapesjs'
 
-import { find, all, children, getCaret, setCaret, getNodePath, getNode } from '../utils.js'
+import { Symbols } from './Symbols'
+import { find, all, children, getCaret, setCaret, getNodePath, getNode } from '../utils'
 import { uniqueId } from 'underscore'
+
+type SymbolAttributes = {
+  id: string,
+  model: Component,
+  label?: string,
+  icon?: string,
+  instances?: Map<string, Component>,
+}
 
 /**
  * A Symbol class holds the data about a symbol: label, icon
@@ -16,14 +26,14 @@ import { uniqueId } from 'underscore'
  * 
  * @class
  */
-const SymbolModel = Backbone.Model.extend({
+class Symbol extends Backbone.Model {
   /**
    * Default options passed to the constructor
    */
-  defaults: {
-    label: 'New Symbol',
-    icon: 'fa-question',
-  },
+  //defaults: {
+  //  label: 'New Symbol',
+  //  icon: 'fa-question',
+  //},
 
   /**
    * @param {{ label: ?string, icon: ?string }} attributes
@@ -33,22 +43,25 @@ const SymbolModel = Backbone.Model.extend({
    * - `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
    *
    */
-  initialize(attributes) {
-    // Check the required instances on the symbol
+  initialize() {
+    // Check required attributes
+    if(!this.has('model')) throw new Error('Could not create Symbol: model is required')
+
+    // Init the required instances on the symbol
     if(!this.has('instances')) {
       this.set('instances', new Map())
     }
-    if(!this.has('model')) throw new Error('Could not create Symbol: model is required')
+
     // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
+    // in which case we convert model to a real component
     // TODO: Needs review
-    // convert model to a real component
-    const model = this.get('model')
+    const model = this.get('model') as Component
     if(!model.cid) { // FIXME: should be typeof model = 'string'
-      const { editor } = this.collection
+      const editor = (this.collection! as any as Symbols).editor
       const [modelComp] = editor.addComponents([model])
       this.set('model', modelComp)
     }
-  },
+  }
 
   /**
    * Return a shallow copy of the model's attributes for JSON
@@ -60,49 +73,53 @@ const SymbolModel = Backbone.Model.extend({
     const obj = Backbone.Model.prototype.toJSON.call(this, opts)
     delete obj.instances
     return obj
-  },
+  }
 
   /**
    * Get all instances as an Array, except the `excludeOne` one
-   * @param {(Component) => void} callback which receives the instances
-   * @param {Component} excludeOne - optionally exclude one component
-   * @param {Component} addOne - optionally add one component, typically pass the symbol's `model` attribute when needed
-   * @returns {Array.<Component>}
+   * @param callback which receives the instances
+   * @param excludeOne - optionally exclude one component
+   * @param addOne - optionally add one component, typically pass the symbol's `model` attribute when needed
+   * @returns The symbol instances
    * @private
    */
-  getAll(addOne = null, excludeOne = null) {
-    const values = Array.from(this.get('instances').values())
+  getAll(addOne: Component | null = null, excludeOne: Component | null = null) {
+    const values = Array.from((this.get('instances') as Map<string, Component>).values())
     return (addOne ? [addOne] : []).concat(excludeOne ? values.filter(inst => inst.cid != excludeOne.cid) : values)
-  },
+  }
 
   /**
    * Browse all instances and their children matching the changed component
    * Includes the `model` of this symbol
    * Will not include the provided instance `srcInst` nor `srcChild` as they are the ones which changed
-   * @param {Component} srcInst - the instance of this symbol containing `child`
-   * @param {Component} srcChild - the child which has the changes
+   * @param srcInst - the instance of this symbol containing `child`
+   * @param srcChild - the child which has the changes
    */
-  browseInstancesAndModel(srcInst, srcChildren, cbk, err) {
-    this.getAll(this.get('model'), srcInst)
+  browseInstancesAndModel(
+    srcInst: Component,
+    srcChildren: Component[],
+    cbk: (dstChildren: Component[], dstInst: Component) => void
+  ) {
+    this.getAll(this.get('model') as Component, srcInst)
       .forEach(dstInst => {
         const dstChildren = srcChildren
           .map(srcChild => {
           // Get a child or the root
             return srcChild.has('symbolId')
               ? dstInst // this is the root
-              : find(dstInst, srcChild.get('symbolChildId')) // this is a child
+              : find(dstInst, srcChild.get('symbolChildId'))! // this is a child
           })
         cbk(dstChildren, dstInst)
       })
-  },
+  }
 
   /**
    * Apply css classes to all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
-   * @param {Component} srcInst - the instance of this symbol containing `child`
-   * @param {Component} srcChild - the child which has the changes
+   * @param srcInst - the instance of this symbol containing `child`
+   * @param srcChild - the child which has the changes
    */
-  applyClasses(srcInst, srcChild) {
+  applyClasses(srcInst: Component, srcChild: Component) {
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
         dstChild.setClass(srcChild.getClasses())
@@ -110,25 +127,29 @@ const SymbolModel = Backbone.Model.extend({
         console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       }
     })
-  },
+  }
 
-  getIndex(parent, symbolChildId) {
+  getIndex(parent: Component, symbolChildId: string) {
     // TODO: Needs review
     return parent.components().toArray()
       .findIndex(c => c.get('symbolChildId') === symbolChildId)
-  },
+  }
 
   /**
    * Update attributes of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
-   * @param {Component} srcInst - the instance of this symbol containing `child`
-   * @param {Component} srcChild - the child which has the changes
+   * @param srcInst - the instance of this symbol containing `child`
+   * @param srcChild - the child which has the changes
    */
-  applyChildren(srcInst, srcChild) {
-    const parent = srcChild.parent()
+  applyChildren(srcInst: Component, srcChild: Component) {
+    // Get the parent of the source child
+    const parent = srcChild.parent() as Component
+    if(!parent) throw new Error(`Could not sync children for symbol ${this.cid}: ${srcChild.cid} has no parent`)
+
+    // Get all instances of this symbol
     const allInst = all(srcInst)
     if(allInst.includes(parent)) {
-      // the child is in the instance
+      // The child is in the instance
       const symbolChildId = srcChild.get('symbolChildId')
       // Case of a child being duplicated inside the symbol
       const isDuplicate = !!symbolChildId && allInst
@@ -167,15 +188,15 @@ const SymbolModel = Backbone.Model.extend({
       // this child is not part of a symbol anymore
       srcChild.set('symbolChildId')
     }
-  },
+  }
 
   /**
    * Update attributes of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
-   * @param {Component} srcInst - the instance of this symbol containing `child`
-   * @param {Component} srcChild - the child which has the changes
+   * @param srcInst - the instance of this symbol containing `child`
+   * @param srcChild - the child which has the changes
    */
-  applyAttributes(srcInst, srcChild) {
+  applyAttributes(srcInst: Component, srcChild: Component) {
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
         // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
@@ -184,25 +205,25 @@ const SymbolModel = Backbone.Model.extend({
         console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       }
     })
-  },
+  }
 
   /**
    * Update text content of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
    * Will not update the provided instance `inst` as it is the one which changed
-   * @param {Component} srcInst - the instance of this symbol containing `child`
-   * @param {Component} srcChild - the child which has the changes
+   * @param srcInst - the instance of this symbol containing `child`
+   * @param srcChild - the child which has the changes
    */
-  applyContent(srcInst, srcChild) {
+  applyContent(srcInst: Component, srcChild: Component) {
     // Store the caret position in the contenteditable container
-    const el = srcChild.getCurrentView().el
+    const el = srcChild.getCurrentView()!.el
     const caret = getCaret(el)
 
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
         if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
           // Sets the new content
-          dstChild.components(srcChild.getCurrentView().getContent())
+          dstChild.components(srcChild.getCurrentView()!.model.get('content')!)
         }
         else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
       } else {
@@ -216,18 +237,18 @@ const SymbolModel = Backbone.Model.extend({
       // After dom update
       setCaret(el, caret)
     })
-  },
+  }
 
   /**
    * Update styles of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
    * Will not update the provided instance `inst` as it is the one which changed
-   * @param {Component} srcInst - the instance of this symbol containing `child`
-   * @param {Component} srcChild - the child which has the changes
-   * @param {Object} changed - the changed styles
-   * @param {Array.string} removed - the removed styles
+   * @param srcInst - the instance of this symbol containing `child`
+   * @param srcChild - the child which has the changes
+   * @param changed - the changed styles
+   * @param removed - the removed styles
    */
-  applyStyle(srcInst, srcChild, changed, removed) {
+  applyStyle(srcInst: Component, srcChild: Component, changed: object, removed: string[]) {
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
       if(dstChild) {
         dstChild.setStyle({
@@ -239,44 +260,44 @@ const SymbolModel = Backbone.Model.extend({
         console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
       }
     })
-  },
+  }
 
   /**
    * Add a component to this symbol `instances`
    * Called at init when editor triggers a 'components:add' event
-   * @param {Component} c
+   * @param c
    */
-  addInstance(c) {
-    this.get('instances').set(c.cid, c) // here we use cid as `instances` is built and not saved
-  },
+  addInstance(c: Component) {
+    this.get('instances')!.set(c.cid, c) // here we use cid as `instances` is built and not saved
+  }
 
   /**
    * @return {Component} The created instance, ready to be added to a component
    */
   createInstance() {
     // Clone the model
-    const inst = this.get('model').clone()
+    const inst = this.get('model')!.clone()
     // Add the component to the symbol instances
     this.addInstance(inst)
     // Let the caller add it to a component
     return inst
-  },
+  }
 
   /**
-   * @param {Component} c - a component
+   * @param c - a component
    * @return {Boolean} true if the component is a symbol
    */
-  isInstance(c) {
+  isInstance(c: Component) {
     return !!c.get('symbolId')
-      && this.get('instances').has(c.cid)
-  },
+      && this.get('instances')!.has(c.cid)
+  }
 
   /**
    * unlink all instances of a symbol
    */
   unlinkAll() {
-    this.get('instances').forEach(c => this.unlink(c))
-  },
+    this.get('instances')!.forEach((c: Component) => this.unlink(c))
+  }
 
   /**
    * unlink an instance from a symbol
@@ -284,26 +305,26 @@ const SymbolModel = Backbone.Model.extend({
    * - remove `symbolChildId` from all the children until they are symbols
    * - remove the reference in instances
    */
-  unlink(c) {
+  unlink(c: Component) {
     c.set('symbolId')
-    this.get('instances').delete(c.cid)
+    this.get('instances')!.delete(c.cid)
     children(c)
       .forEach(child => child.set('symbolChildId'))
-  },
-})
+  }
+}
 
 /**
- * @param {Component} c - a component, supposedly an instance of a symbol
- * @return {string} the symbol ID if the component is a symbol
+ * @param c - a component, supposedly an instance of a symbol
+ * @return the symbol ID if the component is a symbol
  */
-export function getSymbolId(c) {
+export function getSymbolId(c: Component): string {
   return c.get('symbolId')
 }
 
 /**
  * remove symbols IDs from an instance
  */
-export function cleanup(c) {
+export function cleanup(c: Component) {
   c.set('symbolId')
   c.set('symbolChildId')
 }
@@ -313,7 +334,7 @@ export function cleanup(c) {
  * Also init the component's children
  * @param {Component} c
  */
-export function initModel(c, { icon, label, symbolId }) {
+export function initModel(c: Component, { icon, label, symbolId }: ComponentProperties) {
   // check that it is not part of a Symbol already
   if(c.has('symbolId')) {
     throw new Error('Could not init Symbol model: the model has already been init')
@@ -323,9 +344,9 @@ export function initModel(c, { icon, label, symbolId }) {
   // add symbol data
   c.set('icon', `<span class="fa ${ icon }"></span>`)
   // Show that this is a symbol, add an icon to the toolbar UI
-  const toolbar = c.get('toolbar')
+  const toolbar = c.get('toolbar')!
   // FIXME: somehow this happens twice => we should not have to do this check
-  if(!toolbar.find(t => !!t.isSymbol)) {
+  if(!toolbar.find(t => !!(t as any).isSymbol)) {
     toolbar.push({
       attributes: {
         class: 'fa fa-ban on fa-diamond',
@@ -333,7 +354,7 @@ export function initModel(c, { icon, label, symbolId }) {
       },
       command: 'do:nothing',
       isSymbol: true, // prevent add 2 buttons
-    })
+    } as any)
   }
   // init children
   children(c)
@@ -344,7 +365,7 @@ export function initModel(c, { icon, label, symbolId }) {
  * Init a component to be this symbol's `model`'s child
  * @param {Component} c
  */
-export function initSymbolChild(c) {
+export function initSymbolChild(c: Component) {
   if(!c.has('symbolChildId')) {
     c.set('symbolChildId', c.cid)
   }
@@ -354,9 +375,9 @@ export function initSymbolChild(c) {
  * create a new symbol ou of a component
  * the component and its children will be init
  * the component will be cloned and stored as the model
- * @return {SymbolModel}
+ * @return {Symbol}
  */
-export function createSymbol(c, attributes) {
+export function createSymbol(c: Component, attributes: ComponentProperties): Symbol {
   const symbolId = attributes.symbolId ?? uniqueId()
   // Init component with symbolId and children
   initModel(c, {
@@ -364,7 +385,7 @@ export function createSymbol(c, attributes) {
     symbolId,
   })
   // Create a Symbol
-  const s = new SymbolModel({
+  const s = new Symbol({
     ...attributes,
     id: symbolId,
     // Clone the component, store a model
@@ -375,5 +396,4 @@ export function createSymbol(c, attributes) {
   return s
 }
 
-export default SymbolModel
-
+export default Symbol

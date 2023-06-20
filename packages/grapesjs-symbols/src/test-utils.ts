@@ -1,16 +1,16 @@
 import grapesjs from 'grapesjs'
-import Symbol, { createSymbol, initModel } from './model/Symbol.js'
+import { createSymbol } from './model/Symbol'
+import { SymbolEditor } from './model/Symbols'
 
-// Since I can not import the types from grapes
 //  let's use the editor in headless mode
 //  to create components
 const editor = grapesjs.init({
   headless: true,
-  storageManager: { autoload: 0 },
-})
+  storageManager: { autoload: false },
+}) as SymbolEditor
 
 export function getTestSymbols() {
-  const [comp1, comp2, comp3] = editor.addComponents([{
+  const [comp1, comp2, comp3]: any[] = editor.addComponents([{
     test: 'comp1 S1',
   }, {
     test: 'comp2 S1',
@@ -23,7 +23,7 @@ export function getTestSymbols() {
     test: 'child11',
   }, {
     test: 'child12',
-  }])
+  }] as any)
 
   const [child111] = child11.append([{
     test: 'child111',
@@ -35,7 +35,7 @@ export function getTestSymbols() {
   }, {
     test: 'child22',
     symbolChildId: child12.cid,
-  }])
+  }] as any)
 
   const [child211] = child21.append([{
     test: 'child211',

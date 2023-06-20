@@ -1,7 +1,10 @@
+import { Component } from 'grapesjs'
+import { SymbolEditor } from './model/Symbols'
+
 /**
  * set editor as dirty
  */
-export function setDirty(editor) {
+export function setDirty(editor: SymbolEditor) {
   try {
     const curr = editor.getDirtyCount() || 0
     editor.getModel().set('changesCount', curr + 1)
@@ -13,8 +16,8 @@ export function setDirty(editor) {
 /**
  * browse all pages and retrieve all website components
  */
-export function getAllComponentsFromEditor(editor) {
-  const res = []
+export function getAllComponentsFromEditor(editor: SymbolEditor): Component[] {
+  const res: Component[] = []
   editor.Pages.getAll()
     .forEach(page => {
       page.getMainComponent()
@@ -28,7 +31,7 @@ export function getAllComponentsFromEditor(editor) {
  * @param {Component} c - the root component
  * @returns {(Component|null)} the root component's children
  */
-export function children(c) {
+export function children(c: Component): Component[] {
   const children = c.components().toArray()
   return children
     .flatMap(child => all(child))
@@ -39,7 +42,7 @@ export function children(c) {
  * @param {Component} c - the root component
  * @returns {(Component|null)} the root component itself and its children
  */
-export function all(c) {
+export function all(c: Component): Component[] {
   const children = c.components().toArray()
   return [c]
     .concat(children
@@ -56,12 +59,12 @@ export function all(c) {
  * @param {string} cid - the ID we are looking for
  * @returns {(Component|null)} the component itself or one of its children
  */
-export function find(c, symbolChildId) {
+export function find(c: Component, symbolChildId: string): Component | null {
   if(c.get('symbolChildId') === symbolChildId) {
     return c
   } else {
     // check the children components
-    let found = null
+    let found: Component | null = null
     c.components()
       // Does not work properly, why? .find(comp => find(comp, symbolChildId))
       .forEach(comp => {
@@ -76,8 +79,8 @@ export function find(c, symbolChildId) {
  * exported for unit tests
  * @private
  */
-export function closestInstance(c) {
-  let ptr = c
+export function closestInstance(c: Component) {
+  let ptr: Component | undefined = c
   while(ptr && !hasSymbolId(ptr)) {
     ptr = ptr.parent()
   }
@@ -88,7 +91,7 @@ export function closestInstance(c) {
  * @param {Component} c - a component
  * @return {Boolean} true if the component has a symbol id
  */
-export function hasSymbolId(c) {
+export function hasSymbolId(c: Component): boolean {
   return !!c.get('symbolId')
 }
 
@@ -100,12 +103,12 @@ export async function wait(ms = 0) {
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
  */
-export function getNodePath(root, node) {
+export function getNodePath(root: Node, node: ChildNode) {
   const path = []
-  let pointer = node
+  let pointer: ChildNode | undefined = node
   while (pointer && pointer !== root) {
-    const parent = pointer.parentNode
-    const children = Array.from(parent.childNodes)
+    const parent: ChildNode = pointer.parentNode! as any as ChildNode
+    const children = Array.from(parent!.childNodes)
     const nodeIndex = children.indexOf(pointer)
     path.push(nodeIndex)
     pointer = parent
@@ -117,11 +120,11 @@ export function getNodePath(root, node) {
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
  */
-export function getNode(root, path) {
+export function getNode(root: Node, path: number[]): Node | null {
   const mutablePath = [...path]
   let result = root
   while (result && mutablePath.length) {
-    result = result.childNodes[mutablePath.pop()]
+    result = result.childNodes[mutablePath.pop()!]
   }
   return result
 }
@@ -129,24 +132,24 @@ export function getNode(root, path) {
 /**
  * Gets the caret position
  */
-export function getCaret(el) {
-  const win = el.ownerDocument.defaultView
-  const sel = win.getSelection()
+export function getCaret(el: HTMLElement): { path: number[], pos: number } {
+  const win = el.ownerDocument.defaultView!
+  const sel = win.getSelection()!
   const range = sel.rangeCount ? sel.getRangeAt(0) : null
   const pos = range?.startOffset ?? 0
   const caretEl = range?.commonAncestorContainer ?? el
-  const path = getNodePath(el, caretEl)
+  const path = getNodePath(el, caretEl as ChildNode)
   return { path, pos }
 }
 
 /**
  * Sets the caret position
  */
-export function setCaret(el, { path, pos }) {
+export function setCaret(el: HTMLElement, { path, pos }: { path: number[], pos: number }): void {
   const textNode = getNode(el, path)
   if(textNode) {
-    const win = el.ownerDocument.defaultView
-    const sel = win.getSelection()
+    const win = el.ownerDocument.defaultView!
+    const sel = win.getSelection()!
     sel.removeAllRanges()
     const range = document.createRange()
     range.selectNodeContents(textNode)

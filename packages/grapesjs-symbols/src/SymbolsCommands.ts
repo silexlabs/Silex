@@ -1,13 +1,15 @@
 // exported plugin
-import { createSymbol, getSymbolId } from './model/Symbol.js'
-import { setDirty } from './utils.js'
+import { Editor, Component } from 'grapesjs'
+import Symbol, { createSymbol, getSymbolId } from './model/Symbol'
+import { setDirty } from './utils'
+import { SymbolEditor } from './model/Symbols'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
 export const cmdUnlink = 'symbols:unlink'
 export const cmdCreate = 'symbols:create'
 
-export default function({ editor, options }) {
+export default function({ editor, options }: { editor: Editor, options: any}) {
   editor.Commands.add(cmdAdd, addSymbol)
   editor.Commands.add(cmdRemove, removeSymbol)
   editor.Commands.add(cmdUnlink, unlinkSymbolInstance)
@@ -19,13 +21,17 @@ export default function({ editor, options }) {
 
 /**
  * Create a new symbol
- * @param {Component} options.component - the symbol which will become the first instance of the symbol
+ * @param options.component - the component which will become the first instance of the symbol
  * @returns {Symbol}
  */
-export function addSymbol(editor, sender, {label, icon, component = editor.getSelected()}) {
+export function addSymbol(
+  editor: SymbolEditor,
+  sender: any,
+  {label, icon, component = editor.getSelected()}: {label: string, icon: string, component: Component | undefined},
+) {
   if(component) {
     // add the symbol
-    const s = editor.Symbols.add(createSymbol(component, { label, icon }, editor))
+    const s = editor.Symbols.add(createSymbol(component, { label, icon }))
     setDirty(editor)
     // return the symbol to the caller
     return s
@@ -38,7 +44,11 @@ export function addSymbol(editor, sender, {label, icon, component = editor.getSe
  * Delete a symbol
  * @param {symbolId: string} - object containing the symbolId
  */
-export function removeSymbol(editor, sender, {symbolId}) {
+export function removeSymbol(
+  editor: SymbolEditor,
+  sender: any,
+  {symbolId}: {symbolId: string},
+) {
   if(symbolId) {
     if(editor.Symbols.has(symbolId)) {
       // remove the symbol
@@ -57,7 +67,10 @@ export function removeSymbol(editor, sender, {symbolId}) {
   }
 }
 
-export function unlinkSymbolInstance(editor, sender, { component }) {
+export function unlinkSymbolInstance(
+  editor: SymbolEditor,
+  sender: any, { component }: { component: Component },
+) {
   if(component) {
     const s = editor.Symbols.get(getSymbolId(component))
     if(s) {
@@ -75,13 +88,18 @@ export function unlinkSymbolInstance(editor, sender, { component }) {
 /**
  * @param {{index, indexEl, method}} pos Where to insert the component, as [defined by the Sorter](https://github.com/artf/grapesjs/blob/0842df7c2423300f772e9e6cdc88c6ae8141c732/src/utils/Sorter.js#L871)
  */
-export function createSymbolInstance(editor, sender, { symbol, pos, target }) {
+export function createSymbolInstance(
+  editor: SymbolEditor,
+  sender: any,
+  { symbol, pos, target }: { symbol: Symbol, pos: any, target: HTMLElement },
+) {
   pos = pos || { }
   if(symbol && pos && target) {
     const parentId = target ? target.getAttribute('id') : undefined
-    const parent = editor.Components.allById()[parentId]
+    if(!parentId) throw new Error('Can not create the symbol: missing param id')
+    const parent = target ? editor.Components.allById()[parentId!] : undefined
     // create the new component
-    const [c] = parent.append([symbol.createInstance()], { at: pos.index })
+    const [c] = parent ? parent.append([symbol.createInstance()], { at: pos.index }) : []
     // Select the new component
     // Break unit tests? editor.select(c, { scroll: true })
     return c

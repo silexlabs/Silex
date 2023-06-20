@@ -1,5 +1,6 @@
+import Backbone from 'backbone'
 import { getTestSymbols } from '../test-utils'
-import Symbols from './Symbols.js'
+import { Symbols } from './Symbols'
 
 describe('Make sure everything has the correct data type and default values', () => {
   // mock editor
@@ -13,7 +14,7 @@ describe('Make sure everything has the correct data type and default values', ()
 
   test('Initialize symbols with test data', () => {
     const { s1, s1Data, comp1 } = getTestSymbols()
-    const symbols = new Symbols([s1], { options, editor})
+    const symbols = new Symbols([s1], { options, editor })
     expect(symbols).toHaveLength(1)
     expect(comp1.get('symbolId')).toBe(s1.id)
     expect(symbols.get(s1.cid)).not.toBeUndefined()

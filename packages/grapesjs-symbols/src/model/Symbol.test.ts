@@ -1,3 +1,4 @@
+import { Component } from 'grapesjs'
 import { getTestSymbols } from '../test-utils'
 import {jest} from '@jest/globals'
 
@@ -23,7 +24,7 @@ test('Initialize symbol with values', () => {
 })
 
 test('Initialize symbol with default values', () => {
-  const { s2, comp3 } = getTestSymbols()
+  const { s2 } = getTestSymbols()
   expect(s2.get('label')).not.toBeUndefined()
   expect(s2.get('icon')).not.toBeUndefined()
 })
@@ -38,7 +39,7 @@ test('Test data to save has only needed data', () => {
 
 test('Test getAll  method', () => {
   const { s1, comp1, child11, child12, comp2, child21, child22, child111, child211 } = getTestSymbols()
-  const tmp = {}
+  const tmp = {} as Component
 
   // no params
   expect(s1.getAll()).toHaveLength(2)
@@ -112,8 +113,8 @@ test('Test getAll method', () => {
   expect(s1.getAll() instanceof Array).toBe(true)
   expect(s1.get('instances').size).toBe(2)
   expect(s1.getAll()).toHaveLength(2)
-  expect(s1.getAll({})).toHaveLength(3)
-  expect(s1.getAll(null, {})).toHaveLength(2)
+  expect(s1.getAll({} as Component)).toHaveLength(3)
+  expect(s1.getAll(null, {} as Component)).toHaveLength(2)
   expect(s1.getAll(null, comp1)).toHaveLength(1)
 })
 

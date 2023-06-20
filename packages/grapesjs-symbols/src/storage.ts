@@ -1,6 +1,7 @@
-import { getAllComponentsFromEditor } from './utils.js'
+import { SymbolEditor } from './model/Symbols'
+import { getAllComponentsFromEditor } from './utils'
 
-export default (editor, opts = {}) => {
+export default (editor: SymbolEditor) => {
   editor.on('storage:start:store', (objectToStore) => {
     objectToStore.symbols = editor.Symbols.toJSON()
   })
