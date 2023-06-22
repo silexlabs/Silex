@@ -3,7 +3,6 @@
   "compilerOptions": {
     "outDir": "dist/client/",
     "target": "ESNext",
-    "watch": true,
     "sourceMap": true,
     "module": "ESNext",
     "removeComments": false,
