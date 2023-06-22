@@ -86,7 +86,7 @@ export class Symbols extends Backbone.Collection<Symbol>  {
         // TODO: need review
         await wait()
         this.updating = true
-        s.applyChildren(inst, component)
+        s.applyChildren(inst, parent, component)
         this.updating = false
       } else {
         console.warn('Could not update instance', component, ': could not find the symbol with id', symbolId)

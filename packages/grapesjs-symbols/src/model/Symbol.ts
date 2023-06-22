@@ -1,9 +1,10 @@
-import Backbone, { Collection } from 'backbone'
+import Backbone  from 'backbone'
 import { Component, ComponentProperties } from 'grapesjs'
 
 import { Symbols } from './Symbols'
-import { find, all, children, getCaret, setCaret, getNodePath, getNode } from '../utils'
+import { find, all, children, getCaret, setCaret } from '../utils'
 import { uniqueId } from 'underscore'
+import src from '..'
 
 type SymbolAttributes = {
   id: string,
@@ -139,16 +140,15 @@ class Symbol extends Backbone.Model {
    * Update attributes of all instances and their children according to changes of a component
    * Also update the `model` attribute of this symbol
    * @param srcInst - the instance of this symbol containing `child`
+   * @param parent - the element whose children have changed
    * @param srcChild - the child which has the changes
    */
-  applyChildren(srcInst: Component, srcChild: Component) {
-    // Get the parent of the source child
-    const parent = srcChild.parent() as Component
+  applyChildren(srcInst: Component, parent: Component, srcChild: Component) {
     if(!parent) throw new Error(`Could not sync children for symbol ${this.cid}: ${srcChild.cid} has no parent`)
 
     // Get all instances of this symbol
     const allInst = all(srcInst)
-    if(allInst.includes(parent)) {
+    if(allInst.includes(srcChild)) {
       // The child is in the instance
       const symbolChildId = srcChild.get('symbolChildId')
       // Case of a child being duplicated inside the symbol
@@ -166,7 +166,10 @@ class Symbol extends Backbone.Model {
       } else {
         // this is a new child
         all(srcChild)
-          .forEach(c => initSymbolChild(c))
+          // Force new symbolChildId for `srcChild` and its children (excluding symbols)
+          //   because `c` might be a duplicate of another child
+          //   this happens when we duplicate a component inside a symbol
+          .forEach(c => initSymbolChild(c, true))
         this.browseInstancesAndModel(srcInst, [parent], ([dstParent], dstInst) => {
           if(dstParent) {
             const clone = srcChild.clone()
@@ -178,6 +181,7 @@ class Symbol extends Backbone.Model {
       }
     } else {
       // Child is not there anymore
+      // Beware: srcChild has no parent nor view anymore
       this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
         if(dstChild) {
           dstChild.remove()
@@ -223,7 +227,7 @@ class Symbol extends Backbone.Model {
       if(dstChild) {
         if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
           // Sets the new content
-          dstChild.components(srcChild.getCurrentView()!.model.get('content')!)
+          dstChild.components(srcChild.getCurrentView()!.el.innerHTML)
         }
         else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
       } else {
@@ -365,8 +369,8 @@ export function initModel(c: Component, { icon, label, symbolId }: ComponentProp
  * Init a component to be this symbol's `model`'s child
  * @param {Component} c
  */
-export function initSymbolChild(c: Component) {
-  if(!c.has('symbolChildId')) {
+export function initSymbolChild(c: Component, force: boolean = false) {
+  if(force || !c.has('symbolChildId')) {
     c.set('symbolChildId', c.cid)
   }
 }
