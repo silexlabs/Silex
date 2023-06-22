@@ -16,8 +16,8 @@
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
     "prepublishOnly": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "$npm_execpath run lint -- --fix",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js --watch",
     "bump": "$npm_execpath version patch -m 'Bump v%s'"

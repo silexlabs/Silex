@@ -103,13 +103,13 @@ export async function wait(ms = 0) {
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
  */
-export function getNodePath(root: Node, node: ChildNode) {
+export function getNodePath(root: Node, node: Node) {
   const path = []
-  let pointer: ChildNode | undefined = node
+  let pointer: Node | undefined = node
   while (pointer && pointer !== root) {
-    const parent: ChildNode = pointer.parentNode! as any as ChildNode
+    const parent: Node = pointer.parentNode! as any as Node
     const children = Array.from(parent!.childNodes)
-    const nodeIndex = children.indexOf(pointer)
+    const nodeIndex = children.indexOf(pointer as any) // any because it should be a ChildNode but eslint does not know ChildNode
     path.push(nodeIndex)
     pointer = parent
   }
@@ -138,7 +138,7 @@ export function getCaret(el: HTMLElement): { path: number[], pos: number } {
   const range = sel.rangeCount ? sel.getRangeAt(0) : null
   const pos = range?.startOffset ?? 0
   const caretEl = range?.commonAncestorContainer ?? el
-  const path = getNodePath(el, caretEl as ChildNode)
+  const path = getNodePath(el, caretEl as Node)
   return { path, pos }
 }
 
