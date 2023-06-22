@@ -1,4 +1,4 @@
-import grapesjs, { EditorConfig } from 'grapesjs'
+import grapesjs from 'grapesjs'
 import openImport from './openImport'
 
 /**
@@ -212,7 +212,7 @@ export function getEditorConfig(id: string, rootUrl: string) {
 // Keep a ref to the editor singleton
 let editor
 
-export function initEditor(config: EditorConfig, grapesJsPlugins) {
+export function initEditor(config, grapesJsPlugins) {
   if(editor) throw new Error('Grapesjs editor already created')
 
   editor = grapesjs.init({
