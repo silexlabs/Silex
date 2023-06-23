@@ -2,13 +2,15 @@
 
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
+Brought to you by [Alex Hoyau](https://www.patreon.com/lexoyo) and [Silex contributors](https://github.com/silexlabs/Silex/graphs/contributors).
+
+You can help make Silex sustainable by being part of the community, contributing documentation or making a financial contribution. [Let's chat - every little bit helps!](https://github.com/silexlabs/Silex/discussions)
+
 ## About Silex, live web creation.
 
 Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project.
 
 Silex lets you create websites without coding, but it also has built-in editors for HTML, CSS, and JavaScript for when you need more control. It is used by freelancers and web studios to make real websites for real clients. Also Silex can generate templates or be integrated in a nodejs project, it has a plugin system and can integrate with headleass CMS and static site generators, it is part of the JSAMStack ecosystem since the v3.
-
-Brought to you by [Alex Hoyau](https://www.patreon.com/lexoyo) and [Silex contributors](https://github.com/silexlabs/Silex/graphs/contributors).
 
 Useful links
 
