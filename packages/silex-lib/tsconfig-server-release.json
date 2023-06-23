@@ -3,7 +3,6 @@
   "compilerOptions": {
     "outDir": "dist/",
     "target": "esnext",
-    "watch": false,
     "sourceMap": false,
     "module": "CommonJS",
     "removeComments": true,
