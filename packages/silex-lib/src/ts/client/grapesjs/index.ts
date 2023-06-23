@@ -258,15 +258,19 @@ export function initEditor(config, grapesJsPlugins) {
     editor.StyleManager.addProperty('extra',{ extend: 'filter' })
   })
 
-  editor.StorageManager.onError = (type: string, err: Error) => {
-    editor.Modal.open(type === 'load' ? {
+  // Handle errors
+  editor.on('storage:error:load', (err) => {
+    editor.Modal.open({
       title: 'Error loading website',
-      content: `This website could not be loaded.<br><hr>Error: ${err.message}`,
-    } : {
-      title: 'Error saving website',
-      content: `This website could not be saved.<br><hr>Error: ${err.message}`,
+      content: `This website could not be loaded.<br><hr>${err}`,
     })
-  }
+  })
+  editor.on('storage:error:store', (err) => {
+    editor.Modal.open({
+      title: 'Error saving website',
+      content: `This website could not be saved.<br><hr>${err}`,
+    })
+  })
 }
 
 export function getEditor() {
