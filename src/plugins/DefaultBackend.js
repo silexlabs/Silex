@@ -52,17 +52,38 @@ exports.del = async function (id) {
 
 // List projects
 exports.list = async function () {
-  const ids = await readdir(FS_ROOT)
-  return Promise.all(ids.map(async id => ({
-    id,
-    ...await exports.readData(id),
-    stats: await stat(path(id) + DATA_FILE_NAME),
-  })))
+  try {
+    const ids = await readdir(FS_ROOT)
+    return Promise.all(ids.map(async id => ({
+      id,
+      ...await exports.readData(id),
+      stats: await stat(path(id) + DATA_FILE_NAME),
+    })))
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.log(`\nError: Directory ${FS_ROOT} does not exist.\nIf your want to read from a different folder ues the FS_ROOT environment variable or --fs-root command line argument?\n`);
+      const betterError = new Error(`The directory ${FS_ROOT} does not exist`)
+      betterError.code = 'ENOENT'
+      throw betterError
+    }
+    throw error
+  }
 }
 // Read project data
 exports.readData = async function (id) {
-  const data = await readFile(path(id) + DATA_FILE_NAME)
-  return JSON.parse(data.toString())
+  const filePath = path(id) + DATA_FILE_NAME
+  try {
+    const data = await readFile(filePath)
+    return JSON.parse(data.toString())
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.log(`\nError: File ${filePath} or directory ${FS_ROOT} do not exist.\nIf your want to read from a different folder use the FS_ROOT environment variable or --fs-root command line argument?\n`);
+      const betterError = new Error(`The website ${id} does not exist`)
+      betterError.code = 'ENOENT'
+      throw betterError
+    }
+    throw error
+  }
 }
 // Write project data
 exports.writeData = async function (id, data) {
