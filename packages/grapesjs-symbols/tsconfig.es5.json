@@ -1,18 +1,18 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "CommonJS",
     "target": "ES5",
-    "lib": ["ES2020", "DOM"],
     "declaration": true,
-    "outDir": "./dist/es6",
+    "outDir": "./dist/es5",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true, // This is needed to avoid errors with the `@types/node` package (Found 89 errors in the same file, starting at: ../../node_modules/@types/webpack/index.d.ts:32)
-    "moduleResolution": "node"
+    "lib": ["ES2020", "DOM"]
   },
   "include": ["src/**/*.ts"],
   "exclude": [
-    "src/**/*.test.ts",
-    "**/node_modules",
-    "lib"
+      "src/**/*.test.ts",
+      "**/node_modules",
+      "lib"
   ]
 }

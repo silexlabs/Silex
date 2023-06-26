@@ -2,9 +2,15 @@
   "name": "@silexlabs/grapesjs-symbols",
   "version": "1.0.21",
   "description": "Symbols for GrapesJS",
-  "main": "dist/index.js",
-  "module": "src/index.ts",
-  "types": "dist/index.d.ts",
+
+  "main": "dist/es5/index.js",
+  "module": "dist/es6/index.js",
+  "types": "dist/es6/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+
   "repository": {
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-symbols.git"
@@ -14,7 +20,7 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build --patch=false",
+    "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json",
     "prepublishOnly": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "$npm_execpath run lint -- --fix",
