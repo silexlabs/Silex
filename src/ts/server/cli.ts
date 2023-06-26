@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * Silex website builder, free/libre no-code tool for makers.
  * Copyright (c) 2023 lexoyo and Silex Labs foundation
@@ -15,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#!/usr/bin/env node
 
 import { parse } from 'cli'
 
