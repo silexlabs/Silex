@@ -14,7 +14,11 @@
   "files": [
     "dist/",
     "src/",
+    "public",
+    ".silex.js",
+    ".silex",
     "package.json",
+    "package-lock.json",
     "README.md",
     "LICENSE"
   ],
