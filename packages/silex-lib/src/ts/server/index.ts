@@ -6,10 +6,11 @@ import * as types from '../types'
 import * as events from '../events'
 import * as constants from '../constants'
 import * as page from '../page'
-export default { config, types, events, constants, page }
+
+export { config, types, events, constants, page, start, getConfig }
 
 // Main app
-async function main() {
+export default async function main() {
   // Get the default config object
   const config = await getConfig()
 
@@ -26,7 +27,6 @@ I'm ready, listening to port ${config.port}
     startLiverReload()
   }
 }
-main()
 
 // livereload
 async function startLiverReload() {
@@ -40,4 +40,8 @@ async function startLiverReload() {
     console.info(`\n> Debug mode\n> Live reload server is running.\n> Watching ${dist}`)
   })
   server.watch(dist)
+}
+
+if (require.main === module) {
+  main()
 }

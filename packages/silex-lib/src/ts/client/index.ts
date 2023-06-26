@@ -36,6 +36,7 @@ export async function start(options = {}) {
     initEditor(config.editor, config.grapesJsPlugins)
   } catch(e) {
     console.error('Error starting Silex', e)
+    throw e
   }
 
   // Init internationalization module

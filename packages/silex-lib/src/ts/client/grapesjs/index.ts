@@ -14,7 +14,7 @@ import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
-import * as symbolsPlugin from '@silexlabs/grapesjs-symbols' // Why is this not working without *?
+import {cmdAddSymbol, init as symbolsPlugin} from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
@@ -55,9 +55,9 @@ const plugins = [
 ]
 // Check that all plugins are loaded correctly
 plugins
-  .filter(p => !p.value)
+  .filter(p => typeof p.value !== 'function')
   .forEach(p => {
-    throw new Error(`Plugin ${p.name} could not be loaded correctly`)
+    throw new Error(`Plugin ${p.name} could not be loaded correctly (${p.value})`)
   })
 
 // ////////////////////
@@ -215,13 +215,18 @@ let editor
 export function initEditor(config, grapesJsPlugins) {
   if(editor) throw new Error('Grapesjs editor already created')
 
-  editor = grapesjs.init({
-    plugins: [
-      ...grapesJsPlugins,
-      ...config.plugins,
-    ],
-    ...config,
-  })
+  try {
+    editor = grapesjs.init({
+      plugins: [
+        ...grapesJsPlugins,
+        ...config.plugins,
+      ],
+      ...config,
+    })
+  } catch(e) {
+    console.error('Error initializing GrapesJs with plugins:', plugins, e)
+    throw e
+  }
 
   // customize the editor
   ;['text']

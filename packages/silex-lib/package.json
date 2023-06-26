@@ -11,6 +11,13 @@
   "bin": {
     "silex": "./dist/server/cli.js"
   },
+  "files": [
+    "dist/",
+    "src/",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "license": "GPL-3.0",
   "engines": {
     "node": ">=18"
