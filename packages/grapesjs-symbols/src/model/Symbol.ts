@@ -4,7 +4,6 @@ import { Component, ComponentProperties } from 'grapesjs'
 import { Symbols } from './Symbols'
 import { find, all, children, getCaret, setCaret } from '../utils'
 import { uniqueId } from 'underscore'
-import src from '..'
 
 type SymbolAttributes = {
   id: string,

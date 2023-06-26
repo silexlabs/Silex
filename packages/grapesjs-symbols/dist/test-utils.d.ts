@@ -1,4 +1,4 @@
-import Symbol from './model/Symbol';
+import { SymbolEditor } from './model/Symbols';
 export declare function getTestSymbols(): {
     child11: any;
     child12: any;
@@ -8,12 +8,12 @@ export declare function getTestSymbols(): {
     child211: any;
     comp1: any;
     comp2: any;
-    s1: Symbol;
-    s2: Symbol;
+    s1: import("./model/Symbol").default;
+    s2: import("./model/Symbol").default;
     s1Data: {
         icon: string;
         label: string;
         symbolId: string;
     };
-    editor: import("grapesjs").Editor;
+    editor: SymbolEditor;
 };

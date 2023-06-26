@@ -29,7 +29,7 @@ declare class Symbol extends Backbone.Model {
 	 * @returns The symbol instances
 	 * @private
 	 */
-	getAll(addOne: Component | null, excludeOne: Component | null): Component[];
+	getAll(addOne?: Component | null, excludeOne?: Component | null): Component[];
 	/**
 	 * Browse all instances and their children matching the changed component
 	 * Includes the `model` of this symbol
@@ -50,9 +50,10 @@ declare class Symbol extends Backbone.Model {
 	 * Update attributes of all instances and their children according to changes of a component
 	 * Also update the `model` attribute of this symbol
 	 * @param srcInst - the instance of this symbol containing `child`
+	 * @param parent - the element whose children have changed
 	 * @param srcChild - the child which has the changes
 	 */
-	applyChildren(srcInst: Component, srcChild: Component): void;
+	applyChildren(srcInst: Component, parent: Component, srcChild: Component): void;
 	/**
 	 * Update attributes of all instances and their children according to changes of a component
 	 * Also update the `model` attribute of this symbol

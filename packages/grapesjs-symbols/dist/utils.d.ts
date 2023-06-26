@@ -43,7 +43,7 @@ export declare function wait(ms?: number): Promise<unknown>;
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
  */
-export declare function getNodePath(root: Node, node: ChildNode): any[];
+export declare function getNodePath(root: Node, node: Node): any[];
 /**
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test

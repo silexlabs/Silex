@@ -1,9 +1,9 @@
 {
-  "type": "module",
   "name": "@silexlabs/grapesjs-symbols",
   "version": "1.0.20",
   "description": "Symbols for GrapesJS",
   "main": "dist/index.js",
+  "module": "src/index.ts",
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "prepublishOnly": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "$npm_execpath run lint -- --fix",
-    "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
+    "test": "jest",
     "test:watch": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js --watch",
     "bump": "$npm_execpath version patch -m 'Bump v%s'"
   },

@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   transform: {},
   preset: "ts-jest",
 }
