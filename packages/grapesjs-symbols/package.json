@@ -1,8 +1,7 @@
 {
   "name": "@silexlabs/grapesjs-symbols",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "Symbols for GrapesJS",
-
   "main": "dist/es5/index.js",
   "module": "dist/es6/index.js",
   "types": "dist/es6/index.d.ts",
@@ -10,7 +9,6 @@
     "dist",
     "src"
   ],
-
   "repository": {
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-symbols.git"
