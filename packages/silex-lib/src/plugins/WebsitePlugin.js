@@ -3,7 +3,7 @@ const { resolve } = require('path')
 const formidable = require('formidable')
 
 const { noCache } = require('./Cache')
-const { defaultSite } = require('@silexlabs/silex').default.types
+const { defaultSite } = require('../../')
 
 const EVENT_READ_START = 'EVENT_READ_START'
 const EVENT_READ_END = 'EVENT_READ_END'
