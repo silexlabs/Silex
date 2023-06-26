@@ -7,7 +7,7 @@
     "module": "ESNext",
     "removeComments": false,
     "allowJs": true,
-    //"skipLibCheck": true,
+    "skipLibCheck": true,
     "typeRoots": [
       "src/ts/types",
       "node_modules/@types"
