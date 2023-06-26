@@ -17,7 +17,7 @@ async function mkdirIfNotExists(path, options = null) {
 }
 
 // Paths
-const FS_ROOT = process.env.FS_ROOT || join(homedir(), '.silex')
+const FS_ROOT = process.env.FS_ROOT || join(__dirname, '../../', '.silex')
 const ASSETS_PATH = 'assets'
 const ASSETS_URL = 'assets'
 const DATA_FILE_NAME = '/.silex.data.json'
