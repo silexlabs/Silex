@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
+import silex from './index'
 import { parse } from 'cli'
 
 const options = parse({
@@ -48,4 +48,4 @@ if(options['cors-url']) process.env.SILEX_CORS_URL = options['cors-url']
 if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
 if(options['fs-root']) process.env.FS_ROOT = options['fs-root']
 
-import './index'
+silex()
