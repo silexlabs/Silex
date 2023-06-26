@@ -31,7 +31,7 @@ import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
-import {cmdAddSymbol, init as symbolsPlugin} from '@silexlabs/grapesjs-symbols'
+import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
@@ -246,7 +246,7 @@ export function initEditor(config, grapesJsPlugins) {
   }
 
   // customize the editor
-  ;['text']
+  ['text']
     .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
   ;['image', 'video']
     .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))

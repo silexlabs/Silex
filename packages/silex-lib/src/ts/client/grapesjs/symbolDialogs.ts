@@ -16,7 +16,7 @@
  */
 
 import * as grapesjs from 'grapesjs/dist/grapes.min.js'
-import { cmdAddSymbol } from '@silexlabs/grapesjs-symbols/src'
+import { cmdAddSymbol } from '@silexlabs/grapesjs-symbols'
 
 export const cmdPromptAddSymbol = 'symbol-prompt-add'
 
