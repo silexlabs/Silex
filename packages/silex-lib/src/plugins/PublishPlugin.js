@@ -1,3 +1,18 @@
+/**
+ * Publication backend should have
+ * 
+ * - getAuthorizeURL()
+ * - setAuthToken(session)
+ * - isLoggedIn(session)
+ * - login(session)
+ * - logout(session)
+ * - getAdminUrl(session, id)
+ * - publish(session, id, files: [{path, stream}]) => deploymentId
+ * - getPublicationStatus(session, deploymentId)
+ * - getPublicationUrl(session, id)
+ */
+
+
 const express = require('express')
 const { resolve } = require('path')
 

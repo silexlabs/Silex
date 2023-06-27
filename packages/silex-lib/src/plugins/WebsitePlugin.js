@@ -1,7 +1,6 @@
 const { Router } = require('express')
 const { resolve } = require('path')
 const formidable = require('formidable')
-
 const { noCache } = require('./Cache')
 const { defaultSite } = require('../../')
 
@@ -19,19 +18,19 @@ const EVENT_ASSET_WRITE_END = 'EVENT_ASSET_WRITE_END'
 module.exports = async function(config, opts = {}) {
   // Options with defaults
   const options = {
-    // Defaults
-    backend: 'src/plugins/DefaultBackend.js',
     // Default data for new websites
     defaultSite,
+    // Default constants
+    assetsPath: '/assets',
     // Options
     ...opts
   }
 
   // Link to the desired backend
-  const backend = resolve(__dirname, '../..', options.backend)
-  const { assetsDir, assetUrl, init, writeData, readData, list, del } = require(backend)
+  const storage = config.getStorage()
 
   config.on('silex:startup:start', ({app}) => {
+    // Create a new router
     const router = Router()
 
     // website specials
@@ -49,15 +48,12 @@ module.exports = async function(config, opts = {}) {
     if(id) {
       // Returns a website data
       try {
-        config.emit(EVENT_READ_START, { req, id })
-        const data = await readData(id)
-        config.emit(EVENT_READ_END, { req, res, data, id })
-        res
-          .type('application/json')
-          .send({
-            ...options.defaultSite,
-            ...data,
-          })
+        const file = await storage.readFile({}, id, `/website.json`)
+        if (typeof file.content === 'string') {
+          res.json(JSON.parse(file.content))
+        } else {
+          file.content.pipe(res.type('application/json'))
+        }
       } catch (err) {
         if(err.code === 'ENOENT') {
           console.error('Read file error, website does not exist', err)
@@ -70,9 +66,7 @@ module.exports = async function(config, opts = {}) {
     } else {
       // list websites
       try {
-        config.emit(EVENT_READ_START, { req, id })
-        const data = await list()
-        config.emit(EVENT_READ_END, { req, res, data, id })
+        const data = await storage.listDir({}, '/')
         res
           .type('application/json')
           .send(data)
@@ -104,22 +98,25 @@ module.exports = async function(config, opts = {}) {
 
   async function writeWebsite(req, res) {
     const id = req.query.id
-    const [data, err] = fromBody(req.body)
+    const [content, err] = fromBody(req.body)
     if(err) {
       res.status(400).json({ message: 'Error writing data file, could not parse the provided body: ' + err.message, code: err.code})
       return
     }
-    config.emit(EVENT_WRITE_START, { req, id, data })
     try {
-      await init(id)
-      await writeData(id, data)
+      await storage.init({}, id)
+      await storage.writeFiles({}, id, [
+        {
+          path: `/website.json`,
+          content: JSON.stringify(content),
+        },
+      ]);
+
     } catch (err) {
       console.error('Error writing data file', err)
       res.status(500).json({ message: 'Error writing data file: ' + err.message, code: err.code})
       return
     }
-
-    config.emit(EVENT_WRITE_END, { res, req, id, data })
 
     res.json({
       message: 'OK',
@@ -130,9 +127,7 @@ module.exports = async function(config, opts = {}) {
     const { id } = req.query
     if(id) {
       try {
-        config.emit(EVENT_DELETE_START, { req, id })
-        const data = await del(id)
-        config.emit(EVENT_DELETE_END, { req, res, data, id })
+        const data = await storage.deleteDir(id, '/')
         res
           .type('application/json')
           .send(data)
@@ -146,34 +141,25 @@ module.exports = async function(config, opts = {}) {
         }
       }
     } else {
-      // list websites
-      try {
-        config.emit(EVENT_DELETE_START, { req, id })
-        const data = await list()
-        config.emit(EVENT_DELETE_END, { req, res, data, id })
-        res
-          .type('application/json')
-          .send(data)
-      } catch (err) {
-        console.error('List sites error', err)
-        res.status(400).json({ message: err.message, code: err.code })
-      }
+      res.status(400).json({ message: 'Missing id'})
     }
   }
 
   async function readAsset(req, res) {
     const id = req.query.id
     const fileName = req.params[0]
-    const uploadDir = await assetsDir(id)
-    config.emit(EVENT_ASSET_READ_START, { req, id, fileName, uploadDir })
-    res.sendFile(`${uploadDir}/${fileName}`)
-    config.emit(EVENT_ASSET_READ_END, { req, id, fileName, uploadDir })
+    //const uploadDir = await assetsDir(id)
+    //res.sendFile(`${uploadDir}/${fileName}`)
+    const file = await storage.readFile({}, id, `/${options.assetsPath}/${fileName}`)
+    if (typeof file.content === 'string') {
+      res.send(file.content)
+    } else {
+      await files.content.pipe(res)
+    }
   }
 
   async function writeAsset(req, res) {
     const id = req.query.id
-    // FIXME: assetsDir and assetsUrl will both download the site settings file => get both in 1 call
-    const uploadDir = await assetsDir(id)
 
     const form = formidable({
       uploadDir,
@@ -182,26 +168,25 @@ module.exports = async function(config, opts = {}) {
       keepExtensions: true,
     })
 
-    form.parse(req, async (err, fields, files) => {
+    form.parse(req, async (err, fields, _files) => {
       if (err) {
         console.error('Error parsing upload data', err)
         res
           .status(400)
           .json({ message: 'Error parsing upload data: ' + err.message, code: err.code})
-        return
+      } else {
+        const files = [].concat(_files['files[]'])
+        await storage.writeFiles(
+          {},
+          id,
+          files
+            .map(({ originalFilename, filepath }) => ({
+              path: `/${options.assetsPath}/${originalFilename}`,
+              content: fs.createReadStream(filepath),
+            }))
+        )
+        res.json(files.map(({ originalFilename }) => `assets/${originalFilename}?id=${id}`))
       }
-      Promise.all(
-        [].concat(files['files[]']) // may be an array or 1 element
-          .map(file => {
-            const { originalFilename, filepath } = file
-            return assetUrl(id, originalFilename)
-          })
-      )
-        .then(data => {
-          config.emit(EVENT_ASSET_WRITE_START, { req, id, uploadDir, form, data })
-          res.json({ data })
-          config.emit(EVENT_ASSET_WRITE_END, { res, req, id, uploadDir, form, data })
-        })
     })
   }
 }
