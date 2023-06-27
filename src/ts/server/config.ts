@@ -30,6 +30,10 @@ import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Router } from 'express'
 import { readFile } from 'fs/promises'
 import { EVENT_STARTUP_START } from '../events'
+import { HostingProvider, Storage } from './backends/Backend'
+import { FsBackend } from './backends/FsBackend'
+
+const defaultBackend = new FsBackend({})
 
 /**
  * Config types definitions
@@ -43,6 +47,23 @@ export class ServerConfig extends Config {
   ) {
     super()
   }
+
+  private storage: Storage = defaultBackend
+  setStorage(storage: Storage) {
+    this.storage =storage 
+  }
+  getStorage(): Storage {
+    return this.storage
+  }
+
+  private hostingProviders: HostingProvider[] = [defaultBackend]
+  addHostingProvider(hosting: HostingProvider | HostingProvider[]) {
+    this.setHostingProviders(this.hostingProviders.concat(hosting))
+  }
+  setHostingProviders(hostings: HostingProvider[]) {
+    this.hostingProviders = hostings
+  }
+  getHostingProviders(): HostingProvider[] { return this.hostingProviders }
 }
 
 // Get config async function

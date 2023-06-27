@@ -1,5 +1,5 @@
-module.exports = function (silexConfig, options) {
-  silexConfig.addPlugin([
+module.exports = async function (config, options) {
+  await config.addPlugin([
     __dirname + '/src/plugins/ExpressPlugin.js',
     __dirname + '/src/plugins/SslPlugin.js',
     __dirname + '/src/plugins/StaticPlugin.js',

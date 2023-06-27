@@ -95,7 +95,7 @@ export interface PublicationSettings {
   },
 }
 
-export interface File {
+export interface WebsiteFile {
   html: string,
   css: string,
   htmlPath: string,
@@ -146,4 +146,3 @@ export type Selector = string | {
   name: string,
   type: number,
 }
-
