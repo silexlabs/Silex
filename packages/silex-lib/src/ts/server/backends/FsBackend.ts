@@ -1,12 +1,15 @@
 import fs from 'fs/promises'
 import { createWriteStream } from 'fs'
 import fsExtra from 'fs-extra'
-import { File, Storage, HostingProvider } from './Backend'
+import { File, Storage, HostingProvider, AuthProvider } from './Backend'
 import { join } from 'path'
+import { pathToFileURL } from 'url'
 
-export class FsBackend implements Storage, HostingProvider {
-  name = 'FsBackend'
+export class FsBackend implements Storage, AuthProvider, HostingProvider {
+  name = 'File system'
+  icon = 'file'
   rootPath: string
+  disableLogout = true
   options: { rootPath: string }
 
   constructor(opts) {
@@ -20,9 +23,7 @@ export class FsBackend implements Storage, HostingProvider {
     return ''
   }
 
-  async setAuthToken(session: any): Promise<void> {}
-
-  isLoggedIn(session: any): boolean {
+  async isLoggedIn(session: any): Promise<boolean> {
     return true
   }
 
@@ -33,6 +34,8 @@ export class FsBackend implements Storage, HostingProvider {
   async getAdminUrl(session: any, id: string): Promise<string> {
     return ''
   }
+
+  async addAuthRoutes(router: any): Promise<void> {}
 
   async init(session: any, id: string): Promise<void> {
     await fs.mkdir(join(this.options.rootPath, id), { recursive: true })
@@ -75,6 +78,15 @@ export class FsBackend implements Storage, HostingProvider {
   async deleteDir(session: any, id: string, path: string): Promise<void> {
     await fsExtra.remove(join(this.options.rootPath, id, path))
   }
-
-  async publish(session: any, id: string): Promise<void> {}
+  async getFileUrl(session: any, id: string, path: string): Promise<string> {
+    const filePath = join(this.options.rootPath, id, path)
+    console.log('getFileUrl', filePath)
+    const fileUrl = new URL(filePath, 'file://')
+    console.log('getFileUrl', filePath, fileUrl)
+    console.log('getFileUrl', pathToFileURL(fileUrl.toString()).toString())
+    return fileUrl.toString()
+  }
+  async getPublicationStatusUrl(session: any, id: string): Promise<string> {
+    return ''
+  }
 }

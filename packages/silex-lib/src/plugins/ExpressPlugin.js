@@ -3,6 +3,7 @@ const compression = require('compression')
 const cookieParser = require('cookie-parser')
 const session = require('cookie-session')
 const cors = require('cors')
+const { Router } = require('express')
 
 module.exports = async function(config, opts = {}) {
   // Options with defaults
@@ -34,6 +35,17 @@ module.exports = async function(config, opts = {}) {
       name: options.sessionName,
       secret: options.sessionSecret,
     }))
+    // Add auth routes
+    const router = new Router()
+    const storage = config.getStorage()
+    const hostingProviders = config.getHostingProviders()
+    console.log('Add auth routes for storage', storage.name)
+    storage.addAuthRoutes(router)
+    hostingProviders.forEach(provider => {
+      console.log('Add auth routes for hosting provider', provider.name)
+      provider.addAuthRoutes(router)
+    })
+    app.use(router)
   })
 }
 

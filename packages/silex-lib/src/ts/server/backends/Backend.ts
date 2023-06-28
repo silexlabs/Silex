@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Router } from 'express'
 import { Readable } from 'stream'
 
 /**
@@ -36,12 +37,23 @@ export interface File {
  */
 export interface Backend {
   name: string
+  icon: string
+  getAdminUrl(session: any, id: string): Promise<string>
+  getFileUrl(session: any, id: string, path: string): Promise<string>
+  init(session: any, id: string): Promise<void>
+}
+
+
+/**
+ * Auth providers are used to authenticate the user
+ */
+export interface AuthProvider extends Backend {
   getAuthorizeURL(session: any): Promise<string>
-  setAuthToken(session: any, token: any): Promise<void>
+  isLoggedIn(session: any): Promise<boolean>
   login(session: any): Promise<void>
   logout(session: any): Promise<void>
-  getAdminUrl(session: any, id: string): Promise<string>
-  init(session: any, id: string): Promise<void>
+  addAuthRoutes(router: Router): Promise<void>
+  disableLogout?: boolean
 }
 
 /**
@@ -49,7 +61,7 @@ export interface Backend {
  * And possibly rename files and directories, and get the URL of a file
  * 
  */
-export interface Storage extends Backend {
+export interface Storage extends AuthProvider {
   readFile(session: any, id: string, path: string): Promise<File>
   writeFiles(session: any, id: string, files: File[]): Promise<void>
   deleteFiles(session: any, id: string, paths: string[]): Promise<void>
@@ -61,6 +73,7 @@ export interface Storage extends Backend {
 /**
  * Hosting providers are used to publish the website
  */
-export interface HostingProvider extends Backend {
-  publish(session: any, id: string): Promise<void>
+export interface HostingProvider extends AuthProvider {
+  writeFiles(session: any, id: string, files: File[]): Promise<void>
+  getPublicationStatusUrl(session: any, id: string): Promise<string>
 }

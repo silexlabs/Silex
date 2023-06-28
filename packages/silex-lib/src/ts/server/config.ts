@@ -30,7 +30,7 @@ import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Router } from 'express'
 import { readFile } from 'fs/promises'
 import { EVENT_STARTUP_START } from '../events'
-import { HostingProvider, Storage } from './backends/Backend'
+import { AuthProvider, HostingProvider, Storage } from './backends/Backend'
 import { FsBackend } from './backends/FsBackend'
 
 const defaultBackend = new FsBackend({})
@@ -48,6 +48,7 @@ export class ServerConfig extends Config {
     super()
   }
 
+  // Storage to store the website data and assets
   private storage: Storage = defaultBackend
   setStorage(storage: Storage) {
     this.storage =storage 
@@ -56,6 +57,7 @@ export class ServerConfig extends Config {
     return this.storage
   }
 
+  // Hosting providers to publish the website online
   private hostingProviders: HostingProvider[] = [defaultBackend]
   addHostingProvider(hosting: HostingProvider | HostingProvider[]) {
     this.setHostingProviders(this.hostingProviders.concat(hosting))
