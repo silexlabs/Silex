@@ -1,25 +1,27 @@
+/*
+ * Silex website builder, free/libre no-code tool for makers.
+ * Copyright (c) 2023 lexoyo and Silex Labs foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 const { Router } = require('express')
-const { resolve } = require('path')
 const formidable = require('formidable')
 const { noCache } = require('./Cache')
-const { defaultSite } = require('../../')
-
-const EVENT_READ_START = 'EVENT_READ_START'
-const EVENT_READ_END = 'EVENT_READ_END'
-const EVENT_DELETE_START = 'EVENT_WRITE_START'
-const EVENT_DELETE_END = 'EVENT_WRITE_END'
-const EVENT_WRITE_START = 'EVENT_WRITE_START'
-const EVENT_WRITE_END = 'EVENT_WRITE_END'
-const EVENT_ASSET_READ_START = 'EVENT_ASSET_READ_START'
-const EVENT_ASSET_READ_END = 'EVENT_ASSET_READ_END'
-const EVENT_ASSET_WRITE_START = 'EVENT_ASSET_WRITE_START'
-const EVENT_ASSET_WRITE_END = 'EVENT_ASSET_WRITE_END'
 
 module.exports = async function(config, opts = {}) {
   // Options with defaults
   const options = {
-    // Default data for new websites
-    defaultSite,
     // Default constants
     assetsPath: '/assets',
     // Options
@@ -43,12 +45,17 @@ module.exports = async function(config, opts = {}) {
     app.use(noCache,  router)
   })
 
+  /**
+   * Returns a website data or list all websites
+   * 
+   */
   async function readWebsite(req, res) {
     const { id } = req.query
+    const { session } = req
     if(id) {
       // Returns a website data
       try {
-        const file = await storage.readFile({}, id, `/website.json`)
+        const file = await storage.readFile(session, id, `/website.json`)
         if (typeof file.content === 'string') {
           res.json(JSON.parse(file.content))
         } else {
@@ -66,7 +73,7 @@ module.exports = async function(config, opts = {}) {
     } else {
       // list websites
       try {
-        const data = await storage.listDir({}, '/')
+        const data = await storage.listDir(session, '/')
         res
           .type('application/json')
           .send(data)
@@ -97,6 +104,7 @@ module.exports = async function(config, opts = {}) {
   }
 
   async function writeWebsite(req, res) {
+    const { session } = req
     const id = req.query.id
     const [content, err] = fromBody(req.body)
     if(err) {
@@ -104,8 +112,8 @@ module.exports = async function(config, opts = {}) {
       return
     }
     try {
-      await storage.init({}, id)
-      await storage.writeFiles({}, id, [
+      await storage.init(session, id)
+      await storage.writeFiles(session, id, [
         {
           path: `/website.json`,
           content: JSON.stringify(content),
@@ -146,11 +154,12 @@ module.exports = async function(config, opts = {}) {
   }
 
   async function readAsset(req, res) {
+    const { session } = req
     const id = req.query.id
     const fileName = req.params[0]
     //const uploadDir = await assetsDir(id)
     //res.sendFile(`${uploadDir}/${fileName}`)
-    const file = await storage.readFile({}, id, `/${options.assetsPath}/${fileName}`)
+    const file = await storage.readFile(session, id, `/${options.assetsPath}/${fileName}`)
     if (typeof file.content === 'string') {
       res.send(file.content)
     } else {
@@ -159,6 +168,7 @@ module.exports = async function(config, opts = {}) {
   }
 
   async function writeAsset(req, res) {
+    const { session } = req
     const id = req.query.id
 
     const form = formidable({
@@ -177,7 +187,7 @@ module.exports = async function(config, opts = {}) {
       } else {
         const files = [].concat(_files['files[]'])
         await storage.writeFiles(
-          {},
+          session,
           id,
           files
             .map(({ originalFilename, filepath }) => ({

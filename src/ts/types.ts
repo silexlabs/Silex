@@ -19,36 +19,6 @@
  * @fileoverview define types for Silex client and server
  */
 
-// Note: paths begin and end **without** slash
-export const defaultPublicationSettings: PublicationSettings = {
-  path: 'publication',
-  url: '',
-  autoHomePage: true,
-  assets: { path: 'assets', url: '/assets' },
-  html: { path: '' },
-  css: { path: 'css', url: '/css' },
-}
-
-export const defaultSite: WebsiteData = {
-  pages: [{name: 'Main', id: 'main', frames: [{component: {type: 'text', stylable: []}, components: []}]}],
-  assets: [],
-  styles: [],
-  name: 'New website',
-  settings: {
-    description: '',
-    title: '',
-    head: '',
-    lang: '',
-    favicon: '',
-    'og:title': '',
-    'og:description': '',
-    'og:image': '',
-  },
-  fonts: [],
-  symbols: [],
-  publication: defaultPublicationSettings,
-}
-
 export interface WebsiteSettings {
   description: string,
   title: string,
