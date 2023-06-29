@@ -55,7 +55,7 @@ export const publishPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => 
     className: 'silex-button--size publish-button',
     command: cmdPublish,
     attributes: { title: 'Publish' },
-    label: '<span class="fa fa-rocket"></span><span class="silex-button--small">Publish</span>',
+    label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
   })
   editor.Commands.add(cmdPublish, {
     run(editor) { openDialog(editor) },
@@ -93,6 +93,7 @@ async function update(editor) {
   }
 }
 async function getOpenPublishDialog(editor) {
+  console.log('getOpenPublishDialog', {status})
   return html`
     <main>
       ${ status === STATUS_PENDING ? html`

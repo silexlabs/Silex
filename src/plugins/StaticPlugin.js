@@ -22,6 +22,12 @@ module.exports = async function(config, opts = {}) {
         route: '/',
         path: 'public',
       }, {
+        route: '/css/',
+        path: 'node_modules/@fortawesome/fontawesome-free/css/',
+      }, {
+        route: '/webfonts/',
+        path: 'node_modules/@fortawesome/fontawesome-free/webfonts/',
+      }, {
         route: '/',
         path: 'dist/client',
       },

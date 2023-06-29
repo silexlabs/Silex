@@ -115,6 +115,8 @@ export function getEditorConfig(id: string, rootUrl: string) {
       },
     },
 
+    cssIcons: '/css/all.min.css',
+
     plugins: plugins.map(p => p.value),
 
     pluginsOpts: {
@@ -138,13 +140,13 @@ export function getEditorConfig(id: string, rootUrl: string) {
             command: 'open-blocks',
           }, {
             id: 'symbols-btn',
-            className: 'symbols-btn fa fa-fw fa-diamond',
+            className: 'symbols-btn fa-regular fa-gem',
             attributes: { title: 'Symbols', containerClassName: 'symbols-list-container', },
             command: 'open-symbols',
             buttons: [
               {
                 id: 'symbol-create-button',
-                className: 'pages__add-page fa fa-plus',
+                className: 'pages__add-page fa-solid fa-plus',
                 label: 'Create symbol from selection',
                 command: cmdPromptAddSymbol,
               },
@@ -161,17 +163,17 @@ export function getEditorConfig(id: string, rootUrl: string) {
             }],
           }, {
             id: 'layer-manager-btn',
-            className: 'layer-manager-btn fa fa-fw fa-list',
+            className: 'layer-manager-btn fa-solid fa-layer-group',
             attributes: { title: 'Layers', containerClassName: 'layer-manager-container', },
             command: 'open-layers',
           }, {
             id: 'font-dialog-btn',
-            className: 'font-manager-btn fa fa-fw fa-font',
+            className: 'font-manager-btn fa-solid fa-font',
             attributes: { title: 'Fonts' },
             command: cmdOpenFonts,
           }, {
             id: 'settings-dialog-btn',
-            className: 'page-panel-btn fa fa-fw fa-cog',
+            className: 'page-panel-btn fa-solid fa-gears',
             attributes: { title: 'Settings' },
             command: cmdOpenSettings,
           }, {
