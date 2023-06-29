@@ -42,3 +42,62 @@
   }
 }
 
+/*
+*/
+// Font awesome 5 fix
+// https://github.com/GrapesJS/grapesjs/issues/644#issuecomment-833215677
+.gjs-editor-cont .fa {
+	font-weight: 400;
+}
+
+.fa-square-o:before {
+	content: "\f0c8";
+}
+
+.fa-trash-o:before {
+	content: "\f1f8";
+}
+
+.fa-map-o:before {
+	content: "\f279";
+}
+
+.fa-youtube-play:before {
+	content: "\f04b";
+}
+
+/* Fix: open close chevrons: FA5 has the tags in different order ?!!? */
+.fa-chevron-right:before {
+	content: "\f054";
+}
+
+.fa-chevron-down:before {
+	content: "\f078";
+}
+
+// Font awesome 6 fix
+.fa-cog:before {
+  font-weight: 900;
+}
+
+.fa-paint-brush:before {
+  font-weight: 900;
+}
+
+.fa-arrows-alt:before {
+	content: "\f065";
+  font-weight: 900;
+}
+
+/*
+.fa-plus:before {
+	content: "+";
+  font-size: 35px;
+}
+.fa-diamond:before {
+  content: "\f3a5";
+}
+// .fa-plus {
+//   background-image: svg(<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg>);
+// }
+*/
