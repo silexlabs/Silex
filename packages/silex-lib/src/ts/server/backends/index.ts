@@ -20,7 +20,7 @@ import { Readable } from 'stream'
 import { ServerConfig } from '../config'
 import { EVENT_STARTUP_START } from '../../events'
 import { JobStatus, JobData, BackendData, BackendId, WebsiteId } from '../../types'
-import { BACKEND_LIST_PATH, BACKEND_LOGIN_CALLBACK_PATH, BACKEND_LOGOUT_PATH } from '../../constants'
+import { API_BACKEND_LIST, API_BACKEND_LOGIN_CALLBACK, API_BACKEND_LOGOUT } from '../../constants'
 import { requiredParam } from '../utils/validation'
 
 /**
@@ -131,14 +131,14 @@ export function addRoutes(app: Application) {
   app.use(router)
 
   // List backends route
-  router.get(`/${BACKEND_LIST_PATH}`, routeListBackends)
+  router.get(`/${API_BACKEND_LIST}`, routeListBackends)
 
   // Logout route
-  router.post(`/${BACKEND_LOGOUT_PATH}`, routeLogout)
+  router.post(`/${API_BACKEND_LOGOUT}`, routeLogout)
 
   // Login success route
   // Post a message to the opener window with the data from the backend in the query string
-  router.get(`/${BACKEND_LOGIN_CALLBACK_PATH}`, routeLoginSuccess)
+  router.get(`/${API_BACKEND_LOGIN_CALLBACK}`, routeLoginSuccess)
 }
 
 /**

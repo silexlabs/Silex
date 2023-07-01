@@ -18,9 +18,9 @@
 import express from 'express'
 import { noCache } from './Cache'
 import { minify } from 'html-minifier'
-import { HOSTING_PUBLISH_PATH, HOSTING_PUBLICATION_STATUS_PATH } from '../constants'
+import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../constants'
 import { getJob } from '../server/jobs'
-import { JobId, PublicationSettings, WebsiteData } from '../types'
+import { ApiPublicationPublishRequestBody, ApiPublicationPublishRequestQuery, ApiPublicationPublishResponse, ApiPublicationStatusRequestQuery, ApiPublicationStatusResponse, ApiResponseError, JobData, JobId, PublicationSettings, WebsiteData } from '../types'
 import { BackendType, HostingProvider, getBackend } from '../server/backends'
 import { ServerConfig } from '../server/config'
 import { requiredParam } from '../server/utils/validation'
@@ -80,28 +80,34 @@ export default async function(config: ServerConfig, opts = {}) {
     const router = express.Router()
 
     // Get publication status
-    router.get(`/${HOSTING_PUBLICATION_STATUS_PATH}`, async function (req, res) {
-      const id: JobId = req.query.id as string
-      const job = id && getJob(id)
+    router.get(`/${API_PUBLICATION_STATUS}`, async function (req, res) {
+      const query: ApiPublicationStatusRequestQuery = req.query as any
+      const jobId: JobId = query.jobId as string
+      const job = jobId && getJob(jobId)
       if (!job) {
-        console.error(`Error: job not found with id ${id}`)
-        res.status(404).send({
+        console.error(`Error: job not found with id ${jobId}`)
+        res.status(404).json({
           message: 'Error: job not found.',
-        })
+        } as ApiResponseError)
         return
       }
-      res.send(job)
+      console.log(`Job found with id ${jobId}`, job)
+      res.json({
+        ...job,
+        _timeout: undefined,
+      } as ApiPublicationStatusResponse)
     })
 
     // Publish website
-    router.post(`/${HOSTING_PUBLISH_PATH}`, async function (req, res) {
+    router.post(`/${API_PUBLICATION_PUBLISH}`, async function (req, res) {
       try {
-        const id = requiredParam<string>(req.query.id as string, 'id in query')
+        const query: ApiPublicationPublishRequestQuery = req.query as any
+        const body: ApiPublicationPublishRequestBody = req.body
+        const id = requiredParam<string>(query.id as string, 'id in query')
         const session = requiredParam(req['session'], 'session on express request')
-        const config = requiredParam<ServerConfig>(req['config'], 'config on express request')
 
         // Check params
-        const { files, publication } = req.body.data as WebsiteData
+        const { files, publication } = body as WebsiteData
         const publicationSettings: PublicationSettings = {
           ...defaultPublication,
           ...publication,
@@ -137,19 +143,24 @@ export default async function(config: ServerConfig, opts = {}) {
         }]))
         try {
           console.log('Publishing the website', filesList, session)
-          const job = await hostingProvider.publish(session, id, publicationSettings.backend!, filesList)
           res.json({
             url: await hostingProvider.getWebsiteUrl(session, backendId),
-            ...job,
-          })
+            job: await hostingProvider.publish(session, id, publicationSettings.backend!, filesList),
+          } as ApiPublicationPublishResponse)
         } catch (err) {
           console.error('Error publishing the website', err)
-          res.status(500).json({ message: `Error publishing the website. ${err.message}` })
+          res.status(500).json({
+            message: `Error publishing the website. ${err.message}`
+          } as ApiResponseError)
           return
         }
       } catch (err) {
         console.error('Error publishing the website', err)
-        res.status(err.code ?? 500).json({ message: `Error publishing the website. ${err.message}` })
+        res
+          .status(err.code ?? 500)
+          .json({
+            message: `Error publishing the website. ${err.message}`
+          } as ApiResponseError)
         return
       }
     })

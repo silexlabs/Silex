@@ -1,5 +1,5 @@
-import fetch from "node-fetch"
-import { ServerConfig } from "../server/config"
+import fetch from 'node-fetch'
+import { ServerConfig } from '../server/config'
 
 type HooksOptions = {
   gitUrl?: string
@@ -7,6 +7,14 @@ type HooksOptions = {
 }
 
 const rootPath = process.env.DATA_FOLDER
+
+// **********
+throw new Error('TODO: implement hooks plugin')
+const EVENT_ASSET_WRITE_END = 'silex:asset:write:end'
+const EVENT_PUBLISH_END = 'silex:publish:end'
+const EVENT_WRITE_END = 'silex:write:end'
+function projectPath(projectId: string) { return `${rootPath}/${projectId}` }
+// **********
 
 export default async function(config: ServerConfig, opts: HooksOptions = {}) {
   // Options with defaults

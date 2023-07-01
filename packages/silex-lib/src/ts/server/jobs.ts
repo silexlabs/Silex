@@ -14,9 +14,9 @@ let nextJobId = 0
 
 // Create a new job
 export function startJob(message = ''): JobData {
-  const id = `${processKey}_${++nextJobId}`
+  const jobId = `${processKey}_${++nextJobId}`
   const job: JobData = {
-    id,
+    jobId,
     status: JobStatus.IN_PROGRESS,
     message: message
   }
@@ -26,7 +26,7 @@ export function startJob(message = ''): JobData {
 
 // Retriev a job if it exists
 export function getJob(id: JobId): JobData | undefined {
-  return jobs.find(job => job.id === id)
+  return jobs.find(job => job.jobId === id)
 }
 
 
@@ -44,7 +44,7 @@ export function jobError(id: JobId, message = ''): boolean {
 // This is also used in unit tests to avoid memory lea
 export function killJob(job: JobData) {
   clearTimeout(job._timeout)
-  jobs.splice(jobs.findIndex(j => job.id === j.id), 1)
+  jobs.splice(jobs.findIndex(j => job.jobId === j.jobId), 1)
 }
 
 // End the job
