@@ -20,3 +20,14 @@
  */
 
 export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
+
+export const BACKEND_LIST_PATH = 'api/backend/'
+export const BACKEND_LOGOUT_PATH = 'api/backend/logout/'
+export const BACKEND_LOGIN_CALLBACK_PATH = 'api/backend/login/'
+
+export const HOSTING_PUBLISH_PATH = 'api/publication/'
+export const HOSTING_PUBLICATION_STATUS_PATH = '/api/publication/status/'
+
+export const WEBSITE_PATH = 'api/website/'
+export const WEBSITE_ASSETS_REGEX = /\/assets\/(.*)/
+export const WEBSITE_ASSETS_PATH = 'assets/'

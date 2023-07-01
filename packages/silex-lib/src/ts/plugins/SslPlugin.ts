@@ -1,7 +1,7 @@
-const express = require('express')
-const { readFileSync } = require('fs')
-const { createServer } = require('https')
-const fromorceSSL = require('express-force-ssl')
+import express from 'express';
+import { readFileSync } from 'fs';
+import { createServer } from 'https';
+import forceSSL from 'express-force-ssl';
 
 // interface SslOptions {
 //   forceHttps?: boolean
@@ -11,7 +11,7 @@ const fromorceSSL = require('express-force-ssl')
 //   sslPort?: string
 // }
 
-module.exports = async function(config, opts = {}) {
+export default async function(config, opts = {}) {
   // Options with defaults
   const options = {
     forceHttps: process.env.SILEX_FORCE_HTTPS === 'true',

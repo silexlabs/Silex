@@ -19,6 +19,18 @@
  * @fileoverview define types for Silex client and server
  */
 
+export interface WebsiteData {
+  pages: Page[],
+  assets: Asset[],
+  styles: Style[],
+  name: string,
+  settings: WebsiteSettings,
+  fonts: Font[],
+  symbols: symbol[],
+  publication: PublicationSettings,
+  files?: WebsiteFile[], // Added by the client for publish
+}
+
 export interface WebsiteSettings {
   description: string,
   title: string,
@@ -30,24 +42,13 @@ export interface WebsiteSettings {
   'og:image': string,
 }
 
-export interface WebsiteData {
-  pages: Page[],
-  assets: Asset[],
-  styles: Style[],
-  name: string,
-  settings: WebsiteSettings,
-  fonts: Font[],
-  symbols: symbol[],
-  publication: PublicationSettings,
-}
-
 export interface Font {
   name: string,
   value: string,
   variants: string[],
 }
 export interface PublicationSettings {
-  path?: string, // Folder to publish to
+  backend?: BackendData, // Set by the postMessage from the login callback page
   url?: string, // URL to display where the website is published to
   autoHomePage?: boolean, // Name the first page `index` instead of its name
   assets?: {
@@ -115,4 +116,52 @@ export interface Style {
 export type Selector = string | {
   name: string,
   type: number,
+}
+
+/**
+ * Type for a backend id
+ */
+export type BackendId = string
+
+/**
+ * Type for a website id
+ */
+export type WebsiteId = string
+
+/**
+ * Back end data sent to the front end
+ */
+export interface BackendData {
+  backendId: BackendId
+  displayName: string
+  icon: string
+  disableLogout: boolean
+  url: string
+  isLoggedIn: boolean
+  options?: object, // Set at login
+}
+
+/**
+ * Enum to express if the job is in progress or finished or errored
+ */
+export enum JobStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR',
+}
+
+/**
+ * Id used to track the progress of a publication
+ */
+export type JobId = string
+
+/**
+ * Data structure which is sent to the client to display the progress of a job
+ */
+export interface JobData {
+  id: JobId // The job id
+  status: JobStatus // status code
+  message: string // status to display
+  url?: string // url of the published website
+  _timeout?: ReturnType<typeof setTimeout> // Internal use
 }

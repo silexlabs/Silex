@@ -15,28 +15,38 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import getConfig from './config'
-import start  from './express'
+import * as backends from './backends'
+import * as silexApp from './express'
+import { createConfig } from './config'
 
-import * as config from './config'
-import * as types from '../types'
-import * as events from '../events'
-import * as constants from '../constants'
-import * as page from '../page'
-
-export { config, types, events, constants, page, start, getConfig }
+export * from './express'
+export * from './config'
+export * from './backends'
+export * from '../events'
+export * from '../constants'
+export * from '../page'
 
 // Main app
 export default async function main() {
   // Get the default config object
-  const config = await getConfig()
-
-  // Here one can mutate the config object
-  // Check the docs, look for the "add silex to your project as an npm dependency"
+  const config = createConfig()
 
   // start silex
-  const app = await start(config)
+  const app = silexApp.create(config)
 
+  // Serve the client config file
+  await config.addRoutes(app)
+
+  // Load the config files
+  await config.loadConfigFiles()
+
+  // Add the backend routes
+  backends.addRoutes(app)
+
+  // Start the server
+  await silexApp.start(app)
+
+  // All good, server is ready
   console.info(`
 I'm ready, listening to port ${config.port}
   `)
