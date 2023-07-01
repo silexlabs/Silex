@@ -15,15 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import express from 'express';
-import { noCache } from './Cache';
-import { minify } from 'html-minifier';
-import { HOSTING_PUBLISH_PATH, HOSTING_PUBLICATION_STATUS_PATH } from '../constants';
-import { getJob } from '../server/jobs';
+import express from 'express'
+import { noCache } from './Cache'
+import { minify } from 'html-minifier'
+import { HOSTING_PUBLISH_PATH, HOSTING_PUBLICATION_STATUS_PATH } from '../constants'
+import { getJob } from '../server/jobs'
 import { JobId, PublicationSettings, WebsiteData } from '../types'
 import { BackendType, HostingProvider, getBackend } from '../server/backends'
 import { ServerConfig } from '../server/config'
-import { requiredParam } from '../server/utils/validation';
+import { requiredParam } from '../server/utils/validation'
 
 /**
  * @fileoverview Publication plugin for Silex
@@ -86,7 +86,7 @@ export default async function(config: ServerConfig, opts = {}) {
       if (!job) {
         console.error(`Error: job not found with id ${id}`)
         res.status(404).send({
-          message: `Error: job not found.`,
+          message: 'Error: job not found.',
         })
         return
       }

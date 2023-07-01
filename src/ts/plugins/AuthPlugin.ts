@@ -1,5 +1,5 @@
-import express from 'express';
-import { Directus } from '@directus/sdk';
+import express from 'express'
+import { Directus } from '@directus/sdk'
 
 export default async function(config, opts = {}) {
 //  config.on('silex:startup:start', ({app}) => {

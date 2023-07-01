@@ -1,8 +1,8 @@
-import express from 'express';
-import nodeModules from 'node_modules-path';
-import serveStatic from 'serve-static';
-import { withCache } from './Cache';
-import { join } from 'path';
+import express from 'express'
+import nodeModules from 'node_modules-path'
+import serveStatic from 'serve-static'
+import { withCache } from './Cache'
+import { join } from 'path'
 
 type StaticOptions = {
   routes: {
@@ -30,10 +30,10 @@ export default async function(config, opts = {}) {
       },
     ]
     // add project route for source maps
-    .concat(config.debug ? [{
-      route: '/',
-      path: './',
-    }] : []),
+      .concat(config.debug ? [{
+        route: '/',
+        path: './',
+      }] : []),
     ...opts,
   }
 

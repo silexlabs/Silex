@@ -1,7 +1,7 @@
-import express from 'express';
-import { readFileSync } from 'fs';
-import { createServer } from 'https';
-import forceSSL from 'express-force-ssl';
+import express from 'express'
+import { readFileSync } from 'fs'
+import { createServer } from 'https'
+import forceSSL from 'express-force-ssl'
 
 // interface SslOptions {
 //   forceHttps?: boolean

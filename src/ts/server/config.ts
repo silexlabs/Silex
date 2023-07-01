@@ -65,9 +65,9 @@ export class ServerConfig extends Config {
 
     // Only one type of backend
     switch(backendType) {
-      case BackendType.HOSTING: return this.getHostingProviders() as unknown as T[]
-      case BackendType.STORAGE: return this.getStorageProviders() as unknown as T[]
-      default: throw new Error(`Unknown backend type ${type}`)
+    case BackendType.HOSTING: return this.getHostingProviders() as unknown as T[]
+    case BackendType.STORAGE: return this.getStorageProviders() as unknown as T[]
+    default: throw new Error(`Unknown backend type ${type}`)
     }
   }
 
