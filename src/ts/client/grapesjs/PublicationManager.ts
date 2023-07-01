@@ -17,9 +17,9 @@
 
 import { getPageSlug } from '../../page'
 import { onAll } from '../utils'
-import { HOSTING_PUBLICATION_STATUS_PATH, HOSTING_PUBLISH_PATH, BACKEND_LOGOUT_PATH, BACKEND_LIST_PATH } from '../../constants'
-import { BackendData, PublicationSettings, WebsiteId, WebsiteSettings } from '../../types'
-import { Editor } from 'grapesjs'
+import { API_PUBLICATION_STATUS, API_PUBLICATION_PUBLISH, API_BACKEND_LOGOUT, API_BACKEND_LIST } from '../../constants'
+import { ApiPublicationPublishRequestBody, ApiPublicationPublishRequestQuery, ApiPublicationPublishResponse, ApiPublicationStatusRequestQuery, ApiPublicationStatusResponse, BackendData, JobData, JobStatus, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
+import { Editor, ProjectData } from 'grapesjs'
 import e from 'express'
 import { PublicationUi } from './PublicationUi'
 
@@ -52,13 +52,11 @@ export enum PublicationStatus {
   STATUS_LOGGED_OUT = 'STATUS_AUTH_ERROR',
 }
 
-export type PublicationState = {
-  queued: boolean
-  error: boolean
-  running: boolean
-  logs: string[][]
-  errors: string[][]
-  status: PublicationStatus
+export enum PublicationRoute {
+  PUBLICATION_PUBLISH = API_PUBLICATION_PUBLISH,
+  PUBLICATION_STATUS = API_PUBLICATION_STATUS,
+  BACKEND_LOGOUT = API_BACKEND_LOGOUT,
+  BACKEND_LIST = API_BACKEND_LIST,
 }
 
 export type PublicationManagerOptions = {
@@ -70,6 +68,18 @@ export type PublicationManagerOptions = {
 // plugin init cod
 export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
+}
+
+function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
+  switch (status) {
+  case JobStatus.IN_PROGRESS:
+    return PublicationStatus.STATUS_PENDING
+  case JobStatus.ERROR:
+    return PublicationStatus.STATUS_ERROR
+  case JobStatus.SUCCESS:
+    return PublicationStatus.STATUS_SUCCESS
+  }
+  throw new Error(`Unknown job status ${status}`)
 }
 
 // The publication manager class
@@ -92,17 +102,14 @@ export class PublicationManager {
    */
   options: PublicationManagerOptions
   /**
+   * Publication job during the publication process
+   */
+  job: PublicationJobData | null = null
+  /**
    * Publication state
    * This is the state of the publication process
    */
-  state: PublicationState = {
-    queued: false,
-    error: false,
-    running: false,
-    logs: [],
-    errors: [],
-    status: PublicationStatus.STATUS_NONE,
-  }
+  status: PublicationStatus = PublicationStatus.STATUS_NONE
 
   constructor(private editor: PublishableEditor, opts: PublicationManagerOptions) {
     this.options = {
@@ -131,9 +138,35 @@ export class PublicationManager {
       console.info('PublicationUi is disabled because no appendTo option is set')
     }
   }
+
+  async api<ReqQuery, ReqBody, ResBody>(route: PublicationRoute, method = 'POST', query?: ReqQuery, payload?: ReqBody): Promise<ResBody> {
+    console.log('api', route, method, query, payload)
+    try {
+      const url = `${this.options.rootUrl}${route.toString()}?${new URLSearchParams(Object.entries(query)).toString()}`
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: payload && JSON.stringify(payload), // assuming that the payload needs to be stringified
+        credentials: 'include', // sends the cookies with the request
+      })
+
+      if (!response.ok) {
+        const json = await response.json()
+        throw new Error(`${response.statusText}: ${json.message}`)
+      }
+
+      return await response.json() as ResBody
+    } catch (error) {
+      console.error('There was a problem calling the API', error, error.message)
+      throw error
+    }
+  }
+
   async goLogin(provider: BackendData = this.settings.backend) {
     console.log('goLogin', this.settings, provider)
-    window.open(`${this.settings.url}?redirect=/api/hosting/login/success`, '_blank')
+    window.open(provider.url, '_blank')
     return new Promise(resolve => {
       const onMessage = async (event) => {
         if (event.data?.type === 'login') {
@@ -142,8 +175,8 @@ export class PublicationManager {
           this.editor.trigger('publish:login')
           if (event.data.error) {
             console.log('login error')
-            this.state.status = PublicationStatus.STATUS_LOGGED_OUT
-            this.dialog && this.dialog.displayError(event.data.error, this.state, this.settings)
+            this.status = PublicationStatus.STATUS_LOGGED_OUT
+            this.dialog && this.dialog.displayError(event.data.error, this.job, this.status, this.settings)
           } else {
             console.log('login success')
             this.settings.backend = event.data
@@ -157,26 +190,24 @@ export class PublicationManager {
 
   async goLogout() {
     console.log('goLogout')
-    await fetch(`${this.options.rootUrl}${BACKEND_LOGOUT_PATH}/?backendId=${this.settings.backend.backendId}`, {
-      method: 'POST',
-      credentials: 'include',
-    })
+    await this.api(PublicationRoute.BACKEND_LOGOUT, 'POST', { backendId: this.settings.backend.backendId })
     this.settings.backend = null
-    this.dialog && this.dialog.renderDialog(this.state, this.settings)
+    this.dialog && this.dialog.renderDialog(this.job, this.status, this.settings)
   }
 
   async startPublication() {
     console.log('startPublication')
-    if (this.state.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
-    this.state.status = PublicationStatus.STATUS_PENDING
+    if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
+    this.status = PublicationStatus.STATUS_PENDING
     if (!this.settings?.backend?.backendId) {
-      this.state.status = PublicationStatus.STATUS_LOGGED_OUT
-      this.dialog && this.dialog.displayError('Please login', this.state, this.settings)
+      this.status = PublicationStatus.STATUS_LOGGED_OUT
+      this.dialog && this.dialog.displayError('Please login', this.job, this.status, this.settings)
       return
     }
-    this.dialog && this.dialog.renderDialog(this.state, this.settings)
+    this.dialog && this.dialog.renderDialog(this.job, this.status, this.settings)
     this.editor.trigger('publish:before')
-    const projectData = this.editor.getProjectData()
+    const projectData = this.editor.getProjectData() as WebsiteData
+    console.log('projectData', projectData)
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Update assets URL to display outside the editor
     const assetsFolderUrl = this.settings?.assets?.url
@@ -217,11 +248,10 @@ export class PublicationManager {
     const files = await this.getFiles(siteSettings)
 
     // Create the data to send to the server
-    const data = {
+    const data: WebsiteData = {
       ...projectData,
       settings: siteSettings,
       publication: this.settings,
-      id: this.editor.PublicationManager.options.websiteId,
       files,
     }
     // Reset asset URLs
@@ -252,50 +282,27 @@ export class PublicationManager {
         })
     }
     this.editor.trigger('publish:start', data)
-    let res
-    let json
     try {
-      res = await fetch(`${this.options.rootUrl}${HOSTING_PUBLISH_PATH}?backendId=${this.settings.backend.backendId}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          data,
-          // token: _token,
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-      })
-    } catch (e) {
-      this.state.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.state, this.settings)
-      this.editor.trigger('publish:stop', { success: false, message: e.message })
-      return
-    }
-    try {
-      json = await res.json()
-    } catch (e) {
-      this.state.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(`Could not parse the server response, your site may be published. ${e.message}`, this.state, this.settings)
-      this.editor.trigger('publish:stop', { success: false, message: e.message })
-      return
-    }
-    if (!res.ok) {
-      if (res.status === 401) {
-        // Auth error, user needs to login again
-        this.state.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.dialog && this.dialog.displayError(`You need to login again to publish your site. ${json.message}`, this.state, this.settings)
-
-      } else {
-        // Other error
-        this.state.status = PublicationStatus.STATUS_ERROR
-        this.dialog && this.dialog.displayError(`An network error occured, your site is not published. ${json.message}`, this.state, this.settings)
+      const id = this.options.websiteId
+      const publishResponse = await this.api<ApiPublicationPublishRequestQuery, ApiPublicationPublishRequestBody, ApiPublicationPublishResponse>(
+        PublicationRoute.PUBLICATION_PUBLISH,
+        'POST',
+        { id },
+        data)
+      this.job = publishResponse.job
+      this.status = jobStatusToPublicationStatus(this.job.status)
+      // Save the publication settings
+      if(this.settings.url !== publishResponse.url) {
+        this.settings.url = publishResponse.url
+        await this.editor.store(null)
       }
-      this.editor.trigger('publish:stop', { success: false, message: json.message })
+      this.trackProgress()
+    } catch (e) {
+      this.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status, this.settings)
+      this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
-    this.settings.url = json.url
-    await this.editor.store(null)
-    this.trackProgress()
   }
 
   async getFiles(siteSettings: WebsiteSettings) {
@@ -318,9 +325,9 @@ export class PublicationManager {
       <title>${getSetting('title')}</title>
       <link rel="icon" href="${getSetting('favicon')}" />
       ${['description', 'og:title', 'og:description', 'og:image']
-            .map(prop => `<meta property="${prop}" content="${getSetting(prop)}"/>`)
-            .join('\n')
-          }
+    .map(prop => `<meta property="${prop}" content="${getSetting(prop)}"/>`)
+    .join('\n')
+}
       </head>
       ${this.editor.getHtml({ component })}
       </html>
@@ -333,36 +340,20 @@ export class PublicationManager {
   }
 
   async trackProgress() {
-    let res
-    let json
     try {
-      res = await fetch(HOSTING_PUBLICATION_STATUS_PATH)
+      this.job = await this.api<ApiPublicationStatusRequestQuery, null, ApiPublicationStatusResponse>(PublicationRoute.PUBLICATION_STATUS, 'GET', { jobId: this.job.jobId }) as PublicationJobData
+      this.status = jobStatusToPublicationStatus(this.job.status)
     } catch (e) {
-      this.state.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.state, this.settings)
+      this.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status, this.settings)
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
-    try {
-      this.state = await res.json()
-    } catch (e) {
-      this.state.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(`Could not parse the server response, your site may be published. ${e.message}`, this.state, this.settings)
-      this.editor.trigger('publish:stop', { success: false, message: e.message })
-      return
-    }
-    if (!res.ok) {
-      this.state.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(`An network error occured, your site is not published. ${res.statusText}`, this.state, this.settings)
-      this.editor.trigger('publish:stop', { success: false, message: `An network error occured, your site is not published. ${res.statusText}` })
-      return
-    }
-    if (this.state.running) {
+    if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
-      this.state.status = this.state.error ? PublicationStatus.STATUS_ERROR : PublicationStatus.STATUS_SUCCESS
-      this.editor.trigger('publish:stop', { success: this.state.error })
+      this.editor.trigger('publish:stop', { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
-    this.dialog && this.dialog.renderDialog(this.state, this.settings)
+    this.dialog && this.dialog.renderDialog(this.job, this.status, this.settings)
   }
 }

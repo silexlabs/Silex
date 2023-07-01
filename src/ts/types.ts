@@ -15,10 +15,61 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import e from 'express'
+
 /**
  * @fileoverview define types for Silex client and server
  */
 
+// Publication API
+export interface PublicationSettings {
+  backend?: BackendData, // Set by the postMessage from the login callback page
+  url?: string, // URL to display where the website is published to
+  autoHomePage?: boolean, // Name the first page `index` instead of its name
+  assets?: {
+    path?: string, // Folder to copy assets to
+    url?: string, // URL where assets are accessed
+  },
+  html?: {
+    path?: string, // Folder where to generate the HTML pages
+    ext?: string, // File extension for HTML pages
+  },
+  css?: {
+    path?: string, // Folder where to generate the CSS files
+    url?: string, // URL of the Folder where the CSS files are accessed
+    ext?: string, // File extension for CSS files
+  },
+}
+
+export interface WebsiteFile {
+  html: string,
+  css: string,
+  htmlPath: string,
+  cssPath: string,
+}
+
+export type ApiResponseError = { message: string }
+export type ApiPublicationPublishRequestBody = WebsiteData
+export type ApiPublicationPublishRequestQuery = { id: WebsiteId }
+export type ApiPublicationPublishResponse = { url: string, job: PublicationJobData }
+export type ApiPublicationStatusRequestQuery = { jobId: JobId }
+export type ApiPublicationStatusResponse = PublicationJobData
+export type ApiWebsiteReadRequestQuery = { id?: WebsiteId, backendId?: BackendId }
+export type ApiWebsiteReadResponse = WebsiteId[] | WebsiteData
+export type ApiWebsiteWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
+export type ApiWebsiteWriteRequestBody = WebsiteData
+export type ApiWebsiteWriteResponse = { message: string }
+export type ApiWebsiteDeleteRequestQuery = { id: WebsiteId, backendId?: BackendId }
+export type ApiWebsiteDeleteResponse = { message: string }
+export type ApiWebsiteAssetsReadRequestQuery = { id: WebsiteId, backendId?: BackendId }
+export type ApiWebsiteAssetsReadRequestParams = { path: string }
+export type ApiWebsiteAssetsReadResponse = string
+export type ApiWebsiteAssetsWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
+export type ApiWebsiteAssetsWriteRequestBody = File[]
+export type ApiWebsiteAssetsWriteResponse = string[]
+
+// **
+// Website API
 export interface WebsiteData {
   pages: Page[],
   assets: Asset[],
@@ -46,31 +97,6 @@ export interface Font {
   name: string,
   value: string,
   variants: string[],
-}
-export interface PublicationSettings {
-  backend?: BackendData, // Set by the postMessage from the login callback page
-  url?: string, // URL to display where the website is published to
-  autoHomePage?: boolean, // Name the first page `index` instead of its name
-  assets?: {
-    path?: string, // Folder to copy assets to
-    url?: string, // URL where assets are accessed
-  },
-  html?: {
-    path?: string, // Folder where to generate the HTML pages
-    ext?: string, // File extension for HTML pages
-  },
-  css?: {
-    path?: string, // Folder where to generate the CSS files
-    url?: string, // URL of the Folder where the CSS files are accessed
-    ext?: string, // File extension for CSS files
-  },
-}
-
-export interface WebsiteFile {
-  html: string,
-  css: string,
-  htmlPath: string,
-  cssPath: string,
 }
 
 export interface Page {
@@ -118,6 +144,8 @@ export type Selector = string | {
   type: number,
 }
 
+// **
+// Backend API
 /**
  * Type for a backend id
  */
@@ -159,9 +187,14 @@ export type JobId = string
  * Data structure which is sent to the client to display the progress of a job
  */
 export interface JobData {
-  id: JobId // The job id
+  jobId: JobId // The job id
   status: JobStatus // status code
   message: string // status to display
   url?: string // url of the published website
   _timeout?: ReturnType<typeof setTimeout> // Internal use
+}
+
+export interface PublicationJobData extends JobData {
+  logs: string[][]
+  errors: string[][]
 }

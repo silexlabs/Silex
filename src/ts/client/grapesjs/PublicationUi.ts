@@ -17,9 +17,9 @@
 
 import { html, render, TemplateResult } from 'lit-html'
 //import { map } from 'lit-html/directives/map.js'
-import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationState, PublicationStatus, PublishableEditor } from './PublicationManager'
-import { BackendData, PublicationSettings } from '../../types'
-import { BACKEND_LIST_PATH } from '../../constants'
+import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
+import { BackendData, PublicationJobData, PublicationSettings } from '../../types'
+import { API_BACKEND_LIST } from '../../constants'
 
 /**
  * @fileoverview define the publication dialog
@@ -86,17 +86,17 @@ export class PublicationUi {
 
   // **
   // Convenient state checkers
-  isSuccess(state: PublicationState) {
-    return state.status === PublicationStatus.STATUS_SUCCESS
+  isSuccess(status: PublicationStatus) {
+    return status === PublicationStatus.STATUS_SUCCESS
   }
-  isPending(state: PublicationState) {
-    return state.status === PublicationStatus.STATUS_PENDING
+  isPending(status: PublicationStatus) {
+    return status === PublicationStatus.STATUS_PENDING
   }
-  isError(state: PublicationState) {
-    return state.status === PublicationStatus.STATUS_ERROR
+  isError(status: PublicationStatus) {
+    return status === PublicationStatus.STATUS_ERROR
   }
-  isLoggedOut(state: PublicationState) {
-    return state.status === PublicationStatus.STATUS_LOGGED_OUT
+  isLoggedOut(status: PublicationStatus) {
+    return status === PublicationStatus.STATUS_LOGGED_OUT
   }
 
   // **
@@ -132,12 +132,12 @@ export class PublicationUi {
 
   // **
   // Functions to render the dialog
-  async renderDialog(state: PublicationState, settings: PublicationSettings) {
-    console.log('update', state, settings)
+  async renderDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
+    console.log('update', status, settings)
     try {
-      if(this.isOpen && (!state || !settings)) throw new Error('PublicationUi: open but no state or settings')
+      if(this.isOpen && (!status || !settings)) throw new Error('PublicationUi: open but no status or settings')
       render(html`
-      ${!this.isOpen ? '' : settings.backend ? await this.renderOpenDialog(state, settings) : await this.renderLoginDialog(state, settings)}
+      ${!this.isOpen ? '' : settings.backend ? await this.renderOpenDialog(job, status, settings) : await this.renderLoginDialog(status, settings)}
     `, this.el)
       if (this.isOpen) {
         this.el.classList.remove('silex-dialog-hide')
@@ -148,28 +148,28 @@ export class PublicationUi {
       console.error('Error while rendering the dialog', err)
     }
   }
-  async renderOpenDialog(state: PublicationState, settings: PublicationSettings): Promise<TemplateResult> {
-    console.log('getOpenPublishDialog', state.status)
+  async renderOpenDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
+    console.log('getOpenPublishDialog', job)
     return html`
     <main>
-      ${this.isPending(state) ? html`
+      ${this.isPending(status) ? html`
         <p>Publication in progress</p>
       ` : ''}
-      ${this.isSuccess(state) ? html`
+      ${this.isSuccess(status) ? html`
         <p>Publication success</p>
         ${settings.url ? html`<a href="${settings.url}" target="_blank">Click here to view the published website</a>` : ''}
       ` : ''}
-      ${this.isError(state) || this.isLoggedOut(state) ? html`
+      ${this.isError(status) || this.isLoggedOut(status) ? html`
         <p>Publication error</p>
         <div>${this.errorMessage}</div>
       ` : ''}
-      ${state?.running ? html`
+      ${this.isPending(status) ? html`
         <progress
           value=""
           style="width: 100%;"
         ></progress>
       ` : ''}
-      ${state.logs?.length ? html`
+      ${job?.logs?.length ? html`
         <details>
           <summary>Logs</summary>
           <pre style="
@@ -178,11 +178,11 @@ export class PublicationUi {
             overflow: auto;
             font-size: x-small;
             "
-          >${cleanupLogEntry(state.logs)}
+          >${cleanupLogEntry(job!.logs)}
           </pre>
         </details>
       ` : ''}
-      ${state.errors?.length ? html`
+      ${job?.errors?.length ? html`
         <details>
           <summary>Errors</summary>
           <pre style="
@@ -191,20 +191,20 @@ export class PublicationUi {
             overflow: auto;
             font-size: x-small;
             "
-          >${cleanupLogEntry(state.errors)}
+          >${cleanupLogEntry(job!.errors)}
           </pre>
         </details>
       ` : ''}
     </main>
     <footer>
-      ${this.isPending(state) || this.isLoggedOut(state) ? '' : html`
+      ${this.isPending(status) || this.isLoggedOut(status) ? '' : html`
         <button
           class="silex-button silex-button--primary"
           id="publish-button--primary"
           @click=${() => this.editor.Commands.run(cmdPublicationStart)}
         >Publish</button>
       `}
-      ${this.isLoggedOut(state) ? html`
+      ${this.isLoggedOut(status) ? html`
         <button
           class="silex-button silex-button--primary"
           id="publish-button--primary"
@@ -225,10 +225,10 @@ export class PublicationUi {
     </footer>
     `
   }
-  async renderLoginDialog(state: PublicationState, settings: PublicationSettings): Promise<TemplateResult> {
+  async renderLoginDialog(status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
     try {
-      console.log('getOpenLoginDialog', state)
-      const hostingProviders = await fetch(`${this.options.rootUrl}${BACKEND_LIST_PATH}?type=hosting`).then(res => res.json()) as BackendData[]
+      console.log('getOpenLoginDialog', status)
+      const hostingProviders = await fetch(`${this.options.rootUrl}${API_BACKEND_LIST}?type=hosting`).then(res => res.json()) as BackendData[]
       console.log('getOpenLoginDialog', { hostingProviders })
       const loggedProvider: BackendData = hostingProviders.find(provider => provider.isLoggedIn)
       console.log('getOpenLoginDialog', { loggedProvider })
@@ -277,14 +277,14 @@ export class PublicationUi {
     `
     }
   }
-  displayError(message: string, state: PublicationState, settings: PublicationSettings) {
+  displayError(message: string, job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
     console.error(message)
     this.errorMessage = message
-    this.renderDialog(state, settings)
+    this.renderDialog(job, status, settings)
   }
   async closeDialog() {
     this.isOpen = false
-    this.renderDialog(null, null)
+    this.renderDialog(null, null, null)
   }
   async toggleDialog() {
     if (this.isOpen) this.closeDialog()

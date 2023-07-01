@@ -21,8 +21,11 @@
  * @param name the name of the parameter
  * @throws Error if the parameter is missing
  */
-export function requiredParam<T>(value: T | undefined, name: string): NonNullable<T> {
+export function requiredParam<T>(value: T | undefined, name: string, defaultValue?: T): NonNullable<T> {
   if (value === undefined) {
+    if (defaultValue !== undefined) {
+      return defaultValue as NonNullable<T>
+    }
     console.error(`Missing required parameter ${name}`)
     throw new Error(`Missing required parameter ${name}`)
   }

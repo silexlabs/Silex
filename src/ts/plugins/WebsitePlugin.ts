@@ -18,9 +18,9 @@
 import { Router } from 'express'
 import formidable, { File as FormidableFile } from 'formidable'
 import { noCache } from './Cache'
-import { WEBSITE_PATH, WEBSITE_ASSETS_REGEX, WEBSITE_ASSETS_PATH } from '../constants'
+import { API_WEBSITE_ASSETS_REGEX, API_WEBSITE_ASSETS_READ as API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE } from '../constants'
 import { createReadStream } from 'fs'
-import { WebsiteData } from '../types'
+import { ApiResponseError, ApiWebsiteAssetsReadRequestParams, ApiWebsiteAssetsReadRequestQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteRequestQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteRequestQuery, ApiWebsiteDeleteResponse, ApiWebsiteReadRequestQuery, ApiWebsiteReadResponse, ApiWebsiteWriteRequestBody, ApiWebsiteWriteRequestQuery, ApiWebsiteWriteResponse, BackendId, WebsiteData, WebsiteId } from '../types'
 import { BackendType, File, StorageProvider, getBackend } from '../server/backends'
 import { Readable } from 'stream'
 import { requiredParam } from '../server/utils/validation'
@@ -58,97 +58,104 @@ export default async function(config, opts = {}) {
     app.use(noCache,  router)
 
     // website specials
-    router.get(`/${WEBSITE_PATH}`, async (req, res) => {
-      const id = req.query.id as string | undefined
+    router.get(`/${API_WEBSITE_READ}`, async (req, res) => {
+      const query: ApiWebsiteReadRequestQuery = req.query
+      const { id, backendId } = query
       try {
         if(id) {
           // Get website data
           const websiteData: WebsiteData | Readable = await readWebsite(
             req['session'],
             requiredParam(id, 'Website id'),
-            req.query.backendId as string | undefined,
+            backendId as string | undefined,
           )
           if (websiteData instanceof Readable) {
             websiteData.pipe(res.type('application/json'))
           } else {
-            res.json(websiteData)
+            res.json(websiteData as ApiWebsiteReadResponse)
           }
         } else {
           // List websites
-          const websites = await listWebsites(req['session'], req.query.backendId as string | undefined)
-          res.json(websites)
+          const websites = await listWebsites(req['session'], query.backendId as string | undefined)
+          res.json(websites as ApiWebsiteReadResponse)
         }
       } catch(e) {
         console.error('Error getting website data', e)
         if(e instanceof WebsiteError) {
-          res.status(e.code).json({ message: e.message })
+          res.status(e.code).json({ message: e.message } as ApiResponseError)
         } else {
-          res.status(500).json({ message: e.message })
+          res.status(500).json({ message: e.message } as ApiResponseError)
         }
       }
     })
-    router.post(`/${WEBSITE_PATH}`, async (req, res) => {
+    router.post(`/${API_WEBSITE_WRITE}`, async (req, res) => {
       try {
-        const id = requiredParam(req.query.id as string, 'Website id')
-        const websiteData = requiredParam<WebsiteData>(req.body, 'Website data') as WebsiteData
-        const result = await writeWebsite(
+        const query: ApiWebsiteWriteRequestQuery = req.query as any
+        const body: ApiWebsiteWriteRequestBody = req.body
+        const id = requiredParam<WebsiteId>(query.id, 'Website id')
+        const websiteData = requiredParam<WebsiteData>(body, 'Website data') as WebsiteData
+        await writeWebsite(
           req['session'],
           id,
           websiteData,
-          req.query.backendId as string | undefined,
+          query.backendId,
         )
-        res.status(200).json({ message: 'Website saved', result })
+        res.status(200).json({ message: 'Website saved' } as ApiResponseError)
       } catch(e) {
         console.error('Error saving website data', e)
         if(e instanceof WebsiteError) {
-          res.status(e.code).json({ message: e.message })
+          res.status(e.code).json({ message: e.message } as ApiResponseError)
         } else {
-          res.status(500).json({ message: e.message })
+          res.status(500).json({ message: e.message } as ApiResponseError)
         }
       }
     })
 
     // Delete website
-    router.delete(`/${WEBSITE_PATH}`, async (req, res) => {
+    router.delete(`/${API_WEBSITE_DELETE}`, async (req, res) => {
       try {
-        const id = requiredParam(req.query.id as string, 'Website id')
-        await deleteWebsite(req['session'], id, req.query.backendId as string | undefined)
-        res.status(200).json({ message: 'Website deleted' })
+        const query: ApiWebsiteDeleteRequestQuery = req.query as any
+        const id = requiredParam<WebsiteId>(query.id, 'Website id')
+        await deleteWebsite(req['session'], id, query.backendId)
+        res.status(200).json({ message: 'Website deleted' } as ApiResponseError)
       } catch(e) {
         console.error('Error deleting website data', e)
         if(e instanceof WebsiteError) {
-          res.status(e.code).json({ message: e.message })
+          res.status(e.code).json({ message: e.message } as ApiResponseError)
         } else {
-          res.status(500).json({ message: e.message })
+          res.status(500).json({ message: e.message } as ApiResponseError)
         }
       }
     })
     
     // Assets
-    router.get(WEBSITE_ASSETS_REGEX, async (req, res) => {{
+    router.get(API_WEBSITE_ASSETS_REGEX, async (req, res) => {{
       try {
-        const id = requiredParam(req.query.id as string, 'Website id')
-        const path = requiredParam(req.params.path as string, 'Asset path')
-        const asset = await readAsset(req['session'], id, path, req.query.backendId as string | undefined)
-        if(asset instanceof Readable) {
-          asset.pipe(res)
+        const query: ApiWebsiteAssetsReadRequestQuery = req.query as any
+        const params: ApiWebsiteAssetsReadRequestParams = req.params as any
+        const id = requiredParam<WebsiteId>(query.id, 'Website id')
+        const path = requiredParam<string>(params.path, 'Asset path')
+        const asset: File = await readAsset(req['session'], id, path, query.backendId)
+        if(asset.content instanceof Readable) {
+          asset.content.pipe(res)
         } else {
-          res.json(asset)
+          res.json(asset.content as ApiWebsiteAssetsReadResponse)
         }
       } catch(e) {
         console.error('Error getting asset', e)
         if(e instanceof WebsiteError) {
-          res.status(e.code).json({ message: e.message })
+          res.status(e.code).json({ message: e.message } as ApiResponseError)
         } else {
-          res.status(500).json({ message: e.message })
+          res.status(500).json({ message: e.message } as ApiResponseError)
         }
       }
     }})
 
     // Upload assets
-    router.post(`/${WEBSITE_ASSETS_PATH}`, async (req, res) => {
+    router.post(`/${API_WEBSITE_ASSETS_WRITE}`, async (req, res) => {
       try {
-        const id = requiredParam(req.query.id as string, 'Website id')
+        const query: ApiWebsiteAssetsWriteRequestQuery = req.query as any
+        const id = requiredParam<WebsiteId>(query.id as WebsiteId, 'Website id')
 
         // Get the file data from the request
         const form = formidable({
@@ -173,17 +180,17 @@ export default async function(config, opts = {}) {
         })
 
         // Write the files
-        const filesUrl = writeAssets(req['session'], id, files, req.query.backendId as string | undefined)
+        const filesUrl = await writeAssets(req['session'], id, files, query.backendId)
 
         // Return the file URLs to insert in the website
-        res.json(filesUrl)
+        res.json(filesUrl as ApiWebsiteAssetsWriteResponse)
 
       } catch(e) {
         console.error('Error uploading assets', e)
         if(e instanceof WebsiteError) {
-          res.status(e.code).json({ message: e.message })
+          res.status(e.code).json({ message: e.message } as ApiResponseError)
         } else {
-          res.status(500).json({ message: e.message })
+          res.status(500).json({ message: e.message } as ApiResponseError)
         }
       }
     })
@@ -235,7 +242,7 @@ export default async function(config, opts = {}) {
   /**
    * Write the website data to the backend
    */
-  async function writeWebsite(session: any, id: string, websiteData: WebsiteData, backendId?: string) {
+  async function writeWebsite(session: any, id: WebsiteId, websiteData: WebsiteData, backendId?: BackendId): Promise<void> {
     // Get the desired backend
     const storageProvider = await getStorageProvider(session, backendId)
 

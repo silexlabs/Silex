@@ -17,14 +17,14 @@
 
 import { Config, Plugin } from '@silexlabs/silex-plugins'
 import { getEditorConfig } from './grapesjs'
-import { CLIENT_CONFIG_FILE_NAME } from '../constants'
+import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
 
 /**
  * @fileoverview Silex client side config
  */
 
-const id = new URL(location.href).searchParams.get('id') || 'default'
-const lang = new URL(location.href).searchParams.get('lang') || 'en'
+const id = new URL(location.href).searchParams.get('id') ?? DEFAULT_WEBSITE_ID
+const lang = new URL(location.href).searchParams.get('lang') ?? DEFAULT_LANGUAGE
 const rootUrl = `${location.protocol}//${location.host}${location.pathname}`
 
 export class SilexConfig extends Config {

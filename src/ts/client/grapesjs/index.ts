@@ -47,7 +47,7 @@ import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import { templatePlugin } from './template'
 import { eleventyPlugin } from './eleventy'
-import { WEBSITE_PATH } from '../../constants'
+import { API_WEBSITE_READ, API_WEBSITE_WRITE } from '../../constants'
 
 const plugins = [
   {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -110,8 +110,8 @@ export function getEditorConfig(id: string, rootUrl: string) {
       type: 'remote',
       options: {
         remote: {
-          urlStore: `${rootUrl}${WEBSITE_PATH}?id=${id}`,
-          urlLoad: `${rootUrl}${WEBSITE_PATH}?id=${id}`,
+          urlStore: `${rootUrl}${API_WEBSITE_WRITE}?id=${id}`,
+          urlLoad: `${rootUrl}${API_WEBSITE_READ}?id=${id}`,
         },
       },
     },

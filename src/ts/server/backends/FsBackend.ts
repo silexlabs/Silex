@@ -125,9 +125,9 @@ export class FsBackend implements StorageProvider, HostingProvider {
       // Add the website url
       job.url = await this.getFileUrl(session, id, 'index.html')
       if(status === JobStatus.SUCCESS) {
-        jobSuccess(job.id, message)
+        jobSuccess(job.jobId, message)
       } else if(status === JobStatus.ERROR) {
-        jobError(job.id, message)
+        jobError(job.jobId, message)
       }
     })
     return job
