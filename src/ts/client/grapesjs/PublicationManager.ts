@@ -15,16 +15,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { TemplateResult, html, render } from 'lit-html'
-import { map } from 'lit-html/directives/map.js'
 import { getPageSlug } from '../../page'
 import { onAll } from '../utils'
 import { HOSTING_PUBLICATION_STATUS_PATH, HOSTING_PUBLISH_PATH, BACKEND_LOGOUT_PATH, BACKEND_LIST_PATH } from '../../constants'
 import { BackendData, PublicationSettings, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor } from 'grapesjs'
+import e from 'express'
+import { PublicationUi } from './PublicationUi'
+
+/**
+ * @fileoverview Publication manager for Silex
+ * This plugin adds a publication feature to Silex
+ * It lets the user publish the website to a hosting service
+ * It can optionally display a button and a dialog
+ * Useful commands:
+ * - publish: starts the publication process and optionally open the dialog
+ * - publish-login: open the login dialog
+ * - publish-logout: logout from the hosting service and let the user choose a hosting service again
+ */
 
 // Constants
-export const cmdPublish = 'publish-open-dialog'
+export const cmdPublicationStart = 'publish'
+export const cmdPublicationLogin = 'publish-login'
+export const cmdPublicationLogout = 'publish-logout'
 
 // Types
 export type PublishableEditor = Editor & {
@@ -49,7 +62,7 @@ export type PublicationState = {
 }
 
 export type PublicationManagerOptions = {
-  appendTo: string
+  appendTo?: string // If not provided, no button nor dialog will be created
   websiteId: WebsiteId
   rootUrl: string
 }
@@ -59,19 +72,15 @@ export default function publishPlugin(editor, opts) {
   (editor as PublishableEditor).PublicationManager = new PublicationManager(editor, opts)
 }
 
-// Utils
-function cleanup(arr: string[][]): string {
-  return arr[arr.length - 1]
-    ?.map(str => str.replace(/\[.*\]/g, '').trim())
-    ?.filter(str => !!str)
-    ?.join('\n')
-}
-
-
 // The publication manager class
 // This class is responsible for the publication dialog and for the publication process
 // It is added to the editor instance as editor.PublicationManager
 export class PublicationManager {
+  /**
+   * Publication dialog
+   * This class is responsible for the  UI
+   */
+  dialog?: PublicationUi
   /**
    * Publication settings
    * This is the data which is stored in the website settings
@@ -82,19 +91,6 @@ export class PublicationManager {
    * This is the data which is passed to the plugin by grapesjs
    */
   options: PublicationManagerOptions
-  /**
-   * Dialog state
-   */
-  open = false
-  /**
-   * Dialog content
-   */
-  errorMessage = ''
-  /**
-   * Dialog element
-   * This is the DOM element of the dialog
-   */
-  dialog: HTMLElement
   /**
    * Publication state
    * This is the state of the publication process
@@ -121,240 +117,21 @@ export class PublicationManager {
     editor.on('storage:end:load', (data) => {
       this.settings = data.publication ?? {}
     })
-    // Add the publish button to the editor
-    editor.Panels.addButton(opts.appendTo, {
-      id: 'publish-button',
-      className: 'silex-button--size publish-button',
-      command: cmdPublish,
-      attributes: { title: 'Publish' },
-      label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
-    })
     // Add the publish command to the editor
-    editor.Commands.add(cmdPublish, {
-      run(editor: PublishableEditor) { this.openDialog(editor) },
-      stop(editor: PublishableEditor) { this.closeDialog(editor) },
-    })
-    // Reference to the dialog element
-    this.dialog = this.createDialogElements().dialog
-  }
-  isSuccess() {
-    return this.state.status === PublicationStatus.STATUS_SUCCESS
-  }
-  isPending() {
-    return this.state.status === PublicationStatus.STATUS_PENDING
-  }
-  isError() {
-    return this.state.status === PublicationStatus.STATUS_ERROR
-  }
-  isLoggedOut() {
-    return this.state.status === PublicationStatus.STATUS_LOGGED_OUT
-  }
-
-  // Functions to open and close the dialog
-  getDialogElements() {
-    const el = document.querySelector('#publish-dialog') as HTMLElement
-    return el ? {
-      dialog: el,
-      primary: el.querySelector('#publish-button--primary'),
-      secondary: el.querySelector('#publish-button--secondary'),
-    } : null
-  }
-  createDialogElements() {
-    const el = document.createElement('div')
-    el.id = 'publish-dialog'
-    el.className = 'silex-dialog-inline silex-dialog gjs-two-color'
-    document.body.append(el)
-    return this.getDialogElements()
-  }
-  move(rect) {
-    Object.keys(rect).forEach(key => this.dialog.style[key] = rect[key] + 'px')
-  }
-  // Functions to render the dialog
-  async renderDialog() {
-    console.log('update', this.state, this.settings)
-    try {
-      render(html`
-      ${!open ? '' : this.settings.backend ? await this.renderOpenDialog() : await this.renderLoginDialog()}
-    `, this.dialog)
-      if (open) {
-        this.dialog.classList.remove('silex-dialog-hide')
-      } else {
-        this.dialog.classList.add('silex-dialog-hide')
-      }
-    } catch (err) {
-      console.error('Error while rendering the dialog', err)
-    }
-  }
-  async renderOpenDialog(): Promise<TemplateResult> {
-    console.log('getOpenPublishDialog', this.state.status)
-    return html`
-    <main>
-      ${this.isPending() ? html`
-        <p>Publication in progress</p>
-      ` : ''}
-      ${this.isSuccess() ? html`
-        <p>Publication success</p>
-        ${this.settings.url ? html`<a href="${this.settings.url}" target="_blank">Click here to view the published website</a>` : ''}
-      ` : ''}
-      ${this.isError() || this.isLoggedOut() ? html`
-        <p>Publication error</p>
-        <div>${this.errorMessage}</div>
-      ` : ''}
-      ${this.state?.running ? html`
-        <progress
-          value=""
-          style="width: 100%;"
-        ></progress>
-      ` : ''}
-      ${this.state.logs?.length ? html`
-        <details>
-          <summary>Logs</summary>
-          <pre style="
-            max-width: 100%;
-            max-height: 50vh;
-            overflow: auto;
-            font-size: x-small;
-            "
-          >${cleanup(this.state.logs)}
-          </pre>
-        </details>
-      ` : ''}
-      ${this.state.errors?.length ? html`
-        <details>
-          <summary>Errors</summary>
-          <pre style="
-            max-width: 100%;
-            max-height: 50vh;
-            overflow: auto;
-            font-size: x-small;
-            "
-          >${cleanup(this.state.errors)}
-          </pre>
-        </details>
-      ` : ''}
-    </main>
-    <footer>
-      ${this.isPending() || this.isLoggedOut() ? '' : html`
-        <button
-          class="silex-button silex-button--primary"
-          id="publish-button--primary"
-          @click=${() => this.startPublication()}
-        >Publish</button>
-      `}
-      ${this.isLoggedOut() ? html`
-        <button
-          class="silex-button silex-button--primary"
-          id="publish-button--primary"
-          @click=${() => this.goLogin(this.settings.backend)}
-        >Login</button>
-      `: this.settings.backend.disableLogout ? '' : html`
-        <button
-          class="silex-button silex-button--secondary"
-          id="publish-button--secondary"
-          @click=${() => this.goLogout()}
-        >Logout</button>
-      `}
-      <button
-        class="silex-button silex-button--secondary"
-        id="publish-button--secondary"
-        @click=${() => this.editor.Commands.stop(cmdPublish)}
-      >Close</button>
-    </footer>
-    `
-  }
-  async renderLoginDialog() {
-    try {
-      console.log('getOpenLoginDialog', this.state)
-      const hostingProviders = await fetch(`${this.options.rootUrl}${BACKEND_LIST_PATH}?type=hosting`).then(res => res.json()) as BackendData[]
-      console.log('getOpenLoginDialog', { hostingProviders })
-      const loggedProvider: BackendData = hostingProviders.find(provider => provider.isLoggedIn)
-      console.log('getOpenLoginDialog', { loggedProvider })
-
-      if (loggedProvider) {
-        this.settings.backend = loggedProvider
-        this.startPublication()
-        return ''
-      }
-      return html`
-      <main>
-        <p>You need to login to publish your website</p>
-        ${hostingProviders.map(backend => html`
-          <button
-            class="silex-button silex-button--primary"
-            id="publish-button--primary"
-            @click=${() => this.goLogin(backend)}
-          >Login with ${backend.backendId}</button>
-        `)}
-      </main>
-      <footer>
-        <button
-          class="silex-button silex-button--secondary"
-          id="publish-button--secondary"
-          @click=${() => this.editor.Commands.stop(cmdPublish)}
-        >Close</button>
-      </footer>
-    `
-    } catch (err) {
-      console.error(err)
-      return html`
-      <header>
-        <h3>Oops</h3>
-      </header>
-      <main>
-        <p>Unable to load hosting providers</p>
-        <p>Something went wrong: ${err.message}</p> 
-      </main>
-      <footer>
-        <button
-          class="silex-button silex-button--secondary"
-          id="publish-button--secondary"
-          @click=${() => this.editor.Commands.stop(cmdPublish)}
-        >Close</button>
-      </footer>
-    `
-    }
-  }
-  displayError(message: string, _status = PublicationStatus.STATUS_ERROR) {
-    console.error(message)
-    this.errorMessage = message
-    this.state.status = _status
-    this.renderDialog()
-  }
-  async closeDialog() {
-    this.open = false
-    this.renderDialog()
-  }
-  async toggleDialog() {
-    if (this.open) this.closeDialog()
-    else this.openDialog()
-  }
-  async openDialog() {
-    this.open = true
-
-    // Position
-    const buttonEl = this.editor.Panels.getPanel('options').view.el
-      .querySelector('.publish-button')
-    const rect = buttonEl.getBoundingClientRect()
-
-    const width = 450
-    const padding = 10 * 2
-    const minHeight = 50
-    this.move({
-      left: rect.right - width - padding,
-      top: rect.bottom + 10,
-      width,
-      minHeight,
-    })
-
-    // Publication
-    if (this.state.status === PublicationStatus.STATUS_NONE) {
-      this.startPublication()
+    editor.Commands.add(cmdPublicationStart, () => this.startPublication())
+    editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, provider: BackendData) => this.goLogin(provider))
+    editor.Commands.add(cmdPublicationLogout, () => this.goLogout())
+    // Add the publication dialog to the editor
+    if (this.options.appendTo) {
+      this.dialog = new PublicationUi(editor, {
+        appendTo: this.options.appendTo,
+        rootUrl: this.options.rootUrl,
+      })
     } else {
-      this.renderDialog()
+      console.info('PublicationUi is disabled because no appendTo option is set')
     }
   }
-
-  async goLogin(provider: BackendData) {
+  async goLogin(provider: BackendData = this.settings.backend) {
     console.log('goLogin', this.settings, provider)
     window.open(`${this.settings.url}?redirect=/api/hosting/login/success`, '_blank')
     return new Promise(resolve => {
@@ -365,7 +142,8 @@ export class PublicationManager {
           this.editor.trigger('publish:login')
           if (event.data.error) {
             console.log('login error')
-            this.displayError(event.data.error, PublicationStatus.STATUS_LOGGED_OUT)
+            this.state.status = PublicationStatus.STATUS_LOGGED_OUT
+            this.dialog && this.dialog.displayError(event.data.error, this.state, this.settings)
           } else {
             console.log('login success')
             this.settings.backend = event.data
@@ -384,18 +162,19 @@ export class PublicationManager {
       credentials: 'include',
     })
     this.settings.backend = null
-    this.renderDialog()
+    this.dialog && this.dialog.renderDialog(this.state, this.settings)
   }
 
   async startPublication() {
     console.log('startPublication')
-    if (this.isPending()) throw new Error('Publication is already in progress')
+    if (this.state.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
     this.state.status = PublicationStatus.STATUS_PENDING
     if (!this.settings?.backend?.backendId) {
-      this.displayError('Please login', PublicationStatus.STATUS_LOGGED_OUT)
+      this.state.status = PublicationStatus.STATUS_LOGGED_OUT
+      this.dialog && this.dialog.displayError('Please login', this.state, this.settings)
       return
     }
-    this.renderDialog()
+    this.dialog && this.dialog.renderDialog(this.state, this.settings)
     this.editor.trigger('publish:before')
     const projectData = this.editor.getProjectData()
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
@@ -487,25 +266,29 @@ export class PublicationManager {
         },
       })
     } catch (e) {
-      this.displayError(`An error occured, your site is not published. ${e.message}`)
+      this.state.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.state, this.settings)
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
     try {
       json = await res.json()
     } catch (e) {
-      this.displayError(`Could not parse the server response, your site may be published. ${e.message}`)
+      this.state.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`Could not parse the server response, your site may be published. ${e.message}`, this.state, this.settings)
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
     if (!res.ok) {
       if (res.status === 401) {
         // Auth error, user needs to login again
-        this.displayError(`You need to login again to publish your site. ${json.message}`, PublicationStatus.STATUS_LOGGED_OUT)
+        this.state.status = PublicationStatus.STATUS_LOGGED_OUT
+        this.dialog && this.dialog.displayError(`You need to login again to publish your site. ${json.message}`, this.state, this.settings)
 
       } else {
         // Other error
-        this.displayError(`An network error occured, your site is not published. ${json.message}`)
+        this.state.status = PublicationStatus.STATUS_ERROR
+        this.dialog && this.dialog.displayError(`An network error occured, your site is not published. ${json.message}`, this.state, this.settings)
       }
       this.editor.trigger('publish:stop', { success: false, message: json.message })
       return
@@ -555,19 +338,22 @@ export class PublicationManager {
     try {
       res = await fetch(HOSTING_PUBLICATION_STATUS_PATH)
     } catch (e) {
-      this.displayError(`An error occured, your site is not published. ${e.message}`)
+      this.state.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.state, this.settings)
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
     try {
       this.state = await res.json()
     } catch (e) {
-      this.displayError(`Could not parse the server response, your site may be published. ${e.message}`)
+      this.state.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`Could not parse the server response, your site may be published. ${e.message}`, this.state, this.settings)
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
     if (!res.ok) {
-      this.displayError(`An network error occured, your site is not published. ${res.statusText}`)
+      this.state.status = PublicationStatus.STATUS_ERROR
+      this.dialog && this.dialog.displayError(`An network error occured, your site is not published. ${res.statusText}`, this.state, this.settings)
       this.editor.trigger('publish:stop', { success: false, message: `An network error occured, your site is not published. ${res.statusText}` })
       return
     }
@@ -577,6 +363,6 @@ export class PublicationManager {
       this.state.status = this.state.error ? PublicationStatus.STATUS_ERROR : PublicationStatus.STATUS_SUCCESS
       this.editor.trigger('publish:stop', { success: this.state.error })
     }
-    this.renderDialog()
+    this.dialog && this.dialog.renderDialog(this.state, this.settings)
   }
 }
