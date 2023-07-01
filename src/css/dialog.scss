@@ -18,17 +18,24 @@
   background-color: variables.$primaryColor;
   z-index: variables.$z-dialog-inline;
   border-radius: 3px;
+  border: 2px solid rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  header {
+    padding: 10px;
+  }
   main {
     flex-grow: 1;
+    padding: 10px;
   }
   footer {
-    padding: 5px;
+    padding: 10px;
     text-align: right;
   }
   a {
     color: variables.$quaternaryColor;
+  }
+  header > * {
+    margin: 0;
   }
 }

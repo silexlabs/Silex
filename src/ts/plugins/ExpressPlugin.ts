@@ -1,11 +1,12 @@
-const bodyParser = require('body-parser')
-const compression = require('compression')
-const cookieParser = require('cookie-parser')
-const session = require('cookie-session')
-const cors = require('cors')
-const { Router } = require('express')
+import bodyParser from 'body-parser';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import session from 'cookie-session';
+import cors from 'cors';
+import express from 'express';
+const { Router } = express;
 
-module.exports = async function(config, opts = {}) {
+export default async function(config, opts = {}) {
   // Options with defaults
   const options = {
     jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT || '1mb',
@@ -35,17 +36,6 @@ module.exports = async function(config, opts = {}) {
       name: options.sessionName,
       secret: options.sessionSecret,
     }))
-    // Add auth routes
-    const router = new Router()
-    const storage = config.getStorage()
-    const hostingProviders = config.getHostingProviders()
-    console.log('Add auth routes for storage', storage.name)
-    storage.addAuthRoutes(router)
-    hostingProviders.forEach(provider => {
-      console.log('Add auth routes for hosting provider', provider.name)
-      provider.addAuthRoutes(router)
-    })
-    app.use(router)
   })
 }
 

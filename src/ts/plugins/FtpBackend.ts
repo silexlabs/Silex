@@ -15,11 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const JsFTP = require('jsftp');
-const { Readable } = require('stream');
-const express = require('express');
+import JsFTP from 'jsftp';
+import { Readable } from 'stream'
+import express from 'express'
+import {Backend} from '../server/backends';
 
-function formHtml({ host, user, pass, port, secure, id } = {}, err = '') {
+function formHtml({ host = null, user = null, pass = null, port = null, secure = null, id = null }, err = '') {
   return `
     ${ err && `<div class="error">${err || ''}</div>` }
     <form method="post">
@@ -101,9 +102,11 @@ const formCss = `
   }
 `
 
-module.exports = class FtpStorage {
-  name = 'Ftp'
+export default class FtpBackend implements Backend {
+  id = 'ftp'
+  displayName = 'Ftp'
   icon = 'ftp'
+  options
 
   constructor(opts = {}) {
     this.options = {
@@ -114,7 +117,7 @@ module.exports = class FtpStorage {
     }
   }
 
-  async getClient({host, user, pass, port, secure}) {
+  async getClient({host, user, pass, port, secure}): Promise<any> {
     console.log('FTP login', { host, user, pass, port, secure })
     return new Promise((resolve, reject) => {
       const ftp = new JsFTP({
@@ -124,12 +127,12 @@ module.exports = class FtpStorage {
         pass,
       });
 
-      ftp.on('error', (err) => {
+      ftp['on']('error', (err) => {
         console.error('FTP error', err)
         reject(err);
       });
 
-      ftp.on('connect', () => {
+      ftp['on']('connect', () => {
         console.log('FTP connected')
         resolve(ftp)
       })
@@ -138,7 +141,7 @@ module.exports = class FtpStorage {
 
   async isLoggedIn(session) {
     try {
-      await checkAuth(session)
+      await this.checkAuth(session)
     } catch(err) {
       return false
     }
@@ -164,7 +167,7 @@ module.exports = class FtpStorage {
         res
         //.sendStatus(200)
         //.send(`FTP auth success, you can close this window`)
-        .redirect(`${redirect}?name=${encodeURIComponent(this.name)}&icon=${encodeURIComponent(this.icon)}&id=${encodeURIComponent(id)}`)
+        .redirect(`${redirect}?backendId=${encodeURIComponent(this.id)}&icon=${encodeURIComponent(this.icon)}&id=${encodeURIComponent(id)}`)
       } catch(err) {
         console.error('FTP auth failed', err.message)
         res
@@ -215,9 +218,9 @@ module.exports = class FtpStorage {
     session.ftp = token
   }
 
-  async login(session, userData) {
+  async login(session, userData): Promise<void> {
     await this.checkAuth(userData)
-    return this.setAuthToken(session, userData)
+    await this.setAuthToken(session, userData)
   }
 
   async logout(session) {
@@ -226,6 +229,7 @@ module.exports = class FtpStorage {
 
   async getAdminUrl(session, id) {
     throw new Error('TODO: not implemented.')
+    return ''
   }
 
   async init(session, id) {
@@ -259,7 +263,7 @@ module.exports = class FtpStorage {
     const ftp = await this.getClient(session.ftp)
     return Promise.all(
       files.map((file) =>
-        new Promise((resolve, reject) => {
+        new Promise<void>((resolve, reject) => {
           const content = typeof file.content === 'string' ? Buffer.from(file.content) : file.content
           ftp.put(content, `${this.options.rootPath}/${id}${file.path}`, (err) => {
             if (err) {
@@ -276,7 +280,7 @@ module.exports = class FtpStorage {
     const ftp = await this.getClient(session.ftp)
     await Promise.all(
       paths.map((path) =>
-        new Promise((resolve, reject) => {
+        new Promise<void>((resolve, reject) => {
           ftp.raw.dele(`${this.options.rootPath}/${id}${path}`, (err) => {
             if (err) {
               return reject(err)
@@ -303,7 +307,7 @@ module.exports = class FtpStorage {
 
   async createDir(session, id, path) {
     const ftp = await this.getClient(session.ftp)
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       ftp.raw.mkd(`${this.options.rootPath}/${id}${path}`, (err) => {
         if (err) {
           return reject(err);
@@ -315,7 +319,7 @@ module.exports = class FtpStorage {
 
   async deleteDir(session, id, path) {
     const ftp = await this.getClient(session.ftp)
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       ftp.raw.rmd(`${this.options.rootPath}/${id}${path}`, (err) => {
         if (err) {
           return reject(err);
@@ -325,12 +329,12 @@ module.exports = class FtpStorage {
     });
   }
 
-    async getFileUrl(session, id, path) {
-        return `${session.ftp.url}/${id}${path}`
-    }
+  async getFileUrl(session, id, path) {
+      return `${session.ftp.url}/${id}${path}`
+  }
 
-    async getPublicationStatusUrl(session, id) {
-        return `/status/ftp/${id}`
-    }
+  async getPublicationStatusUrl(session, id) {
+      return `/status/ftp/${id}`
+  }
 
 }

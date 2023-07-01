@@ -15,28 +15,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import express, { Application } from 'express'
-
-import { ServerConfig } from './config'
-import { EVENT_STARTUP_START, EVENT_STARTUP_END } from '../events'
-
-export function create(config: ServerConfig): Application {
-  const app = express()
-  app.set('config', config)
-  return app
-}
-
-export async function start(app: Application): Promise<Application> {
-  const config = app.get('config') as ServerConfig
-
-  // Plugins hook to create API routes
-  await config.emit(EVENT_STARTUP_START, { app })
-
-  // Start server
-  return new Promise((resolve, reject) => {
-    app.listen(config.port, () => {
-      config.emit(EVENT_STARTUP_END, { app })
-      resolve(app)
-    })
-  })
+/**
+ * Throw an error if a parameter is missing
+ * @param value the value to check
+ * @param name the name of the parameter
+ * @throws Error if the parameter is missing
+ */
+export function requiredParam<T>(value: T | undefined, name: string): NonNullable<T> {
+  if (value === undefined) {
+    console.error(`Missing required parameter ${name}`)
+    throw new Error(`Missing required parameter ${name}`)
+  }
+  return value as NonNullable<T>
 }
