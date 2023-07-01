@@ -44,7 +44,7 @@ import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
 import { richTextPlugin } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
-import publishPlugin, { PublicationManagerOptions } from './publish'
+import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import { templatePlugin } from './template'
 import { eleventyPlugin } from './eleventy'
 import { WEBSITE_PATH } from '../../constants'
@@ -66,7 +66,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
   {name: './grapesjs/symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
-  {name: './grapesjs/publish', value: publishPlugin},
+  {name: './grapesjs/PublicationManager', value: publicationManagerPlugin},
   {name: './grapesjs/template', value: templatePlugin},
   {name: './grapesjs/eleventy', value: eleventyPlugin},
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
@@ -189,7 +189,7 @@ export function getEditorConfig(id: string, rootUrl: string) {
           },
         ],
       },
-      [publishPlugin as any]: {
+      [publicationManagerPlugin as any]: {
         appendTo: 'options',
         rootUrl,
         websiteId: id,
