@@ -15,10 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import JsFTP from 'jsftp';
+import JsFTP from 'jsftp'
 import { Readable } from 'stream'
 import express from 'express'
-import {Backend} from '../server/backends';
+import {Backend} from '../server/backends'
 
 function formHtml({ host = null, user = null, pass = null, port = null, secure = null, id = null }, err = '') {
   return `
@@ -125,12 +125,12 @@ export default class FtpBackend implements Backend {
         port,
         user,
         pass,
-      });
+      })
 
       ftp['on']('error', (err) => {
         console.error('FTP error', err)
-        reject(err);
-      });
+        reject(err)
+      })
 
       ftp['on']('connect', () => {
         console.log('FTP connected')
@@ -167,12 +167,12 @@ export default class FtpBackend implements Backend {
         res
         //.sendStatus(200)
         //.send(`FTP auth success, you can close this window`)
-        .redirect(`${redirect}?backendId=${encodeURIComponent(this.id)}&icon=${encodeURIComponent(this.icon)}&id=${encodeURIComponent(id)}`)
+          .redirect(`${redirect}?backendId=${encodeURIComponent(this.id)}&icon=${encodeURIComponent(this.icon)}&id=${encodeURIComponent(id)}`)
       } catch(err) {
         console.error('FTP auth failed', err.message)
         res
-        .status(403)
-        .redirect(`${this.options.authorizeURL}?error=${encodeURIComponent(err.message)}`)
+          .status(403)
+          .redirect(`${this.options.authorizeURL}?error=${encodeURIComponent(err.message)}`)
       }
     })
     router.get(this.options.authorizePath, async (req, res) => {
@@ -184,9 +184,9 @@ export default class FtpBackend implements Backend {
         try {
           await this.checkAuth({ host, user, pass, port, secure })
           res
-          .sendStatus(200)
+            .sendStatus(200)
           //.send(`FTP auth success, you can close this window`)
-          .redirect(redirect)
+            .redirect(redirect)
           return
         } catch(err) {
           // TODO: check if the error is a 403
@@ -240,21 +240,21 @@ export default class FtpBackend implements Backend {
   async readFile(session, id, path) {
     return new Promise((resolve, reject) => {
       this.getClient(session.ftp)
-      .then(ftp => {
-        ftp.get(
-          `${this.options.rootPath}/${id}${path}`,
-          (err, socket) => {
-            if (err) {
-              return reject(err)
-            }
-            resolve({
-              path,
-              content: Readable.from(socket),
+        .then(ftp => {
+          ftp.get(
+            `${this.options.rootPath}/${id}${path}`,
+            (err, socket) => {
+              if (err) {
+                return reject(err)
+              }
+              resolve({
+                path,
+                content: Readable.from(socket),
+              })
+              socket.resume()
             })
-            socket.resume()
-          })
-      })
-      .catch(reject)
+        })
+        .catch(reject)
     })
   }
 
@@ -285,11 +285,11 @@ export default class FtpBackend implements Backend {
             if (err) {
               return reject(err)
             }
-            resolve();
-          });
+            resolve()
+          })
         })
       )
-    );
+    )
   }
 
   async listDir(session, id, path) {
@@ -297,12 +297,12 @@ export default class FtpBackend implements Backend {
     return new Promise((resolve, reject) => {
       ftp.ls(`${this.options.rootPath}/${id}${path}`, (err, res) => {
         if (err) {
-          return reject(err);
+          return reject(err)
         }
-        const fileNames = res.map((file) => file.name);
-        resolve(fileNames);
-      });
-    });
+        const fileNames = res.map((file) => file.name)
+        resolve(fileNames)
+      })
+    })
   }
 
   async createDir(session, id, path) {
@@ -310,11 +310,11 @@ export default class FtpBackend implements Backend {
     return new Promise<void>((resolve, reject) => {
       ftp.raw.mkd(`${this.options.rootPath}/${id}${path}`, (err) => {
         if (err) {
-          return reject(err);
+          return reject(err)
         }
-        resolve();
-      });
-    });
+        resolve()
+      })
+    })
   }
 
   async deleteDir(session, id, path) {
@@ -322,19 +322,19 @@ export default class FtpBackend implements Backend {
     return new Promise<void>((resolve, reject) => {
       ftp.raw.rmd(`${this.options.rootPath}/${id}${path}`, (err) => {
         if (err) {
-          return reject(err);
+          return reject(err)
         }
-        resolve();
-      });
-    });
+        resolve()
+      })
+    })
   }
 
   async getFileUrl(session, id, path) {
-      return `${session.ftp.url}/${id}${path}`
+    return `${session.ftp.url}/${id}${path}`
   }
 
   async getPublicationStatusUrl(session, id) {
-      return `/status/ftp/${id}`
+    return `/status/ftp/${id}`
   }
 
 }

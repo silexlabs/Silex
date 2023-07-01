@@ -1,17 +1,14 @@
-const { Config } = require('../config');
-const { EVENT_WRITE_END, EVENT_ASSET_WRITE_END } = require('./WebsitePlugin');
-const { EVENT_PUBLISH_END } = require('./PublishPlugin');
-const nodefetch = require('node-fetch');
-const { projectPath } = require('../project');
+import fetch from "node-fetch"
+import { ServerConfig } from "../server/config"
 
-// type HooksOptions = {
-//   gitUrl?: string
-//   buildUrl?: string
-// }
+type HooksOptions = {
+  gitUrl?: string
+  buildUrl?: string
+}
 
 const rootPath = process.env.DATA_FOLDER
 
-export default async function(config, opts = {}) {
+export default async function(config: ServerConfig, opts: HooksOptions = {}) {
   // Options with defaults
   const options = {
     gitUrl: process.env.SILEX_HOOK_GIT,
@@ -48,11 +45,10 @@ async function hook(url, params = {}) {
     try {
       Object.keys(params)
         .forEach(key => urlObj.searchParams.append(key, params[key]))
-      return nodefetch(urlObj.toString())
+      return fetch(urlObj.toString())
     } catch(error) {
       console.log('Hook call failed', {url, error})
       return null
     }
   }
 }
-

@@ -1,10 +1,10 @@
-import bodyParser from 'body-parser';
-import compression from 'compression';
-import cookieParser from 'cookie-parser';
-import session from 'cookie-session';
-import cors from 'cors';
-import express from 'express';
-const { Router } = express;
+import bodyParser from 'body-parser'
+import compression from 'compression'
+import cookieParser from 'cookie-parser'
+import session from 'cookie-session'
+import cors from 'cors'
+import express from 'express'
+const { Router } = express
 
 export default async function(config, opts = {}) {
   // Options with defaults

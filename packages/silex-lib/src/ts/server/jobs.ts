@@ -13,7 +13,7 @@ const processKey = Math.ceil(Math.random() * 1000000)
 let nextJobId = 0
 
 // Create a new job
-export function startJob(message: string = ''): JobData {
+export function startJob(message = ''): JobData {
   const id = `${processKey}_${++nextJobId}`
   const job: JobData = {
     id,
@@ -31,12 +31,12 @@ export function getJob(id: JobId): JobData | undefined {
 
 
 // End the job with success
-export function jobSuccess(id: JobId, message: string = ''): boolean {
+export function jobSuccess(id: JobId, message = ''): boolean {
   return end(id, JobStatus.SUCCESS, message)
 }
 
 // End the job with error
-export function jobError(id: JobId, message: string = ''): boolean {
+export function jobError(id: JobId, message = ''): boolean {
   return end(id, JobStatus.ERROR, message)
 }
 
@@ -48,7 +48,7 @@ export function killJob(job: JobData) {
 }
 
 // End the job
-function end(id: JobId, status: JobStatus, message: string = ''): boolean {
+function end(id: JobId, status: JobStatus, message = ''): boolean {
   const job = getJob(id)
   if(job) {
     job.status = status

@@ -19,12 +19,12 @@ import * as backends from './backends'
 import * as silexApp from './express'
 import { createConfig } from './config'
 
-export * from './express'
-export * from './config'
-export * from './backends'
-export * from '../events'
-export * from '../constants'
-export * from '../page'
+//export * from './express'
+//export * from './config'
+//export * from './backends'
+//export * from '../events'
+//export * from '../constants'
+//export * from '../page'
 
 // Main app
 export default async function main() {
