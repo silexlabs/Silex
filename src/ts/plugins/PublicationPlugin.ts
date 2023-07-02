@@ -91,7 +91,6 @@ export default async function(config: ServerConfig, opts = {}) {
         } as ApiResponseError)
         return
       }
-      console.log(`Job found with id ${jobId}`, job)
       res.json({
         ...job,
         _timeout: undefined,
@@ -112,7 +111,8 @@ export default async function(config: ServerConfig, opts = {}) {
           ...defaultPublication,
           ...publication,
         }
-        const backendId = requiredParam(publicationSettings.backend?.backendId, 'backendId in publicationSettings')
+        const backend = requiredParam(publicationSettings.backend, 'backend object in publicationSettings')
+        const backendId = requiredParam(backend.backendId, 'backendId in publicationSettings')
         if (!files) throw new PublicationError('Error in the request, files not found', 400)
 
         // Get hosting provider and make sure the user is logged in
@@ -142,10 +142,9 @@ export default async function(config: ServerConfig, opts = {}) {
           content: file.css,
         }]))
         try {
-          console.log('Publishing the website', filesList, session)
           res.json({
             url: await hostingProvider.getWebsiteUrl(session, id),
-            job: await hostingProvider.publish(session, id, publicationSettings.backend!, filesList),
+            job: await hostingProvider.publish(session, id, backend, filesList),
           } as ApiPublicationPublishResponse)
         } catch (err) {
           console.error('Error publishing the website', err)

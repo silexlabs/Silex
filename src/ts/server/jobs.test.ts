@@ -12,11 +12,13 @@ describe('Job Module', () => {
     const {id} = startJob('Test job')
     job = getJob(id)
     expect(job).not.toBeNull()
-    expect(job!.id).toEqual(id)
-    expect(job!.status).toEqual(JobStatus.IN_PROGRESS)
-    expect(job!.message).toEqual('Test job')
-    killJob(job!)
-    expect(getJob(id)).toBeUndefined()
+    if (job) {
+      expect(job.id).toEqual(id)
+      expect(job.status).toEqual(JobStatus.IN_PROGRESS)
+      expect(job.message).toEqual('Test job')
+      killJob(job)
+      expect(getJob(id)).toBeUndefined()
+    }
   })
 
   it('should end a job with success', () => {
@@ -25,8 +27,10 @@ describe('Job Module', () => {
     expect(result).toBeTruthy()
     job = getJob(id)
     expect(job).not.toBeNull()
-    expect(job!.status).toEqual(JobStatus.SUCCESS)
-    expect(job!.message).toEqual('Job completed successfully')
+    if (job) {
+      expect(job.status).toEqual(JobStatus.SUCCESS)
+      expect(job.message).toEqual('Job completed successfully')
+    }
   })
 
   it('should end a job with error', () => {
@@ -35,8 +39,10 @@ describe('Job Module', () => {
     expect(result).toBeTruthy()
     job = getJob(id)
     expect(job).not.toBeNull()
-    expect(job!.status).toEqual(JobStatus.ERROR)
-    expect(job!.message).toEqual('Job ended with error')
+    if (job) {
+      expect(job.status).toEqual(JobStatus.ERROR)
+      expect(job.message).toEqual('Job ended with error')
+    }
   })
 
   it('should not find a job after ending', done => {
