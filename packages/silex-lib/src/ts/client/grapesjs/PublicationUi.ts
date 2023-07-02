@@ -77,10 +77,11 @@ export class PublicationUi {
     // Reference to the dialog element
     this.el = this.createDialogElements()
     // Add the publish command to the editor
-    const ui: PublicationUi = this
+    const openDialog = () => this.openDialog()
+    const closeDialog = () => this.closeDialog()
     editor.Commands.add(cmdPublish, {
-      run(editor: PublishableEditor) { ui.openDialog() },
-      stop(editor: PublishableEditor) { ui.closeDialog() },
+      run(editor: PublishableEditor) { openDialog() },
+      stop(editor: PublishableEditor) { closeDialog() },
     })
   }
 
@@ -169,7 +170,7 @@ export class PublicationUi {
           style="width: 100%;"
         ></progress>
       ` : ''}
-      ${job?.logs?.length ? html`
+      ${job && job.logs?.length ? html`
         <details>
           <summary>Logs</summary>
           <pre style="
@@ -178,11 +179,11 @@ export class PublicationUi {
             overflow: auto;
             font-size: x-small;
             "
-          >${cleanupLogEntry(job!.logs)}
+          >${cleanupLogEntry(job.logs)}
           </pre>
         </details>
       ` : ''}
-      ${job?.errors?.length ? html`
+      ${job && job.errors?.length ? html`
         <details>
           <summary>Errors</summary>
           <pre style="
@@ -191,7 +192,7 @@ export class PublicationUi {
             overflow: auto;
             font-size: x-small;
             "
-          >${cleanupLogEntry(job!.errors)}
+          >${cleanupLogEntry(job.errors)}
           </pre>
         </details>
       ` : ''}

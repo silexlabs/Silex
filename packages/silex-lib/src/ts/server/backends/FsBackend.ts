@@ -50,7 +50,6 @@ export class FsBackend implements StorageProvider, HostingProvider {
   }
 
   updateStatus(filesStatuses, status, statusCbk) {
-    console.log('updateStatus', status)
     statusCbk && statusCbk({
       message: `Writing files:<ul><li>${filesStatuses.map(({file, status}) => `${file.path}: ${status}`).join('</li><li>')}</li></ul>`,
       status,
@@ -76,7 +75,6 @@ export class FsBackend implements StorageProvider, HostingProvider {
       .map(({fileName}) => fileName as WebsiteId)
   }
   async writeFiles(session: any, id: WebsiteId, files: File[], statusCbk?: StatusCallback): Promise<void> {
-    console.log('writeFiles', id, files )
     const filesStatuses = this.initStatus(files)
     let error = false
     for (const fileStatus of filesStatuses) {
@@ -106,7 +104,7 @@ export class FsBackend implements StorageProvider, HostingProvider {
             resolve(file)
           })
           writeStream.on('error', err => {
-            console.log('writeStream error', err)
+            console.error('writeStream error', err)
             fileStatus.message = `Error (${err})`
             this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
             error = true
@@ -121,7 +119,6 @@ export class FsBackend implements StorageProvider, HostingProvider {
   async publish(session: any, id: WebsiteId, backendData: BackendData, files: File[]): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`)
     this.writeFiles(session, id, files, async ({status, message}) => {
-      console.log('Publication status', {status, message})
       // Update the job status
       job.status = status
       job.message = message
@@ -155,7 +152,6 @@ export class FsBackend implements StorageProvider, HostingProvider {
   }
 
   async getFileUrl(session: any, id: WebsiteId, path: string): Promise<string> {
-    console.log('getFileUrl', id, path)
     const filePath = join(this.options.rootPath, id, path)
     const fileUrl = new URL(filePath, 'file://')
     return fileUrl.toString()
