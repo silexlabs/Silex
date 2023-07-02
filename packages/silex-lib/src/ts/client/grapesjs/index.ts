@@ -102,7 +102,7 @@ export function getEditorConfig(id: string, rootUrl: string) {
     },
 
     assetManager: {
-      upload: `${rootUrl}assets/`,
+      upload: `${rootUrl}assets/?id=${id}`,
     },
 
     storageManager: {
