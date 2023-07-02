@@ -33,7 +33,7 @@ import { requiredParam } from '../utils/validation'
  */
 export interface File {
   path: string,
-  content: string | Readable,
+  content: Buffer | string | Readable,
 }
 
 /**

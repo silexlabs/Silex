@@ -66,7 +66,7 @@ export type ApiWebsiteAssetsReadRequestParams = { path: string }
 export type ApiWebsiteAssetsReadResponse = string
 export type ApiWebsiteAssetsWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
 export type ApiWebsiteAssetsWriteRequestBody = File[]
-export type ApiWebsiteAssetsWriteResponse = string[]
+export type ApiWebsiteAssetsWriteResponse = { data: string[] }
 
 // **
 // Website API

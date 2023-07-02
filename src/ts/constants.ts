@@ -34,5 +34,5 @@ export const API_WEBSITE_READ = 'api/website/'
 export const API_WEBSITE_WRITE = 'api/website/'
 export const API_WEBSITE_DELETE = 'api/website/'
 export const API_WEBSITE_LIST = 'api/website/'
-export const API_WEBSITE_ASSETS_REGEX = /\/assets\/(.*)/
-export const API_WEBSITE_ASSETS_READ = 'assets/'
+export const API_WEBSITE_ASSETS_READ = 'assets/:path'
+export const API_WEBSITE_ASSETS_WRITE = 'assets/'

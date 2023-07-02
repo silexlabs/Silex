@@ -18,12 +18,13 @@
 import { Router } from 'express'
 import formidable, { File as FormidableFile } from 'formidable'
 import { noCache } from './Cache'
-import { API_WEBSITE_ASSETS_REGEX, API_WEBSITE_ASSETS_READ as API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE } from '../constants'
+import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE } from '../constants'
 import { createReadStream } from 'fs'
 import { ApiResponseError, ApiWebsiteAssetsReadRequestParams, ApiWebsiteAssetsReadRequestQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteRequestQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteRequestQuery, ApiWebsiteDeleteResponse, ApiWebsiteReadRequestQuery, ApiWebsiteReadResponse, ApiWebsiteWriteRequestBody, ApiWebsiteWriteRequestQuery, ApiWebsiteWriteResponse, BackendId, WebsiteData, WebsiteId } from '../types'
 import { BackendType, File, StorageProvider, getBackend } from '../server/backends'
 import { Readable } from 'stream'
 import { requiredParam } from '../server/utils/validation'
+import { basename } from 'path'
 
 /**
  * @fileoverview Website plugin for Silex
@@ -57,7 +58,7 @@ export default async function(config, opts = {}) {
     const router = Router()
     app.use(noCache,  router)
 
-    // website specials
+    // Load website data
     router.get(`/${API_WEBSITE_READ}`, async (req, res) => {
       const query: ApiWebsiteReadRequestQuery = req.query
       const { id, backendId } = query
@@ -88,6 +89,8 @@ export default async function(config, opts = {}) {
         }
       }
     })
+
+    // Save website data
     router.post(`/${API_WEBSITE_WRITE}`, async (req, res) => {
       try {
         const query: ApiWebsiteWriteRequestQuery = req.query as any
@@ -128,18 +131,23 @@ export default async function(config, opts = {}) {
       }
     })
     
-    // Assets
-    router.get(API_WEBSITE_ASSETS_REGEX, async (req, res) => {{
+    // Load assets
+    router.get(`/${API_WEBSITE_ASSETS_READ}`, async (req, res) => {{
       try {
         const query: ApiWebsiteAssetsReadRequestQuery = req.query as any
         const params: ApiWebsiteAssetsReadRequestParams = req.params as any
         const id = requiredParam<WebsiteId>(query.id, 'Website id')
-        const path = requiredParam<string>(params.path, 'Asset path')
+        const path = requiredParam<string>(params.path, 'path')
         const asset: File = await readAsset(req['session'], id, path, query.backendId)
+        // Set content type
+        res.contentType(basename(asset.path))
+        // Send the file
         if(asset.content instanceof Readable) {
+          // Stream
           asset.content.pipe(res)
         } else {
-          res.json(asset.content as ApiWebsiteAssetsReadResponse)
+          // Buffer or string
+          res.send(asset.content as ApiWebsiteAssetsReadResponse)
         }
       } catch(e) {
         console.error('Error getting asset', e)
@@ -171,7 +179,7 @@ export default async function(config, opts = {}) {
             } else {
               const files = [].concat(_files['files[]'])
                 .map((file: FormidableFile) => ({
-                  path: `/${options.assetsPath}/${file.originalFilename}`,
+                  path: `${options.assetsPath}/${file.originalFilename}`,
                   content: createReadStream(file.filepath),
                 })) 
               resolve(files)
@@ -180,10 +188,12 @@ export default async function(config, opts = {}) {
         })
 
         // Write the files
-        const filesUrl = await writeAssets(req['session'], id, files, query.backendId)
+        const data = await writeAssets(req['session'], id, files, query.backendId)
 
         // Return the file URLs to insert in the website
-        res.json(filesUrl as ApiWebsiteAssetsWriteResponse)
+        res.json({
+          data, // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
+        } as ApiWebsiteAssetsWriteResponse)
 
       } catch(e) {
         console.error('Error uploading assets', e)
@@ -225,7 +235,9 @@ export default async function(config, opts = {}) {
     // Get a website data
     const file = await storageProvider.readFile(session, id, WEBSITE_DATA_PATH)
     if(typeof file.content === 'string') return JSON.parse(file.content)
-    else return file.content
+    else if(file.content instanceof Buffer) return JSON.parse(file.content.toString())
+    else if(file.content instanceof Readable) return file.content
+    throw new WebsiteError('Invalid website data', 500)
   }
 
   /**
@@ -291,12 +303,17 @@ export default async function(config, opts = {}) {
     // Get the desired backend
     const storageProvider = await getStorageProvider(session, backendId)
 
+    // Create the assets/ folder if needed
+    await storageProvider.createDir(session, id, options.assetsPath)
+
     // Write the asset to the backend
     await storageProvider.writeFiles(
       session,
       id,
       files
     )
-    return files.map(({ path }) => `assets/${path}?id=${id}`)
+
+    // Return the files URLs with the website id
+    return files.map(({ path }) => `${path}?id=${id}`)
   }
 }

@@ -1,5 +1,5 @@
 import fs, { stat } from 'fs/promises'
-import { createWriteStream } from 'fs'
+import { createWriteStream, mkdir } from 'fs'
 import fsExtra from 'fs-extra'
 import { File, StorageProvider, HostingProvider, StatusCallback} from '.'
 import { join } from 'path'
@@ -45,11 +45,12 @@ export class FsBackend implements StorageProvider, HostingProvider {
   }
 
   async readFile(session: any, id: WebsiteId, path: string): Promise<File> {
-    const content = await fs.readFile(join(this.options.rootPath, id, path), 'utf8')
+    const content = await fs.readFile(join(this.options.rootPath, id, path))
     return { path, content }
   }
 
   updateStatus(filesStatuses, status, statusCbk) {
+    console.log('updateStatus', status)
     statusCbk && statusCbk({
       message: `Writing files:<ul><li>${filesStatuses.map(({file, status}) => `${file.path}: ${status}`).join('</li><li>')}</li></ul>`,
       status,
@@ -75,6 +76,7 @@ export class FsBackend implements StorageProvider, HostingProvider {
       .map(({fileName}) => fileName as WebsiteId)
   }
   async writeFiles(session: any, id: WebsiteId, files: File[], statusCbk?: StatusCallback): Promise<void> {
+    console.log('writeFiles', id, files )
     const filesStatuses = this.initStatus(files)
     let error = false
     for (const fileStatus of filesStatuses) {
@@ -104,6 +106,7 @@ export class FsBackend implements StorageProvider, HostingProvider {
             resolve(file)
           })
           writeStream.on('error', err => {
+            console.log('writeStream error', err)
             fileStatus.message = `Error (${err})`
             this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
             error = true
@@ -152,11 +155,9 @@ export class FsBackend implements StorageProvider, HostingProvider {
   }
 
   async getFileUrl(session: any, id: WebsiteId, path: string): Promise<string> {
+    console.log('getFileUrl', id, path)
     const filePath = join(this.options.rootPath, id, path)
-    console.log('getFileUrl', filePath)
     const fileUrl = new URL(filePath, 'file://')
-    console.log('getFileUrl', filePath, fileUrl)
-    console.log('getFileUrl', pathToFileURL(fileUrl.toString()).toString())
     return fileUrl.toString()
   }
 

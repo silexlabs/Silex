@@ -144,7 +144,7 @@ export default async function(config: ServerConfig, opts = {}) {
         try {
           console.log('Publishing the website', filesList, session)
           res.json({
-            url: await hostingProvider.getWebsiteUrl(session, backendId),
+            url: await hostingProvider.getWebsiteUrl(session, id),
             job: await hostingProvider.publish(session, id, publicationSettings.backend!, filesList),
           } as ApiPublicationPublishResponse)
         } catch (err) {
