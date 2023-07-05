@@ -131,21 +131,17 @@ export class PublicationManager {
   }
 
   async goLogin(provider: BackendData) {
-    console.log('goLogin', this.settings, provider)
     window.open(provider.authUrl, '_blank')
     return new Promise(resolve => {
       const onMessage = async (event) => {
         const data = event.data as ApiBackendLoggedInPostMessage
         if (data?.type === 'login') {
-          console.log('onMessage', data)
           window.removeEventListener('message', onMessage)
           if (data.error) {
-            console.log('login error')
             this.status = PublicationStatus.STATUS_LOGGED_OUT
             this.settings.backend = null
             this.dialog && this.dialog.displayError(data.message, this.job, this.status, this.settings)
           } else {
-            console.log('login success')
             this.editor.trigger('publish:login')
             const { backend/*, user, websiteMeta */ }: LoginStatus = await loginStatus(data.backendId, provider.type, this.options.websiteId)
             this.settings.backend = backend
@@ -158,7 +154,6 @@ export class PublicationManager {
   }
 
   async goLogout() {
-    console.log('goLogout')
     try {
       await logout(this.settings.backend.backendId, BackendType.HOSTING)
       this.settings.backend = null
@@ -173,7 +168,6 @@ export class PublicationManager {
   async startPublication() {
     if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
     this.status = PublicationStatus.STATUS_PENDING
-    console.log('startPublication', this.settings)
     if (!this.settings?.backend?.isLoggedIn) {
       this.status = PublicationStatus.STATUS_LOGGED_OUT
       this.dialog && this.dialog.displayError('Please login', this.job, this.status, this.settings)
@@ -182,7 +176,6 @@ export class PublicationManager {
     this.dialog && this.dialog.displayPending(this.job, this.status, this.settings)
     this.editor.trigger('publish:before')
     const projectData = this.editor.getProjectData() as WebsiteData
-    console.log('projectData', projectData)
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Update assets URL to display outside the editor
     const assetsFolderUrl = this.settings?.assets?.url
