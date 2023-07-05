@@ -21,7 +21,7 @@ import express, { Application } from 'express'
 import { File, HostingProvider, StatusCallback, StorageProvider, toBackendEnum} from '../server/backends'
 import { requiredParam } from '../server/utils/validation'
 import { API_BACKEND_LOGIN_CALLBACK, WEBSITE_DATA_FILE_NAME } from '../constants'
-import { BackendData, BackendType, BackendUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId } from '../types'
+import { BackendData, BackendType, BackendUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData } from '../types'
 import { EVENT_STARTUP_START } from '../events'
 import { jobError, jobSuccess, startJob } from '../server/jobs'
 import { ServerConfig } from '../server/config'
@@ -102,7 +102,6 @@ function handleInitError(err) {
 }
 
 function formHtml(type: BackendType, { host, user, pass, port, secure, storageRootPath, publicationPath, websiteUrl}: FtpSessionData, err = '') {
-  console.log('formHtml', type, { host, user, pass, port, secure, storageRootPath, publicationPath, websiteUrl}, err)
   return `
     ${ err && `<div class="error">${err || ''}</div>` }
     <form method="post">
@@ -542,7 +541,6 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
               })
               return reject(new Error(errMsg))
             }
-            console.log(`File ${dstPath} uploaded`)
             fileStatus.message = 'Upload complete'
             updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
             resolve(dstPath)
@@ -669,16 +667,20 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
   }
 
   async publish(session: FtpSession, id: string, backendData: BackendData, files: File[]): Promise<JobData> {
-    const job = startJob(`Publishing to ${this.displayName}`)
+    const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
+    job.logs = [[`Publishing to ${this.displayName}`]]
+    job.errors = [[]]
     this.writeFiles(session, '', files, async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message
+      job.logs[0].push(message)
       // Add the website url
       job.url = await this.getWebsiteUrl(session, id)
       if(status === JobStatus.SUCCESS) {
         jobSuccess(job.jobId, message)
       } else if(status === JobStatus.ERROR) {
+        job.errors[0].push(message)
         jobError(job.jobId, message)
       }
     })

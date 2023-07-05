@@ -168,7 +168,7 @@ export class PublicationUi {
         ></progress>
       ` : ''}
       ${job && job.logs?.length ? html`
-        <details>
+        <br><details>
           <summary>Logs</summary>
           <pre style="
             max-width: 100%;
@@ -176,12 +176,12 @@ export class PublicationUi {
             overflow: auto;
             font-size: x-small;
             "
-          >${cleanupLogEntry(job.logs)}
+          >${unsafeHTML(cleanupLogEntry(job.logs))}
           </pre>
         </details>
       ` : ''}
       ${job && job.errors?.length ? html`
-        <details>
+        <br><details>
           <summary>Errors</summary>
           <pre style="
             max-width: 100%;
@@ -189,7 +189,7 @@ export class PublicationUi {
             overflow: auto;
             font-size: x-small;
             "
-          >${cleanupLogEntry(job.errors)}
+          >${unsafeHTML(cleanupLogEntry(job.errors))}
           </pre>
         </details>
       ` : ''}

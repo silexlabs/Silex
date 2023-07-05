@@ -20,7 +20,7 @@ import { createWriteStream, mkdir } from 'fs'
 import fsExtra from 'fs-extra'
 import { File, StorageProvider, HostingProvider, StatusCallback, BackendSession} from '.'
 import { join } from 'path'
-import { BackendData, BackendUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, BackendType } from '../../types'
+import { BackendData, BackendUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, BackendType, PublicationJobData } from '../../types'
 import { jobError, jobSuccess, startJob } from '../jobs'
 import { userInfo } from 'os'
 import { WEBSITE_DATA_FILE_NAME } from '../../constants'
@@ -56,7 +56,7 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
   // ********************
   updateStatus(filesStatuses, status, statusCbk) {
     statusCbk && statusCbk({
-      message: `Writing files:<ul><li>${filesStatuses.map(({file, status}) => `${file.path}: ${status}`).join('</li><li>')}</li></ul>`,
+      message: `<p>Writing files:<ul><li>${filesStatuses.map(({file, message}) => `${file.path}: ${message}`).join('</li><li>')}</li></ul></p>`,
       status,
     })
   }
@@ -240,16 +240,20 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
   // Hosting provider interface
   // ********************
   async publish(session: FsSession, id: WebsiteId, backendData: BackendData, files: File[]): Promise<JobData> {
-    const job = startJob(`Publishing to ${this.displayName}`)
+    const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
+    job.logs = [[`Publishing to ${this.displayName}`]]
+    job.errors = [[]]
     this.writeFiles(session, id, files, async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message
+      job.logs[0].push(message)
       // Add the website url
       job.url = await this.getFileUrl(session, id, 'index.html')
       if(status === JobStatus.SUCCESS) {
         jobSuccess(job.jobId, message)
       } else if(status === JobStatus.ERROR) {
+        job.errors[0].push(message)
         jobError(job.jobId, message)
       }
     })
