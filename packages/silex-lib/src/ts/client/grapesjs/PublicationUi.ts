@@ -16,10 +16,11 @@
  */
 
 import { html, render, TemplateResult } from 'lit-html'
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 //import { map } from 'lit-html/directives/map.js'
 import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
-import { BackendData, PublicationJobData, PublicationSettings } from '../../types'
-import { API_BACKEND_LIST } from '../../constants'
+import { BackendData, BackendType, PublicationJobData, PublicationSettings } from '../../types'
+import { backendList } from '../services'
 
 /**
  * @fileoverview define the publication dialog
@@ -38,7 +39,6 @@ export const cmdPublish = 'publish-open-dialog'
 // Types
 export type PublicationDialogOptions = {
   appendTo: string
-  rootUrl: string
 }
 
 // **
@@ -72,8 +72,6 @@ export class PublicationUi {
    * Initialize the dialog and the publish button
    */
   constructor(private editor: PublishableEditor, private options: PublicationDialogOptions) {
-    // Add the publish button to the editor
-    console.log('PublicationUi add button', options.appendTo)
     // Reference to the dialog element
     this.el = this.createDialogElements()
     // Add the publish command to the editor
@@ -106,7 +104,6 @@ export class PublicationUi {
     const el = document.querySelector('#publish-dialog') as HTMLElement
     const primary = el?.querySelector('#publish-button--primary') as HTMLElement
     const secondary = el?.querySelector('#publish-button--secondary') as HTMLElement
-    console.log('get dialog elements', el, primary, secondary)
     if(!el || !primary || !secondary) throw new Error('Publication dialog elements not found')
     return { el, primary, secondary }
   }
@@ -116,7 +113,6 @@ export class PublicationUi {
     el.id = 'publish-dialog'
     el.className = 'silex-dialog-inline silex-dialog gjs-two-color'
     document.body.append(el)
-    console.log('create dialog elements', el)
     // Create the publish button
     this.editor.Panels.addButton(this.options.appendTo, {
       id: 'publish-button',
@@ -133,8 +129,7 @@ export class PublicationUi {
 
   // **
   // Functions to render the dialog
-  async renderDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
-    console.log('update', status, settings)
+  private async renderDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
     try {
       if(this.isOpen && (!status || !settings)) throw new Error('PublicationUi: open but no status or settings')
       render(html`
@@ -150,7 +145,6 @@ export class PublicationUi {
     }
   }
   async renderOpenDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
-    console.log('getOpenPublishDialog', job)
     return html`
     <main>
       ${this.isPending(status) ? html`
@@ -162,7 +156,10 @@ export class PublicationUi {
       ` : ''}
       ${this.isError(status) || this.isLoggedOut(status) ? html`
         <p>Publication error</p>
-        <div>${this.errorMessage}</div>
+        <div>${unsafeHTML(this.errorMessage)}</div>
+      ` : ''}
+      ${job && job.message ? html`
+        <div>${unsafeHTML(job.message)}</div>
       ` : ''}
       ${this.isPending(status) ? html`
         <progress
@@ -228,11 +225,8 @@ export class PublicationUi {
   }
   async renderLoginDialog(status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
     try {
-      console.log('getOpenLoginDialog', status)
-      const hostingProviders = await fetch(`${this.options.rootUrl}${API_BACKEND_LIST}?type=hosting`).then(res => res.json()) as BackendData[]
-      console.log('getOpenLoginDialog', { hostingProviders })
+      const hostingProviders = await backendList(BackendType.HOSTING)
       const loggedProvider: BackendData = hostingProviders.find(provider => provider.isLoggedIn)
-      console.log('getOpenLoginDialog', { loggedProvider })
 
       if (loggedProvider) {
         settings.backend = loggedProvider
@@ -242,6 +236,10 @@ export class PublicationUi {
       return html`
       <main>
         <p>You need to login to publish your website</p>
+        ${this.isError(status) || this.isLoggedOut(status) ? html`
+          <p>Login error</p>
+          <div>${unsafeHTML(this.errorMessage)}</div>
+        ` : ''}
         ${hostingProviders.map(backend => html`
           <button
             class="silex-button silex-button--primary"
@@ -266,7 +264,7 @@ export class PublicationUi {
       </header>
       <main>
         <p>Unable to load hosting providers</p>
-        <p>Something went wrong: ${err.message}</p> 
+        <p>Something went wrong: ${err.message}</p>
       </main>
       <footer>
         <button
@@ -278,8 +276,12 @@ export class PublicationUi {
     `
     }
   }
+  displayPending(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
+    this.errorMessage = null
+    this.renderDialog(job, status, settings)
+  }
   displayError(message: string, job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
-    console.error(message)
+    console.error(message, job?.message)
     this.errorMessage = message
     this.renderDialog(job, status, settings)
   }

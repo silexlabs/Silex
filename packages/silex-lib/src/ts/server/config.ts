@@ -29,17 +29,22 @@ import { resolve } from 'path'
 import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Application, Request, Response, Router } from 'express'
 import { readFile } from 'fs/promises'
-import { EVENT_STARTUP_START } from '../events'
-import { BackendType, HostingProvider, StorageProvider, toBackendEnum } from './backends'
+import { HostingProvider, StorageProvider, toBackendEnum } from './backends'
 import { FsBackend } from './backends/FsBackend'
 import { Backend } from './backends'
-
-const defaultBackend = new FsBackend({})
+import { BackendType } from '../types'
 
 /**
  * Config types definitions
  */
 export class ServerConfig extends Config {
+  public expressOptions = {
+    jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT || '1mb',
+    textLimit: process.env.SILEX_EXPRESS_TEXT_LIMIT || '10mb',
+    sessionName: process.env.SILEX_SESSION_NAME || 'silex-session',
+    sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
+    cors: process.env.SILEX_CORS_URL,
+  }
   constructor(
     public url: string,
     public debug: boolean,
@@ -72,7 +77,7 @@ export class ServerConfig extends Config {
   }
 
   // Storage providers to store the website data and assets
-  private storageProviders: StorageProvider[] = [defaultBackend]
+  private storageProviders: StorageProvider[] = [new FsBackend(null, { type: BackendType.STORAGE })]
   addStorageProvider(storage: StorageProvider | StorageProvider[]) {
     this.setStorageProviders(this.storageProviders.concat(storage))
   }
@@ -84,7 +89,7 @@ export class ServerConfig extends Config {
   }
 
   // Hosting providers to publish the website online
-  private hostingProviders: HostingProvider[] = [defaultBackend]
+  private hostingProviders: HostingProvider[] = [new FsBackend(null, { type: BackendType.HOSTING })]
   addHostingProvider(hosting: HostingProvider | HostingProvider[]) {
     this.setHostingProviders(this.hostingProviders.concat(hosting))
   }
@@ -139,7 +144,7 @@ export function createConfig(): ServerConfig {
 /**
  * Load user config file
  * This is the config file passed as env var CONFIG
- */ 
+ */
 export async function loadUserConfig(config: ServerConfig) {
   if (process.env.CONFIG) {
     const userConfigPath: Plugin = process.env.CONFIG

@@ -19,12 +19,17 @@
  * @fileoverview define constants for Silex client and server
  */
 
+export const WEBSITE_DATA_FILE_NAME = 'website.json'
+
 export const DEFAULT_WEBSITE_ID = 'default'
+export const DEFAULT_BACKEND_ID = ''
 export const DEFAULT_LANGUAGE = 'en'
 export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
 
+export const API_BACKEND_LOGIN_STATUS = 'api/backend/login/status/'
 export const API_BACKEND_LIST = 'api/backend/'
 export const API_BACKEND_LOGOUT = 'api/backend/logout/'
+export const API_BACKEND_LOGIN = 'api/backend/login/'
 export const API_BACKEND_LOGIN_CALLBACK = 'api/backend/login/'
 
 export const API_PUBLICATION_PUBLISH = 'api/publication/'

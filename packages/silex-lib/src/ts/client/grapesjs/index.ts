@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs from 'grapesjs'
+import grapesjs, { Editor } from 'grapesjs'
 import openImport from './openImport'
 
 /**
@@ -35,6 +35,7 @@ import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
+import loginDialogPlugin, { LoginDialogOptions } from './LoginDialog'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -47,28 +48,33 @@ import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import { templatePlugin } from './template'
 import { eleventyPlugin } from './eleventy'
+import { storagePlugin } from './storage'
 import { API_WEBSITE_READ, API_WEBSITE_WRITE } from '../../constants'
+import { BackendId, WebsiteId } from '../../types'
+import { ApiError } from '../services'
 
 const plugins = [
-  {name: './grapesjs/project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
-  {name: './grapesjs/settings', value: settingsDialog},
+  {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
+  {name: './settings', value: settingsDialog},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
-  {name: './grapesjs/new-page-dialog', value: newPageDialog},
-  {name: './grapesjs/page-panel', value: pagePanelPlugin},
+  {name: './new-page-dialog', value: newPageDialog},
+  {name: './page-panel', value: pagePanelPlugin},
   {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
-  {name: './grapesjs/blocks', value: blocksPlugin},
-  {name: './grapesjs/semantic', value: semanticPlugin},
-  {name: './grapesjs/rich-text', value: richTextPlugin},
+  {name: './blocks', value: blocksPlugin},
+  {name: './semantic', value: semanticPlugin},
+  {name: './rich-text', value: richTextPlugin},
   {name: 'grapesjs-style-filter', value: styleFilterPlugin},
   {name: 'grapesjs-plugin-forms', value: formPlugin},
   {name: 'grapesjs-custom-code', value: codePlugin},
-  {name: './grapesjs/internal-links', value: internalLinksPlugin},
+  {name: './internal-links', value: internalLinksPlugin},
   {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
-  {name: './grapesjs/symbolDialogs', value: symbolDialogsPlugin},
+  {name: './symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
-  {name: './grapesjs/PublicationManager', value: publicationManagerPlugin},
-  {name: './grapesjs/template', value: templatePlugin},
-  {name: './grapesjs/eleventy', value: eleventyPlugin},
+  {name: './PublicationManager', value: publicationManagerPlugin},
+  {name: './template', value: templatePlugin},
+  {name: './eleventy', value: eleventyPlugin},
+  {name: './storage', value: storagePlugin},
+  {name: './LoginDialog', value: loginDialogPlugin},
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
 ]
 // Check that all plugins are loaded correctly
@@ -84,7 +90,7 @@ plugins
 const catBasic = 'Containers'
 const catComponents = 'Components'
 
-export function getEditorConfig(id: string, rootUrl: string) {
+export function getEditorConfig(id: WebsiteId, backendId: BackendId, rootUrl: string) {
   return {
     container: '#gjs',
     height: '100%',
@@ -102,17 +108,22 @@ export function getEditorConfig(id: string, rootUrl: string) {
     },
 
     assetManager: {
-      upload: `${rootUrl}assets/?id=${id}`,
+      upload: `${rootUrl}/assets/?id=${id}`,
     },
 
     storageManager: {
       autoload: true,
-      type: 'remote',
+      //type: 'remote',
+      type: 'backend',
       options: {
-        remote: {
-          urlStore: `${rootUrl}${API_WEBSITE_WRITE}?id=${id}`,
-          urlLoad: `${rootUrl}${API_WEBSITE_READ}?id=${id}`,
+        backend: {
+          id,
+          backendId,
         },
+        //remote: {
+        //  urlStore: `${rootUrl}/${API_WEBSITE_WRITE}?id=${id}`,
+        //  urlLoad: `${rootUrl}/${API_WEBSITE_READ}?id=${id}`,
+        //},
       },
     },
 
@@ -191,7 +202,6 @@ export function getEditorConfig(id: string, rootUrl: string) {
       },
       [publicationManagerPlugin as any]: {
         appendTo: 'options',
-        rootUrl,
         websiteId: id,
       } as PublicationManagerOptions,
       [pagePanelPlugin as any]: {
@@ -219,6 +229,9 @@ export function getEditorConfig(id: string, rootUrl: string) {
       [fontsDialogPlugin as any]: {
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
       },
+      [loginDialogPlugin as any]: {
+        id,
+      } as LoginDialogOptions,
     },
   }
 }
@@ -226,74 +239,61 @@ export function getEditorConfig(id: string, rootUrl: string) {
 // ////////////////////
 // Initialize editor
 // ////////////////////
-// Expose grapes for plugins
-// window['grapesjs'] = grapesjs
-
 // Keep a ref to the editor singleton
-let editor
-
-export function initEditor(config, grapesJsPlugins) {
+let editor: Editor
+export async function initEditor(config, grapesJsPlugins) {
   if(editor) throw new Error('Grapesjs editor already created')
+  return new Promise<Editor>((resolve, reject) => {
+    try {
+      editor = grapesjs.init({
+        plugins: [
+          ...grapesJsPlugins,
+          ...config.plugins,
+        ],
+        ...config,
+      })
+    } catch(e) {
+      console.error('Error initializing GrapesJs with plugins:', plugins, e)
+      reject(e)
+    }
 
-  try {
-    editor = grapesjs.init({
-      plugins: [
-        ...grapesJsPlugins,
-        ...config.plugins,
-      ],
-      ...config,
-    })
-  } catch(e) {
-    console.error('Error initializing GrapesJs with plugins:', plugins, e)
-    throw e
-  }
+    // customize the editor
+    ['text']
+      .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
+    ;['image', 'video']
+      .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
+    ;['map']
+      .forEach(id => editor.Blocks.get(id)?.set('category', 'Components'))
+    editor.Blocks.render([])
 
-  // customize the editor
-  ['text']
-    .forEach(id => editor.Blocks.get(id)?.set('category', 'Basics'))
-  ;['image', 'video']
-    .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
-  ;['map']
-    .forEach(id => editor.Blocks.get(id)?.set('category', 'Components'))
-  editor.Blocks.render()
+    editor.Commands.add('gjs-open-import-webpage', openImport(editor, {
+      modalImportLabel: '',
+      modalImportContent: 'Paste a web page HTML code here.',
+      modalImportButton: 'Import',
+      modalImportTitle: 'Import from website',
+    }))
 
-  editor.Commands.add('gjs-open-import-webpage', openImport(editor, {
-    modalImportLabel: '',
-    modalImportContent: 'Paste a web page HTML code here.',
-    modalImportButton: 'Import',
-    modalImportTitle: 'Import from website',
-  }))
+    editor.on('load', () => {
+      // // move the options panel to the sidebar
+      // const optionsEl = editor.Panels.getPanel('options').view.el
+      // editor.Panels.getPanel('project-bar-panel').view.el
+      // .appendChild(options)
+      // options.style.width = 0
+      // options.style.position = 'static'
 
-  editor.on('load', () => {
-    // // move the options panel to the sidebar
-    // const optionsEl = editor.Panels.getPanel('options').view.el
-    // editor.Panels.getPanel('project-bar-panel').view.el
-    // .appendChild(options)
-    // options.style.width = 0
-    // options.style.position = 'static'
-    // remove blocks and layers buttons from the properties
-    setTimeout(() => {
+      // remove blocks and layers buttons from the properties
       editor.Panels.getPanel('views').buttons.remove('open-blocks')
       editor.Panels.getPanel('views').buttons.remove('open-layers')
       editor.Panels.getPanel('views').view.el.firstChild.style.justifyContent = 'initial' // align left
       editor.Panels.getPanel('options').buttons.remove('export-template')
-    })
 
-    // use the style filter plugin
-    editor.StyleManager.addProperty('extra',{ extend: 'filter' })
-  })
+      editor.BlockManager.render(null)
 
-  // Handle errors
-  editor.on('storage:error:load', (err) => {
-    editor.Modal.open({
-      title: 'Error loading website',
-      content: `This website could not be loaded.<br><hr>${err}`,
-    })
-  })
-  editor.on('storage:error:store', (err) => {
-    editor.Modal.open({
-      title: 'Error saving website',
-      content: `This website could not be saved.<br><hr>${err}`,
+      // use the style filter plugin
+      editor.StyleManager.addProperty('extra',{ extend: 'filter' })
+
+      // GrapesJs editor is ready
+      resolve(editor)
     })
   })
 }

@@ -18,20 +18,19 @@
 import { Router } from 'express'
 import formidable, { File as FormidableFile } from 'formidable'
 import { noCache } from './Cache'
-import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE } from '../constants'
+import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, WEBSITE_DATA_FILE_NAME } from '../constants'
 import { createReadStream } from 'fs'
-import { ApiResponseError, ApiWebsiteAssetsReadRequestParams, ApiWebsiteAssetsReadRequestQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteRequestQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteRequestQuery, ApiWebsiteDeleteResponse, ApiWebsiteReadRequestQuery, ApiWebsiteReadResponse, ApiWebsiteWriteRequestBody, ApiWebsiteWriteRequestQuery, ApiWebsiteWriteResponse, BackendId, WebsiteData, WebsiteId } from '../types'
-import { BackendType, File, StorageProvider, getBackend } from '../server/backends'
+import { ApiResponseError, ApiWebsiteAssetsReadRequestParams, ApiWebsiteAssetsReadRequestQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteRequestQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteRequestQuery, ApiWebsiteReadRequestQuery, ApiWebsiteReadResponse, ApiWebsiteWriteRequestBody, ApiWebsiteWriteRequestQuery, ApiWebsiteWriteResponse, BackendId, BackendType, WebsiteMeta, WebsiteData, WebsiteId } from '../types'
+import { File, StorageProvider, getBackend } from '../server/backends'
 import { Readable } from 'stream'
 import { requiredParam } from '../server/utils/validation'
 import { basename } from 'path'
+import { EVENT_STARTUP_START } from '../events'
 
 /**
  * @fileoverview Website plugin for Silex
  * This plugin provides the website API to Silex server
  */
-
-const WEBSITE_DATA_PATH = '/website.json'
 
 /**
  * Error thrown by the website API
@@ -53,7 +52,7 @@ export default async function(config, opts = {}) {
     ...opts
   }
 
-  config.on('silex:startup:start', ({app}) => {
+  config.on(EVENT_STARTUP_START, ({app}) => {
     // Create a new router
     const router = Router()
     app.use(noCache,  router)
@@ -130,7 +129,7 @@ export default async function(config, opts = {}) {
         }
       }
     })
-    
+
     // Load assets
     router.get(`/${API_WEBSITE_ASSETS_READ}`, async (req, res) => {{
       try {
@@ -181,14 +180,16 @@ export default async function(config, opts = {}) {
                 .map((file: FormidableFile) => ({
                   path: `${options.assetsPath}/${file.originalFilename}`,
                   content: createReadStream(file.filepath),
-                })) 
+                }))
               resolve(files)
             }
           })
         })
 
         // Write the files
+        console.log('Uploading assets', files)
         const data = await writeAssets(req['session'], id, files, query.backendId)
+        console.log('Uploaded assets', data)
 
         // Return the file URLs to insert in the website
         res.json({
@@ -233,7 +234,7 @@ export default async function(config, opts = {}) {
 
     // List websites or get a website
     // Get a website data
-    const file = await storageProvider.readFile(session, id, WEBSITE_DATA_PATH)
+    const file = await storageProvider.readFile(session, id, WEBSITE_DATA_FILE_NAME)
     if(typeof file.content === 'string') return JSON.parse(file.content)
     else if(file.content instanceof Buffer) return JSON.parse(file.content.toString())
     else if(file.content instanceof Readable) return file.content
@@ -243,12 +244,12 @@ export default async function(config, opts = {}) {
   /**
    * List existing websites
    */
-  async function listWebsites(session: any, backendId?: string): Promise<string[]> {
+  async function listWebsites(session: any, backendId?: string): Promise<WebsiteMeta[]> {
     // Get the desired backend
     const storageProvider = await getStorageProvider(session, backendId)
 
     // List websites
-    return await storageProvider.listWebsites(session)
+    return storageProvider.listWebsites(session)
   }
 
   /**
@@ -259,11 +260,12 @@ export default async function(config, opts = {}) {
     const storageProvider = await getStorageProvider(session, backendId)
 
     // Init the storage for this website (create the folder if it does not exist)
-    await storageProvider.init(session, id)
+    // FIXME: put this after login
+    // await storageProvider.init(session, id)
 
     // Write the website data
     await storageProvider.writeFiles(session, id, [{
-      path: WEBSITE_DATA_PATH,
+      path: WEBSITE_DATA_FILE_NAME,
       content: JSON.stringify(websiteData),
     }])
   }
@@ -302,9 +304,6 @@ export default async function(config, opts = {}) {
   async function writeAssets(session: any, id: string, files: File[], backendId?: string): Promise<string[]> {
     // Get the desired backend
     const storageProvider = await getStorageProvider(session, backendId)
-
-    // Create the assets/ folder if needed
-    await storageProvider.createDir(session, id, options.assetsPath)
 
     // Write the asset to the backend
     await storageProvider.writeFiles(

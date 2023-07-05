@@ -15,8 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import e from 'express'
-
 /**
  * @fileoverview define types for Silex client and server
  */
@@ -55,18 +53,24 @@ export type ApiPublicationPublishResponse = { url: string, job: PublicationJobDa
 export type ApiPublicationStatusRequestQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
 export type ApiWebsiteReadRequestQuery = { id?: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteReadResponse = WebsiteId[] | WebsiteData
+export type ApiWebsiteReadResponse = WebsiteMeta[] | WebsiteData
 export type ApiWebsiteWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
 export type ApiWebsiteWriteRequestBody = WebsiteData
 export type ApiWebsiteWriteResponse = { message: string }
 export type ApiWebsiteDeleteRequestQuery = { id: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteDeleteResponse = { message: string }
 export type ApiWebsiteAssetsReadRequestQuery = { id: WebsiteId, backendId?: BackendId }
 export type ApiWebsiteAssetsReadRequestParams = { path: string }
 export type ApiWebsiteAssetsReadResponse = string
 export type ApiWebsiteAssetsWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteAssetsWriteRequestBody = File[]
+export type ApiWebsiteAssetsWriteRequestBody = ClientSideFile[]
 export type ApiWebsiteAssetsWriteResponse = { data: string[] }
+export type ApiBackendListRequestQuery = { type: BackendType }
+export type ApiBackendListResponse = BackendData[]
+export type ApiBackendLoginRequestQuery = { backendId: BackendId, type: BackendType, options?: string, error?: string }
+export type ApiBackendLoggedInPostMessage = { type: string, error: boolean, message: string, backendId: BackendId }
+export type ApiBackendLogoutRequestQuery = { backendId: BackendId, type: BackendType }
+export type ApiBackendLoginStatusRequestQuery = { id?: WebsiteId, backendId?: BackendId, type: BackendType }
+export type ApiBackendLoginStatusResponse = { user: BackendUser, backend: BackendData, websiteMeta?: WebsiteMeta}
 
 // **
 // Website API
@@ -79,6 +83,9 @@ export interface WebsiteData {
   fonts: Font[],
   symbols: symbol[],
   publication: PublicationSettings,
+}
+
+export interface PublicationData extends WebsiteData {
   files?: WebsiteFile[], // Added by the client for publish
 }
 
@@ -152,6 +159,35 @@ export type Selector = string | {
 export type BackendId = string
 
 /**
+ * Type for a client side file
+ * @see backend/File
+ */
+export interface ClientSideFile {
+  path: string,
+  content: Buffer | string
+}
+
+/**
+ * Type for file listing
+ */
+export interface FileMeta {
+  name: string
+  isDir: boolean
+  size: number
+  createdAt: Date
+  updatedAt: Date
+  metadata?: object
+}
+
+/**
+ * Enum to express if the backend is a storage or a hosting
+ */
+export enum BackendType {
+  STORAGE = 'STORAGE',
+  HOSTING = 'HOSTING',
+}
+
+/**
  * Type for a website id
  */
 export type WebsiteId = string
@@ -161,12 +197,33 @@ export type WebsiteId = string
  */
 export interface BackendData {
   backendId: BackendId
+  type: BackendType
   displayName: string
   icon: string
   disableLogout: boolean
-  url: string
   isLoggedIn: boolean
-  options?: object, // Set at login
+  authUrl: string | null
+}
+
+/**
+ * Back end data sent to the front end
+ */
+export interface BackendUser {
+  name: string
+  email?: string
+  picture?: string
+  metadata?: object
+}
+
+/**
+ * Back end data sent to the front end
+ * Meta data can be the root path of the websites, or the bucket name, etc.
+ */
+export interface WebsiteMeta {
+  websiteId: WebsiteId
+  createdAt: Date
+  updatedAt: Date
+  metadata?: object
 }
 
 /**

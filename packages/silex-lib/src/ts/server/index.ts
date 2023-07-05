@@ -41,7 +41,7 @@ export default async function main() {
   await config.loadConfigFiles()
 
   // Add the backend routes
-  backends.addRoutes(app)
+  backends.addRoutes(config, app)
 
   // Start the server
   await silexApp.start(app)
