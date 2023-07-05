@@ -18,9 +18,8 @@
 import { Application, Response, Router } from 'express'
 import { Readable } from 'stream'
 import { ServerConfig } from '../config'
-import { EVENT_STARTUP_START } from '../../events'
-import { JobStatus, JobData, BackendData, BackendId, WebsiteId } from '../../types'
-import { API_BACKEND_LIST, API_BACKEND_LOGIN_CALLBACK, API_BACKEND_LOGOUT } from '../../constants'
+import { JobStatus, JobData, BackendData, BackendId, WebsiteId, ApiBackendListResponse, ApiBackendListRequestQuery, ApiResponseError, ApiBackendLoginRequestQuery, ApiBackendLoggedInPostMessage, ApiBackendLogoutRequestQuery, BackendType, BackendUser, WebsiteMeta, ApiBackendLoginStatusRequestQuery, ApiBackendLoginStatusResponse, FileMeta } from '../../types'
+import { API_BACKEND_LIST, API_BACKEND_LOGIN_CALLBACK, API_BACKEND_LOGIN_STATUS, API_BACKEND_LOGOUT } from '../../constants'
 import { requiredParam } from '../utils/validation'
 
 /**
@@ -30,6 +29,7 @@ import { requiredParam } from '../utils/validation'
 
 /**
  * Files are stored in backend as a File object
+ * @see types/ClientSideFile
  */
 export interface File {
   path: string,
@@ -41,50 +41,48 @@ export interface File {
  */
 export type StatusCallback = ({message, status}: {message: string, status: JobStatus}) => Promise<void>
 
-export enum BackendType {
-  STORAGE = 'STORAGE',
-  HOSTING = 'HOSTING',
-}
-
+export type BackendSession = any
 /**
  * Backends are the base interface for Storage and Hosting providers
  */
-export interface Backend {
+export interface Backend<Session extends BackendSession = BackendSession> {
   id: BackendId
   displayName: string
   icon: string
-  init(session: any, id: WebsiteId): Promise<void>
-  getAdminUrl(session: any, id: WebsiteId): Promise<string>
-  getAuthorizeURL(session: any): Promise<string>
-  isLoggedIn(session: any): Promise<boolean>
-  login(session: any, userData: any): Promise<void>
-  logout(session: any): Promise<void>
-  addAuthRoutes(router: Router): Promise<void>
   disableLogout?: boolean
+  type: BackendType
+  getAdminUrl(session: Session, id: WebsiteId): Promise<string | null>
+  getAuthorizeURL(session: Session): Promise<string | null>
+  isLoggedIn(session: Session): Promise<boolean>
+  //login(session: Session, userData: any): Promise<void>
+  logout(session: Session): Promise<void>
+  getUserData(session: Session): Promise<BackendUser>
+  init(session: Session, id: WebsiteId): Promise<void>
 }
 
 /**
  * Storage are used to store the website data and assets
  * And possibly rename files and directories, and get the URL of a file
- * 
+ *
  */
-export interface StorageProvider extends Backend {
-  listWebsites(session: any): Promise<WebsiteId[]>
-  readFile(session: any, id: WebsiteId, path: string): Promise<File>
-  writeFiles(session: any, id: WebsiteId, files: File[], status?: StatusCallback): Promise<void>
-  deleteFiles(session: any, id: WebsiteId, paths: string[]): Promise<void>
-  listDir(session: any, id: WebsiteId, path: string): Promise<string[]>
-  createDir(session: any, id: WebsiteId, path: string): Promise<void>
-  deleteDir(session: any, id: WebsiteId, path: string): Promise<void>
-  getFileUrl(session: any, id: WebsiteId, path: string): Promise<string>
+export interface StorageProvider<Session = BackendSession> extends Backend<Session> {
+  listWebsites(session: Session): Promise<WebsiteMeta[]>
+  readFile(session: Session, id: WebsiteId, path: string): Promise<File>
+  writeFiles(session: Session, id: WebsiteId, files: File[], status?: StatusCallback): Promise<string[]> // Returns the files paths on storage
+  deleteFiles(session: Session, id: WebsiteId, paths: string[]): Promise<void>
+  listDir(session: Session, id: WebsiteId, path: string): Promise<FileMeta[]>
+  createDir(session: Session, id: WebsiteId, path: string): Promise<void>
+  deleteDir(session: Session, id: WebsiteId, path: string): Promise<void>
+  getSiteMeta(session: Session, id: WebsiteId): Promise<WebsiteMeta>
+  //getFileUrl(session: Session, id: WebsiteId, path: string): Promise<string>
 }
 
 /**
  * Hosting providers are used to publish the website
  */
-export interface HostingProvider extends Backend {
-  publish(session: any, id: WebsiteId, backendData: BackendData, files: File[]): Promise<JobData>
-  getWebsiteUrl(session: any, id: WebsiteId): Promise<string>
+export interface HostingProvider<Session = BackendSession> extends Backend<Session> {
+  publish(session: Session, id: WebsiteId, backendData: BackendData, files: File[]): Promise<JobData>
+  getWebsiteUrl(session: Session, id: WebsiteId): Promise<string>
 }
 
 export function toBackendEnum(type: string): BackendType {
@@ -94,10 +92,10 @@ export function toBackendEnum(type: string): BackendType {
 /**
  * Get a backend by id or by type
  */
-export async function getBackend<T extends Backend>(config: ServerConfig, session: any, type?: BackendType, backendId?: BackendId): Promise<T | undefined> {
+export async function getBackend<T extends Backend>(config: ServerConfig, session: any, type: BackendType, backendId?: BackendId): Promise<T | undefined> {
   const backends = config.getBackends<T>(type)
   // Find the backend by id
-  if (backendId) return backends.find(s => s.id === backendId)
+  if (backendId) return backends.find(s => s.id === backendId && s.type === type)
   // Find the first logged in backend
   for (const backend of backends) {
     if (await backend.isLoggedIn(session)) {
@@ -114,31 +112,76 @@ export async function getBackend<T extends Backend>(config: ServerConfig, sessio
 export async function toBackendData(session: any, backend: Backend): Promise<BackendData> {
   return {
     backendId: backend.id,
+    type: backend.type,
     displayName: backend.displayName,
     icon: backend.icon,
     disableLogout: !!backend.disableLogout,
-    url: await backend.getAuthorizeURL(session),
     isLoggedIn: await backend.isLoggedIn(session),
+    authUrl: await backend.getAuthorizeURL(session),
   }
 }
 
 /**
  * Add routes to the express app
  */
-export function addRoutes(app: Application) {
+export function addRoutes(config: ServerConfig, app: Application) {
   // Create the router
   const router = Router()
   app.use(router)
 
-  // List backends route
+  // Backend routes
+  router.get(`/${API_BACKEND_LOGIN_STATUS}`, routeLoginStatus)
   router.get(`/${API_BACKEND_LIST}`, routeListBackends)
-
-  // Logout route
   router.post(`/${API_BACKEND_LOGOUT}`, routeLogout)
-
-  // Login success route
-  // Post a message to the opener window with the data from the backend in the query string
   router.get(`/${API_BACKEND_LOGIN_CALLBACK}`, routeLoginSuccess)
+}
+
+/**
+ * Express route to check if the user is logged in
+ * Returns user data and backend data
+ */
+export async function routeLoginStatus(req, res) {
+  try {
+    const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
+    const query = requiredParam(req.query as ApiBackendLoginStatusRequestQuery, 'Query object')
+    const session = requiredParam(req['session'], 'Session object')
+    const websiteId = query.id
+    const backendId = query.backendId
+    const type = query.type
+    const backend = await getBackend<Backend>(config, session, type, backendId)
+    if (!backend) {
+      res
+        .status(500)
+        .json({
+          error: true,
+          message: 'No backend found',
+        } as ApiResponseError)
+      return
+    }
+    if(!await backend.isLoggedIn(session)) {
+      res
+        .status(401)
+        .json({
+          error: true,
+          message: 'Not logged in',
+        } as ApiResponseError)
+      return
+    }
+    const backendData = await toBackendData(session, backend)
+    const user = await backend.getUserData(session)
+    const websiteMeta = websiteId && backend.type === BackendType.STORAGE && await (backend as StorageProvider).getSiteMeta(session, websiteId)
+    res.json({
+      backend: backendData,
+      user,
+      websiteMeta,
+    } as ApiBackendLoginStatusResponse)
+  } catch (error) {
+    console.error('Error in the login status request', error)
+    res.status(error?.code ?? 500).json({
+      error: true,
+      message: error.message,
+    } as ApiResponseError)
+  }
 }
 
 /**
@@ -147,25 +190,25 @@ export function addRoutes(app: Application) {
 export async function routeListBackends(req, res) {
   try {
     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
-    const type = req.query.type as BackendType | null
+    const query = req.query as ApiBackendListRequestQuery
+    const type = toBackendEnum(requiredParam(query.type, 'Backend type'))
     const backends = config.getBackends<Backend>(type)
-    console.log('List backends', type, backends)
     try {
       const list = await Promise.all(backends.map(async backend => toBackendData(req['session'], backend)))
-      res.json(list)
+      res.json(list as ApiBackendListResponse)
     } catch (error) {
       console.error('Error while listing backends', error)
       res.status(error?.code ?? 500).json({
         error: true,
         message: 'Error while listing backends: ' + error.message,
-      })
+      } as ApiResponseError)
     }
   } catch (error) {
     console.error('Error in the list backends request', error)
     res.status(error?.code ?? 400).json({
       error: true,
       message: 'Error in the list backends request: ' + error.message,
-    })
+    } as ApiResponseError)
   }
 }
 
@@ -173,19 +216,21 @@ export async function routeListBackends(req, res) {
  * Utility function to send an HTML page to the browser
  * This page will send a postMessage to the parent window and close itself
  */
-function sendHtml(res: Response, message: string, backendData?: BackendData, error?: Error, defaultErrorCode?: number) {
+function sendHtml(res: Response, message: string, backendId?: BackendId, error?: Error, defaultErrorCode?: number) {
   error && console.error('Error while logging in', error)
   // Data for postMessage
   const data = {
     type: 'login', // For postMessage
     error: error ? true : false,
     message,
-    backendData,
-  }
+    backendId,
+  } as ApiBackendLoggedInPostMessage
   // HTTP status code
   const status = error ? error['code'] ?? defaultErrorCode ?? 500 : 200
   // Send the HTML
-  res.status(status).send(`
+  res
+    .status(status)
+    .send(`
         <html>
           <head>
             <script>
@@ -207,19 +252,16 @@ function sendHtml(res: Response, message: string, backendData?: BackendData, err
  */
 export async function routeLoginSuccess(req, res) {
   try {
-    const backendId = requiredParam(req.query.backendId, 'Backend id')
+    const query = req.query as ApiBackendLoginRequestQuery
+    if(query.error) throw new Error(query.error)
+
+    const backendId = requiredParam(query.backendId, 'Backend id')
     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
-    const backend = await getBackend<Backend>(config, req['session'], undefined, backendId)
+    const type = toBackendEnum(requiredParam(query.type, 'Backend type'))
+    const backend = await getBackend<Backend>(config, req['session'], type, backendId)
     if (!backend) throw new Error('Backend not found ' + backendId)
     try {
-      sendHtml(res, 'Logged in', {
-        backendId: backend.id,
-        displayName: backend.displayName,
-        icon: backend.icon,
-        disableLogout: !!backend.disableLogout,
-        url: await backend.getAuthorizeURL(req['session']),
-        isLoggedIn: true,
-      } as BackendData)
+      sendHtml(res, 'Logged in', backendId)
     } catch (error) {
       sendHtml(res, 'Error while logging in', undefined, error, 500)
     }
@@ -233,11 +275,13 @@ export async function routeLoginSuccess(req, res) {
  */
 export async function routeLogout(req, res) {
   try {
+    const query = req.query as ApiBackendLogoutRequestQuery
     // Get the backend
-    const backendId = requiredParam(req.query.backendId, 'Backend id')
+    const backendId = requiredParam(query.backendId, 'Backend id')
     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
-    const backend = await getBackend<Backend>(config, req['session'], undefined, backendId)
-    if (!backend) throw new Error('Backend not found ' + backendId)
+    const type = toBackendEnum(requiredParam(query.type, 'Backend type'))
+    const backend = await getBackend<Backend>(config, req['session'], type, backendId)
+    if (!backend) throw new Error(`Backend not found ${backendId} ${type}`)
     try {
       // Logout
       await backend.logout(req['session'])
@@ -245,13 +289,13 @@ export async function routeLogout(req, res) {
       res.json({
         error: false,
         message: 'OK',
-      })
+      } as ApiResponseError)
     } catch (error) {
       console.error('Error while logging out', error)
       res.status(error?.code ?? 500).json({
         error: true,
         message: 'Error while logging out: ' + error.message,
-      })
+      } as ApiResponseError)
       return
     }
   } catch (error) {
@@ -259,7 +303,7 @@ export async function routeLogout(req, res) {
     res.status(error?.code ?? 400).json({
       error: true,
       message: 'Error in the logout request: ' + error.message,
-    })
+    } as ApiResponseError)
     return
   }
 }

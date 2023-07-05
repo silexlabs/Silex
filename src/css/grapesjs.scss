@@ -89,6 +89,26 @@
   font-weight: 900;
 }
 
+.fa-caret-down:before {
+  content: "\f0d7";
+  font-weight: 900;
+}
+
+.fa-caret-right:before {
+  content: "\f0da";
+  font-weight: 900;
+}
+
+.fa-trash:before {
+  content: "\f2ed";
+  font-weight: 900;
+}
+
+.fa-list:before {
+  content: "\f03a";
+  font-weight: 900;
+}
+
 /*
 .fa-plus:before {
 	content: "+";

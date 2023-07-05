@@ -20,10 +20,11 @@ import { noCache } from './Cache'
 import { minify } from 'html-minifier'
 import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../constants'
 import { getJob } from '../server/jobs'
-import { ApiPublicationPublishRequestBody, ApiPublicationPublishRequestQuery, ApiPublicationPublishResponse, ApiPublicationStatusRequestQuery, ApiPublicationStatusResponse, ApiResponseError, JobData, JobId, PublicationSettings, WebsiteData } from '../types'
-import { BackendType, HostingProvider, getBackend } from '../server/backends'
+import { ApiPublicationPublishRequestBody, ApiPublicationPublishRequestQuery, ApiPublicationPublishResponse, ApiPublicationStatusRequestQuery, ApiPublicationStatusResponse, ApiResponseError, JobData, JobId, PublicationSettings, PublicationData as PublicationData, BackendType} from '../types'
+import { HostingProvider, getBackend } from '../server/backends'
 import { ServerConfig } from '../server/config'
 import { requiredParam } from '../server/utils/validation'
+import { EVENT_STARTUP_START } from '../events'
 
 /**
  * @fileoverview Publication plugin for Silex
@@ -76,7 +77,7 @@ export default async function(config: ServerConfig, opts = {}) {
     ...opts,
   }
 
-  config.on('silex:startup:start', ({app}) => {
+  config.on(EVENT_STARTUP_START, ({app}) => {
     const router = express.Router()
 
     // Get publication status
@@ -106,7 +107,7 @@ export default async function(config: ServerConfig, opts = {}) {
         const session = requiredParam(req['session'], 'session on express request')
 
         // Check params
-        const { files, publication } = body as WebsiteData
+        const { files, publication } = body as PublicationData
         const publicationSettings: PublicationSettings = {
           ...defaultPublication,
           ...publication,
@@ -119,7 +120,7 @@ export default async function(config: ServerConfig, opts = {}) {
         const hostingProvider = await getHostingProvider(session, config, backendId)
         if (!hostingProvider) throw new PublicationError('Error in the request, hosting provider not found', 400)
         if (!hostingProvider.isLoggedIn(session)) throw new PublicationError(`You must be logged in with ${hostingProvider.displayName} to publish`, 401)
-        
+
         // Optim HTML
         files.map(file => ({
           ...file,

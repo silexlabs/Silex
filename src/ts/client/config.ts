@@ -17,15 +17,16 @@
 
 import { Config, Plugin } from '@silexlabs/silex-plugins'
 import { getEditorConfig } from './grapesjs'
-import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
+import { CLIENT_CONFIG_FILE_NAME, DEFAULT_BACKEND_ID, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
 
 /**
  * @fileoverview Silex client side config
  */
 
 const id = new URL(location.href).searchParams.get('id') ?? DEFAULT_WEBSITE_ID
+const backendId = new URL(location.href).searchParams.get('backendId') ?? DEFAULT_BACKEND_ID
 const lang = new URL(location.href).searchParams.get('lang') ?? DEFAULT_LANGUAGE
-const rootUrl = `${location.protocol}//${location.host}${location.pathname}`
+const rootUrl = window.location.origin
 
 export class SilexConfig extends Config {
   /**
@@ -41,13 +42,13 @@ export class SilexConfig extends Config {
   /**
    * Grapesjs config
    */
-  editor = getEditorConfig(id, rootUrl)
+  editor = getEditorConfig(id, backendId, rootUrl)
 
   /**
    * Client config url
    * This is the url of the config file which is a plugin
    */
-  clientConfigUrl = `${rootUrl}${CLIENT_CONFIG_FILE_NAME}`
+  clientConfigUrl = `${rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
 
   /**
    * GrapesJs plugins

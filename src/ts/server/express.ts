@@ -16,13 +16,40 @@
  */
 
 import express, { Application } from 'express'
+import bodyParser from 'body-parser'
+import compression from 'compression'
+import cookieParser from 'cookie-parser'
+import session from 'cookie-session'
+import cors from 'cors'
 
 import { ServerConfig } from './config'
 import { EVENT_STARTUP_START, EVENT_STARTUP_END } from '../events'
 
 export function create(config: ServerConfig): Application {
+  // Express app
   const app = express()
   app.set('config', config)
+
+  // CORS
+  const options = config.expressOptions
+  if (options.cors) {
+    console.log('> CORS are ENABLED:', options.cors)
+    app.use(cors({
+      origin: options.cors,
+    }))
+  }
+  // compress gzip when possible
+  app.use(compression() as any)
+
+  // cookie & session
+  app.use(bodyParser.json({ limit: options.jsonLimit }))
+  app.use(bodyParser.text({ limit: options.textLimit }))
+  console.log('> Session name:', options.sessionName)
+  app.use(cookieParser() as any)
+  app.use(session({
+    name: options.sessionName,
+    secret: options.sessionSecret,
+  }) as any)
   return app
 }
 
@@ -30,7 +57,7 @@ export async function start(app: Application): Promise<Application> {
   const config = app.get('config') as ServerConfig
 
   // Plugins hook to create API routes
-  await config.emit(EVENT_STARTUP_START, { app })
+  config.emit(EVENT_STARTUP_START, { app })
 
   // Start server
   return new Promise((resolve, reject) => {
