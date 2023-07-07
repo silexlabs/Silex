@@ -160,7 +160,6 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
   async readWebsiteFile(session: FsSession, id: WebsiteId, path: string): Promise<ConnectorFile> {
     const fullPath = join(this.options.rootPath, id, path)
     const content = await fs.readFile(fullPath)
-    console.log('read file', path, fullPath, content.length)
     return { path, content }
   }
 
@@ -176,11 +175,9 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
         try {
-          console.log('write file', path, file.content.length)
           await fs.writeFile(path, file.content)
         } catch(err) {
           fileStatus.message = `Error (${err})`
-          console.log('write file stream', path, file.content.length)
           this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
           error = true
           continue

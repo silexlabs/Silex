@@ -29,7 +29,6 @@ export const storagePlugin = (editor) => {
     async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
-        console.log('connectorPlugin load', user)
         if(user) {
           const data = await websiteLoad(options.id, user.connectorId)
           return data

@@ -56,8 +56,10 @@ export async function start(options = {}) {
     throw e
   }
 
+  const editor = getEditor()
+
   // Init internationalization module
-  getEditor().I18n.setLocale(config.lang)
+  editor.I18n.setLocale(config.lang)
 
   // End of loading
   console.log('Silex started')
