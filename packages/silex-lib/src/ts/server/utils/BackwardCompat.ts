@@ -433,7 +433,7 @@ export default class BackwardCompat {
             elements,
           }
           this.removeIfExist(doc, 'meta[name="website-width"]')
-          this.removeIfExist(doc, 'meta[name="hostingProvider"]')
+          this.removeIfExist(doc, 'meta[name="hostingConnector"]')
           this.removeIfExist(doc, 'meta[name="publicationPath"]')
 
           // remove juery-ui at publication

@@ -18,30 +18,30 @@
 import fs, { stat } from 'fs/promises'
 import { createWriteStream, mkdir } from 'fs'
 import fsExtra from 'fs-extra'
-import { File, StorageProvider, HostingProvider, StatusCallback, BackendSession} from '.'
+import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString} from './connectors'
 import { join } from 'path'
-import { BackendData, BackendUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, BackendType, PublicationJobData } from '../../types'
+import { ConnectorData, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, ConnectorType, PublicationJobData, WebsiteMetaFileContent } from '../../types'
 import { jobError, jobSuccess, startJob } from '../jobs'
 import { userInfo } from 'os'
-import { WEBSITE_DATA_FILE_NAME } from '../../constants'
 import { requiredParam } from '../utils/validation'
 import { ServerConfig } from '../config'
+import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
 
-type FsSession = BackendSession
+type FsSession = ConnectorSession
 
 interface FsOptions {
   rootPath?: string
-  type: BackendType
+  type: ConnectorType
 }
 
-export class FsBackend implements StorageProvider<FsSession>, HostingProvider<FsSession> {
-  id = 'fs'
+export class FsConnector implements StorageConnector<FsSession>, HostingConnector<FsSession> {
+  connectorId = 'fs'
   displayName = 'File system'
   icon = 'file'
   rootPath: string
   disableLogout = true
-  options: { rootPath: string, type: BackendType }
-  type: BackendType
+  options: { rootPath: string, type: ConnectorType }
+  type: ConnectorType
 
   constructor(config: ServerConfig | null, opts: FsOptions) {
     this.options = {
@@ -69,7 +69,7 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
   }
 
   // ********************
-  // Backend interface
+  // Connector interface
   // ********************
   async getAdminUrl(session: FsSession, id: WebsiteId): Promise<string> {
     return ''
@@ -87,60 +87,84 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
 
   async logout(session: FsSession): Promise<void> {}
 
-  async getUserData(session: FsSession): Promise<BackendUser> {
+  async getUserData(session: FsSession): Promise<ConnectorUser> {
     const { username,  } = userInfo()
     return {
       name: username,
       picture: this.icon,
+      connectorId: this.connectorId,
     }
   }
 
-  async getSiteMeta(session: FsSession, id: string): Promise<WebsiteMeta> {
+  async setWebsiteMeta(session: any, id: string, data: WebsiteMetaFileContent): Promise<void> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
-    const files = await this.listDir(session, websiteId, '/')
-    const file = files.find(f => f.name === WEBSITE_DATA_FILE_NAME)
-    if(!file) throw new Error('Website not found')
+    const metaFile = await this.readWebsiteFile(session, websiteId, WEBSITE_META_DATA_FILE)
+    const meta = JSON.parse(await contentToString(metaFile.content)) as WebsiteMetaFileContent
+    const newMeta = {
+      ...meta,
+      ...data,
+    }
+    const metaContent = JSON.stringify(newMeta)
+    await this.writeWebsiteFiles(session, websiteId, [{
+      path: WEBSITE_META_DATA_FILE,
+      content: metaContent,
+    }])
+  }
+
+  async getWebsiteMeta(session: FsSession, id: WebsiteId): Promise<WebsiteMeta> {
+    const websiteId = requiredParam<WebsiteId>(id, 'website id')
+    // Get file stat
+    const fileStat = await stat(join(this.options.rootPath, websiteId))
+    // Read meta file
+    const metaFile = await this.readWebsiteFile(session, websiteId, WEBSITE_META_DATA_FILE)
+    const meta = JSON.parse(await contentToString(metaFile.content)) as WebsiteMetaFileContent
+    // Return all meta
     return {
       websiteId,
-      // url: await this.getFileUrl(session, websiteId, WEBSITE_DATA_FILE_NAME),
-      //metadata: {
-      //  path: session.ftp.path,
-      //},
-      ...file,
+      name: meta.name,
+      imageUrl: meta.imageUrl,
+      createdAt: fileStat.birthtime,
+      updatedAt: fileStat.mtime,
     }
-  }
-
-  async init(session: FsSession, id: WebsiteId): Promise<void> {
-    await fs.mkdir(join(this.options.rootPath, id), { recursive: true })
   }
 
   // ********************
   // Storage interface
   // ********************
+  async createWebsite(session: FsSession, id: WebsiteId, meta: WebsiteMetaFileContent): Promise<void> {
+    await this.createWebsiteDir(session, id, '/')
+    await this.setWebsiteMeta(session, id, meta)
+    await this.writeWebsiteFiles(session, id, [{
+      path: WEBSITE_DATA_FILE,
+      content: '{}',
+    }])
+  }
+
   async listWebsites(session: any): Promise<WebsiteMeta[]> {
     const list = await fs.readdir(this.options.rootPath)
     return Promise.all(list.map(async fileName => {
+      const websiteId = fileName as WebsiteId
       const filePath = join(this.options.rootPath, fileName)
       const fileStat = await stat(filePath)
+      const metaFile = await this.readWebsiteFile(session, websiteId, WEBSITE_META_DATA_FILE)
+      const meta = JSON.parse(await contentToString(metaFile.content)) as WebsiteMetaFileContent
       return {
-        websiteId: fileName,
+        websiteId,
         createdAt: fileStat.birthtime,
         updatedAt: fileStat.mtime,
-        metadata: {
-          ...fileStat,
-        },
+        ...meta,
       } as WebsiteMeta
     }))
   }
 
-  async readFile(session: FsSession, id: WebsiteId, path: string): Promise<File> {
+  async readWebsiteFile(session: FsSession, id: WebsiteId, path: string): Promise<ConnectorFile> {
     const fullPath = join(this.options.rootPath, id, path)
     const content = await fs.readFile(fullPath)
     console.log('read file', path, fullPath, content.length)
     return { path, content }
   }
 
-  async writeFiles(session: FsSession, id: WebsiteId, files: File[], statusCbk?: StatusCallback): Promise<string[]> {
+  async writeWebsiteFiles(session: FsSession, id: WebsiteId, files: ConnectorFile[], statusCbk?: StatusCallback): Promise<string[]> {
     const filesStatuses = this.initStatus(files)
     let error = false
     const filePaths = [] as string[]
@@ -194,7 +218,7 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
     }
   }
 
-  async listDir(session: FsSession, id: WebsiteId, path: string): Promise<FileMeta[]> {
+  async listWebsiteDir(session: FsSession, id: WebsiteId, path: string): Promise<FileMeta[]> {
     const list = await fs.readdir(join(this.options.rootPath, id, path))
     return Promise.all(list.map(async fileName => {
       const filePath = join(this.options.rootPath, id, path, fileName)
@@ -222,11 +246,11 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
   //     .map(({fileName}) => fileName as WebsiteId)
   // }
 
-  async createDir(session: FsSession, id: WebsiteId, path: string): Promise<void> {
+  async createWebsiteDir(session: FsSession, id: WebsiteId, path: string): Promise<void> {
     await fs.mkdir(join(this.options.rootPath, id, path), { recursive: true })
   }
 
-  async deleteDir(session: FsSession, id: WebsiteId, path: string): Promise<void> {
+  async deleteWebsiteDir(session: FsSession, id: WebsiteId, path: string): Promise<void> {
     await fsExtra.remove(join(this.options.rootPath, id, path))
   }
 
@@ -237,13 +261,13 @@ export class FsBackend implements StorageProvider<FsSession>, HostingProvider<Fs
   }
 
   // ********************
-  // Hosting provider interface
+  // Hosting connector interface
   // ********************
-  async publish(session: FsSession, id: WebsiteId, backendData: BackendData, files: File[]): Promise<JobData> {
+  async publishWebsite(session: FsSession, id: WebsiteId, connectorData: ConnectorData, files: ConnectorFile[]): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
-    this.writeFiles(session, id, files, async ({status, message}) => {
+    this.writeWebsiteFiles(session, id, files, async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message

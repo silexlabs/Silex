@@ -29,10 +29,10 @@ import { resolve } from 'path'
 import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Application, Request, Response, Router } from 'express'
 import { readFile } from 'fs/promises'
-import { HostingProvider, StorageProvider, toBackendEnum } from './backends'
-import { FsBackend } from './backends/FsBackend'
-import { Backend } from './backends'
-import { BackendType } from '../types'
+import { HostingConnector, StorageConnector, toConnectorEnum } from './connectors/connectors'
+import { FsConnector } from './connectors/FsConnector'
+import { Connector } from './connectors/connectors'
+import { ConnectorType } from '../types'
 
 /**
  * Config types definitions
@@ -54,49 +54,49 @@ export class ServerConfig extends Config {
     super()
   }
 
-  // All backends or just the storage or hosting providers
-  getBackends<T extends Backend>(type: BackendType | string | null = null): T[] {
-    // All backends including storage and hosting providers
+  // All connectors or just the storage or hosting connectors
+  getConnectors<T extends Connector>(type: ConnectorType | string | null = null): T[] {
+    // All connectors including storage and hosting connectors
     if (!type) {
-      // Concat storage and hosting providers
-      const allBackends: Backend[] = (this.getStorageProviders() as Backend[]).concat(this.getHostingProviders() as Backend[])
+      // Concat storage and hosting connectors
+      const allConnectors: Connector[] = (this.getStorageConnectors() as Connector[]).concat(this.getHostingConnectors() as Connector[])
 
-      // Remove duplicates (if a backend is both a storage and a hosting provider)
-      return Array.from(new Set(allBackends)) as unknown as T[]
+      // Remove duplicates (if a connector is both a storage and a hosting connector)
+      return Array.from(new Set(allConnectors)) as unknown as T[]
     }
 
     // Convert to enum in case it is a string
-    const backendType = toBackendEnum(type.toString())
+    const connectorType = toConnectorEnum(type.toString())
 
-    // Only one type of backend
-    switch(backendType) {
-    case BackendType.HOSTING: return this.getHostingProviders() as unknown as T[]
-    case BackendType.STORAGE: return this.getStorageProviders() as unknown as T[]
-    default: throw new Error(`Unknown backend type ${type}`)
+    // Only one type of connector
+    switch(connectorType) {
+    case ConnectorType.HOSTING: return this.getHostingConnectors() as unknown as T[]
+    case ConnectorType.STORAGE: return this.getStorageConnectors() as unknown as T[]
+    default: throw new Error(`Unknown connector type ${type}`)
     }
   }
 
-  // Storage providers to store the website data and assets
-  private storageProviders: StorageProvider[] = [new FsBackend(null, { type: BackendType.STORAGE })]
-  addStorageProvider(storage: StorageProvider | StorageProvider[]) {
-    this.setStorageProviders(this.storageProviders.concat(storage))
+  // Storage connectors to store the website data and assets
+  private storageConnectors: StorageConnector[] = [new FsConnector(null, { type: ConnectorType.STORAGE })]
+  addStorageConnector(storage: StorageConnector | StorageConnector[]) {
+    this.setStorageConnectors(this.storageConnectors.concat(storage))
   }
-  setStorageProviders(storageProviders: StorageProvider[]) {
-    this.storageProviders =storageProviders
+  setStorageConnectors(storageConnectors: StorageConnector[]) {
+    this.storageConnectors =storageConnectors
   }
-  getStorageProviders(): StorageProvider[] {
-    return this.storageProviders
+  getStorageConnectors(): StorageConnector[] {
+    return this.storageConnectors
   }
 
-  // Hosting providers to publish the website online
-  private hostingProviders: HostingProvider[] = [new FsBackend(null, { type: BackendType.HOSTING })]
-  addHostingProvider(hosting: HostingProvider | HostingProvider[]) {
-    this.setHostingProviders(this.hostingProviders.concat(hosting))
+  // Hosting connectors to publish the website online
+  private hostingConnectors: HostingConnector[] = [new FsConnector(null, { type: ConnectorType.HOSTING })]
+  addHostingConnector(hosting: HostingConnector | HostingConnector[]) {
+    this.setHostingConnectors(this.hostingConnectors.concat(hosting))
   }
-  setHostingProviders(hostings: HostingProvider[]) {
-    this.hostingProviders = hostings
+  setHostingConnectors(hostings: HostingConnector[]) {
+    this.hostingConnectors = hostings
   }
-  getHostingProviders(): HostingProvider[] { return this.hostingProviders }
+  getHostingConnectors(): HostingConnector[] { return this.hostingConnectors }
 
   /**
    * Add routes to serve the client config file

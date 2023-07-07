@@ -50,8 +50,8 @@ import { templatePlugin } from './template'
 import { eleventyPlugin } from './eleventy'
 import { storagePlugin } from './storage'
 import { API_WEBSITE_READ, API_WEBSITE_WRITE } from '../../constants'
-import { BackendId, WebsiteId } from '../../types'
-import { ApiError } from '../services'
+import { ConnectorId, WebsiteId } from '../../types'
+import { ApiError } from '../api'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -90,7 +90,7 @@ plugins
 const catBasic = 'Containers'
 const catComponents = 'Components'
 
-export function getEditorConfig(id: WebsiteId, backendId: BackendId, rootUrl: string) {
+export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl: string) {
   return {
     container: '#gjs',
     height: '100%',
@@ -114,11 +114,11 @@ export function getEditorConfig(id: WebsiteId, backendId: BackendId, rootUrl: st
     storageManager: {
       autoload: true,
       //type: 'remote',
-      type: 'backend',
+      type: 'connector',
       options: {
-        backend: {
+        connector: {
           id,
-          backendId,
+          connectorId,
         },
         //remote: {
         //  urlStore: `${rootUrl}/${API_WEBSITE_WRITE}?id=${id}`,

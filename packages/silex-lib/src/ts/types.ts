@@ -21,7 +21,7 @@
 
 // Publication API
 export interface PublicationSettings {
-  backend?: BackendData, // Set by the postMessage from the login callback page
+  connector?: ConnectorData, // Set by the postMessage from the login callback page
   url?: string, // URL to display where the website is published to
   autoHomePage?: boolean, // Name the first page `index` instead of its name
   assets?: {
@@ -46,35 +46,45 @@ export interface WebsiteFile {
   cssPath: string,
 }
 
-export type ApiResponseError = { message: string }
-export type ApiPublicationPublishRequestBody = WebsiteData
-export type ApiPublicationPublishRequestQuery = { id: WebsiteId }
+// **
+// HTTP API types
+export type ApiError = { message: string }
+export type ApiPublicationPublishBody = WebsiteData
+export type ApiPublicationPublishQuery = { id: WebsiteId }
 export type ApiPublicationPublishResponse = { url: string, job: PublicationJobData }
-export type ApiPublicationStatusRequestQuery = { jobId: JobId }
+export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
-export type ApiWebsiteReadRequestQuery = { id?: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteReadResponse = WebsiteMeta[] | WebsiteData
-export type ApiWebsiteWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteWriteRequestBody = WebsiteData
+export type ApiWebsiteReadQuery = { id: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteReadResponse = WebsiteData
+export type ApiWebsiteListQuery = { connectorId?: ConnectorId }
+export type ApiWebsiteListResponse = WebsiteMeta[]
+export type ApiWebsiteWriteQuery = { id: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteWriteBody = WebsiteData
 export type ApiWebsiteWriteResponse = { message: string }
-export type ApiWebsiteDeleteRequestQuery = { id: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteAssetsReadRequestQuery = { id: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteAssetsReadRequestParams = { path: string }
+export type ApiWebsiteDeleteQuery = { id: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteMetaReadQuery = { id?: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteMetaReadResponse = WebsiteMetaFileContent
+export type ApiWebsiteMetaWriteQuery = { id?: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteMetaWriteBody = WebsiteMetaFileContent
+export type ApiWebsiteMetaWriteResponse = { message: string }
+export type ApiWebsiteAssetsReadQuery = { id: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteAssetsReadParams = { path: string }
 export type ApiWebsiteAssetsReadResponse = string
-export type ApiWebsiteAssetsWriteRequestQuery = { id: WebsiteId, backendId?: BackendId }
-export type ApiWebsiteAssetsWriteRequestBody = ClientSideFile[]
+export type ApiWebsiteAssetsWriteQuery = { id: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteAssetsWriteBody = ClientSideFile[]
 export type ApiWebsiteAssetsWriteResponse = { data: string[] }
-export type ApiBackendListRequestQuery = { type: BackendType }
-export type ApiBackendListResponse = BackendData[]
-export type ApiBackendLoginRequestQuery = { backendId: BackendId, type: BackendType, options?: string, error?: string }
-export type ApiBackendLoggedInPostMessage = { type: string, error: boolean, message: string, backendId: BackendId }
-export type ApiBackendLogoutRequestQuery = { backendId: BackendId, type: BackendType }
-export type ApiBackendLoginStatusRequestQuery = { id?: WebsiteId, backendId?: BackendId, type: BackendType }
-export type ApiBackendLoginStatusResponse = { user: BackendUser, backend: BackendData, websiteMeta?: WebsiteMeta}
+export type ApiConnectorListQuery = { type: ConnectorType }
+export type ApiConnectorListResponse = ConnectorData[]
+export type ApiConnectorLoginQuery = { connectorId: ConnectorId, type: ConnectorType, options?: string, error?: string }
+export type ApiConnectorLoggedInPostMessage = { type: string, error: boolean, message: string, connectorId: ConnectorId }
+export type ApiConnectorLogoutQuery = { connectorId?: ConnectorId, type: ConnectorType }
+export type ApiConnectorUserQuery = { connectorId?: ConnectorId, type: ConnectorType }
+export type ApiConnectorUserResponse = ConnectorUser
 
 // **
 // Website API
 export interface WebsiteData {
+  meta: WebsiteMeta,
   pages: Page[],
   assets: Asset[],
   styles: Style[],
@@ -152,15 +162,15 @@ export type Selector = string | {
 }
 
 // **
-// Backend API
+// Connector API
 /**
- * Type for a backend id
+ * Type for a connector id
  */
-export type BackendId = string
+export type ConnectorId = string
 
 /**
  * Type for a client side file
- * @see backend/File
+ * @see connector/File
  */
 export interface ClientSideFile {
   path: string,
@@ -180,9 +190,9 @@ export interface FileMeta {
 }
 
 /**
- * Enum to express if the backend is a storage or a hosting
+ * Enum to express if the connector is a storage or a hosting
  */
-export enum BackendType {
+export enum ConnectorType {
   STORAGE = 'STORAGE',
   HOSTING = 'HOSTING',
 }
@@ -195,9 +205,9 @@ export type WebsiteId = string
 /**
  * Back end data sent to the front end
  */
-export interface BackendData {
-  backendId: BackendId
-  type: BackendType
+export interface ConnectorData {
+  connectorId: ConnectorId
+  type: ConnectorType
   displayName: string
   icon: string
   disableLogout: boolean
@@ -208,22 +218,27 @@ export interface BackendData {
 /**
  * Back end data sent to the front end
  */
-export interface BackendUser {
+export interface ConnectorUser {
   name: string
   email?: string
   picture?: string
+  connectorId: ConnectorId
   metadata?: object
+}
+
+export interface WebsiteMetaFileContent {
+  name: string
+  imageUrl?: string
 }
 
 /**
  * Back end data sent to the front end
  * Meta data can be the root path of the websites, or the bucket name, etc.
  */
-export interface WebsiteMeta {
+export interface WebsiteMeta extends WebsiteMetaFileContent {
   websiteId: WebsiteId
   createdAt: Date
   updatedAt: Date
-  metadata?: object
 }
 
 /**

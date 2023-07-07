@@ -17,11 +17,11 @@
 
 import { getPageSlug } from '../../page'
 import { onAll } from '../utils'
-import { ApiBackendLoggedInPostMessage, ApiPublicationPublishRequestBody, ApiPublicationPublishRequestQuery, ApiPublicationPublishResponse, ApiPublicationStatusRequestQuery, ApiPublicationStatusResponse, BackendData, BackendType, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
+import { ApiConnectorLoggedInPostMessage, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorData, ConnectorType, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor, ProjectData } from 'grapesjs'
 import e from 'express'
 import { PublicationUi } from './PublicationUi'
-import { LoginStatus, loginStatus, logout, publicationStatus, publish } from '../services'
+import { getUser, logout, publicationStatus, publish } from '../api'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -118,7 +118,7 @@ export class PublicationManager {
     })
     // Add the publish command to the editor
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
-    editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, provider: BackendData) => this.goLogin(provider))
+    editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, connector: ConnectorData) => this.goLogin(connector))
     editor.Commands.add(cmdPublicationLogout, () => this.goLogout())
     // Add the publication dialog to the editor
     if (this.options.appendTo) {
@@ -130,21 +130,21 @@ export class PublicationManager {
     }
   }
 
-  async goLogin(provider: BackendData) {
-    window.open(provider.authUrl, '_blank')
+  async goLogin(connector: ConnectorData) {
+    window.open(connector.authUrl, '_blank')
     return new Promise(resolve => {
       const onMessage = async (event) => {
-        const data = event.data as ApiBackendLoggedInPostMessage
+        const data = event.data as ApiConnectorLoggedInPostMessage
         if (data?.type === 'login') {
           window.removeEventListener('message', onMessage)
           if (data.error) {
             this.status = PublicationStatus.STATUS_LOGGED_OUT
-            this.settings.backend = null
+            this.settings.connector = null
             this.dialog && this.dialog.displayError(data.message, this.job, this.status, this.settings)
           } else {
             this.editor.trigger('publish:login')
-            const { backend/*, user, websiteMeta */ }: LoginStatus = await loginStatus(data.backendId, provider.type, this.options.websiteId)
-            this.settings.backend = backend
+            const uesr = await getUser(connector.type, data.connectorId)
+            this.settings.connector = connector
             await this.startPublication()
           }
         }
@@ -155,8 +155,8 @@ export class PublicationManager {
 
   async goLogout() {
     try {
-      await logout(this.settings.backend.backendId, BackendType.HOSTING)
-      this.settings.backend = null
+      await logout(ConnectorType.HOSTING, this.settings.connector.connectorId)
+      this.settings.connector = null
       this.dialog && this.dialog.displayPending(this.job, this.status, this.settings)
     } catch (e) {
       console.error('logout error', e)
@@ -168,7 +168,7 @@ export class PublicationManager {
   async startPublication() {
     if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
     this.status = PublicationStatus.STATUS_PENDING
-    if (!this.settings?.backend?.isLoggedIn) {
+    if (!this.settings?.connector?.isLoggedIn) {
       this.status = PublicationStatus.STATUS_LOGGED_OUT
       this.dialog && this.dialog.displayError('Please login', this.job, this.status, this.settings)
       return
@@ -254,7 +254,7 @@ export class PublicationManager {
       const id = this.options.websiteId
       const [url, job] = await publish(
         id,
-        data as ApiPublicationPublishRequestBody
+        data as ApiPublicationPublishBody
       )
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
@@ -268,7 +268,7 @@ export class PublicationManager {
       console.error('publish error', e)
       if(e.code === 401) {
         this.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.settings.backend = null
+        this.settings.connector = null
         this.dialog && this.dialog.displayError('Please login.', this.job, this.status, this.settings)
       } else {
         this.status = PublicationStatus.STATUS_ERROR

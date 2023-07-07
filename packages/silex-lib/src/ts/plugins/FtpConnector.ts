@@ -18,10 +18,10 @@
 import JsFTP from 'jsftp'
 import { Readable } from 'stream'
 import express, { Application } from 'express'
-import { File, HostingProvider, StatusCallback, StorageProvider, toBackendEnum} from '../server/backends'
+import { ConnectorFile, HostingConnector, StatusCallback, StorageConnector, contentToString, toConnectorEnum} from '../server/connectors/connectors'
 import { requiredParam } from '../server/utils/validation'
-import { API_BACKEND_LOGIN_CALLBACK, WEBSITE_DATA_FILE_NAME } from '../constants'
-import { BackendData, BackendType, BackendUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData } from '../types'
+import { API_CONNECTOR_LOGIN_CALLBACK, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../constants'
+import { ConnectorData, ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent } from '../types'
 import { EVENT_STARTUP_START } from '../events'
 import { jobError, jobSuccess, startJob } from '../server/jobs'
 import { ServerConfig } from '../server/config'
@@ -29,10 +29,10 @@ import { join } from 'path'
 import { type } from 'os'
 
 /**
- * @fileoverview FTP backend for Silex
- * This is a backend for Silex, which allows to store the website on a FTP server
+ * @fileoverview FTP connector for Silex
+ * This is a connector for Silex, which allows to store the website on a FTP server
  *   and to publish the website on a FTP server
- * FIXME: As a hosting provider, this backend should only store the password in the session and the rest in the website data
+ * FIXME: As a hosting connector, this connector should only store the password in the session and the rest in the website data
  *   to prevent publishing a site on the wrong server + multiple sites on 1 server
  * FIXME: Allow reuse of FTP session between calls
  */
@@ -51,25 +51,25 @@ export interface FtpSessionData {
 }
 
 export interface FtpSession {
-  [BackendType.STORAGE]?: FtpSessionData
-  [BackendType.HOSTING]?: FtpSessionData
+  [ConnectorType.STORAGE]?: FtpSessionData
+  [ConnectorType.HOSTING]?: FtpSessionData
 }
 
 interface FileStatus {
-  file: File
+  file: ConnectorFile
   message: string
   status: JobStatus
 }
 
 interface FtpOptions {
-  type: BackendType
+  type: ConnectorType
   rootPath?: string
   authorizeUrl?: string
   authorizePath?: string
 }
 
 interface FtpOptionsWithDefaults {
-  type: BackendType
+  type: ConnectorType
   rootPath: string
   authorizeUrl: string
   authorizePath: string
@@ -84,7 +84,7 @@ function updateStatus(filesStatuses: FileStatus[], status: JobStatus, statusCbk?
   })
 }
 
-function initStatus(files: File[]) {
+function initStatus(files: ConnectorFile[]) {
   return files.map(file => ({
     file,
     message: 'Waiting',
@@ -101,7 +101,7 @@ function handleInitError(err) {
   }
 }
 
-function formHtml(type: BackendType, { host, user, pass, port, secure, storageRootPath, publicationPath, websiteUrl}: FtpSessionData, err = '') {
+function formHtml(type: ConnectorType, { host, user, pass, port, secure, storageRootPath, publicationPath, websiteUrl}: FtpSessionData, err = '') {
   return `
     ${ err && `<div class="error">${err || ''}</div>` }
     <form method="post">
@@ -117,7 +117,7 @@ function formHtml(type: BackendType, { host, user, pass, port, secure, storageRo
         <input class="checkbox" type="checkbox" name="secure" value="true" ${secure ? 'checked' : ''} />
         <label for="secure">Secure</label>
       </div>
-      ${ type === BackendType.STORAGE ? `
+      ${ type === ConnectorType.STORAGE ? `
       <details>
         <summary>Storage options</summary>
         <p>If you are not sure, don't change this</p>
@@ -125,7 +125,7 @@ function formHtml(type: BackendType, { host, user, pass, port, secure, storageRo
         <input placeholder="/silex/" type="text" name="storageRootPath" value="${storageRootPath || '/silex/'}" />
       </details>
       ` : ''}
-      ${ type === BackendType.HOSTING ? `
+      ${ type === ConnectorType.HOSTING ? `
       <fieldset>
         <legend>Publication options</legend>
         <label for="publicationPath">Path where to publish</label>
@@ -253,16 +253,16 @@ details > p {
 `
 
 /**
- * @class FtpBackend
- * @implements {HostingProvider}
- * @implements {StorageProvider}
+ * @class FtpConnector
+ * @implements {HostingConnector}
+ * @implements {StorageConnector}
  */
-export default class FtpBackend implements HostingProvider<FtpSession>, StorageProvider<FtpSession> {
-  id = 'ftp'
+export default class FtpConnector implements HostingConnector<FtpSession>, StorageConnector<FtpSession> {
+  connectorId = 'ftp'
   displayName = 'Ftp'
   icon = 'ftp'
   options: FtpOptionsWithDefaults
-  type: BackendType
+  type: ConnectorType
 
   constructor(config: ServerConfig, opts: FtpOptions) {
     this.options = {
@@ -286,12 +286,12 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
             ...session,
             ...await this.authorize(session, req.body),
           }
-          res.redirect(`/${API_BACKEND_LOGIN_CALLBACK}?backendId=${encodeURIComponent(this.id)}&type=${encodeURIComponent(this.type)}`)
+          res.redirect(`/${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${encodeURIComponent(this.connectorId)}&type=${encodeURIComponent(this.type)}`)
         } catch (err) {
           console.error('FTP auth failed', err)
           res
             .status(403)
-            .redirect(`/${API_BACKEND_LOGIN_CALLBACK}?error=${encodeURIComponent(err.message)}&type=${encodeURIComponent(this.type)}`)
+            .redirect(`/${API_CONNECTOR_LOGIN_CALLBACK}?error=${encodeURIComponent(err.message)}&type=${encodeURIComponent(this.type)}`)
         }
       })
       router.get(this.options.authorizePath, async (req, res, next) => {
@@ -305,7 +305,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
         if (host && user && pass && port && secure) {
           try {
             await this.checkAuth({ host, user, pass, port, secure })
-            res.redirect(API_BACKEND_LOGIN_CALLBACK + '?backendId=' + encodeURIComponent(this.id))
+            res.redirect(API_CONNECTOR_LOGIN_CALLBACK + '?connectorId=' + encodeURIComponent(this.connectorId))
             return
           } catch (err) {
             // TODO: check if the error is a 401
@@ -323,7 +323,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
   }
 
   storageRootPath(session: FtpSession): string {
-    return this.type === BackendType.STORAGE ? requiredParam<string>(this.sessionData(session).storageRootPath, 'storage root path') : requiredParam<string>(this.sessionData(session).publicationPath, 'publication path')
+    return this.type === ConnectorType.STORAGE ? requiredParam<string>(this.sessionData(session).storageRootPath, 'storage root path') : requiredParam<string>(this.sessionData(session).publicationPath, 'publication path')
   }
 
   // **
@@ -335,7 +335,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
   async authorizeForm(session: FtpSession, query: { error :string, type: string }): Promise<string> {
     const { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl } = this.sessionData(session)
     const { error, type } = query
-    requiredParam(type, 'backend type')
+    requiredParam(type, 'connector type')
     return `
       <html>
         <head>
@@ -345,7 +345,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
           </style>
         </head>
         <body>
-          ${formHtml(toBackendEnum(type), { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl }, error)}
+          ${formHtml(toConnectorEnum(type), { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl }, error)}
         </body>
       </html>
       `
@@ -383,7 +383,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
   }
 
   // **
-  // Backend interface
+  // Connector interface
   // **
   async authorize(session: FtpSession, body: any): Promise<FtpSession> {
     const { host, user, pass, port, secure = false, publicationPath, storageRootPath, websiteUrl } = body as FtpSessionData
@@ -398,30 +398,42 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
     }
   }
 
-  async getUserData(session: FtpSession): Promise<BackendUser> {
+  async getUserData(session: FtpSession): Promise<ConnectorUser> {
     return {
       name: this.sessionData(session).user,
       picture: this.icon,
+      connectorId: this.connectorId,
     }
   }
 
-  async getSiteMeta(session: FtpSession, id: WebsiteId): Promise<WebsiteMeta> {
+  async setWebsiteMeta(session: FtpSession, id: string, data: WebsiteMetaFileContent): Promise<void> {
+    const websiteId = requiredParam<WebsiteId>(id, 'website id')
+    await this.writeWebsiteFiles(session, websiteId, [{
+      path: WEBSITE_META_DATA_FILE,
+      content: JSON.stringify(data),
+    }])
+  }
+
+  async getWebsiteMeta(session: FtpSession, id: WebsiteId): Promise<WebsiteMeta> {
     try {
       const websiteId = requiredParam<WebsiteId>(id, 'website id')
-      const files = await this.listDir(session, websiteId, '/')
-      const file = files.find(f => f.name === WEBSITE_DATA_FILE_NAME)
+      // List the files in the root directory
+      const files = await this.listWebsiteDir(session, websiteId, '/')
+      // Find the website data file to get its metadata
+      const file = files.find(f => f.name === WEBSITE_DATA_FILE)
       if (!file) {
-        const storageRootPath = this.storageRootPath(session)
-        const dirPath = join(this.options.rootPath, storageRootPath, websiteId, '/')
-        console.error('Website data file not found', {websiteId, WEBSITE_DATA_FILE_NAME, dirPath, storageRootPath}, this.options)
-        throw new Error(`Website data file not found: ${WEBSITE_DATA_FILE_NAME} in ${dirPath}`)
+        throw new Error(`Website data file not found for website ${websiteId}`)
       }
+      // Read the meta data file to get the meta data set by the user
+      const metaFile = await this.readWebsiteFile(session, websiteId, WEBSITE_META_DATA_FILE)
+      const meta = JSON.parse(await contentToString(metaFile.content)) as WebsiteMetaFileContent
+      // Return all meta
       return {
         websiteId,
         //url: await this.getFileUrl(session, websiteId, WEBSITE_DATA_FILE_NAME),
         createdAt: file.createdAt,
         updatedAt: file.updatedAt,
-        metadata: file.metadata,
+        ...meta,
       }
     } catch(err) {
       console.error(err)
@@ -465,22 +477,22 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
    * Create necessary folders
    * Assets and root folders
    */
-  async init(session: FtpSession, id: WebsiteId): Promise<void> {
+  async createWebsite(session: FtpSession, id: WebsiteId): Promise<void> {
     // create root folder
     const ftp = await this.getClient(this.sessionData(session))
     try {
-      await this.createDir(session, id, '/')
+      await this.createWebsiteDir(session, id, '/')
     } catch(err) {
       handleInitError(err)
     }
     try {
-      await this.createDir(session, id, '/assets')
+      await this.createWebsiteDir(session, id, '/assets')
     } catch(err) {
       handleInitError(err)
     }
   }
 
-  async readFile(session: FtpSession, id: string, path: string): Promise<File> {
+  async readWebsiteFile(session: FtpSession, id: string, path: string): Promise<ConnectorFile> {
     return new Promise((resolve, reject) => {
       if(!this.sessionData(session)) throw new Error('Not logged in')
       const storageRootPath = this.storageRootPath(session)
@@ -507,10 +519,10 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
     })
   }
 
-  async writeFiles(
+  async writeWebsiteFiles(
     session: any,
     id: WebsiteId,
-    files: File[],
+    files: ConnectorFile[],
     statusCbk?: StatusCallback,
   ): Promise<string[]> {
     statusCbk && statusCbk({
@@ -599,7 +611,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
     })
   }
 
-  async listDir(
+  async listWebsiteDir(
     session: FtpSession,
     id: WebsiteId,
     path: string,
@@ -628,7 +640,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
     })
   }
 
-  async createDir(session: FtpSession, id: WebsiteId, path: string) {
+  async createWebsiteDir(session: FtpSession, id: WebsiteId, path: string) {
     const storageRootPath = this.storageRootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     return new Promise<void>((resolve, reject) => {
@@ -643,7 +655,7 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
     })
   }
 
-  async deleteDir(session: FtpSession, id: WebsiteId, path: string) {
+  async deleteWebsiteDir(session: FtpSession, id: WebsiteId, path: string) {
     const storageRootPath = this.storageRootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     return new Promise<void>((resolve, reject) => {
@@ -666,11 +678,11 @@ export default class FtpBackend implements HostingProvider<FtpSession>, StorageP
     return this.sessionData(session).websiteUrl ?? ''
   }
 
-  async publish(session: FtpSession, id: string, backendData: BackendData, files: File[]): Promise<JobData> {
+  async publishWebsite(session: FtpSession, id: string, connectorData: ConnectorData, files: ConnectorFile[]): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
-    this.writeFiles(session, '', files, async ({status, message}) => {
+    this.writeWebsiteFiles(session, '', files, async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message

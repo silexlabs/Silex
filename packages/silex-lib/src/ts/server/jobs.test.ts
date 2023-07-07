@@ -17,6 +17,7 @@
 
 import { JobData, JobStatus } from '../types'
 import { startJob, jobSuccess, jobError, getJob, killJob } from './jobs'
+import { expect, afterEach, it, describe } from '@jest/globals'
 
 let job: JobData | undefined
 afterEach(() => {

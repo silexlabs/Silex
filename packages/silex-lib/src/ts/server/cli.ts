@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * Silex website builder, free/libre no-code tool for makers.
  * Copyright (c) 2023 lexoyo and Silex Labs foundation
@@ -30,7 +32,7 @@ const options = parse({
   'session-secret': ['s', 'Session secret', 'string'],
   'cors-url': ['', 'Enable CORS for URL (can be "*")', 'string'],
   'client-config': ['', 'Path to client config file to be served on .silex-client.js', 'string'],
-  'fs-root': ['', 'Path to the root folder where to store websites. Used by the default backend (fs).', 'string'],
+  'fs-root': ['', 'Path to the root folder where to store websites. Used by the default connector (fs).', 'string'],
 }, {})
 
 if(options.config) process.env.CONFIG = options.config
