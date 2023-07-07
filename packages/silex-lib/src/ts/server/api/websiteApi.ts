@@ -57,7 +57,6 @@ export default function (config: ServerConfig, opts = {}): Router {
 
   // Load website data
   router.get(API_WEBSITE_READ, async (req, res, next) => {
-    console.log('read website')
     const query = req.query as ApiWebsiteReadQuery
     const { id, connectorId } = query
     const session = req['session'] as ConnectorSession
@@ -90,7 +89,6 @@ export default function (config: ServerConfig, opts = {}): Router {
 
   // List websites
   router.get(API_WEBSITE_LIST, async (req, res) => {
-    console.log('list websites')
     const query: ApiWebsiteListQuery = req.query
     const { connectorId } = query
     const session = req['session'] as ConnectorSession
