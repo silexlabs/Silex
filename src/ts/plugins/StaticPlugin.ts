@@ -44,7 +44,7 @@ export default async function(config, opts = {}) {
         path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/webfonts/',
       }, {
         route: '/',
-        path: 'dist/client',
+        path: join(__dirname, '..', '..', 'dist', 'client'),
       },
     ]
     // add project route for source maps
@@ -61,6 +61,7 @@ export default async function(config, opts = {}) {
       .forEach(folder => {
         if (!folder.route) throw new Error('The config for static module has no `route` attribute')
         if (!folder.path) throw new Error('The config for static module has no `path` attribute')
+        console.info(`> [StaticPlugin] Serving static files from ${folder.path} on ${folder.route}`)
         router.use(folder.route, serveStatic(folder.path))
       })
     app.use(withCache,  router)

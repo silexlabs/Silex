@@ -19,25 +19,33 @@
  * @fileoverview define constants for Silex client and server
  */
 
-export const WEBSITE_DATA_FILE_NAME = 'website.json'
+export const WEBSITE_DATA_FILE = 'website.json'
+export const WEBSITE_META_DATA_FILE = 'meta.json'
 
 export const DEFAULT_WEBSITE_ID = 'default'
-export const DEFAULT_BACKEND_ID = ''
+export const DEFAULT_CONNECTOR_ID = ''
 export const DEFAULT_LANGUAGE = 'en'
 export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
 
-export const API_BACKEND_LOGIN_STATUS = 'api/backend/login/status/'
-export const API_BACKEND_LIST = 'api/backend/'
-export const API_BACKEND_LOGOUT = 'api/backend/logout/'
-export const API_BACKEND_LOGIN = 'api/backend/login/'
-export const API_BACKEND_LOGIN_CALLBACK = 'api/backend/login/'
+export const API_PATH = 'api'
 
-export const API_PUBLICATION_PUBLISH = 'api/publication/'
-export const API_PUBLICATION_STATUS = '/api/publication/status/'
+export const API_CONNECTOR_PATH = '/connector'
+export const API_CONNECTOR_USER = '/user'
+export const API_CONNECTOR_LIST = '/'
+export const API_CONNECTOR_LOGOUT = '/logout'
+export const API_CONNECTOR_LOGIN = '/login'
+export const API_CONNECTOR_LOGIN_CALLBACK = '/login'
 
-export const API_WEBSITE_READ = 'api/website/'
-export const API_WEBSITE_WRITE = 'api/website/'
-export const API_WEBSITE_DELETE = 'api/website/'
-export const API_WEBSITE_LIST = 'api/website/'
+export const API_PUBLICATION_PATH = '/publication'
+export const API_PUBLICATION_PUBLISH = '/'
+export const API_PUBLICATION_STATUS = '/publication/status'
+
+export const API_WEBSITE_PATH = '/website'
+export const API_WEBSITE_READ = '/'
+export const API_WEBSITE_WRITE = '/'
+export const API_WEBSITE_DELETE = '/'
+export const API_WEBSITE_LIST = '/'
 export const API_WEBSITE_ASSETS_READ = 'assets/:path'
-export const API_WEBSITE_ASSETS_WRITE = 'assets/'
+export const API_WEBSITE_ASSETS_WRITE = 'assets'
+export const API_WEBSITE_META_READ = '/meta'
+export const API_WEBSITE_META_WRITE = '/meta'

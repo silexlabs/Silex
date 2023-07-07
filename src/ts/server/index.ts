@@ -15,13 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as backends from './backends'
 import * as silexApp from './express'
+import api from './api/api'
 import { createConfig } from './config'
 
 //export * from './express'
 //export * from './config'
-//export * from './backends'
+//export * from './connectors'
 //export * from '../events'
 //export * from '../constants'
 //export * from '../page'
@@ -40,8 +40,8 @@ export default async function main() {
   // Load the config files
   await config.loadConfigFiles()
 
-  // Add the backend routes
-  backends.addRoutes(config, app)
+  // APIs
+  app.use('/api', api(config))
 
   // Start the server
   await silexApp.start(app)

@@ -15,14 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const FtpBackend = require('./dist/plugins/FtpBackend').default
+const FtpConnector = require('./dist/plugins/FtpConnector').default
 
 module.exports = async function (config, options) {
-  if(!FtpBackend) throw new Error('FtpBackend not found')
-  config.setHostingProviders([new FtpBackend(config, {
+  if(!FtpConnector) throw new Error('FtpConnector not found')
+  config.setHostingConnectors([new FtpConnector(config, {
     type: 'HOSTING',
   })])
-  config.setStorageProviders([new FtpBackend(config, {
+  config.setStorageConnectors([new FtpConnector(config, {
     type: 'STORAGE',
   })])
   return {}

@@ -47,18 +47,18 @@ export default async function(config, opts = {}) {
     // SSL
     // force ssl if the env var SILEX_FORCE_HTTPS is set
     if (options.forceHttps) {
-      console.log('> Force SSL option is enabled')
+      console.log('> [SslPlugin] Force SSL option is enabled')
       app.set('forceSSLOptions', {
         trustXFPHeader: !!options.trustXFPHeader,
       })
       router.use(forceSSL)
     } else {
-      console.log('> Force SSL option is disabled, env var SILEX_FORCE_HTTPS not set')
+      console.log('> [SslPlugin] Force SSL option is disabled, env var SILEX_FORCE_HTTPS not set')
     }
 
     // SSL certificate
     if (options.privateKey && options.certificate) {
-      console.log('> SSL certificate is enabled, found certificate:', options.certificate)
+      console.log('> [SslPlugin] SSL certificate is enabled, found certificate:', options.certificate)
       try {
         const privateKey = readFileSync(options.privateKey).toString()
         const certificate = readFileSync(options.certificate).toString()
@@ -71,13 +71,13 @@ export default async function(config, opts = {}) {
         }
 
         createServer(sslServerOptions, this).listen(options.sslPort, () => {
-          console.log('SSL: listening on port ', options.sslPort)
+          console.log('> [SslPlugin] Listening on port ', options.sslPort)
         })
       } catch (e) {
-        console.error('SSL: load certificate failed.', e)
+        console.error('> [SslPlugin] Load certificate failed.', e)
       }
     } else {
-      console.log('> SSL certificate disabled, env vars SILEX_SSL_CERTIFICATE and SILEX_SSL_PRIVATE_KEY not set')
+      console.log('> [SslPlugin] Certificate disabled, env vars SILEX_SSL_CERTIFICATE and SILEX_SSL_PRIVATE_KEY not set')
     }
     app.use(router)
   })

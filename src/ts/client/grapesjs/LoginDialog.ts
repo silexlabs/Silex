@@ -1,7 +1,7 @@
 import { html, render } from 'lit-html'
 import { Editor } from 'grapesjs'
-import { ApiBackendLoggedInPostMessage, BackendData, BackendId, BackendType } from '../../types'
-import { LoginStatus, backendList, loginStatus, logout } from '../services'
+import { ApiConnectorLoggedInPostMessage, ConnectorData, ConnectorId, ConnectorType, ConnectorUser } from '../../types'
+import { connectorList, getUser, logout } from '../api'
 import { WebsiteId } from '../../types'
 
 export const cmdLogin = 'silex:auth:login'
@@ -14,8 +14,14 @@ export interface LoginDialogOptions {
   id: WebsiteId,
 }
 
-export async function getCurrentLoginStatus(editor: Editor): Promise<LoginStatus> {
-  return editor.getModel().get('loginStatus') as LoginStatus // ?? { backend: null, user: null, websiteMeta: null }
+export async function getCurrentUser(editor: Editor): Promise<ConnectorUser> {
+  return editor.getModel().get('user') as ConnectorUser
+}
+
+export async function updateUser(editor: Editor, type: ConnectorType, connectorId?: ConnectorId): Promise<ConnectorUser> {
+  const user = await getUser(type, connectorId)
+  editor.getModel().set('user', user)
+  return user
 }
 
 let open = false
@@ -59,10 +65,10 @@ export default function loginDialogPlugin(editor, opts) {
     return loadStorageList(async list => onStorageList(list))
   }
   async function onStorageList(list) {
-    const loggedIn = list.find(backend => backend.isLoggedIn)
+    const loggedIn = list.find(connector => connector.isLoggedIn)
     if (loggedIn) {
       try {
-        const status = await updateLoginStatus(loggedIn.backendId, loggedIn.type)
+        const status = await updateUser(editor, loggedIn.type, loggedIn.connectorId)
         editor.trigger(eventLoggedIn, status)
         return closeDialog()
       } catch (err) {
@@ -74,9 +80,9 @@ export default function loginDialogPlugin(editor, opts) {
             <footer>
               <button class="silex-button silex-button--primary" @click=${() => loadStorageList(async list => onStorageList(list))}>Retry</button>
               <button class="silex-button" @click=${async () => {
-    await logout(loggedIn.backendId, loggedIn.type)
+    await logout(loggedIn.connectorId, loggedIn.type)
     openDialog()
-  }}>Login with another backend</button>
+  }}>Login with another connector</button>
             </footer>
           `, body)
       }
@@ -86,12 +92,12 @@ export default function loginDialogPlugin(editor, opts) {
     render(html`
         <main>
           <p>Login and give Silex access to a file storage.</p>
-          ${list.map(backend => html`
+          ${list.map(connector => html`
             <button
               class="silex-button silex-button--primary"
               id="publish-button--primary"
-              @click=${() => loginWithBackend(backend)}
-            >Login with ${backend.displayName}</button>
+              @click=${() => loginWithConnector(connector)}
+            >Login with ${connector.displayName}</button>
           `)}
         </main>
         <footer>
@@ -100,15 +106,15 @@ export default function loginDialogPlugin(editor, opts) {
   }
 
   // Auth management
-  async function loadStorageList(done: (list: BackendData[]) => Promise<void>) {
+  async function loadStorageList(done: (list: ConnectorData[]) => Promise<void>) {
     try {
-      const storageProviders = await backendList(BackendType.STORAGE)
-      await done(storageProviders)
+      const storageConnectors = await connectorList(ConnectorType.STORAGE)
+      await done(storageConnectors)
     } catch (err) {
-      console.error('Error with loading storage providers', err)
+      console.error('Error with loading storage connectors', err)
       render(html`
         <main>
-          An error occured while loading the storage providers: ${err.message}
+          An error occured while loading the storage connectors: ${err.message}
         </main>
         <footer>
           <button type="button" class="gjs-btn-prim" @click=${() => loadStorageList(done)}>Retry</button>
@@ -116,8 +122,8 @@ export default function loginDialogPlugin(editor, opts) {
         `, body)
     }
   }
-  async function loginWithBackend(provider: BackendData) {
-    window.open(provider.authUrl, '_blank')
+  async function loginWithConnector(connector: ConnectorData) {
+    window.open(connector.authUrl, '_blank')
     return new Promise(resolve => {
       render(html`
         <main>
@@ -130,8 +136,8 @@ export default function loginDialogPlugin(editor, opts) {
       const onMessage = async (event) => {
         if (event.data?.type === 'login') {
           window.removeEventListener('message', onMessage)
-          const data = event.data as ApiBackendLoggedInPostMessage
-          const { backendId, error, message } = data
+          const data = event.data as ApiConnectorLoggedInPostMessage
+          const { connectorId, error, message } = data
           if (error) {
             // Error, start over
             console.error('login error', message)
@@ -140,10 +146,10 @@ export default function loginDialogPlugin(editor, opts) {
                 <p>Login failed with error: ${message}</p>
               <footer>
                 <button type="button" class="gjs-btn-prim" @click=${() => openDialog()}>Retry</button>
-                ${ backendId ? html`<button class="silex-button" @click=${async () => {
-    await logout(backendId, provider.type)
+                ${ connectorId ? html`<button class="silex-button" @click=${async () => {
+    await logout(connector.type, connectorId)
     openDialog()
-  }}>Login with another backend</button>` : '' }
+  }}>Login with another connector</button>` : '' }
 
                   </footer>
                 `, body)
@@ -157,7 +163,7 @@ export default function loginDialogPlugin(editor, opts) {
                 <footer>
                 </footer>
               `, body)
-              const status = await updateLoginStatus(backendId, provider.type)
+              const status = await updateUser(editor, connector.type, connectorId)
               editor.trigger(eventLoggedIn, status)
               closeDialog()
             } catch (err) {
@@ -170,9 +176,9 @@ export default function loginDialogPlugin(editor, opts) {
                 <footer>
                   <button type="button" class="gjs-btn-prim" @click=${() => openDialog()}>Retry</button>
                   <button class="silex-button" @click=${async () => {
-    await logout(backendId, provider.type)
+    await logout(connector.type, connectorId)
     openDialog()
-  }}>Login with another backend</button>
+  }}>Login with another connector</button>
                 </footer>
                 `, body)
             }
@@ -181,10 +187,5 @@ export default function loginDialogPlugin(editor, opts) {
       }
       window.addEventListener('message', onMessage, false)
     })
-  }
-  async function updateLoginStatus(backendId: BackendId, type: BackendType): Promise<LoginStatus> {
-    const status = await loginStatus(backendId, type, options.id)
-    editor.getModel().set('loginStatus', status)
-    return status
   }
 }

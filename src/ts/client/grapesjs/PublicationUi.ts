@@ -19,13 +19,13 @@ import { html, render, TemplateResult } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 //import { map } from 'lit-html/directives/map.js'
 import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
-import { BackendData, BackendType, PublicationJobData, PublicationSettings } from '../../types'
-import { backendList } from '../services'
+import { ConnectorData, ConnectorType, PublicationJobData, PublicationSettings } from '../../types'
+import { connectorList } from '../api'
 
 /**
  * @fileoverview define the publication dialog
  * This is the UI of the publication feature
- * It is a dialog which allows the user to login to a backend and publish the website
+ * It is a dialog which allows the user to login to a connector and publish the website
  * It also displays the publication status and logs during the publication process
  * This class is used by the PublicationManager
  * This is optional, you can use the PublicationManager without this UI
@@ -133,7 +133,7 @@ export class PublicationUi {
     try {
       if(this.isOpen && (!status || !settings)) throw new Error('PublicationUi: open but no status or settings')
       render(html`
-      ${!this.isOpen ? '' : settings.backend ? await this.renderOpenDialog(job, status, settings) : await this.renderLoginDialog(status, settings)}
+      ${!this.isOpen ? '' : settings.connector ? await this.renderOpenDialog(job, status, settings) : await this.renderLoginDialog(status, settings)}
     `, this.el)
       if (this.isOpen) {
         this.el.classList.remove('silex-dialog-hide')
@@ -208,7 +208,7 @@ export class PublicationUi {
           id="publish-button--primary"
           @click=${() => this.editor.Commands.run(cmdPublicationLogin)}
         >Login</button>
-      `: settings.backend.disableLogout ? '' : html`
+      `: settings.connector.disableLogout ? '' : html`
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -225,11 +225,11 @@ export class PublicationUi {
   }
   async renderLoginDialog(status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
     try {
-      const hostingProviders = await backendList(BackendType.HOSTING)
-      const loggedProvider: BackendData = hostingProviders.find(provider => provider.isLoggedIn)
+      const hostingConnectors = await connectorList(ConnectorType.HOSTING)
+      const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
 
-      if (loggedProvider) {
-        settings.backend = loggedProvider
+      if (loggedConnector) {
+        settings.connector = loggedConnector
         this.editor.Commands.run(cmdPublicationStart)
         return html``
       }
@@ -240,12 +240,12 @@ export class PublicationUi {
           <p>Login error</p>
           <div>${unsafeHTML(this.errorMessage)}</div>
         ` : ''}
-        ${hostingProviders.map(backend => html`
+        ${hostingConnectors.map(connector => html`
           <button
             class="silex-button silex-button--primary"
             id="publish-button--primary"
-            @click=${() => this.editor.Commands.run(cmdPublicationLogin, backend)}
-          >Login with ${backend.backendId}</button>
+            @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
+          >Login with ${connector.connectorId}</button>
         `)}
       </main>
       <footer>
@@ -263,7 +263,7 @@ export class PublicationUi {
         <h3>Oops</h3>
       </header>
       <main>
-        <p>Unable to load hosting providers</p>
+        <p>Unable to load hosting connectors</p>
         <p>Something went wrong: ${err.message}</p>
       </main>
       <footer>

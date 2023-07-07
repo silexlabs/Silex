@@ -15,9 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { BackendId, WebsiteId, WebsiteData } from '../../types'
-import { ApiError, LoginStatus, websiteLoad, websiteSave } from '../services'
-import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentLoginStatus } from './LoginDialog'
+import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType } from '../../types'
+import { ApiError, websiteLoad, websiteSave } from '../api'
+import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
 
 async function wait(ms: number) {
   return new Promise((resolve) => {
@@ -25,12 +25,13 @@ async function wait(ms: number) {
   })
 }
 export const storagePlugin = (editor) => {
-  editor.Storage.add('backend', {
-    async load(options: { id: WebsiteId, backendId: BackendId }): Promise<WebsiteData> {
+  editor.Storage.add('connector', {
+    async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
-        const status = await getCurrentLoginStatus(editor)
-        if(status?.backend?.isLoggedIn) {
-          const data = await websiteLoad(options.id, options.backendId)
+        const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
+        console.log('connectorPlugin load', user)
+        if(user) {
+          const data = await websiteLoad(options.id, user.connectorId)
           return data
         } else {
           return new Promise((resolve, reject) => {
@@ -40,7 +41,7 @@ export const storagePlugin = (editor) => {
                 //editor.loadProjectData(data)
                 resolve(data)
               } catch (err) {
-                console.error('backendPlugin load error', err)
+                console.error('connectorPlugin load error', err)
                 reject(err)
               }
             })
@@ -48,15 +49,16 @@ export const storagePlugin = (editor) => {
           })
         }
       } catch (err) {
-        console.error('backendPlugin load error', err)
+        console.error('connectorPlugin load error', err)
         throw err
       }
     },
 
-    async store(data: WebsiteData, options: { id: WebsiteId, backendId: BackendId }) {
+    async store(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
       try {
-        if(await getCurrentLoginStatus(editor)) {
-          await websiteSave(options.id, options.backendId, data)
+        if(await getCurrentUser(editor)) {
+          const user = await getCurrentUser(editor)
+          await websiteSave(options.id, user.connectorId, data)
         } else {
           editor.once(eventLoggedIn, () => {
             return editor.Storage.save(options)
@@ -64,7 +66,7 @@ export const storagePlugin = (editor) => {
           editor.Commands.run(cmdLogin)
         }
       } catch (err) {
-        console.error('backendPlugin store error', err)
+        console.error('connectorPlugin store error', err)
         throw err
       }
     }
@@ -84,6 +86,7 @@ export const storagePlugin = (editor) => {
       case 404:
         return editor.Modal.open({
           title: 'Website not found',
+
           content: `This website could not be found.<br><hr>${err.message}`,
         })
       case 403:
