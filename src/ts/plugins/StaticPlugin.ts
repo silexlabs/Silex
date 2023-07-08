@@ -35,7 +35,7 @@ export default async function(config, opts = {}) {
     routes: [
       {
         route: '/',
-        path: 'public',
+        path: join(__dirname, '..', '..', 'public'),
       }, {
         route: '/css/',
         path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/css/',

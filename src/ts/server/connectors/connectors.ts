@@ -85,7 +85,7 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
  * Hosting connectors are used to publish the website
  */
 export interface HostingConnector<Session extends ConnectorSession = ConnectorSession> extends Connector<Session> {
-  publishWebsite(session: Session, id: WebsiteId, connectorData: ConnectorData, files: ConnectorFile[]): Promise<JobData>
+  publishWebsite(session: Session, id: WebsiteId, files: ConnectorFile[]): Promise<JobData>
   getWebsiteUrl(session: Session, id: WebsiteId): Promise<string>
 }
 

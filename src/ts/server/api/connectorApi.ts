@@ -26,7 +26,6 @@ export default function(config: ServerConfig) {
  * Returns user data and connector data
  */
 async function routeUser(req, res) {
-  console.log('routeUser', req, res)
   try {
     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
     const session = requiredParam(req['session'], 'Session object')

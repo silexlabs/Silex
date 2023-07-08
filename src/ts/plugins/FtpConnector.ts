@@ -678,7 +678,7 @@ export default class FtpConnector implements HostingConnector<FtpSession>, Stora
     return this.sessionData(session).websiteUrl ?? ''
   }
 
-  async publishWebsite(session: FtpSession, id: string, connectorData: ConnectorData, files: ConnectorFile[]): Promise<JobData> {
+  async publishWebsite(session: FtpSession, id: string, files: ConnectorFile[]): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]

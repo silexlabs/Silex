@@ -30,7 +30,7 @@ export const storagePlugin = (editor) => {
       try {
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if(user) {
-          const data = await websiteLoad(options.id, user.connectorId)
+          const data = await websiteLoad({websiteId: options.id, connectorId: user.connectorId})
           return data
         } else {
           return new Promise((resolve, reject) => {
@@ -57,7 +57,7 @@ export const storagePlugin = (editor) => {
       try {
         if(await getCurrentUser(editor)) {
           const user = await getCurrentUser(editor)
-          await websiteSave(options.id, user.connectorId, data)
+          await websiteSave({websiteId: options.id, connectorId: user.connectorId, data})
         } else {
           editor.once(eventLoggedIn, () => {
             return editor.Storage.save(options)

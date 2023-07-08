@@ -45,6 +45,9 @@ export class ServerConfig extends Config {
     sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
     cors: process.env.SILEX_CORS_URL,
   }
+  public defaultFsConnectorOptions = {
+    rootPath: process.env.FS_ROOT,
+  }
   constructor(
     public url: string,
     public debug: boolean,
@@ -70,14 +73,17 @@ export class ServerConfig extends Config {
 
     // Only one type of connector
     switch(connectorType) {
-    case ConnectorType.HOSTING: return this.getHostingConnectors() as unknown as T[]
-    case ConnectorType.STORAGE: return this.getStorageConnectors() as unknown as T[]
-    default: throw new Error(`Unknown connector type ${type}`)
+      case ConnectorType.HOSTING: return this.getHostingConnectors() as unknown as T[]
+      case ConnectorType.STORAGE: return this.getStorageConnectors() as unknown as T[]
+      default: throw new Error(`Unknown connector type ${type}`)
     }
   }
 
   // Storage connectors to store the website data and assets
-  private storageConnectors: StorageConnector[] = [new FsConnector(null, { type: ConnectorType.STORAGE })]
+  private storageConnectors: StorageConnector[] = [new FsConnector(null, {
+    ...this.defaultFsConnectorOptions,
+    type: ConnectorType.STORAGE,
+  })]
   addStorageConnector(storage: StorageConnector | StorageConnector[]) {
     this.setStorageConnectors(this.storageConnectors.concat(storage))
   }
@@ -89,7 +95,10 @@ export class ServerConfig extends Config {
   }
 
   // Hosting connectors to publish the website online
-  private hostingConnectors: HostingConnector[] = [new FsConnector(null, { type: ConnectorType.HOSTING })]
+  private hostingConnectors: HostingConnector[] = [new FsConnector(null, {
+    ...this.defaultFsConnectorOptions,
+    type: ConnectorType.HOSTING,
+  })]
   addHostingConnector(hosting: HostingConnector | HostingConnector[]) {
     this.setHostingConnectors(this.hostingConnectors.concat(hosting))
   }

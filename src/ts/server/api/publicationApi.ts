@@ -20,10 +20,11 @@ import { noCache } from '../../plugins/Cache'
 import { minify } from 'html-minifier'
 import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../../constants'
 import { getJob } from '../jobs'
-import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ApiError, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType} from '../../types'
-import { HostingConnector, getConnector } from '../connectors/connectors'
+import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ApiError, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
+import { HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
+import { join } from 'path'
 
 /**
  * @fileoverview Publication plugin for Silex
@@ -57,7 +58,7 @@ export async function getHostingConnector(session: any, config: ServerConfig, co
   const hostingConnector = await getConnector(config, session, ConnectorType.HOSTING, connectorId) //  ?? config.getHostingConnectors()[0]
 
   if (!hostingConnector) {
-    throw new PublicationError('No hosting connector found', 404)
+    throw new PublicationError('No hosting connector found', 500)
   }
 
   if (!await hostingConnector.isLoggedIn(session)) {
@@ -65,6 +66,20 @@ export async function getHostingConnector(session: any, config: ServerConfig, co
   }
 
   return hostingConnector as HostingConnector
+}
+
+export async function getStorageConnector(session: any, config: ServerConfig, connectorId?: string): Promise<StorageConnector> {
+  const storageConnector = await getConnector(config, session, ConnectorType.STORAGE, connectorId) //  ?? config.getStorageConnectors()[0]
+
+  if (!storageConnector) {
+    throw new PublicationError('No storage connector found', 500)
+  }
+
+  if (!await storageConnector.isLoggedIn(session)) {
+    throw new PublicationError('Not logged in to the storage connector', 401)
+  }
+
+  return storageConnector as StorageConnector
 }
 
 export default function (config: ServerConfig, opts = {}): Router {
@@ -102,26 +117,29 @@ export default function (config: ServerConfig, opts = {}): Router {
     try {
       const query: ApiPublicationPublishQuery = req.query as any
       const body: ApiPublicationPublishBody = req.body
-      const id = requiredParam<string>(query.id as string, 'id in query')
+      const websiteId = requiredParam<WebsiteId>(query.websiteId as string, 'id in query')
+      const storageId = requiredParam<ConnectorId>(query.storageId as string, 'storageId in query')
+      const hostingId = requiredParam<ConnectorId>(query.hostingId as string, 'hostingId in query')
       const session = requiredParam(req['session'], 'session on express request')
 
       // Check params
-      const { files, publication } = body as PublicationData
+      const { files, publication, assets } = body as PublicationData
       const publicationSettings: PublicationSettings = {
         ...defaultPublication,
         ...publication,
       }
-      const connector = requiredParam(publicationSettings.connector, 'connector object in publicationSettings')
-      const connectorId = requiredParam(connector.connectorId, 'connectorId in publicationSettings')
-      if (!files) throw new PublicationError('Error in the request, files not found', 400)
+      if(!files || !publication || !assets) {
+        throw new PublicationError('Missing data from request: files, publication or assets', 400)
+      }
 
       // Get hosting connector and make sure the user is logged in
-      const hostingConnector = await getHostingConnector(session, config, connectorId)
-      if (!hostingConnector) throw new PublicationError('Error in the request, hosting connector not found', 400)
-      if (!hostingConnector.isLoggedIn(session)) throw new PublicationError(`You must be logged in with ${hostingConnector.displayName} to publish`, 401)
+      const hostingConnector = await getHostingConnector(session, config, hostingId)
+
+      // Get storage connector which holds the assets
+      const storage = await getStorageConnector(session, config, storageId)
 
       // Optim HTML
-      files.map(file => ({
+      const optim = files.map(file => ({
         ...file,
         html: minify(file.html, {
           continueOnParseError: true,
@@ -134,17 +152,21 @@ export default function (config: ServerConfig, opts = {}): Router {
         }).trim(),
       }))
       // Publication
-      const filesList = files.flatMap(file => ([{
+      const assetsFiles = await Promise.all(assets.map(async asset => ({
+        path: join(publicationSettings.assets?.path ?? '', asset.src),
+        content: (await storage.readWebsiteFile(session, websiteId, asset.src)).content,
+      })))
+      const filesList = optim.flatMap(file => ([{
         path: file.htmlPath,
         content: file.html,
       }, {
         path: file.cssPath,
         content: file.css,
-      }]))
+      }])).concat(assetsFiles)
       try {
         res.json({
-          url: await hostingConnector.getWebsiteUrl(session, id),
-          job: await hostingConnector.publishWebsite(session, id, connector, filesList),
+          url: await hostingConnector.getWebsiteUrl(session, websiteId),
+          job: await hostingConnector.publishWebsite(session, websiteId, filesList),
         } as ApiPublicationPublishResponse)
       } catch (err) {
         console.error('Error publishing the website', err)

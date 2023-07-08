@@ -19,7 +19,7 @@ export async function getCurrentUser(editor: Editor): Promise<ConnectorUser> {
 }
 
 export async function updateUser(editor: Editor, type: ConnectorType, connectorId?: ConnectorId): Promise<ConnectorUser> {
-  const user = await getUser(type, connectorId)
+  const user = await getUser({type, connectorId})
   editor.getModel().set('user', user)
   return user
 }
@@ -80,7 +80,7 @@ export default function loginDialogPlugin(editor, opts) {
             <footer>
               <button class="silex-button silex-button--primary" @click=${() => loadStorageList(async list => onStorageList(list))}>Retry</button>
               <button class="silex-button" @click=${async () => {
-    await logout(loggedIn.connectorId, loggedIn.type)
+    await logout({type: loggedIn.type, connectorId: loggedIn.connectorId})
     openDialog()
   }}>Login with another connector</button>
             </footer>
@@ -108,7 +108,7 @@ export default function loginDialogPlugin(editor, opts) {
   // Auth management
   async function loadStorageList(done: (list: ConnectorData[]) => Promise<void>) {
     try {
-      const storageConnectors = await connectorList(ConnectorType.STORAGE)
+      const storageConnectors = await connectorList({type: ConnectorType.STORAGE})
       await done(storageConnectors)
     } catch (err) {
       console.error('Error with loading storage connectors', err)
@@ -147,7 +147,7 @@ export default function loginDialogPlugin(editor, opts) {
               <footer>
                 <button type="button" class="gjs-btn-prim" @click=${() => openDialog()}>Retry</button>
                 ${ connectorId ? html`<button class="silex-button" @click=${async () => {
-    await logout(connector.type, connectorId)
+    await logout({type: connector.type, connectorId})
     openDialog()
   }}>Login with another connector</button>` : '' }
 
@@ -176,7 +176,7 @@ export default function loginDialogPlugin(editor, opts) {
                 <footer>
                   <button type="button" class="gjs-btn-prim" @click=${() => openDialog()}>Retry</button>
                   <button class="silex-button" @click=${async () => {
-    await logout(connector.type, connectorId)
+    await logout({type: connector.type, connectorId})
     openDialog()
   }}>Login with another connector</button>
                 </footer>
