@@ -16,9 +16,9 @@
  */
 
 import fs, { stat } from 'fs/promises'
-import { createWriteStream, mkdir } from 'fs'
+import { createWriteStream } from 'fs'
 import fsExtra from 'fs-extra'
-import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString} from './connectors'
+import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData} from './connectors'
 import { join, resolve } from 'path'
 import { ConnectorData, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, ConnectorType, PublicationJobData, WebsiteMetaFileContent } from '../../types'
 import { jobError, jobSuccess, startJob } from '../jobs'
@@ -35,10 +35,12 @@ interface FsOptions {
   type: ConnectorType
 }
 
+const USER_IMAGE = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%221em%22%20viewBox%3D%220%200%20448%20512%22%3E%3C%21--%21%20Font%20Awesome%20Free%206.4.0%20by%20%40fontawesome%20-%20https%3A%2F%2Ffontawesome.com%20License%20-%20https%3A%2F%2Ffontawesome.com%2Flicense%20%28Commercial%20License%29%20Copyright%202023%20Fonticons%2C%20Inc.%20--%3E%3Cpath%20d%3D%22M304%20128a80%2080%200%201%200%20-160%200%2080%2080%200%201%200%20160%200zM96%20128a128%20128%200%201%201%20256%200A128%20128%200%201%201%2096%20128zM49.3%20464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7%200-120.1%2048.7-129%20112zM0%20482.3C0%20383.8%2079.8%20304%20178.3%20304h91.4C368.2%20304%20448%20383.8%20448%20482.3c0%2016.4-13.3%2029.7-29.7%2029.7H29.7C13.3%20512%200%20498.7%200%20482.3z%22%2F%3E%3C%2Fsvg%3E'
+
 export class FsConnector implements StorageConnector<FsSession>, HostingConnector<FsSession> {
   connectorId = 'fs'
   displayName = 'File system'
-  icon = 'file'
+  icon = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202L6%2022%2018%2022%2018%207%2012%202%206%202Z%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M18%202L12%202%2012%208%2018%208%2018%202Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E'
   rootPath: string
   disableLogout = true
   options: { rootPath: string, type: ConnectorType }
@@ -92,8 +94,8 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
     const { username,  } = userInfo()
     return {
       name: username,
-      picture: this.icon,
-      connectorId: this.connectorId,
+      picture: USER_IMAGE,
+      connector: await toConnectorData(session, this),
     }
   }
 

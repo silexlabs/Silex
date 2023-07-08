@@ -18,7 +18,7 @@
 import JsFTP from 'jsftp'
 import { Readable } from 'stream'
 import express, { Application } from 'express'
-import { ConnectorFile, HostingConnector, StatusCallback, StorageConnector, contentToString, toConnectorEnum} from '../server/connectors/connectors'
+import { ConnectorFile, HostingConnector, StatusCallback, StorageConnector, contentToString, toConnectorData, toConnectorEnum} from '../server/connectors/connectors'
 import { requiredParam } from '../server/utils/validation'
 import { API_CONNECTOR_LOGIN_CALLBACK, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../constants'
 import { ConnectorData, ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent } from '../types'
@@ -402,7 +402,7 @@ export default class FtpConnector implements HostingConnector<FtpSession>, Stora
     return {
       name: this.sessionData(session).user,
       picture: this.icon,
-      connectorId: this.connectorId,
+      connector: await toConnectorData(session, this)
     }
   }
 

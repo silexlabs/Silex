@@ -225,7 +225,7 @@ export interface ConnectorUser {
   name: string
   email?: string
   picture?: string
-  connectorId: ConnectorId
+  connector: ConnectorData
   metadata?: object
 }
 
