@@ -225,7 +225,7 @@ export class PublicationUi {
   }
   async renderLoginDialog(status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
     try {
-      const hostingConnectors = await connectorList(ConnectorType.HOSTING)
+      const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
 
       if (loggedConnector) {

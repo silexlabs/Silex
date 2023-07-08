@@ -19,13 +19,14 @@ import fs, { stat } from 'fs/promises'
 import { createWriteStream, mkdir } from 'fs'
 import fsExtra from 'fs-extra'
 import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString} from './connectors'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { ConnectorData, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, ConnectorType, PublicationJobData, WebsiteMetaFileContent } from '../../types'
 import { jobError, jobSuccess, startJob } from '../jobs'
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation'
 import { ServerConfig } from '../config'
 import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
+import { Readable } from 'stream'
 
 type FsSession = ConnectorSession
 
@@ -98,16 +99,10 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
 
   async setWebsiteMeta(session: any, id: string, data: WebsiteMetaFileContent): Promise<void> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
-    const metaFile = await this.readWebsiteFile(session, websiteId, WEBSITE_META_DATA_FILE)
-    const meta = JSON.parse(await contentToString(metaFile.content)) as WebsiteMetaFileContent
-    const newMeta = {
-      ...meta,
-      ...data,
-    }
-    const metaContent = JSON.stringify(newMeta)
+    const content = JSON.stringify(data)
     await this.writeWebsiteFiles(session, websiteId, [{
       path: WEBSITE_META_DATA_FILE,
-      content: metaContent,
+      content
     }])
   }
 
@@ -132,6 +127,7 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
   // Storage interface
   // ********************
   async createWebsite(session: FsSession, id: WebsiteId, meta: WebsiteMetaFileContent): Promise<void> {
+    console.log('createWebsite', id, meta)
     await this.createWebsiteDir(session, id, '/')
     await this.setWebsiteMeta(session, id, meta)
     await this.writeWebsiteFiles(session, id, [{
@@ -171,11 +167,11 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
       const {file} = fileStatus
       const path = join(this.options.rootPath, id, file.path)
       filePaths.push(path)
-      if (typeof file.content === 'string') {
+      if (typeof file.content === 'string' || Buffer.isBuffer(file.content)) {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
         try {
-          await fs.writeFile(path, file.content)
+          await fs.writeFile(path, file.content, 'binary')
         } catch(err) {
           fileStatus.message = `Error (${err})`
           this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
@@ -184,7 +180,7 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
         }
         fileStatus.message = 'Success'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
-      } else {
+      } else if (file.content instanceof Readable) {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
         const writeStream = createWriteStream(path)
@@ -203,6 +199,9 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
             resolve(file)
           })
         })
+      } else {
+        console.error('Invalid file content', typeof file.content)
+        throw new Error('Invalid file content: ' + typeof file.content)
       }
     }
     this.updateStatus(filesStatuses, error ? JobStatus.ERROR : JobStatus.SUCCESS, statusCbk)
@@ -260,11 +259,11 @@ export class FsConnector implements StorageConnector<FsSession>, HostingConnecto
   // ********************
   // Hosting connector interface
   // ********************
-  async publishWebsite(session: FsSession, id: WebsiteId, connectorData: ConnectorData, files: ConnectorFile[]): Promise<JobData> {
+  async publishWebsite(session: FsSession, id: WebsiteId, files: ConnectorFile[]): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
-    this.writeWebsiteFiles(session, id, files, async ({status, message}) => {
+    this.writeWebsiteFiles(session, '', files, async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message

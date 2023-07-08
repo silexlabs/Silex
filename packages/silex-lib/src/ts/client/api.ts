@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { API_CONNECTOR_LIST, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_PATH, API_PATH, API_PUBLICATION_PATH, API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_DELETE, API_WEBSITE_LIST, API_WEBSITE_PATH, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE } from '../constants'
-import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorId, JobData, JobId, PublicationJobData, WebsiteId, ApiConnectorListResponse, ApiConnectorListQuery, ConnectorData, ConnectorType, ApiWebsiteReadQuery, ApiWebsiteReadResponse, WebsiteData, ApiWebsiteWriteQuery, ApiWebsiteWriteBody, ApiWebsiteWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse, ClientSideFile, PublicationData, ApiConnectorUserResponse, ConnectorUser, WebsiteMeta, ApiConnectorLogoutQuery, ApiConnectorUserQuery, ApiWebsiteListResponse, ApiWebsiteListQuery } from '../types'
+import { API_CONNECTOR_LIST, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_PATH, API_PATH, API_PUBLICATION_PATH, API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_DELETE, API_WEBSITE_LIST, API_WEBSITE_PATH, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_CREATE } from '../constants'
+import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorId, JobData, JobId, PublicationJobData, WebsiteId, ApiConnectorListResponse, ApiConnectorListQuery, ConnectorData, ConnectorType, ApiWebsiteReadQuery, ApiWebsiteReadResponse, WebsiteData, ApiWebsiteWriteQuery, ApiWebsiteWriteBody, ApiWebsiteWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse, ClientSideFile, PublicationData, ApiConnectorUserResponse, ConnectorUser, WebsiteMeta, ApiConnectorLogoutQuery, ApiConnectorUserQuery, ApiWebsiteListResponse, ApiWebsiteListQuery, WebsiteMetaFileContent, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, ApiWebsiteMetaWriteResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse } from '../types'
 
 export enum ApiRoute {
   PUBLICATION_PUBLISH = API_PATH + API_PUBLICATION_PATH + API_PUBLICATION_PUBLISH,
@@ -27,6 +27,7 @@ export enum ApiRoute {
   WEBSITE_READ = API_PATH + API_WEBSITE_PATH + API_WEBSITE_READ,
   WEBSITE_WRITE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_WRITE,
   WEBSITE_DELETE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_DELETE,
+  WEBSITE_CREATE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_CREATE,
   WEBSITE_LIST = API_PATH + API_WEBSITE_PATH + API_WEBSITE_LIST,
   WEBSITE_ASSETS_READ = API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSETS_READ,
   WEBSITE_ASSETS_WRITE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSETS_WRITE,
@@ -43,28 +44,28 @@ export class ApiError extends Error {
 
 const ROOT_URL = window.location.origin
 
-export async function getUser(type: ConnectorType, connectorId?: ConnectorId): Promise<ConnectorUser> {
+export async function getUser({type, connectorId}: {type: ConnectorType, connectorId?: ConnectorId}): Promise<ConnectorUser> {
   return api<ApiConnectorUserQuery, null, ApiConnectorUserResponse>(ApiRoute.CONNECTOR_USER, 'GET', {
     type,
     connectorId,
   }) as Promise<ConnectorUser>
 }
 
-export async function logout(type: ConnectorType, connectorId?: ConnectorId): Promise<void> {
+export async function logout({type, connectorId}: {type: ConnectorType, connectorId?: ConnectorId}): Promise<void> {
   return api<ApiConnectorLogoutQuery, null, null>(ApiRoute.CONNECTOR_LOGOUT, 'POST', { connectorId, type })
 }
 
-export async function publish(websiteId: WebsiteId, data: PublicationData): Promise<[url: string, job: PublicationJobData]> {
+export async function publish({websiteId, hostingId, storageId, data}: {websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, data: PublicationData}): Promise<[url: string, job: PublicationJobData]> {
   const { url, job } = await api<ApiPublicationPublishQuery, ApiPublicationPublishBody, ApiPublicationPublishResponse>(
     ApiRoute.PUBLICATION_PUBLISH,
     'POST',
-    { id: websiteId },
+    { websiteId, hostingId, storageId },
     data
   ) as ApiPublicationPublishResponse
   return [url, job]
 }
 
-export async function publicationStatus(jobId: JobId): Promise<PublicationJobData> {
+export async function publicationStatus({jobId}: {jobId: JobId}): Promise<PublicationJobData> {
   return api<ApiPublicationStatusQuery, null, ApiPublicationStatusResponse>(
     ApiRoute.PUBLICATION_STATUS,
     'GET',
@@ -72,34 +73,46 @@ export async function publicationStatus(jobId: JobId): Promise<PublicationJobDat
   ) as Promise<PublicationJobData>
 }
 
-export async function connectorList(type: ConnectorType): Promise<ConnectorData[]> {
+export async function connectorList({type}: {type: ConnectorType}): Promise<ConnectorData[]> {
   const list = await api<ApiConnectorListQuery, null, ApiConnectorListResponse>(ApiRoute.CONNECTOR_LIST, 'GET', { type })
   return list as ConnectorData[]
 }
 
 
-export async function websiteList(connectorId?: ConnectorId): Promise<WebsiteMeta[]> {
+export async function websiteList({connectorId}: {connectorId?: ConnectorId}): Promise<WebsiteMeta[]> {
   return api<ApiWebsiteListQuery, null, ApiWebsiteListResponse>(ApiRoute.WEBSITE_LIST, 'GET', { connectorId }) as Promise<WebsiteMeta[]>
 }
 
-export async function websiteLoad(id: WebsiteId, connectorId: ConnectorId): Promise<WebsiteData> {
-  return api<ApiWebsiteReadQuery, null, ApiWebsiteReadResponse>(ApiRoute.WEBSITE_READ, 'GET', { id, connectorId: connectorId }) as Promise<WebsiteData>
+export async function websiteLoad({websiteId, connectorId}: {websiteId: WebsiteId, connectorId?: ConnectorId}): Promise<WebsiteData> {
+  return api<ApiWebsiteReadQuery, null, ApiWebsiteReadResponse>(ApiRoute.WEBSITE_READ, 'GET', { websiteId, connectorId: connectorId }) as Promise<WebsiteData>
 }
 
-export async function websiteSave(id: WebsiteId, connectorId: ConnectorId, data: WebsiteData): Promise<void> {
-  const { message } = await api<ApiWebsiteWriteQuery, ApiWebsiteWriteBody, ApiWebsiteWriteResponse>(ApiRoute.WEBSITE_WRITE, 'POST', { id, connectorId: connectorId }, data)
+export async function websiteSave({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteData, connectorId?: ConnectorId}): Promise<void> {
+  const { message } = await api<ApiWebsiteWriteQuery, ApiWebsiteWriteBody, ApiWebsiteWriteResponse>(ApiRoute.WEBSITE_WRITE, 'POST', { websiteId, connectorId: connectorId }, data)
 }
 
-export async function websiteDelete(id: WebsiteId, connectorId: ConnectorId): Promise<void> {
-  await api<ApiWebsiteDeleteQuery, null, null>(ApiRoute.WEBSITE_DELETE, 'DELETE', { id, connectorId: connectorId })
+export async function websiteDelete({websiteId, connectorId}: {websiteId: WebsiteId, connectorId?: ConnectorId}): Promise<void> {
+  await api<ApiWebsiteDeleteQuery, null, null>(ApiRoute.WEBSITE_DELETE, 'DELETE', { websiteId, connectorId: connectorId })
 }
 
-export async function websiteAssetsLoad(path: string, id: WebsiteId, connectorId: ConnectorId): Promise<string> {
-  return api<ApiWebsiteAssetsReadQuery, null, ApiWebsiteAssetsReadResponse>(`${ApiRoute.WEBSITE_ASSETS_READ}/${path}`, 'GET', { id, connectorId: connectorId })
+export async function websiteCreate({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteMetaFileContent, connectorId?: ConnectorId}): Promise<void> {
+  await api<ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse>(ApiRoute.WEBSITE_CREATE, 'PUT', { websiteId, connectorId: connectorId }, data)
 }
 
-export async function websiteAssetsSave(id: WebsiteId, connectorId: ConnectorId, files: ClientSideFile[]): Promise<string[]> {
-  const { data } = await api<ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse>(ApiRoute.WEBSITE_ASSETS_WRITE, 'POST', { id, connectorId: connectorId }, files)
+export async function websiteMetaWrite({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteMetaFileContent, connectorId?: ConnectorId}): Promise<void> {
+  await api<ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, ApiWebsiteMetaWriteResponse>(ApiRoute.WEBSITE_META_WRITE, 'PUT', { websiteId, connectorId: connectorId }, data)
+}
+
+export async function websiteMetaRead({websiteId, connectorId}: {websiteId: WebsiteId, connectorId?: ConnectorId}): Promise<void> {
+  await api<ApiWebsiteMetaReadQuery, null, ApiWebsiteMetaReadResponse>(ApiRoute.WEBSITE_META_WRITE, 'PUT', { websiteId, connectorId: connectorId })
+}
+
+export async function websiteAssetsLoad({path, websiteId, connectorId}: {path: string, websiteId: WebsiteId, connectorId: ConnectorId}): Promise<string> {
+  return api<ApiWebsiteAssetsReadQuery, null, ApiWebsiteAssetsReadResponse>(`${ApiRoute.WEBSITE_ASSETS_READ}/${path}`, 'GET', { websiteId, connectorId: connectorId })
+}
+
+export async function websiteAssetsSave({websiteId, connectorId, files}: {websiteId: WebsiteId, connectorId: ConnectorId, files: ClientSideFile[]}): Promise<string[]> {
+  const { data } = await api<ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse>(ApiRoute.WEBSITE_ASSETS_WRITE, 'POST', { websiteId, connectorId: connectorId }, files)
   return data
 }
 

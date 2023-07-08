@@ -17,7 +17,7 @@
 
 import { getPageSlug } from '../../page'
 import { onAll } from '../utils'
-import { ApiConnectorLoggedInPostMessage, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorData, ConnectorType, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
+import { ApiConnectorLoggedInPostMessage, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor, ProjectData } from 'grapesjs'
 import e from 'express'
 import { PublicationUi } from './PublicationUi'
@@ -143,7 +143,7 @@ export class PublicationManager {
             this.dialog && this.dialog.displayError(data.message, this.job, this.status, this.settings)
           } else {
             this.editor.trigger('publish:login')
-            const uesr = await getUser(connector.type, data.connectorId)
+            const uesr = await getUser({type: connector.type, connectorId: data.connectorId})
             this.settings.connector = connector
             await this.startPublication()
           }
@@ -155,7 +155,7 @@ export class PublicationManager {
 
   async goLogout() {
     try {
-      await logout(ConnectorType.HOSTING, this.settings.connector.connectorId)
+      await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
       this.settings.connector = null
       this.dialog && this.dialog.displayPending(this.job, this.status, this.settings)
     } catch (e) {
@@ -180,14 +180,15 @@ export class PublicationManager {
     // Update assets URL to display outside the editor
     const assetsFolderUrl = this.settings?.assets?.url
     if (assetsFolderUrl) {
-      const publishedUrl = path => `${assetsFolderUrl}/${path.split('/').pop()}`
+      // Concat the paths, handles the trailing and leading slashes
+      const publishedUrl = path => `${assetsFolderUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
       // New URLs for assets, according to site config
       onAll(this.editor, c => {
         // Attributes
         if (c.get('type') === 'image') {
-          const path = c.get('src')
-          c.set('tmp-src', path)
-          c.set('src', publishedUrl(path))
+          const src = c.get('src')
+          c.set('tmp-src', src)
+          c.set('src', publishedUrl(src))
         }
         //// Inline styles
         //// This is handled by the editor.Css.getAll loop
@@ -250,12 +251,17 @@ export class PublicationManager {
         })
     }
     this.editor.trigger('publish:start', data)
+    const user = this.editor.getModel().get('user') as ConnectorUser
+    if(!user) throw new Error('User not logged in to a storage connector')
+    if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
     try {
-      const id = this.options.websiteId
-      const [url, job] = await publish(
-        id,
-        data as ApiPublicationPublishBody
-      )
+      const websiteId = this.options.websiteId
+      const [url, job] = await publish({
+        websiteId,
+        hostingId: this.settings.connector.connectorId,
+        storageId: user.connectorId,
+        data: data as ApiPublicationPublishBody,
+      })
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
       // Save the publication settings
@@ -315,7 +321,7 @@ export class PublicationManager {
 
   async trackProgress() {
     try {
-      this.job = await publicationStatus(this.job.jobId)
+      this.job = await publicationStatus({jobId: this.job.jobId})
       this.status = jobStatusToPublicationStatus(this.job.status)
     } catch (e) {
       this.status = PublicationStatus.STATUS_ERROR
