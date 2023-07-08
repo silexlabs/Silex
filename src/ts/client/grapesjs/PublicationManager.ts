@@ -259,7 +259,7 @@ export class PublicationManager {
       const [url, job] = await publish({
         websiteId,
         hostingId: this.settings.connector.connectorId,
-        storageId: user.connectorId,
+        storageId: user.connector.connectorId,
         data: data as ApiPublicationPublishBody,
       })
       this.job = job
