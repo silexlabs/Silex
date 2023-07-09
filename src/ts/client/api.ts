@@ -100,7 +100,7 @@ export async function websiteCreate({websiteId, data, connectorId}: {websiteId: 
 }
 
 export async function websiteMetaWrite({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteMetaFileContent, connectorId?: ConnectorId}): Promise<void> {
-  await api<ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, ApiWebsiteMetaWriteResponse>(ApiRoute.WEBSITE_META_WRITE, 'PUT', { websiteId, connectorId: connectorId }, data)
+  await api<ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, ApiWebsiteMetaWriteResponse>(ApiRoute.WEBSITE_META_WRITE, 'POST', { websiteId, connectorId: connectorId }, data)
 }
 
 export async function websiteMetaRead({websiteId, connectorId}: {websiteId: WebsiteId, connectorId?: ConnectorId}): Promise<void> {
