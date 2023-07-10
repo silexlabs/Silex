@@ -1,10 +1,30 @@
-import { Response, Router } from 'express'
-import { API_CONNECTOR_LIST, API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT } from '../../constants'
+import { Request, Response, Router } from 'express'
+import { API_CONNECTOR_LIST, API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_LOGIN, API_CONNECTOR_SETTINGS, API_PATH, API_CONNECTOR_PATH } from '../../constants'
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
 import { Connector, getConnector, toConnectorData, toConnectorEnum } from '../connectors/connectors'
-import { ApiConnectorListQuery, ApiConnectorListResponse, ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiConnectorUserQuery, ApiConnectorUserResponse, ApiConnectorLogoutQuery, ApiError, ConnectorId, ConnectorType } from '../../types'
+import { ApiConnectorListQuery, ApiConnectorListResponse, ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiConnectorUserQuery, ApiConnectorUserResponse, ApiConnectorLogoutQuery, ApiError, ConnectorId, ConnectorType, ApiConnectorSettingsResponse, ApiConnectorSettingsPostQuery, ApiConnectorSettingsPostBody, ApiConnectorSettingsQuery } from '../../types'
 
+/**
+ * @fileoverview The connector API adds routes to handle the connectors and the methods they implement, this includes authentication and user data.
+ *
+ * About authentication
+ *
+ * There are 2 types of connectors, for storage of website data and for publication to a hosting service. The authentication process is the same for both types of connectors
+ *
+ * Here is a typical authentication flow:
+ *
+ * 1. Client app calls the `user` route which returns a 401 as there is no auth in the session
+ * 1. Client app lists all connectors (either for publication or storage) and display a button for each connector
+ * 1. The user clicks a button, it opens a page with either the connector's `getOAuthUrl` for OAuth connectors (A) or the login route for basic auth connectors (B). This can be done in a popup (C) or as a redirect in the client app window (D)
+ * 1. OAuth (A): the page displays the OAuth page which ends up going back to the callback page
+ * 1. Basic auth (B): the page displays the login form `connector.getLoginForm()` which ends up going back to the callback page
+ * 1. The callback page stores the auth data in the session
+ * 1. Popup (C): The callback page will post a message to the parent window which closes the popup and goes on with the flow
+ * 1. Redirect (D): The callback page will redirect to the client app
+ * 1. The client side will call the `user` route again, which will return the user data
+ *
+ */
 /**
  * Add routes to the express app
  */
@@ -15,8 +35,11 @@ export default function(config: ServerConfig) {
   // Connector routes
   router.get(API_CONNECTOR_USER, routeUser)
   router.get(API_CONNECTOR_LIST, routeListConnectors)
-  router.post(API_CONNECTOR_LOGOUT, routeLogout)
+  router.get(API_CONNECTOR_LOGIN, routeLogin)
+  // router.get(API_CONNECTOR_SETTINGS, routeSettings)
+  // router.post(API_CONNECTOR_SETTINGS, routeSettingsPost)
   router.get(API_CONNECTOR_LOGIN_CALLBACK, routeLoginSuccess)
+  router.post(API_CONNECTOR_LOGOUT, routeLogout)
 
   return router
 }
@@ -25,7 +48,7 @@ export default function(config: ServerConfig) {
  * Express route to check if the user is logged in
  * Returns user data and connector data
  */
-async function routeUser(req, res) {
+async function routeUser(req: Request, res: Response) {
   try {
     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
     const session = requiredParam(req['session'], 'Session object')
@@ -37,7 +60,7 @@ async function routeUser(req, res) {
         .status(500)
         .json({
           error: true,
-          message: 'No connector found',
+          message: `Connector not found: ${type} ${query.connectorId}`,
         } as ApiError)
       return
     }
@@ -50,7 +73,8 @@ async function routeUser(req, res) {
         } as ApiError)
       return
     }
-    const user = await connector.getUserData(session)
+    // User logged in, return user data
+    const user = await connector.getUser(session)
     res.json(user as ApiConnectorUserResponse)
   } catch (error) {
     console.error('Error in the login status request', error)
@@ -64,7 +88,7 @@ async function routeUser(req, res) {
 /**
  * Express route to list the connectors
  */
-async function routeListConnectors(req, res) {
+async function routeListConnectors(req: Request, res: Response) {
   try {
     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
     const query = req.query as ApiConnectorListQuery
@@ -90,44 +114,110 @@ async function routeListConnectors(req, res) {
 }
 
 /**
- * Utility function to send an HTML page to the browser
- * is page will send a postMessage to the parent window and close itself
+ * Route login
+ * Display the connector's login form if the connector is basic auth
+ *   or redirect to oauth url if the connector is oauth
+ *   or redirect to success page if the user is logged in
  */
-function sendHtml(res: Response, message: string, connectorId?: ConnectorId, error?: Error, defaultErrorCode?: number) {
-  error && console.error('Error while logging in', error)
-  // Data for postMessage
-  const data = {
-    type: 'login', // For postMessage
-    error: error ? true : false,
-    message,
-    connectorId,
-  } as ApiConnectorLoggedInPostMessage
-  // HTTP status code
-  const status = error ? error['code'] ?? defaultErrorCode ?? 500 : 200
-  // Send the HTML
-  res
-    .status(status)
-    .send(`
-        <html>
-          <head>
-            <script>
-              window.opener.postMessage(${JSON.stringify(data)}, '*')
-              window.close()
-            </script>
-          </head>
-          <body>
-            <p>${message}</p>
-            <p>Close this window</p>
-          </body>
-        </html>
-      `)
+async function routeLogin(req: Request, res: Response) {
+  try {
+    const query = req.query as ApiConnectorLoginQuery
+    if(query.error) throw new Error(query.error)
+
+    const connectorId = requiredParam(query.connectorId, 'Connector id')
+    const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
+    const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
+    const connector = await getConnector<Connector>(config, req['session'], type, connectorId)
+    const session = requiredParam(req['session'], 'Session object')
+    if (!connector) throw new Error(`Connector not found ${connectorId} ${type}`)
+    // Check if the user is already logged in
+    if (await connector.isLoggedIn(session)) {
+      res.redirect(`${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}`)
+      return
+    }
+    const oauthUrl = await connector.getOAuthUrl(session)
+    if (oauthUrl) {
+      // Starts the OAuth flow
+      res.redirect(oauthUrl)
+    } else {
+      // Display the login form
+      res.send(await connector.getLoginForm(session, `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_SETTINGS}?connectorId=${connectorId}&type=${type}`))
+    }
+  } catch (error) {
+    console.error('Error in the login request', error)
+    res.status(error?.code ?? 400).json({
+      error: true,
+      message: 'Error in the login request: ' + error.message,
+    } as ApiError)
+  }
 }
+
+// /**
+//  * Route connector settings
+//  * Display the connector's settings form or redirect to login page if the user is not logged in
+//  */
+// function routeSettings(req: Request, res: Response) {
+//   try {
+//     const query = req.query as ApiConnectorSettingsQuery
+//
+//     const connectorId = requiredParam(query.connectorId, 'Connector id')
+//     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
+//     const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
+//     const connector = await getConnector<Connector>(config, req['session'], type, connectorId)
+//     const session = requiredParam(req['session'], 'Session object')
+//     if (!connector) throw new Error(`Connector not found ${connectorId} ${type}`)
+//     // Check if the user is already logged in
+//     if (!await connector.isLoggedIn(session)) {
+//       res.redirect(`${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}&error=Not logged in`)
+//       return
+//     }
+//     // Display the login form
+//     res.send(await connector.getSettingsForm(session, ``) as ApiConnectorSettingsResponse)
+//   } catch (error) {
+//     console.error('Error in the login request', error)
+//     res.status(error?.code ?? 400).json({
+//       error: true,
+//       message: 'Error in the login request: ' + error.message,
+//     } as ApiError)
+//   }
+// }
+//
+// /**
+//  * Route connector settings post
+//  * Save the connector's settings in the website meta file
+//  */
+// function routeSettingsPost(req: Request, res: Response) {
+//   try {
+//     const query = req.query as ApiConnectorSettingsPostQuery
+//
+//     const connectorId = requiredParam(query.connectorId, 'Connector id')
+//     const config = requiredParam(req.app.get('config') as ServerConfig, 'Config object on express js APP')
+//     const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
+//     const connector = await getConnector<Connector>(config, req['session'], type, connectorId)
+//     const session = requiredParam(req['session'], 'Session object')
+//     const body = req.body as ApiConnectorSettingsPostBody
+//     if (!connector) throw new Error(`Connector not found ${connectorId} ${type}`)
+//     // Check if the user is already logged in
+//     if (!await connector.isLoggedIn(session)) {
+//       res.redirect(`${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}&error=Not logged in`)
+//       return
+//     }
+//     // Save the settings
+//     await connector.setWebsiteMeta(session, websiteId, body)
+//   } catch (error) {
+//     console.error('Error in the login request', error)
+//     res.status(error?.code ?? 400).json({
+//       error: true,
+//       message: 'Error in the login request: ' + error.message,
+//     } as ApiError)
+//   }
+// }
 
 /**
  * Express route to serve as redirect after a successful login
  * The returned HTML will postMessage data and close the popup window
  */
-async function routeLoginSuccess(req, res) {
+async function routeLoginSuccess(req: Request, res: Response) {
   try {
     const query = req.query as ApiConnectorLoginQuery
     if(query.error) throw new Error(query.error)
@@ -137,20 +227,21 @@ async function routeLoginSuccess(req, res) {
     const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
     const connector = await getConnector<Connector>(config, req['session'], type, connectorId)
     if (!connector) throw new Error('Connector not found ' + connectorId)
-    try {
-      sendHtml(res, 'Logged in', connectorId)
-    } catch (error) {
-      sendHtml(res, 'Error while logging in', undefined, error, 500)
-    }
+    // Store the auth info in the session
+    await connector.setToken(req['session'], query)
+    // End the auth flow
+    res.send(getEndAuthHtml('Logged in', false, connectorId))
   } catch (error) {
-    sendHtml(res, 'Error in the request ' + error.message, undefined, error, 400)
+    res
+    .status(error?.code ?? 500)
+    .send(getEndAuthHtml(error.message, true))
   }
 }
 
 /**
  * Express route to logout from a connector
- */
-async function routeLogout(req, res) {
+*/
+async function routeLogout(req: Request, res: Response) {
   try {
     const query = req.query as ApiConnectorLogoutQuery
     // Get the connector
@@ -183,4 +274,37 @@ async function routeLogout(req, res) {
     } as ApiError)
     return
   }
+}
+
+/**
+ * Utility function to send an HTML page to the browser
+ * is page will send a postMessage to the parent window and close itself
+ */
+function getEndAuthHtml(message: string, error: boolean, connectorId?: ConnectorId): string {
+  // Data for postMessage
+  const data = {
+    type: 'login', // For postMessage
+    error,
+    message,
+    connectorId,
+  } as ApiConnectorLoggedInPostMessage
+  // Send the HTML
+  return `
+    <html>
+      <head>
+        <script>
+          if(window.opener) {
+            window.opener.postMessage(${JSON.stringify(data)}, '*')
+            window.close()
+          } else {
+            window.location.href = '/'
+          }
+        </script>
+      </head>
+      <body>
+        <p>${message}</p>
+        <p>Close this window or <a href="/">go back to /</a></p>
+      </body>
+    </html>
+  `
 }

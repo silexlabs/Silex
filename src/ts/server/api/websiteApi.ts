@@ -21,7 +21,7 @@ import PersistentFile from 'formidable/src/PersistentFile'
 import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, WEBSITE_DATA_FILE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE } from '../../constants'
 import { createReadStream } from 'fs'
 import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody } from '../../types'
-import { ConnectorFile, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
+import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
 import { Readable } from 'stream'
 import { requiredParam } from '../utils/validation'
 import { basename } from 'path'
@@ -134,20 +134,16 @@ export default function (config: ServerConfig, opts = {}): Router {
   router.put(API_WEBSITE_CREATE, async (req, res) => {
     try {
       const session = req['session'] as ConnectorSession
-      console.log('createWebsite 000', req.query, req.body, req.params, session)
       const query: ApiWebsiteCreateQuery = req.query as any
       const body: ApiWebsiteCreateBody = req.body
-      const websiteId= requiredParam<WebsiteId>(query.websiteId, 'Website id')
       const websiteMeta = requiredParam<WebsiteMetaFileContent>(body, 'Website meta') as WebsiteMeta
       const connectorId = query.connectorId
       const connector = await getConnector<StorageConnector>(config, session, ConnectorType.STORAGE, connectorId)
       if(!connector) {
         throw new WebsiteError(`Connector ${connectorId} not found`, 500)
       }
-    console.log('createWebsite 111', websiteId, websiteMeta)
       await connector.createWebsite(
         session,
-        websiteId,
         websiteMeta,
       )
       res.json({ message: 'Website meta saved' } as ApiWebsiteMetaWriteResponse)
@@ -238,16 +234,16 @@ export default function (config: ServerConfig, opts = {}): Router {
         const params: ApiWebsiteAssetsReadParams = req.params as any
         const websiteId= requiredParam<WebsiteId>(query.websiteId, 'Website id')
         const path = requiredParam<string>(params.path, 'path')
-        const asset: ConnectorFile = await readAsset(req['session'], websiteId, path, query.connectorId)
+        const asset: ConnectorFileContent = await readAsset(req['session'], websiteId, path, query.connectorId)
         // Set content type
-        res.contentType(basename(asset.path))
+        res.contentType(basename(path))
         // Send the file
-        if (asset.content instanceof Readable) {
+        if (asset instanceof Readable) {
           // Stream
-          asset.content.pipe(res)
+          asset.pipe(res)
         } else {
           // Buffer or string
-          res.send(asset.content as ApiWebsiteAssetsReadResponse)
+          res.send(asset as ApiWebsiteAssetsReadResponse)
         }
       } catch (e) {
         console.error('Error getting asset', e)
@@ -290,9 +286,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       })
 
       // Write the files
-      console.log('Uploading assets', files)
       const data = await writeAssets(req['session'], websiteId, files, query.connectorId)
-      console.log('Uploaded assets', data)
 
       // Return the file URLs to insert in the website
       res.json({
@@ -328,19 +322,14 @@ export default function (config: ServerConfig, opts = {}): Router {
   }
 
   /**
-   * Website a website data or list all websites
+   * Read the website data
    */
   async function readWebsite(session: any, websiteId: string, connectorId?: string): Promise<WebsiteData | Readable> {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 
-    // List websites or get a website
-    // Get a website data
-    const file = await storageConnector.readWebsiteFile(session, websiteId, WEBSITE_DATA_FILE)
-    if (typeof file.content === 'string') return JSON.parse(file.content)
-    else if (file.content instanceof Buffer) return JSON.parse(file.content.toString())
-    else if (file.content instanceof Readable) return file.content
-    throw new WebsiteError('Invalid website data', 500)
+    // Return website data
+    return storageConnector.readWebsite(session, websiteId)
   }
 
   /**
@@ -361,43 +350,30 @@ export default function (config: ServerConfig, opts = {}): Router {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 
-    // Init the storage for this website (create the folder if it does not exist)
-    // FIXME: put this after login
-    // await storageConnector.init(session, websiteId)
-
     // Write the website data
-    await storageConnector.writeWebsiteFiles(session, websiteId, [{
-      path: WEBSITE_DATA_FILE,
-      content: JSON.stringify(websiteData),
-    }])
+    await storageConnector.updateWebsite(session, websiteId, websiteData)
   }
 
   /**
    * Delete a website
    */
-  async function deleteWebsite(session: any, websiteId: string, connectorId?: string) {
+  async function deleteWebsite(session: any, websiteId: string, connectorId?: string): Promise<void> {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 
     // Delete the website
-    return await storageConnector.deleteWebsiteDir(session, websiteId, '/')
+    return storageConnector.deleteWebsite(session, websiteId)
   }
 
   /**
    * Read an asset
    */
-  async function readAsset(session: any, websiteId: string, fileName: string, connectorId?: string): Promise<ConnectorFile> {
-    //const { session } = req
-    //const websiteId= req.querywebsiteId.
-    //const fileName = req.params[0]
-    //const uploadDir = await assetsDir(websiteId)
-    //res.sendFile(`${uploadDir}/${fileName}`)
-
+  async function readAsset(session: any, websiteId: string, fileName: string, connectorId?: string): Promise<ConnectorFileContent> {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 
     // Read the asset from the connector
-    return await storageConnector.readWebsiteFile(session, websiteId, `/${options.assetsPath}/${fileName}`)
+    return storageConnector.readAsset(session, websiteId, `/${options.assetsPath}/${fileName}`)
   }
 
   /**
@@ -408,7 +384,7 @@ export default function (config: ServerConfig, opts = {}): Router {
     const storageConnector = await getStorageConnector(session, connectorId)
 
     // Write the asset to the connector
-    await storageConnector.writeWebsiteFiles(
+    await storageConnector.writeAssets(
       session,
       websiteId,
       files

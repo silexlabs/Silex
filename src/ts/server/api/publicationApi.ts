@@ -154,7 +154,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       // Publication
       const assetsFiles = await Promise.all(assets.map(async asset => ({
         path: join(publicationSettings.assets?.path ?? '', asset.src),
-        content: (await storage.readWebsiteFile(session, websiteId, asset.src)).content,
+        content: await storage.readAsset(session, websiteId, asset.src),
       })))
       const filesList = optim.flatMap(file => ([{
         path: file.htmlPath,
@@ -165,8 +165,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       }])).concat(assetsFiles)
       try {
         res.json({
-          url: await hostingConnector.getWebsiteUrl(session, websiteId),
-          job: await hostingConnector.publishWebsite(session, websiteId, filesList),
+          url: await hostingConnector.getUrl(session, websiteId),
+          job: await hostingConnector.publish(session, websiteId, filesList),
         } as ApiPublicationPublishResponse)
       } catch (err) {
         console.error('Error publishing the website', err)

@@ -30,9 +30,10 @@ import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Application, Request, Response, Router } from 'express'
 import { readFile } from 'fs/promises'
 import { HostingConnector, StorageConnector, toConnectorEnum } from './connectors/connectors'
-import { FsConnector } from './connectors/FsConnector'
+import { FsStorage } from './connectors/FsStorage'
 import { Connector } from './connectors/connectors'
 import { ConnectorType } from '../types'
+import { FsHosting } from './connectors/FsHosting'
 
 /**
  * Config types definitions
@@ -45,9 +46,7 @@ export class ServerConfig extends Config {
     sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
     cors: process.env.SILEX_CORS_URL,
   }
-  public defaultFsConnectorOptions = {
-    rootPath: process.env.FS_ROOT,
-  }
+
   constructor(
     public url: string,
     public debug: boolean,
@@ -80,9 +79,8 @@ export class ServerConfig extends Config {
   }
 
   // Storage connectors to store the website data and assets
-  private storageConnectors: StorageConnector[] = [new FsConnector(null, {
-    ...this.defaultFsConnectorOptions,
-    type: ConnectorType.STORAGE,
+  private storageConnectors: StorageConnector[] = [new FsStorage(null, {
+    path: process.env.FS_ROOT,
   })]
   addStorageConnector(storage: StorageConnector | StorageConnector[]) {
     this.setStorageConnectors(this.storageConnectors.concat(storage))
@@ -95,9 +93,8 @@ export class ServerConfig extends Config {
   }
 
   // Hosting connectors to publish the website online
-  private hostingConnectors: HostingConnector[] = [new FsConnector(null, {
-    ...this.defaultFsConnectorOptions,
-    type: ConnectorType.HOSTING,
+  private hostingConnectors: HostingConnector[] = [new FsHosting(null, {
+    path: process.env.FS_ROOT,
   })]
   addHostingConnector(hosting: HostingConnector | HostingConnector[]) {
     this.setHostingConnectors(this.hostingConnectors.concat(hosting))

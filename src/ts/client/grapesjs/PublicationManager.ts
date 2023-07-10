@@ -131,7 +131,7 @@ export class PublicationManager {
   }
 
   async goLogin(connector: ConnectorData) {
-    window.open(connector.authUrl, '_blank')
+    window.open(connector.oauthUrl, '_blank')
     return new Promise(resolve => {
       const onMessage = async (event) => {
         const data = event.data as ApiConnectorLoggedInPostMessage
@@ -259,7 +259,7 @@ export class PublicationManager {
       const [url, job] = await publish({
         websiteId,
         hostingId: this.settings.connector.connectorId,
-        storageId: user.connector.connectorId,
+        storageId: user.storage.connectorId,
         data: data as ApiPublicationPublishBody,
       })
       this.job = job

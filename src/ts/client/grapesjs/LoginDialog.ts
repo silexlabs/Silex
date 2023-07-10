@@ -123,7 +123,7 @@ export default function loginDialogPlugin(editor, opts) {
     }
   }
   async function loginWithConnector(connector: ConnectorData) {
-    window.open(connector.authUrl, '_blank')
+    window.open(connector.oauthUrl, '_blank')
     return new Promise(resolve => {
       render(html`
         <main>

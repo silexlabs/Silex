@@ -34,6 +34,7 @@ export const API_CONNECTOR_USER = '/user'
 export const API_CONNECTOR_LIST = '/'
 export const API_CONNECTOR_LOGOUT = '/logout'
 export const API_CONNECTOR_LOGIN = '/login'
+export const API_CONNECTOR_SETTINGS = '/settings'
 export const API_CONNECTOR_LOGIN_CALLBACK = '/login'
 
 export const API_PUBLICATION_PATH = '/publication'
