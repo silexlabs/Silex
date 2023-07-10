@@ -233,8 +233,8 @@ async function routeLoginSuccess(req: Request, res: Response) {
     res.send(getEndAuthHtml('Logged in', false, connectorId))
   } catch (error) {
     res
-    .status(error?.code ?? 500)
-    .send(getEndAuthHtml(error.message, true))
+      .status(error?.code ?? 500)
+      .send(getEndAuthHtml(error.message, true))
   }
 }
 

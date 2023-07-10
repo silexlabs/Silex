@@ -303,7 +303,7 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
           resolve(Readable.from(socket))
           socket.resume()
         })
-      })
+    })
   }
 
   async readdir(ftp: JsFTP, path: string): Promise<FileMeta[]> {
@@ -579,15 +579,15 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
         })
       })
     )
-    .catch((err) => {
+      .catch((err) => {
       // Not sure why it never gets here
-      console.error(err)
-      statusCbk && statusCbk({
-        message: err.message,
-        status: JobStatus.ERROR,
+        console.error(err)
+        statusCbk && statusCbk({
+          message: err.message,
+          status: JobStatus.ERROR,
+        })
+        return []
       })
-      return []
-    })
   }
 
   async readAsset(session: FtpSession, id: string, path: string): Promise<ConnectorFileContent> {
