@@ -72,9 +72,9 @@ export class ServerConfig extends Config {
 
     // Only one type of connector
     switch(connectorType) {
-      case ConnectorType.HOSTING: return this.getHostingConnectors() as unknown as T[]
-      case ConnectorType.STORAGE: return this.getStorageConnectors() as unknown as T[]
-      default: throw new Error(`Unknown connector type ${type}`)
+    case ConnectorType.HOSTING: return this.getHostingConnectors() as unknown as T[]
+    case ConnectorType.STORAGE: return this.getStorageConnectors() as unknown as T[]
+    default: throw new Error(`Unknown connector type ${type}`)
     }
   }
 
