@@ -78,7 +78,6 @@ export async function connectorList({type}: {type: ConnectorType}): Promise<Conn
   return list as ConnectorData[]
 }
 
-
 export async function websiteList({connectorId}: {connectorId?: ConnectorId}): Promise<WebsiteMeta[]> {
   return api<ApiWebsiteListQuery, null, ApiWebsiteListResponse>(ApiRoute.WEBSITE_LIST, 'GET', { connectorId }) as Promise<WebsiteMeta[]>
 }
@@ -96,7 +95,7 @@ export async function websiteDelete({websiteId, connectorId}: {websiteId: Websit
 }
 
 export async function websiteCreate({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteMetaFileContent, connectorId?: ConnectorId}): Promise<void> {
-  await api<ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse>(ApiRoute.WEBSITE_CREATE, 'PUT', { websiteId, connectorId: connectorId }, data)
+  await api<ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse>(ApiRoute.WEBSITE_CREATE, 'PUT', { connectorId: connectorId }, data)
 }
 
 export async function websiteMetaWrite({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteMetaFileContent, connectorId?: ConnectorId}): Promise<void> {

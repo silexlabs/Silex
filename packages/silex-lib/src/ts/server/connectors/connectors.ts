@@ -17,7 +17,7 @@
 
 import { Readable } from 'stream'
 import { ServerConfig } from '../config'
-import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ApiConnectorListResponse, ApiConnectorListQuery, ApiError, ApiConnectorLoginQuery, ApiConnectorLoggedInPostMessage, ApiConnectorLogoutQuery, ConnectorType, ConnectorUser, WebsiteMeta, ApiConnectorUserQuery, ApiConnectorUserResponse, FileMeta, WebsiteMetaFileContent } from '../../types'
+import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData } from '../../types'
 
 /**
  * @fileoverview define types for Silex connectors
@@ -50,16 +50,24 @@ export type ConnectorSession = object
  */
 export interface Connector<Session extends ConnectorSession = ConnectorSession> {
   connectorId: ConnectorId
+  connectorType: ConnectorType
   displayName: string
   icon: string
   disableLogout?: boolean
-  type: ConnectorType
-  getAdminUrl(session: Session, id: WebsiteId): Promise<string | null>
-  getAuthorizeURL(session: Session): Promise<string | null>
+  // Get the URL to start the authentication process with OAuth (not used for basic auth)
+  getOAuthUrl(session: Session): Promise<string | null>
+  // Get the form to display to the user to authenticate (not used for OAuth)
+  getLoginForm(session: Session, redirectTo: string): Promise<string | null>
+  // Get the form to display to the user to set the connector settings for a given website
+  getSettingsForm(session: Session, redirectTo: string): Promise<string | null>
+  // Auth and user management
   isLoggedIn(session: Session): Promise<boolean>
-  //login(session: Session, userData: any): Promise<void>
+  setToken(session: Session, token: object): Promise<void>
   logout(session: Session): Promise<void>
-  getUserData(session: Session): Promise<ConnectorUser>
+  getUser(session: Session): Promise<ConnectorUser>
+  // Handle website meta file
+  getWebsiteMeta(session: Session, websiteId: WebsiteId): Promise<WebsiteMeta>
+  setWebsiteMeta(session: Session, websiteId: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
 }
 
 /**
@@ -68,25 +76,25 @@ export interface Connector<Session extends ConnectorSession = ConnectorSession> 
  *
  */
 export interface StorageConnector<Session extends ConnectorSession = ConnectorSession> extends Connector<Session> {
+  // CRUD on websites
   listWebsites(session: Session): Promise<WebsiteMeta[]>
-  createWebsite(session: Session, id: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
-  deleteFiles(session: Session, id: WebsiteId, paths: string[]): Promise<void>
-  readWebsiteFile(session: Session, id: WebsiteId, path: string): Promise<ConnectorFile>
-  writeWebsiteFiles(session: Session, id: WebsiteId, files: ConnectorFile[], status?: StatusCallback): Promise<string[]> // Returns the files paths on storage
-  listWebsiteDir(session: Session, id: WebsiteId, path: string): Promise<FileMeta[]>
-  createWebsiteDir(session: Session, id: WebsiteId, path: string): Promise<void> // Recursively create directory - like mkdir -p
-  deleteWebsiteDir(session: Session, id: WebsiteId, path: string): Promise<void>
-  getWebsiteMeta(session: Session, id: WebsiteId): Promise<WebsiteMeta>
-  setWebsiteMeta(session: Session, id: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
-  //getFileUrl(session: Session, id: WebsiteId, path: string): Promise<string>
+  readWebsite(session: Session, websiteId: WebsiteId): Promise<WebsiteData | Readable>
+  createWebsite(session: Session, data: WebsiteMetaFileContent): Promise<WebsiteId>
+  updateWebsite(session: Session, websiteId: WebsiteId, data: WebsiteData): Promise<void>
+  deleteWebsite(session: Session, websiteId: WebsiteId): Promise<void>
+  // CRUD on assets
+  writeAssets(session: Session, websiteId: WebsiteId, files: ConnectorFile[], status?: StatusCallback): Promise<string[]> // Returns the files paths on storage
+  readAsset(session: Session, websiteId: WebsiteId, fileName: string): Promise<ConnectorFileContent>
+  deleteAssets(session: Session, websiteId: WebsiteId, fileNames: string[]): Promise<void>
+  //getFileUrl(session: Session, websiteId: WebsiteId, path: string): Promise<string>
 }
 
 /**
  * Hosting connectors are used to publish the website
  */
 export interface HostingConnector<Session extends ConnectorSession = ConnectorSession> extends Connector<Session> {
-  publishWebsite(session: Session, id: WebsiteId, files: ConnectorFile[]): Promise<JobData>
-  getWebsiteUrl(session: Session, id: WebsiteId): Promise<string>
+  publish(session: Session, websiteId: WebsiteId, files: ConnectorFile[]): Promise<JobData>
+  getUrl(session: Session, websiteId: WebsiteId): Promise<string>
 }
 
 export function toConnectorEnum(type: string): ConnectorType {
@@ -101,7 +109,7 @@ export function toConnectorEnum(type: string): ConnectorType {
 export async function getConnector<T extends Connector>(config: ServerConfig, session: any, type: ConnectorType, connectorId?: ConnectorId): Promise<T | undefined> {
   const connectors = config.getConnectors<T>(type)
   // Find the connector by id
-  if (connectorId) return connectors.find(s => s.connectorId === connectorId && s.type === type)
+  if (connectorId) return connectors.find(s => s.connectorId === connectorId && s.connectorType === type)
   // Find the first logged in connector
   for (const connector of connectors) {
     if (await connector.isLoggedIn(session)) {
@@ -118,18 +126,21 @@ export async function getConnector<T extends Connector>(config: ServerConfig, se
 export async function toConnectorData(session: any, connector: Connector): Promise<ConnectorData> {
   return {
     connectorId: connector.connectorId,
-    type: connector.type,
+    type: connector.connectorType,
     displayName: connector.displayName,
     icon: connector.icon,
     disableLogout: !!connector.disableLogout,
     isLoggedIn: await connector.isLoggedIn(session),
-    authUrl: await connector.getAuthorizeURL(session),
+    oauthUrl: await connector.getOAuthUrl(session),
   }
 }
 
 export async function contentToString(content: ConnectorFileContent): Promise<string> {
+  // String
   if (typeof content === 'string') return content
+  // Buffer
   if (Buffer.isBuffer(content)) return content.toString('utf8')
+  // Stream
   return new Promise((resolve, reject) => {
     let result = ''
     content.on('data', (chunk: Buffer) => {

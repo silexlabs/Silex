@@ -61,7 +61,7 @@ export type ApiWebsiteListResponse = WebsiteMeta[]
 export type ApiWebsiteWriteQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
 export type ApiWebsiteWriteBody = WebsiteData
 export type ApiWebsiteWriteResponse = { message: string }
-export type ApiWebsiteCreateQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
+export type ApiWebsiteCreateQuery = { connectorId?: ConnectorId }
 export type ApiWebsiteCreateBody = WebsiteMetaFileContent
 export type ApiWebsiteCreateResponse = { message: string }
 export type ApiWebsiteDeleteQuery = { websiteId: WebsiteId, connectorId?: ConnectorId }
@@ -80,18 +80,32 @@ export type ApiConnectorListQuery = { type: ConnectorType }
 export type ApiConnectorListResponse = ConnectorData[]
 export type ApiConnectorLoginQuery = { connectorId: ConnectorId, type: ConnectorType, options?: string, error?: string }
 export type ApiConnectorLoggedInPostMessage = { type: string, error: boolean, message: string, connectorId: ConnectorId }
+export type ApiConnectorSettingsQuery = { connectorId?: ConnectorId, type: ConnectorType }
+export type ApiConnectorSettingsResponse = string // HTML
+export type ApiConnectorSettingsPostQuery = { connectorId?: ConnectorId, type: ConnectorType }
+export type ApiConnectorSettingsPostBody = ConnectorUserSettings
+export type ApiConnectorSettingsPostResponse = { message: string }
 export type ApiConnectorLogoutQuery = { connectorId?: ConnectorId, type: ConnectorType }
 export type ApiConnectorUserQuery = { connectorId?: ConnectorId, type: ConnectorType }
 export type ApiConnectorUserResponse = ConnectorUser
 
 // **
 // Website API
+export const defaultWebsiteData: WebsiteData = {
+  //pages: [],
+  //assets: [],
+  //styles: [],
+  //settings: {},
+  //fonts: [],
+  //symbols: [],
+  //publication: {},
+} as WebsiteData
+
 export interface WebsiteData {
-  meta: WebsiteMeta,
   pages: Page[],
   assets: Asset[],
   styles: Style[],
-  name: string,
+  //name: string,
   settings: WebsiteSettings,
   fonts: Font[],
   symbols: symbol[],
@@ -103,14 +117,14 @@ export interface PublicationData extends WebsiteData {
 }
 
 export interface WebsiteSettings {
-  description: string,
-  title: string,
-  lang: string,
-  head: string,
-  favicon: string,
-  'og:title': string,
-  'og:description': string,
-  'og:image': string,
+  description?: string,
+  title?: string,
+  lang?: string,
+  head?: string,
+  favicon?: string,
+  'og:title'?: string,
+  'og:description'?: string,
+  'og:image'?: string,
 }
 
 export interface Font {
@@ -206,7 +220,7 @@ export enum ConnectorType {
 export type WebsiteId = string
 
 /**
- * Back end data sent to the front end
+ * Back end data shared with the front end
  */
 export interface ConnectorData {
   connectorId: ConnectorId
@@ -215,23 +229,30 @@ export interface ConnectorData {
   icon: string
   disableLogout: boolean
   isLoggedIn: boolean
-  authUrl: string | null
+  oauthUrl: string | null
 }
 
 /**
- * Back end data sent to the front end
+ * User settings for a connector and for a given website
+ */
+export type ConnectorUserSettings = {
+  [websiteId: string]: object
+}
+
+/**
+ * Back end data shared with the front end
  */
 export interface ConnectorUser {
   name: string
   email?: string
   picture?: string
-  connector: ConnectorData
-  metadata?: object
+  storage: ConnectorData
 }
 
 export interface WebsiteMetaFileContent {
   name: string
   imageUrl?: string
+  connectorUserSettings: ConnectorUserSettings
 }
 
 /**
@@ -265,7 +286,6 @@ export interface JobData {
   jobId: JobId // The job id
   status: JobStatus // status code
   message: string // status to display
-  url?: string // url of the published website
   _timeout?: ReturnType<typeof setTimeout> // Internal use
 }
 
