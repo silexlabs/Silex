@@ -142,7 +142,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       //}))
       // Publication
       const assetsFiles: ConnectorFile[] = await Promise.all(assets.map(async asset => ({
-        path: join(...asset.path!.split('/')), // resolve relative path
+        path: asset.path ? join(...asset.path.split('/')) : '', // resolve relative path
         content: await storage.readAsset(session, websiteId, asset.src),
       })))
       const filesList: ConnectorFile[] = optim.flatMap<ConnectorFile>(file => ([{
