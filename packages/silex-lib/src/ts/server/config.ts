@@ -123,8 +123,8 @@ export class ServerConfig extends Config {
         }
         // Send the config file
         res
-        .contentType('application/javascript')
-        .send(clientConfig)
+          .contentType('application/javascript')
+          .send(clientConfig)
       })
     }
   }
