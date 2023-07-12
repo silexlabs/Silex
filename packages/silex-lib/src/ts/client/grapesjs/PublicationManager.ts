@@ -123,12 +123,12 @@ export class PublicationManager {
       this.settings = data.publication ?? {}
       // Check if the user is logged in
       getUser({ type: ConnectorType.HOSTING, connectorId: this.settings.connector?.connectorId })
-      .then((user) => {})
-      .catch((err) => {
-        this.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.settings = {}
-        this.dialog && this.dialog.displayError('Please login', this.job, this.status)
-      })
+        .then((user) => {})
+        .catch((err) => {
+          this.status = PublicationStatus.STATUS_LOGGED_OUT
+          this.settings = {}
+          this.dialog && this.dialog.displayError('Please login', this.job, this.status)
+        })
     })
     // Add the publish command to the editor
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
