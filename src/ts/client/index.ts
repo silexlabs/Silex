@@ -57,16 +57,17 @@ export async function start(options = {}) {
   // Init internationalization module
   editor.I18n.setLocale(config.lang)
 
-  // End of loading
-  document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
-  document.querySelector('#gjs').classList.remove('silex-dialog-hide')
-  config.emit(EVENT_STARTUP_END, { editor, config })
-
   // Load the site
   editor.StorageManager.setAutosave(false)
   await editor.load(null)
   setTimeout(() => {
+    // This needs time for grapesjs
     editor.editor.set('changesCount', 0)
     editor.StorageManager.setAutosave(true)
-  })
+
+    // This needs time for the loader to be hidden
+    document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
+    document.querySelector('#gjs').classList.remove('silex-dialog-hide')
+    config.emit(EVENT_STARTUP_END, { editor, config })
+  }, 1000)
 }
