@@ -29,6 +29,7 @@ import { connectorList } from '../api'
  * It also displays the publication status and logs during the publication process
  * This class is used by the PublicationManager
  * This is optional, you can use the PublicationManager without this UI
+ * @TODO Use publication events instead of calls from the PublicationManager
  */
 
 // **

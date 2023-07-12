@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "dist/",
+    "outDir": "dist/plugins/server/",
     "target": "ESNext",
     "declaration": true,
     "sourceMap": true,

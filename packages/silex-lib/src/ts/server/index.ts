@@ -60,7 +60,7 @@ async function startLiverReload() {
   // Load modules only when needed (they may not even be installed)
   const { createServer } = await import('livereload')
   const { resolve } = await import('path')
-  const dist = resolve(__dirname, '../client')
+  const dist = resolve(__dirname, '../../client')
   const server = createServer({
     delay: 0,
   }, () => {

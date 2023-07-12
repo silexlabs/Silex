@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "dist/",
+    "outDir": "dist/server/",
     "target": "esnext",
     "sourceMap": false,
     "module": "CommonJS",

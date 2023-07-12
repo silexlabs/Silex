@@ -52,6 +52,7 @@ export async function start(options = {}) {
   }
 
   const editor = getEditor()
+  window['editor'] = editor
 
   // Init internationalization module
   editor.I18n.setLocale(config.lang)
@@ -59,7 +60,7 @@ export async function start(options = {}) {
   // End of loading
   document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
   document.querySelector('#gjs').classList.remove('silex-dialog-hide')
-  config.emit(EVENT_STARTUP_END)
+  config.emit(EVENT_STARTUP_END, { editor, config })
 
   // Load the site
   editor.StorageManager.setAutosave(false)

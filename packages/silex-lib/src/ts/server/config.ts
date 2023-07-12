@@ -172,7 +172,7 @@ export async function loadUserConfig(config: ServerConfig) {
  * This is the main config file
  */
 export async function loadSilexConfig(config: ServerConfig) {
-  const configFilePath: Plugin = resolve(__dirname, '../../.silex.js')
+  const configFilePath: Plugin = resolve(__dirname, '../../../.silex.js')
   console.log('> Loading config', configFilePath)
   try {
     // Initiate the process with the config file which is just another plugin

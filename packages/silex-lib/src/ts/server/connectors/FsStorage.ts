@@ -17,11 +17,9 @@
 
 import fs, { stat } from 'fs/promises'
 import { createWriteStream } from 'fs'
-import fsExtra from 'fs-extra'
-import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData, ConnectorFileContent} from './connectors'
-import { join, resolve } from 'path'
-import { ConnectorData, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, ConnectorType, PublicationJobData, WebsiteMetaFileContent, WebsiteData, defaultWebsiteData, ConnectorOptions } from '../../types'
-import { jobError, jobSuccess, startJob } from '../jobs'
+import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors'
+import { join } from 'path'
+import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, defaultWebsiteData, ConnectorOptions } from '../../types'
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation'
 import { ServerConfig } from '../config'
@@ -31,6 +29,9 @@ import { v4 as uuid } from 'uuid'
 
 type FsSession = ConnectorSession
 
+const USER_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' height='1em' viewBox='0 0 448 512'%3E%3Cpath d='M304 128a80 80 0 1 0 -160 0 80 80 0 1 0 160 0zM96 128a128 128 0 1 1 256 0A128 128 0 1 1 96 128zM49.3 464H398.7c-8.9-63.3-63.3-112-129-112H178.3c-65.7 0-120.1 48.7-129 112zM0 482.3C0 383.8 79.8 304 178.3 304h91.4C368.2 304 448 383.8 448 482.3c0 16.4-13.3 29.7-29.7 29.7H29.7C13.3 512 0 498.7 0 482.3z'/%3E%3C/svg%3E"
+const FILE_ICON = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202L6%2022%2018%2022%2018%207%2012%202%206%202Z%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M18%202L12%202%2012%208%2018%208%2018%202Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E'
+
 interface FsOptions {
   path?: string
 }
@@ -38,14 +39,14 @@ interface FsOptions {
 export class FsStorage implements StorageConnector<FsSession> {
   connectorId = 'fs-storage'
   displayName = 'File system storage'
-  icon = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202L6%2022%2018%2022%2018%207%2012%202%206%202Z%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M18%202L12%202%2012%208%2018%208%2018%202Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E'
+  icon = FILE_ICON
   disableLogout = true
   options: { path: string }
   connectorType = ConnectorType.STORAGE
 
   constructor(config: ServerConfig | null, opts: FsOptions) {
     this.options = {
-      path: __dirname + '/../../../.silex',
+      path: __dirname + '../../../../.silex',
       ...opts,
     }
   }
@@ -97,7 +98,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     const { username,  } = userInfo()
     return {
       name: username,
-      picture: 'data://image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202L6%2022%2018%2022%2018%207%2012%202%206%202Z%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M18%202L12%202%2012%208%2018%208%2018%202Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E',
+      picture: USER_ICON,
       storage: await toConnectorData(session, this),
     }
   }
@@ -232,40 +233,4 @@ export class FsStorage implements StorageConnector<FsSession> {
     const path = join(this.options.path, id, fileName)
     return await fs.readFile(path)
   }
-
-  // async listWebsiteDir(session: FsSession, id: WebsiteId, path: string): Promise<FileMeta[]> {
-  //   const list = await fs.readdir(join(this.options.path, id, path))
-  //   return Promise.all(list.map(async fileName => {
-  //     const filePath = join(this.options.path, id, path, fileName)
-  //     const fileStat = await stat(filePath)
-  //     return {
-  //       name: fileName,
-  //       size: fileStat.size,
-  //       isDir: fileStat.isDirectory(),
-  //       createdAt: fileStat.birthtime,
-  //       updatedAt: fileStat.mtime,
-  //     }
-  //   }))
-  // }
-
-  // async listDir(session: FsSession, id: string, path: string): Promise<FileMeta[]> {
-  //   const fileNames = await fs.readdir(this.options.path)
-  //   // Filter directories only
-  //   // That's a way to do an async filter
-  //   const withType = await Promise.all(fileNames.map(async fileName => ({
-  //     fileName,
-  //     isDir: (await stat(join(this.options.path, fileName))).isDirectory(),
-  //   })))
-  //   return withType
-  //     .filter(({fileName, isDir}) => isDir)
-  //     .map(({fileName}) => fileName as WebsiteId)
-  // }
-
-  // async createWebsiteDir(session: FsSession, id: WebsiteId, path: string): Promise<void> {
-  //   await fs.mkdir(join(this.options.path, id, path), { recursive: true })
-  // }
-
-  // async deleteWebsiteDir(session: FsSession, id: WebsiteId, path: string): Promise<void> {
-  //   await fsExtra.remove(join(this.options.path, id, path))
-  // }
 }

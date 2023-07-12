@@ -46,7 +46,6 @@ import { semanticPlugin } from './semantic'
 import { richTextPlugin } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
-import { eleventyPlugin } from './eleventy'
 import { storagePlugin } from './storage'
 import { ConnectorId, WebsiteId } from '../../types'
 
@@ -68,7 +67,6 @@ const plugins = [
   {name: './symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
   {name: './PublicationManager', value: publicationManagerPlugin},
-  {name: './eleventy', value: eleventyPlugin},
   {name: './storage', value: storagePlugin},
   {name: './LoginDialog', value: loginDialogPlugin},
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},

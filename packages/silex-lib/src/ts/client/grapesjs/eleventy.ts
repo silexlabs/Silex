@@ -15,15 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+throw 'unused now'
+
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { getPageSlug } from '../../page'
 import { Page } from '../../types'
+import { EVENT_PUBLISH_DATA } from '../../events'
 
 const pluginName = 'eleventy'
 
 export const eleventyPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
-  editor.on(opts.eventStart || 'publish:start', data => {
+  editor.on(opts.eventStart || EVENT_PUBLISH_DATA, data => {
     data.pages.forEach((page: Page, idx) => {
       const file = data.files[idx]
       file.css = `---

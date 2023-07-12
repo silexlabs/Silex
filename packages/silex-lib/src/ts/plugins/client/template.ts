@@ -15,21 +15,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {html, render} from '/node_modules/lit-html/lit-html.js'
-import {styleMap} from '/node_modules/lit-html/directives/style-map.js'
-// import { onAll } from '/node_modules/@silexlabs/silex/dist/client/utils.js'
-
 //import {html, render} from 'lit-html'
 //import {styleMap} from 'lit-html/directives/style-map.js'
 //import { onAll } from '@silexlabs/silex/dist/client/utils.js'
 import { onAll } from '../../client/utils.js'
-import { EVENT_STARTUP_END } from '../../events.js'
+import { EVENT_PUBLISH_END, EVENT_PUBLISH_START, EVENT_STARTUP_END, EVENT_STARTUP_START } from '../../events.js'
+
+//// @ts-ignore
+//import {html, render} from '/node_modules/lit-html/lit-html.js'
+//// @ts-ignore
+//import {styleMap} from '/node_modules/lit-html/directives/style-map.js'
+
+const silex = window['silex']
 
 const pluginName = 'template'
 const templateType = 'templateType'
 const templateKey = 'template'
 
-export default (config, opts = {}) => {
+export default async (config, opts: any = {}) => {
+  // @ts-ignore
+  const { html, render } = await import('/node_modules/lit-html/lit-html.js')
+  // @ts-ignore
+  const { styleMap } = await import('/node_modules/lit-html/directives/style-map.js')
+
   config.on(EVENT_STARTUP_END, () => {
     const editor = silex.getEditor()
     // Add the new trait to all component types
@@ -39,7 +47,7 @@ export default (config, opts = {}) => {
           defaults: {
             traits: [
               // Keep the type original traits
-              ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
+              ...editor.DomComponents.getType(type.id)!.model.prototype.defaults.traits,
               // Add the new trait
               {
                 label: false,
@@ -149,7 +157,7 @@ export default (config, opts = {}) => {
         // put back together
         .join('\n')
     }
-    editor.on(opts.eventStart || 'publish:before', () => {
+    editor.on(EVENT_PUBLISH_START, () => {
       // Insert templates
       onAll(editor, c => {
         const template = c.get(templateKey)
@@ -177,7 +185,7 @@ export default (config, opts = {}) => {
         }
       })
     })
-    editor.on(opts.eventStop || 'publish:stop', () => {
+    editor.on(EVENT_PUBLISH_END, () => {
       onAll(editor, c => {
         // Restore the original method
         c.toHTML = c.get('tmpHtml')

@@ -21,7 +21,7 @@ import { minify } from 'html-minifier'
 import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../../constants'
 import { getJob } from '../jobs'
 import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ApiError, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
-import { HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
+import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
 import { join } from 'path'
@@ -127,24 +127,25 @@ export default function (config: ServerConfig, opts = {}): Router {
       const storage = await getStorageConnector(session, config, storageId)
 
       // Optim HTML
-      const optim = files.map(file => ({
-        ...file,
-        html: minify(file.html, {
-          continueOnParseError: true,
-          collapseInlineTagWhitespace: true,
-          collapseWhitespace: true,
-          minifyCSS: true,
-          minifyJS: true,
-          removeScriptTypeAttributes: true,
-          removeStyleLinkTypeAttributes: true,
-        }).trim(),
-      }))
+      const optim = files
+      //const optim = files.map(file => ({
+      //  ...file,
+      //  html: minify(file.html, {
+      //    continueOnParseError: true,
+      //    collapseInlineTagWhitespace: true,
+      //    collapseWhitespace: true,
+      //    minifyCSS: true,
+      //    minifyJS: true,
+      //    removeScriptTypeAttributes: true,
+      //    removeStyleLinkTypeAttributes: true,
+      //  }).trim(),
+      //}))
       // Publication
-      const assetsFiles = await Promise.all(assets.map(async asset => ({
-        path: asset.src,
+      const assetsFiles: ConnectorFile[] = await Promise.all(assets.map(async asset => ({
+        path: join(...asset.path!.split('/')), // resolve relative path
         content: await storage.readAsset(session, websiteId, asset.src),
       })))
-      const filesList = optim.flatMap(file => ([{
+      const filesList: ConnectorFile[] = optim.flatMap<ConnectorFile>(file => ([{
         path: file.htmlPath,
         content: file.html,
       }, {
