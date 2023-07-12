@@ -131,6 +131,7 @@ export interface Page {
   settings?: WebsiteSettings,
   cssExt?: string,
   htmlExt?: string,
+  slug?: string,
 }
 
 export interface Frame {
@@ -156,6 +157,7 @@ export interface Asset     {
   height: number,
   width: number,
   name: string,
+  path?: string, // Set by the publication renderer, this is the path in the hosting storage after publication
 }
 
 export interface Style {
@@ -183,7 +185,7 @@ export type ConnectorOptions = object
  */
 export interface ClientSideFile {
   path: string,
-  content: Buffer | string
+  content: string, // Not buffer because it's sent from the client in JSON
 }
 
 /**

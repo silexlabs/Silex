@@ -17,7 +17,7 @@
 
 // Page related functions
 // This is used on the client and the server
-export function getPageSlug(pageName = 'index') {
+export function getPageSlug(pageName) {
   return pageName
     .toLowerCase()
     .replace(/[^a-z0-9 -]/g, '')

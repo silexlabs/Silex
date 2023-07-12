@@ -21,6 +21,7 @@ import { Editor, ProjectData } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
+import { EVENT_PUBLISH_DATA, EVENT_PUBLISH_END, EVENT_PUBLISH_ERROR, EVENT_PUBLISH_LOGIN_END, EVENT_PUBLISH_START } from '../../events'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -163,7 +164,7 @@ export class PublicationManager {
             this.settings = {}
             this.dialog && this.dialog.displayError(data.message, this.job, this.status)
           } else {
-            this.editor.trigger('publish:login')
+            this.editor.trigger(EVENT_PUBLISH_LOGIN_END)
             //const uesr = await getUser({type: connector.type, connectorId: data.connectorId})
             this.settings.connector = connector
             this.settings.options = data.options
@@ -201,45 +202,9 @@ export class PublicationManager {
     this.status = PublicationStatus.STATUS_PENDING
     this.job = null
     this.dialog && this.dialog.displayPending(this.job, this.status)
-    this.editor.trigger('publish:before')
+    this.editor.trigger(EVENT_PUBLISH_START)
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
-    // Update assets URL to display outside the editor
-    // const assetsFolderUrl = this.settings?.assets?.url
-    // if (assetsFolderUrl) {
-    //   // Concat the paths, handles the trailing and leading slashes
-    //   const publishedUrl = path => `${assetsFolderUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
-    //   // New URLs for assets, according to site config
-    //   onAll(this.editor, c => {
-    //     // Attributes
-    //     if (c.get('type') === 'image') {
-    //       const src = c.get('src')
-    //       c.set('tmp-src', src)
-    //       c.set('src', publishedUrl(src))
-    //     }
-    //     //// Inline styles
-    //     //// This is handled by the editor.Css.getAll loop
-    //     //const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
-    //     //if(bgUrl) {
-    //     //  c.set('tmp-bg-url', bgUrl)
-    //     //  c.setStyle({
-    //     //    ...c.getStyle(),
-    //     //    'background-image': `url('${publishedUrl(bgUrl)}')`,
-    //     //  })
-    //     //}
-    //   })
-    //   this.editor.Css.getAll()
-    //     .forEach(c => {
-    //       const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
-    //       if (bgUrl) {
-    //         c.setStyle({
-    //           ...c.getStyle(),
-    //           'background-image': `url('${publishedUrl(bgUrl)}')`,
-    //         })
-    //         c.set('tmp-bg-url-css' as any, bgUrl)
-    //       }
-    //     })
-    // }
     // Build the files structure
     const files = await this.getFiles(siteSettings)
 
@@ -250,34 +215,7 @@ export class PublicationManager {
       publication: this.settings,
       files,
     }
-    // // Reset asset URLs
-    // if (assetsFolderUrl) {
-    //   onAll(this.editor, c => {
-    //     if (c.get('type') === 'image' && c.has('tmp-src')) {
-    //       c.set('src', c.get('tmp-src'))
-    //       c.set('tmp-src')
-    //     }
-    //     //// This is handled by the editor.Css.getAll loop
-    //     //if(c.getStyle()['background-image'] && c.has('tmp-bg-url')) {
-    //     //  c.setStyle({
-    //     //    ...c.getStyle(),
-    //     //    'background-image': `url('${c.get('tmp-bg-url')}')`,
-    //     //  })
-    //     //  c.set('tmp-bg-url')
-    //     //}
-    //   })
-    //   this.editor.Css.getAll()
-    //     .forEach(c => {
-    //       if (c.has('tmp-bg-url-css' as any)) {
-    //         c.setStyle({
-    //           ...c.getStyle(),
-    //           'background-image': `url('${c.get('tmp-bg-url-css' as any)}')`,
-    //         })
-    //         c.set('tmp-bg-url-css' as any)
-    //       }
-    //     })
-    // }
-    this.editor.trigger('publish:start', data)
+    this.editor.trigger(EVENT_PUBLISH_DATA, data)
     const storageUser = this.editor.getModel().get('user') as ConnectorUser
     if(!storageUser) throw new Error('User not logged in to a storage connector')
     if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
@@ -293,10 +231,11 @@ export class PublicationManager {
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
       // Save the publication settings
-      if(this.settings.url !== url) {
-        this.settings.url = url
-        await this.editor.store(null)
-      }
+      // Useless because the url is useful after publish only
+      //if(this.settings.url !== url) {
+      //  this.settings.url = url
+      //  await this.editor.store(null)
+      //}
       this.trackProgress()
     } catch (e) {
       console.error('publish error', e)
@@ -308,7 +247,8 @@ export class PublicationManager {
         this.status = PublicationStatus.STATUS_ERROR
         this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
       }
-      this.editor.trigger('publish:stop', { success: false, message: e.message })
+      this.editor.trigger(EVENT_PUBLISH_ERROR, { success: false, message: e.message })
+      this.editor.trigger(EVENT_PUBLISH_END, { success: false, message: e.message })
       return
     }
   }
@@ -316,18 +256,17 @@ export class PublicationManager {
   async getFiles(siteSettings: WebsiteSettings) {
     return this.editor.Pages.getAll().map(page => {
       const pageSettings = page.get('settings') as WebsiteSettings
-      const pageName = this.settings?.autoHomePage !== false && page.get('type') === 'main' ? 'index' : (page.get('name') || page.get('type'))
       function getSetting(name) {
         return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
       }
       const component = page.getMainComponent()
-      const slug = getPageSlug(pageName)
+      const slug = page.get('slug') || getPageSlug(page.get('name') || page.get('type'))
       return {
         html: `
       <!DOCTYPE html>
       <html lang="${getSetting('lang')}">
       <head>
-      <link rel="stylesheet" href="/${slug}.css" />
+      <link rel="stylesheet" href="/css/${slug}.css" />
       ${siteSettings?.head || ''}
       ${pageSettings?.head || ''}
       <title>${getSetting('title')}</title>
@@ -354,13 +293,14 @@ export class PublicationManager {
     } catch (e) {
       this.status = PublicationStatus.STATUS_ERROR
       this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
-      this.editor.trigger('publish:stop', { success: false, message: e.message })
+      this.editor.trigger(EVENT_PUBLISH_END, { success: false, message: e.message })
+      this.editor.trigger(EVENT_PUBLISH_ERROR, { success: false, message: e.message })
       return
     }
     if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
-      this.editor.trigger('publish:stop', { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
+      this.editor.trigger(EVENT_PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
     this.dialog && this.dialog.displayPending(this.job, this.status)
   }
