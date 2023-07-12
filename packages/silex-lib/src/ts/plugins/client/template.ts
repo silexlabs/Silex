@@ -42,12 +42,13 @@ export default async (config, opts: any = {}) => {
     const editor = silex.getEditor()
     // Add the new trait to all component types
     editor.DomComponents.getTypes().map(type => {
+      const originalType = editor.DomComponents.getType(type.id)
       editor.DomComponents.addType(type.id, {
         model: {
           defaults: {
             traits: [
               // Keep the type original traits
-              ...editor.DomComponents.getType(type.id)!.model.prototype.defaults.traits,
+              ...originalType.model.prototype.defaults.traits,
               // Add the new trait
               {
                 label: false,
