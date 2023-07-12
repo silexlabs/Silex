@@ -15,6 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * @fileoverview Import feature
+ * Let the user import HTML code when she creates a new page
+ *
+ */
 // from https://github.com/artf/grapesjs-preset-webpage/blob/3e5a9e12998c9a32b6f1199953084163678e6c17/src/commands/openImport.js
 export default function openImport(editor, config) {
   const pfx = editor.getConfig('stylePrefix')

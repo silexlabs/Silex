@@ -36,7 +36,9 @@ export const storagePlugin = (editor) => {
           return new Promise((resolve, reject) => {
             editor.once(eventLoggedIn, async () => {
               try {
+  editor.StorageManager.setAutosave(false)
                 const data = await editor.Storage.load(options)
+  editor.StorageManager.setAutosave(true)
                 //editor.loadProjectData(data)
                 resolve(data)
               } catch (err) {

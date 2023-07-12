@@ -15,14 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const SslPlugin = require('./dist/plugins/SslPlugin').default
-const StaticPlugin = require('./dist/plugins/StaticPlugin').default
+const SslPlugin = require('./dist/plugins/server/SslPlugin').default
+const StaticPlugin = require('./dist/plugins/server/StaticPlugin').default
 
 module.exports = async function(config, options) {
   try {
-    if(!SslPlugin) throw new Error('SslPlugin not found')
-    if(!StaticPlugin) throw new Error('StaticPlugin not found')
-
     await config.addPlugin([
       SslPlugin,
       StaticPlugin,

@@ -45,7 +45,7 @@ export async function start(options = {}) {
 
   // Start grapesjs
   try{
-    await initEditor(config.editor, config.grapesJsPlugins)
+    await initEditor(config.grapesJsConfig, config.grapesJsPlugins)
   } catch(e) {
     console.error('Error starting Silex', e)
     throw e
@@ -60,4 +60,12 @@ export async function start(options = {}) {
   document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
   document.querySelector('#gjs').classList.remove('silex-dialog-hide')
   config.emit(EVENT_STARTUP_END)
+
+  // Load the site
+  editor.StorageManager.setAutosave(false)
+  await editor.load(null)
+  setTimeout(() => {
+    editor.editor.set('changesCount', 0)
+    editor.StorageManager.setAutosave(true)
+  })
 }

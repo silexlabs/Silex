@@ -122,7 +122,9 @@ export class ServerConfig extends Config {
           clientConfig = (await readFile(path)).toString()
         }
         // Send the config file
-        res.json(clientConfig)
+        res
+        .contentType('application/javascript')
+        .send(clientConfig)
       })
     }
   }
@@ -176,8 +178,10 @@ export async function loadSilexConfig(config: ServerConfig) {
     // Initiate the process with the config file which is just another plugin
     await config.addPlugin(configFilePath, {})
   } catch(e) {
-    if(e.code === 'MODULE_NOT_FOUND') {
-      console.info('No config found', configFilePath)
+    console.log(e.requireStack[0])
+    // Check if the error is about the config file not found and not another module not found in the config file
+    if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === configFilePath))) {
+      console.info('> /!\\ Config file not found', configFilePath)
     } else {
       throw new Error(`Error in config file ${configFilePath}: ${e.message}`)
     }

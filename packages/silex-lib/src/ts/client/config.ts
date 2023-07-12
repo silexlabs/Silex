@@ -42,7 +42,7 @@ export class SilexConfig extends Config {
   /**
    * Grapesjs config
    */
-  editor = getEditorConfig(id, connectorId, rootUrl)
+  grapesJsConfig = getEditorConfig(id, connectorId, rootUrl)
 
   /**
    * Client config url

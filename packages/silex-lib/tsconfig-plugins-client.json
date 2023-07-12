@@ -4,7 +4,7 @@
     "target": "ESNext",
     "declaration": true,
     "sourceMap": true,
-    "module": "CommonJS",
+    "module": "ESNext",
     "removeComments": false,
     "allowJs": true,
     "skipLibCheck": true,
@@ -16,6 +16,12 @@
     "esModuleInterop": true
   },
   "include": [
-    "src/ts/plugins/**/*"
+    "src/ts/plugins/client/**/*"
   ],
+  "plugins": [
+    {
+      "name": "ts-lit-plugin",
+      "strict": true
+    }
+  ]
 }
