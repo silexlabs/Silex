@@ -134,8 +134,8 @@ export default (config, opts = {}) => {
     // Quote strings, no values for boolean
     function makeAttribute(key, value) {
       switch (typeof value) {
-        case 'boolean': return value ? key : ''
-        default: return `${key}="${value}"`
+      case 'boolean': return value ? key : ''
+      default: return `${key}="${value}"`
       }
     }
     // Remove empty lines in templates
@@ -166,14 +166,14 @@ export default (config, opts = {}) => {
         // Override the method
         c.toHTML = () => {
           return `${before
-            }${c.get('tagName') ? `<${c.get('tagName')}
+          }${c.get('tagName') ? `<${c.get('tagName')}
             ${Object.entries(c.get('attributes')).map(([key, value]) => makeAttribute(key, value)).join(' ')}
             ${classes.length || classname ? `class="${classes.join(' ')} ${classname}"` : ''}
             ${attributes}
             ${style ? `style="${style}"` : ''}
             >` : ''}${replace || c.getInnerHTML()
-            }${c.get('tagName') ? `</${c.get('tagName')}>` : ''}${after
-            }`
+          }${c.get('tagName') ? `</${c.get('tagName')}>` : ''}${after
+          }`
         }
       })
     })
