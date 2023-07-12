@@ -15,12 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import JsFTP from 'jsftp'
-import { Readable } from 'stream'
-import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToString, toConnectorData, toConnectorEnum} from '../server/connectors/connectors'
+import { Client } from 'basic-ftp'
+import { PassThrough, Readable, Writable } from 'stream'
+import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToReadable, contentToString, toConnectorData, toConnectorEnum} from '../server/connectors/connectors'
 import { requiredParam } from '../server/utils/validation'
 import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../constants'
-import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, defaultWebsiteData, WebsiteData } from '../types'
+import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, defaultWebsiteData, WebsiteData, ConnectorOptions } from '../types'
 import { jobError, jobSuccess, startJob } from '../server/jobs'
 import { ServerConfig } from '../server/config'
 import { join } from 'path'
@@ -76,25 +76,10 @@ interface FtpOptionsWithDefaults {
 
 // **
 // Utils methos
-function updateStatus(filesStatuses: FileStatus[], status: JobStatus, statusCbk?: ({ message, status }: { message: string, status: JobStatus }) => void) {
-  statusCbk && statusCbk({
-    message: `Writing files:<ul><li>${filesStatuses.map(({ file, message }) => `${file.path}: ${message}`).join('</li><li>')}</li></ul>`,
-    status,
-  })
-}
-
-function initStatus(files: ConnectorFile[]) {
-  return files.map(file => ({
-    file,
-    message: 'Waiting',
-    status: JobStatus.IN_PROGRESS,
-  }))
-}
-
-function formHtml(type: ConnectorType, { host, user, pass, port, secure, storageRootPath, publicationPath, websiteUrl}: FtpSessionData, err = '') {
+function formHtml(redirectTo: string, type: ConnectorType, { host, user, pass, port, secure, storageRootPath, publicationPath, websiteUrl}: FtpSessionData, err = '') {
   return `
     ${ err && `<div class="error">${err || ''}</div>` }
-    <form method="post">
+    <form method="POST" action="${redirectTo}">
       <label for="host">Host</label>
       <input placeholder="ftp.example.com" type="text" name="host" value="${host || ''}" />
       <label for="user">User</label>
@@ -239,7 +224,6 @@ summary {
 details > p {
   margin-top: 10px;
 }
-
 `
 
 /**
@@ -247,12 +231,12 @@ details > p {
  * @implements {HostingConnector}
  * @implements {StorageConnector}
  */
-export default class FtpStorage implements StorageConnector<FtpSession> {
+export default class FtpConnector implements StorageConnector<FtpSession> {
   connectorId = 'ftp'
   displayName = 'Ftp'
   icon = 'ftp'
   options: FtpOptionsWithDefaults
-  connectorType: ConnectorType = ConnectorType.STORAGE
+  connectorType: ConnectorType
 
   constructor(config: ServerConfig, opts: FtpOptions) {
     this.options = {
@@ -261,6 +245,7 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
       authorizePath: '/api/authorize/ftp/',
       ...opts,
     }
+    this.connectorType = this.options.type
   }
 
   // **
@@ -269,7 +254,7 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
     return session[this.options.type] ?? {} as FtpSessionData
   }
 
-  storageRootPath(session: FtpSession): string {
+  rootPath(session: FtpSession): string {
     return this.connectorType === ConnectorType.STORAGE ?
       requiredParam<string>(this.sessionData(session).storageRootPath, 'storage root path') :
       requiredParam<string>(this.sessionData(session).publicationPath, 'publication path')
@@ -277,147 +262,89 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
 
   // **
   // FTP methods
-  async write(ftp: JsFTP, path: string, content: ConnectorFileContent, progress?: (message: string) => void): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      progress && progress('Upload started')
-      ftp.put(content, path, (err) => {
-        if (err) {
-          const errMsg = `Error writing file ${path}: ${err.message}`
-          console.error(errMsg)
-          return reject(new Error(errMsg))
-        }
-        progress && progress('Upload complete')
-        resolve(path)
-      })
+  async write(ftp: Client, path: string, content: ConnectorFileContent, progress?: (message: string) => void): Promise<string> {
+    ftp.trackProgress(info => {
+      progress && progress(`Uploading ${info.bytes / 1000} KB}`)
     })
+    progress && progress('Upload started')
+    await ftp.uploadFrom(contentToReadable(content), path)
+    progress && progress('Upload complete')
+    return path
   }
 
-  async read(ftp: JsFTP, path: string): Promise<Readable> {
-    return new Promise<Readable>((resolve, reject) => {
-      ftp.get(
-        path,
-        (err, socket) => {
-          if (err) {
-            return reject(err)
-          }
-          resolve(Readable.from(socket))
-          socket.resume()
-        })
-    })
+  async read(ftp: Client, path: string): Promise<Readable> {
+    const stream = new PassThrough()
+    await ftp.downloadTo(stream, path)
+    return stream
   }
 
-  async readdir(ftp: JsFTP, path: string): Promise<FileMeta[]> {
-    return new Promise<FileMeta[]>((resolve, reject) => {
-      ftp.ls(path, (err, files) => {
-        if (err) {
-          return reject(err)
-        }
-        resolve(files.map((file) => ({
-          name: file.name,
-          isDir: file.type === 1,
-          size: file.size,
-          createdAt: new Date(file.time),
-          updatedAt: new Date(file.time),
-          metaData: {
-            ...file,
-          },
-        } as FileMeta)))
-      })
-    })
+  async readdir(ftp: Client, path: string): Promise<FileMeta[]> {
+    const list = await ftp.list(path)
+    return list.map((file) => ({
+      name: file.name,
+      isDir: file.isDirectory,
+      size: file.size,
+      createdAt: file.modifiedAt,
+      updatedAt: file.modifiedAt,
+      metaData: file,
+    } as FileMeta))
   }
 
-  async mkdir(ftp: JsFTP, path: string) {
-    return new Promise<void>((resolve, reject) => {
-      ftp.raw('mkd', path, (err) => {
-        if (err) {
-          console.error(`Error creating folder ${path}: ${err.message} (${err.code})`)
-          if (err.code === 550) {
-            console.log('Folder already exists', err.message)
-            return resolve()
-          } else {
-            console.error('Error creating folder', err)
-            return reject(err)
-          }
-        }
-        resolve()
-      })
-    })
+  async mkdir(ftp: Client, path: string) {
+    return ftp.ensureDir(path)
   }
 
-  async rmdir(ftp: JsFTP, path: string) {
-    return new Promise<void>((resolve, reject) => {
-      ftp.raw('rmd', path, (err) => {
-        if (err) {
-          console.error(`Error deleting folder ${path}: ${err.message}`)
-          return reject(err)
-        }
-        resolve()
-      })
-    })
+  async rmdir(ftp: Client, path: string) {
+    return ftp.removeDir(path)
   }
 
-  async unlink(ftp: JsFTP, path: string) {
-    return new Promise<void>((resolve, reject) => {
-      ftp.raw('dele', path, (err) => {
-        if (err) {
-          console.error(`Error deleting file ${path}: ${err.message}`)
-          return reject(err)
-        }
-        resolve()
-      })
-    })
+  async unlink(ftp: Client, path: string) {
+    return ftp.remove(path)
   }
 
-  async getClient({host, user, pass, port, secure}): Promise<any> {
-    return new Promise((resolve, reject) => {
-      const ftp = new JsFTP({
-        host,
-        port,
-        user,
-        pass,
-      })
-
-      ftp['on']('close', (err) => {
-        console.error('FTP CONNEXION close', err)
-      })
-
-      ftp['on']('error', (err) => {
-        console.error('FTP CONNEXION error', err)
-        reject(err)
-      })
-
-      ftp['on']('connect', () => {
-        ftp.auth(user, pass, (err) => {
-          if (err) {
-            console.error('FTP AUTH error', err)
-            reject(err)
-          } else {
-            resolve(ftp)
-          }
-        })
-      })
+  async getClient({host, user, pass, port, secure}): Promise<Client> {
+    const ftp = new Client()
+    await ftp.access({
+      host,
+      port,
+      user,
+      password: pass,
+      secure,
     })
+    ftp['test'] = uuid()
+    return ftp
+  }
+
+  closeClient(ftp: Client) {
+    if(ftp && !ftp.closed) {
+      ftp.close()
+    } else {
+      console.warn('ftp already closed')
+    }
   }
 
   // **
   // Connector interface
+  getOptions(formData: object): ConnectorOptions {
+    return {
+      // Storage
+      storageRootPath: formData['storageRootPath'],
+      // Hosting
+      publicationPath: formData['publicationPath'],
+      websiteUrl: formData['websiteUrl'],
+    }
+  }
+
   async getOAuthUrl(session: FtpSession): Promise<string | null> { return null }
 
   async getLoginForm(session: FtpSession, redirectTo: string): Promise<string | null> {
     const { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl } = this.sessionData(session)
     requiredParam(type, 'connector type')
     return `
-      <html>
-        <head>
-          <title>FTP auth</title>
-          <style>
-            ${formCss}
-          </style>
-        </head>
-        <body>
-          ${formHtml(this.connectorType, { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl })}
-        </body>
-      </html>
+        <style>
+          ${formCss}
+        </style>
+        ${formHtml(redirectTo, this.connectorType, { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl })}
       `
   }
 
@@ -431,10 +358,13 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
     requiredParam(user, 'user')
     requiredParam(pass, 'pass')
     requiredParam(port, 'port')
+
     // Check if the connection is valid
-    await this.getClient({ host, user, pass, port, secure })
+    const ftp = await this.getClient({ host, user, pass, port, secure })
     // Save the token
     session[this.connectorType] = { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl }
+    // Clean up
+    this.closeClient(ftp)
   }
 
   async logout(session: FtpSession) {
@@ -454,7 +384,8 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
       if (!session[this.options.type]) {
         return false
       }
-      await this.getClient(this.sessionData(session))
+      const ftp = await this.getClient(this.sessionData(session))
+      this.closeClient(ftp)
       return true
     } catch(err) {
       return false
@@ -463,33 +394,30 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
 
   async setWebsiteMeta(session: FtpSession, id: string, data: WebsiteMetaFileContent): Promise<void> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
-    const path = join(this.storageRootPath(session), websiteId, WEBSITE_META_DATA_FILE)
+    const path = join(this.rootPath(session), websiteId, WEBSITE_META_DATA_FILE)
     const ftp = await this.getClient(this.sessionData(session))
     await this.write(ftp, path, JSON.stringify(data))
+    this.closeClient(ftp)
   }
 
   async getWebsiteMeta(session: FtpSession, id: WebsiteId): Promise<WebsiteMeta> {
     try {
       const websiteId = requiredParam<WebsiteId>(id, 'website id')
-      const folder = join(this.storageRootPath(session), websiteId)
-      // List the files in the root directory
-      const files = await this.readdir(session, folder)
-      // Find the website data file to get its metadata
-      const file = files.find(f => f.name === WEBSITE_DATA_FILE)
-      if (!file) {
-        throw new Error(`Website data file not found for website ${websiteId}`)
-      }
-      // Read the meta data file to get the meta data set by the user
-      const path = join(this.storageRootPath(session), websiteId, WEBSITE_META_DATA_FILE)
       const ftp = await this.getClient(this.sessionData(session))
+      // Get stats for the website folder
+      const folder = join(this.rootPath(session), websiteId)
+      const lastMod = await ftp.lastMod(folder)
+      // Read the meta data file to get the meta data set by the user
+      const path = join(this.rootPath(session), websiteId, WEBSITE_META_DATA_FILE)
       const readable = await this.read(ftp, path)
       const meta = JSON.parse(await contentToString(readable)) as WebsiteMetaFileContent
+      this.closeClient(ftp)
       // Return all meta
       return {
         websiteId,
         //url: await this.getFileUrl(session, websiteId, WEBSITE_DATA_FILE_NAME),
-        createdAt: file.createdAt,
-        updatedAt: file.updatedAt,
+        createdAt: lastMod,
+        updatedAt: lastMod,
         ...meta,
       }
     } catch(err) {
@@ -508,52 +436,60 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
     const ftp = await this.getClient(this.sessionData(session))
     // Generate a random id
     const id = uuid()
-    // create root folder
-    const rootPath = join(this.storageRootPath(session), id)
-    await this.mkdir(session, rootPath)
+    // // create root folder
+    // const rootPath = join(this.storageRootPath(session), id)
+    // await this.mkdir(ftp, rootPath)
     // create assets folder
-    const assetsPath = join(this.storageRootPath(session), id, '/assets')
-    await this.mkdir(session, assetsPath)
+    const assetsPath = join(this.rootPath(session), id, '/assets')
+    await this.mkdir(ftp, assetsPath)
     // create website data file
-    const websiteDataPath = join(this.storageRootPath(session), id, WEBSITE_DATA_FILE)
+    const websiteDataPath = join(this.rootPath(session), id, WEBSITE_DATA_FILE)
     await this.write(ftp, websiteDataPath, JSON.stringify(defaultWebsiteData))
     // create website meta data file
-    const websiteMetaDataPath = join(this.storageRootPath(session), id, WEBSITE_META_DATA_FILE)
+    const websiteMetaDataPath = join(this.rootPath(session), id, WEBSITE_META_DATA_FILE)
     await this.write(ftp, websiteMetaDataPath, JSON.stringify({}))
+    // Clean up
+    this.closeClient(ftp)
     // All good
     return id
   }
 
   async listWebsites(session: FtpSession): Promise<WebsiteMeta[]> {
-    const storageRootPath = this.storageRootPath(session)
+    const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const files = await this.readdir(ftp, storageRootPath)
-    return await Promise.all(files.map(async file => {
+    const list = await Promise.all(files.map(async file => {
       const websiteId = file.name
       const websiteMeta = await this.getWebsiteMeta(session, websiteId)
       return websiteMeta
     }))
+    this.closeClient(ftp)
+    return list
   }
 
   async readWebsite(session: FtpSession, websiteId: string): Promise<WebsiteData | Readable> {
-    const storageRootPath = this.storageRootPath(session)
+    const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const websiteDataPath = join(storageRootPath, websiteId, WEBSITE_DATA_FILE)
-    return this.read(ftp, websiteDataPath)
+    const data = await this.read(ftp, websiteDataPath)
+    this.closeClient(ftp)
+    return data
   }
 
   async updateWebsite(session: FtpSession, websiteId: string, data: WebsiteData): Promise<void> {
-    const storageRootPath = this.storageRootPath(session)
+    const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const websiteDataPath = join(storageRootPath, websiteId, WEBSITE_DATA_FILE)
     await this.write(ftp, websiteDataPath, JSON.stringify(data))
+    this.closeClient(ftp)
   }
 
   async deleteWebsite(session: FtpSession, websiteId: string): Promise<void> {
-    const storageRootPath = this.storageRootPath(session)
+    const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const websitePath = join(storageRootPath, websiteId)
     await this.rmdir(ftp, websitePath)
+    this.closeClient(ftp)
   }
 
   async writeAssets(
@@ -562,48 +498,73 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
     files: ConnectorFile[],
     statusCbk?: StatusCallback,
   ): Promise<string[]> {
+    // Connect to FTP server
     statusCbk && statusCbk({
       message: 'Connecting to FTP server',
       status: JobStatus.IN_PROGRESS,
     })
     const ftp = await this.getClient(this.sessionData(session))
-    const filesStatuses = initStatus(files)
-    const storageRootPath = this.storageRootPath(session)
-    return Promise.all(
-      filesStatuses.map((fileStatus) => {
-        const { file } = fileStatus
-        const dstPath = join(this.options.path, storageRootPath, id, file.path)
-        return this.write(ftp, dstPath, file.content, message => {
-          fileStatus.message = message
-          updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
-        })
-      })
-    )
-      .catch((err) => {
-      // Not sure why it never gets here
-        console.error(err)
+    const rootPath = this.rootPath(session)
+    // Make sure that root folder exists
+    statusCbk && statusCbk({
+      message: 'Making sure that root folder exists',
+      status: JobStatus.IN_PROGRESS,
+    })
+    await this.mkdir(ftp, rootPath)
+    // Write files
+    const paths: string[] = []
+    let lastFile: ConnectorFile | undefined
+    try {
+      // Sequentially write files
+      for(const file of files) {
         statusCbk && statusCbk({
-          message: err.message,
-          status: JobStatus.ERROR,
+          message: `Writing file ${file.path}`,
+          status: JobStatus.IN_PROGRESS,
         })
-        return []
+        const dstPath = join(this.options.path, rootPath, id, file.path)
+        lastFile = file
+        const result = await this.write(ftp, dstPath, file.content, message => {
+          statusCbk && statusCbk({
+            message: `Writing file ${file.path.split('/').pop()} to ${dstPath.split('/').slice(0, -1).join('/')}: ${message}`,
+            status: JobStatus.IN_PROGRESS,
+          })
+        })
+        paths.push(result)
+      }
+      this.closeClient(ftp)
+      statusCbk && statusCbk({
+        message: `Finished writing ${paths.length} files to ${rootPath}`,
+        status: JobStatus.SUCCESS,
       })
+      return paths
+    } catch(err) {
+      // Not sure why it never gets here
+      statusCbk && statusCbk({
+        message: `Error writing file ${lastFile?.path}: ${err.message}`,
+        status: JobStatus.ERROR,
+      })
+      this.closeClient(ftp)
+      return []
+    }
   }
 
   async readAsset(session: FtpSession, id: string, path: string): Promise<ConnectorFileContent> {
     if (!this.sessionData(session)) throw new Error('Not logged in')
-    const storageRootPath = this.storageRootPath(session)
+    const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const dirPath = join(this.options.path, storageRootPath, id, path)
-    return this.read(ftp, dirPath)
+    const asset = this.read(ftp, dirPath)
+    this.closeClient(ftp)
+    return asset
   }
 
   async deleteAssets(session: FtpSession, id: WebsiteId, paths: string[]): Promise<void> {
-    const storageRootPath = this.storageRootPath(session)
+    const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     await Promise.all(
       paths.map((path) => this.unlink(ftp, join(this.options.path, storageRootPath, id, path)))
     )
+    this.closeClient(ftp)
   }
 
   // **
@@ -618,6 +579,12 @@ export default class FtpStorage implements StorageConnector<FtpSession> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
+    // Create folders
+    const rootPath = this.rootPath(session)
+    const ftp = await this.getClient(this.sessionData(session))
+    await this.mkdir(ftp, rootPath)
+    await this.mkdir(ftp, join(rootPath, 'assets'))
+    // Write files
     this.writeAssets(session, '', files, async ({status, message}) => {
       // Update the job status
       job.status = status

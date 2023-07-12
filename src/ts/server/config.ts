@@ -42,6 +42,7 @@ export class ServerConfig extends Config {
   public expressOptions = {
     jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT || '1mb',
     textLimit: process.env.SILEX_EXPRESS_TEXT_LIMIT || '10mb',
+    urlencodedLimit: process.env.SILEX_EXPRESS_URLENCODED_LIMIT || '1mb',
     sessionName: process.env.SILEX_SESSION_NAME || 'silex-session',
     sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
     cors: process.env.SILEX_CORS_URL,

@@ -44,6 +44,7 @@ export function create(config: ServerConfig): Application {
   // cookie & session
   app.use(bodyParser.json({ limit: options.jsonLimit }))
   app.use(bodyParser.text({ limit: options.textLimit }))
+  app.use(bodyParser.urlencoded({ limit: options.urlencodedLimit }))
   console.log('> Session name:', options.sessionName)
   app.use(cookieParser() as any)
   app.use(session({

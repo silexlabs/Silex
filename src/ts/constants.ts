@@ -27,7 +27,7 @@ export const DEFAULT_CONNECTOR_ID = ''
 export const DEFAULT_LANGUAGE = 'en'
 export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
 
-export const API_PATH = 'api'
+export const API_PATH = '/api'
 
 export const API_CONNECTOR_PATH = '/connector'
 export const API_CONNECTOR_USER = '/user'
@@ -35,7 +35,7 @@ export const API_CONNECTOR_LIST = '/'
 export const API_CONNECTOR_LOGOUT = '/logout'
 export const API_CONNECTOR_LOGIN = '/login'
 export const API_CONNECTOR_SETTINGS = '/settings'
-export const API_CONNECTOR_LOGIN_CALLBACK = '/login'
+export const API_CONNECTOR_LOGIN_CALLBACK = '/login/callback'
 
 export const API_PUBLICATION_PATH = '/publication'
 export const API_PUBLICATION_PUBLISH = '/'

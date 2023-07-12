@@ -134,10 +134,10 @@ export default function loginDialogPlugin(editor, opts) {
         </footer>
       `, body)
       const onMessage = async (event) => {
-        if (event.data?.type === 'login') {
+        const data = event.data as ApiConnectorLoggedInPostMessage
+        if (data?.type === 'login') {
           window.removeEventListener('message', onMessage)
-          const data = event.data as ApiConnectorLoggedInPostMessage
-          const { connectorId, error, message } = data
+          const { connectorId, error, message } = data // TODO: use options from the connector? For now they are stored in the session
           if (error) {
             // Error, start over
             console.error('login error', message)

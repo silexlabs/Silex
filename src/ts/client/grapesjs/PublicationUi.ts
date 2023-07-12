@@ -57,7 +57,7 @@ export class PublicationUi {
   /**
    * Dialog state
    */
-  private isOpen = false
+  public isOpen = false
   /**
    * Dialog content
    */
@@ -67,6 +67,8 @@ export class PublicationUi {
    * This is the DOM element of the dialog
    */
   private el: HTMLElement
+
+  public settings: PublicationSettings
 
   /**
    * Initialize the dialog and the publish button
@@ -96,6 +98,9 @@ export class PublicationUi {
   }
   isLoggedOut(status: PublicationStatus) {
     return status === PublicationStatus.STATUS_LOGGED_OUT
+  }
+  isReady(status: PublicationStatus) {
+    return status === PublicationStatus.STATUS_NONE
   }
 
   // **
@@ -129,11 +134,11 @@ export class PublicationUi {
 
   // **
   // Functions to render the dialog
-  private async renderDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
+  private async renderDialog(job: PublicationJobData, status: PublicationStatus) {
     try {
-      if(this.isOpen && (!status || !settings)) throw new Error('PublicationUi: open but no status or settings')
+      if(this.isOpen && (!status || !this.settings)) throw new Error('PublicationUi: open but no status or settings')
       render(html`
-      ${!this.isOpen ? '' : settings.connector ? await this.renderOpenDialog(job, status, settings) : await this.renderLoginDialog(status, settings)}
+      ${!this.isOpen ? '' : this.settings.connector ? await this.renderOpenDialog(job, status) : await this.renderLoginDialog(status)}
     `, this.el)
       if (this.isOpen) {
         this.el.classList.remove('silex-dialog-hide')
@@ -144,22 +149,26 @@ export class PublicationUi {
       console.error('Error while rendering the dialog', err)
     }
   }
-  async renderOpenDialog(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
+  async renderOpenDialog(job: PublicationJobData, status: PublicationStatus): Promise<TemplateResult> {
     return html`
     <main>
       ${this.isPending(status) ? html`
         <p>Publication in progress</p>
       ` : ''}
+      ${this.isReady(status) ? html`
+        <p>You are connected to ${this.settings.connector.displayName}</p><p>Click on the publish button to publish your website</p>
+        ${this.settings.options && Object.entries(this.settings.options).length && html`<p>Publication options: <ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul></p>`}
+      ` : ''}
       ${this.isSuccess(status) ? html`
         <p>Publication success</p>
-        ${settings.url ? html`<a href="${settings.url}" target="_blank">Click here to view the published website</a>` : ''}
+        ${this.settings.url ? html`<p><a href="${this.settings.url}" target="_blank">Click here to view the published website</a></p>` : ''}
       ` : ''}
       ${this.isError(status) || this.isLoggedOut(status) ? html`
         <p>Publication error</p>
         <div>${unsafeHTML(this.errorMessage)}</div>
       ` : ''}
       ${job && job.message ? html`
-        <div>${unsafeHTML(job.message)}</div>
+        <p>${unsafeHTML(job.message)}</p>
       ` : ''}
       ${this.isPending(status) ? html`
         <progress
@@ -167,7 +176,7 @@ export class PublicationUi {
           style="width: 100%;"
         ></progress>
       ` : ''}
-      ${job && job.logs?.length ? html`
+      ${job && job.logs?.length && job.logs[0].length ? html`
         <br><details>
           <summary>Logs</summary>
           <pre style="
@@ -180,7 +189,7 @@ export class PublicationUi {
           </pre>
         </details>
       ` : ''}
-      ${job && job.errors?.length ? html`
+      ${job && job.errors?.length && job.errors[0].length ? html`
         <br><details>
           <summary>Errors</summary>
           <pre style="
@@ -206,9 +215,9 @@ export class PublicationUi {
         <button
           class="silex-button silex-button--primary"
           id="publish-button--primary"
-          @click=${() => this.editor.Commands.run(cmdPublicationLogin)}
+          @click=${() => this.editor.Commands.run(cmdPublicationLogin, this.settings.connector)}
         >Login</button>
-      `: settings.connector.disableLogout ? '' : html`
+      `: this.settings.connector.disableLogout ? '' : html`
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
@@ -223,15 +232,14 @@ export class PublicationUi {
     </footer>
     `
   }
-  async renderLoginDialog(status: PublicationStatus, settings: PublicationSettings): Promise<TemplateResult> {
+  async renderLoginDialog(status: PublicationStatus): Promise<TemplateResult> {
     try {
+      render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
-
       if (loggedConnector) {
-        settings.connector = loggedConnector
-        this.editor.Commands.run(cmdPublicationStart)
-        return html``
+        this.settings.connector = loggedConnector
+        return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
       return html`
       <main>
@@ -276,18 +284,18 @@ export class PublicationUi {
     `
     }
   }
-  displayPending(job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
+  displayPending(job: PublicationJobData, status: PublicationStatus) {
     this.errorMessage = null
-    this.renderDialog(job, status, settings)
+    this.renderDialog(job, status)
   }
-  displayError(message: string, job: PublicationJobData, status: PublicationStatus, settings: PublicationSettings) {
-    console.error(message, job?.message)
+  displayError(message: string, job: PublicationJobData, status: PublicationStatus) {
+    console.info(message)
     this.errorMessage = message
-    this.renderDialog(job, status, settings)
+    this.renderDialog(job, status)
   }
   async closeDialog() {
     this.isOpen = false
-    this.renderDialog(null, null, null)
+    this.renderDialog(null, null)
   }
   async toggleDialog() {
     if (this.isOpen) this.closeDialog()
@@ -315,6 +323,7 @@ export class PublicationUi {
     }
 
     // Publication
-    this.editor.Commands.run(cmdPublicationStart)
+    //this.editor.Commands.run(cmdPublicationStart)
+    this.renderDialog(null, PublicationStatus.STATUS_NONE)
   }
 }

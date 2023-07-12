@@ -31,14 +31,6 @@ import { join } from 'path'
  * Adds a publication API to Silex server
  */
 
-const defaultPublication: PublicationSettings = {
-  url: '',
-  autoHomePage: true,
-  assets: { path: 'assets', url: '/assets' },
-  html: { path: '' },
-  css: { path: 'css', url: '/css' },
-}
-
 /**
  * Error thrown by the publication API
  * @param message error message
@@ -124,10 +116,6 @@ export default function (config: ServerConfig, opts = {}): Router {
 
       // Check params
       const { files, publication, assets } = body as PublicationData
-      const publicationSettings: PublicationSettings = {
-        ...defaultPublication,
-        ...publication,
-      }
       if(!files || !publication || !assets) {
         throw new PublicationError('Missing data from request: files, publication or assets', 400)
       }
@@ -153,7 +141,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       }))
       // Publication
       const assetsFiles = await Promise.all(assets.map(async asset => ({
-        path: join(publicationSettings.assets?.path ?? '', asset.src),
+        path: asset.src,
         content: await storage.readAsset(session, websiteId, asset.src),
       })))
       const filesList = optim.flatMap(file => ([{
