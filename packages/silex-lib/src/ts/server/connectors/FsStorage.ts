@@ -20,7 +20,7 @@ import { createWriteStream } from 'fs'
 import fsExtra from 'fs-extra'
 import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData, ConnectorFileContent} from './connectors'
 import { join, resolve } from 'path'
-import { ConnectorData, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, ConnectorType, PublicationJobData, WebsiteMetaFileContent, WebsiteData, defaultWebsiteData } from '../../types'
+import { ConnectorData, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobId, JobStatus, WebsiteId, ConnectorType, PublicationJobData, WebsiteMetaFileContent, WebsiteData, defaultWebsiteData, ConnectorOptions } from '../../types'
 import { jobError, jobSuccess, startJob } from '../jobs'
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation'
@@ -71,6 +71,10 @@ export class FsStorage implements StorageConnector<FsSession> {
   // ********************
   // Connector interface
   // ********************
+  getOptions(formData: object): ConnectorOptions {
+    return {}
+  }
+
   async getOAuthUrl(session: object): Promise<string | null> {
     return null
   }

@@ -22,21 +22,9 @@
 // Publication API
 export interface PublicationSettings {
   connector?: ConnectorData, // Set by the postMessage from the login callback page
+  options?: ConnectorOptions, // Options for the publication connector saved with the site
   url?: string, // URL to display where the website is published to
   autoHomePage?: boolean, // Name the first page `index` instead of its name
-  assets?: {
-    path?: string, // Folder to copy assets to
-    url?: string, // URL where assets are accessed
-  },
-  html?: {
-    path?: string, // Folder where to generate the HTML pages
-    ext?: string, // File extension for HTML pages
-  },
-  css?: {
-    path?: string, // Folder where to generate the CSS files
-    url?: string, // URL of the Folder where the CSS files are accessed
-    ext?: string, // File extension for CSS files
-  },
 }
 
 export interface WebsiteFile {
@@ -50,7 +38,7 @@ export interface WebsiteFile {
 // HTTP API types
 export type ApiError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
-export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId }
+export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
 export type ApiPublicationPublishResponse = { url: string, job: PublicationJobData }
 export type ApiPublicationStatusQuery = { jobId: JobId }
 export type ApiPublicationStatusResponse = PublicationJobData
@@ -78,8 +66,10 @@ export type ApiWebsiteAssetsWriteBody = ClientSideFile[]
 export type ApiWebsiteAssetsWriteResponse = { data: string[] }
 export type ApiConnectorListQuery = { type: ConnectorType }
 export type ApiConnectorListResponse = ConnectorData[]
-export type ApiConnectorLoginQuery = { connectorId: ConnectorId, type: ConnectorType, options?: string, error?: string }
-export type ApiConnectorLoggedInPostMessage = { type: string, error: boolean, message: string, connectorId: ConnectorId }
+export type ApiConnectorLoginQuery = { connectorId: ConnectorId, type: ConnectorType }
+export type ApiConnectorLoggedInPostMessage = { type: string, error: boolean, message: string, connectorId: ConnectorId, options: ConnectorOptions }
+export type ApiConnectorLoginCbkQuery = { connectorId?: ConnectorId, type: ConnectorType, error?: string } // May have any other query params from oauth
+export type ApiConnectorLoginCbkBody = object // Body from basic auth, POST only, contains options and token
 export type ApiConnectorSettingsQuery = { connectorId?: ConnectorId, type: ConnectorType }
 export type ApiConnectorSettingsResponse = string // HTML
 export type ApiConnectorSettingsPostQuery = { connectorId?: ConnectorId, type: ConnectorType }
@@ -184,6 +174,8 @@ export type Selector = string | {
  * Type for a connector id
  */
 export type ConnectorId = string
+
+export type ConnectorOptions = object
 
 /**
  * Type for a client side file

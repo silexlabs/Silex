@@ -17,7 +17,7 @@
 
 import { Readable } from 'stream'
 import { ServerConfig } from '../config'
-import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData } from '../../types'
+import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData, ConnectorOptions } from '../../types'
 
 /**
  * @fileoverview define types for Silex connectors
@@ -68,6 +68,10 @@ export interface Connector<Session extends ConnectorSession = ConnectorSession> 
   // Handle website meta file
   getWebsiteMeta(session: Session, websiteId: WebsiteId): Promise<WebsiteMeta>
   setWebsiteMeta(session: Session, websiteId: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
+  // Get the connector options from login form
+  // They are stored in the website meta file for hosting connectors
+  // And in the user session for storage connectors
+  getOptions(formData: object): ConnectorOptions
 }
 
 /**
@@ -153,4 +157,15 @@ export async function contentToString(content: ConnectorFileContent): Promise<st
       resolve(result)
     })
   })
+}
+
+export function contentToReadable(content: ConnectorFileContent): Readable {
+  // String
+  if (typeof content === 'string') return Readable.from([content])
+  // Buffer
+  if (Buffer.isBuffer(content)) return Readable.from([content])
+  // Stream
+  if (content instanceof Readable) return content
+  // Unknown
+  throw new Error('Unknown content type')
 }

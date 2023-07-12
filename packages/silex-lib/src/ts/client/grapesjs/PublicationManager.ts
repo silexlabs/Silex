@@ -16,12 +16,11 @@
  */
 
 import { getPageSlug } from '../../page'
-import { onAll } from '../utils'
-import { ApiConnectorLoggedInPostMessage, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor, ProjectData } from 'grapesjs'
-import e from 'express'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
+import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -87,7 +86,14 @@ export class PublicationManager {
    * Publication settings
    * This is the data which is stored in the website settings
    */
-  settings: PublicationSettings
+  _settings: PublicationSettings
+  get settings(): PublicationSettings {
+    return this._settings
+  }
+  set settings(newSettings: PublicationSettings) {
+    this._settings = newSettings
+    this.dialog && (this.dialog.settings = newSettings)
+  }
   /**
    * Plugin options
    * This is the data which is passed to the plugin by grapesjs
@@ -115,6 +121,14 @@ export class PublicationManager {
     // load publication settings from the website
     editor.on('storage:end:load', (data) => {
       this.settings = data.publication ?? {}
+      // Check if the user is logged in
+      getUser({ type: ConnectorType.HOSTING, connectorId: this.settings.connector?.connectorId })
+      .then((user) => {})
+      .catch((err) => {
+        this.status = PublicationStatus.STATUS_LOGGED_OUT
+        this.settings = {}
+        this.dialog && this.dialog.displayError('Please login', this.job, this.status)
+      })
     })
     // Add the publish command to the editor
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
@@ -131,7 +145,14 @@ export class PublicationManager {
   }
 
   async goLogin(connector: ConnectorData) {
-    window.open(connector.oauthUrl, '_blank')
+    this.settings = {}
+    this.status = PublicationStatus.STATUS_LOGGED_OUT
+    this.dialog && this.dialog.displayPending(this.job, this.status)
+    const params: ApiConnectorLoginQuery = {
+      connectorId: connector.connectorId,
+      type: connector.type,
+    }
+    window.open(connector.oauthUrl || `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${params.connectorId}&type=${params.type}`, '_blank')
     return new Promise(resolve => {
       const onMessage = async (event) => {
         const data = event.data as ApiConnectorLoggedInPostMessage
@@ -139,13 +160,19 @@ export class PublicationManager {
           window.removeEventListener('message', onMessage)
           if (data.error) {
             this.status = PublicationStatus.STATUS_LOGGED_OUT
-            this.settings.connector = null
-            this.dialog && this.dialog.displayError(data.message, this.job, this.status, this.settings)
+            this.settings = {}
+            this.dialog && this.dialog.displayError(data.message, this.job, this.status)
           } else {
             this.editor.trigger('publish:login')
-            const uesr = await getUser({type: connector.type, connectorId: data.connectorId})
+            //const uesr = await getUser({type: connector.type, connectorId: data.connectorId})
             this.settings.connector = connector
-            await this.startPublication()
+            this.settings.options = data.options
+            this.status = PublicationStatus.STATUS_NONE
+            // Save the website with the new settings
+            this.editor.store(null)
+            // Display the dialog
+            this.dialog && this.dialog.displayPending(this.job, this.status)
+            //await this.startPublication()
           }
         }
       }
@@ -156,63 +183,63 @@ export class PublicationManager {
   async goLogout() {
     try {
       await logout({type: ConnectorType.HOSTING, connectorId: this.settings.connector.connectorId})
-      this.settings.connector = null
-      this.dialog && this.dialog.displayPending(this.job, this.status, this.settings)
+      this.settings = {}
+      this.dialog && this.dialog.displayPending(this.job, this.status)
     } catch (e) {
       console.error('logout error', e)
       this.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(e.message, this.job, this.status, this.settings)
+      this.dialog && this.dialog.displayError(e.message, this.job, this.status)
     }
   }
 
+  /**
+   * Start the publication process
+   * This is the command "publish"
+   */
   async startPublication() {
     if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
     this.status = PublicationStatus.STATUS_PENDING
-    if (!this.settings?.connector?.isLoggedIn) {
-      this.status = PublicationStatus.STATUS_LOGGED_OUT
-      this.dialog && this.dialog.displayError('Please login', this.job, this.status, this.settings)
-      return
-    }
-    this.dialog && this.dialog.displayPending(this.job, this.status, this.settings)
+    this.job = null
+    this.dialog && this.dialog.displayPending(this.job, this.status)
     this.editor.trigger('publish:before')
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Update assets URL to display outside the editor
-    const assetsFolderUrl = this.settings?.assets?.url
-    if (assetsFolderUrl) {
-      // Concat the paths, handles the trailing and leading slashes
-      const publishedUrl = path => `${assetsFolderUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
-      // New URLs for assets, according to site config
-      onAll(this.editor, c => {
-        // Attributes
-        if (c.get('type') === 'image') {
-          const src = c.get('src')
-          c.set('tmp-src', src)
-          c.set('src', publishedUrl(src))
-        }
-        //// Inline styles
-        //// This is handled by the editor.Css.getAll loop
-        //const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
-        //if(bgUrl) {
-        //  c.set('tmp-bg-url', bgUrl)
-        //  c.setStyle({
-        //    ...c.getStyle(),
-        //    'background-image': `url('${publishedUrl(bgUrl)}')`,
-        //  })
-        //}
-      })
-      this.editor.Css.getAll()
-        .forEach(c => {
-          const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
-          if (bgUrl) {
-            c.setStyle({
-              ...c.getStyle(),
-              'background-image': `url('${publishedUrl(bgUrl)}')`,
-            })
-            c.set('tmp-bg-url-css' as any, bgUrl)
-          }
-        })
-    }
+    // const assetsFolderUrl = this.settings?.assets?.url
+    // if (assetsFolderUrl) {
+    //   // Concat the paths, handles the trailing and leading slashes
+    //   const publishedUrl = path => `${assetsFolderUrl.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
+    //   // New URLs for assets, according to site config
+    //   onAll(this.editor, c => {
+    //     // Attributes
+    //     if (c.get('type') === 'image') {
+    //       const src = c.get('src')
+    //       c.set('tmp-src', src)
+    //       c.set('src', publishedUrl(src))
+    //     }
+    //     //// Inline styles
+    //     //// This is handled by the editor.Css.getAll loop
+    //     //const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
+    //     //if(bgUrl) {
+    //     //  c.set('tmp-bg-url', bgUrl)
+    //     //  c.setStyle({
+    //     //    ...c.getStyle(),
+    //     //    'background-image': `url('${publishedUrl(bgUrl)}')`,
+    //     //  })
+    //     //}
+    //   })
+    //   this.editor.Css.getAll()
+    //     .forEach(c => {
+    //       const bgUrl = c.getStyle()['background-image']?.match(/url\('(.*)'\)/)?.pop()
+    //       if (bgUrl) {
+    //         c.setStyle({
+    //           ...c.getStyle(),
+    //           'background-image': `url('${publishedUrl(bgUrl)}')`,
+    //         })
+    //         c.set('tmp-bg-url-css' as any, bgUrl)
+    //       }
+    //     })
+    // }
     // Build the files structure
     const files = await this.getFiles(siteSettings)
 
@@ -223,44 +250,45 @@ export class PublicationManager {
       publication: this.settings,
       files,
     }
-    // Reset asset URLs
-    if (assetsFolderUrl) {
-      onAll(this.editor, c => {
-        if (c.get('type') === 'image' && c.has('tmp-src')) {
-          c.set('src', c.get('tmp-src'))
-          c.set('tmp-src')
-        }
-        //// This is handled by the editor.Css.getAll loop
-        //if(c.getStyle()['background-image'] && c.has('tmp-bg-url')) {
-        //  c.setStyle({
-        //    ...c.getStyle(),
-        //    'background-image': `url('${c.get('tmp-bg-url')}')`,
-        //  })
-        //  c.set('tmp-bg-url')
-        //}
-      })
-      this.editor.Css.getAll()
-        .forEach(c => {
-          if (c.has('tmp-bg-url-css' as any)) {
-            c.setStyle({
-              ...c.getStyle(),
-              'background-image': `url('${c.get('tmp-bg-url-css' as any)}')`,
-            })
-            c.set('tmp-bg-url-css' as any)
-          }
-        })
-    }
+    // // Reset asset URLs
+    // if (assetsFolderUrl) {
+    //   onAll(this.editor, c => {
+    //     if (c.get('type') === 'image' && c.has('tmp-src')) {
+    //       c.set('src', c.get('tmp-src'))
+    //       c.set('tmp-src')
+    //     }
+    //     //// This is handled by the editor.Css.getAll loop
+    //     //if(c.getStyle()['background-image'] && c.has('tmp-bg-url')) {
+    //     //  c.setStyle({
+    //     //    ...c.getStyle(),
+    //     //    'background-image': `url('${c.get('tmp-bg-url')}')`,
+    //     //  })
+    //     //  c.set('tmp-bg-url')
+    //     //}
+    //   })
+    //   this.editor.Css.getAll()
+    //     .forEach(c => {
+    //       if (c.has('tmp-bg-url-css' as any)) {
+    //         c.setStyle({
+    //           ...c.getStyle(),
+    //           'background-image': `url('${c.get('tmp-bg-url-css' as any)}')`,
+    //         })
+    //         c.set('tmp-bg-url-css' as any)
+    //       }
+    //     })
+    // }
     this.editor.trigger('publish:start', data)
-    const user = this.editor.getModel().get('user') as ConnectorUser
-    if(!user) throw new Error('User not logged in to a storage connector')
+    const storageUser = this.editor.getModel().get('user') as ConnectorUser
+    if(!storageUser) throw new Error('User not logged in to a storage connector')
     if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
     try {
       const websiteId = this.options.websiteId
       const [url, job] = await publish({
         websiteId,
         hostingId: this.settings.connector.connectorId,
-        storageId: user.storage.connectorId,
+        storageId: storageUser.storage.connectorId,
         data: data as ApiPublicationPublishBody,
+        options: this.settings.options,
       })
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
@@ -274,11 +302,11 @@ export class PublicationManager {
       console.error('publish error', e)
       if(e.code === 401) {
         this.status = PublicationStatus.STATUS_LOGGED_OUT
-        this.settings.connector = null
-        this.dialog && this.dialog.displayError('Please login.', this.job, this.status, this.settings)
+        this.settings = {}
+        this.dialog && this.dialog.displayError('Please login.', this.job, this.status)
       } else {
         this.status = PublicationStatus.STATUS_ERROR
-        this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status, this.settings)
+        this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
       }
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
@@ -299,7 +327,7 @@ export class PublicationManager {
       <!DOCTYPE html>
       <html lang="${getSetting('lang')}">
       <head>
-      <link rel="stylesheet" href="${this.settings?.css?.url || ''}/${slug}.css" />
+      <link rel="stylesheet" href="/${slug}.css" />
       ${siteSettings?.head || ''}
       ${pageSettings?.head || ''}
       <title>${getSetting('title')}</title>
@@ -313,8 +341,8 @@ export class PublicationManager {
       </html>
       `,
         css: this.editor.getCss({ component }),
-        cssPath: `${this.settings?.css?.path || ''}/${slug}${this.settings?.css?.ext || '.css'}`,
-        htmlPath: `${this.settings?.html?.path || ''}/${slug}${this.settings?.html?.ext || '.html'}`,
+        cssPath: `/${slug}.css`,
+        htmlPath: `/${slug}.html`,
       }
     })
   }
@@ -325,7 +353,7 @@ export class PublicationManager {
       this.status = jobStatusToPublicationStatus(this.job.status)
     } catch (e) {
       this.status = PublicationStatus.STATUS_ERROR
-      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status, this.settings)
+      this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
       this.editor.trigger('publish:stop', { success: false, message: e.message })
       return
     }
@@ -334,6 +362,6 @@ export class PublicationManager {
     } else {
       this.editor.trigger('publish:stop', { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
-    this.dialog && this.dialog.displayPending(this.job, this.status, this.settings)
+    this.dialog && this.dialog.displayPending(this.job, this.status)
   }
 }

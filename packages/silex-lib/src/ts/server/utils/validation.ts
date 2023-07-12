@@ -26,8 +26,9 @@ export function requiredParam<T>(value: T | undefined, name: string, defaultValu
     if (defaultValue !== undefined) {
       return defaultValue as NonNullable<T>
     }
-    console.error(`Missing required parameter ${name}`)
-    throw new Error(`Missing required parameter ${name}`)
+    const error = new Error(`Missing required parameter ${name}`)
+    console.error(`Missing required parameter ${name}`, error)
+    throw error
   }
   return value as NonNullable<T>
 }
