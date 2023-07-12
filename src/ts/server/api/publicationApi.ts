@@ -16,7 +16,7 @@
  */
 
 import { Router } from 'express'
-import { noCache } from '../../plugins/Cache'
+import { noCache } from '../../plugins/server/Cache'
 import { minify } from 'html-minifier'
 import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../../constants'
 import { getJob } from '../jobs'

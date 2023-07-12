@@ -16,7 +16,7 @@
  */
 
 import fetch from 'node-fetch'
-import { ServerConfig } from '../server/config'
+import { ServerConfig } from '../../server/config'
 
 type HooksOptions = {
   gitUrl?: string

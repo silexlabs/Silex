@@ -42,7 +42,7 @@
     "build:client:debug": {
       "patterns": [
         "src/ts/client/",
-        "src/ts/plugins/"
+        "src/ts/plugins/client/"
       ],
       "extensions": [
         "ts"
@@ -51,15 +51,23 @@
     "build:server:debug": {
       "patterns": [
         "src/ts/server/",
-        "src/ts/plugins/"
+        "src/ts/plugins/server/"
       ],
       "extensions": [
         "ts"
       ]
     },
-    "build:plugins": {
+    "build:plugins:server": {
       "patterns": [
-        "src/ts/plugins/"
+        "src/ts/plugins/server/"
+      ],
+      "extensions": [
+        "ts"
+      ]
+    },
+    "build:plugins:client": {
+      "patterns": [
+        "src/ts/plugins/client/"
       ],
       "extensions": [
         "ts"
@@ -73,7 +81,7 @@
     "start:debug": "cross-env FS_ROOT=`pwd`/.silex cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/index.js",
     "prepublishOnly": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "preversion": "$npm_execpath run prepublishOnly",
-    "build": "run-s build:css:release build:html build:client:release build:server:release build:plugins",
+    "build": "run-s build:css:release build:html build:client:release build:server:release build:plugins:client build:plugins:server",
     "webpack": "webpack --config webpack.config.js",
     "build:css:release": "sass --load-path ../../node_modules --load-path node_modules --no-source-map src/css/index.scss dist/client/css/admin.css",
     "build:css:debug": "sass --load-path ../../node_modules --load-path node_modules src/css/index.scss dist/client/css/admin.css",
@@ -83,7 +91,8 @@
     "build:client:debug": "webpack --config webpack.debug.config.js",
     "build:server:release": "tsc -p tsconfig-server-release.json",
     "build:server:debug": "SILEX_DEBUG=true tsc -p tsconfig-server-debug.json",
-    "build:plugins": "SILEX_DEBUG=true tsc -p tsconfig-plugins.json",
+    "build:plugins:server": "tsc -p tsconfig-plugins-server.json",
+    "build:plugins:client": "tsc -p tsconfig-plugins-client.json",
     "lint": "eslint 'src/ts/**/*.ts'",
     "lint:fix": "$npm_execpath run lint -- --fix",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",

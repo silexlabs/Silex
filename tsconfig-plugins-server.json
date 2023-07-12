@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "outDir": "dist/",
+    "target": "ESNext",
+    "declaration": true,
+    "sourceMap": true,
+    "module": "CommonJS",
+    "removeComments": false,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "typeRoots": [
+      "src/ts/types",
+      "node_modules/@types"
+    ],
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "include": [
+    "src/ts/plugins/server/**/*"
+  ],
+}

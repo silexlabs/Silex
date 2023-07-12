@@ -20,7 +20,7 @@ import nodeModules from 'node_modules-path'
 import serveStatic from 'serve-static'
 import { withCache } from './Cache'
 import { join } from 'path'
-import { EVENT_STARTUP_START } from '../events'
+import { EVENT_STARTUP_START } from '../../events'
 
 type StaticOptions = {
   routes: {
@@ -35,7 +35,7 @@ export default async function(config, opts = {}) {
     routes: [
       {
         route: '/',
-        path: join(__dirname, '..', '..', 'public'),
+        path: join(__dirname, '../../..', 'public'),
       }, {
         route: '/css/',
         path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/css/',
@@ -43,8 +43,11 @@ export default async function(config, opts = {}) {
         route: '/webfonts/',
         path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/webfonts/',
       }, {
+        route: '/node_modules/',
+        path: nodeModules(),
+      }, {
         route: '/',
-        path: join(__dirname, '..', '..', 'dist', 'client'),
+        path: join(__dirname, '../../..', 'dist', 'client'),
       },
     ]
     // add project route for source maps

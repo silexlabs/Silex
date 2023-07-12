@@ -46,12 +46,9 @@ import { semanticPlugin } from './semantic'
 import { richTextPlugin } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
-import { templatePlugin } from './template'
 import { eleventyPlugin } from './eleventy'
 import { storagePlugin } from './storage'
-import { API_WEBSITE_READ, API_WEBSITE_WRITE } from '../../constants'
 import { ConnectorId, WebsiteId } from '../../types'
-import { ApiError } from '../api'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -71,7 +68,6 @@ const plugins = [
   {name: './symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
   {name: './PublicationManager', value: publicationManagerPlugin},
-  {name: './template', value: templatePlugin},
   {name: './eleventy', value: eleventyPlugin},
   {name: './storage', value: storagePlugin},
   {name: './LoginDialog', value: loginDialogPlugin},
@@ -112,7 +108,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
     },
 
     storageManager: {
-      autoload: true,
+      autoload: false,
       //type: 'remote',
       type: 'connector',
       options: {
@@ -274,13 +270,6 @@ export async function initEditor(config, grapesJsPlugins) {
     }))
 
     editor.on('load', () => {
-      // // move the options panel to the sidebar
-      // const optionsEl = editor.Panels.getPanel('options').view.el
-      // editor.Panels.getPanel('project-bar-panel').view.el
-      // .appendChild(options)
-      // options.style.width = 0
-      // options.style.position = 'static'
-
       // remove blocks and layers buttons from the properties
       editor.Panels.getPanel('views').buttons.remove('open-blocks')
       editor.Panels.getPanel('views').buttons.remove('open-layers')
