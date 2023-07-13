@@ -23,7 +23,7 @@ import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, Websit
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation'
 import { ServerConfig } from '../config'
-import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
+import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
 import { Readable } from 'stream'
 import { v4 as uuid } from 'uuid'
 
@@ -48,6 +48,17 @@ export class FsStorage implements StorageConnector<FsSession> {
     this.options = {
       path: __dirname + '../../../../.silex',
       ...opts,
+    }
+    this.initFs()
+  }
+
+  async initFs() {
+    const stat = await fs.stat(this.options.path).catch(() => null)
+    if (!stat) {
+      const id = DEFAULT_WEBSITE_ID
+      await fs.mkdir(join(this.options.path, id), { recursive: true })
+      await this.setWebsiteMeta({}, id, { name: 'Default website', connectorUserSettings: {} })
+      await this.updateWebsite({}, id, defaultWebsiteData)
     }
   }
 
