@@ -111,7 +111,9 @@ export function toConnectorEnum(type: string): ConnectorType {
  * Get a connector by id or by type
  */
 export async function getConnector<T extends Connector>(config: ServerConfig, session: any, type: ConnectorType, connectorId?: ConnectorId): Promise<T | undefined> {
-  const connectors = config.getConnectors<T>(type)
+  // Get the connectors for this type
+  const connectors = config.getConnectors(type) as T[]
+
   // Find the connector by id
   if (connectorId) return connectors.find(s => s.connectorId === connectorId && s.connectorType === type)
   // Find the first logged in connector

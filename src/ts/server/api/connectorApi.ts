@@ -95,7 +95,7 @@ async function routeListConnectors(req: Request, res: Response) {
     const session = requiredParam(req['session'], 'Session object')
     const query = req.query as ApiConnectorListQuery
     const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
-    const connectors = config.getConnectors<Connector>(type)
+    const connectors = config.getConnectors(type)
     try {
       const list = await Promise.all(connectors.map(async connector => toConnectorData(session, connector)))
       res.json(list as ApiConnectorListResponse)

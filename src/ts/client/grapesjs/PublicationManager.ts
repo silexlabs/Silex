@@ -21,7 +21,7 @@ import { Editor, ProjectData } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
-import { EVENT_PUBLISH_DATA, EVENT_PUBLISH_END, EVENT_PUBLISH_ERROR, EVENT_PUBLISH_LOGIN_END, EVENT_PUBLISH_START } from '../../events'
+import { ClientEvent } from '../events'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -164,7 +164,7 @@ export class PublicationManager {
             this.settings = {}
             this.dialog && this.dialog.displayError(data.message, this.job, this.status)
           } else {
-            this.editor.trigger(EVENT_PUBLISH_LOGIN_END)
+            this.editor.trigger(ClientEvent.PUBLISH_LOGIN_END)
             //const uesr = await getUser({type: connector.type, connectorId: data.connectorId})
             this.settings.connector = connector
             this.settings.options = data.options
@@ -202,7 +202,7 @@ export class PublicationManager {
     this.status = PublicationStatus.STATUS_PENDING
     this.job = null
     this.dialog && this.dialog.displayPending(this.job, this.status)
-    this.editor.trigger(EVENT_PUBLISH_START)
+    this.editor.trigger(ClientEvent.PUBLISH_START)
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Build the files structure
@@ -215,7 +215,7 @@ export class PublicationManager {
       publication: this.settings,
       files,
     }
-    this.editor.trigger(EVENT_PUBLISH_DATA, data)
+    this.editor.trigger(ClientEvent.PUBLISH_DATA, data)
     const storageUser = this.editor.getModel().get('user') as ConnectorUser
     if(!storageUser) throw new Error('User not logged in to a storage connector')
     if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
@@ -247,8 +247,8 @@ export class PublicationManager {
         this.status = PublicationStatus.STATUS_ERROR
         this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
       }
-      this.editor.trigger(EVENT_PUBLISH_ERROR, { success: false, message: e.message })
-      this.editor.trigger(EVENT_PUBLISH_END, { success: false, message: e.message })
+      this.editor.trigger(ClientEvent.PUBLISH_ERROR, { success: false, message: e.message })
+      this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: e.message })
       return
     }
   }
@@ -293,14 +293,14 @@ export class PublicationManager {
     } catch (e) {
       this.status = PublicationStatus.STATUS_ERROR
       this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
-      this.editor.trigger(EVENT_PUBLISH_END, { success: false, message: e.message })
-      this.editor.trigger(EVENT_PUBLISH_ERROR, { success: false, message: e.message })
+      this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: e.message })
+      this.editor.trigger(ClientEvent.PUBLISH_ERROR, { success: false, message: e.message })
       return
     }
     if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
-      this.editor.trigger(EVENT_PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
+      this.editor.trigger(ClientEvent.PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
     this.dialog && this.dialog.displayPending(this.job, this.status)
   }

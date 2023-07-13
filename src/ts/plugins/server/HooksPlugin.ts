@@ -17,18 +17,15 @@
 
 import fetch from 'node-fetch'
 import { ServerConfig } from '../../server/config'
-import { EVENT_ASSET_WRITE_END, EVENT_PUBLISH_END, EVENT_WRITE_END } from '../../events'
+import { ServerEvent, WebsiteAssetStoreEndEventType } from '../../server/events'
 
 type HooksOptions = {
   gitUrl?: string
   buildUrl?: string
 }
 
-const rootPath = process.env.DATA_FOLDER
-
 // **********
 throw new Error('TODO: implement hooks plugin')
-function projectPath(projectId: string) { return `${rootPath}/${projectId}` }
 // **********
 
 export default async function(config: ServerConfig, opts: HooksOptions = {}) {
@@ -36,25 +33,27 @@ export default async function(config: ServerConfig, opts: HooksOptions = {}) {
   const options = {
     gitUrl: process.env.SILEX_HOOK_GIT,
     buildUrl: process.env.SILEX_HOOK_BUILD,
+    websitePath: process.env.DATA_FOLDER,
+    assetsPath: process.env.ASSETS_FOLDER,
     ...opts
   }
-  config.on(EVENT_WRITE_END, async ({ res, req, projectId, data }) => {
+  config.on(ServerEvent.WEBSITE_STORE_END, async ({ res, req, projectId, data }) => {
     if(options.gitUrl) {
       await hook(options.gitUrl, {
-        path: projectPath(projectId),
+        path: options.websitePath,
         message: 'Change from Silex',
       })
     }
   })
-  config.on(EVENT_ASSET_WRITE_END, async ({ res, req, projectId, uploadDir, form, data }) => {
+  config.on(ServerEvent.WEBSITE_ASSET_STORE_END, async (e: WebsiteAssetStoreEndEventType) => {
     if(options.gitUrl) {
       await hook(options.gitUrl, {
-        path: projectPath(projectId),
+        path: options.assetsPath,
         message: 'Change from Silex',
       })
     }
   })
-  config.on(EVENT_PUBLISH_END, async ({ projectId, files, req, res }) => {
+  config.on(ServerEvent.PUBLISH_END, async ({ projectId, files, req, res }) => {
     if(options.buildUrl) {
       await hook(options.buildUrl)
     }

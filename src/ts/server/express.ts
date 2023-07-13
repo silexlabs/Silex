@@ -23,7 +23,7 @@ import session from 'cookie-session'
 import cors from 'cors'
 
 import { ServerConfig } from './config'
-import { EVENT_STARTUP_START, EVENT_STARTUP_END } from '../events'
+import { ServerEvent } from './events'
 
 export function create(config: ServerConfig): Application {
   // Express app
@@ -58,12 +58,12 @@ export async function start(app: Application): Promise<Application> {
   const config = app.get('config') as ServerConfig
 
   // Plugins hook to create API routes
-  config.emit(EVENT_STARTUP_START, { app })
+  config.emit(ServerEvent.STARTUP_START, { app })
 
   // Start server
   return new Promise((resolve, reject) => {
     app.listen(config.port, () => {
-      config.emit(EVENT_STARTUP_END, { app })
+      config.emit(ServerEvent.STARTUP_END, { app })
       resolve(app)
     })
   })
