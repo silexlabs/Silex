@@ -1,5 +1,5 @@
-import { ConnectorId, PublicationData, WebsiteData, WebsiteId } from "../types";
-import { ConnectorFile } from "./connectors/connectors";
+import { ConnectorId, PublicationData, WebsiteData, WebsiteId } from '../types'
+import { ConnectorFile } from './connectors/connectors'
 
 export enum ServerEvent {
   STARTUP_START = 'startup-start',
