@@ -21,12 +21,12 @@ import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { getPageSlug } from '../../page'
 import { Page } from '../../types'
-import { EVENT_PUBLISH_DATA } from '../../events'
+import { ClientEvent } from '../events'
 
 const pluginName = 'eleventy'
 
 export const eleventyPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
-  editor.on(opts.eventStart || EVENT_PUBLISH_DATA, data => {
+  editor.on(opts.eventStart || ClientEvent.PUBLISH_DATA, data => {
     data.pages.forEach((page: Page, idx) => {
       const file = data.files[idx]
       file.css = `---

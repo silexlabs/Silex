@@ -22,8 +22,8 @@
  */
 
 import { SilexConfig } from './config'
+import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
-import { EVENT_STARTUP_START, EVENT_STARTUP_END } from '../events'
 
 /**
  * Start Silex, called from host HTML page with window.silex.start()
@@ -41,7 +41,7 @@ export async function start(options = {}) {
   }
 
   // Notify plugins that loading is over and Silex is starting
-  config.emit(EVENT_STARTUP_START)
+  config.emit(ClientEvent.STARTUP_START)
 
   // Start grapesjs
   try{
@@ -68,6 +68,6 @@ export async function start(options = {}) {
     // This needs time for the loader to be hidden
     document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
     document.querySelector('#gjs').classList.remove('silex-dialog-hide')
-    config.emit(EVENT_STARTUP_END, { editor, config })
+    config.emit(ClientEvent.STARTUP_END, { editor, config })
   }, 1000)
 }

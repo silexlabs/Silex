@@ -19,7 +19,7 @@ import express from 'express'
 import { readFileSync } from 'fs'
 import { createServer } from 'https'
 import forceSSL from 'express-force-ssl'
-import { EVENT_STARTUP_START } from '../../events'
+import { ServerEvent } from '../../server/events'
 
 // interface SslOptions {
 //   forceHttps?: boolean
@@ -41,7 +41,7 @@ export default async function(config, opts = {}) {
   }
 
   // Add routes on silex startup
-  config.on(EVENT_STARTUP_START, ({app}) => {
+  config.on(ServerEvent.STARTUP_START, ({app}) => {
     const router = express.Router()
 
     // SSL

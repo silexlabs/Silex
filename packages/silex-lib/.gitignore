@@ -10,4 +10,4 @@ node_modules
 .git
 old
 dist/
-
+.silex/

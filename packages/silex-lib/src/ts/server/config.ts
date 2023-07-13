@@ -40,32 +40,28 @@ import { FsHosting } from './connectors/FsHosting'
  */
 export class ServerConfig extends Config {
   public expressOptions = {
-    jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT || '1mb',
-    textLimit: process.env.SILEX_EXPRESS_TEXT_LIMIT || '10mb',
-    urlencodedLimit: process.env.SILEX_EXPRESS_URLENCODED_LIMIT || '1mb',
-    sessionName: process.env.SILEX_SESSION_NAME || 'silex-session',
-    sessionSecret: process.env.SILEX_SESSION_SECRET || 'replace this session secret in env vars',
+    jsonLimit: process.env.SILEX_EXPRESS_JSON_LIMIT,
+    textLimit: process.env.SILEX_EXPRESS_TEXT_LIMIT,
+    urlencodedLimit: process.env.SILEX_EXPRESS_URLENCODED_LIMIT,
+    sessionName: process.env.SILEX_SESSION_NAME,
+    sessionSecret: process.env.SILEX_SESSION_SECRET,
     cors: process.env.SILEX_CORS_URL,
   }
-
-  constructor(
-    public url: string,
-    public debug: boolean,
-    public port: string,
-    public apiPath: string,
-  ) {
-    super()
-  }
+  public port = process.env.SILEX_PORT
+  public debug = process.env.SILEX_DEBUG === 'true'
+  public url = `${process.env.SILEX_PROTOCOL}://${process.env.SILEX_HOST}:${process.env.SILEX_PORT}`
+  public userConfigPath: Plugin | undefined = process.env.SILEX_CONFIG
+  public configFilePath: Plugin = resolve(__dirname, '../../../.silex.js')
 
   // All connectors or just the storage or hosting connectors
-  getConnectors<T extends Connector>(type: ConnectorType | string | null = null): T[] {
+  getConnectors(type: ConnectorType | string | null = null): Connector[] {
     // All connectors including storage and hosting connectors
     if (!type) {
       // Concat storage and hosting connectors
-      const allConnectors: Connector[] = (this.getStorageConnectors() as Connector[]).concat(this.getHostingConnectors() as Connector[])
+      const allConnectors: Connector[] = (this.getStorageConnectors() as Connector[]).concat(this.getHostingConnectors())
 
       // Remove duplicates (if a connector is both a storage and a hosting connector)
-      return Array.from(new Set(allConnectors)) as unknown as T[]
+      return [...new Set(allConnectors)]
     }
 
     // Convert to enum in case it is a string
@@ -73,16 +69,14 @@ export class ServerConfig extends Config {
 
     // Only one type of connector
     switch(connectorType) {
-    case ConnectorType.HOSTING: return this.getHostingConnectors() as unknown as T[]
-    case ConnectorType.STORAGE: return this.getStorageConnectors() as unknown as T[]
-    default: throw new Error(`Unknown connector type ${type}`)
+      case ConnectorType.HOSTING: return this.getHostingConnectors()
+      case ConnectorType.STORAGE: return this.getStorageConnectors()
+      default: throw new Error(`Unknown connector type ${type}`)
     }
   }
 
   // Storage connectors to store the website data and assets
-  private storageConnectors: StorageConnector[] = [new FsStorage(null, {
-    path: process.env.FS_ROOT,
-  })]
+  private storageConnectors: StorageConnector[] = []
   addStorageConnector(storage: StorageConnector | StorageConnector[]) {
     this.setStorageConnectors(this.storageConnectors.concat(storage))
   }
@@ -94,9 +88,7 @@ export class ServerConfig extends Config {
   }
 
   // Hosting connectors to publish the website online
-  private hostingConnectors: HostingConnector[] = [new FsHosting(null, {
-    path: process.env.FS_ROOT,
-  })]
+  private hostingConnectors: HostingConnector[] = []
   addHostingConnector(hosting: HostingConnector | HostingConnector[]) {
     this.setHostingConnectors(this.hostingConnectors.concat(hosting))
   }
@@ -112,20 +104,25 @@ export class ServerConfig extends Config {
     const path = process.env.SILEX_CLIENT_CONFIG
     if (path) {
       console.log(`> Serving client side config ${path} at ${CLIENT_CONFIG_FILE_NAME}`)
-      // Load the client config file
-      let clientConfig = (await readFile(path as string)).toString()
-      // Serve the config file
-      app.get(`/${CLIENT_CONFIG_FILE_NAME}`, async (req: Request, res: Response) => {
-        // Reload each time in debug mode
-        if (this.debug) {
-          console.log('[Debug mode] Reloading config file', path)
-          clientConfig = (await readFile(path)).toString()
-        }
-        // Send the config file
-        res
-          .contentType('application/javascript')
-          .send(clientConfig)
-      })
+      try {
+        // Load the client config file
+        let clientConfig = (await readFile(path as string)).toString()
+        // Serve the config file
+        app.get(`/${CLIENT_CONFIG_FILE_NAME}`, async (req: Request, res: Response) => {
+          // Reload each time in debug mode
+          if (this.debug) {
+            console.log('[Debug mode] Reloading config file', path)
+            clientConfig = (await readFile(path)).toString()
+          }
+          // Send the config file
+          res
+            .contentType('application/javascript')
+            .send(clientConfig)
+        })
+      } catch (e) {
+        console.error(`Error loading client config file ${path}`, e)
+        throw new Error(`Error loading client config file ${path}: ${e.message}`)
+      }
     }
   }
 
@@ -135,55 +132,59 @@ export class ServerConfig extends Config {
    */
   async loadConfigFiles() {
     // Load the user config file
-    await loadUserConfig(this)
+    await this.loadUserConfig()
     // Load the main config file
-    await loadSilexConfig(this)
+    await this.loadSilexConfig()
   }
-}
 
-// Get config async function
-export function createConfig(): ServerConfig {
-  const port = process.env.PORT || '6805' // 6805 is the date of sexual revolution started in paris france 8-)
-  const debug = process.env.SILEX_DEBUG === 'true'
-
-  const url = process.env.SERVER_URL || `http://localhost:${port}`
-  return new ServerConfig(url, debug, port, '/api')
-}
-
-/**
- * Load user config file
- * This is the config file passed as env var CONFIG
- */
-export async function loadUserConfig(config: ServerConfig) {
-  if (process.env.CONFIG) {
-    const userConfigPath: Plugin = process.env.CONFIG
-    console.log('> Loading user config', userConfigPath)
-    try {
-      // Initiate the process with the config file which is just another plugin
-      await config.addPlugin(userConfigPath, {})
-    } catch (e) {
-      throw new Error(`User config file ${userConfigPath} error: ${e.message}`)
+  /**
+   * Load user config file
+   * This is the config file passed as env var CONFIG
+   */
+  async loadUserConfig() {
+    if (this.userConfigPath) {
+      console.log('> Loading user config', this.userConfigPath)
+      try {
+        // Initiate the process with the config file which is just another plugin
+        await this.addPlugin(this.userConfigPath, {})
+      } catch (e) {
+        throw new Error(`User config file ${this.userConfigPath} error: ${e.message}`)
+      }
     }
   }
-}
 
-/**
- * Load .silex.js in the root folder
- * This is the main config file
- */
-export async function loadSilexConfig(config: ServerConfig) {
-  const configFilePath: Plugin = resolve(__dirname, '../../../.silex.js')
-  console.log('> Loading config', configFilePath)
-  try {
-    // Initiate the process with the config file which is just another plugin
-    await config.addPlugin(configFilePath, {})
-  } catch(e) {
-    console.log(e.requireStack[0])
-    // Check if the error is about the config file not found and not another module not found in the config file
-    if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === configFilePath))) {
-      console.info('> /!\\ Config file not found', configFilePath)
-    } else {
-      throw new Error(`Error in config file ${configFilePath}: ${e.message}`)
+  /**
+   * Load .silex.js in the root folder
+   * This is the main config file
+   */
+  async loadSilexConfig() {
+    console.log('> Loading config', this.configFilePath)
+    try {
+      // Initiate the process with the config file which is just another plugin
+      await this.addPlugin(this.configFilePath, {})
+    } catch(e) {
+      console.log(e.requireStack[0])
+      // Check if the error is about the config file not found and not another module not found in the config file
+      if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === this.configFilePath))) {
+        console.info('> /!\\ Config file not found', this.configFilePath)
+      } else {
+        throw new Error(`Error in config file ${this.configFilePath}: ${e.message}`)
+      }
+    }
+  }
+
+  async initDefaultConnectors() {
+    // Add default storage connectors
+    if (!this.storageConnectors.length) {
+      this.addStorageConnector(new FsStorage(null, {
+        path: process.env.SILEX_FS_ROOT,
+      }))
+    }
+    // Add default hosting connectors
+    if (!this.hostingConnectors.length) {
+      this.addHostingConnector(new FsHosting(null, {
+        path: process.env.SILEX_FS_ROOT,
+      }))
     }
   }
 }

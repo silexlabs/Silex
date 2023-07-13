@@ -20,7 +20,7 @@ import nodeModules from 'node_modules-path'
 import serveStatic from 'serve-static'
 import { withCache } from './Cache'
 import { join } from 'path'
-import { EVENT_STARTUP_START } from '../../events'
+import { ServerEvent } from '../../server/events'
 
 type StaticOptions = {
   routes: {
@@ -58,7 +58,7 @@ export default async function(config, opts = {}) {
     ...opts,
   }
 
-  config.on(EVENT_STARTUP_START, ({app}) => {
+  config.on(ServerEvent.STARTUP_START, ({app}) => {
     const router = express.Router()
     options.routes
       .forEach(folder => {

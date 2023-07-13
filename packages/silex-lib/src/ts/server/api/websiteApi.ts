@@ -26,6 +26,7 @@ import { Readable } from 'stream'
 import { requiredParam } from '../utils/validation'
 import { basename } from 'path'
 import { ServerConfig } from '../config'
+import { ServerEvent, WebsiteStoreEndEventType, WebsiteStoreStartEventType, WebsiteAssetStoreStartEventType, WebsiteAssetStoreEndEventType } from '../events'
 
 /**
  * @fileoverview Website plugin for Silex
@@ -109,19 +110,26 @@ export default function (config: ServerConfig, opts = {}): Router {
   // Save website data
   router.post(API_WEBSITE_WRITE, async (req, res) => {
     try {
+      // Check input
       const query: ApiWebsiteWriteQuery = req.query as any
       const body: ApiWebsiteWriteBody = req.body
       const websiteId= requiredParam<WebsiteId>(query.websiteId, 'Website id')
       const websiteData = requiredParam<WebsiteData>(body, 'Website data') as WebsiteData
+      const connectorId = query.connectorId // Optional
+      // Hook to modify the website data before saving
+      config.emit(ServerEvent.WEBSITE_STORE_START, { websiteId, websiteData, connectorId } as WebsiteStoreStartEventType)
+      // Save website data
       await writeWebsite(
         req['session'],
         websiteId,
         websiteData,
-        query.connectorId,
+        connectorId,
       )
+      config.emit(ServerEvent.WEBSITE_STORE_END, null as WebsiteStoreEndEventType)
       res.status(200).json({ message: 'Website saved' } as ApiWebsiteWriteResponse)
     } catch (e) {
       console.error('Error saving website data', e)
+      config.emit(ServerEvent.WEBSITE_STORE_END, e as WebsiteStoreEndEventType)
       if (e instanceof WebsiteError) {
         res.status(e.code).json({ message: e.message } as ApiError)
       } else {
@@ -133,6 +141,7 @@ export default function (config: ServerConfig, opts = {}): Router {
   // Create website or update website meta
   router.put(API_WEBSITE_CREATE, async (req, res) => {
     try {
+      // Check input
       const session = req['session'] as ConnectorSession
       const query: ApiWebsiteCreateQuery = req.query as any
       const body: ApiWebsiteCreateBody = req.body
@@ -142,6 +151,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       if(!connector) {
         throw new WebsiteError(`Connector ${connectorId} not found`, 500)
       }
+      // Create website
       await connector.createWebsite(
         session,
         websiteMeta,
@@ -157,9 +167,10 @@ export default function (config: ServerConfig, opts = {}): Router {
     }
   })
 
-  // Create website or update website meta
+  // Update website meta
   router.post(API_WEBSITE_META_WRITE, async (req, res) => {
     try {
+      // Check input
       const session = req['session'] as ConnectorSession
       const query: ApiWebsiteMetaWriteQuery = req.query as any
       const body: ApiWebsiteMetaWriteBody = req.body
@@ -170,6 +181,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       if(!connector) {
         throw new WebsiteError(`Connector ${connectorId} not found`, 500)
       }
+      // Update website meta
       await connector.setWebsiteMeta(
         session,
         websiteId,
@@ -259,6 +271,7 @@ export default function (config: ServerConfig, opts = {}): Router {
   // Upload assets
   router.post(API_WEBSITE_ASSETS_WRITE, async (req, res) => {
     try {
+      // Check input
       const query: ApiWebsiteAssetsWriteQuery = req.query as any
       const websiteId= requiredParam<WebsiteId>(query.websiteId as WebsiteId, 'Website id')
 
@@ -268,6 +281,9 @@ export default function (config: ServerConfig, opts = {}): Router {
         multiples: true,
         keepExtensions: true,
       })
+      const connectorId = query.connectorId // Optional
+
+      // Retrive the files
       const files: ConnectorFile[] = await new Promise<ConnectorFile[]>((resolve, reject) => {
         form.parse(req, async (err, fields, _files) => {
           if (err) {
@@ -285,14 +301,19 @@ export default function (config: ServerConfig, opts = {}): Router {
         })
       })
 
+      // Hook to modify the files
+      config.emit(ServerEvent.WEBSITE_ASSET_STORE_START, { files, websiteId, connectorId } as WebsiteAssetStoreStartEventType)
+
       // Write the files
-      const data = await writeAssets(req['session'], websiteId, files, query.connectorId)
+      const data = await writeAssets(req['session'], websiteId, files, connectorId)
 
       // Return the file URLs to insert in the website
       res.json({
         data, // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       } as ApiWebsiteAssetsWriteResponse)
 
+      // Hook for plugins
+      config.emit(ServerEvent.WEBSITE_ASSET_STORE_END, null as WebsiteAssetStoreEndEventType)
     } catch (e) {
       console.error('Error uploading assets', e)
       if (e instanceof WebsiteError) {
@@ -300,6 +321,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
+      // Hook for plugins
+      config.emit(ServerEvent.WEBSITE_ASSET_STORE_END, e as WebsiteAssetStoreEndEventType)
     }
   })
 

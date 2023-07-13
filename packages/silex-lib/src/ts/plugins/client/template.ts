@@ -19,7 +19,7 @@
 //import {styleMap} from 'lit-html/directives/style-map.js'
 //import { onAll } from '@silexlabs/silex/dist/client/utils.js'
 import { onAll } from '../../client/utils.js'
-import { EVENT_PUBLISH_END, EVENT_PUBLISH_START, EVENT_STARTUP_END, EVENT_STARTUP_START } from '../../events.js'
+import { ServerEvent } from '../../server/events.js'
 
 //// @ts-ignore
 //import {html, render} from '/node_modules/lit-html/lit-html.js'
@@ -38,7 +38,7 @@ export default async (config, opts: any = {}) => {
   // @ts-ignore
   const { styleMap } = await import('/node_modules/lit-html/directives/style-map.js')
 
-  config.on(EVENT_STARTUP_END, () => {
+  config.on(ServerEvent.STARTUP_END, () => {
     const editor = silex.getEditor()
     // Add the new trait to all component types
     editor.DomComponents.getTypes().map(type => {
@@ -158,7 +158,7 @@ export default async (config, opts: any = {}) => {
         // put back together
         .join('\n')
     }
-    editor.on(EVENT_PUBLISH_START, () => {
+    editor.on(ServerEvent.PUBLISH_START, () => {
       // Insert templates
       onAll(editor, c => {
         const template = c.get(templateKey)
@@ -186,7 +186,7 @@ export default async (config, opts: any = {}) => {
         }
       })
     })
-    editor.on(EVENT_PUBLISH_END, () => {
+    editor.on(ServerEvent.PUBLISH_END, () => {
       onAll(editor, c => {
         // Restore the original method
         c.toHTML = c.get('tmpHtml')

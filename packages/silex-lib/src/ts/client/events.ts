@@ -15,13 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export const EVENT_STARTUP_START = 'silex:startup:start'
-export const EVENT_STARTUP_END = 'silex:startup:end'
-export const EVENT_PUBLISH_START = 'silex:publish:start'
-export const EVENT_PUBLISH_DATA = 'silex:publish:data'
-export const EVENT_PUBLISH_END = 'silex:publish:end'
-export const EVENT_PUBLISH_ERROR = 'silex:publish:error'
-export const EVENT_PUBLISH_LOGIN_START = 'silex:publish:login:start'
-export const EVENT_PUBLISH_LOGIN_END = 'silex:publish:login:end'
-export const EVENT_ASSET_WRITE_END = 'silex:asset:write:end'
-export const EVENT_WRITE_END = 'silex:write:end'
+export enum ClientEvent {
+  STARTUP_START = 'silex:startup:start',
+  STARTUP_END = 'silex:startup:end',
+  PUBLISH_START = 'silex:publish:start',
+  PUBLISH_DATA = 'silex:publish:data',
+  PUBLISH_END = 'silex:publish:end',
+  PUBLISH_ERROR = 'silex:publish:error',
+  PUBLISH_LOGIN_START = 'silex:publish:login:start',
+  PUBLISH_LOGIN_END = 'silex:publish:login:end',
+  ASSET_WRITE_END = 'silex:asset:write:end',
+  WRITE_END = 'silex:write:end',
+}

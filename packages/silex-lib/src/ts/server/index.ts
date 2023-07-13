@@ -17,19 +17,20 @@
 
 import * as silexApp from './express'
 import api from './api/api'
-import { createConfig } from './config'
-
-//export * from './express'
-//export * from './config'
-//export * from './connectors'
-//export * from '../events'
-//export * from '../constants'
-//export * from '../page'
+import { ServerConfig } from './config'
+import dotenv from 'dotenv'
 
 // Main app
-export default async function main() {
+export default async function silex() {
+  // Load env vars from .env file if any
+  dotenv.config()
+
+  // Load default env vars
+  // This will not override existing env vars
+  dotenv.config({ path: '.env.default' })
+
   // Get the default config object
-  const config = createConfig()
+  const config = new ServerConfig()
 
   // start silex
   const app = silexApp.create(config)
@@ -39,6 +40,9 @@ export default async function main() {
 
   // Load the config files
   await config.loadConfigFiles()
+
+  // Init the connectors in case no plugin adds them
+  await config.initDefaultConnectors()
 
   // APIs
   app.use('/api', api(config))
@@ -70,5 +74,5 @@ async function startLiverReload() {
 }
 
 if (require.main === module) {
-  main()
+  silex()
 }

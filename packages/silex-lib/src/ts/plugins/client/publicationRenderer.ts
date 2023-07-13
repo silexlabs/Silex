@@ -1,7 +1,7 @@
 import { getPageSlug } from '../../page.js'
 import { Page } from '../../types.js'
-import { EVENT_PUBLISH_DATA, EVENT_PUBLISH_END, EVENT_PUBLISH_START, EVENT_STARTUP_END } from '../../events.js'
 import { onAll } from '../../client/utils.js'
+import { ClientEvent } from '../../client/events.js'
 
 export default (config, opts: any = {}) => {
   const options = {
@@ -27,10 +27,8 @@ export default (config, opts: any = {}) => {
       ...opts.assets,
     },
   }
-  config.on(EVENT_STARTUP_END, ({ editor }) => {
-    // editor.on(EVENT_PUBLISH_DATA, (data: WebsiteData) => {
-    // })
-    editor.on(EVENT_PUBLISH_START, () => {
+  config.on(ClientEvent.STARTUP_END, ({ editor }) => {
+    editor.on(ClientEvent.PUBLISH_START, () => {
       // Update assets URL to display outside the editor
       const assetsFolderUrl = options.assets.url
       if (assetsFolderUrl) {
@@ -75,7 +73,7 @@ export default (config, opts: any = {}) => {
         }
       })
     })
-    editor.on(EVENT_PUBLISH_END, () => {
+    editor.on(ClientEvent.PUBLISH_END, () => {
       const assetsFolderUrl = options.assets.url
       // Reset asset URLs
       if (assetsFolderUrl) {
@@ -105,7 +103,7 @@ export default (config, opts: any = {}) => {
           })
       }
     })
-    editor.on(EVENT_PUBLISH_DATA, data => {
+    editor.on(ClientEvent.PUBLISH_DATA, data => {
       data.pages.forEach((page: Page, idx) => {
         const file = data.files[idx]
         // CSS

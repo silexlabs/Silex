@@ -16,8 +16,6 @@
  */
 
 import { Router } from 'express'
-import { noCache } from '../../plugins/server/Cache'
-import { minify } from 'html-minifier'
 import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../../constants'
 import { getJob } from '../jobs'
 import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ApiError, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
@@ -25,6 +23,7 @@ import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from 
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
 import { join } from 'path'
+import { PublishEndEventType, PublishStartEventType, ServerEvent } from '../events'
 
 /**
  * @fileoverview Publication plugin for Silex
@@ -74,15 +73,7 @@ export async function getStorageConnector(session: any, config: ServerConfig, co
   return storageConnector as StorageConnector
 }
 
-export default function (config: ServerConfig, opts = {}): Router {
-  const options = {
-    // Defaults
-    statusUrl: process.env.SILEX_PUBLICATION_STATUS_URL,
-    connector: 'src/plugins/DefaultConnector.js',
-    // Options
-    ...opts,
-  }
-
+export default function (config: ServerConfig): Router {
   // Create a new router
   const router = Router()
 
@@ -115,10 +106,14 @@ export default function (config: ServerConfig, opts = {}): Router {
       const session = requiredParam(req['session'], 'session on express request')
 
       // Check params
-      const { files, publication, assets } = body as PublicationData
+      const data = body as PublicationData
+      const { files, publication, assets } = data
       if(!files || !publication || !assets) {
         throw new PublicationError('Missing data from request: files, publication or assets', 400)
       }
+
+      // Hook for plugins
+      config.emit(ServerEvent.PUBLISH_START, data as PublishStartEventType)
 
       // Get hosting connector and make sure the user is logged in
       const hostingConnector = await getHostingConnector(session, config, hostingId)
@@ -126,26 +121,12 @@ export default function (config: ServerConfig, opts = {}): Router {
       // Get storage connector which holds the assets
       const storage = await getStorageConnector(session, config, storageId)
 
-      // Optim HTML
-      const optim = files
-      //const optim = files.map(file => ({
-      //  ...file,
-      //  html: minify(file.html, {
-      //    continueOnParseError: true,
-      //    collapseInlineTagWhitespace: true,
-      //    collapseWhitespace: true,
-      //    minifyCSS: true,
-      //    minifyJS: true,
-      //    removeScriptTypeAttributes: true,
-      //    removeStyleLinkTypeAttributes: true,
-      //  }).trim(),
-      //}))
       // Publication
       const assetsFiles: ConnectorFile[] = await Promise.all(assets.map(async asset => ({
         path: asset.path ? join(...asset.path.split('/')) : '', // resolve relative path
         content: await storage.readAsset(session, websiteId, asset.src),
       })))
-      const filesList: ConnectorFile[] = optim.flatMap<ConnectorFile>(file => ([{
+      const filesList: ConnectorFile[] = files.flatMap<ConnectorFile>(file => ([{
         path: file.htmlPath,
         content: file.html,
       }, {
@@ -162,6 +143,8 @@ export default function (config: ServerConfig, opts = {}): Router {
         res.status(500).json({
           message: `Error publishing the website. ${err.message}`
         } as ApiError)
+        // Hook for plugins
+        config.emit(ServerEvent.PUBLISH_END, err as PublishEndEventType)
         return
       }
     } catch (err) {
@@ -171,8 +154,12 @@ export default function (config: ServerConfig, opts = {}): Router {
         .json({
           message: `Error publishing the website. ${err.message}`
         } as ApiError)
+      // Hook for plugins
+      config.emit(ServerEvent.PUBLISH_END, err as PublishEndEventType)
       return
     }
+    // Hook for plugins
+    config.emit(ServerEvent.PUBLISH_END)
   })
 
   return router

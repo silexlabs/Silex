@@ -35,10 +35,10 @@ const options = parse({
   'fs-root': ['', 'Path to the root folder where to store websites. Used by the default connector (fs).', 'string'],
 }, {})
 
-if(options.config) process.env.CONFIG = options.config
-if(options.port) process.env.PORT = options.port
+if(options.config) process.env.SILEX_CONFIG = options.config
+if(options.port) process.env.SILEX_PORT = options.port
 if(options.debug) process.env.SILEX_DEBUG = options.debug
-if(options['ssl-port']) process.env.SSL_PORT = options['ssl-port']
+if(options['ssl-port']) process.env.SILEX_SSL_PORT = options['ssl-port']
 if(options['force-https']) process.env.SILEX_FORCE_HTTPS = options['force-https']
 if(options['ssl-private-key']) process.env.SILEX_SSL_PRIVATE_KEY = options['ssl-private-key']
 if(options['ssl-certificate']) process.env.SILEX_SSL_CERTIFICATE = options['ssl-certificate']
@@ -46,6 +46,6 @@ if(options['force-https-trust-xfp-header']) process.env.SILEX_FORCE_HTTPS_TRUST_
 if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
 if(options['cors-url']) process.env.SILEX_CORS_URL = options['cors-url']
 if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
-if(options['fs-root']) process.env.FS_ROOT = options['fs-root']
+if(options['fs-root']) process.env.SILEX_FS_ROOT = options['fs-root']
 
 silex()
