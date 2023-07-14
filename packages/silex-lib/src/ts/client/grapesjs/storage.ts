@@ -73,14 +73,18 @@ export const storagePlugin = (editor) => {
     }
   })
   // Handle errors
-  editor.on('storage:error:load', (err) => {
+  editor.on('storage:error:load', (err: Error) => {
     handleError(err)
   })
-  editor.on('storage:error:store', (err) => {
+  editor.on('storage:error:store', (err: Error) => {
     handleError(err)
   })
-  function handleError(err: Error) {
-    console.error('Error with loading / saving', err, err instanceof ApiError)
+  editor.on('asset:upload:error', (err: Error) => {
+    handleError(err)
+  })
+  function handleError(_err: Error | string) {
+    const err: Error = typeof _err === 'string' ? JSON.parse(_err) : _err
+    console.error('Error with loading or saving website or uploading asset', err, err instanceof ApiError)
     if (err instanceof ApiError) {
       console.error('ApiError', err.code, err.message)
       switch (err.code) {
@@ -101,13 +105,13 @@ export const storagePlugin = (editor) => {
       default:
         return editor.Modal.open({
           title: 'Error',
-          content: `An error occured. ${err.message}`,
+          content: `An error occured.<br>${err.message}`,
         })
       }
     } else {
       return editor.Modal.open({
         title: 'Error',
-        content: `An error occured. ${err.message}`,
+        content: `An error occured.<br>${err.message}`,
       })
     }
   }

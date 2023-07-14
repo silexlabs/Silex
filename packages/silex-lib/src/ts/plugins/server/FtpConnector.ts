@@ -262,14 +262,13 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
 
   // **
   // FTP methods
-  async write(ftp: Client, path: string, content: ConnectorFileContent, progress?: (message: string) => void): Promise<string> {
+  async write(ftp: Client, path: string, content: ConnectorFileContent, progress?: (message: string) => void): Promise<void> {
     ftp.trackProgress(info => {
       progress && progress(`Uploading ${info.bytes / 1000} KB}`)
     })
     progress && progress('Upload started')
     await ftp.uploadFrom(contentToReadable(content), path)
     progress && progress('Upload complete')
-    return path
   }
 
   async read(ftp: Client, path: string): Promise<Readable> {
@@ -497,7 +496,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     id: WebsiteId,
     files: ConnectorFile[],
     statusCbk?: StatusCallback,
-  ): Promise<string[]> {
+  ): Promise<void> {
     // Connect to FTP server
     statusCbk && statusCbk({
       message: 'Connecting to FTP server',
@@ -512,7 +511,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     })
     await this.mkdir(ftp, rootPath)
     // Write files
-    const paths: string[] = []
     let lastFile: ConnectorFile | undefined
     try {
       // Sequentially write files
@@ -529,14 +527,12 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
             status: JobStatus.IN_PROGRESS,
           })
         })
-        paths.push(result)
       }
       this.closeClient(ftp)
       statusCbk && statusCbk({
-        message: `Finished writing ${paths.length} files to ${rootPath}`,
+        message: `Finished writing ${files.length} files to ${rootPath}`,
         status: JobStatus.SUCCESS,
       })
-      return paths
     } catch(err) {
       // Not sure why it never gets here
       statusCbk && statusCbk({
@@ -544,7 +540,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
         status: JobStatus.ERROR,
       })
       this.closeClient(ftp)
-      return []
     }
   }
 
