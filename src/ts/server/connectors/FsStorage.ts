@@ -31,7 +31,8 @@ import { fileURLToPath } from 'url'
 // Variables needed for jest tests
 if(!globalThis.__dirname) {
   // @ts-ignore
-  globalThis.__dirname = dirname(fileURLToPath(import.meta.url))
+  globalThis.__dirname = dirname(process.cwd() + '/src/ts/server/connectors/FsStorage.ts')
+  console.log('Redefining __dirname', globalThis.__dirname)
 }
 
 type FsSession = ConnectorSession
