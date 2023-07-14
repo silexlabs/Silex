@@ -15,43 +15,60 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Config, Plugin } from '@silexlabs/silex-plugins'
+import { Config } from '@silexlabs/silex-plugins'
 import { getEditorConfig } from './grapesjs'
-import { CLIENT_CONFIG_FILE_NAME, DEFAULT_CONNECTOR_ID, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
+import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
+import { ConnectorId, WebsiteId } from '../types'
+import { EditorConfig } from 'grapesjs'
 
 /**
  * @fileoverview Silex client side config
  */
 
-const id = new URL(location.href).searchParams.get('id') ?? DEFAULT_WEBSITE_ID
-const connectorId = new URL(location.href).searchParams.get('connectorId') ?? DEFAULT_CONNECTOR_ID
-const lang = new URL(location.href).searchParams.get('lang') ?? DEFAULT_LANGUAGE
-const rootUrl = window.location.origin
+export class ClientConfig extends Config {
+  /**
+   * The website to load
+   * This is the id of the website in the storage connector
+   */
+  websiteId: WebsiteId = new URL(location.href).searchParams.get('id') ?? DEFAULT_WEBSITE_ID
 
-export class SilexConfig extends Config {
+  /**
+   * The storage connector to use
+   * If not found in the URL and the user is not logged in to any storage, use the first storage
+   */
+  storageId: ConnectorId = new URL(location.href).searchParams.get('storageId')
+
+  /**
+   * language for I18n module
+   */
+  lang = new URL(location.href).searchParams.get('lang') ?? DEFAULT_LANGUAGE
+
+  /**
+   * root url of Silex app
+   */
+  rootUrl = window.location.origin
+
   /**
    * debug mode
    */
   debug = false
 
   /**
-   * language for I18n module
-   */
-  lang = lang
-
-  /**
    * Grapesjs config
    */
-  grapesJsConfig = getEditorConfig(id, connectorId, rootUrl)
+  grapesJsConfig: EditorConfig
 
   /**
    * Client config url
    * This is the url of the config file which is a plugin
    */
-  clientConfigUrl = `${rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
+  clientConfigUrl: string
 
   /**
-   * GrapesJs plugins
+   * Init GrapesJS config which depend on the config file properties
    */
-  grapesJsPlugins: Plugin[] = []
+  initGrapesConfig() {
+    this.grapesJsConfig = getEditorConfig(this.websiteId, this.storageId, this.rootUrl)
+    this.clientConfigUrl = `${this.rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
+  }
 }
