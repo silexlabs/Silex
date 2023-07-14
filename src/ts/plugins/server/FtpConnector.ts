@@ -60,16 +60,10 @@ interface FileStatus {
   status: JobStatus
 }
 
-interface FtpOptions {
-  type: ConnectorType
-  path?: string
-  authorizeUrl?: string
-  authorizePath?: string
-}
-
-interface FtpOptionsWithDefaults {
+export interface FtpOptions {
   type: ConnectorType
   path: string
+  assetsFolder: string
   authorizeUrl: string
   authorizePath: string
 }
@@ -235,17 +229,19 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
   connectorId = 'ftp'
   displayName = 'Ftp'
   icon = 'ftp'
-  options: FtpOptionsWithDefaults
+  options: FtpOptions
   connectorType: ConnectorType
 
-  constructor(config: ServerConfig, opts: FtpOptions) {
+  constructor(config: ServerConfig, opts: Partial<FtpOptions>) {
     this.options = {
       path: '',
+      assetsFolder: 'assets',
       authorizeUrl: '/api/authorize/ftp/',
       authorizePath: '/api/authorize/ftp/',
       ...opts,
-    }
-    this.connectorType = this.options.type
+    } as FtpOptions
+    if(!this.options.type) throw new Error('missing type in option of FtpConnector')
+    this.connectorType = toConnectorEnum(this.options.type)
   }
 
   // **
@@ -262,7 +258,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
 
   // **
   // FTP methods
-  async write(ftp: Client, path: string, content: ConnectorFileContent, progress?: (message: string) => void): Promise<void> {
+  private async write(ftp: Client, path: string, content: ConnectorFileContent, progress?: (message: string) => void): Promise<void> {
     ftp.trackProgress(info => {
       progress && progress(`Uploading ${info.bytes / 1000} KB}`)
     })
@@ -271,13 +267,13 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     progress && progress('Upload complete')
   }
 
-  async read(ftp: Client, path: string): Promise<Readable> {
+  private async read(ftp: Client, path: string): Promise<Readable> {
     const stream = new PassThrough()
     await ftp.downloadTo(stream, path)
     return stream
   }
 
-  async readdir(ftp: Client, path: string): Promise<FileMeta[]> {
+  private async readdir(ftp: Client, path: string): Promise<FileMeta[]> {
     const list = await ftp.list(path)
     return list.map((file) => ({
       name: file.name,
@@ -289,19 +285,19 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     } as FileMeta))
   }
 
-  async mkdir(ftp: Client, path: string) {
+  private async mkdir(ftp: Client, path: string) {
     return ftp.ensureDir(path)
   }
 
-  async rmdir(ftp: Client, path: string) {
+  private async rmdir(ftp: Client, path: string) {
     return ftp.removeDir(path)
   }
 
-  async unlink(ftp: Client, path: string) {
+  private async unlink(ftp: Client, path: string) {
     return ftp.remove(path)
   }
 
-  async getClient({host, user, pass, port, secure}): Promise<Client> {
+  private async getClient({host, user, pass, port, secure}): Promise<Client> {
     const ftp = new Client()
     await ftp.access({
       host,
@@ -310,11 +306,10 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       password: pass,
       secure,
     })
-    ftp['test'] = uuid()
     return ftp
   }
 
-  closeClient(ftp: Client) {
+  private closeClient(ftp: Client) {
     if(ftp && !ftp.closed) {
       ftp.close()
     } else {
@@ -509,7 +504,8 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       message: 'Making sure that root folder exists',
       status: JobStatus.IN_PROGRESS,
     })
-    await this.mkdir(ftp, rootPath)
+    // Useless as ftp write will create the folder
+    // await this.mkdir(ftp, rootPath)
     // Write files
     let lastFile: ConnectorFile | undefined
     try {
@@ -519,7 +515,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
           message: `Writing file ${file.path}`,
           status: JobStatus.IN_PROGRESS,
         })
-        const dstPath = join(this.options.path, rootPath, id, file.path)
+        const dstPath = join(this.options.path, rootPath, id, this.options.assetsFolder, file.path)
         lastFile = file
         const result = await this.write(ftp, dstPath, file.content, message => {
           statusCbk && statusCbk({
@@ -547,7 +543,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     if (!this.sessionData(session)) throw new Error('Not logged in')
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
-    const dirPath = join(this.options.path, storageRootPath, id, path)
+    const dirPath = join(this.options.path, storageRootPath, id, this.options.assetsFolder, path)
     const asset = this.read(ftp, dirPath)
     this.closeClient(ftp)
     return asset
@@ -557,7 +553,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     await Promise.all(
-      paths.map((path) => this.unlink(ftp, join(this.options.path, storageRootPath, id, path)))
+      paths.map((path) => this.unlink(ftp, join(this.options.path, storageRootPath, id, this.options.assetsFolder, path)))
     )
     this.closeClient(ftp)
   }

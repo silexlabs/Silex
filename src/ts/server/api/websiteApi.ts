@@ -241,7 +241,6 @@ export default function (config: ServerConfig, opts = {}): Router {
   // Load assets
   router.get(API_WEBSITE_ASSETS_READ + '/:path', async (req, res) => {
     {
-      console.log('API_WEBSITE_ASSETS_READ', req.params)
       try {
         const query: ApiWebsiteAssetsReadQuery = req.query as any
         const params: ApiWebsiteAssetsReadParams = req.params as any
@@ -306,9 +305,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       config.emit(ServerEvent.WEBSITE_ASSET_STORE_START, { files, websiteId, connectorId } as WebsiteAssetStoreStartEventType)
 
       // Write the files
-      console.log('before writeAssets')
       await writeAssets(req['session'], websiteId, files, connectorId)
-      console.log('after writeAssets')
 
       // Return the file URLs to insert in the website
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
@@ -417,7 +414,7 @@ export default function (config: ServerConfig, opts = {}): Router {
     // Clean up the path
     const cleanPathFiles = files.map(file => ({
       ...file,
-      path: file.path.replace(`/assets/`, '/'), // Remove the assets folder added by GrapesJS
+      path: file.path.replace('/assets/', '/'), // Remove the assets folder added by GrapesJS
     }))
 
     // Write the asset to the connector
