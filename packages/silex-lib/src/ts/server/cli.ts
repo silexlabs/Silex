@@ -21,31 +21,43 @@ import silex from './index'
 import { parse } from 'cli'
 
 const options = parse({
-  config: [ 'c', 'Path for the server side config file to load at startup', 'file'],
-  port: [ 'p', 'Port to listen to', 'int'],
-  debug: [false, 'Debug mode, with live reload, source maps etc.', 'boolean'],
+  'host': ['', 'Sets the host param of the express module "cookie-session".', 'string'],
+  'port': [ 'p', 'Port to listen to', 'int'],
+  'protocol': ['', 'Sets the protocol param of the express module "cookie-session".', 'string'],
+  'config': [ 'c', 'Path for the server side config file to load at startup', 'file'],
+  'client-config': ['', 'Path to client config file to be served on .silex-client.js', 'string'],
+  'fs-root': ['', 'Path to the root folder where to store websites. Used by the default connector (fs).', 'string'],
+  'session-name': ['', 'Sets the name param of the express module "cookie-session".', 'string'],
+  'session-secret': ['s', 'Session secret', 'string'],
   'ssl-port': [ false, 'Port to listen to for SSL/HTTPS', 'int'],
   'force-https': [ false, 'Force HTTPS', 'boolean'],
   'ssl-private-key': [ false, 'Path to private key for SSL', 'file'],
   'ssl-certificate': [ false, 'Path to SSL certificate', 'file'],
   'force-https-trust-xfp-header': [ false, 'Sets the trustXFPHeader param of the express module "cookie-session". Use only with --force-https', 'boolean'],
-  'session-secret': ['s', 'Session secret', 'string'],
   'cors-url': ['', 'Enable CORS for URL (can be "*")', 'string'],
-  'client-config': ['', 'Path to client config file to be served on .silex-client.js', 'string'],
-  'fs-root': ['', 'Path to the root folder where to store websites. Used by the default connector (fs).', 'string'],
+  'express-json-limit': ['', 'Sets the limit param of the express module "json".', 'string'],
+  'express-text-limit': ['', 'Sets the limit param of the express module "text".', 'string'],
+  'express-urlencoded-limit': ['', 'Sets the limit param of the express module "urlencoded".', 'string'],
+  'debug': [false, 'Debug mode, with live reload, source maps etc.', 'boolean'],
 }, {})
 
-if(options.config) process.env.SILEX_CONFIG = options.config
+if(options['host']) process.env.SILEX_HOST = options['host']
 if(options.port) process.env.SILEX_PORT = options.port
-if(options.debug) process.env.SILEX_DEBUG = options.debug
+if(options['protocol']) process.env.SILEX_PROTOCOL = options['protocol']
+if(options.config) process.env.SILEX_CONFIG = options.config
+if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
+if(options['fs-root']) process.env.SILEX_FS_ROOT = options['fs-root']
+if(options['session-name']) process.env.SILEX_SESSION_NAME = options['session-name']
+if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
 if(options['ssl-port']) process.env.SILEX_SSL_PORT = options['ssl-port']
 if(options['force-https']) process.env.SILEX_FORCE_HTTPS = options['force-https']
 if(options['ssl-private-key']) process.env.SILEX_SSL_PRIVATE_KEY = options['ssl-private-key']
 if(options['ssl-certificate']) process.env.SILEX_SSL_CERTIFICATE = options['ssl-certificate']
 if(options['force-https-trust-xfp-header']) process.env.SILEX_FORCE_HTTPS_TRUST_XFP_HEADER = options['force-https-trust-xfp-header']
-if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
 if(options['cors-url']) process.env.SILEX_CORS_URL = options['cors-url']
-if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
-if(options['fs-root']) process.env.SILEX_FS_ROOT = options['fs-root']
+if(options['express-json-limit']) process.env.SILEX_EXPRESS_JSON_LIMIT = options['express-json-limit']
+if(options['express-text-limit']) process.env.SILEX_EXPRESS_TEXT_LIMIT = options['express-text-limit']
+if(options['express-urlencoded-limit']) process.env.SILEX_EXPRESS_URLENCODED_LIMIT = options['express-urlencoded-limit']
+if(options.debug) process.env.SILEX_DEBUG = options.debug
 
 silex()

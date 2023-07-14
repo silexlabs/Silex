@@ -23,7 +23,6 @@ export const WEBSITE_DATA_FILE = 'website.json'
 export const WEBSITE_META_DATA_FILE = 'meta.json'
 
 export const DEFAULT_WEBSITE_ID = 'default'
-export const DEFAULT_CONNECTOR_ID = ''
 export const DEFAULT_LANGUAGE = 'en'
 export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
 

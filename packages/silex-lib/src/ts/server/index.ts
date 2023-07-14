@@ -19,15 +19,34 @@ import * as silexApp from './express'
 import api from './api/api'
 import { ServerConfig } from './config'
 import dotenv from 'dotenv'
+import { join } from 'path'
 
 // Main app
 export default async function silex() {
   // Load env vars from .env file if any
-  dotenv.config()
+  const curDirEnv = dotenv.config()
+  if (curDirEnv.error) {
+    if(curDirEnv.error['code'] === 'ENOENT') {
+      console.info('> No .env file found in current directory')
+    } else {
+      throw curDirEnv.error
+    }
+  } else {
+    console.info('> Env vars loaded from .env file')
+  }
 
   // Load default env vars
   // This will not override existing env vars
-  dotenv.config({ path: '.env.default' })
+  const DEFAULT_ENV_FILE = join(__dirname, '../../../.env.default')
+  const rootDirEnv = dotenv.config({ path: DEFAULT_ENV_FILE })
+  if (rootDirEnv.error) {
+    if(rootDirEnv.error['code'] === 'ENOENT') {
+      throw new Error(`\n\nFailed to load default env vars. File not found ${DEFAULT_ENV_FILE}\n\n`)
+    } else {
+      throw new Error(`\n\nFailed to load default env vars. Error in ${DEFAULT_ENV_FILE}: ${ rootDirEnv.error.message }\n\n`)
+    }
+  }
+  console.info('> Default env vars loaded')
 
   // Get the default config object
   const config = new ServerConfig()

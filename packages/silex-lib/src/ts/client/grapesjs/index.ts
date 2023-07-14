@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs, { Editor } from 'grapesjs'
+import grapesjs, { Editor, EditorConfig } from 'grapesjs'
 import openImport from './openImport'
 
 /**
@@ -84,7 +84,7 @@ plugins
 const catBasic = 'Containers'
 const catComponents = 'Components'
 
-export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl: string) {
+export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl: string): EditorConfig {
   return {
     container: '#gjs',
     height: '100%',
@@ -235,17 +235,11 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
 // ////////////////////
 // Keep a ref to the editor singleton
 let editor: Editor
-export async function initEditor(config, grapesJsPlugins) {
+export async function initEditor(config: EditorConfig) {
   if(editor) throw new Error('Grapesjs editor already created')
   return new Promise<Editor>((resolve, reject) => {
     try {
-      editor = grapesjs.init({
-        plugins: [
-          ...grapesJsPlugins,
-          ...config.plugins,
-        ],
-        ...config,
-      })
+      editor = grapesjs.init(config)
     } catch(e) {
       console.error('Error initializing GrapesJs with plugins:', plugins, e)
       reject(e)
