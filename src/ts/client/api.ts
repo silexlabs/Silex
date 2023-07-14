@@ -110,6 +110,10 @@ export async function websiteAssetsLoad({path, websiteId, connectorId}: {path: s
   return api<ApiWebsiteAssetsReadQuery, null, ApiWebsiteAssetsReadResponse>(`${ApiRoute.WEBSITE_ASSETS_READ}/${path}`, 'GET', { websiteId, connectorId: connectorId })
 }
 
+/**
+ * Not used directly, grapesjs handles the upload
+ * @see assetManager in src/ts/client/grapesjs/index.ts
+ */
 export async function websiteAssetsSave({websiteId, connectorId, files}: {websiteId: WebsiteId, connectorId: ConnectorId, files: ClientSideFile[]}): Promise<string[]> {
   const { data } = await api<ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse>(ApiRoute.WEBSITE_ASSETS_WRITE, 'POST', { websiteId, connectorId: connectorId }, files)
   return data

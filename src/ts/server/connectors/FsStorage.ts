@@ -26,6 +26,7 @@ import { ServerConfig } from '../config'
 import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
 import { Readable } from 'stream'
 import { v4 as uuid } from 'uuid'
+import e from 'express'
 
 type FsSession = ConnectorSession
 
@@ -33,7 +34,8 @@ const USER_ICON = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\
 const FILE_ICON = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202L6%2022%2018%2022%2018%207%2012%202%206%202Z%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M18%202L12%202%2012%208%2018%208%2018%202Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E'
 
 interface FsOptions {
-  path?: string
+  path: string
+  assetsFolder: string
 }
 
 export class FsStorage implements StorageConnector<FsSession> {
@@ -41,12 +43,13 @@ export class FsStorage implements StorageConnector<FsSession> {
   displayName = 'File system storage'
   icon = FILE_ICON
   disableLogout = true
-  options: { path: string }
+  options: FsOptions
   connectorType = ConnectorType.STORAGE
 
-  constructor(config: ServerConfig | null, opts: FsOptions) {
+  constructor(config: ServerConfig | null, opts: Partial<FsOptions>) {
     this.options = {
-      path: __dirname + '../../../../.silex',
+      path: join(__dirname, '..', '..', '..', '..', 'data'),
+      assetsFolder: '/assets',
       ...opts,
     }
     this.initFs()
@@ -55,8 +58,9 @@ export class FsStorage implements StorageConnector<FsSession> {
   async initFs() {
     const stat = await fs.stat(this.options.path).catch(() => null)
     if (!stat) {
+      // create data folder with a default website
       const id = DEFAULT_WEBSITE_ID
-      await fs.mkdir(join(this.options.path, id), { recursive: true })
+      await fs.mkdir(join(this.options.path, id, this.options.assetsFolder), { recursive: true })
       await this.setWebsiteMeta({}, id, { name: 'Default website', connectorUserSettings: {} })
       await this.updateWebsite({}, id, defaultWebsiteData)
     }
@@ -145,7 +149,7 @@ export class FsStorage implements StorageConnector<FsSession> {
   // ********************
   async createWebsite(session: FsSession, meta: WebsiteMetaFileContent): Promise<WebsiteId> {
     const id = uuid()
-    await fs.mkdir(join(this.options.path, id), { recursive: true })
+    await fs.mkdir(join(this.options.path, id, this.options.assetsFolder), { recursive: true })
     await this.setWebsiteMeta(session, id, meta)
     await this.updateWebsite(session, id, defaultWebsiteData)
     return id
@@ -179,19 +183,17 @@ export class FsStorage implements StorageConnector<FsSession> {
   }
 
   async getAsset(session: FsSession, id: WebsiteId, path: string): Promise<ConnectorFile> {
-    const fullPath = join(this.options.path, id, path)
+    const fullPath = join(this.options.path, id, this.options.assetsFolder, path)
     const content = await fs.readFile(fullPath)
     return { path, content }
   }
 
-  async writeAssets(session: FsSession, id: WebsiteId, files: ConnectorFile[], statusCbk?: StatusCallback): Promise<string[]> {
+  async writeAssets(session: FsSession, id: WebsiteId, files: ConnectorFile[], statusCbk?: StatusCallback): Promise<void> {
     const filesStatuses = this.initStatus(files)
-    let error = false
-    const filePaths = [] as string[]
+    let error: Error | null = null
     for (const fileStatus of filesStatuses) {
       const {file} = fileStatus
-      const path = join(this.options.path, id, file.path)
-      filePaths.push(path)
+      const path = join(this.options.path, id, this.options.assetsFolder, file.path)
       if (typeof file.content === 'string' || Buffer.isBuffer(file.content)) {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
@@ -200,7 +202,7 @@ export class FsStorage implements StorageConnector<FsSession> {
         } catch(err) {
           fileStatus.message = `Error (${err})`
           this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
-          error = true
+          error = err
           continue
         }
         fileStatus.message = 'Success'
@@ -220,7 +222,7 @@ export class FsStorage implements StorageConnector<FsSession> {
             console.error('writeStream error', err)
             fileStatus.message = `Error (${err})`
             this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)
-            error = true
+            error = err
             resolve(file)
           })
         })
@@ -230,7 +232,7 @@ export class FsStorage implements StorageConnector<FsSession> {
       }
     }
     this.updateStatus(filesStatuses, error ? JobStatus.ERROR : JobStatus.SUCCESS, statusCbk)
-    return filePaths
+    if(error) throw error
   }
 
   async deleteAssets(session: FsSession, id: WebsiteId, paths: string[]): Promise<void> {
@@ -241,7 +243,7 @@ export class FsStorage implements StorageConnector<FsSession> {
 
   async readAsset(session: object, websiteId: string, fileName: string): Promise<ConnectorFileContent> {
     const id = requiredParam<WebsiteId>(websiteId, 'website id')
-    const path = join(this.options.path, id, fileName)
+    const path = join(this.options.path, id, this.options.assetsFolder, fileName)
     return await fs.readFile(path)
   }
 }

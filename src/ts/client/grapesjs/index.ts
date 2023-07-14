@@ -48,6 +48,7 @@ import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import { storagePlugin } from './storage'
 import { ConnectorId, WebsiteId } from '../../types'
+import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -102,7 +103,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
     },
 
     assetManager: {
-      upload: `${rootUrl}/assets/?id=${id}`,
+      upload: `${rootUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSETS_WRITE}/?websiteId=${id}${ connectorId ? `&connectorId=${connectorId}` : ''}`,
     },
 
     storageManager: {

@@ -74,5 +74,5 @@ export async function start(options = {}) {
     document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
     document.querySelector('#gjs').classList.remove('silex-dialog-hide')
     config.emit(ClientEvent.STARTUP_END, { editor, config })
-  }, 1000)
+  }, 100)
 }

@@ -18,7 +18,7 @@
 import { Router } from 'express'
 import formidable from 'formidable'
 import PersistentFile from 'formidable/src/PersistentFile'
-import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, WEBSITE_DATA_FILE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE } from '../../constants'
+import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH } from '../../constants'
 import { createReadStream } from 'fs'
 import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody } from '../../types'
 import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
@@ -239,8 +239,9 @@ export default function (config: ServerConfig, opts = {}): Router {
   })
 
   // Load assets
-  router.get(API_WEBSITE_ASSETS_READ, async (req, res) => {
+  router.get(API_WEBSITE_ASSETS_READ + '/:path', async (req, res) => {
     {
+      console.log('API_WEBSITE_ASSETS_READ', req.params)
       try {
         const query: ApiWebsiteAssetsReadQuery = req.query as any
         const params: ApiWebsiteAssetsReadParams = req.params as any
@@ -293,7 +294,7 @@ export default function (config: ServerConfig, opts = {}): Router {
             const files = ([].concat(_files['files[]']) as PersistentFile[])
               .map(file => file.toJSON())
               .map(file => ({
-                path: `${options.assetsPath}/${file.originalFilename}`,
+                path: `/${file.originalFilename}`,
                 content: createReadStream(file.filepath),
               }))
             resolve(files)
@@ -305,11 +306,18 @@ export default function (config: ServerConfig, opts = {}): Router {
       config.emit(ServerEvent.WEBSITE_ASSET_STORE_START, { files, websiteId, connectorId } as WebsiteAssetStoreStartEventType)
 
       // Write the files
-      const data = await writeAssets(req['session'], websiteId, files, connectorId)
+      console.log('before writeAssets')
+      await writeAssets(req['session'], websiteId, files, connectorId)
+      console.log('after writeAssets')
 
       // Return the file URLs to insert in the website
+      // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       res.json({
-        data, // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
+        data: files.map(file =>
+          API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSETS_READ
+          + file.path
+          + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
+        ),
       } as ApiWebsiteAssetsWriteResponse)
 
       // Hook for plugins
@@ -396,7 +404,7 @@ export default function (config: ServerConfig, opts = {}): Router {
     const storageConnector = await getStorageConnector(session, connectorId)
 
     // Read the asset from the connector
-    return storageConnector.readAsset(session, websiteId, `/${options.assetsPath}/${fileName}`)
+    return storageConnector.readAsset(session, websiteId, `/${fileName}`)
   }
 
   /**
@@ -406,11 +414,17 @@ export default function (config: ServerConfig, opts = {}): Router {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 
+    // Clean up the path
+    const cleanPathFiles = files.map(file => ({
+      ...file,
+      path: file.path.replace(`/assets/`, '/'), // Remove the assets folder added by GrapesJS
+    }))
+
     // Write the asset to the connector
     await storageConnector.writeAssets(
       session,
       websiteId,
-      files
+      cleanPathFiles,
     )
 
     // Return the files URLs with the website id

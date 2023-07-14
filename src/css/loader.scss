@@ -7,4 +7,6 @@
   color: variables.$secondaryColor;
   justify-content: center;
   align-items: center;
+  background-color: variables.$primaryColor;
+  z-index: variables.$z-loader;
 }
