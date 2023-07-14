@@ -101,9 +101,9 @@ export interface HostingConnector<Session extends ConnectorSession = ConnectorSe
   getUrl(session: Session, websiteId: WebsiteId): Promise<string>
 }
 
-export function toConnectorEnum(type: string): ConnectorType {
-  const result = ConnectorType[type.toUpperCase() as keyof typeof ConnectorType]
-  if(!result) throw new Error('Unknown connector ' + type)
+export function toConnectorEnum(type: string | ConnectorType): ConnectorType {
+  const result = ConnectorType[type.toString().toUpperCase() as keyof typeof ConnectorType]
+  if(!result) throw new Error(`Unknown connector type ${type}. It should be one of ${Object.keys(ConnectorType).join(', ')}`)
   return result
 }
 

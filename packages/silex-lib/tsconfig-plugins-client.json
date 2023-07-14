@@ -18,6 +18,9 @@
   "include": [
     "src/ts/plugins/client/**/*"
   ],
+  "exclude": [
+    "**/*.test.ts"
+  ],
   "plugins": [
     {
       "name": "ts-lit-plugin",

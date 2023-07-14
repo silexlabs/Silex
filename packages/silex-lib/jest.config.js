@@ -39,5 +39,27 @@ module.exports = {
         }],
       },
     },
+    {
+      displayName: 'dom',
+      testEnvironment: 'jsdom',
+      testMatch: ['<rootDir>/src/ts/plugins/client/**/*.test.ts'],
+      extensionsToTreatAsEsm: [".ts"],
+      transform: {
+        ".ts": ['ts-jest', {
+          useESM: true,
+        }],
+      },
+    },
+    {
+      displayName: 'node',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/src/ts/plugins/server/**/*.test.ts'],
+      extensionsToTreatAsEsm: [".ts"],
+      transform: {
+        ".ts": ['ts-jest', {
+          useESM: true,
+        }],
+      },
+    },
   ],
 };

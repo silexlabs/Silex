@@ -18,7 +18,7 @@
 import fs, { stat } from 'fs/promises'
 import { createWriteStream } from 'fs'
 import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, defaultWebsiteData, ConnectorOptions } from '../../types'
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation'
@@ -26,7 +26,13 @@ import { ServerConfig } from '../config'
 import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
 import { Readable } from 'stream'
 import { v4 as uuid } from 'uuid'
-import e from 'express'
+import { fileURLToPath } from 'url'
+
+// Variables needed for jest tests
+if(!globalThis.__dirname) {
+  // @ts-ignore
+  globalThis.__dirname = dirname(fileURLToPath(import.meta.url))
+}
 
 type FsSession = ConnectorSession
 
@@ -55,7 +61,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     this.initFs()
   }
 
-  async initFs() {
+  private async initFs() {
     const stat = await fs.stat(this.options.path).catch(() => null)
     if (!stat) {
       // create data folder with a default website
@@ -69,14 +75,14 @@ export class FsStorage implements StorageConnector<FsSession> {
   // ********************
   // Job utils methods
   // ********************
-  updateStatus(filesStatuses, status, statusCbk) {
+  private updateStatus(filesStatuses, status, statusCbk) {
     statusCbk && statusCbk({
       message: `<p>Writing files:<ul><li>${filesStatuses.map(({file, message}) => `${file.path}: ${message}`).join('</li><li>')}</li></ul></p>`,
       status,
     })
   }
 
-  initStatus(files) {
+  private initStatus(files) {
     return files.map(file => ({
       file,
       message: 'Waiting',
