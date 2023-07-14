@@ -116,7 +116,7 @@ export async function websiteAssetsSave({websiteId, connectorId, files}: {websit
 }
 
 export async function api<ReqQuery, ReqBody, ResBody>(route: ApiRoute | string, method: string, query?: ReqQuery, payload?: ReqBody): Promise<ResBody> {
-  const url = `${ROOT_URL}${route.toString()}?${new URLSearchParams(Object.entries(query).filter(([key, value]) => typeof value != 'undefined')).toString()}`
+  const url = `${ROOT_URL}${route.toString()}?${new URLSearchParams(Object.entries(query).filter(([key, value]) => !!value)).toString()}`
   const response = await fetch(url, {
     method,
     headers: {

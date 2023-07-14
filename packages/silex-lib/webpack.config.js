@@ -19,7 +19,7 @@ const path = require('path');
 const webpack = require("webpack")
 
 module.exports = {
-  entry: './src/ts/client/expose.ts',
+  entry: './src/ts/client/index.ts',
   mode: 'production',
   module: {
     rules: [

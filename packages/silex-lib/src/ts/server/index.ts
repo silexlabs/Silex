@@ -21,6 +21,9 @@ import { ServerConfig } from './config'
 import dotenv from 'dotenv'
 import { join } from 'path'
 
+// Expose API to calling app as function silex()
+export * from './expose'
+
 // Main app
 export default async function silex() {
   // Load env vars from .env file if any

@@ -62,13 +62,12 @@ export class ClientConfig extends Config {
    * Client config url
    * This is the url of the config file which is a plugin
    */
-  clientConfigUrl: string
+  clientConfigUrl = `${this.rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
 
   /**
    * Init GrapesJS config which depend on the config file properties
    */
   initGrapesConfig() {
     this.grapesJsConfig = getEditorConfig(this.websiteId, this.storageId, this.rootUrl)
-    this.clientConfigUrl = `${this.rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
   }
 }
