@@ -15,16 +15,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export * from './grapesjs/index'
-export * from './config'
 
-export * as constants from '../constants'
-export * as utils from './utils'
-export * as api from './api'
 export * as events from './events'
-export * as page from '../page'
-export * as types from '../types'
-
-console.info(`
-Silex client loaded
-`)

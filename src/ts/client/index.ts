@@ -25,6 +25,9 @@ import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
 
+// Expose API to calling app as window.silex
+export * from './expose'
+
 /**
  * Start Silex, called from host HTML page with window.silex.start()
  */
@@ -55,7 +58,6 @@ export async function start(options = {}) {
   }
 
   const editor = getEditor()
-  window['editor'] = editor
 
   // Init internationalization module
   editor.I18n.setLocale(config.lang)
