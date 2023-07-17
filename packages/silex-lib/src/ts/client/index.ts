@@ -64,15 +64,26 @@ export async function start(options = {}) {
 
   // Load the site
   editor.StorageManager.setAutosave(false)
+  console.log('before load')
+  try {
   await editor.load(null)
-  setTimeout(() => {
-    // This needs time for grapesjs
-    editor.editor.set('changesCount', 0)
-    editor.StorageManager.setAutosave(true)
+  } catch(e) {
+    if(e.httpStatusCode === 401) {
+      // Unauthorized, will try to login
+    } else {
+      // Will display an error message, see in storage.ts
+    }
+  } finally {
+    console.log('after load')
+    setTimeout(() => {
+      // This needs time for grapesjs
+      editor.editor.set('changesCount', 0)
+      editor.StorageManager.setAutosave(true)
 
-    // This needs time for the loader to be hidden
-    document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
-    document.querySelector('#gjs').classList.remove('silex-dialog-hide')
-    config.emit(ClientEvent.STARTUP_END, { editor, config })
-  }, 100)
+      // This needs time for the loader to be hidden
+      document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
+      document.querySelector('#gjs').classList.remove('silex-dialog-hide')
+      config.emit(ClientEvent.STARTUP_END, { editor, config })
+    }, 100)
+  }
 }

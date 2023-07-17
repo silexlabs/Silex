@@ -3,7 +3,7 @@ import { API_CONNECTOR_LIST, API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_USER, A
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
 import { Connector, getConnector, toConnectorData, toConnectorEnum } from '../connectors/connectors'
-import { ApiConnectorListQuery, ApiConnectorListResponse, ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiConnectorUserQuery, ApiConnectorUserResponse, ApiConnectorLogoutQuery, ApiError, ConnectorId, ApiConnectorLoginCbkQuery, ApiConnectorLoginCbkBody, ConnectorType, ConnectorOptions } from '../../types'
+import { ApiConnectorListQuery, ApiConnectorListResponse, ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiConnectorUserQuery, ApiConnectorUserResponse, ApiConnectorLogoutQuery, ConnectorId, ApiConnectorLoginCbkQuery, ApiConnectorLoginCbkBody, ConnectorOptions, ApiResponseError } from '../../types'
 
 /**
  * @fileoverview The connector API adds routes to handle the connectors and the methods they implement, this includes authentication and user data.
@@ -62,7 +62,7 @@ async function routeUser(req: Request, res: Response) {
         .json({
           error: true,
           message: `Connector not found: ${type} ${query.connectorId}`,
-        } as ApiError)
+        } as ApiResponseError)
       return
     }
     if(!await connector.isLoggedIn(session)) {
@@ -71,7 +71,7 @@ async function routeUser(req: Request, res: Response) {
         .json({
           error: true,
           message: 'Not logged in',
-        } as ApiError)
+        } as ApiResponseError)
       return
     }
     // User logged in, return user data
@@ -82,7 +82,7 @@ async function routeUser(req: Request, res: Response) {
     res.status(error?.code ?? 500).json({
       error: true,
       message: error.message,
-    } as ApiError)
+    } as ApiResponseError)
   }
 }
 
@@ -104,14 +104,14 @@ async function routeListConnectors(req: Request, res: Response) {
       res.status(error?.code ?? 500).json({
         error: true,
         message: 'Error while listing connectors: ' + error.message,
-      } as ApiError)
+      } as ApiResponseError)
     }
   } catch (error) {
     console.error('Error in the list connectors request', error)
     res.status(error?.code ?? 400).json({
       error: true,
       message: 'Error in the list connectors request: ' + error.message,
-    } as ApiError)
+    } as ApiResponseError)
   }
 }
 
@@ -151,7 +151,7 @@ async function routeLogin(req: Request, res: Response) {
     res.status(error?.code ?? 400).json({
       error: true,
       message: 'Error in the login request: ' + error.message,
-    } as ApiError)
+    } as ApiResponseError)
   }
 }
 
@@ -212,7 +212,7 @@ async function routeLogin(req: Request, res: Response) {
 //     res.status(error?.code ?? 400).json({
 //       error: true,
 //       message: 'Error in the login request: ' + error.message,
-//     } as ApiError)
+//     } as ApiResponseError)
 //   }
 // }
 
@@ -222,6 +222,7 @@ async function routeLogin(req: Request, res: Response) {
  */
 async function routeLoginSuccess(req: Request, res: Response) {
   try {
+    console.log('routeLoginSuccess', req.query, req.body, req['sesion'])
     const query = req.query as ApiConnectorLoginCbkQuery
     if(query.error) throw new Error(query.error)
 
@@ -268,13 +269,13 @@ async function routeLogout(req: Request, res: Response) {
       res.json({
         error: false,
         message: 'OK',
-      } as ApiError)
+      } as ApiResponseError)
     } catch (error) {
       console.error('Error while logging out', error)
       res.status(error?.code ?? 500).json({
         error: true,
         message: 'Error while logging out: ' + error.message,
-      } as ApiError)
+      } as ApiResponseError)
       return
     }
   } catch (error) {
@@ -282,7 +283,7 @@ async function routeLogout(req: Request, res: Response) {
     res.status(error?.code ?? 400).json({
       error: true,
       message: 'Error in the logout request: ' + error.message,
-    } as ApiError)
+    } as ApiResponseError)
     return
   }
 }

@@ -15,15 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const FtpConnector = require('./dist/plugins/FtpConnector').default
+const FtpConnector = require('./dist/plugins/server/plugins/server/FtpConnector').default
+const GitlabConnector = require('./dist/plugins/server/plugins/server/GitlabConnector').default
 
 module.exports = async function (config, options) {
   if(!FtpConnector) throw new Error('FtpConnector not found')
-  config.setHostingConnectors([new FtpConnector(config, {
-    type: 'HOSTING',
-  })])
-  config.setStorageConnectors([new FtpConnector(config, {
-    type: 'STORAGE',
-  })])
+  if(!GitlabConnector) throw new Error('GitlabConnector not found')
+
+  config.setHostingConnectors([
+    new FtpConnector(config, {
+      type: 'HOSTING',
+    }),
+  ])
+  config.setStorageConnectors([
+      new FtpConnector(config, {
+      type: 'STORAGE',
+    }),
+    new GitlabConnector(config, {
+      clientId: process.env.GITLAB_CLIENT_ID,
+      clientSecret: process.env.GITLAB_CLIENT_SECRET,
+    }),
+])
   return {}
 }

@@ -98,13 +98,12 @@ export class FsStorage implements StorageConnector<FsSession> {
     return {}
   }
 
-  async getOAuthUrl(session: object): Promise<string | null> {
+  async getOAuthUrl(session: FsSession): Promise<null> { return null }
+
+  async getLoginForm(session: FsSession, redirectTo: string): Promise<string | null> {
     return null
   }
-  async getLoginForm(session: object, redirectTo: string): Promise<string | null> {
-    return null
-  }
-  async getSettingsForm(session: object, redirectTo: string): Promise<string | null> {
+  async getSettingsForm(session: FsSession, redirectTo: string): Promise<string | null> {
     return null
   }
 

@@ -148,7 +148,7 @@ export class ServerConfig extends Config {
         // Initiate the process with the config file which is just another plugin
         await this.addPlugin(this.userConfigPath, {})
       } catch (e) {
-        throw new Error(`User config file ${this.userConfigPath} error: ${e.message}`)
+        throw new Error(`\nUser config file ${this.userConfigPath} error:\n\n\t${e.message}\n\n`)
       }
     }
   }
