@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType } from '../../types'
-import { ApiError, websiteLoad, websiteSave } from '../api'
+import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError } from '../../types'
+import { websiteLoad, websiteSave } from '../api'
 import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
 
 async function wait(ms: number) {
@@ -28,6 +28,7 @@ export const storagePlugin = (editor) => {
   editor.Storage.add('connector', {
     async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
+        console.log('storage get user')
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if(user) {
           const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId})
@@ -86,8 +87,8 @@ export const storagePlugin = (editor) => {
     const err: Error = typeof _err === 'string' ? JSON.parse(_err) : _err
     console.error('Error with loading or saving website or uploading asset', err, err instanceof ApiError)
     if (err instanceof ApiError) {
-      console.error('ApiError', err.code, err.message)
-      switch (err.code) {
+      console.error('ApiError', err.httpStatusCode, err.message)
+      switch (err.httpStatusCode) {
       case 404:
         return editor.Modal.open({
           title: 'Website not found',

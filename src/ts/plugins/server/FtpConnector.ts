@@ -329,7 +329,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     }
   }
 
-  async getOAuthUrl(session: FtpSession): Promise<string | null> { return null }
+  async getOAuthUrl(session: FtpSession): Promise<null> { return null }
 
   async getLoginForm(session: FtpSession, redirectTo: string): Promise<string | null> {
     const { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl } = this.sessionData(session)

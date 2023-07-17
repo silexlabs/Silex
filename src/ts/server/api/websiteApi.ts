@@ -33,17 +33,6 @@ import { ServerEvent, WebsiteStoreEndEventType, WebsiteStoreStartEventType, Webs
  * This plugin provides the website API to Silex server
  */
 
-/**
- * Error thrown by the website API
- * @param message error message
- * @param code http status code
- */
-export class WebsiteError extends Error {
-  constructor(message: string, public code: number) {
-    super(message)
-  }
-}
-
 export default function (config: ServerConfig, opts = {}): Router {
   // Options with defaults
   const options = {
@@ -79,9 +68,8 @@ export default function (config: ServerConfig, opts = {}): Router {
         res.json(websiteData as ApiWebsiteReadResponse)
       }
     } catch (e) {
-      console.error('Error getting website data', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -99,8 +87,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       res.json(websites as ApiWebsiteListResponse)
     } catch (e) {
       console.error('Error getting website data', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -130,8 +118,8 @@ export default function (config: ServerConfig, opts = {}): Router {
     } catch (e) {
       console.error('Error saving website data', e)
       config.emit(ServerEvent.WEBSITE_STORE_END, e as WebsiteStoreEndEventType)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -149,7 +137,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       const connectorId = query.connectorId
       const connector = await getConnector<StorageConnector>(config, session, ConnectorType.STORAGE, connectorId)
       if(!connector) {
-        throw new WebsiteError(`Connector ${connectorId} not found`, 500)
+        throw new ApiError(`Connector ${connectorId} not found`, 500)
       }
       // Create website
       await connector.createWebsite(
@@ -159,8 +147,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       res.json({ message: 'Website meta saved' } as ApiWebsiteMetaWriteResponse)
     } catch (e) {
       console.error('Error saving website meta', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -179,7 +167,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       const connectorId = query.connectorId
       const connector = await getConnector<StorageConnector>(config, session, ConnectorType.STORAGE, connectorId)
       if(!connector) {
-        throw new WebsiteError(`Connector ${connectorId} not found`, 500)
+        throw new ApiError(`Connector ${connectorId} not found`, 500)
       }
       // Update website meta
       await connector.setWebsiteMeta(
@@ -190,8 +178,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       res.json({ message: 'Website meta saved' } as ApiWebsiteMetaWriteResponse)
     } catch (e) {
       console.error('Error saving website meta', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -207,14 +195,14 @@ export default function (config: ServerConfig, opts = {}): Router {
       const connectorId = query.connectorId
       const connector = await getConnector<StorageConnector>(config, session, ConnectorType.STORAGE, connectorId)
       if(!connector) {
-        throw new WebsiteError(`Connector ${connectorId} not found`, 500)
+        throw new ApiError(`Connector ${connectorId} not found`, 500)
       }
       const websiteMeta: WebsiteMeta = await connector.getWebsiteMeta(session, websiteId)
       res.json(websiteMeta as ApiWebsiteMetaReadResponse)
     } catch (e) {
       console.error('Error getting website meta', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -230,8 +218,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       res.status(200).json({ message: 'Website deleted' } as ApiError)
     } catch (e) {
       console.error('Error deleting website data', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -259,8 +247,8 @@ export default function (config: ServerConfig, opts = {}): Router {
         }
       } catch (e) {
         console.error('Error getting asset', e)
-        if (e instanceof WebsiteError) {
-          res.status(e.code).json({ message: e.message } as ApiError)
+        if (e.httpStatusCode) {
+          res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
         } else {
           res.status(500).json({ message: e.message } as ApiError)
         }
@@ -288,7 +276,7 @@ export default function (config: ServerConfig, opts = {}): Router {
         form.parse(req, async (err, fields, _files) => {
           if (err) {
             console.error('Error parsing upload data', err)
-            reject(new WebsiteError('Error parsing upload data: ' + err.message, 400))
+            reject(new ApiError('Error parsing upload data: ' + err.message, 400))
           } else {
             const files = ([].concat(_files['files[]']) as PersistentFile[])
               .map(file => file.toJSON())
@@ -321,8 +309,8 @@ export default function (config: ServerConfig, opts = {}): Router {
       config.emit(ServerEvent.WEBSITE_ASSET_STORE_END, null as WebsiteAssetStoreEndEventType)
     } catch (e) {
       console.error('Error uploading assets', e)
-      if (e instanceof WebsiteError) {
-        res.status(e.code).json({ message: e.message } as ApiError)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
       } else {
         res.status(500).json({ message: e.message } as ApiError)
       }
@@ -339,11 +327,11 @@ export default function (config: ServerConfig, opts = {}): Router {
     const storageConnector = await getConnector(config, session, ConnectorType.STORAGE, connectorId) //  ?? config.getStorageConnectors()[0]
 
     if (!storageConnector) {
-      throw new WebsiteError('No storage connector found', 404)
+      throw new ApiError('No storage connector found', 404)
     }
 
     if (!await storageConnector.isLoggedIn(session)) {
-      throw new WebsiteError('Not logged in', 401)
+      throw new ApiError('Not logged in', 401)
     }
 
     return storageConnector as StorageConnector

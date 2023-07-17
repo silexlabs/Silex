@@ -34,9 +34,16 @@ export interface WebsiteFile {
   cssPath: string,
 }
 
+export class ApiError extends Error {
+  constructor(message: string, public readonly httpStatusCode: number) {
+    super(message)
+    console.info('API error', httpStatusCode, message)
+  }
+}
+
 // **
 // HTTP API types
-export type ApiError = { message: string }
+export type ApiResponseError = { message: string }
 export type ApiPublicationPublishBody = WebsiteData // this contains the connectorId
 export type ApiPublicationPublishQuery = { websiteId: WebsiteId, hostingId: ConnectorId, storageId: ConnectorId, options: ConnectorOptions}
 export type ApiPublicationPublishResponse = { url: string, job: PublicationJobData }
