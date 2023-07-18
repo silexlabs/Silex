@@ -118,15 +118,15 @@ export default class GitlabConnector implements StorageConnector {
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '')
-      .substr(0, 128);
+      .substr(0, 128)
   }
 
   private async generateCodeChallenge(verifier) {
-    const hashed = createHash('sha256').update(verifier).digest();
-    let base64Url = hashed.toString('base64');
+    const hashed = createHash('sha256').update(verifier).digest()
+    let base64Url = hashed.toString('base64')
     // Replace '+' with '-', '/' with '_', and remove '='
-    base64Url = base64Url.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-    return base64Url;
+    base64Url = base64Url.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
+    return base64Url
   }
 
 
@@ -157,7 +157,7 @@ export default class GitlabConnector implements StorageConnector {
       codeVerifier,
       codeChallenge,
     }
-    const scope = `api+read_api+read_user+read_repository+write_repository+email+sudo+profile+openid`
+    const scope = 'api+read_api+read_user+read_repository+write_repository+email+sudo+profile+openid'
     return `https://gitlab.com/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${session.gitlab.state}&scope=${scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
   }
 
@@ -240,7 +240,7 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async createWebsite(session: GitlabSession, websiteMeta: WebsiteMetaFileContent): Promise<WebsiteId> {
-    const project = await this.callApi(session, `api/v4/projects/`, 'POST', {
+    const project = await this.callApi(session, 'api/v4/projects/', 'POST', {
       name: websiteMeta.name,
     }) as any
     await this.updateWebsite(session, project.id, {} as WebsiteData)
