@@ -46,6 +46,7 @@ interface GitlabToken {
     id_token: string
     scope: string
   }
+  userId?: number
 }
 
 interface GitlabSession {
@@ -74,19 +75,25 @@ interface GitlabGetToken {
   code_verifier: string
 }
 
+interface GitlabWebsiteName {
+  name: string
+}
+
 export default class GitlabConnector implements StorageConnector {
   connectorId = 'gitlab'
   connectorType = ConnectorType.STORAGE
   displayName = 'GitLab'
   icon = 'http://gitlab.lcqb.upmc.fr/assets/favicon-075eba76312e8421991a0c1f89a89ee81678bcde72319dd3e8047e2a47cd3a42.ico'
   disableLogout = false
+  color = '#ffffff'
+  background = '#FC6D26'
 
   constructor(private config: ServerConfig, private options: GitlabOptions) {
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
     if(!this.options.clientSecret) throw new Error('Missing Gitlab client secret')
   }
 
-  private async callApi(session: GitlabSession, path: string, method = 'GET', body: GitlabWriteFile | GitlabGetToken | null = null, params: any = {}): Promise<any> {
+  private async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | null = null, params: any = {}): Promise<any> {
     const token = session?.gitlab?.token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')
@@ -96,8 +103,6 @@ export default class GitlabConnector implements StorageConnector {
       method,
       headers: {
         'Content-Type': 'application/json',
-        //'PRIVATE-TOKEN': token,
-        //'Authorization': `Bearer ${token}`,
       },
       body: body ? JSON.stringify(body) : undefined
     })
@@ -199,8 +204,11 @@ export default class GitlabConnector implements StorageConnector {
     })
       .then((response) => response.json())
 
-
     session.gitlab = { token, state: session.gitlab.state, codeVerifier: session.gitlab.codeVerifier, codeChallenge: session.gitlab.codeChallenge }
+
+    // We need to get the user ID for listWebsites
+    const user = await this.callApi(session, 'api/v4/user') as any
+    session.gitlab.userId = user.id
   }
 
   async logout(session: GitlabSession): Promise<void> {
@@ -217,7 +225,7 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async listWebsites(session: GitlabSession): Promise<WebsiteMeta[]> {
-    const projects = await this.callApi(session, 'api/v4/projects') as any[]
+    const projects = await this.callApi(session, `api/v4/users/${session.gitlab?.userId}/projects`) as any[]
     return projects.map(p => ({
       websiteId: p.id,
       name: p.name,
@@ -232,7 +240,12 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async createWebsite(session: GitlabSession, websiteMeta: WebsiteMetaFileContent): Promise<WebsiteId> {
-    const project = await this.callApi(session, `api/v4/projects?name=${websiteMeta.name}`) as any
+    const project = await this.callApi(session, `api/v4/projects/`, 'POST', {
+      name: websiteMeta.name,
+    }) as any
+    await this.updateWebsite(session, project.id, {} as WebsiteData)
+    await this.setWebsiteMeta(session, project.id, websiteMeta)
+    console.log('createWebsite', project)
     return project.id
   }
 

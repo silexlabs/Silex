@@ -57,7 +57,9 @@ export async function start(options = {}) {
     throw e
   }
 
+  config.emit(ClientEvent.GRAPESJS_START)
   const editor = getEditor()
+  config.emit(ClientEvent.GRAPESJS_END, { editor })
 
   // Init internationalization module
   editor.I18n.setLocale(config.lang)

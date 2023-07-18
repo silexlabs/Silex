@@ -79,7 +79,7 @@ async function routeUser(req: Request, res: Response) {
     res.json(user as ApiConnectorUserResponse)
   } catch (error) {
     console.error('Error in the login status request', error)
-    res.status(error?.code ?? 500).json({
+    res.status(error?.code ?? error?.httpStatusCode ?? 500).json({
       error: true,
       message: error.message,
     } as ApiResponseError)
@@ -101,14 +101,14 @@ async function routeListConnectors(req: Request, res: Response) {
       res.json(list as ApiConnectorListResponse)
     } catch (error) {
       console.error('Error while listing connectors', error)
-      res.status(error?.code ?? 500).json({
+      res.status(error?.code ?? error?.httpStatusCode ?? 500).json({
         error: true,
         message: 'Error while listing connectors: ' + error.message,
       } as ApiResponseError)
     }
   } catch (error) {
     console.error('Error in the list connectors request', error)
-    res.status(error?.code ?? 400).json({
+    res.status(error?.code ?? error?.httpStatusCode ?? 400).json({
       error: true,
       message: 'Error in the list connectors request: ' + error.message,
     } as ApiResponseError)
@@ -148,7 +148,7 @@ async function routeLogin(req: Request, res: Response) {
     }
   } catch (error) {
     console.error('Error in the login request', error)
-    res.status(error?.code ?? 400).json({
+    res.status(error?.code ?? error?.httpStatusCode ?? 400).json({
       error: true,
       message: 'Error in the login request: ' + error.message,
     } as ApiResponseError)
@@ -178,7 +178,7 @@ async function routeLogin(req: Request, res: Response) {
 //     res.send(await connector.getSettingsForm(session, ``) as ApiConnectorSettingsResponse)
 //   } catch (error) {
 //     console.error('Error in the login request', error)
-//     res.status(error?.code ?? 400).json({
+//     res.status(error?.code ?? error?.httpStatusCode ?? 400).json({
 //       error: true,
 //       message: 'Error in the login request: ' + error.message,
 //     } as ApiError)
@@ -209,7 +209,7 @@ async function routeLogin(req: Request, res: Response) {
 //     await connector.setWebsiteMeta(session, websiteId, body)
 //   } catch (error) {
 //     console.error('Error in the login request', error)
-//     res.status(error?.code ?? 400).json({
+//     res.status(error?.code ?? error?.httpStatusCode ?? 400).json({
 //       error: true,
 //       message: 'Error in the login request: ' + error.message,
 //     } as ApiResponseError)
@@ -222,7 +222,6 @@ async function routeLogin(req: Request, res: Response) {
  */
 async function routeLoginSuccess(req: Request, res: Response) {
   try {
-    console.log('routeLoginSuccess', req.query, req.body, req['sesion'])
     const query = req.query as ApiConnectorLoginCbkQuery
     if(query.error) throw new Error(query.error)
 
@@ -234,17 +233,22 @@ async function routeLoginSuccess(req: Request, res: Response) {
     const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
     const connector = await getConnector<Connector>(config, req['session'], type, connectorId)
     if (!connector) throw new Error('Connector not found ' + connectorId)
-    // Store the auth info in the session
-    // This is useful for storage only
-    await connector.setToken(session, {
-      ...query,
-      ...body,
-    })
+    // Check if the user is already logged in
+    if (await connector.isLoggedIn(session)) {
+      console.info('User already logged in for connector ' + connectorId)
+    } else {
+      // Store the auth info in the session
+      // This is useful for storage only
+      await connector.setToken(session, {
+        ...query,
+        ...body,
+      })
+    }
     // End the auth flow
     res.send(getEndAuthHtml('Logged in', false, connectorId, connector.getOptions(body)))
   } catch (error) {
     res
-      .status(error?.code ?? 500)
+      .status(error?.code ?? error?.httpStatusCode ?? 500)
       .send(getEndAuthHtml(error.message, true))
   }
 }
@@ -272,7 +276,7 @@ async function routeLogout(req: Request, res: Response) {
       } as ApiResponseError)
     } catch (error) {
       console.error('Error while logging out', error)
-      res.status(error?.code ?? 500).json({
+      res.status(error?.code ?? error?.httpStatusCode ?? 500).json({
         error: true,
         message: 'Error while logging out: ' + error.message,
       } as ApiResponseError)
@@ -280,7 +284,7 @@ async function routeLogout(req: Request, res: Response) {
     }
   } catch (error) {
     console.error('Error in the logout request', error)
-    res.status(error?.code ?? 400).json({
+    res.status(error?.code ?? error?.httpStatusCode ?? 400).json({
       error: true,
       message: 'Error in the logout request: ' + error.message,
     } as ApiResponseError)

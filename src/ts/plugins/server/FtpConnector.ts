@@ -231,6 +231,8 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
   icon = 'ftp'
   options: FtpOptions
   connectorType: ConnectorType
+  color = '#ffffff'
+  background = '#0066CC'
 
   constructor(config: ServerConfig, opts: Partial<FtpOptions>) {
     this.options = {
@@ -247,7 +249,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
   // **
   // Utils
   sessionData(session: FtpSession): FtpSessionData {
-    return session[this.options.type] ?? {} as FtpSessionData
+    return session[`ftp-${this.options.type}`] ?? {} as FtpSessionData
   }
 
   rootPath(session: FtpSession): string {
@@ -356,13 +358,13 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     // Check if the connection is valid
     const ftp = await this.getClient({ host, user, pass, port, secure })
     // Save the token
-    session[this.connectorType] = { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl }
+    session[`ftp-${this.connectorType}`] = { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl }
     // Clean up
     this.closeClient(ftp)
   }
 
   async logout(session: FtpSession) {
-    delete session[this.options.type]
+    delete session[`ftp-${this.options.type}`]
   }
 
   async getUser(session: FtpSession): Promise<ConnectorUser> {
@@ -375,7 +377,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
 
   async isLoggedIn(session: FtpSession) {
     try {
-      if (!session[this.options.type]) {
+      if (!session[`ftp-${this.options.type}`]) {
         return false
       }
       const ftp = await this.getClient(this.sessionData(session))

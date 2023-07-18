@@ -16,9 +16,9 @@
  */
 
 import { Router } from 'express'
-import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS } from '../../constants'
+import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSETS_READ } from '../../constants'
 import { getJob } from '../jobs'
-import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ApiError, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
+import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
 import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
@@ -40,6 +40,8 @@ export class PublicationError extends Error {
     super(message)
   }
 }
+
+const PROJECT_ROOT = require.main ? require.main.path : process.cwd();
 
 /**
  * Get the desired connector
@@ -86,7 +88,7 @@ export default function (config: ServerConfig): Router {
       console.error(`Error: job not found with id ${jobId}`)
       res.status(404).json({
         message: 'Error: job not found.',
-      } as ApiError)
+      })
       return
     }
     res.json({
@@ -122,10 +124,18 @@ export default function (config: ServerConfig): Router {
       const storage = await getStorageConnector(session, config, storageId)
 
       // Publication
-      const assetsFiles: ConnectorFile[] = await Promise.all(assets.map(async asset => ({
-        path: asset.path ? join(...asset.path.split('/')) : '', // resolve relative path
-        content: await storage.readAsset(session, websiteId, asset.src),
-      })))
+      const assetsFiles: ConnectorFile[] = await Promise.all(assets.map(async asset => {
+        if(!asset.path) throw new PublicationError('Missing path in asset', 400)
+        if(!asset.src) throw new PublicationError('Missing src in asset', 400)
+        // Remove the / from the asset root if it starts with one
+        const prefix = API_WEBSITE_ASSETS_READ.replace(/^\//, '')
+        // Get the asset url relative to the asset root
+        const src = asset.src.startsWith(prefix) ? asset.src.substring(prefix.length) : asset.src
+        return {
+          path: asset.path,
+          content: await storage.readAsset(session, websiteId, src),
+        }
+      }))
       const filesList: ConnectorFile[] = files.flatMap<ConnectorFile>(file => ([{
         path: file.htmlPath,
         content: file.html,
@@ -133,27 +143,17 @@ export default function (config: ServerConfig): Router {
         path: file.cssPath,
         content: file.css,
       }])).concat(assetsFiles)
-      try {
-        res.json({
-          url: await hostingConnector.getUrl(session, websiteId),
-          job: await hostingConnector.publish(session, websiteId, filesList),
-        } as ApiPublicationPublishResponse)
-      } catch (err) {
-        console.error('Error publishing the website', err)
-        res.status(500).json({
-          message: `Error publishing the website. ${err.message}`
-        } as ApiError)
-        // Hook for plugins
-        config.emit(ServerEvent.PUBLISH_END, err as PublishEndEventType)
-        return
-      }
+      res.json({
+        url: await hostingConnector.getUrl(session, websiteId),
+        job: await hostingConnector.publish(session, websiteId, filesList),
+      } as ApiPublicationPublishResponse)
     } catch (err) {
       console.error('Error publishing the website', err)
       res
-        .status(err.code ?? 500)
+        .status(typeof err.code === 'number' ? err.code : 500)
         .json({
           message: `Error publishing the website. ${err.message}`
-        } as ApiError)
+        })
       // Hook for plugins
       config.emit(ServerEvent.PUBLISH_END, err as PublishEndEventType)
       return

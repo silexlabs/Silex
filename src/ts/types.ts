@@ -231,6 +231,8 @@ export interface ConnectorData {
   disableLogout: boolean
   isLoggedIn: boolean
   oauthUrl: string | null
+  color: string
+  background: string
 }
 
 /**

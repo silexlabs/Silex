@@ -35,7 +35,7 @@ import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
-import loginDialogPlugin, { LoginDialogOptions } from './LoginDialog'
+import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -191,7 +191,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
             id: 'logout-button',
             className: 'page-panel-btn fa fa-fw fa-sign-out',
             attributes: { title: 'Sign out' },
-            command: 'relogin',
+            command: cmdLogout,
           },
         ],
       },

@@ -54,6 +54,8 @@ export interface Connector<Session extends ConnectorSession = ConnectorSession> 
   displayName: string
   icon: string
   disableLogout?: boolean
+  color: string
+  background: string
   // Get the URL to start the authentication process with OAuth (not used for basic auth)
   getOAuthUrl(session: Session): Promise<string | null>
   // Get the form to display to the user to authenticate (not used for OAuth)
@@ -138,6 +140,8 @@ export async function toConnectorData(session: any, connector: Connector): Promi
     disableLogout: !!connector.disableLogout,
     isLoggedIn: await connector.isLoggedIn(session),
     oauthUrl: await connector.getOAuthUrl(session),
+    color: connector.color,
+    background: connector.background,
   }
 }
 
