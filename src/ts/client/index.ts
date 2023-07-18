@@ -68,7 +68,7 @@ export async function start(options = {}) {
   editor.StorageManager.setAutosave(false)
   console.log('before load')
   try {
-  await editor.load(null)
+    await editor.load(null)
   } catch(e) {
     if(e.httpStatusCode === 401) {
       // Unauthorized, will try to login

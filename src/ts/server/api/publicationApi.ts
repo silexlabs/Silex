@@ -41,7 +41,7 @@ export class PublicationError extends Error {
   }
 }
 
-const PROJECT_ROOT = require.main ? require.main.path : process.cwd();
+const PROJECT_ROOT = require.main ? require.main.path : process.cwd()
 
 /**
  * Get the desired connector
