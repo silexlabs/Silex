@@ -239,7 +239,7 @@ export class PublicationManager {
       this.trackProgress()
     } catch (e) {
       console.error('publish error', e)
-      if(e.code === 401) {
+      if(e.code === 401 || e.httpStatusCode === 401) {
         this.status = PublicationStatus.STATUS_LOGGED_OUT
         this.settings = {}
         this.dialog && this.dialog.displayError('Please login.', this.job, this.status)

@@ -52,6 +52,8 @@ export class FsStorage implements StorageConnector<FsSession> {
   disableLogout = true
   options: FsOptions
   connectorType = ConnectorType.STORAGE
+  color = '#ffffff'
+  background = '#006400'
 
   constructor(config: ServerConfig | null, opts: Partial<FsOptions>) {
     this.options = {

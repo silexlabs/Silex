@@ -3,8 +3,10 @@ import { Editor } from 'grapesjs'
 import { ApiConnectorLoggedInPostMessage, ConnectorData, ConnectorId, ConnectorType, ConnectorUser } from '../../types'
 import { connectorList, getUser, logout } from '../api'
 import { WebsiteId } from '../../types'
+import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 
 export const cmdLogin = 'silex:auth:login'
+export const cmdLogout = 'silex:auth:logout'
 export const eventLoggingIn = 'silex:auth:logging-in'
 export const eventLoggedIn = 'silex:auth:logged-in'
 export const eventLoginFailed = 'silex:auth:login-failed'
@@ -37,6 +39,13 @@ export default function loginDialogPlugin(editor, opts) {
   editor.Commands.add(cmdLogin, {
     async run(editor: Editor) {  await openDialog() },
     stop(editor: Editor) { closeDialog() },
+  })
+  editor.Commands.add(cmdLogout, {
+    async run(editor: Editor) {
+      await logout({type: ConnectorType.STORAGE })
+      editor.getModel().set('user', null)
+      editor.trigger(eventLoggedOut)
+    },
   })
   editor.on(eventLoggedOut, async () => openDialog())
 
@@ -124,7 +133,8 @@ export default function loginDialogPlugin(editor, opts) {
     }
   }
   async function loginWithConnector(connector: ConnectorData) {
-    window.open(connector.oauthUrl, '_blank')
+    const nonOAuthUrl = `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${connector.connectorId}&type=${connector.type}`
+    window.open(connector.oauthUrl ?? nonOAuthUrl, '_blank')
     return new Promise(resolve => {
       render(html`
         <main>
