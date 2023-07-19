@@ -6,7 +6,8 @@ FROM node:18
 
 COPY . /silex
 WORKDIR /silex
-# RUN apt-get update
+RUN apt-get update
+RUN ls -la ./node_modules/@silexlabs/silex/
 RUN npm install
 # RUN npm run build
 
