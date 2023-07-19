@@ -253,7 +253,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
   }
 
   rootPath(session: FtpSession): string {
-    console.log('rootPath', this.sessionData(session), session)
     return this.connectorType === ConnectorType.STORAGE ?
       requiredParam<string>(this.sessionData(session).storageRootPath, 'storage root path') :
       requiredParam<string>(this.sessionData(session).publicationPath, 'publication path')
