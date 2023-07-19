@@ -165,6 +165,30 @@ export async function contentToString(content: ConnectorFileContent): Promise<st
   })
 }
 
+export async function contentToBuffer(content: ConnectorFileContent): Promise<Buffer> {
+  // String
+  if (typeof content === 'string') return Buffer.from(content, 'utf8')
+  // Buffer
+  if (Buffer.isBuffer(content)) return content
+  // Stream
+  if(content instanceof Readable) {
+    return new Promise((resolve, reject) => {
+      const chunks: Buffer[] = []
+      content.on('data', (chunk: Buffer) => {
+        chunks.push(chunk)
+      })
+      content.on('error', (err: Error) => {
+        reject(err)
+      })
+      content.on('end', () => {
+        resolve(Buffer.concat(chunks))
+      })
+    })
+  }
+  // Unknown
+  throw new Error('Unknown content type')
+}
+
 export function contentToReadable(content: ConnectorFileContent): Readable {
   // String
   if (typeof content === 'string') return Readable.from([content])

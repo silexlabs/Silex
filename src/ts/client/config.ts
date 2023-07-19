@@ -36,7 +36,7 @@ export class ClientConfig extends Config {
    * The storage connector to use
    * If not found in the URL and the user is not logged in to any storage, use the first storage
    */
-  storageId: ConnectorId = new URL(location.href).searchParams.get('storageId')
+  storageId: ConnectorId = new URL(location.href).searchParams.get('connectorId')
 
   /**
    * language for I18n module
