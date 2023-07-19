@@ -16,7 +16,7 @@
  */
 
 import { Router } from 'express'
-import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSETS_READ } from '../../constants'
+import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSET_READ } from '../../constants'
 import { getJob } from '../jobs'
 import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
 import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
@@ -128,7 +128,7 @@ export default function (config: ServerConfig): Router {
         if(!asset.path) throw new PublicationError('Missing path in asset', 400)
         if(!asset.src) throw new PublicationError('Missing src in asset', 400)
         // Remove the / from the asset root if it starts with one
-        const prefix = API_WEBSITE_ASSETS_READ.replace(/^\//, '')
+        const prefix = API_WEBSITE_ASSET_READ.replace(/^\//, '')
         // Get the asset url relative to the asset root
         const src = asset.src.startsWith(prefix) ? asset.src.substring(prefix.length) : asset.src
         return {

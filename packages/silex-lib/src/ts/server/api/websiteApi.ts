@@ -18,7 +18,7 @@
 import { Router } from 'express'
 import formidable from 'formidable'
 import PersistentFile from 'formidable/src/PersistentFile'
-import { API_WEBSITE_ASSETS_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH } from '../../constants'
+import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH } from '../../constants'
 import { createReadStream } from 'fs'
 import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody } from '../../types'
 import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
@@ -227,7 +227,7 @@ export default function (config: ServerConfig, opts = {}): Router {
   })
 
   // Load assets
-  router.get(API_WEBSITE_ASSETS_READ + '/:path', async (req, res) => {
+  router.get(API_WEBSITE_ASSET_READ + '/:path', async (req, res) => {
     {
       try {
         const query: ApiWebsiteAssetsReadQuery = req.query as any
@@ -299,7 +299,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       res.json({
         data: files.map(file =>
-          API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSETS_READ
+          API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
           + file.path
           + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
         ),

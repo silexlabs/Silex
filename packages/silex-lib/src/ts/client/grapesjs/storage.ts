@@ -80,6 +80,9 @@ export const storagePlugin = (editor) => {
   editor.on('storage:error:store', (err: Error) => {
     handleError(err)
   })
+  editor.on('asset:upload:end', (err: Error) => {
+    editor.save()
+  })
   editor.on('asset:upload:error', (err: Error) => {
     handleError(err)
   })
