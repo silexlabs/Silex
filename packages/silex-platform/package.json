@@ -2,30 +2,30 @@
   "name": "editor.silex.me",
   "version": "1.0.34",
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
-  "main": "index.js",
   "scripts": {
     "release": "",
-    "start": "node index.js",
-    "postinstall": "npm run build",
-    "build": "npm run build:html",
-    "build:html": "pug -O env.js index.pug -o dist/"
+    "start": "silex --config `pwd`/.silex.js --client-config `pwd`/client-config.js --debug"
   },
   "engines": {
-    "node": ">=11.5.0 <=12.22.10"
+    "node": ">=18"
   },
   "author": "lexoyo",
-  "license": "MPL",
+  "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@sentry/node": "^7.21.0",
-    "@sentry/tracing": "^7.21.0",
-    "got": "^12.5.3",
-    "pug": "^3.0.2",
-    "pug-cli": "^1.0.0-alpha6",
-    "serve-static": "^1.15.0",
-    "silex-website-builder": "2.7.63"
+    "@silexlabs/silex": "^3.0.0-alpha.43",
+    "@silexlabs/silex-dashboard": "^1.0.3"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:silexlabs/editor.silex.me.git"
-  }
+  },
+  "keywords": [
+    "silex",
+    "website",
+    "builder",
+    "free",
+    "foss",
+    "website builder",
+    "diy"
+  ]
 }
