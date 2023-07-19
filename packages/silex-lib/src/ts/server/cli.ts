@@ -21,6 +21,7 @@ import silex from './index'
 import { parse } from 'cli'
 
 const options = parse({
+  'url': ['', 'URL of your server', 'string'],
   'host': ['', 'Sets the host param of the express module "cookie-session".', 'string'],
   'port': [ 'p', 'Port to listen to', 'int'],
   'protocol': ['', 'Sets the protocol param of the express module "cookie-session".', 'string'],
@@ -41,6 +42,7 @@ const options = parse({
   'debug': [false, 'Debug mode, with live reload, source maps etc.', 'boolean'],
 }, {})
 
+if(options['url']) process.env.SILEX_URL = options['url']
 if(options['host']) process.env.SILEX_HOST = options['host']
 if(options.port) process.env.SILEX_PORT = options.port
 if(options['protocol']) process.env.SILEX_PROTOCOL = options['protocol']
