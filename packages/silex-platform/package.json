@@ -4,7 +4,8 @@
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "scripts": {
     "release": "",
-    "start": "silex --config `pwd`/.silex.js --client-config `pwd`/client-config.js --debug"
+    "start": "silex --config `pwd`/.silex.js --client-config `pwd`/client-config.js",
+    "dev": "silex --config `pwd`/.silex.js --client-config `pwd`/client-config.js --debug"
   },
   "engines": {
     "node": ">=18"
