@@ -33,6 +33,7 @@ export interface GitlabOptions {
   clientId: string
   clientSecret: string
   branch: string
+  assetsFolder: string
 }
 
 interface GitlabToken {
@@ -106,6 +107,7 @@ export default class GitlabConnector implements StorageConnector {
   constructor(private config: ServerConfig, opts: Partial<GitlabOptions>) {
     this.options = {
       branch: 'main',
+      assetsFolder: '',
       ...opts,
     } as GitlabOptions
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
@@ -114,6 +116,10 @@ export default class GitlabConnector implements StorageConnector {
 
   // **
   // Convenience methods for the Gitlab API
+  private getAssetPath(path: string): string {
+    return `${this.options.assetsFolder}${path}`
+  }
+
   private async createFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
     // Remove leading slash
     const safePath = path.replace(/^\//, '')
@@ -384,7 +390,7 @@ export default class GitlabConnector implements StorageConnector {
       // Convert to base64
       const content = (await contentToBuffer(file.content)).toString('base64')
       try {
-        await this.updateFile(session, websiteId, file.path, content, true)
+        await this.updateFile(session, websiteId, this.getAssetPath(file.path), content, true)
       } catch (e) {
         // If the file does not exist, create it
         if (e.statusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
@@ -398,9 +404,9 @@ export default class GitlabConnector implements StorageConnector {
 
   async readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent> {
     // Remove leading slash
-    const safePath = fileName.replace(/^\//, '')
+    const finalPath = this.getAssetPath(fileName)
     // Call the API
-    const url = `https://gitlab.com/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
+    const url = `https://gitlab.com/api/v4/projects/${websiteId}/repository/files/${finalPath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -421,7 +427,7 @@ export default class GitlabConnector implements StorageConnector {
       commit_message: `Delete assets from Silex: ${fileNames.join(', ')}`,
       actions: fileNames.map(f => ({
         action: 'delete',
-        file_path: f,
+        file_path: this.getAssetPath(f),
       })),
     })
   }
