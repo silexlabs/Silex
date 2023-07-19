@@ -22,7 +22,7 @@ let connector
 const storageRootPath = 'dummy storageRootPath'
 const assetsFolder = 'dummy assetsFolder'
 const dummySession = {
-  [ConnectorType.STORAGE]: {
+  [`ftp-${ConnectorType.STORAGE}`]: {
     host: 'dummy host',
     user: 'dummy user',
     pass: 'dummy pass',
