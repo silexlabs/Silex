@@ -21,7 +21,6 @@ import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, 
 import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent } from '../../types'
 import fetch from 'node-fetch'
 import crypto, { createHash } from 'crypto'
-import { PassThrough, Readable } from 'stream'
 
 /**
  * Gitlab connector
@@ -34,6 +33,8 @@ export interface GitlabOptions {
   clientSecret: string
   branch: string
   assetsFolder: string
+  metaRepo: string
+  metaRepoFile: string
 }
 
 interface GitlabToken {
@@ -50,6 +51,7 @@ interface GitlabToken {
     scope: string
   }
   userId?: number
+  username?: string
 }
 
 interface GitlabSession {
@@ -65,7 +67,7 @@ interface GitlabAction {
 interface GitlabWriteFile {
   branch: string
   commit_message: string
-  id: string
+  id?: string
   actions?: GitlabAction[]
   content?: string
   file_path?: string
@@ -90,6 +92,16 @@ interface GitlabCreateBranch {
   ref: string
 }
 
+interface MetaRepoFileContent {
+  websites: {
+    [websiteId: string]: {
+      meta: WebsiteMetaFileContent,
+      createdAt: string,
+      updatedAt: string,
+    }
+  }
+}
+
 async function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
@@ -108,6 +120,8 @@ export default class GitlabConnector implements StorageConnector {
     this.options = {
       branch: 'main',
       assetsFolder: '',
+      metaRepo: 'silex-meta',
+      metaRepoFile: 'websites.json',
       ...opts,
     } as GitlabOptions
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
@@ -144,6 +158,36 @@ export default class GitlabConnector implements StorageConnector {
     })
   }
 
+  /*
+   * Get the meta repo path for the current user
+   * The meta repo contains a JSON file which contains the list of websites
+   */
+  private getMetaRepoPath(session: GitlabSession): string {
+    if(!session.gitlab?.username) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
+    return encodeURIComponent(`${session.gitlab.username}/${this.options.metaRepo}`)
+  }
+
+  /**
+   * Initialize the storage with a meta repo
+   */
+  private async initStorage(session: GitlabSession): Promise<void> {
+    // Create the meta repo
+    try {
+      const project = await this.callApi(session, 'api/v4/projects/', 'POST', {
+        name: this.options.metaRepo,
+      }) as any
+      return this.createFile(session, this.getMetaRepoPath(session), this.options.metaRepoFile, JSON.stringify({
+        websites: {}
+      } as MetaRepoFileContent))
+    } catch (e) {
+      console.error('Could not init storage', e.statusCode, e.httpStatusCode, e)
+      throw e
+    }
+  }
+
+  /**
+   * Call the Gitlab API with the user's token and handle errors
+   */
   private async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | null = null, params: any = {}): Promise<any> {
     const token = session?.gitlab?.token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
@@ -167,7 +211,7 @@ export default class GitlabConnector implements StorageConnector {
         throw e
       } else {
         // Useless error linked to the fact that the response is not JSON
-        //console.error('Gitlab API error - could not parse response', response.status, response.statusText, {url, method, body, params, text})
+        console.error('Gitlab API error (3) - could not parse response', response.status, response.statusText, {url, method, body, params, text})
         return text
       }
     }
@@ -196,12 +240,14 @@ export default class GitlabConnector implements StorageConnector {
           }
           return await this.callApi(session, path, method, body as any, params)
         } else {
-          //console.error('Gitlab API error - could not refresh token', response.status, response.statusText, { url, method, body, params, refreshJson })
-          throw new ApiError(`Gitlab API error: ${refreshJson?.message ?? response.statusText}`, response.status)
+          const message = typeof refreshJson?.message === 'object' ? Object.entries(refreshJson.message).map(entry => entry.join(' ')).join(' ') : refreshJson?.message ?? refreshJson?.error ?? response.statusText
+          console.error('Gitlab API error (2) - could not refresh token', response.status, response.statusText, {message})
+          throw new ApiError(`Gitlab API error (2): ${message}`, response.status)
         }
       } else {
-        //console.error('Gitlab API error', response.status, response.statusText, { url, method, body, params, json })
-        throw new ApiError(`Gitlab API error: ${json?.message ?? json?.error ?? response.statusText}`, response.status)
+        const message = typeof json?.message === 'object' ? Object.entries(json.message).map(entry => entry.join(' ')).join(' ') : json?.message ?? json?.error ?? response.statusText
+        console.error('Gitlab API error (1)', response.status, response.statusText, {message})
+        throw new ApiError(`Gitlab API error (1): ${message}`, response.status)
       }
     }
     return json
@@ -281,7 +327,7 @@ export default class GitlabConnector implements StorageConnector {
     if(!session.gitlab?.codeVerifier) throw new ApiError('Missing code verifier', 401)
     if(!session.gitlab?.codeChallenge) throw new ApiError('Missing code challenge', 401)
 
-    const token = await fetch('https://gitlab.com/oauth/token', {
+    const response = await fetch('https://gitlab.com/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -295,13 +341,16 @@ export default class GitlabConnector implements StorageConnector {
         code_verifier: session.gitlab.codeVerifier,
       }),
     })
-      .then((response) => response.json())
 
+    const token = await response.json()
+
+    // Store the token in the session
     session.gitlab = { token, state: session.gitlab.state, codeVerifier: session.gitlab.codeVerifier, codeChallenge: session.gitlab.codeChallenge }
 
     // We need to get the user ID for listWebsites
     const user = await this.callApi(session, 'api/v4/user') as any
     session.gitlab.userId = user.id
+    session.gitlab.username = user.username
   }
 
   async logout(session: GitlabSession): Promise<void> {
@@ -313,19 +362,43 @@ export default class GitlabConnector implements StorageConnector {
     return {
       name: user.name,
       email: user.email,
+      picture: user.avatar_url,
       storage: await toConnectorData(session, this as StorageConnector),
     }
   }
 
   async listWebsites(session: GitlabSession): Promise<WebsiteMeta[]> {
-    const projects = await this.callApi(session, `api/v4/users/${session.gitlab?.userId}/projects`) as any[]
-    return projects.map(p => ({
-      websiteId: p.id,
-      name: p.name,
-      createdAt: p.created_at,
-      updatedAt: p.last_activity_at,
-      connectorUserSettings: {},
-    }))
+    try {
+      const result = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+        ref: this.options.branch,
+      })
+      const { content } = result
+      const contentDecoded = Buffer.from(content, 'base64').toString('utf8')
+      const websites = (JSON.parse(contentDecoded) as MetaRepoFileContent).websites
+      console.log('listWebsites', {websites, contentDecoded, content, result})
+      return Object.entries(websites).map(([websiteId, {meta, createdAt, updatedAt}]) => ({
+        websiteId,
+        createdAt: new Date(createdAt),
+        updatedAt: new Date(updatedAt),
+        ...meta,
+      }))
+    } catch (e) {
+      console.error('Could not list websites', e.statusCode, e.httpStatusCode, e.code)
+      if (e.statusCode === 404 || e.httpStatusCode === 404) {
+        await this.initStorage(session)
+        return []
+      } else {
+        throw e
+      }
+    }
+    //const projects = await this.callApi(session, `api/v4/users/${session.gitlab?.user?.id}/projects`) as any[]
+    //return projects.map(p => ({
+    //  websiteId: p.id,
+    //  name: p.name,
+    //  createdAt: p.created_at,
+    //  updatedAt: p.last_activity_at,
+    //  connectorUserSettings: {},
+    //}))
   }
 
   async readWebsite(session: GitlabSession, websiteId: string): Promise<WebsiteData> {
@@ -343,9 +416,9 @@ export default class GitlabConnector implements StorageConnector {
       name: websiteMeta.name,
     }) as any
     await this.createFile(session, project.id, WEBSITE_DATA_FILE, JSON.stringify({} as WebsiteData))
-    await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
+    //await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
     //await this.updateWebsite(session, project.id, {} as WebsiteData)
-    //await this.setWebsiteMeta(session, project.id, websiteMeta)
+    await this.setWebsiteMeta(session, project.id, websiteMeta)
     return project.id
   }
 
@@ -360,28 +433,75 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async deleteWebsite(session: GitlabSession, websiteId: WebsiteId): Promise<void> {
+    // Delete repo
     await this.callApi(session, `api/v4/projects/${websiteId}`, 'DELETE')
+    // Load the meta repo data
+    const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+      ref: this.options.branch,
+    })
+    const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
+    const data = metaRepo.websites[websiteId]
+    if(!data) throw new ApiError(`Website ${websiteId} not found`, 404)
+    // Update or create the website meta data
+    delete metaRepo.websites[websiteId]
+    // Save the meta repo data
+    const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
+      branch: this.options.branch,
+      commit_message: `Delete meta data of ${data.meta.name} (${websiteId}) from Silex`,
+      content: JSON.stringify(metaRepo),
+      file_path: this.options.metaRepoFile,
+    })
   }
 
   async getWebsiteMeta(session: GitlabSession, websiteId: WebsiteId): Promise<WebsiteMeta> {
-    const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`) as any
+    const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+      ref: this.options.branch,
+    })
+    const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
+    if(!metaRepo.websites[websiteId]) throw new ApiError(`Website ${websiteId} not found`, 404)
     return {
-      websiteId: project.id,
-      name: project.name,
-      createdAt: project.created_at,
-      updatedAt: project.last_activity_at,
-      connectorUserSettings: {},
+      websiteId,
+      createdAt: new Date(metaRepo.websites[websiteId].createdAt),
+      updatedAt: new Date(metaRepo.websites[websiteId].updatedAt),
+      ...metaRepo.websites[websiteId].meta,
     }
+    //const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`) as any
+    //return {
+    //  websiteId: project.id,
+    //  name: project.name,
+    //  createdAt: project.created_at,
+    //  updatedAt: project.last_activity_at,
+    //  connectorUserSettings: {},
+    //}
   }
 
   async setWebsiteMeta(session: GitlabSession, websiteId: WebsiteId, websiteMeta: WebsiteMetaFileContent): Promise<void> {
-    const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'PUT', {
-      branch: this.options.branch,
-      commit_message: 'Update website meta data from Silex',
-      content: JSON.stringify(websiteMeta),
-      file_path: WEBSITE_META_DATA_FILE,
-      id: websiteId,
+    // Load the meta repo data
+    const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+      ref: this.options.branch,
     })
+    const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
+    // Update or create the website meta data
+    metaRepo.websites[websiteId] = {
+      updatedAt: new Date().toISOString(),
+      createdAt: metaRepo.websites[websiteId]?.createdAt ?? new Date().toISOString(),
+      meta: websiteMeta,
+    }
+    // Save the meta repo data
+    const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
+      branch: this.options.branch,
+      commit_message: `Update website meta data of ${websiteMeta.name} (${websiteId}) from Silex`,
+      content: JSON.stringify(metaRepo),
+      file_path: this.options.metaRepoFile,
+    })
+
+    //const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'PUT', {
+    //  branch: this.options.branch,
+    //  commit_message: 'Update website meta data from Silex',
+    //  content: JSON.stringify(websiteMeta),
+    //  file_path: WEBSITE_META_DATA_FILE,
+    //  id: websiteId,
+    //})
   }
 
   async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback | undefined): Promise<void> {
@@ -393,7 +513,7 @@ export default class GitlabConnector implements StorageConnector {
         await this.updateFile(session, websiteId, this.getAssetPath(file.path), content, true)
       } catch (e) {
         // If the file does not exist, create it
-        if (e.statusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
+        if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
           await this.createFile(session, websiteId, file.path, content, true)
         } else {
           throw e
