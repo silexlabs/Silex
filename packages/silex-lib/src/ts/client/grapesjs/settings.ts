@@ -38,7 +38,7 @@ export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) =>
   } catch (error) {
     // Cannot get version from webpack (see plugin in webpack.config.js)
   }
-  console.log('Silex version:', version)
+  console.info('Silex version:', version)
   editor.Commands.add(cmdOpenSettings, {
     run: (_, sender, {page}) => {
       modal = editor.Modal.open({

@@ -37,6 +37,7 @@
   width: calc(85% - $projectBarWidth);
 }
 .#{$pn-prefix}devices-c {
+  display: flex;
   .#{$prefix}device-label {
     display: none;
   }

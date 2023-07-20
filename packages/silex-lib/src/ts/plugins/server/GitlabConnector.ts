@@ -119,7 +119,7 @@ export default class GitlabConnector implements StorageConnector {
   constructor(private config: ServerConfig, opts: Partial<GitlabOptions>) {
     this.options = {
       branch: 'main',
-      assetsFolder: '',
+      assetsFolder: 'assets',
       metaRepo: 'silex-meta',
       metaRepoFile: 'websites.json',
       ...opts,
@@ -131,7 +131,7 @@ export default class GitlabConnector implements StorageConnector {
   // **
   // Convenience methods for the Gitlab API
   private getAssetPath(path: string): string {
-    return `${this.options.assetsFolder}${path}`
+    return encodeURIComponent(`${this.options.assetsFolder}${path}`)
   }
 
   private async createFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
@@ -375,7 +375,6 @@ export default class GitlabConnector implements StorageConnector {
       const { content } = result
       const contentDecoded = Buffer.from(content, 'base64').toString('utf8')
       const websites = (JSON.parse(contentDecoded) as MetaRepoFileContent).websites
-      console.log('listWebsites', {websites, contentDecoded, content, result})
       return Object.entries(websites).map(([websiteId, {meta, createdAt, updatedAt}]) => ({
         websiteId,
         createdAt: new Date(createdAt),
@@ -514,7 +513,7 @@ export default class GitlabConnector implements StorageConnector {
       } catch (e) {
         // If the file does not exist, create it
         if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
-          await this.createFile(session, websiteId, file.path, content, true)
+          await this.createFile(session, websiteId, this.getAssetPath(file.path), content, true)
         } else {
           throw e
         }
@@ -537,6 +536,7 @@ export default class GitlabConnector implements StorageConnector {
     if(!response.ok) throw new ApiError(`Gitlab API error: ${json?.message ?? json?.error ?? response.statusText}`, response.status)
     // From base64 string to buffer
     const buf = Buffer.from(json.content, 'base64')
+    // Return the image bytes
     return buf
   }
 

@@ -50,6 +50,7 @@ export async function start(options = {}) {
   config.initGrapesConfig()
 
   // Start grapesjs
+  config.emit(ClientEvent.GRAPESJS_START)
   try{
     await initEditor(config.grapesJsConfig)
   } catch(e) {
@@ -57,7 +58,6 @@ export async function start(options = {}) {
     throw e
   }
 
-  config.emit(ClientEvent.GRAPESJS_START)
   const editor = getEditor()
   config.emit(ClientEvent.GRAPESJS_END, { editor })
 
@@ -66,7 +66,6 @@ export async function start(options = {}) {
 
   // Load the site
   editor.StorageManager.setAutosave(false)
-  console.log('before load')
   try {
     await editor.load(null)
   } catch(e) {
@@ -76,7 +75,6 @@ export async function start(options = {}) {
       // Will display an error message, see in storage.ts
     }
   } finally {
-    console.log('after load')
     setTimeout(() => {
       // This needs time for grapesjs
       editor.editor.set('changesCount', 0)

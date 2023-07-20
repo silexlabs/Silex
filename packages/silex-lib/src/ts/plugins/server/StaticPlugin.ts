@@ -48,6 +48,9 @@ export default async function(config, opts = {}) {
       }, {
         route: '/',
         path: join(__dirname, '../../../../..', 'dist', 'client'),
+      }, {
+        route: '/',
+        path: join(__dirname, '../../../../..', 'dist', 'plugins', 'client'),
       },
     ]
     // add project route for source maps
@@ -57,6 +60,7 @@ export default async function(config, opts = {}) {
       }] : []),
     ...opts,
   }
+  console.info('> [StaticPlugin] Serving static files')
 
   config.on(ServerEvent.STARTUP_START, ({app}) => {
     const router = express.Router()

@@ -96,7 +96,7 @@ export async function websiteMetaWrite({websiteId, data, connectorId}: {websiteI
 }
 
 export async function websiteMetaRead({websiteId, connectorId}: {websiteId: WebsiteId, connectorId?: ConnectorId}): Promise<WebsiteMeta> {
-  return api<ApiWebsiteMetaReadQuery, null, ApiWebsiteMetaReadResponse>(ApiRoute.WEBSITE_META_WRITE, 'PUT', { websiteId, connectorId: connectorId })
+  return api<ApiWebsiteMetaReadQuery, null, ApiWebsiteMetaReadResponse>(ApiRoute.WEBSITE_META_WRITE, 'GET', { websiteId, connectorId })
 }
 
 export async function websiteAssetsLoad({path, websiteId, connectorId}: {path: string, websiteId: WebsiteId, connectorId: ConnectorId}): Promise<string> {

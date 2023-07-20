@@ -35,6 +35,6 @@ module.exports = async function (config, options) {
       clientId: process.env.GITLAB_CLIENT_ID,
       clientSecret: process.env.GITLAB_CLIENT_SECRET,
     }),
-])
+  ])
   return {}
 }

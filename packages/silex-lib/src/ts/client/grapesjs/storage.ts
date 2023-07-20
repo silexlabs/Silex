@@ -28,7 +28,6 @@ export const storagePlugin = (editor) => {
   editor.Storage.add('connector', {
     async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
-        console.log('storage get user')
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if(user) {
           const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId})

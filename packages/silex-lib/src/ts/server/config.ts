@@ -103,7 +103,7 @@ export class ServerConfig extends Config {
   async addRoutes(app: Application) {
     const path = process.env.SILEX_CLIENT_CONFIG
     if (path) {
-      console.log(`> Serving client side config ${path} at ${CLIENT_CONFIG_FILE_NAME}`)
+      console.info(`> Serving client side config ${path} at ${CLIENT_CONFIG_FILE_NAME}`)
       try {
         // Load the client config file
         let clientConfig = (await readFile(path as string)).toString()
@@ -111,7 +111,7 @@ export class ServerConfig extends Config {
         app.get(`/${CLIENT_CONFIG_FILE_NAME}`, async (req: Request, res: Response) => {
           // Reload each time in debug mode
           if (this.debug) {
-            console.log('[Debug mode] Reloading config file', path)
+            console.info('[Debug mode] Reloading config file', path)
             clientConfig = (await readFile(path)).toString()
           }
           // Send the config file
@@ -143,7 +143,7 @@ export class ServerConfig extends Config {
    */
   async loadUserConfig() {
     if (this.userConfigPath) {
-      console.log('> Loading user config', this.userConfigPath)
+      console.info('> Loading user config', this.userConfigPath)
       try {
         // Initiate the process with the config file which is just another plugin
         await this.addPlugin(this.userConfigPath, {})
@@ -158,12 +158,11 @@ export class ServerConfig extends Config {
    * This is the main config file
    */
   async loadSilexConfig() {
-    console.log('> Loading config', this.configFilePath)
+    console.info('> Loading config', this.configFilePath)
     try {
       // Initiate the process with the config file which is just another plugin
       await this.addPlugin(this.configFilePath, {})
     } catch(e) {
-      console.log(e.requireStack[0])
       // Check if the error is about the config file not found and not another module not found in the config file
       if(e.code === 'MODULE_NOT_FOUND' && (!e.requireStack || !e.requireStack.find(path => path === this.configFilePath))) {
         console.info('> /!\\ Config file not found', this.configFilePath)

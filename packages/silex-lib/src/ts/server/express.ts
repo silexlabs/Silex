@@ -33,7 +33,7 @@ export function create(config: ServerConfig): Application {
   // CORS
   const options = config.expressOptions
   if (options.cors) {
-    console.log('> CORS are ENABLED:', options.cors)
+    console.info('> CORS are ENABLED:', options.cors)
     app.use(cors({
       origin: options.cors,
     }))
@@ -45,7 +45,7 @@ export function create(config: ServerConfig): Application {
   app.use(bodyParser.json({ limit: options.jsonLimit }))
   app.use(bodyParser.text({ limit: options.textLimit }))
   app.use(bodyParser.urlencoded({ limit: options.urlencodedLimit }))
-  console.log('> Session name:', options.sessionName)
+  console.info('> Session name:', options.sessionName)
   app.use(cookieParser() as any)
   app.use(session({
     name: options.sessionName,

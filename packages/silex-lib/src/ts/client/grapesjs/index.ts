@@ -45,7 +45,6 @@ import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
 import { richTextPlugin } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
-import wiebsiteInfoPlugin from './website-info'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import { storagePlugin } from './storage'
 import { ConnectorId, WebsiteId } from '../../types'
@@ -65,7 +64,6 @@ const plugins = [
   {name: 'grapesjs-plugin-forms', value: formPlugin},
   {name: 'grapesjs-custom-code', value: codePlugin},
   {name: './internal-links', value: internalLinksPlugin},
-  {name: './website-info', value: wiebsiteInfoPlugin},
   {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
   {name: './symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
