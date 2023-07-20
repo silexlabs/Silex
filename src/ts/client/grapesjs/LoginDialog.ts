@@ -21,7 +21,6 @@ export async function getCurrentUser(editor: Editor): Promise<ConnectorUser> {
 }
 
 export async function updateUser(editor: Editor, type: ConnectorType, connectorId?: ConnectorId): Promise<ConnectorUser> {
-  console.log('updateUser', type, connectorId)
   const user = await getUser({type, connectorId})
   editor.getModel().set('user', user)
   return user

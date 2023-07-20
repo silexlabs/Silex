@@ -9,6 +9,7 @@
 @use "grapesjs";
 @use "project-bar";
 @use "page-panel";
+@use "website-info";
 
 .container-png::before {
   content: " ";

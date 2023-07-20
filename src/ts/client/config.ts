@@ -20,12 +20,15 @@ import { getEditorConfig } from './grapesjs'
 import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
 import { ConnectorId, WebsiteId } from '../types'
 import { EditorConfig } from 'grapesjs'
+import * as api from './api'
 
 /**
  * @fileoverview Silex client side config
  */
 
 export class ClientConfig extends Config {
+  api = api
+
   /**
    * The website to load
    * This is the id of the website in the storage connector

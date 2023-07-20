@@ -15,9 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import websiteInfoPlugin from './plugins/client/website-info.js'
+
 // This file is loaded by Silex when the user opens the editor
 // Unless you override the default config with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config
 export default async function (config) {
+  // Add plugins
+  config.addPlugin(websiteInfoPlugin, {})
+
   // // For example add a GrapesJs plugin like this
   // config.editor.plugins.push(plugin)
   // config.editor.pluginsOpts[plugin] = {
