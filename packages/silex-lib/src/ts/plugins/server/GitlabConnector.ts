@@ -33,8 +33,9 @@ export interface GitlabOptions {
   clientSecret: string
   branch: string
   assetsFolder: string
-  metaRepo: string
-  metaRepoFile: string
+  //metaRepo: string
+  //metaRepoFile: string
+  repoPrefix: string
 }
 
 interface GitlabToken {
@@ -120,8 +121,9 @@ export default class GitlabConnector implements StorageConnector {
     this.options = {
       branch: 'main',
       assetsFolder: 'assets',
-      metaRepo: 'silex-meta',
-      metaRepoFile: 'websites.json',
+      //metaRepo: 'silex-meta',
+      //metaRepoFile: 'websites.json',
+      repoPrefix: 'silex_',
       ...opts,
     } as GitlabOptions
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
@@ -162,28 +164,28 @@ export default class GitlabConnector implements StorageConnector {
    * Get the meta repo path for the current user
    * The meta repo contains a JSON file which contains the list of websites
    */
-  private getMetaRepoPath(session: GitlabSession): string {
-    if(!session.gitlab?.username) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
-    return encodeURIComponent(`${session.gitlab.username}/${this.options.metaRepo}`)
-  }
+  //private getMetaRepoPath(session: GitlabSession): string {
+  //  if(!session.gitlab?.username) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
+  //  return encodeURIComponent(`${session.gitlab.username}/${this.options.metaRepo}`)
+  //}
 
-  /**
-   * Initialize the storage with a meta repo
-   */
-  private async initStorage(session: GitlabSession): Promise<void> {
-    // Create the meta repo
-    try {
-      const project = await this.callApi(session, 'api/v4/projects/', 'POST', {
-        name: this.options.metaRepo,
-      }) as any
-      return this.createFile(session, this.getMetaRepoPath(session), this.options.metaRepoFile, JSON.stringify({
-        websites: {}
-      } as MetaRepoFileContent))
-    } catch (e) {
-      console.error('Could not init storage', e.statusCode, e.httpStatusCode, e)
-      throw e
-    }
-  }
+  ///**
+  // * Initialize the storage with a meta repo
+  // */
+  //private async initStorage(session: GitlabSession): Promise<void> {
+  //  // Create the meta repo
+  //  try {
+  //    const project = await this.callApi(session, 'api/v4/projects/', 'POST', {
+  //      name: this.options.metaRepo,
+  //    }) as any
+  //    return this.createFile(session, this.getMetaRepoPath(session), this.options.metaRepoFile, JSON.stringify({
+  //      websites: {}
+  //    } as MetaRepoFileContent))
+  //  } catch (e) {
+  //    console.error('Could not init storage', e.statusCode, e.httpStatusCode, e)
+  //    throw e
+  //  }
+  //}
 
   /**
    * Call the Gitlab API with the user's token and handle errors
@@ -368,36 +370,38 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async listWebsites(session: GitlabSession): Promise<WebsiteMeta[]> {
-    try {
-      const result = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
-        ref: this.options.branch,
-      })
-      const { content } = result
-      const contentDecoded = Buffer.from(content, 'base64').toString('utf8')
-      const websites = (JSON.parse(contentDecoded) as MetaRepoFileContent).websites
-      return Object.entries(websites).map(([websiteId, {meta, createdAt, updatedAt}]) => ({
-        websiteId,
-        createdAt: new Date(createdAt),
-        updatedAt: new Date(updatedAt),
-        ...meta,
+    //try {
+    //  const result = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+    //    ref: this.options.branch,
+    //  })
+    //  const { content } = result
+    //  const contentDecoded = Buffer.from(content, 'base64').toString('utf8')
+    //  const websites = (JSON.parse(contentDecoded) as MetaRepoFileContent).websites
+    //  return Object.entries(websites).map(([websiteId, {meta, createdAt, updatedAt}]) => ({
+    //    websiteId,
+    //    createdAt: new Date(createdAt),
+    //    updatedAt: new Date(updatedAt),
+    //    ...meta,
+    //  }))
+    //} catch (e) {
+    //  console.error('Could not list websites', e.statusCode, e.httpStatusCode, e.code)
+    //  if (e.statusCode === 404 || e.httpStatusCode === 404) {
+    //    await this.initStorage(session)
+    //    return []
+    //  } else {
+    //    throw e
+    //  }
+    //}
+    const projects = await this.callApi(session, `api/v4/users/${session.gitlab?.userId}/projects`) as any[]
+    return projects
+      .filter(p => p.name.startsWith(this.options.repoPrefix))
+      .map(p => ({
+        websiteId: p.id,
+        name: p.name.replace(this.options.repoPrefix, ''),
+        createdAt: p.created_at,
+        updatedAt: p.last_activity_at,
+        connectorUserSettings: {},
       }))
-    } catch (e) {
-      console.error('Could not list websites', e.statusCode, e.httpStatusCode, e.code)
-      if (e.statusCode === 404 || e.httpStatusCode === 404) {
-        await this.initStorage(session)
-        return []
-      } else {
-        throw e
-      }
-    }
-    //const projects = await this.callApi(session, `api/v4/users/${session.gitlab?.user?.id}/projects`) as any[]
-    //return projects.map(p => ({
-    //  websiteId: p.id,
-    //  name: p.name,
-    //  createdAt: p.created_at,
-    //  updatedAt: p.last_activity_at,
-    //  connectorUserSettings: {},
-    //}))
   }
 
   async readWebsite(session: GitlabSession, websiteId: string): Promise<WebsiteData> {
@@ -412,12 +416,12 @@ export default class GitlabConnector implements StorageConnector {
 
   async createWebsite(session: GitlabSession, websiteMeta: WebsiteMetaFileContent): Promise<WebsiteId> {
     const project = await this.callApi(session, 'api/v4/projects/', 'POST', {
-      name: websiteMeta.name,
+      name: this.options.repoPrefix + websiteMeta.name,
     }) as any
     await this.createFile(session, project.id, WEBSITE_DATA_FILE, JSON.stringify({} as WebsiteData))
-    //await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
+    await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
     //await this.updateWebsite(session, project.id, {} as WebsiteData)
-    await this.setWebsiteMeta(session, project.id, websiteMeta)
+    //await this.setWebsiteMeta(session, project.id, websiteMeta)
     return project.id
   }
 
@@ -434,73 +438,84 @@ export default class GitlabConnector implements StorageConnector {
   async deleteWebsite(session: GitlabSession, websiteId: WebsiteId): Promise<void> {
     // Delete repo
     await this.callApi(session, `api/v4/projects/${websiteId}`, 'DELETE')
-    // Load the meta repo data
-    const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
-      ref: this.options.branch,
-    })
-    const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
-    const data = metaRepo.websites[websiteId]
-    if(!data) throw new ApiError(`Website ${websiteId} not found`, 404)
-    // Update or create the website meta data
-    delete metaRepo.websites[websiteId]
-    // Save the meta repo data
-    const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
-      branch: this.options.branch,
-      commit_message: `Delete meta data of ${data.meta.name} (${websiteId}) from Silex`,
-      content: JSON.stringify(metaRepo),
-      file_path: this.options.metaRepoFile,
-    })
+    //// Load the meta repo data
+    //const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+    //  ref: this.options.branch,
+    //})
+    //const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
+    //const data = metaRepo.websites[websiteId]
+    //if(!data) throw new ApiError(`Website ${websiteId} not found`, 404)
+    //// Update or create the website meta data
+    //delete metaRepo.websites[websiteId]
+    //// Save the meta repo data
+    //const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
+    //  branch: this.options.branch,
+    //  commit_message: `Delete meta data of ${data.meta.name} (${websiteId}) from Silex`,
+    //  content: JSON.stringify(metaRepo),
+    //  file_path: this.options.metaRepoFile,
+    //})
   }
 
   async getWebsiteMeta(session: GitlabSession, websiteId: WebsiteId): Promise<WebsiteMeta> {
-    const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
-      ref: this.options.branch,
-    })
-    const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
-    if(!metaRepo.websites[websiteId]) throw new ApiError(`Website ${websiteId} not found`, 404)
-    return {
-      websiteId,
-      createdAt: new Date(metaRepo.websites[websiteId].createdAt),
-      updatedAt: new Date(metaRepo.websites[websiteId].updatedAt),
-      ...metaRepo.websites[websiteId].meta,
-    }
-    //const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`) as any
+    //const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+    //  ref: this.options.branch,
+    //})
+    //const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
+    //if(!metaRepo.websites[websiteId]) throw new ApiError(`Website ${websiteId} not found`, 404)
     //return {
-    //  websiteId: project.id,
-    //  name: project.name,
-    //  createdAt: project.created_at,
-    //  updatedAt: project.last_activity_at,
-    //  connectorUserSettings: {},
+    //  websiteId,
+    //  createdAt: new Date(metaRepo.websites[websiteId].createdAt),
+    //  updatedAt: new Date(metaRepo.websites[websiteId].updatedAt),
+    //  ...metaRepo.websites[websiteId].meta,
     //}
+    const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'GET', null, {
+      ref: this.options.branch,
+    }) as any
+    return {
+      websiteId: project.id,
+      name: project.name,
+      createdAt: project.created_at,
+      updatedAt: project.last_activity_at,
+      connectorUserSettings: {},
+    }
   }
 
   async setWebsiteMeta(session: GitlabSession, websiteId: WebsiteId, websiteMeta: WebsiteMetaFileContent): Promise<void> {
-    // Load the meta repo data
-    const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
-      ref: this.options.branch,
-    })
-    const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
-    // Update or create the website meta data
-    metaRepo.websites[websiteId] = {
-      updatedAt: new Date().toISOString(),
-      createdAt: metaRepo.websites[websiteId]?.createdAt ?? new Date().toISOString(),
-      meta: websiteMeta,
-    }
-    // Save the meta repo data
-    const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
-      branch: this.options.branch,
-      commit_message: `Update website meta data of ${websiteMeta.name} (${websiteId}) from Silex`,
-      content: JSON.stringify(metaRepo),
-      file_path: this.options.metaRepoFile,
-    })
-
-    //const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'PUT', {
-    //  branch: this.options.branch,
-    //  commit_message: 'Update website meta data from Silex',
-    //  content: JSON.stringify(websiteMeta),
-    //  file_path: WEBSITE_META_DATA_FILE,
-    //  id: websiteId,
+    //// Load the meta repo data
+    //const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
+    //  ref: this.options.branch,
     //})
+    //const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
+    //// Update or create the website meta data
+    //metaRepo.websites[websiteId] = {
+    //  updatedAt: new Date().toISOString(),
+    //  createdAt: metaRepo.websites[websiteId]?.createdAt ?? new Date().toISOString(),
+    //  meta: websiteMeta,
+    //}
+    //// Save the meta repo data
+    //const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
+    //  branch: this.options.branch,
+    //  commit_message: `Update website meta data of ${websiteMeta.name} (${websiteId}) from Silex`,
+    //  content: JSON.stringify(metaRepo),
+    //  file_path: this.options.metaRepoFile,
+    //})
+
+    // Rename the repo if needed
+    const oldMeta = await this.getWebsiteMeta(session, websiteId)
+    if(websiteMeta.name !== oldMeta.name) {
+      await this.callApi(session, `api/v4/projects/${websiteId}`, 'PUT', {
+        name: this.options.repoPrefix + websiteMeta.name,
+      })
+    }
+
+    // Update the metadata file
+    await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'PUT', {
+      branch: this.options.branch,
+      commit_message: 'Update website meta data from Silex',
+      content: JSON.stringify(websiteMeta),
+      file_path: WEBSITE_META_DATA_FILE,
+      id: websiteId,
+    })
   }
 
   async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback | undefined): Promise<void> {
