@@ -16,10 +16,13 @@
  */
 
 export enum ClientEvent {
+  // Sent on the config object
   STARTUP_START = 'silex:startup:start',
   STARTUP_END = 'silex:startup:end',
   GRAPESJS_START = 'silex:grapesjs:start',
   GRAPESJS_END = 'silex:grapesjs:end',
+
+  // Sent on the editor object
   PUBLISH_START = 'silex:publish:start',
   PUBLISH_DATA = 'silex:publish:data',
   PUBLISH_END = 'silex:publish:end',

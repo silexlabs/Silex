@@ -18,6 +18,7 @@
 import { Readable } from 'stream'
 import { ServerConfig } from '../config'
 import { JobStatus, JobData, ConnectorData, ConnectorId, WebsiteId, ConnectorType, ConnectorUser, WebsiteMeta, WebsiteMetaFileContent, WebsiteData, ConnectorOptions } from '../../types'
+import { JobManager } from '../jobs'
 
 /**
  * @fileoverview define types for Silex connectors
@@ -99,8 +100,9 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
  * Hosting connectors are used to publish the website
  */
 export interface HostingConnector<Session extends ConnectorSession = ConnectorSession> extends Connector<Session> {
-  publish(session: Session, websiteId: WebsiteId, files: ConnectorFile[]): Promise<JobData>
+  publish(session: Session, websiteId: WebsiteId, files: ConnectorFile[], jobManager: JobManager): Promise<JobData> // Pass the jobManager as plugins do not neccessarily share the same module instance
   getUrl(session: Session, websiteId: WebsiteId): Promise<string>
+
 }
 
 export function toConnectorEnum(type: string | ConnectorType): ConnectorType {

@@ -24,7 +24,6 @@ export interface PublicationSettings {
   connector?: ConnectorData, // Set by the postMessage from the login callback page
   options?: ConnectorOptions, // Options for the publication connector saved with the site
   url?: string, // URL to display where the website is published to
-  autoHomePage?: boolean, // Name the first page `index` instead of its name
 }
 
 export interface WebsiteFile {
@@ -110,7 +109,7 @@ export interface WebsiteData {
 }
 
 export interface PublicationData extends WebsiteData {
-  files?: WebsiteFile[], // Added by the client for publish
+  files?: ClientSideFile[], // Added by the client for publish
 }
 
 export interface WebsiteSettings {
@@ -187,13 +186,28 @@ export type ConnectorId = string
 export type ConnectorOptions = object
 
 /**
+ * Type for a client side file when the content is available as a string
+ */
+export interface ClientSideFileWithContent {
+  path: string,
+  content: string, // Not buffer because it's sent from the client in JSON
+  type: 'html' | 'asset' | 'css',
+}
+
+/**
+ * Type for a client side file when the content is in the storage connector
+ */
+export interface ClientSideFileWithSrc {
+  path: string,
+  src: string, // Where to download the file, a path for the storage connector
+  type: 'html' | 'asset' | 'css',
+}
+
+/**
  * Type for a client side file
  * @see connector/File
  */
-export interface ClientSideFile {
-  path: string,
-  content: string, // Not buffer because it's sent from the client in JSON
-}
+export type ClientSideFile = ClientSideFileWithContent | ClientSideFileWithSrc
 
 /**
  * Type for file listing
