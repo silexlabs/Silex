@@ -55,7 +55,7 @@ export default async function(config) {
       topBar?.appendChild(container)
       // Display the website meta data
       container.innerHTML = `
-        <div class="gjs-website-meta-image" style="background: url(${websiteMeta.imageUrl});"></div>
+        ${ websiteMeta.imageUrl ? `<div class="gjs-website-meta-image" style="background: url(${websiteMeta.imageUrl});"></div>` : '' }
         <div class="gjs-website-meta-name">${websiteMeta.name}</div>
       `
     }

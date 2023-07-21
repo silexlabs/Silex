@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
+import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE } from '../../constants'
 import { ServerConfig } from '../../server/config'
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '../../server/connectors/connectors'
 import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent } from '../../types'
@@ -419,7 +419,7 @@ export default class GitlabConnector implements StorageConnector {
       name: this.options.repoPrefix + websiteMeta.name,
     }) as any
     await this.createFile(session, project.id, WEBSITE_DATA_FILE, JSON.stringify({} as WebsiteData))
-    await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
+    //await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
     //await this.updateWebsite(session, project.id, {} as WebsiteData)
     //await this.setWebsiteMeta(session, project.id, websiteMeta)
     return project.id
@@ -468,12 +468,17 @@ export default class GitlabConnector implements StorageConnector {
     //  updatedAt: new Date(metaRepo.websites[websiteId].updatedAt),
     //  ...metaRepo.websites[websiteId].meta,
     //}
-    const project = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'GET', null, {
-      ref: this.options.branch,
-    }) as any
+    // const response = await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'GET', null, {
+    //   ref: this.options.branch,
+    // }) as any
+    // Base64 to string to JSON
+    // const contentDecoded = Buffer.from(response.content, 'base64').toString('utf8')
+    // const websiteMeta = JSON.parse(contentDecoded) as WebsiteMetaFileContent
+    const project = await this.callApi(session, `api/v4/projects/${websiteId}`)
     return {
-      websiteId: project.id,
-      name: project.name,
+      websiteId,
+      name: project.name.replace(this.options.repoPrefix, ''),
+      imageUrl: project.avatar_url,
       createdAt: project.created_at,
       updatedAt: project.last_activity_at,
       connectorUserSettings: {},
@@ -507,15 +512,14 @@ export default class GitlabConnector implements StorageConnector {
         name: this.options.repoPrefix + websiteMeta.name,
       })
     }
-
-    // Update the metadata file
-    await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'PUT', {
-      branch: this.options.branch,
-      commit_message: 'Update website meta data from Silex',
-      content: JSON.stringify(websiteMeta),
-      file_path: WEBSITE_META_DATA_FILE,
-      id: websiteId,
-    })
+    //// Update the metadata file
+    //await this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${WEBSITE_META_DATA_FILE}`, 'PUT', {
+    //  branch: this.options.branch,
+    //  commit_message: 'Update website meta data from Silex',
+    //  content: JSON.stringify(websiteMeta),
+    //  file_path: WEBSITE_META_DATA_FILE,
+    //  id: websiteId,
+    //})
   }
 
   async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback | undefined): Promise<void> {
