@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '../../page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteId, WebsiteSettings } from '../../types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ClientSideFile, ClientSideFileWithContent, ClientSideFileWithSrc, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor, ProjectData } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -206,7 +206,18 @@ export class PublicationManager {
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Build the files structure
-    const files = await this.getFiles(siteSettings)
+    const files: ClientSideFile[] = (await this.getSiteFiles(siteSettings))
+      .flatMap(file => ([{
+        path: file.htmlPath,
+        content: file.html,
+      } as ClientSideFile, {
+        path: file.cssPath,
+        content: file.css,
+      } as ClientSideFile]))
+      .concat(projectData.assets.map(asset => ({
+        path: asset.path,
+        src: asset.src,
+      }) as ClientSideFile))
 
     // Create the data to send to the server
     const data: PublicationData = {
@@ -253,7 +264,7 @@ export class PublicationManager {
     }
   }
 
-  async getFiles(siteSettings: WebsiteSettings) {
+  async getSiteFiles(siteSettings: WebsiteSettings): Promise<WebsiteFile[]> {
     return this.editor.Pages.getAll().map(page => {
       const pageSettings = page.get('settings') as WebsiteSettings
       function getSetting(name) {

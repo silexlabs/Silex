@@ -16,10 +16,11 @@
  */
 
 import { Config } from '@silexlabs/silex-plugins'
-import { getEditorConfig } from './grapesjs'
+import { getEditor, getEditorConfig } from './grapesjs'
 import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
 import { ConnectorId, WebsiteId } from '../types'
-import { EditorConfig } from 'grapesjs'
+import { Editor, EditorConfig, Page } from 'grapesjs'
+import { PublicationTransformer } from './publication-transformers'
 import * as api from './api'
 
 /**
@@ -72,5 +73,24 @@ export class ClientConfig extends Config {
    */
   initGrapesConfig() {
     this.grapesJsConfig = getEditorConfig(this.websiteId, this.storageId, this.rootUrl)
+  }
+
+  /**
+   * Get grapesjs editor
+   */
+  getEditor(): Editor {
+    return getEditor()
+  }
+
+  /**
+   * Publication transformers let plugins change files before they are published
+   */
+  publicationTransformers: Array<PublicationTransformer> = []
+
+  /**
+   * Add a publication transformer(s)
+   */
+  addPublicationTransformers(transformers: PublicationTransformer | PublicationTransformer[]) {
+    this.publicationTransformers = this.publicationTransformers.concat(transformers)
   }
 }

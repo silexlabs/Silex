@@ -21,11 +21,11 @@ import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, 
 import { requiredParam } from '../../server/utils/validation'
 import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
 import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, defaultWebsiteData, WebsiteData, ConnectorOptions } from '../../types'
-import { jobError, jobSuccess, startJob } from '../../server/jobs'
 import { ServerConfig } from '../../server/config'
 import { join } from 'path'
 import { type } from 'os'
 import { v4 as uuid } from 'uuid'
+import { JobManager } from '../../server/jobs'
 
 /**
  * @fileoverview FTP connector for Silex
@@ -568,7 +568,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     return this.sessionData(session).websiteUrl ?? ''
   }
 
-  async publish(session: FtpSession, id: string, files: ConnectorFile[]): Promise<JobData> {
+  async publish(session: FtpSession, id: WebsiteId, files: ConnectorFile[], {startJob, jobSuccess, jobError}: JobManager): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]

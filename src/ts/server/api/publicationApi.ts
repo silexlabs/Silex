@@ -17,13 +17,12 @@
 
 import { Router } from 'express'
 import { API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSET_READ } from '../../constants'
-import { getJob } from '../jobs'
-import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, JobId, PublicationSettings, PublicationData as PublicationData, ConnectorType, ConnectorId, WebsiteId} from '../../types'
+import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, JobId, PublicationData, ConnectorType, ConnectorId, WebsiteId, ClientSideFile, ClientSideFileWithContent, ClientSideFileWithSrc} from '../../types'
 import { ConnectorFile, HostingConnector, StorageConnector, getConnector } from '../connectors/connectors'
 import { ServerConfig } from '../config'
 import { requiredParam } from '../utils/validation'
-import { join } from 'path'
 import { PublishEndEventType, PublishStartEventType, ServerEvent } from '../events'
+import { getJob, jobManager } from '../jobs'
 
 /**
  * @fileoverview Publication plugin for Silex
@@ -109,9 +108,9 @@ export default function (config: ServerConfig): Router {
 
       // Check params
       const data = body as PublicationData
-      const { files, publication, assets } = data
-      if(!files || !publication || !assets) {
-        throw new PublicationError('Missing data from request: files, publication or assets', 400)
+      const { files } = data
+      if(!files) {
+        throw new PublicationError('Missing files in body', 400)
       }
 
       // Hook for plugins
@@ -123,29 +122,23 @@ export default function (config: ServerConfig): Router {
       // Get storage connector which holds the assets
       const storage = await getStorageConnector(session, config, storageId)
 
-      // Publication
-      const assetsFiles: ConnectorFile[] = await Promise.all(assets.map(async asset => {
-        if(!asset.path) throw new PublicationError('Missing path in asset', 400)
-        if(!asset.src) throw new PublicationError('Missing src in asset', 400)
-        // Remove the / from the asset root if it starts with one
+      // Load the content if necessary
+      const filesList: ConnectorFile[] = await Promise.all(files.map(async (file: ClientSideFile) => {
         const prefix = API_WEBSITE_ASSET_READ.replace(/^\//, '')
-        // Get the asset url relative to the asset root
-        const src = asset.src.startsWith(prefix) ? asset.src.substring(prefix.length) : asset.src
+        const fileWithContent = file as ClientSideFileWithContent
+        const fileWithSrc = file as ClientSideFileWithSrc
+        if(!fileWithContent.content && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)
+        const src = fileWithSrc.src?.startsWith(prefix) ? fileWithSrc.src.substring(prefix.length) : fileWithSrc.src
         return {
-          path: asset.path,
-          content: await storage.readAsset(session, websiteId, src),
+          path: file.path,
+          content: fileWithContent.content ??
+            await storage.readAsset(session, websiteId, src),
         }
       }))
-      const filesList: ConnectorFile[] = files.flatMap<ConnectorFile>(file => ([{
-        path: file.htmlPath,
-        content: file.html,
-      }, {
-        path: file.cssPath,
-        content: file.css,
-      }])).concat(assetsFiles)
+
       res.json({
         url: await hostingConnector.getUrl(session, websiteId),
-        job: await hostingConnector.publish(session, websiteId, filesList),
+        job: await hostingConnector.publish(session, websiteId, filesList, jobManager),
       } as ApiPublicationPublishResponse)
     } catch (err) {
       console.error('Error publishing the website', err)

@@ -24,6 +24,7 @@
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
+import { initPublicationTransformers } from './publication-transformers'
 
 // Expose API to calling app as window.silex
 export * from './expose'
@@ -60,6 +61,9 @@ export async function start(options = {}) {
 
   const editor = getEditor()
   config.emit(ClientEvent.GRAPESJS_END, { editor })
+
+  // Init publication transformers
+  initPublicationTransformers(config)
 
   // Init internationalization module
   editor.I18n.setLocale(config.lang)

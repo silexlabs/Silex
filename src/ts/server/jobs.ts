@@ -75,3 +75,13 @@ function end(id: JobId, status: JobStatus, message = ''): boolean {
   }
   return false
 }
+
+// Type definition of the job manager
+export interface JobManager {
+  startJob: typeof startJob
+  jobSuccess: typeof jobSuccess
+  jobError: typeof jobError
+}
+
+// Export the job manager
+export const jobManager: JobManager = { startJob, jobSuccess, jobError }
