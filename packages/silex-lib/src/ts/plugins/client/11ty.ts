@@ -1,6 +1,6 @@
-import { Page } from "grapesjs";
-import { ClientConfig } from "../../client/config";
-import { ClientSideFile, ClientSideFileWithContent } from "../../types";
+import { Page } from 'grapesjs'
+import { ClientConfig } from '../../client/config'
+import { ClientSideFile, ClientSideFileWithContent } from '../../types'
 
 interface PluginOptions {
   html: {
@@ -42,23 +42,23 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
       const fileWithContent = file as ClientSideFileWithContent
       console.log('Silex: transform file for 11ty', fileWithContent)
       switch (file.type) {
-        case 'html':
-          return {
-            ...file,
-            path: options.html.path + fileWithContent.path,
-            //content: `---\npermalink: ${options.html.url}${fileWithContent.path}\n---\n${fileWithContent.content}`
-          }
-        case 'css':
-          return {
-            ...file,
-            path: options.css.path + fileWithContent.path.replace(/\.css$/, '.css.liquid'),
-            content: `---\npermalink: ${options.css.url}${fileWithContent.path}\n---\n${fileWithContent.content}`
-          }
-        case 'asset':
-          return {
-            ...file,
-            path: options.assets.path + fileWithContent.path,
-          }
+      case 'html':
+        return {
+          ...file,
+          path: options.html.path + fileWithContent.path,
+          //content: `---\npermalink: ${options.html.url}${fileWithContent.path}\n---\n${fileWithContent.content}`
+        }
+      case 'css':
+        return {
+          ...file,
+          path: options.css.path + fileWithContent.path.replace(/\.css$/, '.css.liquid'),
+          content: `---\npermalink: ${options.css.url}${fileWithContent.path}\n---\n${fileWithContent.content}`
+        }
+      case 'asset':
+        return {
+          ...file,
+          path: options.assets.path + fileWithContent.path,
+        }
       }
       throw new Error(`Unknown file type ${file.type}`)
     },

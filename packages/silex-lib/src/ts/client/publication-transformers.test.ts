@@ -3,17 +3,16 @@ import { Mock } from 'jest-mock'
 import {
   transformComponents,
   transformStyles,
-  transformPages,
-  transformFiles,
   resetTransformComponents,
   resetTransformStyles,
+  PublicationTransformer,
+  transformPages,
   resetTransformPages,
-  PublicationTransformer
+  transformFiles
 } from './publication-transformers'
 import { ClientConfig } from './config'
-import GrapesJS, { Component, Editor, ObjectStrings } from 'grapesjs'
+import GrapesJS, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
 import { ClientSideFile, PublicationData } from '../types'
-import exp from 'constants'
 
 describe('publication-transformers', () => {
   let mockConfig: ClientConfig
@@ -47,7 +46,10 @@ describe('publication-transformers', () => {
       path: 'test path',
       content: 'test content',
     } as ClientSideFile
-    mockData = { files: [mockFile] } as PublicationData
+    mockData = {
+      files: [mockFile],
+      pages: [{} as Page],
+    } as PublicationData
     transformer = {
       renderComponent: jest.fn(),
       renderCssRule: jest.fn(),
@@ -82,18 +84,19 @@ describe('publication-transformers', () => {
 
   it('should transform styles', () => {
     const renderCssRule = transformer.renderCssRule as Mock
-    const returned = {color: 'test'} as ObjectStrings
-    renderCssRule.mockReturnValue(returned)
+    renderCssRule.mockImplementation((rule: any) => {
+      return { color: 'test'+rule.attributes.style.color } as ObjectStrings
+    })
     transformStyles(mockConfig)
     const css = editor.getCss()
     expect(renderCssRule).toBeCalledTimes(2)
-    const results = renderCssRule.mock.calls.map(call => call[1] as ObjectStrings)
-    const parent = results.find(c => c.color === 'red')
+    const results = renderCssRule.mock.results.map(r => r.value as ObjectStrings)
+    const parent = results.find(c => c.color === 'testred')
     expect(parent).not.toBeUndefined()
-    const child = results.find(c => c.color === 'blue')
+    const child = results.find(c => c.color === 'testblue')
     expect(child).not.toBeUndefined()
     expect(css).toContain('color:test')
-    expect(css).not.toContain('blue')
+    expect(css).not.toContain('color:blue')
   })
 
   it('should reset transformed styles', () => {
