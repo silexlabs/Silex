@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Page } from "grapesjs"
+
 /**
  * @fileoverview define types for Silex client and server
  */
@@ -127,17 +129,6 @@ export interface Font {
   name: string,
   value: string,
   variants: string[],
-}
-
-export interface Page {
-  name?: string,
-  id: string,
-  type?: string,
-  frames: Frame[],
-  settings?: WebsiteSettings,
-  cssExt?: string,
-  htmlExt?: string,
-  slug?: string,
 }
 
 export interface Frame {
