@@ -15,8 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Page } from 'grapesjs'
-
 /**
  * @fileoverview define types for Silex client and server
  */
@@ -100,7 +98,7 @@ export const defaultWebsiteData: WebsiteData = {
 } as WebsiteData
 
 export interface WebsiteData {
-  pages: Page[],
+  pages: any[], // Page[], // From grapesjs, not imported because it breaks the build on the server side
   assets: Asset[],
   styles: Style[],
   //name: string,
