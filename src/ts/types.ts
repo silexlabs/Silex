@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Page } from "grapesjs"
+import { Page } from 'grapesjs'
 
 /**
  * @fileoverview define types for Silex client and server

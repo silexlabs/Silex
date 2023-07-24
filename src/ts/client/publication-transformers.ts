@@ -41,7 +41,7 @@ export interface PublicationTransformer {
   // Define how pages are named
   pageToSlug?(page: Page): string
   // Transform files after they are rendered and before they are published
-  transformFile?(file: ClientSideFile, page: Page): ClientSideFile
+  transformFile?(file: ClientSideFile, page: Page | null): ClientSideFile
 }
 
 
@@ -78,7 +78,7 @@ export function transformComponents(config: ClientConfig) {
   const editor = config.getEditor()
   onAll(editor, (c: Component) => {
     if (c.get(ATTRIBUTE_METHOD_STORE_HTML)) {
-      console.warn('Silex: publication transformer: HTML transform already altered', c)
+      console.warn('Publication transformer: HTML transform already altered', c)
     } else {
       const initialToHTML = c.toHTML.bind(c)
       c[ATTRIBUTE_METHOD_STORE_HTML] = c.toHTML
@@ -87,7 +87,7 @@ export function transformComponents(config: ClientConfig) {
           try {
             return transformer.renderComponent ? transformer.renderComponent(c, initialToHTML) ?? html : html
           } catch (e) {
-            console.error('Silex: publication transformer: error rendering component', c, e)
+            console.error('Publication transformer: error rendering component', c, e)
             return html
           }
         }, initialToHTML())
@@ -104,7 +104,7 @@ export function transformStyles(config: ClientConfig) {
   const editor = config.getEditor()
   editor.Css.getAll().forEach(c => {
     if (c[ATTRIBUTE_METHOD_STORE_CSS]) {
-      console.warn('Silex: publication transformer: CSS transform already altered', c)
+      console.warn('Publication transformer: CSS transform already altered', c)
     } else {
       const initialGetStyle = c.getStyle.bind(c)
       c[ATTRIBUTE_METHOD_STORE_CSS] = c.getStyle
@@ -116,7 +116,7 @@ export function transformStyles(config: ClientConfig) {
             }
           }, initialGetStyle())
         } catch (e) {
-          console.error('Silex: publication transformer: error rendering style', c, e)
+          console.error('Publication transformer: error rendering style', c, e)
           return initialGetStyle()
         }
       }
@@ -135,7 +135,7 @@ export function transformPages(config: ClientConfig) {
       try {
         return transformer.pageToSlug ? transformer.pageToSlug(page) ?? slug : slug
       } catch (e) {
-        console.error('Silex: publication transformer: error creating page slug', page, e)
+        console.error('Publication transformer: error creating page slug', page, e)
         return slug
       }
     }, page.get('slug')))
@@ -150,10 +150,10 @@ export function transformFiles(config: ClientConfig, data: PublicationData) {
   data.files = config.publicationTransformers.reduce((files: ClientSideFile[], transformer: PublicationTransformer) => {
     return files.map((file, idx) => {
       try {
-        const page = data.pages[idx]
+        const page = data.pages[idx] ?? null
         return transformer.transformFile ? transformer.transformFile(file, page) as ClientSideFile ?? file : file
       } catch (e) {
-        console.error('Silex: publication transformer: error transforming file', file, e)
+        console.error('Publication transformer: error transforming file', file, e)
         return file
       }
     })
