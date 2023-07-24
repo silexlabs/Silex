@@ -210,13 +210,17 @@ export class PublicationManager {
       .flatMap(file => ([{
         path: file.htmlPath,
         content: file.html,
+        type: 'html',
       } as ClientSideFile, {
         path: file.cssPath,
         content: file.css,
+        type: 'css',
       } as ClientSideFile]))
       .concat(projectData.assets.map(asset => ({
-        path: asset.path,
+        ...asset,
+        path: `/${asset.src}`,
         src: asset.src,
+        type: 'asset',
       }) as ClientSideFile))
 
     // Create the data to send to the server
@@ -271,6 +275,11 @@ export class PublicationManager {
         return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
       }
       const component = page.getMainComponent()
+
+
+
+
+
       const slug = page.get('slug') || getPageSlug(page.get('name') || page.get('type'))
       return {
         html: `

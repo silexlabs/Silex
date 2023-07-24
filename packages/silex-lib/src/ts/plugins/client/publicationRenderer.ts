@@ -1,7 +1,47 @@
+/*
+ * Silex website builder, free/libre no-code tool for makers.
+ * Copyright (c) 2023 lexoyo and Silex Labs foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+// Silex: publication renderer plugin is deprecated. Use the publication renderer plugin instead.
+console.warn('Silex: publication renderer plugin is deprecated. Use the publication renderer plugin instead.')
+
+/* Usage:
+  import publicationRenderer from '/node_modules/@silexlabs/silex/dist/plugins/client/plugins/client/publicationRenderer.js'
+  await config.addPlugin(publicationRenderer, {
+    css: {
+      frontMatter: true,
+      ext: '.css.liquid',
+      path: '../../../pages'
+    },
+    html: {
+      frontMatter: false,
+      path: '../../../_includes'
+    },
+    assets: {
+      path: '../../../',
+      url: '/',
+    },
+  })
+*/
+
 import { getPageSlug } from '../../page.js'
-import { Page } from '../../types.js'
+import { ClientSideFile } from '../../types.js'
 import { onAll } from '../../client/utils.js'
 import { ClientEvent } from '../../client/events.js'
+import { Page } from 'grapesjs'
 
 export default (config, opts: any = {}) => {
   const options = {
@@ -103,26 +143,28 @@ export default (config, opts: any = {}) => {
           })
       }
     })
-    editor.on(ClientEvent.PUBLISH_DATA, data => {
-      data.pages.forEach((page: Page, idx) => {
-        const file = data.files[idx]
-        // CSS
-        file.cssPath = file.cssPath.replace(/\.css$/, options.css.ext)
-        file.cssPath = options.css.path + file.cssPath
-        if (options.css.frontMatter) {
-          file.css = `---\npermalink: ${options.css.url}/${page.slug}.css\n---\n${file.css}`
-        }
-        // HTML
-        file.htmlPath = file.htmlPath.replace(/\.html$/, options.html.ext)
-        file.htmlPath = options.html.path + file.htmlPath
-        if (options.html.frontMatter) {
-          file.html = `---\npermalink: ${options.html.url}/${page.slug}.html\n---\n${file.html}`
-        }
-      })
-      data.assets.forEach((asset, idx) => {
-        asset.path = options.assets.path + asset.src
-        // The rest is handled by the editor.Css.getAll loop
-      })
-    })
+    //editor.on(ClientEvent.PUBLISH_DATA, data => {
+    //  data.pages.forEach((page: Page, idx) => {
+    //    const file = data.files[idx] as ClientSideFile
+    //    console.log('Silex: publication renderer: page', page, file)
+    //    // CSS
+    //    if(file.type === 'css') {
+    //    file.cssPath = file.cssPath.replace(/\.css$/, options.css.ext)
+    //    file.cssPath = options.css.path + file.cssPath
+    //    if (options.css.frontMatter) {
+    //      file.css = `---\npermalink: ${options.css.url}/${page.slug}.css\n---\n${file.css}`
+    //    }
+    //    // HTML
+    //    file.htmlPath = file.htmlPath.replace(/\.html$/, options.html.ext)
+    //    file.htmlPath = options.html.path + file.htmlPath
+    //    if (options.html.frontMatter) {
+    //      file.html = `---\npermalink: ${options.html.url}/${page.slug}.html\n---\n${file.html}`
+    //    }
+    //  })
+    //  data.assets.forEach((asset, idx) => {
+    //    asset.path = options.assets.path + asset.src
+    //    // The rest is handled by the editor.Css.getAll loop
+    //  })
+    //})
   })
 }

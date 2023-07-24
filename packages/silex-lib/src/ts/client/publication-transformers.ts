@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, CssRule, Editor, ObjectStrings, OptionsStyle, Page, ToHTMLOptions } from 'grapesjs'
+import { Component, CssRule, ObjectStrings, Page } from 'grapesjs'
 import { ClientSideFile, PublicationData } from '../types'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
@@ -35,13 +35,13 @@ const ATTRIBUTE_METHOD_STORE_CSS = 'tmp-pre-publication-transformer-tocss'
  */
 export interface PublicationTransformer {
   // Override how components render at publication by grapesjs
-  renderComponent(component: Component, initialHtml: string): string
+  renderComponent?(component: Component, toHtml: () => string): string | undefined
   // Override how styles render at publication by grapesjs
-  renderCssRule(rule: CssRule, initialRule: ObjectStrings): ObjectStrings
+  renderCssRule?(rule: CssRule, initialRule: () => ObjectStrings): ObjectStrings | undefined
   // Define how pages are named
-  pageToSlug(page: Page): string
+  pageToSlug?(page: Page): string
   // Transform files after they are rendered and before they are published
-  transformFile(file: ClientSideFile): ClientSideFile
+  transformFile?(file: ClientSideFile, page: Page): ClientSideFile
 }
 
 
@@ -85,7 +85,7 @@ export function transformComponents(config: ClientConfig) {
       c.toHTML = () => {
         return config.publicationTransformers.reduce((html, transformer) => {
           try {
-            return transformer.renderComponent(c, html) ?? html
+            return transformer.renderComponent ? transformer.renderComponent(c, initialToHTML) ?? html : html
           } catch (e) {
             console.error('Silex: publication transformer: error rendering component', c, e)
             return html
@@ -112,7 +112,7 @@ export function transformStyles(config: ClientConfig) {
         try {
           return config.publicationTransformers.reduce((style, transformer) => {
             return {
-              ...transformer.renderCssRule(c, style),
+              ...transformer.renderCssRule ? transformer.renderCssRule(c, initialGetStyle) ?? style : style,
             }
           }, initialGetStyle())
         } catch (e) {
@@ -130,10 +130,10 @@ export function transformStyles(config: ClientConfig) {
  */
 export function transformPages(config: ClientConfig) {
   const editor = config.getEditor()
-  editor.Pages.getAll().forEach(page => {
+  editor.Pages.getAll().forEach((page) => {
     page.set('slug', config.publicationTransformers.reduce((slug, transformer) => {
       try {
-        return transformer.pageToSlug(page) ?? slug
+        return transformer.pageToSlug ? transformer.pageToSlug(page) ?? slug : slug
       } catch (e) {
         console.error('Silex: publication transformer: error creating page slug', page, e)
         return slug
@@ -148,9 +148,10 @@ export function transformPages(config: ClientConfig) {
  */
 export function transformFiles(config: ClientConfig, data: PublicationData) {
   data.files = config.publicationTransformers.reduce((files: ClientSideFile[], transformer: PublicationTransformer) => {
-    return files.map(file => {
+    return files.map((file, idx) => {
       try {
-        return transformer.transformFile(file) as ClientSideFile
+        const page = data.pages[idx]
+        return transformer.transformFile ? transformer.transformFile(file, page) as ClientSideFile ?? file : file
       } catch (e) {
         console.error('Silex: publication transformer: error transforming file', file, e)
         return file

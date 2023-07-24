@@ -201,6 +201,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     let error: Error | null = null
     for (const fileStatus of filesStatuses) {
       const {file} = fileStatus
+      console.log('writeAssets', file, this.options.path, id, this.options.assetsFolder, file.path)
       const path = join(this.options.path, id, this.options.assetsFolder, file.path)
       if (typeof file.content === 'string' || Buffer.isBuffer(file.content)) {
         fileStatus.message = 'Writing'

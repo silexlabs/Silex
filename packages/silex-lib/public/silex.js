@@ -47,26 +47,23 @@ export default async function (config) {
   config.addPublicationTransformers({
     // Override how components render at publication by grapesjs
     renderComponent(component, initialHtml) {
-      return 'COMPONENT'
       return initialHtml
     },
     // Override how styles render at publication by grapesjs
     renderCssRule(rule, initialCss) {
-      return 'CSS RULE'
       return initialCss
     },
     // Define how pages are named
     pageToSlug(page) {
-      return 'PAGE TO SLUG'
       return page.get('slug') ?? page.get('name') ?? 'index'
     },
     // Transform files after they are rendered and before they are published
     transformFile(file) {
-      return {
-        ...file,
-        content: 'TRANSFORMED FILE',
-        src: undefined,
-      }
+      //return {
+      //  ...file,
+      //  content: 'TRANSFORMED FILE',
+      //  src: undefined,
+      //}
       return file
     }
   })
