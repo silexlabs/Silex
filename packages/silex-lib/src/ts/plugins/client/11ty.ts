@@ -64,8 +64,8 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
           .replace(/^\/css/, '')
           // Change extension
           .replace(/\.css$/, '.css.liquid')
-          console.log({res})
-          return res
+        console.log({res})
+        return res
       case 'asset':
         console.log('Silex: transform path for 11ty', path, options.assets.path + path)
         return options.assets.path + path

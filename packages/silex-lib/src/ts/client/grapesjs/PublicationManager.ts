@@ -221,7 +221,7 @@ export class PublicationManager {
       .concat(projectData.assets.map(asset => {
         // Remove /assets that is added by grapesjs
         const initialPath = `/${asset.src}`
-         .replace(/^\/assets/, '/') // Remove /assets that is added by grapesjs, FIXME: why leave '/'? make it absolute? brakes the dashboard
+          .replace(/^\/assets/, '/') // Remove /assets that is added by grapesjs, FIXME: why leave '/'? make it absolute? brakes the dashboard
         const path = transformPath(this.editor, initialPath, ClientSideFileType.ASSET)
         return {
           ...asset,
