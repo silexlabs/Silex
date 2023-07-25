@@ -197,12 +197,15 @@ export class FsStorage implements StorageConnector<FsSession> {
   }
 
   async writeAssets(session: FsSession, id: WebsiteId, files: ConnectorFile[], statusCbk?: StatusCallback): Promise<void> {
+    return this.write(session, id, files, this.options.assetsFolder, statusCbk)
+  }
+
+  async write(session: FsSession, id: WebsiteId, files: ConnectorFile[], assetsFolder: string, statusCbk?: StatusCallback): Promise<void> {
     const filesStatuses = this.initStatus(files)
     let error: Error | null = null
     for (const fileStatus of filesStatuses) {
       const {file} = fileStatus
-      console.log('writeAssets', file, this.options.path, id, this.options.assetsFolder, file.path)
-      const path = join(this.options.path, id, this.options.assetsFolder, file.path)
+      const path = join(this.options.path, id, assetsFolder, file.path)
       if (typeof file.content === 'string' || Buffer.isBuffer(file.content)) {
         fileStatus.message = 'Writing'
         this.updateStatus(filesStatuses, JobStatus.IN_PROGRESS, statusCbk)

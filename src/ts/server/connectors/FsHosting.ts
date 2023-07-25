@@ -37,7 +37,7 @@ export class FsHosting extends FsStorage implements HostingConnector<FsSession> 
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
-    this.writeAssets(session, id, files, async ({status, message}) => {
+    this.write(session, id, files, '', async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message
