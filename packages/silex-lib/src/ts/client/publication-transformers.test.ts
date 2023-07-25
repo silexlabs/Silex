@@ -1,18 +1,17 @@
 import { jest,  expect, describe, it, beforeEach } from '@jest/globals'
 import { Mock } from 'jest-mock'
 import {
-  transformComponents,
-  transformStyles,
-  resetTransformComponents,
-  resetTransformStyles,
+  renderComponents,
+  renderCssRules,
+  resetRenderComponents,
+  resetRenderCssRules,
   PublicationTransformer,
-  transformPages,
-  resetTransformPages,
-  transformFiles
+  transformFiles,
+  transformBgImage
 } from './publication-transformers'
 import { ClientConfig } from './config'
 import GrapesJS, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
-import { ClientSideFile, PublicationData } from '../types'
+import { ClientSideFile, ClientSideFileType, PublicationData } from '../types'
 
 describe('publication-transformers', () => {
   let mockConfig: ClientConfig
@@ -53,16 +52,18 @@ describe('publication-transformers', () => {
     transformer = {
       renderComponent: jest.fn(),
       renderCssRule: jest.fn(),
-      pageToSlug: jest.fn(),
-      transformFile: jest.fn()
+      transformFile: jest.fn(),
+      transformPermalink: jest.fn(),
+      transformPath: jest.fn(),
     } as PublicationTransformer
     mockConfig = { getEditor: jest.fn(() => editor), publicationTransformers: [transformer] } as unknown as ClientConfig
+    editor.getModel().set('config', mockConfig)
   })
 
   it('should transform components', () => {
     const renderComponent = transformer.renderComponent as Mock
     renderComponent.mockReturnValue('mockHtml')
-    transformComponents(mockConfig)
+    renderComponents(editor)
     const html = editor.getHtml()
     expect(renderComponent).toBeCalledTimes(6)
     const results = renderComponent.mock.calls.map(call => call[0] as Component)
@@ -75,22 +76,22 @@ describe('publication-transformers', () => {
   it('should reset transformed pages', () => {
     const renderComponent = transformer.renderComponent as Mock
     renderComponent.mockReturnValue('mockHtml')
-    transformComponents(mockConfig)
-    resetTransformComponents(mockConfig)
+    renderComponents(editor)
+    resetRenderComponents(editor)
     const html = editor.getHtml()
     expect(renderComponent).toBeCalledTimes(0)
     expect(html).toContain('Hello world')
   })
 
   it('should transform styles', () => {
-    const renderCssRule = transformer.renderCssRule as Mock
-    renderCssRule.mockImplementation((rule: any) => {
-      return { color: 'test'+rule.attributes.style.color } as ObjectStrings
+    const transformCssRule = transformer.renderCssRule as Mock
+    transformCssRule.mockImplementation((rule: any) => {
+      return { color: 'test'+rule.color } as ObjectStrings
     })
-    transformStyles(mockConfig)
+    renderCssRules(editor)
     const css = editor.getCss()
-    expect(renderCssRule).toBeCalledTimes(2)
-    const results = renderCssRule.mock.results.map(r => r.value as ObjectStrings)
+    expect(transformCssRule).toBeCalledTimes(2)
+    const results = transformCssRule.mock.results.map(r => r.value as ObjectStrings)
     const parent = results.find(c => c.color === 'testred')
     expect(parent).not.toBeUndefined()
     const child = results.find(c => c.color === 'testblue')
@@ -103,32 +104,11 @@ describe('publication-transformers', () => {
     const renderCssRule = transformer.renderCssRule as Mock
     const returned = {color: 'test'} as ObjectStrings
     renderCssRule.mockReturnValue(returned)
-    transformStyles(mockConfig)
-    resetTransformStyles(mockConfig)
+    renderCssRules(editor)
+    resetRenderCssRules(editor)
     const css = editor.getCss()
     expect(renderCssRule).toBeCalledTimes(0)
     expect(css).toContain('color:blue')
-  })
-
-  it('should transform pages', () => {
-    const PAGE_SLUG = 'test page slug'
-    const pageToSlug = transformer.pageToSlug as Mock
-    pageToSlug.mockReturnValue(PAGE_SLUG)
-    transformPages(mockConfig)
-    const pages = editor.Pages.getAll()
-    expect(pageToSlug).toBeCalledTimes(1)
-    expect(pages[0].get('slug')).toBe(PAGE_SLUG)
-  })
-
-  it('should reset transformed components', () => {
-    const PAGE_SLUG = 'test page slug'
-    const pageToSlug = transformer.pageToSlug as Mock
-    pageToSlug.mockReturnValue(PAGE_SLUG)
-    transformPages(mockConfig)
-    resetTransformPages(mockConfig)
-    const pages = editor.Pages.getAll()
-    expect(pageToSlug).toBeCalledTimes(1)
-    expect(pages[0].get('slug')).not.toBe(PAGE_SLUG)
   })
 
   it('should transform files', () => {
@@ -138,9 +118,82 @@ describe('publication-transformers', () => {
     expect(mockData.files?.length).toBe(1)
     if (mockData.files?.length) { // To avoid ! operator on mockData.files and make the lint happy
       expect(mockData.files[0]).toBe(mockFile)
-      transformFiles(mockConfig, mockData)
+      transformFiles(editor, mockData)
       expect(transformFile).toBeCalledTimes(1)
       expect(mockData.files[0]).toBe(returned)
     }
+  })
+  it('should transform permalinks of images src', () => {
+    editor.addComponents(`
+      <img src="test.png">
+    `)
+    const transformPermalink = transformer.transformPermalink as Mock
+    const transformedSrc = 'transformed.png'
+    transformPermalink.mockReturnValue(transformedSrc)
+    renderComponents(editor)
+    const html = editor.getHtml()
+    expect(transformPermalink).toBeCalledTimes(1)
+    expect(transformPermalink.mock.calls[0][0]).toBe('test.png')
+    expect(transformPermalink.mock.calls[0][1]).toBe('asset')
+  })
+  it('should transform a style rule with background image', () => {
+    expect(transformBgImage(editor, { 'background-image': 'url(test.png)' })).toEqual({ 'background-image': 'url(test.png)' })
+    const transformPermalink = transformer.transformPermalink as Mock
+    const transformedSrc = 'transformed.png'
+    transformPermalink.mockImplementation((url, type) => (url as string).replace('test.png', transformedSrc))
+    expect(transformBgImage(editor, { 'background-image': 'url(test.png)' })).toEqual({ 'background-image': 'url(transformed.png)' })
+    expect(transformBgImage(editor, { 'background-image': 'url("test.png")' })).toEqual({ 'background-image': 'url(transformed.png)' })
+  })
+
+  it('should transform permalinks of background images in inline css', () => {
+    const el = document.createElement('div')
+    const [comp] = editor.addComponents(el)
+    comp.setStyle({ 'background-image': 'url(test.png)' })
+    //editor.addComponents(`
+    //  <div style="color: black; background-image: url(test.png);"></div>
+    //`)
+    const transformPermalink = transformer.transformPermalink as Mock
+    const transformedSrc = 'transformed.png'
+    transformPermalink.mockReturnValue(transformedSrc)
+    renderComponents(editor)
+    const css = editor.getCss()
+    expect(transformPermalink).toBeCalledTimes(1)
+    expect(transformPermalink.mock.calls[0][0]).toBe('test.png')
+    expect(transformPermalink.mock.calls[0][1]).toBe('asset')
+    expect(css).toContain('url(test.png)')
+  })
+  it('should transform permalinks of background images in styles', () => {
+    editor.addComponents(`
+      <div class="test"></div>
+    `)
+    editor.addStyle(`
+      .test {
+        background-image: url(test.png);
+      }
+    `)
+    const transformPermalink = transformer.transformPermalink as Mock
+    const transformedSrc = 'transformed.png'
+    transformPermalink.mockReturnValue(transformedSrc)
+    renderCssRules(editor)
+    const css = editor.getCss()
+    expect(transformPermalink).toBeCalledTimes(1)
+    expect(transformPermalink.mock.calls[0][0]).toBe('test.png')
+    expect(transformPermalink.mock.calls[0][1]).toBe('asset')
+    expect(css).toContain(`url(${transformedSrc})`)
+  })
+  it('should transform links to pages to match permalinks ', () => {
+    editor.addComponents(`
+      <a href="./index.html">test</a>
+    `)
+    const transformPermalink = transformer.transformPermalink as Mock
+    const transformedPermalink = './transformed-page.html'
+    transformPermalink.mockReturnValue(transformedPermalink)
+    renderComponents(editor)
+    const html = editor.getHtml()
+    expect(transformPermalink).toBeCalledTimes(1)
+    expect((transformPermalink.mock.calls[0][0])).toBe('./index.html')
+    expect((transformPermalink.mock.calls[0][1])).toBe(ClientSideFileType.HTML)
+    expect(html).not.toContain('href="./index.html"')
+    expect(html).toContain(`href="${transformedPermalink}"`)
   })
 })

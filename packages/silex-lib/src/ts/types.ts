@@ -23,7 +23,6 @@
 export interface PublicationSettings {
   connector?: ConnectorData, // Set by the postMessage from the login callback page
   options?: ConnectorOptions, // Options for the publication connector saved with the site
-  url?: string, // URL to display where the website is published to
 }
 
 export interface WebsiteFile {
@@ -172,7 +171,25 @@ export type Selector = string | {
  */
 export type ConnectorId = string
 
-export type ConnectorOptions = object
+export type ConnectorOptions = {
+  websiteUrl?: string, // For publication UI
+  [key: string]: any,
+}
+
+export enum ClientSideFileType {
+  HTML = 'html',
+  ASSET = 'asset',
+  CSS = 'css',
+}
+
+/**
+ * Type for a client side file when the content is not available, used to handle file names and paths and urls
+ */
+export interface ClientSideFileWithPermalink {
+  path: string, // Path in the connector
+  permalink: string, // Used to link to the file
+  type: ClientSideFileType,
+}
 
 /**
  * Type for a client side file when the content is available as a string
@@ -180,16 +197,16 @@ export type ConnectorOptions = object
 export interface ClientSideFileWithContent {
   path: string,
   content: string, // Not buffer because it's sent from the client in JSON
-  type: 'html' | 'asset' | 'css',
+  type: ClientSideFileType
 }
 
 /**
- * Type for a client side file when the content is in the storage connector
+ * Type for a client side file when the content is in the connector
  */
 export interface ClientSideFileWithSrc {
   path: string,
   src: string, // Where to download the file, a path for the storage connector
-  type: 'html' | 'asset' | 'css',
+  type: ClientSideFileType
 }
 
 /**

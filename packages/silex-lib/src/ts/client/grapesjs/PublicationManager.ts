@@ -16,12 +16,13 @@
  */
 
 import { getPageSlug } from '../../page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ClientSideFile, ClientSideFileWithContent, ClientSideFileWithSrc, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ClientSideFile, ClientSideFileType, ClientSideFileWithContent, ClientSideFileWithSrc, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor, ProjectData } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 import { ClientEvent } from '../events'
+import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents } from '../publication-transformers'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -203,25 +204,27 @@ export class PublicationManager {
     this.job = null
     this.dialog && this.dialog.displayPending(this.job, this.status)
     this.editor.trigger(ClientEvent.PUBLISH_START)
+    this.setPublicationTransformers()
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Build the files structure
-    const files: ClientSideFile[] = (await this.getSiteFiles(siteSettings))
+    const files: ClientSideFile[] = (await this.getHtmlFiles(siteSettings))
       .flatMap(file => ([{
-        path: file.htmlPath,
+        path: file.htmlPath, // Already "transformed" in getHtmlFiles
         content: file.html,
         type: 'html',
       } as ClientSideFile, {
-        path: file.cssPath,
+        path: file.cssPath, // Already "transformed" in getHtmlFiles
         content: file.css,
         type: 'css',
       } as ClientSideFile]))
-      .concat(projectData.assets.map(asset => ({
-        ...asset,
-        path: `/${asset.src}`,
-        src: asset.src,
-        type: 'asset',
-      }) as ClientSideFile))
+      .concat(projectData.assets.map(asset => {
+        const src = transformPath(this.editor, asset.path, ClientSideFileType.ASSET)
+        return {
+          ...asset,
+          src,
+        } as ClientSideFile
+      }))
 
     // Create the data to send to the server
     const data: PublicationData = {
@@ -230,6 +233,7 @@ export class PublicationManager {
       publication: this.settings,
       files,
     }
+    transformFiles(this.editor, data)
     this.editor.trigger(ClientEvent.PUBLISH_DATA, data)
     const storageUser = this.editor.getModel().get('user') as ConnectorUser
     if(!storageUser) throw new Error('User not logged in to a storage connector')
@@ -268,25 +272,26 @@ export class PublicationManager {
     }
   }
 
-  async getSiteFiles(siteSettings: WebsiteSettings): Promise<WebsiteFile[]> {
+  async getHtmlFiles(siteSettings: WebsiteSettings): Promise<WebsiteFile[]> {
     return this.editor.Pages.getAll().map(page => {
       const pageSettings = page.get('settings') as WebsiteSettings
       function getSetting(name) {
         return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
       }
       const component = page.getMainComponent()
-
-
-
-
-
-      const slug = page.get('slug') || getPageSlug(page.get('name') || page.get('type'))
+      // Transform the file paths
+      const slug = getPageSlug(page.get('name'))
+      const cssInitialPath = `/css/${slug}.css`
+      const htmlInitialPath = `/${slug}.html`
+      const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS)
+      const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
+      const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
       return {
         html: `
       <!DOCTYPE html>
       <html lang="${getSetting('lang')}">
       <head>
-      <link rel="stylesheet" href="/css/${slug}.css" />
+      <link rel="stylesheet" href="${cssPermalink}" />
       ${siteSettings?.head || ''}
       ${pageSettings?.head || ''}
       <title>${getSetting('title')}</title>
@@ -300,8 +305,8 @@ export class PublicationManager {
       </html>
       `,
         css: this.editor.getCss({ component }),
-        cssPath: `/${slug}.css`,
-        htmlPath: `/${slug}.html`,
+        cssPath,
+        htmlPath,
       }
     })
   }
@@ -313,6 +318,7 @@ export class PublicationManager {
     } catch (e) {
       this.status = PublicationStatus.STATUS_ERROR
       this.dialog && this.dialog.displayError(`An error occured, your site is not published. ${e.message}`, this.job, this.status)
+      this.resetPublicationTransformers()
       this.editor.trigger(ClientEvent.PUBLISH_END, { success: false, message: e.message })
       this.editor.trigger(ClientEvent.PUBLISH_ERROR, { success: false, message: e.message })
       return
@@ -320,8 +326,19 @@ export class PublicationManager {
     if (this.job.status === JobStatus.IN_PROGRESS) {
       setTimeout(() => this.trackProgress(), 2000)
     } else {
+      this.resetPublicationTransformers()
       this.editor.trigger(ClientEvent.PUBLISH_END, { success: this.job.status === JobStatus.SUCCESS, message: this.job.message })
     }
     this.dialog && this.dialog.displayPending(this.job, this.status)
+  }
+
+  private setPublicationTransformers() {
+    renderComponents(this.editor)
+    renderComponents(this.editor)
+  }
+
+  private resetPublicationTransformers() {
+    resetRenderComponents(this.editor)
+    resetRenderCssRules(this.editor)
   }
 }

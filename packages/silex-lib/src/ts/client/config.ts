@@ -20,7 +20,7 @@ import { getEditor, getEditorConfig } from './grapesjs'
 import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
 import { ConnectorId, WebsiteId } from '../types'
 import { Editor, EditorConfig, Page } from 'grapesjs'
-import { PublicationTransformer } from './publication-transformers'
+import { PublicationTransformer, validatePublicationTransformer } from './publication-transformers'
 import * as api from './api'
 
 /**
@@ -91,6 +91,16 @@ export class ClientConfig extends Config {
    * Add a publication transformer(s)
    */
   addPublicationTransformers(transformers: PublicationTransformer | PublicationTransformer[]) {
+    // Make sure it is an array
+    if (!Array.isArray(transformers)) {
+      transformers = [transformers]
+    }
+    // Validate
+    transformers.forEach(transformer => {
+      validatePublicationTransformer(transformer)
+    })
+
+    // Add to the list
     this.publicationTransformers = this.publicationTransformers.concat(transformers)
   }
 }
