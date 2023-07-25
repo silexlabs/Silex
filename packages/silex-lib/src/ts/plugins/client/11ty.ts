@@ -31,58 +31,78 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
       ...opts.css,
     },
     assets: {
-      url: '/assets',
+      url: '/',
       path: './', // assets is already in the assets urls
       ...opts.assets,
     },
   }
 
   config.addPublicationTransformers({
+    //transformPermalink: (path, type) => {
+    //  switch (type) {
+    //  case 'html':
+    //    console.log('Silex: transform path for 11ty', path, options.html.url + path)
+    //    return options.html.url + path
+    //  case 'css':
+    //    console.log('Silex: transform path for 11ty', path, options.css.url + path.replace(/\.css$/, '.css.liquid'))
+    //    return options.css.url + path.replace(/\.css$/, '.css.liquid')
+    //  case 'asset':
+    //    console.log('Silex: transform path for 11ty', path, options.assets.url + path)
+    //    return options.assets.url + path
+    //  }
+    //  throw new Error(`Unknown file type ${type}`)
+    //},
+    transformPath: (path, type) => {
+      switch (type) {
+      case 'html':
+        console.log('Silex: transform path for 11ty', path, options.html.path + path)
+        return options.html.path + path
+      case 'css':
+        console.log('Silex: transform path for 11ty', path, options.css.path + path.replace(/\.css$/, '.css.liquid'), path.replace(/^\/css/, ''))
+        const res = options.css.path + path
+          // Remove default path
+          .replace(/^\/css/, '')
+          // Change extension
+          .replace(/\.css$/, '.css.liquid')
+          console.log({res})
+          return res
+      case 'asset':
+        console.log('Silex: transform path for 11ty', path, options.assets.path + path)
+        return options.assets.path + path
+          // Remove default path
+          .replace(/^\/assets/, '')
+      }
+      throw new Error(`Unknown file type ${type}`)
+    },
     transformFile: (file: ClientSideFile) => {
+      console.log('Silex: transform file for 11ty', file)
+
       const fileWithContent = file as ClientSideFileWithContent
       switch (file.type) {
       case 'html':
         return {
           ...file,
-          path: options.html.path + fileWithContent.path,
+          //path: options.html.path + fileWithContent.path,
           //content: `---\npermalink: ${options.html.url}${fileWithContent.path}\n---\n${fileWithContent.content}`
         }
       case 'css':
+        const path = fileWithContent.path
+          // Remove extension added in transformPath (options.css.path)
+          .replace(new RegExp(`^${options.css.path}`), '')
+          // Remove path added in transformPath (options.css.path)
+          .replace(/\.css\.liquid$/, '.css')
         return {
           ...file,
-          path: options.css.path + fileWithContent.path.replace(/\.css$/, '.css.liquid'),
-          content: `---\npermalink: ${options.css.url}${fileWithContent.path}\n---\n${fileWithContent.content}`
+          //path: options.css.path + fileWithContent.path.replace(/\.css$/, '.css.liquid'),
+          content: `---\npermalink: ${options.css.url}${path}\n---\n${fileWithContent.content}`
         }
       case 'asset':
         return {
           ...file,
-          path: options.assets.path + fileWithContent.path,
+          //path: options.assets.path + fileWithContent.path,
         }
       }
       throw new Error(`Unknown file type ${file.type}`)
     },
-    renderComponent: (c, toHtml) => {
-      if (c.get('type') === 'image') {
-        // Concat the paths, handles the trailing and leading slashes
-        const publishedUrl = path => `${options.assets.url.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
-        const src = c.get('src')
-        c.set('src', publishedUrl(src))
-        const html = toHtml()
-        console.log('Silex: transform component for 11ty', publishedUrl, html)
-        c.set('src', src)
-        return html
-      }
-    },
-    renderCssRule(c, getStyle) {
-      const publishedUrl = path => `${options.assets.url.replace(/\/+$/, '')}/${path.replace(/^\/+/, '')}`
-      const url = getStyle()['background-image']
-      const bgUrl = url?.match(/url\('(.*)'\)/)?.pop()
-      if (bgUrl) {
-        return {
-          ...getStyle(),
-          'background-image': `url('${publishedUrl(bgUrl)}')`,
-        }
-      }
-    }
   })
 }

@@ -16,8 +16,8 @@
  */
 
 import { getPageSlug } from '../../page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ClientSideFile, ClientSideFileType, ClientSideFileWithContent, ClientSideFileWithSrc, ConnectorData, ConnectorType, ConnectorUser, JobData, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
-import { Editor, ProjectData } from 'grapesjs'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
+import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
@@ -212,17 +212,21 @@ export class PublicationManager {
       .flatMap(file => ([{
         path: file.htmlPath, // Already "transformed" in getHtmlFiles
         content: file.html,
-        type: 'html',
+        type: ClientSideFileType.HTML,
       } as ClientSideFile, {
         path: file.cssPath, // Already "transformed" in getHtmlFiles
         content: file.css,
-        type: 'css',
+        type: ClientSideFileType.CSS,
       } as ClientSideFile]))
       .concat(projectData.assets.map(asset => {
-        const src = transformPath(this.editor, asset.path, ClientSideFileType.ASSET)
+        // Remove /assets that is added by grapesjs
+        const initialPath = `/${asset.src}`
+         .replace(/^\/assets/, '/') // Remove /assets that is added by grapesjs, FIXME: why leave '/'? make it absolute? brakes the dashboard
+        const path = transformPath(this.editor, initialPath, ClientSideFileType.ASSET)
         return {
           ...asset,
-          src,
+          path,
+          type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
         } as ClientSideFile
       }))
 

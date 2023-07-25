@@ -71,7 +71,7 @@ export function validatePublicationTransformer(transformer: PublicationTransform
 
   // Check that the methods are functions
   allowedProperties.forEach(key => {
-    if(typeof transformer[key] !== 'function') {
+    if(typeof transformer[key] !== 'function' && transformer[key] !== undefined) {
       throw new Error(`Publication transformer: ${key} must be a function`)
     }
   })
