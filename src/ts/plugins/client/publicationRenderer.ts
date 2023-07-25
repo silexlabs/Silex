@@ -15,8 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Silex: publication renderer plugin is deprecated. Use the publication renderer plugin instead.
-console.warn('Silex: publication renderer plugin is deprecated. Use the publication renderer plugin instead.')
+/**
+ * @deprecated
+ * This plugin is deprecated. Use the publication renderer plugin instead.
+ */
+console.warn('This plugin is deprecated. Use the publication renderer plugin instead.')
+throw 'This plugin is deprecated. Use the publication renderer plugin instead.'
 
 /* Usage:
   import publicationRenderer from '/node_modules/@silexlabs/silex/dist/plugins/client/plugins/client/publicationRenderer.js'

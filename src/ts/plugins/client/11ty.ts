@@ -38,9 +38,8 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
   }
 
   config.addPublicationTransformers({
-    transformFile: (file: ClientSideFile, page: Page) => {
+    transformFile: (file: ClientSideFile) => {
       const fileWithContent = file as ClientSideFileWithContent
-      console.log('Silex: transform file for 11ty', fileWithContent)
       switch (file.type) {
       case 'html':
         return {

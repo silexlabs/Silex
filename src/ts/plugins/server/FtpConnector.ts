@@ -64,6 +64,7 @@ export interface FtpOptions {
   type: ConnectorType
   path: string
   assetsFolder: string
+  cssFolder: string // For publication only
   authorizeUrl: string
   authorizePath: string
 }
@@ -238,6 +239,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     this.options = {
       path: '',
       assetsFolder: 'assets',
+      cssFolder: 'css',
       authorizeUrl: '/api/authorize/ftp/',
       authorizePath: '/api/authorize/ftp/',
       ...opts,
@@ -494,6 +496,16 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     files: ConnectorFile[],
     statusCbk?: StatusCallback,
   ): Promise<void> {
+    return this.writeFile(session, id, files, this.options.assetsFolder, statusCbk)
+  }
+
+  async writeFile(
+    session: any,
+    id: WebsiteId,
+    files: ConnectorFile[],
+    relativePath: string,
+    statusCbk?: StatusCallback,
+  ): Promise<void> {
     // Connect to FTP server
     statusCbk && statusCbk({
       message: 'Connecting to FTP server',
@@ -517,7 +529,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
           message: `Writing file ${file.path}`,
           status: JobStatus.IN_PROGRESS,
         })
-        const dstPath = join(this.options.path, rootPath, id, this.options.assetsFolder, file.path)
+        const dstPath = join(this.options.path, rootPath, id, relativePath, file.path)
         lastFile = file
         const result = await this.write(ftp, dstPath, file.content, message => {
           statusCbk && statusCbk({
@@ -576,9 +588,10 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     const rootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     await this.mkdir(ftp, rootPath)
-    await this.mkdir(ftp, join(rootPath, 'assets'))
+    await this.mkdir(ftp, join(rootPath, this.options.assetsFolder))
+    await this.mkdir(ftp, join(rootPath, this.options.cssFolder))
     // Write files
-    this.writeAssets(session, '', files, async ({status, message}) => {
+    this.writeFile(session, '', files, '', async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message

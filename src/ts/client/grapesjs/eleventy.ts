@@ -15,13 +15,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-throw 'unused now'
+/**
+ * @deprecated
+ * Replaced by the plugin 11ty.ts
+ * This plugin is deprecated. Use the publication renderer plugin instead.
+ */
+console.warn('This plugin is deprecated. Use the publication renderer plugin instead.')
+throw 'This plugin is deprecated. Use the publication renderer plugin instead.'
 
 import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { getPageSlug } from '../../page'
-import { Page } from '../../types'
 import { ClientEvent } from '../events'
+import { Page } from 'grapesjs'
 
 const pluginName = 'eleventy'
 
@@ -30,7 +36,7 @@ export const eleventyPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     data.pages.forEach((page: Page, idx) => {
       const file = data.files[idx]
       file.css = `---
-permalink: /css/${getPageSlug(page.name)}.css
+permalink: /css/${getPageSlug(page.get('name'))}.css
 ---
 ${file.css}
 `

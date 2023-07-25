@@ -18,7 +18,7 @@
 // Page related functions
 // This is used on the client and the server
 export function getPageSlug(pageName) {
-  return pageName
+  return (pageName || 'index')
     .toLowerCase()
     .replace(/[^a-z0-9 -]/g, '')
     // Collapse whitespace and replace by -
@@ -26,6 +26,6 @@ export function getPageSlug(pageName) {
     // Collapse dashes
     .replace(/-+/g, '-')
 }
-export function getPageLink(pageName = 'index') {
+export function getPageLink(pageName) {
   return `./${getPageSlug(pageName)}.html`
 }

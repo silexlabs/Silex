@@ -15,18 +15,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, CssRule, ObjectStrings, Page } from 'grapesjs'
-import { ClientSideFile, PublicationData } from '../types'
-import { ClientConfig } from './config'
-import { ClientEvent } from './events'
+import { Component, CssRule, Editor, ObjectStrings, Page } from 'grapesjs'
+import { ClientSideFile, ClientSideFileType, ClientSideFileWithPermalink, PublicationData } from '../types'
 import { onAll } from './utils'
+import { getPageLink, getPageSlug } from '../page'
 
 /**
  * @fileoverview Silex publication transformers are used to control how the site is rendered and published
+ * Here we call path the path on the connector (either storage or hosting)
+ * We call permalink the path at which the resource is served
+ * This is where pages and assets paths and permalinks are set
+ * Here we also update background images urls, assets url and links to match the new permalinks
  */
 
 // Properties names used to store the original methods on the components and styles
 const ATTRIBUTE_METHOD_STORE_HTML = 'tmp-pre-publication-transformer-tohtml'
+const ATTRIBUTE_METHOD_STORE_SRC = 'tmp-pre-publication-transformer-src'
+const ATTRIBUTE_METHOD_STORE_INLINE_CSS = 'tmp-pre-publication-transformer-inline-css'
+const ATTRIBUTE_METHOD_STORE_HREF = 'tmp-pre-publication-transformer-href'
 const ATTRIBUTE_METHOD_STORE_CSS = 'tmp-pre-publication-transformer-tocss'
 
 /**
@@ -34,56 +40,76 @@ const ATTRIBUTE_METHOD_STORE_CSS = 'tmp-pre-publication-transformer-tocss'
  * They are added to the config object with config.addPublicationTransformer()
  */
 export interface PublicationTransformer {
-  // Override how components render at publication by grapesjs
+  // Temporarily override how components render at publication by grapesjs
   renderComponent?(component: Component, toHtml: () => string): string | undefined
-  // Override how styles render at publication by grapesjs
+  // Temporarily override how styles render at publication by grapesjs
   renderCssRule?(rule: CssRule, initialRule: () => ObjectStrings): ObjectStrings | undefined
-  // Define how pages are named
-  pageToSlug?(page: Page): string
   // Transform files after they are rendered and before they are published
-  transformFile?(file: ClientSideFile, page: Page | null): ClientSideFile
+  transformFile?(file: ClientSideFile): ClientSideFile
+  // Define where files are served
+  transformPermalink?(path: string, type: ClientSideFileType): string
+  // Define where files are published
+  transformPath?(path: string, type: ClientSideFileType): string
 }
 
+export function validatePublicationTransformer(transformer: PublicationTransformer): void {
+  // List all the properties
+  const allowedProperties = [
+    'renderComponent',
+    'renderCssRule',
+    'transformFile',
+    'transformPermalink',
+    'transformPath',
+  ]
 
-/**
- * Init publication transformers
- * Called at startup in the /index.ts file
- */
-export async function initPublicationTransformers(config: ClientConfig) {
-  const editor = config.getEditor()
-  // Override default rendering of components and styles
-  // Also create page slugs
-  editor.on(ClientEvent.PUBLISH_START, () => {
-    transformComponents(config)
-    transformStyles(config)
-    transformPages(config)
+  // Check that there are no unknown properties
+  Object.keys(transformer).forEach(key => {
+    if(!allowedProperties.includes(key)) {
+      throw new Error(`Publication transformer: unknown property ${key}`)
+    }
   })
-  // Reset the components and styles rendering
-  editor.on(ClientEvent.PUBLISH_END, () => {
-    resetTransformComponents(config)
-    resetTransformStyles(config)
-    resetTransformPages(config)
-  })
-  // Transform files after generating all files to be published
-  editor.on(ClientEvent.PUBLISH_DATA, (data: PublicationData) => {
-    transformFiles(config, data)
+
+  // Check that the methods are functions
+  allowedProperties.forEach(key => {
+    if(typeof transformer[key] !== 'function') {
+      throw new Error(`Publication transformer: ${key} must be a function`)
+    }
   })
 }
+
 
 /**
  * Alter the components rendering
  * Exported for unit tests
  */
-export function transformComponents(config: ClientConfig) {
-  const editor = config.getEditor()
+export function renderComponents(editor: Editor) {
+  const config = editor.getModel().get('config')
   onAll(editor, (c: Component) => {
     if (c.get(ATTRIBUTE_METHOD_STORE_HTML)) {
       console.warn('Publication transformer: HTML transform already altered', c)
     } else {
       const initialToHTML = c.toHTML.bind(c)
       c[ATTRIBUTE_METHOD_STORE_HTML] = c.toHTML
+      const initialGetStyle = c.getStyle.bind(c)
+      c[ATTRIBUTE_METHOD_STORE_INLINE_CSS] = c.getStyle
+      const href = c.get('attributes').href as string | undefined
+      if(href?.startsWith('./')) {
+        //const page = editor.Pages.getAll().find(p => getPageLink(p.getName()) === href)
+        //if(page) {
+        c[ATTRIBUTE_METHOD_STORE_HREF] = href
+        c.set('attributes', {
+          ...c.get('attributes'),
+          //href: transformPagePermalin(editor, page),
+          href: transformPermalink(editor, href, ClientSideFileType.HTML),
+        })
+        //}
+      }
+      if(c.get('src')) {
+        c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('src')
+        c.set('src', transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET))
+      }
       c.toHTML = () => {
-        return config.publicationTransformers.reduce((html, transformer) => {
+        return config.publicationTransformers.reduce((html: string, transformer: PublicationTransformer) => {
           try {
             return transformer.renderComponent ? transformer.renderComponent(c, initialToHTML) ?? html : html
           } catch (e) {
@@ -92,6 +118,7 @@ export function transformComponents(config: ClientConfig) {
           }
         }, initialToHTML())
       }
+      c.getStyle = () => transformBgImage(editor, initialGetStyle())
     }
   })
 }
@@ -100,23 +127,24 @@ export function transformComponents(config: ClientConfig) {
  * Alter the styles rendering
  * Exported for unit tests
  */
-export function transformStyles(config: ClientConfig) {
-  const editor = config.getEditor()
-  editor.Css.getAll().forEach(c => {
-    if (c[ATTRIBUTE_METHOD_STORE_CSS]) {
-      console.warn('Publication transformer: CSS transform already altered', c)
+export function renderCssRules(editor: Editor) {
+  const config = editor.getModel().get('config')
+  editor.Css.getAll().forEach((style: CssRule) => {
+    if (style[ATTRIBUTE_METHOD_STORE_CSS]) {
+      console.warn('Publication transformer: CSS transform already altered', style)
     } else {
-      const initialGetStyle = c.getStyle.bind(c)
-      c[ATTRIBUTE_METHOD_STORE_CSS] = c.getStyle
-      c.getStyle = () => {
+      const initialGetStyle = style.getStyle.bind(style)
+      style[ATTRIBUTE_METHOD_STORE_CSS] = style.getStyle
+      style.getStyle = () => {
         try {
-          return config.publicationTransformers.reduce((style, transformer) => {
+          const result = config.publicationTransformers.reduce((s: CssRule, transformer: PublicationTransformer) => {
             return {
-              ...transformer.renderCssRule ? transformer.renderCssRule(c, initialGetStyle) ?? style : style,
+              ...transformer.renderCssRule ? transformer.renderCssRule(s, initialGetStyle) ?? s : s,
             }
-          }, initialGetStyle())
+          }, transformBgImage(editor, initialGetStyle()))
+          return result
         } catch (e) {
-          console.error('Publication transformer: error rendering style', c, e)
+          console.error('Publication transformer: error rendering style', style, e)
           return initialGetStyle()
         }
       }
@@ -125,33 +153,31 @@ export function transformStyles(config: ClientConfig) {
 }
 
 /**
- * Create page slugs
- * Exported for unit tests
+ * Transform background image url according to the transformed path of assets
  */
-export function transformPages(config: ClientConfig) {
-  const editor = config.getEditor()
-  editor.Pages.getAll().forEach((page) => {
-    page.set('slug', config.publicationTransformers.reduce((slug, transformer) => {
-      try {
-        return transformer.pageToSlug ? transformer.pageToSlug(page) ?? slug : slug
-      } catch (e) {
-        console.error('Publication transformer: error creating page slug', page, e)
-        return slug
-      }
-    }, page.get('slug')))
-  })
+export function transformBgImage(editor: Editor, style: ObjectStrings): ObjectStrings {
+  const url = style['background-image']
+  const bgUrl = url?.match(/url\(["']?(.*?)["']?\)/)?.pop()
+  if (bgUrl) {
+    return {
+      ...style,
+      'background-image': `url(${transformPermalink(editor, bgUrl, ClientSideFileType.ASSET)})`,
+    }
+  }
+  return style
 }
 
 /**
  * Transform files
  * Exported for unit tests
  */
-export function transformFiles(config: ClientConfig, data: PublicationData) {
+export function transformFiles(editor: Editor, data: PublicationData) {
+  const config = editor.getModel().get('config')
   data.files = config.publicationTransformers.reduce((files: ClientSideFile[], transformer: PublicationTransformer) => {
     return files.map((file, idx) => {
       try {
         const page = data.pages[idx] ?? null
-        return transformer.transformFile ? transformer.transformFile(file, page) as ClientSideFile ?? file : file
+        return transformer.transformFile ? transformer.transformFile(file) as ClientSideFile ?? file : file
       } catch (e) {
         console.error('Publication transformer: error transforming file', file, e)
         return file
@@ -160,29 +186,63 @@ export function transformFiles(config: ClientConfig, data: PublicationData) {
   }, data.files)
 }
 
-export function resetTransformComponents(config: ClientConfig) {
-  const editor = config.getEditor()
+/**
+ * Transform files paths
+ * Exported for unit tests
+ */
+export function transformPermalink(editor: Editor, path: string, type: ClientSideFileType): string {
+  const config = editor.getModel().get('config')
+  return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
+    try {
+      return transformer.transformPermalink ? transformer.transformPermalink(path, type) ?? result : result
+    } catch (e) {
+      console.error('Publication transformer: error transforming path', path, e)
+      return result
+    }
+  }, path)
+}
+
+export function transformPath(editor: Editor, path: string, type: ClientSideFileType): string {
+  const config = editor.getModel().get('config')
+  return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
+    try {
+      return transformer.transformPath ? transformer.transformPath(path, type) ?? result : result
+    } catch (e) {
+      console.error('Publication transformer: error transforming path', path, e)
+      return result
+    }
+  }, path)
+}
+
+export function resetRenderComponents(editor: Editor) {
   onAll(editor, (c: Component) => {
     if (c[ATTRIBUTE_METHOD_STORE_HTML]) {
       c.toHTML = c[ATTRIBUTE_METHOD_STORE_HTML]
       delete c[ATTRIBUTE_METHOD_STORE_HTML]
     }
+    if (c[ATTRIBUTE_METHOD_STORE_INLINE_CSS]) {
+      c.getStyle = c[ATTRIBUTE_METHOD_STORE_INLINE_CSS]
+      delete c[ATTRIBUTE_METHOD_STORE_INLINE_CSS]
+    }
+    if(c[ATTRIBUTE_METHOD_STORE_SRC]) {
+      c.set('src', c[ATTRIBUTE_METHOD_STORE_SRC])
+      delete c[ATTRIBUTE_METHOD_STORE_SRC]
+    }
+    if(c[ATTRIBUTE_METHOD_STORE_HREF]) {
+      c.set('attributes', {
+        ...c.get('attributes'),
+        href: c[ATTRIBUTE_METHOD_STORE_HREF],
+      })
+      delete c[ATTRIBUTE_METHOD_STORE_HREF]
+    }
   })
 }
 
-export function resetTransformStyles(config: ClientConfig) {
-  const editor = config.getEditor()
+export function resetRenderCssRules(editor: Editor) {
   editor.Css.getAll().forEach(c => {
     if (c[ATTRIBUTE_METHOD_STORE_CSS]) {
       c.getStyle = c[ATTRIBUTE_METHOD_STORE_CSS]
       delete c[ATTRIBUTE_METHOD_STORE_CSS]
     }
-  })
-}
-
-export function resetTransformPages(config: ClientConfig) {
-  const editor = config.getEditor()
-  editor.Pages.getAll().forEach(page => {
-    page.unset('slug')
   })
 }

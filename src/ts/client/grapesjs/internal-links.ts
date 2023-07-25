@@ -107,7 +107,7 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
   function getDefaultHref(type) {
     switch(type) {
     case 'email': return 'mailto:'
-    case 'page': return getPageLink()
+    case 'page': return getPageLink(null)
     case 'url': return 'https://'
     }
   }

@@ -162,7 +162,7 @@ export class PublicationUi {
       ` : ''}
       ${this.isSuccess(status) ? html`
         <p>Publication success</p>
-        ${this.settings.url ? html`<p><a href="${this.settings.url}" target="_blank">Click here to view the published website</a></p>` : ''}
+        ${this.settings.options.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : ''}
       ` : ''}
       ${this.isError(status) || this.isLoggedOut(status) ? html`
         <p>Publication error</p>
