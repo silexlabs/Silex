@@ -55,19 +55,15 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
     transformPath: (path, type) => {
       switch (type) {
       case 'html':
-        console.log('Silex: transform path for 11ty', path, options.html.path + path)
         return options.html.path + path
       case 'css':
-        console.log('Silex: transform path for 11ty', path, options.css.path + path.replace(/\.css$/, '.css.liquid'), path.replace(/^\/css/, ''))
         const res = options.css.path + path
           // Remove default path
           .replace(/^\/css/, '')
           // Change extension
           .replace(/\.css$/, '.css.liquid')
-        console.log({res})
         return res
       case 'asset':
-        console.log('Silex: transform path for 11ty', path, options.assets.path + path)
         return options.assets.path + path
           // Remove default path
           .replace(/^\/assets/, '')
@@ -75,8 +71,6 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
       throw new Error(`Unknown file type ${type}`)
     },
     transformFile: (file: ClientSideFile) => {
-      console.log('Silex: transform file for 11ty', file)
-
       const fileWithContent = file as ClientSideFileWithContent
       switch (file.type) {
       case 'html':

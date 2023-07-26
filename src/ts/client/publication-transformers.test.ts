@@ -48,7 +48,7 @@ describe('publication-transformers', () => {
     mockData = {
       files: [mockFile],
       pages: [{} as Page],
-    } as PublicationData
+    } as any as PublicationData
     transformer = {
       renderComponent: jest.fn(),
       renderCssRule: jest.fn(),
