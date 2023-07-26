@@ -23,6 +23,7 @@ import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents } from '../publication-transformers'
+import { removeTempDataFromAssetUrl } from '../assetUrl'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -207,6 +208,8 @@ export class PublicationManager {
     this.setPublicationTransformers()
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
+    // Remove temporary data for editing
+    projectData.assets = removeTempDataFromAssetUrl(projectData.assets)
     // Build the files structure
     const files: ClientSideFile[] = (await this.getHtmlFiles(siteSettings))
       .flatMap(file => ([{
@@ -218,17 +221,21 @@ export class PublicationManager {
         content: file.css,
         type: ClientSideFileType.CSS,
       } as ClientSideFile]))
-      .concat(projectData.assets.map(asset => {
+      .concat(projectData.assets
+        .map(asset => {
         // Remove /assets that is added by grapesjs
-        const initialPath = `/${asset.src}`
-          .replace(/^\/assets/, '/') // Remove /assets that is added by grapesjs, FIXME: why leave '/'? make it absolute? brakes the dashboard
-        const path = transformPath(this.editor, initialPath, ClientSideFileType.ASSET)
-        return {
-          ...asset,
-          path,
-          type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
-        } as ClientSideFile
-      }))
+          const initialPath = asset.src
+          // Remove /assets that is added by grapesjs
+            .replace(/^\/assets/, '')
+          // Transform the file paths with the transformers
+          const path = transformPath(this.editor, initialPath, ClientSideFileType.ASSET)
+          console.info('asset transform xxxxxx ================>', asset.src, initialPath, path)
+          return {
+            ...asset,
+            path,
+            type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
+          } as ClientSideFile
+        }))
 
     // Create the data to send to the server
     const data: PublicationData = {

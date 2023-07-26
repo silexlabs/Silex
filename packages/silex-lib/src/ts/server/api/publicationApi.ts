@@ -124,7 +124,7 @@ export default function (config: ServerConfig): Router {
 
       // Load the content if necessary
       const filesList: ConnectorFile[] = await Promise.all(files.map(async (file: ClientSideFile) => {
-        const prefix = API_WEBSITE_ASSET_READ.replace(/^\//, '')
+        const prefix = API_WEBSITE_ASSET_READ
         const fileWithContent = file as ClientSideFileWithContent
         const fileWithSrc = file as ClientSideFileWithSrc
         if(!fileWithContent.content && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)

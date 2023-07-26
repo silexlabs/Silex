@@ -96,8 +96,29 @@ export const defaultWebsiteData: WebsiteData = {
   //publication: {},
 } as WebsiteData
 
+
+// **
+// Grapesjs types
+// From grapesjs, not imported because it breaks the build on the server side
+export interface Component {
+  type: string,
+  content?: string,
+  attributes: { [key: string]: string },
+  components: Component[],
+}
+
+export interface Page {
+  id: string,
+  name: string,
+  slug: string,
+  // TODO: why is this here? settings: WebsiteSettings,
+  frames: {
+    component: Component,
+  }[]
+}
+
 export interface WebsiteData {
-  pages: any[], // Page[], // From grapesjs, not imported because it breaks the build on the server side
+  pages: Page[],
   assets: Asset[],
   styles: Style[],
   //name: string,
@@ -128,23 +149,23 @@ export interface Font {
   variants: string[],
 }
 
-export interface Frame {
-  component: { type: string, stylable: string[] },
-  components: Component[],
-}
-
-export interface Component {
-  type: string,
-  content?: string,
-  attributes: { [key: string]: string },
-  conponents: Component[],
-}
+//export interface Frame {
+//  component: { type: string, stylable: string[] },
+//  components: Component[],
+//}
+//
+//export interface Component {
+//  type: string,
+//  content?: string,
+//  attributes: { [key: string]: string },
+//  conponents: Component[],
+//}
 
 export enum Unit {
   PX = 'px',
 }
 
-export interface Asset     {
+export interface Asset {
   type: string,
   src: string,
   unitDim: Unit,

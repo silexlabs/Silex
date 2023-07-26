@@ -15,22 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError } from '../../types'
+import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError, Asset, Page, Component, Style } from '../../types'
 import { websiteLoad, websiteSave } from '../api'
 import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
+import { addTemDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
 
-async function wait(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
 export const storagePlugin = (editor) => {
   editor.Storage.add('connector', {
     async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if(user) {
-          const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId})
+          const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId}) as WebsiteData
+          data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
+          data.pages = addTemDataToPages(data.pages, options.id, user.storage.connectorId)
+          data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
           return data
         } else {
           return new Promise((resolve, reject) => {
@@ -59,6 +58,9 @@ export const storagePlugin = (editor) => {
       try {
         if(await getCurrentUser(editor)) {
           const user = await getCurrentUser(editor)
+          data.assets = removeTempDataFromAssetUrl(data.assets)
+          data.pages = removeTempDataFromPages(data.pages)
+          data.styles = removeTempDataFromStyles(data.styles)
           await websiteSave({websiteId: options.id, connectorId: user.storage.connectorId, data})
         } else {
           editor.once(eventLoggedIn, () => {
