@@ -36,6 +36,7 @@ export interface GitlabOptions {
   //metaRepo: string
   //metaRepoFile: string
   repoPrefix: string
+  scope: string
 }
 
 interface GitlabToken {
@@ -124,6 +125,7 @@ export default class GitlabConnector implements StorageConnector {
       //metaRepo: 'silex-meta',
       //metaRepoFile: 'websites.json',
       repoPrefix: 'silex_',
+      scope: 'api', // 'api+read_api+read_user+read_repository+write_repository+email+sudo+profile+openid'
       ...opts,
     } as GitlabOptions
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
@@ -299,8 +301,7 @@ export default class GitlabConnector implements StorageConnector {
       codeVerifier,
       codeChallenge,
     }
-    const scope = 'api+read_api+read_user+read_repository+write_repository+email+sudo+profile+openid'
-    return `https://gitlab.com/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${session.gitlab.state}&scope=${scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
+    return `https://gitlab.com/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${session.gitlab.state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
   }
 
   getOptions(formData: object): object {
