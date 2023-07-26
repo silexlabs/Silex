@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Editor } from "grapesjs"
+import { Component, Editor } from 'grapesjs'
 
 
 // Browse all elements of all pages
