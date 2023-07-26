@@ -194,9 +194,9 @@ export function transformPermalink(editor: Editor, path: string, type: ClientSid
   const config = editor.getModel().get('config')
   return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
     try {
-      return transformer.transformPermalink ? transformer.transformPermalink(path, type) ?? result : result
+      return transformer.transformPermalink ? transformer.transformPermalink(result, type) ?? result : result
     } catch (e) {
-      console.error('Publication transformer: error transforming path', path, e)
+      console.error('Publication transformer: error transforming path', result, e)
       return result
     }
   }, path)
@@ -206,9 +206,9 @@ export function transformPath(editor: Editor, path: string, type: ClientSideFile
   const config = editor.getModel().get('config')
   return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
     try {
-      return transformer.transformPath ? transformer.transformPath(path, type) ?? result : result
+      return transformer.transformPath ? transformer.transformPath(result, type) ?? result : result
     } catch (e) {
-      console.error('Publication transformer: error transforming path', path, e)
+      console.error('Publication transformer: error transforming path', result, e)
       return result
     }
   }, path)

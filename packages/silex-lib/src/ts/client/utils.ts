@@ -15,9 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Component, Editor } from "grapesjs"
+
 
 // Browse all elements of all pages
-export function onAll(editor, cbk) {
+export function onAll(editor: Editor, cbk: (c: Component) => void) {
   editor.Pages.getAll()
     .forEach(page => {
       page.getMainComponent()
