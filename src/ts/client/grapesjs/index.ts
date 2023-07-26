@@ -210,7 +210,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       },
       [internalLinksPlugin as any]: {
         // FIXME: warn the user about links in error
-        onError: (errors) => console.log('Links errors:', errors),
+        onError: (errors) => console.warn('Links errors:', errors),
       },
       [codePlugin as any]: {
         blockLabel: 'HTML',

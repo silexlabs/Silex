@@ -111,7 +111,7 @@ export interface Page {
   id: string,
   name: string,
   slug: string,
-  // TODO: why is this here? settings: WebsiteSettings,
+  settings: WebsiteSettings, // TODO: why is this here? It is used in the publication manager
   frames: {
     component: Component,
   }[]

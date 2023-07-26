@@ -1,26 +1,39 @@
 import { API_PATH, API_WEBSITE_ASSET_READ, API_WEBSITE_PATH } from '../constants'
-import { Asset, Component, ConnectorId, Page, Style, WebsiteId } from '../types'
+import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, WebsiteId } from '../types'
+import { Editor, Page as GrapesPage, CssRule, ObjectStrings } from 'grapesjs'
+import { onAll } from './utils'
+
+/**
+ * @fileoverview Helpers to manage assets URL
+ * Assets URLs are stored on storage in their "stored version": `/assets/image.webp`
+ * But the client side uses the "display version": `/api/website/assets/image.webp?websiteId=47868975&connectorId=gitlab`
+ * After loading the site data we convert all URLs to the client side version
+ * Before saving the site data we convert all URLs to the storage version
+ * During publicationn we convert all URLs to the storage version and back
+ */
 
 // Orging and path
 const SERVER_URL = `${window.location.origin}${window.location.pathname}`
 
 /**
- * Function to convert a path from it stored version to the one we give to grapesjs
+ * Function to convert a path from it stored version to the displayed version
  * Stored version is like `/assets/image.webp`
  * Grapesjs version is like `/api/website/assets/image.webp?websiteId=47868975&connectorId=gitlab`
- * @param path the path to convert
- * @param websiteId the website ID
- * @param storageId the storage connector ID
- * @returns the converted path
  */
 function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: ConnectorId): string {
-  const url = new URL(path, SERVER_URL)
-  url.pathname = url.pathname.replace(/^\/assets/, '')
-  url.pathname = `${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
-  url.searchParams.set('websiteId', websiteId)
-  url.searchParams.set('connectorId', storageId)
-  const result = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
-  return result
+  // Check the path is a stored path
+  if (path.startsWith('/assets')) {
+    const url = new URL(path, SERVER_URL)
+    url.pathname = url.pathname.replace(/^\/assets/, '')
+    url.pathname = `${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
+    url.searchParams.set('websiteId', websiteId)
+    url.searchParams.set('connectorId', storageId)
+    const result = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
+    return result
+  } else {
+    console.error('storedToDisplayed: path is not a stored path', path)
+    return path
+  }
 }
 
 /**
@@ -31,15 +44,40 @@ function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: Connec
  * @returns the converted path
  */
 function displayedToStored(path: string): string {
-  const url = new URL(path, SERVER_URL)
-  url.pathname = url.pathname.replace(new RegExp(`^${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`), '')
-  url.pathname = `/assets${url.pathname}`
-  url.searchParams.delete('websiteId')
-  url.searchParams.delete('connectorId')
-  const result = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
-  return result
+  // Check the path is a displayed path
+  if (path.startsWith(`${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`)) {
+    const url = new URL(path, SERVER_URL)
+    url.pathname = url.pathname.replace(new RegExp(`^${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`), '')
+    url.pathname = `/assets${url.pathname}`
+    url.searchParams.delete('websiteId')
+    url.searchParams.delete('connectorId')
+    const result = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
+    return result
+  } else {
+    console.error('displayedToStored: path is not a displayed path', path)
+    return path
+  }
 }
 
+/**
+ * Publication transformer to convert the asset URL during publication
+ */
+export const assetsPublicationTransformer = {
+  transformPath(path: string, type: ClientSideFileType): string {
+    if(type === ClientSideFileType.ASSET) {
+      const result = displayedToStored(path)
+      return result
+    }
+    return undefined
+  },
+  transformPermalink(path: string, type: ClientSideFileType): string {
+    if(type === ClientSideFileType.ASSET) {
+      const result = displayedToStored(path)
+      return result
+    }
+    return undefined
+  },
+}
 
 /**
  * Update asset URL to use the current storage connector and website ID
@@ -149,7 +187,7 @@ export function addTempDataToStyles(styles: Style[], websiteId: WebsiteId, stora
   return styles.map((style: Style) => {
     if (style.style && style.style['background-image']) {
       const urls = [...style.style['background-image'].matchAll(pattern)].map(match => storedToDisplayed(match[2], websiteId, storageId))
-      style = {
+      return {
         ...style,
         style: {
           ...style.style,
@@ -169,7 +207,7 @@ export function removeTempDataFromStyles(styles: Style[]): Style[] {
   return styles.map((style: Style) => {
     if (style.style && style.style['background-image']) {
       const urls = [...style.style['background-image'].matchAll(pattern)].map(match => displayedToStored(match[2]))
-      style = {
+      return {
         ...style,
         style: {
           ...style.style,
