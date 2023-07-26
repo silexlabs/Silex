@@ -104,14 +104,18 @@ export function renderComponents(editor: Editor) {
         })
         //}
       }
-      if(c.get('src')) {
-        c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('src')
-        c.set('src', transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET))
+      if(c.get('attributes').src) {
+        c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('attributes').src
+        const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET)
+        c.set('attributes', {
+          ...c.get('attributes'),
+          src,
+        })
       }
       c.toHTML = () => {
         return config.publicationTransformers.reduce((html: string, transformer: PublicationTransformer) => {
           try {
-            return transformer.renderComponent ? transformer.renderComponent(c, initialToHTML) ?? html : html
+            return transformer.renderComponent ? transformer.renderComponent(c, () => html) ?? html : html
           } catch (e) {
             console.error('Publication transformer: error rendering component', c, e)
             return html
@@ -225,7 +229,10 @@ export function resetRenderComponents(editor: Editor) {
       delete c[ATTRIBUTE_METHOD_STORE_INLINE_CSS]
     }
     if(c[ATTRIBUTE_METHOD_STORE_SRC]) {
-      c.set('src', c[ATTRIBUTE_METHOD_STORE_SRC])
+      c.set('attributes', {
+        ...c.get('attributes'),
+        src: c[ATTRIBUTE_METHOD_STORE_SRC],
+      })
       delete c[ATTRIBUTE_METHOD_STORE_SRC]
     }
     if(c[ATTRIBUTE_METHOD_STORE_HREF]) {
