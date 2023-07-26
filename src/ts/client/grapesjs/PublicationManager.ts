@@ -22,7 +22,7 @@ import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 import { ClientEvent } from '../events'
-import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents } from '../publication-transformers'
+import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
 
 /**
@@ -344,7 +344,7 @@ export class PublicationManager {
 
   private setPublicationTransformers() {
     renderComponents(this.editor)
-    renderComponents(this.editor)
+    renderCssRules(this.editor)
   }
 
   private resetPublicationTransformers() {
