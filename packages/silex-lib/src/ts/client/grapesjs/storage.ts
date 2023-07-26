@@ -27,9 +27,9 @@ export const storagePlugin = (editor) => {
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if(user) {
           const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId}) as WebsiteData
-          data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
-          data.pages = addTemDataToPages(data.pages, options.id, user.storage.connectorId)
-          data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
+          if(data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
+          if(data.pages) data.pages = addTemDataToPages(data.pages, options.id, user.storage.connectorId)
+          if(data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
           return data
         } else {
           return new Promise((resolve, reject) => {
