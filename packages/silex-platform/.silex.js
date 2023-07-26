@@ -19,6 +19,7 @@ module.exports = async function (config) {
     new GitlabConnector(config, {
       clientId: process.env.GITLAB_CLIENT_ID,
       clientSecret: process.env.GITLAB_CLIENT_SECRET,
+      scope: process.env.GITLAB_SCOPE,
     }),
   ])
 }

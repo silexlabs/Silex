@@ -4,5 +4,11 @@ import websiteInfoPlugin from './plugins/client/website-info.js'
 
 export default async function (config) {
     config.addPlugin(websiteInfoPlugin, {})
+    config.addPublicationTransformers({
+        transformPermalink: (path, type) => {
+            // Replace /index.html with /
+            return type === 'html' && path.endsWith('/index.html') ? path.replace(/index\.html$/, '') : path
+        },
+    })
     return {}
 }
