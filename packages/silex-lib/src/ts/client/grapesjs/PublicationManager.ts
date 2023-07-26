@@ -205,7 +205,6 @@ export class PublicationManager {
     this.job = null
     this.dialog && this.dialog.displayPending(this.job, this.status)
     this.editor.trigger(ClientEvent.PUBLISH_START)
-    this.setPublicationTransformers()
     // User and where to publish
     const storageUser = this.editor.getModel().get('user') as ConnectorUser
     if(!storageUser) throw new Error('User not logged in to a storage connector')
@@ -213,6 +212,7 @@ export class PublicationManager {
     const websiteId = this.options.websiteId
     const storageId = storageUser.storage.connectorId
     // Data to publish
+    this.setPublicationTransformers()
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Build the files structure
