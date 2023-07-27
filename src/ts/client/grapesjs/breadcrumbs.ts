@@ -14,18 +14,19 @@ export default function (editor, options) {
         display: flex;
         align-items: center;
         height: 100%;
-        padding: 5px 10px 0;
+        padding: 0 10px;
         font-size: 12px;
         color: #999;
         overflow-x: auto;
         overflow-y: hidden;
       }
       #breadcrumbs-container h3 {
+        font-size: inherit;
         margin: 0;
       }
       #breadcrumbs-container .breadcrumb {
-        margin: 5px;
-        font-size: 15px;
+        margin: 0 5px;
+        font-size: 14px;
         line-height: 1;
         cursor: pointer;
         white-space: nowrap;
