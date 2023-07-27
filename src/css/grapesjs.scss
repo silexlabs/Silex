@@ -22,6 +22,7 @@
     }
   }
 }
+
 .#{$cv-prefix}canvas,
 .#{$pn-prefix}panel,
 .#{$pn-prefix}commands {
@@ -44,6 +45,20 @@
 }
 .#{$pn-prefix}views-container {
   width: $viewsPanelWidth;
+}
+
+// Inside the canvas
+.gjs-toolbar {
+  background-color: $tertiaryColor;
+}
+.gjs-resizer-h {
+  border-color: $tertiaryColor;
+}
+.gjs-com-badge, .gjs-com-badge-red, .gjs-badge {
+    background-color: $tertiaryColor;
+}
+.gjs-cv-canvas .gjs-highlighter, .gjs-cv-canvas .gjs-highlighter-sel {
+    outline: 1px solid $tertiaryColor;
 }
 
 /*

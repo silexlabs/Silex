@@ -127,6 +127,29 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
     },
 
     cssIcons: '/css/all.min.css',
+    canvasCss: `
+      :root {
+        --primaryColor: #333333;
+        --secondaryColor: #ddd;
+        --tertiaryColor: #8873FE;
+        --quaternaryColor: #56E3FF;
+        --darkerPrimaryColor: #363636;
+        --lighterPrimaryColor: #575757;
+      }
+      .gjs-frame-selected {
+        box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.5) !important; // Change to red border
+      }
+      .gjs-selected {
+        outline: 2px solid var(--tertiaryColor) !important;
+        outline-offset: -2px;
+      }
+      .gjs-tools .gjs-badge { /* for the label */
+        background-color: red;
+      }
+      .gjs-toolbar { /* for the toolbar */
+        background-color: red;
+      }
+    `,
 
     plugins: plugins.map(p => p.value),
 

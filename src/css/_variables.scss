@@ -1,17 +1,12 @@
-// $silexlightergrey: #ddd;
-// $silexlightgrey: #535353;
-// $silexmediumgrey: #444;
-// $silexmediumdarkgrey: #393939;
-// $silexdarkgrey: #2f2f2f;
-// $silexdarkergrey: #2a2a2a;
-// $silexlightblue: #7bc0ff;
+// All colors
+// /!\ Duplicated in the grapesjs/index.ts too => keep in sync
+$primaryColor: #333333 !default;
+$secondaryColor: #ddd !default;
+$tertiaryColor: #8873FE !default;
+$quaternaryColor: #56E3FF !default;
+$darkerPrimaryColor: #363636 !default;
+$lighterPrimaryColor: #575757 !default;
 
-$primaryColor: #444;
-$secondaryColor: #ddd;
-$tertiaryColor: #5e85a8;
-$quaternaryColor: #7bc0ff;
-$darkerPrimaryColor: #363636;
-$lighterPrimaryColor: #575757;
 $topBarHeight: 40px;
 $projectBarWidth: 35px;
 $projectPanelWidth: 13%;
@@ -25,12 +20,3 @@ $pn-prefix: '#{$prefix}pn-';
 $cv-prefix: '#{$prefix}cv-';
 $z-dialog-inline: 10;
 $z-loader: 10;
-
-:root {
-  --primaryColor: #444;
-  --secondaryColor: #ddd;
-  --tertiaryColor: #5e85a8;
-  --quaternaryColor: #7bc0ff;
-  --darkerPrimaryColor: #363636;
-  --lighterPrimaryColor: #575757;
-}
