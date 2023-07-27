@@ -101,6 +101,7 @@
   },
   "dependencies": {
     "@directus/sdk": "10.3.3",
+    "@fontsource/ubuntu": "^5.0.5",
     "@fortawesome/fontawesome-free": "6.4.0",
     "@gitbeaker/rest": "^39.7.0",
     "@silexlabs/grapesjs-directus-storage": "1.0.15",
