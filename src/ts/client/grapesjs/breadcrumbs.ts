@@ -14,7 +14,7 @@ export default function (editor, options) {
         display: flex;
         align-items: center;
         height: 100%;
-        padding: 2px 10px 0;
+        padding: 5px 10px 0;
         font-size: 12px;
         color: #999;
         overflow-x: auto;
@@ -25,7 +25,7 @@ export default function (editor, options) {
       }
       #breadcrumbs-container .breadcrumb {
         margin: 5px;
-        font-size: large;
+        font-size: 15px;
         line-height: 1;
         cursor: pointer;
         white-space: nowrap;
@@ -73,7 +73,7 @@ export default function (editor, options) {
       editor.select(component)
     }
     breadcrumb.classList.add('breadcrumb')
-    breadcrumb.innerHTML = `<span>${component.get('tagName')}${component.getClasses().length ? `.${component.getClasses().join('.')}` : ''}</span>`
+    breadcrumb.innerHTML = `<span>${component.getName() ?? component.get('tagName')}</span>`
     return breadcrumb
   }
 }
