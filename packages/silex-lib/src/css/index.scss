@@ -20,15 +20,6 @@
 // Ubuntu Fonts
 @use "@fontsource/ubuntu";
 
-:root {
-  --primaryColor: $primaryColor;
-  --secondaryColor: $secondaryColor;
-  --tertiaryColor: $tertiaryColor;
-  --quaternaryColor: $quaternaryColor;
-  --darkerPrimaryColor: $darkerPrimaryColor;
-  --lighterPrimaryColor: $lighterPrimaryColor;
-}
-
 .container-png::before {
   content: " ";
   background-image: url("../assets/container.png");
