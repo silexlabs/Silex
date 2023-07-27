@@ -71,6 +71,8 @@ export class PublicationUi {
 
   public settings: PublicationSettings
 
+  private sender = null
+
   /**
    * Initialize the dialog and the publish button
    */
@@ -80,8 +82,12 @@ export class PublicationUi {
     // Add the publish command to the editor
     const openDialog = () => this.openDialog()
     const closeDialog = () => this.closeDialog()
+    const setSender = sender => this.sender = sender
     editor.Commands.add(cmdPublish, {
-      run(editor: PublishableEditor) { openDialog() },
+      run(editor: PublishableEditor, sender) {
+        setSender(sender)
+        openDialog()
+      },
       stop(editor: PublishableEditor) { closeDialog() },
     })
   }
@@ -297,6 +303,8 @@ export class PublicationUi {
   async closeDialog() {
     this.isOpen = false
     this.renderDialog(null, null)
+    if(this.sender) this.sender.set('active', 0) // Deactivate the button to make it ready to be clicked again
+    this.sender = null
   }
   async toggleDialog() {
     if (this.isOpen) this.closeDialog()
