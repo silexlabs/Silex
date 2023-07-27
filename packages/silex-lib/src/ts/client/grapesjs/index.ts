@@ -141,7 +141,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
           {
             id: 'dash',
             className: 'logo',
-            attributes: { title: 'Go to your dashboard' },
+            attributes: { title: 'Dashboard' },
             link: '/',
             command: 'open-dash',
           }, {
@@ -191,6 +191,18 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
             id: 'spacer',
             attributes: {},
             className: 'project-bar-spacer',
+          }, {
+            id: 'dash2',
+            className: 'fa-solid fa-house',
+            attributes: { title: 'Dashboard' },
+            link: '/',
+            command: 'open-dash',
+          }, {
+            id: 'help',
+            className: 'fa fa-fw fa-question-circle',
+            attributes: { title: 'Documentation' },
+            link: 'https://docs.silex.me/',
+            command: 'open-help',
           }, {
             id: 'logout-button',
             className: 'page-panel-btn fa fa-fw fa-sign-out',
