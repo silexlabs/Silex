@@ -24,47 +24,47 @@ export default async function (config) {
   config.addPlugin(websiteInfoPlugin, {})
 
   // // For example add a GrapesJs plugin like this
-  // config.editor.plugins.push(plugin)
-  // config.editor.pluginsOpts[plugin] = {
+  // config.grapesJsConfig.plugins.push(plugin)
+  // config.grapesJsConfig.pluginsOpts[plugin] = {
   // }
   // // Or like this to override the default options
   // // See the docs for the list of options
   // return {
   //   ...config,
-  //   editor: {
-  //     ...config.editor,
+  //   grapesJsConfig: {
+  //     ...config.grapesJsConfig,
   //     plugins: [
-  //       ...config.editor.plugins,
+  //       ...config.grapesJsConfig.plugins,
   //       plugin,
   //     ],
   //     pluginsOpts: {
-  //       ...config.editor.pluginsOpts,
+  //       ...config.grapesJsConfig.pluginsOpts,
   //       [plugin]: {
   //       },
   //     },
   //   },
   // }
-  config.addPublicationTransformers({
-    // Override how components render at publication by grapesjs
-    renderComponent(component, initialHtml) {
-      return initialHtml
-    },
-    // Override how styles render at publication by grapesjs
-    renderCssRule(rule, initialCss) {
-      return initialCss
-    },
-    // Define how pages are named
-    pageToSlug(page) {
-      return page.get('slug') ?? page.get('name') ?? 'index'
-    },
-    // Transform files after they are rendered and before they are published
-    transformFile(file) {
-      //return {
-      //  ...file,
-      //  content: 'TRANSFORMED FILE',
-      //  src: undefined,
-      //}
-      return file
-    }
-  })
+
+  // config.addPublicationTransformers({
+  //   // Override how components render at publication by grapesjs
+  //   renderComponent(component, initialHtml) {
+  //     return initialHtml
+  //   },
+  //   // Override how styles render at publication by grapesjs
+  //   renderCssRule(rule, initialCss) {
+  //     return initialCss
+  //   },
+  //   // Define how files are named
+  //   transformPath(path) {
+  //     return path
+  //   },
+  //   // Difine files URLs
+  //   transformPermalink(link) {
+  //     return link
+  //   },
+  //   // Transform files after they are rendered and before they are published
+  //   transformFile(file) {
+  //     return file
+  //   }
+  // })
 }
