@@ -46,8 +46,8 @@ export interface PublicationTransformer {
   renderCssRule?(rule: CssRule, initialRule: () => ObjectStrings): ObjectStrings | undefined
   // Transform files after they are rendered and before they are published
   transformFile?(file: ClientSideFile): ClientSideFile
-  // Define where files are served
-  transformPermalink?(path: string, type: ClientSideFileType): string
+  // Define files URLs
+  transformPermalink?(link: string, type: ClientSideFileType): string
   // Define where files are published
   transformPath?(path: string, type: ClientSideFileType): string
 }
