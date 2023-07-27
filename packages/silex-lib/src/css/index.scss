@@ -1,5 +1,8 @@
 /* Normalize css */
 @use "normalize.css/normalize";
+
+@use "_variables";
+//@use "light";
 @use "grapesjs/src/styles/scss/main";
 
 /* Silex styles imports */
@@ -7,10 +10,21 @@
 @use "loader";
 @use "footer";
 @use "dialog";
-@use "grapesjs";
 @use "project-bar";
 @use "page-panel";
 @use "website-info";
+@use "grapesjs";
+
+//@use "grapesjs-light";
+
+:root {
+  --primaryColor: $primaryColor;
+  --secondaryColor: $secondaryColor;
+  --tertiaryColor: $tertiaryColor;
+  --quaternaryColor: $quaternaryColor;
+  --darkerPrimaryColor: $darkerPrimaryColor;
+  --lighterPrimaryColor: $lighterPrimaryColor;
+}
 
 .container-png::before {
   content: " ";
