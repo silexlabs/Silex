@@ -21,7 +21,7 @@ iframe.enable-squeeze.silex-squeeze-left {
       flex: 1;
     }
     .#{$pn-prefix}btn {
-      margin: 5px 0 0;
+      margin: 5px 0 5px 0px;
       padding: 5px;
       &.#{$pn-prefix}active {
         background-color: $lighterPrimaryColor;

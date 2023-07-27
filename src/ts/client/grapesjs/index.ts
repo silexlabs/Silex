@@ -36,6 +36,8 @@ import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
+import footerPlugin from './footer'
+import breadcrumbsPlugin from './breadcrumbs'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -71,6 +73,8 @@ const plugins = [
   {name: './storage', value: storagePlugin},
   {name: './LoginDialog', value: loginDialogPlugin},
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
+  {name: './breadcrumbs', value: breadcrumbsPlugin},
+  {name: './footer', value: footerPlugin},
 ]
 // Check that all plugins are loaded correctly
 plugins
