@@ -14,9 +14,11 @@ export default function (editor, options) {
         display: flex;
         align-items: center;
         height: 100%;
-        padding: 0 10px;
+        padding: 2px 10px 0;
         font-size: 12px;
         color: #999;
+        overflow-x: auto;
+        overflow-y: hidden;
       }
       #breadcrumbs-container h3 {
         margin: 0;
@@ -26,9 +28,7 @@ export default function (editor, options) {
         font-size: large;
         line-height: 1;
         cursor: pointer;
-      }
-      #breadcrumbs-container .breadcrumb span {
-        text-decoration: underline;
+        white-space: nowrap;
       }
       #breadcrumbs-container .breadcrumb::after {
         content: "➔";
@@ -44,7 +44,7 @@ export default function (editor, options) {
   })
   // Append the breadcrumbs container to the editor's container
 
-  editor.on('component:selected style', () => renderBreadcrumbs())
+  editor.on('component:selected style:target component:drag:end', () => renderBreadcrumbs())
   function renderBreadcrumbs() {
     let component = editor.getSelected() ?? editor.Pages.getSelected().getMainComponent()
 

@@ -43,7 +43,7 @@ iframe.enable-squeeze.silex-squeeze-left {
   top: $topBarHeight;
   width: $projectPanelWidth;
   min-width: $projectPanelMinWidth;
-  height: calc(100% - $topBarHeight);
+  height: calc(100% - $topBarHeight - $footerHeight);
   background-color: $lighterPrimaryColor;
   &:not(.gjs-hidden) {
     display: flex; // let the child take the whole height
