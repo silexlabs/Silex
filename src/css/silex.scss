@@ -3,6 +3,9 @@
 
 .silex-workspace {
   @include mixins.silex-ui-full;
+  body {
+    font-family: $fontFamily;
+  }
   display: flex;
   a {
     color: inherit;

@@ -47,6 +47,11 @@
   width: $viewsPanelWidth;
 }
 
+.gjs-editor {
+  font-family: $fontFamily;
+  font-size: 0.75rem;
+}
+
 // Inside the canvas
 .gjs-toolbar {
   background-color: $tertiaryColor;
