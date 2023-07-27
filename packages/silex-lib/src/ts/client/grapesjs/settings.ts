@@ -46,10 +46,10 @@ export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) =>
         content: '',
         attributes: { class: 'settings-dialog' },
       })
-      .onceClose(() => {
-        sender.set('active', 0) // Deactivate the button to make it ready to be clicked again
-        editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
-      })
+        .onceClose(() => {
+          sender.set('active', 0) // Deactivate the button to make it ready to be clicked again
+          editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
+        })
       displaySettings(editor, opts, page)
       modal.setContent(el)
       const form = el.querySelector('form')

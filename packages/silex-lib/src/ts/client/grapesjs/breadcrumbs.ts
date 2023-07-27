@@ -1,14 +1,14 @@
-import { onFooter } from "./footer";
+import { onFooter } from './footer'
 
 export default function (editor, options) {
   let breadcrumbsContainer
   onFooter(footer => {
     // Initialize the breadcrumbs container
-    breadcrumbsContainer = document.createElement('div');
-    breadcrumbsContainer.id = 'breadcrumbs-container';
-    footer.prepend(breadcrumbsContainer);
+    breadcrumbsContainer = document.createElement('div')
+    breadcrumbsContainer.id = 'breadcrumbs-container'
+    footer.prepend(breadcrumbsContainer)
     // Add breadcrumbs styles
-    const breadcrumbsStyles = document.createElement('style');
+    const breadcrumbsStyles = document.createElement('style')
     breadcrumbsStyles.innerHTML = `
       #breadcrumbs-container {
         display: flex;
@@ -38,42 +38,42 @@ export default function (editor, options) {
       #breadcrumbs-container .breadcrumb:last-child::after {
         content: "";
       }
-    `;
-    footer.prepend(breadcrumbsStyles);
-    renderBreadcrumbs();
+    `
+    footer.prepend(breadcrumbsStyles)
+    renderBreadcrumbs()
   })
   // Append the breadcrumbs container to the editor's container
 
-  editor.on('component:selected style', () => renderBreadcrumbs());
+  editor.on('component:selected style', () => renderBreadcrumbs())
   function renderBreadcrumbs() {
     let component = editor.getSelected() ?? editor.Pages.getSelected().getMainComponent()
 
     if(!breadcrumbsContainer) return
 
     // Clear the breadcrumbs container
-    breadcrumbsContainer.innerHTML = '';
+    breadcrumbsContainer.innerHTML = ''
 
     // Traverse up the tree of components, prepending each to the breadcrumbs
     while (component) {
-      const breadcrumb = createBreadcrumb(component);
-      breadcrumbsContainer.prepend(breadcrumb);
-      console.log(component, component.tagName);
-      component = component.parent();
+      const breadcrumb = createBreadcrumb(component)
+      breadcrumbsContainer.prepend(breadcrumb)
+      console.log(component, component.tagName)
+      component = component.parent()
     }
 
     // Label
-    const label = document.createElement('span');
-    label.innerHTML = '<h3>Selection:&nbsp;</h3>';
-    breadcrumbsContainer.prepend(label);
+    const label = document.createElement('span')
+    label.innerHTML = '<h3>Selection:&nbsp;</h3>'
+    breadcrumbsContainer.prepend(label)
   }
   function createBreadcrumb(component) {
-    const breadcrumb = document.createElement('span');
-    const model = component.model;
+    const breadcrumb = document.createElement('span')
+    const model = component.model
     breadcrumb.onclick = () => {
-      editor.select(component);
-    };
-    breadcrumb.classList.add('breadcrumb');
-    breadcrumb.innerHTML = `<span>${component.get('tagName')}${component.getClasses().length ? `.${component.getClasses().join('.')}` : ''}</span>`;
+      editor.select(component)
+    }
+    breadcrumb.classList.add('breadcrumb')
+    breadcrumb.innerHTML = `<span>${component.get('tagName')}${component.getClasses().length ? `.${component.getClasses().join('.')}` : ''}</span>`
     return breadcrumb
   }
 }
