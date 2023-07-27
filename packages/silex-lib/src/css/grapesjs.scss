@@ -34,13 +34,16 @@
   left: auto;
 }
 .#{$cv-prefix}canvas {
-  width: calc(85% - $projectBarWidth);
+  width: calc(100% - $viewsPanelWidth - $projectBarWidth);
 }
 .#{$pn-prefix}devices-c {
   display: flex;
   .#{$prefix}device-label {
     display: none;
   }
+}
+.#{$pn-prefix}views-container {
+  width: $viewsPanelWidth;
 }
 
 /*

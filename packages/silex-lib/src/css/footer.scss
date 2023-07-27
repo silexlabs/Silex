@@ -1,0 +1,11 @@
+@use "variables" as *;
+// Footer is sticky at the bottom of the stage
+.gjs-pn-footer {
+  bottom: 0;
+  left: $projectBarWidth;
+  right: $viewsPanelWidth;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

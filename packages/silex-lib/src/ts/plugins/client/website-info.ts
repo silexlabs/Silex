@@ -53,7 +53,6 @@ export default async function(config) {
   })
 
   config.on(ClientEvent.GRAPESJS_END, async ({editor}) => {
-    console.log('GRAPESJS_END', editor)
     // Detect when the page changes
     editor.on('page:select', async () => {
       displayWebsiteMeta()
@@ -76,7 +75,6 @@ export default async function(config) {
     })()
     // Get the current page
     const currentPage = config.getEditor().Pages?.getSelected()
-    console.log('currentPage', currentPage.get('name'), currentPage.get('type'))
     // Display the website meta data
     container.innerHTML = `
         ${websiteMeta?.imageUrl ? `<div class="gjs-website-meta-image" style="background: url(${websiteMeta?.imageUrl});"></div>` : ''}
