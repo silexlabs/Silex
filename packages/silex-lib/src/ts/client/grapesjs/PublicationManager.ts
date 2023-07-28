@@ -228,12 +228,9 @@ export class PublicationManager {
       } as ClientSideFile]))
       .concat(projectData.assets
         .map(asset => {
-          // Remove /assets that is added by grapesjs
-          const initialPath = asset.src
-            .replace(/^\/assets/, '')
           // Transform the file paths with the transformers
-          const path = transformPath(this.editor, initialPath, ClientSideFileType.ASSET)
-          const src = transformPermalink(this.editor, initialPath, ClientSideFileType.ASSET)
+          const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
+          const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
           return {
             ...asset,
             path,
