@@ -43,8 +43,11 @@ export default async function(config, opts = {}) {
         route: '/webfonts/',
         path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/webfonts/',
       }, {
-        route: '/node_modules/',
-        path: nodeModules(),
+        route: '/css/files/',
+        path: nodeModules('@fontsource/ubuntu') + '/@fontsource/ubuntu/files/',
+      //}, {
+      //  route: '/node_modules/',
+      //  path: nodeModules(),
       }, {
         route: '/',
         path: join(__dirname, '../../../../..', 'dist', 'client'),

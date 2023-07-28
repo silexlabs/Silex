@@ -34,9 +34,11 @@ const templateKey = 'template'
 
 export default async (config, opts: any = {}) => {
   // @ts-ignore
-  const { html, render } = await import('/node_modules/lit-html/lit-html.js')
+  const { html, render } = await import('https://unpkg.com/lit-html/lit-html.js')
+  //const { html, render } = await import('/node_modules/lit-html/lit-html.js')
   // @ts-ignore
-  const { styleMap } = await import('/node_modules/lit-html/directives/style-map.js')
+  const { styleMap } = await import('https://unpkg.com/lit-html/directives/style-map.js')
+  //const { styleMap } = await import('/node_modules/lit-html/directives/style-map.js')
 
   config.on(ClientEvent.GRAPESJS_END, () => {
     const editor = silex.getEditor()
