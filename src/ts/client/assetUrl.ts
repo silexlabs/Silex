@@ -28,8 +28,8 @@ function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: Connec
     url.pathname = `${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
     url.searchParams.set('websiteId', websiteId)
     url.searchParams.set('connectorId', storageId)
-    const result = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
-    return result
+    const encodedPath = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
+    return decodeURIComponent(encodedPath)
   } else {
     console.error('storedToDisplayed: path is not a stored path', path)
     return path
@@ -51,8 +51,8 @@ function displayedToStored(path: string): string {
     url.pathname = `/assets${url.pathname}`
     url.searchParams.delete('websiteId')
     url.searchParams.delete('connectorId')
-    const result = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
-    return result
+    const encodedPath = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
+    return decodeURIComponent(encodedPath)
   } else {
     console.error('displayedToStored: path is not a displayed path', path)
     return path
