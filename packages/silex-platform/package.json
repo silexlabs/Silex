@@ -1,6 +1,6 @@
 {
   "name": "editor.silex.me",
-  "version": "1.0.71",
+  "version": "1.0.70",
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "scripts": {
     "release": "",
@@ -13,8 +13,8 @@
   "author": "lexoyo",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@silexlabs/silex": "^3.0.0-alpha.64",
-    "@silexlabs/silex-dashboard": "^1.0.25"
+    "@silexlabs/silex": "^3.0.0-alpha.66",
+    "@silexlabs/silex-dashboard": "^1.0.26"
   },
   "repository": {
     "type": "git",
