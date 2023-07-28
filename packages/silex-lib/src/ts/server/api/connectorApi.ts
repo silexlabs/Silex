@@ -51,7 +51,7 @@ export default function(config: ServerConfig) {
  */
 function validateStatus(status: number, _default = 500): number {
   if(!status) {
-    console.warn(`Status code is undefined, returning default ${_default}}`)
+    console.warn(`Status code is undefined, returning default ${_default}`)
     return _default
   }
   // Make sure it is a string
