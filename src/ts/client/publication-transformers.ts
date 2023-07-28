@@ -31,6 +31,7 @@ import { getPageLink, getPageSlug } from '../page'
 // Properties names used to store the original methods on the components and styles
 const ATTRIBUTE_METHOD_STORE_HTML = 'tmp-pre-publication-transformer-tohtml'
 const ATTRIBUTE_METHOD_STORE_SRC = 'tmp-pre-publication-transformer-src'
+const ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC = 'tmp-pre-publication-transformer-attributes-src'
 const ATTRIBUTE_METHOD_STORE_INLINE_CSS = 'tmp-pre-publication-transformer-inline-css'
 const ATTRIBUTE_METHOD_STORE_HREF = 'tmp-pre-publication-transformer-href'
 const ATTRIBUTE_METHOD_STORE_CSS = 'tmp-pre-publication-transformer-tocss'
@@ -104,6 +105,9 @@ export function renderComponents(editor: Editor) {
         })
         //}
       }
+      // Handle both c.attributes.src and c.attributes.attributes.src
+      // For some reason we need both
+      // Especially when the component is not on the current page, we need c.attributes.attributes.src
       if(c.get('attributes').src) {
         c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('attributes').src
         const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET)
@@ -113,7 +117,7 @@ export function renderComponents(editor: Editor) {
         })
       }
       if(c.get('src')) {
-        c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('src')
+        c[ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC] = c.get('src')
         const src = transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET)
         c.set('src', src)
       }
@@ -238,8 +242,11 @@ export function resetRenderComponents(editor: Editor) {
         ...c.get('attributes'),
         src: c[ATTRIBUTE_METHOD_STORE_SRC],
       })
-      c.set('src', c[ATTRIBUTE_METHOD_STORE_SRC])
       delete c[ATTRIBUTE_METHOD_STORE_SRC]
+    }
+    if(c[ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC]) {
+      c.set('src', c[ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC])
+      delete c[ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC]
     }
     if(c[ATTRIBUTE_METHOD_STORE_HREF]) {
       c.set('attributes', {
