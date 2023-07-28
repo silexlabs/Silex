@@ -69,11 +69,9 @@ export const projectBarPlugin = (editor, opts) => {
     }
 
     // commands for show / hide panels
-    editor.Commands.add(panel.command, {
+    // handle the case where command is a normal command, then let the Panel handle it
+    typeof panel.command === 'string' && editor.Commands.add(panel.command, {
       run() {
-        if(panel.link) {
-          window.open(panel.link)
-        }
         if(panel.attributes.containerClassName) {
           containerPanel.set('visible', true)
           el.classList.remove('gjs-hidden')

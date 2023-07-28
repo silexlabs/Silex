@@ -55,16 +55,19 @@ export const storagePlugin = (editor) => {
     },
 
     async store(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
+      console.log('connectorPlugin store', data, options)
       try {
         if(await getCurrentUser(editor)) {
+          console.log('connectorPlugin store2', data, options)
           const user = await getCurrentUser(editor)
           data.assets = removeTempDataFromAssetUrl(data.assets)
           data.pages = removeTempDataFromPages(data.pages)
           data.styles = removeTempDataFromStyles(data.styles)
+          console.log('connectorPlugin store3', data, options)
           await websiteSave({websiteId: options.id, connectorId: user.storage.connectorId, data})
         } else {
           editor.once(eventLoggedIn, () => {
-            return editor.Storage.save(options)
+            return editor.Storage.store()
           })
           editor.Commands.run(cmdLogin)
         }

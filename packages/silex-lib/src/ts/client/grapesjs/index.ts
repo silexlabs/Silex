@@ -165,8 +165,9 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
             id: 'dash',
             className: 'logo',
             attributes: { title: 'Dashboard' },
-            link: '/',
-            command: 'open-dash',
+            command: () => {
+              window.location.href = '/'
+            },
           }, {
             id: 'block-manager-btn',
             className: 'block-manager-btn fa fa-fw fa-plus',
@@ -204,7 +205,9 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
             id: 'font-dialog-btn',
             className: 'font-manager-btn fa-solid fa-font',
             attributes: { title: 'Fonts' },
-            command: cmdOpenFonts,
+            command: () => {
+              editor.runCommand(cmdOpenFonts)
+            },
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa-solid fa-gears',
@@ -218,14 +221,16 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
             id: 'dash2',
             className: 'fa-solid fa-house',
             attributes: { title: 'Dashboard' },
-            link: '/',
-            command: 'open-dash',
+            command: () => {
+              window.location.href = '/'
+            },
           }, {
             id: 'help',
             className: 'fa fa-fw fa-question-circle',
             attributes: { title: 'Documentation' },
-            link: 'https://docs.silex.me/',
-            command: 'open-help',
+            command: () => {
+              window.open('https://docs.silex.me/', '_blank')
+            },
           }, {
             id: 'logout-button',
             className: 'page-panel-btn fa fa-fw fa-sign-out',
