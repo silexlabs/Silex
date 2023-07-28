@@ -49,14 +49,18 @@ export default function(config: ServerConfig) {
  * Method to validate HTTP status codes
  * Returns a suitable error code if it is not valid
  */
-function validateStatus(status: number, _defautl = 500): number {
+function validateStatus(status: number, _default = 500): number {
+  if(!status) {
+    console.warn(`Status code is undefined, returning default ${_default}}`)
+    return _default
+  }
   // Make sure it is a string
   status = parseInt(status.toString())
   // Check the status code
   if (status >= 100 && status < 600) return status
   // Invalid status code
-  console.warn(`Invalid status code ${status}, returning default ${_defautl}}`)
-  return _defautl
+  console.warn(`Invalid status code ${status}, returning default ${_default}}`)
+  return _default
 }
 
 /**
