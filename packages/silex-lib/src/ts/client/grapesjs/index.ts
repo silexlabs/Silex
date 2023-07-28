@@ -132,7 +132,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
         --primaryColor: #333333;
         --secondaryColor: #ddd;
         --tertiaryColor: #8873FE;
-        --quaternaryColor: #56E3FF;
+        --quaternaryColor: #A291FF;
         --darkerPrimaryColor: #363636;
         --lighterPrimaryColor: #575757;
       }
