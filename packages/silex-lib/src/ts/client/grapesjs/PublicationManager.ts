@@ -23,7 +23,6 @@ import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
-import { removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -212,6 +211,7 @@ export class PublicationManager {
     const websiteId = this.options.websiteId
     const storageId = storageUser.storage.connectorId
     // Data to publish
+    // See assetUrl.ts which is a default transformer, always present
     this.setPublicationTransformers()
     const projectData = this.editor.getProjectData() as WebsiteData
     const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
@@ -298,6 +298,7 @@ export class PublicationManager {
       const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS)
       const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
+      const body = this.editor.getHtml({ component })
       return {
         html: `
       <!DOCTYPE html>
@@ -313,7 +314,7 @@ export class PublicationManager {
     .join('\n')
 }
       </head>
-      ${this.editor.getHtml({ component })}
+      ${body}
       </html>
       `,
         css: this.editor.getCss({ component }),
