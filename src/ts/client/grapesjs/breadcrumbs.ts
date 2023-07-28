@@ -58,7 +58,6 @@ export default function (editor, options) {
     while (component) {
       const breadcrumb = createBreadcrumb(component)
       breadcrumbsContainer.prepend(breadcrumb)
-      console.log(component, component.tagName)
       component = component.parent()
     }
 

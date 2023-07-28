@@ -104,13 +104,18 @@ export function renderComponents(editor: Editor) {
         })
         //}
       }
-      if(c.get('attributes').src) {
-        c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('attributes').src
-        const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET)
-        c.set('attributes', {
-          ...c.get('attributes'),
-          src,
-        })
+      //if(c.get('attributes').src) {
+      //  c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('attributes').src
+      //  const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET)
+      //  c.set('attributes', {
+      //    ...c.get('attributes'),
+      //    src,
+      //  })
+      //}
+      if(c.get('src')) {
+        c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('src')
+        const src = transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET)
+        c.set('src', src)
       }
       c.toHTML = () => {
         return config.publicationTransformers.reduce((html: string, transformer: PublicationTransformer) => {
@@ -228,11 +233,15 @@ export function resetRenderComponents(editor: Editor) {
       c.getStyle = c[ATTRIBUTE_METHOD_STORE_INLINE_CSS]
       delete c[ATTRIBUTE_METHOD_STORE_INLINE_CSS]
     }
+    //if(c[ATTRIBUTE_METHOD_STORE_SRC]) {
+    //  c.set('attributes', {
+    //    ...c.get('attributes'),
+    //    src: c[ATTRIBUTE_METHOD_STORE_SRC],
+    //  })
+    //  delete c[ATTRIBUTE_METHOD_STORE_SRC]
+    //}
     if(c[ATTRIBUTE_METHOD_STORE_SRC]) {
-      c.set('attributes', {
-        ...c.get('attributes'),
-        src: c[ATTRIBUTE_METHOD_STORE_SRC],
-      })
+      c.set('src', c[ATTRIBUTE_METHOD_STORE_SRC])
       delete c[ATTRIBUTE_METHOD_STORE_SRC]
     }
     if(c[ATTRIBUTE_METHOD_STORE_HREF]) {
