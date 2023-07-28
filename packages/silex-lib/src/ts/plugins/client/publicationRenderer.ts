@@ -23,7 +23,7 @@ console.warn('This plugin is deprecated. Use the publication renderer plugin ins
 throw 'This plugin is deprecated. Use the publication renderer plugin instead.'
 
 /* Usage:
-  import publicationRenderer from '/node_modules/@silexlabs/silex/dist/plugins/client/plugins/client/publicationRenderer.js'
+  import publicationRenderer from 'https://unpkg.com/@silexlabs/silex@latest/dist/plugins/client/plugins/client/publicationRenderer'
   await config.addPlugin(publicationRenderer, {
     css: {
       frontMatter: true,
