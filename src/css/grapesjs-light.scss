@@ -1,0 +1,180 @@
+// Comes from gramateria
+/* Overwrite GrapeJS css */
+
+.gjs-cm-editor#gjs-cm-css #gjs-cm-title,
+.gjs-cm-editor#gjs-cm-htmlmixed #gjs-cm-title,
+.gjs-two-color,
+.gjs-four-color,
+.gjs-color-warn, .gjs-sm-sector .gjs-sm-field input, .gjs-clm-tags .gjs-sm-field input, .gjs-sm-sector .gjs-clm-field input, .gjs-clm-tags .gjs-clm-field input, .gjs-sm-sector .gjs-sm-field select, .gjs-clm-tags .gjs-sm-field select, .gjs-sm-sector .gjs-clm-field select, .gjs-clm-tags .gjs-clm-field select {
+    color: #464973;
+}
+
+.gjs-one-bg {
+    background-color: #f6f7f9;
+}
+
+.gjs-block:hover {
+    box-shadow: 0 3px 4px 0 rgba(204, 210, 251, 0.42);
+}
+
+.gjs-category-title,
+.gjs-sm-sector .gjs-sm-title,
+.gjs-clm-tags .gjs-sm-title,
+.gjs-block-category .gjs-title,
+.gjs-layer-title {
+    background-color: #eee;
+    border-bottom: 1px solid rgba(121, 121, 121, 0.25);
+}
+
+/* text editor color */
+
+
+.gjs-cm-editor #gjs-cm-title {
+    background-color: rgba(164, 190, 241, 0.2);
+}
+
+.cm-s-hopscotch.CodeMirror {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#2f3c54+0,414251+100 */
+    background: #2f3c54;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #2f3c54 0%, #414251 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #2f3c54 0%, #414251 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #2f3c54 0%, #414251 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#2f3c54', endColorstr='#414251', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    color: #999;
+}
+
+.cm-s-hopscotch .CodeMirror-gutters {
+    background: #232c3c;
+}
+
+
+/* class name */
+.gjs-clm-tags #gjs-clm-close,
+.gjs-clm-tags #gjs-clm-checkbox {
+    color: #444;
+}
+
+.gjs-three-bg {
+    background-color: #f6f7f9;
+}
+
+/* select box */
+.gjs-field-arrow-u {
+    border-bottom: 4px solid #444;
+}
+
+.gjs-field-arrow-d {
+    border-top: 4px solid #444;
+}
+
+
+.gjs-field .gjs-d-s-arrow {
+    border-top: 4px solid rgb(68, 68, 68);
+}
+
+.gjs-pn-btn.fa:before,
+.gjs-block.fa:before {
+    color: #262c42;
+}
+
+.gjs-block {
+    background: #fff;
+}
+
+.gjs-blocks-c {
+    padding-bottom: 6px;
+}
+
+.gjs-field select.gjs-devices {
+    padding: 2px;
+}
+
+.gjs-color-warn,
+.gjs-sm-sector .gjs-sm-field input,
+.gjs-clm-tags .gjs-sm-field input,
+.gjs-sm-sector .gjs-clm-field input,
+.gjs-clm-tags .gjs-clm-field input,
+.gjs-sm-sector .gjs-sm-field select,
+.gjs-clm-tags .gjs-sm-field select,
+.gjs-sm-sector .gjs-clm-field select,
+.gjs-clm-tags .gjs-clm-field select {
+    color: #000;
+}
+
+#gjs-mdl-c .header-menus {
+    justify-content: space-between;
+    display: flex;
+    align-items: center;
+}
+
+label.gjs-import-file {
+    padding:10px 30px;
+    border:1px dashed #ddd;
+    font-size:13px;
+    background:#fff;
+}
+
+label.gjs-import-file:hover{
+    cursor:pointer;
+    border-color:var(--theme-color);
+}
+
+.CodeMirror {
+    height: 400px;
+}
+
+button.exportgram {
+    margin-left: 10px;
+    padding: 4px 10px;
+    background: #444;
+    color: #fff;
+    border-radius: 20px;
+}
+
+.html-wrapper,
+.css-wrapper {
+    width: 49%;
+    float: left;
+}
+
+.html-wrapper h4,
+.css-wrapper h4 {
+    margin: 4px 0 4px;
+}
+
+.gjs-mdl-dialog {
+    max-width: none;
+}
+
+.clear-fix {
+    width: 100%;
+    clear: both;
+}
+
+.css-wrapper {
+    margin-left: 2%;
+}
+
+
+
+.gjs-sm-sectors .gjs-radio-items .gjs-radio-item {
+    background: #585858;
+}
+
+label.gjs-radio-item-label,
+.gjs-sm-sectors .gjs-radio-item .fa {
+    color: #fff;
+}
+
+.gjs-four-color-h:hover {
+    color: var(--theme-color);
+}
+
+.iframe-wrapper{
+    padding-bottom:30px;
+}
