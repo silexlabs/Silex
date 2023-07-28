@@ -116,8 +116,8 @@ export async function api<ReqQuery, ReqBody, ResBody>(route: ApiRoute | string, 
   const url = `${ROOT_URL}${route.toString()}?${
     new URLSearchParams(
       Object.entries(query)
-      .filter(([key, value]) => !!value)
-      .map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)])
+        .filter(([key, value]) => !!value)
+        .map(([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)])
     ).toString()}`
   const response = await fetch(url, {
     method,
