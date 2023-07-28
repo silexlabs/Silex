@@ -132,7 +132,7 @@ describe('publication-transformers', () => {
     transformPermalink.mockReturnValue(transformedSrc)
     renderComponents(editor)
     const html = editor.getHtml()
-    expect(transformPermalink).toBeCalledTimes(1)
+    expect(transformPermalink).toBeCalledTimes(2) // 2x because of c.attributes.src and c.attributes.attributes.src
     expect(transformPermalink.mock.calls[0][0]).toBe('test.png')
     expect(transformPermalink.mock.calls[0][1]).toBe('asset')
   })
