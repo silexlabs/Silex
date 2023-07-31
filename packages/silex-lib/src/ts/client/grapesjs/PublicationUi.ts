@@ -191,8 +191,7 @@ export class PublicationUi {
             max-height: 50vh;
             overflow: auto;
             font-size: x-small;
-            "
-          >${unsafeHTML(cleanupLogEntry(job.logs))}
+            " >${unsafeHTML(cleanupLogEntry(job.logs))}
           </pre>
         </details>
       ` : ''}
@@ -223,13 +222,13 @@ export class PublicationUi {
           class="silex-button silex-button--primary"
           id="publish-button--primary"
           @click=${() => this.editor.Commands.run(cmdPublicationLogin, this.settings.connector)}
-        >Login</button>
+        >Connect</button>
       `: this.settings.connector.disableLogout ? '' : html`
         <button
           class="silex-button silex-button--secondary"
           id="publish-button--secondary"
           @click=${() => this.editor.Commands.run(cmdPublicationLogout)}
-        >Logout</button>
+        >Disconnect</button>
       `}
       <button
         class="silex-button silex-button--secondary"
@@ -243,14 +242,19 @@ export class PublicationUi {
     try {
       render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
-      const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
-      if (loggedConnector) {
-        this.settings.connector = loggedConnector
+      const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
+      if (hostingConnectors.length === 1 && loggedConnectors.length === 1) {
+        this.settings.connector = loggedConnectors[0]
         return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
+      //const loggedConnector: ConnectorData = hostingConnectors.find(connector => connector.isLoggedIn)
+      //if (loggedConnector) {
+      //  this.settings.connector = loggedConnector
+      //  return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
+      //}
       return html`
       <main>
-        <p>You need to login to publish your website</p>
+        <p>You need to connect a hosting connector to publish your website</p>
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <p>Login error</p>
           <div>${unsafeHTML(this.errorMessage)}</div>
@@ -260,7 +264,7 @@ export class PublicationUi {
             class="silex-button silex-button--primary"
             id="publish-button--primary"
             @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
-          >Login with ${connector.connectorId}</button>
+          >${connector.displayName}</button>
         `)}
       </main>
       <footer>
