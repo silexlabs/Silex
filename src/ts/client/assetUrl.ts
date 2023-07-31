@@ -137,7 +137,7 @@ function removeTempDataFromComponents(component: Component): Component {
     ...component,
     attributes: {
       ...component.attributes,
-      src: displayedToStored(component.attributes.src) : undefined,
+      src: displayedToStored(component.attributes.src),
     },
   } : component
   // Update the asset URL in the children

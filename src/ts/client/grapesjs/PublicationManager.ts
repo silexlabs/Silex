@@ -147,6 +147,19 @@ export class PublicationManager {
   }
 
   async goLogin(connector: ConnectorData) {
+    // Check if the user is already logged in
+    if(connector.isLoggedIn) {
+      this.settings = {
+        ...this.settings, // In case there are options
+        connector,
+      }
+      this.status = PublicationStatus.STATUS_NONE
+      // Save the website with the new settings
+      this.editor.store(null)
+      // Display the dialog
+      this.dialog && this.dialog.displayPending(this.job, this.status)
+      return
+    }
     this.settings = {}
     this.status = PublicationStatus.STATUS_LOGGED_OUT
     this.dialog && this.dialog.displayPending(this.job, this.status)
@@ -228,6 +241,10 @@ export class PublicationManager {
       } as ClientSideFile]))
       .concat(projectData.assets
         .map(asset => {
+          // TODO: is this needed?
+          // // Remove /assets that is added by grapesjs
+          // const initialPath = asset.src
+          //   .replace(/^\/assets/, '')
           // Transform the file paths with the transformers
           const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
           const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)

@@ -67,10 +67,7 @@ export interface Connector<Session extends ConnectorSession = ConnectorSession> 
   isLoggedIn(session: Session): Promise<boolean>
   setToken(session: Session, token: object): Promise<void>
   logout(session: Session): Promise<void>
-  getUser(session: Session): Promise<ConnectorUser>
-  // Handle website meta file
-  getWebsiteMeta(session: Session, websiteId: WebsiteId): Promise<WebsiteMeta>
-  setWebsiteMeta(session: Session, websiteId: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
+  getUser(session: Session): Promise<ConnectorUser | null>
   // Get the connector options from login form
   // They are stored in the website meta file for hosting connectors
   // And in the user session for storage connectors
@@ -94,6 +91,9 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
   readAsset(session: Session, websiteId: WebsiteId, fileName: string): Promise<ConnectorFileContent>
   deleteAssets(session: Session, websiteId: WebsiteId, fileNames: string[]): Promise<void>
   //getFileUrl(session: Session, websiteId: WebsiteId, path: string): Promise<string>
+  // Handle website meta file
+  getWebsiteMeta(session: Session, websiteId: WebsiteId): Promise<WebsiteMeta>
+  setWebsiteMeta(session: Session, websiteId: WebsiteId, data: WebsiteMetaFileContent): Promise<void>
 }
 
 /**

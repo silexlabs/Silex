@@ -17,6 +17,7 @@
 
 const FtpConnector = require('./dist/plugins/server/plugins/server/FtpConnector').default
 const GitlabConnector = require('./dist/plugins/server/plugins/server/GitlabConnector').default
+const DownloadPlugin = require('./dist/plugins/server/plugins/server/DownloadConnector').default
 
 module.exports = async function (config, options) {
   if(!FtpConnector) throw new Error('FtpConnector not found')
@@ -26,16 +27,17 @@ module.exports = async function (config, options) {
     new FtpConnector(config, {
       type: 'HOSTING',
     }),
+    new DownloadPlugin(config),
   ])
-  config.setStorageConnectors([
-      new FtpConnector(config, {
-      type: 'STORAGE',
-    }),
-    new GitlabConnector(config, {
-      clientId: process.env.GITLAB_CLIENT_ID,
-      clientSecret: process.env.GITLAB_CLIENT_SECRET,
-    }),
-  ])
+  //config.setStorageConnectors([
+  //    new FtpConnector(config, {
+  //    type: 'STORAGE',
+  //  }),
+  //  new GitlabConnector(config, {
+  //    clientId: process.env.GITLAB_CLIENT_ID,
+  //    clientSecret: process.env.GITLAB_CLIENT_SECRET,
+  //  }),
+  //])
 
   return {}
 }

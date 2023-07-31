@@ -99,7 +99,6 @@ export class ClientConfig extends Config {
     transformers.forEach(transformer => {
       validatePublicationTransformer(transformer)
     })
-
     // Add to the list
     this.publicationTransformers = this.publicationTransformers.concat(transformers)
   }

@@ -178,7 +178,7 @@ export default async (config, opts: any = {}) => {
         c.toHTML = () => {
           return `${before
           }${c.get('tagName') ? `<${c.get('tagName')}
-            ${Object.entries(c.get('attributes')).map(([key, value]) => makeAttribute(key, value)).join(' ')}
+            ${Object.entries(c.get('attributes') as object).map(([key, value]) => makeAttribute(key, value)).join(' ')}
             ${classes.length || classname ? `class="${classes.join(' ')} ${classname}"` : ''}
             ${attributes}
             ${style ? `style="${style}"` : ''}
