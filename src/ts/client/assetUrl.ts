@@ -86,10 +86,10 @@ export const assetsPublicationTransformer = {
  */
 export function addTempDataToAssetUrl(assets: Asset[], websiteId: WebsiteId, storageId: ConnectorId): Asset[] {
   return assets.map((asset: Asset) => {
-    return {
+    return asset.src ? {
       ...asset,
       src: storedToDisplayed(asset.src, websiteId, storageId),
-    }
+    } : asset
   })
 }
 
@@ -100,10 +100,10 @@ export function addTempDataToAssetUrl(assets: Asset[], websiteId: WebsiteId, sto
 export function removeTempDataFromAssetUrl(assets: Asset[]): Asset[] {
   return assets.map((asset: Asset) => {
     // Return the asset with the new URL
-    return {
+    return asset.src ? {
       ...asset,
       src: displayedToStored(asset.src),
-    }
+    } : asset
   })
 }
 
@@ -112,13 +112,13 @@ export function removeTempDataFromAssetUrl(assets: Asset[]): Asset[] {
  */
 function addTempDataToComponents(component: Component, websiteId: WebsiteId, storageId: ConnectorId): Component {
   // Update the asset URL in the component
-  const newComponent = {
+  const newComponent = component.attributes?.src ? {
     ...component,
     attributes: {
       ...component.attributes,
-      src: component.attributes?.src ? storedToDisplayed(component.attributes.src, websiteId, storageId) : undefined,
+      src: storedToDisplayed(component.attributes.src, websiteId, storageId),
     },
-  }
+  } : component
   // Update the asset URL in the children
   if (newComponent.components) {
     newComponent.components = newComponent.components.map((childComponent: Component) => {
@@ -133,13 +133,13 @@ function addTempDataToComponents(component: Component, websiteId: WebsiteId, sto
  */
 function removeTempDataFromComponents(component: Component): Component {
   // Update the asset URL in the component
-  const newComponent = {
+  const newComponent = component.attributes?.src ? {
     ...component,
     attributes: {
       ...component.attributes,
-      src: component.attributes?.src ? displayedToStored(component.attributes.src) : undefined,
+      src: displayedToStored(component.attributes.src) : undefined,
     },
-  }
+  } : component
   // Update the asset URL in the children
   if (newComponent.components) {
     newComponent.components = newComponent.components.map((childComponent: Component) => {
