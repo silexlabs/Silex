@@ -13,8 +13,8 @@
   "author": "lexoyo",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@silexlabs/silex": "^3.0.0-alpha.69",
-    "@silexlabs/silex-dashboard": "^1.0.31"
+    "@silexlabs/silex": "^3.0.0-alpha.71",
+    "@silexlabs/silex-dashboard": "^1.0.32"
   },
   "repository": {
     "type": "git",
