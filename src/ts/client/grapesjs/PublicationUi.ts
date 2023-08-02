@@ -174,7 +174,7 @@ export class PublicationUi {
         <p>Publication error</p>
         <div>${unsafeHTML(this.errorMessage)}</div>
       ` : ''}
-      ${job && job.message ? html`
+      ${job?.message ? html`
         <p>${unsafeHTML(job.message)}</p>
       ` : ''}
       ${this.isPending(status) ? html`
@@ -183,7 +183,7 @@ export class PublicationUi {
           style="width: 100%;"
         ></progress>
       ` : ''}
-      ${job && job.logs?.length && job.logs[0].length ? html`
+      ${job?.logs?.length && job.logs[0].length ? html`
         <br><details>
           <summary>Logs</summary>
           <pre style="
@@ -195,7 +195,7 @@ export class PublicationUi {
           </pre>
         </details>
       ` : ''}
-      ${job && job.errors?.length && job.errors[0].length ? html`
+      ${job?.errors?.length && job.errors[0].length ? html`
         <br><details>
           <summary>Errors</summary>
           <pre style="
