@@ -37,6 +37,9 @@
   overflow: auto;
   form.silex-form {
     padding-bottom: 100px; // leave space for fixed footer
+    textarea {
+      min-height: 250px;
+    }
   }
   .silex-form__element {
     padding: 10px 5px;
