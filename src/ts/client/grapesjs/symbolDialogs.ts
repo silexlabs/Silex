@@ -31,7 +31,7 @@ export default grapesjs.plugins.add(name, (editor, opts) => {
   editor.Commands.add(cmdPromptAddSymbol, {
     run: (_, sender) => {
       const label = prompt('Label', getNext('Symbol '))
-      const icon = prompt('Icon', 'fa-list')
+      const icon = 'fa-gem'
       editor.runCommand(cmdAddSymbol, { label, icon })
     }
   })

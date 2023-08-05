@@ -16,9 +16,30 @@
  */
 
 /**
- * This file is loaded by Silex when the user opens the editor
- * Unless you override the default config with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config
+ * @fileoverview Run Silex with grapesjs plugins
+ * Start silex with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config set to this file
  */
 
 export default async function (config) {
+  // For example add a GrapesJs plugin like this
+  config.grapesJsConfig.plugins.push(plugin)
+  config.grapesJsConfig.pluginsOpts[plugin] = {
+  }
+  // Or like this to override the default options
+  // See the docs for the list of options
+  return {
+    ...config,
+    grapesJsConfig: {
+      ...config.grapesJsConfig,
+      plugins: [
+        ...config.grapesJsConfig.plugins,
+        plugin,
+      ],
+      pluginsOpts: {
+        ...config.grapesJsConfig.pluginsOpts,
+        [plugin]: {
+        },
+      },
+    },
+  }
 }

@@ -12,13 +12,20 @@
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  if not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- * This file is loaded by Silex when the user opens the editor
- * Unless you override the default config with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config
+ * @fileoverview Run Silex with some plugins
+ * Start silex with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config set to this file
  */
 
+import websiteInfoPlugin from './plugins/client/website-info.js'
+
+// This file is loaded by Silex when the user opens the editor
+// Unless you override the default config with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config
 export default async function (config) {
+  // Add plugins
+  config.addPlugin(websiteInfoPlugin, {})
 }
+

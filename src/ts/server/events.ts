@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// FIXME: this is for client and server, it is confusing, split in 2 files
 import { ConnectorId, PublicationData, WebsiteData, WebsiteId } from '../types'
 import { ConnectorFile } from './connectors/connectors'
 
