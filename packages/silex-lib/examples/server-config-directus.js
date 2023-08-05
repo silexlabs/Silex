@@ -15,10 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * This file is loaded by Silex when the user opens the editor
- * Unless you override the default config with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config
- */
+const StaticPlugin = require('../../dist/plugins/server/plugins/server/StaticPlugin').default
 
-export default async function (config) {
+module.exports = async function (config, options) {
+  config.addPlugin(StaticPlugin, {
+    routes: [{
+      route: '/js/grapesjs-directus-storage/',
+      path: __dirname + '/../../node_modules/@silexlabs/grapesjs-directus-storage/dist',
+    }, {
+      route: '/js/directus/',
+      path: __dirname + '/../../node_modules/@directus/sdk/dist',
+    }]
+  })
+  return {}
 }

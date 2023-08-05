@@ -15,6 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * @fileoverview This file is loaded by Silex at startup, after the user config if you specify one
+ */
+
 const SslPlugin = require('./dist/plugins/server/plugins/server/SslPlugin').default
 const StaticPlugin = require('./dist/plugins/server/plugins/server/StaticPlugin').default
 

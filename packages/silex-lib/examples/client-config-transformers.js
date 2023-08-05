@@ -16,9 +16,32 @@
  */
 
 /**
- * This file is loaded by Silex when the user opens the editor
- * Unless you override the default config with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config
+ * @fileoverview Run Silex with publication transformers
+ * Start silex with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config set to this file
  */
 
 export default async function (config) {
+  config.addPublicationTransformers({
+    // Override how components render at publication by grapesjs
+    renderComponent(component, initialHtml) {
+      return initialHtml
+    },
+    // Override how styles render at publication by grapesjs
+    renderCssRule(rule, initialCss) {
+      return initialCss
+    },
+    // Define how files are named
+    transformPath(path) {
+      return path
+    },
+    // Difine files URLs
+    transformPermalink(link) {
+      return link
+    },
+    // Transform files after they are rendered and before they are published
+    transformFile(file) {
+      return file
+    }
+  })
 }
+

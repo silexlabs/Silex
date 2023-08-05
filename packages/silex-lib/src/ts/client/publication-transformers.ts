@@ -18,7 +18,6 @@
 import { Component, CssRule, Editor, ObjectStrings, Page } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, ClientSideFileWithPermalink, PublicationData } from '../types'
 import { onAll } from './utils'
-import { getPageLink, getPageSlug } from '../page'
 
 /**
  * @fileoverview Silex publication transformers are used to control how the site is rendered and published
@@ -95,15 +94,11 @@ export function renderComponents(editor: Editor) {
       c[ATTRIBUTE_METHOD_STORE_INLINE_CSS] = c.getStyle
       const href = c.get('attributes').href as string | undefined
       if(href?.startsWith('./')) {
-        //const page = editor.Pages.getAll().find(p => getPageLink(p.getName()) === href)
-        //if(page) {
         c[ATTRIBUTE_METHOD_STORE_HREF] = href
         c.set('attributes', {
           ...c.get('attributes'),
-          //href: transformPagePermalin(editor, page),
           href: transformPermalink(editor, href, ClientSideFileType.HTML),
         })
-        //}
       }
       // Handle both c.attributes.src and c.attributes.attributes.src
       // For some reason we need both

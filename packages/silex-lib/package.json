@@ -100,11 +100,9 @@
     "test:watch": "$npm_execpath test -- --watch"
   },
   "dependencies": {
-    "@directus/sdk": "10.3.3",
     "@fontsource/ubuntu": "^5.0.5",
     "@fortawesome/fontawesome-free": "6.4.0",
     "@gitbeaker/rest": "^39.7.0",
-    "@silexlabs/grapesjs-directus-storage": "1.0.15",
     "@silexlabs/grapesjs-fonts": "1.0.12",
     "@silexlabs/grapesjs-loading": "1.0.8",
     "@silexlabs/grapesjs-symbols": "1.0.22",
