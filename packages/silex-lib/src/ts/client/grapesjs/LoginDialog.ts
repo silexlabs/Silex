@@ -26,6 +26,9 @@ export async function updateUser(editor: Editor, type: ConnectorType, connectorI
   return user
 }
 
+// Orging and path, should we use config.rootUrl?
+const SERVER_URL = `${window.location.origin}${window.location.pathname}`
+
 let open = false
 let body: HTMLElement | null = null
 export default function loginDialogPlugin(editor, opts) {
@@ -132,7 +135,7 @@ export default function loginDialogPlugin(editor, opts) {
     }
   }
   async function loginWithConnector(connector: ConnectorData) {
-    const nonOAuthUrl = `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${connector.connectorId}&type=${connector.type}`
+    const nonOAuthUrl = `${SERVER_URL}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${connector.connectorId}&type=${connector.type}`
     window.open(connector.oauthUrl ?? nonOAuthUrl, '_blank')
     return new Promise(resolve => {
       render(html`

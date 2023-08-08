@@ -75,6 +75,9 @@ function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
   throw new Error(`Unknown job status ${status}`)
 }
 
+// Orging and path, should we use config.rootUrl?
+const SERVER_URL = `${window.location.origin}${window.location.pathname}`
+
 // The publication manager class
 // This class is responsible for the publication dialog and for the publication process
 // It is added to the editor instance as editor.PublicationManager
@@ -167,7 +170,7 @@ export class PublicationManager {
       connectorId: connector.connectorId,
       type: connector.type,
     }
-    window.open(connector.oauthUrl || `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${params.connectorId}&type=${params.type}`, '_blank')
+    window.open(connector.oauthUrl || `${SERVER_URL}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${params.connectorId}&type=${params.type}`, '_blank')
     return new Promise(resolve => {
       const onMessage = async (event) => {
         const data = event.data as ApiConnectorLoggedInPostMessage
