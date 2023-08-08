@@ -11,3 +11,4 @@ node_modules
 old
 dist/
 .silex/
+.env

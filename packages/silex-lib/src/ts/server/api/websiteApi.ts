@@ -302,6 +302,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       res.json({
         data: result.map(path =>
+          // FIXME: We should return path without this line, as it is saved, not as it is displayed
           baseUrl + API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
           + path
           + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)

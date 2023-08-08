@@ -10,23 +10,29 @@ import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, Website
  * During publicationn we convert all URLs to the storage version and back
  */
 
+// Get the base URL where Silex is served
+const baseUrl = window.location.pathname.replace(/\/$/, '')
+
 // Orging and path, should we use config.rootUrl?
-const SERVER_URL = window.location.origin + window.location.pathname.replace(/\/$/, '')
+const SERVER_URL = window.location.origin + baseUrl
 
 /**
  * Function to convert a path from it stored version to the displayed version
  * Stored version is like `/assets/image.webp`
  * Grapesjs version is like `/api/website/assets/image.webp?websiteId=47868975&connectorId=gitlab`
+ * Exported for unit tests
  */
-function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: ConnectorId): string {
+export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: ConnectorId): string {
   // Check the path is a stored path
   if (path.startsWith('/assets')) {
     const url = new URL(path, SERVER_URL)
     url.pathname = url.pathname.replace(/^\/assets/, '')
-    url.pathname = `${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
+    url.pathname = `${baseUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
     url.searchParams.set('websiteId', websiteId)
     url.searchParams.set('connectorId', storageId)
-    const encodedPath = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
+    const encodedPath = '/' + url.toString() // add a leading slash
+      .replace(new RegExp(`^${SERVER_URL}`), '')
+      .replace(/^\//, '') // remove the first slash if it exists
     return decodeURIComponent(encodedPath)
   } else {
     console.error('storedToDisplayed: path is not a stored path', path)
@@ -40,16 +46,21 @@ function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: Connec
  * Stored version is like `/assets/image.webp`
  * @param path the path to convert
  * @returns the converted path
+ * Exported for unit tests
  */
-function displayedToStored(path: string): string {
+export function displayedToStored(path: string): string {
+  // The path to the assets API
+  const apiPath = `${baseUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`
   // Check the path is a displayed path
-  if (path.startsWith(`${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`)) {
+  if (path.startsWith(apiPath)) {
     const url = new URL(path, SERVER_URL)
-    url.pathname = url.pathname.replace(new RegExp(`^${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`), '')
+    url.pathname = url.pathname.replace(new RegExp(`^${apiPath}`), '')
     url.pathname = `/assets${url.pathname}`
     url.searchParams.delete('websiteId')
     url.searchParams.delete('connectorId')
-    const encodedPath = '/' + url.toString().replace(new RegExp(`^${SERVER_URL}`), '')
+    const encodedPath = '/' + url.toString() // add a leading slash
+      .replace(new RegExp(`^${SERVER_URL}`), '')
+      .replace(/^\//, '') // remove the first slash if it exists
     return decodeURIComponent(encodedPath)
   } else {
     console.error('displayedToStored: path is not a displayed path', path)
