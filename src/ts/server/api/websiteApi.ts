@@ -293,14 +293,14 @@ export default function (config: ServerConfig, opts = {}): Router {
       config.emit(ServerEvent.WEBSITE_ASSET_STORE_START, { files, websiteId, connectorId } as WebsiteAssetStoreStartEventType)
 
       // Write the files
-      await writeAssets(req['session'], websiteId, files, connectorId)
+      const result = await writeAssets(req['session'], websiteId, files, connectorId)
 
       // Return the file URLs to insert in the website
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       res.json({
-        data: files.map(file =>
+        data: result.map(path =>
           API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
-          + file.path
+          + path
           + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
         ),
       } as ApiWebsiteAssetsWriteResponse)
@@ -394,6 +394,7 @@ export default function (config: ServerConfig, opts = {}): Router {
 
   /**
    * Write an asset to the connector
+   * @returns File names on the storage connector, always starting with a slash
    */
   async function writeAssets(session: any, websiteId: string, files: ConnectorFile[], connectorId?: string): Promise<string[]> {
     // Get the desired connector
@@ -406,14 +407,18 @@ export default function (config: ServerConfig, opts = {}): Router {
     }))
 
     // Write the asset to the connector
-    await storageConnector.writeAssets(
+    const result = await storageConnector.writeAssets(
       session,
       websiteId,
       cleanPathFiles,
     )
 
     // Return the files URLs with the website id
-    return files.map(({ path }) => `${path}?websiteId=${websiteId}`)
+    return files.map(({ path }, idx) => `${
+      result && result[idx]
+      ? `/${result[idx].replace(/^\//, '')}` // ensure the leading slash
+      : path
+    }?websiteId=${websiteId}`)
   }
   return router
 }

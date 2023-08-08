@@ -1,4 +1,3 @@
-import { Page } from 'grapesjs'
 import { ClientConfig } from '../../client/config'
 import { ClientSideFile, ClientSideFileWithContent } from '../../types'
 

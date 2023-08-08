@@ -4,10 +4,8 @@ import { ConnectorOptions, ConnectorType, ConnectorUser, JobData, JobStatus, Pub
 import { ConnectorFile, ConnectorSession, HostingConnector } from '../../server/connectors/connectors'
 import { tmpdir } from 'os'
 import { JobManager } from '../../server/jobs'
-import { Readable } from 'stream'
 import { ServerConfig } from '../../server/config'
 import { ServerEvent } from '../../server/events'
-import { getHostingConnector } from '../../server/api/publicationApi'
 
 import { Request, Response } from 'express'
 
