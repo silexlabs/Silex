@@ -35,7 +35,7 @@ export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId:
       .replace(/^\//, '') // remove the first slash if it exists
     return decodeURIComponent(encodedPath)
   } else {
-    console.error('storedToDisplayed: path is not a stored path', path)
+    console.warn('storedToDisplayed: path is not a stored path', path)
     return path
   }
 }
@@ -63,7 +63,7 @@ export function displayedToStored(path: string): string {
       .replace(/^\//, '') // remove the first slash if it exists
     return decodeURIComponent(encodedPath)
   } else {
-    console.error('displayedToStored: path is not a displayed path', path)
+    console.warn('displayedToStored: path is not a displayed path', path)
     return path
   }
 }
