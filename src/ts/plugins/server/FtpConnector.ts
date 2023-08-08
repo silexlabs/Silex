@@ -241,8 +241,8 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       path: '',
       assetsFolder: 'assets',
       cssFolder: 'css',
-      authorizeUrl: '/api/authorize/ftp/',
-      authorizePath: '/api/authorize/ftp/',
+      authorizeUrl: './api/authorize/ftp/',
+      authorizePath: './api/authorize/ftp/',
       ...opts,
     } as FtpOptions
     if(!this.options.type) throw new Error('missing type in option of FtpConnector')
