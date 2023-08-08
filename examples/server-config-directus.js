@@ -15,17 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const StaticPlugin = require('../../dist/plugins/server/plugins/server/StaticPlugin').default
+// const StaticPlugin = require('../dist/plugins/server/plugins/server/StaticPlugin').default
 
 module.exports = async function (config, options) {
-  config.addPlugin(StaticPlugin, {
-    routes: [{
-      route: '/js/grapesjs-directus-storage/',
-      path: __dirname + '/../../node_modules/@silexlabs/grapesjs-directus-storage/dist',
-    }, {
-      route: '/js/directus/',
-      path: __dirname + '/../../node_modules/@directus/sdk/dist',
-    }]
-  })
+  // config.addPlugin(StaticPlugin, {
+  //   routes: [{
+  //     route: '/js/grapesjs-directus-storage/',
+  //     path: __dirname + '/../../node_modules/@silexlabs/grapesjs-directus-storage/dist',
+  //   }, {
+  //     route: '/js/directus/',
+  //     path: __dirname + '/../../node_modules/@directus/sdk/dist',
+  //   }]
+  // })
   return {}
 }
