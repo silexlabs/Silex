@@ -259,4 +259,3 @@ export class FsStorage implements StorageConnector<FsSession> {
     return await fs.readFile(path)
   }
 }
-
