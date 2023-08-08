@@ -76,7 +76,7 @@ function jobStatusToPublicationStatus(status: JobStatus): PublicationStatus {
 }
 
 // Orging and path, should we use config.rootUrl?
-const SERVER_URL = `${window.location.origin}${window.location.pathname}`
+const SERVER_URL = window.location.origin + window.location.pathname.replace(/\/$/, '')
 
 // The publication manager class
 // This class is responsible for the publication dialog and for the publication process

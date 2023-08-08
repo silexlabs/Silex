@@ -49,7 +49,7 @@ export class ServerConfig extends Config {
   }
   public port = process.env.SILEX_PORT
   public debug = process.env.SILEX_DEBUG === 'true'
-  public url = process.env.SILEX_URL ?? `${process.env.SILEX_PROTOCOL}://${process.env.SILEX_HOST}:${process.env.SILEX_PORT}`
+  public url = process.env.SILEX_URL?.replace(/\/$/, '') ?? `${process.env.SILEX_PROTOCOL}://${process.env.SILEX_HOST}:${process.env.SILEX_PORT}`
   public userConfigPath: Plugin | undefined = process.env.SILEX_CONFIG
   public configFilePath: Plugin = resolve(__dirname, '../../../.silex.js')
 

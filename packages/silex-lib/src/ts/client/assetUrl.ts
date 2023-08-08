@@ -11,7 +11,7 @@ import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, Website
  */
 
 // Orging and path, should we use config.rootUrl?
-const SERVER_URL = `${window.location.origin}${window.location.pathname}`
+const SERVER_URL = window.location.origin + window.location.pathname.replace(/\/$/, '')
 
 /**
  * Function to convert a path from it stored version to the displayed version
