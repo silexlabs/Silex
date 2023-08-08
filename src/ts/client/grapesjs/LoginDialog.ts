@@ -27,7 +27,7 @@ export async function updateUser(editor: Editor, type: ConnectorType, connectorI
 }
 
 // Orging and path, should we use config.rootUrl?
-const SERVER_URL = `${window.location.origin}${window.location.pathname}`
+const SERVER_URL = window.location.origin + window.location.pathname.replace(/\/$/, '')
 
 let open = false
 let body: HTMLElement | null = null

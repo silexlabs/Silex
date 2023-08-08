@@ -296,7 +296,7 @@ export default function (config: ServerConfig, opts = {}): Router {
       const result = await writeAssets(req['session'], websiteId, files, connectorId)
 
       // Base URL of silex serve
-      const baseUrl = new URL(config.url).pathname
+      const baseUrl = new URL(config.url).pathname.replace(/\/$/, '')
 
       // Return the file URLs to insert in the website
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)

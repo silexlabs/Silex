@@ -36,7 +36,7 @@ export enum ApiRoute {
 }
 
 // Root URL of Silex server, should we use config.rootUrl ?
-const ROOT_URL = window.location.origin + window.location.pathname
+const SERVER_URL = window.location.origin + window.location.pathname.replace(/\/$/, '')
 
 export async function getUser({type, connectorId}: {type: ConnectorType, connectorId?: ConnectorId}): Promise<ConnectorUser> {
   return api<ApiConnectorUserQuery, null, ApiConnectorUserResponse>(ApiRoute.CONNECTOR_USER, 'GET', {
@@ -114,7 +114,7 @@ export async function websiteAssetsSave({websiteId, connectorId, files}: {websit
 }
 
 export async function api<ReqQuery, ReqBody, ResBody>(route: ApiRoute | string, method: string, query?: ReqQuery, payload?: ReqBody): Promise<ResBody> {
-  const url = `${ROOT_URL}${route.toString()}?${
+  const url = `${SERVER_URL}${route.toString()}?${
     new URLSearchParams(
       Object.entries(query)
         .filter(([key, value]) => !!value)
