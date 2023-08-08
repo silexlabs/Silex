@@ -416,8 +416,8 @@ export default function (config: ServerConfig, opts = {}): Router {
     // Return the files URLs with the website id
     return files.map(({ path }, idx) => `${
       result && result[idx]
-      ? `/${result[idx].replace(/^\//, '')}` // ensure the leading slash
-      : path
+        ? `/${result[idx].replace(/^\//, '')}` // ensure the leading slash
+        : path
     }?websiteId=${websiteId}`)
   }
   return router
