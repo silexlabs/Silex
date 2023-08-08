@@ -1,7 +1,5 @@
 import { API_PATH, API_WEBSITE_ASSET_READ, API_WEBSITE_PATH } from '../constants'
 import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, WebsiteId } from '../types'
-import { Editor, Page as GrapesPage, CssRule, ObjectStrings } from 'grapesjs'
-import { onAll } from './utils'
 
 /**
  * @fileoverview Helpers to manage assets URL
@@ -152,7 +150,7 @@ function removeTempDataFromComponents(component: Component): Component {
 /**
  * Add temp data to pages
  */
-export function addTemDataToPages(pages: Page[], websiteId: WebsiteId, storageId: ConnectorId): Page[] {
+export function addTempDataToPages(pages: Page[], websiteId: WebsiteId, storageId: ConnectorId): Page[] {
   return pages.map((page: Page) => {
     return {
       ...page,

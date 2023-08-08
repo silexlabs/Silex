@@ -18,7 +18,7 @@
 import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError, Asset, Page, Component, Style } from '../../types'
 import { websiteLoad, websiteSave } from '../api'
 import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
-import { addTemDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
+import { addTempDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
 
 export const storagePlugin = (editor) => {
   editor.Storage.add('connector', {
@@ -28,7 +28,7 @@ export const storagePlugin = (editor) => {
         if(!user) throw new ApiError('Not logged in', 401)
         const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId}) as WebsiteData
         if(data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
-        if(data.pages) data.pages = addTemDataToPages(data.pages, options.id, user.storage.connectorId)
+        if(data.pages) data.pages = addTempDataToPages(data.pages, options.id, user.storage.connectorId)
         if(data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
         return data
 

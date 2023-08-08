@@ -50,7 +50,7 @@ export class ClientConfig extends Config {
   /**
    * root url of Silex app
    */
-  rootUrl = window.location.origin
+  rootUrl = window.location.origin + window.location.pathname
 
   /**
    * debug mode

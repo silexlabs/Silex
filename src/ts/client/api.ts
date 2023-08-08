@@ -35,7 +35,7 @@ export enum ApiRoute {
   WEBSITE_META_WRITE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_META_WRITE,
 }
 
-const ROOT_URL = window.location.origin
+const ROOT_URL = window.location.origin + window.location.pathname
 
 export async function getUser({type, connectorId}: {type: ConnectorType, connectorId?: ConnectorId}): Promise<ConnectorUser> {
   return api<ApiConnectorUserQuery, null, ApiConnectorUserResponse>(ApiRoute.CONNECTOR_USER, 'GET', {
