@@ -30,14 +30,14 @@ interface FsOptions {
 export class FsHosting extends FsStorage implements HostingConnector<FsSession> {
   connectorId = 'fs-hosting'
   displayName = 'File system hosting'
-  icon = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%202L6%2022%2018%2022%2018%207%2012%202%206%202Z%22%3E%3C%2Fpath%3E%3Cpath%20d%3D%22M18%202L12%202%2012%208%2018%208%2018%202Z%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E'
   connectorType = ConnectorType.HOSTING
 
   async publish(session: FsSession, id: WebsiteId, files: ConnectorFile[], {startJob, jobSuccess, jobError}: JobManager): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
-    this.write(session, id, files, '', async ({status, message}) => {
+    // Call write without id or folder so that it goes in / (path will be modified by publication transformers)
+    this.write(session, '', files, '', async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message
