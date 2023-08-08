@@ -121,7 +121,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       },
     },
 
-    cssIcons: '/css/all.min.css',
+    cssIcons: './css/all.min.css',
     canvasCss: `
       :root {
         --primaryColor: #333333;
