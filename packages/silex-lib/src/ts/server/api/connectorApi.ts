@@ -150,7 +150,7 @@ async function routeLogin(req: Request, res: Response) {
     if (!connector) throw new Error(`Connector not found ${connectorId} ${type}`)
     // Check if the user is already logged in
     if (await connector.isLoggedIn(session)) {
-      res.redirect(`${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}`)
+      res.redirect(`${config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}`)
       return
     }
     const oauthUrl = await connector.getOAuthUrl(session)
@@ -160,8 +160,8 @@ async function routeLogin(req: Request, res: Response) {
     } else {
       // Display the login form
       const redirectTo = await connector.getSettingsForm(session, '') ?
-        `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_SETTINGS}?connectorId=${connectorId}&type=${type}` :
-        `${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}`
+        `${config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_SETTINGS}?connectorId=${connectorId}&type=${type}` :
+        `${config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}`
       res.send(await connector.getLoginForm(session, redirectTo))
     }
   } catch (error) {
@@ -189,7 +189,7 @@ async function routeLogin(req: Request, res: Response) {
 //     if (!connector) throw new Error(`Connector not found ${connectorId} ${type}`)
 //     // Check if the user is already logged in
 //     if (!await connector.isLoggedIn(session)) {
-//       res.redirect(`${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}&error=Not logged in`)
+//       res.redirect(`${config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}&error=Not logged in`)
 //       return
 //     }
 //     // Display the login form
@@ -220,7 +220,7 @@ async function routeLogin(req: Request, res: Response) {
 //     if (!connector) throw new Error(`Connector not found ${connectorId} ${type}`)
 //     // Check if the user is already logged in
 //     if (!await connector.isLoggedIn(session)) {
-//       res.redirect(`${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}&error=Not logged in`)
+//       res.redirect(`${config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?connectorId=${connectorId}&type=${type}&error=Not logged in`)
 //       return
 //     }
 //     // Save the settings

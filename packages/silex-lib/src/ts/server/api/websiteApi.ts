@@ -295,11 +295,14 @@ export default function (config: ServerConfig, opts = {}): Router {
       // Write the files
       const result = await writeAssets(req['session'], websiteId, files, connectorId)
 
+      // Base URL of silex serve
+      const baseUrl = new URL(config.url).pathname
+
       // Return the file URLs to insert in the website
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       res.json({
         data: result.map(path =>
-          API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
+          baseUrl + API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
           + path
           + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
         ),
