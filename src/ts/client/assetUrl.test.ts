@@ -49,7 +49,7 @@ describe('assetUrl', () => {
         pathname: '/silex',
         origin: 'http://localhost:6800',
       },
-    });
+    })
     const { displayedToStored, storedToDisplayed } = await import('./assetUrl')
     // Convert a valid URL as displayed
     expect(displayedToStored('/silex/api/website/assets/test.webp?websiteId=test-id&connectorId=test-connector'))
