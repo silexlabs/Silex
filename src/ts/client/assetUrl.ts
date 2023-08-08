@@ -10,7 +10,7 @@ import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, Website
  * During publicationn we convert all URLs to the storage version and back
  */
 
-// Orging and path
+// Orging and path, should we use config.rootUrl?
 const SERVER_URL = `${window.location.origin}${window.location.pathname}`
 
 /**
