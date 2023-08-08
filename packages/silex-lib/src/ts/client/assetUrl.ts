@@ -14,7 +14,8 @@ import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, Website
 const baseUrl = window.location.pathname.replace(/\/$/, '')
 
 // Orging and path, should we use config.rootUrl?
-const SERVER_URL = window.location.origin + baseUrl
+const SERVER_URL = window.location.origin
+console.log('SERVER_URL', SERVER_URL)
 
 /**
  * Function to convert a path from it stored version to the displayed version
@@ -25,11 +26,16 @@ const SERVER_URL = window.location.origin + baseUrl
 export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: ConnectorId): string {
   // Check the path is a stored path
   if (path.startsWith('/assets')) {
+    // Make an absolute URL
     const url = new URL(path, SERVER_URL)
+    // Remove the assets folder as it is part of the saved path
     url.pathname = url.pathname.replace(/^\/assets/, '')
+    // Add the API path and the connectorId and websiteId
     url.pathname = `${baseUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
+    // Add the GET params
     url.searchParams.set('websiteId', websiteId)
     url.searchParams.set('connectorId', storageId)
+    // Back to a relative URL, keep the path but not the origin
     const encodedPath = '/' + url.toString() // add a leading slash
       .replace(new RegExp(`^${SERVER_URL}`), '')
       .replace(/^\//, '') // remove the first slash if it exists
@@ -55,11 +61,11 @@ export function displayedToStored(path: string): string {
   if (path.startsWith(apiPath)) {
     const url = new URL(path, SERVER_URL)
     url.pathname = url.pathname.replace(new RegExp(`^${apiPath}`), '')
-    url.pathname = `/assets${url.pathname}`
+    url.pathname = `${baseUrl}/assets${url.pathname}`
     url.searchParams.delete('websiteId')
     url.searchParams.delete('connectorId')
     const encodedPath = '/' + url.toString() // add a leading slash
-      .replace(new RegExp(`^${SERVER_URL}`), '')
+      .replace(new RegExp(`^${SERVER_URL}${baseUrl}`), '')
       .replace(/^\//, '') // remove the first slash if it exists
     return decodeURIComponent(encodedPath)
   } else {
