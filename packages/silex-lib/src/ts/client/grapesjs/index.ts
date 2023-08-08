@@ -112,17 +112,12 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
 
     storageManager: {
       autoload: false,
-      //type: 'remote',
       type: 'connector',
       options: {
         connector: {
           id,
           connectorId,
         },
-        //remote: {
-        //  urlStore: `${rootUrl}/${API_WEBSITE_WRITE}?id=${id}`,
-        //  urlLoad: `${rootUrl}/${API_WEBSITE_READ}?id=${id}`,
-        //},
       },
     },
 

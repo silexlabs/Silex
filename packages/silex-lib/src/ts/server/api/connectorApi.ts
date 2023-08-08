@@ -96,7 +96,7 @@ async function routeUser(req: Request, res: Response) {
     const user = await connector.getUser(session)
     res.json(user as ApiConnectorUserResponse)
   } catch (error) {
-    console.error('Error in the login status request', error)
+    console.error('Error in the user request', error, error.code)
     res.status(validateStatus(error?.code ?? error?.httpStatusCode, 500)).json({
       error: true,
       message: error.message,

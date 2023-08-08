@@ -25,45 +25,40 @@ export const storagePlugin = (editor) => {
     async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
-        if(user) {
-          const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId}) as WebsiteData
-          if(data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
-          if(data.pages) data.pages = addTemDataToPages(data.pages, options.id, user.storage.connectorId)
-          if(data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
-          return data
-        } else {
-          return new Promise((resolve, reject) => {
-            editor.once(eventLoggedIn, async () => {
-              try {
-                editor.StorageManager.setAutosave(false)
-                const data = await editor.Storage.load(options)
-                editor.StorageManager.setAutosave(true)
-                //editor.loadProjectData(data)
-                resolve(data)
-              } catch (err) {
-                console.error('connectorPlugin load error', err)
-                reject(err)
-              }
-            })
-            editor.Commands.run(cmdLogin)
-          })
-        }
+        if(!user) throw new ApiError('Not logged in', 401)
+        const data = await websiteLoad({websiteId: options.id, connectorId: user.storage.connectorId}) as WebsiteData
+        if(data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
+        if(data.pages) data.pages = addTemDataToPages(data.pages, options.id, user.storage.connectorId)
+        if(data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
+        return data
+
       } catch (err) {
+        if(err.httpStatusCode === 401) {
+          editor.once(eventLoggedIn, async () => {
+            try {
+              editor.StorageManager.setAutosave(false)
+              const data = await editor.Storage.load(options)
+              editor.StorageManager.setAutosave(true)
+              editor.loadProjectData(data)
+            } catch (err) {
+              console.error('connectorPlugin load error', err)
+              throw err
+            }
+          })
+          editor.Commands.run(cmdLogin)
+        }
         console.error('connectorPlugin load error', err)
         throw err
       }
     },
 
     async store(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
-      console.log('connectorPlugin store', data, options)
       try {
         if(await getCurrentUser(editor)) {
-          console.log('connectorPlugin store2', data, options)
           const user = await getCurrentUser(editor)
           data.assets = removeTempDataFromAssetUrl(data.assets)
           data.pages = removeTempDataFromPages(data.pages)
           data.styles = removeTempDataFromStyles(data.styles)
-          console.log('connectorPlugin store3', data, options)
           await websiteSave({websiteId: options.id, connectorId: user.storage.connectorId, data})
         } else {
           editor.once(eventLoggedIn, () => {
