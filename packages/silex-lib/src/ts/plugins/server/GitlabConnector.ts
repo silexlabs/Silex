@@ -255,12 +255,20 @@ export default class GitlabConnector implements StorageConnector {
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')
     const url = `https://gitlab.com/${path}?${tokenParam}${paramsStr}`
-    const response = await fetch(url, {
+    const headers = {
+      'Content-Type': 'application/json',
+    }
+    if(method === 'GET' && body) {
+      console.error('Gitlab API error (4) - GET request with body', {url, method, body, params})
+    }
+    // With or without body
+    const response = await fetch(url, body && method !== 'GET' ? {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: body ? JSON.stringify(body) : undefined
+    } : {
+      method,
+      headers,
     })
     let json: { message: string, error: string } | any
     // Handle the case when the server returns an non-JSON response (e.g. 400 Bad Request)
