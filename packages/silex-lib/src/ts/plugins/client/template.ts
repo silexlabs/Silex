@@ -15,11 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-//import {html, render} from 'lit-html'
-//import {styleMap} from 'lit-html/directives/style-map.js'
-//import { onAll } from '@silexlabs/silex/dist/client/utils.js'
-import { onAll } from '../../client/utils.js'
-import { ClientEvent } from '../../client/events.js'
+// Silex serves /clients
+// @ts-ignore
+import { onAll } from '/client/utils.js'
+// @ts-ignore
+import { ClientEvent } from '/client/events.js'
 
 // You need to serve lit-html at /js/lit-html/
 // @ts-ignore
