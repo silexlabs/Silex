@@ -44,7 +44,9 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
         return options.html.url + path
       case 'css':
         console.log('Silex: transform path for 11ty', path, options.css.url + path.replace(/\.css$/, '.css.liquid'))
-        return options.css.url + path.replace(/\.css$/, '.css.liquid')
+        return options.css.url + path
+          .replace(/^\/css/, '')
+          .replace(/\.css.liquid$/, '.css');
       case 'asset':
         console.log('Silex: transform path for 11ty', path, options.assets.url + path)
         return options.assets.url + path
