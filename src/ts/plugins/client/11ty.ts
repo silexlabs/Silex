@@ -25,8 +25,9 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
       ...opts.html,
     },
     css: {
-      url: '/css',
-      path: './css',
+      url: '/css', // For the HTML links
+      path: './css', // For the file system
+      permalink: '/css', // For the frontmatter
       ...opts.css,
     },
     assets: {
@@ -89,7 +90,7 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
         return {
           ...file,
           //path: options.css.path + fileWithContent.path.replace(/\.css$/, '.css.liquid'),
-          content: `---\npermalink: ${options.css.url}${path}\n---\n${fileWithContent.content}`
+          content: `---\npermalink: ${options.css.permalink}${path}\n---\n${fileWithContent.content}`
         }
       case 'asset':
         return {
