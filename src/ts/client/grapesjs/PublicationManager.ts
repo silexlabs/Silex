@@ -317,23 +317,21 @@ export class PublicationManager {
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
       const body = this.editor.getHtml({ component })
       return {
-        html: `
-      <!DOCTYPE html>
-      <html lang="${getSetting('lang')}">
-      <head>
-      <link rel="stylesheet" href="${cssPermalink}" />
-      ${siteSettings?.head || ''}
-      ${pageSettings?.head || ''}
-      <title>${getSetting('title')}</title>
-      <link rel="icon" href="${getSetting('favicon')}" />
-      ${['description', 'og:title', 'og:description', 'og:image']
-    .map(prop => `<meta property="${prop}" content="${getSetting(prop)}"/>`)
-    .join('\n')
+        html: `<!DOCTYPE html>
+<html lang="${getSetting('lang')}">
+<head>
+<link rel="stylesheet" href="${cssPermalink}" />
+${siteSettings?.head || ''}
+${pageSettings?.head || ''}
+<title>${getSetting('title')}</title>
+<link rel="icon" href="${getSetting('favicon')}" />
+${['description', 'og:title', 'og:description', 'og:image']
+.map(prop => `<meta property="${prop}" content="${getSetting(prop)}"/>`)
+.join('\n')
 }
-      </head>
-      ${body}
-      </html>
-      `,
+</head>
+${body}
+</html>`,
         css: this.editor.getCss({ component }),
         cssPath,
         htmlPath,
