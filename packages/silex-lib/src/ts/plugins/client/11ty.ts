@@ -37,20 +37,20 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
   }
 
   config.addPublicationTransformers({
-    //transformPermalink: (path, type) => {
-    //  switch (type) {
-    //  case 'html':
-    //    console.log('Silex: transform path for 11ty', path, options.html.url + path)
-    //    return options.html.url + path
-    //  case 'css':
-    //    console.log('Silex: transform path for 11ty', path, options.css.url + path.replace(/\.css$/, '.css.liquid'))
-    //    return options.css.url + path.replace(/\.css$/, '.css.liquid')
-    //  case 'asset':
-    //    console.log('Silex: transform path for 11ty', path, options.assets.url + path)
-    //    return options.assets.url + path
-    //  }
-    //  throw new Error(`Unknown file type ${type}`)
-    //},
+    transformPermalink: (path, type) => {
+      switch (type) {
+      case 'html':
+        console.log('Silex: transform path for 11ty', path, options.html.url + path)
+        return options.html.url + path
+      case 'css':
+        console.log('Silex: transform path for 11ty', path, options.css.url + path.replace(/\.css$/, '.css.liquid'))
+        return options.css.url + path.replace(/\.css$/, '.css.liquid')
+      case 'asset':
+        console.log('Silex: transform path for 11ty', path, options.assets.url + path)
+        return options.assets.url + path
+      }
+      throw new Error(`Unknown file type ${type}`)
+    },
     transformPath: (path, type) => {
       switch (type) {
       case 'html':
