@@ -15,9 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const FtpConnector = require('./dist/plugins/server/plugins/server/FtpConnector').default
-const GitlabConnector = require('./dist/plugins/server/plugins/server/GitlabConnector').default
-const DownloadPlugin = require('./dist/plugins/server/plugins/server/DownloadConnector').default
+const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector').default
+const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
+const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default
 
 module.exports = async function (config, options) {
   if (!FtpConnector) throw new Error('FtpConnector not found')
