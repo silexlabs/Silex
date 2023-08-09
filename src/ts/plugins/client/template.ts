@@ -17,15 +17,15 @@
 
 // Silex serves /clients
 // @ts-ignore
-import { onAll } from '/client/utils.js'
+import { onAll } from '../client/utils.js'
 // @ts-ignore
-import { ClientEvent } from '/client/events.js'
+import { ClientEvent } from '../client/events.js'
 
 // You need to serve lit-html at /js/lit-html/
 // @ts-ignore
-import {html, render} from '/js/lit-html/lit-html.js'
+import {html, render} from '../js/lit-html/lit-html.js'
 // @ts-ignore
-import {styleMap} from '/js/lit-html/directives/style-map.js'
+import {styleMap} from '../js/lit-html/directives/style-map.js'
 
 const silex = window['silex']
 
