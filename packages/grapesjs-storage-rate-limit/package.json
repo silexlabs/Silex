@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "description": "GrapesJs plugin to make sure the user does not save the website more often than desired",
   "type": "module",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
@@ -21,7 +21,7 @@
     "silex-website-builder"
   ],
   "author": "lexoyo",
-  "license": "GPL-3.0-or-later",
+  "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/silexlabs/grapesjs-storage-rate-limit/issues"
   },
