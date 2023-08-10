@@ -40,6 +40,9 @@ let serverUrl = window.location.origin + window.location.pathname.replace(/\/$/,
 export function setServerUrl(url: string): void {
   serverUrl = url
 }
+export function getServerUrl(): string {
+  return serverUrl
+}
 
 export async function getUser({type, connectorId}: {type: ConnectorType, connectorId?: ConnectorId}): Promise<ConnectorUser> {
   return api<ApiConnectorUserQuery, null, ApiConnectorUserResponse>(ApiRoute.CONNECTOR_USER, 'GET', {
