@@ -23,9 +23,26 @@ export default (editor, opts = {}) => {
   });
 
   // Save the latest data once the cooldown period is over
-  const doStore = async (data) => {
-    // Save the data immediately
-    await storage.store(data, storageOptions);
+  const doStore = async (data, isLater) => {
+    try {
+      if(isLater) {
+        editor.trigger('storage:start:store', data)
+        editor.trigger('storage:store', data)
+      }
+      // Save the data immediately
+      await storage.store(data, storageOptions);
+      if(isLater) {
+        editor.trigger('storage:end')
+        editor.trigger('storage:end:store', data)
+      }
+    } catch (e) {
+      if(isLater) {
+        editor.trigger('storage:error', err)
+        editor.trigger('storage:error:store', err)
+      } else {
+        throw e;
+      }
+    }
     // Start another cooldown period after saving
     startCooldown();
   };
@@ -37,7 +54,7 @@ export default (editor, opts = {}) => {
       isCoolingDown = false;
       if (pendingSave) {
         pendingSave = false;  // Reset the pending save flag
-        await doStore(latestData); // Save the latest data once cooldown is over
+        await doStore(latestData, true); // Save the latest data once cooldown is over
       }
     }, options.time);
   };
@@ -55,7 +72,7 @@ export default (editor, opts = {}) => {
         return;
       }
 
-      await doStore(data);
+      await doStore(data, false);
     },
 
     // Do nothing
