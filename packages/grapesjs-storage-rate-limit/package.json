@@ -1,0 +1,33 @@
+{
+  "name": "@silexlabs/grapesjs-storage-rate-limit",
+  "version": "0.0.0",
+  "description": "GrapesJs plugin to make sure the user does not save the website more often than desired",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build --patch=false",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silexlabs/grapesjs-storage-rate-limit.git"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin",
+    "silex",
+    "grapesjs-plugin",
+    "silex-website-builder"
+  ],
+  "author": "lexoyo",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/silexlabs/grapesjs-storage-rate-limit/issues"
+  },
+  "homepage": "https://github.com/silexlabs/grapesjs-storage-rate-limit#readme",
+  "devDependencies": {
+    "grapesjs-cli": "^4.1.1",
+    "jest": "^29.6.2"
+  }
+}
