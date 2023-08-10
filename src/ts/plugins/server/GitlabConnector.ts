@@ -311,8 +311,11 @@ export default class GitlabConnector implements StorageConnector {
           return await this.callApi(session, path, method, body as any, params)
         } else {
           const message = typeof refreshJson?.message === 'object' ? Object.entries(refreshJson.message).map(entry => entry.join(' ')).join(' ') : refreshJson?.message ?? refreshJson?.error ?? response.statusText
-          console.error('Gitlab API error (2) - could not refresh token', response.status, response.statusText, {message}, JSON.stringify(body))
-          //this.logout(session)
+          console.error('Gitlab API error (2) - could not refresh token', response.status, response.statusText, {message}, 'refresh_token:', token.refresh_token)
+          // Workaround for when the token is invalid
+          // It happens often which is not normal (refresh token should last 6 months)
+          this.logout(session)
+          // Notify the user
           throw new ApiError(`Gitlab API error (2): ${message}`, response.status)
         }
       } else {
