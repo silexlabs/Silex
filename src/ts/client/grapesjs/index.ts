@@ -38,6 +38,7 @@ import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
+import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -75,6 +76,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
   {name: './breadcrumbs', value: breadcrumbsPlugin},
   {name: './footer', value: footerPlugin},
+  {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
 ]
 // Check that all plugins are loaded correctly
 plugins
@@ -266,6 +268,9 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       [loginDialogPlugin as any]: {
         id,
       } as LoginDialogOptions,
+      [rateLimitPlugin as any]: {
+        time: 5000,
+      },
     },
   }
 }
