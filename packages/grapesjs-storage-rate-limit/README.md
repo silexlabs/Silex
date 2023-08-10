@@ -6,6 +6,7 @@ This plugin will intercept when user saves a website and make sure it doesn't oc
 
 Features
 
+- **Works with any storage:** This plugin place itself between the storage and your app.
 - **Immediate Save:** The first save is performed immediately.
 - **Cooldown Period:** After saving, the plugin enters a cooldown period during which subsequent saves are ignored.
 - **Post-Cooldown Save:** If there are more calls to the `store` function during the cooldown, one final save occurs after the cooldown expires, and the cooldown period restarts.
