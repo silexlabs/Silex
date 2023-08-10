@@ -67,7 +67,7 @@ Directly in the browser
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/@silexlabs/grapesjs-storage-rate-limit.min.js"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-storage-rate-limit.min.js"></script>
 
 <div id="gjs"></div>
 
