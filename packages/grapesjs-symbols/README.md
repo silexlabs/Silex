@@ -190,8 +190,7 @@ Build the source
 $ npm run build
 ```
 
-
-
 ## License
 
-MIT
+AGPL-v3
+
