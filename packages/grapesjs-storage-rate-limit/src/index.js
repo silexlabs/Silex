@@ -15,7 +15,6 @@ export default (editor, opts = {}) => {
 
   // Prevent reload while cooling down and before saving
   window.addEventListener('beforeunload', (e) => {
-    console.log('beforeunload', e);
     if (pendingSave) {
       e.preventDefault();
       e.returnValue = '';
@@ -24,6 +23,9 @@ export default (editor, opts = {}) => {
 
   // Save the latest data once the cooldown period is over
   const doStore = async (data, isLater) => {
+    // Start another cooldown period after saving
+    startCooldown();
+    // Save the data and trigger events
     try {
       if(isLater) {
         editor.trigger('storage:start:store', data)
@@ -35,26 +37,30 @@ export default (editor, opts = {}) => {
         editor.trigger('storage:end')
         editor.trigger('storage:end:store', data)
       }
-    } catch (e) {
+    } catch (err) {
       if(isLater) {
         editor.trigger('storage:error', err)
         editor.trigger('storage:error:store', err)
       } else {
-        throw e;
+        throw err;
       }
     }
-    // Start another cooldown period after saving
-    startCooldown();
   };
 
   // Start the cooldown period
   const startCooldown = () => {
     isCoolingDown = true;
     setTimeout(async () => {
-      isCoolingDown = false;
       if (pendingSave) {
-        pendingSave = false;  // Reset the pending save flag
-        await doStore(latestData, true); // Save the latest data once cooldown is over
+        // Reset the pending save flag
+        pendingSave = false;
+        // Save the latest data once cooldown is over
+        const data = latestData;
+        latestData = null;
+        await doStore(data, true);
+      } else {
+        // Reset the cooldown flag
+        isCoolingDown = false;
       }
     }, options.time);
   };
@@ -65,14 +71,12 @@ export default (editor, opts = {}) => {
     // Store the data
     // Adds a cooldown period before saving again
     async store(data) {
-      latestData = data;
-
       if (isCoolingDown) {
         pendingSave = true;
-        return;
+        latestData = data;
+      } else {
+        await doStore(data, false);
       }
-
-      await doStore(data, false);
     },
 
     // Do nothing
