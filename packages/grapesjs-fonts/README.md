@@ -89,8 +89,7 @@ editor.runCommand('open-fonts')
 And you can use the plugin's API:
 
 ```js
-// TODO: expose the API
-
+// TODO
 ```
 
 ### CSS
@@ -109,26 +108,11 @@ Also you should style the dialog:
 }
 ```
 
-
-## Summary
-
-* Plugin name: `@silexlabs/grapesjs-fonts`
-* Components
-    * `component-id-1`
-    * `component-id-2`
-    * ...
-* Blocks
-    * `block-id-1`
-    * `block-id-2`
-    * ...
-
-
-
 ## Options
 
 | Option | Description | Default |
 |-|-|-
-| `api_key` | Google fonts API key, [see this doc to get an API key](https://developers.google.com/fonts/docs/developer_api#APIKey) | `default value` |
+| `api_key` | Google fonts API key, [see this doc to get an API key](https://developers.google.com/fonts/docs/developer_api#APIKey) | Required |
 
 
 
