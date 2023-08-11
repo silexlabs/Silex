@@ -18,7 +18,7 @@ Features
 * Create a symbol from an element
 * Create symbol instances
 * Sync instances: when one instance is modified, update all other instances
-* "unlink" an instance so that is stops syncing
+* Unlink an instance so that is stops syncing
 * Symbol have a name and an icon
 * View symbol icon for all instances in the layer manager
 * Optional list of symbols which support draging symbols to the stage
