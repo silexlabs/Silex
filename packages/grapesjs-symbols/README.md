@@ -4,7 +4,7 @@
 
 This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages
 
-> This code is very early stage, it is not working as expected yet. It is part of a bigger project: [Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+> This code is part of a bigger project: [Silex v3](https://www.silex.me/) which aims to be a free/libre alternative to webflow
 
 Links
 
