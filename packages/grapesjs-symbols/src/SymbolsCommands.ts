@@ -1,8 +1,8 @@
-// exported plugin
 import { Editor, Component } from 'grapesjs'
 import Symbol, { createSymbol, getSymbolId } from './model/Symbol'
-import { setDirty } from './utils'
+import { allowDrop, setDirty } from './utils'
 import { SymbolEditor } from './model/Symbols'
+import { html, render } from 'lit-html'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
@@ -18,6 +18,19 @@ export default function({ editor, options }: { editor: Editor, options: any}) {
 
 // Symbol management functions
 // These are exported for unit tests
+
+export function displayError(editor: Editor, title: string, message: string) {
+  const content = document.createElement('div')
+  editor.Modal.open({
+    title,
+    content,
+  })
+  render(html`<main>
+      <p>${message}</p>
+    </main><footer>
+      <button class="gjs-btn-prim" @click=${() => editor.Modal.close()}>Close</button>
+    </footer>`, content)
+}
 
 /**
  * Create a new symbol
@@ -92,18 +105,30 @@ export function createSymbolInstance(
   editor: SymbolEditor,
   sender: any,
   { symbol, pos, target }: { symbol: Symbol, pos: any, target: HTMLElement },
-) {
-  pos = pos || { }
-  if(symbol && pos && target) {
+): Component | null {
+  pos = pos || {}
+  if (symbol && pos && target) {
     const parentId = target ? target.getAttribute('id') : undefined
-    if(!parentId) throw new Error('Can not create the symbol: missing param id')
+    if (!parentId) throw new Error('Can not create the symbol: missing param id')
     const parent = target ? editor.Components.allById()[parentId!] : undefined
-    // create the new component
-    const [c] = parent ? parent.append([symbol.createInstance()], { at: pos.index }) : []
-    // Select the new component
-    // Break unit tests? editor.select(c, { scroll: true })
-    return c
+    // Check that it is a valid parent
+    if (parent) {
+      if(!allowDrop({target: symbol.get('model'), parent})) {
+        // Cancel and notify the user
+        displayError(editor, 'Error: can not create the symbol', 'One of the parent is in the symbol.</p><p>Please remove the parent from the symbol and try again.')
+        return null
+      } else {
+        // create the new component
+        const [c] = parent ? parent.append([symbol.createInstance()], { at: pos.index }) : []
+        // Select the new component
+        // Break unit tests? editor.select(c, { scroll: true })
+        return c
+      }
+    } else {
+      console.error('Can not create the symbol: parent not found')
+      return null
+    }
   } else {
-    throw new Error('Can not create the symbol: missing param symbol, pos or target')
+    throw new Error('Can not create the symbol: missing param symbol or pos or target')
   }
 }

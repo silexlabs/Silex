@@ -22,6 +22,7 @@ export default class extends Backbone.View {
   protected lastPos: Position | null = null
   protected lastTarget: HTMLElement | null = null
   //initialize(model, { editor, options }) {
+  // FIXME: why is editor in options?
   constructor(protected options: SymbolsViewOptions) {
     super(options)
     // listen to redraw UI

@@ -1,7 +1,7 @@
 import Backbone, { ViewOptions } from 'backbone'
 
-import { closestInstance, wait } from '../utils'
-import Symbol, { getSymbolId, cleanup } from './Symbol'
+import { allowDrop, closestInstance, wait } from '../utils'
+import Symbol, { getSymbolId } from './Symbol'
 import { Editor, Component, CssRule } from 'grapesjs'
 
 // Editor with the symbols plugin
@@ -30,6 +30,7 @@ export class Symbols extends Backbone.Collection<Symbol>  {
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
     this.editor.on('component:input', c => this.onUpdateContent(c))
     this.editor.on('styleable:change', cssRule => this.onStyleChanged(cssRule))
+    this.editor.on('component:drag', ({target, parent}) => this.onDrag({target, parent}))
   }
 
   /**
@@ -41,6 +42,20 @@ export class Symbols extends Backbone.Collection<Symbol>  {
    */
   updateComponents(components: Component[]) {
     components.forEach(c => this.onAdd(c))
+  }
+
+  /**
+   * Prevent drop on a symbol into itself or things similar
+   */
+  onDrag({target, parent}) {
+    if(parent?.get('droppable') && !allowDrop({target, parent})) {
+      // Prevent drop
+      parent.set('droppable', false)
+      // Reset after drop
+      this.editor.once('component:drag:end', () => {
+        parent.set('droppable', true)
+      })
+    }
   }
 
   /**

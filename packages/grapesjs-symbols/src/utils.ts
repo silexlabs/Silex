@@ -1,5 +1,6 @@
 import { Component } from 'grapesjs'
 import { SymbolEditor } from './model/Symbols'
+import { getSymbolId } from './model/Symbol'
 
 /**
  * set editor as dirty
@@ -76,10 +77,9 @@ export function find(c: Component, symbolChildId: string): Component | null {
 
 /**
  * find the first symbol in the parents (or the element itself)
- * exported for unit tests
  * @private
  */
-export function closestInstance(c: Component) {
+export function closestInstance(c: Component): Component | undefined {
   let ptr: Component | undefined = c
   while(ptr && !hasSymbolId(ptr)) {
     ptr = ptr.parent()
@@ -160,5 +160,40 @@ export function setCaret(el: HTMLElement, { path, pos }: { path: number[], pos: 
   } else {
     console.error('Could not keep the caret position', {el, path})
   }
+}
 
+/**
+ * find the all the symbols in the parents (or the element itself)
+ * @private
+ */
+function allParentInstances(c: Component, includeSelf: boolean): Component[] {
+  let result = []
+  let ptr: Component | undefined = includeSelf ? c : c.parent()
+  while(ptr) {
+    if(hasSymbolId(ptr)) result.push(ptr)
+    ptr = ptr.parent()
+  }
+  return result
+}
+
+/**
+ * find the all the symbols in the children (or the element itself)
+ */
+function allChildrenInstances(c: Component, includeSelf: boolean): Component[] {
+  const children = c.components().toArray()
+  const result = []
+  if(includeSelf && hasSymbolId(c)) result.push(c)
+  return [c]
+    .concat(children
+      .flatMap(child => allChildrenInstances(child, true)) // include self only for the subsequent levels
+    )
+}
+
+/**
+ * Find if a parent is also a child of the symbol
+ */
+export function allowDrop({target, parent}): boolean {
+  const allParents = allParentInstances(parent, true)
+  const allChildren = allChildrenInstances(target, false)
+  return !allParents.find(p => allChildren.find(c => getSymbolId(c) === getSymbolId(p)))
 }
