@@ -13,6 +13,8 @@ Links
 * [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
 * [Discussion about ongoing developments](https://github.com/silexlabs/grapesjs-symbols/issues/1)
 
+![illustration: 2 symbols on 1 page](https://github.com/silexlabs/grapesjs-symbols/assets/715377/98bb9843-7fa6-4c75-b009-d03d3bca3d99)
+
 Features
 
 * Create a symbol from an element
