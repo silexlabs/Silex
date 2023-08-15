@@ -5,15 +5,10 @@ import { SYMBOL_SYNC_ATTRIBUTE, getSymbolId } from '../model/Symbol'
 import { Component } from 'grapesjs'
 import { cmdUnlink } from '../SymbolsCommands'
 import { confirmDialog } from './SymbolsView'
+import { SymbolOptions } from '..'
 
 // Same signature as a grapesjs plugin
-export default function (editor: SymbolEditor, opts: any = {}) {
-  const options = {
-    ...opts,
-    primaryColor: '#b9a5a6',
-    secondaryColor: '#463a3c',
-    highlightColor: '#d97aa6',
-  }
+export default function (editor: SymbolEditor, options: SymbolOptions) {
   function setSync(el: HTMLElement, component: Component, sync: boolean) {
     component.set(SYMBOL_SYNC_ATTRIBUTE, sync)
     updateUi(el, component)
