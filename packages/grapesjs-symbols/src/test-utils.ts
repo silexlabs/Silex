@@ -50,11 +50,11 @@ export function getTestSymbols() {
 
   // This is equivalent to
   // const s1 = createSymbol(comp1, s1Data)
-  const s1 = createSymbol(comp1, s1Data)
+  const s1 = createSymbol(editor, comp1, s1Data)
   s1.addInstance(comp2)
   s1.get('model').set('test', 'S1 model')
 
-  const s2 = createSymbol(comp3, {
+  const s2 = createSymbol(editor, comp3, {
     icon: 'fa-cog',
     label: 'S2',
   })

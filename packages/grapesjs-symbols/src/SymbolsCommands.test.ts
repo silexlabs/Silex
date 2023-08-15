@@ -23,7 +23,7 @@ test('Command symbols:add', () => {
   const { editor, s1, s2 } = getTestSymbols()
   editor.Symbols = new Backbone.Collection() as Symbols
   const sender = {}, label = 'label', icon = 'icon'
-  expect(() => addSymbol(editor, sender, {label, icon, component: undefined})).toThrow('missing param component')
+  expect(() => addSymbol(editor, sender, {label, icon, component: undefined})).toThrow('Can not create the symbol: missing required param')
   expect(editor.Symbols).toHaveLength(0)
   const [component] = editor.addComponents([{
     tagName: 'div',

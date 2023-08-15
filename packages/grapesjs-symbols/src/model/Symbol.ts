@@ -1,8 +1,8 @@
 import Backbone  from 'backbone'
 import { Component, ComponentProperties } from 'grapesjs'
 
-import { Symbols } from './Symbols'
-import { find, all, children, getCaret, setCaret } from '../utils'
+import { SymbolEditor, Symbols } from './Symbols'
+import { find, all, children, getCaret, setCaret, closestInstance } from '../utils'
 import { uniqueId } from 'underscore'
 
 type SymbolAttributes = {
@@ -380,8 +380,11 @@ export function initSymbolChild(c: Component, force: boolean = false) {
  * the component will be cloned and stored as the model
  * @return {Symbol}
  */
-export function createSymbol(c: Component, attributes: ComponentProperties): Symbol {
+export function createSymbol(editor: SymbolEditor, c: Component, attributes: ComponentProperties): Symbol {
   const symbolId = attributes.symbolId ?? uniqueId()
+  // If the component is in a symbol, we need to update all instances
+  const inst = closestInstance(c)
+
   // Init component with symbolId and children
   initModel(c, {
     ...attributes,
@@ -396,6 +399,31 @@ export function createSymbol(c: Component, attributes: ComponentProperties): Sym
   })
   // Store a ref
   s.addInstance(c)
+
+  // Handle the case where the new symbol is a child of another symbol
+  if(inst) {
+    // For all instances containing c, make c an instance of the new symbolId
+    const parentSymbolId = getSymbolId(inst)
+    const parentSymbol = editor.Symbols.get(parentSymbolId) as Symbol
+    // For each child of the new symbol
+    all(c)
+    // For each instance of the parent symbol (containing a soon to be instance of s)
+      .forEach(child => {
+      // Here child is a component of the new symbol
+        parentSymbol.getAll(null, inst)
+          .forEach(otherInst => {
+            // For each instance of s and its children
+            const otherChild = find(otherInst, child.get('symbolChildId'))
+            console.log('otherChild', otherChild?.view?.el, otherChild?.get('symbolId'), otherChild?.get('symbolChildId'))
+            otherChild?.set('symbolId', symbolId)
+            otherChild?.set('symbolChildId', child.get('symbolChildId'))
+            // Add the new instance to the symbol
+            if(child === c) {
+              s.addInstance(otherChild)
+            }
+          })
+      })
+  }
   return s
 }
 

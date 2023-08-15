@@ -42,14 +42,15 @@ export function addSymbol(
   sender: any,
   {label, icon, component = editor.getSelected()}: {label: string, icon: string, component: Component | undefined},
 ) {
-  if(component) {
+  if(component && label && icon) {
     // add the symbol
-    const s = editor.Symbols.add(createSymbol(component, { label, icon }))
+    const s = editor.Symbols.add(createSymbol(editor, component, { label, icon }))
     setDirty(editor)
     // return the symbol to the caller
     return s
   } else {
-    throw new Error('Can not create the symbol: missing param component')
+    console.error('Can not create the symbol: missing required param', {label, icon, component})
+    throw new Error('Can not create the symbol: missing required param')
   }
 }
 
