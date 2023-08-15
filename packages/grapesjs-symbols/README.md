@@ -20,6 +20,7 @@ Features
 * Create a symbol from an element
 * Create symbol instances
 * Sync instances: when one instance is modified, update all other instances
+* Temporary pause sync
 * Unlink an instance so that is stops syncing
 * Symbol have a name and an icon
 * View symbol icon for all instances in the layer manager
