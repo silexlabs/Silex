@@ -83,7 +83,7 @@ export default class extends Backbone.View {
             "
             title="" draggable="true"
             symbol-id=${s.cid}>
-            <div class="symbols__remove" @click=${(event: Event) => this.onRemove(event)}>
+            <div title="Unlink all instances and delete Symbol" class="symbols__remove" @click=${(event: Event) => this.onRemove(event)}>
               <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
             </div>
             <div class="gjs-block-label">
@@ -117,8 +117,52 @@ export default class extends Backbone.View {
       // not a symbol creation
     }
   }
-  onRemove(event: Event) {
-    const symbolId = closestHtml((event.target! as HTMLElement), 'symbol-id')
+  onRemove({target: deleteButton}) {
+    // Check if the user has already been asked
+    if(localStorage.getItem('remember:delete-symbol') === 'on') {
+      this.onRemoveConfirm(deleteButton as HTMLElement)
+    } else {
+      // Warn the user
+      const content = document.createElement('div')
+      this.options.editor.Modal.open({
+        title: 'Delete Symbol',
+        content,
+      })
+      let remember = 'off'
+      render(html`<main>
+        <p>Are you sure you want to delete this symbol?</p>
+        <p>Deleting this symbol <em>will not</em> delete its instances, just disconnects them. Confirm to proceed or cancel to maintain the current link.</p>
+      </main><footer style="display: flex; justify-content: space-between;">
+        <div>
+          <label class="gjs-field gjs-field-checkbox" style="
+            float: left;
+            margin-right: 10px;
+          ">
+            <input type="checkbox" id="remember" @click=${({target: rememberCheckbox}) => remember = rememberCheckbox.value}>
+            <i class="gjs-chk-icon"></i>
+          </label>
+          <label for="remember">Don't ask me again</label>
+        </div>
+        <div>
+          <button
+            class="gjs-btn-prim"
+            @click=${() => this.options.editor.Modal.close()}
+            style="
+              margin-left: auto;
+              background: transparent;
+              margin-right: 10px;
+            ">Cancel</button>
+          <button class="gjs-btn-prim" @click=${() => {
+    this.onRemoveConfirm(deleteButton as HTMLElement)
+    localStorage.setItem('remember:delete-symbol', remember)
+    this.options.editor.Modal.close()
+  }}>Delete</button>
+        </div>
+      </footer>`, content)
+    }
+  }
+  onRemoveConfirm(target: HTMLElement) {
+    const symbolId = closestHtml((target), 'symbol-id')
       ?.getAttribute('symbol-id')
     if(symbolId) {
       const c = this.options.editor.runCommand('symbols:remove', { symbolId })
