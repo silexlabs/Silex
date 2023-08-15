@@ -70,7 +70,7 @@ export function confirmDialog({
 export interface SymbolsViewOptions extends ViewOptions {
   editor: SymbolEditor,
   appendTo: string,
-  selectColor: string,
+  highlightColor: string,
   emptyText: string,
 }
 
@@ -105,7 +105,7 @@ export default class extends Backbone.View {
     render(html`
     <style>
       .symbols__symbol-selected {
-        border: 1px solid ${ this.options.selectColor };
+        border: 1px solid ${ this.options.highlightColor };
       }
       .symbols__symbol {
         position: relative;

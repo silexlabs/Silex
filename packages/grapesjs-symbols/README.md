@@ -152,10 +152,12 @@ Notes
 > TBD
 
 | Option | Description | Default |
-|-|-|-
-| `option1` | Description option | `default value` |
-
-
+|-|-|-|
+| `appendTo` | CSS selector to choose where to attach the list of symbols. | `#symbols` |
+| `emptyText` | A text to be displayed when there is no symbols in the list. | `No symbol yet.` |
+| `primaryColor` | Color for the UI (list of symbols and traits in the property manager) | `#b9a5a6` |
+| `secondaryColor` | Color for the UI (list of symbols and traits in the property manager) | `#463a3c` |
+| `highlightColor` | Color for the UI (list of symbols and traits in the property manager) | `#d97aa6` |
 
 ## Download
 

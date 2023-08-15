@@ -1,6 +1,6 @@
 import Storage from './storage'
 import { Symbols, SymbolEditor } from './model/Symbols'
-import SymbolsView from './view/SymbolsView'
+import SymbolsView, { SymbolsViewOptions } from './view/SymbolsView'
 import initCommands, * as cmd from './SymbolsCommands'
 import initTraits from './view/traits'
 
@@ -9,11 +9,21 @@ export const cmdRemoveSymbol = cmd.cmdRemove
 export const cmdUnlinkSymbol = cmd.cmdUnlink
 export const cmdCreateSymbol = cmd.cmdCreate
 
-export default (editor: SymbolEditor, opts: any = {}) => {
-  const options = { ...{
+export interface SymbolOptions {
+  appendTo?: string
+  emptyText?: string
+  primaryColor?: string
+  secondaryColor?: string
+  highlightColor?: string
+}
+
+export default (editor: SymbolEditor, opts: Partial<SymbolOptions> = {}) => {
+  const options: SymbolOptions = { ...{
     appendTo: '#symbols',
-    selectColor: '#EEE',
     emptyText: 'No symbol yet.',
+    primaryColor: '#b9a5a6',
+    secondaryColor: '#463a3c',
+    highlightColor: '#d97aa6',
   },  ...opts }
 
   // store the symbols data with the site
@@ -24,7 +34,7 @@ export default (editor: SymbolEditor, opts: any = {}) => {
 
   editor.on('load', (...args) => {
     // Display symbols
-    new SymbolsView({ ...options, editor, model: editor.Symbols, })
+    new SymbolsView({ ...options, editor, model: editor.Symbols, } as any as SymbolsViewOptions)
 
     // Commands to create/delete symbols
     initCommands(editor, options)
