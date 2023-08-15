@@ -13,6 +13,10 @@ type SymbolAttributes = {
   instances?: Map<string, Component>,
 }
 
+export const SYMBOL_ID_ATTRIBUTE = 'symbolId'
+export const SYMBOL_CHILD_ID_ATTRIBUTE = 'symbolChildId'
+export const SYMBOL_SYNC_ATTRIBUTE = 'symbolSync'
+
 /**
  * A Symbol class holds the data about a symbol: label, icon
  * The `model` attribute is a grapesjs Component used to create new instances
@@ -105,9 +109,9 @@ class Symbol extends Backbone.Model {
         const dstChildren = srcChildren
           .map(srcChild => {
           // Get a child or the root
-            return srcChild.has('symbolId')
+            return srcChild.has(SYMBOL_ID_ATTRIBUTE)
               ? dstInst // this is the root
-              : find(dstInst, srcChild.get('symbolChildId'))! // this is a child
+              : find(dstInst, srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE))! // this is a child
           })
         cbk(dstChildren, dstInst)
       })
@@ -120,11 +124,13 @@ class Symbol extends Backbone.Model {
    * @param srcChild - the child which has the changes
    */
   applyClasses(srcInst: Component, srcChild: Component) {
+    if(srcInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
       if(dstChild) {
         dstChild.setClass(srcChild.getClasses())
       } else {
-        console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        console.error(`Could not sync classes for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`)
       }
     })
   }
@@ -132,7 +138,7 @@ class Symbol extends Backbone.Model {
   getIndex(parent: Component, symbolChildId: string) {
     // TODO: Needs review
     return parent.components().toArray()
-      .findIndex(c => c.get('symbolChildId') === symbolChildId)
+      .findIndex(c => c.get(SYMBOL_CHILD_ID_ATTRIBUTE) === symbolChildId)
   }
 
   /**
@@ -143,23 +149,27 @@ class Symbol extends Backbone.Model {
    * @param srcChild - the child which has the changes
    */
   applyChildren(srcInst: Component, parent: Component, srcChild: Component) {
+    if(srcInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
     if(!parent) throw new Error(`Could not sync children for symbol ${this.cid}: ${srcChild.cid} has no parent`)
 
     // Get all instances of this symbol
     const allInst = all(srcInst)
+      .filter(inst => inst.get(SYMBOL_SYNC_ATTRIBUTE) !== false)
+
+    // Handle the create/update/remove cases
     if(allInst.includes(srcChild)) {
       // The child is in the instance
-      const symbolChildId = srcChild.get('symbolChildId')
+      const symbolChildId = srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)
       // Case of a child being duplicated inside the symbol
       const isDuplicate = !!symbolChildId && allInst
-        .filter(c => c.get('symbolChildId') === symbolChildId && c.parent() === parent).length > 1
+        .filter(c => c.get(SYMBOL_CHILD_ID_ATTRIBUTE) === symbolChildId && c.parent() === parent).length > 1
       if(symbolChildId && !isDuplicate) {
         // Case of a moving child inside the instance
         this.browseInstancesAndModel(srcInst, [srcChild, parent], ([dstChild, dstParent], dstInst) => {
           if(dstChild && dstParent) {
             dstParent.append(dstChild, { at: srcChild.index() })
           } else {
-            console.error(`Could not sync child for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`, {dstChild, dstParent})
+            console.error(`Could not sync child for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`, {dstChild, dstParent})
           }
         })
       } else {
@@ -174,7 +184,7 @@ class Symbol extends Backbone.Model {
             const clone = srcChild.clone()
             dstParent.append(clone, { at: srcChild.index() })
           } else {
-            console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+            console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`)
           }
         })
       }
@@ -185,11 +195,11 @@ class Symbol extends Backbone.Model {
         if(dstChild) {
           dstChild.remove()
         } else {
-          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+          console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`)
         }
       })
       // this child is not part of a symbol anymore
-      srcChild.set('symbolChildId')
+      srcChild.set(SYMBOL_CHILD_ID_ATTRIBUTE)
     }
   }
 
@@ -200,12 +210,14 @@ class Symbol extends Backbone.Model {
    * @param srcChild - the child which has the changes
    */
   applyAttributes(srcInst: Component, srcChild: Component) {
+    if(srcInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
       if(dstChild) {
         // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
         dstChild.attributes = srcChild.attributes
       } else {
-        console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        console.error(`Could not sync attributes for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`)
       }
     })
   }
@@ -218,11 +230,14 @@ class Symbol extends Backbone.Model {
    * @param srcChild - the child which has the changes
    */
   applyContent(srcInst: Component, srcChild: Component) {
+    if(srcInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
+
     // Store the caret position in the contenteditable container
     const el = srcChild.getCurrentView()!.el
     const caret = getCaret(el)
 
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
       if(dstChild) {
         if(dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
           // Sets the new content
@@ -230,7 +245,7 @@ class Symbol extends Backbone.Model {
         }
         else { console.error('applyContent, NOT A TEXT', dstChild, dstChild.get('type')) }
       } else {
-        console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`)
       }
     })
     // Restore the caret position in the contenteditable container
@@ -252,7 +267,9 @@ class Symbol extends Backbone.Model {
    * @param removed - the removed styles
    */
   applyStyle(srcInst: Component, srcChild: Component, changed: object, removed: string[]) {
+    if(srcInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
     this.browseInstancesAndModel(srcInst, [srcChild], ([dstChild], dstInst) => {
+      if(dstInst.get(SYMBOL_SYNC_ATTRIBUTE) === false) return
       if(dstChild) {
         dstChild.setStyle({
           ...dstChild.getStyle(),
@@ -260,7 +277,7 @@ class Symbol extends Backbone.Model {
         })
         removed.forEach(styleName => dstChild.removeStyle(styleName))
       } else {
-        console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get('symbolChildId')} not found in ${dstInst.cid}`)
+        console.error(`Could not sync content for symbol ${this.cid}: ${srcChild.get(SYMBOL_CHILD_ID_ATTRIBUTE)} not found in ${dstInst.cid}`)
       }
     })
   }
@@ -291,7 +308,7 @@ class Symbol extends Backbone.Model {
    * @return {Boolean} true if the component is a symbol
    */
   isInstance(c: Component) {
-    return !!c.get('symbolId')
+    return !!c.get(SYMBOL_ID_ATTRIBUTE)
       && this.get('instances')!.has(c.cid)
   }
 
@@ -309,10 +326,10 @@ class Symbol extends Backbone.Model {
    * - remove the reference in instances
    */
   unlink(c: Component) {
-    c.set('symbolId')
+    c.set(SYMBOL_ID_ATTRIBUTE)
     this.get('instances')!.delete(c.cid)
     children(c)
-      .forEach(child => child.set('symbolChildId'))
+      .forEach(child => child.set(SYMBOL_CHILD_ID_ATTRIBUTE))
   }
 }
 
@@ -321,15 +338,15 @@ class Symbol extends Backbone.Model {
  * @return the symbol ID if the component is a symbol
  */
 export function getSymbolId(c: Component): string {
-  return c.get('symbolId')
+  return c.get(SYMBOL_ID_ATTRIBUTE)
 }
 
 /**
  * remove symbols IDs from an instance
  */
 export function cleanup(c: Component) {
-  c.set('symbolId')
-  c.set('symbolChildId')
+  c.set(SYMBOL_ID_ATTRIBUTE)
+  c.set(SYMBOL_CHILD_ID_ATTRIBUTE)
 }
 
 /**
@@ -339,11 +356,11 @@ export function cleanup(c: Component) {
  */
 export function initModel(c: Component, { icon, label, symbolId }: ComponentProperties) {
   // check that it is not part of a Symbol already
-  if(c.has('symbolId')) {
+  if(c.has(SYMBOL_ID_ATTRIBUTE)) {
     throw new Error('Could not init Symbol model: the model has already been init')
   }
   // This is the symbol cid
-  c.set('symbolId', symbolId)
+  c.set(SYMBOL_ID_ATTRIBUTE, symbolId)
   // add symbol data
   c.set('icon', `<span class="fa ${ icon }"></span>`)
   // Show that this is a symbol, add an icon to the toolbar UI
@@ -369,8 +386,8 @@ export function initModel(c: Component, { icon, label, symbolId }: ComponentProp
  * @param {Component} c
  */
 export function initSymbolChild(c: Component, force: boolean = false) {
-  if(force || !c.has('symbolChildId')) {
-    c.set('symbolChildId', c.cid)
+  if(force || !c.has(SYMBOL_CHILD_ID_ATTRIBUTE)) {
+    c.set(SYMBOL_CHILD_ID_ATTRIBUTE, c.cid)
   }
 }
 
@@ -407,16 +424,16 @@ export function createSymbol(editor: SymbolEditor, c: Component, attributes: Com
     const parentSymbol = editor.Symbols.get(parentSymbolId) as Symbol
     // For each child of the new symbol
     all(c)
-    // For each instance of the parent symbol (containing a soon to be instance of s)
+      // For each instance of the parent symbol (containing a soon to be instance of s)
       .forEach(child => {
       // Here child is a component of the new symbol
         parentSymbol.getAll(null, inst)
           .forEach(otherInst => {
             // For each instance of s and its children
-            const otherChild = find(otherInst, child.get('symbolChildId'))
-            console.log('otherChild', otherChild?.view?.el, otherChild?.get('symbolId'), otherChild?.get('symbolChildId'))
-            otherChild?.set('symbolId', symbolId)
-            otherChild?.set('symbolChildId', child.get('symbolChildId'))
+            const otherChild = find(otherInst, child.get(SYMBOL_CHILD_ID_ATTRIBUTE))
+            console.log('otherChild', otherChild?.view?.el, otherChild?.get(SYMBOL_ID_ATTRIBUTE), otherChild?.get(SYMBOL_CHILD_ID_ATTRIBUTE))
+            otherChild?.set(SYMBOL_ID_ATTRIBUTE, symbolId)
+            otherChild?.set(SYMBOL_CHILD_ID_ATTRIBUTE, child.get(SYMBOL_CHILD_ID_ATTRIBUTE))
             // Add the new instance to the symbol
             if(child === c) {
               s.addInstance(otherChild)

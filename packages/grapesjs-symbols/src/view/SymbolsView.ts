@@ -1,4 +1,5 @@
 import { render, html } from 'lit-html'
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 import Backbone, { ViewOptions } from 'backbone'
 import { Symbols, SymbolEditor } from '../model/Symbols'
 import { Position } from 'grapesjs'
@@ -9,6 +10,61 @@ function closestHtml(child: HTMLElement, attr: string) {
     ptr = ptr.parentElement
   }
   return ptr
+}
+
+export function confirmDialog({
+  editor,
+  content: main,
+  title,
+  cbk,
+  lsKey,
+}: {
+  editor: SymbolEditor,
+  content: string,
+  title: string,
+  cbk: () => void,
+  lsKey: string,
+}) {
+  // Check if the user has already been asked
+  if (localStorage.getItem(lsKey) === 'on') {
+    cbk()
+  } else {
+    const content = document.createElement('div')
+    editor.Modal.open({
+      title,
+      content,
+    })
+    let remember = 'off'
+    render(html`<main>
+        ${unsafeHTML(main)}
+      </main><footer style="display: flex; justify-content: space-between;">
+        <div>
+          <label class="gjs-field gjs-field-checkbox" style="
+            float: left;
+            margin-right: 10px;
+          ">
+            <input type="checkbox" id="remember" @click=${({ target: rememberCheckbox }) => remember = rememberCheckbox.value}>
+            <i class="gjs-chk-icon"></i>
+          </label>
+          <label for="remember">Don't ask me again</label>
+        </div>
+        <div>
+          <button
+            class="gjs-btn-prim"
+            @click=${() => editor.Modal.close()}
+            style="
+              margin-left: auto;
+              background: transparent;
+              margin-right: 10px;
+            ">Cancel</button>
+          <button class="gjs-btn-prim" @click=${() => {
+    cbk()
+    localStorage.setItem(lsKey, remember)
+    editor.Modal.close()
+  }}>Delete</button>
+        </div>
+      </footer>`, content)
+  }
 }
 
 export interface SymbolsViewOptions extends ViewOptions {
@@ -117,49 +173,20 @@ export default class extends Backbone.View {
       // not a symbol creation
     }
   }
-  onRemove({target: deleteButton}) {
-    // Check if the user has already been asked
-    if(localStorage.getItem('remember:delete-symbol') === 'on') {
-      this.onRemoveConfirm(deleteButton as HTMLElement)
-    } else {
-      // Warn the user
-      const content = document.createElement('div')
-      this.options.editor.Modal.open({
-        title: 'Delete Symbol',
-        content,
-      })
-      let remember = 'off'
-      render(html`<main>
-        <p>Are you sure you want to delete this symbol?</p>
-        <p>Deleting this symbol <em>will not</em> delete its instances, just disconnects them. Confirm to proceed or cancel to maintain the current link.</p>
-      </main><footer style="display: flex; justify-content: space-between;">
-        <div>
-          <label class="gjs-field gjs-field-checkbox" style="
-            float: left;
-            margin-right: 10px;
-          ">
-            <input type="checkbox" id="remember" @click=${({target: rememberCheckbox}) => remember = rememberCheckbox.value}>
-            <i class="gjs-chk-icon"></i>
-          </label>
-          <label for="remember">Don't ask me again</label>
-        </div>
-        <div>
-          <button
-            class="gjs-btn-prim"
-            @click=${() => this.options.editor.Modal.close()}
-            style="
-              margin-left: auto;
-              background: transparent;
-              margin-right: 10px;
-            ">Cancel</button>
-          <button class="gjs-btn-prim" @click=${() => {
-    this.onRemoveConfirm(deleteButton as HTMLElement)
-    localStorage.setItem('remember:delete-symbol', remember)
-    this.options.editor.Modal.close()
-  }}>Delete</button>
-        </div>
-      </footer>`, content)
-    }
+  onRemove({ target: deleteButton }) {
+    // Warn the user
+    confirmDialog({
+      editor: this.options.editor,
+      title: 'Delete Symbol',
+      content: `
+          <p>Are you sure you want to delete this symbol?</p>
+          <p>Deleting this symbol <em>will not</em> delete its instances, just disconnects them. Confirm to proceed or cancel to maintain the current link.</p>
+        `,
+      cbk: () => {
+        this.onRemoveConfirm(deleteButton as HTMLElement)
+      },
+      lsKey: 'delete-symbol',
+    })
   }
   onRemoveConfirm(target: HTMLElement) {
     const symbolId = closestHtml((target), 'symbol-id')

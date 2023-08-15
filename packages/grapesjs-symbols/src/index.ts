@@ -2,6 +2,7 @@ import Storage from './storage'
 import { Symbols, SymbolEditor } from './model/Symbols'
 import SymbolsView from './view/SymbolsView'
 import initCommands, * as cmd from './SymbolsCommands'
+import initTraits from './view/traits'
 
 export const cmdAddSymbol = cmd.cmdAdd
 export const cmdRemoveSymbol = cmd.cmdRemove
@@ -26,6 +27,9 @@ export default (editor: SymbolEditor, opts: any = {}) => {
     new SymbolsView({ ...options, editor, model: editor.Symbols, })
 
     // Commands to create/delete symbols
-    initCommands({options, editor})
+    initCommands(editor, options)
+
+    // Add traits like a plugin
+    initTraits(editor, options)
   })
 }

@@ -3,13 +3,15 @@ import Symbol, { createSymbol, getSymbolId } from './model/Symbol'
 import { allowDrop, setDirty } from './utils'
 import { SymbolEditor } from './model/Symbols'
 import { html, render } from 'lit-html'
+import { SymbolEvents } from './events'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
 export const cmdUnlink = 'symbols:unlink'
 export const cmdCreate = 'symbols:create'
 
-export default function({ editor, options }: { editor: Editor, options: any}) {
+// Same signature as a grapesjs plugin
+export default function(editor: SymbolEditor, options: any = {}) {
   editor.Commands.add(cmdAdd, addSymbol)
   editor.Commands.add(cmdRemove, removeSymbol)
   editor.Commands.add(cmdUnlink, unlinkSymbolInstance)
@@ -46,6 +48,8 @@ export function addSymbol(
     // add the symbol
     const s = editor.Symbols.add(createSymbol(editor, component, { label, icon }))
     setDirty(editor)
+    // Notify plugins
+    editor.trigger(SymbolEvents.CREATE, { symbol: s })
     // return the symbol to the caller
     return s
   } else {
@@ -67,10 +71,14 @@ export function removeSymbol(
     if(editor.Symbols.has(symbolId)) {
       // remove the symbol
       const s = editor.Symbols.remove(symbolId)
+      const instances = s.get('instances')
       // Unlink all instances
       s.unlinkAll()
       // notify the editor that a change occured
       setDirty(editor)
+      // Notify the plugins
+      instances.forEach(c => editor.trigger(SymbolEvents.UNLINK, { symbol: s, component: c }))
+      editor.trigger(SymbolEvents.REMOVE, { symbol: s })
       // return the symbol to the caller
       return s
     } else {
@@ -91,6 +99,8 @@ export function unlinkSymbolInstance(
       s.unlink(component)
       // notify the editor that a change occured
       setDirty(editor)
+      // Notify the plugins
+      editor.trigger(SymbolEvents.UNLINK, { symbol: s, component })
     } else {
       console.warn('Can not unlink component', component, 'Symbol not found')
     }
@@ -123,6 +133,9 @@ export function createSymbolInstance(
         const [c] = parent ? parent.append([symbol.createInstance()], { at: pos.index }) : []
         // Select the new component
         // Break unit tests? editor.select(c, { scroll: true })
+        // Notify plugins
+        editor.trigger(SymbolEvents.LINK, { symbol, component: c })
+        editor.trigger(SymbolEvents.CREATE_INSTANCE, { symbol, component: c })
         return c
       }
     } else {
