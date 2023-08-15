@@ -85,6 +85,14 @@ plugins
     throw new Error(`Plugin ${p.name} could not be loaded correctly (${p.value})`)
   })
 
+// Constants
+const PRIMARY_COLOR = '#333333'
+const SECONDARY_COLOR = '#ddd'
+const TERTIARY_COLOR = '#8873FE'
+const QUATERNARY_COLOR = '#A291FF'
+const DARKER_PRIMARY_COLOR = '#363636'
+const LIGHTER_PRIMARY_COLOR = '#575757'
+
 // ////////////////////
 // Config
 // ////////////////////
@@ -126,12 +134,12 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
     cssIcons: './css/all.min.css',
     canvasCss: `
       :root {
-        --primaryColor: #333333;
-        --secondaryColor: #ddd;
-        --tertiaryColor: #8873FE;
-        --quaternaryColor: #A291FF;
-        --darkerPrimaryColor: #363636;
-        --lighterPrimaryColor: #575757;
+        --primaryColor: ${PRIMARY_COLOR};
+        --secondaryColor: ${SECONDARY_COLOR};
+        --tertiaryColor: ${TERTIARY_COLOR};
+        --quaternaryColor: ${QUATERNARY_COLOR};
+        --darkerPrimaryColor: ${DARKER_PRIMARY_COLOR};
+        --lighterPrimaryColor: ${LIGHTER_PRIMARY_COLOR};
       }
       .gjs-frame-selected {
         box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.5) !important; // Change to red border
@@ -139,12 +147,6 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       .gjs-selected {
         outline: 2px solid var(--tertiaryColor) !important;
         outline-offset: -2px;
-      }
-      .gjs-tools .gjs-badge { /* for the label */
-        background-color: red;
-      }
-      .gjs-toolbar { /* for the toolbar */
-        background-color: red;
       }
     `,
 
@@ -261,6 +263,10 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       },
       [symbolsPlugin as any]: {
         appendTo: '.symbols-list-container',
+        emptyText: 'No symbol yet.',
+        primaryColor: PRIMARY_COLOR,
+        secondaryColor: SECONDARY_COLOR,
+        highlightColor: TERTIARY_COLOR,
       },
       [fontsDialogPlugin as any]: {
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
