@@ -30,7 +30,7 @@ const options: grapesjs.SelectOption = [
 ]
 
 // plugin code
-export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
+export const internalLinksPlugin = (editor, opts) => {
   // update links when a page link changes
   function onAll(cbk) {
     editor.Pages.getAll()
@@ -222,4 +222,4 @@ export const internalLinksPlugin = grapesjs.plugins.add(pluginName, (editor, opt
       doRender(elInput, href)
     },
   })
-})
+}
