@@ -300,13 +300,16 @@ export default function (config: ServerConfig, opts = {}): Router {
 
       // Return the file URLs to insert in the website
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
+      const data = result.map(path =>
+        // FIXME: We should return path without this line, as it is saved, not as it is displayed
+        baseUrl + API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
+        + path
+        + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
+      )
+
+      // Return the file URLs
       res.json({
-        data: result.map(path =>
-          // FIXME: We should return path without this line, as it is saved, not as it is displayed
-          baseUrl + API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ
-          + path
-          + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
-        ),
+        data,
       } as ApiWebsiteAssetsWriteResponse)
 
       // Hook for plugins
@@ -418,11 +421,12 @@ export default function (config: ServerConfig, opts = {}): Router {
     )
 
     // Return the files URLs with the website id
-    return files.map(({ path }, idx) => `${
-      result && result[idx]
-        ? `/${result[idx].replace(/^\//, '')}` // ensure the leading slash
-        : path
-    }?websiteId=${websiteId}`)
+    return files
+      // Use the original path or the one returned by the connector
+      .map(({ path }, idx) => result && result[idx] ? result[idx] : path)
+      // Make it an absolute path with the website id and the connector id as query params
+      //.map((path) => toAssetUrl(path, config.url, websiteId, connectorId))
   }
+
   return router
 }
