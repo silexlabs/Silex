@@ -398,7 +398,8 @@ export function initSymbolChild(c: Component, force: boolean = false) {
  * @return {Symbol}
  */
 export function createSymbol(editor: SymbolEditor, c: Component, attributes: ComponentProperties): Symbol {
-  const symbolId = attributes.symbolId ?? uniqueId()
+  const symbolId = attributes.symbolId ?? `s_${uniqueId()}_${new Date().getTime()}`
+
   // If the component is in a symbol, we need to update all instances
   const inst = closestInstance(c)
 
