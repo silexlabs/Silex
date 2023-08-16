@@ -21,6 +21,7 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
         <p>Are you sure you want to unlink this component from the symbol? This is a <em>definitive action<em></p>
         <p>Unlinking this component <em>will not</em> delete the symbol, just disconnects it. Confirm to proceed or cancel to maintain the current link.</p>
       `,
+      primaryLabel: 'Unlink',
       cbk: () => {
         editor.runCommand(cmdUnlink, { component })
       },

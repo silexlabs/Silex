@@ -16,12 +16,16 @@ export function confirmDialog({
   editor,
   content: main,
   title,
+  primaryLabel,
+  secondaryLabel = 'Cancel',
   cbk,
   lsKey,
 }: {
   editor: SymbolEditor,
   content: string,
   title: string,
+  primaryLabel: string,
+  secondaryLabel?: string,
   cbk: () => void,
   lsKey: string,
 }) {
@@ -56,12 +60,12 @@ export function confirmDialog({
               margin-left: auto;
               background: transparent;
               margin-right: 10px;
-            ">Cancel</button>
+            ">${secondaryLabel}</button>
           <button class="gjs-btn-prim" @click=${() => {
     cbk()
     localStorage.setItem(lsKey, remember)
     editor.Modal.close()
-  }}>Delete</button>
+  }}>${primaryLabel}</button>
         </div>
       </footer>`, content)
   }
@@ -182,6 +186,7 @@ export default class extends Backbone.View {
           <p>Are you sure you want to delete this symbol?</p>
           <p>Deleting this symbol <em>will not</em> delete its instances, just disconnects them. Confirm to proceed or cancel to maintain the current link.</p>
         `,
+      primaryLabel: 'Delete',
       cbk: () => {
         this.onRemoveConfirm(deleteButton as HTMLElement)
       },
