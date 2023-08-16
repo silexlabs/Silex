@@ -15,7 +15,6 @@ const baseUrl = window.location.pathname.replace(/\/$/, '')
 
 // Orging and path, should we use config.rootUrl?
 const SERVER_URL = window.location.origin
-console.log('SERVER_URL', SERVER_URL)
 
 /**
  * Function to convert a path from it stored version to the displayed version
@@ -36,10 +35,11 @@ export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId:
     url.searchParams.set('websiteId', websiteId)
     url.searchParams.set('connectorId', storageId)
     // Back to a relative URL, keep the path but not the origin
-    const encodedPath = '/' + url.toString() // add a leading slash
-      .replace(new RegExp(`^${SERVER_URL}`), '')
-      .replace(/^\//, '') // remove the first slash if it exists
-    return decodeURIComponent(encodedPath)
+    return `${decodeURIComponent(url.pathname)}${url.search}`
+    //const encodedPath = '/' + url.toString() // add a leading slash
+    //  .replace(new RegExp(`^${SERVER_URL}`), '')
+    //  .replace(/^\//, '') // remove the first slash if it exists
+    //return decodeURIComponent(encodedPath)
   } else {
     console.warn('storedToDisplayed: path is not a stored path', path)
     return path
