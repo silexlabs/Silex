@@ -28,19 +28,21 @@ export default (editor, opts = {}) => {
     // Save the data and trigger events
     try {
       if(isLater) {
+        editor.trigger('storage:start', data)
         editor.trigger('storage:start:store', data)
-        editor.trigger('storage:store', data)
       }
       // Save the data immediately
       await storage.store(data, storageOptions);
       if(isLater) {
         editor.trigger('storage:end')
         editor.trigger('storage:end:store', data)
+        editor.trigger('storage:store', data)
       }
     } catch (err) {
       if(isLater) {
         editor.trigger('storage:error', err)
         editor.trigger('storage:error:store', err)
+        editor.trigger('storage:end')
       } else {
         throw err;
       }
