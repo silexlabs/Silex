@@ -8,12 +8,10 @@ import { Editor, Component, CssRule } from 'grapesjs'
 export type SymbolEditor = Editor & { Symbols: Symbols }
 
 export class Symbols extends Backbone.Collection<Symbol>  {
-  //model = Symbol
-  public editor: Editor
-  public options: any
-  public updating: boolean = false
+  editor: Editor
+  options: any
+  updating: boolean = false
 
-  //initialize(models, {editor, options}) {
   constructor(models: Symbol[], { editor, options, ...opts }: any) {
     super(models, opts)
     this.editor = editor
@@ -21,6 +19,19 @@ export class Symbols extends Backbone.Collection<Symbol>  {
     if (!options.headless) {
       this.initEvents()
     }
+    // Make sure the symbol CRUD operations are undoable
+    this.editor.UndoManager.add(this)
+  }
+
+  disableUndo(disable) {
+    if(disable) this.editor.UndoManager.stop()
+    else this.editor.UndoManager.start()
+  }
+
+  async preventUndo(cbk) {
+    this.editor.UndoManager.stop()
+    await cbk()
+    this.editor.UndoManager.start()
   }
 
   initEvents() {
@@ -31,6 +42,12 @@ export class Symbols extends Backbone.Collection<Symbol>  {
     this.editor.on('component:input', c => this.onUpdateContent(c))
     this.editor.on('styleable:change', cssRule => this.onStyleChanged(cssRule))
     this.editor.on('component:drag', ({target, parent}) => this.onDrag({target, parent}))
+    //this.editor.on('undo', () => {
+    //  this.updating = true
+    //  setTimeout(() => {
+    //    this.updating = false
+    //  }, 1000)
+    //})
   }
 
   /**
@@ -101,7 +118,9 @@ export class Symbols extends Backbone.Collection<Symbol>  {
         // TODO: need review
         await wait()
         this.updating = true
-        s.applyChildren(inst, parent, component)
+        await this.preventUndo(async () => {
+          s.applyChildren(inst, parent, component)
+        })
         this.updating = false
       } else {
         console.warn('Could not update instance', component, ': could not find the symbol with id', symbolId)
@@ -131,15 +150,18 @@ export class Symbols extends Backbone.Collection<Symbol>  {
   /**
    * A component's css classes have changed
    */
-  onUpdateClasses(c: Component) {
+  async onUpdateClasses(c: Component) {
     if (this.updating) return
     const inst = closestInstance(c)
     if (inst) {
       const symbolId = getSymbolId(inst)
       const s = this.get(symbolId)
       if (s) {
+        await wait() // Needed for undo to work
         this.updating = true
-        s.applyClasses(inst, c)
+        this.preventUndo(() => {
+          s.applyClasses(inst, c)
+        })
         this.updating = false
       } else {
         console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
@@ -158,7 +180,9 @@ export class Symbols extends Backbone.Collection<Symbol>  {
       const s = this.get(symbolId)
       if (s) {
         this.updating = true
-        s.applyContent(inst, c)
+        this.preventUndo(() => {
+          s.applyContent(inst, c)
+        })
         this.updating = false
       } else {
         console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId)
