@@ -56,20 +56,22 @@ class Symbol extends Backbone.Model {
       this.set('instances', new Map())
     }
 
-    // Get a ref to grapesjs editor
-    const editor = (this.collection! as any as Symbols).editor
+    if(this.collection) { // This is false during unit tests
+      // Get a ref to grapesjs editor
+      const editor = (this.collection! as any as Symbols).editor
 
-    // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
-    // in which case we convert model to a real component
-    // TODO: Needs review
-    const model = this.get('model') as Component
-    if(!model.cid) { // FIXME: should be typeof model = 'string'
-      const [modelComp] = editor.addComponents([model])
-      this.set('model', modelComp)
+      // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
+      // in which case we convert model to a real component
+      // TODO: Needs review
+      const model = this.get('model') as Component
+      if(!model.cid) { // FIXME: should be typeof model = 'string'
+        const [modelComp] = editor.addComponents([model])
+        this.set('model', modelComp)
+      }
+
+      // Make sure the symbol instances are undoable
+      editor.UndoManager.add(this)
     }
-
-    // Make sure the symbol instances are undoable
-    editor.UndoManager.add(this)
   }
 
   /**

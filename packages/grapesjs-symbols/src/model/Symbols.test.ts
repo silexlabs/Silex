@@ -2,11 +2,16 @@ import Backbone from 'backbone'
 import { getTestSymbols } from '../test-utils'
 import { Symbols } from './Symbols'
 
+const UndoManager = {
+  add: jest.fn(),
+}
 describe('Make sure everything has the correct data type and default values', () => {
   // mock editor
   let editor, options
   beforeEach(() => {
-    editor = {}
+    editor = {
+      UndoManager,
+    }
     options =  {
       headless: true,
     }
@@ -40,7 +45,9 @@ describe('Test event listeners which maintain the components list up to date', (
   let editor, options
   beforeEach(() => {
     // mock editor
-    editor = {}
+    editor = {
+      UndoManager,
+    }
     options =  {
       headless: true,
     }
