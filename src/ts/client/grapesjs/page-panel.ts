@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 import {html, render} from 'lit-html'
 
 const pluginName = 'page-panel'
@@ -89,7 +88,7 @@ function renderPages(editor, config) {
     </main></section>`
 }
 
-export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
+export const pagePanelPlugin = (editor, opts) => {
   // create wrapper
   const el = document.createElement('div')
   el.classList.add('pages__wrapper')
@@ -114,5 +113,5 @@ export const pagePanelPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =
     // add command to add pages
     editor.Commands.add(cmdAddPage, () => addPage(editor, opts))
   })
-})
+}
 

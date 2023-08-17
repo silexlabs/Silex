@@ -17,7 +17,6 @@
 
 import {html, render} from 'lit-html'
 import {map} from 'lit-html/directives/map.js'
-import grapesjs from 'grapesjs/dist/grapes.min.js'
 
 // constants
 const pluginName = 'semantic'
@@ -48,7 +47,7 @@ const tags = [
 ]
 
 // plugin code
-export const semanticPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
+export const semanticPlugin = (editor, opts) => {
   // Add the new trait to all component types
   editor.DomComponents.getTypes().map(type => {
     editor.DomComponents.addType(type.id, {
@@ -111,4 +110,4 @@ export const semanticPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
       doRender(elInput, tagName)
     },
   })
-})
+}

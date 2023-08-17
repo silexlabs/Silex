@@ -15,11 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
-
 const pluginName = 'richText'
 
-export const richTextPlugin = grapesjs.plugins.add(pluginName, (editor, opts) => {
+export const richTextPlugin = (editor, opts) => {
   editor.RichTextEditor.add('orderedList', {
     icon: '1.',
     attributes: {title: 'Ordered List'},
@@ -30,4 +28,4 @@ export const richTextPlugin = grapesjs.plugins.add(pluginName, (editor, opts) =>
     attributes: {title: 'Unordered List'},
     result: rte => rte.exec('insertUnorderedList'),
   })
-})
+}

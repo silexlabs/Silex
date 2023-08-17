@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 import {html, render} from 'lit-html'
 import {live} from 'lit-html/directives/live.js'
 
@@ -26,7 +25,7 @@ let modal
 
 export const cmdOpenNewPageDialog = 'new-page-dialog'
 
-export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
+export const newPageDialog = (editor, opts) => {
   editor.Commands.add(cmdOpenNewPageDialog, {
     run: (_, sender, {page}) => {
       modal = editor.Modal.open({
@@ -53,7 +52,7 @@ export const newPageDialog = grapesjs.plugins.add(name, (editor, opts) => {
       // el.innerHTML = ''
     },
   })
-})
+}
 
 function onImport(editor, page) {
   editor.Pages.select(page)
