@@ -17,7 +17,6 @@
 
 import {html, render} from 'lit-html'
 import {live} from 'lit-html/directives/live.js'
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 
 import { WebsiteSettings } from '../../types'
 
@@ -31,7 +30,7 @@ declare const VERSION: string
 export const cmdOpenSettings = 'open-settings'
 
 let version = 'v3'
-export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) => {
+export const settingsDialog = (editor, opts) => {
   // Display Silex version from package.json
   try {
     version = VERSION
@@ -81,7 +80,7 @@ export const settingsDialog = grapesjs.plugins.add(pluginName, (editor, opts) =>
       updateDom(editor)
     })
   })
-})
+}
 
 // Is the model a site or a page?
 function isSite(model) { return !!model.getHtml }

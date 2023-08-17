@@ -15,12 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import * as grapesjs from 'grapesjs/dist/grapes.min.js'
 import { cmdAddSymbol } from '@silexlabs/grapesjs-symbols'
 
 export const cmdPromptAddSymbol = 'symbol-prompt-add'
 
-export default grapesjs.plugins.add(name, (editor, opts) => {
+export default (editor, opts) => {
   function getNext(prefix) {
     let idx = 1
     while(editor.Symbols.find(s => s.get('label') === prefix + idx)) {
@@ -35,4 +34,4 @@ export default grapesjs.plugins.add(name, (editor, opts) => {
       editor.runCommand(cmdAddSymbol, { label, icon })
     }
   })
-})
+}
