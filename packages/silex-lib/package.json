@@ -129,7 +129,7 @@
     "grapesjs-blocks-basic": "1.0.2",
     "grapesjs-custom-code": "1.0.2",
     "grapesjs-plugin-forms": "2.0.6",
-    "grapesjs-style-filter": "1.0.2",
+    "grapesjs-style-border": "1.0.4",
     "html-minifier": "^4.0.0",
     "lit-html": "2.8.0",
     "mkdirp": "3.0.1",
