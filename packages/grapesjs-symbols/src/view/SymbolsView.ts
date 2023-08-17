@@ -41,7 +41,11 @@ export function confirmDialog({
     let remember = 'off'
     render(html`<main>
         ${unsafeHTML(main)}
-      </main><footer style="display: flex; justify-content: space-between;">
+      </main><footer style="
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+      ">
         <div>
           <label class="gjs-field gjs-field-checkbox" style="
             float: left;

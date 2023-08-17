@@ -1,8 +1,10 @@
 import { Editor, Component } from 'grapesjs'
+import { html, render } from 'lit-html'
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
+
 import Symbol, { createSymbol, getSymbolId } from './model/Symbol'
 import { allowDrop, setDirty } from './utils'
 import { SymbolEditor } from './model/Symbols'
-import { html, render } from 'lit-html'
 import { SymbolEvents } from './events'
 
 export const cmdAdd = 'symbols:add'
@@ -28,8 +30,13 @@ export function displayError(editor: Editor, title: string, message: string) {
     content,
   })
   render(html`<main>
-      <p>${message}</p>
-    </main><footer>
+      <p>${unsafeHTML(message)}</p>
+    </main><footer style="
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    ">
+      <div></div>
       <button class="gjs-btn-prim" @click=${() => editor.Modal.close()}>Close</button>
     </footer>`, content)
 }
@@ -126,7 +133,7 @@ export function createSymbolInstance(
     if (parent) {
       if(!allowDrop({target: symbol.get('model'), parent})) {
         // Cancel and notify the user
-        displayError(editor, 'Error: can not create the symbol', 'One of the parent is in the symbol.</p><p>Please remove the parent from the symbol and try again.')
+        displayError(editor, 'Error: can not create the symbol', '<p>One of the parent is in the symbol.</p><p>Please remove the parent from the symbol and try again.</p>')
         return null
       } else {
         // create the new component

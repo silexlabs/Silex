@@ -9,6 +9,11 @@ jest.mock('lit-html', () => {
   const html = jest.fn()
   return { render, html }
 })
+jest.mock('lit-html/directives/unsafe-html.js', () => {
+  return {
+    unsafeHTML: jest.fn(),
+  }
+})
 
 import { addSymbol } from './SymbolsCommands'
 import {
