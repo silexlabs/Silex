@@ -60,6 +60,7 @@ export const semanticPlugin = (editor, opts) => {
             {
               label: 'Tag name',
               type: 'tag-name',
+              name: 'tag-name',
             },
           ]
         }
