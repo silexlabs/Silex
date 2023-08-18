@@ -38,6 +38,7 @@ import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
+import imgPlugin from './img'
 import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
@@ -78,6 +79,7 @@ const plugins = [
   {name: './LoginDialog', value: loginDialogPlugin},
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
   {name: './breadcrumbs', value: breadcrumbsPlugin},
+  {name: './img', value: imgPlugin},
   {name: './footer', value: footerPlugin},
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
   {name: 'grapesjs-style-border', value: borderPugin},
