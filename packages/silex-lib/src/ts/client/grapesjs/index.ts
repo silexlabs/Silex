@@ -79,7 +79,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
   {name: './breadcrumbs', value: breadcrumbsPlugin},
   {name: './footer', value: footerPlugin},
-  //{name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
+  {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
   {name: 'grapesjs-style-border', value: borderPugin},
 ]
 // Check that all plugins are loaded correctly
