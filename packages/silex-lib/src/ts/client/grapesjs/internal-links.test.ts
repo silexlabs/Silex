@@ -17,7 +17,11 @@
 
 import { internalLinksPlugin } from './internal-links'
 import { expect, test, beforeEach } from '@jest/globals'
-import grapesjs from 'grapesjs'
+import GrapesJs from 'grapesjs'
+
+/* @ts-ignore */
+const {grapesjs} = GrapesJs // FIXME: why needed in unit tests only?
+
 
 let editor
 let nextId = 1
@@ -65,6 +69,7 @@ const page2 = {
   },
 }
 beforeEach(() => {
+  /* @ts-ignore */
   editor = grapesjs.init({
     headless: true,
     storageManager: { autoload: false },
@@ -81,7 +86,7 @@ test('init', () => {
 test('rename page and rewrite links in current page', () => {
   const page = editor.Pages.getSelected()
   expect(page.id).toBe(pageMain.id)
-  expect(page.getName()).toBeUndefined()
+  expect(page.getName()).toBe('')
   const newName = 'Home page'
   const newPath = './home-page.html'
   // Do not work: page.setName(newName)
