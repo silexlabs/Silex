@@ -22,6 +22,58 @@ import { Editor } from 'grapesjs'
  */
 
 export default (editor: Editor, opts) => {
+  opts = {
+    labelSrc: 'Image URL',
+    placeholderSrc: 'https://example.com/image.jpg',
+    ...opts,
+  }
+  // Add src trait in the properties
+  editor.TraitManager.addType('src', {
+    events: {
+      'change': 'onChange',
+    },
+    templateInput() {
+      return `
+        <div class="gjs-field gjs-field-trad">
+          <label class="gjs-label">${opts.labelSrc}</label>
+          <input type="text" class="gjs-field" placeholder="${opts.placeholderSrc}" />
+        </div>
+      `
+    },
+    getInputEl() {
+      if (!this.inputEl) {
+        this.inputEl = this.templateInput()
+      }
+      return this.inputEl
+    },
+    onValueChange() {
+      this.setValue(this.getInputEl().value)
+    },
+    setValue(value) {
+      this.getInputEl().value = value
+    },
+    getValue() {
+      return this.getInputEl().value
+    },
+  })
+
+  // Add the trait to the image component
+  editor.DomComponents.addType('image', {
+    model: {
+      defaults: {
+        ...editor.DomComponents.getType('image').model.prototype.defaults,
+        traits: [
+          ...editor.DomComponents.getType('image').model.prototype.defaults.traits
+          // Remove href and tagName trait becase images have to keep the img tag, not become links
+          // Remove tag-name trait which is added by the semantic plugin
+          // Also remove src trait in case it exists already
+            .filter((trait) => !['href', 'tag-name', 'src'].includes(trait.name)),
+          'src',
+        ],
+      },
+    },
+  })
+
   // Wait for the editor to be ready
   editor.on('load', () => {
     // Add a sector to the style manager
