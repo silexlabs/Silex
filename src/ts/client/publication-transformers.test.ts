@@ -10,8 +10,11 @@ import {
   transformBgImage
 } from './publication-transformers'
 import { ClientConfig } from './config'
-import GrapesJS, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
+import GrapesJs, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, PublicationData } from '../types'
+
+/* @ts-ignore */
+const {grapesjs} = GrapesJs // FIXME: why needed in unit tests only?
 
 describe('publication-transformers', () => {
   let mockConfig: ClientConfig
@@ -23,7 +26,8 @@ describe('publication-transformers', () => {
 
   beforeEach(() => {
     // Initialize your mocks here
-    editor = GrapesJS.init({
+    /* @ts-ignore */
+    editor = grapesjs.init({
       headless: true,
       storageManager: { autoload: false },
     })

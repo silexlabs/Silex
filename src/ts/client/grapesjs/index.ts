@@ -40,6 +40,7 @@ import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
 import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPugin from 'grapesjs-style-border'
+import backgroundPlugin from 'grapesjs-style-bg'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -56,6 +57,7 @@ import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../cons
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
+  {name: 'grapesjs-style-bg', value: backgroundPlugin},
   {name: './settings', value: settingsDialog},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
   {name: './new-page-dialog', value: newPageDialog},
@@ -77,8 +79,8 @@ const plugins = [
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
   {name: './breadcrumbs', value: breadcrumbsPlugin},
   {name: './footer', value: footerPlugin},
-  {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
-  {name: 'grapesjs-style-border', value: borderPugin}
+  //{name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
+  {name: 'grapesjs-style-border', value: borderPugin},
 ]
 // Check that all plugins are loaded correctly
 plugins
@@ -292,6 +294,7 @@ export async function initEditor(config: EditorConfig) {
   if(editor) throw new Error('Grapesjs editor already created')
   return new Promise<Editor>((resolve, reject) => {
     try {
+      /* @ts-ignore */
       editor = grapesjs.init(config)
     } catch(e) {
       console.error('Error initializing GrapesJs with plugins:', plugins, e)

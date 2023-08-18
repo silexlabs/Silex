@@ -196,17 +196,22 @@ export function removeTempDataFromPages(pages: Page[]): Page[] {
 
 /**
  * Add data to stylesheets
+ *   e.g. linear-gradient(to right, #1fb101 0%, #df1313 67%, rgba(234, 97, 97, 255) 78%, white 100%), url('/assets/qIg7JPRc.webp'), linear-gradient(#0ca311 0%, #0ca311 100%)
  */
 export function addTempDataToStyles(styles: Style[], websiteId: WebsiteId, storageId: ConnectorId): Style[] {
-  const pattern = /url\((["']?)([^"']+?)\1\)/g
+  const regex = new RegExp(/(.*)(url\((["']?)([^"']+?)\1\))*(.*)/, 'g')
+
   return styles.map((style: Style) => {
     if (style.style && style.style['background-image']) {
-      const urls = [...style.style['background-image'].matchAll(pattern)].map(match => storedToDisplayed(match[2], websiteId, storageId))
+      const bgImage = style.style['background-image']
+        .replace(/url\((['"]?)([^'"]+)\1\)/g, (match, quote, url) => {
+          return `url(${quote}${storedToDisplayed(url, websiteId, storageId)}${quote})`
+        })
       return {
         ...style,
         style: {
           ...style.style,
-          'background-image': urls.map(url => `url('${url}')`).join(', '),
+          'background-image': bgImage,
         },
       }
     }
@@ -216,17 +221,22 @@ export function addTempDataToStyles(styles: Style[], websiteId: WebsiteId, stora
 
 /**
  * Remove temp data from stylesheets
+ * The property `background-image` contains the URLs of the assets and other values,
+ *   e.g. `linear-gradient(to right, #1fb101 0%, #df1313 67%, rgba(234, 97, 97, 255) 78%, white 100%), url('/api/website/assets/qIg7JPRc.webp?websiteId=default&connectorId=fs-storage'), linear-gradient(#0ca311 0%, #0ca311 100%)`
  */
 export function removeTempDataFromStyles(styles: Style[]): Style[] {
   const pattern = /url\((["']?)([^"']+?)\1\)/g
   return styles.map((style: Style) => {
     if (style.style && style.style['background-image']) {
-      const urls = [...style.style['background-image'].matchAll(pattern)].map(match => displayedToStored(match[2]))
+      const bgImage = style.style['background-image']
+        .replace(/url\((['"]?)([^'"]+)\1\)/g, (match, quote, url) => {
+          return `url(${quote}${displayedToStored(url)}${quote})`
+        })
       return {
         ...style,
         style: {
           ...style.style,
-          'background-image': urls.map(url => `url('${url}')`).join(', '),
+          'background-image': bgImage,
         },
       }
     }

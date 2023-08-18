@@ -1,4 +1,5 @@
 import { jest,  expect, describe, it, beforeEach } from '@jest/globals'
+import { removeTempDataFromStyles } from './assetUrl'
 
 describe('assetUrl', () => {
   beforeEach(() => {
@@ -121,5 +122,43 @@ describe('assetUrl', () => {
     // Convert a URL which is already as displayed
     expect(storedToDisplayed(`/api/website/assets/test.webp?websiteId=${websiteIdEncoded}&connectorId=${connectorIdEncoded}`, websiteId, connectorId))
       .toBe(`/api/website/assets/test.webp?websiteId=${websiteIdEncoded}&connectorId=${connectorIdEncoded}`)
+  })
+
+  it('multiple backgrounds', async () => {
+    // // FIXME: this should mock the functions but it doesnt
+    // const mocked = {
+    //   displayedToStored: jest.fn((url: string) => url),
+    //   storedToDisplayed: jest.fn((url: string) => url),
+    // }
+    // jest.mock('./assetUrl', () => (mocked))
+    //addTempDataToStyles([toStyle(bgImageDisplayed)], websiteId, connectorId)
+    //expect(mocked.displayedToStored).toBeCalledTimes(1)
+    const { addTempDataToStyles } = await import('./assetUrl')
+
+    const websiteId = 'test-id'
+    const connectorId = 'test-connector'
+    const bgImageDisplayed = `linear-gradient(to right, #1fb101 0%, #df1313 67%, rgba(234, 97, 97, 255) 78%, white 100%), url('/api/website/assets/qIg7JPRc.webp?websiteId=${websiteId}&connectorId=${connectorId}'), linear-gradient(#0ca311 0%, #0ca311 100%)`
+    const bgImageStored = 'linear-gradient(to right, #1fb101 0%, #df1313 67%, rgba(234, 97, 97, 255) 78%, white 100%), url(\'/assets/qIg7JPRc.webp\'), linear-gradient(#0ca311 0%, #0ca311 100%)'
+    const selectors = ['body']
+    function toStyle(bgImage: string) {
+      return {
+        style: {
+          'background-image': bgImage,
+        },
+        selectors,
+      }
+    }
+    // From stored to displayed
+    expect(addTempDataToStyles([toStyle(bgImageStored)], websiteId, connectorId))
+      .toEqual([toStyle(bgImageDisplayed)])
+    // From displayed to displayed (error case)
+    expect(addTempDataToStyles([toStyle(bgImageDisplayed)], websiteId, connectorId))
+      .toEqual([toStyle(bgImageDisplayed)])
+    // From displayed to stored
+    expect(removeTempDataFromStyles([toStyle(bgImageDisplayed)]))
+      .toEqual([toStyle(bgImageStored)])
+    //// From stored to stored (error case)
+    expect(removeTempDataFromStyles([toStyle(bgImageStored)]))
+      .toEqual([toStyle(bgImageStored)])
   })
 })

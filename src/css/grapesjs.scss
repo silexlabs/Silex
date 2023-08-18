@@ -1,4 +1,5 @@
 @use "variables" as *;
+@use "grapesjs-plugins";
 
 #gjs {
   flex: 1 1 auto;
@@ -140,36 +141,4 @@
 
 .fa-diamond:before {
   content: "\f3a5";
-}
-
-
-
-// Border trait
-@mixin square-borders-before {
-  display: block;
-  content: '' !important;
-  border: 2px solid $tertiaryColor;
-  width: 10px;
-  height: 10px;
-  margin: auto;
-}
-.fa-arrows::before {
-  @include square-borders-before;
-  border-color: $secondaryColor;
-}
-.fa-long-arrow-up::before {
-  @include square-borders-before;
-  border-top-color: $secondaryColor;
-}
-.fa-long-arrow-down::before {
-  @include square-borders-before;
-  border-bottom-color: $secondaryColor;
-}
-.fa-long-arrow-left::before {
-  @include square-borders-before;
-  border-left-color: $secondaryColor;
-}
-.fa-long-arrow-right::before {
-  @include square-borders-before;
-  border-right-color: $secondaryColor;
 }

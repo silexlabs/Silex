@@ -30,8 +30,14 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
-  },
+  extensions: ['.tsx', '.ts', '.js'],
+  modules: [
+    path.resolve(__dirname, 'src'), // default src directory
+    path.resolve(__dirname, '../../node_modules'),
+    path.resolve(__dirname, 'node_modules'),
+  ],
+},
+
   output: {
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist/client/js'),
