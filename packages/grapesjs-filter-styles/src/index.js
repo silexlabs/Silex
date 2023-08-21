@@ -3,6 +3,8 @@ export default (editor, opts = {}) => {
     const options = {
       ...{
         placeholder: 'Search...',
+        appendTo: null,
+        appendBefore: null,
       }, ...opts
     };
 
@@ -43,8 +45,10 @@ export default (editor, opts = {}) => {
       <input id="${id}" type="text" class="gjs-field gjs-sm-properties gjs-two-color" placeholder="${options.placeholder}" />
     `
     const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`);
-    const wrapper = tags.parentElement.parentElement
-    wrapper.insertBefore(container, tags.parentElement.parentElement.lastElementChild);
+    const appendBefore = typeof options.appendBefore === 'string' ? document.querySelector(options.appendBefore) : options.appendBefore
+    const appendTo = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : options.appendTo
+    const wrapper = appendBefore ? appendBefore.parentElement : appendTo ?? tags.parentElement.parentElement
+    wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild);
     const input = wrapper.querySelector(`#${id}`)
     input.onkeyup = () => refresh(editor, input, wrapper)
     const button = wrapper.querySelector(`#${id}-btn`)
