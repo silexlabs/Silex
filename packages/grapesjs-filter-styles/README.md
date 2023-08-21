@@ -1,6 +1,14 @@
 # Grapesjs Filter Styles
 
+This plugin adds a search bar in the Style manager so that users can search for a CSS style
+
+> This code is part of a bigger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+
 [DEMO](https://codepen.io/lexoyo/full/WNLbXxY)
+
+![Grapesjs Filter Styles plugin](./doc/grapesjs-filter-styles1.png)
+![Grapesjs Filter Styles plugin](./doc/grapesjs-filter-styles2.png)
+![Grapesjs Filter Styles plugin](./doc/grapesjs-filter-styles3.png)
 
 ### HTML
 ```html
