@@ -1,9 +1,6 @@
 # Grapesjs Filter Styles
 
-[DEMO](##)
-> **Provide a live demo of your plugin**
-For a better user engagement create a simple live demo by using services like [JSFiddle](https://jsfiddle.net) [CodeSandbox](https://codesandbox.io) [CodePen](https://codepen.io) and link it here in your README (attaching a screenshot/gif will also be a plus).
-To help you in this process here below you will find the necessary HTML/CSS/JS, so it just a matter of copy-pasting on some of those services. After that delete this part and update the link above
+[DEMO](https://codepen.io/lexoyo/full/WNLbXxY)
 
 ### HTML
 ```html
@@ -34,25 +31,14 @@ body, html {
 ```
 
 
-## Summary
-
-* Plugin name: `@silexlabs/grapesjs-filter-styles`
-* Components
-    * `component-id-1`
-    * `component-id-2`
-    * ...
-* Blocks
-    * `block-id-1`
-    * `block-id-2`
-    * ...
-
-
-
 ## Options
 
 | Option | Description | Default |
 |-|-|-
 | `option1` | Description option | `default value` |
+| `placeholder` | Text in the empty text input | 'Search...' |
+| `appendTo` | Element where the text input shoud be added, can be CSS selector or an HTML element | null |
+| `appendBefore` | Element where the text input shoud be added, can be CSS selector or an HTML element | null |
 
 
 
@@ -63,7 +49,7 @@ body, html {
 * NPM
   * `npm i @silexlabs/grapesjs-filter-styles`
 * GIT
-  * `git clone https://github.com/lexoyo/@silexlabs/grapesjs-filter-styles.git`
+  * `git clone https://github.com/silexlabs/grapesjs-filter-styles.git`
 
 
 
@@ -116,7 +102,7 @@ const editor = grapesjs.init({
 Clone the repository
 
 ```sh
-$ git clone https://github.com/lexoyo/@silexlabs/grapesjs-filter-styles.git
+$ git clone https://github.com/silexlabs/grapesjs-filter-styles.git
 $ cd @silexlabs/grapesjs-filter-styles
 ```
 
@@ -142,4 +128,4 @@ $ npm run build
 
 ## License
 
-MIT
+AGPL-3.0-or-later
