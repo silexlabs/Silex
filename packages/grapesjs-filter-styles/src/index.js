@@ -1,33 +1,3 @@
-//function levenshteinDistance(str, arr) {
-//  const matrix = [];
-//  for (let i = 0; i <= arr.length; i++) {
-//    matrix[i] = [i];
-//  }
-//  for (let j = 0; j <= str.length; j++) {
-//    matrix[0][j] = j;
-//  }
-//  for (let i = 1; i <= arr.length; i++) {
-//    for (let j = 1; j <= str.length; j++) {
-//      if (arr.charAt(i - 1) === str.charAt(j - 1)) {
-//        matrix[i][j] = matrix[i - 1][j - 1];
-//      } else {
-//        matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-//      }
-//    }
-//  }
-//  return matrix[arr.length][str.length];
-//}
-//
-//function fuzzySearch(query, arr, threshold = 20) {
-//  return arr
-//    .map(item => ({
-//      item,
-//      distance: levenshteinDistance(query, item.searchable),
-//    }))
-//    .filter(({item, distance}) => distance <= threshold)
-//    .sort((one, two) => one.distance - two.distance)
-//}
-
 export default (editor, opts = {}) => {
   editor.on('load', () => {
     const options = {
@@ -38,7 +8,6 @@ export default (editor, opts = {}) => {
 
     const prefix = editor.Config.selectorManager.pStylePrefix;
     const id = `${prefix}filter-styles`
-    console.log({ prefix })
     const container = document.createElement('div')
     container.innerHTML = `
       <input id="${id}" type="text" class="gjs-field gjs-sm-properties gjs-two-color" placeholder="${options.placeholder}" />
@@ -48,67 +17,110 @@ export default (editor, opts = {}) => {
     wrapper.insertBefore(container, tags.parentElement.parentElement.lastElementChild);
     const input = wrapper.querySelector(`#${id}`)
     input.onkeyup = () => refresh(editor, input)
-    editor.on('component:selected', () => setTimeout(() => refresh(editor, input)))
+    editor.on('component:selected', () => {
+      resetAll(editor)
+      setTimeout(() => refresh(editor, input))
+    })
   })
 }
 
+// Reset all sectors
+function resetAll(editor) {
+  getSectors(editor)
+    .forEach(sector => {
+      resetSector(sector)
+      sector.getProperties()
+        .forEach(property => {
+          resetProperty(property)
+        })
+    })
+}
+
+// Sectors
+const changedSectors = new WeakMap()
+function showSector(sector, visible) {
+  if(!changedSectors.has(sector)) {
+    changedSectors.set(sector, {
+      sector,
+      initial: sector.isOpen(),
+    })
+  }
+  sector.setOpen(visible)
+}
+function resetSector(sector) {
+  const item = changedSectors.get(sector)
+  item?.sector.setOpen(item?.initial)
+  changedSectors.delete(sector)
+}
+
+// Properties
+const changedProperties = new WeakMap()
+function showProperty(property, visible) {
+  if(!changedProperties.has(property)) {
+    changedProperties.set(property, {
+      property,
+      initial: property.get('visible'),
+    })
+  }
+  property.set('visible', visible)
+}
+function resetProperty(property) {
+  const item = changedProperties.get(property)
+  item?.property.set('visible', item?.initial)
+  changedProperties.delete(property)
+}
+
+// Filters
+function getSectors(editor) {
+  return editor.StyleManager.getSectors().toArray()
+    // Filter visible sectors
+    .filter(sector => sector.isVisible())
+}
+function getSearchableItems(editor) {
+  return getSectors(editor)
+    // Handles composite properties
+    .flatMap(sector => sector.getProperties().flatMap(property => (property.getType() === 'composite' ? property.properties.map(subprop => ({
+      sector,
+      property,
+      subprop,
+    })) : {
+      sector,
+      property,
+    })))
+    // Create a searchable field
+    .map(({ sector, property, subprop }) => ({
+      searchable: `
+        ${sector.get('name')}
+        ${property.get('name')}
+        ${property.get('options')?.map(option => option.id).join(', ') ?? ''}
+        ${subprop?.get('name') ?? ''}
+        ${subprop?.get('options')?.map(option => option.id).join(', ') ?? ''}
+      `,
+      sector,
+      property,
+    }))
+}
+
+// Main action
 function refresh(editor, input) {
-  console.log('refresh', input.value)
   if (input.value) {
-    const properties = editor.StyleManager.getSectors().toArray()
-      // Filter visible sectors
-      .filter(sector => sector.isVisible())
-      // Handles composite properties
-      .flatMap(sector => sector.getProperties().flatMap(property => (property.getType() === 'composite' ? property.properties.map(subprop => ({
-        sector,
-        property: subprop,
-        parentProperty: property,
-      })) : {
-        sector,
-        property,
-      })))
-      // Create a searchable field
-      .map(({ sector, property }) => ({
-        searchable: `${sector.get('name')}\n${property.get('name')}\n${property.get('options')?.map(option => option.id).join(', ') ?? ''}`,
-        sector,
-        property,
-      }))
+    const properties = getSearchableItems(editor)
       // Keep only the matching items
       .filter(item => item.searchable.toLowerCase().includes(input.value.toLowerCase()))
 
-    // Open or close the sectors
-    editor.StyleManager.getSectors().toArray()
-      .filter(sector => sector.isVisible())
+    // Close and hide all sectors and properties
+    getSectors(editor)
       .forEach(sector => {
-        typeof sector.get('wasOpen') === 'undefined' && sector.set('wasOpen', sector.isOpen())
-        sector.setOpen(false)
+        showSector(sector, false)
         sector.getProperties()
-          .forEach(property => {
-            typeof property.get('wasVisible') === 'undefined' && property.set('wasVisible', property.get('visible'))
-            property.set('visible', false)
-          })
+        .forEach(property => showProperty(property, false))
       })
+    // Show the one we are searching for
     properties.forEach(item => {
-      const prop = item.parentProperty ?? item.property
-      if(prop.get('wasVisible')) {
-        item.sector.setOpen(true)
-        prop.set('visible', true)
-      }
+      showSector(item.sector, true)
+      showProperty(item.property, true)
     })
   } else {
-    // Reset visibility
-    editor.StyleManager.getSectors().toArray()
-      .filter(sector => sector.isVisible())
-      .forEach(sector => {
-        typeof sector.get('wasOpen') !== 'undefined' ? sector.setOpen(sector.get('wasOpen')) : sector.setOpen(false)
-        sector.set('wasOpen')
-        sector.getProperties()
-          .forEach(property => {
-            if(typeof property.get('wasVisible') !== 'undefined') {
-              property.set('visible', property.get('wasVisible'))
-              property.set('wasVisible')
-            }
-          })
-      })
+    resetAll(editor)
   }
 }
