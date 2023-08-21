@@ -1,0 +1,25 @@
+{
+  "name": "@silexlabs/grapesjs-filter-styles",
+  "version": "0.0.0",
+  "description": "Grapesjs Filter Styles",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/grapesjs-filter-styles.git"
+  },
+  "author": "lexoyo",
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build --patch=false",
+    "lint": "eslint src"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin",
+    "silex"
+  ],
+  "devDependencies": {
+    "grapesjs-cli": "^4.1.1"
+  },
+  "license": "AGPL-3.0-or-later"
+}
