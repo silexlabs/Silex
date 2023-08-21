@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-filter-styles",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "description": "Grapesjs Filter Styles",
   "main": "dist/index.js",
   "repository": {
