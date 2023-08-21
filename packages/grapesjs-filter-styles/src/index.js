@@ -10,16 +10,51 @@ export default (editor, opts = {}) => {
     const id = `${prefix}filter-styles`
     const container = document.createElement('div')
     container.innerHTML = `
+      <style>
+        #${id}-btn {
+          position: absolute;
+          right: 0;
+          border: none;
+          padding: 5px;
+          margin: 5px;
+          line-height: 1;
+          border-radius: 50%;
+          width: 25px;
+          height: 25px;
+          border: 1px solid;
+          z-index: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: opacity .15s ease;
+          cursor: pointer;
+          opacity: .75;
+        }
+        .empty #${id}-btn {
+          cursor: initial;
+          opacity: .25;
+        }
+      </style>
+
+      <button
+        id="${id}-btn"
+        class="gjs-field gjs-sm-properties gjs-two-color"
+        >X</button>
       <input id="${id}" type="text" class="gjs-field gjs-sm-properties gjs-two-color" placeholder="${options.placeholder}" />
     `
     const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`);
     const wrapper = tags.parentElement.parentElement
     wrapper.insertBefore(container, tags.parentElement.parentElement.lastElementChild);
     const input = wrapper.querySelector(`#${id}`)
-    input.onkeyup = () => refresh(editor, input)
-    editor.on('component:selected', () => {
+    input.onkeyup = () => refresh(editor, input, wrapper)
+    const button = wrapper.querySelector(`#${id}-btn`)
+    button.onclick = () => {
+      input.value = ''
+      refresh(editor, input, wrapper)
+    }
+    editor.on('component:selected component:styleUpdate', () => {
       resetAll(editor)
-      setTimeout(() => refresh(editor, input))
+      setTimeout(() => refresh(editor, input, wrapper))
     })
   })
 }
@@ -102,8 +137,12 @@ function getSearchableItems(editor) {
 }
 
 // Main action
-function refresh(editor, input) {
+function refresh(editor, input, wrapper) {
   if (input.value) {
+    // Display
+    wrapper.classList.remove('empty')
+    
+    // Get searchable items
     const properties = getSearchableItems(editor)
       // Keep only the matching items
       .filter(item => item.searchable.toLowerCase().includes(input.value.toLowerCase()))
@@ -121,6 +160,7 @@ function refresh(editor, input) {
       showProperty(item.property, true)
     })
   } else {
+    wrapper.classList.add('empty')
     resetAll(editor)
   }
 }
