@@ -31,6 +31,7 @@ import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
+import filterStyles from '@silexlabs/grapesjs-filter-styles'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
@@ -73,6 +74,7 @@ const plugins = [
   {name: 'grapesjs-custom-code', value: codePlugin},
   {name: './internal-links', value: internalLinksPlugin},
   {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
+  {name: '@silexlabs/grapesjs-filter-styles', value: filterStyles},
   {name: './symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
   {name: './PublicationManager', value: publicationManagerPlugin},
@@ -258,6 +260,9 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       [uiSuggestClasses as any]: {
         enableCount: false,
         enablePerformance: false,
+      },
+      [filterStyles]: {
+        appendBefore: '.gjs-sm-sectors',
       },
       [internalLinksPlugin as any]: {
         // FIXME: warn the user about links in error

@@ -102,7 +102,7 @@
   "dependencies": {
     "@fontsource/ubuntu": "^5.0.8",
     "@fortawesome/fontawesome-free": "6.4.2",
-    "@silexlabs/grapesjs-fonts": "1.0.12",
+    "@silexlabs/grapesjs-filter-styles": "^1.0.0",
     "@silexlabs/grapesjs-loading": "1.0.8",
     "@silexlabs/grapesjs-storage-rate-limit": "^1.0.8",
     "@silexlabs/grapesjs-symbols": "1.0.37",
