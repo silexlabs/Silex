@@ -4,6 +4,8 @@ A plugin for GrapesJS that provides rate-limited storage, allowing you to save c
 
 This plugin will intercept when user saves a website and make sure it doesn't occure more than once every second or any duration you setup
 
+> This code is part of a bigger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+
 Features
 
 - **Works with any storage:** This plugin place itself between the storage and your app.
