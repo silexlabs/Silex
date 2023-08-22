@@ -116,13 +116,13 @@ export default async (config, opts: any = {}) => {
         <p>This will be inserted in the published version</p>
       </div>
       ${[
-        'classname',
-        'attributes',
-        'style',
-        'before',
-        'replace',
-        'after',
-      ].map(id => html`
+    'classname',
+    'attributes',
+    'style',
+    'before',
+    'replace',
+    'after',
+  ].map(id => html`
       <label data-contain="${id}" class="template-wrapper-${id}">
         ${labels[id]}
       </label>
