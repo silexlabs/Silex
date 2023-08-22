@@ -20,7 +20,7 @@ import {live} from 'lit-html/directives/live.js'
 
 import { WebsiteSettings } from '../../types'
 
-const pluginName = 'settings-dialog'
+const idCodeWrapper = 'settings-head-wrapper'
 const el = document.createElement('div')
 let modal
 
@@ -30,6 +30,7 @@ declare const VERSION: string
 export const cmdOpenSettings = 'open-settings'
 
 let version = 'v3'
+let headEditor = null
 export const settingsDialog = (editor, opts) => {
   // Display Silex version from package.json
   try {
@@ -46,7 +47,7 @@ export const settingsDialog = (editor, opts) => {
         attributes: { class: 'settings-dialog' },
       })
         .onceClose(() => {
-          sender.set('active', 0) // Deactivate the button to make it ready to be clicked again
+          sender?.set && sender.set('active', 0) // Deactivate the button to make it ready to be clicked again, only in case of a grapesjs button (not in the pages panel)
           editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
         })
       displaySettings(editor, opts, page)
@@ -72,13 +73,19 @@ export const settingsDialog = (editor, opts) => {
   editor.on('storage:end:load', (data) => {
     const model = editor.getModel()
     model.set('settings', data.settings || {})
-    model.set('name', data.name)
+    //model.set('name', data.name)
     updateDom(editor)
   })
   editor.on('page', (e) => {
     editor.Canvas.getFrameEl().addEventListener('load', () => {
       updateDom(editor)
     })
+  })
+  headEditor = editor.CodeManager.createViewer({
+    readOnly: false,
+    codeName: 'htmlmixed',
+    lineNumbers: true,
+    lineWrapping: true,
   })
 }
 
@@ -147,10 +154,9 @@ function displaySettings(editor, config, model = editor.getModel()) {
       </div>
       <h2>Code</h2>
       <div class="silex-form__group">
-        <label class="silex-form__element">
+        <label class="silex-form__element" id="${idCodeWrapper}">
           <h3>HTML head</h3>
           <p>HTML code which will be inserted in the HEAD tag.</p>
-          <textarea name="head" .value=${live(settings.head || '')}></textarea>
         </label>
       </div>
       <footer>
@@ -160,6 +166,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
       </footer>
     </form>
   `, el)
+  el.querySelector(`#${idCodeWrapper}`).appendChild(headEditor.getElement())
+  headEditor.setContent(settings.head || '')
 }
 
 function saveSettings(editor, config, model = editor.getModel()) {
@@ -170,11 +178,14 @@ function saveSettings(editor, config, model = editor.getModel()) {
       aggregate[key] = value
       return aggregate
     }, {}) as {[key: string]: any}
-    // take the name out to the main model (by design in grapesjs pages)
-  const { name, ...settings } = data
+  //// take the name out to the main model (by design in grapesjs pages)
+  //const { name, ...settings } = data
   model.set({
-    settings,
-    name,
+    settings: {
+      ...data,
+      head: headEditor.getContent(),
+    },
+    //name,
   })
   // save if auto save is on
   editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
