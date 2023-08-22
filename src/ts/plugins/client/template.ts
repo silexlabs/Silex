@@ -33,9 +33,43 @@ const pluginName = 'template'
 const templateType = 'templateType'
 const templateKey = 'template'
 
+function createCodeEditor(editor, mode = 'htmlmixed', singleLine = false) {
+  const options = {
+    readOnly: false,
+    codeName: mode,
+  } as any
+  if(singleLine) {
+    options.lineWrapping = false
+    options.lineNumbers = false
+    options.indentWithTabs = false
+  } else {
+    options.lineNumbers = true
+    options.lineWrapping = true
+  }
+
+  return editor.CodeManager.createViewer(options)
+}
+
 export default async (config, opts: any = {}) => {
   config.on(ClientEvent.GRAPESJS_END, () => {
     const editor = silex.getEditor()
+    // Get the necessary code editors
+    const editors = {
+      before: createCodeEditor(editor),
+      replace: createCodeEditor(editor),
+      after: createCodeEditor(editor),
+      attributes: createCodeEditor(editor, 'text', true),
+      classname: createCodeEditor(editor, 'text', true),
+      style: createCodeEditor(editor, 'css', true),
+    }
+    const is1line = {
+      before: false,
+      replace: false,
+      after: false,
+      attributes: true,
+      classname: true,
+      style: true,
+    }
     // Add the new trait to all component types
     editor.DomComponents.getTypes().map(type => {
       const originalType = editor.DomComponents.getType(type.id)
@@ -60,7 +94,7 @@ export default async (config, opts: any = {}) => {
     function doRender(el) {
       const template = editor.getSelected()?.get(templateKey) || {}
       const taStyle = opts.styles?.textarea ?? styleMap({
-        backgroundColor: 'var(--darkerPrimaryColor)',
+        xxbackgroundColor: 'var(--darkerPrimaryColor)',
       })
       const sepStyle = opts.styles?.sep ?? styleMap({ height: '10px' })
       const labels = {
@@ -72,31 +106,38 @@ export default async (config, opts: any = {}) => {
         style: html`CSS styles`,
       }
       render(html`
+      <style>
+        .CodeMirror {
+          height: 100%;
+        }
+      </style>
       <div>
         <h3>Template</h3>
         <p>This will be inserted in the published version</p>
       </div>
-      ${['classname', 'attributes', 'style'].map(id => html`
-      <label>
+      ${[
+        'classname',
+        'attributes',
+        'style',
+        'before',
+        'replace',
+        'after',
+      ].map(id => html`
+      <label data-contain="${id}" class="template-wrapper-${id}">
         ${labels[id]}
-        <input
-          id="template-${id}"
-          .value=${template[id] || ''}
-          style=${taStyle}
-          />
       </label>
       `)}
-      ${['before', 'replace', 'after'].map(id => html`
-        <label
-          for="template-${id}"
-          >${labels[id]}</label>
-        <textarea
-          id="template-${id}"
-          style=${taStyle}
-          .value=${template[id] || ''}
-          ></textarea>
-      `)}
     `, el)
+      el.querySelectorAll('[data-contain]').forEach(container => {
+        const id = container.getAttribute('data-contain')
+        const codeEditor = editors[id]
+        container.appendChild(codeEditor.getElement())
+        codeEditor.getElement().style.display = 'block'
+        codeEditor.getElement().style.height = is1line[id] ? '' : '200px'
+        codeEditor.getElement().style.width = '100%'
+        codeEditor.setContent(template[id] ?? '')
+        codeEditor.refresh()
+      })
     }
 
     editor.TraitManager.addType(templateType, {
@@ -114,12 +155,12 @@ export default async (config, opts: any = {}) => {
       // `elInput` is the result HTMLElement you get from `createInput`
       onEvent({ elInput, component, event }) {
         const template = {
-          before: elInput.querySelector('#template-before').value,
-          replace: elInput.querySelector('#template-replace').value,
-          after: elInput.querySelector('#template-after').value,
-          attributes: elInput.querySelector('#template-attributes').value,
-          classname: elInput.querySelector('#template-classname').value,
-          style: elInput.querySelector('#template-style').value,
+          before: editors.before.getContent(),
+          replace: editors.replace.getContent(),
+          after: editors.after.getContent(),
+          attributes: editors.attributes.getContent(),
+          classname: editors.classname.getContent(),
+          style: editors.style.getContent(),
         }
 
         // Store the new template
