@@ -20,8 +20,8 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
   const options = {
     ...opts,
     html: {
-      url: '/',
-      path: './',
+      url: '',
+      path: '.',
       ...opts.html,
     },
     css: {
@@ -31,8 +31,8 @@ export default (config: ClientConfig, opts: Partial<PluginOptions>) => {
       ...opts.css,
     },
     assets: {
-      url: '/',
-      path: './', // assets is already in the assets urls
+      url: '',
+      path: '.', // assets is already in the assets urls
       ...opts.assets,
     },
   }

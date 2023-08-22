@@ -38,7 +38,7 @@ export default (editor: Editor, opts) => {
       units: ['px', '%', 'em'],
       default: 'auto',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
-    }, { at: 4 })
+    }, { at: 5 })
     editor.StyleManager.addProperty('dimension', {
       name: 'Overflow',
       property: 'overflow',
@@ -474,5 +474,55 @@ export default (editor: Editor, opts) => {
       ],
       info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
     }, { at: 12 })
+
+    // Add content property, visible only when a pseudo element is selected
+    const contentProp = editor.StyleManager.addProperty('general', {
+      name: 'Content',
+      property: 'content',
+      type: 'text',
+      defaults: 'none',
+      info: 'The content CSS property replaces an element with a generated value. Objects inserted using the content property are anonymous replaced elements.',
+      full: true,
+      visible: false,
+    }, { at: 0 })
+    function refreshContentProp() {
+      const state = editor.SelectorManager.getState()
+      if (['before', 'after'].includes(state)) {
+        contentProp.set('visible', true)
+      } else {
+        contentProp.set('visible', false)
+      }
+    }
+    editor.on('selector:state component:selected style:sector:update', (state, opts) => setTimeout(() => refreshContentProp()))
+    editor.StyleManager.getSector('general').on('change', () => refreshContentProp())
+
+    // Add pseudo elements
+    editor.SelectorManager.states.add({name: 'before', label: 'Before'})
+    editor.SelectorManager.states.add({name: 'after', label: 'After'})
+    editor.SelectorManager.states.add({name: 'active', label: 'Active'})
+    editor.SelectorManager.states.add({name: 'first-child', label: 'First child'})
+    editor.SelectorManager.states.add({name: 'last-child', label: 'Last child'})
+    editor.SelectorManager.states.add({name: 'focus', label: 'Focus'})
+    editor.SelectorManager.states.add({name: 'visited', label: 'Visited'})
+    editor.SelectorManager.states.add({name: 'link', label: 'Link'})
+    editor.SelectorManager.states.add({name: 'first-letter', label: 'First letter'})
+    editor.SelectorManager.states.add({name: 'first-line', label: 'First line'})
+    editor.SelectorManager.states.add({name: 'selection', label: 'Selection'})
+    editor.SelectorManager.states.add({name: 'empty', label: 'Empty'})
+    editor.SelectorManager.states.add({name: 'enabled', label: 'Enabled'})
+    editor.SelectorManager.states.add({name: 'disabled', label: 'Disabled'})
+    editor.SelectorManager.states.add({name: 'checked', label: 'Checked'})
+    editor.SelectorManager.states.add({name: 'indeterminate', label: 'Indeterminate'})
+    editor.SelectorManager.states.add({name: 'placeholder-shown', label: 'Placeholder shown'})
+    editor.SelectorManager.states.add({name: 'placeholder', label: 'Placeholder'})
+    editor.SelectorManager.states.add({name: 'default', label: 'Default'})
+    editor.SelectorManager.states.add({name: 'valid', label: 'Valid'})
+    editor.SelectorManager.states.add({name: 'invalid', label: 'Invalid'})
+    editor.SelectorManager.states.add({name: 'in-range', label: 'In range'})
+    editor.SelectorManager.states.add({name: 'out-of-range', label: 'Out of range'})
+    editor.SelectorManager.states.add({name: 'required', label: 'Required'})
+    editor.SelectorManager.states.add({name: 'optional', label: 'Optional'})
+    editor.SelectorManager.states.add({name: 'read-only', label: 'Read only'})
+    editor.SelectorManager.states.add({name: 'read-write', label: 'Read write'})
   })
 }
