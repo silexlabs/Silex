@@ -430,8 +430,8 @@ export default (editor: Editor, opts) => {
         name: 'Text decoration color',
         property: 'text-decoration-color',
         type: 'color',
-        defaults: 'auto',
-        fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
+        defaults: 'initial',
+        fixedValues: ['inherit', 'initial', 'revert', 'unset'],
         info: 'The text-decoration-color CSS property sets the color of decorations added to text by text-decoration-line.',
       }, {
         name: 'Text decoration thickness',
