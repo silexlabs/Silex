@@ -475,6 +475,22 @@ export default (editor: Editor, opts) => {
       info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
     }, { at: 12 })
 
+    editor.StyleManager.addProperty('general', {
+      name: 'Visibility',
+      property: 'visibility',
+      type: 'select',
+      defaults: 'visible',
+      options: [
+        /* @ts-ignore */
+        { value: 'visible', name: 'visible' },
+        /* @ts-ignore */
+        { value: 'hidden', name: 'hidden' },
+        /* @ts-ignore */
+        { value: 'collapse', name: 'collapse' },
+      ],
+      info: 'The visibility CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a <table>.',
+    }, { at: 1 })
+
     // Add content property, visible only when a pseudo element is selected
     const contentProp = editor.StyleManager.addProperty('general', {
       name: 'Content',
@@ -493,7 +509,7 @@ export default (editor: Editor, opts) => {
         contentProp.set('visible', false)
       }
     }
-    editor.on('selector:state component:selected style:sector:update', (state, opts) => setTimeout(() => refreshContentProp()))
+    editor.on('selector:state component:selected component:styleUpdate style:sector:update', (state, opts) => setTimeout(() => refreshContentProp()))
     editor.StyleManager.getSector('general').on('change', () => refreshContentProp())
 
     // Add pseudo elements
