@@ -1,0 +1,32 @@
+{
+  "name": "@silexlabs/grapesjs-data-source",
+  "version": "0.0.0",
+  "description": "Grapesjs Data Source",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/grapesjs-data-source.git"
+  },
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build --patch=false",
+    "lint": "eslint src",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "grapesjs",
+    "plugin",
+    "silex"
+  ],
+  "devDependencies": {
+    "@jest/globals": "^29.6.3",
+    "grapesjs-cli": "^4.1.1",
+    "jest": "^29.6.3",
+    "ts-jest": "^29.1.1"
+  },
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "@apollo/client": "^3.8.1"
+  }
+}
