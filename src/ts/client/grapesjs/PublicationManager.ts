@@ -23,6 +23,7 @@ import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
+import { displayedToStored } from '../assetUrl'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -251,10 +252,14 @@ export class PublicationManager {
           // Transform the file paths with the transformers
           const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
           //const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
+          // This is done in transformPermalink and transformPath but other transformers may change it
+          // So we do this only using displayedToStored for the path
+          // As path is used to download the asset
+          const src = displayedToStored(asset.src)
           return {
             ...asset,
             path,
-            src: asset.src, // TODO: is this needed?
+            src,
             type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
           } as ClientSideFile
         }))
