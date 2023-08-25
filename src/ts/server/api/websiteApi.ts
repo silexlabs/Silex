@@ -24,7 +24,7 @@ import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWeb
 import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
 import { Readable } from 'stream'
 import { requiredParam } from '../utils/validation'
-import { basename } from 'path'
+import { basename, join } from 'path'
 import { ServerConfig } from '../config'
 import { ServerEvent, WebsiteStoreEndEventType, WebsiteStoreStartEventType, WebsiteAssetStoreStartEventType, WebsiteAssetStoreEndEventType } from '../events'
 
@@ -301,8 +301,12 @@ export default function (config: ServerConfig, opts = {}): Router {
       // Return the file URLs to insert in the website
       // As expected by grapesjs (https://grapesjs.com/docs/modules/Assets.html#uploading-assets)
       const data = result.map(path =>
-        '/assets/'
-        + path.replace(/^\//, '') // Remove the leading slash
+        join(
+        // We should return path without this line, as it is saved, not as it is displayed
+        // But this url is sent straight to grapesjs, so we need to return the url as it is displayed
+          baseUrl, API_PATH, API_WEBSITE_PATH, API_WEBSITE_ASSET_READ,
+          path,
+        )
         + `?websiteId=${websiteId}&connectorId=${connectorId ? connectorId : ''}` // As expected by wesite API (readAsset)
       )
 
