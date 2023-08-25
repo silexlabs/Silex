@@ -255,7 +255,7 @@ export class PublicationManager {
           // TODO: is this needed?
           // Remove /assets that is added by grapesjs
           const initialPath = asset.src
-             .replace(/^\/assets/, '')
+            .replace(/^\/assets/, '')
           return {
             ...asset,
             path,
