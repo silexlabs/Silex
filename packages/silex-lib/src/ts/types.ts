@@ -208,26 +208,22 @@ export enum ClientSideFileType {
  */
 export interface ClientSideFileWithPermalink {
   path: string, // Path in the connector
-  permalink: string, // Used to link to the file
+  permalink?: string, // Defaults to path, this the path where the file is served, it is used to link to the file
   type: ClientSideFileType,
 }
 
 /**
  * Type for a client side file when the content is available as a string
  */
-export interface ClientSideFileWithContent {
-  path: string,
+export interface ClientSideFileWithContent extends ClientSideFileWithPermalink {
   content: string, // Not buffer because it's sent from the client in JSON
-  type: ClientSideFileType
 }
 
 /**
  * Type for a client side file when the content is in the connector
  */
-export interface ClientSideFileWithSrc {
-  path: string,
+export interface ClientSideFileWithSrc extends ClientSideFileWithPermalink {
   src: string, // Where to download the file, a path for the storage connector
-  type: ClientSideFileType
 }
 
 /**

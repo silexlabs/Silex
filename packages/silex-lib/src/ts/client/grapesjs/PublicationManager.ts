@@ -250,11 +250,11 @@ export class PublicationManager {
           //   .replace(/^\/assets/, '')
           // Transform the file paths with the transformers
           const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
-          const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
+          //const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
           return {
             ...asset,
             path,
-            src,
+            src: asset.src, // TODO: is this needed?
             type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
           } as ClientSideFile
         }))
