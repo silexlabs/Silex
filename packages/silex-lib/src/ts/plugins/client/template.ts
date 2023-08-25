@@ -138,6 +138,30 @@ export default async (config, opts: any = {}) => {
         codeEditor.setContent(template[id] ?? '')
         codeEditor.refresh()
       })
+      // Make sure we apply the changes when the user presses any key
+      // The events should be triggered by the trait manager (call onEvent) but it doesn't work for "delete" key for example
+      el.onkeydown = () => {
+        applyChanges(editor.getSelected())
+      }
+    }
+
+    function applyChanges(component) {
+      console.log('onEvent', { component })
+      const template = {
+        before: editors.before.getContent(),
+        replace: editors.replace.getContent(),
+        after: editors.after.getContent(),
+        attributes: editors.attributes.getContent(),
+        classname: editors.classname.getContent(),
+        style: editors.style.getContent(),
+      }
+
+      // Store the new template
+      if (Object.values(template).filter(val => !!val && !!cleanup(val)).length > 0) {
+        component.set(templateKey, template)
+      } else {
+        component.set(templateKey)
+      }
     }
 
     editor.TraitManager.addType(templateType, {
@@ -154,21 +178,7 @@ export default async (config, opts: any = {}) => {
       // Update the component based on UI changes
       // `elInput` is the result HTMLElement you get from `createInput`
       onEvent({ elInput, component, event }) {
-        const template = {
-          before: editors.before.getContent(),
-          replace: editors.replace.getContent(),
-          after: editors.after.getContent(),
-          attributes: editors.attributes.getContent(),
-          classname: editors.classname.getContent(),
-          style: editors.style.getContent(),
-        }
-
-        // Store the new template
-        if (Object.values(template).filter(val => !!val && !!cleanup(val)).length > 0) {
-          component.set(templateKey, template)
-        } else {
-          component.set(templateKey)
-        }
+        applyChanges(component)
       },
       // Update UI on the component change
       onUpdate({ elInput, component }) {
