@@ -326,7 +326,7 @@ ${pageSettings?.head || ''}
 <title>${getSetting('title')}</title>
 <link rel="icon" href="${getSetting('favicon')}" />
 ${['description', 'og:title', 'og:description', 'og:image']
-    .map(prop => `<meta property="${prop}" content="${getSetting(prop)}"/>`)
+    .map(prop => `<meta name="${prop}" property="${prop}" content="${getSetting(prop)}"/>`)
     .join('\n')
 }
 </head>
