@@ -1,4 +1,25 @@
-# Grapesjs Data Source
+# Data Source plugin
+
+This GrapesJS plugin integrates various APIs, such as GraphQL and REST, into the editor. 
+
+
+Here are the key parts of the plugin:
+
+1. **editor.DataSourceManager**: A Backbone collection to manage the APIs. This collection holds the different available data sources and their settings (type, url, auth...). This data is stored with the website data.
+
+1. **editor.StateManager**: A Backbone collection to manage component states and generate queries to APIs. Component states are used to build the query needed for the current page, and they can be used to create other states in child components or override a component's attributes or style. This collection is generated from the components attributes, it is not stored with the site data.
+
+1. **editor.TemplateManager**: A Backbone collection that holds templates overriding components' attributes and styles. Templates can be JavaScript expressions, loops, or conditional statements (ifs), affecting how components are rendered on stage. This collection is generated from the components attributes, it is not stored in the site data.
+
+1. **DataSource**: An interface for classes managing an API, abstracting the calls and queries. It includes methods like `getData(query)` and `getTypes()`.
+
+1. **Dynamic Pages**: Pages can be marked as dynamic, making a state named `current` available to the page. This state holds the value currently being displayed in the editor.
+
+1. **Publish Feature**: The plugin offers a "publish" feature to generate pages and data files for a static site generator, starting with Eleventy. This includes one data file per dynamic page and one page per dynamic page, with queries to the datasource making the desired data available.
+
+The components with "Loop Template" also have a `current` state, similar to dynamic pages.
+
+The plugin's architecture is designed to provide a flexible and efficient way to manage data and rendering in the editor, supporting dynamic content and static site generation. It abstracts the complexities of working with different APIs and provides a unified way to manage component states, templates, and dynamic content.
 
 [DEMO](##)
 > **Provide a live demo of your plugin**

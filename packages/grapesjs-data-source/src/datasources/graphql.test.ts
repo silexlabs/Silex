@@ -3,6 +3,7 @@ import {connect, postsDetails, postsId, schema} from './graphql-mock.js'
 const bearerToken = process.env.BEARER ?? ''
 
 const options = {
+  name: 'GraphQL',
   url: `https://sandbox.internet2000.net/cms/graphql?access_token=${bearerToken}`,
   bearerToken,
 }
