@@ -245,10 +245,6 @@ export class PublicationManager {
       } as ClientSideFile]))
       .concat(projectData.assets
         .map(asset => {
-          // TODO: is this needed?
-          // // Remove /assets that is added by grapesjs
-          // const initialPath = asset.src
-          //   .replace(/^\/assets/, '')
           // Transform the file paths with the transformers
           const path = transformPath(this.editor, asset.src, ClientSideFileType.ASSET)
           //const src = transformPermalink(this.editor, asset.src, ClientSideFileType.ASSET)
@@ -256,10 +252,14 @@ export class PublicationManager {
           // So we do this only using displayedToStored for the path
           // As path is used to download the asset
           const src = displayedToStored(asset.src)
+          // TODO: is this needed?
+          // Remove /assets that is added by grapesjs
+          const initialPath = asset.src
+             .replace(/^\/assets/, '')
           return {
             ...asset,
             path,
-            src,
+            src: initialPath,
             type: ClientSideFileType.ASSET, // Replaces grapesjs's 'image' type
           } as ClientSideFile
         }))
