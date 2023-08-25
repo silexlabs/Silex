@@ -146,7 +146,6 @@ export default async (config, opts: any = {}) => {
     }
 
     function applyChanges(component) {
-      console.log('onEvent', { component })
       const template = {
         before: editors.before.getContent(),
         replace: editors.replace.getContent(),
