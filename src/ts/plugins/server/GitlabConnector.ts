@@ -21,6 +21,7 @@ import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, 
 import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent } from '../../types'
 import fetch from 'node-fetch'
 import crypto, { createHash } from 'crypto'
+import { join } from 'path'
 
 /**
  * Gitlab connector
@@ -193,7 +194,7 @@ export default class GitlabConnector implements StorageConnector {
   // **
   // Convenience methods for the Gitlab API
   private getAssetPath(path: string): string {
-    return encodeURIComponent(`${this.options.assetsFolder}${path}`)
+    return encodeURIComponent(join(this.options.assetsFolder, path))
   }
 
   private async createFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
@@ -623,7 +624,7 @@ export default class GitlabConnector implements StorageConnector {
       },
     })
     const json = await response.json()
-    if(!response.ok) throw new ApiError(`Gitlab API error: ${json?.message ?? json?.error ?? response.statusText}`, response.status)
+    if(!response.ok) throw new ApiError(`Error reading file "${fileName}" from Gitlab: ${json?.message ?? json?.error ?? response.statusText}`, response.status)
     // From base64 string to buffer
     const buf = Buffer.from(json.content, 'base64')
     // Return the image bytes
