@@ -9,6 +9,16 @@ export default async function (config) {
             // Replace /index.html with /
             return type === 'html' && path.endsWith('/index.html') ? path.replace(/index\.html$/, '') : path
         },
+        transformPermalink(path, type) {
+            // Make absolute paths relative
+            switch (type) {
+                case 'css':
+                    return path.startsWith('/') ? `.${path}` : path
+                case 'asset':
+                    return path.startsWith('/') ? `.${path}` : path
+            }
+            return path
+        },
     })
     return {}
 }
