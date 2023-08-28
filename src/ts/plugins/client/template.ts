@@ -140,7 +140,7 @@ export default async (config, opts: any = {}) => {
       })
       // Make sure we apply the changes when the user presses any key
       // The events should be triggered by the trait manager (call onEvent) but it doesn't work for "delete" key for example
-      el.onkeydown = () => {
+      el.onkeyup = () => {
         applyChanges(editor.getSelected())
       }
     }
