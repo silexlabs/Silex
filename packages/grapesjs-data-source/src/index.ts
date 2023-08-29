@@ -1,21 +1,61 @@
-import {Editor} from 'grapesjs'
+import {Editor, Button} from 'grapesjs'
 import DataSourceManager from "./model/DataSourceManager";
 import model from './model';
+import DynamicDataManager from './model/DynamicDataManager';
+import { Component } from 'grapesjs';
+import ui from './ui';
 
-export interface DataSourceOptions {}
-
-export interface DataSourceEditor extends Editor {
+// **
+// Data plugin, interfaces and types
+export interface DataEditor extends Editor {
   DataSourceManager: DataSourceManager,
+  DynamicDataManager: DynamicDataManager,
 }
 
-export interface DataSourceImpl {
+export interface DataOptions {
+  dataSources?: DataSourceObject[],
+  dynamicData?: DynamicDataOptions,
+}
+
+export default function (editor: DataEditor, opts: Partial<DataOptions> = {}) {
+  model(editor, opts)
+  ui(editor, opts)
+}
+// **
+// DynamicData interfaces and types
+export interface DynamicDataOptions {
+  appendTo?: string | HTMLElement | (() => HTMLElement),
+  button?: Button | (() => Button),
+  styles?: string,
+}
+
+export interface DynamicDataObject {
+  component: Component,
+  attribute: string,
+  dataSource: DataSource,
+  variablePath: string[],
+  validate: () => boolean,
+  getValue(): any,
+  getType(): Type,
+}
+
+// **
+// DataSource interfaces and types
+export interface DataSourceObject {
+  type: string,
+  name: string,
+  [key: string]: any,
+}
+
+export interface DataSource extends Backbone.Model {
   id: string,
   name: string,
   connect: () => Promise<void>,
   getSchema: () => Promise<Schema>,
   getData: (query: Query) => Promise<any[]>,
 }
-export type DataSource = (options: DataSourceOptions) => DataSourceImpl
+
+export type DataSourceConstructor = (options: DataSourceObject) => DataSource
 
 export interface Schema {
   types: Type[],
@@ -23,8 +63,9 @@ export interface Schema {
 
 export interface Type {
   name: string,
-  kind: string,
   fields: Field[],
+  kind: string,
+  ofType?: Type,
 }
 
 export interface Field {
@@ -36,12 +77,4 @@ export interface Query {
   name: string,
   attributes?: string[][],
   children?: Array<string | Query>,
-}
-
-export interface DataSourceEditorOptions {
-  dataSources?: DataSource[],
-}
-
-export default function (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions> = {}) {
-  model(editor, opts)
 }

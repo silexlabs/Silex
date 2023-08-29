@@ -1,14 +1,14 @@
 import Backbone from "backbone"
 import {Editor} from 'grapesjs'
-import { DataSource, DataOptions } from ".."
+import { DataSource, DataOptions, DynamicDataObject } from ".."
 
 /**
  * GrapesJs plugin to manage data sources
  */
-export default class DataSourceManager extends Backbone.Collection<DataSource> {
+export default class DynamicDataManager extends Backbone.Collection {
   private editor: Editor
   private options: Record<string, DataOptions>
-  constructor(models: DataSource[], { editor, ...opts }: any) {
+  constructor(models: DynamicDataObject[], { editor, ...opts }: any) {
     super(models, opts)
     this.editor = editor
     this.options = {
@@ -17,7 +17,8 @@ export default class DataSourceManager extends Backbone.Collection<DataSource> {
     // Make sure the symbol CRUD operations are undoable
     this.editor.UndoManager.add(this)
   }
-  getAll(): DataSource[] {
+  getAll() {
     return this.models
   }
 }
+

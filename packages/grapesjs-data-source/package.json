@@ -10,6 +10,7 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
+    "serve:mocks": "http-serve ./mocks/ -p 3000 --cors",
     "lint": "eslint src",
     "test": "jest",
     "test:watch": "jest --watch"
@@ -22,11 +23,16 @@
   "devDependencies": {
     "@jest/globals": "^29.6.3",
     "grapesjs-cli": "^4.1.1",
+    "http-serve": "^1.0.1",
     "jest": "^29.6.3",
     "ts-jest": "^29.1.1"
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@apollo/client": "^3.8.1"
+    "@apollo/client": "^3.8.1",
+    "@codemirror/autocomplete": "^6.9.0",
+    "@codemirror/state": "^6.2.1",
+    "codemirror": "^6.0.1",
+    "lit-html": "^2.8.0"
   }
 }
