@@ -38,7 +38,6 @@ export class DynamicProperty {
   //       .slice(0, -1)
   //       // Get the current type
   //       .reduce((current: Type | null, name: string) => {
-  //         console.log('current', current, name)
   //         if(current?.kind === 'LIST') {
   //           console.warn('LIST not implemented', current.ofType)
   //           throw new Error('LIST not implemented')
@@ -60,7 +59,6 @@ export class DynamicProperty {
   //       label: field.name,
   //       type: field.type.kind === 'SCALAR' ? 'variable' : 'property',
   //     })) ?? []
-  //     console.log('options', {options, lastType})
   //     const indexOfLastDot = before?.text?.lastIndexOf('.')
   //     const from = indexOfLastDot && indexOfLastDot > 0 ? indexOfLastDot + 1 : 0
   //     return {
@@ -87,10 +85,8 @@ export class DynamicProperty {
   // }
 
   getCompletion(context: Record<string, Type>, type: Type | undefined): Field[] {
-    console.log('getCompletion', {context, type})
     if(type) {
       const result = context[type.name]?.fields
-      console.log({result})
       return result ?? []
     } else {
       return Object.values(context).map((type: Type) => ({
@@ -100,44 +96,69 @@ export class DynamicProperty {
     }
   }
 
-  getCompletionSelect(currentIndex: number, displayedFields: Field[], context: Record<string, Type>, onChange: (field: Field) => void): ReturnType<typeof html> {
+  getFieldDisplayName(field: Field): string {
+    switch (field.type.kind) {
+      case 'SCALAR':
+        return `${field.name} 🔑`
+      case 'LIST':
+        return `${field.type.ofType?.name} 📜`
+      case 'OBJECT':
+        return `${field.name} 📦`
+      case 'NON_NULL':
+        return `${field.name} ❗`
+      default:
+        // display symbol for collections of the cms
+        return `${field.name || field.type.name} 📂`
+    }
+  }
+
+  getCompletionSelect(currentIndex: number, displayedFields: Field[], context: Record<string, Type>, onChange: (field?: Field) => void): ReturnType<typeof html> {
     const currentField = displayedFields[currentIndex]
     const previousField = displayedFields[currentIndex - 1]
     const completion = this.getCompletion(context, previousField?.type)
-    console.log('zzz', {currentIndex, currentField, previousField, displayedFields, context})
+    if(completion.length === 0) return html``
     return html`
-      <select
-        @change=${(e: Event) => {
-          const select = e.target as HTMLSelectElement
-          const option = select.options[select.selectedIndex]
-          const fieldName = select.value
-          const isType = option.hasAttribute('data-is-type')
-          const newField = completion.find(field => isType ? field.type.name === fieldName : field.name === fieldName)
-          const newType = newField?.type
-          if (newType) {
-            onChange({
-              name: fieldName,
-              type: newType,
-            })
-          } else {
-            console.error(`Type not found for field ${fieldName}`)
-          }
-        }}
-        >
-        <option value="">+</option>
-        ${
-          completion
-          .map((field: Field) => html`
-            <option
-              value="${field.name === '' ? field.type.name : field.name}"
-              ?data-is-type=${field.name === ''}
-              ?selected=${field.name === '' ? field.type.name === currentField?.type.name : field.name === currentField?.name}
-              >
-              ${field.name === '' ? field.type.name : field.name}
-            </option>
-          `)
-        }
-      </select>
+      <label class="ds-select__wrapper">
+        <div class="ds-select__name gjs-field gjs-field-text gjs-label ${currentIndex === displayedFields.length ? 'last' : ''}">
+          ${currentField && this.getFieldDisplayName(currentField)}
+          <select
+            class="ds-select"
+            @change=${(e: Event) => {
+              const select = e.target as HTMLSelectElement
+              const option = select.options[select.selectedIndex]
+              const fieldName = select.value
+              if (fieldName === '') {
+                // Remove the field
+                onChange()
+              } else {
+                const isType = option.hasAttribute('data-is-type')
+                const newField = completion.find(field => isType ? field.type.name === fieldName : field.name === fieldName)
+                const newType = newField?.type
+                if(!newType) throw new Error('newType is undefined')
+                onChange({
+                  name: fieldName,
+                  type: newType,
+                })
+              }
+            }}
+            >
+            <option value="">-</option>
+            ${
+              completion
+              .map((field: Field) => html`
+                <option
+                  value="${field.name === '' ? field.type.name : field.name}"
+                  ?data-is-type=${field.name === ''}
+                  ?selected=${field.name === '' ? field.type.name === currentField?.type.name : field.name === currentField?.name}
+                  >
+                  ${ this.getFieldDisplayName(field) }
+                </option>
+              `)
+            }
+          </select>
+        </div>
+        <div class="ds-select__type gjs-four-color">${currentField?.type.name ?? currentField?.type.ofType?.name}</div>
+      </label>
     `
   }
 
@@ -161,34 +182,35 @@ export class DynamicProperty {
     //   parent: document.body
     // })
     return html`
-      <label class="ds-container">
+      <div class="ds-container">
         <div class="ds-label">${this.displayName}</div>
-        <div class="ds-field gjs-field gjs-field-text">
+        <div class="ds-field">
           ${
             fields.map((field: Field, index: number) => html`
-              <label class="ds-container">
-                <div class="ds-label">${field.name ?? field.type.name}</div>
-                <div class="ds-field gjs-field gjs-field-text">
-                  ${
-                    this.getCompletionSelect(index, fields, context, (field: Field) => {
-                      // Remove all types until the current one
-                      // And replace the current one
-                      this.onChange?.(fields.slice(0, index).concat(field) as Field[])
-                    })
+              ${
+                this.getCompletionSelect(index, fields, context, (field?: Field) => {
+                  if(field) {
+                    // Remove all types until the current one
+                    // And replace the current one
+                    this.onChange?.(fields.slice(0, index).concat(field) as Field[])
+                  } else {
+                    // Remove the current field
+                    this.onChange?.(fields.slice(0, index) as Field[])
                   }
-                </div>
-              </label>
+                })
+              }
             `)
             //view.dom
           }
           ${
-            this.getCompletionSelect(fields.length, fields, context, (field: Field) => {
-              this.onChange?.(fields.concat(field) as Field[])
+            this.getCompletionSelect(fields.length, fields, context, (field?: Field) => {
+              if(field) {
+                this.onChange?.(fields.concat(field) as Field[])
+              }
             })
           }
-          +
         </div>
-      </label>
+      </div>
     `
   }
 }

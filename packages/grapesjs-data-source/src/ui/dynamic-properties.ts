@@ -16,8 +16,30 @@ const defaultStyles = `
     border-bottom: 1px solid rgba(0,0,0,.2);;
   }
   .ds-label {
-    margin: 0 10px;
     text-align: left;
+    margin: 0 10px;
+  }
+  .ds-select__wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .ds-select__type {
+    margin: 0 2px;
+    min-height: 15px;
+  }
+  .ds-select__name {
+    position: relative;
+    margin: 2px;
+    padding: 10px;
+  }
+  .ds-select__name::before {
+    content: '▼';
+  }
+  .ds-select__name.last::before {
+    content: '+';
   }
   .ds-field {
     display: flex;
@@ -26,8 +48,13 @@ const defaultStyles = `
     align-items: center;
     margin: 2px 10px;
   }
-  .ds-field select.ds-select-hidden {
+  .ds-field select.ds-select {
+    opacity: 0;
     position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
   .ds-button {
     width: 20px;
@@ -68,7 +95,12 @@ const dynamicProperties: DynamicProperty[] = [
   //}),
   new DynamicProperty({
     name: 'innerHTML',
-    displayName: 'Inner HTML',
+    displayName: 'Content',
+    //isAvailable: (component: Component) => true,
+  }),
+  new DynamicProperty({
+    name: 'background-image',
+    displayName: 'Background image',
     //isAvailable: (component: Component) => true,
   }),
 ]
@@ -84,10 +116,8 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
   }
   async function getSchemas(): Promise<Record<string, Type>> {
     const schemas = await Promise.all(editor.DataSourceManager.getAll().map(ds => ds.getSchema()))
-    console.log('schemas', schemas)
     return schemas
       .reduce((acc, schema) => {
-        console.log({schema})
         schema.types.forEach(type => {
           acc[type.name] = type
         })
@@ -97,7 +127,6 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
   const baseContext = { 
     ...await getSchemas(),
   }
-  console.log('baseContext', baseContext)
   function getContext(component: Component): Record<string, Type> {
     return {
       ...baseContext,
@@ -167,7 +196,6 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
     const button = typeof options.button === 'function' ? options.button() : options.button
     if(!button) throw new Error(`Element ${options.button} not found`)
     button.on('change', () => {
-      console.log('button change', button.active)
       if(button.active) {
         // Move at the bottom
         appendTo.appendChild(wrapper)
@@ -195,7 +223,6 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
       <main>
       ${dynamicProperties.map(property => {
         property.onChange = (value: any) => {
-          console.log('change', property.name, value)
           component.set(dsAttribute, {
             ...component.get(dsAttribute),
             [property.name]: value,
