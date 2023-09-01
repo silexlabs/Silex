@@ -21,11 +21,13 @@ const defaultStyles = `
   }
   .ds-field {
     display: flex;
+    flex-wrap: wrap;
     flex-direction: row;
     align-items: center;
     margin: 2px 10px;
   }
-  .ds-field input {
+  .ds-field select.ds-select-hidden {
+    position: absolute;
   }
   .ds-button {
     width: 20px;
@@ -57,19 +59,16 @@ const defaultStyles = `
 `
 
 const dynamicProperties: DynamicProperty[] = [
-  new DynamicProperty({
-    name: 'classname',
-    displayName: 'CSS classes',
-    type: 'array',
-    subtype: 'expression',
-    //isAvailable: (component: Component) => true,
-    //getValue: (component: Component) => component.get('classes')?.models.map(c => c.id) || [],
-    //setValue: (component: Component, value: string[]) => { component.get('classes')?.add(value.map(id => ({ id, label: id }))) },
-  }),
+  //new DynamicProperty({
+  //  name: 'classname',
+  //  displayName: 'CSS classes',
+  //  //isAvailable: (component: Component) => true,
+  //  //getValue: (component: Component) => component.get('classes')?.models.map(c => c.id) || [],
+  //  //setValue: (component: Component, value: string[]) => { component.get('classes')?.add(value.map(id => ({ id, label: id }))) },
+  //}),
   new DynamicProperty({
     name: 'innerHTML',
     displayName: 'Inner HTML',
-    type: 'expression',
     //isAvailable: (component: Component) => true,
   }),
 ]
@@ -202,7 +201,7 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
             [property.name]: value,
           })
         }
-        return property.toHtmlForm(dsData[property.name], getContext(component))
+        return property.toHtmlForm(dsData[property.name] ?? [], getContext(component))
       })}
       </main>
     `, wrapper)
