@@ -27,7 +27,8 @@ const options = parse({
   'protocol': ['', 'Sets the protocol param of the express module "cookie-session".', 'string'],
   'config': [ 'c', 'Path for the server side config file to load at startup', 'file'],
   'client-config': ['', 'Path to client config file to be served on .silex-client.js', 'string'],
-  'fs-root': ['', 'Path to the root folder where to store websites. Used by the default connector (fs).', 'string'],
+  'fs-root': ['', 'Path to the root folder where to store websites. Used by the default storage connector (fs).', 'string'],
+  'fs-hosting-root': ['', 'Path to the root folder where to publish websites. Used by the default hosting connector (fs).', 'string'],
   'session-name': ['', 'Sets the name param of the express module "cookie-session".', 'string'],
   'session-secret': ['s', 'Session secret', 'string'],
   'ssl-port': [ false, 'Port to listen to for SSL/HTTPS', 'int'],
@@ -49,6 +50,7 @@ if(options['protocol']) process.env.SILEX_PROTOCOL = options['protocol']
 if(options.config) process.env.SILEX_CONFIG = options.config
 if(options['client-config']) process.env.SILEX_CLIENT_CONFIG = options['client-config']
 if(options['fs-root']) process.env.SILEX_FS_ROOT = options['fs-root']
+if(options['fs-hosting-root']) process.env.SILEX_FS_HOSTING_ROOT = options['fs-hosting-root']
 if(options['session-name']) process.env.SILEX_SESSION_NAME = options['session-name']
 if(options['session-secret']) process.env.SILEX_SESSION_SECRET = options['session-secret']
 if(options['ssl-port']) process.env.SILEX_SSL_PORT = options['ssl-port']

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import fs, { stat } from 'fs/promises'
+import fs from 'fs/promises'
 import { createWriteStream } from 'fs'
 import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors'
 import { dirname, join } from 'path'
@@ -64,7 +64,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     this.initFs()
   }
 
-  private async initFs() {
+  protected async initFs() {
     const stat = await fs.stat(this.options.path).catch(() => null)
     if (!stat) {
       // create data folder with a default website
@@ -136,7 +136,7 @@ export class FsStorage implements StorageConnector<FsSession> {
   async getWebsiteMeta(session: FsSession, id: WebsiteId): Promise<WebsiteMeta> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
     // Get stats for website folder
-    const fileStat = await stat(join(this.options.path, websiteId))
+    const fileStat = await fs.stat(join(this.options.path, websiteId))
     const path = join(this.options.path, websiteId, WEBSITE_META_DATA_FILE)
     // Get meta file
     const content = await fs.readFile(path)

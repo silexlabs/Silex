@@ -22,6 +22,7 @@ const TIME_TO_KEEP_AFTER_STOP = 60*10*1000 // 10 min
 
 // Store the jobs in memory
 const jobs = new Array<JobData>()
+const timers = new WeakMap<JobData, NodeJS.Timeout>()
 
 // Key which will change on server restart
 const processKey = Math.ceil(Math.random() * 1000000)
@@ -60,7 +61,8 @@ export function jobError(id: JobId, message = ''): boolean {
 // Remove a job from memory
 // This is also used in unit tests to avoid memory lea
 export function killJob(job: JobData) {
-  clearTimeout(job._timeout)
+  clearTimeout(timers.get(job))
+  timers.delete(job)
   jobs.splice(jobs.findIndex(j => job.jobId === j.jobId), 1)
 }
 
@@ -70,7 +72,7 @@ function end(id: JobId, status: JobStatus, message = ''): boolean {
   if(job) {
     job.status = status
     if(message) job.message = message
-    job._timeout = setTimeout(() => killJob(job), TIME_TO_KEEP_AFTER_STOP)
+    timers.set(job, setTimeout(() => killJob(job), TIME_TO_KEEP_AFTER_STOP))
     return true
   }
   return false

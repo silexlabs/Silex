@@ -20,8 +20,9 @@ import { getEditor, getEditorConfig } from './grapesjs'
 import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
 import { ConnectorId, WebsiteId } from '../types'
 import { Editor, EditorConfig, Page } from 'grapesjs'
-import { PublicationTransformer, validatePublicationTransformer } from './publication-transformers'
+import { PublicationTransformer, publicationTransformerDefault, validatePublicationTransformer } from './publication-transformers'
 import * as api from './api'
+import { assetsPublicationTransformer } from './assetUrl'
 
 /**
  * @fileoverview Silex client side config
@@ -85,7 +86,14 @@ export class ClientConfig extends Config {
   /**
    * Publication transformers let plugins change files before they are published
    */
-  publicationTransformers: Array<PublicationTransformer> = []
+  publicationTransformers: Array<PublicationTransformer> = [assetsPublicationTransformer, publicationTransformerDefault]
+
+  /**
+   * Reset publication transformers
+   */
+  resetPublicationTransformers() {
+    this.publicationTransformers = [assetsPublicationTransformer]
+  }
 
   /**
    * Add a publication transformer(s)

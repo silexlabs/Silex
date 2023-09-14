@@ -16,7 +16,7 @@
  */
 
 import { getPageSlug } from '../../page'
-import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
+import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublicationPublishBody, ClientSideFile, ClientSideFileType, ConnectorData, ConnectorType, ConnectorUser, JobStatus, Initiator, PublicationData, PublicationJobData, PublicationSettings, WebsiteData, WebsiteFile, WebsiteId, WebsiteSettings } from '../../types'
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
@@ -323,7 +323,7 @@ export class PublicationManager {
       const slug = getPageSlug(page.get('name'))
       const cssInitialPath = `/css/${slug}.css`
       const htmlInitialPath = `/${slug}.html`
-      const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS)
+      const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS, Initiator.HTML)
       const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
       const body = this.editor.getHtml({ component })
