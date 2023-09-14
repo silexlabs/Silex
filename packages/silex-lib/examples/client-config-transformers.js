@@ -23,19 +23,20 @@
 export default async function (config) {
   config.addPublicationTransformers({
     // Override how components render at publication by grapesjs
-    renderComponent(component, initialHtml) {
-      return initialHtml
+    renderComponent(component, toHtml) {
+      return toHtml()
     },
     // Override how styles render at publication by grapesjs
     renderCssRule(rule, initialCss) {
-      return initialCss
+      return initialCss()
     },
     // Define how files are named
     transformPath(path) {
       return path
     },
     // Difine files URLs
-    transformPermalink(link) {
+    transformPermalink(link, type, initiator) {
+      console.log('transformPermalink', { link, type, initiator})
       return link
     },
     // Transform files after they are rendered and before they are published

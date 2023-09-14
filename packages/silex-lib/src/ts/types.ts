@@ -203,6 +203,11 @@ export enum ClientSideFileType {
   CSS = 'css',
 }
 
+export enum Initiator {
+  HTML = 'html',
+  CSS = 'css',
+}
+
 /**
  * Type for a client side file when the content is not available, used to handle file names and paths and urls
  */

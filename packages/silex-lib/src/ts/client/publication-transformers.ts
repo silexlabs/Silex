@@ -16,7 +16,7 @@
  */
 
 import { Component, CssRule, Editor, ObjectStrings, Page } from 'grapesjs'
-import { ClientSideFile, ClientSideFileType, ClientSideFileWithPermalink, PublicationData } from '../types'
+import { ClientSideFile, ClientSideFileType, ClientSideFileWithPermalink, Initiator, PublicationData } from '../types'
 import { onAll } from './utils'
 
 /**
@@ -47,9 +47,40 @@ export interface PublicationTransformer {
   // Transform files after they are rendered and before they are published
   transformFile?(file: ClientSideFile): ClientSideFile
   // Define files URLs
-  transformPermalink?(link: string, type: ClientSideFileType): string
+  transformPermalink?(link: string, type: ClientSideFileType, initiator: Initiator): string
   // Define where files are published
   transformPath?(path: string, type: ClientSideFileType): string
+}
+
+export const publicationTransformerDefault: PublicationTransformer = {
+  // Override how components render at publication by grapesjs
+  renderComponent(component: Component, toHtml: () => string): string | undefined {
+    return toHtml()
+  },
+  // Override how styles render at publication by grapesjs
+  renderCssRule(rule: CssRule, initialRule: () => ObjectStrings): ObjectStrings | undefined {
+    return initialRule()
+  },
+  // Define where files are published
+  transformPath(path: string, type: ClientSideFileType): string {
+    return path
+  },
+  // Define files URLs
+  transformPermalink(link: string, type: ClientSideFileType, initiator: Initiator): string {
+    switch(initiator) {
+      case Initiator.HTML:
+        return link
+      case Initiator.CSS:
+        // In case of a link from a CSS file, we need to go up one level
+        return `../${link.replace(/^\//, '')}`
+      default:
+        throw new Error(`Unknown initiator ${initiator}`)
+    }
+  },
+  // Define how files are named
+  transformFile(file: ClientSideFile): ClientSideFile {
+    return file
+  }
 }
 
 export function validatePublicationTransformer(transformer: PublicationTransformer): void {
@@ -97,7 +128,7 @@ export function renderComponents(editor: Editor) {
         c[ATTRIBUTE_METHOD_STORE_HREF] = href
         c.set('attributes', {
           ...c.get('attributes'),
-          href: transformPermalink(editor, href, ClientSideFileType.HTML),
+          href: transformPermalink(editor, href, ClientSideFileType.HTML, Initiator.HTML),
         })
       }
       // Handle both c.attributes.src and c.attributes.attributes.src
@@ -105,7 +136,7 @@ export function renderComponents(editor: Editor) {
       // Especially when the component is not on the current page, we need c.attributes.attributes.src
       if(c.get('attributes').src) {
         c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('attributes').src
-        const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET)
+        const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET, Initiator.HTML)
         c.set('attributes', {
           ...c.get('attributes'),
           src,
@@ -113,16 +144,16 @@ export function renderComponents(editor: Editor) {
       }
       if(c.get('src')) {
         c[ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC] = c.get('src')
-        const src = transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET)
+        const src = transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET, Initiator.HTML)
         c.set('src', src)
       }
       c.toHTML = () => {
-        return config.publicationTransformers.reduce((html: string, transformer: PublicationTransformer) => {
+        return config.publicationTransformers.reduce((xxx: string, transformer: PublicationTransformer) => {
           try {
-            return transformer.renderComponent ? transformer.renderComponent(c, () => html) ?? html : html
+            return transformer.renderComponent ? transformer.renderComponent(c, () => xxx) ?? xxx : xxx
           } catch (e) {
             console.error('Publication transformer: error rendering component', c, e)
-            return html
+            return xxx
           }
         }, initialToHTML())
       }
@@ -145,11 +176,12 @@ export function renderCssRules(editor: Editor) {
       style[ATTRIBUTE_METHOD_STORE_CSS] = style.getStyle
       style.getStyle = () => {
         try {
+          const initialStyle = transformBgImage(editor, initialGetStyle())
           const result = config.publicationTransformers.reduce((s: CssRule, transformer: PublicationTransformer) => {
             return {
-              ...transformer.renderCssRule ? transformer.renderCssRule(s, initialGetStyle) ?? s : s,
+              ...transformer.renderCssRule ? transformer.renderCssRule(s, () => initialStyle) ?? s : s,
             }
-          }, transformBgImage(editor, initialGetStyle()))
+          }, initialStyle)
           return result
         } catch (e) {
           console.error('Publication transformer: error rendering style', style, e)
@@ -169,7 +201,7 @@ export function transformBgImage(editor: Editor, style: ObjectStrings): ObjectSt
   if (bgUrl) {
     return {
       ...style,
-      'background-image': `url(${transformPermalink(editor, bgUrl, ClientSideFileType.ASSET)})`,
+      'background-image': `url(${transformPermalink(editor, bgUrl, ClientSideFileType.ASSET, Initiator.CSS)})`,
     }
   }
   return style
@@ -198,11 +230,11 @@ export function transformFiles(editor: Editor, data: PublicationData) {
  * Transform files paths
  * Exported for unit tests
  */
-export function transformPermalink(editor: Editor, path: string, type: ClientSideFileType): string {
+export function transformPermalink(editor: Editor, path: string, type: ClientSideFileType, initiator: Initiator): string {
   const config = editor.getModel().get('config')
   return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
     try {
-      return transformer.transformPermalink ? transformer.transformPermalink(result, type) ?? result : result
+      return transformer.transformPermalink ? transformer.transformPermalink(result, type, initiator) ?? result : result
     } catch (e) {
       console.error('Publication transformer: error transforming path', result, e)
       return result

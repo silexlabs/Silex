@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import fs from 'fs/promises'
 import { ConnectorFile, StorageConnector, HostingConnector, StatusCallback, ConnectorSession, contentToString, toConnectorData, ConnectorFileContent} from './connectors'
 import { join } from 'path'
 import { FsStorage } from './FsStorage'
@@ -23,21 +24,25 @@ import { JobManager } from '../jobs'
 
 type FsSession = ConnectorSession
 
-interface FsOptions {
-  path?: string
-}
-
 export class FsHosting extends FsStorage implements HostingConnector<FsSession> {
   connectorId = 'fs-hosting'
   displayName = 'File system hosting'
   connectorType = ConnectorType.HOSTING
+
+  protected async initFs() {
+    const stat = await fs.stat(this.options.path).catch(() => null)
+    if (!stat) {
+      await fs.mkdir(join(this.options.path, 'assets'), { recursive: true })
+      await fs.mkdir(join(this.options.path, 'css'), { recursive: true })
+    }
+  }
 
   async publish(session: FsSession, id: WebsiteId, files: ConnectorFile[], {startJob, jobSuccess, jobError}: JobManager): Promise<JobData> {
     const job = startJob(`Publishing to ${this.displayName}`) as PublicationJobData
     job.logs = [[`Publishing to ${this.displayName}`]]
     job.errors = [[]]
     // Call write without id or folder so that it goes in / (path will be modified by publication transformers)
-    this.write(session, '', files, '', async ({status, message}) => {
+    await this.write(session, '', files, '', async ({status, message}) => {
       // Update the job status
       job.status = status
       job.message = message

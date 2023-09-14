@@ -56,7 +56,6 @@ export const internalLinksPlugin = (editor, opts) => {
       // mark all links as issues
       const issues = []
       onAll(component => {
-        console.log(component.getAttributes().href, getPageLink(page.previous('name')), page.previous('name'))
         if(component.getAttributes().href === getPageLink(page.previous('name'))) {
           issues.push(component)
         }

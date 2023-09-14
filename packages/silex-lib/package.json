@@ -16,7 +16,6 @@
     "src/",
     "public",
     ".silex.js",
-    ".silex",
     ".env.default",
     "package.json",
     "package-lock.json",
