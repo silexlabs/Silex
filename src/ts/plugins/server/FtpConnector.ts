@@ -23,9 +23,10 @@ import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
 import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, defaultWebsiteData, WebsiteData, ConnectorOptions } from '../../types'
 import { ServerConfig } from '../../server/config'
 import { join } from 'path'
-import { type } from 'os'
+import { tmpdir } from 'os'
 import { v4 as uuid } from 'uuid'
 import { JobManager } from '../../server/jobs'
+import { mkdtemp } from 'fs/promises'
 
 /**
  * @fileoverview FTP connector for Silex
@@ -338,7 +339,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
 
   async getLoginForm(session: FtpSession, redirectTo: string): Promise<string | null> {
     const { host, user, pass, port, secure, publicationPath, storageRootPath, websiteUrl } = this.sessionData(session)
-    requiredParam(type, 'connector type')
     return `
         <style>
           ${formCss}
@@ -488,6 +488,17 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     const ftp = await this.getClient(this.sessionData(session))
     const websitePath = join(storageRootPath, websiteId)
     await this.rmdir(ftp, websitePath)
+    this.closeClient(ftp)
+  }
+
+  async duplicateWebsite(session: FtpSession, websiteId: string, newWebsiteId: string): Promise<void> {
+    const storageRootPath = this.rootPath(session)
+    const ftp = await this.getClient(this.sessionData(session))
+    const websitePath = join(storageRootPath, websiteId)
+    const newWebsitePath = join(storageRootPath, newWebsiteId)
+    const tempDir = await mkdtemp(tmpdir())
+    await ftp.downloadToDir(websitePath, tempDir)
+    await ftp.uploadFromDir(tempDir, newWebsitePath)
     this.closeClient(ftp)
   }
 

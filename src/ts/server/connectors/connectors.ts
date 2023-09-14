@@ -86,6 +86,7 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
   createWebsite(session: Session, data: WebsiteMetaFileContent): Promise<WebsiteId>
   updateWebsite(session: Session, websiteId: WebsiteId, data: WebsiteData): Promise<void>
   deleteWebsite(session: Session, websiteId: WebsiteId): Promise<void>
+  duplicateWebsite(session: Session, websiteId: WebsiteId, newWebsiteId: WebsiteId): Promise<void>
   // CRUD on assets
   writeAssets(session: Session, websiteId: WebsiteId, files: ConnectorFile[], status?: StatusCallback): Promise<string[] | void>
   readAsset(session: Session, websiteId: WebsiteId, fileName: string): Promise<ConnectorFileContent>
@@ -102,7 +103,6 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
 export interface HostingConnector<Session extends ConnectorSession = ConnectorSession> extends Connector<Session> {
   publish(session: Session, websiteId: WebsiteId, files: ConnectorFile[], jobManager: JobManager): Promise<JobData> // Pass the jobManager as plugins do not neccessarily share the same module instance
   getUrl(session: Session, websiteId: WebsiteId): Promise<string>
-
 }
 
 export function toConnectorEnum(type: string | ConnectorType): ConnectorType {

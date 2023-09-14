@@ -68,13 +68,13 @@ export const publicationTransformerDefault: PublicationTransformer = {
   // Define files URLs
   transformPermalink(link: string, type: ClientSideFileType, initiator: Initiator): string {
     switch(initiator) {
-      case Initiator.HTML:
-        return link
-      case Initiator.CSS:
-        // In case of a link from a CSS file, we need to go up one level
-        return `../${link.replace(/^\//, '')}`
-      default:
-        throw new Error(`Unknown initiator ${initiator}`)
+    case Initiator.HTML:
+      return link
+    case Initiator.CSS:
+      // In case of a link from a CSS file, we need to go up one level
+      return `../${link.replace(/^\//, '')}`
+    default:
+      throw new Error(`Unknown initiator ${initiator}`)
     }
   },
   // Define how files are named
