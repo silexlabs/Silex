@@ -230,9 +230,8 @@ export default function (config: ServerConfig, opts = {}): Router {
   router.post(API_WEBSITE_DUPLICATE, async (req, res) => {
     try {
       const query: ApiWebsiteDuplicateQuery = req.query as any
-      const fromId= requiredParam<WebsiteId>(query.fromId, 'Website id')
-      const toId= requiredParam<WebsiteId>(query.toId, 'New website id')
-      await duplicateWebsite(req['session'], fromId, toId, query.connectorId)
+      const websiteId= requiredParam<WebsiteId>(query.websiteId, 'New website id')
+      await duplicateWebsite(req['session'], websiteId, query.connectorId)
       res.status(200).json({ message: 'Website duplicated' } as ApiError)
     } catch (e) {
       console.error('Error duplicating website data', e)
@@ -412,12 +411,12 @@ export default function (config: ServerConfig, opts = {}): Router {
   /**
    * Duplicate a website
    */
-  async function duplicateWebsite(session: any, websiteId: string, newWebsiteId: string, connectorId?: string): Promise<void> {
+  async function duplicateWebsite(session: any, websiteId: string, connectorId?: string): Promise<void> {
     // Get the desired connector
     const storageConnector = await getStorageConnector(session, connectorId)
 
     // Duplicate the website
-    return storageConnector.duplicateWebsite(session, websiteId, newWebsiteId)
+    return storageConnector.duplicateWebsite(session, websiteId)
   }
 
   /**

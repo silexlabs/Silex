@@ -491,7 +491,8 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     this.closeClient(ftp)
   }
 
-  async duplicateWebsite(session: FtpSession, websiteId: string, newWebsiteId: string): Promise<void> {
+  async duplicateWebsite(session: FtpSession, websiteId: string): Promise<void> {
+    const newWebsiteId = uuid()
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const websitePath = join(storageRootPath, websiteId)

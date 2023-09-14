@@ -221,6 +221,24 @@ export default class GitlabConnector implements StorageConnector {
     })
   }
 
+  async readFile(session: GitlabSession, websiteId: string, fileName: string): Promise<Buffer> {
+    const safePath = fileName.replace(/^\//, '')
+    // Call the API
+    const url = `https://gitlab.com/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const json = await response.json()
+    if(!response.ok) throw new ApiError(`Error reading file "${fileName}" from Gitlab: ${json?.message ?? json?.error ?? response.statusText}`, response.status)
+    // From base64 string to buffer
+    const buf = Buffer.from(json.content, 'base64')
+    // Return the image bytes
+    return buf
+  }
+
   /*
    * Get the meta repo path for the current user
    * The meta repo contains a JSON file which contains the list of websites
@@ -274,18 +292,6 @@ export default class GitlabConnector implements StorageConnector {
     let json: { message: string, error: string } | any
     // Handle the case when the server returns an non-JSON response (e.g. 400 Bad Request)
     const text = await response.text()
-    try {
-      json = JSON.parse(text)
-    } catch (e) {
-      if(!response.ok) {
-        // A real error
-        throw e
-      } else {
-        // Useless error linked to the fact that the response is not JSON
-        console.error('Gitlab API error (3) - could not parse response', response.status, response.statusText, {url, method, body, params, text})
-        return text
-      }
-    }
     if(!response.ok) {
       if (response.status === 401 && session?.gitlab?.token?.refresh_token) {
         // Refresh the token
@@ -323,6 +329,18 @@ export default class GitlabConnector implements StorageConnector {
         const message = typeof json?.message === 'object' ? Object.entries(json.message).map(entry => entry.join(' ')).join(' ') : json?.message ?? json?.error ?? response.statusText
         console.error('Gitlab API error (1)', response.status, response.statusText, {message})
         throw new ApiError(`Gitlab API error (1): ${message}`, response.status)
+      }
+    }
+    try {
+      json = JSON.parse(text)
+    } catch (e) {
+      if(!response.ok) {
+        // A real error
+        throw e
+      } else {
+        // Useless error linked to the fact that the response is not JSON
+        console.error('Gitlab API error (3) - could not parse response', response.status, response.statusText, {url, method, body, params, text})
+        return text
       }
     }
     return json
@@ -528,6 +546,37 @@ export default class GitlabConnector implements StorageConnector {
     //})
   }
 
+  async duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void> {
+    // Get the repo meta data
+    const meta = await this.getWebsiteMeta(session, websiteId)
+    // List all the repository files
+    const blobs = await this.callApi(session, `api/v4/projects/${websiteId}/repository/tree`, 'GET', null, {
+      recursive: true,
+    })
+    const files = blobs
+      .filter(item => item.type === 'blob')
+      .map(item => item.path)
+    // Create a new repo
+    const newId = await this.createWebsite(session, {
+      ...meta,
+      name: meta.name + ' Copy ' + new Date().toISOString().replace(/T.*/, '') + ' ' + Math.random().toString(36).substring(2, 4),
+    })
+    // Upload all files
+    for(const file of files) {
+      const path = encodeURIComponent(file)
+      const content = await this.readFile(session, websiteId, path)
+      // From buffer to string
+      const contentStr = content.toString('base64')
+      switch(file) {
+        case WEBSITE_DATA_FILE:
+          await this.updateFile(session, newId, path, contentStr, true)
+          break;
+        default:
+          await this.createFile(session, newId, path, contentStr, true)
+      }
+    }
+  }
+
   async getWebsiteMeta(session: GitlabSession, websiteId: WebsiteId): Promise<WebsiteMeta> {
     //const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
     //  ref: this.options.branch,
@@ -615,20 +664,7 @@ export default class GitlabConnector implements StorageConnector {
   async readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent> {
     // Remove leading slash
     const finalPath = this.getAssetPath(fileName)
-    // Call the API
-    const url = `https://gitlab.com/api/v4/projects/${websiteId}/repository/files/${finalPath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    const json = await response.json()
-    if(!response.ok) throw new ApiError(`Error reading file "${fileName}" from Gitlab: ${json?.message ?? json?.error ?? response.statusText}`, response.status)
-    // From base64 string to buffer
-    const buf = Buffer.from(json.content, 'base64')
-    // Return the image bytes
-    return buf
+    return this.readFile(session, websiteId, finalPath)
   }
 
   async deleteAssets(session: GitlabSession, websiteId: string, fileNames: string[]): Promise<void> {
