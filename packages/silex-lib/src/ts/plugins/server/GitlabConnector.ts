@@ -568,11 +568,11 @@ export default class GitlabConnector implements StorageConnector {
       // From buffer to string
       const contentStr = content.toString('base64')
       switch(file) {
-        case WEBSITE_DATA_FILE:
-          await this.updateFile(session, newId, path, contentStr, true)
-          break;
-        default:
-          await this.createFile(session, newId, path, contentStr, true)
+      case WEBSITE_DATA_FILE:
+        await this.updateFile(session, newId, path, contentStr, true)
+        break
+      default:
+        await this.createFile(session, newId, path, contentStr, true)
       }
     }
   }
