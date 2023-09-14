@@ -18,9 +18,9 @@
 import { Router } from 'express'
 import formidable from 'formidable'
 import PersistentFile from 'formidable/src/PersistentFile'
-import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH } from '../../constants'
+import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH, API_WEBSITE_DUPLICATE } from '../../constants'
 import { createReadStream } from 'fs'
-import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody } from '../../types'
+import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteDuplicateQuery } from '../../types'
 import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
 import { Readable } from 'stream'
 import { requiredParam } from '../utils/validation'
@@ -226,6 +226,24 @@ export default function (config: ServerConfig, opts = {}): Router {
     }
   })
 
+  // Duplicate website
+  router.post(API_WEBSITE_DUPLICATE, async (req, res) => {
+    try {
+      const query: ApiWebsiteDuplicateQuery = req.query as any
+      const fromId= requiredParam<WebsiteId>(query.fromId, 'Website id')
+      const toId= requiredParam<WebsiteId>(query.toId, 'New website id')
+      await duplicateWebsite(req['session'], fromId, toId, query.connectorId)
+      res.status(200).json({ message: 'Website duplicated' } as ApiError)
+    } catch (e) {
+      console.error('Error duplicating website data', e)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
+      } else {
+        res.status(500).json({ message: e.message } as ApiError)
+      }
+    }
+  })
+
   // Load assets
   router.get(API_WEBSITE_ASSET_READ + '/:path', async (req, res) => {
     {
@@ -389,6 +407,17 @@ export default function (config: ServerConfig, opts = {}): Router {
 
     // Delete the website
     return storageConnector.deleteWebsite(session, websiteId)
+  }
+
+  /**
+   * Duplicate a website
+   */
+  async function duplicateWebsite(session: any, websiteId: string, newWebsiteId: string, connectorId?: string): Promise<void> {
+    // Get the desired connector
+    const storageConnector = await getStorageConnector(session, connectorId)
+
+    // Duplicate the website
+    return storageConnector.duplicateWebsite(session, websiteId, newWebsiteId)
   }
 
   /**
