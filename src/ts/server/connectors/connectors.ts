@@ -86,7 +86,7 @@ export interface StorageConnector<Session extends ConnectorSession = ConnectorSe
   createWebsite(session: Session, data: WebsiteMetaFileContent): Promise<WebsiteId>
   updateWebsite(session: Session, websiteId: WebsiteId, data: WebsiteData): Promise<void>
   deleteWebsite(session: Session, websiteId: WebsiteId): Promise<void>
-  duplicateWebsite(session: Session, websiteId: WebsiteId, newWebsiteId: WebsiteId): Promise<void>
+  duplicateWebsite(session: Session, websiteId: WebsiteId): Promise<void>
   // CRUD on assets
   writeAssets(session: Session, websiteId: WebsiteId, files: ConnectorFile[], status?: StatusCallback): Promise<string[] | void>
   readAsset(session: Session, websiteId: WebsiteId, fileName: string): Promise<ConnectorFileContent>

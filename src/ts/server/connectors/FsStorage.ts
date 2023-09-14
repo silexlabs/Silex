@@ -198,10 +198,16 @@ export class FsStorage implements StorageConnector<FsSession> {
     return fs.rmdir(path, { recursive: true })
   }
 
-  async duplicateWebsite(session: FsSession, websiteId: WebsiteId, newWebsiteId: WebsiteId): Promise<void> {
+  async duplicateWebsite(session: FsSession, websiteId: WebsiteId): Promise<void> {
+    const newWebsiteId = uuid()
     const from = join(this.options.path, websiteId)
     const to = join(this.options.path, newWebsiteId)
     await copyDir(from, to)
+    const meta = await this.getWebsiteMeta(session, websiteId)
+    await this.setWebsiteMeta(session, newWebsiteId, {
+      ...meta,
+      name: `${meta.name} copy`,
+    })
   }
 
   async listWebsites(session: any): Promise<WebsiteMeta[]> {
