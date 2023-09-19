@@ -14,8 +14,8 @@ import {customElement, property} from 'lit/decorators.js';
  * @slot - This element has a slot
  * @csspart button - The button
  */
-@customElement('my-element')
-export class MyElement extends LitElement {
+@customElement('steps-selector')
+export class StepsSelector extends LitElement {
   static override styles = css`
     :host {
       display: block;
@@ -63,6 +63,6 @@ export class MyElement extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'my-element': MyElement;
+    'steps-selector': StepsSelector;
   }
 }

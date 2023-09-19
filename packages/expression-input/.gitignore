@@ -3,9 +3,9 @@
 /test/
 custom-elements.json
 # top level source
-my-element.js
-my-element.js.map
-my-element.d.ts
-my-element.d.ts.map
+steps-selector.js
+steps-selector.js.map
+steps-selector.d.ts
+steps-selector.d.ts.map
 # only generated for size check
-my-element.bundled.js
+steps-selector.bundled.js
