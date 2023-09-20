@@ -39,10 +39,9 @@ let PopinDialog = class PopinDialog extends LitElement {
     constructor() {
         super();
         this.hidden = false;
-        this.ensureElementInView_ = this.ensureElementInView.bind(this);
-        this.setAttribute('tabindex', "0");
-        this.onkeydown = (event) => this.keydown(event);
-        this.onblur = () => this.blured();
+        this.resized_ = this.ensureElementInView.bind(this);
+        this.blured_ = this.hide.bind(this);
+        this.keydown_ = this.checkShortcuts.bind(this);
     }
     render() {
         setTimeout(() => this.ensureElementInView());
@@ -61,16 +60,24 @@ let PopinDialog = class PopinDialog extends LitElement {
     }
     connectedCallback() {
         super.connectedCallback();
-        window.addEventListener('resize', this.ensureElementInView_);
+        // Make the element focusable
+        this.setAttribute('tabindex', "0");
+        // Attach events on this instance
+        this.addEventListener('blur', this.blured_);
+        this.addEventListener('keydown', this.keydown_);
+        // Attach elements on window
+        window.addEventListener('resize', this.resized_);
     }
     disconnectedCallback() {
-        window.removeEventListener('resize', this.ensureElementInView_);
+        window.removeEventListener('resize', this.resized_);
+        this.removeEventListener('blur', this.blured_);
+        this.removeEventListener('keydown', this.keydown_);
         super.disconnectedCallback();
     }
-    blured() {
+    hide() {
         this.setAttribute('hidden', '');
     }
-    keydown(event) {
+    checkShortcuts(event) {
         if (event.key === 'Escape') {
             this.blur();
         }

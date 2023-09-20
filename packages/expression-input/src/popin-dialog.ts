@@ -90,9 +90,6 @@ main {
 
   constructor() {
     super()
-    this.setAttribute('tabindex', "0")
-    this.onkeydown = (event: KeyboardEvent) => this.keydown(event)
-    this.onblur = () => this.blured()
   }
 
   override render() {
@@ -111,23 +108,33 @@ main {
     `;
   }
 
-  private ensureElementInView_ = this.ensureElementInView.bind(this);
+  private resized_ = this.ensureElementInView.bind(this);
+  private blured_ = this.hide.bind(this);
+  private keydown_ = this.checkShortcuts.bind(this);
 
   override connectedCallback() {
     super.connectedCallback();
-    window.addEventListener('resize', this.ensureElementInView_);
+    // Make the element focusable
+    this.setAttribute('tabindex', "0")
+    // Attach events on this instance
+    this.addEventListener('blur', this.blured_)
+    this.addEventListener('keydown', this.keydown_)
+    // Attach elements on window
+    window.addEventListener('resize', this.resized_);
   }
 
   override disconnectedCallback() {
-    window.removeEventListener('resize', this.ensureElementInView_);
+    window.removeEventListener('resize', this.resized_);
+    this.removeEventListener('blur', this.blured_)
+    this.removeEventListener('keydown', this.keydown_)
     super.disconnectedCallback();
   }
 
-  private blured() {
+  private hide() {
     this.setAttribute('hidden', '');
   }
 
-  private keydown(event: KeyboardEvent) {
+  private checkShortcuts(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       this.blur()
     }

@@ -33,11 +33,13 @@ export declare class PopinDialog extends LitElement {
     hidden: boolean;
     constructor();
     render(): import("lit").TemplateResult<1>;
-    private ensureElementInView_;
+    private resized_;
+    private blured_;
+    private keydown_;
     connectedCallback(): void;
     disconnectedCallback(): void;
-    private blured;
-    private keydown;
+    private hide;
+    private checkShortcuts;
     attributeChangedCallback(name: string, _old: string | null, value: string | null): void;
     private ensureElementInView;
 }
