@@ -12,6 +12,37 @@ Use cases
 * Select a folder in a file system
 * Make decisions in a decision tree
 
+## Roadmap
+
+Project
+
+- [ ] Licence AGPL
+- [ ] publish to npm
+
+Popin
+
+- [ ] form: json to form
+- [ ] list
+
+Selector
+
+- [ ] values: icon, name (may be a function of options), tags, options, optionsForm, type, helpText (with html links to directus collection)
+- [ ] callback getNextChoices(pastChoices)
+- [ ] result (the final value resulting the current choices)
+- [ ] state: valid, warning, error
+- [ ] message (if error or warning)
+- [ ] copy / paste / set / unset
+- [ ] events: change
+
+SelectorItem
+
+- [ ] value
+- [ ] events: set, unset
+- [ ] openChoices/close, openOptions/close
+- [ ] state
+- [ ] message
+- [ ] helpText
+
 ## Integration guide
 
 ## Development / contribution

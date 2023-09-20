@@ -9,14 +9,14 @@ import {StepsSelector} from '../steps-selector.js';
 import {fixture, assert} from '@open-wc/testing';
 import {html} from 'lit/static-html.js';
 
-suite('my-element', () => {
+suite('steps-selector', () => {
   test('is defined', () => {
-    const el = document.createElement('my-element');
+    const el = document.createElement('steps-selector');
     assert.instanceOf(el, StepsSelector);
   });
 
   test('renders with default values', async () => {
-    const el = await fixture(html`<my-element></my-element>`);
+    const el = await fixture(html`<steps-selector></steps-selector>`);
     assert.shadowDom.equal(
       el,
       `
@@ -28,7 +28,7 @@ suite('my-element', () => {
   });
 
   test('renders with a set name', async () => {
-    const el = await fixture(html`<my-element name="Test"></my-element>`);
+    const el = await fixture(html`<steps-selector name="Test"></steps-selector>`);
     assert.shadowDom.equal(
       el,
       `
@@ -40,7 +40,7 @@ suite('my-element', () => {
   });
 
   test('handles a click', async () => {
-    const el = (await fixture(html`<my-element></my-element>`)) as StepsSelector;
+    const el = (await fixture(html`<steps-selector></steps-selector>`)) as StepsSelector;
     const button = el.shadowRoot!.querySelector('button')!;
     button.click();
     await el.updateComplete;
@@ -55,7 +55,7 @@ suite('my-element', () => {
   });
 
   test('styling applied', async () => {
-    const el = (await fixture(html`<my-element></my-element>`)) as StepsSelector;
+    const el = (await fixture(html`<steps-selector></steps-selector>`)) as StepsSelector;
     await el.updateComplete;
     assert.equal(getComputedStyle(el).paddingTop, '16px');
   });
