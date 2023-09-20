@@ -2,7 +2,7 @@ import {PopinDialog} from '../popin-dialog';
 import {fixture, assert} from '@open-wc/testing';
 import {html} from 'lit/static-html.js';
 
-suite('popin', () => {
+suite('popin-dialog', () => {
   test('is defined', () => {
     const el = document.createElement('popin-dialog')
     assert.instanceOf(el, PopinDialog)

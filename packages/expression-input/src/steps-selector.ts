@@ -1,7 +1,9 @@
 /**
- * @license
- * Copyright 2019 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
+ * These actions can be done by clicking on buttons in the UI:
+ * - reset to default value
+ * - copy value to clipboard
+ * - paste value from clipboard
+ * - add a next step at the end of the selection
  */
 
 import {LitElement, html, css} from 'lit';

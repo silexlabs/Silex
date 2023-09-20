@@ -74,8 +74,11 @@ let PopinDialog = class PopinDialog extends LitElement {
         this.removeEventListener('keydown', this.keydown_);
         super.disconnectedCallback();
     }
-    hide() {
-        this.setAttribute('hidden', '');
+    hide(e) {
+        console.log('hide', e.target, e.target !== this);
+        if (!this.contains(e.relatedTarget) && e.target !== this) {
+            this.setAttribute('hidden', '');
+        }
     }
     checkShortcuts(event) {
         if (event.key === 'Escape') {
@@ -86,6 +89,10 @@ let PopinDialog = class PopinDialog extends LitElement {
         super.attributeChangedCallback(name, _old, value);
         if (name === 'hidden' && value === null) {
             this.focus();
+            this.dispatchEvent(new CustomEvent('popin-dialog-opened'));
+        }
+        if (name === 'hidden' && value !== null) {
+            this.dispatchEvent(new CustomEvent('popin-dialog-closed'));
         }
     }
     ensureElementInView() {

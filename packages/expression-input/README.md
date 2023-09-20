@@ -21,8 +21,8 @@ Project
 
 Popin
 
-- [ ] form: json to form
-- [ ] list
+- [x] Display where placed
+- [x] Handle focus
 
 Selector
 

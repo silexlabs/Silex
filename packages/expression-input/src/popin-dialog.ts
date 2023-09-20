@@ -130,8 +130,11 @@ main {
     super.disconnectedCallback();
   }
 
-  private hide() {
-    this.setAttribute('hidden', '');
+  private hide(e: FocusEvent) {
+    console.log('hide', e.target, e.target !== this)
+    if(!this.contains(e.relatedTarget as Node) && e.target !== this) {
+      this.setAttribute('hidden', '');
+    }
   }
 
   private checkShortcuts(event: KeyboardEvent) {
@@ -144,6 +147,10 @@ main {
     super.attributeChangedCallback(name, _old, value);
     if (name === 'hidden' && value === null) {
       this.focus()
+      this.dispatchEvent(new CustomEvent('popin-dialog-opened'))
+    }
+    if (name === 'hidden' && value !== null) {
+      this.dispatchEvent(new CustomEvent('popin-dialog-closed'))
     }
   }
 

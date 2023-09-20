@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;steps-selector-item> Demo</title>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/lit/polyfill-support.js"></script>
+    <script type="module" src="../steps-selector-item.js"></script>
+    <style>
+      .icon {
+        border: solid 1px blue;
+        padding: 10px;
+        background-repeat: no-repeat;
+        background-size: contain;
+        display: inline-block;
+      }
+      .icon.collection {
+        background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="%23E9E9E9" stroke="%23000" stroke-width="2"/><rect x="20" y="20" width="60" height="10" fill="%23333"/><rect x="20" y="35" width="60" height="10" fill="%23555"/><rect x="20" y="50" width="60" height="10" fill="%23777"/><rect x="20" y="65" width="60" height="10" fill="%23999"/></svg>');
+      }
+    </style>
+  </head>
+  <body>
+    <section>
+      <steps-selector-item>
+        <span slot="icon"><div class="icon collection"></div></span>
+        <span slot="name">My step</span>
+        <ul slot="tags">
+          <li>tag1</li>
+          <li>tag2</li>
+        </ul>
+        <div slot="type">Collection</div>
+        <div slot="helpText"><p>Some help text <a href="#">with a link</a></p></div>
+        <div slot="errorText"><p>Some error text</p></div>
+        <ul slot="values">
+          <li value="value1">Value 1</li>
+          <li value="value2">Value 2</li>
+          <li value="value3">Value 3</li>
+          <li value="value4">Value 4</li>
+          <li value="value5">Value 5</li>
+          <li value="value6">Value 6</li>
+          <li value="value7">Value 7</li>
+        </ul>
+        <form slot="options">
+          <label><input type="checkbox" name="option1" value="option1">Option 1</label>
+          <label><input type="checkbox" name="option2" value="option2">Option 2</label>
+          <label><input type="checkbox" name="option3" value="option3">Option 3</label>
+          <button type="submit">Ok</button>
+          <button type="reset">Cancel</button>
+        </form>
+      </steps-selector-item>
+    </section>
+  </body>
+</html>
+
