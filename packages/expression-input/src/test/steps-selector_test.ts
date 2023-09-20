@@ -41,8 +41,8 @@ suite('steps-selector', () => {
 
   test('handles a click', async () => {
     const el = (await fixture(html`<steps-selector></steps-selector>`)) as StepsSelector;
-    const button = el.shadowRoot!.querySelector('button')!;
-    button.click();
+    const button = el.shadowRoot?.querySelector('button');
+    button?.click();
     await el.updateComplete;
     assert.shadowDom.equal(
       el,
