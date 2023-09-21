@@ -62,21 +62,12 @@ export class StepsSelectorItem extends LitElement {
   `;
 
   private _selectedItem = ""
-  @property()
   get selectedItem() {
     return this._selectedItem
   }
   set selectedItem(value: string) {
     this._selectedItem = value
-    this.dispatchEvent(new CustomEvent('set'));
-  }
-
-  @property()
-  get selectedIndex() {
-    return this.selectedItem ? this.values.indexOf(this.selectedItem) : -1
-  }
-  set selectedIndex(index: number) {
-    this.selectedItem = this.values[index]
+    this.dispatchEvent(new CustomEvent('set', {detail: {value}}));
   }
 
   @property({type: Boolean, attribute: 'no-options-editor'})
@@ -84,7 +75,6 @@ export class StepsSelectorItem extends LitElement {
 
   get values() {
     const list = this.querySelector('slot[name="values"]') as HTMLUListElement
-    console.log("values", list)
     return Array.from(list?.querySelectorAll('li') || []).map(li => li.getAttribute('value') ?? '')
   }
 
@@ -149,32 +139,26 @@ export class StepsSelectorItem extends LitElement {
   }
 
   editOptions() {
-    console.log("render", this.values, this.querySelector('slot[name="options"]'))
-    console.log("editOptions")
     this.dispatchEvent(new CustomEvent('edit-options'));
     this.optionsPopin.value?.toggleAttribute('hidden')
   }
 
   editValue() {
-    console.log("editValue")
     this.dispatchEvent(new CustomEvent('edit-value'));
     this.valuesPopin.value?.toggleAttribute('hidden')
   }
 
   showHelpText() {
-    console.log("showHelpText", this.helpTextPopin.value)
     this.helpTextPopin.value?.toggleAttribute('hidden')
   }
 
   delete() {
-    console.log("delete")
     this.dispatchEvent(new CustomEvent('delete'));
   }
 
   selectValue(e: MouseEvent) {
     if (e.target instanceof HTMLElement) {
       const li = e.target.closest('li')
-    console.log("selectValue", li, li?.getAttribute('value'))
       if (li) {
         this.selectedItem = li.getAttribute('value') ?? ''
       }

@@ -8,15 +8,51 @@
     <script src="../node_modules/lit/polyfill-support.js"></script>
     <script type="module" src="../steps-selector.js"></script>
     <style>
-      p {
-        border: solid 1px blue;
-        padding: 8px;
+      steps-selector-item {
+        padding: 10px;
+        margin: 10px;
       }
     </style>
   </head>
   <body>
-    <steps-selector>
-      <p>This is child content</p>
-    </steps-selector>
+    <steps-selector id="prop1"></steps-selector>
+    <script>
+      setTimeout(() => {
+        const steps1 = document.querySelector('#prop1')
+        steps1.steps = [{
+          name: 'Posts',
+          icon: '',
+          type: 'Collection',
+          tags: [],
+          helpText: 'Some text with <a href="#">html links</a>',
+          errorText: 'Some error text',
+        }, {
+          name: 'Where',
+          icon: '',
+          type: 'Filter',
+          tags: ['author', 'lexoyo'],
+          helpText: '<p>Creates an array including only the objects with a given property value, or any truthy value by default. About <a href="https://liquidjs.com/filters/where.html">liquidjs where filter in the docs</a></p>',
+          options: {
+            property: 'author',
+            value: 'lexoyo',
+          },
+          optionsForm: {
+
+          }
+        }]
+        steps1.save()
+        steps1.completion = (steps) => {
+          console.log('completion', steps)
+          return [{
+            name: 'Posts',
+            icon: '',
+            type: 'Collection',
+            tags: [],
+            helpText: 'Some text with <a href="#">html links</a>',
+            errorText: 'Some error text',
+          }]
+        }
+      })
+    </script>
   </body>
 </html>

@@ -44,8 +44,6 @@ export declare class StepsSelectorItem extends LitElement {
     private _selectedItem;
     get selectedItem(): string;
     set selectedItem(value: string);
-    get selectedIndex(): number;
-    set selectedIndex(index: number);
     noOptionsEditor: boolean;
     get values(): string[];
     helpTextPopin: Ref<HTMLElement>;

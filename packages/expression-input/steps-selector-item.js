@@ -60,17 +60,10 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     }
     set selectedItem(value) {
         this._selectedItem = value;
-        this.dispatchEvent(new CustomEvent('set'));
-    }
-    get selectedIndex() {
-        return this.selectedItem ? this.values.indexOf(this.selectedItem) : -1;
-    }
-    set selectedIndex(index) {
-        this.selectedItem = this.values[index];
+        this.dispatchEvent(new CustomEvent('set', { detail: { value } }));
     }
     get values() {
         const list = this.querySelector('slot[name="values"]');
-        console.log("values", list);
         return Array.from((list === null || list === void 0 ? void 0 : list.querySelectorAll('li')) || []).map(li => { var _a; return (_a = li.getAttribute('value')) !== null && _a !== void 0 ? _a : ''; });
     }
     render() {
@@ -123,31 +116,25 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     }
     editOptions() {
         var _a;
-        console.log("render", this.values, this.querySelector('slot[name="options"]'));
-        console.log("editOptions");
         this.dispatchEvent(new CustomEvent('edit-options'));
         (_a = this.optionsPopin.value) === null || _a === void 0 ? void 0 : _a.toggleAttribute('hidden');
     }
     editValue() {
         var _a;
-        console.log("editValue");
         this.dispatchEvent(new CustomEvent('edit-value'));
         (_a = this.valuesPopin.value) === null || _a === void 0 ? void 0 : _a.toggleAttribute('hidden');
     }
     showHelpText() {
         var _a;
-        console.log("showHelpText", this.helpTextPopin.value);
         (_a = this.helpTextPopin.value) === null || _a === void 0 ? void 0 : _a.toggleAttribute('hidden');
     }
     delete() {
-        console.log("delete");
         this.dispatchEvent(new CustomEvent('delete'));
     }
     selectValue(e) {
         var _a;
         if (e.target instanceof HTMLElement) {
             const li = e.target.closest('li');
-            console.log("selectValue", li, li === null || li === void 0 ? void 0 : li.getAttribute('value'));
             if (li) {
                 this.selectedItem = (_a = li.getAttribute('value')) !== null && _a !== void 0 ? _a : '';
             }
@@ -180,12 +167,6 @@ StepsSelectorItem.styles = css `
       content: " ▾";
     }
   `;
-__decorate([
-    property()
-], StepsSelectorItem.prototype, "selectedItem", null);
-__decorate([
-    property()
-], StepsSelectorItem.prototype, "selectedIndex", null);
 __decorate([
     property({ type: Boolean, attribute: 'no-options-editor' })
 ], StepsSelectorItem.prototype, "noOptionsEditor", void 0);
