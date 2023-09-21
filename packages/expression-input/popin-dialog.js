@@ -7,7 +7,27 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 /**
+ * This PopinDialog component is a simple dialog that can be used to display any html on top of your UI
+ * It is not a modal, it is not blocking the UI, it is just a simple dialog that will catch focus and hide when the user press escape or click outside of it
+ * The dialog will be automatically positioned where placed in the DOM but it will be moved and resized to be fully visible on all screen sizes
+ *
+ * Usage:
+ *
+ * ```
+ * <popin-dialog hidden style="width: 400px" no-auto-close>
+ *   <div slot="header">Header</div>
+ *   <div slot="body">Body</div>
+ *   <div slot="footer">Footer</div>
+ * </popin-dialog>
+ * ```
+ *
  * @element popin-dialog
+ * @htmltag popin-dialog
+ * @htmlslot header - The header of the dialog
+ * @htmlslot body - The body of the dialog
+ * @htmlslot footer - The footer of the dialog
+ * @htmlattr hidden - Hide the dialog
+ * @htmlattr no-auto-close - Do not close the dialog when the user click outside of it
  * @fires {CustomEvent} popin-dialog-closed - Fires when the dialog is closed
  * @fires {CustomEvent} popin-dialog-opened - Fires when the dialog is opened
  * @cssprop {Color} --popin-dialog-background - The background color of the dialog
@@ -23,25 +43,15 @@ import { customElement, property } from 'lit/decorators.js';
  * @cssprop {Padding} --popin-dialog-body-padding - The padding of the body
  * @cssprop {Padding} --popin-dialog-footer-padding - The padding of the footer
  *
- * This PopinDialog component is a simple dialog that can be used to display any html on top of your UI
- * It is not a modal, it is not blocking the UI, it is just a simple dialog that will catch focus and hide when the user press escape or click outside of it
- * The dialog will be automatically positioned where placed in the DOM but it will be moved and resized to be fully visible on all screen sizes
- * Usage:
- * ```
- * <popin-dialog hidden style="width: 400px">
- *   <div slot="header">Header</div>
- *   <div slot="body">Body</div>
- *   <div slot="footer">Footer</div>
- * </popin-dialog>
- * ```
  */
 let PopinDialog = class PopinDialog extends LitElement {
     constructor() {
         super();
         this.hidden = false;
+        this.noAutoClose = false;
         this.resized_ = this.ensureElementInView.bind(this);
-        this.blured_ = this.hide.bind(this);
-        this.keydown_ = this.checkShortcuts.bind(this);
+        this.blured_ = this.blured.bind(this);
+        this.keydown_ = this.keydown.bind(this);
     }
     render() {
         setTimeout(() => this.ensureElementInView());
@@ -74,13 +84,26 @@ let PopinDialog = class PopinDialog extends LitElement {
         this.removeEventListener('keydown', this.keydown_);
         super.disconnectedCallback();
     }
-    hide(e) {
-        console.log('hide', e.target, e.target !== this);
-        if (!this.contains(e.relatedTarget) && e.target !== this) {
-            this.setAttribute('hidden', '');
-        }
+    blured() {
+        if (this.noAutoClose)
+            return;
+        // Give the time to the click event to be processed
+        setTimeout(() => {
+            // Check if the focus is still inside the dialog
+            const focusedElement = document.activeElement;
+            const popinDialog = focusedElement === null || focusedElement === void 0 ? void 0 : focusedElement.closest('popin-dialog');
+            if (popinDialog !== this) {
+                // Hide the dialog
+                this.setAttribute('hidden', '');
+            }
+            else {
+                // Focus the dialog again so that this function
+                // will be called again when the user click outside
+                this.focus();
+            }
+        });
     }
-    checkShortcuts(event) {
+    keydown(event) {
         if (event.key === 'Escape') {
             this.blur();
         }
@@ -150,7 +173,7 @@ PopinDialog.styles = css `
       background-color: var(--popin-dialog-background);
     }
     :host([hidden]) {
-      display: none;
+      display: none !important;
     }
 
 header {
@@ -175,6 +198,9 @@ main {
 __decorate([
     property()
 ], PopinDialog.prototype, "hidden", void 0);
+__decorate([
+    property({ type: Boolean, attribute: 'no-auto-close' })
+], PopinDialog.prototype, "noAutoClose", void 0);
 PopinDialog = __decorate([
     customElement('popin-dialog')
 ], PopinDialog);

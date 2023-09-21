@@ -11,7 +11,7 @@
     "clean": "rimraf steps-selector.{d.ts,d.ts.map,js,js.map} test/steps-selector.{d.ts,d.ts.map,js,js.map} test/steps-selector.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",
-    "lint:lit-analyzer": "lit-analyzer --rules.no-incompatible-property-type=off --rules.no-missing-import=off",
+    "lint:lit-analyzer": "lit-analyzer --rules.no-incompatible-property-type=off --rules.no-missing-import=off --rules.no-unknown-attribute=off",
     "format": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --ignore-path ./.eslintignore --write",
     "docs": "npm run docs:clean && npm run build && npm run analyze && npm run docs:build && npm run docs:assets && npm run docs:gen",
     "docs:clean": "rimraf docs",

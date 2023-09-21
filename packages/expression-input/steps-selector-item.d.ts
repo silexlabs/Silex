@@ -46,6 +46,7 @@ export declare class StepsSelectorItem extends LitElement {
     set selectedItem(value: string);
     get selectedIndex(): number;
     set selectedIndex(index: number);
+    noOptionsEditor: boolean;
     get values(): string[];
     helpTextPopin: Ref<HTMLElement>;
     valuesPopin: Ref<HTMLElement>;
@@ -61,6 +62,7 @@ export declare class StepsSelectorItem extends LitElement {
     delete(): void;
     selectValue(e: MouseEvent): void;
     selectOptions(e: SubmitEvent): void;
+    cancelOptions(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {
