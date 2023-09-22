@@ -23,7 +23,7 @@ export interface Step {
   tags?: string[]
   helpText?: string
   errorText?: string
-  options?: Object
+  options?: unknown
   optionsForm?: string
 }
 
@@ -169,7 +169,7 @@ export class StepsSelector extends LitElement {
     }
   }
 
-  setOptionsAt(at: number, options: Object) {
+  setOptionsAt(at: number, options: unknown) {
     this.steps = [
       ...this.steps.slice(0, at),
       {
