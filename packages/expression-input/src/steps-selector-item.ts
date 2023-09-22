@@ -4,7 +4,6 @@ import {customElement, property} from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import './popin-dialog'
-import { PopinDialog } from './popin-dialog';
 
 /**
  * @element steps-selector-item
