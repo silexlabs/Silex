@@ -8,18 +8,193 @@
     <script src="../node_modules/lit/polyfill-support.js"></script>
     <script type="module" src="../steps-selector.js"></script>
     <style>
-      steps-selector-item {
+      body {
+        font-family: sans-serif;
+        background-color: #eee;
+        margin: 0;
+      }
+      .container {
+        max-width: 400px;
+        min-height: 100vh;
+        box-sizing: border-box;
+        margin: 0 0 0 auto;
         padding: 10px;
-        margin: 10px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
       }
     </style>
   </head>
   <body>
-    <steps-selector id="prop1"></steps-selector>
+    <section class="container">
+      <steps-selector id="prop1">
+        Test 1
+      </steps-selector>
+      <hr />
+      <steps-selector id="prop2">
+        Test 2
+      </steps-selector>
+    </section>
     <script>
+        const data = [
+          {
+            "name": "Blog Post",
+            "type": "CMS",
+            "fields": [
+              { "name": "Title", "type": "string" },
+              { "name": "Content", "type": "string" },
+              { "name": "Author", "type": "User" }
+            ],
+            helpText: 'Some text with <a href="#">html links</a>',
+          },
+          {
+            "name": "Page",
+            "type": "CMS",
+            "fields": [
+              { "name": "Title", "type": "string" },
+              { "name": "Body", "type": "string" }
+            ]
+          },
+          {
+            "name": "Settings",
+            "type": "CMS",
+            "fields": [
+              { "name": "Site Name", "type": "string" },
+              { "name": "Theme", "type": "string" }
+            ]
+          },
+          {
+            "name": "User",
+            "type": "CMS",
+            "fields": [
+              { "name": "Username", "type": "string" },
+              { "name": "Email", "type": "string" }
+            ]
+          },
+          {
+            "name": "Where",
+            "type": "Liquid Filter",
+            "options": { "parameter": "value" }
+          },
+          {
+            "name": "Upcase",
+            "type": "Liquid Filter",
+            "options": {}
+          },
+          {
+            "name": "Truncate",
+            "type": "Liquid Filter",
+            "options": { "length": 50 }
+          },
+          {
+            "name": "Current",
+            "type": "CMS",
+            "tags": ["special"],
+            "fields": [
+              { "name": "Current Page", "type": "Page" }
+            ]
+          },
+          {
+            "name": "Category",
+            "type": "CMS",
+            "fields": [
+              { "name": "Name", "type": "string" },
+              { "name": "Description", "type": "string" }
+            ]
+          },
+          {
+            "name": "Tag",
+            "type": "CMS",
+            "fields": [
+              { "name": "Name", "type": "string" }
+            ]
+          },
+          {
+            "name": "Menu",
+            "type": "CMS",
+            "fields": [
+              { "name": "Name", "type": "string" },
+              { "name": "Items", "type": "array" }
+            ]
+          },
+          {
+            "name": "MenuItem",
+            "type": "CMS",
+            "fields": [
+              { "name": "Label", "type": "string" },
+              { "name": "Link", "type": "string" }
+            ]
+          },
+          {
+            "name": "Comment",
+            "type": "CMS",
+            "fields": [
+              { "name": "Author", "type": "User" },
+              { "name": "Content", "type": "string" }
+            ]
+          },
+          {
+            "name": "Asset",
+            "type": "CMS",
+            "fields": [
+              { "name": "Filename", "type": "string" },
+              { "name": "Size", "type": "number" }
+            ]
+          },
+          {
+            "name": "Append",
+            "type": "Liquid Filter",
+            "options": { "suffix": "value" }
+          },
+          {
+            "name": "Prepend",
+            "type": "Liquid Filter",
+            "options": { "prefix": "value" }
+          },
+          {
+            "name": "Replace",
+            "type": "Liquid Filter",
+            "options": { "find": "value", "replace": "value" }
+          },
+          {
+            "name": "Split",
+            "type": "Liquid Filter",
+            "options": { "delimiter": "," }
+          },
+          {
+            "name": "Join",
+            "type": "Liquid Filter",
+            "options": { "delimiter": "," }
+          },
+          {
+            "name": "Sort",
+            "type": "Liquid Filter",
+            "options": { "attribute": "value" }
+          },
+          {
+            "name": "Map",
+            "type": "Liquid Filter",
+            "options": { "attribute": "value" }
+          }
+        ]
+
       setTimeout(() => {
         const steps1 = document.querySelector('#prop1')
-        steps1.steps = [{
+        steps1.steps = []
+        steps1.save()
+        steps1.completion = (steps) => {
+          if(steps.length === 0) {
+            return data
+              .filter(s => s.type === 'CMS')
+          }
+          const lastStep = steps[steps.length - 1]
+          return data
+            .filter(s => s.type === 'Liquid Filter')
+            .concat(lastStep?.fields || data.find(s => s.name === lastStep.type)?.fields || [])
+        }
+
+        const steps2 = document.querySelector('#prop2')
+        steps2.steps = [{
           name: 'Posts',
           icon: '',
           type: 'Collection',
@@ -40,8 +215,8 @@
 
           }
         }]
-        steps1.save()
-        steps1.completion = (steps) => {
+        steps2.save()
+        steps2.completion = (steps) => {
           console.log('completion', steps)
           return [{
             name: 'Posts',

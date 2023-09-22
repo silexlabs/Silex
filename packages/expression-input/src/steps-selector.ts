@@ -1,6 +1,6 @@
 import {LitElement, html, css} from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement} from 'lit/decorators.js';
 
 import './steps-selector-item'
 
@@ -48,6 +48,10 @@ export class StepsSelector extends LitElement {
       justify-content: space-between;
       align-items: center;
     }
+    steps-selector-item {
+      padding: 10px;
+      margin: 10px;
+    }
   `;
 
   // Read only property dirty
@@ -80,9 +84,10 @@ export class StepsSelector extends LitElement {
   completion: (steps: Step[]) => Step[] = () => []
 
   override render() {
+    const nextSteps = this.completion(this.steps)
     return html`
       <div class=${classMap({dirty: this.dirty, "property-container": true})}>
-        <slot name="property-name">Property Name</slot>
+        <slot></slot>
         ${this.dirty ? html`
           <slot name="dirty-icon" @click=${this.reset}>
             <svg viewBox="0 0 24 24" width="20"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
@@ -99,6 +104,7 @@ export class StepsSelector extends LitElement {
             <steps-selector-item
               key=${index}
               ?no-options-editor=${!step.optionsForm}
+              ?no-info=${!step.helpText}
               @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(step => step.name === event.detail.value))}
               @delete=${() => this.deleteStepAt(index)}
             >
@@ -125,6 +131,27 @@ export class StepsSelector extends LitElement {
               </div>
             </steps-selector-item>
           `)}
+        ${this.steps.length > 0 ? html`` : html`
+          <slot name="placeholder">
+            Add a first step
+          </slot>
+        `}
+        ${nextSteps.length > 0 ? html`
+          <steps-selector-item
+            no-options-editor
+            no-delete
+            no-arrow
+            no-info
+            @set=${(event: CustomEvent) => this.setStepAt(this.steps.length, nextSteps.find(step => step.name === event.detail.value))}
+          >
+            <div slot="name">+</div>
+            <div slot="values">
+              <ul>
+                ${ nextSteps.map(step => html`<li value=${step.name}>${step.name}</li>`) }
+              </ul>
+            </div>
+          </steps-selector-item>
+        ` : html``}
       </div>
     `;
   }
@@ -137,7 +164,6 @@ export class StepsSelector extends LitElement {
       this.steps = [
         ...this.steps.slice(0, at),
         step,
-        ...this.steps.slice(at + 1),
       ]
       this.dirty = true
     } else {

@@ -1,6 +1,7 @@
 import {LitElement, html, css} from 'lit';
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import {customElement, property} from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import './popin-dialog'
 
@@ -56,7 +57,7 @@ export class StepsSelectorItem extends LitElement {
       font-weight: bold;
       cursor: pointer;
     }
-    slot[name="name"]::after {
+    .with-arrow::after {
       content: " ▾";
     }
   `;
@@ -73,12 +74,22 @@ export class StepsSelectorItem extends LitElement {
   @property({type: Boolean, attribute: 'no-options-editor'})
   noOptionsEditor = false;
 
+  @property({type: Boolean, attribute: 'no-delete'})
+  noDelete = false;
+
+  @property({type: Boolean, attribute: 'no-arrow'})
+  noArrow = false;
+
+  @property({type: Boolean, attribute: 'no-info'})
+  noInfo = false;
+
   get values() {
     const list = this.querySelector('slot[name="values"]') as HTMLUListElement
     return Array.from(list?.querySelectorAll('li') || []).map(li => li.getAttribute('value') ?? '')
   }
 
   helpTextPopin: Ref<HTMLElement> = createRef();
+  helpTextSlot: Ref<HTMLElement> = createRef();
   valuesPopin: Ref<HTMLElement> = createRef();
   optionsPopin: Ref<HTMLElement> = createRef();
 
@@ -90,7 +101,7 @@ export class StepsSelectorItem extends LitElement {
     return html`
       <div class="value" @click=${() => this.editValue()}>
         <slot name="icon"></slot>
-        <slot name="name"></slot>
+        <slot name="name" class=${classMap({ 'with-arrow': !this.noArrow })}></slot>
         <popin-dialog hidden ${ref(this.valuesPopin)} @click=${(e: MouseEvent) => this.selectValue(e)}>
           <slot name="values"></slot>
         </popin-dialog>
@@ -99,12 +110,14 @@ export class StepsSelectorItem extends LitElement {
         <slot name="tags"></slot>
         <slot name="type"></slot>
       </div>
-      <slot name="helpTitle" @click=${() => this.showHelpText()} title="Info">
-        <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
-      </slot>
-      <popin-dialog hidden ${ref(this.helpTextPopin)}>
-        <slot name="helpText"></slot>
-      </popin-dialog>
+      ${this.noInfo ? '' : html`
+        <slot name="helpTitle" @click=${() => this.showHelpText()} title="Info">
+          <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg>
+        </slot>
+        <popin-dialog hidden ${ref(this.helpTextPopin)}>
+          <slot name="helpText"></slot>
+        </popin-dialog>
+      `}
       <slot name="errorText"></slot>
       <div class="buttons">
         ${this.noOptionsEditor ? '' : html`
@@ -117,11 +130,13 @@ export class StepsSelectorItem extends LitElement {
           <slot name="options" slot="body"></slot>
         </popin-dialog>
         `}
-        <button @click=${() => this.delete()} title="Delete">
-          <slot name="delete-button">
-            <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z"/></svg>
-          </slot>
-        </button>
+        ${this.noDelete ? '' : html`
+          <button @click=${() => this.delete()} title="Delete">
+            <slot name="delete-button">
+              <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z"/></svg>
+            </slot>
+          </button>
+        `}
       </div>
     `;
   }
