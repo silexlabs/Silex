@@ -9,6 +9,17 @@ import './steps-selector-item'
  * @element steps-selector
  * Web component to select a sequence of steps
  * 
+ * It has these events:
+ * - change
+ * 
+ * It has these properties:
+ * - steps
+ * - dirty
+ * 
+ * It has these slots:
+ * - placeholder
+ * - dirty-icon
+ * 
  * User actions:
  * - add a next step at the end of the selection
  * - reset to default value
@@ -27,13 +38,6 @@ export interface Step {
   optionsForm?: string
 }
 
-/**
- * An example element.
- *
- * @fires count-changed - Indicates when the count changes
- * @slot - This element has a slot
- * @csspart button - The button
- */
 @customElement('steps-selector')
 export class StepsSelector extends LitElement {
   static override styles = css`
@@ -82,6 +86,7 @@ export class StepsSelector extends LitElement {
   protected initialValue: Step[] = []
 
   // Get the list of steps that can be added after the given selection
+  @property({type: Function})
   completion: (steps: Step[]) => Step[] = () => []
 
   override render() {

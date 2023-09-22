@@ -1,4 +1,4 @@
-# Steps selector ui
+# Steps selector
 
 A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.
 
@@ -26,24 +26,79 @@ Popin
 
 Selector
 
-- [ ] values: icon, name (may be a function of options), tags, options, optionsForm, type, helpText (with html links to directus collection)
-- [ ] callback getNextChoices(pastChoices)
+- [x] values: icon, name (may be a function of options), tags, options, optionsForm, type, helpText (with html links to directus collection)
+- [x] callback getNextChoices(pastChoices)
 - [ ] result (the final value resulting the current choices)
 - [ ] state: valid, warning, error
-- [ ] message (if error or warning)
+- [x] message (if error or warning)
 - [ ] copy / paste / set / unset
-- [ ] events: change
+- [x] events: change
 
 SelectorItem
 
-- [ ] value
-- [ ] events: set, unset
-- [ ] openChoices/close, openOptions/close
-- [ ] state
-- [ ] message
-- [ ] helpText
+- [x] value
+- [x] events: set, unset
+- [x] openChoices/close, openOptions/close
+- [x] state
+- [x] message
+- [x] helpText
 
 ## Integration guide
+
+Install the npm package in your project
+
+```shell
+$ npm install --save @silexlabs/steps-selector
+```
+
+Include the library with ESNext `import "steps-selector"` or directly in the HTML with `<script src="/path/to/steps-selector.js"></script>`
+
+Use in your HTML as a web component:
+
+```html
+<html><body>
+  <steps-selector></steps-selector>
+  <steps-selector>
+
+  </steps-selector>
+```
+
+ The `steps-selector` component has these events:
+ - change
+ 
+ It has these properties:
+ - steps
+ - dirty
+ - completion
+ 
+ It has these slots:
+ - placeholder
+ - dirty-icon
+
+ The main property is `completion`, which is a function you need to provide to the component so that it knows what can be selected at each steps:
+
+ ```js
+// Create
+const stepsSelector = document.querySelector('step-selector')
+// Initial state
+stepsSelector.steps = [
+  // ... Initial state here
+]
+// Reset dirty flag and store the current value as initial value
+stepsSelector.save()
+// Provide the completion fucntion
+stepsSelector.completion = (steps) => {
+  // In this example just return the same for each step
+  return [{
+    name: 'Posts',
+    icon: '',
+    type: 'Collection',
+    tags: [],
+    helpText: 'Some text with <a href="#">html links</a>',
+    errorText: 'Some error text',
+  }]
+}
+ ```
 
 ## Development / contribution
 
