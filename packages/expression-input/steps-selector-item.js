@@ -101,7 +101,7 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
           </slot>
         </button>
         <popin-dialog hidden no-auto-close ${ref(this.optionsPopin)} @submit=${(e) => this.selectOptions(e)} @reset=${() => this.cancelOptions()}>
-          <slot name="options" slot="body"></slot>
+            <slot name="options" slot="body"></slot>
         </popin-dialog>
         `}
         ${this.noDelete ? '' : html `
@@ -124,9 +124,11 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
         super.attributeChangedCallback(name, _old, value);
     }
     editOptions() {
-        var _a;
-        this.dispatchEvent(new CustomEvent('edit-options'));
+        var _a, _b;
         (_a = this.optionsPopin.value) === null || _a === void 0 ? void 0 : _a.toggleAttribute('hidden');
+        const optionsSlot = (_b = this.optionsPopin.value) === null || _b === void 0 ? void 0 : _b.querySelector('slot[name="options"]');
+        const form = optionsSlot === null || optionsSlot === void 0 ? void 0 : optionsSlot.assignedElements().map(el => el.querySelector('form')).find(el => !!el);
+        this.dispatchEvent(new CustomEvent('edit-options', { detail: { form } }));
     }
     editValue() {
         var _a;
@@ -152,7 +154,10 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     selectOptions(e) {
         var _a;
         (_a = this.optionsPopin.value) === null || _a === void 0 ? void 0 : _a.setAttribute('hidden', '');
-        this.dispatchEvent(new CustomEvent('set-options'));
+        const form = e.target;
+        const formData = new FormData(form);
+        const options = Object.fromEntries(formData.entries());
+        this.dispatchEvent(new CustomEvent('set-options', { detail: { options } }));
         e.preventDefault();
     }
     cancelOptions() {

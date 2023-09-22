@@ -84,7 +84,8 @@
         {
         "name": "Truncate",
         "type": "Liquid Filter",
-        "options": { "length": 50 }
+        "options": { "length": 50 },
+        "optionsForm": '<form><label>Length</label><input type="number" name="length" value="50" /><button type="submit">Save</button></form>'
         },
         {
         "name": "Current",
@@ -211,9 +212,7 @@
             property: 'author',
             value: 'lexoyo',
           },
-          optionsForm: {
-
-          }
+          optionsForm: '<form><label>Property</label><input type="text" name="property" value="author" /><label>Value</label><input type="text" name="value" value="lexoyo" /><button type="submit">Save</button></form>',
         }]
         steps2.save()
         steps2.completion = (steps) => {

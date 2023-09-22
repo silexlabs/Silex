@@ -4,6 +4,7 @@ import {customElement, property} from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 import './popin-dialog'
+import { PopinDialog } from './popin-dialog';
 
 /**
  * @element steps-selector-item
@@ -127,7 +128,7 @@ export class StepsSelectorItem extends LitElement {
           </slot>
         </button>
         <popin-dialog hidden no-auto-close ${ref(this.optionsPopin)} @submit=${(e: SubmitEvent) => this.selectOptions(e)} @reset=${() => this.cancelOptions()}>
-          <slot name="options" slot="body"></slot>
+            <slot name="options" slot="body"></slot>
         </popin-dialog>
         `}
         ${this.noDelete ? '' : html`
@@ -154,8 +155,10 @@ export class StepsSelectorItem extends LitElement {
   }
 
   editOptions() {
-    this.dispatchEvent(new CustomEvent('edit-options'));
     this.optionsPopin.value?.toggleAttribute('hidden')
+    const optionsSlot = this.optionsPopin.value?.querySelector('slot[name="options"]') as HTMLSlotElement
+    const form = optionsSlot?.assignedElements().map(el => el.querySelector('form')).find(el => !!el) as HTMLFormElement
+    this.dispatchEvent(new CustomEvent('edit-options', {detail: {form}}));
   }
 
   editValue() {
@@ -182,7 +185,10 @@ export class StepsSelectorItem extends LitElement {
 
   selectOptions(e: SubmitEvent) {
     this.optionsPopin.value?.setAttribute('hidden', '')
-    this.dispatchEvent(new CustomEvent('set-options'));
+    const form = e.target as HTMLFormElement
+    const formData = new FormData(form)
+    const options = Object.fromEntries(formData.entries())
+    this.dispatchEvent(new CustomEvent('set-options', {detail: {options}}));
     e.preventDefault()
   }
 

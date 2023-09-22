@@ -1,6 +1,7 @@
 import {LitElement, html, css} from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import {customElement} from 'lit/decorators.js';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './steps-selector-item'
 
@@ -23,7 +24,7 @@ export interface Step {
   helpText?: string
   errorText?: string
   options?: Object
-  optionsForm?: Object
+  optionsForm?: string
 }
 
 /**
@@ -105,8 +106,9 @@ export class StepsSelector extends LitElement {
               key=${index}
               ?no-options-editor=${!step.optionsForm}
               ?no-info=${!step.helpText}
-              @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(step => step.name === event.detail.value))}
+              @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
               @delete=${() => this.deleteStepAt(index)}
+              @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options)}
             >
               <div slot="icon">${step.icon}</div>
               <div slot="name">${step.name}</div>
@@ -114,8 +116,8 @@ export class StepsSelector extends LitElement {
                 ${step.tags?.map(tag => html`<li>${tag}</li>`)}
               </ul>
               <div slot="type">${step.type}</div>
-              <div slot="helpText">${step.helpText}</div>
-              <div slot="errorText">${step.errorText}</div>
+              <div slot="helpText">${unsafeHTML(step.helpText)}</div>
+              <div slot="errorText">${unsafeHTML(step.errorText)}</div>
               <div slot="values">
                 <ul>
                   ${
@@ -124,11 +126,7 @@ export class StepsSelector extends LitElement {
                   }
                 </ul>
               </div>
-              <div slot="options">
-                <form>
-                  to be generated with json to form
-                </form>
-              </div>
+              <div slot="options">${unsafeHTML(step.optionsForm)}</div>
             </steps-selector-item>
           `)}
         ${this.steps.length > 0 ? html`` : html`
@@ -169,6 +167,18 @@ export class StepsSelector extends LitElement {
     } else {
       console.error(`Step is undefined`)
     }
+  }
+
+  setOptionsAt(at: number, options: Object) {
+    this.steps = [
+      ...this.steps.slice(0, at),
+      {
+        ...this.steps[at],
+        options,
+      },
+      ...this.steps.slice(at + 1),
+    ]
+    this.dirty = true
   }
 
   /**
