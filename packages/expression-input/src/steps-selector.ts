@@ -66,7 +66,7 @@ export class StepsSelector extends LitElement {
   }
 
   // Steps currently selected
-  private _steps: Step[] = []
+  protected _steps: Step[] = []
   get steps() {
     return this._steps
   }
@@ -78,7 +78,7 @@ export class StepsSelector extends LitElement {
   }
 
   // Initial value
-  initialValue: Step[] = []
+  protected initialValue: Step[] = []
 
   // Get the list of steps that can be added after the given selection
   completion: (steps: Step[]) => Step[] = () => []
