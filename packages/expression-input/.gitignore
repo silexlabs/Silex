@@ -1,11 +1,3 @@
 /node_modules/
 /lib/
 /test/
-custom-elements.json
-# top level source
-steps-selector.js
-steps-selector.js.map
-steps-selector.d.ts
-steps-selector.d.ts.map
-# only generated for size check
-steps-selector.bundled.js
