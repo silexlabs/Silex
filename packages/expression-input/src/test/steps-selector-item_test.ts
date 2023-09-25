@@ -34,12 +34,12 @@ suite('Steps selector item', () => {
     const shadowRoot = el.shadowRoot
     console.log(shadowRoot?.innerHTML)
     assert.equal((shadowRoot?.querySelector('slot[name="icon"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test icon')
-    //assert.equal((shadowRoot?.querySelector('slot[name="name"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test name')
-    //assert.equal((shadowRoot?.querySelector('slot[name="tags"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test tag')
-    //assert.equal((shadowRoot?.querySelector('slot[name="helpText"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test help text')
-    //assert.equal((shadowRoot?.querySelector('slot[name="errorText"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test error text')
-    //assert.equal((shadowRoot?.querySelector('slot[name="edit-options-button"]') as HTMLSlotElement)?.assignedNodes().length, 0)
-    //assert.isTrue((shadowRoot?.querySelector('slot[name="edit-options-button"]') as HTMLSlotElement)?.childNodes.length > 1) // > 1 because of it has text nodes in addintion to the default svg
+    assert.equal((shadowRoot?.querySelector('slot[name="name"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test name')
+    assert.equal((shadowRoot?.querySelector('slot[name="tags"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test tag')
+    assert.equal((shadowRoot?.querySelector('slot[name="helpText"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test help text')
+    assert.equal((shadowRoot?.querySelector('slot[name="errorText"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test error text')
+    assert.equal((shadowRoot?.querySelector('slot[name="edit-options-button"]') as HTMLSlotElement)?.assignedNodes().length, 0)
+    assert.isTrue((shadowRoot?.querySelector('slot[name="edit-options-button"]') as HTMLSlotElement)?.childNodes.length > 1) // > 1 because of it has text nodes in addintion to the default svg
   })
 
   test('hide edit options button when no-options-editor attribute is set', async () => {

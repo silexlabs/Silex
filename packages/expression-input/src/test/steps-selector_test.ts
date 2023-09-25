@@ -6,8 +6,7 @@
 
 import {StepsSelector} from '../steps-selector.js';
 
-import {fixture, assert} from '@open-wc/testing';
-import {html} from 'lit/static-html.js';
+import {assert} from '@open-wc/testing';
 
 suite('steps-selector', () => {
   test('is defined', () => {
