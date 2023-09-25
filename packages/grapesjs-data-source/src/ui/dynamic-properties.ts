@@ -1,6 +1,6 @@
 import { Component } from "grapesjs"
-import { DataEditor, DataSource, DynamicDataOptions, Schema, Type } from ".."
-import { html, render } from "lit-html"
+import { Context, DataEditor, DataSource, DynamicDataOptions, Field, Schema, Type } from ".."
+import { html, render } from "lit"
 import { DynamicProperty } from "./DynamicProperty"
 
 const dsAttribute = 'ds-data'
@@ -35,10 +35,10 @@ const defaultStyles = `
     margin: 2px;
     padding: 10px;
   }
-  .ds-select__name::before {
+  .ds-select__name::after {
     content: '▼';
   }
-  .ds-select__name.last::before {
+  .ds-select__name.last::after {
     content: '+';
   }
   .ds-field {
@@ -86,22 +86,9 @@ const defaultStyles = `
 `
 
 const dynamicProperties: DynamicProperty[] = [
-  //new DynamicProperty({
-  //  name: 'classname',
-  //  displayName: 'CSS classes',
-  //  //isAvailable: (component: Component) => true,
-  //  //getValue: (component: Component) => component.get('classes')?.models.map(c => c.id) || [],
-  //  //setValue: (component: Component, value: string[]) => { component.get('classes')?.add(value.map(id => ({ id, label: id }))) },
-  //}),
   new DynamicProperty({
     name: 'innerHTML',
     displayName: 'Content',
-    //isAvailable: (component: Component) => true,
-  }),
-  new DynamicProperty({
-    name: 'background-image',
-    displayName: 'Background image',
-    //isAvailable: (component: Component) => true,
   }),
 ]
 
@@ -114,45 +101,30 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
     styles: defaultStyles,
     ...opts,
   }
-  async function getSchemas(): Promise<Record<string, Type>> {
-    const schemas = await Promise.all(editor.DataSourceManager.getAll().map(ds => ds.getSchema()))
-    return schemas
-      .reduce((acc, schema) => {
-        schema.types.forEach(type => {
-          acc[type.name] = type
-        })
-        return acc
-      }, {} as Record<string, Type>)
+  async function getDef(ds: DataSource): Promise<Type> {
+    const schema = await ds.getSchema()
+    return {
+      name: ds.id,
+      kind: 'OBJECT',
+      fields: schema.types
+        .find(type => type.name === 'Query')?.fields ?? []
+    }
   }
-  const baseContext = { 
-    ...await getSchemas(),
-  }
-  function getContext(component: Component): Record<string, Type> {
+
+  const defs = await Promise.all(editor.DataSourceManager.getAll().map(ds => getDef(ds)))
+  const baseContext = defs
+    .reduce((acc, def) => {
+      acc[def.name] = {
+        types: [def],
+      }
+      return acc
+    }, {} as Context)
+  console.log('baseContext', baseContext)
+  function getContext(component: Component): Context {
     return {
       ...baseContext,
     }
   }
-  //// Add the new trait to all component types
-  //editor.DomComponents.getTypes().map(type => {
-  //  const originalType = editor.DomComponents.getType(type.id)
-  //  if(!originalType) throw new Error(`Type ${type.id} not found`)
-  //  editor.DomComponents.addType(type.id, {
-  //    model: {
-  //      defaults: {
-  //        traits: [
-  //          // Keep the type original traits
-  //          ...originalType.model.prototype.defaults.traits,
-  //          // Add the new trait
-  //          {
-  //            label: false,
-  //            type: dsTraitType,
-  //            name: 'datasource',
-  //          },
-  //        ]
-  //      }
-  //    }
-  //  })
-  //})
   // Get the container element for the UI
   if(!options.appendTo) {
     throw new Error('appendTo option is required')
@@ -161,13 +133,6 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
   } else if(!(options.appendTo instanceof HTMLElement) && typeof options.appendTo !== 'function') {
     throw new Error(`appendTo option must be a string or an HTMLElement or a function`)
   }
-
-  //// Add a sector
-  //const sector = editor.StyleManager.addSector('ds', {
-  //  name: 'Dynamic Data',
-  //  open: true,
-  //})
-  //console.log('sector', sector)
 
   const appendTo: HTMLElement | null = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : typeof options.appendTo === 'function' ? options.appendTo() : options.appendTo
   if(!appendTo) throw new Error(`Element ${options.appendTo} not found`)
@@ -225,47 +190,12 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
         property.onChange = (value: any) => {
           component.set(dsAttribute, {
             ...component.get(dsAttribute),
-            [property.name]: value,
+            [property.getName()]: value,
           })
         }
-        return property.toHtmlForm(dsData[property.name] ?? [], getContext(component))
+        return property.toHtmlForm(dsData[property.getName()] ?? [], getContext(component))
       })}
       </main>
     `, wrapper)
   }
-
-  //function applyChanges(component: Component, data?: any) {
-  //  // Store the new values
-  //  if (!!data) {
-  //    component.set(dsAttribute, data)
-  //  } else {
-  //    component.set(dsAttribute)
-  //  }
-  //}
-
-  //editor.TraitManager.addType(dsTraitType, {
-  //  // Create UI wrapper for the trait
-  //  createInput({ trait }) {
-  //    // Create a new element container and add some content
-  //    const el = document.createElement('div')
-  //    el.classList.add('gjs-one-bg')
-  //    // update the UI when a page is added/renamed/removed
-  //    editor.on('page', () => doRender(el))
-  //    doRender(el)
-  //    // this will be the element passed to onEvent and onUpdate
-  //    return el
-  //  },
-  //  // Update the component based on UI changes
-  //  // `elInput` is the result HTMLElement you get from `createInput`
-  //  onEvent({ elInput, component, event }) {
-  //    // applyChanges(component)
-  //    console.log('onEvent', elInput, component, event)
-  //    doRender(elInput)
-  //  },
-  //  // Update UI on the component change
-  //  onUpdate({ elInput, component }) {
-  //    console.log('onUpdate', elInput, component)
-  //    doRender(elInput)
-  //  },
-  //})
 }

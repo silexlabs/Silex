@@ -78,3 +78,5 @@ export interface Query {
   attributes?: string[][],
   children?: Array<string | Query>,
 }
+
+export type Context = Record<string, Schema>

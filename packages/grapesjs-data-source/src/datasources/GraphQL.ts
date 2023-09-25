@@ -62,7 +62,8 @@ export default class GraphQLConnector extends Backbone.Model<GraphQLConnectorOpt
           ${this.buildQuery(query)}
         }
       `) as any
-    return result.data[query.name]
+      console.log('result', result.data)
+    return result.data.Query[query.name]
   }
   /**
    * Exported for testing purposes
