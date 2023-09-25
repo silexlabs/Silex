@@ -1,6 +1,6 @@
 import {LitElement, html, css} from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
-import {customElement, eventOptions, property} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './steps-selector-item'
@@ -35,7 +35,7 @@ export interface Step {
   tags?: string[]
   helpText?: string
   errorText?: string
-  options?: unknown
+  options?: any
   optionsForm?: string
 }
 
@@ -45,14 +45,46 @@ export class StepsSelector extends LitElement {
     :host {
       --steps-selector-dirty-color: red;
     }
-    :host .dirty {
-      color: var(--steps-selector-dirty-color, red);
-    }
-    :host .property-container {
+    ::part(header) {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
+    }
+    .dirty {
+      color: var(--steps-selector-dirty-color, red);
+    }
+    ::part(property-container) {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+    ::part(fixed-selector) {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--steps-selector-dirty-border-color, #ccc);
+      background-color: var(--steps-selector-dirty-background-color, #ccc);
+      border-radius: 5px;
+      padding: 3px;
+    }
+    .fixed-selector span {
+      padding: 3px;
+    }
+    .fixed-selector span:not(.active):hover {
+      color: var(--steps-selector-dirty-color, #0091ff);
+    }
+    .fixed-selector span:not(.active) {
+      cursor: pointer;
+    }
+    .fixed-selector span:last-child {
+      margin-left: 5px;
+    }
+    .fixed-selector span.active {
+      border-radius: 5px;
+      background-color: #eee;
     }
     steps-selector-item {
       padding: 10px;
@@ -61,14 +93,8 @@ export class StepsSelector extends LitElement {
   `;
 
   // Read only property dirty
-  private _dirty = false
   get dirty() {
-    return this._dirty
-  }
-  protected set dirty(value) {
-    const oldValue = this._dirty
-    this._dirty = value
-    this.requestUpdate('dirty', oldValue)
+    return JSON.stringify(this.steps) !== JSON.stringify(this.initialValue)
   }
 
   // Steps currently selected
@@ -90,56 +116,95 @@ export class StepsSelector extends LitElement {
   @property({type: Function})
   completion: (steps: Step[]) => Step[] = () => []
 
+  @property({type: Boolean, attribute: 'allow-fixed'})
+  allowFixed = false
+
+  @property({type: Boolean, attribute: 'fixed'})
+  fixed = false
+
+  @property({type: String, attribute: 'fixed-type'})
+  fixedType: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
+
   override render() {
     const nextSteps = this.completion(this.steps)
     return html`
-      <div class=${classMap({dirty: this.dirty, "property-container": true})}>
-        <slot></slot>
-        ${this.dirty ? html`
-          <slot name="dirty-icon" @click=${this.reset}>
-            <svg viewBox="0 0 24 24" width="20"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
-          </slot>
-        ` : html``}
-      </div>
-      <div class="steps-container">
-        ${this.steps
-          .map((step, index) => ({
-            step,
-            completion: this.completion(this.steps.slice(0, index)),
-          }))
-          .map(({step, completion}, index) => html`
-            <steps-selector-item
-              key=${index}
-              ?no-options-editor=${!step.optionsForm}
-              ?no-info=${!step.helpText}
-              @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
-              @delete=${() => this.deleteStepAt(index)}
-              @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options)}
-            >
-              <div slot="icon">${step.icon}</div>
-              <div slot="name">${step.name}</div>
-              <ul slot="tags">
-                ${step.tags?.map(tag => html`<li>${tag}</li>`)}
-              </ul>
-              <div slot="type">${step.type}</div>
-              <div slot="helpText">${unsafeHTML(step.helpText)}</div>
-              <div slot="errorText">${unsafeHTML(step.errorText)}</div>
-              <div slot="values">
-                <ul>
-                  ${
-                    completion
-                      .map(step => html`<li value=${step.name}>${step.name}</li>`)
-                  }
+      <!-- header -->
+      <header part="header" class="header">
+        <div class=${classMap({dirty: this.dirty, "property-name": true})} part="property-name">
+          <slot></slot>
+          ${this.dirty ? html`
+            <slot name="dirty-icon" @click=${this.reset}>
+              <svg viewBox="0 0 24 24" width="20"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+            </slot>
+          ` : html``}
+        </div>
+        ${this.allowFixed ? html`
+          <div part="fixed-selector" class="fixed-selector">
+            <span
+              class=${classMap({active: this.fixed, 'fixed-selector-fixed': true})}
+              @click=${() => this.fixed = true}
+              part="fixed-selector-fixed"
+            >Fixed</span>
+            <span
+              class=${classMap({active: !this.fixed, 'fixed-selector-expression': true})}
+              @click=${() => this.fixed = false}
+              part="fixed-selector-expression"
+            >Expression</span>
+          </div>
+        ` : ''}
+      </header>
+      <!-- fixed value -->
+      ${this.fixed ? html`
+        <div part="property-container" class="property-container">
+          <input
+            .type=${this.fixedType}
+            .value=${this.steps[0]?.options ? this.steps[0].options['value'] : ''}
+            @change=${(event: InputEvent) => this.fixedValueChanged((event.target as HTMLInputElement).value)}
+          >
+        </div>
+      ` : html`
+        <!-- steps -->
+        <div part="steps-container" class="steps-container">
+          ${this.steps
+            .map((step, index) => ({
+              step,
+              completion: this.completion(this.steps.slice(0, index)),
+            }))
+            .map(({step, completion}, index) => html`
+              <steps-selector-item
+                key=${index}
+                ?no-options-editor=${!step.optionsForm}
+                ?no-info=${!step.helpText}
+                @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
+                @delete=${() => this.deleteStepAt(index)}
+                @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options)}
+              >
+                <div slot="icon">${step.icon}</div>
+                <div slot="name">${step.name}</div>
+                <ul slot="tags">
+                  ${step.tags?.map(tag => html`<li>${tag}</li>`)}
                 </ul>
-              </div>
-              <div slot="options">${unsafeHTML(step.optionsForm)}</div>
-            </steps-selector-item>
-          `)}
+                <div slot="type">${step.type}</div>
+                <div slot="helpText">${unsafeHTML(step.helpText)}</div>
+                <div slot="errorText">${unsafeHTML(step.errorText)}</div>
+                <div slot="values">
+                  <ul>
+                    ${
+                      completion
+                        .map(step => html`<li value=${step.name}>${step.name}</li>`)
+                    }
+                  </ul>
+                </div>
+                <div slot="options">${unsafeHTML(step.optionsForm)}</div>
+              </steps-selector-item>
+            `)}
+        <!-- no steps -->
         ${this.steps.length > 0 ? html`` : html`
           <slot name="placeholder">
             Add a first step
           </slot>
         `}
+        <!-- add a step -->
         ${nextSteps.length > 0 ? html`
           <steps-selector-item
             no-options-editor
@@ -156,13 +221,36 @@ export class StepsSelector extends LitElement {
             </div>
           </steps-selector-item>
         ` : html``}
-      </div>
+        </div>
+      `}
     `;
   }
 
   override connectedCallback() {
     super.connectedCallback()
     this.dispatchEvent(new Event('load'))
+  }
+
+  isFixedValue() {
+    return this.allowFixed && this.fixed && (this.steps.length === 0 || this.steps[0].type === 'fixed')
+  }
+
+  fixedValueChanged(value: string) {
+    if (value && value !== '') {
+      this.steps = [
+        {
+          name: 'Fixed value',
+          icon: '',
+          type: 'fixed',
+          options: {
+            value,
+          },
+          optionsForm: `<form><input name="value" type="text" value=${value} /><button type="submit">Save</button></form>`,
+        },
+      ]
+    } else {
+      this.steps = []
+    }
   }
 
   /**
@@ -174,7 +262,6 @@ export class StepsSelector extends LitElement {
         ...this.steps.slice(0, at),
         step,
       ]
-      this.dirty = true
     } else {
       console.error(`Step is undefined`)
     }
@@ -189,7 +276,6 @@ export class StepsSelector extends LitElement {
       },
       ...this.steps.slice(at + 1),
     ]
-    this.dirty = true
   }
 
   /**
@@ -197,14 +283,12 @@ export class StepsSelector extends LitElement {
    */
   deleteStepAt(at: number) {
     this.steps = this.steps.slice(0, at)
-    this.dirty = true
   }
 
   /**
    * Reset dirty flag and store the current value as initial value
    */
   public save() {
-    this.dirty = false
     this.initialValue = [
       ...this.steps,
     ]
@@ -214,7 +298,6 @@ export class StepsSelector extends LitElement {
    * Reset dirty flag and restore the initial value
    */
   reset() {
-    this.dirty = false
     this.steps = [
       ...this.initialValue,
     ]

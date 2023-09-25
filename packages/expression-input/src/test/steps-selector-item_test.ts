@@ -23,12 +23,12 @@ suite('Steps selector item', () => {
   test('renders with a set HTML body', async () => {
     const el = await fixture(html`
       <steps-selector-item>
-        <div slot="icon">Test icon</div>
-        <div slot="name">Test name</div>
-        <div slot="tags"><ul><li>Test tag</li></ul></div>
-        <div slot="values"><ul><li>Test value</li></ul></div>
-        <div slot="helpText">Test help text</div>
-        <div slot="errorText">Test error text</div>
+        <head slot="icon">Test icon</head>
+        <head slot="name">Test name</head>
+        <head slot="tags"><ul><li>Test tag</li></ul></head>
+        <head slot="values"><ul><li>Test value</li></ul></head>
+        <head slot="helpText">Test help text</head>
+        <head slot="errorText">Test error text</head>
       </steps-selector-item>
     `)
     const shadowRoot = el.shadowRoot

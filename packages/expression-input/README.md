@@ -67,6 +67,10 @@ The `steps-selector` component has these events:
 - load
 - change
 
+It has these attributes:
+- fixed
+- fixed-type: 'none' | 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
+
 It has these properties:
 - steps
 - dirty

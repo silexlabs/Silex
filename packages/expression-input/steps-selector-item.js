@@ -73,13 +73,13 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     }
     render() {
         return html `
-      <div class="value" @click=${() => this.editValue()}>
+      <header class="value" @click=${() => this.editValue()}>
         <slot name="icon"></slot>
         <slot name="name" class=${classMap({ 'with-arrow': !this.noArrow })}></slot>
         <popin-dialog hidden ${ref(this.valuesPopin)} @click=${(e) => this.selectValue(e)}>
           <slot name="values"></slot>
         </popin-dialog>
-      </div>
+      </header>
       <div class="meta">
         <slot name="tags"></slot>
         <slot name="type"></slot>
