@@ -57,48 +57,50 @@ Use in your HTML as a web component:
 
 ```html
 <html><body>
-  <steps-selector></steps-selector>
-  <steps-selector>
-
+  <steps-selector onload="initStepSelector(event.target)"></steps-selector>
+  <steps-selector onload="initStepSelector(event.target)">
+    Label
   </steps-selector>
 ```
 
- The `steps-selector` component has these events:
- - change
- 
- It has these properties:
- - steps
- - dirty
- - completion
- 
- It has these slots:
- - placeholder
- - dirty-icon
+The `steps-selector` component has these events:
+- load
+- change
 
- The main property is `completion`, which is a function you need to provide to the component so that it knows what can be selected at each steps:
+It has these properties:
+- steps
+- dirty
+- completion
 
- ```js
-// Create
-const stepsSelector = document.querySelector('step-selector')
-// Initial state
-stepsSelector.steps = [
-  // ... Initial state here
-]
-// Reset dirty flag and store the current value as initial value
-stepsSelector.save()
-// Provide the completion fucntion
-stepsSelector.completion = (steps) => {
-  // In this example just return the same for each step
-  return [{
-    name: 'Posts',
-    icon: '',
-    type: 'Collection',
-    tags: [],
-    helpText: 'Some text with <a href="#">html links</a>',
-    errorText: 'Some error text',
-  }]
+It has these slots:
+- placeholder
+- dirty-icon
+
+The property `completion` is a function you need to provide to the component so that it knows what can be selected at each steps:
+
+```js
+function initStepSelector(stepsSelector) {
+  // [Optional] Initial state
+  stepsSelector.steps = [
+    // ... Initial selection here
+  ]
+  // [Optional] Reset dirty flag and store the current value as initial value
+  stepsSelector.save()
+
+  // [Required] Provide the completion fucntion
+  stepsSelector.completion = (steps) => {
+    // In this example just return the same for each step
+    return [{
+      name: 'Posts',
+      icon: '',
+      type: 'Collection',
+      tags: [],
+      helpText: 'Some text with <a href="#">html links</a>',
+      errorText: 'Some error text',
+    }]
+  }
 }
- ```
+```
 
 ## Development / contribution
 

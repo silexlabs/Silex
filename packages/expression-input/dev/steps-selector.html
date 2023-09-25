@@ -27,11 +27,11 @@
   </head>
   <body>
     <section class="container">
-      <steps-selector id="prop1">
+      <steps-selector id="prop1" onload="initStepsSelector1(event.target)">
         Test 1
       </steps-selector>
       <hr />
-      <steps-selector id="prop2">
+      <steps-selector id="prop2" onload="initStepsSelector2(event.target)" allow-fixed>
         Test 2
       </steps-selector>
     </section>
@@ -179,7 +179,7 @@
         }
       ]
 
-      setTimeout(() => {
+      function initStepsSelector1(stepsSelector) {
         const steps1 = document.querySelector('#prop1')
         steps1.steps = []
         steps1.save()
@@ -193,7 +193,9 @@
             .filter(s => s.type === 'Liquid Filter')
             .concat(lastStep?.fields || data.find(s => s.name === lastStep.type)?.fields || [])
         }
+      }
 
+      function initStepsSelector2(stepsSelector) {
         const steps2 = document.querySelector('#prop2')
         steps2.steps = [{
           name: 'Posts',
@@ -225,7 +227,7 @@
             errorText: 'Some error text',
           }]
         }
-      })
+      }
     </script>
   </body>
 </html>

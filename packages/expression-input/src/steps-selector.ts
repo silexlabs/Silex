@@ -1,6 +1,6 @@
 import {LitElement, html, css} from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
-import {customElement} from 'lit/decorators.js';
+import {customElement, eventOptions, property} from 'lit/decorators.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 import './steps-selector-item'
@@ -10,6 +10,7 @@ import './steps-selector-item'
  * Web component to select a sequence of steps
  * 
  * It has these events:
+ * - load
  * - change
  * 
  * It has these properties:
@@ -157,6 +158,11 @@ export class StepsSelector extends LitElement {
         ` : html``}
       </div>
     `;
+  }
+
+  override connectedCallback() {
+    super.connectedCallback()
+    this.dispatchEvent(new Event('load'))
   }
 
   /**
