@@ -1,82 +1,157 @@
-import {Editor, Button} from 'grapesjs'
+import {Editor, Button, Component} from 'grapesjs'
 import DataSourceManager from "./model/DataSourceManager";
 import model from './model';
-import DynamicDataManager from './model/DynamicDataManager';
-import { Component } from 'grapesjs';
-import ui from './ui';
+import DataManager from './model/DataManager';
+import view from './view';
+import { Step } from '@silexlabs/steps-selector';
+import { GraphQLKind } from './datasources/GraphQL';
 
 // **
 // Data plugin, interfaces and types
+
+/**
+ * DataEditor is GrapesJs Editor with references to our plugins
+ */
 export interface DataEditor extends Editor {
   DataSourceManager: DataSourceManager,
-  DynamicDataManager: DynamicDataManager,
+  DataManager: DataManager,
 }
 
-export interface DataOptions {
+/**
+ * Options for our two plugins
+ */
+export interface Options {
   dataSources?: DataSourceObject[],
-  dynamicData?: DynamicDataOptions,
+  data?: DataOptions,
 }
 
-export default function (editor: DataEditor, opts: Partial<DataOptions> = {}) {
+/**
+ * GrapesJs plugin to initialize our models and views plugins
+ */
+export default function (editor: DataEditor, opts: Partial<Options> = {}) {
   model(editor, opts)
-  ui(editor, opts)
+  view(editor, opts)
 }
+
 // **
-// DynamicData interfaces and types
-export interface DynamicDataOptions {
+// Data interfaces and types
+
+/**
+ * DataOptions holds options for Data plugin
+ */
+export interface DataOptions {
   appendTo?: string | HTMLElement | (() => HTMLElement),
   button?: Button | (() => Button),
   styles?: string,
 }
 
-export interface DynamicDataObject {
+/**
+ * ExpressionItem is a property or a filter
+ */
+export interface ExpressionItem extends Filter, Property, Step {}
+
+/**
+ * Filters are a subset of ExpressionItem and Step
+ */
+export interface Filter {
+  name: string
+  type: string
+  list: boolean
+  helpText?: string
+  options?: any
+  optionsForm?: string
+  typeOut: string
+  listOut: boolean
+}
+
+/**
+ * An Expression is a list of properties and filters
+ * You can get a value from a data source out of an expression
+ */
+export type Expression = ExpressionItem[]
+
+export type ComponentData = Record<string, Expression>
+
+/**
+ * DataObject holds logic to manipulate data source for a component attribute
+ */
+export interface DataObject {
   component: Component,
   attribute: string,
   dataSource: DataSource,
-  variablePath: string[],
+  expression: Expression,
   validate: () => boolean,
   getValue(): any,
-  getType(): Type,
+  getProperty(): Property,
 }
+
+/**
+ * A component's context is all the data available at the component level
+ */
+export type Context = DataObject[]
 
 // **
-// DataSource interfaces and types
+// Data source interfaces and types
+
+/**
+ * DataSourceObject holds data to create a DataSource from config
+ */
 export interface DataSourceObject {
-  type: string,
+  type: 'graphql', // | 'rest' | 'sql' | 'mongo' | 'firebase' | 'custom',
   name: string,
-  [key: string]: any,
 }
 
+///**
+// * Query is the data structure used to query a DataSource
+// */
+//export interface Query {
+//  name: string,
+//  attributes?: string[][],
+//  properties?: Property[],
+//}
+
+/**
+ * DataSource is what a data source must implement
+ */
 export interface DataSource extends Backbone.Model {
-  id: string,
-  name: string,
   connect: () => Promise<void>,
   getSchema: () => Promise<Schema>,
-  getData: (query: Query) => Promise<any[]>,
+  //getData: (query: Query) => Promise<any[]>,
 }
 
+/**
+ * This is used to specify the constructor of a DataSource
+ * Because interfaces cannot have constructors
+ */
 export type DataSourceConstructor = (options: DataSourceObject) => DataSource
 
-export interface Schema {
-  types: Type[],
+/**
+ * All types of types
+ */
+export type Kind = GraphQLKind
+
+/**
+ * Properties are a subset of ExpressionItem and Step
+ */
+export interface Property {
+  name: string
+  kind: Kind
+  fields?: Field[]
 }
 
-export interface Type {
-  name: string,
-  fields: Field[],
-  kind: string,
-  ofType?: Type,
-}
-
+/**
+ * Fields are a subset of ExpressionItem and Step
+ */
 export interface Field {
-  name: string,
-  type: Type,
+  name: string
+  type: string
+  kind: Kind
 }
 
-export interface Query {
-  name: string,
-  attributes?: string[][],
-  children?: Array<string | Query>,
+/**
+ * Schema is the data structure returned by a DataSource
+ */
+export interface Schema {
+  dataSource: DataSourceObject,
+  properties?: Property[],
 }
-
-export type Context = Record<string, Schema>

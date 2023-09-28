@@ -1,9 +1,9 @@
 import DataSourceManager from './DataSourceManager'
-import { DataEditor, DataOptions, DataSourceObject } from '..'
-import DynamicDataManager from './DynamicDataManager'
+import { DataEditor, Options, DataSourceObject } from '..'
+import DataManager from './DataManager'
 import GraphQL, { GraphQLConnectorOptions } from '../datasources/GraphQL'
 
-export default (editor: DataEditor, opts: Partial<DataOptions> = {}) => {
+export default (editor: DataEditor, opts: Partial<Options> = {}) => {
   // Data source manager
   editor.DataSourceManager = new DataSourceManager(
     (opts.dataSources ?? []).map((ds: DataSourceObject) => {
@@ -15,5 +15,5 @@ export default (editor: DataEditor, opts: Partial<DataOptions> = {}) => {
     { editor, ...opts})
   
   // Dynamic data manager
-  editor.DynamicDataManager = new DynamicDataManager([], { editor, ...opts})
+  editor.DataManager = new DataManager([], { editor, ...opts})
 }

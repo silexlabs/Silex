@@ -1,7 +1,11 @@
 import { Component } from "grapesjs"
-import { Context, DataEditor, DataSource, DynamicDataOptions, Field, Schema, Type } from ".."
+import { Context, DataEditor, DataSource, DataOptions, Schema, ComponentData } from ".."
 import { html, render } from "lit"
+import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import { DynamicProperty } from "./DynamicProperty"
+
+import '@silexlabs/steps-selector/steps-selector.js'
+import { Step, StepsSelector } from "@silexlabs/steps-selector/steps-selector.js"
 
 const dsAttribute = 'ds-data'
 const defaultStyles = `
@@ -85,22 +89,15 @@ const defaultStyles = `
   }
 `
 
-const dynamicProperties: DynamicProperty[] = [
-  new DynamicProperty({
-    name: 'innerHTML',
-    displayName: 'Content',
-  }),
-]
-
-async function wait(ms: number = 0) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
-  const options: DynamicDataOptions = {
+export default async (editor: DataEditor, opts: DataOptions = {}) => {
+  const options: DataOptions = {
     styles: defaultStyles,
     ...opts,
   }
+  // Selectors
+  const innerHTMLSelector = createRef<StepsSelector>()
+
+  // Data
   async function getDef(ds: DataSource): Promise<Type> {
     const schema = await ds.getSchema()
     return {
@@ -119,7 +116,6 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
       }
       return acc
     }, {} as Context)
-  console.log('baseContext', baseContext)
   function getContext(component: Component): Context {
     return {
       ...baseContext,
@@ -143,19 +139,14 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
   appendTo.appendChild(wrapper)
 
   // Update the UI when a page is added/renamed/removed
-  editor.on('page', () => load())
+  editor.on('page', () => updateUi())
 
   // Update the UI on component selection change
-  editor.on('component:selected', () => load())
+  editor.on('component:selected', () => updateUi())
   
   // Update the UI on component change
-  editor.on('component:update', () => load())
+  editor.on('component:update', () => updateUi())
 
-  // Log events
-  editor.on('page', () => console.log('EVENT page'))
-  editor.on('component:selected', () => console.log('EVENT component:selected'))
-  editor.on('component:update', () => console.log('EVENT component:update'))
-  
   // Show the UI when the button is clicked
   if(options.button) {
     const button = typeof options.button === 'function' ? options.button() : options.button
@@ -174,10 +165,31 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
     wrapper.style.display = button.active ? 'block' : 'none'
   }
 
+  function initStepsSelector(stepsSelector: StepsSelector, steps: Step[]) {
+    stepsSelector.steps = steps
+    //stepsSelector.completion = (steps: Step[]) => {
+    //  return getContext()
+    //}
+  }
+
+  function chagedStepsSelector(component: Component, name: string, stepsSelector: StepsSelector) {
+    component.set(dsAttribute, {
+      ...component.get(dsAttribute),
+      [name]: stepsSelector.steps,
+    })
+  }
+
   // Update the UI
-  function load(component: Component | undefined = editor.getSelected()) {
+  function updateUi(component: Component | undefined = editor.getSelected()) {
     if(!component) return
-    const dsData = component.get(dsAttribute) || {}
+    const dsData = component.get(dsAttribute) || {} as ComponentData
+    const { innerHTML } = dsData
+    const fixed = !innerHTML?.length || innerHTML?.length === 1 && innerHTML[0].type === 'fixed'
+    if(innerHTMLSelector.value) {
+      initStepsSelector(innerHTMLSelector.value, innerHTML ?? [])
+
+    }
+    console.log({fixed})
     render(html`
       <style>
         ${options.styles}
@@ -186,15 +198,27 @@ export default async (editor: DataEditor, opts: DynamicDataOptions = {}) => {
         <div class="gjs-traits-label">Dynamic Data</div>
       </div>
       <main>
-      ${dynamicProperties.map(property => {
-        property.onChange = (value: any) => {
-          component.set(dsAttribute, {
-            ...component.get(dsAttribute),
-            [property.getName()]: value,
-          })
-        }
-        return property.toHtmlForm(dsData[property.getName()] ?? [], getContext(component))
-      })}
+      ${
+        ''
+        //dynamicProperties.map(property => {
+        //property.onChange = (value: any) => {
+        //  component.set(dsAttribute, {
+        //    ...component.get(dsAttribute),
+        //    [property.getName()]: value,
+        //  })
+        //}
+        //return property.toHtmlForm(dsData[property.getName()] ?? [], getContext(component))
+        //})
+      }
+        <steps-selector
+          ${ref(innerHTMLSelector)}
+          allow-fixed
+          @onload=${(e: CustomEvent) => initStepsSelector(e.detail, innerHTML ?? [])}
+          @change=${(e: SubmitEvent) => chagedStepsSelector(component, 'innerHTML', e.target as StepsSelector)}
+          .fixed=${fixed}
+          >
+          innerHTML
+        </steps-selector>
       </main>
     `, wrapper)
   }

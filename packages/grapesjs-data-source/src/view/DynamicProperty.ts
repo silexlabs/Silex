@@ -1,5 +1,6 @@
 import { html } from 'lit'
-import { Context, Field, Schema, Type } from '..'
+import { Context, Expression, Field, Schema, Type } from '..'
+import { Step } from '@silexlabs/steps-selector'
 
 export interface DynamicPropertyOptions {
   name: string
