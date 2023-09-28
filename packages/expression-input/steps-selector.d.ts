@@ -1,5 +1,5 @@
 import { LitElement } from 'lit';
-import './steps-selector-item';
+import './steps-selector-item.js';
 /**
  * @element steps-selector
  * Web component to select a sequence of steps
@@ -35,14 +35,15 @@ export interface Step {
 export declare class StepsSelector extends LitElement {
     static styles: import("lit").CSSResult;
     get dirty(): boolean;
-    protected _steps: Step[];
-    get steps(): Step[];
-    set steps(value: Step[]);
+    steps: Step[];
+    protected get _steps(): Step[];
+    protected set _steps(value: Step[]);
     protected initialValue: Step[];
     completion: (steps: Step[]) => Step[];
     allowFixed: boolean;
     fixed: boolean;
     fixedType: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url';
+    placeholder: string;
     render(): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     isFixedValue(): boolean;

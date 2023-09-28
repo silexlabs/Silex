@@ -180,10 +180,9 @@
       ]
 
       function initStepsSelector1(stepsSelector) {
-        const steps1 = document.querySelector('#prop1')
-        steps1.steps = []
-        steps1.save()
-        steps1.completion = (steps) => {
+        stepsSelector.steps = []
+        stepsSelector.save()
+        stepsSelector.completion = (steps) => {
           if(steps.length === 0) {
             return data
               .filter(s => s.type === 'CMS')
@@ -196,8 +195,7 @@
       }
 
       function initStepsSelector2(stepsSelector) {
-        const steps2 = document.querySelector('#prop2')
-        steps2.steps = [{
+        stepsSelector.steps = [{
           name: 'Posts',
           icon: '',
           type: 'Collection',
@@ -216,8 +214,8 @@
           },
           optionsForm: '<form><label>Property</label><input type="text" name="property" value="author" /><label>Value</label><input type="text" name="value" value="lexoyo" /><button type="submit">Save</button></form>',
         }]
-        steps2.save()
-        steps2.completion = (steps) => {
+        stepsSelector.save()
+        stepsSelector.completion = (steps) => {
           return [{
             name: 'Posts',
             icon: '',

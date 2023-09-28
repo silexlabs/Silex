@@ -1,9 +1,9 @@
-import {LitElement, html, css} from 'lit';
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
-import {customElement, property} from 'lit/decorators.js';
-import { classMap } from 'lit/directives/class-map.js';
+import {LitElement, html, css} from 'lit'
+import { Ref, createRef, ref } from 'lit/directives/ref.js'
+import {customElement, property} from 'lit/decorators.js'
+import { classMap } from 'lit/directives/class-map.js'
 
-import './popin-dialog'
+import './popin-dialog.js'
 
 /**
  * @element steps-selector-item
@@ -60,44 +60,45 @@ export class StepsSelectorItem extends LitElement {
     .with-arrow::after {
       content: " ▾";
     }
-  `;
+  `
 
-  private _selectedItem = ""
+  private _selectedItem = ''
   get selectedItem() {
     return this._selectedItem
   }
   set selectedItem(value: string) {
     this._selectedItem = value
-    this.dispatchEvent(new CustomEvent('set', {detail: {value}}));
+    this.dispatchEvent(new CustomEvent('set', {detail: {value}}))
   }
 
   @property({type: Boolean, attribute: 'no-options-editor'})
-  noOptionsEditor = false;
+  noOptionsEditor = false
 
   @property({type: Boolean, attribute: 'no-delete'})
-  noDelete = false;
+  noDelete = false
 
   @property({type: Boolean, attribute: 'no-arrow'})
-  noArrow = false;
+  noArrow = false
 
   @property({type: Boolean, attribute: 'no-info'})
-  noInfo = false;
+  noInfo = false
 
   get values() {
     const list = this.querySelector('slot[name="values"]') as HTMLUListElement
     return Array.from(list?.querySelectorAll('li') || []).map(li => li.getAttribute('value') ?? '')
   }
 
-  helpTextPopin: Ref<HTMLElement> = createRef();
-  helpTextSlot: Ref<HTMLElement> = createRef();
-  valuesPopin: Ref<HTMLElement> = createRef();
-  optionsPopin: Ref<HTMLElement> = createRef();
+  helpTextPopin: Ref<HTMLElement> = createRef()
+  helpTextSlot: Ref<HTMLElement> = createRef()
+  valuesPopin: Ref<HTMLElement> = createRef()
+  optionsPopin: Ref<HTMLElement> = createRef()
 
   constructor() {
     super()
   }
 
   override render() {
+    console.log('render steps-selector-item')
     return html`
       <header class="value" @click=${() => this.editValue()}>
         <slot name="icon"></slot>
@@ -138,30 +139,30 @@ export class StepsSelectorItem extends LitElement {
           </button>
         `}
       </div>
-    `;
+    `
   }
 
   override connectedCallback() {
-    super.connectedCallback();
+    super.connectedCallback()
   }
 
   override disconnectedCallback() {
-    super.disconnectedCallback();
+    super.disconnectedCallback()
   }
 
   override attributeChangedCallback(name: string, _old: string | null, value: string | null): void {
-    super.attributeChangedCallback(name, _old, value);
+    super.attributeChangedCallback(name, _old, value)
   }
 
   editOptions() {
     this.optionsPopin.value?.toggleAttribute('hidden')
     const optionsSlot = this.optionsPopin.value?.querySelector('slot[name="options"]') as HTMLSlotElement
     const form = optionsSlot?.assignedElements().map(el => el.querySelector('form')).find(el => !!el) as HTMLFormElement
-    this.dispatchEvent(new CustomEvent('edit-options', {detail: {form}}));
+    this.dispatchEvent(new CustomEvent('edit-options', {detail: {form}}))
   }
 
   editValue() {
-    this.dispatchEvent(new CustomEvent('edit-value'));
+    this.dispatchEvent(new CustomEvent('edit-value'))
     this.valuesPopin.value?.toggleAttribute('hidden')
   }
 
@@ -170,7 +171,7 @@ export class StepsSelectorItem extends LitElement {
   }
 
   delete() {
-    this.dispatchEvent(new CustomEvent('delete'));
+    this.dispatchEvent(new CustomEvent('delete'))
   }
 
   selectValue(e: MouseEvent) {
@@ -187,7 +188,7 @@ export class StepsSelectorItem extends LitElement {
     const form = e.target as HTMLFormElement
     const formData = new FormData(form)
     const options = Object.fromEntries(formData.entries())
-    this.dispatchEvent(new CustomEvent('set-options', {detail: {options}}));
+    this.dispatchEvent(new CustomEvent('set-options', {detail: {options}}))
     e.preventDefault()
   }
 
@@ -199,6 +200,6 @@ export class StepsSelectorItem extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'steps-selector-item': StepsSelectorItem;
+    'steps-selector-item': StepsSelectorItem
   }
 }

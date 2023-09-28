@@ -1,9 +1,9 @@
-import {LitElement, html, css} from 'lit';
-import { classMap } from 'lit/directives/class-map.js';
-import {customElement, property} from 'lit/decorators.js';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {LitElement, html, css} from 'lit'
+import { classMap } from 'lit/directives/class-map.js'
+import {customElement, property} from 'lit/decorators.js'
+import {unsafeHTML} from 'lit/directives/unsafe-html.js'
 
-import './steps-selector-item'
+import './steps-selector-item.js'
 
 /**
  * @element steps-selector
@@ -85,28 +85,32 @@ export class StepsSelector extends LitElement {
     .fixed-selector span.active {
       border-radius: 5px;
       background-color: #eee;
+      cursor: default;
     }
     steps-selector-item {
       padding: 10px;
       margin: 10px;
     }
-  `;
+  `
 
   // Read only property dirty
   get dirty() {
-    return JSON.stringify(this.steps) !== JSON.stringify(this.initialValue)
+    return JSON.stringify(this._steps) !== JSON.stringify(this.initialValue)
   }
 
   // Steps currently selected
-  protected _steps: Step[] = []
-  get steps() {
-    return this._steps
+  @property({type: Array})
+  steps: Step[] = []
+
+  // Steps with change events - internal use only
+  protected get _steps() {
+    return this.steps
   }
-  set steps(value) {
-    const oldValue = this._steps
-    this._steps = value
+  protected set _steps(value) {
+    const oldValue = this.steps
+    this.steps = value
     this.requestUpdate('steps', oldValue)
-    this.dispatchEvent(new CustomEvent('change', {detail: {value}}));
+    this.dispatchEvent(new CustomEvent('change', {detail: {value}}))
   }
 
   // Initial value
@@ -119,18 +123,22 @@ export class StepsSelector extends LitElement {
   @property({type: Boolean, attribute: 'allow-fixed'})
   allowFixed = false
 
-  @property({type: Boolean, attribute: 'fixed'})
+  @property({type: Boolean, attribute: 'fixed', reflect: true})
   fixed = false
 
   @property({type: String, attribute: 'fixed-type'})
   fixedType: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
 
+  @property()
+  placeholder = 'Add a first step'
+
   override render() {
-    const nextSteps = this.completion(this.steps)
+    console.log('render ==== ', this.fixed)
+    const nextSteps = this.completion(this._steps)
     return html`
       <!-- header -->
       <header part="header" class="header">
-        <div class=${classMap({dirty: this.dirty, "property-name": true})} part="property-name">
+        <div class=${classMap({dirty: this.dirty, 'property-name': true})} part="property-name">
           <slot></slot>
           ${this.dirty ? html`
             <slot name="dirty-icon" @click=${this.reset}>
@@ -157,18 +165,19 @@ export class StepsSelector extends LitElement {
       ${this.fixed ? html`
         <div part="property-container" class="property-container">
           <input
+            .placeholder=${this.placeholder}
             .type=${this.fixedType}
-            .value=${this.steps[0]?.options ? this.steps[0].options['value'] : ''}
+            .value=${this._steps[0]?.options ? this._steps[0].options['value'] : ''}
             @change=${(event: InputEvent) => this.fixedValueChanged((event.target as HTMLInputElement).value)}
           >
         </div>
       ` : html`
         <!-- steps -->
         <div part="steps-container" class="steps-container">
-          ${this.steps
+          ${this._steps
             .map((step, index) => ({
               step,
-              completion: this.completion(this.steps.slice(0, index)),
+              completion: this.completion(this._steps.slice(0, index)),
             }))
             .map(({step, completion}, index) => html`
               <steps-selector-item
@@ -199,9 +208,9 @@ export class StepsSelector extends LitElement {
               </steps-selector-item>
             `)}
         <!-- no steps -->
-        ${this.steps.length > 0 ? html`` : html`
-          <slot name="placeholder">
-            Add a first step
+        ${this._steps.length > 0 ? html`` : html`
+          <slot name="placeholder" part="placeholder">
+            <p>${this.placeholder}</p>
           </slot>
         `}
         <!-- add a step -->
@@ -211,7 +220,7 @@ export class StepsSelector extends LitElement {
             no-delete
             no-arrow
             no-info
-            @set=${(event: CustomEvent) => this.setStepAt(this.steps.length, nextSteps.find(step => step.name === event.detail.value))}
+            @set=${(event: CustomEvent) => this.setStepAt(this._steps.length, nextSteps.find(step => step.name === event.detail.value))}
           >
             <div slot="name">+</div>
             <div slot="values">
@@ -223,7 +232,7 @@ export class StepsSelector extends LitElement {
         ` : html``}
         </div>
       `}
-    `;
+    `
   }
 
   override connectedCallback() {
@@ -232,12 +241,12 @@ export class StepsSelector extends LitElement {
   }
 
   isFixedValue() {
-    return this.allowFixed && this.fixed && (this.steps.length === 0 || this.steps[0].type === 'fixed')
+    return this.allowFixed && this.fixed && (this._steps.length === 0 || this._steps[0].type === 'fixed')
   }
 
   fixedValueChanged(value: string) {
     if (value && value !== '') {
-      this.steps = [
+      this._steps = [
         {
           name: 'Fixed value',
           icon: '',
@@ -249,7 +258,7 @@ export class StepsSelector extends LitElement {
         },
       ]
     } else {
-      this.steps = []
+      this._steps = []
     }
   }
 
@@ -258,23 +267,23 @@ export class StepsSelector extends LitElement {
    */
   setStepAt(at: number, step: Step | undefined) {
     if (step) {
-      this.steps = [
-        ...this.steps.slice(0, at),
+      this._steps = [
+        ...this._steps.slice(0, at),
         step,
       ]
     } else {
-      console.error(`Step is undefined`)
+      console.error(`Step is undefined at ${at}`)
     }
   }
 
   setOptionsAt(at: number, options: unknown) {
-    this.steps = [
-      ...this.steps.slice(0, at),
+    this._steps = [
+      ...this._steps.slice(0, at),
       {
-        ...this.steps[at],
+        ...this._steps[at],
         options,
       },
-      ...this.steps.slice(at + 1),
+      ...this._steps.slice(at + 1),
     ]
   }
 
@@ -282,7 +291,7 @@ export class StepsSelector extends LitElement {
    * Delete the step at the given index and all the following steps
    */
   deleteStepAt(at: number) {
-    this.steps = this.steps.slice(0, at)
+    this._steps = this._steps.slice(0, at)
   }
 
   /**
@@ -290,7 +299,7 @@ export class StepsSelector extends LitElement {
    */
   public save() {
     this.initialValue = [
-      ...this.steps,
+      ...this._steps,
     ]
   }
 
@@ -298,7 +307,7 @@ export class StepsSelector extends LitElement {
    * Reset dirty flag and restore the initial value
    */
   reset() {
-    this.steps = [
+    this._steps = [
       ...this.initialValue,
     ]
   }
@@ -306,6 +315,6 @@ export class StepsSelector extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'steps-selector': StepsSelector;
+    'steps-selector': StepsSelector
   }
 }

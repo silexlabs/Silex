@@ -29,7 +29,9 @@
     //  }
     //],
     "@typescript-eslint/no-incompatible-property-type": "off",
-    "semi": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "quotes": ["error", "single"],
+    "semi": ["error", "never"]
   },
   "overrides": [
     {

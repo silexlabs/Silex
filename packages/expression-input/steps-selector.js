@@ -8,12 +8,12 @@ import { LitElement, html, css } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { customElement, property } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import './steps-selector-item';
+import './steps-selector-item.js';
 let StepsSelector = class StepsSelector extends LitElement {
     constructor() {
         super(...arguments);
         // Steps currently selected
-        this._steps = [];
+        this.steps = [];
         // Initial value
         this.initialValue = [];
         // Get the list of steps that can be added after the given selection
@@ -21,27 +21,30 @@ let StepsSelector = class StepsSelector extends LitElement {
         this.allowFixed = false;
         this.fixed = false;
         this.fixedType = 'text';
+        this.placeholder = 'Add a first step';
     }
     // Read only property dirty
     get dirty() {
-        return JSON.stringify(this.steps) !== JSON.stringify(this.initialValue);
+        return JSON.stringify(this._steps) !== JSON.stringify(this.initialValue);
     }
-    get steps() {
-        return this._steps;
+    // Steps with change events - internal use only
+    get _steps() {
+        return this.steps;
     }
-    set steps(value) {
-        const oldValue = this._steps;
-        this._steps = value;
+    set _steps(value) {
+        const oldValue = this.steps;
+        this.steps = value;
         this.requestUpdate('steps', oldValue);
         this.dispatchEvent(new CustomEvent('change', { detail: { value } }));
     }
     render() {
         var _a;
-        const nextSteps = this.completion(this.steps);
+        console.log('render ==== ', this.fixed);
+        const nextSteps = this.completion(this._steps);
         return html `
       <!-- header -->
       <header part="header" class="header">
-        <div class=${classMap({ dirty: this.dirty, "property-name": true })} part="property-name">
+        <div class=${classMap({ dirty: this.dirty, 'property-name': true })} part="property-name">
           <slot></slot>
           ${this.dirty ? html `
             <slot name="dirty-icon" @click=${this.reset}>
@@ -68,18 +71,19 @@ let StepsSelector = class StepsSelector extends LitElement {
       ${this.fixed ? html `
         <div part="property-container" class="property-container">
           <input
+            .placeholder=${this.placeholder}
             .type=${this.fixedType}
-            .value=${((_a = this.steps[0]) === null || _a === void 0 ? void 0 : _a.options) ? this.steps[0].options['value'] : ''}
+            .value=${((_a = this._steps[0]) === null || _a === void 0 ? void 0 : _a.options) ? this._steps[0].options['value'] : ''}
             @change=${(event) => this.fixedValueChanged(event.target.value)}
           >
         </div>
       ` : html `
         <!-- steps -->
         <div part="steps-container" class="steps-container">
-          ${this.steps
+          ${this._steps
             .map((step, index) => ({
             step,
-            completion: this.completion(this.steps.slice(0, index)),
+            completion: this.completion(this._steps.slice(0, index)),
         }))
             .map(({ step, completion }, index) => {
             var _a;
@@ -111,9 +115,9 @@ let StepsSelector = class StepsSelector extends LitElement {
             `;
         })}
         <!-- no steps -->
-        ${this.steps.length > 0 ? html `` : html `
-          <slot name="placeholder">
-            Add a first step
+        ${this._steps.length > 0 ? html `` : html `
+          <slot name="placeholder" part="placeholder">
+            <p>${this.placeholder}</p>
           </slot>
         `}
         <!-- add a step -->
@@ -123,7 +127,7 @@ let StepsSelector = class StepsSelector extends LitElement {
             no-delete
             no-arrow
             no-info
-            @set=${(event) => this.setStepAt(this.steps.length, nextSteps.find(step => step.name === event.detail.value))}
+            @set=${(event) => this.setStepAt(this._steps.length, nextSteps.find(step => step.name === event.detail.value))}
           >
             <div slot="name">+</div>
             <div slot="values">
@@ -142,11 +146,11 @@ let StepsSelector = class StepsSelector extends LitElement {
         this.dispatchEvent(new Event('load'));
     }
     isFixedValue() {
-        return this.allowFixed && this.fixed && (this.steps.length === 0 || this.steps[0].type === 'fixed');
+        return this.allowFixed && this.fixed && (this._steps.length === 0 || this._steps[0].type === 'fixed');
     }
     fixedValueChanged(value) {
         if (value && value !== '') {
-            this.steps = [
+            this._steps = [
                 {
                     name: 'Fixed value',
                     icon: '',
@@ -159,7 +163,7 @@ let StepsSelector = class StepsSelector extends LitElement {
             ];
         }
         else {
-            this.steps = [];
+            this._steps = [];
         }
     }
     /**
@@ -167,44 +171,44 @@ let StepsSelector = class StepsSelector extends LitElement {
      */
     setStepAt(at, step) {
         if (step) {
-            this.steps = [
-                ...this.steps.slice(0, at),
+            this._steps = [
+                ...this._steps.slice(0, at),
                 step,
             ];
         }
         else {
-            console.error(`Step is undefined`);
+            console.error(`Step is undefined at ${at}`);
         }
     }
     setOptionsAt(at, options) {
-        this.steps = [
-            ...this.steps.slice(0, at),
+        this._steps = [
+            ...this._steps.slice(0, at),
             {
-                ...this.steps[at],
+                ...this._steps[at],
                 options,
             },
-            ...this.steps.slice(at + 1),
+            ...this._steps.slice(at + 1),
         ];
     }
     /**
      * Delete the step at the given index and all the following steps
      */
     deleteStepAt(at) {
-        this.steps = this.steps.slice(0, at);
+        this._steps = this._steps.slice(0, at);
     }
     /**
      * Reset dirty flag and store the current value as initial value
      */
     save() {
         this.initialValue = [
-            ...this.steps,
+            ...this._steps,
         ];
     }
     /**
      * Reset dirty flag and restore the initial value
      */
     reset() {
-        this.steps = [
+        this._steps = [
             ...this.initialValue,
         ];
     }
@@ -253,6 +257,7 @@ StepsSelector.styles = css `
     .fixed-selector span.active {
       border-radius: 5px;
       background-color: #eee;
+      cursor: default;
     }
     steps-selector-item {
       padding: 10px;
@@ -260,17 +265,23 @@ StepsSelector.styles = css `
     }
   `;
 __decorate([
+    property({ type: Array })
+], StepsSelector.prototype, "steps", void 0);
+__decorate([
     property({ type: Function })
 ], StepsSelector.prototype, "completion", void 0);
 __decorate([
     property({ type: Boolean, attribute: 'allow-fixed' })
 ], StepsSelector.prototype, "allowFixed", void 0);
 __decorate([
-    property({ type: Boolean, attribute: 'fixed' })
+    property({ type: Boolean, attribute: 'fixed', reflect: true })
 ], StepsSelector.prototype, "fixed", void 0);
 __decorate([
     property({ type: String, attribute: 'fixed-type' })
 ], StepsSelector.prototype, "fixedType", void 0);
+__decorate([
+    property()
+], StepsSelector.prototype, "placeholder", void 0);
 StepsSelector = __decorate([
     customElement('steps-selector')
 ], StepsSelector);

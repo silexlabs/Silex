@@ -8,7 +8,7 @@ import { LitElement, html, css } from 'lit';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import './popin-dialog';
+import './popin-dialog.js';
 /**
  * @element steps-selector-item
  * This class is a step in the selection of the steps-selector component
@@ -50,7 +50,7 @@ import './popin-dialog';
 let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     constructor() {
         super();
-        this._selectedItem = "";
+        this._selectedItem = '';
         this.noOptionsEditor = false;
         this.noDelete = false;
         this.noArrow = false;
@@ -72,6 +72,7 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
         return Array.from((list === null || list === void 0 ? void 0 : list.querySelectorAll('li')) || []).map(li => { var _a; return (_a = li.getAttribute('value')) !== null && _a !== void 0 ? _a : ''; });
     }
     render() {
+        console.log('render steps-selector-item');
         return html `
       <header class="value" @click=${() => this.editValue()}>
         <slot name="icon"></slot>

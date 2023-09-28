@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
-import './popin-dialog';
+import './popin-dialog.js';
 /**
  * @element steps-selector-item
  * This class is a step in the selection of the steps-selector component

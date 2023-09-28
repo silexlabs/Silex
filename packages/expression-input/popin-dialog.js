@@ -71,7 +71,7 @@ let PopinDialog = class PopinDialog extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         // Make the element focusable
-        this.setAttribute('tabindex', "0");
+        this.setAttribute('tabindex', '0');
         // Attach events on this instance
         this.addEventListener('blur', this.blured_);
         this.addEventListener('keydown', this.keydown_);
@@ -126,21 +126,35 @@ let PopinDialog = class PopinDialog extends LitElement {
         const rect = this.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
+        // Calculate the offset of each parent element with a non-static position
+        let offsetX = 0;
+        let offsetY = 0;
+        let parent = this.offsetParent;
+        while (parent) {
+            const parentRect = parent.getBoundingClientRect();
+            const parentStyle = getComputedStyle(parent);
+            if (parentStyle.position !== 'static') {
+                console.log('ensureElementInView', parent, parentRect.left);
+                offsetX += parentRect.left + parseInt(parentStyle.borderLeftWidth);
+                offsetY += parentRect.top + parseInt(parentStyle.borderTopWidth);
+            }
+            parent = parent.offsetParent;
+        }
         // Check if the element is out of the viewport on the right side
-        if (rect.right > viewportWidth) {
-            this.style.left = `${viewportWidth - rect.width}px`;
+        if (rect.left + rect.width > viewportWidth) {
+            this.style.left = `${Math.round(viewportWidth - rect.width - offsetX)}px`;
         }
         // Check if the element is out of the viewport on the left side
         if (rect.left < 0) {
-            this.style.left = '0px';
+            this.style.left = `${-offsetX}px`;
         }
         // Check if the element is out of the viewport on the bottom
-        if (rect.bottom > viewportHeight) {
-            this.style.top = `${viewportHeight - rect.height}px`;
+        if (rect.top + rect.height > viewportHeight) {
+            this.style.top = `${Math.round(viewportHeight - rect.height - offsetY)}px`;
         }
         // Check if the element is out of the viewport on the top
         if (rect.top < 0) {
-            this.style.top = '0px';
+            this.style.top = `${-offsetY}px`;
         }
     }
 };
