@@ -78,6 +78,12 @@ Then, you can run Silex with the `silex` command. The entry point is `src/ts/ser
 
 You can configure Silex using environment variables and command-line options. All available options can be found in `src/ts/server/cli.ts`.
 
+There are config files (same as plugins) in the `examples/` folder. To start Silex locally with these config:
+
+```sh
+$ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_CONFIG=`pwd`/examples/server-config-plugins.js npm run start:debug
+```
+
 ## Contributing
 
 Contributions are welcome! Please read our [contributing guidelines](CONTRIBUTING.md) for details on how to contribute to Silex.
