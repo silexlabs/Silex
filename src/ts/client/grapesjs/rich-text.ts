@@ -15,17 +15,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { RichTextEditorAction } from 'grapesjs'
+
 const pluginName = 'richText'
 
+export const orderedList: RichTextEditorAction = {
+  name: 'orderedList',
+  icon: '1.',
+  attributes: { title: 'Ordered List' },
+  result: rte => rte.exec('insertOrderedList'),
+}
+
+export const unorderedList: RichTextEditorAction = {
+  name: 'unorderedList',
+  icon: '•',
+  //icon: '<i class="fa fa-list-ul"></i>',
+  attributes: { title: 'Unordered List' },
+  result: rte => rte.exec('insertUnorderedList'),
+}
+
 export const richTextPlugin = (editor, opts) => {
-  editor.RichTextEditor.add('orderedList', {
-    icon: '1.',
-    attributes: {title: 'Ordered List'},
-    result: rte => rte.exec('insertOrderedList'),
-  })
-  editor.RichTextEditor.add('unorderedList', {
-    icon: '<i class="fa fa-list-ul"></i>',
-    attributes: {title: 'Unordered List'},
-    result: rte => rte.exec('insertUnorderedList'),
-  })
+  // This doesn't work, it is now added in the editor config
+  //editor.RichTextEditor.add('orderedList', orderedList)
+  //editor.RichTextEditor.add('unorderedList', unorderedList)
 }
