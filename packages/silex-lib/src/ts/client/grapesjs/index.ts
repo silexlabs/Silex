@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs, { Editor, EditorConfig } from 'grapesjs'
+import grapesjs, { Editor, EditorConfig, RichTextEditorAction } from 'grapesjs'
 import openImport from './openImport'
 
 /**
@@ -51,7 +51,7 @@ import { projectBarPlugin } from './project-bar'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
-import { richTextPlugin } from './rich-text'
+import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import { storagePlugin } from './storage'
@@ -159,6 +159,12 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
         outline-offset: -2px;
       }
     `,
+
+    richTextEditor: {
+      // @ts-ignore
+      actions: ['bold', 'italic', 'underline', 'strikethrough', 'link', 'wrap', orderedList, unorderedList],
+    },
+
 
     plugins: plugins.map(p => p.value),
 
