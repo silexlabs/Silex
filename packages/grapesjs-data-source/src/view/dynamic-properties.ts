@@ -1,178 +1,230 @@
 import { Component } from "grapesjs"
-import { Context, DataEditor, DataSource, DataOptions, Schema, ComponentData } from ".."
+import { DataEditor, DataOptions, Schema, ComponentData, Property, ExpressionItem, Expression, DataSource } from ".."
 import { html, render } from "lit"
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
-import { DynamicProperty } from "./DynamicProperty"
+//import { DynamicProperty } from "./DynamicProperty"
 
 import '@silexlabs/steps-selector/steps-selector.js'
 import { Step, StepsSelector } from "@silexlabs/steps-selector/steps-selector.js"
 
 const dsAttribute = 'ds-data'
 const defaultStyles = `
-  .ds-wrapper {
-    margin-top: 20px;
+  :root {
+    --steps-selector-dirty-background-color: rgba(0,0,0,.2);
+    --steps-selector-dirty-border-color: rgba(0,0,0,.2);
+    --steps-selector-dirty-color: #d278c9;
+    --steps-selector-active-color: #ddd;
+    --steps-selector-active-background-color: rgba(255,255,255,.15);
+    --popin-dialog-background: #ddd;
+    --popin-dialog-color: #333;
+    --popin-dialog-header-background: transparent;
+    --popin-dialog-body-background: transparent;
+    --popin-dialog-footer-background: transparent;
+    /*
+    --popin-dialog-header-color: #333;
+    --popin-dialog-body-color: #666;
+    --popin-dialog-footer-color: #333;
+    --popin-dialog-header-border-bottom: none;
+    --popin-dialog-footer-border-top: none;
+    --popin-dialog-header-padding: 0;
+    --popin-dialog-body-padding: 5px;
+    --popin-dialog-footer-padding: 0;
+    */
   }
-  .ds-container {
+  /*
+  */
+  steps-selector::part(property-container) {
     display: flex;
-    flex-direction: column;
-    padding: 10px 0;
-    margin: 10px 0;
-    border-bottom: 1px solid rgba(0,0,0,.2);;
   }
-  .ds-label {
-    text-align: left;
-    margin: 0 10px;
+  steps-selector::part(property-input) {
+    padding: 5px;
+    border: medium;
+    margin: 5px;
+    flex: 1 1 auto;
+    background-color: rgba(0,0,0,.2);
+    color: #ddd;
   }
-  .ds-select__wrapper {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-  .ds-select__type {
-    margin: 0 2px;
-    min-height: 15px;
-  }
-  .ds-select__name {
-    position: relative;
-    margin: 2px;
-    padding: 10px;
-  }
-  .ds-select__name::after {
-    content: '▼';
-  }
-  .ds-select__name.last::after {
-    content: '+';
-  }
-  .ds-field {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
-    align-items: center;
-    margin: 2px 10px;
-  }
-  .ds-field select.ds-select {
-    opacity: 0;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-  .ds-button {
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    padding-bottom: 3px;
-    border: none;
-  }
-  .ds-button.ds-remove {
-    background-color: rgba(255, 255, 255, 0.25);
-    color: white;
-    margin: 0 5px;
-  }
-  .ds-button.ds-add {
-    margin-left: auto;
-    margin-top: 5px;
-  }
-  .ds-container .cm-editor {
-    width: 100%;
-    height: 100%;
-    text-align: left;
-  }
-  .ds-container .cm-cursor {
-    border-left-color: #ddd;
-  }
-  .ds-container .cm-tooltip-autocomplete {
-    color: black;
+  steps-selector::part(steps-selector-item)::part(values-li) {
+    background-color: red !important;
+    list-style: none;
   }
 `
 
-export default async (editor: DataEditor, opts: DataOptions = {}) => {
+export type ExpressionBuilderEditor = DataEditor & {
+  ExpressionBuilder: ExpressionBuilder
+}
+
+export default async (editor: ExpressionBuilderEditor, opts: DataOptions = {}) => {
+  console.log('dynamic-properties', opts, editor)
   const options: DataOptions = {
     styles: defaultStyles,
     ...opts,
   }
-  // Selectors
-  const innerHTMLSelector = createRef<StepsSelector>()
+  editor.ExpressionBuilder = new ExpressionBuilder(options, editor)
+}
+
+export class ExpressionBuilder {
+  // Constants
+  static readonly READY = 'expression:ready'
+
+  // UI
+  protected innerHTMLSelector = createRef<StepsSelector>()
+  protected wrapper: HTMLElement = document.createElement('section')
 
   // Data
-  async function getDef(ds: DataSource): Promise<Type> {
-    const schema = await ds.getSchema()
-    return {
-      name: ds.id,
-      kind: 'OBJECT',
-      fields: schema.types
-        .find(type => type.name === 'Query')?.fields ?? []
+  protected schemas: Schema[]
+  protected baseContext: Property[]
+
+  // Constructor
+  constructor(protected options: DataOptions, protected editor: ExpressionBuilderEditor) {
+    this.schemas = []
+    this.baseContext = []
+    // Async call to init which will end by emitting the READY event
+    this.init(editor)
+    .then(() => editor.trigger(ExpressionBuilder.READY))
+  }
+
+  async init(editor: ExpressionBuilderEditor) {
+    const dataSources = editor.DataSourceManager.getAll()
+    this.schemas = await Promise.all(dataSources.map(ds => ds.getSchema()))
+    this.baseContext = this.schemas
+      .map((schema: Schema) => ({
+        name: schema.dataSource.name,
+        type: 'data_source',
+        fields: schema.properties,
+      } as Property))
+    // Get the container element for the UI
+    if (!this.options.appendTo) {
+      throw new Error('appendTo option is required')
+    } else if (typeof this.options.appendTo === 'string') {
+      if (!document.querySelector(this.options.appendTo)) throw new Error(`Element ${this.options.appendTo} not found`)
+    } else if (!(this.options.appendTo instanceof HTMLElement) && typeof this.options.appendTo !== 'function') {
+      throw new Error(`appendTo option must be a string or an HTMLElement or a function`)
     }
-  }
 
-  const defs = await Promise.all(editor.DataSourceManager.getAll().map(ds => getDef(ds)))
-  const baseContext = defs
-    .reduce((acc, def) => {
-      acc[def.name] = {
-        types: [def],
-      }
-      return acc
-    }, {} as Context)
-  function getContext(component: Component): Context {
-    return {
-      ...baseContext,
-    }
-  }
-  // Get the container element for the UI
-  if(!options.appendTo) {
-    throw new Error('appendTo option is required')
-  } else if(typeof options.appendTo === 'string') {
-    if(!document.querySelector(options.appendTo)) throw new Error(`Element ${options.appendTo} not found`)
-  } else if(!(options.appendTo instanceof HTMLElement) && typeof options.appendTo !== 'function') {
-    throw new Error(`appendTo option must be a string or an HTMLElement or a function`)
-  }
+    // create a wrapper for our UI
+    this.wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
 
-  const appendTo: HTMLElement | null = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : typeof options.appendTo === 'function' ? options.appendTo() : options.appendTo
-  if(!appendTo) throw new Error(`Element ${options.appendTo} not found`)
+    // The options appendTo and button can be functions which use editor so they need to be called asynchronously
+    let appendTo: HTMLElement
+    editor.onReady(() => {
+      // Append the wrapper to the container
+      appendTo = (typeof this.options.appendTo === 'string' ? document.querySelector(this.options.appendTo) : typeof this.options.appendTo === 'function' ? this.options.appendTo() : this.options.appendTo) as HTMLElement
+      if (!appendTo) throw new Error(`Element ${this.options.appendTo} not found`)
+      appendTo.appendChild(this.wrapper)
 
-  // create a wrapper for our UI
-  const wrapper = document.createElement('section')
-  wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
-  appendTo.appendChild(wrapper)
-
-  // Update the UI when a page is added/renamed/removed
-  editor.on('page', () => updateUi())
-
-  // Update the UI on component selection change
-  editor.on('component:selected', () => updateUi())
-  
-  // Update the UI on component change
-  editor.on('component:update', () => updateUi())
-
-  // Show the UI when the button is clicked
-  if(options.button) {
-    const button = typeof options.button === 'function' ? options.button() : options.button
-    if(!button) throw new Error(`Element ${options.button} not found`)
-    button.on('change', () => {
-      if(button.active) {
-        // Move at the bottom
-        appendTo.appendChild(wrapper)
-        // Show the UI
-        wrapper.style.display = 'block'
-      } else {
-        // Hide the UI
-        wrapper.style.display = 'none'
+      // Show the UI when the button is clicked
+      if (this.options.button) {
+        const button = typeof this.options.button === 'function' ? this.options.button() : this.options.button
+        if (!button) throw new Error(`Element ${this.options.button} not found`)
+        button.on('change', () => {
+          if (button.active) {
+            // Move at the bottom
+            appendTo.appendChild(this.wrapper)
+            // Show the UI
+            this.wrapper.style.display = 'block'
+          } else {
+            // Hide the UI
+            this.wrapper.style.display = 'none'
+          }
+        })
+        this.wrapper.style.display = button.active ? 'block' : 'none'
       }
     })
-    wrapper.style.display = button.active ? 'block' : 'none'
+
+    // Update the UI when a page is added/renamed/removed
+    editor.on('page', () => this.updateUi())
+
+    // Update the UI on component selection change
+    editor.on('component:selected', () => this.updateUi())
+
+    // Update the UI on component change
+    editor.on('component:update', () => this.updateUi())
   }
 
-  function initStepsSelector(stepsSelector: StepsSelector, steps: Step[]) {
+  /**
+   * Get the context for the current selection
+   * The context is the data sources and properties available at this component level
+   */
+  getContext(component: Component | null): Property[] {
+    return [
+      ...this.baseContext,
+      // TODO: Add filters and properties here
+    ]
+    // Add the fixed value step to the context
+    .concat({
+      kind: 'scalar',
+      ...StepsSelector.getFixedValueStep('DEFINE VALUE HERE'),
+    } as Property)
+  }
+  /**
+   * Get the next possible expression items
+   */
+  getCompletion(expression: Expression, component: Component | null) {
+    if(expression.length === 0) return this.getContext(component)
+    if(expression.length === 1 && expression[0].type === 'DataSource') return [
+      ...this.schemas.find(schema => schema.dataSource.name === expression[0].name)?.properties ?? [],
+    ]
+    return [
+      // The fields of the last selected type or filter for the current selection
+      ...this.getFields(expression, component),
+      // TODO: Add filters here
+    ]
+  }
+  /**
+   * Recursive function to find the next possible expressions
+   */
+  getFields(expression: Expression, component: Component | null): Property[] {
+    const context = this.getContext(component)
+    if(expression.length === 0) return context
+    
+    // First get the schema of the first item if it is a DataSource
+    const firstItem: ExpressionItem = expression[0]
+    if(expression.length === 1) {
+      console.log('====>', {context, firstItem})
+      return (
+        // A property from the context or a DataSource type
+        this.contextToProperties(context, firstItem as Property)
+        // Defaults to no properties
+        ?? [] as Property[]
+      )
+    }
+
+    // Recursive call with one less expression item
+    const lastProps: Property[] = this.getFields(expression.slice(0, -1), component)
+    const currentProp: Property = lastProps.find(prop => prop.name === expression.slice(-1)[0].name) as Property
+    if(!currentProp) throw new Error(`Property ${expression.slice(-1)[0].name} not found`)
+    const fields = this.contextToProperties(context, currentProp) //schema?.properties?.filter(prop => prop.type === currentProp.type) as Property[]
+    return fields
+  }
+
+  contextToProperties(context: Property[], currentProp: Property) {
+    const fields = context
+      .find(prop => prop.type === currentProp.type && prop.name === currentProp.name)
+      ?.fields as Property[]
+    if(!fields) {
+      console.error(`Type ${currentProp.type} not found`, {context, currentProp})
+      throw new Error(`Type ${currentProp.type} not found`)
+    }
+    return fields
+  }
+
+  initStepsSelector(stepsSelector: StepsSelector, steps: Step[], component: Component | null) {
+    console.log('initStepsSelector', stepsSelector, steps, component, this.getContext(component))
     stepsSelector.steps = steps
-    //stepsSelector.completion = (steps: Step[]) => {
-    //  return getContext()
-    //}
+    stepsSelector.completion = (steps: Step[]) => {
+      console.log('completion', steps)
+      const expression = steps as Expression
+      const completion = this.getCompletion(expression, component)
+      console.log({completion})
+      return completion.map(prop => ({
+        icon: '',
+        ...prop,
+      }))
+    }
   }
 
-  function chagedStepsSelector(component: Component, name: string, stepsSelector: StepsSelector) {
+  chagedStepsSelector(component: Component, name: string, stepsSelector: StepsSelector) {
     component.set(dsAttribute, {
       ...component.get(dsAttribute),
       [name]: stepsSelector.steps,
@@ -180,19 +232,19 @@ export default async (editor: DataEditor, opts: DataOptions = {}) => {
   }
 
   // Update the UI
-  function updateUi(component: Component | undefined = editor.getSelected()) {
+  updateUi(component: Component | undefined = this.editor.getSelected()) {
     if(!component) return
     const dsData = component.get(dsAttribute) || {} as ComponentData
     const { innerHTML } = dsData
     const fixed = !innerHTML?.length || innerHTML?.length === 1 && innerHTML[0].type === 'fixed'
-    if(innerHTMLSelector.value) {
-      initStepsSelector(innerHTMLSelector.value, innerHTML ?? [])
+    if(this.innerHTMLSelector.value) {
+      this.initStepsSelector(this.innerHTMLSelector.value, innerHTML ?? [], component)
 
     }
     console.log({fixed})
     render(html`
       <style>
-        ${options.styles}
+        ${this.options.styles}
       </style>
       <div>
         <div class="gjs-traits-label">Dynamic Data</div>
@@ -207,19 +259,19 @@ export default async (editor: DataEditor, opts: DataOptions = {}) => {
         //    [property.getName()]: value,
         //  })
         //}
-        //return property.toHtmlForm(dsData[property.getName()] ?? [], getContext(component))
+        //return property.toHtmlForm(dsData[property.getName()] ?? [], this.getContext(component))
         //})
       }
         <steps-selector
-          ${ref(innerHTMLSelector)}
+          ${ref(this.innerHTMLSelector)}
           allow-fixed
-          @onload=${(e: CustomEvent) => initStepsSelector(e.detail, innerHTML ?? [])}
-          @change=${(e: SubmitEvent) => chagedStepsSelector(component, 'innerHTML', e.target as StepsSelector)}
+          @onload=${(e: CustomEvent) => this.initStepsSelector(e.detail, innerHTML ?? [], null)}
+          @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, 'innerHTML', e.target as StepsSelector)}
           .fixed=${fixed}
           >
           innerHTML
         </steps-selector>
       </main>
-    `, wrapper)
+    `, this.wrapper)
   }
 }

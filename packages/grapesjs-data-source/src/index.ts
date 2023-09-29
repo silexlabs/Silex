@@ -5,6 +5,7 @@ import DataManager from './model/DataManager';
 import view from './view';
 import { Step } from '@silexlabs/steps-selector';
 import { GraphQLKind } from './datasources/GraphQL';
+import { ExpressionBuilder } from './view/dynamic-properties';
 
 // **
 // Data plugin, interfaces and types
@@ -15,6 +16,7 @@ import { GraphQLKind } from './datasources/GraphQL';
 export interface DataEditor extends Editor {
   DataSourceManager: DataSourceManager,
   DataManager: DataManager,
+  ExpressionBuilder: ExpressionBuilder,
 }
 
 /**
@@ -48,7 +50,7 @@ export interface DataOptions {
 /**
  * ExpressionItem is a property or a filter
  */
-export interface ExpressionItem extends Filter, Property, Step {}
+export type ExpressionItem = Filter | Property | Step
 
 /**
  * Filters are a subset of ExpressionItem and Step
@@ -85,10 +87,10 @@ export interface DataObject {
   getProperty(): Property,
 }
 
-/**
- * A component's context is all the data available at the component level
- */
-export type Context = DataObject[]
+///**
+// * A component's context is all the data available at the component level
+// */
+//export type Context = DataObject[]
 
 // **
 // Data source interfaces and types
@@ -136,6 +138,7 @@ export type Kind = GraphQLKind
 export interface Property {
   name: string
   kind: Kind
+  type: 'data_source' | 'type' | 'fixed'
   fields?: Field[]
 }
 

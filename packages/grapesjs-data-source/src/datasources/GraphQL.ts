@@ -7,7 +7,7 @@ export interface GraphQLConnectorOptions extends DataSourceObject {
   method: 'GET' | 'POST',
 }
 
-export type GraphQLKind = 'SCALAR' | 'OBJECT' | 'LIST'
+export type GraphQLKind = 'scalar' | 'object' | 'list'
 
 export interface GQLType {
   name: string,
@@ -101,16 +101,18 @@ export default class GraphQLConnector extends Backbone.Model<GraphQLConnectorOpt
     return {
       name: field.name,
       type: this.getTypeProp('name', field),
-      kind: this.getTypeProp('kind', field) as GraphQLKind,
+      kind: this.getTypeProp('kind', field),
     }
   }
-  protected getTypeProp(prop: string, field: any): string {
-    return field.type?.ofType?.[prop] ?? field.type?.[prop] ?? field[prop]
+  protected getTypeProp(prop: string, field: any): GraphQLKind {
+    return (field.type?.ofType?.[prop] ?? field.type?.[prop] ?? field[prop])
+      .toLowerCase()
   }
   protected graphQLToProp(type: GQLType): Property {
     return {
       name: type.name,
-      kind: this.getTypeProp('kind', type) as GraphQLKind,
+      kind: this.getTypeProp('kind', type),
+      type: 'type',
       fields: type.fields?.map((field: any) => this.graphQLToField(field)),
     }
   }
