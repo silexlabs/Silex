@@ -293,7 +293,9 @@ export default class GitlabConnector implements StorageConnector {
     // Handle the case when the server returns an non-JSON response (e.g. 400 Bad Request)
     const text = await response.text()
     if(!response.ok) {
-      if (response.status === 401 && session?.gitlab?.token?.refresh_token) {
+      if (text.includes('A file with this name doesn\'t exist')) {
+        throw new ApiError('Gitlab API error (5): Not Found', 404)
+      } else if (response.status === 401 && session?.gitlab?.token?.refresh_token) {
         // Refresh the token
         const token = session?.gitlab?.token
         const body = {
@@ -327,7 +329,6 @@ export default class GitlabConnector implements StorageConnector {
         }
       } else {
         const message = typeof json?.message === 'object' ? Object.entries(json.message).map(entry => entry.join(' ')).join(' ') : json?.message ?? json?.error ?? response.statusText
-        console.error('Gitlab API error (1)', response.status, response.statusText, {message})
         throw new ApiError(`Gitlab API error (1): ${message}`, response.status)
       }
     }
@@ -520,7 +521,6 @@ export default class GitlabConnector implements StorageConnector {
       branch: this.options.branch,
       commit_message: 'Update website data from Silex',
       content: JSON.stringify(websiteData),
-      file_path: WEBSITE_DATA_FILE,
       id: websiteId,
     })
   }
@@ -648,12 +648,14 @@ export default class GitlabConnector implements StorageConnector {
     for (const file of files) {
       // Convert to base64
       const content = (await contentToBuffer(file.content)).toString('base64')
+      const path = this.getAssetPath(file.path)
+
       try {
-        await this.updateFile(session, websiteId, this.getAssetPath(file.path), content, true)
+        await this.updateFile(session, websiteId, path, content, true)
       } catch (e) {
         // If the file does not exist, create it
         if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
-          await this.createFile(session, websiteId, this.getAssetPath(file.path), content, true)
+          await this.createFile(session, websiteId, path, content, true)
         } else {
           throw e
         }
