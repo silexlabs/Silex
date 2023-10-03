@@ -1,15 +1,16 @@
 import Backbone from "backbone"
-import { DataSource, Schema, DataSourceObject, Property, Field } from ".."
+import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, IDataSource, IDataSourceOptions, Type, TypeId, TypeKind, builtinTypeIds, builtinTypes } from "../types"
 
-export interface GraphQLConnectorOptions extends DataSourceObject {
-  url: string,
-  headers: Record<string, string>,
-  method: 'GET' | 'POST',
+export interface GraphQLOptions extends IDataSourceOptions {
+  url: string
+  headers: Record<string, string>
+  method: 'GET' | 'POST'
+  queryable: TypeId[] | ((type: GQLType) => boolean)
 }
 
-export type GraphQLKind = 'scalar' | 'object' | 'list'
+export type GraphQLKind = 'SCALAR' | 'OBJECT' | 'LIST'
 
-export interface GQLType {
+export interface GQLField {
   name: string,
   type: {
     name: string,
@@ -19,40 +20,32 @@ export interface GQLType {
       kind: GraphQLKind,
     },
   },
-  fields: {
-    name: string,
-    type: {
-      name: string,
-      kind: GraphQLKind,
-      ofType?: {
-        name: string,
-        kind: GraphQLKind,
-      },
-    },
-  }[],
+}
+export interface GQLType {
+  name: string,
+  type: GQLField,
+  fields: GQLField[],
 }
 
-export default class GraphQLConnector extends Backbone.Model<GraphQLConnectorOptions> implements DataSource {
-  constructor(options: GraphQLConnectorOptions) {
+export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
+  protected types: Type[] = []
+  protected ready = false
+  constructor(options: GraphQLOptions) {
     super(options)
-    this.set('type', 'graphql')
+    this.set('id', options.id)
     this.set('name', options.name)
     this.set('url', options.url)
     this.set('headers', options.headers)
+    this.set('queryable', options.queryable)
   }
-  async connect(): Promise<void> {
-    try {
-      const result = await this.call(`
-          query {
-            __typename
-          }
-        `) as any
-      if (!result?.data?.__typename) throw new Error(`Invalid response: ${JSON.stringify(result)}`)
-    } catch (e: any) {
-      throw new Error(`GraphQL connection failed: ${e.message}`)
-    }
+  /**
+   * @throws Error
+   */
+  protected triggerError<T>(message: string): T {
+    this.trigger(DATA_SOURCE_ERROR, {message})
+    throw new Error(message)
   }
-  async getSchema(): Promise<Schema> {
+  protected async loadTypes(): Promise<Type[]> {
     try {
       const result = await this.call(`
           query {
@@ -73,68 +66,113 @@ export default class GraphQLConnector extends Backbone.Model<GraphQLConnectorOpt
               }
             }
           }
-        `) as any
-      if (!result.data?.__schema?.types) throw new Error(`Invalid response: ${JSON.stringify(result)}`)
-      return {
-        dataSource: {
-          type: 'graphql',
-          method: this.get('method') ?? 'POST',
-          name: this.get('name') ?? 'GraphQL',
-          url: this.get('url')!,
-          headers: this.get('headers'),
-        } as GraphQLConnectorOptions,
-        properties: result
+        `) as {data: {__schema: {types: GQLType[]}}}
+      if (!result.data?.__schema?.types) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
+      const allTypes = result.data.__schema.types.map((type: GQLType) => type.name)
+          .concat(builtinTypeIds)
+
+      const query: GQLType | undefined = result.data.__schema.types.find((type: GQLType) => type.name === 'Query')
+
+      return result
           .data.__schema.types
-          .find((type: any) => type.name === 'Query')?.fields
-          .map((field: any) => ({
-            kind: this.getTypeProp('kind', field),
-            ...result.data.__schema.types.find((type: any) => type.name === this.getTypeProp('name', field))
-          }))
-          //.filter((type: any) => type)
-          .map((type: any) => this.graphQLToProp(type)),
-      }
-    } catch (e: any) {
-      throw new Error(`GraphQL introspection failed: ${e.message}`)
+          // Filter out Query, Mutation, Subscription
+          .filter((type: GQLType) => !['Query', 'Mutation', 'Subscription'].includes(type.name))
+          // Filter out types that are not in Query
+          .map((type: GQLType) => query?.fields.find((field: GQLField) => field.name === type.name) ?? type)
+
+        // return query.fields
+        // Add the fields which are not in Query but at the schema's root
+        // @ts-ignore
+        .map((field: GQLField) => ({
+          ...field,
+          ...result.data.__schema.types.find((type: GQLType) => type.name === this.getTypeProp('name', field)),
+        } as GQLType))
+        .map((type: GQLType) => this.graphQLToType(allTypes, type))
+        .concat(builtinTypes)
+
+      //return result
+      //    .data.__schema.types
+      //    .find((type: GQLType) => type.name === 'Query')?.fields
+      //    .map((field: GQLType) => ({
+      //      kind: this.getTypeProp('kind', field),
+      //      ...result.data.__schema.types.find((type: any) => type.name === this.getTypeProp('name', field))
+      //    }))
+      //    .map((type: any) => this.graphQLToType(allTypes, type))
+      //    .concat(builtinTypes)
+    } catch (e) {
+      return this.triggerError(`GraphQL introspection failed: ${(e as Error).message}`)
     }
   }
-  protected graphQLToField(field: GQLType): Field {
+  protected graphQLToField(type: GQLField): Field {
     return {
-      name: field.name,
-      type: this.getTypeProp('name', field),
-      kind: this.getTypeProp('kind', field),
-    }
-  }
-  protected getTypeProp(prop: string, field: any): GraphQLKind {
-    return (field.type?.ofType?.[prop] ?? field.type?.[prop] ?? field[prop])
-      .toLowerCase()
-  }
-  protected graphQLToProp(type: GQLType): Property {
-    return {
+      id: type.name,
+      dataSourceId: this.get('id')!,
       name: type.name,
-      kind: this.getTypeProp('kind', type),
-      type: 'type',
-      fields: type.fields?.map((field: any) => this.graphQLToField(field)),
+      typeId: this.getTypeProp('name', type),
+      kind: (this.getTypeProp('kind', type) ?? 'SCALAR').toLowerCase() as TypeKind,
     }
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected getTypeProp(prop: string, type: any): GraphQLKind {
+    return (type.type?.ofType?.[prop] ?? type.type?.[prop] ?? type[prop])
+  }
+  protected graphQLToType(allTypes: TypeId[], type: GQLType): Type {
+    const queryable = this.get('queryable') ?? []
+    const result = {
+      id: type.name,
+      dataSourceId: this.get('id')!,
+      name: type.name,
+      kind: (this.getTypeProp('kind', type) ?? 'SCALAR').toLowerCase() as TypeKind,
+      fields: type.fields
+        // Do not include fields that are not in the schema
+        // FIXME: somehow this happens with fields of type datetime_functions for directus
+        //?.filter((field: {name: string, type: any}) => allTypes.includes(field.name))
+        ?.filter((field) => allTypes.includes(this.getTypeProp('name', field)))
+        ?.map(field => this.graphQLToField(field))
+        ?? [],
+      queryable: queryable instanceof Array
+        ? queryable.includes(type.name)
+        : queryable(type),
+    }
+    return result
   }
 
+  async connect(): Promise<void> {
+    try {
+      // const result = await this.call(`
+      //     query {
+      //       __typename
+      //     }
+      //   `) as any
+      // if (!result?.data?.__typename) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
+      this.types = await this.loadTypes()
+      this.ready = true
+      this.trigger(DATA_SOURCE_READY)
+    } catch (e) {
+      return this.triggerError(`GraphQL connection failed: ${(e as Error).message}`)
+    }
+  }
+  getTypes(): Type[] {
+    if (!this.ready) return []
+    return this.types
+  }
   //async getData(query: Query): Promise<any[]> {
   //  const result = await this.call(`
   //      query {
   //        ${this.buildQuery(query)}
   //      }
   //    `) as any
-  //    console.log('result', result.data)
   //  return result.data.Query[query.name]
   //}
 
   /**
    * Exported for testing purposes
    */
-  async call(query: string): Promise<any[]> {
+  async call(query: string): Promise<unknown> {
     const url = this.get('url')
-    if (!url) throw new Error('Missing GraphQL URL')
+    if (!url) return this.triggerError('Missing GraphQL URL')
     const headers = this.get('headers')
-    if(!headers) throw new Error('Missing GraphQL headers')
+    if(!headers) return this.triggerError('Missing GraphQL headers')
     const method = this.get('method') ?? 'POST'
     // GraphQL Introspcetion
     const response = await fetch(url, {
@@ -147,7 +185,7 @@ export default class GraphQLConnector extends Backbone.Model<GraphQLConnectorOpt
     })
     if (!response?.ok) {
       console.error('GraphQL call failed', response?.status, response?.statusText, query)
-      throw new Error(`GraphQL call failed with \`${response?.statusText}\` and status ${response?.status}`)
+      return this.triggerError(`GraphQL call failed with \`${response?.statusText}\` and status ${response?.status}`)
     }
     return response.json()
   }

@@ -1,71 +1,79 @@
-import { GraphQLConnectorOptions } from './GraphQL'
-import {connect, postsDetails, postsId, schema} from '../../mocks/graphql-mocks.js'
-import { Field, Property } from '..'
+import { GQLType, GraphQLOptions } from './GraphQL'
+import {schema} from '../../__mocks__/graphql-mocks.js'
+import { Field, Type } from '../types'
 
 const bearerToken = process.env.BEARER ?? ''
 
-const options: GraphQLConnectorOptions = {
-  name: 'GraphQL',
+const options: GraphQLOptions = {
+  id: 'testDataSourceId',
   type: 'graphql',
+  name: 'GraphQL',
   url: `https://sandbox.internet2000.net/cms/graphql?access_token=${bearerToken}`,
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer ' + bearerToken,
   },
+  queryable: ['posts', 'Contact', 'test'],
 }
 
-async function importDataSource(datas?: any[]) {
+async function importDataSource(datas?: unknown[]) {
   if (datas?.length) {
     global.fetch = jest.fn()
-    datas && datas.forEach(data => {
+    datas?.forEach(data => {
       global.fetch = (global.fetch as jest.Mock)
-      .mockImplementationOnce(() =>
-        Promise.resolve({
+      .mockImplementationOnce(() => {
+        return Promise.resolve({
           ok: true,
           json: () => Promise.resolve(data),
-        }),
-      )
+        })
+      })
     })
   }
-  return import('./GraphQL')
+  // @ts-ignore
+  return (await import('./GraphQL')).default.default // Why default.default?
 }
-beforeEach(() => {
+beforeEach(async () => {
   jest.resetAllMocks()
 })
 
 test('connect', async () => {
-  const DataSource = (await importDataSource([connect])).default
+  const DataSource = (await importDataSource([schema]))
   const dataSource = new DataSource(options)
   await dataSource.connect()
+  await new Promise(resolve => setTimeout(resolve, 100))
 })
 
-test('getSchema', async () => {
-  const GraphQLDataSource = (await importDataSource([connect, schema])).default
+test('getTypes', async () => {
+  const GraphQLDataSource = (await importDataSource([schema]))
   const dataSource = new GraphQLDataSource(options)
   await dataSource.connect()
-  const {properties} = await dataSource.getSchema()
-  expect(properties).not.toBeUndefined()
-  expect(properties!.length).toBeGreaterThan(10)
-  const contactProp: Property = properties![0]
+  const types = await dataSource.getTypes()
+  expect(types).not.toBeUndefined()
+  expect(types!.length).toBeGreaterThan(10)
+  const contactProp: Type = types!.find((prop: Type) => prop.id === 'Contact')!
+  expect(contactProp.id).toBe('Contact')
   expect(contactProp.name).toBe('Contact')
-  const testProp: Property | undefined = properties!.find(prop => prop.name === 'test')
+  expect(contactProp.kind).toBe('object') // Contact collection is a singleton in directus
+  expect(contactProp.fields).not.toBeUndefined()
+  expect(contactProp.fields).toContainEqual({id: 'id', name: 'id', typeId: 'ID', kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  const testProp: Type | undefined = types!.find((prop: Type) => prop.id === 'test')
   expect(testProp).not.toBeUndefined()
   expect(testProp!.fields).not.toBeUndefined()
-  const testO2MField: Field | undefined = testProp!.fields!.find(field => field.name === 'test_o2m')
+  const testO2MField: Field | undefined = testProp!.fields!.find(field => field.id === 'test_o2m')
   expect(testO2MField).not.toBeUndefined()
-  expect((testO2MField as any).fields).toBeUndefined()
-  const testO2MProp: Property | undefined = properties!.find(prop => prop.name === testO2MField!.type)
+  expect((testO2MField as unknown as GQLType).fields).toBeUndefined()
+  const testO2MProp: Type | undefined = types!.find((prop: Type) => prop.id === testO2MField!.typeId)
   expect(testO2MProp).not.toBeUndefined()
-  expect(testO2MProp!.name).toBe('test_o2m')
-  expect(testO2MProp!.kind).toBe('LIST')
+  expect(testO2MProp!.id).toBe('test_o2m')
+  expect(testO2MProp!.kind).toBe('list')
   expect(testO2MProp!.fields).not.toBeUndefined()
-  expect(testO2MProp!.fields).toContainEqual({name: 'id', type: 'ID', kind: 'SCALAR'})
-  expect(testO2MProp!.fields).toContainEqual({name: 'label', type: 'String', kind: 'SCALAR'})
+  expect(testO2MProp!.fields).toContainEqual({id: 'id', name: 'id', typeId: 'ID', kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(testO2MProp!.fields).toContainEqual({id: 'label', name: 'label', typeId: 'String', kind: 'scalar', dataSourceId: 'testDataSourceId'})
 })
 
 //test('Get data', async () => {
-//  const DataSource = (await importDataSource([connect, postsId, postsDetails])).default
+//  const DataSource = (await importDataSource([connect, postsId, postsDetails]))
 //  const dataSource = new DataSource(options)
 //  await dataSource.connect()
 //  const dataPostsId = await dataSource.getData({
