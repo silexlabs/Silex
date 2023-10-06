@@ -31,9 +31,11 @@ export interface Step {
     errorText?: string;
     options?: any;
     optionsForm?: string;
+    meta?: any;
 }
 export declare class StepsSelector extends LitElement {
     static styles: import("lit").CSSResult;
+    static getFixedValueStep(value: string): Step;
     get dirty(): boolean;
     steps: Step[];
     protected get _steps(): Step[];

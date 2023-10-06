@@ -31,6 +31,7 @@ import { customElement, property } from 'lit/decorators.js';
  * @fires {CustomEvent} popin-dialog-closed - Fires when the dialog is closed
  * @fires {CustomEvent} popin-dialog-opened - Fires when the dialog is opened
  * @cssprop {Color} --popin-dialog-background - The background color of the dialog
+ * @cssprop {Color} --popin-dialog-color - The text color of the dialog
  * @cssprop {Color} --popin-dialog-header-background - The background color of the header
  * @cssprop {Color} --popin-dialog-body-background - The background color of the body
  * @cssprop {Color} --popin-dialog-footer-background - The background color of the footer
@@ -60,8 +61,8 @@ let PopinDialog = class PopinDialog extends LitElement {
         <slot class="header" name="header"></slot>
       </header>
       <main>
-        <slot class="body" name="body"></slot>
-        <slot class="default"></slot>
+        <slot class="body" name="body" part="body"></slot>
+        <slot class="default" part="default"></slot>
       </main>
       <footer>
         <slot class="footer" name="footer"></slot>
@@ -119,95 +120,104 @@ let PopinDialog = class PopinDialog extends LitElement {
         }
     }
     ensureElementInView() {
-        // Reset the position
-        this.style.left = '';
-        this.style.top = '';
-        // Get the element's bounding rectangle
+        var _a;
+        console.log('ensureElementInView');
+        // Set our position to the parent element position
+        const parentStyle = (_a = this.parentElement) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+        this.style.left = `${parentStyle === null || parentStyle === void 0 ? void 0 : parentStyle.left}px`;
+        this.style.top = `${parentStyle === null || parentStyle === void 0 ? void 0 : parentStyle.top}px`;
+        const offsetX = 0;
+        const offsetY = 0;
+        // // Get the element's bounding rectangle
         const rect = this.getBoundingClientRect();
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
-        // Calculate the offset of each parent element with a non-static position
-        let offsetX = 0;
-        let offsetY = 0;
-        let parent = this.offsetParent;
-        while (parent) {
-            const parentRect = parent.getBoundingClientRect();
-            const parentStyle = getComputedStyle(parent);
-            if (parentStyle.position !== 'static') {
-                console.log('ensureElementInView', parent, parentRect.left);
-                offsetX += parentRect.left + parseInt(parentStyle.borderLeftWidth);
-                offsetY += parentRect.top + parseInt(parentStyle.borderTopWidth);
-            }
-            parent = parent.offsetParent;
-        }
+        // // Calculate the offset of each parent element with a non-static position
+        // let offsetX = 0
+        // let offsetY = 0
+        // let parent = this.offsetParent as HTMLElement
+        // while (parent) {
+        //   console.log(parent)
+        //   const parentRect = parent.getBoundingClientRect()
+        //   const parentStyle = getComputedStyle(parent)
+        //   if (parentStyle.position !== 'static') {
+        //     offsetX += parentRect.left + Math.round(parseInt(parentStyle.borderLeftWidth))
+        //     offsetY += parentRect.top + Math.round(parseInt(parentStyle.borderTopWidth))
+        //     break // Only the first parent with a non-static position is relevant
+        //   }
+        //   parent = parent.offsetParent as HTMLElement
+        // }
         // Check if the element is out of the viewport on the right side
-        if (rect.left + rect.width > viewportWidth) {
-            this.style.left = `${Math.round(viewportWidth - rect.width - offsetX)}px`;
+        if (rect.left + rect.width + offsetX > viewportWidth) {
+            this.style.left = `${viewportWidth - rect.width - offsetX}px`;
         }
         // Check if the element is out of the viewport on the left side
-        if (rect.left < 0) {
+        if (rect.left + offsetX < 0) {
             this.style.left = `${-offsetX}px`;
         }
         // Check if the element is out of the viewport on the bottom
-        if (rect.top + rect.height > viewportHeight) {
-            this.style.top = `${Math.round(viewportHeight - rect.height - offsetY)}px`;
+        if (rect.top + rect.height + offsetY > viewportHeight) {
+            this.style.top = `${viewportHeight - rect.height - offsetY}px`;
         }
         // Check if the element is out of the viewport on the top
-        if (rect.top < 0) {
+        if (rect.top + offsetY < 0) {
             this.style.top = `${-offsetY}px`;
         }
     }
 };
 PopinDialog.styles = css `
-  :host {
-  --popin-dialog-background: #fff;
-  --popin-dialog-header-background: #f5f5f5;
-  --popin-dialog-body-background: #f5f5f5;
-  --popin-dialog-footer-background: #f5f5f5;
-  --popin-dialog-header-color: #333;
-  --popin-dialog-body-color: #666;
-  --popin-dialog-footer-color: #333;
-  --popin-dialog-header-border-bottom: none;
-  --popin-dialog-footer-border-top: none;
-  --popin-dialog-header-padding: 0;
-  --popin-dialog-body-padding: 5px;
-  --popin-dialog-footer-padding: 0;
-}
     :host {
       display: inline-block;
-      position: absolute;
-      max-width: 100%;
+      position: fixed;
+      max-width: 100vw;
+      max-height: 80vh;
       box-sizing: border-box;
       z-index: 1000; /* Ensure it's on top of other content */
-      border-radius: 8px;
+      border-radius: var(--popin-dialog-border-radius, 3px);
       overflow: hidden; /* To ensure border-radius applies to children elements */
+      overflow-y: auto;
+      outline: none;
+      border: var(--popin-dialog-border, 1px solid #ccc);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       display: inline-flex;
       flex-direction: column;
-      background-color: var(--popin-dialog-background);
+      background-color: var(--popin-dialog-background, #fff);
+      color: var(--popin-dialog-color, #000);
     }
     :host([hidden]) {
       display: none !important;
     }
 
-header {
-  border-bottom: var(--popin-dialog-header-border-bottom);
-  background-color: var(--popin-dialog-header-background);
-  padding: var(--popin-dialog-header-padding);
-}
+    header {
+      border-bottom: var(--popin-dialog-header-border-bottom, #f5f5f5);
+      background-color: var(--popin-dialog-header-background, transparent);
+      padding: var(--popin-dialog-header-padding, 0);
+      color: var(--popin-dialog-header-color, #000);
+    }
 
-footer {
-  border-top: var(--popin-dialog-footer-border-top);
-  display: flex;
-  justify-content: flex-end;
-  background-color: var(--popin-dialog-footer-background);
-  padding: var(--popin-dialog-footer-padding);
-}
+    footer {
+      border-top: var(--popin-dialog-footer-border-top, 1px solid #f5f5f5);
+      display: flex;
+      justify-content: flex-end;
+      background-color: var(--popin-dialog-footer-background, transparent);
+      padding: var(--popin-dialog-footer-padding);
+      color: var(--popin-dialog-footer-color, #000);
+    }
 
-main {
-  background-color: var(--popin-dialog-body-background);
-  padding: var(--popin-dialog-body-padding);
-}
+    main {
+      background-color: var(--popin-dialog-body-background, transparent);
+      padding: var(--popin-dialog-body-padding, 5px);
+      color: var(--popin-dialog-body-color, #000);
+    }
+
+    ::slotted([slot="header"]) {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    ::slotted([slot="body"]) * {
+      background: red !important;
+    }
   `;
 __decorate([
     property()

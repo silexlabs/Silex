@@ -24,6 +24,7 @@ import { LitElement } from 'lit';
  * @fires {CustomEvent} popin-dialog-closed - Fires when the dialog is closed
  * @fires {CustomEvent} popin-dialog-opened - Fires when the dialog is opened
  * @cssprop {Color} --popin-dialog-background - The background color of the dialog
+ * @cssprop {Color} --popin-dialog-color - The text color of the dialog
  * @cssprop {Color} --popin-dialog-header-background - The background color of the header
  * @cssprop {Color} --popin-dialog-body-background - The background color of the body
  * @cssprop {Color} --popin-dialog-footer-background - The background color of the footer

@@ -37,14 +37,12 @@ export interface Step {
   errorText?: string
   options?: any
   optionsForm?: string
+  meta?: any
 }
 
 @customElement('steps-selector')
 export class StepsSelector extends LitElement {
   static override styles = css`
-    :host {
-      --steps-selector-dirty-color: red;
-    }
     ::part(header) {
       display: flex;
       flex-direction: row;
@@ -53,6 +51,10 @@ export class StepsSelector extends LitElement {
     }
     .dirty {
       color: var(--steps-selector-dirty-color, red);
+    }
+    ::part(dirty-icon) {
+      display: inline-block;
+      width: 1rem;
     }
     ::part(property-container) {
       display: flex;
@@ -67,9 +69,25 @@ export class StepsSelector extends LitElement {
       align-items: center;
       border: 1px solid var(--steps-selector-dirty-border-color, #ccc);
       background-color: var(--steps-selector-dirty-background-color, #ccc);
-      border-radius: 5px;
+      border-radius: var(--steps-selector-dirty-border-radius, 3px);
       padding: 3px;
     }
+    ul[slot="tags"] {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    /* an arrow between elements */
+    .steps-container__separator {
+      display: inline;
+    }
+    .steps-container__separator::after {
+      content: "▶";
+      color: var(--steps-selector-separator-color, #333);
+      font-size: var(--steps-selector-separator-font-size, 1.5em);
+      padding: 0 5px;
+    }
+    /* selector between fixed value (text input) and steps */
     .fixed-selector span {
       padding: 3px;
     }
@@ -83,15 +101,65 @@ export class StepsSelector extends LitElement {
       margin-left: 5px;
     }
     .fixed-selector span.active {
-      border-radius: 5px;
-      background-color: #eee;
+      border-radius: var(--steps-selector-active-border-radius, 3px);
+      background-color: var(--steps-selector-active-background-color, #eee);
+      color: var(--steps-selector-active-color, #333);
       cursor: default;
     }
-    steps-selector-item {
-      padding: 10px;
-      margin: 10px;
+    ul.values-ul {
+      list-style: none;
+      padding: var(--steps-selector-values-ul-padding, 0);
+      margin: var(--steps-selector-values-ul-margin, 0);
+      color: var(--steps-selector-values-ul-color, #000);
+      background-color: var(--steps-selector-values-ul-background-color, transparent);
+    }
+    li.values-li {
+      padding: var(--steps-selector-values-li-padding, 5px);
+      margin: var(--steps-selector-values-li-margin, 0);
+      background-color: var(--steps-selector-values-li-background-color, transparent);
+      border-bottom: var(--steps-selector-values-li-border, 1px solid #ccc);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+    }
+    li.values-li:last-child {
+      border-bottom: none;
+    }
+    li.values-li:hover {
+      background-color: var(--steps-selector-values-li-hover-background-color, #eee);
+    }
+    li.values-li.active {
+      background-color: var(--steps-selector-values-li-active-background-color, #ccc);
+      font-weight: var(--steps-selector-values-li-active-font-weight, bold);
+    }
+    li.values-li .values__icon {
+      margin-right: var(--steps-selector-values-li-icon-margin-right, 5px);
+    }
+    li.values-li .values__name {
+      margin-right: var(--steps-selector-values-li-name-margin-right, 25px);
+    }
+    li.values-li .values__type {
+      color: var(--steps-selector-values-li-type-color, #999);
+    }
+    .placeholder > * {
+      color: var(--steps-selector-placeholder-color, #999);
+      font-style: var(--steps-selector-placeholder-font-style, italic);
+      margin: var(--steps-selector-placeholder-margin, 10px 0);
     }
   `
+
+  public static getFixedValueStep(value: string): Step {
+    return {
+      name: 'Fixed value',
+      icon: '',
+      type: 'fixed',
+      options: {
+        value,
+      },
+      optionsForm: `<form><input name="value" type="text" value=${value} /><button type="submit">Save</button></form>`,
+    }
+  }
+
 
   // Read only property dirty
   get dirty() {
@@ -141,8 +209,8 @@ export class StepsSelector extends LitElement {
         <div class=${classMap({dirty: this.dirty, 'property-name': true})} part="property-name">
           <slot></slot>
           ${this.dirty ? html`
-            <slot name="dirty-icon" @click=${this.reset}>
-              <svg viewBox="0 0 24 24" width="20"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+            <slot name="dirty-icon" part="dirty-icon" class="dirty-icon" @click=${this.reset}>
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
             </slot>
           ` : html``}
         </div>
@@ -165,6 +233,7 @@ export class StepsSelector extends LitElement {
       ${this.fixed ? html`
         <div part="property-container" class="property-container">
           <input
+            part="property-input" class="property-input"
             .placeholder=${this.placeholder}
             .type=${this.fixedType}
             .value=${this._steps[0]?.options ? this._steps[0].options['value'] : ''}
@@ -180,6 +249,7 @@ export class StepsSelector extends LitElement {
               completion: this.completion(this._steps.slice(0, index)),
             }))
             .map(({step, completion}, index) => html`
+              ${index > 0 ? html`<div class="steps-container__separator"></div>` : html``}
               <steps-selector-item
                 key=${index}
                 ?no-options-editor=${!step.optionsForm}
@@ -187,35 +257,43 @@ export class StepsSelector extends LitElement {
                 @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
                 @delete=${() => this.deleteStepAt(index)}
                 @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options)}
+                exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,errorText,name,icon"
               >
-                <div slot="icon">${step.icon}</div>
-                <div slot="name">${step.name}</div>
-                <ul slot="tags">
-                  ${step.tags?.map(tag => html`<li>${tag}</li>`)}
-                </ul>
-                <div slot="type">${step.type}</div>
+                <div slot="icon">${unsafeHTML(step.icon)}</div>
+                <div slot="name">${unsafeHTML(step.name)}</div>
+                <div slot="type">${unsafeHTML(step.type)}</div>
+                <slot slot="delete-button" name="delete-button">
+                  X
+                </slot>
                 <div slot="helpText">${unsafeHTML(step.helpText)}</div>
+                <ul slot="tags">
+                  ${step.tags?.map(tag => html`<li>${unsafeHTML(tag)}</li>`)}
+                </ul>
                 <div slot="errorText">${unsafeHTML(step.errorText)}</div>
                 <div slot="values">
-                  <ul>
+                  <ul class="values-ul">
                     ${
                       completion
-                        .map(step => html`<li value=${step.name}>${step.name}</li>`)
+                        .map(step => html`<li class=${classMap({'values-li': true, active: step.name === this._steps[index].name})} value=${step.name}>
+                          <span class="values__name">
+                            <span class="values__icon">${unsafeHTML(step.icon)}</span>
+                            ${unsafeHTML(step.name)}
+                          </span>
+                          <span class="values__type">${unsafeHTML(step.type)}</span>
+                        </li>`)
                     }
                   </ul>
                 </div>
                 <div slot="options">${unsafeHTML(step.optionsForm)}</div>
               </steps-selector-item>
             `)}
-        <!-- no steps -->
-        ${this._steps.length > 0 ? html`` : html`
-          <slot name="placeholder" part="placeholder">
-            <p>${this.placeholder}</p>
-          </slot>
-        `}
         <!-- add a step -->
         ${nextSteps.length > 0 ? html`
+          <div part="separator__add"></div>
           <steps-selector-item
+            exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,errorText,name,icon"
+            class="steps-selector-item__add"
+            part="steps-selector-item__add"
             no-options-editor
             no-delete
             no-arrow
@@ -224,12 +302,24 @@ export class StepsSelector extends LitElement {
           >
             <div slot="name">+</div>
             <div slot="values">
-              <ul>
-                ${ nextSteps.map(step => html`<li value=${step.name}>${step.name}</li>`) }
+              <ul class="values-ul">
+                ${ nextSteps.map(step => html`<li class="values-li" value=${step.name}>
+                  <span class="values__name">
+                    <span class="values__icon">${unsafeHTML(step.icon)}</span>
+                    ${unsafeHTML(step.name)}
+                  </span>
+                  <span class="values__type">${unsafeHTML(step.type)}</span>
+                </li>`) }
               </ul>
             </div>
           </steps-selector-item>
         ` : html``}
+        <!-- no steps -->
+        ${this._steps.length > 0 ? html`` : html`
+          <slot name="placeholder" part="placeholder" class="placeholder">
+            <p>${this.placeholder}</p>
+          </slot>
+        `}
         </div>
       `}
     `
@@ -247,15 +337,7 @@ export class StepsSelector extends LitElement {
   fixedValueChanged(value: string) {
     if (value && value !== '') {
       this._steps = [
-        {
-          name: 'Fixed value',
-          icon: '',
-          type: 'fixed',
-          options: {
-            value,
-          },
-          optionsForm: `<form><input name="value" type="text" value=${value} /><button type="submit">Save</button></form>`,
-        },
+        StepsSelector.getFixedValueStep(value),
       ]
     } else {
       this._steps = []
