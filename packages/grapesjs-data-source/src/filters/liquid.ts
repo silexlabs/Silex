@@ -88,6 +88,27 @@ export const filters: Filter[] = [
     `,
   }, {
     type: 'filter',
+    id: 'split',
+    name: 'split',
+    validate: type => !!type && type.kind === 'scalar' && type.id === 'String',
+    outputType: type => type ? {
+      ...type,
+      kind: 'list',
+    } : null,
+    apply: (str, options) => (str as string).split(options.separator as string ?? ','),
+    options: {
+      separator: ',',
+    },
+    optionsForm: `
+      <form>
+        <label>Separator
+          <input type="text" name="separator" placeholder="Separator"/>
+        </label>
+        <button type="submit">Done</button>
+      </form>
+    `,
+  }, {
+    type: 'filter',
     id: 'map',
     name: 'map',
     validate: type => !!type && type.kind === 'list',
