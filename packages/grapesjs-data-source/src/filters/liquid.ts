@@ -143,5 +143,26 @@ export const filters: Filter[] = [
     apply: (arr) => (arr as unknown[]).length,
     options: {},
     optionsForm: null,
-  },
+  }, {
+    type: 'filter',
+    id: 'at',
+    name: 'at',
+    validate: type => !!type && type.kind === 'list',
+    outputType: type => type ? {
+      ...type,
+      kind: type.fields.length ? 'object' : 'scalar',
+    } : null,
+    apply: (arr, options) => (arr as unknown[])[options.index as number],
+    options: {
+      index: 0,
+    },
+    optionsForm: `
+      <form>
+        <label>Index
+          <input type="number" name="index" placeholder="Index"/>
+        </label>
+        <button type="submit">Done</button>
+      </form>
+    `,
+  }
 ]

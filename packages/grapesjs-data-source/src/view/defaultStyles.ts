@@ -88,4 +88,10 @@ export const PROPERTY_STYLES = `
     display: inline-flex;
     margin: 0;
   }
+  .ds-section label.ds-label {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    color: var(--ds-secondary);
+  }
 `

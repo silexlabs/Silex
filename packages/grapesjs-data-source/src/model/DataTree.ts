@@ -1,6 +1,6 @@
 import { Component } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, Token, Type, TypeId, TypeProperty } from '../types'
-import { StateId, getState, getStates } from './state'
+import { StateId, getState, getExportedStates } from './state'
 import { DataSourceEditor } from '..'
 import { filters as liquidFilters } from '../filters/liquid'
 
@@ -83,11 +83,11 @@ export class DataTree {
     const states: State[] = []
     let parent = component
     while(parent) {
-      const parentStates: State[] = getStates(parent)
+      const parentStates: State[] = getExportedStates(parent)
         .map((stateId: StateId) => ({
           type: 'state',
           id: stateId,
-          typeId: getState(parent, stateId).typeId,
+          typeId: getState(parent, stateId, true).typeId,
           componentCid: parent.cid,
         }))
       states.push(...parentStates)
