@@ -10,21 +10,7 @@ suite('popin-dialog', () => {
 
   test('renders with default values', async () => {
     const el = await fixture(html`<popin-dialog></popin-dialog>`)
-    assert.shadowDom.equal(
-      el,
-      `
-      <header>
-        <slot class="header" name="header"></slot>
-      </header>
-      <main>
-        <slot class="body" name="body"></slot>
-        <slot class="default"></slot>
-      </main>
-      <footer>
-        <slot class="footer" name="footer"></slot>
-      </footer>
-    `
-    )
+    assert.shadowDom.equalSnapshot(el)
   })
 
   test('renders with a set HTML body', async () => {
