@@ -54,7 +54,7 @@ export declare class StepsSelector extends LitElement {
      * Set the step at the given index
      */
     setStepAt(at: number, step: Step | undefined): void;
-    setOptionsAt(at: number, options: unknown): void;
+    setOptionsAt(at: number, options: unknown, optionsForm: string): void;
     /**
      * Delete the step at the given index and all the following steps
      */

@@ -50,6 +50,7 @@ export class StepsSelectorItem extends LitElement {
     :host {
       display: inline-flex;
       flex-direction: column;
+      flex-shrink: 0;
     }
     :host header {
       position: relative;
@@ -102,6 +103,7 @@ export class StepsSelectorItem extends LitElement {
     }
     ::slotted([slot="name"]), ::slotted([slot="type"]) {
       cursor: pointer;
+      flex-shrink: 0;
     }
     ::slotted([slot="name"]) {
       font-weight: var(--steps-selector-item-name-font-weight, bold);
@@ -156,7 +158,6 @@ export class StepsSelectorItem extends LitElement {
   }
 
   override render() {
-    console.log('render steps-selector-item')
     return html`
       <header>
         <div class="value" part="value" @click=${() => this.editValue()}>
@@ -178,7 +179,7 @@ export class StepsSelectorItem extends LitElement {
             <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 448c-105.9 0-192-86.1-192-192S150.1 64 256 64s192 86.1 192 192S361.9 448 256 448zM240 160h32v32h-32V160zM240 192h32v128h-32V192zM240 352h32v32h-32V352z"/></svg>
           </slot>
           <popin-dialog hidden ${ref(this.helpTextPopin)}>
-            <slot part=" helpText"name="helpText"></slot>
+            <slot part="helpText" "name="helpText"></slot>
           </popin-dialog>
         `}
         <div class="buttons">
@@ -265,10 +266,34 @@ export class StepsSelectorItem extends LitElement {
   selectOptions(e: SubmitEvent) {
     this.optionsPopin.value?.setAttribute('hidden', '')
     const form = e.target as HTMLFormElement
+    // Update the options object
     const formData = new FormData(form)
     const options = Object.fromEntries(formData.entries())
-    this.dispatchEvent(new CustomEvent('set-options', {detail: {options}}))
+    // Update the optionsForm too
+    const optionsForm = this.formToString(form, formData)
+    // Notify the steps-selector
+    this.dispatchEvent(new CustomEvent('set-options', {detail: {options, optionsForm}}))
     e.preventDefault()
+  }
+
+  /**
+   * Update the form with the values from the formData
+   * Returns the form as a string
+   */
+  formToString(form: HTMLFormElement, formData: FormData) {
+    const inputs = Array.from(form.querySelectorAll('input, select, textarea'))
+    inputs.forEach(input => {
+      const name = input.getAttribute('name')
+      if(!name) {
+        console.error('input has no name', input)
+        throw new Error('input has no name')
+      }
+      const value = formData.get(name)
+      if (value) {
+        input.setAttribute('value', value.toString())
+      }
+    })
+    return form.outerHTML
   }
 
   cancelOptions() {

@@ -64,6 +64,11 @@ export declare class StepsSelectorItem extends LitElement {
     delete(): void;
     selectValue(e: MouseEvent): void;
     selectOptions(e: SubmitEvent): void;
+    /**
+     * Update the form with the values from the formData
+     * Returns the form as a string
+     */
+    formToString(form: HTMLFormElement, formData: FormData): string;
     cancelOptions(): void;
 }
 declare global {

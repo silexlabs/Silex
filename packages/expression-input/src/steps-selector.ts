@@ -156,7 +156,7 @@ export class StepsSelector extends LitElement {
       options: {
         value,
       },
-      optionsForm: `<form><input name="value" type="text" value=${value} /><button type="submit">Save</button></form>`,
+      optionsForm: `<form><input name="value" type="text" value="${value}" /><button type="submit">Save</button></form>`,
     }
   }
 
@@ -201,7 +201,6 @@ export class StepsSelector extends LitElement {
   placeholder = 'Add a first step'
 
   override render() {
-    console.log('render ==== ', this.fixed)
     const nextSteps = this.completion(this._steps)
     return html`
       <!-- header -->
@@ -256,7 +255,7 @@ export class StepsSelector extends LitElement {
                 ?no-info=${!step.helpText}
                 @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
                 @delete=${() => this.deleteStepAt(index)}
-                @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options)}
+                @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options, event.detail.optionsForm)}
                 exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,errorText,name,icon"
               >
                 <div slot="icon">${unsafeHTML(step.icon)}</div>
@@ -358,12 +357,13 @@ export class StepsSelector extends LitElement {
     }
   }
 
-  setOptionsAt(at: number, options: unknown) {
+  setOptionsAt(at: number, options: unknown, optionsForm: string) {
     this._steps = [
       ...this._steps.slice(0, at),
       {
         ...this._steps[at],
         options,
+        optionsForm,
       },
       ...this._steps.slice(at + 1),
     ]

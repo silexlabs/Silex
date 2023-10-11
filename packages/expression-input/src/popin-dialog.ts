@@ -183,7 +183,6 @@ export class PopinDialog extends LitElement {
   }
 
   private ensureElementInView() {
-    console.log('ensureElementInView')
     // Set our position to the parent element position
     const parentStyle = this.parentElement?.getBoundingClientRect()
     this.style.left = `${parentStyle?.left}px`
@@ -202,7 +201,6 @@ export class PopinDialog extends LitElement {
     // let offsetY = 0
     // let parent = this.offsetParent as HTMLElement
     // while (parent) {
-    //   console.log(parent)
     //   const parentRect = parent.getBoundingClientRect()
     //   const parentStyle = getComputedStyle(parent)
     //   if (parentStyle.position !== 'static') {

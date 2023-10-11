@@ -32,7 +32,6 @@ suite('Steps selector item', () => {
       </steps-selector-item>
     `)
     const shadowRoot = el.shadowRoot
-    console.log(shadowRoot?.innerHTML)
     assert.equal((shadowRoot?.querySelector('slot[name="icon"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test icon')
     assert.equal((shadowRoot?.querySelector('slot[name="name"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test name')
     assert.equal((shadowRoot?.querySelector('slot[name="tags"]') as HTMLSlotElement)?.assignedNodes()[0].textContent, 'Test tag')
