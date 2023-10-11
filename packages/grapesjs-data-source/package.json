@@ -35,7 +35,7 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@apollo/client": "^3.8.1",
-    "@silexlabs/steps-selector": "^0.0.1",
+    "@silexlabs/steps-selector": "^0.0.2",
     "backbone": "^1.5.0",
     "lit": "^2.8.0"
   }
