@@ -147,7 +147,7 @@ export class PropertiesUi {
       type: 'filter',
       id: 'fixed',
       name: 'Fixed value',
-      outputType: () => dataTree.findType('String'),
+      outputType: () => 'String' as TypeId,
       validate: () => true,
       apply: () => value,
       options: {

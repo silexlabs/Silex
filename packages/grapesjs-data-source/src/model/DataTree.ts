@@ -122,8 +122,10 @@ export class DataTree {
    */
   getTypeFromToken(token: Token, prevType: Type | null): Type | null {
     switch (token.type) { 
-      case 'filter':
-        return token.outputType(prevType)
+      case 'filter': {
+        const result: Type | TypeId | null = token.outputType(prevType)
+        return typeof result === 'string' ? this.findType(result) ?? null : result
+      }
       case 'property':
         switch (token.propType) {
           case 'type':

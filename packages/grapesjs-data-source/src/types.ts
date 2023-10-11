@@ -102,7 +102,7 @@ export interface Filter {
   options: Record<string, unknown>
   optionsForm: string | null
   validate: (input: Type | null) => boolean
-  outputType: (input: Type | null) => Type | null
+  outputType: (input: Type | null) => Type | TypeId | null
   apply: (input: unknown, options: Record<string, unknown>) => unknown
 }
 

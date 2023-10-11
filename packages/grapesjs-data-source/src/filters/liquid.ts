@@ -65,5 +65,62 @@ export const filters: Filter[] = [
     apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
     options: {},
     optionsForm: null,
-  }
+  }, {
+    type: 'filter',
+    id: 'join',
+    name: 'join',
+    validate: type => !!type && type.kind === 'list' && type.id === 'String',
+    outputType: type => type ? {
+      ...type,
+      kind: 'scalar',
+    } : null,
+    apply: (arr, options) => (arr as string[]).join(options.separator as string ?? ','),
+    options: {
+      separator: ',',
+    },
+    optionsForm: `
+      <form>
+        <label>Separator
+          <input type="text" name="separator" placeholder="Separator"/>
+        </label>
+        <button type="submit">Done</button>
+      </form>
+    `,
+  }, {
+    type: 'filter',
+    id: 'map',
+    name: 'map',
+    validate: type => !!type && type.kind === 'list',
+    outputType: type => type,
+    apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
+    options: {
+      key: '',
+    },
+    optionsForm: `
+      <form>
+        <label>Key
+          <input type="text" name="key" placeholder="Key"/>
+        </label>
+        <button type="submit">Done</button>
+      </form>
+    `,
+  }, {
+    type: 'filter',
+    id: 'reverse',
+    name: 'reverse',
+    validate: type => !!type && type.kind === 'list',
+    outputType: type => type,
+    apply: (arr) => (arr as unknown[]).reverse(),
+    options: {},
+    optionsForm: null,
+  }, {
+    type: 'filter',
+    id: 'size',
+    name: 'size',
+    validate: type => !!type && type.kind === 'list',
+    outputType: () => 'Int',
+    apply: (arr) => (arr as unknown[]).length,
+    options: {},
+    optionsForm: null,
+  },
 ]
