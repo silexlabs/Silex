@@ -6,8 +6,8 @@ import '@silexlabs/steps-selector'
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { getState, setState } from "../model/state"
-import { DataTree, Expression, Token } from "../model/DataTree"
-import { Type, TypeId, TypeKind } from "../types"
+import { DataTree } from "../model/DataTree"
+import { Expression, Token, Type, TypeId, TypeKind } from "../types"
 
 export class PropertiesUi {
   protected innerHTMLSelector = createRef<StepsSelector>()
@@ -77,7 +77,7 @@ export class PropertiesUi {
           case 'type': return {
             name: type.id,
             icon: '',
-            type: this.getDisplayType('Collection', type.kind), // FIXME: use the data source option as a name
+            type: this.getDisplayType(type.dataSourceId as string ?? 'Type', type.kind), // FIXME: use the data source option as a name
             meta: { token, type }
           }
           case 'field': return {

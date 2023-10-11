@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 import grapesjs, { Editor, Component } from 'grapesjs'
-import { DataTree, Filter, TypeProperty, Token, State } from './DataTree'
-import { Type } from '../types'
+import { DataTree } from './DataTree'
+import { Type, Filter, TypeProperty, Token, State } from '../types'
 import { DataSourceEditor } from '..'
 
 const simpleTypes: Type[] = [{

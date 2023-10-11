@@ -1,3 +1,5 @@
+import { StateId } from "./model/state"
+
 // Data sources must implement this interface
 export type DataSourceId = string | number // Matches the Backbone.Model.id type
 export interface IDataSource {
@@ -56,3 +58,73 @@ export type Field = {
   kind: FieldKind
   dataSourceId: DataSourceId
 }
+
+// **
+// Data tree
+/**
+ * A token can be a property or a filter
+ */
+export type Token = Property | Filter | State
+
+/**
+ * A property is used to make expressions and access data from the data source
+ */
+export type Property = TypeProperty | FieldProperty
+
+export interface BaseProperty {
+  type: 'property'
+  propType: 'type' | 'field'
+  dataSourceId: DataSourceId | null
+  kind: TypeKind
+}
+
+export interface TypeProperty extends BaseProperty {
+  propType: 'type'
+  typeId: TypeId
+}
+
+export interface FieldProperty extends BaseProperty {
+  propType: 'field'
+  typeId: TypeId
+  fieldId: FieldId
+  parentTypeId: TypeId
+}
+
+/**
+ * A filter is used to alter data in an expression
+ * It is provided in the options
+ */
+export type FilterId = string
+export interface Filter {
+  type: 'filter'
+  id: FilterId
+  name: string
+  options: Record<string, unknown>
+  optionsForm: string | null
+  validate: (input: Type | null) => boolean
+  outputType: (input: Type | null) => Type | null
+  apply: (input: unknown, options: Record<string, unknown>) => unknown
+}
+
+/**
+ * A component state
+ */
+export interface State {
+  type: 'state'
+  id: StateId
+  typeId: TypeId
+  componentCid: string
+}
+
+/**
+ * A context is a list of available tokens for a component
+ */
+export type Context = Token[]
+
+
+/**
+ * An expression is a list of tokens which can be evaluated to a value
+ * It is used to access data from the data source
+ */
+export type Expression = Token[]
+

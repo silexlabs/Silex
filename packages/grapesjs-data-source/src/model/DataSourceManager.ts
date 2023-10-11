@@ -1,7 +1,7 @@
 import Backbone from "backbone"
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, IDataSourceModel } from "../types"
-import { DataTree, Filter } from "./DataTree"
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, Filter, IDataSourceModel } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
+import { DataTree } from "./DataTree"
 
 /**
  * GrapesJs plugin to manage data sources

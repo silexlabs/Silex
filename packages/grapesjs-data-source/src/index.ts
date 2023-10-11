@@ -2,9 +2,9 @@ import { Editor } from 'grapesjs'
 
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
-import { IDataSourceOptions } from './types'
+import { Filter, IDataSourceOptions } from './types'
 import view, { ViewOptions } from './view'
-import { Filter } from './model/DataTree'
+
 // GrapesJs related types
 export interface DataSourceEditor extends Editor {
   DataSourceManager: DataSourceManager
@@ -48,3 +48,5 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
   // Register the UI for component properties
   view(editor, options.properties)
 }
+
+export const version = '__VERSION__'

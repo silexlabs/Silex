@@ -1,6 +1,5 @@
 import { Component } from 'grapesjs'
-import { Expression } from './DataTree'
-import { TypeId } from '../types'
+import { Expression, TypeId } from '../types'
 
 export type StateId = string
 export interface State {
