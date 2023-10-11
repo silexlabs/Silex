@@ -16,7 +16,6 @@ export function getState(component: Component, id: StateId): State {
   return states[id]
 }
 export function setState(component: Component, id: StateId, state: State): void {
-  console.log('setState', id, state)
   component.set('states', {
     ...component.get('states') ?? {},
     [id]: state,

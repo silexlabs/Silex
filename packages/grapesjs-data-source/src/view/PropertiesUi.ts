@@ -157,6 +157,7 @@ export class PropertiesUi {
         <form>
           <label>Value
             <input type="text" name="value" value="${value}">
+            <button type="submit">Done</button>
           </label>
         </form>
       `

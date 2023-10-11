@@ -16,7 +16,7 @@ export type Property = TypeProperty | FieldProperty
 export interface BaseProperty {
   type: 'property'
   propType: 'type' | 'field'
-  dataSourceId: DataSourceId
+  dataSourceId: DataSourceId | null
   kind: TypeKind
 }
 
@@ -192,7 +192,13 @@ export class DataTree {
             return this.findType(token.typeId, token.dataSourceId) ?? null
           case 'field': {
             const type = this.findType(token.typeId, token.dataSourceId) ?? null
-            return type
+            if(type) {
+              return {
+                ...type,
+                kind: token.kind,
+              }
+            }
+            return null
           }
           default:
             console.error('Unknown property type (reading propType)', token)
@@ -260,23 +266,26 @@ export class DataTree {
       console.error('Type not found for expression', expression)
       throw new Error('Type not found for expression')
     }
-    return type.fields
-      // To type
-      .map(
-        (field: Field) => {
-          const t: Type | null = this.findType(field.typeId, field.dataSourceId) 
-          if(!t) throw new Error(`Type ${field.typeId} not found`)
-          // To token
-          return {
-            type: 'property',
-            propType: 'field',
-            typeId: t.id,
-            fieldId: field.id,
-            parentTypeId: type.id,
-            dataSourceId: t.dataSourceId,
-          } as Token
-        }
-      )
+    return ([] as Token[])
+      // Add fields if the kind is object
+      .concat(type.kind === 'object' ? type.fields
+        // To type
+        .map(
+          (field: Field): Token  => {
+            const t: Type | null = this.findType(field.typeId, field.dataSourceId) 
+            if(!t) throw new Error(`Type ${field.typeId} not found`)
+            // To token
+            return {
+              type: 'property',
+              propType: 'field',
+              typeId: t.id,
+              fieldId: field.id,
+              parentTypeId: type.id,
+              kind: field.kind,
+              dataSourceId: t.dataSourceId ?? null,
+            }
+          }
+        ) : [])
       // Add filters
       .concat(
         this.filters
