@@ -2,7 +2,7 @@ export const PROPERTY_STYLES = `
   :root {
     --ds-primary: #d278c9;
     --ds-secondary: #ddd;
-    --ds-tertiary: #333;
+    --ds-tertiary: #3d3d3d;
     --ds-highlight: #d278c9;
     --ds-button-color: #ddd;
     --ds-button-bg: rgba(255,255,255,.15);
@@ -92,10 +92,19 @@ export const PROPERTY_STYLES = `
     display: inline-flex;
     margin: 0;
   }
+  .ds-section .gjs-traits-label {
+    background-color: var(--ds-tertiary);
+  }
   .ds-section label.ds-label {
     display: flex;
     align-items: center;
-    margin: 5px;
+    padding: 10px;
     color: var(--ds-secondary);
+  }
+  .ds-section label.ds-label--disabled {
+    justify-content: space-between;
+  }
+  .ds-section label.ds-label--disabled .ds-label__message {
+    opacity: .5;
   }
 `

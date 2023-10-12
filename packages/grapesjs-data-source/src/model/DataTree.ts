@@ -1,6 +1,6 @@
 import { Component } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, Token, Type, TypeId, TypeProperty } from '../types'
-import { StateId, getState, getExportedStates } from './state'
+import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StateId, Token, Type, TypeId, TypeProperty } from '../types'
+import { getStateIds, getState, getOrCreatePersistantId, findComponentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
 import { filters as liquidFilters } from '../filters/liquid'
 
@@ -26,7 +26,7 @@ export class DataTree {
     return this._allTypes
   }
 
-  constructor(editor: DataSourceEditor, options: DataTreeOptions) {
+  constructor(protected editor: DataSourceEditor, options: DataTreeOptions) {
     this.dataSources = options.dataSources
     this.filters = typeof options.filters === 'string'
       // Include preset from filters/
@@ -83,12 +83,12 @@ export class DataTree {
     const states: State[] = []
     let parent = component
     while(parent) {
-      const parentStates: State[] = getExportedStates(parent)
+      const parentStates: State[] = getStateIds(parent, true)
         .map((stateId: StateId) => ({
           type: 'state',
           id: stateId,
-          typeId: getState(parent, stateId, true).typeId,
-          componentCid: parent.cid,
+          componentId: getOrCreatePersistantId(parent),
+          exposed: true,
         }))
       states.push(...parentStates)
       parent = parent.parent() as Component
@@ -144,8 +144,19 @@ export class DataTree {
             console.error('Unknown property type (reading propType)', token)
             throw new Error('Unknown property type')
         }
-      case 'state':
-        return this.findType(token.typeId) ?? null
+      case 'state': {
+        const component = findComponentByPersistentId(token.componentId, this.editor)
+        if(!component) {
+          console.error('Component not found for state', token)
+          throw new Error('Component not found for state evaluation')
+        }
+        const expression = getState(component, token.id, token.exposed)?.expression
+        if(!expression) {
+          console.warn('State is not defined on component', { component, token })
+          return null
+        }
+        return this.getTypeFromExpression(expression)
+      }
       default:
         console.error('Unknown token type (reading type)', token)
         throw new Error('Unknown token type')
@@ -160,7 +171,7 @@ export class DataTree {
     let lastType: Type | null = null
     return expression.map((token: Token) => {
       lastType = this.getTypeFromToken(token, lastType)
-      if(!lastType) throw new Error(`Type not found for token ${token.type}`)
+      if(!lastType) return this.findType('Unknown')!
       return lastType
     })
   }
@@ -203,8 +214,8 @@ export class DataTree {
     if(expression.length === 0) return this.getContext(component)
     const type = this.getTypeFromExpression(expression)
     if(!type) {
-      console.error('Type not found for expression', expression)
-      throw new Error('Type not found for expression')
+      console.warn('Type not found for expression', expression)
+      return []
     }
     return ([] as Token[])
       // Add fields if the kind is object

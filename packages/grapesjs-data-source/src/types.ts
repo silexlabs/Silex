@@ -1,5 +1,3 @@
-import { StateId } from "./model/state"
-
 // Data sources must implement this interface
 export type DataSourceId = string | number // Matches the Backbone.Model.id type
 export interface IDataSource {
@@ -39,7 +37,7 @@ export type Type = {
 }
 
 // From https://graphql.org/graphql-js/basic-types/
-export const builtinTypeIds = ['String', 'Int', 'Float', 'Boolean', 'ID']
+export const builtinTypeIds = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Unknown']
 export const builtinTypes: Type[] = builtinTypeIds.map(id => ({
   id,
   name: id,
@@ -109,11 +107,12 @@ export interface Filter {
 /**
  * A component state
  */
+export type StateId = string
 export interface State {
   type: 'state'
   id: StateId
-  typeId: TypeId
-  componentCid: string
+  componentId: string
+  exposed: boolean
 }
 
 /**

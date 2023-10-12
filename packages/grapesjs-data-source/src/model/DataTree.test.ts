@@ -166,7 +166,7 @@ test('get context with parent compontent states', () => {
   expect(context).toHaveLength(1)
   const typeProp = context[0] as State
   expect(typeProp.type).toBe('state')
-  expect(typeProp.componentCid).toBe(component.cid)
+  expect(typeProp.componentId).toBe(component.cid)
   expect(typeProp.id).toBe('testStateId')
 })
 

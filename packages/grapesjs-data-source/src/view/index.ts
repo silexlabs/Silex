@@ -28,7 +28,7 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
     // create a wrapper for our UI
     const wrapper = document.createElement('section')
     wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
-    const propertiesUi = new PropertiesUi(options, wrapper)
+    const propertiesUi = new PropertiesUi(editor, options, wrapper)
 
     // Data tree
     const dataTree = editor.DataSourceManager.getDataTree()
