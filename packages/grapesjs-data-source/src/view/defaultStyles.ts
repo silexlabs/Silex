@@ -27,6 +27,7 @@ export const PROPERTY_STYLES = `
     --steps-selector-item-button-background-color: transparent;
     --steps-selector-item-button-color: var(--ds-button-color);
     --steps-selector-separator-color: var(--ds-button-color);
+    --steps-selector-item-arrow-padding: 5px 5px 0 5px;
     /*
     --popin-dialog-header-color: #333;
     --popin-dialog-body-color: #666;
@@ -54,11 +55,14 @@ export const PROPERTY_STYLES = `
     color: var(--ds-button);
   }
   steps-selector::part(type) {
-    font-weight: 200;
-    font-size: smaller;
-    padding: 0;
-    color: var(--ds-secondary);
-    padding: 10px;
+    padding-bottom: 0;
+    padding-top: 4px;
+  }
+  steps-selector::part(name) {
+    font-weight: normal;
+    padding-bottom: 0;
+    padding-top: 5px;
+    padding-left: 13px;
   }
   steps-selector::part(steps-selector-item__add) {
     margin: 0 10px;
