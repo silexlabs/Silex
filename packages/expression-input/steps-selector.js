@@ -23,6 +23,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         this.fixed = false;
         this.fixedType = 'text';
         this.placeholder = 'Add a first step';
+        this.fixedPlaceholder = 'Enter a fixed value or switch to expression';
     }
     static getFixedValueStep(value) {
         return {
@@ -32,7 +33,10 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
             options: {
                 value,
             },
-            optionsForm: `<form><input name="value" type="text" value="${value}" /><button type="submit">Save</button></form>`,
+            optionsForm: `<form>
+        <input name="value" type="text" value="${value}" />
+        <button type="submit">Save</button>
+      </form>`,
         };
     }
     // Read only property dirty
@@ -83,7 +87,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         <div part="property-container" class="property-container">
           <input
             part="property-input" class="property-input"
-            .placeholder=${this.placeholder}
+            .placeholder=${this.fixedPlaceholder}
             .type=${this.fixedType}
             .value=${((_a = this._steps[0]) === null || _a === void 0 ? void 0 : _a.options) ? this._steps[0].options['value'] : ''}
             @change=${(event) => this.fixedValueChanged(event.target.value)}
@@ -91,6 +95,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         </div>
       ` : html `
         <!-- steps -->
+        <div part="scroll-container" class="scroll-container">
         <div part="steps-container" class="steps-container">
           ${this._steps
             .map((step, index) => ({
@@ -108,14 +113,13 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
                 @set=${(event) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
                 @delete=${() => this.deleteStepAt(index)}
                 @set-options=${(event) => this.setOptionsAt(index, event.detail.options, event.detail.optionsForm)}
-                exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,errorText,name,icon"
+                part="steps-selector-item"
+                exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,errorText,header,name,icon"
               >
-                <div slot="icon">${unsafeHTML(step.icon)}</div>
-                <div slot="name">${unsafeHTML(step.name)}</div>
-                <div slot="type">${unsafeHTML(step.type)}</div>
-                <slot slot="delete-button" name="delete-button">
-                  X
-                </slot>
+                <div part="icon" slot="icon">${unsafeHTML(step.icon)}</div>
+                <div part="name" slot="name">${unsafeHTML(step.name)}</div>
+                <div part="type" slot="type">${unsafeHTML(step.type)}</div>
+                <slot slot="delete-button" name="delete-button">x</slot>
                 <div slot="helpText">${unsafeHTML(step.helpText)}</div>
                 <ul slot="tags">
                   ${(_a = step.tags) === null || _a === void 0 ? void 0 : _a.map(tag => html `<li>${unsafeHTML(tag)}</li>`)}
@@ -138,10 +142,10 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
             `;
         })}
         <!-- add a step -->
-        ${nextSteps.length > 0 ? html `
+        ${nextSteps.length > 0 && (typeof this.maxSteps === 'undefined' || this.maxSteps === -1 || this._steps.length < this.maxSteps) ? html `
           <div part="separator__add"></div>
           <steps-selector-item
-            exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,errorText,name,icon"
+            exportparts="value,delete-button,separator__info,separator__options,separator__delete,type,values,helpText,options,tags,header,errorText,icon"
             class="steps-selector-item__add"
             part="steps-selector-item__add"
             no-options-editor
@@ -150,7 +154,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
             no-info
             @set=${(event) => this.setStepAt(this._steps.length, nextSteps.find(step => step.name === event.detail.value))}
           >
-            <div slot="name">+</div>
+            <div name="add-button" part="add-button" slot="name">+</div>
             <div slot="values">
               <ul class="values-ul">
                 ${nextSteps.map(step => html `<li class="values-li" value=${step.name}>
@@ -170,6 +174,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
             <p>${this.placeholder}</p>
           </slot>
         `}
+        </div>
         </div>
       `}
     `;
@@ -282,7 +287,8 @@ StepsSelector.styles = css `
       content: "▶";
       color: var(--steps-selector-separator-color, #333);
       font-size: var(--steps-selector-separator-font-size, 1.5em);
-      padding: 0 5px;
+      margin: var(--steps-selector-separator-margin, 0);
+      padding: var(--steps-selector-separator-padding, 0);
     }
     /* selector between fixed value (text input) and steps */
     .fixed-selector span {
@@ -362,6 +368,12 @@ __decorate([
 __decorate([
     property()
 ], StepsSelector.prototype, "placeholder", void 0);
+__decorate([
+    property()
+], StepsSelector.prototype, "fixedPlaceholder", void 0);
+__decorate([
+    property({ type: Number, attribute: 'max-steps' })
+], StepsSelector.prototype, "maxSteps", void 0);
 StepsSelector = StepsSelector_1 = __decorate([
     customElement('steps-selector')
 ], StepsSelector);

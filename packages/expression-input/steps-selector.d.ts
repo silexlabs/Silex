@@ -46,6 +46,8 @@ export declare class StepsSelector extends LitElement {
     fixed: boolean;
     fixedType: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url';
     placeholder: string;
+    fixedPlaceholder: string;
+    maxSteps: number | undefined;
     render(): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     isFixedValue(): boolean;

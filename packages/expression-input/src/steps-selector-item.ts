@@ -159,7 +159,7 @@ export class StepsSelectorItem extends LitElement {
 
   override render() {
     return html`
-      <header>
+      <header part="header">
         <div class="value" part="value" @click=${() => this.editValue()}>
           <slot part="icon" name="icon"></slot>
           <slot part="name" name="name"></slot>
@@ -211,7 +211,7 @@ export class StepsSelectorItem extends LitElement {
               <slot
                 name="delete-button"
                 >
-                X
+                x
               </slot>
             </button>
           `}
@@ -264,6 +264,9 @@ export class StepsSelectorItem extends LitElement {
   }
 
   selectOptions(e: SubmitEvent) {
+    // Prevent reloading the page
+    e.preventDefault()
+    // Hide the options popin
     this.optionsPopin.value?.setAttribute('hidden', '')
     const form = e.target as HTMLFormElement
     // Update the options object
@@ -273,7 +276,6 @@ export class StepsSelectorItem extends LitElement {
     const optionsForm = this.formToString(form, formData)
     // Notify the steps-selector
     this.dispatchEvent(new CustomEvent('set-options', {detail: {options, optionsForm}}))
-    e.preventDefault()
   }
 
   /**
@@ -284,13 +286,13 @@ export class StepsSelectorItem extends LitElement {
     const inputs = Array.from(form.querySelectorAll('input, select, textarea'))
     inputs.forEach(input => {
       const name = input.getAttribute('name')
-      if(!name) {
-        console.error('input has no name', input)
-        throw new Error('input has no name')
-      }
-      const value = formData.get(name)
-      if (value) {
-        input.setAttribute('value', value.toString())
+      if(name) {
+        const value = formData.get(name)
+        if (value) {
+          input.setAttribute('value', value.toString())
+        }
+      } else {
+        console.warn('input has no name', input)
       }
     })
     return form.outerHTML

@@ -18,6 +18,7 @@ Project
 
 - [ ] Licence AGPL
 - [ ] publish to npm
+- [ ] Unit tests still fail on github actions (playwrite issue)
 
 Popin
 
@@ -28,11 +29,12 @@ Selector
 
 - [x] values: icon, name (may be a function of options), tags, options, optionsForm, type, helpText (with html links to directus collection)
 - [x] callback getNextChoices(pastChoices)
+- [x] message (if error or warning)
+- [x] events: change
+- [ ] styling
+- [ ] copy / paste / set / unset
 - [ ] result (the final value resulting the current choices)
 - [ ] state: valid, warning, error
-- [x] message (if error or warning)
-- [ ] copy / paste / set / unset
-- [x] events: change
 
 SelectorItem
 

@@ -73,7 +73,7 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     }
     render() {
         return html `
-      <header>
+      <header part="header">
         <div class="value" part="value" @click=${() => this.editValue()}>
           <slot part="icon" name="icon"></slot>
           <slot part="name" name="name"></slot>
@@ -125,7 +125,7 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
               <slot
                 name="delete-button"
                 >
-                X
+                x
               </slot>
             </button>
           `}
@@ -174,6 +174,9 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
     }
     selectOptions(e) {
         var _a;
+        // Prevent reloading the page
+        e.preventDefault();
+        // Hide the options popin
         (_a = this.optionsPopin.value) === null || _a === void 0 ? void 0 : _a.setAttribute('hidden', '');
         const form = e.target;
         // Update the options object
@@ -183,7 +186,6 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
         const optionsForm = this.formToString(form, formData);
         // Notify the steps-selector
         this.dispatchEvent(new CustomEvent('set-options', { detail: { options, optionsForm } }));
-        e.preventDefault();
     }
     /**
      * Update the form with the values from the formData
@@ -193,13 +195,14 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
         const inputs = Array.from(form.querySelectorAll('input, select, textarea'));
         inputs.forEach(input => {
             const name = input.getAttribute('name');
-            if (!name) {
-                console.error('input has no name', input);
-                throw new Error('input has no name');
+            if (name) {
+                const value = formData.get(name);
+                if (value) {
+                    input.setAttribute('value', value.toString());
+                }
             }
-            const value = formData.get(name);
-            if (value) {
-                input.setAttribute('value', value.toString());
+            else {
+                console.warn('input has no name', input);
             }
         });
         return form.outerHTML;
