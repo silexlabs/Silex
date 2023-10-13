@@ -19,14 +19,17 @@ export const PROPERTY_STYLES = `
     --popin-dialog-body-background: transparent;
     --popin-dialog-footer-background: transparent;
     --steps-selector-placeholder-margin: 0 10px;
-    --steps-selector-item-button-margin: 3px;
-    --steps-selector-item-button-padding: 3px;
+    --steps-selector-item-button-margin: 0;
+    --steps-selector-item-button-padding: 2px;
     --steps-selector-item-button-border-radius: 50%;
     --steps-selector-item-button-width: 20px;
     --steps-selector-item-button-height: 20px;
     --steps-selector-item-button-background-color: transparent;
     --steps-selector-item-button-color: var(--ds-button-color);
     --steps-selector-separator-color: var(--ds-button-color);
+    --steps-selector-separator-font-size: 0.7em;
+    --steps-selector-separator-margin: 0;
+    --steps-selector-separator-padding: 0 3px 0 1px;
     --steps-selector-item-arrow-padding: 5px 5px 0 5px;
     /*
     --popin-dialog-header-color: #333;
@@ -45,7 +48,20 @@ export const PROPERTY_STYLES = `
   }
   steps-selector::part(separator__delete) {
     border-right: 1px solid var(--ds-button-border);
-    height: 30px;
+    height: 20px;
+  }
+  steps-selector::part(add-button) {
+    background-color: rgba(255,255,255,.15);
+    border-radius: 2px;
+    padding: 3px;
+    margin: 0;
+    border: 1px solid rgba(0,0,0,.15);
+    width: 24px;
+    height: 24px;
+    box-sizing: border-box;
+    cursor: pointer;
+  }
+  steps-selector::part(value) {
   }
   steps-selector::part(delete-button) {
     margin: 0;
@@ -54,32 +70,48 @@ export const PROPERTY_STYLES = `
     justify-content: center;
     color: var(--ds-button);
   }
+  steps-selector::part(header) {
+    border: none;
+  }
   steps-selector::part(type) {
     padding-bottom: 0;
     padding-top: 4px;
+    display: none;
   }
   steps-selector::part(name) {
     font-weight: normal;
     padding-bottom: 0;
-    padding-top: 5px;
-    padding-left: 13px;
-  }
-  steps-selector::part(steps-selector-item__add) {
-    margin: 0 10px;
+    padding-top: 0;
+    padding-left: 5px;
   }
   steps-selector::part(property-input) {
-    padding: 5px;
-    margin: 5px 0;
+    padding: 4px;
     border: medium;
     flex: 1 1 auto;
-    background-color: rgba(0,0,0,.2);
+    background-color: transparent;
     color: var(--ds-secondary);
+  }
+  steps-selector::part(property-container) {
+    background-color: rgba(0,0,0,.2);
+    border-radius: 2px;
+    box-sizing: border-box;
+    padding: 5px;
+    margin: 5px 0;
+  }
+  steps-selector::part(scroll-container) {
+    overflow: auto;
+    box-sizing: border-box;
   }
   steps-selector::part(steps-container) {
     display: flex;
     align-items: center;
-    overflow: auto;
-    padding: 10px 0px;
+    background-color: rgba(0,0,0,.2);
+    border-radius: 2px;
+    padding: 5px;
+    margin: 5px 0;
+    width: fit-content;
+    min-width: 100%;
+    box-sizing: border-box;
   }
   steps-selector::part(dirty-icon) {
     cursor: pointer;
@@ -91,6 +123,14 @@ export const PROPERTY_STYLES = `
     vertical-align: bottom;
     display: inline-flex;
     margin: 0;
+  }
+  steps-selector::part(steps-selector-item) {
+    border: 1px solid rgba(0,0,0,.15);
+    background-color: rgba(255,255,255,.15);
+    border-radius: 2px;
+    margin-right: 5px;
+  }
+  steps-selector::part(steps-selector-item__add) {
   }
   .ds-section .gjs-traits-label {
     background-color: var(--ds-tertiary);
