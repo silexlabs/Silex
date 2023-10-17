@@ -24,7 +24,7 @@ import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { getOrCreatePersistantId, getState, removeState, setState } from "../model/state"
 import { DataTree } from "../model/DataTree"
-import { Expression, Token, Type, TypeId, TypeKind } from "../types"
+import { Expression, Token, Type, TypeId, FieldKind } from "../types"
 import { DataSourceEditor } from ".."
 
 type PropsNames = 
@@ -70,7 +70,7 @@ export class PropertiesUi {
       // Get the type for each token
       // The filters output types are resolved
       const types = tokens
-        .map(token => dataTree.getTypeFromExpression(tokens.concat(token)))
+        .map(token => dataTree.getExpressionResultType(tokens.concat(token)))
       // Convert the context to steps
       return types
       .map((type, index) => {
@@ -86,8 +86,9 @@ export class PropertiesUi {
     }
   }
 
-  getDisplayType(typeId: TypeId, kind: TypeKind) {
-    return kind === 'list' ? `${typeId} [ ]` : kind === 'object' ? `${typeId} { }` : typeId
+  getDisplayType(typeIds: TypeId[], kind: FieldKind | null): string {
+    const typeLabel = typeIds.join(', ')
+    return kind === 'list' ? `${typeLabel} [ ]` : kind === 'object' ? `${typeLabel} { }` : typeLabel
   }
 
   /**
@@ -95,7 +96,7 @@ export class PropertiesUi {
    * This will resolve the types of filters
    */
   toSteps(dataTree: DataTree, expression: Expression): Step[] {
-    return dataTree.getAllTypesFromExpression(expression)
+    return dataTree.expressionToFields(expression)
       .map((type, index) => {
         const token = expression[index]
         if (!type) {
@@ -122,13 +123,13 @@ export class PropertiesUi {
           case 'type': return {
             name: type.id,
             icon: '',
-            type: this.getDisplayType(type.dataSourceId as string ?? 'Type', type.kind), // FIXME: use the data source option as a name
+            type: this.getDisplayType([type.dataSourceId as string ?? 'Type'], null), // FIXME: use a data source option as a name
             meta: { token, type }
           }
           case 'field': return {
             name: token.fieldId,
             icon: '',
-            type: this.getDisplayType(type.name, type.kind),
+            type: this.getDisplayType(token.typeIds, token.kind),
             meta: { token, type }
           }
           default:
@@ -190,7 +191,7 @@ export class PropertiesUi {
       type: 'filter',
       id: 'fixed',
       name: 'Fixed value',
-      outputType: () => typeId,
+      output: () => typeId,
       validate: () => true,
       apply: () => value,
       options: {
@@ -210,7 +211,7 @@ export class PropertiesUi {
   // Update the UI
   updateUi(component: Component | undefined, dataTree: DataTree) {
     if(!component) return
-    const dataStateType: Type | undefined = dataTree.getTypeFromExpression(getState(component, 'data', false)?.expression ?? []) ?? undefined
+    const dataStateType: Type | undefined = dataTree.getExpressionResultType(getState(component, 'data', false)?.expression ?? []) ?? undefined
     render(html`
       <style>
         ${this.options.styles}
@@ -243,7 +244,6 @@ export class PropertiesUi {
                       type: 'property',
                       propType: 'type',
                       typeId: 'Int',
-                      kind: 'scalar',
                       dataSourceId: null,
                     }],
                   }, true)
@@ -339,14 +339,13 @@ export class PropertiesUi {
             propType: 'field',
             dataSourceId: field.dataSourceId,
             kind: field.kind,
-            typeId: field.typeId,
+            typeId: field.typeIds,
             fieldId: field.id,
-            parentTypeId: type.id,
           }
           return {
             name: field.name,
             icon: '',
-            type: this.getDisplayType(field.typeId, field.kind),
+            type: this.getDisplayType(field.typeIds, field.kind),
             meta: {
               token,
               type,

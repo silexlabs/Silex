@@ -24,7 +24,7 @@ export const filters: Filter[] = [
     id: 'abs',
     name: 'abs',
     validate: type => !!type && (type.id === 'Int' || type.id === 'Float') && type.kind === 'scalar',
-    outputType: type => type,
+    output: type => type,
     apply: num => Math.abs(num as number),
     options: {},
     optionsForm: null,
@@ -33,7 +33,7 @@ export const filters: Filter[] = [
     id: 'strip_html',
     name: 'strip_html',
     validate: type => !!type && type.id === 'String' && type.kind === 'scalar',
-    outputType: type => type,
+    output: type => type,
     apply: (str) => (str as string).replace(/<[^>]*>/g, ''),
     options: {},
     optionsForm: null,
@@ -42,7 +42,7 @@ export const filters: Filter[] = [
     id: 'where',
     name: 'where',
     validate: type => !!type && type.kind === 'list',
-    outputType: type => type,
+    output: type => type,
     apply: (arr, options) => {
       const { key, value } = options as { key: string, value: string }
       return (arr as Record<string, unknown>[]).filter(item => item[key] === value)
@@ -63,7 +63,7 @@ export const filters: Filter[] = [
     id: 'first',
     name: 'first',
     validate: type => !!type && type.kind === 'list',
-    outputType: type => type ? {
+    output: type => type ? {
       ...type,
       kind: type.fields.length ? 'object' : 'scalar',
     } : null,
@@ -75,7 +75,7 @@ export const filters: Filter[] = [
     id: 'last',
     name: 'last',
     validate: type => !!type && type.kind === 'list',
-    outputType: type => type ? {
+    output: type => type ? {
       ...type,
       kind: type.fields.length ? 'object' : 'scalar',
     } : null,
@@ -87,7 +87,7 @@ export const filters: Filter[] = [
     id: 'join',
     name: 'join',
     validate: type => !!type && type.kind === 'list' && type.id === 'String',
-    outputType: type => type ? {
+    output: type => type ? {
       ...type,
       kind: 'scalar',
     } : null,
@@ -108,7 +108,7 @@ export const filters: Filter[] = [
     id: 'split',
     name: 'split',
     validate: type => !!type && type.kind === 'scalar' && type.id === 'String',
-    outputType: type => type ? {
+    output: type => type ? {
       ...type,
       kind: 'list',
     } : null,
@@ -129,7 +129,7 @@ export const filters: Filter[] = [
     id: 'map',
     name: 'map',
     validate: type => !!type && type.kind === 'list',
-    outputType: type => type,
+    output: type => type,
     apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
     options: {
       key: '',
@@ -147,7 +147,7 @@ export const filters: Filter[] = [
     id: 'reverse',
     name: 'reverse',
     validate: type => !!type && type.kind === 'list',
-    outputType: type => type,
+    output: type => type,
     apply: (arr) => (arr as unknown[]).reverse(),
     options: {},
     optionsForm: null,
@@ -156,7 +156,7 @@ export const filters: Filter[] = [
     id: 'size',
     name: 'size',
     validate: type => !!type && type.kind === 'list',
-    outputType: () => 'Int',
+    output: () => 'Int',
     apply: (arr) => (arr as unknown[]).length,
     options: {},
     optionsForm: null,
@@ -165,7 +165,7 @@ export const filters: Filter[] = [
     id: 'at',
     name: 'at',
     validate: type => !!type && type.kind === 'list',
-    outputType: type => type ? {
+    output: type => type ? {
       ...type,
       kind: type.fields.length ? 'object' : 'scalar',
     } : null,

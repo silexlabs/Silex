@@ -16,7 +16,7 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, IDataSource, IDataSourceOptions, Type, TypeId, TypeKind, builtinTypeIds, builtinTypes } from "../types"
+import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, FieldKind, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -34,12 +34,13 @@ export interface GraphQLOptions extends IDataSourceOptions {
 
 // GraphQL specific types
 // Exported for unit tests
-export type GQLKind = 'SCALAR' | 'OBJECT' | 'LIST' | 'NON_NULL'
+export type GQLKind = 'SCALAR' | 'OBJECT' | 'LIST' | 'NON_NULL' | 'UNION'
 
 export interface GQLOfType {
   name?: string,
   kind: GQLKind,
   ofType?: GQLOfType,
+  possibleTypes?: {name: string}[],
 }
 export interface GQLField {
   name: string,
@@ -74,21 +75,12 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         query {
           __schema {
             types {
-              name
-              fields {
-                name
-                type {
-                  name
-                  kind
-                  ofType {
-                    name
-                    kind
-                    ofType {
-                      name
-                      kind
-                      ofType {
-                        name
-                        kind
+              name fields {
+                name type {
+                  name kind possibleTypes { name kind } ofType {
+                    name kind possibleTypes { name kind } ofType {
+                      name kind possibleTypes { name kind } ofType {
+                        name kind possibleTypes { name kind }
                       }
                     }
                   }
@@ -117,15 +109,6 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         // Filter out types that are in Query (the queryables are handled separately)
         .filter((type: GQLType) => !query?.fields.find((field: GQLField) => field.name === type.name))
 
-        // Map to GQLType
-        //.map((field: GQLType) => ({
-        //  type: result.data.__schema.types
-        //    .find((type: GQLType) => 
-        //      type.name === field.name
-        //      || (field.type && type.name === this.getOfTypeProp<string>('name', field.type, field.name))
-        //    ) as GQLType,
-        //  kind: this.getOfTypeProp('kind', field.type),
-        //}))
         // Map to Type
         .map((type: GQLType) => this.graphQLToType(allTypes, type, 'SCALAR', false))
         // Add builtin types
@@ -139,7 +122,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
             ...result.data.__schema.types.find((type: GQLType) => type.name === this.getOfTypeProp<string>('name', field.type, field.name)),
             name: field.name,
           } as GQLType,
-          kind: this.getOfTypeProp<TypeKind>('kind', field.type) as GQLKind,
+          kind: this.ofKindToKind(field.type),
         }))
         // Map to Type
         .map(({type, kind}) => this.graphQLToType(allTypes, type, kind, true))
@@ -155,8 +138,8 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       id: field.name,
       dataSourceId: this.get('id')!,
       name: field.name,
-      typeId: this.getOfTypeProp<string>('name', field.type, field.name),
-      kind: (this.getOfTypeProp<TypeKind>('kind', field.type) ?? 'SCALAR').toLowerCase() as TypeKind,
+      typeIds: this.graphQLToTypes(field),
+      kind: this.graphQLToKind(this.ofKindToKind(field.type)),
     }
   }
 
@@ -184,25 +167,46 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   }
 
   /**
-   * Convert GraphQL kind to TypeKind
+   * Recursively search for a property on a GraphQL type
+   * Handles Union types with possibleTypes
+   * Handles list and object and non-null types with ofType
+   */
+  protected graphQLToTypes(field: GQLField): TypeId[] {
+    if(field.type.possibleTypes) return field.type.possibleTypes.map(type => type.name)
+    return [this.getOfTypeProp<string>('name', field.type, field.name)]
+  }
+
+  /**
+   * Convert GraphQL kind to FieldKind
    * @throws Error if kind is not valid or is NON_NULL
    */
-  protected graphQLToKind(kind: GQLKind): TypeKind {
+  protected graphQLToKind(kind: GQLKind): FieldKind {
     switch(kind) {
       case 'LIST': return 'list'
       case 'OBJECT': return 'object'
       case 'SCALAR': return 'scalar'
+      case 'UNION':
       case 'NON_NULL':
       default:
-        throw new Error(`Invalid kind ${kind}`)
+        throw new Error(`Unable to find a valid kind for ${kind}`)
     }
   }
 
   /**
-   * Check if a GraphQL kind has a valid TypeKind equivalent
+   * Check if a GraphQL kind has a valid FieldKind equivalent
    */
   protected validKind(kind: GQLKind): boolean {
-    return ['LIST', 'OBJECT', 'SCALAR'].includes(kind)
+    return ['LIST', 'OBJECT', 'SCALAR', 'UNION'].includes(kind)
+  }
+
+  /**
+   * Recursively search for a GraphQL kind of type list, object or scalar
+   */
+  protected ofKindToKind(ofKind: GQLOfType): GQLKind {
+    if(this.validKind(ofKind.kind)) return ofKind.kind
+    if(ofKind.ofType) return this.ofKindToKind(ofKind.ofType)
+    console.error('Unable to find a valid kind', ofKind)
+    throw new Error(`Unable to find a valid kind for ${ofKind.kind}`)
   }
 
   /**
@@ -214,7 +218,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       id: type.name,
       dataSourceId: this.get('id')!,
       name: type.name,
-      kind: this.graphQLToKind(kind),//: (this.getTypeProp<TypeKind>('kind', type) ?? 'SCALAR').toLowerCase() as TypeKind,
+      kind: this.graphQLToKind(kind),//: (this.getTypeProp<FieldKind>('kind', type) ?? 'SCALAR').toLowerCase() as FieldKind,
       fields: type.fields
         // Do not include fields that are not in the schema
         // FIXME: somehow this happens with fields of type datetime_functions for directus

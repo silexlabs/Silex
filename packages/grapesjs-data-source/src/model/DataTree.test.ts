@@ -20,18 +20,17 @@
  */
 import grapesjs, { Editor, Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, TypeProperty, Token, State } from '../types'
+import { Type, Filter, Token, State, FieldProperty } from '../types'
 import { DataSourceEditor } from '..'
 
 const simpleTypes: Type[] = [{
   id: 'testTypeId',
   name: 'test type name',
-  kind: 'object',
   fields: [
     {
       id: 'testFieldId',
       name: 'test field name',
-      typeId: 'testFieldTypeId',
+      typeIds: ['testFieldTypeId'],
       kind: 'scalar',
       dataSourceId: 'DataSourceId',
     }
@@ -41,7 +40,6 @@ const simpleTypes: Type[] = [{
 }, {
   id: 'testFieldTypeId',
   name: 'test field type name',
-  kind: 'scalar',
   fields: [],
   queryable: false,
   dataSourceId: 'DataSourceId',
@@ -51,7 +49,7 @@ const simpleFilters: Filter[] = [{
   id: 'testFilterAnyInput',
   name: 'test filter any input',
   validate: type => !type,
-  outputType: () => null,
+  output: () => null,
   options: {},
   optionsForm: null,
   apply: jest.fn(),
@@ -60,7 +58,7 @@ const simpleFilters: Filter[] = [{
   id: 'testFilterId',
   name: 'test filter name',
   validate: type => type?.id === 'testTypeId',
-  outputType: type => type!,
+  output: type => type!,
   options: {},
   optionsForm: null,
   apply: jest.fn(),
@@ -69,23 +67,22 @@ const simpleFilters: Filter[] = [{
   id: 'testFilterId2',
   name: 'test filter name 2',
   validate: type => type?.id === 'testFieldTypeId',
-  outputType: () => null,
+  output: () => null,
   options: {},
   optionsForm: null,
   apply: jest.fn(),
 }]
 const simpleTokens: Token[] = [{
-  type: 'property',
-  propType: 'type',
-  typeId: 'testTypeId',
-  dataSourceId: 'DataSourceId',
-  kind: 'object',
-}, {
+//  type: 'property',
+//  propType: 'type',
+//  typeId: 'testTypeId',
+//  dataSourceId: 'DataSourceId',
+//  kind: 'object',
+//}, {
   type: 'property',
   propType: 'field',
   fieldId: 'testFieldId',
-  typeId: 'testTypeId',
-  parentTypeId: 'testTypeId',
+  typeIds: ['testTypeId'],
   dataSourceId: 'DataSourceId',
   kind: 'object',
 }]
@@ -109,6 +106,7 @@ test('Find type from  id', () => {
     id: 'DataSourceId',
     connect: async () => {},
     getTypes: () => simpleTypes,
+    getQueryables: () => simpleTypes[0].fields,
   }]})
 
   // Type not found
@@ -131,6 +129,7 @@ test('get types map', () => {
       id: 'DataSourceId',
       connect: async () => {},
       getTypes: () => simpleTypes,
+      getQueryables: () => simpleTypes[0].fields,
     }],
   })
   const types = dataTree.getAllTypes()
@@ -209,13 +208,20 @@ test('get context with data source queryable values', () => {
         queryable: true,
         dataSourceId: 'DataSourceId',
       }],
+      getQueryables: () => [{
+        id: 'testFieldId2',
+        name: 'test field name 2',
+        typeIds: ['testTypeId2'],
+        kind: 'scalar',
+        dataSourceId: 'DataSourceId',
+      }],
     }],
   })
   const context = dataTree.getContext(component)
   expect(context).toBeDefined()
   expect(context).toHaveLength(1)
-  const typeProp = context[0] as TypeProperty
-  expect(typeProp.typeId).toBe('testTypeId2')
+  const typeProp = context[0] as FieldProperty
+  expect(typeProp.typeIds).toBe('testTypeId2')
 })
 
 // const simpleExpression: Context = [
@@ -281,7 +287,7 @@ test('get type from property', () => {
       getTypes: () => simpleTypes,
     }],
   })
-  const prop: Type | null = dataTree.getTypeFromProperty({
+  const prop: Type | null = dataTree.propertyToField({
     type: 'property',
     propType: 'type',
     typeId: 'testTypeId',
@@ -290,12 +296,11 @@ test('get type from property', () => {
   })
   expect(prop).not.toBeNull()
   expect(prop?.id).toBe('testTypeId')
-  const field: Type | null = dataTree.getTypeFromProperty({
+  const field: Type | null = dataTree.propertyToField({
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
-    parentTypeId: 'testTypeId',
-    typeId: 'testFieldTypeId',
+    typeIds: ['testFieldTypeId'],
     dataSourceId: 'DataSourceId',
     kind: 'object',
   })
@@ -314,10 +319,10 @@ test('get type with simple context', () => {
   })
 
   // Empty value
-  expect(dataTree.getTypeFromExpression([])).toBeNull()
+  expect(dataTree.getExpressionResultType([])).toBeNull()
 
   // 1 level value
-  const type = dataTree.getTypeFromExpression([{
+  const type = dataTree.getExpressionResultType([{
     type: 'property',
     propType: 'type',
     typeId: 'testTypeId',
@@ -328,7 +333,7 @@ test('get type with simple context', () => {
   expect(type?.id).toBe('testTypeId')
 
   // 2 levels value
-  const type2 = dataTree.getTypeFromExpression([{
+  const type2 = dataTree.getExpressionResultType([{
     type: 'property',
     propType: 'type',
     typeId: 'testTypeId',
@@ -338,8 +343,7 @@ test('get type with simple context', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
-    parentTypeId: 'testTypeId',
-    typeId: 'testFieldTypeId',
+    typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
   }])
@@ -384,8 +388,7 @@ test('get completion with simple context', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
-    parentTypeId: 'testTypeId',
-    typeId: 'testFieldTypeId',
+    typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
   }])
@@ -427,8 +430,7 @@ test('get completion with filters', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
-    parentTypeId: 'testTypeId',
-    typeId: 'testFieldTypeId',
+    typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
   }])

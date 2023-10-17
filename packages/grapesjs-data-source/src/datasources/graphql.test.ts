@@ -185,7 +185,7 @@ test('graphQLToField', async () => {
   expect(result).not.toBeUndefined()
   expect(result.id).toBe('posts')
   expect(result.name).toBe('posts')
-  expect(result.typeId).toBe('PostEntityResponseCollection')
+  expect(result.typeIds).toBe('PostEntityResponseCollection')
 })
 
 test('connect', async () => {
@@ -233,7 +233,7 @@ test('getTypes directus', async () => {
   const testO2MField: Field | undefined = testType!.fields!.find(field => field.id === 'test_o2m')
   expect(testO2MField).not.toBeUndefined()
   expect((testO2MField as unknown as GQLType).fields).toBeUndefined()
-  const testO2MType: Type | undefined = types!.find((prop: Type) => prop.id === testO2MField!.typeId)
+  const testO2MType: Type | undefined = types!.find((prop: Type) => prop.id === testO2MField!.typeIds)
   expect(testO2MType).not.toBeUndefined()
   expect(testO2MType!.id).toBe('test_o2m')
   expect(testO2MType!.kind).toBe('list')

@@ -20,10 +20,14 @@ export type DataSourceId = string | number // Matches the Backbone.Model.id type
 export interface IDataSource {
   // For reference in expressions
   id: DataSourceId
+
   // Initialization
   connect(): Promise<void>
+
   // Introspection
   getTypes(): Type[]
+  getQueryables(): Field[]
+
   // Access data
   //fetchValues(type: TypeId): Promise<any[]>
 }
@@ -43,12 +47,10 @@ export interface IDataSourceOptions extends Backbone.ModelSetOptions {
 
 // Types
 export type TypeId = string
-export type TypeKind = 'scalar' | 'object' | 'list'
 export type Type = {
   id: TypeId
   name: string
   fields: Field[]
-  kind: TypeKind
   queryable: boolean
   dataSourceId?: DataSourceId // Not required for builtin types
 }
@@ -59,7 +61,6 @@ export const builtinTypes: Type[] = builtinTypeIds.map(id => ({
   id,
   name: id,
   fields: [],
-  kind: 'scalar',
   queryable: false,
 }))
 
@@ -69,7 +70,7 @@ export type FieldKind = 'scalar' | 'object' | 'list'
 export type Field = {
   id: FieldId
   name: string
-  typeId: TypeId
+  typeIds: TypeId[]
   kind: FieldKind
   dataSourceId: DataSourceId
 }
@@ -84,25 +85,24 @@ export type Token = Property | Filter | State
 /**
  * A property is used to make expressions and access data from the data source
  */
-export type Property = TypeProperty | FieldProperty
+export type Property = /*TypeProperty |*/ FieldProperty
 
 export interface BaseProperty {
   type: 'property'
   propType: 'type' | 'field'
   dataSourceId: DataSourceId | null
-  kind: TypeKind
 }
 
-export interface TypeProperty extends BaseProperty {
-  propType: 'type'
-  typeId: TypeId
-}
+//export interface TypeProperty extends BaseProperty {
+//  propType: 'type'
+//  typeId: TypeId
+//}
 
 export interface FieldProperty extends BaseProperty {
   propType: 'field'
-  typeId: TypeId
+  typeIds: TypeId[]
   fieldId: FieldId
-  parentTypeId: TypeId
+  kind: FieldKind
 }
 
 /**
@@ -116,8 +116,8 @@ export interface Filter {
   name: string
   options: Record<string, unknown>
   optionsForm: string | null
-  validate: (input: Type | null) => boolean
-  outputType: (input: Type | null) => Type | TypeId | null
+  validate: (input: Field | null) => boolean
+  output: (input: Field | null) => Field | null
   apply: (input: unknown, options: Record<string, unknown>) => unknown
 }
 
