@@ -2,7 +2,6 @@
 
 This GrapesJS plugin integrates various APIs, such as GraphQL and REST, into the editor. 
 
-
 Here are the key parts of the plugin:
 
 1. **editor.DataSourceManager**: A Backbone collection to manage the APIs. This collection holds the different available data sources and their settings (type, url, auth...). This data is stored with the website data.
@@ -54,6 +53,59 @@ body, html {
 }
 ```
 
+## Local tests and development
+
+Use a local strapi to test GraphQL data source
+
+```sh
+$ cd strapi
+$ yarn develop
+```
+
+Strapi admin
+
+* `http://localhost:1337/admin/`
+* Login: `alex@test.com`
+* Password: `test_TEST1`
+
+Strapi GraphQL:
+
+* `http://localhost:1337/graphql`
+* `Bearer 456fe45a764921a26a81abd857bf987cd1735fbdbe58951ff5fc45a1c0ed2c52ab920cc0498b17411cd03954da7bb3e62e6bae612024360fb89717bd2274493ce190f3be14cdf47fccd33182fd795a67e48624e37f7276d9f84e98b2ec6945926d7a150e8c5deafa272aa9d9d97ee89e227c1edb1d6740ffd37a16b2298b3cc8`
+
+Use this as a data source in the plugin options:
+
+```js
+grapesjs.init({
+  // ...
+  // Your config here
+  // ...
+
+  plugins: ['@silexlabs/grapesjs-data-source'],
+  pluginsOpts: {
+    '@silexlabs/grapesjs-data-source': {
+      dataSources: [
+        {
+          id: 'strapi',
+          type: 'graphql',
+          name: 'Strapi',
+          url: 'http://localhost:1337/graphql',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer 79c9e74b3cf4a9f5ce2836b81fd8aaf8a986b5696769456d3646a3213f5d7228634a1a15a8bbad4e87c09ab864c501499c6f8955cf350e49b89311764009aee68589a4b78f22c06b7e09835b48cd6f21fb84311ce873cd5672bd4652fde3f5f0db6afb258dfe7b93371b7632b551ecdd969256ffc076ab8f735b5d8c7d228825',
+          },
+        },
+      ],
+      properties: {
+        appendTo: () => editor.Panels.getPanel('views-container').view.el,
+        button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
+      },
+      filters: 'liquid',
+    }
+  }
+});
+```
 
 ## Summary
 

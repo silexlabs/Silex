@@ -1,0 +1,2137 @@
+{
+  "data": {
+    "__schema": {
+      "types": [
+        {
+          "name": "JSON",
+          "fields": null
+        },
+        {
+          "name": "DateTime",
+          "fields": null
+        },
+        {
+          "name": "Upload",
+          "fields": null
+        },
+        {
+          "name": "String",
+          "fields": null
+        },
+        {
+          "name": "Pagination",
+          "fields": [
+            {
+              "name": "total",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "page",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "pageSize",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "pageCount",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Int",
+          "fields": null
+        },
+        {
+          "name": "ResponseCollectionMeta",
+          "fields": [
+            {
+              "name": "pagination",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Pagination",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "PublicationState",
+          "fields": null
+        },
+        {
+          "name": "IDFilterInput",
+          "fields": null
+        },
+        {
+          "name": "ID",
+          "fields": null
+        },
+        {
+          "name": "Boolean",
+          "fields": null
+        },
+        {
+          "name": "BooleanFilterInput",
+          "fields": null
+        },
+        {
+          "name": "StringFilterInput",
+          "fields": null
+        },
+        {
+          "name": "IntFilterInput",
+          "fields": null
+        },
+        {
+          "name": "FloatFilterInput",
+          "fields": null
+        },
+        {
+          "name": "Float",
+          "fields": null
+        },
+        {
+          "name": "DateTimeFilterInput",
+          "fields": null
+        },
+        {
+          "name": "JSONFilterInput",
+          "fields": null
+        },
+        {
+          "name": "PostFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "PostInput",
+          "fields": null
+        },
+        {
+          "name": "Post",
+          "fields": [
+            {
+              "name": "title",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "content",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "publishedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "localizations",
+              "type": {
+                "name": "PostRelationResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "locale",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "PostEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "Post",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "PostEntityResponse",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": "PostEntity",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "PostEntityResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "PostEntity",
+                      "kind": "OBJECT"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ResponseCollectionMeta",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "PostRelationResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFileFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "UploadFileInput",
+          "fields": null
+        },
+        {
+          "name": "UploadFile",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "alternativeText",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "caption",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "width",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "height",
+              "type": {
+                "name": "Int",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "formats",
+              "type": {
+                "name": "JSON",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "hash",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "ext",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "mime",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "size",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Float",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "url",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "previewUrl",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "provider",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "provider_metadata",
+              "type": {
+                "name": "JSON",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "related",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": "GenericMorph",
+                  "kind": "UNION"
+                }
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFileEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "UploadFile",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFileEntityResponse",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": "UploadFileEntity",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFileEntityResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ResponseCollectionMeta",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFileRelationResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFolderFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "UploadFolderInput",
+          "fields": null
+        },
+        {
+          "name": "UploadFolder",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "pathId",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "parent",
+              "type": {
+                "name": "UploadFolderEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "children",
+              "type": {
+                "name": "UploadFolderRelationResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "files",
+              "type": {
+                "name": "UploadFileRelationResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "path",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFolderEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "UploadFolder",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFolderEntityResponse",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": "UploadFolderEntity",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFolderEntityResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ResponseCollectionMeta",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UploadFolderRelationResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "I18NLocaleFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "I18NLocale",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "code",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "I18NLocaleEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "I18NLocale",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "I18NLocaleEntityResponse",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": "I18NLocaleEntity",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "I18NLocaleEntityResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ResponseCollectionMeta",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsPermissionFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsPermission",
+          "fields": [
+            {
+              "name": "action",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "role",
+              "type": {
+                "name": "UsersPermissionsRoleEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsPermissionEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "UsersPermissionsPermission",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsPermissionRelationResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsRoleFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsRoleInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsRole",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "permissions",
+              "type": {
+                "name": "UsersPermissionsPermissionRelationResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "users",
+              "type": {
+                "name": "UsersPermissionsUserRelationResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsRoleEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "UsersPermissionsRole",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsRoleEntityResponse",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": "UsersPermissionsRoleEntity",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsRoleEntityResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ResponseCollectionMeta",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsUserFiltersInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsUserInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsUser",
+          "fields": [
+            {
+              "name": "username",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "email",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "provider",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "confirmed",
+              "type": {
+                "name": "Boolean",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "blocked",
+              "type": {
+                "name": "Boolean",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "role",
+              "type": {
+                "name": "UsersPermissionsRoleEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatedAt",
+              "type": {
+                "name": "DateTime",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsUserEntity",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": "ID",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "attributes",
+              "type": {
+                "name": "UsersPermissionsUser",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsUserEntityResponse",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": "UsersPermissionsUserEntity",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsUserEntityResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "meta",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ResponseCollectionMeta",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsUserRelationResponseCollection",
+          "fields": [
+            {
+              "name": "data",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "GenericMorph",
+          "fields": null
+        },
+        {
+          "name": "FileInfoInput",
+          "fields": null
+        },
+        {
+          "name": "I18NLocaleCode",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsMe",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "username",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "email",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "confirmed",
+              "type": {
+                "name": "Boolean",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "blocked",
+              "type": {
+                "name": "Boolean",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "role",
+              "type": {
+                "name": "UsersPermissionsMeRole",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsMeRole",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsRegisterInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsLoginInput",
+          "fields": null
+        },
+        {
+          "name": "UsersPermissionsPasswordPayload",
+          "fields": [
+            {
+              "name": "ok",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsLoginPayload",
+          "fields": [
+            {
+              "name": "jwt",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "user",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UsersPermissionsMe",
+                  "kind": "OBJECT"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsCreateRolePayload",
+          "fields": [
+            {
+              "name": "ok",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsUpdateRolePayload",
+          "fields": [
+            {
+              "name": "ok",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "UsersPermissionsDeleteRolePayload",
+          "fields": [
+            {
+              "name": "ok",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "PaginationArg",
+          "fields": null
+        },
+        {
+          "name": "Query",
+          "fields": [
+            {
+              "name": "post",
+              "type": {
+                "name": "PostEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "posts",
+              "type": {
+                "name": "PostEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uploadFile",
+              "type": {
+                "name": "UploadFileEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uploadFiles",
+              "type": {
+                "name": "UploadFileEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uploadFolder",
+              "type": {
+                "name": "UploadFolderEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "uploadFolders",
+              "type": {
+                "name": "UploadFolderEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "i18NLocale",
+              "type": {
+                "name": "I18NLocaleEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "i18NLocales",
+              "type": {
+                "name": "I18NLocaleEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "usersPermissionsRole",
+              "type": {
+                "name": "UsersPermissionsRoleEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "usersPermissionsRoles",
+              "type": {
+                "name": "UsersPermissionsRoleEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "usersPermissionsUser",
+              "type": {
+                "name": "UsersPermissionsUserEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "usersPermissionsUsers",
+              "type": {
+                "name": "UsersPermissionsUserEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "me",
+              "type": {
+                "name": "UsersPermissionsMe",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mutation",
+          "fields": [
+            {
+              "name": "createPost",
+              "type": {
+                "name": "PostEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updatePost",
+              "type": {
+                "name": "PostEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "deletePost",
+              "type": {
+                "name": "PostEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createUploadFile",
+              "type": {
+                "name": "UploadFileEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updateUploadFile",
+              "type": {
+                "name": "UploadFileEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "deleteUploadFile",
+              "type": {
+                "name": "UploadFileEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createUploadFolder",
+              "type": {
+                "name": "UploadFolderEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updateUploadFolder",
+              "type": {
+                "name": "UploadFolderEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "deleteUploadFolder",
+              "type": {
+                "name": "UploadFolderEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "upload",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UploadFileEntityResponse",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "multipleUpload",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "updateFileInfo",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UploadFileEntityResponse",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "removeFile",
+              "type": {
+                "name": "UploadFileEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createPostLocalization",
+              "type": {
+                "name": "PostEntityResponse",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createUsersPermissionsRole",
+              "type": {
+                "name": "UsersPermissionsCreateRolePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "updateUsersPermissionsRole",
+              "type": {
+                "name": "UsersPermissionsUpdateRolePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "deleteUsersPermissionsRole",
+              "type": {
+                "name": "UsersPermissionsDeleteRolePayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "createUsersPermissionsUser",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UsersPermissionsUserEntityResponse",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "updateUsersPermissionsUser",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UsersPermissionsUserEntityResponse",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "deleteUsersPermissionsUser",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UsersPermissionsUserEntityResponse",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "login",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UsersPermissionsLoginPayload",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "register",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "UsersPermissionsLoginPayload",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "forgotPassword",
+              "type": {
+                "name": "UsersPermissionsPasswordPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "resetPassword",
+              "type": {
+                "name": "UsersPermissionsLoginPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "changePassword",
+              "type": {
+                "name": "UsersPermissionsLoginPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "emailConfirmation",
+              "type": {
+                "name": "UsersPermissionsLoginPayload",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__Schema",
+          "fields": [
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "types",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "queryType",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__Type",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "mutationType",
+              "type": {
+                "name": "__Type",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "subscriptionType",
+              "type": {
+                "name": "__Type",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            },
+            {
+              "name": "directives",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "__Type",
+          "fields": [
+            {
+              "name": "kind",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__TypeKind",
+                  "kind": "ENUM"
+                }
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "specifiedByUrl",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "fields",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "interfaces",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "possibleTypes",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "enumValues",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "inputFields",
+              "type": {
+                "name": null,
+                "kind": "LIST",
+                "ofType": {
+                  "name": null,
+                  "kind": "NON_NULL"
+                }
+              }
+            },
+            {
+              "name": "ofType",
+              "type": {
+                "name": "__Type",
+                "kind": "OBJECT",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__TypeKind",
+          "fields": null
+        },
+        {
+          "name": "__Field",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__Type",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "isDeprecated",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deprecationReason",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__InputValue",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "type",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "__Type",
+                  "kind": "OBJECT"
+                }
+              }
+            },
+            {
+              "name": "defaultValue",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isDeprecated",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deprecationReason",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__EnumValue",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isDeprecated",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "deprecationReason",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            }
+          ]
+        },
+        {
+          "name": "__Directive",
+          "fields": [
+            {
+              "name": "name",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "description",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
+              "name": "isRepeatable",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR"
+                }
+              }
+            },
+            {
+              "name": "locations",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            },
+            {
+              "name": "args",
+              "type": {
+                "name": null,
+                "kind": "NON_NULL",
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "__DirectiveLocation",
+          "fields": null
+        }
+      ]
+    }
+  }
+}
