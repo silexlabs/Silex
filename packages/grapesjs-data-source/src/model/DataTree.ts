@@ -19,7 +19,8 @@ import { Component } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldProperty, Filter, IDataSource, State, StateId, Token, Type, TypeId } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, findComponentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
-import { filters as liquidFilters } from '../filters/liquid'
+import getLiquidFilters from '../filters/liquid'
+import getGenericFilters from '../filters/generic'
 
 /**
  * Options of the data tree
@@ -55,7 +56,10 @@ export class DataTree {
     this.dataSources = options.dataSources
     this.filters = typeof options.filters === 'string'
       // Include preset from filters/
-      ? liquidFilters
+      ? [
+        ...getGenericFilters(this),
+        ...getLiquidFilters(this),
+      ]
       // Define filters in the options
       : options.filters.map((filter: Partial<Filter>) => ({
       type: 'filter',
@@ -101,7 +105,11 @@ export class DataTree {
    * Get the context of a component
    * This includes all parents states, data sources queryable values, values provided in the options
    */
-  getContext(component: Component): Context {
+  getContext(component = this.editor.getSelected()): Context {
+    if(!component) {
+      console.error('Component is required for context')
+      throw new Error('Component is required for context')
+    }
     // Get all queryable values from all data sources
     const queryable: FieldProperty[] = this.queryables
       .map((field: Field) => {
@@ -148,7 +156,7 @@ export class DataTree {
     throw new Error('Not implemented')
   }
 
-  findType(typeId: TypeId, dataSourceId?: DataSourceId | null): Type | null {
+  findType(typeId: TypeId, dataSourceId?: DataSourceId): Type | null {
     return this.allTypes
       .find((type: Type) => (!dataSourceId || type.dataSourceId === dataSourceId) && type.id === typeId) ?? null
   }
@@ -159,7 +167,10 @@ export class DataTree {
   tokenToField(token: Token, prev: Field | null): Field | null {
     switch (token.type) {
       case 'filter': {
-        return token.output(prev)
+        if(token.validate(prev)) {
+          return token.output(prev, token.options ?? {})
+        }
+        return null
       }
       case 'property':
         switch (token.propType) {
@@ -169,7 +180,7 @@ export class DataTree {
             const typeNames = token.typeIds
               .map((typeId: TypeId) => this.findType(typeId, token.dataSourceId))
               .map((type: Type | null) => type?.name)
-            if(!token.dataSourceId) throw new Error('Data source id is required')
+
             return {
               id: token.fieldId,
               name: typeNames.join(', '),
@@ -208,9 +219,18 @@ export class DataTree {
     // Resolve type of the expression 1 step at a time
     let prev: Field | null = null
     return expression.map((token: Token) => {
-      prev = this.tokenToField(token, prev)
-      if(!prev) throw new Error('Type not found for token')
-      return prev
+      const field = this.tokenToField(token, prev)
+      if(!field) {
+        console.warn('Type not found for token in expressionToFields', {token, expression})
+        return {
+          id: 'unknown',
+          name: 'unknown',
+          typeIds: [],
+          kind: 'scalar',
+        }
+      }
+      prev = field
+      return field
     })
   }
 

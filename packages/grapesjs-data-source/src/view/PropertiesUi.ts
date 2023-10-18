@@ -24,7 +24,7 @@ import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { getOrCreatePersistantId, getState, removeState, setState } from "../model/state"
 import { DataTree } from "../model/DataTree"
-import { Expression, Token, Type, TypeId, FieldKind } from "../types"
+import { Expression, Token, TypeId, FieldKind, Field } from "../types"
 import { DataSourceEditor } from ".."
 
 type PropsNames = 
@@ -69,19 +69,13 @@ export class PropertiesUi {
       const tokens = dataTree.getCompletion(component, expression)
       // Get the type for each token
       // The filters output types are resolved
-      const types = tokens
+      const fields = tokens
         .map(token => dataTree.getExpressionResultType(tokens.concat(token)))
       // Convert the context to steps
-      return types
-      .map((type, index) => {
-        if(!tokens[index]) {
-          console.error('Unknown type (completion)', tokens[index])
-          throw new Error(`Unknown type`)
-        }
-        // if(!type) {
-        //   // Happens when a filter returns no type
-        // }
-        return this.toStep(dataTree, type, tokens[index])
+      return fields
+      .map((field, index) => {
+        const prev = index > 0 ? fields[index - 1] : null
+        return this.toStep(dataTree, field, prev, tokens[index])
       })
     }
   }
@@ -96,55 +90,56 @@ export class PropertiesUi {
    * This will resolve the types of filters
    */
   toSteps(dataTree: DataTree, expression: Expression): Step[] {
-    return dataTree.expressionToFields(expression)
+    const fields = dataTree.expressionToFields(expression)
+    return fields
       .map((type, index) => {
         const token = expression[index]
         if (!type) {
           console.error('Unknown type (reading type)', token)
           throw new Error(`Unknown type`)
         }
-        return this.toStep(dataTree, type, token)
+        const prev = index > 0 ? fields[index - 1] : null
+        return this.toStep(dataTree, type, prev, token)
       })
   }
 
   /**
    * Convert a token to a step
    * This will resolve the types of filters
-   * @param type can be null, this happens when token is a filter with output resolving to null
+   * @param field can be null, this happens when token is a filter with output resolving to null
    */
-  toStep(dataTree: DataTree, type: Type | null, token: Token): Step {
+  toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token): Step {
     switch (token.type) {
       case 'property':
-        if(!type) {
+        if(!field) {
           console.error('Unknown type (reading type)', token)
           throw new Error(`Unknown type`)
         }
         switch (token.propType) {
-          case 'type': return {
-            name: type.id,
-            icon: '',
-            type: this.getDisplayType([type.dataSourceId as string ?? 'Type'], null), // FIXME: use a data source option as a name
-            meta: { token, type }
-          }
+          //case 'type': return {
+          //  name: type.id,
+          //  icon: '',
+          //  type: this.getDisplayType([type.dataSourceId as string ?? 'Type'], null), // FIXME: use a data source option as a name
+          //  meta: { token, type }
+          //}
           case 'field': return {
             name: token.fieldId,
             icon: '',
             type: this.getDisplayType(token.typeIds, token.kind),
-            meta: { token, type }
+            meta: { token, type: field }
           }
           default:
             console.error('Unknown property type (reading propType)', token)
             throw new Error(`Unknown property type`)
         }
       case 'filter':
-        // Here type may be null
         return {
           name: token.name,
           icon: '',
           type: 'Filter',
           options: token.options,
-          optionsForm: token.optionsForm ?? undefined,
-          meta: { token, type }
+          optionsForm: token.optionsForm ? token.optionsForm(prev, token.options) ?? undefined : undefined,
+          meta: { token, type: field }
         }
       case 'state': {
         //const component = this.editor.Components.getById(token.componentId)
@@ -153,8 +148,8 @@ export class PropertiesUi {
         return {
           name: token.id,
           icon: '',
-          type: type?.name ?? 'Unknown',
-          meta: { token, type }
+          type: field?.name ?? 'Unknown',
+          meta: { token, type: field }
         }
       }
       default:
@@ -171,7 +166,6 @@ export class PropertiesUi {
     const steps = stepsSelector.steps.map(step => {
       const token = step.meta?.token ?? this.getFixedToken(step.options?.value ?? '', 'String') // Add a fixed string if the token is not found
       token.options = step.options
-      token.optionsForm = step.optionsForm
       return {
         ...step,
         meta: {
@@ -184,6 +178,7 @@ export class PropertiesUi {
     setState(component, name, {
       expression: steps.map(step => step.meta.token),
     }, false)
+    stepsSelector.steps = steps
   }
 
   getFixedToken(value: string | number | boolean, typeId: TypeId): Token {
@@ -191,17 +186,23 @@ export class PropertiesUi {
       type: 'filter',
       id: 'fixed',
       name: 'Fixed value',
-      output: () => typeId,
-      validate: () => true,
+      output: () => ({
+        id: 'fixed_value',
+        name: 'Fixed value',
+        kind: 'scalar',
+        typeIds: [typeId],
+      }),
+      validate: field => !field,
       apply: () => value,
       options: {
         value,
       },
-      optionsForm: `
+      optionsForm: () => `
         <form>
           <label>Value
             <input type="text" name="value" value="${value.toString()}">
-            <button type="submit">Done</button>
+            <input type="submit" value="Apply"/>
+            <input type="reset" value="Cancel"/>
           </label>
         </form>
       `
@@ -211,7 +212,7 @@ export class PropertiesUi {
   // Update the UI
   updateUi(component: Component | undefined, dataTree: DataTree) {
     if(!component) return
-    const dataStateType: Type | undefined = dataTree.getExpressionResultType(getState(component, 'data', false)?.expression ?? []) ?? undefined
+    const dataStateType: Field | undefined = dataTree.getExpressionResultType(getState(component, 'data', false)?.expression ?? []) ?? undefined
     render(html`
       <style>
         ${this.options.styles}
@@ -242,9 +243,10 @@ export class PropertiesUi {
                   setState(component, 'loopIndex', {
                     expression: [{
                       type: 'property',
-                      propType: 'type',
-                      typeId: 'Int',
-                      dataSourceId: null,
+                      propType: 'field',
+                      fieldId: 'index',
+                      kind: 'scalar',
+                      typeIds: ['Number'],
                     }],
                   }, true)
                   setState(component, 'loopItem', {
@@ -312,13 +314,13 @@ export class PropertiesUi {
     `
   }
 
-  renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, type: Type | undefined): TemplateResult {
+  renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, field: Field | undefined): TemplateResult {
     const state = getState(component, name, false) ?? {expression: []}
     if(state?.expression.length !== 0 && state?.expression.length !== 1) {
       console.error('Invalid state', state)
       throw new Error('Invalid state')
     }
-    if(!type) {
+    if(!field) {
       return html`
         <label class="ds-label ds-label--disabled">
           ${name}
@@ -330,8 +332,20 @@ export class PropertiesUi {
     //const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
     const reference = this.propsSelectorRefs.get(name)
     const stepsSelector = this.propsSelectorRefs.get(name)?.value
+    // From fields to types (all the types for the current field)
+    const types = field.typeIds
+      .map(typeId => {
+        const type = dataTree.findType(typeId)
+        if(!type) {
+          console.error('Unknown type', typeId)
+          throw new Error(`Unknown type ${typeId}`)
+        }
+        return type
+      })
+    // From type to fields (the fields of the given type)
     const completion = (): Step[] => {
-      return type.fields
+      return types
+        .flatMap(type => type.fields)
         .filter(field => field.kind === 'scalar')
         .map(field => {
           const token = {
@@ -348,12 +362,12 @@ export class PropertiesUi {
             type: this.getDisplayType(field.typeIds, field.kind),
             meta: {
               token,
-              type,
+              type: field,
             },
           }
         })
     }
-    const steps = state.expression.length === 1 ? [this.toStep(dataTree, type, state.expression[0])] : []
+    const steps = state.expression.length === 1 ? [this.toStep(dataTree, field, null, state.expression[0])] : []
     if(stepsSelector) {
       // This will not happen for the first render
       // The first render will use onload

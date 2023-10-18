@@ -7,3 +7,4 @@ node_modules/
 _index.html
 dist/
 stats.json
+.vscode

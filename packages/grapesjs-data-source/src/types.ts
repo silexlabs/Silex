@@ -51,7 +51,6 @@ export type Type = {
   id: TypeId
   name: string
   fields: Field[]
-  queryable: boolean
   dataSourceId?: DataSourceId // Not required for builtin types
 }
 
@@ -61,7 +60,6 @@ export const builtinTypes: Type[] = builtinTypeIds.map(id => ({
   id,
   name: id,
   fields: [],
-  queryable: false,
 }))
 
 // Fileds
@@ -72,7 +70,7 @@ export type Field = {
   name: string
   typeIds: TypeId[]
   kind: FieldKind
-  dataSourceId: DataSourceId
+  dataSourceId?: DataSourceId
 }
 
 // **
@@ -90,7 +88,7 @@ export type Property = /*TypeProperty |*/ FieldProperty
 export interface BaseProperty {
   type: 'property'
   propType: 'type' | 'field'
-  dataSourceId: DataSourceId | null
+  dataSourceId?: DataSourceId
 }
 
 //export interface TypeProperty extends BaseProperty {
@@ -110,15 +108,16 @@ export interface FieldProperty extends BaseProperty {
  * It is provided in the options
  */
 export type FilterId = string
+export type FilterOptions = Record<string, unknown>
 export interface Filter {
   type: 'filter'
   id: FilterId
   name: string
-  options: Record<string, unknown>
-  optionsForm: string | null
+  options: FilterOptions
+  optionsForm?: (input: Field | null, options: FilterOptions) => string | null
   validate: (input: Field | null) => boolean
-  output: (input: Field | null) => Field | null
-  apply: (input: unknown, options: Record<string, unknown>) => unknown
+  output: (input: Field | null, options: FilterOptions) => Field | null
+  apply: (input: unknown, options: FilterOptions) => unknown
 }
 
 /**

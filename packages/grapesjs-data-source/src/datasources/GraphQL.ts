@@ -40,7 +40,7 @@ export interface GQLOfType {
   name?: string,
   kind: GQLKind,
   ofType?: GQLOfType,
-  possibleTypes?: {name: string}[],
+  possibleTypes?: {name: string, kind: GQLKind}[],
 }
 export interface GQLField {
   name: string,
@@ -53,6 +53,7 @@ export interface GQLType {
 
 export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
   protected types: Type[] = []
+  protected queryables: Field[] = []
   protected ready = false
   constructor(options: GraphQLOptions) {
     super(options)
@@ -69,7 +70,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     this.trigger(DATA_SOURCE_ERROR, {message})
     throw new Error(message)
   }
-  protected async loadTypes(): Promise<Type[]> {
+  protected async loadData(): Promise<[Type[], Field[]]> {
     try {
       const result = await this.call(`
         query {
@@ -114,9 +115,9 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         // Add builtin types
         .concat(builtinTypes)
 
-      // Get fields from Query, which are the queryables
-      const queryables = query.fields
-        // Map to GQLType
+      // Get queryable types
+      const queryableTypes = query.fields
+        // Map to GQLType, keeping kind for later
         .map((field: GQLField) => ({
           type: {
             ...result.data.__schema.types.find((type: GQLType) => type.name === this.getOfTypeProp<string>('name', field.type, field.name)),
@@ -127,8 +128,13 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         // Map to Type
         .map(({type, kind}) => this.graphQLToType(allTypes, type, kind, true))
       
+      // Get all queryables as fields
+      const queryableFields = query.fields
+        // Map to Field
+        .map((field: GQLField) => this.graphQLToField(field))
+      
       // Return all types, queryables and non-queryables
-      return queryables.concat(nonQueryables)
+      return [queryableTypes.concat(nonQueryables), queryableFields]
     } catch (e) {
       return this.triggerError(`GraphQL introspection failed: ${(e as Error).message}`)
     }
@@ -196,13 +202,29 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * Check if a GraphQL kind has a valid FieldKind equivalent
    */
   protected validKind(kind: GQLKind): boolean {
-    return ['LIST', 'OBJECT', 'SCALAR', 'UNION'].includes(kind)
+    return ['LIST', 'OBJECT', 'SCALAR'].includes(kind)
   }
 
   /**
    * Recursively search for a GraphQL kind of type list, object or scalar
    */
   protected ofKindToKind(ofKind: GQLOfType): GQLKind {
+    if(ofKind.possibleTypes) {
+      const foundKind = ofKind.possibleTypes
+      .reduce((prev: GQLKind | null, type: {kind: GQLKind, name: string}) => {
+        if(!prev) return type.kind as GQLKind
+        if(prev !== type.kind) {
+          console.error('Unable to find a valid kind, union types with different kind is not supported', ofKind)
+          throw new Error(`Unable to find a valid kind for ${ofKind.kind}. Union types with different kind is not supported`)
+        }
+        return prev as GQLKind
+      }, null)
+      if(!foundKind) {
+        console.error('Unable to find a valid kind', ofKind)
+        throw new Error(`Unable to find a valid kind for ${ofKind.kind}`)
+      }
+      return foundKind
+    }
     if(this.validKind(ofKind.kind)) return ofKind.kind
     if(ofKind.ofType) return this.ofKindToKind(ofKind.ofType)
     console.error('Unable to find a valid kind', ofKind)
@@ -218,7 +240,6 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       id: type.name,
       dataSourceId: this.get('id')!,
       name: type.name,
-      kind: this.graphQLToKind(kind),//: (this.getTypeProp<FieldKind>('kind', type) ?? 'SCALAR').toLowerCase() as FieldKind,
       fields: type.fields
         // Do not include fields that are not in the schema
         // FIXME: somehow this happens with fields of type datetime_functions for directus
@@ -246,7 +267,9 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       //     }
       //   `) as any
       // if (!result?.data?.__typename) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
-      this.types = await this.loadTypes()
+      const [types, fields] = await this.loadData()
+      this.types = types
+      this.queryables = fields
       this.ready = true
       this.trigger(DATA_SOURCE_READY)
     } catch (e) {
@@ -259,8 +282,15 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * This has to be implemented as it is a DataSource method
    */
   getTypes(): Type[] {
-    if (!this.ready) return []
     return this.types
+  }
+
+  /**
+   * Get all queryable fields
+   * This has to be implemented as it is a DataSource method
+   */
+  getQueryables(): Field[] {
+    return this.queryables
   }
 
   /**

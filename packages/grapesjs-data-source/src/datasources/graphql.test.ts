@@ -149,15 +149,13 @@ test('graphQLToType', async () => {
   expect(result).not.toBeUndefined()
   expect(result.name).toBe('PostEntityResponseCollection')
   expect(result.id).toBe('PostEntityResponseCollection')
-  expect(result.kind).toBe('scalar')
-  expect(result.queryable).toBe(false)
   expect(result.fields).not.toBeUndefined()
   expect(result.fields).toHaveLength(1)
   expect(result.fields).toContainEqual({
     id: 'data',
     name: 'data',
-    typeId: 'PostEntity',
-    kind: 'object',
+    typeIds: ['PostEntity'],
+    kind: 'list',
     dataSourceId: 'testDataSourceId'
   })
 })
@@ -185,11 +183,11 @@ test('graphQLToField', async () => {
   expect(result).not.toBeUndefined()
   expect(result.id).toBe('posts')
   expect(result.name).toBe('posts')
-  expect(result.typeIds).toBe('PostEntityResponseCollection')
+  expect(result.typeIds).toEqual(['PostEntityResponseCollection'])
 })
 
 test('connect', async () => {
-  const DataSource = (await importDataSource([directusSchema]))
+  const DataSource = (await importDataSource([simpleSchema]))
   const dataSource = new DataSource(options)
   await dataSource.connect()
   await new Promise(resolve => setTimeout(resolve, 100))
@@ -206,10 +204,9 @@ test('getTypes simple mocks', async () => {
   expect(postsType).not.toBeUndefined()
   expect(postsType.id).toBe('posts')
   expect(postsType.name).toBe('posts')
-  expect(postsType.kind).toBe('object')
   expect(postsType.fields).not.toBeUndefined()
   expect(postsType.fields).toContainEqual({
-    id: 'data', name: 'data', typeId: 'PostEntity', kind: 'object', dataSourceId: 'testDataSourceId'
+    id: 'data', name: 'data', typeIds: ['PostEntity'], kind: 'list', dataSourceId: 'testDataSourceId'
   })
 })
 
@@ -224,22 +221,20 @@ test('getTypes directus', async () => {
   expect(contactType).not.toBeUndefined()
   expect(contactType.id).toBe('Contact')
   expect(contactType.name).toBe('Contact')
-  expect(contactType.kind).toBe('object') // Contact collection is a singleton in directus
   expect(contactType.fields).not.toBeUndefined()
-  expect(contactType.fields).toContainEqual({id: 'id', name: 'id', typeId: 'ID', kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(contactType.fields).toContainEqual({id: 'id', name: 'id', typeIds: ['ID'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
   const testType: Type | undefined = types!.find((prop: Type) => prop.id === 'test')
   expect(testType).not.toBeUndefined()
   expect(testType!.fields).not.toBeUndefined()
   const testO2MField: Field | undefined = testType!.fields!.find(field => field.id === 'test_o2m')
   expect(testO2MField).not.toBeUndefined()
   expect((testO2MField as unknown as GQLType).fields).toBeUndefined()
-  const testO2MType: Type | undefined = types!.find((prop: Type) => prop.id === testO2MField!.typeIds)
+  const testO2MType: Type | undefined = types!.find((t: Type) => testO2MField!.typeIds.includes(t.id))
   expect(testO2MType).not.toBeUndefined()
   expect(testO2MType!.id).toBe('test_o2m')
-  expect(testO2MType!.kind).toBe('list')
   expect(testO2MType!.fields).not.toBeUndefined()
-  expect(testO2MType!.fields).toContainEqual({id: 'id', name: 'id', typeId: 'ID', kind: 'scalar', dataSourceId: 'testDataSourceId'})
-  expect(testO2MType!.fields).toContainEqual({id: 'label', name: 'label', typeId: 'String', kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(testO2MType!.fields).toContainEqual({id: 'id', name: 'id', typeIds: ['ID'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(testO2MType!.fields).toContainEqual({id: 'label', name: 'label', typeIds: ['String'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
 })
 
 test('getTypes strapi', async () => {
@@ -253,7 +248,6 @@ test('getTypes strapi', async () => {
   expect(postsType).not.toBeUndefined()
   expect(postsType.id).toBe('posts')
   expect(postsType.name).toBe('posts')
-  expect(postsType.kind).toBe('object')
   expect(postsType.fields).not.toBeUndefined()
   const dataField = postsType.fields!.find(field => field.id === 'data')
   expect(dataField).not.toBeUndefined()
