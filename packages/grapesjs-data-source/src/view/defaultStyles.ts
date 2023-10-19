@@ -159,6 +159,10 @@ export const PROPERTY_STYLES = `
   steps-selector::part(scroll-container) {
     overflow: auto;
     box-sizing: border-box;
+
+    /* inner shadow to make it visible when content is overflowing */
+    box-shadow: inset 0 0 5px 0 rgba(0,0,0,.2);
+
   }
   steps-selector::part(steps-container) {
     display: flex;
@@ -167,7 +171,7 @@ export const PROPERTY_STYLES = `
     border-radius: 2px;
     padding: 5px;
     margin: 5px 0;
-    width: fit-content;
+    width: max-content;
     min-width: 100%;
     box-sizing: border-box;
   }

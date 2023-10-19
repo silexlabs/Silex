@@ -22,7 +22,7 @@ import { Ref, createRef, ref } from 'lit/directives/ref.js';
 import '@silexlabs/steps-selector'
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
-import { getOrCreatePersistantId, getState, removeState, setState } from "../model/state"
+import { getState, setState } from "../model/state"
 import { DataTree } from "../model/DataTree"
 import { Expression, Token, TypeId, FieldKind, Field } from "../types"
 import { DataSourceEditor } from ".."
@@ -36,12 +36,11 @@ type PropsNames =
   | 'src'
   | 'href'
   | 'alt'
-  | 'loopIndex'
   | 'condition'
-  | 'data'
-  | 'sort'
-  | 'limit'
-  | 'offset'
+  | '__data'
+  | '__sort'
+  | '__limit'
+  | '__offset'
 
 export class PropertiesUi {
 
@@ -54,10 +53,10 @@ export class PropertiesUi {
     ['href', createRef<StepsSelector>()],
     ['alt', createRef<StepsSelector>()],
     ['condition', createRef<StepsSelector>()],
-    ['data', createRef<StepsSelector>()],
-    ['sort', createRef<StepsSelector>()],
-    ['limit', createRef<StepsSelector>()],
-    ['offset', createRef<StepsSelector>()],
+    ['__data', createRef<StepsSelector>()],
+    ['__sort', createRef<StepsSelector>()],
+    ['__limit', createRef<StepsSelector>()],
+    ['__offset', createRef<StepsSelector>()],
   ])
 
   // Constructor
@@ -146,7 +145,7 @@ export class PropertiesUi {
           //  meta: { token, type }
           //}
           case 'field': return {
-            name: token.fieldId,
+            name: token.label,
             icon: '',
             type: this.getDisplayType(token.typeIds, token.kind),
             meta: { token, type: field },
@@ -239,7 +238,7 @@ export class PropertiesUi {
   // Update the UI
   updateUi(component: Component | undefined, dataTree: DataTree) {
     if(!component) return
-    const dataStateType: Field | undefined = dataTree.getExpressionResultType(getState(component, 'data', false)?.expression ?? []) ?? undefined
+    const dataStateType: Field | undefined = dataTree.getExpressionResultType(getState(component, '__data', false)?.expression ?? []) ?? undefined
     render(html`
       <style>
         ${this.options.styles}
@@ -249,13 +248,13 @@ export class PropertiesUi {
           <div class="gjs-traits-label">Element Properties</div>
         </div>
         <main>
-          ${this.renderExpressionUi(component, dataTree, 'innerHTML', true)}
-          ${this.renderExpressionUi(component, dataTree, 'title', true)}
-          ${this.renderExpressionUi(component, dataTree, 'class', true)}
-          ${this.renderExpressionUi(component, dataTree, 'style', true)}
-          ${this.renderExpressionUi(component, dataTree, 'src', true)}
-          ${this.renderExpressionUi(component, dataTree, 'href', true)}
-          ${this.renderExpressionUi(component, dataTree, 'alt', true)}
+          ${this.renderExpressionUi(component, dataTree, 'innerHTML', 'Content', true)}
+          ${this.renderExpressionUi(component, dataTree, 'title', 'title', true)}
+          ${this.renderExpressionUi(component, dataTree, 'class', 'class', true)}
+          ${this.renderExpressionUi(component, dataTree, 'style', 'style', true)}
+          ${this.renderExpressionUi(component, dataTree, 'src', 'src', true)}
+          ${this.renderExpressionUi(component, dataTree, 'href', 'href', true)}
+          ${this.renderExpressionUi(component, dataTree, 'alt', 'alt', true)}
         </main>
       </section>
       <section class="ds-section">
@@ -264,39 +263,22 @@ export class PropertiesUi {
             <input
               type="checkbox"
               name="loop"
-              .checked=${!!getState(component, 'loopIndex', true)}
+              .checked=${component.has('dsLoop')}
               @change=${(e: InputEvent) => {
                 if((e.target as HTMLInputElement).checked) {
-                  setState(component, 'loopIndex', {
-                    expression: [{
-                      type: 'property',
-                      propType: 'field',
-                      fieldId: 'index',
-                      kind: 'scalar',
-                      typeIds: ['Number'],
-                    }],
-                  }, true)
-                  setState(component, 'loopItem', {
-                    expression: [{
-                      type: 'state',
-                      id: 'data',
-                      componentId: getOrCreatePersistantId(component),
-                      exposed: false,
-                    }],
-                  }, true)
+                  component.set('dsLoop', true)
                 } else {
-                  removeState(component, 'loopIndex', true)
-                  removeState(component, 'loopItem', true)
+                  component.unset('dsLoop')
                 }
               }}
             ></label>
         </div>
         <main>
-          ${ getState(component, 'loopIndex', true) ? html`
-            ${this.renderExpressionUi(component, dataTree, 'data', false)}
-            ${this.renderPropertyUi(component, dataTree, 'sort', dataStateType)}
-            ${this.renderExpressionUi(component, dataTree, 'limit', true)}
-            ${this.renderExpressionUi(component, dataTree, 'offset', true)}
+          ${ component.has('dsLoop') ? html`
+            ${this.renderExpressionUi(component, dataTree, '__data', 'data', false)}
+            ${this.renderPropertyUi(component, dataTree, '__sort', 'sort', dataStateType)}
+            ${this.renderExpressionUi(component, dataTree, '__limit', 'limit', true)}
+            ${this.renderExpressionUi(component, dataTree, '__offset', 'offset', true)}
           ` : ''}
         </main>
       </section>
@@ -305,13 +287,13 @@ export class PropertiesUi {
           <div class="gjs-traits-label">Visibility</div>
         </div>
         <main>
-          ${this.renderExpressionUi(component, dataTree, 'condition', true)}
+          ${this.renderExpressionUi(component, dataTree, 'condition', 'condition', true)}
         </main>
       </section>
     `, this.wrapper)
   }
 
-  renderExpressionUi(component: Component, dataTree: DataTree, name: PropsNames, allowFixed: boolean, maxSteps?: number): TemplateResult {
+  renderExpressionUi(component: Component, dataTree: DataTree, name: PropsNames, label: string, allowFixed: boolean, maxSteps?: number): TemplateResult {
     const state = getState(component, name, false) ?? {expression: []}
     const steps = this.toSteps(dataTree, state.expression)
     const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
@@ -336,12 +318,12 @@ export class PropertiesUi {
         @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, name, e.target as StepsSelector)}
         .fixed=${fixed}
         >
-        ${name}
+        ${label}
       </steps-selector>
     `
   }
 
-  renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, field: Field | undefined): TemplateResult {
+  renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, label: string, field: Field | undefined): TemplateResult {
     const state = getState(component, name, false) ?? {expression: []}
     if(state?.expression.length !== 0 && state?.expression.length !== 1) {
       console.error('Invalid state', state)
@@ -350,7 +332,7 @@ export class PropertiesUi {
     if(!field) {
       return html`
         <label class="ds-label ds-label--disabled">
-          ${name}
+          ${label}
           <div class="ds-label__message">No data source</div>
         </label>
       `
@@ -413,7 +395,7 @@ export class PropertiesUi {
         }}
         @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, name, e.target as StepsSelector)}
         >
-        ${name}
+        ${label}
       </steps-selector>
     `
   }

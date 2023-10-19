@@ -52,6 +52,7 @@ const simpleQueryables: Field[] = [{
 }]
 const simpleQueryableTokens: FieldProperty[] = [{
   fieldId: 'testSimpleQueryableId',
+  label: 'test queryable',
   type: 'property',
   propType: 'field',
   typeIds: ['testTypeId'],
@@ -291,6 +292,7 @@ test('get type with simple context', () => {
   // 1 level value
   const type = dataTree.getExpressionResultType([{
     fieldId: 'testFieldId',
+    label: 'test field name',
     type: 'property',
     propType: 'field',
     typeIds: ['testFieldTypeId'],
@@ -303,6 +305,7 @@ test('get type with simple context', () => {
   // 2 levels value
   const type2 = dataTree.getExpressionResultType([{
     fieldId: 'first',
+    label: 'test field name',
     type: 'property',
     propType: 'field',
     typeIds: ['testTypeId'],
@@ -312,6 +315,7 @@ test('get type with simple context', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'second',
+    label: 'test field name',
     typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
@@ -343,6 +347,7 @@ test('get completion with simple context', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
+    label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
@@ -356,6 +361,7 @@ test('get completion with simple context', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
+    label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
@@ -363,6 +369,7 @@ test('get completion with simple context', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
+    label: 'test field name',
     typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
@@ -393,6 +400,7 @@ test('get completion with filters', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
+    label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
@@ -404,6 +412,7 @@ test('get completion with filters', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
+    label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
@@ -411,6 +420,7 @@ test('get completion with filters', () => {
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId',
+    label: 'test field name',
     typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',

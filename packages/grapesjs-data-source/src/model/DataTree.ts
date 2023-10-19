@@ -145,28 +145,46 @@ export class DataTree {
     const queryable: FieldProperty[] = this.queryables
       .map((field: Field) => {
         if(!field.dataSourceId) throw new Error(`Type ${field.id} has no data source`)
-        return {
-          type: 'property',
-          propType: 'field',
-          fieldId: field.id,
-          typeIds: field.typeIds,
-          dataSourceId: field.dataSourceId,
-          kind: field.kind,
-          ...this.getTokenOptions(field) ?? {},
-        }
+        return this.fieldToToken(field)
       })
     // Get all states in the component scope
     const states: State[] = []
+    const loopProperties: FieldProperty[] = []
     let parent = component
     while(parent) {
-      const parentStates: State[] = getStateIds(parent, true)
-        .map((stateId: StateId) => ({
+      // Get explicitely set states
+      states.push(...(getStateIds(parent, true)
+        .map((stateId: StateId): State => ({
           type: 'state',
           id: stateId,
           componentId: getOrCreatePersistantId(parent),
           exposed: true,
-        }))
-      states.push(...parentStates)
+        }))))
+      // Get states from loops
+      if (parent !== component) {
+        if (parent.has('dsLoop')) {
+          const loopDataState = getState(parent, '__data', false)
+          if (loopDataState) {
+            const loopDataField = this.getExpressionResultType(loopDataState.expression)
+            if (loopDataField) {
+              if(loopDataField.kind === 'list') {
+                loopProperties.push({
+                  ...this.fieldToToken(loopDataField),
+                  label: `Loop item (${parent.getId()})`,
+                  kind: 'object', // TODO: this may be a scalar
+                })
+              } else {
+                console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
+              }
+            } else {
+              console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
+            }
+          } else {
+            console.warn('Loop data not found for component', parent)
+          }
+        }
+      }
+      // Go up to parent
       parent = parent.parent() as Component
     }
     // Get filters which accept no input
@@ -176,8 +194,27 @@ export class DataTree {
     return [
       ...queryable,
       ...states,
+      ...loopProperties,
       ...filters,
     ]
+  }
+
+  /**
+   * Get the token corresponding to a field
+   */
+  fieldToToken(field: Field): FieldProperty {
+    if(!field) throw new Error('Field is required for token')
+    if(!field.dataSourceId) throw new Error(`Field ${field.id} has no data source`)
+    return {
+      type: 'property',
+      propType: 'field',
+      fieldId: field.id,
+      label: field.name,
+      typeIds: field.typeIds,
+      dataSourceId: field.dataSourceId,
+      kind: field.kind,
+      ...this.getTokenOptions(field) ?? {},
+    }
   }
 
   /**
@@ -302,15 +339,7 @@ export class DataTree {
           (field: Field): Token  => {
             // const t: Type | null = this.findType(field.typeIds, field.dataSourceId) 
             // if(!t) throw new Error(`Type ${field.typeIds} not found`)
-            return {
-              type: 'property',
-              propType: 'field',
-              typeIds: field.typeIds,
-              fieldId: field.id,
-              kind: field.kind,
-              dataSourceId: field.dataSourceId,
-              ...this.getTokenOptions(field) ?? {},
-            }
+            return this.fieldToToken(field)
           }
         ) : [])
       // Add filters
