@@ -16,7 +16,7 @@
  */
 
 import { Component } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldProperty, Filter, IDataSource, State, StateId, Token, Type, TypeId } from '../types'
+import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, FieldProperty, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, findComponentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
 import getLiquidFilters from '../filters/liquid'
@@ -102,6 +102,37 @@ export class DataTree {
   }
 
   /**
+   * Get the options of a token
+   */
+  getTokenOptions(field: Field): { optionsForm: (input: Field | null, options: Options) => string, options: Options} | null {
+    if (field.arguments && field.arguments.length > 0) {
+      return {
+        optionsForm: (input: Field | null, options: Options) => {
+          return `
+            <form>
+              ${
+                field.arguments!.map((arg: FieldArgument) => {
+                  const value = options[arg.name] ?? arg.defaultValue ?? ''
+                  return `<label>${arg.name}</label><input type="text" name="${arg.name}" value="${value}">`
+                }).join('\n')
+              }
+              <div class="buttons">
+                <input type="reset" value="Cancel">
+                <input type="submit" value="Apply">
+              </div>
+            </form>
+          `
+        },
+        options: field.arguments!.reduce((options: Record<string, unknown>, arg: FieldArgument) => {
+          options[arg.name] = arg.defaultValue
+          return options
+        }, {}),
+      }
+    }
+    return null
+  }
+
+  /**
    * Get the context of a component
    * This includes all parents states, data sources queryable values, values provided in the options
    */
@@ -121,6 +152,7 @@ export class DataTree {
           typeIds: field.typeIds,
           dataSourceId: field.dataSourceId,
           kind: field.kind,
+          ...this.getTokenOptions(field) ?? {},
         }
       })
     // Get all states in the component scope
@@ -277,6 +309,7 @@ export class DataTree {
               fieldId: field.id,
               kind: field.kind,
               dataSourceId: field.dataSourceId,
+              ...this.getTokenOptions(field) ?? {},
             }
           }
         ) : [])

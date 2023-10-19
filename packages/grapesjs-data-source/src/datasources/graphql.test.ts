@@ -255,6 +255,20 @@ test('getTypes strapi', async () => {
   expect(dataField!.kind).toBe('list')
 })
 
+test('getQueryables strapi', async () => {
+  const GraphQLDataSource = (await importDataSource([strapiSchema]))
+  const dataSource = new GraphQLDataSource(options)
+  await dataSource.connect()
+  const queryables = await dataSource.getQueryables()
+  const post: Field = queryables!.find((field: Field) => field.id === 'post')!
+  expect(post).not.toBeUndefined()
+  expect(post.id).toBe('post')
+  expect(post.name).toBe('post')
+  expect(post.arguments).not.toBeUndefined()
+  expect(post.arguments).toHaveLength(1)
+  expect(post.arguments![0].name).toBe('id')
+})
+
 // test('Get data', async () => {
 //   const DataSource = (await importDataSource([connect, postsId, postsDetails]))
 //   const dataSource = new DataSource(options)

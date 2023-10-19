@@ -65,12 +65,18 @@ export const builtinTypes: Type[] = builtinTypeIds.map(id => ({
 // Fileds
 export type FieldId = string
 export type FieldKind = 'scalar' | 'object' | 'list'
-export type Field = {
+export interface FieldArgument {
+  name: string
+  typeId: TypeId
+  defaultValue?: unknown
+}
+export interface Field {
   id: FieldId
   name: string
   typeIds: TypeId[]
   kind: FieldKind
   dataSourceId?: DataSourceId
+  arguments?: FieldArgument[]
 }
 
 // **
@@ -79,6 +85,7 @@ export type Field = {
  * A token can be a property or a filter
  */
 export type Token = Property | Filter | State
+export type Options = Record<string, unknown>
 
 /**
  * A property is used to make expressions and access data from the data source
@@ -101,6 +108,8 @@ export interface FieldProperty extends BaseProperty {
   typeIds: TypeId[]
   fieldId: FieldId
   kind: FieldKind
+  options?: Record<string, unknown>
+  optionsForm?: (input: Field | null, options: Options) => string | null
 }
 
 /**
@@ -108,16 +117,15 @@ export interface FieldProperty extends BaseProperty {
  * It is provided in the options
  */
 export type FilterId = string
-export type FilterOptions = Record<string, unknown>
 export interface Filter {
   type: 'filter'
   id: FilterId
   name: string
-  options: FilterOptions
-  optionsForm?: (input: Field | null, options: FilterOptions) => string | null
+  options: Options
+  optionsForm?: (input: Field | null, options: Options) => string | null
   validate: (input: Field | null) => boolean
-  output: (input: Field | null, options: FilterOptions) => Field | null
-  apply: (input: unknown, options: FilterOptions) => unknown
+  output: (input: Field | null, options: Options) => Field | null
+  apply: (input: unknown, options: Options) => unknown
 }
 
 /**

@@ -15,6 +15,44 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+export const OPTIONS_STYLES = `
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 5px;
+    color: var(--ds-tertiary);
+  }
+  form label {
+    text-align: left;
+    margin-top: 5px;
+  }
+  form .buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin: 5px 0;
+    width: 100%;
+  }
+  form input {
+    padding: 4px;
+    background-color: transparent;
+    border-radius: 2px;
+    color: var(--ds-tertiary);
+    border: 1px solid rgba(0,0,0,.15);
+  }
+  form .buttons input {
+    margin-left: 5px;
+    cursor: pointer;
+    padding: 4px 10px;
+    background-color: var(--ds-button-bg);
+  }
+  form .buttons input[type="reset"] {
+    border-color: transparent;
+  }
+  form .buttons input:hover {
+    color: var(--ds-primary);
+  }
+`
 export const PROPERTY_STYLES = `
   :root {
     --ds-primary: #d278c9;
@@ -30,8 +68,8 @@ export const PROPERTY_STYLES = `
     --steps-selector-dirty-color: #d278c9;
     --steps-selector-active-color: #ddd;
     --steps-selector-active-background-color: rgba(255,255,255,.15);
-    --popin-dialog-background: #ddd;
-    --popin-dialog-color: #333;
+    --popin-dialog-background: var(--ds-secondary);
+    --popin-dialog-color: var(--ds-tertiary);
     --popin-dialog-header-background: transparent;
     --popin-dialog-body-background: transparent;
     --popin-dialog-footer-background: transparent;
@@ -78,7 +116,10 @@ export const PROPERTY_STYLES = `
     box-sizing: border-box;
     cursor: pointer;
   }
-  steps-selector::part(value) {
+  .test {
+    display: flex;
+    align-items: center;
+    background: red !important;
   }
   steps-selector::part(delete-button) {
     margin: 0;

@@ -26,6 +26,7 @@ import { getOrCreatePersistantId, getState, removeState, setState } from "../mod
 import { DataTree } from "../model/DataTree"
 import { Expression, Token, TypeId, FieldKind, Field } from "../types"
 import { DataSourceEditor } from ".."
+import { OPTIONS_STYLES } from "./defaultStyles"
 
 type PropsNames = 
   'innerHTML'
@@ -43,6 +44,7 @@ type PropsNames =
   | 'offset'
 
 export class PropertiesUi {
+
   protected propsSelectorRefs: Map<PropsNames, Ref<StepsSelector>> = new Map([
     ['innerHTML', createRef<StepsSelector>()],
     ['title', createRef<StepsSelector>()],
@@ -57,9 +59,13 @@ export class PropertiesUi {
     ['limit', createRef<StepsSelector>()],
     ['offset', createRef<StepsSelector>()],
   ])
+
   // Constructor
   constructor(protected editor: DataSourceEditor, protected options: ViewOptions, protected wrapper: HTMLElement) {}
 
+  /**
+   * Set the completion function of a steps selector
+   */
   setCompletion(dataTree: DataTree, component: Component, stepsSelector: StepsSelector) {
     stepsSelector.completion = (steps: Step[]): Step[] => {
       // Current expression
@@ -80,9 +86,26 @@ export class PropertiesUi {
     }
   }
 
+  /**
+   * Get the display type of a field
+   */
   getDisplayType(typeIds: TypeId[], kind: FieldKind | null): string {
     const typeLabel = typeIds.join(', ')
     return kind === 'list' ? `${typeLabel} [ ]` : kind === 'object' ? `${typeLabel} { }` : typeLabel
+  }
+
+  /**
+   * Add css styles to options form
+   */
+  addStyles(optionsForm: string | null): string {
+    if(!optionsForm) return ''
+    return `
+      <style>
+        ${OPTIONS_STYLES}
+        ${this.options.optionsStyles ?? ''}
+      </style>
+      ${optionsForm}
+    `
   }
 
   /**
@@ -126,7 +149,9 @@ export class PropertiesUi {
             name: token.fieldId,
             icon: '',
             type: this.getDisplayType(token.typeIds, token.kind),
-            meta: { token, type: field }
+            meta: { token, type: field },
+            options: token.options,
+            optionsForm: token.optionsForm ? this.addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
           }
           default:
             console.error('Unknown property type (reading propType)', token)
@@ -138,7 +163,7 @@ export class PropertiesUi {
           icon: '',
           type: 'Filter',
           options: token.options,
-          optionsForm: token.optionsForm ? token.optionsForm(prev, token.options) ?? undefined : undefined,
+          optionsForm: token.optionsForm ? this.addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
           meta: { token, type: field }
         }
       case 'state': {
@@ -197,15 +222,17 @@ export class PropertiesUi {
       options: {
         value,
       },
-      optionsForm: () => `
+      optionsForm: () => this.addStyles(`
         <form>
           <label>Value
             <input type="text" name="value" value="${value.toString()}">
-            <input type="submit" value="Apply"/>
-            <input type="reset" value="Cancel"/>
+            <div class="buttons">
+              <input type="submit" value="Apply"/>
+              <input type="reset" value="Cancel"/>
+            </div>
           </label>
         </form>
-      `
+      `),
     }
   }
 

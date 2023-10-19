@@ -41,8 +41,10 @@ export default function(dataTree: DataTree): Filter[] {
           <select class="form-control" id="type" name="type">
             ${ dataTree.allTypes.map(type => `<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.name}</option>`).join('\n') }
           </select>
-          <input type="submit" value="Apply" />
-          <input type="reset" value="Cancel"/>
+          <div class="buttons">
+            <input type="reset" value="Cancel"/>
+            <input type="submit" value="Apply" />
+          </div>
         </form>
       `,
     },

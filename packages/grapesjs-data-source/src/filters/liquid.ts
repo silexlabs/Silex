@@ -16,7 +16,7 @@
  */
 
 import { DataTree } from "../model/DataTree"
-import { Field, Filter, FilterOptions, State } from "../types"
+import { Field, Filter, Options, State } from "../types"
 
 export default function(dataTree: DataTree): Filter[] {
   function listToObject(field: Field | null): Field | null {
@@ -50,7 +50,7 @@ export default function(dataTree: DataTree): Filter[] {
       }
     }
   }
-  function keySelector(field: Field | null, options: FilterOptions, name: string): string {
+  function keySelector(field: Field | null, options: Options, name: string): string {
     // FIXME: here field is always null
     if(!field) return `
       <label>${name}
@@ -119,8 +119,10 @@ export default function(dataTree: DataTree): Filter[] {
             }
           </select>
         </label>
-        <input type="submit" value="Apply" />
-        <input type="reset" value="Cancel" />
+        <div class="buttons">
+          <input type="reset" value="Cancel" />
+          <input type="submit" value="Apply" />
+        </div>
       </form>
     `,
     }, {
@@ -157,8 +159,10 @@ export default function(dataTree: DataTree): Filter[] {
         <label>Separator
           <input type="text" name="separator" placeholder="Separator"/>
         </label>
-        <input type="submit" value="Apply" />
-        <input type="reset" value="Cancel" />
+        <div class="buttons">
+          <input type="reset" value="Cancel" />
+          <input type="submit" value="Apply" />
+        </div>
       </form>
     `,
     }, {
@@ -179,8 +183,10 @@ export default function(dataTree: DataTree): Filter[] {
         <label>Separator
           <input type="text" name="separator" placeholder="Separator"/>
         </label>
-        <input type="submit" value="Apply" />
-        <input type="reset" value="Cancel" />
+        <div class="buttons">
+          <input type="reset" value="Cancel" />
+          <input type="submit" value="Apply" />
+        </div>
       </form>
     `,
     }, {
@@ -198,8 +204,10 @@ export default function(dataTree: DataTree): Filter[] {
           <label>Key
             ${ keySelector(input, options, 'key') }
           </label>
-          <input type="submit" value="Apply" />
-          <input type="reset" value="Cancel" />
+          <div class="buttons">
+            <input type="reset" value="Cancel" />
+            <input type="submit" value="Apply" />
+          </div>
         </form>
       `,
     }, {
@@ -238,8 +246,10 @@ export default function(dataTree: DataTree): Filter[] {
         <label>Index
           <input type="number" name="index" placeholder="Index"/>
         </label>
-        <input type="submit" value="Apply" />
-        <input type="reset" value="Cancel" />
+          <div class="buttons">
+          <input type="reset" value="Cancel" />
+          <input type="submit" value="Apply" />
+        </div>
       </form>
     `,
     }

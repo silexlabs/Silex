@@ -17,6 +17,7 @@
 
 import Backbone from "backbone"
 import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, FieldKind, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
+import graphqlIntrospectionQuery from "./graphql-introspection-query"
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -45,6 +46,11 @@ export interface GQLOfType {
 export interface GQLField {
   name: string,
   type: GQLOfType,
+  args?: {
+    name: string,
+    type: GQLOfType,
+    defaultValue?: string,
+  }[],
 }
 export interface GQLType {
   name: string,
@@ -72,25 +78,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   }
   protected async loadData(): Promise<[Type[], Field[]]> {
     try {
-      const result = await this.call(`
-        query {
-          __schema {
-            types {
-              name fields {
-                name type {
-                  name kind possibleTypes { name kind } ofType {
-                    name kind possibleTypes { name kind } ofType {
-                      name kind possibleTypes { name kind } ofType {
-                        name kind possibleTypes { name kind }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      `) as {data: {__schema: {types: GQLType[]}}}
+      const result = await this.call(graphqlIntrospectionQuery) as {data: {__schema: {types: GQLType[]}}}
       if (!result.data?.__schema?.types) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
       const allTypes = result.data.__schema.types.map((type: GQLType) => type.name)
           .concat(builtinTypeIds)
@@ -146,6 +134,11 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       name: field.name,
       typeIds: this.graphQLToTypes(field),
       kind: this.graphQLToKind(this.ofKindToKind(field.type)),
+      arguments: field.args?.map(arg => ({
+        name: arg.name,
+        typeId: this.getOfTypeProp<string>('name', arg.type, arg.name),
+        defaultValue: arg.defaultValue,
+      })),
     }
   }
 

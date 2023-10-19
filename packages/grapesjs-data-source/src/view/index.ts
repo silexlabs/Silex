@@ -24,6 +24,7 @@ export interface ViewOptions {
   appendTo?: string | HTMLElement | (() => HTMLElement)
   button?: Button | (() => Button)
   styles?: string
+  optionsStyles?: string
 }
 
 export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
