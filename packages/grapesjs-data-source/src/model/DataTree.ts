@@ -269,12 +269,14 @@ export class DataTree {
       case 'state': {
         const parent = getParentByPersistentId(token.componentId, component)
         if(!parent) {
-          console.error('Component not found for state', token)
-          throw new Error('Component not found for state evaluation')
+          console.warn('Component not found for state', token)
+          // TODO: notification
+          return null
         }
         const expression = getState(parent, token.id, token.exposed)?.expression
         if(!expression) {
           console.warn('State is not defined on component', { component: parent, token })
+          // TODO: notification
           return null
         }
         const field = this.getExpressionResultType(expression, parent)

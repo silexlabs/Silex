@@ -169,13 +169,7 @@ export class PropertiesUi {
         const parent = getParentByPersistentId(token.componentId, component)
         if(!parent) {
           console.warn('Component not found', token.componentId)
-          // TODO: show a warning
-          //this.editor.Notifier.add({
-          //  level: 'warning',
-          //  title: 'Component not found',
-          //  text: `${token.componentId} was not found`,
-          //  component: this.editor.getSelected(),
-          //})
+          // TODO: notification
         }
         return {
           name: getStateLabel(parent, token.label),
