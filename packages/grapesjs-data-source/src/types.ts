@@ -72,7 +72,7 @@ export interface FieldArgument {
 }
 export interface Field {
   id: FieldId
-  name: string
+  label: string
   typeIds: TypeId[]
   kind: FieldKind
   dataSourceId?: DataSourceId
@@ -136,8 +136,10 @@ export type StateId = string
 export interface State {
   type: 'state'
   id: StateId
+  label: string
   componentId: string
   exposed: boolean
+  forceKind?: FieldKind
 }
 
 /**

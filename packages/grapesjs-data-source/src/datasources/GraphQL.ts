@@ -131,7 +131,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     return {
       id: field.name,
       dataSourceId: this.get('id')!,
-      name: field.name,
+      label: field.name,
       typeIds: this.graphQLToTypes(field),
       kind: this.graphQLToKind(this.ofKindToKind(field.type)),
       arguments: field.args?.map(arg => ({

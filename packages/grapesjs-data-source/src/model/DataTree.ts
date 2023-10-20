@@ -17,7 +17,7 @@
 
 import { Component } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, FieldProperty, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId } from '../types'
-import { getStateIds, getState, getOrCreatePersistantId, findComponentByPersistentId } from './state'
+import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
 import getLiquidFilters from '../filters/liquid'
 import getGenericFilters from '../filters/generic'
@@ -149,7 +149,7 @@ export class DataTree {
       })
     // Get all states in the component scope
     const states: State[] = []
-    const loopProperties: FieldProperty[] = []
+    const loopProperties: State[] = []
     let parent = component
     while(parent) {
       // Get explicitely set states
@@ -157,21 +157,25 @@ export class DataTree {
         .map((stateId: StateId): State => ({
           type: 'state',
           id: stateId,
+          label: stateId,
           componentId: getOrCreatePersistantId(parent),
           exposed: true,
         }))))
       // Get states from loops
-      if (parent !== component) {
+      //if (parent !== component) {
         if (parent.has('dsLoop')) {
           const loopDataState = getState(parent, '__data', false)
           if (loopDataState) {
-            const loopDataField = this.getExpressionResultType(loopDataState.expression)
+            const loopDataField = this.getExpressionResultType(loopDataState.expression, parent)
             if (loopDataField) {
               if(loopDataField.kind === 'list') {
                 loopProperties.push({
-                  ...this.fieldToToken(loopDataField),
-                  label: `Loop item (${parent.getId()})`,
-                  kind: 'object', // TODO: this may be a scalar
+                  type: 'state',
+                  id: '__data',
+                  componentId: getOrCreatePersistantId(parent),
+                  exposed: false,
+                  forceKind: 'object', // TODO: this may be a scalar
+                  label: 'loop item',
                 })
               } else {
                 console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
@@ -183,7 +187,7 @@ export class DataTree {
             console.warn('Loop data not found for component', parent)
           }
         }
-      }
+      //}
       // Go up to parent
       parent = parent.parent() as Component
     }
@@ -200,7 +204,7 @@ export class DataTree {
   }
 
   /**
-   * Get the token corresponding to a field
+   * Create a property token from a field
    */
   fieldToToken(field: Field): FieldProperty {
     if(!field) throw new Error('Field is required for token')
@@ -209,7 +213,7 @@ export class DataTree {
       type: 'property',
       propType: 'field',
       fieldId: field.id,
-      label: field.name,
+      label: field.label,
       typeIds: field.typeIds,
       dataSourceId: field.dataSourceId,
       kind: field.kind,
@@ -233,7 +237,7 @@ export class DataTree {
   /**
    * Get the type corresponding to a token
    */
-  tokenToField(token: Token, prev: Field | null): Field | null {
+  tokenToField(token: Token, prev: Field | null, component: Component): Field | null {
     switch (token.type) {
       case 'filter': {
         if(token.validate(prev)) {
@@ -252,7 +256,7 @@ export class DataTree {
 
             return {
               id: token.fieldId,
-              name: typeNames.join(', '),
+              label: typeNames.join(', '),
               typeIds: token.typeIds,
               kind: token.kind,
               dataSourceId: token.dataSourceId,
@@ -263,17 +267,21 @@ export class DataTree {
             throw new Error('Unknown property type')
         }
       case 'state': {
-        const component = findComponentByPersistentId(token.componentId, this.editor)
-        if(!component) {
+        const parent = getParentByPersistentId(token.componentId, component)
+        if(!parent) {
           console.error('Component not found for state', token)
           throw new Error('Component not found for state evaluation')
         }
-        const expression = getState(component, token.id, token.exposed)?.expression
+        const expression = getState(parent, token.id, token.exposed)?.expression
         if(!expression) {
-          console.warn('State is not defined on component', { component, token })
+          console.warn('State is not defined on component', { component: parent, token })
           return null
         }
-        return this.getExpressionResultType(expression)
+        const field = this.getExpressionResultType(expression, parent)
+        return field ? {
+          ...field,
+          kind: token.forceKind ?? field.kind,
+        } : null
       }
       default:
         console.error('Unknown token type (reading type)', token)
@@ -284,16 +292,16 @@ export class DataTree {
   /**
    * Evaluate the types of each token in an expression
    */
-  expressionToFields(expression: Expression): Field[] {
+  expressionToFields(expression: Expression, component: Component): Field[] {
     // Resolve type of the expression 1 step at a time
     let prev: Field | null = null
     return expression.map((token: Token) => {
-      const field = this.tokenToField(token, prev)
+      const field = this.tokenToField(token, prev, component)
       if(!field) {
         console.warn('Type not found for token in expressionToFields', {token, expression})
         return {
           id: 'unknown',
-          name: 'unknown',
+          label: 'unknown',
           typeIds: [],
           kind: 'scalar',
         }
@@ -307,10 +315,10 @@ export class DataTree {
    * Evaluate an expression to a type
    * This is used to validate expressions and for autocompletion
    */
-  getExpressionResultType(expression: Expression): Field | null {
+  getExpressionResultType(expression: Expression, component: Component): Field | null {
     // Resolve type of the expression 1 step at a time
     return expression.reduce((prev: Field | null, token: Token) => {
-      return this.tokenToField(token, prev)
+      return this.tokenToField(token, prev, component)
     }, null)
   }
 
@@ -322,7 +330,7 @@ export class DataTree {
     if(!component) throw new Error('Component is required for completion')
     if(!expression) throw new Error('Expression is required for completion')
     if(expression.length === 0) return this.getContext(component)
-    const field = this.getExpressionResultType(expression)
+    const field = this.getExpressionResultType(expression, component)
     if(!field) {
       console.warn('Result type not found for expression', expression)
       return []

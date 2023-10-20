@@ -30,7 +30,7 @@ const simpleTypes: Type[] = [{
   fields: [
     {
       id: 'testFieldId',
-      name: 'test field name',
+      label: 'test field name',
       typeIds: ['testFieldTypeId'],
       kind: 'scalar',
       dataSourceId: 'DataSourceId',
@@ -45,7 +45,7 @@ const simpleTypes: Type[] = [{
 }]
 const simpleQueryables: Field[] = [{
   id: 'testSimpleQueryableId',
-  name: 'test queryable',
+  label: 'test queryable',
   typeIds: ['testTypeId'],
   kind: 'scalar',
   dataSourceId: 'DataSourceId',
@@ -86,11 +86,13 @@ const simpleFilters: Filter[] = [{
 }]
 
 let editor: Editor
+let firstComponent: Component
 beforeEach(async () => {
   editor = grapesjs.init({
     container: document.createElement('div'),
     components: '<div></div>',
   })
+  firstComponent = editor.getComponents().first()
 })
 
 test('DataTree instanciation', () => {
@@ -206,7 +208,7 @@ test('get context with data source queryable values', () => {
       }],
       getQueryables: () => [{
         id: 'testFieldId2',
-        name: 'test field name 2',
+        label: 'test field name 2',
         typeIds: ['testTypeId2'],
         kind: 'scalar',
         dataSourceId: 'DataSourceId',
@@ -287,7 +289,7 @@ test('get type with simple context', () => {
   })
 
   // Empty value
-  expect(dataTree.getExpressionResultType([])).toBeNull()
+  expect(dataTree.getExpressionResultType([], firstComponent)).toBeNull()
 
   // 1 level value
   const type = dataTree.getExpressionResultType([{
@@ -298,7 +300,7 @@ test('get type with simple context', () => {
     typeIds: ['testFieldTypeId'],
     dataSourceId: 'DataSourceId',
     kind: 'object',
-  }])
+  }], firstComponent)
   expect(type).not.toBeNull()
   expect(type?.id).toBe('testFieldId')
 
@@ -319,7 +321,7 @@ test('get type with simple context', () => {
     typeIds: ['testFieldTypeId'],
     kind: 'object',
     dataSourceId: 'DataSourceId',
-  }])
+  }], firstComponent)
   expect(type2).not.toBeNull()
   expect(type2?.id).toBe('second')
 })

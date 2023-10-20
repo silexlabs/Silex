@@ -17,7 +17,6 @@
 
 import { Component } from 'grapesjs'
 import { Expression, StateId } from '../types'
-import { DataSourceEditor } from '..'
 
 /**
  * @fileoverview This file contains the model for components states
@@ -62,24 +61,18 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
   return newPersistantId
 }
 
-/**
- * Recursiveley get all children of a component
- */
-function getAll(component: Component): Component[] {
-  const children: Component[] = []
-  component.components().forEach((c: Component) => {
-    children.push(...getAll(c))
-  })
-  return [component, ...children]
+export function getStateLabel(component: Component | null | undefined, label: string): string {
+  const name = component?.getName() ?? '[Not found]'
+  return `${name}'s ${label}` // (${component.get('tagName')}#${component.getId()})`
 }
 
 /**
  * Find a component by its persistant ID in the current page
  */
-export function findComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null {
-  const component = editor.Pages.getSelected()?.getMainComponent() as Component
+export function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null {
+  if(!component) return null
   if(getPersistantId(component) === id) return component
-  return getAll(component).find((c: Component) => getPersistantId(c) === id) ?? null
+  return getParentByPersistentId(id, component.parent())
 }
 
 /**

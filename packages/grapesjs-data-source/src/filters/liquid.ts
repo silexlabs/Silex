@@ -25,7 +25,7 @@ export default function(dataTree: DataTree): Filter[] {
     }
     if(field.kind !== 'list') {
       console.error('Field is not a list', field)
-      throw new Error(`Field ${field.name} is not a list`)
+      throw new Error(`Field ${field.label} is not a list`)
     }
     return {
       ...field,
@@ -35,13 +35,13 @@ export default function(dataTree: DataTree): Filter[] {
   function getFieldType(field: Field | null, key: string | undefined): Field | null {
     if (!field || !key) return null
     const types = field.typeIds.map(typeId => dataTree.findType(typeId))
-    const fields = types.map(type => type?.fields.find(field => field.name === key))
+    const fields = types.map(type => type?.fields.find(field => field.label === key))
     switch(fields.length) {
       case 0: return null
       case 1: return fields[0]!
       default: return {
         id: `${field.id}.${key}`,
-        name: `${field.name}.${key}`,
+        label: `${field.label}.${key}`,
         typeIds: fields.reduce((typeIds, field) => typeIds
           // Add typeIds of the field if not already present
           .concat(field!.typeIds.filter(t => !typeIds.includes(t)))
@@ -63,7 +63,7 @@ export default function(dataTree: DataTree): Filter[] {
         ${
           field ? field.typeIds
             .flatMap(typeId => dataTree.findType(typeId)!.fields)
-            .map(f => `<option value="${f.name}" ${f.name === options.key ? 'selected': ''}>${f.name}</option>`)
+            .map(f => `<option value="${f.label}" ${f.label === options.key ? 'selected': ''}>${f.label}</option>`)
             .join('\n') 
             : ''
         }
@@ -225,7 +225,7 @@ export default function(dataTree: DataTree): Filter[] {
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: () => ({
         id: 'Int',
-        name: 'Int',
+        label: 'Int',
         typeIds: ['Int'],
         kind: 'scalar',
       }),

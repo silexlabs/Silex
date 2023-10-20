@@ -182,7 +182,7 @@ test('graphQLToField', async () => {
   const result = gql.graphQLToField(testField)
   expect(result).not.toBeUndefined()
   expect(result.id).toBe('posts')
-  expect(result.name).toBe('posts')
+  expect(result.label).toBe('posts')
   expect(result.typeIds).toEqual(['PostEntityResponseCollection'])
 })
 
@@ -251,7 +251,7 @@ test('getTypes strapi', async () => {
   expect(postsType.fields).not.toBeUndefined()
   const dataField = postsType.fields!.find(field => field.id === 'data')
   expect(dataField).not.toBeUndefined()
-  expect(dataField!.name).toBe('data')
+  expect(dataField!.label).toBe('data')
   expect(dataField!.kind).toBe('list')
 })
 
@@ -263,7 +263,7 @@ test('getQueryables strapi', async () => {
   const post: Field = queryables!.find((field: Field) => field.id === 'post')!
   expect(post).not.toBeUndefined()
   expect(post.id).toBe('post')
-  expect(post.name).toBe('post')
+  expect(post.label).toBe('post')
   expect(post.arguments).not.toBeUndefined()
   expect(post.arguments).toHaveLength(1)
   expect(post.arguments![0].name).toBe('id')
