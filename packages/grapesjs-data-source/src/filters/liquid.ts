@@ -113,7 +113,7 @@ export default function(dataTree: DataTree): Filter[] {
           <select name="state">
             ${
               dataTree.getContext()
-                .filter(token => token.type === 'state')
+                .filter(token => token.type === 'state' && token.exposed)
                 .map(state => `<option value="${(state as State).id}">${(state as State).id}</option>`)
                 .join('\n')
             }

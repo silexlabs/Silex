@@ -52,27 +52,59 @@ export default `
   fragment TypeRef on __Type {
     kind
     name
+    possibleTypes {
+      kind
+      name
+    }
     ofType {
       kind
       name
+      possibleTypes {
+        kind
+        name
+      }
       ofType {
         kind
         name
+        possibleTypes {
+          kind
+          name
+        }
         ofType {
           kind
           name
+          possibleTypes {
+            kind
+            name
+          }
           ofType {
             kind
             name
+            possibleTypes {
+              kind
+              name
+            }
             ofType {
               kind
               name
+              possibleTypes {
+                kind
+                name
+              }
               ofType {
                 kind
                 name
+                possibleTypes {
+                  kind
+                  name
+                }
                 ofType {
                   kind
                   name
+                  possibleTypes {
+                    kind
+                    name
+                  }
                 }
               }
             }
