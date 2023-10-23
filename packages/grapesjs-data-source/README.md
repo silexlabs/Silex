@@ -1,24 +1,14 @@
-# Data Source plugin
+# GrapesJs Data Source plugin
 
 This GrapesJS plugin integrates various APIs, such as GraphQL and REST, into the editor. 
 
-Here are the key parts of the plugin:
+It makes a new UI available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
 
-1. **editor.DataSourceManager**: A Backbone collection to manage the APIs. This collection holds the different available data sources and their settings (type, url, auth...). This data is stored with the website data.
+The plugin has data management feature needed to manage components states, expressions made of tokens, build a query from the component states.
 
-1. **editor.StateManager**: A Backbone collection to manage component states and generate queries to APIs. Component states are used to build the query needed for the current page, and they can be used to create other states in child components or override a component's attributes or style. This collection is generated from the components attributes, it is not stored with the site data.
+The output of this plugin is data stored on the components as states. This data then needs to be used by other plugins or the application starting grapesjs. For example you can implement a "publish" feature to generate pages and data files for a static site generator or CMSs
 
-1. **editor.TemplateManager**: A Backbone collection that holds templates overriding components' attributes and styles. Templates can be JavaScript expressions, loops, or conditional statements (ifs), affecting how components are rendered on stage. This collection is generated from the components attributes, it is not stored in the site data.
-
-1. **DataSource**: An interface for classes managing an API, abstracting the calls and queries. It includes methods like `getData(query)` and `getTypes()`.
-
-1. **Dynamic Pages**: Pages can be marked as dynamic, making a state named `current` available to the page. This state holds the value currently being displayed in the editor.
-
-1. **Publish Feature**: The plugin offers a "publish" feature to generate pages and data files for a static site generator, starting with Eleventy. This includes one data file per dynamic page and one page per dynamic page, with queries to the datasource making the desired data available.
-
-The components with "Loop Template" also have a `current` state, similar to dynamic pages.
-
-The plugin's architecture is designed to provide a flexible and efficient way to manage data and rendering in the editor, supporting dynamic content and static site generation. It abstracts the complexities of working with different APIs and provides a unified way to manage component states, templates, and dynamic content.
+> This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 
 [DEMO](##)
 > **Provide a live demo of your plugin**
@@ -29,7 +19,7 @@ To help you in this process here below you will find the necessary HTML/CSS/JS, 
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="https://unpkg.com/grapesjs-data-source"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-data-source"></script>
 
 <div id="gjs"></div>
 ```
@@ -41,7 +31,49 @@ const editor = grapesjs.init({
   height: '100%',
   fromElement: true,
   storageManager: false,
-  plugins: ['grapesjs-data-source'],
+  plugins: ['@silexlabs/grapesjs-data-source'],
+  pluginsOpts: {
+    '@silexlabs/grapesjs-data-source': {
+      dataSources: [{
+        id: 'directus',
+        type: 'graphql',
+        name: 'Directus',
+        url: `https://localhost:8085/graphql`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer yjgwcj...0c_0zex',
+        },
+      }, {
+        id: 'strapi',
+        type: 'graphql',
+        name: 'Strapi',
+        url: 'http://localhost:1337/graphql',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 456fe45a764921a2...6b2298b3cc8',
+        },
+      }, {
+        id: 'supabase',
+        type: 'graphql',
+        name: 'Supabase',
+        url: `https://api.supabase.io/platform/projects/jpslgeqihfj/api/graphql`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyjhbgcioijiuz...tww8imndplsfm',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        },
+      }],
+      properties: {
+        appendTo: () => editor.Panels.getPanel('views-container').view.el,
+        button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
+      },
+      filters: 'liquid',
+    }
+  }
 });
 ```
 
@@ -109,7 +141,7 @@ grapesjs.init({
 
 ## Summary
 
-* Plugin name: `grapesjs-data-source`
+* Plugin name: `@silexlabs/grapesjs-data-source`
 * Components
     * `component-id-1`
     * `component-id-2`
@@ -132,9 +164,9 @@ grapesjs.init({
 ## Download
 
 * CDN
-  * `https://unpkg.com/grapesjs-data-source`
+  * `https://unpkg.com/@silexlabs/grapesjs-data-source`
 * NPM
-  * `npm i grapesjs-data-source`
+  * `npm i @silexlabs/grapesjs-data-source`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-data-source.git`
 
@@ -154,9 +186,9 @@ Directly in the browser
   var editor = grapesjs.init({
       container: '#gjs',
       // ...
-      plugins: ['grapesjs-data-source'],
+      plugins: ['@silexlabs/grapesjs-data-source'],
       pluginsOpts: {
-        'grapesjs-data-source': { /* options */ }
+        '@silexlabs/grapesjs-data-source': { /* options */ }
       }
   });
 </script>
@@ -165,7 +197,7 @@ Directly in the browser
 Modern javascript
 ```js
 import grapesjs from 'grapesjs';
-import plugin from 'grapesjs-data-source';
+import plugin from '@silexlabs/grapesjs-data-source';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
@@ -210,6 +242,20 @@ Build the source
 ```sh
 $ npm run build
 ```
+
+### Developement notes
+
+Here are the key parts of the plugin:
+
+1. **editor.DataSourceManager**: A Backbone collection to manage the APIs. This collection holds the different available data sources and their settings (type, url, auth...). This data is provided by the config. The main API of this class is `getDataTree()` to get the data tree
+
+1. **DataTree**: A class to manage component states and generate queries to APIs. Component states are used to build the query needed for the current page, and they can be used to create other states in child components or override a component's attributes or style. This collection is generated from the components attributes, it is not stored with the site data.
+
+1. **DataSource**: An interface for classes managing an API, abstracting the calls and queries. It includes methods like `getData(query)` and `getTypes()`.
+
+The components with "Loop Template" also have a `current` state, similar to dynamic pages.
+
+The plugin's architecture is designed to provide a flexible and efficient way to manage data and rendering in the editor, supporting dynamic content and static site generation. It abstracts the complexities of working with different APIs and provides a unified way to manage component states, templates, and dynamic content.
 
 
 

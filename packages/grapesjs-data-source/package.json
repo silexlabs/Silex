@@ -3,6 +3,10 @@
   "version": "0.0.4",
   "description": "Grapesjs Data Source",
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-data-source.git"
