@@ -21,8 +21,9 @@
 
 import grapesjs, { Editor, Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, State, FieldProperty, Field } from '../types'
+import { Type, Filter, FieldProperty, Field } from '../types'
 import { DataSourceEditor } from '..'
+import { setState } from './state'
 
 const simpleTypes: Type[] = [{
   id: 'testTypeId',
@@ -428,4 +429,66 @@ test('get completion with filters', () => {
     dataSourceId: 'DataSourceId',
   }])
   expect(completion2).toHaveLength(1) // 1 filter
+})
+
+test('Get experessions used by a component', () => {
+  const dataTree = new DataTree(editor as DataSourceEditor, {
+    filters: simpleFilters,
+    dataSources: [{
+      id: 'DataSourceId',
+      connect: async () => { },
+      getTypes: () => simpleTypes,
+      getQueryables: () => simpleQueryables,
+    }],
+  })
+  const component = editor.getComponents().first()
+  const expression = [{
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    }] as FieldProperty[]
+  setState(component, 'testStateId', {
+    expression,
+  }, true)
+  expect(dataTree.getComponentExpressions(component)).toEqual([expression])
+})
+
+test('Get experessions used by a component and its children', () => {
+  class DataTreeTest extends DataTree {
+    getComponentExpressions = jest.fn(() => [])
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+    filters: [],
+    dataSources: [],
+  })
+  dataTree.getComponentExpressionsRecursive(firstComponent)
+  expect(dataTree.getComponentExpressions).toHaveBeenCalledTimes(1) // 1 per component
+})
+
+test('Get experessions used by a page', () => {
+  class DataTreeTest extends DataTree {
+    getComponentExpressionsRecursive = jest.fn(() => [])
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+    filters: [],
+    dataSources: [],
+  })
+  dataTree.getPageExpressions((editor.Pages.getAll()[0]))
+  expect(dataTree.getComponentExpressionsRecursive).toHaveBeenCalledTimes(1)
+})
+
+test('Get experessions used by all pages', () => {
+  class DataTreeTest extends DataTree {
+    getPageExpressions = jest.fn(() => [])
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+    filters: [],
+    dataSources: [],
+  })
+  dataTree.getAllPagesExpressions()
+  expect(dataTree.getPageExpressions).toHaveBeenCalledTimes(1) // 1 per page
 })

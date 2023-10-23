@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component } from 'grapesjs'
+import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, FieldProperty, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
@@ -29,6 +29,27 @@ import getGenericFilters from '../filters/generic'
 export interface DataTreeOptions {
   filters: Partial<Filter>[]
   dataSources: IDataSource[]
+}
+
+/**
+ * Error thrown when a query cannot be built
+ */
+export interface BuildQueryErrorOptions {
+  expression: Expression
+  component: Component
+  token: Token
+}
+export class BuildQueryError extends Error {
+  public expression: Expression
+  public component: Component
+  public token: Token
+
+  constructor(message: string, options: BuildQueryErrorOptions) {
+    super(message)
+    this.expression = options.expression
+    this.component = options.component
+    this.token = options.token
+  }
 }
 
 export class DataTree {
@@ -358,5 +379,68 @@ export class DataTree {
           // Match input type
           .filter(filter => filter.validate(field))
       )
+  }
+
+  /**
+   * Get all expressions used in all pages
+   */
+  getAllPagesExpressions(): { page: Page, expressions: Expression[] }[] {
+    return this.editor.Pages.getAll()
+      .map((page: Page) => ({
+        page,
+        expressions: this.getPageExpressions(page),
+      }))
+  }
+
+  /**
+   * Get all expressions used in a page
+   * This will be used to fetch data for the page
+   */
+  getPageExpressions(page: Page): Expression[] {
+    return this.getComponentExpressionsRecursive(page.getMainComponent())
+  }
+
+  /**
+   * Get all expressions used by a component and its children
+   */
+  getComponentExpressionsRecursive(component: Component): Expression[] {
+    const queries = [] as Expression[]
+    queries.push(...this.getComponentExpressions(component))
+    component.components()
+      .forEach((child: Component) => {
+        queries.push(...this.getComponentExpressionsRecursive(child))
+      })
+    return queries
+  }
+
+  /**
+   * Get all expressions used by a component
+   */
+  getComponentExpressions(component: Component): Expression[] {
+    return ([] as Expression[])
+      // Visible states (custom / user defined)
+      .concat(getStateIds(component, true).map(stateId => getState(component, stateId, true)?.expression))
+      // Hidden states (loop / internals)
+      .concat(getStateIds(component, false).map(stateId => getState(component, stateId, false)?.expression))
+      // Resolve state expressions
+      .map((expression) => expression?.flatMap((token: Token) => {
+        switch (token.type) {
+          case 'state': {
+            const parent = getParentByPersistentId(token.componentId, component)
+            if(!parent) {
+              console.warn('Component not found for state', token)
+              throw new BuildQueryError('Component not found for state', { component, token, expression })
+            }
+            const state = getState(parent, token.id, token.exposed)
+            if(!state?.expression) {
+              console.warn('State is not defined on component', parent, token)
+              throw new BuildQueryError('State is not defined on component', { component, token, expression })
+            }
+            return state.expression
+          }
+          default:
+            return token
+        }
+      }))
   }
 }

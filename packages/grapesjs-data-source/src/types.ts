@@ -15,6 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Queries
+export type PageId = string // GrapesJs page id type
+export interface Query {
+  expression: Expression
+}
+
 // Data sources must implement this interface
 export type DataSourceId = string | number // Matches the Backbone.Model.id type
 export interface IDataSource {
@@ -29,7 +35,7 @@ export interface IDataSource {
   getQueryables(): Field[]
 
   // Access data
-  //fetchValues(type: TypeId): Promise<any[]>
+  //fetchValues(query: Query): Promise<unknown[]>
 }
 export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
