@@ -86,6 +86,7 @@ export const PROPERTY_STYLES = `
     --steps-selector-separator-margin: 0;
     --steps-selector-separator-padding: 0 3px 0 1px;
     --steps-selector-item-arrow-padding: 5px 5px 0 5px;
+    --steps-selector-values-li-icon-margin-right: 0;
     /*
     --popin-dialog-header-color: #333;
     --popin-dialog-body-color: #666;
