@@ -21,6 +21,7 @@
     "silex"
   ],
   "devDependencies": {
+    "@babel/preset-typescript": "^7.23.2",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.5",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
