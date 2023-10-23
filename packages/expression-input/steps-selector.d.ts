@@ -32,6 +32,7 @@ export interface Step {
     options?: any;
     optionsForm?: string;
     meta?: any;
+    category?: string;
 }
 export declare class StepsSelector extends LitElement {
     static styles: import("lit").CSSResult;
@@ -48,7 +49,10 @@ export declare class StepsSelector extends LitElement {
     placeholder: string;
     fixedPlaceholder: string;
     maxSteps: number | undefined;
+    groupByCategory: boolean;
     render(): import("lit").TemplateResult<1>;
+    group(completion: Step[]): Map<string, Step[]>;
+    renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     isFixedValue(): boolean;
     fixedValueChanged(value: string): void;

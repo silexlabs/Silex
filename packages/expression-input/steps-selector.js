@@ -24,6 +24,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         this.fixedType = 'text';
         this.placeholder = 'Add a first step';
         this.fixedPlaceholder = 'Enter a fixed value or switch to expression';
+        this.groupByCategory = false;
     }
     static getFixedValueStep(value) {
         return {
@@ -35,7 +36,10 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
             },
             optionsForm: `<form>
         <input name="value" type="text" value="${value}" />
-        <button type="submit">Save</button>
+        <div class="buttons">
+          <input type="reset" value="Cancel" />
+          <input type="submit" value="Apply" />
+        </div>
       </form>`,
         };
     }
@@ -56,6 +60,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
     render() {
         var _a;
         const nextSteps = this.completion(this._steps);
+        const nextStepsByCategory = this.group(nextSteps);
         return html `
       <!-- header -->
       <header part="header" class="header">
@@ -98,11 +103,21 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         <div part="scroll-container" class="scroll-container">
         <div part="steps-container" class="steps-container">
           ${this._steps
+            // Add completion to each step
             .map((step, index) => ({
             step,
             completion: this.completion(this._steps.slice(0, index)),
         }))
-            .map(({ step, completion }, index) => {
+            // Group steps by catégory
+            .map(({ step, completion }) => {
+            return {
+                step,
+                completion,
+                completionMap: this.group(completion),
+            };
+        })
+            // Create the ui
+            .map(({ step, completion, completionMap }, index) => {
             var _a;
             return html `
               ${index > 0 ? html `<div class="steps-container__separator"></div>` : html ``}
@@ -126,16 +141,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
                 </ul>
                 <div slot="errorText">${unsafeHTML(step.errorText)}</div>
                 <div slot="values">
-                  <ul class="values-ul">
-                    ${completion
-                .map(step => html `<li class=${classMap({ 'values-li': true, active: step.name === this._steps[index].name })} value=${step.name}>
-                          <span class="values__name">
-                            <span class="values__icon">${unsafeHTML(step.icon)}</span>
-                            ${unsafeHTML(step.name)}
-                          </span>
-                          <span class="values__type">${unsafeHTML(step.type)}</span>
-                        </li>`)}
-                  </ul>
+                  ${this.renderValues(completion, completionMap, this._steps[index])}
                 </div>
                 <div slot="options">${unsafeHTML(step.optionsForm)}</div>
               </steps-selector-item>
@@ -156,15 +162,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
           >
             <div name="add-button" part="add-button" slot="name">+</div>
             <div slot="values">
-              <ul class="values-ul">
-                ${nextSteps.map(step => html `<li class="values-li" value=${step.name}>
-                  <span class="values__name">
-                    <span class="values__icon">${unsafeHTML(step.icon)}</span>
-                    ${unsafeHTML(step.name)}
-                  </span>
-                  <span class="values__type">${unsafeHTML(step.type)}</span>
-                </li>`)}
-              </ul>
+              ${this.renderValues(nextSteps, nextStepsByCategory)}
             </div>
           </steps-selector-item>
         ` : html ``}
@@ -177,6 +175,46 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         </div>
         </div>
       `}
+    `;
+    }
+    group(completion) {
+        return completion.reduce((map, step) => {
+            var _a, _b;
+            const category = (_a = step.category) !== null && _a !== void 0 ? _a : 'Other';
+            const steps = (_b = map.get(category)) !== null && _b !== void 0 ? _b : [];
+            steps.push(step);
+            map.set(category, steps);
+            return map;
+        }, new Map());
+    }
+    renderValues(completion, completionMap, currentStep) {
+        return this.groupByCategory ? html `
+      <ul class="values-ul">
+        ${Array.from(completionMap.entries())
+            .map(([category, steps]) => html `
+          <li class="values-li values__title" value=${category}>
+            <span class="values__name">${unsafeHTML(category)}</span>
+          </li>
+          ${steps.map(step => html `<li class=${classMap({ 'values-li': true, active: step.name === (currentStep === null || currentStep === void 0 ? void 0 : currentStep.name) })} value=${step.name}>
+            <span class="values__name">
+              <span class="values__icon">${unsafeHTML(step.icon)}</span>
+              ${unsafeHTML(step.name)}
+            </span>
+            <span class="values__type">${unsafeHTML(step.type)}</span>
+          </li>`)}
+        `)}
+      </ul>
+    ` : html `
+      <ul class="values-ul">
+        ${completion
+            .map(step => html `<li class=${classMap({ 'values-li': true, active: step.name === (currentStep === null || currentStep === void 0 ? void 0 : currentStep.name) })} value=${step.name}>
+              <span class="values__name">
+                <span class="values__icon">${unsafeHTML(step.icon)}</span>
+                ${unsafeHTML(step.name)}
+              </span>
+              <span class="values__type">${unsafeHTML(step.type)}</span>
+            </li>`)}
+      </ul>
     `;
     }
     connectedCallback() {
@@ -335,6 +373,16 @@ StepsSelector.styles = css `
       background-color: var(--steps-selector-values-li-active-background-color, #ccc);
       font-weight: var(--steps-selector-values-li-active-font-weight, bold);
     }
+    li.values-li.values__title {
+      /* Display this line as an array title */
+      color: var(--steps-selector-values-li-title-color, #333);
+      background-color: var(--steps-selector-values-li-background-color, #eee);
+      text-transform: var(--steps-selector-values-li-title-text-transform, uppercase);
+      cursor: default;
+    }
+    li.values-li.values__title .values__name {
+      margin: var(--steps-selector-values-li-title-margin, auto);
+    }
     li.values-li .values__icon {
       margin-right: var(--steps-selector-values-li-icon-margin-right, 5px);
     }
@@ -374,6 +422,9 @@ __decorate([
 __decorate([
     property({ type: Number, attribute: 'max-steps' })
 ], StepsSelector.prototype, "maxSteps", void 0);
+__decorate([
+    property({ type: Boolean, attribute: 'group-by-category' })
+], StepsSelector.prototype, "groupByCategory", void 0);
 StepsSelector = StepsSelector_1 = __decorate([
     customElement('steps-selector')
 ], StepsSelector);

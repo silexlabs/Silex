@@ -27,7 +27,11 @@
   </head>
   <body>
     <section class="container">
-      <steps-selector id="prop1" onload="initStepsSelector1(event.target)">
+      <steps-selector
+        id="prop1"
+        onload="initStepsSelector1(event.target)"
+        group-by-category
+        >
         Test 1
       </steps-selector>
       <hr />
@@ -186,11 +190,13 @@
           if(steps.length === 0) {
             return data
               .filter(s => s.type === 'CMS')
+              .map(s => ({...s, category: s.type}))
           }
           const lastStep = steps[steps.length - 1]
           return data
             .filter(s => s.type === 'Liquid Filter')
             .concat(lastStep?.fields || data.find(s => s.name === lastStep.type)?.fields || [])
+            .map(s => ({...s, category: s.type}))
         }
       }
 

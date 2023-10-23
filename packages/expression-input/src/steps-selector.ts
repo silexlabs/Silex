@@ -38,6 +38,7 @@ export interface Step {
   options?: any
   optionsForm?: string
   meta?: any
+  category?: string
 }
 
 @customElement('steps-selector')
@@ -133,6 +134,16 @@ export class StepsSelector extends LitElement {
       background-color: var(--steps-selector-values-li-active-background-color, #ccc);
       font-weight: var(--steps-selector-values-li-active-font-weight, bold);
     }
+    li.values-li.values__title {
+      /* Display this line as an array title */
+      color: var(--steps-selector-values-li-title-color, #333);
+      background-color: var(--steps-selector-values-li-background-color, #eee);
+      text-transform: var(--steps-selector-values-li-title-text-transform, uppercase);
+      cursor: default;
+    }
+    li.values-li.values__title .values__name {
+      margin: var(--steps-selector-values-li-title-margin, auto);
+    }
     li.values-li .values__icon {
       margin-right: var(--steps-selector-values-li-icon-margin-right, 5px);
     }
@@ -159,7 +170,10 @@ export class StepsSelector extends LitElement {
       },
       optionsForm: `<form>
         <input name="value" type="text" value="${value}" />
-        <button type="submit">Save</button>
+        <div class="buttons">
+          <input type="reset" value="Cancel" />
+          <input type="submit" value="Apply" />
+        </div>
       </form>`,
     }
   }
@@ -210,8 +224,12 @@ export class StepsSelector extends LitElement {
   @property({type: Number, attribute: 'max-steps'})
   maxSteps: number | undefined
 
+  @property({type: Boolean, attribute: 'group-by-category'})
+  groupByCategory = false
+
   override render() {
     const nextSteps = this.completion(this._steps)
+    const nextStepsByCategory = this.group(nextSteps)
     return html`
       <!-- header -->
       <header part="header" class="header">
@@ -254,11 +272,21 @@ export class StepsSelector extends LitElement {
         <div part="scroll-container" class="scroll-container">
         <div part="steps-container" class="steps-container">
           ${this._steps
+            // Add completion to each step
             .map((step, index) => ({
               step,
               completion: this.completion(this._steps.slice(0, index)),
             }))
-            .map(({step, completion}, index) => html`
+            // Group steps by catégory
+            .map(({step, completion}) => {
+              return {
+                step,
+                completion,
+                completionMap: this.group(completion),
+              }
+            })
+            // Create the ui
+            .map(({step, completion, completionMap}, index) => html`
               ${index > 0 ? html`<div class="steps-container__separator"></div>` : html``}
               <steps-selector-item
                 key=${index}
@@ -280,18 +308,7 @@ export class StepsSelector extends LitElement {
                 </ul>
                 <div slot="errorText">${unsafeHTML(step.errorText)}</div>
                 <div slot="values">
-                  <ul class="values-ul">
-                    ${
-                      completion
-                        .map(step => html`<li class=${classMap({'values-li': true, active: step.name === this._steps[index].name})} value=${step.name}>
-                          <span class="values__name">
-                            <span class="values__icon">${unsafeHTML(step.icon)}</span>
-                            ${unsafeHTML(step.name)}
-                          </span>
-                          <span class="values__type">${unsafeHTML(step.type)}</span>
-                        </li>`)
-                    }
-                  </ul>
+                  ${ this.renderValues(completion, completionMap, this._steps[index]) }
                 </div>
                 <div slot="options">${unsafeHTML(step.optionsForm)}</div>
               </steps-selector-item>
@@ -311,15 +328,7 @@ export class StepsSelector extends LitElement {
           >
             <div name="add-button" part="add-button" slot="name">+</div>
             <div slot="values">
-              <ul class="values-ul">
-                ${ nextSteps.map(step => html`<li class="values-li" value=${step.name}>
-                  <span class="values__name">
-                    <span class="values__icon">${unsafeHTML(step.icon)}</span>
-                    ${unsafeHTML(step.name)}
-                  </span>
-                  <span class="values__type">${unsafeHTML(step.type)}</span>
-                </li>`) }
-              </ul>
+              ${ this.renderValues(nextSteps, nextStepsByCategory) }
             </div>
           </steps-selector-item>
         ` : html``}
@@ -332,6 +341,49 @@ export class StepsSelector extends LitElement {
         </div>
         </div>
       `}
+    `
+  }
+
+  group(completion: Step[]): Map<string, Step[]> {
+    return completion.reduce((map, step) => {
+      const category = step.category ?? 'Other'
+      const steps = map.get(category) ?? []
+      steps.push(step)
+      map.set(category, steps)
+      return map
+    }, new Map<string, Step[]>())
+  }
+
+  renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step) {
+    return this.groupByCategory ? html`
+      <ul class="values-ul">
+        ${Array.from(completionMap.entries())
+          .map(([category, steps]) => html`
+          <li class="values-li values__title" value=${category}>
+            <span class="values__name">${unsafeHTML(category)}</span>
+          </li>
+          ${steps.map(step => html`<li class=${classMap({'values-li': true, active: step.name === currentStep?.name})} value=${step.name}>
+            <span class="values__name">
+              <span class="values__icon">${unsafeHTML(step.icon)}</span>
+              ${unsafeHTML(step.name)}
+            </span>
+            <span class="values__type">${unsafeHTML(step.type)}</span>
+          </li>`)}
+        `)}
+      </ul>
+    ` : html`
+      <ul class="values-ul">
+        ${
+          completion
+            .map(step => html`<li class=${classMap({'values-li': true, active: step.name === currentStep?.name})} value=${step.name}>
+              <span class="values__name">
+                <span class="values__icon">${unsafeHTML(step.icon)}</span>
+                ${unsafeHTML(step.name)}
+              </span>
+              <span class="values__type">${unsafeHTML(step.type)}</span>
+            </li>`)
+        }
+      </ul>
     `
   }
 
