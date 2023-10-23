@@ -391,6 +391,7 @@ StepsSelector.styles = css `
     }
     li.values-li .values__type {
       color: var(--steps-selector-values-li-type-color, #999);
+      width: max-content;
     }
     .placeholder > * {
       color: var(--steps-selector-placeholder-color, #999);
