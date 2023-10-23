@@ -19,7 +19,7 @@ import { Component } from "grapesjs"
 import { TemplateResult, html, render } from "lit"
 import { Ref, createRef, ref } from 'lit/directives/ref.js';
 
-import '@silexlabs/steps-selector'
+import '@silexlabs/steps-selector' // For the web component to work
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { getParentByPersistentId, getState, getStateLabel, setState } from "../model/state"
@@ -151,6 +151,7 @@ export class PropertiesUi {
             meta: { token, type: field },
             options: token.options,
             optionsForm: token.optionsForm ? this.addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
+            category: token.dataSourceId as string,
           }
           default:
             console.error('Unknown property type (reading propType)', token)
@@ -163,7 +164,8 @@ export class PropertiesUi {
           type: 'Filter',
           options: token.options,
           optionsForm: token.optionsForm ? this.addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
-          meta: { token, type: field }
+          meta: { token, type: field },
+          category: 'Filters',
         }
       case 'state': {
         const parent = getParentByPersistentId(token.componentId, component)
@@ -176,6 +178,7 @@ export class PropertiesUi {
           icon: '',
           type: token.forceKind ?? field?.label ?? 'Unknown',
           meta: { token, type: field },
+          category: 'States',
         }
       }
       default:
@@ -261,6 +264,14 @@ export class PropertiesUi {
       </section>
       <section class="ds-section">
         <div>
+          <div class="gjs-traits-label">Visibility</div>
+        </div>
+        <main>
+          ${this.renderExpressionUi(component, dataTree, 'condition', 'condition', true)}
+        </main>
+      </section>
+      <section class="ds-section">
+        <div>
           <label class="gjs-traits-label ds-label">Loop
             <input
               type="checkbox"
@@ -284,14 +295,6 @@ export class PropertiesUi {
           ` : ''}
         </main>
       </section>
-      <section class="ds-section">
-        <div>
-          <div class="gjs-traits-label">Visibility</div>
-        </div>
-        <main>
-          ${this.renderExpressionUi(component, dataTree, 'condition', 'condition', true)}
-        </main>
-      </section>
     `, this.wrapper)
   }
 
@@ -310,6 +313,7 @@ export class PropertiesUi {
     return html`
       <steps-selector
         ${ref(reference)}
+        group-by-category
         ?allow-fixed=${allowFixed}
         max-steps=${maxSteps ?? -1}
         @load=${(e: CustomEvent) => {
