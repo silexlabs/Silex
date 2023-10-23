@@ -24,7 +24,7 @@ const bearerToken = process.env.BEARER ?? ''
 const options: GraphQLOptions = {
   id: 'testDataSourceId',
   type: 'graphql',
-  name: 'GraphQL',
+  label: 'GraphQL',
   url: `https://sandbox.internet2000.net/cms/graphql?access_token=${bearerToken}`,
   method: 'POST',
   headers: {
@@ -76,7 +76,7 @@ test('getTypeProp', async () => {
     headers: {},
     queryable: [],
     id: 'testDataSourceId',
-    name: 'test',
+    label: 'test',
     type: 'graphql',
   })
   expect(gql.getOfTypeProp('kind', {kind: 'SCALAR'})).toBe('SCALAR')
@@ -141,22 +141,22 @@ test('graphQLToType', async () => {
     headers: {},
     queryable: () => true,
     id: 'testDataSourceId',
-    name: 'test',
+    label: 'test',
     type: 'graphql',
   })
   
   const result = gql.graphQLToType(allTypes, testType, 'SCALAR', false)
   expect(result).not.toBeUndefined()
-  expect(result.name).toBe('PostEntityResponseCollection')
+  expect(result.label).toBe('PostEntityResponseCollection')
   expect(result.id).toBe('PostEntityResponseCollection')
   expect(result.fields).not.toBeUndefined()
   expect(result.fields).toHaveLength(1)
   expect(result.fields).toContainEqual({
     id: 'data',
-    name: 'data',
+    label: 'data',
     typeIds: ['PostEntity'],
     kind: 'list',
-    dataSourceId: 'testDataSourceId'
+    dataSourceId: 'testDataSourceId',
   })
 })
 
@@ -175,7 +175,7 @@ test('graphQLToField', async () => {
     headers: {},
     queryable: [],
     id: 'testDataSourceId',
-    name: 'test',
+    label: 'test',
     type: 'graphql',
   })
 
@@ -203,10 +203,10 @@ test('getTypes simple mocks', async () => {
   const postsType: Type = types!.find((type: Type) => type.id === 'posts')!
   expect(postsType).not.toBeUndefined()
   expect(postsType.id).toBe('posts')
-  expect(postsType.name).toBe('posts')
+  expect(postsType.label).toBe('posts')
   expect(postsType.fields).not.toBeUndefined()
   expect(postsType.fields).toContainEqual({
-    id: 'data', name: 'data', typeIds: ['PostEntity'], kind: 'list', dataSourceId: 'testDataSourceId'
+    id: 'data', label: 'data', typeIds: ['PostEntity'], kind: 'list', dataSourceId: 'testDataSourceId'
   })
 })
 
@@ -220,9 +220,9 @@ test('getTypes directus', async () => {
   const contactType: Type = types!.find((prop: Type) => prop.id === 'Contact')!
   expect(contactType).not.toBeUndefined()
   expect(contactType.id).toBe('Contact')
-  expect(contactType.name).toBe('Contact')
+  expect(contactType.label).toBe('Contact')
   expect(contactType.fields).not.toBeUndefined()
-  expect(contactType.fields).toContainEqual({id: 'id', name: 'id', typeIds: ['ID'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(contactType.fields).toContainEqual({id: 'id', label: 'id', typeIds: ['ID'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
   const testType: Type | undefined = types!.find((prop: Type) => prop.id === 'test')
   expect(testType).not.toBeUndefined()
   expect(testType!.fields).not.toBeUndefined()
@@ -233,8 +233,8 @@ test('getTypes directus', async () => {
   expect(testO2MType).not.toBeUndefined()
   expect(testO2MType!.id).toBe('test_o2m')
   expect(testO2MType!.fields).not.toBeUndefined()
-  expect(testO2MType!.fields).toContainEqual({id: 'id', name: 'id', typeIds: ['ID'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
-  expect(testO2MType!.fields).toContainEqual({id: 'label', name: 'label', typeIds: ['String'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(testO2MType!.fields).toContainEqual({id: 'id', label: 'id', typeIds: ['ID'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
+  expect(testO2MType!.fields).toContainEqual({id: 'label', label: 'label', typeIds: ['String'], kind: 'scalar', dataSourceId: 'testDataSourceId'})
 })
 
 test('getTypes strapi', async () => {
@@ -247,7 +247,7 @@ test('getTypes strapi', async () => {
   const postsType: Type = types!.find((type: Type) => type.id === 'posts')!
   expect(postsType).not.toBeUndefined()
   expect(postsType.id).toBe('posts')
-  expect(postsType.name).toBe('posts')
+  expect(postsType.label).toBe('posts')
   expect(postsType.fields).not.toBeUndefined()
   const dataField = postsType.fields!.find(field => field.id === 'data')
   expect(dataField).not.toBeUndefined()

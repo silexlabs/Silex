@@ -74,7 +74,7 @@ export default function(dataTree: DataTree): Filter[] {
     {
       type: 'filter',
       id: 'abs',
-      name: 'abs',
+      label: 'abs',
       validate: (field: Field | null) => !!field && (field.typeIds.includes('Int') || field.typeIds.includes('Float')) && field.kind === 'scalar',
       output: field => field,
       apply: num => Math.abs(num as number),
@@ -82,7 +82,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'strip_html',
-      name: 'strip_html',
+      label: 'strip_html',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
       output: type => type,
       apply: (str) => (str as string).replace(/<[^>]*>/g, ''),
@@ -90,7 +90,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'where',
-      name: 'where',
+      label: 'where',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
       apply: (arr, options) => {
@@ -128,7 +128,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'first',
-      name: 'first',
+      label: 'first',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: (field: Field | null) => listToObject(field),
       apply: (arr) => (arr as unknown[])[0],
@@ -136,7 +136,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'last',
-      name: 'last',
+      label: 'last',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: (field: Field | null) => listToObject(field),
       apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
@@ -144,7 +144,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'join',
-      name: 'join',
+      label: 'join',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'list',
       output: field => field ? {
         ...field,
@@ -168,7 +168,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'split',
-      name: 'split',
+      label: 'split',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
       output: field => field ? {
         ...field,
@@ -192,7 +192,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'map',
-      name: 'map',
+      label: 'map',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: (field, options) => getFieldType(field, options['key'] as string | undefined),
       apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
@@ -213,7 +213,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'reverse',
-      name: 'reverse',
+      label: 'reverse',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
       apply: (arr) => (arr as unknown[]).reverse(),
@@ -221,7 +221,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'size',
-      name: 'size',
+      label: 'size',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: () => ({
         id: 'Int',
@@ -234,7 +234,7 @@ export default function(dataTree: DataTree): Filter[] {
     }, {
       type: 'filter',
       id: 'at',
-      name: 'at',
+      label: 'at',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => listToObject(field),
       apply: (arr, options) => (arr as unknown[])[options.index as number],

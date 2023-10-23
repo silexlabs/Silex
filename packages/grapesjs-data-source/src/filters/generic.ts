@@ -24,7 +24,7 @@ export default function(dataTree: DataTree): Filter[] {
     {
       type: 'filter',
       id: 'as',
-      name: 'as',
+      label: 'as',
       validate: field => !!field && field?.kind !== 'list',
       output: (field, options) => field && options.type ? {
         ...field,
@@ -39,7 +39,7 @@ export default function(dataTree: DataTree): Filter[] {
           <label for="type">Type</label>
           <small class="form-text text-muted">The type to cast to</small>
           <select class="form-control" id="type" name="type">
-            ${ dataTree.allTypes.map(type => `<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.name}</option>`).join('\n') }
+            ${ dataTree.allTypes.map(type => `<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`).join('\n') }
           </select>
           <div class="buttons">
             <input type="reset" value="Cancel"/>

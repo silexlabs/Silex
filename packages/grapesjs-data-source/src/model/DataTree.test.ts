@@ -26,7 +26,7 @@ import { DataSourceEditor } from '..'
 
 const simpleTypes: Type[] = [{
   id: 'testTypeId',
-  name: 'test type name',
+  label: 'test type name',
   fields: [
     {
       id: 'testFieldId',
@@ -39,7 +39,7 @@ const simpleTypes: Type[] = [{
   dataSourceId: 'DataSourceId',
 }, {
   id: 'testFieldTypeId',
-  name: 'test field type name',
+  label: 'test field type name',
   fields: [],
   dataSourceId: 'DataSourceId',
 }]
@@ -62,7 +62,7 @@ const simpleQueryableTokens: FieldProperty[] = [{
 const simpleFilters: Filter[] = [{
   type: 'filter',
   id: 'testFilterAnyInput',
-  name: 'test filter any input',
+  label: 'test filter any input',
   validate: type => !type, // Just for empty expressions
   output: () => null,
   options: {},
@@ -70,7 +70,7 @@ const simpleFilters: Filter[] = [{
 }, {
   type: 'filter',
   id: 'testFilterId',
-  name: 'test filter name',
+  label: 'test filter name',
   validate: type => !!type?.typeIds.includes('testTypeId'),
   output: type => type!,
   options: {},
@@ -78,7 +78,7 @@ const simpleFilters: Filter[] = [{
 }, {
   type: 'filter',
   id: 'testFilterId2',
-  name: 'test filter name 2',
+  label: 'test filter name 2',
   validate: type => !!type?.typeIds.includes('testFieldTypeId'),
   output: () => null,
   options: {},
@@ -195,13 +195,13 @@ test('get context with data source queryable values', () => {
       connect: async () => {},
       getTypes: () => [{
         id: 'testTypeId1',
-        name: 'test type name 1',
+        label: 'test type name 1',
         kind: 'scalar',
         fields: [],
         dataSourceId: 'DataSourceId',
       }, {
         id: 'testTypeId2',
-        name: 'test type name 2',
+        label: 'test type name 2',
         kind: 'scalar',
         fields: [],
         dataSourceId: 'DataSourceId',

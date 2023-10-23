@@ -50,7 +50,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     .map((ds: IDataSourceOptions) => {
       switch (ds.type) {
         case 'graphql': return new GraphQL(ds as GraphQLOptions)
-        default: throw new Error(`Unknown data source: ${ds.name}`)
+        default: throw new Error(`Unknown data source: ${ds.label}`)
       }
     })
   

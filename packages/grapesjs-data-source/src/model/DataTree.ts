@@ -68,7 +68,7 @@ export class DataTree {
     // Check that all filters have required fields
     this.filters.forEach((filter: Filter) => {
       if(!filter.id) throw new Error('Filter id is required')
-      if(!filter.name) throw new Error('Filter name is required')
+      if(!filter.label) throw new Error('Filter name is required')
       if(!filter.validate) throw new Error('Filter validate is required')
       if(!filter.output) throw new Error('Filter outputType is required')
       if(!filter.apply) throw new Error('Filter apply is required')
@@ -252,7 +252,7 @@ export class DataTree {
           case 'field': {
             const typeNames = token.typeIds
               .map((typeId: TypeId) => this.findType(typeId, token.dataSourceId))
-              .map((type: Type | null) => type?.name)
+              .map((type: Type | null) => type?.label)
 
             return {
               id: token.fieldId,

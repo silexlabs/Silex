@@ -41,7 +41,7 @@ export interface IDataSourceModel extends Backbone.Model, IDataSource {}
 // Options of a data source
 export interface IDataSourceOptions extends Backbone.ModelSetOptions {
   id: DataSourceId
-  name: string
+  label: string
   type: 'graphql' // | 'rest' | 'database' | 'csv' | 'json'
 }
 
@@ -49,7 +49,7 @@ export interface IDataSourceOptions extends Backbone.ModelSetOptions {
 export type TypeId = string
 export type Type = {
   id: TypeId
-  name: string
+  label: string
   fields: Field[]
   dataSourceId?: DataSourceId // Not required for builtin types
 }
@@ -58,7 +58,7 @@ export type Type = {
 export const builtinTypeIds = ['String', 'Int', 'Float', 'Boolean', 'ID', 'Unknown']
 export const builtinTypes: Type[] = builtinTypeIds.map(id => ({
   id,
-  name: id,
+  label: id,
   fields: [],
 }))
 
@@ -121,7 +121,7 @@ export type FilterId = string
 export interface Filter {
   type: 'filter'
   id: FilterId
-  name: string
+  label: string
   options: Options
   optionsForm?: (input: Field | null, options: Options) => string | null
   validate: (input: Field | null) => boolean

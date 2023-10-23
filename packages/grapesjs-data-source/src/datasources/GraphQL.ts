@@ -64,7 +64,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   constructor(options: GraphQLOptions) {
     super(options)
     this.set('id', options.id)
-    this.set('name', options.name)
+    this.set('label', options.label)
     this.set('url', options.url)
     this.set('headers', options.headers)
     this.set('queryable', options.queryable)
@@ -232,7 +232,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     const result = {
       id: type.name,
       dataSourceId: this.get('id')!,
-      name: type.name,
+      label: type.name,
       fields: type.fields
         // Do not include fields that are not in the schema
         // FIXME: somehow this happens with fields of type datetime_functions for directus

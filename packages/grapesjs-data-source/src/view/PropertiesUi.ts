@@ -159,7 +159,7 @@ export class PropertiesUi {
         }
       case 'filter':
         return {
-          name: token.name,
+          name: token.label,
           icon: '',
           type: 'Filter',
           options: token.options,
@@ -214,7 +214,7 @@ export class PropertiesUi {
     return {
       type: 'filter',
       id: 'fixed',
-      name: 'Fixed value',
+      label: 'Fixed value',
       output: () => ({
         id: 'fixed_value',
         label: 'Fixed value',
