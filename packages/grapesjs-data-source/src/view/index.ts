@@ -20,6 +20,9 @@ import { DataSourceEditor } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
 import { PropertiesUi } from './PropertiesUi'
 
+/**
+ * 
+ */
 export interface ViewOptions {
   appendTo?: string | HTMLElement | (() => HTMLElement)
   button?: Button | (() => Button)
@@ -35,8 +38,8 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
     }
 
     // Get the container element for the UI
-    if (!options.appendTo) {
-      throw new Error('appendTo option is required')
+    if (typeof options.appendTo === 'undefined') {
+      options.appendTo = '.gjs-pn-panel.gjs-pn-views-container'
     } else if (typeof options.appendTo === 'string') {
       if (!document.querySelector(options.appendTo)) throw new Error(`Element ${options.appendTo} not found`)
     } else if (!(options.appendTo instanceof HTMLElement) && typeof options.appendTo !== 'function') {

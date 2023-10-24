@@ -22,26 +22,33 @@ import { DataSourceManager } from './model/DataSourceManager'
 import { Filter, IDataSourceOptions } from './types'
 import view, { ViewOptions } from './view'
 
-// GrapesJs related types
+/**
+ * Add the DataSourceManager to the GrapesJs editor
+ */
 export interface DataSourceEditor extends Editor {
   DataSourceManager: DataSourceManager
 }
 
+/**
+ * Options for the DataSourceEditor plugin
+ */
 export interface DataSourceEditorOptions {
   dataSources: IDataSourceOptions[],
-  properties: ViewOptions,
+  view: ViewOptions,
   filters: Filter[],
 }
 
-// GrapesJs plugin
+/**
+ * GrapeJs plugin entry point
+ */
 export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions> = {}) => {
   const options: DataSourceEditorOptions = {
     dataSources: [],
     filters: [],
     ...opts,
-    properties: {
+    view: {
       appendTo: '.gjs-pn-panel.gjs-pn-views-container',
-      ...opts?.properties,
+      ...opts?.view,
     },
   }
 
@@ -63,7 +70,11 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
   editor.DataSourceManager = new DataSourceManager(dataSources, editor, options)
 
   // Register the UI for component properties
-  view(editor, options.properties)
+  view(editor, options.view)
 }
 
+/**
+ * Version of the plugin
+ * This is replaced by the build script
+ */
 export const version = '__VERSION__'

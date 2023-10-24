@@ -1,6 +1,6 @@
 # GrapesJs Data Source plugin
 
-This GrapesJS plugin integrates various APIs, such as GraphQL and REST, into the editor. 
+This GrapesJS plugin integrates various APIs into the editor. 
 
 It makes a new UI available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
 
@@ -10,7 +10,21 @@ The output of this plugin is data stored on the components as states. This data 
 
 > This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 
-[DEMO](https://codepen.io/lexoyo/pen/xxMbxeB)
+[DEMO](https://codepen.io/lexoyo/full/xxMbxeB)
+
+## Supported APIs
+
+This plugin suports only GraphQL for now, contribution are welcome for support of other REST specific APIs or more generic Open API
+
+Here is [a list of GraphQL APIs you can use](https://github.com/graphql-kit/graphql-apis), it includes fake data and demo public APIs. Also consider these open source self hostable services:
+
+* [Strapi headless CMS](https://strapi.io/)
+* [Directus headless CMS](https://directus.io/)
+* [Supabase database (a Firebase alternative)](https://supabase.com/)
+* [Tina markdown files to GraphQL tool](https://tina.io/docs/graphql/overview/)
+* Drupal, WordPress... All have GraphQL support
+
+Contributions welcome for documenting the use of these data sources
 
 ### HTML
 ```html
@@ -32,36 +46,13 @@ const editor = grapesjs.init({
   pluginsOpts: {
     '@silexlabs/grapesjs-data-source': {
       dataSources: [{
-        id: 'directus',
+        id: 'countries',
         type: 'graphql',
-        name: 'Directus',
-        url: `https://localhost:8085/graphql`,
+        name: 'Countries',
+        url: 'https://countries.trevorblades.com/graphql',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer yjgwcj...0c_0zex',
-        },
-      }, {
-        id: 'strapi',
-        type: 'graphql',
-        name: 'Strapi',
-        url: 'http://localhost:1337/graphql',
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer 456fe45a764921a2...6b2298b3cc8',
-        },
-      }, {
-        id: 'supabase',
-        type: 'graphql',
-        name: 'Supabase',
-        url: `https://api.supabase.io/platform/projects/jpslgeqihfj/api/graphql`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyjhbgcioijiuz...tww8imndplsfm',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
         },
       }],
       properties: {
@@ -136,26 +127,71 @@ grapesjs.init({
 });
 ```
 
-## Summary
+## Configuration examples
 
-* Plugin name: `@silexlabs/grapesjs-data-source`
-* Components
-    * `component-id-1`
-    * `component-id-2`
-    * ...
-* Blocks
-    * `block-id-1`
-    * `block-id-2`
-    * ...
+Here are examples of APIs I tested:
 
+Directus
 
+```
+{
+  id: 'directus',
+  type: 'graphql',
+  name: 'Directus',
+  url: `https://localhost:8085/graphql`,
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer yjgwcj...0c_0zex',
+  },
+}
+```
+
+Strapi
+
+```
+{
+  id: 'strapi',
+  type: 'graphql',
+  name: 'Strapi',
+  url: 'http://localhost:1337/graphql',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer 456fe45a764921a2...6b2298b3cc8',
+  },
+}
+```
+
+Supabase (I had a CORS problem, let's discuss this in an issue if you want to give it a try)
+
+```
+{
+  id: 'supabase',
+  type: 'graphql',
+  name: 'Supabase',
+  url: `https://api.supabase.io/platform/projects/jpslgeqihfj/api/graphql`,
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer eyjhbgcioijiuz...tww8imndplsfm',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  },
+}
+```
 
 ## Options
 
 | Option | Description | Default |
 |-|-|-
-| `option1` | Description option | `default value` |
-
+| `dataSources` | List of data sources, see config examples and the plugin code | `[]` |
+| `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/generic.ts`) | `[]` |
+| `view` | Options for the UI | `[]` |
+| `view.appendTo` | Where to attach the UI (the state inputs). It can be a string or an HTMLElement or a function | `.gjs-pn-panel.gjs-pn-views-container` |
+| `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide the UI | `undefined` which means no button |
+| `view.styles` | CSS styles which are applied to the UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
+| `view.optionsStyles` | CSS styles which are applied to each "expression selector" UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 
 
 ## Download

@@ -48,7 +48,7 @@ export interface IDataSourceModel extends Backbone.Model, IDataSource {}
 export interface IDataSourceOptions extends Backbone.ModelSetOptions {
   id: DataSourceId
   label: string
-  type: 'graphql' // | 'rest' | 'database' | 'csv' | 'json'
+  type: 'graphql'
 }
 
 // Types
