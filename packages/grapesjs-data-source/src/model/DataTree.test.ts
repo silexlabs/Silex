@@ -21,7 +21,7 @@
 
 import grapesjs, { Editor, Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, FieldProperty, Field } from '../types'
+import { Type, Filter, FieldProperty, Field, State } from '../types'
 import { DataSourceEditor } from '..'
 import { setState } from './state'
 
