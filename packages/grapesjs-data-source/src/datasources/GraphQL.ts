@@ -461,7 +461,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         })` : ''
         // The query
         return dedent`${indent}${tree.token.fieldId}${args} {
-        __typename
+        ${indent}  __typename
         ${children}
         ${indent}}`
       }

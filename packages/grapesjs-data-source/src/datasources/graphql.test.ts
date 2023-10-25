@@ -316,7 +316,10 @@ test('build query from tree', () => {
   }
   const query = gql.buildQuery(tree)
   expect(query)
-    .toEqual(`testFieldId {\ntestFieldPropertyId\n}`)
+    .toEqual(`testFieldId {
+  __typename
+testFieldPropertyId
+}`)
 })
 
 test('merge trees', () => {
@@ -480,7 +483,9 @@ test('Get query from 1 expression', async () => {
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
+  __typename
   testFieldId {
+    __typename
     testFieldPropertyId
   }
 }`)
@@ -533,9 +538,12 @@ test('Get query from multiple expressions', async () => {
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
+  __typename
   testFieldId {
+    __typename
     testFieldPropertyId
     testFieldPropertyId2 {
+      __typename
       testFieldPropertyId3
     }
   }
@@ -584,13 +592,17 @@ test('Get query with options', async () => {
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
+  __typename
   testFieldId(id: 1) {
+    __typename
 
   }
   testFieldId(name: "test") {
+    __typename
 
   }
   testFieldId {
+    __typename
 
   }
 }`)
@@ -635,10 +647,13 @@ test('Get query from multiple expressions', async () => {
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
+  __typename
   testFieldId1 {
+    __typename
     testFieldPropertyId
   }
   testFieldId2 {
+    __typename
     testFieldPropertyId2
   }
 }`)
