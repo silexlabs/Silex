@@ -1,5 +1,5 @@
 import Backbone from 'backbone';
-import { Button, Component, Editor } from 'grapesjs';
+import { Button, Component, Editor, Page } from 'grapesjs';
 
 export type DataSourceId = string | number;
 export interface IDataSource {
@@ -7,6 +7,7 @@ export interface IDataSource {
 	connect(): Promise<void>;
 	getTypes(): Type[];
 	getQueryables(): Field[];
+	getQuery(expressions: Expression[]): string;
 }
 export interface IDataSourceModel extends Backbone.Model, IDataSource {
 }
@@ -167,6 +168,26 @@ declare class DataTree {
 	 * @returns a list of possible tokens to add to the expression
 	 */
 	getCompletion(component: Component, expression: Expression): Context;
+	/**
+	 * Get all expressions used in all pages
+	 */
+	getAllPagesExpressions(): {
+		page: Page;
+		expressions: Expression[];
+	}[];
+	/**
+	 * Get all expressions used in a page
+	 * This will be used to fetch data for the page
+	 */
+	getPageExpressions(page: Page): Expression[];
+	/**
+	 * Get all expressions used by a component and its children
+	 */
+	getComponentExpressionsRecursive(component: Component): Expression[];
+	/**
+	 * Get all expressions used by a component
+	 */
+	getComponentExpressions(component: Component): Expression[];
 }
 declare class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
 	protected editor: DataSourceEditor;
@@ -199,22 +220,36 @@ declare class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
 	 */
 	modelChanged(e?: CustomEvent): void;
 	getDataTree(): DataTree;
+	getPageQuery(page: Page): Record<DataSourceId, string>;
 }
+/**
+ *
+ */
 export interface ViewOptions {
 	appendTo?: string | HTMLElement | (() => HTMLElement);
 	button?: Button | (() => Button);
 	styles?: string;
 	optionsStyles?: string;
 }
+/**
+ * Add the DataSourceManager to the GrapesJs editor
+ */
 export interface DataSourceEditor extends Editor {
 	DataSourceManager: DataSourceManager;
 }
+/**
+ * Options for the DataSourceEditor plugin
+ */
 export interface DataSourceEditorOptions {
 	dataSources: IDataSourceOptions[];
-	properties: ViewOptions;
+	view: ViewOptions;
 	filters: Filter[];
 }
 declare const _default: (editor: DataSourceEditor, opts?: Partial<DataSourceEditorOptions>) => void;
+/**
+ * Version of the plugin
+ * This is replaced by the build script
+ */
 export declare const version = "__VERSION__";
 
 export {
