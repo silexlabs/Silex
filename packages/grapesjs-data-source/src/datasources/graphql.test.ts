@@ -572,7 +572,7 @@ test('Get query with options', async () => {
     typeIds: ['testTypeId'],
     kind: 'object',
     dataSourceId: 'TestDataSourceId',
-    options: {id: 2},
+    options: {name: 'test'},
   }], [{
     type: 'property',
     propType: 'field',
@@ -587,7 +587,7 @@ test('Get query with options', async () => {
   testFieldId(id: 1) {
 
   }
-  testFieldId(id: 2) {
+  testFieldId(name: "test") {
 
   }
   testFieldId {
