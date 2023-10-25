@@ -16,10 +16,11 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSourceModel } from "../types"
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSourceModel } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
 import { DataTree } from "./DataTree"
-import { Page } from "grapesjs"
+import { Component, Page } from "grapesjs"
+import { StoredState, onStateChange } from "./state"
 
 /**
  * GrapesJs plugin to manage data sources
@@ -50,6 +51,9 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
 
     // Start listening to data sources
     this.modelChanged()
+
+    // Relay state changes to the editor
+    onStateChange((state: StoredState | null, component: Component) => this.editor.trigger(COMPONENT_STATE_CHANGED, { state, component }))
   }
 
   /**
@@ -100,7 +104,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       dataSource.on(DATA_SOURCE_CHANGED, this.dataChangedBinded)
       dataSource.on(DATA_SOURCE_ERROR, this.dataSourceErrorBinded)
     })
-    this.editor.trigger('datasource:change', e?.detail)
+    this.editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
   }
 
   getDataTree() {

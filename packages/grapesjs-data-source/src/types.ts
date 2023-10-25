@@ -41,6 +41,7 @@ export interface IDataSource {
 export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
 export const DATA_SOURCE_CHANGED = 'data-source:changed'
+export const COMPONENT_STATE_CHANGED = 'component:state:changed'
 
 // For use by the DataSourceManager class which is a Backbone collection
 export interface IDataSourceModel extends Backbone.Model, IDataSource {}
