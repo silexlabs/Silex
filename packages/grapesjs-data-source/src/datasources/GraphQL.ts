@@ -455,11 +455,13 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           Object
           .keys(tree.token.options)
           .map(key => ({key, value: tree.token.options![key]}))
+          .filter(({value}) => !!value)
           .map(({key, value}) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
           .join(', ')
         })` : ''
         // The query
         return dedent`${indent}${tree.token.fieldId}${args} {
+        __typename
         ${children}
         ${indent}}`
       }
