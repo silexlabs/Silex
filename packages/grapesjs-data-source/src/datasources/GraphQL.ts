@@ -92,6 +92,15 @@ function shallowEqual(option1: FieldOptions | undefined, option2: FieldOptions |
   return true;
 }
 
+function isJson(str: string) {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+
 /**
  * GraphQL DataSource implementation
  * This is a Backbone model used in the DataSourceManager collection
@@ -446,7 +455,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           Object
           .keys(tree.token.options)
           .map(key => ({key, value: tree.token.options![key]}))
-          .map(({key, value}) => typeof value === 'string' ? `${key}: "${value}"` : `${key}: ${value}`)
+          .map(({key, value}) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
           .join(', ')
         })` : ''
         // The query
