@@ -314,8 +314,9 @@ test('build query from tree', () => {
       children: [],
     }],
   }
-  expect(gql.buildQuery(tree))
-    .toEqual(`testFieldId {\n  testFieldPropertyId\n}`)
+  const query = gql.buildQuery(tree)
+  expect(query)
+    .toEqual(`testFieldId {\ntestFieldPropertyId\n}`)
 })
 
 test('merge trees', () => {
@@ -420,43 +421,43 @@ test('merge trees', () => {
         children: [],
       }],
     })
-  })
+})
 
-  test('get tree', () => {
-    const gql = new GQLTest({
-      url: 'http://localhost',
-      method: 'POST',
-      headers: {},
-      queryable: [],
-      id: 'testDataSourceId',
-      label: 'test',
-      type: 'graphql',
+test('get tree', () => {
+  const gql = new GQLTest({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  const expression: Expression = [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'DataSourceId',
+  }]
+  expect(gql.getTree(expression))
+    .toEqual({
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [],
     })
-    const expression: Expression = [{
-      type: 'property',
-      propType: 'field',
-      fieldId: 'testFieldId',
-      label: 'test field name',
-      typeIds: ['testTypeId'],
-      kind: 'object',
-      dataSourceId: 'DataSourceId',
-    }]
-    expect(gql.getTree(expression))
-      .toEqual({
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'testFieldId',
-          label: 'test field name',
-          typeIds: ['testTypeId'],
-          kind: 'object',
-          dataSourceId: 'DataSourceId',
-        },
-        children: [],
-      })
-  })
+})
 
-test('Get query from expressions', async () => {
+test('Get query from 1 expression', async () => {
   const DataSource = (await importDataSource([simpleSchema]))
   const dataSource = new DataSource(options)
   await dataSource.connect()
@@ -478,7 +479,115 @@ test('Get query from expressions', async () => {
     dataSourceId: 'TestDataSourceId',
   }]])
   expect(query).not.toBeUndefined()
-  expect(query).toEqual(`testFieldId {\n  testFieldPropertyId\n}`)
+  expect(query).toEqual(`query {
+  testFieldId {
+    testFieldPropertyId
+  }
+}`)
+})
+
+test('Get query from multiple expressions', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const query = await dataSource.getQuery([[{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId2',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'list',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId3',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+  }]])
+  expect(query).not.toBeUndefined()
+  expect(query).toEqual(`query {
+  testFieldId {
+    testFieldPropertyId
+    testFieldPropertyId2 {
+      testFieldPropertyId3
+    }
+  }
+}`)
+})
+
+test('Get query from multiple expressions', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const query = await dataSource.getQuery([[{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId2',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId2',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+  }]])
+  expect(query).not.toBeUndefined()
+  expect(query).toEqual(`query {
+  testFieldId1 {
+    testFieldPropertyId
+  }
+  testFieldId2 {
+    testFieldPropertyId2
+  }
+}`)
 })
 
 // test('Get data', async () => {

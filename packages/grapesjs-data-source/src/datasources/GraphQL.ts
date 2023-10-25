@@ -324,11 +324,23 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   getQuery(expressions: Expression[]): string {
     if(expressions.length === 0) return ''
     const tree: Tree = expressions
+      // From Expression to Tree
       .map(expression => this.getTree(expression
         // Ignore filters
         .filter(token => token.type !== 'filter'))
       )
+      // Add the main query object which is the root of the tree
+      .map(tree => ({
+        token: {
+          dataSourceId: tree.token.dataSourceId,
+          fieldId: 'query',
+          kind: 'object',
+        },
+        children: [tree],
+      } as Tree))
+      // Merge all trees from the root
       .reduce((finalTree, tree) => this.mergeTrees(finalTree, tree))
+    // To GraphQL query
     return this.buildQuery(tree)
   }
 
@@ -381,18 +393,18 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   /**
    * Build a GraphQL query from a tree
    */
-  protected buildQuery(tree: Tree): string {
+  protected buildQuery(tree: Tree, indent = ''): string {
     switch(tree.token.kind) {
       case 'scalar':
-        return tree.token.fieldId
+        return indent + tree.token.fieldId
       case 'object':
       case 'list': {
         const children = tree.children
-          .map(child => this.buildQuery(child))
+          .map(child => this.buildQuery(child, indent + '  '))
           .join('\n')
-        return dedent`${tree.token.fieldId} {
-          ${children}
-        }`
+        return dedent`${indent}${tree.token.fieldId} {
+        ${children}
+        ${indent}}`
       }
       default:
         console.error('Unable to build GraphQL query', tree)
