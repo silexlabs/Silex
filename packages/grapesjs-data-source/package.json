@@ -9,7 +9,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/silexlabs/grapesjs-data-source.git"
+    "url": "git+https://github.com/silexlabs/grapesjs-data-source.git"
   },
   "scripts": {
     "start": "grapesjs-cli serve",
