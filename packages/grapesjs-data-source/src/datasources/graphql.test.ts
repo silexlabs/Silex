@@ -542,6 +542,60 @@ test('Get query from multiple expressions', async () => {
 }`)
 })
 
+test('Get query with options', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const query = await dataSource.getQuery([[{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+    options: {id: 1},
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+    options: {id: 1},
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+    options: {id: 2},
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }]])
+  expect(query).not.toBeUndefined()
+  expect(query).toEqual(`query {
+  testFieldId(id: 1) {
+
+  }
+  testFieldId(id: 2) {
+
+  }
+  testFieldId {
+
+  }
+}`)
+})
+
 test('Get query from multiple expressions', async () => {
   const DataSource = (await importDataSource([simpleSchema]))
   const dataSource = new DataSource(options)

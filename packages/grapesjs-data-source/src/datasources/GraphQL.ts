@@ -16,7 +16,7 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, FieldProperty, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
+import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, FieldOptions, FieldProperty, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 import graphqlIntrospectionQuery from "./graphql-introspection-query"
 import dedent from "dedent-js"
 
@@ -67,6 +67,35 @@ export interface Tree {
   children: Tree[]
 }
 
+/**
+ * Utility function to shallow compare two objects
+ * Used to compare options of tree items
+ */
+function shallowEqual(option1: FieldOptions | undefined, option2: FieldOptions | undefined) {
+  // Handle the case where one or both are undefined
+  if(!option1 && !option2) return true
+  if(!option1 || !option2) return false
+
+  const keys1 = Object.keys(option1);
+  const keys2 = Object.keys(option2);
+
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  for (const key of keys1) {
+    if (option1[key] !== option2[key]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * GraphQL DataSource implementation
+ * This is a Backbone model used in the DataSourceManager collection
+ */
 export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
   protected types: Type[] = []
   protected queryables: Field[] = []
@@ -372,12 +401,21 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
     }
     const different = tree1.children
-      .filter(child1 => !tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId))
+      .filter(child1 => !tree2.children.find(child2 =>
+        child1.token.fieldId === child2.token.fieldId
+        && shallowEqual(child1.token.options, child2.token.options)
+      ))
       .concat(tree2.children
-        .filter(child2 => !tree1.children.find(child1 => child1.token.fieldId === child2.token.fieldId))
+        .filter(child2 => !tree1.children.find(child1 =>
+          child1.token.fieldId === child2.token.fieldId
+          && shallowEqual(child1.token.options, child2.token.options)
+        ))
       )
     const same = tree1.children
-      .filter(child1 => tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId))
+      .filter(child1 => tree2.children.find(child2 =>
+        child1.token.fieldId === child2.token.fieldId
+        && shallowEqual(child1.token.options, child2.token.options)
+      ))
 
     return {
       token: tree1.token,
@@ -399,10 +437,19 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         return indent + tree.token.fieldId
       case 'object':
       case 'list': {
+        // Children
         const children = tree.children
           .map(child => this.buildQuery(child, indent + '  '))
           .join('\n')
-        return dedent`${indent}${tree.token.fieldId} {
+        // Arguments
+        const args = tree.token.options ? `(${
+          Object
+          .keys(tree.token.options)
+          .map(key => `${key}: ${tree.token.options![key]}`)
+          .join(', ')
+        })` : ''
+        // The query
+        return dedent`${indent}${tree.token.fieldId}${args} {
         ${children}
         ${indent}}`
       }

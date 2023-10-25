@@ -110,14 +110,14 @@ export interface BaseProperty {
 //  propType: 'type'
 //  typeId: TypeId
 //}
-
+export type FieldOptions = Record<string, unknown>
 export interface FieldProperty extends BaseProperty {
   propType: 'field'
   typeIds: TypeId[]
   fieldId: FieldId
   label: string
   kind: FieldKind
-  options?: Record<string, unknown>
+  options?: FieldOptions
   optionsForm?: (input: Field | null, options: Options) => string | null
 }
 
