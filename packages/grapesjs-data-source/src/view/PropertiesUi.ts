@@ -174,7 +174,7 @@ export class PropertiesUi {
           // TODO: notification
         }
         return {
-          name: getStateLabel(parent, token.label),
+          name: getStateLabel(parent, token),
           icon: '',
           type: token.forceKind ?? field?.label ?? 'Unknown',
           meta: { token, type: field },

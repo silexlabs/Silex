@@ -108,6 +108,7 @@ test('Find type from  id', () => {
     connect: async () => {},
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
+    getQuery: () => '',
   }]})
 
   // Type not found
@@ -131,6 +132,7 @@ test('get types map', () => {
       connect: async () => {},
       getTypes: () => simpleTypes,
       getQueryables: () => simpleTypes[0].fields,
+      getQuery: () => '',
     }],
   })
   const types = dataTree.getAllTypes()
@@ -214,6 +216,7 @@ test('get context with data source queryable values', () => {
         kind: 'scalar',
         dataSourceId: 'DataSourceId',
       }],
+      getQuery: () => '',
     }],
   })
   const context = dataTree.getContext(component)
@@ -286,6 +289,7 @@ test('get type with simple context', () => {
       connect: async () => { },
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
+      getQuery: () => '',
     }],
   })
 
@@ -335,6 +339,7 @@ test('get completion with simple context', () => {
       connect: async () => { },
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
+      getQuery: () => '',
     }],
   })
   const component = editor.getComponents().first()
@@ -388,6 +393,7 @@ test('get completion with filters', () => {
       connect: async () => { },
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
+      getQuery: () => '',
     }],
   })
   const component = editor.getComponents().first()
@@ -439,6 +445,7 @@ test('Get experessions used by a component', () => {
       connect: async () => { },
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
+      getQuery: () => '',
     }],
   })
   const component = editor.getComponents().first()

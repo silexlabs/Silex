@@ -44,6 +44,7 @@
     "@apollo/client": "^3.8.5",
     "@silexlabs/steps-selector": "^0.0.5",
     "backbone": "^1.5.0",
+    "dedent-js": "^1.0.1",
     "lit": "^3.0.0"
   }
 }

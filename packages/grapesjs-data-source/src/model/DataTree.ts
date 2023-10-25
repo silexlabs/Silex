@@ -195,7 +195,7 @@ export class DataTree {
                   id: '__data',
                   componentId: getOrCreatePersistantId(parent),
                   exposed: false,
-                  forceKind: 'object', // TODO: this may be a scalar
+                  forceKind: 'object', // FIXME: this may be a scalar
                   label: 'loop item',
                 })
               } else {

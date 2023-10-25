@@ -15,9 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType } from './GraphQL'
+import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType, Tree } from './GraphQL'
 import {directusSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks.js'
-import { Field, Type } from '../types'
+import { Expression, Field, Type } from '../types'
 
 const bearerToken = process.env.BEARER ?? ''
 
@@ -62,6 +62,18 @@ class GQLTest extends GraphQL {
 
   getOfTypeProp<T>(prop: string, type: GQLOfType, defaultValue?: T): T {
     return super.getOfTypeProp(prop, type, defaultValue)
+  }
+
+  getTree(expression: Expression): Tree {
+    return super.getTree(expression)
+  }
+
+  mergeTrees(tree1: Tree, tree2: Tree): Tree {
+    return super.mergeTrees(tree1, tree2)
+  }
+
+  buildQuery(tree: Tree): string {
+    return super.buildQuery(tree)
   }
 }
 
@@ -267,6 +279,206 @@ test('getQueryables strapi', async () => {
   expect(post.arguments).not.toBeUndefined()
   expect(post.arguments).toHaveLength(1)
   expect(post.arguments![0].name).toBe('id')
+})
+
+test('build query from tree', () => {
+  const gql = new GQLTest({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  const tree: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [],
+    }],
+  }
+  expect(gql.buildQuery(tree))
+    .toEqual(`testFieldId {\n  testFieldPropertyId\n}`)
+})
+
+test('merge trees', () => {
+  const gql = new GQLTest({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  const tree1: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [],
+    }],
+  }
+  const tree2: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [],
+    }, {
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId2',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [],
+    }],
+  }
+  expect(gql.mergeTrees(tree1, tree2))
+    .toEqual({
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldPropertyId2',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId'],
+          kind: 'scalar',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      }, {
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldPropertyId',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId'],
+          kind: 'scalar',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      }],
+    })
+  })
+
+  test('get tree', () => {
+    const gql = new GQLTest({
+      url: 'http://localhost',
+      method: 'POST',
+      headers: {},
+      queryable: [],
+      id: 'testDataSourceId',
+      label: 'test',
+      type: 'graphql',
+    })
+    const expression: Expression = [{
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    }]
+    expect(gql.getTree(expression))
+      .toEqual({
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldId',
+          label: 'test field name',
+          typeIds: ['testTypeId'],
+          kind: 'object',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      })
+  })
+
+test('Get query from expressions', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const query = await dataSource.getQuery([[{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+  }]])
+  expect(query).not.toBeUndefined()
+  expect(query).toEqual(`testFieldId {\n  testFieldPropertyId\n}`)
 })
 
 // test('Get data', async () => {

@@ -16,7 +16,7 @@
  */
 
 import { Component } from 'grapesjs'
-import { Expression, StateId } from '../types'
+import { Expression, StateId, State } from '../types'
 
 /**
  * @fileoverview This file contains the model for components states
@@ -61,9 +61,9 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
   return newPersistantId
 }
 
-export function getStateLabel(component: Component | null | undefined, label: string): string {
+export function getStateLabel(component: Component | null | undefined, state: State): string {
   const name = component?.getName() ?? '[Not found]'
-  return `${name}'s ${label}` // (${component.get('tagName')}#${component.getId()})`
+  return `${name}'s ${state.label}` // (${component.get('tagName')}#${component.getId()})`
 }
 
 /**
@@ -94,14 +94,14 @@ function fireChange(state: StoredState | null, component: Component) {
 /**
  * List all exported states
  */
-export function getStateIds(component: Component, exported: boolean): StateId[] {
+export function getStateIds(component: Component, exported: boolean = true): StateId[] {
   return Object.keys(component.get(exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY) ?? {})
 }
 
 /**
  * Get a state
  */
-export function getState(component: Component, id: StateId, exported: boolean): StoredState {
+export function getState(component: Component, id: StateId, exported: boolean = true): StoredState {
   const states = component.get(exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY) ?? {}
   return states[id]
 }
@@ -109,7 +109,7 @@ export function getState(component: Component, id: StateId, exported: boolean): 
 /**
  * Set a state
  */
-export function setState(component: Component, id: StateId, state: StoredState, exported: boolean): void {
+export function setState(component: Component, id: StateId, state: StoredState, exported: boolean = true): void {
   const key = exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY
   component.set(key, {
     ...component.get(key) ?? {},
@@ -121,7 +121,7 @@ export function setState(component: Component, id: StateId, state: StoredState, 
 /**
  * Remove a state
  */
-export function removeState(component: Component, id: StateId, exported: boolean): void {
+export function removeState(component: Component, id: StateId, exported: boolean = true): void {
   const key = exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY
   const states = component.get(key) ?? {}
   const newState = {

@@ -37,15 +37,6 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
       ...opts,
     }
 
-    // Get the container element for the UI
-    if (typeof options.appendTo === 'undefined') {
-      options.appendTo = '.gjs-pn-panel.gjs-pn-views-container'
-    } else if (typeof options.appendTo === 'string') {
-      if (!document.querySelector(options.appendTo)) throw new Error(`Element ${options.appendTo} not found`)
-    } else if (!(options.appendTo instanceof HTMLElement) && typeof options.appendTo !== 'function') {
-      throw new Error(`appendTo option must be a string or an HTMLElement or a function`)
-    }
-
     // create a wrapper for our UI
     const wrapper = document.createElement('section')
     wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
@@ -57,6 +48,16 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
     // The options appendTo and button can be functions which use editor so they need to be called asynchronously
     let appendTo: HTMLElement
     editor.onReady(() => {
+      // Get the container element for the UI
+      if (typeof options.appendTo === 'undefined') {
+        // This should never happen as we set a default value in /index.ts
+        throw new Error(`appendTo option must be set`)
+      } else if (typeof options.appendTo === 'string') {
+        if (!document.querySelector(options.appendTo)) throw new Error(`Element ${options.appendTo} not found`)
+      } else if (!(options.appendTo instanceof HTMLElement) && typeof options.appendTo !== 'function') {
+        throw new Error(`appendTo option must be a string or an HTMLElement or a function`)
+      }
+
       // Append the wrapper to the container
       appendTo = (typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : typeof options.appendTo === 'function' ? options.appendTo() : options.appendTo) as HTMLElement
       if (!appendTo) throw new Error(`Element ${options.appendTo} not found`)

@@ -33,6 +33,7 @@ export interface IDataSource {
   // Introspection
   getTypes(): Type[]
   getQueryables(): Field[]
+  getQuery(expressions: Expression[]): string
 
   // Access data
   //fetchValues(query: Query): Promise<unknown[]>

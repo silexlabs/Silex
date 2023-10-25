@@ -16,9 +16,10 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, Filter, IDataSourceModel } from "../types"
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSourceModel } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
 import { DataTree } from "./DataTree"
+import { Page } from "grapesjs"
 
 /**
  * GrapesJs plugin to manage data sources
@@ -104,5 +105,29 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
 
   getDataTree() {
     return this.dataTree
+  }
+
+  getPageQuery(page: Page): Record<DataSourceId, string> {
+    const expressions = this.dataTree.getPageExpressions(page)
+    return this.models
+      .map(ds => {
+        const query = ds.getQuery(expressions
+          .filter(e => {
+            const first = e[0]
+            if (!first || first.type !== 'property') {
+              console.warn('Invalid expression', e)
+              return false
+            }
+            return first.dataSourceId === ds.id
+          }))
+        return {
+          dataSourceId: ds.id.toString(),
+          query,
+        }
+      })
+      .reduce((acc, { dataSourceId, query }) => {
+        acc[dataSourceId] = query
+        return acc
+      }, {} as Record<DataSourceId, string>)
   }
 }

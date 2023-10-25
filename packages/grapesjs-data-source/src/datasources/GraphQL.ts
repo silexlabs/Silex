@@ -16,8 +16,9 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, FieldKind, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
+import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, FieldProperty, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 import graphqlIntrospectionQuery from "./graphql-introspection-query"
+import dedent from "dedent-js"
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -55,6 +56,15 @@ export interface GQLField {
 export interface GQLType {
   name: string,
   fields: GQLField[],
+}
+
+/**
+ * Useful interface to create a tree of fields
+ * Exported for unit tests
+ */
+export interface Tree {
+  token: FieldProperty
+  children: Tree[]
 }
 
 export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
@@ -311,21 +321,84 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     return response.json()
   }
 
-  //buildQuery(query: Query | string): string {
-  //  switch (typeof query) {
-  //    case 'string':
-  //      return query
-  //    case 'object':
-  //    default:
-  //      return `${query.name}${query.attributes?.length ? `(${query
-  //        .attributes
-  //        .map(([name, value]) => `${name}: ${value}`)
-  //        .join(',')
-  //      })` : ''} {
-  //      ${query.children?.map(q => this.buildQuery(q)).join('\n') ?? 'id'}
-  //    }`
-  //  }
-  //}
+  getQuery(expressions: Expression[]): string {
+    if(expressions.length === 0) return ''
+    const tree: Tree = expressions
+      .map(expression => this.getTree(expression
+        // Ignore filters
+        .filter(token => token.type !== 'filter'))
+      )
+      .reduce((finalTree, tree) => this.mergeTrees(finalTree, tree))
+    return this.buildQuery(tree)
+  }
+
+  protected getTree(expression: Expression): Tree {
+    const next = expression[0]
+    switch(next.type) {
+      case 'property':
+        return {
+          token: next,
+          children: expression.length > 1
+            ? [this.getTree(expression.slice(1))]
+            : [],
+        }
+
+      case 'filter':
+      case 'state': // This will not occure as components states are resolved to properties and filters
+      default:
+        console.error('Invalid expression', expression)
+        throw new Error(`Invalid expression ${JSON.stringify(expression)}`)
+    }
+  }
+
+  /**
+   * Recursively merge two trees
+   */
+  protected mergeTrees(tree1: Tree, tree2: Tree): Tree {
+    if (tree1.token.kind !== tree2.token.kind || tree1.token.dataSourceId !== tree2.token.dataSourceId) {
+      console.error('Unable to merge trees', tree1, tree2)
+      throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
+    }
+    const different = tree1.children
+      .filter(child1 => !tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId))
+      .concat(tree2.children
+        .filter(child2 => !tree1.children.find(child1 => child1.token.fieldId === child2.token.fieldId))
+      )
+    const same = tree1.children
+      .filter(child1 => tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId))
+
+    return {
+      token: tree1.token,
+      children: different
+        .concat(same
+          .map(child1 => {
+            const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
+            return this.mergeTrees(child1, child2!)
+          })),
+    }
+  }
+
+  /**
+   * Build a GraphQL query from a tree
+   */
+  protected buildQuery(tree: Tree): string {
+    switch(tree.token.kind) {
+      case 'scalar':
+        return tree.token.fieldId
+      case 'object':
+      case 'list': {
+        const children = tree.children
+          .map(child => this.buildQuery(child))
+          .join('\n')
+        return dedent`${tree.token.fieldId} {
+          ${children}
+        }`
+      }
+      default:
+        console.error('Unable to build GraphQL query', tree)
+        throw new Error(`Unable to build GraphQL query: unable to build tree ${JSON.stringify(tree)}`)
+    }
+  }
 
   //async getData(query: Query): Promise<any[]> {
   //  const result = await this.call(`
