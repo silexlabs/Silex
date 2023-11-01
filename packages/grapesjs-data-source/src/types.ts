@@ -143,7 +143,7 @@ export interface Filter {
 export type StateId = string
 export interface State {
   type: 'state'
-  id: StateId
+  storedStateId: StateId // Id of the state stored in the component
   label: string
   componentId: string
   exposed: boolean
@@ -161,4 +161,3 @@ export type Context = Token[]
  * It is used to access data from the data source
  */
 export type Expression = Token[]
-

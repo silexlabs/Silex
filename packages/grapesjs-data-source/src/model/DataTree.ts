@@ -177,7 +177,7 @@ export class DataTree {
       states.push(...(getStateIds(parent, true)
         .map((stateId: StateId): State => ({
           type: 'state',
-          id: stateId,
+          storedStateId: stateId,
           label: stateId,
           componentId: getOrCreatePersistantId(parent),
           exposed: true,
@@ -192,7 +192,7 @@ export class DataTree {
               if(loopDataField.kind === 'list') {
                 loopProperties.push({
                   type: 'state',
-                  id: '__data',
+                  storedStateId: '__data',
                   componentId: getOrCreatePersistantId(parent),
                   exposed: false,
                   forceKind: 'object', // FIXME: this may be a scalar
@@ -294,7 +294,7 @@ export class DataTree {
           // TODO: notification
           return null
         }
-        const expression = getState(parent, token.id, token.exposed)?.expression
+        const expression = getState(parent, token.storedStateId, token.exposed)?.expression
         if(!expression) {
           console.warn('State is not defined on component', { component: parent, token })
           // TODO: notification
@@ -415,6 +415,37 @@ export class DataTree {
 
   /**
    * Get all expressions used by a component
+   * Resolves all states token as expressions recursively
+   * Resulting expressions contain properties and filters only, no states anymore
+   */
+  resolveState(state: State, component: Component): Expression | null {
+    const parent = getParentByPersistentId(state.componentId, component)
+    if(!parent) {
+      console.warn('Component not found for state', state)
+      return null
+    }
+    // Get the expression of the state
+    const soredState = getState(parent, state.storedStateId, state.exposed)
+    if(!soredState?.expression) {
+      console.warn('State is not defined on component', parent, state)
+      return null
+    }
+    return soredState.expression
+      .flatMap((token: Token) => {
+        switch (token.type) {
+          case 'state': {
+            return this.resolveState(token, parent) ?? []
+          }
+          default:
+            return token
+        }
+      })
+  }
+
+  /**
+   * Get all expressions used by a component
+   * Resolves all states token as expressions recursively
+   * Resulting expressions contain properties and filters only, no states anymore
    */
   getComponentExpressions(component: Component): Expression[] {
     return ([] as Expression[])
@@ -425,19 +456,8 @@ export class DataTree {
       // Resolve state expressions
       .map((expression) => expression?.flatMap((token: Token) => {
         switch (token.type) {
-          case 'state': {
-            const parent = getParentByPersistentId(token.componentId, component)
-            if(!parent) {
-              console.warn('Component not found for state', token)
-              throw new BuildQueryError('Component not found for state', { component, token, expression })
-            }
-            const state = getState(parent, token.id, token.exposed)
-            if(!state?.expression) {
-              console.warn('State is not defined on component', parent, token)
-              throw new BuildQueryError('State is not defined on component', { component, token, expression })
-            }
-            return state.expression
-          }
+          case 'state':
+            return this.resolveState(token, component) ?? []
           default:
             return token
         }

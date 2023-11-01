@@ -33,9 +33,9 @@
     "src"
   ],
   "exclude": [
-    "node_modules",
-    "dist",
-    "old",
-    "__mocks__"
+    "./node_modules/**/*",
+    "./dist/**/*",
+    "./old/**/*",
+    "./__mocks__/**/*"
   ]
 }

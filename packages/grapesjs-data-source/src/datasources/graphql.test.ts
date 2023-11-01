@@ -16,7 +16,7 @@
  */
 
 import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType, Tree } from './GraphQL'
-import {directusSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks.js'
+import {directusSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
 import { Expression, Field, Type } from '../types'
 
 const bearerToken = process.env.BEARER ?? ''
