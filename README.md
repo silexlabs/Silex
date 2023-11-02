@@ -8,8 +8,7 @@ There is no issue on this repo, please use the individual project's issues
 
 ## Included repositories in this meta repo
 
-[Check the projects in this repo](./submodules.md)
-
+> Leave the line bellow as it is used in the doc scripts
 > Auto generated submodules
 
 # Silex packages
