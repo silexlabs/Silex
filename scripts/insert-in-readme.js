@@ -2,7 +2,7 @@
 
 const fs = require('fs/promises')
 
-async function main(content, key) {
+async function main(content, key, code) {
   // Read README.md
   const readme = await fs.readFile('README.md', 'utf-8')
   const keyText = `> Auto generated ${key}`
@@ -11,7 +11,15 @@ async function main(content, key) {
   const keyIndexStart = lines.findIndex((line) => line.trim() === keyText)
   const keyIndexEnd = lines.findIndex((line, index) => index > keyIndexStart && line.trim() === keyText)
   if(keyIndexStart < 0 || keyIndexEnd < 0) throw new Error(`Key not found in readme: ${key}`)
-  lines.splice(keyIndexStart + 1, keyIndexEnd - keyIndexStart - 1, content)
+  if(code) {
+    lines.splice(keyIndexStart + 1, keyIndexEnd - keyIndexStart - 1, `
+\`\`\`
+${content}
+\`\`\`
+`)
+  } else {
+    lines.splice(keyIndexStart + 1, keyIndexEnd - keyIndexStart - 1, content)
+  }
   // Write README.md
   await fs.writeFile('README.md', lines.join('\n'))
 }
@@ -22,5 +30,5 @@ process.stdin.on('data', (chunk) => {
   content += chunk
 })
 process.stdin.on('end', () => {
-  main(content, process.argv[2])
+  main(content, process.argv[2], process.argv[3] === '--code')
 })
