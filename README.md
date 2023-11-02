@@ -1,8 +1,8 @@
 ## About this meta repo
 
-This is a [meta repository](https://github.com/mateodelnorte/meta#readme) for Silex website builder
+This is a meta repository for Silex website builder
 
-It includes all sub projects needed for Silex development, this is the repo you need to contribute to Silex.
+It includes all projects needed for Silex development as git submodules. This is the repo you need to contribute to Silex as many of the projects are dependencies of each other, so we can iterate in all at the same time and benefit from using [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) or [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces).
 
 There is no issue on this repo, please use the individual project's issues
 
@@ -17,27 +17,31 @@ There is no issue on this repo, please use the individual project's issues
 | Silex website builder | `/packages/Silex` | [Website](https://www.silex.me) | The hackable website builder for designers. | [Github repo](https://github.com/silexlabs/Silex) | [npm package](https://www.npmjs.com/package/silex-website-builder) | [docs](https://github.com/silexlabs/Silex/wiki) | GPL and MPL |
 | editor.silex.me | `/packages/editor.silex.me` | [Website](https://editor.silex.me) | Free public Silex instance hosted by Silex Labs foundation. | [Github repo](https://github.com/silexlabs/editor.silex.me) | - | [docs](https://github.com/silexlabs/Silex/wiki) | GPL |
 | Silex desktop | `/packages/silex-desktop` | [Website](https://github.com/silexlabs/silex-desktop/releases/latest) | Silex desktop version, an installable application for Windows, MacOS and linux. | [Github repo](https://github.com/silexlabs/silex-desktop) | - | [docs](https://github.com/silexlabs/Silex/wiki) | GPL |
-| Stage component (drag'n drop) | `/packages/drag-drop-stage-component/` | [Website](http://projects.silexlabs.org/drag-drop-stage-component/pub/) | This "stage" component enables the user select elements, drag and drop them, resize them. | [Github repo](https://github.com/silexlabs/drag-drop-stage-component) | [npm package](https://www.npmjs.com/package/drag-drop-stage-component) | [docs](https://github.com/silexlabs/drag-drop-stage-component) | MIT |
 | Unifile and unifile-* | `/packages/unifile*` | [Website](http://projects.silexlabs.org/unifile/) | Nodejs library to access cloud storage services with a common API. | [Github repo](https://github.com/silexlabs/unifile) | [npm package](https://www.npmjs.com/package/unifile) | [docs](http://projects.silexlabs.org/unifile/) | MIT |
+| eleventy-plugin-directus | `/packages/eleventy-plugin-directus` | - | Expose Directus collections as global data in 11ty | https://github.com/silexlabs/eleventy-plugin-directus | [npm package]() | https://github.com/silexlabs/eleventy-plugin-directus | MIT |
+| eleventy-plugin-directus | `/packages/eleventy-plugin-directus` | - | Expose Directus collections as global data in 11ty | https://github.com/silexlabs/eleventy-plugin-directus | [npm package](https://www.npmjs.com/package/@silexlabs/eleventy-plugin-directus) | https://github.com/silexlabs/eleventy-plugin-directus | MIT |
+| `@silexlabs/grapesjs-fonts` | `/packages/grapesjs-fonts` | - | Custom Fonts plugin for grapesjs | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-fonts) | [Github repo](https://github.com/silexlabs/grapesjs-fonts#readme) | MIT |
+| grapesjs-symbols | `/packages/grapesjs-symbols` | - |  | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-symbols) | [Github repo](https://github.com/silexlabs/grapesjs-symbols#readme) | MIT |
+| grapesjs-ui-suggest-classes | `/packages/grapesjs-ui-suggest-classes` | - |  | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-ui-suggest-classes) | [Github repo](https://github.com/silexlabs/grapesjs-ui-suggest-classes#readme) | MIT |
+| grapesjs-directus-storage | `/packages/grapesjs-directus-storage` | - |  | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-directus-storage) | [Github repo](https://github.com/silexlabs/grapesjs-directus-storage#readme) | MIT |
 
-## Instructions
+## Instruction
 
-To contribute to Silex you need to clone this repo. 
+To contribute to Silex you need to clone this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (yarn or npm):
 
-1. As this is a meta repo, you will need to [install meta](https://github.com/mateodelnorte/meta#getting-started)
-1. Clone this repo with `meta git clone git@github.com:silexlabs/silex-meta.git` or `meta git clone https://github.com/silexlabs/silex-meta.git`
-1. Cd in the repo: `cd silex-meta`
-1. Use the recommended version of node: `nvm use`
-1. Install all dependencies: `npm install && meta exec "npm install"`
-1. ~Make each project uses the development version of any other project in the meta repo: `meta npm link && meta npm link --all`~
-1. Make each project uses the development version of any other project in the meta repo: `meta exec "npm link" && node scripts/link-all.js`
+```
+$ git clone git@github.com:silexlabs/silex-meta.git --recurse-submodules -j8
+$ cd silex-meta
+$ nvm use
+$ npm install OR yarn install
+$ npm start OR yarn start
+```
 
 Useful commands
 
-* Start Silex: `cd packages/silex-website-builder/ && npm start` (or use `npm run start:debug`)
-* Release and bump version of a library and all its dependents: `meta release-version unifile`, see [Meta release plugin](https://github.com/alqh/meta-release)
-* Detect which package needs a release: `node scripts/detect-changes.js`
-
+* Start Silex: `npm start` (or use `npm run start:debug`)
+* Release a package (which is in packages/$PACKAGE_NAME) and bump version of a library and all its dependents: `scripts/release-version packages/$PACKAGE_NAME $VERSION`, then you probably want to `git push --follow-tags` the changed packages
+* Add a project: `git submodules add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`
 
 ## Third party dependencies
 
@@ -49,65 +53,6 @@ Useful commands
 ## Size of Silex code base
 
 This includes all the packages of this repo.
-
-As of june 2017, around 100.000 lines of code. See [github API count (includes blank lines and comments I guess)](https://api.github.com/repos/silexlabs/Silex/languages):
-
-```
-JavaScript: 856643,
-CSS: 82702,
-HTML: 53727,
-Shell: 1532
-```
-
-[cb372's report](http://line-count.herokuapp.com/silexlabs/Silex):
-
-<table id="results" class="table table-striped">
-<tbody>
-    <tr>
-        <th>File Type</th>
-        <th>Files</th>
-        <th>Lines of Code</th>
-        <th>Total lines</th>
-    </tr>
-    <tr>
-        <td>JavaScript</td>
-        <td>422</td>
-        <td>138797</td>
-        <td>183644</td>
-    </tr>
-    <tr>
-        <td>Json</td>
-        <td>3</td>
-        <td>146</td>
-        <td>146</td>
-    </tr>
-    <tr>
-        <td>Text</td>
-        <td>12</td>
-        <td>0</td>
-        <td>1047</td>
-    </tr>
-    <tr>
-        <td>Shell</td>
-        <td>4</td>
-        <td>24</td>
-        <td>47</td>
-    </tr>
-    <tr>
-        <td>Stylesheets</td>
-        <td>90</td>
-        <td>17777</td>
-        <td>21504</td>
-    </tr>
-    <tr>
-        <td>Html</td>
-        <td>7</td>
-        <td>545</td>
-        <td>726</td>
-    </tr>
-</tbody>
-</table>
-
 
 [Cloc's report](https://github.com/AlDanial/cloc) in mar. 2021:
 
@@ -135,4 +80,31 @@ SUM:                           804          33177          17745         181865
 -------------------------------------------------------------------------------
 ```
 
+[Cloc's report](https://github.com/AlDanial/cloc) in feb 2023:
 
+```
+$ cloc packages                                                                      
+     515 text files.
+     345 unique files.                                          
+     697 files ignored.
+
+github.com/AlDanial/cloc v 1.92  T=1.00 s (345.0 files/s, 212776.0 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+JSON                            22              1              0         119875
+JavaScript                      62           7190           7805          38240
+TypeScript                     142           2035           4067          17106
+CSS                             21            594            715           5761
+YAML                            23             53             39           2914
+LESS                            21            138            159           2234
+Markdown                        15            413              0            932
+Pug                             14             49             30            899
+EJS                              7             35              4            798
+HTML                             3             56             12            495
+SVG                             13              0              0             96
+Dockerfile                       2              9              9             13
+-------------------------------------------------------------------------------
+SUM:                           345          10573          12840         189363
+-------------------------------------------------------------------------------
+```
