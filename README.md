@@ -1,8 +1,8 @@
 ## About this meta repo
 
-This is a [meta repository](https://github.com/mateodelnorte/meta#readme) for Silex website builder
+This is a meta repository for Silex website builder
 
-It includes all sub projects needed for Silex development as git submodules. This is the repo you need to contribute to Silex as many of the projects are dependencies of each other, so we can iterate in all at the same time and benefit from using [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) or [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces).
+It includes all projects needed for Silex development as git submodules. This is the repo you need to contribute to Silex as many of the projects are dependencies of each other, so we can iterate in all at the same time and benefit from using [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) or [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces).
 
 There is no issue on this repo, please use the individual project's issues
 

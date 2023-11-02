@@ -22,9 +22,6 @@
 [submodule "packages/node_modules-path"]
 	path = packages/node_modules-path
 	url = git@github.com:lexoyo/node_modules-path.git
-[submodule "packages/silex-doc"]
-	path = packages/silex-doc
-	url = git@github.com:silexlabs/silex-doc.git
 [submodule "packages/Silex.wiki"]
 	path = packages/Silex.wiki
 	url = https://github.com/silexlabs/Silex.wiki.git
@@ -46,3 +43,9 @@
 [submodule "packages/silex-dashboard"]
 	path = packages/silex-dashboard
 	url = git@github.com:silexlabs/silex-dashboard.git
+[submodule "packages/grapesjs-data-source"]
+	path = packages/grapesjs-data-source
+	url = git@github.com:silexlabs/grapesjs-data-source.git
+[submodule "packages/silex-plugin-starter"]
+	path = packages/silex-plugin-starter
+	url = git@github.com:silexlabs/silex-plugin-starter.git
