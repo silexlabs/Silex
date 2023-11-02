@@ -331,6 +331,7 @@ export class PublicationManager {
         html: `<!DOCTYPE html>
 <html lang="${getSetting('lang')}">
 <head>
+<meta charset="UTF-8">
 <link rel="stylesheet" href="${cssPermalink}" />
 ${siteSettings?.head || ''}
 ${pageSettings?.head || ''}
