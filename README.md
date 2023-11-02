@@ -8,7 +8,7 @@ There is no issue on this repo, please use the individual project's issues
 
 ## Included repositories in this meta repo
 
-> Leave the line bellow as it is used in the doc scripts
+> Leave the line bellow as it is used in the doc script to insert content in the readme
 > 
 > Auto generated submodules
 
