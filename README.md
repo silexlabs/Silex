@@ -1,4 +1,4 @@
-## About this meta repo
+## Silex meta repo
 
 This is a meta repository for Silex website builder
 
@@ -8,33 +8,38 @@ There is no issue on this repo, please use the individual project's issues
 
 ## Included repositories in this meta repo
 
-| Name | Folder | Website | Description | Repo | npm | Docs | License |
-|------|--------|---------|------|------|------|------|------|
-| CloudExplorer | `/packages/cloud-explorer/` | [Website](https://cloud-explorer.org/) | A free customizable file browser and a self hosted node.js API server. | [Github repo](https://github.com/silexlabs/CloudExplorer2) | [npm package](https://www.npmjs.com/package/cloud-explorer) | [docs](https://github.com/silexlabs/CloudExplorer2) | |
-| Prodotype | `/packages/prodotype` | [Website](http://projects.silexlabs.org/Prodotype/) | Create components and the UI to edit them out of html templates and yaml files. | [Github repo](https://github.com/silexlabs/Prodotype) | [npm package](https://www.npmjs.com/package/prodotype) | [docs](http://projects.silexlabs.org/Prodotype/) | |
-| Responsize | `/packages/responsize/` | [Website](http://responsize.org/) | Display websites on different screen sizes in the browser. Useful to visualize how a website looks on desktop while browsing on mobile, or on big screen while browsing on a laptop. | [Github repo](https://github.com/silexlabs/responsize) | [npm package](https://www.npmjs.com/package/responsize) | [docs](https://github.com/silexlabs/responsize) | GPL |
-| Silex templates | `/packages/silex-templates/` and `/packages/silex-blank-templates/` | [Website](https://www.silex.me/templates/) | The community templates available on [Silex Dashboard](https://github.com/silexlabs/Silex/wiki/Editor-UI#dashboard). | [Github repo](https://github.com/silexlabs/silex-templates) | [npm package](https://www.npmjs.com/package/silex-templates) | [docs](https://github.com/silexlabs/Silex/wiki/Create-templates-for-Silex) | CC |
-| Silex website builder | `/packages/Silex` | [Website](https://www.silex.me) | The hackable website builder for designers. | [Github repo](https://github.com/silexlabs/Silex) | [npm package](https://www.npmjs.com/package/silex-website-builder) | [docs](https://github.com/silexlabs/Silex/wiki) | GPL and MPL |
-| editor.silex.me | `/packages/editor.silex.me` | [Website](https://editor.silex.me) | Free public Silex instance hosted by Silex Labs foundation. | [Github repo](https://github.com/silexlabs/editor.silex.me) | - | [docs](https://github.com/silexlabs/Silex/wiki) | GPL |
-| Silex desktop | `/packages/silex-desktop` | [Website](https://github.com/silexlabs/silex-desktop/releases/latest) | Silex desktop version, an installable application for Windows, MacOS and linux. | [Github repo](https://github.com/silexlabs/silex-desktop) | - | [docs](https://github.com/silexlabs/Silex/wiki) | GPL |
-| Unifile and unifile-* | `/packages/unifile*` | [Website](http://projects.silexlabs.org/unifile/) | Nodejs library to access cloud storage services with a common API. | [Github repo](https://github.com/silexlabs/unifile) | [npm package](https://www.npmjs.com/package/unifile) | [docs](http://projects.silexlabs.org/unifile/) | MIT |
-| eleventy-plugin-directus | `/packages/eleventy-plugin-directus` | - | Expose Directus collections as global data in 11ty | https://github.com/silexlabs/eleventy-plugin-directus | [npm package]() | https://github.com/silexlabs/eleventy-plugin-directus | MIT |
-| eleventy-plugin-directus | `/packages/eleventy-plugin-directus` | - | Expose Directus collections as global data in 11ty | https://github.com/silexlabs/eleventy-plugin-directus | [npm package](https://www.npmjs.com/package/@silexlabs/eleventy-plugin-directus) | https://github.com/silexlabs/eleventy-plugin-directus | MIT |
-| `@silexlabs/grapesjs-fonts` | `/packages/grapesjs-fonts` | - | Custom Fonts plugin for grapesjs | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-fonts) | [Github repo](https://github.com/silexlabs/grapesjs-fonts#readme) | MIT |
-| grapesjs-symbols | `/packages/grapesjs-symbols` | - |  | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-symbols) | [Github repo](https://github.com/silexlabs/grapesjs-symbols#readme) | MIT |
-| grapesjs-ui-suggest-classes | `/packages/grapesjs-ui-suggest-classes` | - |  | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-ui-suggest-classes) | [Github repo](https://github.com/silexlabs/grapesjs-ui-suggest-classes#readme) | MIT |
-| grapesjs-directus-storage | `/packages/grapesjs-directus-storage` | - |  | [npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-directus-storage) | [Github repo](https://github.com/silexlabs/grapesjs-directus-storage#readme) | MIT |
+[Check the projects in this repo](./submodules.md)
+
+> Auto generated submodules
+
+# Silex packages
+
+| Name | Repo | Description |
+| ---- | ---- | ----------- |
+| Grapesjs Ui Suggest Classes | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | [DEMO](https://codepen.io/lexo1000/pen/abErmeW) |
+| Symbols plugin for GrapesJS | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
+| Eleventy Plugin Directus | `git@github.com:silexlabs/eleventy-plugin-directus.git` | ![combined](https://user-images.githubusercontent.com/715377/202714740-44db41be-27a7-42d9-aa58-8d72d486bcbf.png) |
+| Grapesjs Fonts | `git@github.com:silexlabs/grapesjs-fonts.git` | Custom Fonts plugin for grapesjs |
+| Grapesjs Directus Storage | `git@github.com:silexlabs/grapesjs-directus-storage.git` | Directus as a backend for GrapesJS |
+| Grapesjs Loading | `git@github.com:silexlabs/grapesjs-loading.git` | Shows a loading bar while the site is loaded or saved. By default it looks like the classic loading bar on top of the page, e.g. on github.com. |
+| eleventy-plugin-concat | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
+| Silex plugins | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
+| GrapesJs Data Source plugin | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
+| silex-plugin-starter | `git@github.com:silexlabs/silex-plugin-starter.git` |  |
+
+
+> Auto generated submodules
 
 ## Instruction
 
-To contribute to Silex you need to clone this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (yarn or npm):
+To contribute to Silex you need to clone this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (you can replace `npm` with `yarn`):
 
 ```
 $ git clone git@github.com:silexlabs/silex-meta.git --recurse-submodules -j8
 $ cd silex-meta
 $ nvm use
-$ npm install OR yarn install
-$ npm start OR yarn start
+$ npm install
+$ npm start
 ```
 
 Useful commands
@@ -45,14 +50,37 @@ Useful commands
 
 ## Third party dependencies
 
+* The excellent [GrapesJs framework](https://grapesjs.com/) used for the front end drag/drop feature
 * [Typescript](https://www.typescriptlang.org/) is used to build Silex
-* [Ace](http://ace.c9.io/), an excellent code editor in javascript
-* jquery is included in the sites generated by Silex
 * [GLYPHICONS library of icons and symbols](http://glyphicons.com/) ([CC license](http://creativecommons.org/licenses/by/3.0/)) and [fontawesome icons](http://fontawesome.io/)
 
 ## Size of Silex code base
 
 This includes all the packages of this repo.
+
+> Auto generated count
+
+> silex-meta@1.0.0 count
+> cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,css
+
+github.com/AlDanial/cloc v 1.98  T=0.50 s (364.0 files/s, 160794.0 lines/s)
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+JSON                            35              0              0          65611
+TypeScript                      61            564           1469           6322
+JavaScript                      51            260            451           2184
+YAML                            14             30             20           1907
+HTML                             8             90              0            946
+SCSS                             9             33             13            455
+INI                              2              4              0             21
+Dockerfile                       1              3              4              8
+Text                             1              0              0              2
+-------------------------------------------------------------------------------
+SUM:                           182            984           1957          77456
+-------------------------------------------------------------------------------
+
+> Auto generated count
 
 [Cloc's report](https://github.com/AlDanial/cloc) in mar. 2021:
 

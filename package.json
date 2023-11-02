@@ -20,7 +20,9 @@
   "license": "GPL-3.0-or-later",
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "scripts": {
-    "start": "node packages/Silex/"
+    "start": "node packages/Silex/",
+    "count": "cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,css",
+    "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && $npm_execpath run count | scripts/insert-in-readme.js count"
   },
   "wip": [
     "packages/grapesjs-links",
@@ -35,7 +37,6 @@
     "packages/editor.silex.me",
     "packages/eleventy-plugin-concat",
     "packages/eleventy-plugin-directus",
-    "packages/grapesjs",
     "packages/grapesjs-symbols",
     "packages/grapesjs-ui-suggest-classes",
     "packages/grapesjs-fonts",
@@ -44,5 +45,9 @@
     "packages/silex-dashboard",
     "packages/silex-plugins",
     "packages/Silex"
-  ]
+  ],
+  "devDependencies": {
+    "cloc": "^1.98.0-cloc",
+    "js-ini": "^1.6.0"
+  }
 }
