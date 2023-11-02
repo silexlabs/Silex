@@ -16,10 +16,14 @@ There is no issue on this repo, please use the individual project's issues
 
 | Name | Repo | Description |
 | ---- | ---- | ----------- |
+| About this repo | `git@github.com:silexlabs/editor.silex.me.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me). |
+| Silex desktop | `git@github.com:silexlabs/silex-desktop.git` | This is the official [Silex](https://www.silex.me) desktop version, an installable application for Windows, MacOS and linux. |
 | Grapesjs Ui Suggest Classes | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | [DEMO](https://codepen.io/lexo1000/pen/abErmeW) |
 | Symbols plugin for GrapesJS | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Eleventy Plugin Directus | `git@github.com:silexlabs/eleventy-plugin-directus.git` | ![combined](https://user-images.githubusercontent.com/715377/202714740-44db41be-27a7-42d9-aa58-8d72d486bcbf.png) |
 | Grapesjs Fonts | `git@github.com:silexlabs/grapesjs-fonts.git` | Custom Fonts plugin for grapesjs |
+| About Silex, live web creation. | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
+| Access node_modules in package.json | `git@github.com:lexoyo/node_modules-path.git` | Use it in your `packge.json` like this: |
 | Grapesjs Directus Storage | `git@github.com:silexlabs/grapesjs-directus-storage.git` | Directus as a backend for GrapesJS |
 | Grapesjs Loading | `git@github.com:silexlabs/grapesjs-loading.git` | Shows a loading bar while the site is loaded or saved. By default it looks like the classic loading bar on top of the page, e.g. on github.com. |
 | eleventy-plugin-concat | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
@@ -63,23 +67,20 @@ This includes all the packages of this repo.
 ```
 
 > silex-meta@1.0.0 count
-> cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,css
+> cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,html
 
-github.com/AlDanial/cloc v 1.98  T=0.50 s (364.0 files/s, 160794.0 lines/s)
+github.com/AlDanial/cloc v 1.98  T=0.50 s (344.0 files/s, 38404.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JSON                            35              0              0          65611
-TypeScript                      61            564           1469           6322
-JavaScript                      51            260            451           2184
-YAML                            14             30             20           1907
-HTML                             8             90              0            946
-SCSS                             9             33             13            455
+TypeScript                      99           1093           3975          10938
+JavaScript                      51            239            627           1815
+YAML                            17             49             28            342
+Dockerfile                       2              8              8             53
 INI                              2              4              0             21
-Dockerfile                       1              3              4              8
 Text                             1              0              0              2
 -------------------------------------------------------------------------------
-SUM:                           182            984           1957          77456
+SUM:                           172           1393           4638          13171
 -------------------------------------------------------------------------------
 
 ```
