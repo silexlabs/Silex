@@ -1,27 +1,48 @@
 {
   "name": "silex-meta",
   "version": "1.0.0",
-  "description": "Sub projects needed for Silex development",
-  "engines": {
-    "node": ">=10.15.3 <=12.22.10"
-  },
+  "description": "Meta repo for Silex development",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/silexlabs/silex-meta.git"
   },
+  "engines": {
+    "node": ">=16"
+  },
   "keywords": [
-    "Silex website builder",
-    "dev"
+    "contribution",
+    "silex",
+    "website builder",
+    "Silex website builder"
   ],
   "author": "lexoyo",
   "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/silexlabs/silex-meta/issues"
-  },
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
-  "dependencies": {},
-  "devDependencies": {
-    "meta-loop": "^1.2.5",
-    "meta-release": "^0.1.2"
-  }
+  "scripts": {
+    "start": "node packages/Silex/"
+  },
+  "wip": [
+    "packages/grapesjs-links",
+    "packages/grapesjs-cli",
+    "packages/silex-desktop",
+    "packages/node_modules-path"
+  ],
+  "xworkspaces": [
+    "packages/**/*"
+  ],
+  "workspaces": [
+    "packages/editor.silex.me",
+    "packages/eleventy-plugin-concat",
+    "packages/eleventy-plugin-directus",
+    "packages/grapesjs",
+    "packages/grapesjs-symbols",
+    "packages/grapesjs-ui-suggest-classes",
+    "packages/grapesjs-fonts",
+    "packages/grapesjs-directus-storage",
+    "packages/grapesjs-loading",
+    "packages/silex-dashboard",
+    "packages/silex-plugins",
+    "packages/Silex"
+  ]
 }
