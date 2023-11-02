@@ -22,12 +22,6 @@
 [submodule "packages/node_modules-path"]
 	path = packages/node_modules-path
 	url = git@github.com:lexoyo/node_modules-path.git
-[submodule "packages/Silex.wiki"]
-	path = packages/Silex.wiki
-	url = https://github.com/silexlabs/Silex.wiki.git
-[submodule "packages/grapesjs"]
-	path = packages/grapesjs
-	url = git@github.com:GrapesJS/grapesjs.git
 [submodule "packages/grapesjs-directus-storage"]
 	path = packages/grapesjs-directus-storage
 	url = git@github.com:silexlabs/grapesjs-directus-storage.git
