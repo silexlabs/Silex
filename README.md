@@ -60,6 +60,8 @@ This includes all the packages of this repo.
 
 > Auto generated count
 
+```
+
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,css
 
@@ -79,6 +81,8 @@ Text                             1              0              0              2
 -------------------------------------------------------------------------------
 SUM:                           182            984           1957          77456
 -------------------------------------------------------------------------------
+
+```
 
 > Auto generated count
 
