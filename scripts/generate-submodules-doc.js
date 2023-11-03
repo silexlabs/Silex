@@ -7,7 +7,9 @@ async function main() {
   try {
     const data = await fs.readFile('.gitmodules', 'utf-8')
     const parsedData = ini.parse(data)
-    const array = Object.keys(parsedData).map((key) => ({
+    const array = Object.keys(parsedData)
+    .sort((a, b) => b.localeCompare(a))
+    .map((key) => ({
       // From submodule "submodules/..." to "..."
       name: key.replace(/^submodule \"packages\//, '').replace(/\"$/, ''),
       ...parsedData[key],
@@ -15,8 +17,8 @@ async function main() {
     let markdown = `
 # Silex packages
 
-| Name | Repo | Description |
-| ---- | ---- | ----------- |
+| Name | Directory | Repo | Description |
+| ---- | --------- | ---- | ----------- |
 `
     let readmeCount = 0
     for(project of array) {
@@ -33,7 +35,7 @@ async function main() {
         if(err.code === 'ENOENT') continue
         else throw err
       }
-      markdown += `| ${title} | \`${project.url}\` | ${description} |\n`
+      markdown += `| ${title} | \`packages/${project.name}\` | \`${project.url}\` | ${description} |\n`
     }
     console.log(markdown)
   } catch (err) {
