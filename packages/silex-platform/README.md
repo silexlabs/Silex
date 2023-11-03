@@ -1,4 +1,4 @@
-## About this repo
+## Silex instances by Silex Labs
 
 This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me).
 
