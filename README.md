@@ -81,7 +81,7 @@ You can configure Silex using environment variables and command-line options. Al
 There are config files (same as plugins) in the `examples/` folder. To start Silex locally with these config:
 
 ```sh
-$ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_CONFIG=`pwd`/examples/server-config-plugins.js npm run start:debug
+$ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_SERVER_CONFIG=`pwd`/examples/server-config-plugins.js npm run start:debug
 ```
 
 ## Contributing
