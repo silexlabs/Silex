@@ -26,7 +26,6 @@
   },
   "wip": [
     "packages/grapesjs-links",
-    "packages/grapesjs-cli",
     "packages/silex-desktop",
     "packages/node_modules-path"
   ],
@@ -37,12 +36,15 @@
     "packages/editor.silex.me",
     "packages/eleventy-plugin-concat",
     "packages/eleventy-plugin-directus",
-    "packages/grapesjs-symbols",
-    "packages/grapesjs-ui-suggest-classes",
-    "packages/grapesjs-fonts",
     "packages/grapesjs-directus-storage",
+    "packages/grapesjs-filter-styles",
+    "packages/grapesjs-fonts",
     "packages/grapesjs-loading",
+    "packages/grapesjs-symbols",
+    "packages/grapesjs-storage-rate-limit",
+    "packages/grapesjs-ui-suggest-classes",
     "packages/silex-dashboard",
+    "packages/silex-plugin-starter",
     "packages/silex-plugins",
     "packages/Silex"
   ],

@@ -43,3 +43,9 @@
 [submodule "packages/silex-plugin-starter"]
 	path = packages/silex-plugin-starter
 	url = git@github.com:silexlabs/silex-plugin-starter.git
+[submodule "packages/grapesjs-filter-styles"]
+	path = packages/grapesjs-filter-styles
+	url = git@github.com:silexlabs/grapesjs-filter-styles.git
+[submodule "packages/grapesjs-storage-rate-limit"]
+	path = packages/grapesjs-storage-rate-limit
+	url = git@github.com:silexlabs/grapesjs-storage-rate-limit.git
