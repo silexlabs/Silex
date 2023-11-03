@@ -1,12 +1,12 @@
-[![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://editor.silex.me)
+[![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://v3.silex.me)
 
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
 Brought to you by [Alex Hoyau](https://www.patreon.com/lexoyo) and [Silex contributors](https://github.com/silexlabs/Silex/graphs/contributors).
 
-You can help make Silex sustainable by being part of the community, contributing documentation or making a financial contribution. [Let's chat - every little bit helps!](https://github.com/silexlabs/Silex/discussions)
+Help make Silex sustainable by being [part of the community](https://community.silex.me/), [contributing documentation](https://docs.silex.me/), [making a financial contribution](https://opencollective.com/silex), [report bugs](https://github.com/silexlabs/Silex/issues).
 
-## About Silex, live web creation.
+## Silex
 
 Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project.
 
