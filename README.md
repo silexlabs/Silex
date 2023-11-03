@@ -48,13 +48,15 @@ There is a desktop application that you can install on your computer which may b
 
 You can also run Silex locally or on your server using `npx`, `npm`, or `Docker`.
 
+Check the [developer docs](https://docs.silex.me/en/dev) for configuration options and integration with your js projects.
+
 #### Using npx
 
 ```bash
 npx @silexlabs/silex
 ```
 
-This command will run Silex with the entry point being `src/ts/server/cli.ts`.
+This command will run Silex with default config.
 
 #### Using Docker
 
@@ -62,7 +64,7 @@ This command will run Silex with the entry point being `src/ts/server/cli.ts`.
 docker run -p 6805:6805 silexlabs/silex
 ```
 
-This command will run Silex in a Docker container with the entry point being `src/ts/server/index.ts`.
+This command will run Silex in a Docker container.
 
 #### Using npm
 
@@ -72,13 +74,27 @@ First, install Silex as a dev dependency in your project:
 npm install --save-dev @silexlabs/silex
 ```
 
-Then, you can run Silex with the `silex` command. The entry point is `src/ts/server/cli.ts`.
+Then, you can run Silex with the `silex` command in your `package.json` scripts:
+
+```json
+{
+  "scripts": {
+    "start": "silex"
+  }
+}
+```
 
 ## Configuration
 
-You can configure Silex using environment variables and command-line options. All available options can be found in `src/ts/server/cli.ts`.
+You can configure Silex using environment variables and command-line options. All available options can be found in the [developer docs](https://docs.silex.me/en/dev) as well as in the code: [`src/ts/server/cli.ts`](./src/ts/server/cli.ts).
 
-There are config files (same as plugins) in the `examples/` folder. To start Silex locally with these config:
+Check the example config files - which are the same as plugins in Silex, in the [`examples/`](./examples/) folder. To test these configs, start Silex locally like this:
+
+```sh
+$ npx silex --client-config=./examples/client-config-transformers.js --server-config=`pwd`/examples/server-config-plugins.js 
+```
+
+Or like this:
 
 ```sh
 $ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_SERVER_CONFIG=`pwd`/examples/server-config-plugins.js npm run start:debug
