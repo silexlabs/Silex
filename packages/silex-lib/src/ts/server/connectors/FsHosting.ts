@@ -34,6 +34,7 @@ export class FsHosting extends FsStorage implements HostingConnector<FsSession> 
     if (!stat) {
       await fs.mkdir(join(this.options.path, 'assets'), { recursive: true })
       await fs.mkdir(join(this.options.path, 'css'), { recursive: true })
+      console.info(`> [FsHosting] Created folders assets/ and css/ in ${this.options.path}`)
     }
   }
 

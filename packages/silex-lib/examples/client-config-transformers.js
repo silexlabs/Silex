@@ -36,7 +36,6 @@ export default async function (config) {
     },
     // Difine files URLs
     transformPermalink(link, type, initiator) {
-      console.log('transformPermalink', { link, type, initiator})
       return link
     },
     // Transform files after they are rendered and before they are published
