@@ -25,7 +25,7 @@
  */
 
 import { Config, Plugin } from '@silexlabs/silex-plugins'
-import { resolve } from 'path'
+import { join, resolve } from 'path'
 import { CLIENT_CONFIG_FILE_NAME } from '../constants'
 import { Application, Request, Response, Router } from 'express'
 import { readFile } from 'fs/promises'
@@ -177,13 +177,13 @@ export class ServerConfig extends Config {
     // Add default storage connectors
     if (!this.storageConnectors.length) {
       this.addStorageConnector(new FsStorage(null, {
-        path: process.env.SILEX_FS_ROOT || tmpdir() + '/silex',
+        path: process.env.SILEX_FS_ROOT || join(tmpdir(), '/silex/storage'),
       }))
     }
     // Add default hosting connectors
     if (!this.hostingConnectors.length) {
       this.addHostingConnector(new FsHosting(null, {
-        path: process.env.SILEX_FS_HOSTING_ROOT || tmpdir() + '/silex/publication',
+        path: process.env.SILEX_FS_HOSTING_ROOT || join(tmpdir(), '/silex/hosting'),
       }))
     }
   }

@@ -88,6 +88,7 @@ export class FsStorage implements StorageConnector<FsSession> {
       await fs.mkdir(join(this.options.path, id, this.options.assetsFolder), { recursive: true })
       await this.setWebsiteMeta({}, id, { name: 'Default website', connectorUserSettings: {} })
       await this.updateWebsite({}, id, defaultWebsiteData)
+      console.info(`> [FsStorage] Created ${id} in ${this.options.path}`)
     }
   }
 
