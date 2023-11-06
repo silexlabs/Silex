@@ -4,8 +4,8 @@
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "scripts": {
     "release": "",
-    "start": "silex --config `pwd`/.silex.js --client-config `pwd`/client-config.js",
-    "dev": "silex --config `pwd`/.silex.js --client-config `pwd`/client-config.js --debug"
+    "start": "silex --server-config `pwd`/.silex.js --client-config `pwd`/client-config.js",
+    "dev": "silex --server-config `pwd`/.silex.js --client-config `pwd`/client-config.js --debug"
   },
   "engines": {
     "node": ">=18"
@@ -14,7 +14,7 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@silexlabs/silex": "^3.0.0-alpha.122",
-    "@silexlabs/silex-dashboard": "^1.0.40"
+    "@silexlabs/silex-dashboard": "^1.0.41"
   },
   "repository": {
     "type": "git",
