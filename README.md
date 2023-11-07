@@ -16,9 +16,11 @@ There is no issue on this repo, please use the individual project's issues
 
 | Name | Directory | Repo | Description |
 | ---- | --------- | ---- | ----------- |
+| Steps selector | `packages/steps-selector-ui` | `git@github.com:silexlabs/steps-selector-ui.git` | A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree. |
 | Silex | `packages/Silex` | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
 | Silex plugins | `packages/silex-plugins` | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
 | Silex Plugin Starter | `packages/silex-plugin-starter` | `git@github.com:silexlabs/silex-plugin-starter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
+| Eleventy Visual Designer | `packages/silex-plugin-11ty` | `git@github.com:silexlabs/silex-plugin-11ty.git` | Eleventy Visual Designer is a Silex plugin that simplifies the creation of Eleventy layouts. It provides a visual interface to design pages while seamlessly integrating GraphQL data, allowing for a streamlined, code-free development process |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Access node_modules in package.json | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Use it in your `packge.json` like this: |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | [DEMO](https://codepen.io/lexo1000/pen/abErmeW) |
@@ -71,18 +73,18 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 1.98  T=0.50 s (346.0 files/s, 39786.0 lines/s)
+github.com/AlDanial/cloc v 1.98  T=0.50 s (398.0 files/s, 45328.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-TypeScript                     105           1119           4047          11314
-JavaScript                      60            328            801           2171
+TypeScript                     113           1201           4336          12228
+JavaScript                      78            362           1048           3376
 Dockerfile                       2              8              8             53
 INI                              2              4              0             21
 liquid                           3              0              0             17
 Text                             1              0              0              2
 -------------------------------------------------------------------------------
-SUM:                           173           1459           4856          13578
+SUM:                           199           1575           5392          15697
 -------------------------------------------------------------------------------
 
 ```

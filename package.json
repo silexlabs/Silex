@@ -36,6 +36,7 @@
     "packages/editor.silex.me",
     "packages/eleventy-plugin-concat",
     "packages/eleventy-plugin-directus",
+    "packages/grapesjs-data-source",
     "packages/grapesjs-directus-storage",
     "packages/grapesjs-filter-styles",
     "packages/grapesjs-fonts",
@@ -44,9 +45,11 @@
     "packages/grapesjs-storage-rate-limit",
     "packages/grapesjs-ui-suggest-classes",
     "packages/silex-dashboard",
+    "packages/silex-plugin-11ty",
     "packages/silex-plugin-starter",
     "packages/silex-plugins",
-    "packages/Silex"
+    "packages/Silex",
+    "packages/steps-selector-ui"
   ],
   "devDependencies": {
     "cloc": "^1.98.0-cloc",
