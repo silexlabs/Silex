@@ -49,3 +49,9 @@
 [submodule "packages/grapesjs-storage-rate-limit"]
 	path = packages/grapesjs-storage-rate-limit
 	url = git@github.com:silexlabs/grapesjs-storage-rate-limit.git
+[submodule "packages/silex-plugin-11ty"]
+	path = packages/silex-plugin-11ty
+	url = git@github.com:silexlabs/silex-plugin-11ty.git
+[submodule "packages/steps-selector-ui"]
+	path = packages/steps-selector-ui
+	url = git@github.com:silexlabs/steps-selector-ui.git
