@@ -61,7 +61,10 @@ export class ClientConfig extends Config {
   /**
    * Grapesjs config
    */
-  grapesJsConfig: EditorConfig
+  grapesJsConfig: EditorConfig = {
+    plugins: [],
+    pluginsOpts: {},
+  }
 
   /**
    * Client config url
@@ -73,7 +76,22 @@ export class ClientConfig extends Config {
    * Init GrapesJS config which depend on the config file properties
    */
   initGrapesConfig() {
-    this.grapesJsConfig = getEditorConfig(this.websiteId, this.storageId, this.rootUrl)
+    // Get the initial config
+    const config = getEditorConfig(this.websiteId, this.storageId, this.rootUrl)
+
+    // Merge with the config modified by plugins
+    this.grapesJsConfig = {
+      ...this.grapesJsConfig,
+      ...config,
+      plugins: [
+        ...this.grapesJsConfig.plugins,
+        ...config.plugins,
+      ],
+      pluginsOpts: {
+        ...this.grapesJsConfig.pluginsOpts,
+        ...config.pluginsOpts,
+      },
+    }
   }
 
   /**

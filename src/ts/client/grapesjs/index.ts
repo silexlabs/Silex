@@ -169,12 +169,12 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
     plugins: plugins.map(p => p.value),
 
     pluginsOpts: {
-      [blocksBasicPlugin as any]: {
+      [blocksBasicPlugin.toString()]: {
         blocks: ['text', 'image', 'video', 'map'],
         category: catBasic,
         //flexGrid: true,
       },
-      [projectBarPlugin as any]: {
+      [projectBarPlugin.toString()]: {
         panels: [
           {
             id: 'dash',
@@ -254,46 +254,46 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
           },
         ],
       },
-      [publicationManagerPlugin as any]: {
+      [publicationManagerPlugin.toString()]: {
         appendTo: 'options',
         websiteId: id,
       } as PublicationManagerOptions,
-      [pagePanelPlugin as any]: {
+      [pagePanelPlugin.toString()]: {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
       },
-      [uiSuggestClasses as any]: {
+      [uiSuggestClasses.toString()]: {
         enableCount: false,
         enablePerformance: false,
       },
       [filterStyles]: {
         appendBefore: '.gjs-sm-sectors',
       },
-      [internalLinksPlugin as any]: {
+      [internalLinksPlugin.toString()]: {
         // FIXME: warn the user about links in error
         onError: (errors) => console.warn('Links errors:', errors),
       },
-      [codePlugin as any]: {
+      [codePlugin.toString()]: {
         blockLabel: 'HTML',
         blockCustomCode: {
           category: catComponents,
         }
       },
-      [symbolsPlugin as any]: {
+      [symbolsPlugin.toString()]: {
         appendTo: '.symbols-list-container',
         emptyText: 'No symbol yet.',
         primaryColor: PRIMARY_COLOR,
         secondaryColor: SECONDARY_COLOR,
         highlightColor: TERTIARY_COLOR,
       },
-      [fontsDialogPlugin as any]: {
+      [fontsDialogPlugin.toString()]: {
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
       },
-      [loginDialogPlugin as any]: {
+      [loginDialogPlugin.toString()]: {
         id,
       } as LoginDialogOptions,
-      [rateLimitPlugin as any]: {
+      [rateLimitPlugin.toString()]: {
         time: 5000,
       },
     },

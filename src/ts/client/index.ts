@@ -50,6 +50,7 @@ export async function start(options = {}) {
   config.initGrapesConfig()
 
   // Start grapesjs
+  // Here you can change the config before passing it to grapesjs
   config.emit(ClientEvent.GRAPESJS_START)
   try{
     await initEditor(config.grapesJsConfig)

@@ -17,11 +17,7 @@
 
 import { internalLinksPlugin } from './internal-links'
 import { expect, test, beforeEach } from '@jest/globals'
-import GrapesJs from 'grapesjs'
-
-/* @ts-ignore */
-const {grapesjs} = GrapesJs // FIXME: why needed in unit tests only?
-
+import grapesjs from 'grapesjs'
 
 let editor
 let nextId = 1

@@ -10,11 +10,8 @@ import {
   transformBgImage
 } from './publication-transformers'
 import { ClientConfig } from './config'
-import GrapesJs, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
+import grapesjs, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, PublicationData } from '../types'
-
-/* @ts-ignore */
-const {grapesjs} = GrapesJs // FIXME: why needed in unit tests only?
 
 describe('publication-transformers', () => {
   let mockConfig: ClientConfig
