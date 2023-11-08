@@ -22,13 +22,13 @@
     "typography"
   ],
   "devDependencies": {
-    "eslint": "^8.28.0",
-    "grapesjs-cli": "^3.0.1"
+    "eslint": "^8.53.0",
+    "grapesjs-cli": "^4.1.3"
   },
   "dependencies": {
-    "backbone": "^1.4.1",
-    "grapesjs": "^0.20.3",
-    "lit-html": "^2.4.0"
+    "backbone": "^1.5.0",
+    "grapesjs": "^0.21.7",
+    "lit-html": "^3.0.2"
   },
   "license": "GPL-3.0"
 }
