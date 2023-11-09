@@ -9,6 +9,8 @@ export declare class Symbols extends Backbone.Collection<Symbol> {
     options: any;
     updating: boolean;
     constructor(models: Symbol[], { editor, options, ...opts }: any);
+    disableUndo(disable: any): void;
+    preventUndo(cbk: any): Promise<void>;
     initEvents(): void;
     /**
      * Update sybols with existing components
@@ -18,6 +20,13 @@ export declare class Symbols extends Backbone.Collection<Symbol> {
      * @private
      */
     updateComponents(components: Component[]): void;
+    /**
+     * Prevent drop on a symbol into itself or things similar
+     */
+    onDrag({ target, parent }: {
+        target: any;
+        parent: any;
+    }): void;
     /**
      * Add a component to a symbol
      * This is useful only when loading new HTML content
@@ -39,7 +48,7 @@ export declare class Symbols extends Backbone.Collection<Symbol> {
     /**
      * A component's css classes have changed
      */
-    onUpdateClasses(c: Component): void;
+    onUpdateClasses(c: Component): Promise<void>;
     /**
      * A component's text content has changed
      */

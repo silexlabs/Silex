@@ -42,6 +42,7 @@ var storage_1 = __importDefault(require("./storage"));
 var Symbols_1 = require("./model/Symbols");
 var SymbolsView_1 = __importDefault(require("./view/SymbolsView"));
 var SymbolsCommands_1 = __importStar(require("./SymbolsCommands")), cmd = SymbolsCommands_1;
+var traits_1 = __importDefault(require("./view/traits"));
 exports.cmdAddSymbol = cmd.cmdAdd;
 exports.cmdRemoveSymbol = cmd.cmdRemove;
 exports.cmdUnlinkSymbol = cmd.cmdUnlink;
@@ -50,8 +51,10 @@ exports.default = (function (editor, opts) {
     if (opts === void 0) { opts = {}; }
     var options = __assign({
         appendTo: '#symbols',
-        selectColor: '#EEE',
         emptyText: 'No symbol yet.',
+        primaryColor: '#b9a5a6',
+        secondaryColor: '#463a3c',
+        highlightColor: '#d97aa6',
     }, opts);
     // store the symbols data with the site
     (0, storage_1.default)(editor);
@@ -65,6 +68,8 @@ exports.default = (function (editor, opts) {
         // Display symbols
         new SymbolsView_1.default(__assign(__assign({}, options), { editor: editor, model: editor.Symbols }));
         // Commands to create/delete symbols
-        (0, SymbolsCommands_1.default)({ options: options, editor: editor });
+        (0, SymbolsCommands_1.default)(editor, options);
+        // Add traits like a plugin
+        (0, traits_1.default)(editor, options);
     });
 });

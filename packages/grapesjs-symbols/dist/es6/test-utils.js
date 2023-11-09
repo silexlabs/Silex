@@ -1,5 +1,5 @@
 import grapesjs from 'grapesjs';
-import { createSymbol } from './model/Symbol';
+import { createSymbol } from './model/Symbol.js';
 //  let's use the editor in headless mode
 //  to create components
 var editor = grapesjs.init({
@@ -41,10 +41,10 @@ export function getTestSymbols() {
     };
     // This is equivalent to
     // const s1 = createSymbol(comp1, s1Data)
-    var s1 = createSymbol(comp1, s1Data);
+    var s1 = createSymbol(editor, comp1, s1Data);
     s1.addInstance(comp2);
     s1.get('model').set('test', 'S1 model');
-    var s2 = createSymbol(comp3, {
+    var s2 = createSymbol(editor, comp3, {
         icon: 'fa-cog',
         label: 'S2',
     });

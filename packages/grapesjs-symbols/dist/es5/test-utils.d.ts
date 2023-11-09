@@ -1,4 +1,4 @@
-import { SymbolEditor } from './model/Symbols';
+import { SymbolEditor } from './model/Symbols.js';
 export declare function getTestSymbols(): {
     child11: any;
     child12: any;
@@ -8,8 +8,8 @@ export declare function getTestSymbols(): {
     child211: any;
     comp1: any;
     comp2: any;
-    s1: import("./model/Symbol").default;
-    s2: import("./model/Symbol").default;
+    s1: import("./model/Symbol.js").default;
+    s2: import("./model/Symbol.js").default;
     s1Data: {
         icon: string;
         label: string;

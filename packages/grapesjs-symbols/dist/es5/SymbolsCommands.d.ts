@@ -5,10 +5,8 @@ export declare const cmdAdd = "symbols:add";
 export declare const cmdRemove = "symbols:remove";
 export declare const cmdUnlink = "symbols:unlink";
 export declare const cmdCreate = "symbols:create";
-export default function ({ editor, options }: {
-    editor: Editor;
-    options: any;
-}): void;
+export default function (editor: SymbolEditor, options?: any): void;
+export declare function displayError(editor: Editor, title: string, message: string): void;
 /**
  * Create a new symbol
  * @param options.component - the component which will become the first instance of the symbol
@@ -36,4 +34,4 @@ export declare function createSymbolInstance(editor: SymbolEditor, sender: any, 
     symbol: Symbol;
     pos: any;
     target: HTMLElement;
-}): Component;
+}): Component | null;

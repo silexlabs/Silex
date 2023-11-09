@@ -29,10 +29,9 @@ export declare function all(c: Component): Component[];
 export declare function find(c: Component, symbolChildId: string): Component | null;
 /**
  * find the first symbol in the parents (or the element itself)
- * exported for unit tests
  * @private
  */
-export declare function closestInstance(c: Component): Component;
+export declare function closestInstance(c: Component): Component | undefined;
 /**
  * @param {Component} c - a component
  * @return {Boolean} true if the component has a symbol id
@@ -63,3 +62,10 @@ export declare function setCaret(el: HTMLElement, { path, pos }: {
     path: number[];
     pos: number;
 }): void;
+/**
+ * Find if a parent is also a child of the symbol
+ */
+export declare function allowDrop({ target, parent }: {
+    target: any;
+    parent: any;
+}): boolean;

@@ -45,7 +45,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCaret = exports.getCaret = exports.getNode = exports.getNodePath = exports.wait = exports.hasSymbolId = exports.closestInstance = exports.find = exports.all = exports.children = exports.getAllComponentsFromEditor = exports.setDirty = void 0;
+exports.allowDrop = exports.setCaret = exports.getCaret = exports.getNode = exports.getNodePath = exports.wait = exports.hasSymbolId = exports.closestInstance = exports.find = exports.all = exports.children = exports.getAllComponentsFromEditor = exports.setDirty = void 0;
+var Symbol_1 = require("./model/Symbol");
 /**
  * set editor as dirty
  */
@@ -124,7 +125,6 @@ function find(c, symbolChildId) {
 exports.find = find;
 /**
  * find the first symbol in the parents (or the element itself)
- * exported for unit tests
  * @private
  */
 function closestInstance(c) {
@@ -218,3 +218,40 @@ function setCaret(el, _a) {
     }
 }
 exports.setCaret = setCaret;
+/**
+ * find the all the symbols in the parents (or the element itself)
+ * @private
+ */
+function allParentInstances(c, includeSelf) {
+    var result = [];
+    var ptr = includeSelf ? c : c.parent();
+    while (ptr) {
+        if (hasSymbolId(ptr))
+            result.push(ptr);
+        ptr = ptr.parent();
+    }
+    return result;
+}
+/**
+ * find the all the symbols in the children (or the element itself)
+ */
+function allChildrenInstances(c, includeSelf) {
+    var children = c.components().toArray();
+    var result = [];
+    if (includeSelf && hasSymbolId(c))
+        result.push(c);
+    return [c]
+        .concat(children
+        .flatMap(function (child) { return allChildrenInstances(child, true); }) // include self only for the subsequent levels
+    );
+}
+/**
+ * Find if a parent is also a child of the symbol
+ */
+function allowDrop(_a) {
+    var target = _a.target, parent = _a.parent;
+    var allParents = allParentInstances(parent, true);
+    var allChildren = allChildrenInstances(target, false);
+    return !allParents.find(function (p) { return allChildren.find(function (c) { return (0, Symbol_1.getSymbolId)(c) === (0, Symbol_1.getSymbolId)(p); }); });
+}
+exports.allowDrop = allowDrop;

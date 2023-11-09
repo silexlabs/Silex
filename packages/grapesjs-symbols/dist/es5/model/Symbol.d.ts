@@ -1,5 +1,9 @@
-import Backbone from 'backbone';
 import { Component, ComponentProperties } from 'grapesjs';
+import { SymbolEditor } from './Symbols';
+import Backbone from 'backbone';
+export declare const SYMBOL_ID_ATTRIBUTE = "symbolId";
+export declare const SYMBOL_CHILD_ID_ATTRIBUTE = "symbolChildId";
+export declare const SYMBOL_SYNC_ATTRIBUTE = "symbolSync";
 /**
  * A Symbol class holds the data about a symbol: label, icon
  * The `model` attribute is a grapesjs Component used to create new instances
@@ -144,5 +148,5 @@ export declare function initSymbolChild(c: Component, force?: boolean): void;
  * the component will be cloned and stored as the model
  * @return {Symbol}
  */
-export declare function createSymbol(c: Component, attributes: ComponentProperties): Symbol;
+export declare function createSymbol(editor: SymbolEditor, c: Component, attributes: ComponentProperties): Symbol;
 export default Symbol;

@@ -13,6 +13,7 @@ import Storage from './storage';
 import { Symbols } from './model/Symbols';
 import SymbolsView from './view/SymbolsView';
 import initCommands, * as cmd from './SymbolsCommands';
+import initTraits from './view/traits';
 export var cmdAddSymbol = cmd.cmdAdd;
 export var cmdRemoveSymbol = cmd.cmdRemove;
 export var cmdUnlinkSymbol = cmd.cmdUnlink;
@@ -21,8 +22,10 @@ export default (function (editor, opts) {
     if (opts === void 0) { opts = {}; }
     var options = __assign({
         appendTo: '#symbols',
-        selectColor: '#EEE',
         emptyText: 'No symbol yet.',
+        primaryColor: '#b9a5a6',
+        secondaryColor: '#463a3c',
+        highlightColor: '#d97aa6',
     }, opts);
     // store the symbols data with the site
     Storage(editor);
@@ -36,6 +39,8 @@ export default (function (editor, opts) {
         // Display symbols
         new SymbolsView(__assign(__assign({}, options), { editor: editor, model: editor.Symbols }));
         // Commands to create/delete symbols
-        initCommands({ options: options, editor: editor });
+        initCommands(editor, options);
+        // Add traits like a plugin
+        initTraits(editor, options);
     });
 });

@@ -29,10 +29,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSymbol = exports.initSymbolChild = exports.initModel = exports.cleanup = exports.getSymbolId = void 0;
-var backbone_1 = __importDefault(require("backbone"));
+exports.createSymbol = exports.initSymbolChild = exports.initModel = exports.cleanup = exports.getSymbolId = exports.SYMBOL_SYNC_ATTRIBUTE = exports.SYMBOL_CHILD_ID_ATTRIBUTE = exports.SYMBOL_ID_ATTRIBUTE = void 0;
 var utils_1 = require("../utils");
-var underscore_1 = require("underscore");
+var backbone_1 = __importDefault(require("backbone"));
+var underscore_1 = __importDefault(require("underscore"));
+exports.SYMBOL_ID_ATTRIBUTE = 'symbolId';
+exports.SYMBOL_CHILD_ID_ATTRIBUTE = 'symbolChildId';
+exports.SYMBOL_SYNC_ATTRIBUTE = 'symbolSync';
 /**
  * A Symbol class holds the data about a symbol: label, icon
  * The `model` attribute is a grapesjs Component used to create new instances
@@ -74,14 +77,19 @@ var Symbol = /** @class */ (function (_super) {
         if (!this.has('instances')) {
             this.set('instances', new Map());
         }
-        // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
-        // in which case we convert model to a real component
-        // TODO: Needs review
-        var model = this.get('model');
-        if (!model.cid) { // FIXME: should be typeof model = 'string'
+        if (this.collection) { // This is false during unit tests
+            // Get a ref to grapesjs editor
             var editor = this.collection.editor;
-            var modelComp = editor.addComponents([model])[0];
-            this.set('model', modelComp);
+            // `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
+            // in which case we convert model to a real component
+            // TODO: Needs review
+            var model = this.get('model');
+            if (!model.cid) { // FIXME: should be typeof model = 'string'
+                var modelComp = editor.addComponents([model])[0];
+                this.set('model', modelComp);
+            }
+            // Make sure the symbol instances are undoable
+            editor.UndoManager.add(this);
         }
     };
     /**
@@ -123,9 +131,9 @@ var Symbol = /** @class */ (function (_super) {
             var dstChildren = srcChildren
                 .map(function (srcChild) {
                 // Get a child or the root
-                return srcChild.has('symbolId')
+                return srcChild.has(exports.SYMBOL_ID_ATTRIBUTE)
                     ? dstInst // this is the root
-                    : (0, utils_1.find)(dstInst, srcChild.get('symbolChildId')); // this is a child
+                    : (0, utils_1.find)(dstInst, srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE)); // this is a child
             });
             cbk(dstChildren, dstInst);
         });
@@ -138,20 +146,24 @@ var Symbol = /** @class */ (function (_super) {
      */
     Symbol.prototype.applyClasses = function (srcInst, srcChild) {
         var _this = this;
+        if (srcInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+            return;
         this.browseInstancesAndModel(srcInst, [srcChild], function (_a, dstInst) {
             var dstChild = _a[0];
+            if (dstInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+                return;
             if (dstChild) {
                 dstChild.setClass(srcChild.getClasses());
             }
             else {
-                console.error("Could not sync classes for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid));
+                console.error("Could not sync classes for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid));
             }
         });
     };
     Symbol.prototype.getIndex = function (parent, symbolChildId) {
         // TODO: Needs review
         return parent.components().toArray()
-            .findIndex(function (c) { return c.get('symbolChildId') === symbolChildId; });
+            .findIndex(function (c) { return c.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE) === symbolChildId; });
     };
     /**
      * Update attributes of all instances and their children according to changes of a component
@@ -162,16 +174,20 @@ var Symbol = /** @class */ (function (_super) {
      */
     Symbol.prototype.applyChildren = function (srcInst, parent, srcChild) {
         var _this = this;
+        if (srcInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+            return;
         if (!parent)
             throw new Error("Could not sync children for symbol ".concat(this.cid, ": ").concat(srcChild.cid, " has no parent"));
         // Get all instances of this symbol
-        var allInst = (0, utils_1.all)(srcInst);
+        var allInst = (0, utils_1.all)(srcInst)
+            .filter(function (inst) { return inst.get(exports.SYMBOL_SYNC_ATTRIBUTE) !== false; });
+        // Handle the create/update/remove cases
         if (allInst.includes(srcChild)) {
             // The child is in the instance
-            var symbolChildId_1 = srcChild.get('symbolChildId');
+            var symbolChildId_1 = srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE);
             // Case of a child being duplicated inside the symbol
             var isDuplicate = !!symbolChildId_1 && allInst
-                .filter(function (c) { return c.get('symbolChildId') === symbolChildId_1 && c.parent() === parent; }).length > 1;
+                .filter(function (c) { return c.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE) === symbolChildId_1 && c.parent() === parent; }).length > 1;
             if (symbolChildId_1 && !isDuplicate) {
                 // Case of a moving child inside the instance
                 this.browseInstancesAndModel(srcInst, [srcChild, parent], function (_a, dstInst) {
@@ -180,7 +196,7 @@ var Symbol = /** @class */ (function (_super) {
                         dstParent.append(dstChild, { at: srcChild.index() });
                     }
                     else {
-                        console.error("Could not sync child for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid), { dstChild: dstChild, dstParent: dstParent });
+                        console.error("Could not sync child for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid), { dstChild: dstChild, dstParent: dstParent });
                     }
                 });
             }
@@ -198,7 +214,7 @@ var Symbol = /** @class */ (function (_super) {
                         dstParent.append(clone, { at: srcChild.index() });
                     }
                     else {
-                        console.error("Could not sync attributes for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid));
+                        console.error("Could not sync attributes for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid));
                     }
                 });
             }
@@ -212,11 +228,11 @@ var Symbol = /** @class */ (function (_super) {
                     dstChild.remove();
                 }
                 else {
-                    console.error("Could not sync attributes for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid));
+                    console.error("Could not sync attributes for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid));
                 }
             });
             // this child is not part of a symbol anymore
-            srcChild.set('symbolChildId');
+            srcChild.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE);
         }
     };
     /**
@@ -227,14 +243,18 @@ var Symbol = /** @class */ (function (_super) {
      */
     Symbol.prototype.applyAttributes = function (srcInst, srcChild) {
         var _this = this;
+        if (srcInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+            return;
         this.browseInstancesAndModel(srcInst, [srcChild], function (_a, dstInst) {
             var dstChild = _a[0];
+            if (dstInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+                return;
             if (dstChild) {
                 // doesnt work: dstChild.setAttributes(srcChild.getAttributes())
                 dstChild.attributes = srcChild.attributes;
             }
             else {
-                console.error("Could not sync attributes for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid));
+                console.error("Could not sync attributes for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid));
             }
         });
     };
@@ -247,11 +267,15 @@ var Symbol = /** @class */ (function (_super) {
      */
     Symbol.prototype.applyContent = function (srcInst, srcChild) {
         var _this = this;
+        if (srcInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+            return;
         // Store the caret position in the contenteditable container
         var el = srcChild.getCurrentView().el;
         var caret = (0, utils_1.getCaret)(el);
         this.browseInstancesAndModel(srcInst, [srcChild], function (_a, dstInst) {
             var dstChild = _a[0];
+            if (dstInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+                return;
             if (dstChild) {
                 if (dstChild.get('type') === 'text') { // FIXME: sometimes type is ""
                     // Sets the new content
@@ -262,7 +286,7 @@ var Symbol = /** @class */ (function (_super) {
                 }
             }
             else {
-                console.error("Could not sync content for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid));
+                console.error("Could not sync content for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid));
             }
         });
         // Restore the caret position in the contenteditable container
@@ -284,14 +308,18 @@ var Symbol = /** @class */ (function (_super) {
      */
     Symbol.prototype.applyStyle = function (srcInst, srcChild, changed, removed) {
         var _this = this;
+        if (srcInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+            return;
         this.browseInstancesAndModel(srcInst, [srcChild], function (_a, dstInst) {
             var dstChild = _a[0];
+            if (dstInst.get(exports.SYMBOL_SYNC_ATTRIBUTE) === false)
+                return;
             if (dstChild) {
                 dstChild.setStyle(__assign(__assign({}, dstChild.getStyle()), changed));
                 removed.forEach(function (styleName) { return dstChild.removeStyle(styleName); });
             }
             else {
-                console.error("Could not sync content for symbol ".concat(_this.cid, ": ").concat(srcChild.get('symbolChildId'), " not found in ").concat(dstInst.cid));
+                console.error("Could not sync content for symbol ".concat(_this.cid, ": ").concat(srcChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE), " not found in ").concat(dstInst.cid));
             }
         });
     };
@@ -319,7 +347,7 @@ var Symbol = /** @class */ (function (_super) {
      * @return {Boolean} true if the component is a symbol
      */
     Symbol.prototype.isInstance = function (c) {
-        return !!c.get('symbolId')
+        return !!c.get(exports.SYMBOL_ID_ATTRIBUTE)
             && this.get('instances').has(c.cid);
     };
     /**
@@ -336,10 +364,10 @@ var Symbol = /** @class */ (function (_super) {
      * - remove the reference in instances
      */
     Symbol.prototype.unlink = function (c) {
-        c.set('symbolId');
+        c.set(exports.SYMBOL_ID_ATTRIBUTE);
         this.get('instances').delete(c.cid);
         (0, utils_1.children)(c)
-            .forEach(function (child) { return child.set('symbolChildId'); });
+            .forEach(function (child) { return child.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE); });
     };
     return Symbol;
 }(backbone_1.default.Model));
@@ -348,15 +376,15 @@ var Symbol = /** @class */ (function (_super) {
  * @return the symbol ID if the component is a symbol
  */
 function getSymbolId(c) {
-    return c.get('symbolId');
+    return c.get(exports.SYMBOL_ID_ATTRIBUTE);
 }
 exports.getSymbolId = getSymbolId;
 /**
  * remove symbols IDs from an instance
  */
 function cleanup(c) {
-    c.set('symbolId');
-    c.set('symbolChildId');
+    c.set(exports.SYMBOL_ID_ATTRIBUTE);
+    c.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE);
 }
 exports.cleanup = cleanup;
 /**
@@ -367,11 +395,11 @@ exports.cleanup = cleanup;
 function initModel(c, _a) {
     var icon = _a.icon, label = _a.label, symbolId = _a.symbolId;
     // check that it is not part of a Symbol already
-    if (c.has('symbolId')) {
+    if (c.has(exports.SYMBOL_ID_ATTRIBUTE)) {
         throw new Error('Could not init Symbol model: the model has already been init');
     }
     // This is the symbol cid
-    c.set('symbolId', symbolId);
+    c.set(exports.SYMBOL_ID_ATTRIBUTE, symbolId);
     // add symbol data
     c.set('icon', "<span class=\"fa ".concat(icon, "\"></span>"));
     // Show that this is a symbol, add an icon to the toolbar UI
@@ -398,8 +426,8 @@ exports.initModel = initModel;
  */
 function initSymbolChild(c, force) {
     if (force === void 0) { force = false; }
-    if (force || !c.has('symbolChildId')) {
-        c.set('symbolChildId', c.cid);
+    if (force || !c.has(exports.SYMBOL_CHILD_ID_ATTRIBUTE)) {
+        c.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE, c.cid);
     }
 }
 exports.initSymbolChild = initSymbolChild;
@@ -409,9 +437,11 @@ exports.initSymbolChild = initSymbolChild;
  * the component will be cloned and stored as the model
  * @return {Symbol}
  */
-function createSymbol(c, attributes) {
+function createSymbol(editor, c, attributes) {
     var _a;
-    var symbolId = (_a = attributes.symbolId) !== null && _a !== void 0 ? _a : (0, underscore_1.uniqueId)();
+    var symbolId = (_a = attributes.symbolId) !== null && _a !== void 0 ? _a : "s_".concat(underscore_1.default.uniqueId(), "_").concat(new Date().getTime());
+    // If the component is in a symbol, we need to update all instances
+    var inst = (0, utils_1.closestInstance)(c);
     // Init component with symbolId and children
     initModel(c, __assign(__assign({}, attributes), { symbolId: symbolId }));
     // Create a Symbol
@@ -420,6 +450,31 @@ function createSymbol(c, attributes) {
         model: c.clone() }));
     // Store a ref
     s.addInstance(c);
+    // Handle the case where the new symbol is a child of another symbol
+    if (inst) {
+        // For all instances containing c, make c an instance of the new symbolId
+        var parentSymbolId = getSymbolId(inst);
+        var parentSymbol_1 = editor.Symbols.get(parentSymbolId);
+        // For each child of the new symbol
+        (0, utils_1.all)(c)
+            // For each instance of the parent symbol (containing a soon to be instance of s)
+            .forEach(function (child) {
+            // Here child is a component of the new symbol
+            parentSymbol_1.getAll(null, inst)
+                .forEach(function (otherInst) {
+                var _a;
+                // For each instance of s and its children
+                var otherChild = (0, utils_1.find)(otherInst, child.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE));
+                console.log('otherChild', (_a = otherChild === null || otherChild === void 0 ? void 0 : otherChild.view) === null || _a === void 0 ? void 0 : _a.el, otherChild === null || otherChild === void 0 ? void 0 : otherChild.get(exports.SYMBOL_ID_ATTRIBUTE), otherChild === null || otherChild === void 0 ? void 0 : otherChild.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE));
+                otherChild === null || otherChild === void 0 ? void 0 : otherChild.set(exports.SYMBOL_ID_ATTRIBUTE, symbolId);
+                otherChild === null || otherChild === void 0 ? void 0 : otherChild.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE, child.get(exports.SYMBOL_CHILD_ID_ATTRIBUTE));
+                // Add the new instance to the symbol
+                if (child === c) {
+                    s.addInstance(otherChild);
+                }
+            });
+        });
+    }
     return s;
 }
 exports.createSymbol = createSymbol;

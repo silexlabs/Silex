@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTestSymbols = void 0;
 var grapesjs_1 = __importDefault(require("grapesjs"));
-var Symbol_1 = require("./model/Symbol");
+var Symbol_js_1 = require("./model/Symbol.js");
 //  let's use the editor in headless mode
 //  to create components
 var editor = grapesjs_1.default.init({
@@ -47,10 +47,10 @@ function getTestSymbols() {
     };
     // This is equivalent to
     // const s1 = createSymbol(comp1, s1Data)
-    var s1 = (0, Symbol_1.createSymbol)(comp1, s1Data);
+    var s1 = (0, Symbol_js_1.createSymbol)(editor, comp1, s1Data);
     s1.addInstance(comp2);
     s1.get('model').set('test', 'S1 model');
-    var s2 = (0, Symbol_1.createSymbol)(comp3, {
+    var s2 = (0, Symbol_js_1.createSymbol)(editor, comp3, {
         icon: 'fa-cog',
         label: 'S2',
     });

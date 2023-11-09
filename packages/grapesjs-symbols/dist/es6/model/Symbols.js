@@ -72,11 +72,10 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 import Backbone from 'backbone';
-import { closestInstance, wait } from '../utils';
+import { allowDrop, closestInstance, wait } from '../utils';
 import Symbol, { getSymbolId } from './Symbol';
 var Symbols = /** @class */ (function (_super) {
     __extends(Symbols, _super);
-    //initialize(models, {editor, options}) {
     function Symbols(models, _a) {
         var _this = this;
         var editor = _a.editor, options = _a.options, opts = __rest(_a, ["editor", "options"]);
@@ -87,8 +86,31 @@ var Symbols = /** @class */ (function (_super) {
         if (!options.headless) {
             _this.initEvents();
         }
+        // Make sure the symbol CRUD operations are undoable
+        _this.editor.UndoManager.add(_this);
         return _this;
     }
+    Symbols.prototype.disableUndo = function (disable) {
+        if (disable)
+            this.editor.UndoManager.stop();
+        else
+            this.editor.UndoManager.start();
+    };
+    Symbols.prototype.preventUndo = function (cbk) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.editor.UndoManager.stop();
+                        return [4 /*yield*/, cbk()];
+                    case 1:
+                        _a.sent();
+                        this.editor.UndoManager.start();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     Symbols.prototype.initEvents = function () {
         var _this = this;
         this.editor.on('component:create', function (c) { return _this.onAdd(c); });
@@ -97,6 +119,16 @@ var Symbols = /** @class */ (function (_super) {
         this.editor.on('component:update:classes', function (c) { return _this.onUpdateClasses(c); });
         this.editor.on('component:input', function (c) { return _this.onUpdateContent(c); });
         this.editor.on('styleable:change', function (cssRule) { return _this.onStyleChanged(cssRule); });
+        this.editor.on('component:drag', function (_a) {
+            var target = _a.target, parent = _a.parent;
+            return _this.onDrag({ target: target, parent: parent });
+        });
+        //this.editor.on('undo', () => {
+        //  this.updating = true
+        //  setTimeout(() => {
+        //    this.updating = false
+        //  }, 1000)
+        //})
     };
     /**
      * Update sybols with existing components
@@ -108,6 +140,20 @@ var Symbols = /** @class */ (function (_super) {
     Symbols.prototype.updateComponents = function (components) {
         var _this = this;
         components.forEach(function (c) { return _this.onAdd(c); });
+    };
+    /**
+     * Prevent drop on a symbol into itself or things similar
+     */
+    Symbols.prototype.onDrag = function (_a) {
+        var target = _a.target, parent = _a.parent;
+        if ((parent === null || parent === void 0 ? void 0 : parent.get('droppable')) && !allowDrop({ target: target, parent: parent })) {
+            // Prevent drop
+            parent.set('droppable', false);
+            // Reset after drop
+            this.editor.once('component:drag:end', function () {
+                parent.set('droppable', true);
+            });
+        }
     };
     /**
      * Add a component to a symbol
@@ -143,17 +189,18 @@ var Symbols = /** @class */ (function (_super) {
      */
     Symbols.prototype.onUpdateChildren = function (parent, component) {
         return __awaiter(this, void 0, void 0, function () {
-            var inst, symbolId, s;
+            var inst, symbolId, s_1;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (this.updating)
                             return [2 /*return*/];
                         inst = closestInstance(parent);
-                        if (!inst) return [3 /*break*/, 3];
+                        if (!inst) return [3 /*break*/, 4];
                         symbolId = getSymbolId(inst);
-                        s = this.get(symbolId);
-                        if (!s) return [3 /*break*/, 2];
+                        s_1 = this.get(symbolId);
+                        if (!s_1) return [3 /*break*/, 3];
                         // wait for the component's children to be changed
                         // I couldn't find an event like `component:update:components:after`
                         // TODO: need review
@@ -164,13 +211,20 @@ var Symbols = /** @class */ (function (_super) {
                         // TODO: need review
                         _a.sent();
                         this.updating = true;
-                        s.applyChildren(inst, parent, component);
-                        this.updating = false;
-                        return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.preventUndo(function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    s_1.applyChildren(inst, parent, component);
+                                    return [2 /*return*/];
+                                });
+                            }); })];
                     case 2:
+                        _a.sent();
+                        this.updating = false;
+                        return [3 /*break*/, 4];
+                    case 3:
                         console.warn('Could not update instance', component, ': could not find the symbol with id', symbolId);
-                        _a.label = 3;
-                    case 3: return [2 /*return*/];
+                        _a.label = 4;
+                    case 4: return [2 /*return*/];
                 }
             });
         });
@@ -199,21 +253,34 @@ var Symbols = /** @class */ (function (_super) {
      * A component's css classes have changed
      */
     Symbols.prototype.onUpdateClasses = function (c) {
-        if (this.updating)
-            return;
-        var inst = closestInstance(c);
-        if (inst) {
-            var symbolId = getSymbolId(inst);
-            var s = this.get(symbolId);
-            if (s) {
-                this.updating = true;
-                s.applyClasses(inst, c);
-                this.updating = false;
-            }
-            else {
-                console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId);
-            }
-        }
+        return __awaiter(this, void 0, void 0, function () {
+            var inst, symbolId, s_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.updating)
+                            return [2 /*return*/];
+                        inst = closestInstance(c);
+                        if (!inst) return [3 /*break*/, 3];
+                        symbolId = getSymbolId(inst);
+                        s_2 = this.get(symbolId);
+                        if (!s_2) return [3 /*break*/, 2];
+                        return [4 /*yield*/, wait()]; // Needed for undo to work
+                    case 1:
+                        _a.sent(); // Needed for undo to work
+                        this.updating = true;
+                        this.preventUndo(function () {
+                            s_2.applyClasses(inst, c);
+                        });
+                        this.updating = false;
+                        return [3 /*break*/, 3];
+                    case 2:
+                        console.warn('Could not update instance', c, ': could not find the symbol with id', symbolId);
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
     };
     /**
      * A component's text content has changed
@@ -224,10 +291,12 @@ var Symbols = /** @class */ (function (_super) {
         var inst = closestInstance(c);
         if (inst) {
             var symbolId = getSymbolId(inst);
-            var s = this.get(symbolId);
-            if (s) {
+            var s_3 = this.get(symbolId);
+            if (s_3) {
                 this.updating = true;
-                s.applyContent(inst, c);
+                this.preventUndo(function () {
+                    s_3.applyContent(inst, c);
+                });
                 this.updating = false;
             }
             else {
