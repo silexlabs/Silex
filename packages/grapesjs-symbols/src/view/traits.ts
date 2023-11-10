@@ -83,29 +83,33 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
       updateUi(elInput, component)
     },
   })
-  // Add the new trait to all component types
-  editor.DomComponents.getTypes().map(type => {
-    editor.DomComponents.addType(type.id, {
-      //isComponent: el => isComponent(el),
-      model: {
-        defaults: {
-          traits: [
-            // Keep the type original traits
-            ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
-            // Add the new trait
-            //{
-            //  type: 'checkbox',
-            //  name: 'In sync',
-            //  //valueTrue: 'YES', // Value to assign when is checked, default: `true`
-            //  //valueFalse: 'NO', // Value to assign when is unchecked, default: `false`
-            //}
-            {
-              type: 'symbol-trait',
-              name: 'Symbol',
-            }
-          ]
-        }
-      }
-    })
+  // Add trait to symbols when the user selects one
+  editor.on('component:selected', component => {
+    const symbolId = component && getSymbolId(component)
+    if(symbolId) {
+      component.addTrait({
+        type: 'symbol-trait',
+        name: 'Symbol',
+      })
+    }
   })
+  //// Add the new trait to all component types
+  //editor.DomComponents.getTypes().forEach(type => {
+  //  editor.DomComponents.addType(type.id, {
+  //    //isComponent: el => isComponent(el),
+  //    model: {
+  //      defaults: {
+  //        traits: [
+  //          // Keep the type original traits
+  //          ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
+  //          // Add the new trait
+  //          {
+  //            type: 'symbol-trait',
+  //            name: 'Symbol',
+  //          }
+  //        ]
+  //      }
+  //    }
+  //  })
+  //})
 }
