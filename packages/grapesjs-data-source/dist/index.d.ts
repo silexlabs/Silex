@@ -52,13 +52,14 @@ export interface BaseProperty {
 	propType: "field";
 	dataSourceId?: DataSourceId;
 }
+export type FieldOptions = Record<string, unknown>;
 export interface FieldProperty extends BaseProperty {
 	propType: "field";
 	typeIds: TypeId[];
 	fieldId: FieldId;
 	label: string;
 	kind: FieldKind;
-	options?: Record<string, unknown>;
+	options?: FieldOptions;
 	optionsForm?: (input: Field | null, options: Options) => string | null;
 }
 /**
@@ -82,7 +83,7 @@ export interface Filter {
 export type StateId = string;
 export interface State {
 	type: "state";
-	id: StateId;
+	storedStateId: StateId;
 	label: string;
 	componentId: string;
 	exposed: boolean;
@@ -186,6 +187,14 @@ declare class DataTree {
 	getComponentExpressionsRecursive(component: Component): Expression[];
 	/**
 	 * Get all expressions used by a component
+	 * Resolves all states token as expressions recursively
+	 * Resulting expressions contain properties and filters only, no states anymore
+	 */
+	resolveState(state: State, component: Component): Expression | null;
+	/**
+	 * Get all expressions used by a component
+	 * Resolves all states token as expressions recursively
+	 * Resulting expressions contain properties and filters only, no states anymore
 	 */
 	getComponentExpressions(component: Component): Expression[];
 }
@@ -231,6 +240,43 @@ export interface ViewOptions {
 	styles?: string;
 	optionsStyles?: string;
 }
+/**
+ * Types
+ */
+export interface StoredState {
+	expression: Expression;
+}
+export type PersistantId = string;
+/**
+ * Get the persistant ID of a component
+ */
+export declare function getPersistantId(component: Component): PersistantId | null;
+/**
+ * Get the persistant ID of a component and create it if it does not exist
+ */
+export declare function getOrCreatePersistantId(component: Component): PersistantId;
+export declare function getStateLabel(component: Component | null | undefined, state: State): string;
+/**
+ * Find a component by its persistant ID in the current page
+ */
+export declare function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null;
+export declare function onStateChange(callback: (state: StoredState | null, component: Component) => void): () => void;
+/**
+ * List all exported states
+ */
+export declare function getStateIds(component: Component, exported?: boolean): StateId[];
+/**
+ * Get a state
+ */
+export declare function getState(component: Component, id: StateId, exported?: boolean): StoredState;
+/**
+ * Set a state
+ */
+export declare function setState(component: Component, id: StateId, state: StoredState, exported?: boolean): void;
+/**
+ * Remove a state
+ */
+export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
 /**
  * Add the DataSourceManager to the GrapesJs editor
  */

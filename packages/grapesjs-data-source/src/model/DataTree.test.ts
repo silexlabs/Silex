@@ -24,7 +24,6 @@ import { DataTree } from './DataTree'
 import { Type, Filter, FieldProperty, Field, State, Expression } from '../types'
 import { DataSourceEditor } from '..'
 import { getState, getStateIds, getOrCreatePersistantId, getParentByPersistentId } from './state'
-import { get } from 'jquery'
 
 // Mock only getState
 jest.mock('./state', () => ({

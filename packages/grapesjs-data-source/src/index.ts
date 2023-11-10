@@ -78,3 +78,5 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
  * This is replaced by the build script
  */
 export const version = '__VERSION__'
+
+export * from './model/state'

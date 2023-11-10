@@ -31,32 +31,26 @@ import { OPTIONS_STYLES } from "./defaultStyles"
 type PropsNames = 
   'innerHTML'
   | 'title'
-  | 'class'
+  | 'className'
   | 'style'
   | 'src'
   | 'href'
   | 'alt'
   | 'condition'
   | '__data'
-  | '__sort'
-  | '__limit'
-  | '__offset'
 
 export class PropertiesUi {
 
   protected propsSelectorRefs: Map<PropsNames, Ref<StepsSelector>> = new Map([
     ['innerHTML', createRef<StepsSelector>()],
     ['title', createRef<StepsSelector>()],
-    ['class', createRef<StepsSelector>()],
+    ['className', createRef<StepsSelector>()],
     ['style', createRef<StepsSelector>()],
     ['src', createRef<StepsSelector>()],
     ['href', createRef<StepsSelector>()],
     ['alt', createRef<StepsSelector>()],
     ['condition', createRef<StepsSelector>()],
     ['__data', createRef<StepsSelector>()],
-    ['__sort', createRef<StepsSelector>()],
-    ['__limit', createRef<StepsSelector>()],
-    ['__offset', createRef<StepsSelector>()],
   ])
 
   // Constructor
@@ -243,7 +237,7 @@ export class PropertiesUi {
   // Update the UI
   updateUi(component: Component | undefined, dataTree: DataTree) {
     if(!component) return
-    const dataStateType: Field | undefined = dataTree.getExpressionResultType(getState(component, '__data', false)?.expression ?? [], component) ?? undefined
+    //const dataStateType: Field | undefined = dataTree.getExpressionResultType(getState(component, '__data', false)?.expression ?? [], component) ?? undefined
     render(html`
       <style>
         ${this.options.styles}
@@ -255,7 +249,7 @@ export class PropertiesUi {
         <main>
           ${this.renderExpressionUi(component, dataTree, 'innerHTML', 'Content', true)}
           ${this.renderExpressionUi(component, dataTree, 'title', 'title', true)}
-          ${this.renderExpressionUi(component, dataTree, 'class', 'class', true)}
+          ${this.renderExpressionUi(component, dataTree, 'className', 'className', true)}
           ${this.renderExpressionUi(component, dataTree, 'style', 'style', true)}
           ${this.renderExpressionUi(component, dataTree, 'src', 'src', true)}
           ${this.renderExpressionUi(component, dataTree, 'href', 'href', true)}
@@ -289,9 +283,6 @@ export class PropertiesUi {
         <main>
           ${ component.has('dsLoop') ? html`
             ${this.renderExpressionUi(component, dataTree, '__data', 'data', false)}
-            ${this.renderPropertyUi(component, dataTree, '__sort', 'sort', dataStateType)}
-            ${this.renderExpressionUi(component, dataTree, '__limit', 'limit', true)}
-            ${this.renderExpressionUi(component, dataTree, '__offset', 'offset', true)}
           ` : ''}
         </main>
       </section>

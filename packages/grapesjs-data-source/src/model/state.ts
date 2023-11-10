@@ -56,7 +56,7 @@ export function getPersistantId(component: Component): PersistantId | null {
 export function getOrCreatePersistantId(component: Component): PersistantId {
   const persistantId = component.get(PERSISTANT_ID_KEY)
   if(persistantId) return persistantId
-  const newPersistantId = component.cid as PersistantId
+  const newPersistantId = component.ccid as PersistantId
   component.set(PERSISTANT_ID_KEY, newPersistantId)
   return newPersistantId
 }

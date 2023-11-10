@@ -97,7 +97,7 @@ const editor = grapesjs.init({
       dataSources: [{
         id: 'countries',
         type: 'graphql',
-        name: 'Countries',
+        label: 'Countries',
         url: 'https://countries.trevorblades.com/graphql',
         method: 'POST',
         headers: {
