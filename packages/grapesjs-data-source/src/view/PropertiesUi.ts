@@ -266,24 +266,10 @@ export class PropertiesUi {
       </section>
       <section class="ds-section">
         <div>
-          <label class="gjs-traits-label ds-label">Loop
-            <input
-              type="checkbox"
-              name="loop"
-              .checked=${component.has('dsLoop')}
-              @change=${(e: InputEvent) => {
-                if((e.target as HTMLInputElement).checked) {
-                  component.set('dsLoop', true)
-                } else {
-                  component.unset('dsLoop')
-                }
-              }}
-            ></label>
+          <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${ component.has('dsLoop') ? html`
-            ${this.renderExpressionUi(component, dataTree, '__data', 'data', false)}
-          ` : ''}
+          ${this.renderExpressionUi(component, dataTree, '__data', 'data', false)}
         </main>
       </section>
     `, this.wrapper)

@@ -184,28 +184,24 @@ export class DataTree {
         }))))
       // Get states from loops
       //if (parent !== component) {
-        if (parent.has('dsLoop')) {
-          const loopDataState = getState(parent, '__data', false)
-          if (loopDataState) {
-            const loopDataField = this.getExpressionResultType(loopDataState.expression, parent)
-            if (loopDataField) {
-              if(loopDataField.kind === 'list') {
-                loopProperties.push({
-                  type: 'state',
-                  storedStateId: '__data',
-                  componentId: getOrCreatePersistantId(parent),
-                  exposed: false,
-                  forceKind: 'object', // FIXME: this may be a scalar
-                  label: 'loop item',
-                })
-              } else {
-                console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
-              }
+        const loopDataState = getState(parent, '__data', false)
+        if (loopDataState) {
+          const loopDataField = this.getExpressionResultType(loopDataState.expression, parent)
+          if (loopDataField) {
+            if (loopDataField.kind === 'list') {
+              loopProperties.push({
+                type: 'state',
+                storedStateId: '__data',
+                componentId: getOrCreatePersistantId(parent),
+                exposed: false,
+                forceKind: 'object', // FIXME: this may be a scalar
+                label: 'loop item',
+              })
             } else {
-              console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
+              console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
             }
           } else {
-            console.warn('Loop data not found for component', parent)
+            console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
           }
         }
       //}
