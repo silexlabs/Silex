@@ -202,6 +202,7 @@ export enum ClientSideFileType {
   HTML = 'html',
   ASSET = 'asset',
   CSS = 'css',
+  OTHER = 'other',
 }
 
 export enum Initiator {
