@@ -16,27 +16,27 @@
  *
  */
 
-/**
- * @fileoverview
- * The footer is the part of the UI which contain the bread crumbs
- * Styles are in: src/scss/footer.scss
- */
-let _onFooter = []
-let footer
-export default function (editor, options) {
-  const panel = editor.Panels.addPanel({
-    id: 'footer',
-    visible: true,
-    buttons: [],
-  })
-  setTimeout(() => {
-    footer = panel.view?.el
-    _onFooter.forEach(cbk => cbk(footer))
-    _onFooter = []
-  })
-}
+const pasteBtnClass = 'fa fa-fw fa-paste silex-button'
+const disabledClass = ' disabled'
 
-export function onFooter(fn) {
-  if(footer) fn(footer)
-  else _onFooter.push(fn)
+export default function(editor) {
+  // Add copy/paste buttons in the top bar
+  const [copyBtn, pasteBtn] = editor.Panels.addButton('options', [{
+    id: 'copy',
+    className: 'fa fa-fw fa-copy',
+    command: 'core:copy',
+    attributes: { title: 'Copy (Ctrl+C)' },
+  }, {
+    id: 'paste',
+    className: pasteBtnClass + disabledClass,
+    command: 'core:paste',
+    attributes: { title: 'Paste (Ctrl+V)' },
+    active: false,
+  }])
+
+  // Disable paste button if clipboard is empty
+  editor.EditorModel.on('change:clipboard', (model, value) => {
+    const hasClipboard = value && value.length > 0
+    pasteBtn.set('className', pasteBtnClass + (hasClipboard ? '' : disabledClass))
+  })
 }

@@ -87,6 +87,7 @@ input.silex-button[type="submit"] {
   padding: 5px;
 }
 
+.silex-button.disabled,
 .silex-button[disabled] {
   opacity: .8;
   cursor: unset;
@@ -102,6 +103,7 @@ input.silex-button[type="submit"] {
 
 .silex-button--size {
   max-height: 30px;
+  margin: 0 10px;
 }
 
 .silex-button--small {

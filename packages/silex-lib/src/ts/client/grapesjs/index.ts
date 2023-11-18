@@ -54,6 +54,7 @@ import { semanticPlugin } from './semantic'
 import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
+import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { ConnectorId, WebsiteId } from '../../types'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
@@ -67,6 +68,7 @@ const plugins = [
   {name: './page-panel', value: pagePanelPlugin},
   {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
   {name: './blocks', value: blocksPlugin},
+  {name: './view-buttons', value: ViewButtons},
   {name: './semantic', value: semanticPlugin},
   {name: './rich-text', value: richTextPlugin},
   {name: 'grapesjs-style-filter', value: styleFilterPlugin},
@@ -332,17 +334,23 @@ export async function initEditor(config: EditorConfig) {
       modalImportTitle: 'Import from website',
     }))
 
+    // Adjustments to do when the editor is ready
     editor.on('load', () => {
-      // remove blocks and layers buttons from the properties
-      editor.Panels.getPanel('views').buttons.remove('open-blocks')
-      editor.Panels.getPanel('views').buttons.remove('open-layers')
-      editor.Panels.getPanel('views').view.el.firstChild.style.justifyContent = 'initial' // align left
+      const views = editor.Panels.getPanel('views')
+
+      // Remove blocks and layers buttons from the properties
+      // This is because in Silex they are on the left
+      views.buttons.remove('open-blocks')
+      views.buttons.remove('open-layers')
+
+      // Remove useless buttons
       editor.Panels.getPanel('options').buttons.remove('export-template')
 
+      // Render the block manager, otherwise it is empty
       editor.BlockManager.render(null)
 
       // use the style filter plugin
-      editor.StyleManager.addProperty('extra',{ extend: 'filter' })
+      editor.StyleManager.addProperty('extra', { extend: 'filter' })
 
       // GrapesJs editor is ready
       resolve(editor)
