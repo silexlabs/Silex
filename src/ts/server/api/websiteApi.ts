@@ -282,7 +282,6 @@ export default function (config: ServerConfig, opts = {}): Router {
 
       // Get the file data from the request
       const form = formidable({
-        filename: (name, ext, part, _form) => `${name}${ext}`,
         multiples: true,
         keepExtensions: true,
       })
@@ -295,12 +294,13 @@ export default function (config: ServerConfig, opts = {}): Router {
             console.error('Error parsing upload data', err)
             reject(new ApiError('Error parsing upload data: ' + err.message, 400))
           } else {
-            const files = ([].concat(_files['files[]']) as PersistentFile[])
+            const files = ([].concat(_files['files[]'] as PersistentFile) as PersistentFile[])
               .map(file => file.toJSON())
               .map(file => ({
                 path: `/${file.originalFilename}`,
                 content: createReadStream(file.filepath),
               }))
+            console.log('files', files)
             resolve(files)
           }
         })
