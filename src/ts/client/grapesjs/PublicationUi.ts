@@ -125,13 +125,16 @@ export class PublicationUi {
     el.id = 'publish-dialog'
     el.className = 'silex-dialog-inline silex-dialog gjs-two-color'
     document.body.append(el)
-    // Create the publish button
-    this.editor.Panels.addButton(this.options.appendTo, {
-      id: 'publish-button',
-      className: 'silex-button--size publish-button',
-      command: cmdPublish,
-      attributes: { title: 'Publish' },
-      label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
+    // Let the other buttons be added, we want to be last
+    setTimeout(() => {
+      // Create the publish button
+      this.editor.Panels.addButton(this.options.appendTo, {
+        id: 'publish-button',
+        className: 'silex-button--size publish-button',
+        command: cmdPublish,
+        attributes: { title: 'Publish' },
+        label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
+      })
     })
     return el
   }
