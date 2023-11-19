@@ -128,21 +128,21 @@ function displaySettings(editor, config, model = editor.getModel()) {
               <li
                 class=${item.id === currentMenuItem.id ? 'active' : ''}
                 @click=${e => {
-                  e.preventDefault()
-                  currentMenuItem = item
-                  const li = e.target as HTMLElement
-                  const ul = li.closest('ul')
-                  const section = li.closest('section')
-                  const mainItem = section.querySelector(`#settings-${item.id}`)
-                  // Update active
-                  Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
-                  li.classList.add('active')
-                  // Update hidden
-                  Array.from(section.querySelectorAll('.silex-form__hideable')).forEach(el => el.classList.add('silex-hidden'))
-                  mainItem.classList.remove('silex-hidden')
-                  // This messes up with the save / cancel mechanism
-                  // displaySettings(editor, config, model)
-                }}
+    e.preventDefault()
+    currentMenuItem = item
+    const li = e.target as HTMLElement
+    const ul = li.closest('ul')
+    const section = li.closest('section')
+    const mainItem = section.querySelector(`#settings-${item.id}`)
+    // Update active
+    Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
+    li.classList.add('active')
+    // Update hidden
+    Array.from(section.querySelectorAll('.silex-form__hideable')).forEach(el => el.classList.add('silex-hidden'))
+    mainItem.classList.remove('silex-hidden')
+    // This messes up with the save / cancel mechanism
+    // displaySettings(editor, config, model)
+  }}
               >
                 ${item.label}
               </li>
