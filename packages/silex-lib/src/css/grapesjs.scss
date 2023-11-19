@@ -53,6 +53,17 @@
   font-size: 0.75rem;
 }
 
+// Dialogs
+.gjs-mdl-header {
+  background-color: $primaryColor;
+  color: $secondaryColor;
+  padding: 20px;
+  border-bottom: 1px solid $lighterPrimaryColor;
+  .gjs-mdl-btn-close {
+    top: 15px;
+  }
+}
+
 // Inside the canvas
 .gjs-toolbar {
   background-color: $tertiaryColor;

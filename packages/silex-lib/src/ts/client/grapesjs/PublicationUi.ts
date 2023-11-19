@@ -161,6 +161,9 @@ export class PublicationUi {
   }
   async renderOpenDialog(job: PublicationJobData, status: PublicationStatus): Promise<TemplateResult> {
     return html`
+    <header>
+      <h3>Publication</h3>
+    </header>
     <main>
       ${this.isPending(status) ? html`
         <p>Publication in progress</p>
@@ -191,8 +194,6 @@ export class PublicationUi {
           <summary>Logs</summary>
           <pre style="
             max-width: 100%;
-            max-height: 50vh;
-            overflow: auto;
             font-size: x-small;
             " >${unsafeHTML(cleanupLogEntry(job.logs))}
           </pre>
@@ -203,8 +204,6 @@ export class PublicationUi {
           <summary>Errors</summary>
           <pre style="
             max-width: 100%;
-            max-height: 50vh;
-            overflow: auto;
             font-size: x-small;
             "
           >${unsafeHTML(cleanupLogEntry(job.errors))}
