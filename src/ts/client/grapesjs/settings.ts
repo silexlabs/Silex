@@ -96,8 +96,16 @@ function displaySettings(editor, config, model = editor.getModel()) {
   const settings = model.get('settings') || {} as WebsiteSettings
   model.set('settings', settings)
   render(html`
-    <p>The page settings will override site settings, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
     <form class="silex-form">
+      <div class="silex-help">
+        ${isSite(model) ? html`
+          <p>Here you can set the name of your website, SEO and social networks sharing data.</p>
+          <p>These settings are overriden by the page settings, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
+        ` : html`
+          <p>Here you can set the name of your page, SEO and social networks sharing data.</p>
+          <p>These settings override the site settings, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
+        `}
+      </div>
       <h2>General settings</h2>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
