@@ -1,0 +1,31 @@
+@use "variables" as *;
+.fonts-dialog {
+  .gjs-mdl-dialog {
+    width: 100%;
+    max-width: unset;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .gjs-mdl-content {
+    flex: 1 1 auto;
+  }
+  .silex-form__element {
+    margin-bottom: 80px;
+  }
+  .silex-list li {
+    border-bottom: none;
+  }
+  h2 {
+    border-radius: 0;
+    background-color: transparent;
+  }
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px !important;
+    background-color: $primaryColor;
+  }
+}
