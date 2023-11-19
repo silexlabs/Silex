@@ -88,7 +88,7 @@ export const settingsDialog = (editor, opts) => {
   editor.on('storage:end:load', (data) => {
     const model = editor.getModel()
     model.set('settings', data.settings || {})
-    //model.set('name', data.name)
+    model.set('name', data.name)
     updateDom(editor)
   })
   editor.on('page', (e) => {
@@ -128,10 +128,20 @@ function displaySettings(editor, config, model = editor.getModel()) {
               <li
                 class=${item.id === currentMenuItem.id ? 'active' : ''}
                 @click=${e => {
-                  saveSettings(editor, model)
-                  currentMenuItem = item
-                  displaySettings(editor, model)
                   e.preventDefault()
+                  currentMenuItem = item
+                  const li = e.target as HTMLElement
+                  const ul = li.closest('ul')
+                  const section = li.closest('section')
+                  const mainItem = section.querySelector(`#settings-${item.id}`)
+                  // Update active
+                  Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
+                  li.classList.add('active')
+                  // Update hidden
+                  Array.from(section.querySelectorAll('.silex-form__hideable')).forEach(el => el.classList.add('silex-hidden'))
+                  mainItem.classList.remove('silex-hidden')
+                  // This messes up with the save / cancel mechanism
+                  // displaySettings(editor, config, model)
                 }}
               >
                 ${item.label}
@@ -140,7 +150,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
           </ul>
         </aside>
         <main>
-          ${currentMenuItem.id === 'general' ? html`
+          <div id="settings-general" class="silex-form__hideable">
             <div class="gjs-sm-sector-title">General</div>
             <div class="silex-form__group col2">
               <label class="silex-form__element">
@@ -154,8 +164,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
                 <input type="text" name="lang" .value=${live(settings.lang || '')}/>
               </label>
             </div>
-          ` : ''}
-          ${currentMenuItem.id === 'seo' ? html`
+          </div>
+          <div id="settings-seo" class="silex-form__hideable silex-hidden">
             <div class="gjs-sm-sector-title">SEO</div>
             <div class="silex-form__group col2">
               <label class="silex-form__element">
@@ -174,8 +184,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
                 <input type="text" name="favicon" .value=${live(settings.favicon || '')}/>
               </label>
             </div>
-          ` : ''}
-          ${currentMenuItem.id === 'social' ? html`
+          </div>
+          <div id="settings-social" class="silex-form__hideable silex-hidden">
             <div class="gjs-sm-sector-title">Social</div>
             <div class="silex-help">
               <p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>,
@@ -204,8 +214,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
                 <input type="text" name="og:image" .value=${live(settings['og:image'] || '')}/>
               </label>
             </div>
-          ` : ''}
-          ${currentMenuItem.id === 'code' ? html`
+          </div>
+          <div id="settings-code" class="silex-form__hideable silex-hidden">
             <div class="gjs-sm-sector-title">Code</div>
             <div class="silex-form__group">
               <label class="silex-form__element" id="${idCodeWrapper}">
@@ -213,13 +223,13 @@ function displaySettings(editor, config, model = editor.getModel()) {
                 <p class="silex-help">HTML code which will be inserted in the HEAD tag.</p>
               </label>
             </div>
-        ` : ''}
+          </div>
         </main>
       </section>
       <footer>
         <p class="silex-version">Silex ${version}</p>
-        <!-- <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenSettings)} value="Cancel"> -->
-        <input class="silex-button" type="submit" value="Close">
+        <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenSettings)} value="Cancel">
+        <input class="silex-button" type="submit" value="Apply">
       </footer>
     </form>
   `, el)
@@ -235,14 +245,14 @@ function saveSettings(editor, config, model = editor.getModel()) {
       aggregate[key] = value
       return aggregate
     }, {}) as {[key: string]: any}
-  //// take the name out to the main model (by design in grapesjs pages)
-  //const { name, ...settings } = data
+  // take the name out to the main model (by design in grapesjs pages)
+  const { name, ...settings } = data
   model.set({
     settings: {
       ...data,
       head: headEditor.getContent(),
     },
-    //name,
+    name,
   })
   // save if auto save is on
   editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
