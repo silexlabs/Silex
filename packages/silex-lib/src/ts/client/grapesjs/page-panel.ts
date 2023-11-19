@@ -28,14 +28,38 @@ function selectPage(editor, page) {
 }
 function addPage(editor, config) {
   const pages = editor.Pages.getAll()
+  // Get a name
   let idx = 1
   const newPageName = config.newPageName || 'New page'
   let pageName = newPageName
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
+  // Add page
   const page = editor.Pages.add({ name: pageName })
+  // Select the new page
+  editor.Pages.select(page)
+  // Open page settings to edit the name
   editor.runCommand(config.cmdOpenNewPageDialog, {page})
+}
+
+function clonePage(editor, page) {
+  const pages = editor.Pages.getAll()
+  // Get a name
+  let idx = 1
+  const newPageName = (page.getName() || 'main') + ' copy'
+  let pageName = newPageName
+  while(pages.find(p => p.getName() === pageName)) {
+    pageName = `${newPageName} ${idx++}`
+  }
+  // Add page
+  const newPage = editor.Pages.add({ name: pageName })
+  // Clone components
+  const clones = page.getMainComponent().components().map(c => c.clone())
+  newPage.getMainComponent()
+    .components(clones)
+  // Select the new page
+  editor.Pages.select(newPage)
 }
 
 function removePage(editor, page) {
@@ -75,6 +99,7 @@ function renderPages(editor, config) {
                ${ name }
              </div>
              <i class="pages__icon pages__remove-btn fa fa-trash" @click=${e => removePage(editor, getPageFromEvent(e))}></i>
+             <i class="pages__icon pages__clone-btn fa fa-clone" @click=${e => clonePage(editor, getPageFromEvent(e))}></i>
              <i class="pages__icon fa fa-cog" @click=${e => settingsPage(editor, config, getPageFromEvent(e))}></i>
            </div>
           </div>
