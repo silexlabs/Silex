@@ -30,7 +30,9 @@
 }
 
 .silex-hidden {
-  display: none;
+  visibility: hidden;
+  position: absolute;
+  opacity: 0;
 }
 
 // full screen settings

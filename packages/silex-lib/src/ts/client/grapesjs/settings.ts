@@ -138,7 +138,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
     Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
     li.classList.add('active')
     // Update hidden
-    Array.from(section.querySelectorAll('.silex-form__hideable')).forEach(el => el.classList.add('silex-hidden'))
+    Array.from(section.querySelectorAll('.silex-hideable')).forEach(el => el.classList.add('silex-hidden'))
     mainItem.classList.remove('silex-hidden')
     // This messes up with the save / cancel mechanism
     // displaySettings(editor, config, model)
@@ -150,7 +150,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
           </ul>
         </aside>
         <main>
-          <div id="settings-general" class="silex-form__hideable">
+          <div id="settings-general" class="silex-hideable">
             <div class="gjs-sm-sector-title">General</div>
             <div class="silex-form__group col2">
               <label class="silex-form__element">
@@ -165,7 +165,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
               </label>
             </div>
           </div>
-          <div id="settings-seo" class="silex-form__hideable silex-hidden">
+          <div id="settings-seo" class="silex-hideable silex-hidden">
             <div class="gjs-sm-sector-title">SEO</div>
             <div class="silex-form__group col2">
               <label class="silex-form__element">
@@ -185,7 +185,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
               </label>
             </div>
           </div>
-          <div id="settings-social" class="silex-form__hideable silex-hidden">
+          <div id="settings-social" class="silex-hideable silex-hidden">
             <div class="gjs-sm-sector-title">Social</div>
             <div class="silex-help">
               <p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>,
@@ -215,7 +215,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
               </label>
             </div>
           </div>
-          <div id="settings-code" class="silex-form__hideable silex-hidden">
+          <div id="settings-code" class="silex-hideable silex-hidden">
             <div class="gjs-sm-sector-title">Code</div>
             <div class="silex-form__group">
               <label class="silex-form__element" id="${idCodeWrapper}">
