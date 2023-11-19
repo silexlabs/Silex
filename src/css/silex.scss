@@ -30,9 +30,13 @@
 }
 
 .silex-hidden {
+  /* do not really hide, because it breaks the code editor init in the site settings + for animation */
   visibility: hidden;
   position: absolute;
   opacity: 0;
+  height: 10px;
+  width: 10px;
+  overflow: hidden;
 }
 
 // full screen settings
