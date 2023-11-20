@@ -23,6 +23,8 @@ import { Editor, EditorConfig, Page } from 'grapesjs'
 import { PublicationTransformer, publicationTransformerDefault, validatePublicationTransformer } from './publication-transformers'
 import * as api from './api'
 import { assetsPublicationTransformer } from './assetUrl'
+import { SettingsSection } from './grapesjs/settings-sections'
+import { addSection, removeSection } from './grapesjs/settings'
 
 /**
  * @fileoverview Silex client side config
@@ -127,5 +129,19 @@ export class ClientConfig extends Config {
     })
     // Add to the list
     this.publicationTransformers = this.publicationTransformers.concat(transformers)
+  }
+
+  /**
+   * Add a section to the settings dialog
+   */
+  addSettings(section: SettingsSection, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number = 'last') {
+    addSection(section, siteOrPage, position)
+  }
+
+  /**
+   * Remove a section from the settings dialog
+   */
+  removeSettings(id: string, siteOrPage: 'site' | 'page') {
+    removeSection(id, siteOrPage)
   }
 }
