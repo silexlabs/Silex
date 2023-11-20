@@ -16,26 +16,17 @@
  */
 
 import {html, render} from 'lit-html'
-import {live} from 'lit-html/directives/live.js'
+import {defaultSections, idCodeWrapper, isSite} from './settings-sections'
+
+/**
+ * @fileoverview This file contains the settings dialog. The config API lets plugins add sections to the settings dialog.
+ */
 
 import { WebsiteSettings } from '../../types'
 
-const menuItems = [{
-  id: 'general',
-  label: 'General',
-}, {
-  id: 'seo',
-  label: 'SEO',
-}, {
-  id: 'social',
-  label: 'Social',
-}, {
-  id: 'code',
-  label: 'Code',
-}]
-let currentMenuItem = menuItems[0]
+const sectionsSite = [...defaultSections]
+const sectionsPage = [...defaultSections]
 
-const idCodeWrapper = 'settings-head-wrapper'
 const el = document.createElement('div')
 let modal
 
@@ -104,12 +95,35 @@ export const settingsDialog = (editor, opts) => {
   })
 }
 
-// Is the model a site or a page?
-function isSite(model) { return !!model.getHtml }
+export function addSection(section, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number) {
+  const sections = siteOrPage === 'site' ? sectionsSite : sectionsPage
+  if (position === 'first') {
+    sections.unshift(section)
+  } else if (position === 'last') {
+    sections.push(section)
+  } else if (typeof position === 'number') {
+    sections.splice(position, 0, section)
+  } else {
+    throw new Error('Invalid position for settings section')
+  }
+}
+
+export function removeSection(id, siteOrPage: 'site' | 'page') {
+  const sections = siteOrPage === 'site' ? sectionsSite : sectionsPage
+  const index = sections.findIndex(section => section.id === id)
+  if(index === -1) throw new Error(`Cannot find section with id ${id}`)
+  sections.splice(index, 1)
+}
+
 
 function displaySettings(editor, config, model = editor.getModel()) {
+  // Update the model with the current settings
   const settings = model.get('settings') || {} as WebsiteSettings
   model.set('settings', settings)
+  // Get the current sections for page or site
+  const menuItemsCurrent = isSite(model) ? sectionsSite : sectionsPage
+  // Init the current section selection
+  let sections = menuItemsCurrent[0]
   render(html`
     <form class="silex-form">
       <div class="silex-help">
@@ -124,12 +138,12 @@ function displaySettings(editor, config, model = editor.getModel()) {
       <section class="silex-sidebar-dialog">
         <aside class="silex-bar">
           <ul class="silex-list silex-list--menu">
-            ${menuItems.map(item => html`
+            ${menuItemsCurrent.map(item => html`
               <li
-                class=${item.id === currentMenuItem.id ? 'active' : ''}
+                class=${item.id === sections.id ? 'active' : ''}
                 @click=${e => {
     e.preventDefault()
-    currentMenuItem = item
+    sections = item
     const li = e.target as HTMLElement
     const ul = li.closest('ul')
     const section = li.closest('section')
@@ -150,80 +164,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
           </ul>
         </aside>
         <main>
-          <div id="settings-general" class="silex-hideable">
-            <div class="gjs-sm-sector-title">General</div>
-            <div class="silex-form__group col2">
-              <label class="silex-form__element">
-                <h3>${isSite(model) ? 'Site name' : 'Page name'}</h3>
-                <p class="silex-help">${isSite(model) ? 'The project name in the editor, for you to remember what it is about.' : 'Label of the page in the editor, and file name of the published HTML page.'}</p>
-                <input type="text" name="name" .value=${live(model.get('name') || '')}/>
-              </label>
-              <label class="silex-form__element">
-                <h3>Website language</h3>
-                <p class="silex-help">This is the default language code for this website. Example: en, fr, es...</p>
-                <input type="text" name="lang" .value=${live(settings.lang || '')}/>
-              </label>
-            </div>
-          </div>
-          <div id="settings-seo" class="silex-hideable silex-hidden">
-            <div class="gjs-sm-sector-title">SEO</div>
-            <div class="silex-form__group col2">
-              <label class="silex-form__element">
-                <h3>Title</h3>
-                <p class="silex-help">Title of the browser window, and title in the search engines results. It is used by search engines to find out what your site is talking about. The title should be a maximum of 70 characters long, including spaces.</p>
-                <input type="text" name="title" .value=${live(settings.title || '')}/>
-              </label>
-              <label class="silex-form__element">
-                <h3>Description</h3>
-                <p class="silex-help">Description displayed by the search engines in search results. It is used by search engines to find out what your site is talking about. It is best to keep meta descriptions between 150 and 160 characters.</p>
-                <input type="text" name="description" .value=${live(settings.description || '')}/>
-              </label>
-              <label class="silex-form__element">
-                <h3>Favicon</h3>
-                <p class="silex-help">Small image displayed in the browser's address bar and in tabs. The recommended size is 16×16 or 32×32 pixels. This can be a URL or a relative path.</p>
-                <input type="text" name="favicon" .value=${live(settings.favicon || '')}/>
-              </label>
-            </div>
-          </div>
-          <div id="settings-social" class="silex-hideable silex-hidden">
-            <div class="gjs-sm-sector-title">Social</div>
-            <div class="silex-help">
-              <p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>,
-              <a target="_blank" href="https://cards-dev.twitter.com/validator">Twitter</a>,
-              <a target="_blank" href="https://www.linkedin.com/post-inspector/inspect/">Linkedin</a></p>
-            </div>
-            <div class="silex-form__group col2">
-              <label class="silex-form__element">
-                <h3>Title</h3>
-                <p class="silex-help">The title of your website displayed when a user shares your website on a social network.
-              Do not include any branding in this title, just eye-catching phrase, e.g. "Learn everything about fishing".
-              Title should be between 60 and 90 characters long.</p>
-                <input type="text" name="og:title" .value=${live(settings['og:title'] || '')}/>
-              </label>
-              <label class="silex-form__element">
-                <h3>Description</h3>
-                <p class="silex-help">Description displayed when a user shares your website on a social network. Make it catchy, and invite readers to visit your website too, e.g. "Sam's website about fishing, check it out!" Title should be between 60 and 90 characters long.</p>
-                <input type="text" name="og:description" .value=${live(settings['og:description'] || '')}/>
-              </label>
-              <label class="silex-form__element">
-                <h3>Image</h3>
-                <div class="silex-help">
-                  <p>Thumbnail image which is displayed when your website is shared on a social network. The optimal size is 1200×627 pixels. At this size, your thumbnail will be big and stand out from the crowd. But do not exceed the 5MB size limit. If you use an image that is smaller than 400 pixels x 209 pixels, it will render as a much smaller thumbnail.</p>
-                  <p>Please enter the full URL here, e.g. "http://mysite.com/path/to/image.jpg"</p>
-                </div>
-                <input type="text" name="og:image" .value=${live(settings['og:image'] || '')}/>
-              </label>
-            </div>
-          </div>
-          <div id="settings-code" class="silex-hideable silex-hidden">
-            <div class="gjs-sm-sector-title">Code</div>
-            <div class="silex-form__group">
-              <label class="silex-form__element" id="${idCodeWrapper}">
-                <h3>HTML head</h3>
-                <p class="silex-help">HTML code which will be inserted in the HEAD tag.</p>
-              </label>
-            </div>
-          </div>
+            ${menuItemsCurrent.map(item => item.render(settings, model))}
         </main>
       </section>
       <footer>
