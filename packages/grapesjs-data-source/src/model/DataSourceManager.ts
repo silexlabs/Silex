@@ -22,6 +22,12 @@ import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
 import { StoredState, onStateChange } from "./state"
 
+function getDataSourceClass(ds: IDataSourceModel): IDataSourceModel {
+  // FIXME: Why sometimes the methods of the data source are in the attributes?
+  /* @ts-ignore */
+  return ds.getTypes ? ds : ds.attributes
+}
+
 /**
  * GrapesJs plugin to manage data sources
  */
@@ -91,7 +97,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
    * Listen to data source changes
    */
   modelChanged(e?: CustomEvent) {
-    this.dataTree.dataSources = this.models
+    this.dataTree.dataSources = this.models.map(ds => getDataSourceClass(ds)) as IDataSourceModel[]
     // Remove all listeners
     this.models.forEach((dataSource: IDataSourceModel) => {
       dataSource.off(DATA_SOURCE_READY, this.dataSourceReadyBinded)
@@ -115,15 +121,16 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     const expressions = this.dataTree.getPageExpressions(page)
     return this.models
       .map(ds => {
-        const query = ds.getQuery(expressions
-          .filter(e => {
-            const first = e[0]
-            if (!first || first.type !== 'property') {
-              console.warn('Invalid expression', e)
-              return false
-            }
-            return first.dataSourceId === ds.id
-          }))
+        const query = getDataSourceClass(ds)
+          .getQuery(expressions
+            .filter(e => {
+              const first = e[0]
+              if (!first || first.type !== 'property') {
+                console.warn('Invalid expression', e)
+                return false
+              }
+              return first.dataSourceId === ds.id
+            }))
         return {
           dataSourceId: ds.id.toString(),
           query,
