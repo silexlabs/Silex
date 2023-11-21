@@ -23,6 +23,7 @@ import {defaultSections, idCodeWrapper, isSite} from './settings-sections'
  */
 
 import { WebsiteSettings } from '../../types'
+import { ClientEvent } from '../events'
 
 const sectionsSite = [...defaultSections]
 const sectionsPage = [...defaultSections]
@@ -61,14 +62,20 @@ export const settingsDialog = (editor, opts) => {
       const form = el.querySelector('form')
       form.onsubmit = event => {
         event.preventDefault()
+        editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
         saveSettings(editor, opts, page)
+        editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
         editor.stopCommand(cmdOpenSettings)
       }
       form.querySelector('input')?.focus()
+      // Notify other plugins
+      editor.trigger(ClientEvent.SETTINGS_OPEN, page)
+      // Return the dialog
       return modal
     },
     stop: () => {
       modal.close()
+      editor.trigger(ClientEvent.SETTINGS_CLOSE)
     },
   })
   // add settings to the website

@@ -31,4 +31,8 @@ export enum ClientEvent {
   PUBLISH_LOGIN_END = 'silex:publish:login:end',
   ASSET_WRITE_END = 'silex:asset:write:end',
   WRITE_END = 'silex:write:end',
+  SETTINGS_OPEN = 'silex:settings:open',
+  SETTINGS_CLOSE = 'silex:settings:close',
+  SETTINGS_SAVE_START = 'silex:settings:save:start',
+  SETTINGS_SAVE_END = 'silex:settings:save:end',
 }
