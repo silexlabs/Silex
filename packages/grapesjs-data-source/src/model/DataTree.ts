@@ -20,14 +20,13 @@ import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expressi
 import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
 import getLiquidFilters from '../filters/liquid'
-import getGenericFilters from '../filters/generic'
 
 /**
  * Options of the data tree
  * They can be set on the instance too
  */
 export interface DataTreeOptions {
-  filters: Partial<Filter>[]
+  filters: Partial<Filter>[] | string
   dataSources: IDataSource[]
 }
 
@@ -78,7 +77,7 @@ export class DataTree {
     this.filters = typeof options.filters === 'string'
       // Include preset from filters/
       ? [
-        ...getGenericFilters(this),
+        //...getGenericFilters(this),
         ...getLiquidFilters(this),
       ]
       // Define filters in the options
@@ -252,13 +251,30 @@ export class DataTree {
   }
 
   /**
+   * Add missing methonds to the filter
+   * When filters are stored they lose their methods
+   */
+  getFilterFromToken(token: Filter, filters: Filter[]): Filter {
+    const filter = filters.find(filter => filter.id === token.id)
+    if(!filter) {
+      console.warn('Filter not found', token)
+      throw new Error(`Filter ${token.id} not found`)
+    }
+    return {
+      ...token,
+      ...filter,
+    }
+  }
+
+  /**
    * Get the type corresponding to a token
    */
   tokenToField(token: Token, prev: Field | null, component: Component): Field | null {
     switch (token.type) {
       case 'filter': {
-        if(token.validate(prev)) {
-          return token.output(prev, token.options ?? {})
+        const filter = this.getFilterFromToken(token, this.filters)
+        if(filter.validate(prev)) {
+          return filter.output(prev, filter.options ?? {})
         }
         return null
       }

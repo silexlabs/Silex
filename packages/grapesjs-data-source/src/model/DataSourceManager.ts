@@ -16,16 +16,23 @@
  */
 
 import Backbone from "backbone"
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSourceModel } from "../types"
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
 import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
 import { StoredState, onStateChange } from "./state"
 
-function getDataSourceClass(ds: IDataSourceModel): IDataSourceModel {
-  // FIXME: Why sometimes the methods of the data source are in the attributes?
-  /* @ts-ignore */
-  return ds.getTypes ? ds : ds.attributes
+/**
+ * FIXME: Why sometimes the methods of the data source are in the attributes?
+ * @return ds if it has the getTypes method or ds.attributes if it has the getTypes method
+ */
+export function getDataSourceClass(ds: IDataSource | { attributes: IDataSource }): IDataSource {
+  const unknownTyped = ds as Record<string, unknown>
+  if(typeof unknownTyped.getTypes === 'function') return ds as IDataSource
+  const unknownAttributes = unknownTyped.attributes as Record<string, unknown>
+  if(typeof unknownAttributes.getTypes === 'function') return unknownTyped.attributes as IDataSource
+  console.error('Data source has no getTypes method', ds)
+  throw new Error('Data source has no getTypes method')
 }
 
 /**

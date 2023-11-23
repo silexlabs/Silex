@@ -100,9 +100,7 @@ const editor = grapesjs.init({
         label: 'Countries',
         url: 'https://countries.trevorblades.com/graphql',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: {},
       }],
       properties: {
         appendTo: () => editor.Panels.getPanel('views-container').view.el,
@@ -161,7 +159,6 @@ grapesjs.init({
           url: 'http://localhost:1337/graphql',
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
             'Authorization': 'Bearer 79c9e74b3cf4a9f5ce2836b81fd8aaf8a986b5696769456d3646a3213f5d7228634a1a15a8bbad4e87c09ab864c501499c6f8955cf350e49b89311764009aee68589a4b78f22c06b7e09835b48cd6f21fb84311ce873cd5672bd4652fde3f5f0db6afb258dfe7b93371b7632b551ecdd969256ffc076ab8f735b5d8c7d228825',
           },
         },
@@ -190,7 +187,6 @@ Directus
   url: `https://localhost:8085/graphql`,
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
     'Authorization': 'Bearer yjgwcj...0c_0zex',
   },
 }
@@ -206,7 +202,6 @@ Strapi
   url: 'http://localhost:1337/graphql',
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
     'Authorization': 'Bearer 456fe45a764921a2...6b2298b3cc8',
   },
 }
@@ -222,7 +217,6 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
   url: `https://api.supabase.io/platform/projects/jpslgeqihfj/api/graphql`,
   method: 'POST',
   headers: {
-    'Content-Type': 'application/json',
     'Authorization': 'Bearer eyjhbgcioijiuz...tww8imndplsfm',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -234,14 +228,13 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
 
 | Option | Description | Default |
 |-|-|-
-| `dataSources` | List of data sources, see config examples and the plugin code | `[]` |
-| `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/generic.ts`) | `[]` |
+| `dataSources` | List of data sources, see config examples and the plugin code for docs ([data source options](./src/index.ts) and [GraphQL data source options](./src/datasources/GraphQL.ts)) | `[]` |
+| `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/liquid.ts`) | `[]` |
 | `view` | Options for the UI | `[]` |
 | `view.appendTo` | Where to attach the UI (the state inputs). It can be a string or an HTMLElement or a function | `.gjs-pn-panel.gjs-pn-views-container` |
 | `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide the UI | `undefined` which means no button |
 | `view.styles` | CSS styles which are applied to the UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 | `view.optionsStyles` | CSS styles which are applied to each "expression selector" UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
-
 
 ## Download
 
@@ -251,8 +244,6 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
   * `npm i @silexlabs/grapesjs-data-source`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-data-source.git`
-
-
 
 ## Usage
 

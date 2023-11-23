@@ -27,11 +27,18 @@ import dedent from "dedent-js"
 /**
  * GraphQL Data source options
  */
-export interface GraphQLOptions extends IDataSourceOptions {
+interface GraphQLQueryOptions {
   url: string
   headers: Record<string, string>
   method: 'GET' | 'POST'
   queryable?: TypeId[] | ((type: GQLType) => boolean)
+}
+
+/**
+ * GraphQL Data source options with server to server options
+ */
+export interface GraphQLOptions extends GraphQLQueryOptions, IDataSourceOptions {
+  serverToServer?: GraphQLQueryOptions
 }
 
 // GraphQL specific types

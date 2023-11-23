@@ -103,7 +103,7 @@ export type Expression = Token[];
  * They can be set on the instance too
  */
 export interface DataTreeOptions {
-	filters: Partial<Filter>[];
+	filters: Partial<Filter>[] | string;
 	dataSources: IDataSource[];
 }
 declare class DataTree {
@@ -151,6 +151,11 @@ declare class DataTree {
 	 */
 	getValue(context: Context, expression: Expression): unknown;
 	findType(typeId: TypeId, dataSourceId?: DataSourceId): Type | null;
+	/**
+	 * Add missing methonds to the filter
+	 * When filters are stored they lose their methods
+	 */
+	getFilterFromToken(token: Filter, filters: Filter[]): Filter;
 	/**
 	 * Get the type corresponding to a token
 	 */
@@ -289,7 +294,7 @@ export interface DataSourceEditor extends Editor {
 export interface DataSourceEditorOptions {
 	dataSources: IDataSourceOptions[];
 	view: ViewOptions;
-	filters: Filter[];
+	filters: Filter[] | string;
 }
 declare const _default: (editor: DataSourceEditor, opts?: Partial<DataSourceEditorOptions>) => void;
 /**

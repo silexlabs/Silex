@@ -35,7 +35,7 @@ export interface DataSourceEditor extends Editor {
 export interface DataSourceEditorOptions {
   dataSources: IDataSourceOptions[],
   view: ViewOptions,
-  filters: Filter[],
+  filters: Filter[] | string,
 }
 
 /**
