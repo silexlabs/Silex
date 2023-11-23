@@ -353,7 +353,10 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     // GraphQL Introspcetion
     const response = await fetch(url, {
       method,
-      headers,
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
       // Body when POST
       ...(method === 'POST' ? {
         body: JSON.stringify({ query }),

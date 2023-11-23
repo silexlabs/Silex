@@ -62,7 +62,6 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     })
   
   // Connect the data sources (async)
-  console.info('Connecting data sources', dataSources)
   Promise.all(dataSources.map(ds => ds.connect()))
   .then(() => console.info('Data sources connected'))
 
