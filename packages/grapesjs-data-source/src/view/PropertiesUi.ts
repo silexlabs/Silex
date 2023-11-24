@@ -16,17 +16,15 @@
  */
 
 import { Component } from "grapesjs"
-import { TemplateResult, html, render } from "lit"
-import { Ref, createRef, ref } from 'lit/directives/ref.js';
+import { html, render } from "lit"
+import { Ref, createRef } from 'lit/directives/ref.js'
 
 import '@silexlabs/steps-selector' // For the web component to work
-import { Step, StepsSelector } from "@silexlabs/steps-selector"
+import { StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
-import { getParentByPersistentId, getState, getStateLabel, setState } from "../model/state"
 import { DataTree } from "../model/DataTree"
-import { Expression, Token, TypeId, FieldKind, Field } from "../types"
 import { DataSourceEditor } from ".."
-import { OPTIONS_STYLES } from "./defaultStyles"
+import { renderExpression, setOptionsFormStyles } from "../utils"
 
 type PropsNames = 
   'innerHTML'
@@ -54,184 +52,8 @@ export class PropertiesUi {
   ])
 
   // Constructor
-  constructor(protected editor: DataSourceEditor, protected options: ViewOptions, protected wrapper: HTMLElement) {}
-
-  /**
-   * Set the completion function of a steps selector
-   */
-  setCompletion(dataTree: DataTree, component: Component, stepsSelector: StepsSelector) {
-    stepsSelector.completion = (steps: Step[]): Step[] => {
-      // Current expression
-      const expression = steps.map(step => step.meta.token)
-      // Get the completion, which is a context
-      // It is a list of tokens, each one can be added at the end of the expression
-      const tokens = dataTree.getCompletion(component, expression)
-      // Get the type for each token
-      // The filters output types are resolved
-      const fields = tokens
-        .map(token => dataTree.getExpressionResultType(tokens.concat(token), component))
-      // Convert the context to steps
-      return fields
-      .map((field, index) => {
-        const prev = index > 0 ? fields[index - 1] : null
-        return this.toStep(dataTree, field, prev, tokens[index], component)
-      })
-    }
-  }
-
-  /**
-   * Get the display type of a field
-   */
-  getDisplayType(typeIds: TypeId[], kind: FieldKind | null): string {
-    const typeLabel = typeIds.join(', ')
-    return kind === 'list' ? `${typeLabel} [ ]` : kind === 'object' ? `${typeLabel} { }` : typeLabel
-  }
-
-  /**
-   * Add css styles to options form
-   */
-  addStyles(optionsForm: string | null): string {
-    if(!optionsForm) return ''
-    return `
-      <style>
-        ${OPTIONS_STYLES}
-        ${this.options.optionsStyles ?? ''}
-      </style>
-      ${optionsForm}
-    `
-  }
-
-  /**
-   * Convert an expression to steps
-   * This will resolve the types of filters
-   */
-  toSteps(dataTree: DataTree, expression: Expression, component: Component): Step[] {
-    const fields = dataTree.expressionToFields(expression, component)
-    return fields
-      .map((type, index) => {
-        const token = expression[index]
-        if (!type) {
-          console.error('Unknown type (reading type)', token)
-          throw new Error(`Unknown type`)
-        }
-        const prev = index > 0 ? fields[index - 1] : null
-        return this.toStep(dataTree, type, prev, token, component)
-      })
-  }
-
-  /**
-   * Convert a token to a step
-   * This will resolve the types of filters
-   * @param field can be null, this happens when token is a filter with output resolving to null
-   */
-  toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step {
-    switch (token.type) {
-      case 'property':
-        if(!field) {
-          console.error('Unknown type (reading type)', token)
-          throw new Error(`Unknown type`)
-        }
-        switch (token.propType) {
-          //case 'type': return {
-          //  name: type.id,
-          //  icon: '',
-          //  type: this.getDisplayType([type.dataSourceId as string ?? 'Type'], null), // FIXME: use a data source option as a name
-          //  meta: { token, type }
-          //}
-          case 'field': return {
-            name: token.label,
-            icon: '',
-            type: this.getDisplayType(token.typeIds, token.kind),
-            meta: { token, type: field },
-            options: token.options,
-            optionsForm: token.optionsForm ? this.addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
-            category: token.dataSourceId as string,
-          }
-          default:
-            console.error('Unknown property type (reading propType)', token)
-            throw new Error(`Unknown property type`)
-        }
-      case 'filter':
-        return {
-          name: token.label,
-          icon: '',
-          type: 'Filter',
-          options: token.options,
-          optionsForm: token.optionsForm ? this.addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
-          meta: { token, type: field },
-          category: 'Filters',
-        }
-      case 'state': {
-        const parent = getParentByPersistentId(token.componentId, component)
-        if(!parent) {
-          console.warn('Component not found', token.componentId)
-          // TODO: notification
-        }
-        return {
-          name: getStateLabel(parent, token),
-          icon: '',
-          type: token.forceKind ?? field?.label ?? 'Unknown',
-          meta: { token, type: field },
-          category: 'States',
-        }
-      }
-      default:
-        console.error('Unknown token type (reading type)', token)
-        throw new Error(`Unknown token type`)
-    }
-  }
-
-  chagedStepsSelector(component: Component, name: string, stepsSelector: StepsSelector) {
-    // Check input
-    if(!component) throw new Error('Component is required')
-    if(!name) throw new Error('Name is required')
-    // Update the tokens with new options values
-    const steps = stepsSelector.steps.map(step => {
-      const token = step.meta?.token ?? this.getFixedToken(step.options?.value ?? '', 'String') // Add a fixed string if the token is not found
-      token.options = step.options
-      return {
-        ...step,
-        meta: {
-          ...step.meta,
-          token,
-        }
-      }
-    })
-    // Update the state
-    setState(component, name, {
-      expression: steps.map(step => step.meta.token),
-    }, false)
-    stepsSelector.steps = steps
-  }
-
-  getFixedToken(value: string | number | boolean, typeId: TypeId): Token {
-    return {
-      type: 'filter',
-      id: 'fixed',
-      label: 'Fixed value',
-      output: () => ({
-        id: 'fixed_value',
-        label: 'Fixed value',
-        kind: 'scalar',
-        typeIds: [typeId],
-      }),
-      validate: field => !field,
-      apply: () => value,
-      options: {
-        value,
-      },
-      optionsForm: () => this.addStyles(`
-        <form>
-          <label>Value
-            <input type="text" name="value" value="${value.toString()}">
-            <div class="buttons">
-              <input type="submit" value="Apply"/>
-              <input type="reset" value="Cancel"/>
-            </div>
-          </label>
-        </form>
-      `),
-    }
+  constructor(protected editor: DataSourceEditor, protected options: ViewOptions, protected wrapper: HTMLElement) {
+    setOptionsFormStyles(options.optionsStyles ?? '')
   }
 
   // Update the UI
@@ -247,13 +69,13 @@ export class PropertiesUi {
           <div class="gjs-traits-label">Element Properties</div>
         </div>
         <main>
-          ${this.renderExpressionUi(component, dataTree, 'innerHTML', 'Content', true)}
-          ${this.renderExpressionUi(component, dataTree, 'title', 'title', true)}
-          ${this.renderExpressionUi(component, dataTree, 'className', 'className', true)}
-          ${this.renderExpressionUi(component, dataTree, 'style', 'style', true)}
-          ${this.renderExpressionUi(component, dataTree, 'src', 'src', true)}
-          ${this.renderExpressionUi(component, dataTree, 'href', 'href', true)}
-          ${this.renderExpressionUi(component, dataTree, 'alt', 'alt', true)}
+          ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!)}
+          ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!)}
+          ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!)}
+          ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!)}
+          ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!)}
+          ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!)}
+          ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!)}
         </main>
       </section>
       <section class="ds-section">
@@ -261,7 +83,7 @@ export class PropertiesUi {
           <div class="gjs-traits-label">Visibility</div>
         </div>
         <main>
-          ${this.renderExpressionUi(component, dataTree, 'condition', 'condition', true)}
+          ${renderExpression(component, dataTree, 'condition', 'condition', true, this.propsSelectorRefs.get('condition')!)}
         </main>
       </section>
       <section class="ds-section">
@@ -269,117 +91,86 @@ export class PropertiesUi {
           <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${this.renderExpressionUi(component, dataTree, '__data', 'data', false)}
+          ${renderExpression(component, dataTree, '__data', 'data', false, this.propsSelectorRefs.get('__data')!)}
         </main>
       </section>
     `, this.wrapper)
   }
 
-  renderExpressionUi(component: Component, dataTree: DataTree, name: PropsNames, label: string, allowFixed: boolean, maxSteps?: number): TemplateResult {
-    const state = getState(component, name, false) ?? {expression: []}
-    const steps = this.toSteps(dataTree, state.expression, component)
-    const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
-    const reference = this.propsSelectorRefs.get(name)
-    const stepsSelector = this.propsSelectorRefs.get(name)?.value
-    if(stepsSelector) {
-      // This will not happen for the first render
-      // The first render will use onload
-      stepsSelector.steps = steps
-      this.setCompletion(dataTree, component, stepsSelector)
-    }
-    return html`
-      <steps-selector
-        ${ref(reference)}
-        group-by-category
-        ?allow-fixed=${allowFixed}
-        max-steps=${maxSteps ?? -1}
-        @load=${(e: CustomEvent) => {
-          const stepsSelector = e.target as StepsSelector
-          stepsSelector.steps = steps
-          this.setCompletion(dataTree, component, stepsSelector)
-        }}
-        @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, name, e.target as StepsSelector)}
-        .fixed=${fixed}
-        >
-        ${label}
-      </steps-selector>
-    `
-  }
+  //renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, label: string, field: Field | undefined): TemplateResult {
+  //  const state = getState(component, name, false) ?? {expression: []}
+  //  if(state?.expression.length !== 0 && state?.expression.length !== 1) {
+  //    console.error('Invalid state', state)
+  //    throw new Error('Invalid state')
+  //  }
+  //  if(!field) {
+  //    return html`
+  //      <label class="ds-label ds-label--disabled">
+  //        ${label}
+  //        <div class="ds-label__message">No data source</div>
+  //      </label>
+  //    `
+  //  }
+  //  //const steps = this.toSteps(dataTree, )
+  //  //const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
+  //  const reference = this.propsSelectorRefs.get(name)
+  //  const stepsSelector = this.propsSelectorRefs.get(name)?.value
+  //  // From fields to types (all the types for the current field)
+  //  const types = field.typeIds
+  //    .map(typeId => {
+  //      const type = dataTree.findType(typeId)
+  //      if(!type) {
+  //        console.error('Unknown type', typeId)
+  //        throw new Error(`Unknown type ${typeId}`)
+  //      }
+  //      return type
+  //    })
+  //  // From type to fields (the fields of the given type)
+  //  const completion = (): Step[] => {
+  //    return types
+  //      .flatMap(type => type.fields)
+  //      .filter(field => field.kind === 'scalar')
+  //      .map(field => {
+  //        const token = {
+  //          type: 'property',
+  //          propType: 'field',
+  //          dataSourceId: field.dataSourceId,
+  //          kind: field.kind,
+  //          typeId: field.typeIds,
+  //          fieldId: field.id,
+  //        }
+  //        return {
+  //          name: field.label,
+  //          icon: '',
+  //          type: this.getDisplayType(field.typeIds, field.kind),
+  //          meta: {
+  //            token,
+  //            type: field,
+  //          },
+  //        }
+  //      })
+  //  }
+  //  const steps = state.expression.length === 1 ? [this.toStep(dataTree, field, null, state.expression[0], component)] : []
+  //  if(stepsSelector) {
+  //    // This will not happen for the first render
+  //    // The first render will use onload
+  //    stepsSelector.steps = steps
+  //    stepsSelector.completion = completion
+  //  }
 
-  renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, label: string, field: Field | undefined): TemplateResult {
-    const state = getState(component, name, false) ?? {expression: []}
-    if(state?.expression.length !== 0 && state?.expression.length !== 1) {
-      console.error('Invalid state', state)
-      throw new Error('Invalid state')
-    }
-    if(!field) {
-      return html`
-        <label class="ds-label ds-label--disabled">
-          ${label}
-          <div class="ds-label__message">No data source</div>
-        </label>
-      `
-    }
-    //const steps = this.toSteps(dataTree, )
-    //const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
-    const reference = this.propsSelectorRefs.get(name)
-    const stepsSelector = this.propsSelectorRefs.get(name)?.value
-    // From fields to types (all the types for the current field)
-    const types = field.typeIds
-      .map(typeId => {
-        const type = dataTree.findType(typeId)
-        if(!type) {
-          console.error('Unknown type', typeId)
-          throw new Error(`Unknown type ${typeId}`)
-        }
-        return type
-      })
-    // From type to fields (the fields of the given type)
-    const completion = (): Step[] => {
-      return types
-        .flatMap(type => type.fields)
-        .filter(field => field.kind === 'scalar')
-        .map(field => {
-          const token = {
-            type: 'property',
-            propType: 'field',
-            dataSourceId: field.dataSourceId,
-            kind: field.kind,
-            typeId: field.typeIds,
-            fieldId: field.id,
-          }
-          return {
-            name: field.label,
-            icon: '',
-            type: this.getDisplayType(field.typeIds, field.kind),
-            meta: {
-              token,
-              type: field,
-            },
-          }
-        })
-    }
-    const steps = state.expression.length === 1 ? [this.toStep(dataTree, field, null, state.expression[0], component)] : []
-    if(stepsSelector) {
-      // This will not happen for the first render
-      // The first render will use onload
-      stepsSelector.steps = steps
-      stepsSelector.completion = completion
-    }
-
-    return html`
-      <steps-selector
-        ${ref(reference)}
-        max-steps="1"
-        @load=${(e: CustomEvent) => {
-          const stepsSelector = e.target as StepsSelector
-          stepsSelector.steps = steps
-          stepsSelector.completion = completion
-        }}
-        @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, name, e.target as StepsSelector)}
-        >
-        ${label}
-      </steps-selector>
-    `
-  }
+  //  return html`
+  //    <steps-selector
+  //      ${ref(reference)}
+  //      max-steps="1"
+  //      @load=${(e: CustomEvent) => {
+  //        const stepsSelector = e.target as StepsSelector
+  //        stepsSelector.steps = steps
+  //        stepsSelector.completion = completion
+  //      }}
+  //      @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, name, e.target as StepsSelector)}
+  //      >
+  //      ${label}
+  //    </steps-selector>
+  //  `
+  //}
 }

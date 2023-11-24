@@ -22,6 +22,9 @@ import { DataSourceManager } from './model/DataSourceManager'
 import { Filter, IDataSourceOptions } from './types'
 import view, { ViewOptions } from './view'
 
+export * from './types'
+export * from './utils'
+
 /**
  * Add the DataSourceManager to the GrapesJs editor
  */
