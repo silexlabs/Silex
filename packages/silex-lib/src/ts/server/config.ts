@@ -34,7 +34,6 @@ import { FsStorage } from './connectors/FsStorage'
 import { Connector } from './connectors/connectors'
 import { ConnectorType } from '../types'
 import { FsHosting } from './connectors/FsHosting'
-import { tmpdir } from 'os'
 
 /**
  * Config types definitions
@@ -177,13 +176,13 @@ export class ServerConfig extends Config {
     // Add default storage connectors
     if (!this.storageConnectors.length) {
       this.addStorageConnector(new FsStorage(null, {
-        path: process.env.SILEX_FS_ROOT || join(tmpdir(), '/silex/storage'),
+        path: process.env.SILEX_FS_ROOT || join(process.cwd(), '/silex/storage'),
       }))
     }
     // Add default hosting connectors
     if (!this.hostingConnectors.length) {
       this.addHostingConnector(new FsHosting(null, {
-        path: process.env.SILEX_FS_HOSTING_ROOT || join(tmpdir(), '/silex/hosting'),
+        path: process.env.SILEX_FS_HOSTING_ROOT || join(process.cwd(), '/silex/hosting'),
       }))
     }
   }
