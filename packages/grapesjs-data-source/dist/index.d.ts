@@ -3,6 +3,80 @@ import { Button, Component, Editor, Page } from 'grapesjs';
 import { LitElement } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
 
+/**
+ * @element steps-selector
+ * Web component to select a sequence of steps
+ *
+ * It has these events:
+ * - load
+ * - change
+ *
+ * It has these properties:
+ * - steps
+ * - dirty
+ *
+ * It has these slots:
+ * - placeholder
+ * - dirty-icon
+ *
+ * User actions:
+ * - add a next step at the end of the selection
+ * - reset to default value
+ * - copy value to clipboard
+ * - paste value from clipboard
+ */
+export interface Step {
+	name: string;
+	icon: string;
+	type: string;
+	tags?: string[];
+	helpText?: string;
+	errorText?: string;
+	options?: any;
+	optionsForm?: string;
+	meta?: any;
+	category?: string;
+}
+declare class StepsSelector extends LitElement {
+	static styles: import("lit").CSSResult;
+	static getFixedValueStep(value: string): Step;
+	get dirty(): boolean;
+	steps: Step[];
+	protected get _steps(): Step[];
+	protected set _steps(value: Step[]);
+	protected initialValue: Step[];
+	completion: (steps: Step[]) => Step[];
+	allowFixed: boolean;
+	fixed: boolean;
+	fixedType: "text" | "date" | "email" | "number" | "password" | "tel" | "time" | "url";
+	placeholder: string;
+	fixedPlaceholder: string;
+	maxSteps: number | undefined;
+	groupByCategory: boolean;
+	render(): import("lit").TemplateResult<1>;
+	group(completion: Step[]): Map<string, Step[]>;
+	renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): import("lit").TemplateResult<1>;
+	connectedCallback(): void;
+	isFixedValue(): boolean;
+	fixedValueChanged(value: string): void;
+	/**
+	 * Set the step at the given index
+	 */
+	setStepAt(at: number, step: Step | undefined): void;
+	setOptionsAt(at: number, options: unknown, optionsForm: string): void;
+	/**
+	 * Delete the step at the given index and all the following steps
+	 */
+	deleteStepAt(at: number): void;
+	/**
+	 * Reset dirty flag and store the current value as initial value
+	 */
+	save(): void;
+	/**
+	 * Reset dirty flag and restore the initial value
+	 */
+	reset(): void;
+}
 export type PageId = string;
 export interface Query {
 	expression: Expression;
@@ -110,16 +184,12 @@ export type Context = Token[];
  * It is used to access data from the data source
  */
 export type Expression = Token[];
-/**
- * Options of the data tree
- * They can be set on the instance too
- */
-export interface DataTreeOptions {
-	filters: Partial<Filter>[] | string;
-	dataSources: IDataSource[];
-}
 declare class DataTree {
 	protected editor: DataSourceEditor;
+	protected options: {
+		dataSources: IDataSource[];
+		filters: Filter[];
+	};
 	dataSources: IDataSource[];
 	filters: Filter[];
 	/**
@@ -133,7 +203,10 @@ declare class DataTree {
 	 */
 	protected _queryables: Field[];
 	get queryables(): Field[];
-	constructor(editor: DataSourceEditor, options: DataTreeOptions);
+	constructor(editor: DataSourceEditor, options: {
+		dataSources: IDataSource[];
+		filters: Filter[];
+	});
 	/**
 	 * Get all types from all data sources
 	 */
@@ -257,80 +330,6 @@ export interface ViewOptions {
 	styles?: string;
 	optionsStyles?: string;
 }
-/**
- * @element steps-selector
- * Web component to select a sequence of steps
- *
- * It has these events:
- * - load
- * - change
- *
- * It has these properties:
- * - steps
- * - dirty
- *
- * It has these slots:
- * - placeholder
- * - dirty-icon
- *
- * User actions:
- * - add a next step at the end of the selection
- * - reset to default value
- * - copy value to clipboard
- * - paste value from clipboard
- */
-export interface Step {
-	name: string;
-	icon: string;
-	type: string;
-	tags?: string[];
-	helpText?: string;
-	errorText?: string;
-	options?: any;
-	optionsForm?: string;
-	meta?: any;
-	category?: string;
-}
-declare class StepsSelector extends LitElement {
-	static styles: import("lit").CSSResult;
-	static getFixedValueStep(value: string): Step;
-	get dirty(): boolean;
-	steps: Step[];
-	protected get _steps(): Step[];
-	protected set _steps(value: Step[]);
-	protected initialValue: Step[];
-	completion: (steps: Step[]) => Step[];
-	allowFixed: boolean;
-	fixed: boolean;
-	fixedType: "text" | "date" | "email" | "number" | "password" | "tel" | "time" | "url";
-	placeholder: string;
-	fixedPlaceholder: string;
-	maxSteps: number | undefined;
-	groupByCategory: boolean;
-	render(): import("lit").TemplateResult<1>;
-	group(completion: Step[]): Map<string, Step[]>;
-	renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): import("lit").TemplateResult<1>;
-	connectedCallback(): void;
-	isFixedValue(): boolean;
-	fixedValueChanged(value: string): void;
-	/**
-	 * Set the step at the given index
-	 */
-	setStepAt(at: number, step: Step | undefined): void;
-	setOptionsAt(at: number, options: unknown, optionsForm: string): void;
-	/**
-	 * Delete the step at the given index and all the following steps
-	 */
-	deleteStepAt(at: number): void;
-	/**
-	 * Reset dirty flag and store the current value as initial value
-	 */
-	save(): void;
-	/**
-	 * Reset dirty flag and restore the initial value
-	 */
-	reset(): void;
-}
 export declare function setOptionsFormStyles(styles: string): void;
 /**
  * Create a "fixed" token
@@ -362,9 +361,9 @@ export declare function renderExpression(component: Component, dataTree: DataTre
 export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
 export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
 export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
-export declare function optionsFormButtons(): string;
-export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
-export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
+export declare function optionsFormButtons(): import("lit-html").TemplateResult<1>;
+export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): import("lit-html").TemplateResult<1>;
+export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): import("lit-html").TemplateResult<1>;
 /**
  * Types
  */

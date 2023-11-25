@@ -1,12 +1,12 @@
 import { Component } from "grapesjs"
 import { Expression, Field, FieldKind, Options, State, Token, TypeId } from "./types"
 import { DataTree } from "./model/DataTree"
-import { Ref, ref } from "lit/directives/ref.js"
 import { getParentByPersistentId, getPersistantId, getState, getStateLabel, getStateVariableName, setState } from "./model/state"
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { OPTIONS_STYLES } from "./view/defaultStyles"
 import { DataSourceEditor } from "."
 import { html } from "lit"
+import { Ref, ref } from "lit/directives/ref.js"
 
 /**
  * Get the display type of a field

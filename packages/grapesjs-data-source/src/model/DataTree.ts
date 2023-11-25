@@ -19,7 +19,6 @@ import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, FieldProperty, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
-import getLiquidFilters from '../filters/liquid'
 
 /**
  * Options of the data tree
@@ -72,19 +71,10 @@ export class DataTree {
     return this._queryables
   }
 
-  constructor(protected editor: DataSourceEditor, options: DataTreeOptions) {
+  constructor(protected editor: DataSourceEditor, protected options: {dataSources: IDataSource[], filters: Filter[]}) {
     this.dataSources = options.dataSources
-    this.filters = typeof options.filters === 'string'
-      // Include preset from filters/
-      ? [
-        //...getGenericFilters(this),
-        ...getLiquidFilters(editor),
-      ]
-      // Define filters in the options
-      : options.filters.map((filter: Partial<Filter>) => ({
-      type: 'filter',
-      ...filter,
-    } as Filter))
+    this.filters = options.filters
+
     // Check that all filters have required fields
     this.filters.forEach((filter: Filter) => {
       if(!filter.id) throw new Error('Filter id is required')
