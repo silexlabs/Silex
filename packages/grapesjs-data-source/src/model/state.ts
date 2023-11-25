@@ -32,6 +32,7 @@ const HIDDEN_STATES_KEY = 'hiddenStates'
  * Types
  */
 export interface StoredState {
+  label?: string
   expression: Expression
 }
 
@@ -63,7 +64,7 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
 
 export function getStateLabel(component: Component | null | undefined, state: State): string {
   const name = component?.getName() ?? '[Not found]'
-  return `${name}'s ${state.label}` // (${component.get('tagName')}#${component.getId()})`
+  return `${name}'s ${state.label || state.storedStateId}`
 }
 
 /**

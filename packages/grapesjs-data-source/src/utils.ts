@@ -1,5 +1,5 @@
 import { Component } from "grapesjs"
-import { Expression, Field, FieldKind, Options, State, Token, TypeId } from "./types"
+import { Expression, Field, FieldKind, Options, State, StateId, Token, TypeId } from "./types"
 import { DataTree } from "./model/DataTree"
 import { getParentByPersistentId, getPersistantId, getState, getStateLabel, getStateVariableName, setState } from "./model/state"
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
@@ -94,7 +94,7 @@ export function setCompletion(dataTree: DataTree, component: Component, stepsSel
 /**
  * Handle the change event of a steps selector
  */
-export function chagedStepsSelector(component: Component, name: string, stepsSelector: StepsSelector) {
+export function chagedStepsSelector(component: Component, name: string, label: string, stepsSelector: StepsSelector, exposed: boolean) {
   // Check input
   if(!component) throw new Error('Component is required')
   if(!name) throw new Error('Name is required')
@@ -112,8 +112,9 @@ export function chagedStepsSelector(component: Component, name: string, stepsSel
   })
   // Update the state
   setState(component, name, {
+    label,
     expression: steps.map(step => step.meta.token),
-  }, false)
+  }, exposed)
   stepsSelector.steps = steps
 }
 
@@ -138,8 +139,8 @@ export function toSteps(dataTree: DataTree, expression: Expression, component: C
 /**
  * Render an expression with the steps-selector web component
  */
-export function renderExpression(component: Component, dataTree: DataTree, name: string, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, maxSteps?: number) {
-  const state = getState(component, name, false) ?? {expression: []}
+export function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number) {
+  const state = getState(component, stateId, exposed) ?? {expression: []}
   const steps = toSteps(dataTree, state.expression, component)
   const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
   const stepsSelector = reference?.value
@@ -160,7 +161,7 @@ export function renderExpression(component: Component, dataTree: DataTree, name:
         stepsSelector.steps = steps
         setCompletion(dataTree, component, stepsSelector)
       }}
-      @change=${(e: SubmitEvent) => chagedStepsSelector(component, name, e.target as StepsSelector)}
+      @change=${(e: SubmitEvent) => chagedStepsSelector(component, stateId, label, e.target as StepsSelector, exposed)}
       .fixed=${fixed}
       >
       ${label}
@@ -216,6 +217,7 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
         console.warn('Component not found', token.componentId)
         // TODO: notification
       }
+      console.log('render STATE', token, parent, getStateLabel(parent, token))
       return {
         name: getStateLabel(parent, token),
         icon: '',

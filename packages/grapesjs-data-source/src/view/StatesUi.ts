@@ -16,14 +16,16 @@
  */
 
 import { Component } from "grapesjs"
-import { html, render } from "lit"
-import { Ref, createRef } from 'lit/directives/ref.js'
+import { TemplateResult, html, render } from "lit"
+import { Ref, createRef, ref } from 'lit/directives/ref.js'
 
 import { StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { DataTree } from "../model/DataTree"
-import { DataSourceEditor } from ".."
+import { DataSourceEditor, StateId } from ".."
+import { StoredState, getState, getStateIds, removeState, setState } from "../model/state"
 import { renderExpression, setOptionsFormStyles } from "../utils"
+import { ArrayUi } from "./ArrayUi"
 
 type PropsNames = 
   'innerHTML'
@@ -36,9 +38,15 @@ type PropsNames =
   | 'condition'
   | '__data'
 
+type Item = {
+  stateId: StateId
+  component: Component
+  storedState: StoredState
+}
+
 export class StatesUi {
 
-  protected propsSelectorRefs: Map<PropsNames, Ref<StepsSelector>> = new Map([
+  private propsSelectorRefs: Map<PropsNames, Ref<StepsSelector>> = new Map([
     ['innerHTML', createRef<StepsSelector>()],
     ['title', createRef<StepsSelector>()],
     ['className', createRef<StepsSelector>()],
@@ -50,31 +58,146 @@ export class StatesUi {
     ['__data', createRef<StepsSelector>()],
   ])
 
+  private statesSelectorRefs: Map<StateId, Ref<StepsSelector>> = new Map()
+  private statesArrayUi: ArrayUi<Item>
+  private currentComponent: Component | undefined
+
   // Constructor
-  constructor(protected editor: DataSourceEditor, protected options: ViewOptions, protected wrapper: HTMLElement) {
+  constructor(private editor: DataSourceEditor, private options: ViewOptions, private wrapper: HTMLElement) {
     setOptionsFormStyles(options.optionsStyles ?? '')
+    this.statesArrayUi = new ArrayUi<Item>({
+      renderItem: item => this.renderCustomState(item),
+      createItem: () => this.createCustomState(),
+      renameItem: item => this.renameCustomState(item),
+      onChange: items => this.updateCustomStates(items),
+    })
   }
 
-  // Update the UI
+  /**
+   * Render a custom state
+   */
+  renderCustomState(item: Item): TemplateResult {
+    return renderExpression(
+      item.component,
+      this.editor.DataSourceManager.getDataTree(),
+      item.stateId,
+      item.storedState.label || item.stateId,
+      true,
+      this.statesSelectorRefs.get(item.stateId)!,
+      true,
+    )
+  }
+
+  /**
+   * Rename a custom state
+   */
+  renameCustomState(item: Item): Item {
+    const label = prompt('Rename this state', item.storedState.label)
+    return {
+      ...item,
+      storedState: {
+        ...item.storedState,
+        label: label || item.storedState.label,
+      }
+    }
+  }
+
+  /**
+   * Update the custom states, in the order of the list
+   */
+  updateCustomStates(items: Item[]) {
+    if (!this.currentComponent) return
+    const component = this.currentComponent
+    const stateIds = getStateIds(this.currentComponent, true)
+    // // Remove states that are not in the list
+    // stateIds.forEach(stateId => {
+    //   if (!items.find(item => item.stateId === stateId)) {
+    //     removeState(component, stateId)
+    //   }
+    // })
+    // Remove all states
+    stateIds.forEach(stateId => {
+      removeState(component, stateId, true)
+    })
+    // Add states in the order of the list
+    items.forEach(item => {
+      console.log('updateCustomStates', item.storedState)
+      setState(item.component, item.stateId, item.storedState, true)
+    })
+  }
+  
+  /**
+   * Create a new custom state
+   */
+  createCustomState(): Item | null {
+    if (!this.currentComponent) throw new Error('No current component')
+    const label = prompt('Name this state', 'New state')
+    if (!label) return null
+    if (getStateIds(this.currentComponent).includes(label)) {
+      alert('A state with this name already exists')
+      return null
+    }
+    const stateId = `${this.currentComponent.getId()}-${Math.random().toString(36)}`
+    const storedState: StoredState = {
+      label,
+      expression: [],
+    }
+    setState(this.currentComponent, stateId, storedState, true)
+    return { stateId, storedState, component: this.currentComponent }
+  }
+
+  /**
+   * Update the custom states array UI
+   */
+  updateCustomStatesArrayUi(component: Component, wrapper: HTMLElement) {
+    this.currentComponent = component
+    const stateIds = getStateIds(component, true)
+    stateIds.forEach(stateId => {
+      if (!this.statesSelectorRefs.has(stateId)) {
+        this.statesSelectorRefs.set(stateId, createRef<StepsSelector>())
+      }
+    })
+    this.statesArrayUi.setData(stateIds.map(stateId => ({
+      stateId,
+      component,
+      storedState: getState(component, stateId, true),
+    })), wrapper)
+  }
+
+  /**
+   * Update the UI
+   */
   updateUi(component: Component | undefined, dataTree: DataTree) {
     if(!component) return
-    //const dataStateType: Field | undefined = dataTree.getExpressionResultType(getState(component, '__data', false)?.expression ?? [], component) ?? undefined
     render(html`
       <style>
         ${this.options.styles}
       </style>
       <section class="ds-section">
         <div>
+          <div class="gjs-traits-label">Custom States</div>
+        </div>
+        <main>
+          <div
+            ${ref(el => {
+              if(!el) return
+              this.updateCustomStatesArrayUi(component, el as HTMLElement)
+            })}
+            ></div>
+        </main>
+      </section>
+      <section class="ds-section">
+        <div>
           <div class="gjs-traits-label">Element Properties</div>
         </div>
         <main>
-          ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!)}
-          ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!)}
-          ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!)}
-          ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!)}
-          ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!)}
-          ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!)}
-          ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!)}
+          ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!, false)}
+          ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!, false)}
+          ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!, false)}
+          ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!, false)}
+          ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!, false)}
+          ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!, false)}
+          ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!, false)}
         </main>
       </section>
       <section class="ds-section">
@@ -82,7 +205,7 @@ export class StatesUi {
           <div class="gjs-traits-label">Visibility</div>
         </div>
         <main>
-          ${renderExpression(component, dataTree, 'condition', 'condition', true, this.propsSelectorRefs.get('condition')!)}
+          ${renderExpression(component, dataTree, 'condition', 'condition', true, this.propsSelectorRefs.get('condition')!, false)}
         </main>
       </section>
       <section class="ds-section">
@@ -90,7 +213,7 @@ export class StatesUi {
           <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${renderExpression(component, dataTree, '__data', 'data', false, this.propsSelectorRefs.get('__data')!)}
+          ${renderExpression(component, dataTree, '__data', 'data', false, this.propsSelectorRefs.get('__data')!, false)}
         </main>
       </section>
     `, this.wrapper)

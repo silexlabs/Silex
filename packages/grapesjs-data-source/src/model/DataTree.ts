@@ -167,7 +167,7 @@ export class DataTree {
         .map((stateId: StateId): State => ({
           type: 'state',
           storedStateId: stateId,
-          label: stateId,
+          label: getState(parent, stateId, true)?.label || stateId,
           componentId: getOrCreatePersistantId(parent),
           exposed: true,
         }))))
