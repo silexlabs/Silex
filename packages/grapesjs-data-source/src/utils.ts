@@ -217,7 +217,6 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
         console.warn('Component not found', token.componentId)
         // TODO: notification
       }
-      console.log('render STATE', token, parent, getStateLabel(parent, token))
       return {
         name: getStateLabel(parent, token),
         icon: '',
@@ -265,7 +264,7 @@ export function getFieldType(editor: DataSourceEditor, field: Field | null, key:
   }
 }
 export function optionsFormButtons() {
-  return html`
+  return `
       <div class="buttons">
         <input type="reset" value="Cancel" />
         <input type="submit" value="Apply" />
@@ -274,12 +273,12 @@ export function optionsFormButtons() {
 }
 export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string) {
   const dataTree = editor.DataSourceManager.getDataTree()
-  if (!field) return html`
+  if (!field) return `
       <label>${name}
         <input type="text" name="${name}" />
       </label>
     `
-  return html`
+  return `
       <select name="${name}">
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
@@ -293,13 +292,15 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
 }
 export function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string) {
   const dataTree = editor.DataSourceManager.getDataTree()
-  return html`
+  return `
           <select name="${name}">
+            <option value="">Select a ${name}</option>
             ${dataTree.getContext()
       .filter(token => token.type === 'state' && token.exposed)
       .map(token => {
         const state = token as State
         const value = getStateVariableName(state.componentId, state.storedStateId)
+        console.log('optionsFormStateSelector', { options, value })
         const component = (() => {
           let c = editor.getSelected()
           while (c) {
@@ -312,7 +313,7 @@ export function optionsFormStateSelector(editor: DataSourceEditor, options: Opti
           console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
           return ''
         }
-        return `<option selected="${options[name] === value}" value="${value}">${component.getName()}'s ${state.label}</option>`
+        return `<option${options[name] === value ? ' selected' : ''} value="${value}">${component.getName()}'s ${state.label}</option>`
       })
       .join('\n')
     }

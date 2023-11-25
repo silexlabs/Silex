@@ -37,7 +37,6 @@ export class ArrayUi<Item=unknown> {
     this.renderUi()
   }
   renderUi() {
-    console.log('renderUi', this.items, this.wrapper)
     if(!this.wrapper) {
       console.warn('No wrapper')
       return

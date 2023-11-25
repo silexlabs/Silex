@@ -38,11 +38,15 @@ export default function(editor: DataSourceEditor): Filter[] {
       apply: (str, options) => `${str}${options.suffix}`,
       options: {
         suffix: '',
+        state: '',
       },
       optionsForm: () => `
       <form>
         <label>Suffix
           <input type="text" name="suffix" placeholder="Suffix"/>
+        </label>
+        <label>Suffix (select a custom state)
+          ${ optionsFormStateSelector(editor, {}, 'state') }
         </label>
         ${ optionsFormButtons() }
       </form>
