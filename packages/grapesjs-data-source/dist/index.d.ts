@@ -386,6 +386,10 @@ export declare function onStateChange(callback: (state: StoredState | null, comp
  */
 export declare function getStateIds(component: Component, exported?: boolean): StateId[];
 /**
+ * Get the name of a state variable
+ */
+export declare function getStateVariableName(componentId: string, stateId: StateId): string;
+/**
  * Get a state
  */
 export declare function getState(component: Component, id: StateId, exported?: boolean): StoredState;

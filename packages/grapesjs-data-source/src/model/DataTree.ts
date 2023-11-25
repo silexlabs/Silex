@@ -78,7 +78,7 @@ export class DataTree {
       // Include preset from filters/
       ? [
         //...getGenericFilters(this),
-        ...getLiquidFilters(this),
+        ...getLiquidFilters(editor),
       ]
       // Define filters in the options
       : options.filters.map((filter: Partial<Filter>) => ({
@@ -194,7 +194,7 @@ export class DataTree {
                 componentId: getOrCreatePersistantId(parent),
                 exposed: false,
                 forceKind: 'object', // FIXME: this may be a scalar
-                label: 'loop item',
+                label: '',
               })
             } else {
               console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)

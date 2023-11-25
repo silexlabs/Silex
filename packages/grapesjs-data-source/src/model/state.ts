@@ -99,6 +99,14 @@ export function getStateIds(component: Component, exported: boolean = true): Sta
 }
 
 /**
+ * Get the name of a state variable
+ * Useful to generate code
+ */
+export function getStateVariableName(componentId: string, stateId: StateId): string {
+  return `state_${ componentId }_${ stateId }`
+}
+
+/**
  * Get a state
  */
 export function getState(component: Component, id: StateId, exported: boolean = true): StoredState {

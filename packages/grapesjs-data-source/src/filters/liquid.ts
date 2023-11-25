@@ -15,10 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataTree } from "../model/DataTree"
+import { DataSourceEditor, getPersistantId, getStateVariableName } from ".."
 import { Field, Filter, Options, State } from "../types"
 
-export default function(dataTree: DataTree): Filter[] {
+export default function(editor: DataSourceEditor): Filter[] {
+  const dataTree = editor.DataSourceManager.getDataTree()
   function listToObject(field: Field | null): Field | null {
     if (!field) {
       return null
@@ -73,14 +74,6 @@ export default function(dataTree: DataTree): Filter[] {
   return [
     {
       type: 'filter',
-      id: 'abs',
-      label: 'abs',
-      validate: (field: Field | null) => !!field && (field.typeIds.includes('Int') || field.typeIds.includes('Float')) && field.kind === 'scalar',
-      output: field => field,
-      apply: num => Math.abs(num as number),
-      options: {},
-    }, {
-      type: 'filter',
       id: 'strip_html',
       label: 'strip_html',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
@@ -109,12 +102,28 @@ export default function(dataTree: DataTree): Filter[] {
         <label>Value to match (hard coded)
           <input type="text" name="value" placeholder="Value"/>
         </label>
-        <label>Value to match (from parent state)
+        <label>Value to match (select a custom state)
           <select name="state">
             ${
               dataTree.getContext()
                 .filter(token => token.type === 'state' && token.exposed)
-                .map(state => `<option value="${(state as State).storedStateId}">${(state as State).storedStateId}</option>`)
+                .map(token => {
+                  const state = token as State
+                  const value = getStateVariableName(state.componentId, state.storedStateId)
+                  const component = (() => {
+                    let c = editor.getSelected()
+                    while (c) {
+                      if (getPersistantId(c) === state.componentId) return c
+                      c = c.parent()
+                    }
+                    return null
+                  })()
+                  if (!component) {
+                    console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
+                    return ''
+                  }
+                  return `<option selected="${options.state === value}" value="${value}">${component.getName()}'s ${state.label}</option>`
+                })
                 .join('\n')
             }
           </select>
