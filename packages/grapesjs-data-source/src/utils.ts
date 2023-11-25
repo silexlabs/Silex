@@ -1,11 +1,12 @@
 import { Component } from "grapesjs"
-import { Expression, Field, FieldKind, Token, TypeId } from "./types"
+import { Expression, Field, FieldKind, Options, State, Token, TypeId } from "./types"
 import { DataTree } from "./model/DataTree"
 import { TemplateResult, html } from "lit"
 import { Ref, ref } from "lit/directives/ref.js"
-import { getParentByPersistentId, getState, getStateLabel, setState } from "./model/state"
+import { getParentByPersistentId, getPersistantId, getState, getStateLabel, getStateVariableName, setState } from "./model/state"
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { OPTIONS_STYLES } from "./view/defaultStyles"
+import { DataSourceEditor } from "."
 
 /**
  * Get the display type of a field
@@ -227,4 +228,92 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
       console.error('Unknown token type (reading type)', token)
       throw new Error(`Unknown token type`)
   }
+}
+
+export function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null {
+  if (!field) {
+    return null
+  }
+  if (field.kind !== from) {
+    console.error(`Field is not a ${from}`, field)
+    throw new Error(`Field ${field.label} is not a ${from}`)
+  }
+  return {
+    ...field,
+    kind: to,
+  }
+}
+export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null {
+  const dataTree = editor.DataSourceManager.getDataTree()
+  if (!field || !key) return null
+  const types = field.typeIds.map(typeId => dataTree.findType(typeId))
+  const fields = types.map(type => type?.fields.find(field => field.label === key))
+  switch (fields.length) {
+    case 0: return null
+    case 1: return fields[0]!
+    default: return {
+      id: `${field.id}.${key}`,
+      label: `${field.label}.${key}`,
+      typeIds: fields.reduce((typeIds, field) => typeIds
+        // Add typeIds of the field if not already present
+        .concat(field!.typeIds.filter(t => !typeIds.includes(t)))
+        , [] as string[]),
+      kind: 'object',
+    }
+  }
+}
+export function optionsFormButtons(): string {
+  return `
+      <div class="buttons">
+        <input type="reset" value="Cancel" />
+        <input type="submit" value="Apply" />
+      </div>
+    `
+}
+export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string {
+  const dataTree = editor.DataSourceManager.getDataTree()
+  if (!field) return `
+      <label>${name}
+        <input type="text" name="${name}" />
+      </label>
+    `
+  return `
+      <select name="${name}">
+        <option value="">Select a ${name}</option>
+        ${field ? field.typeIds
+      .flatMap(typeId => dataTree.findType(typeId)!.fields)
+      .map(f => `<option value="${f.label}" ${f.label === options.key ? 'selected' : ''}>${f.label}</option>`)
+      .join('\n')
+      : ''
+    }
+      </select>
+    `
+}
+export function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string {
+  const dataTree = editor.DataSourceManager.getDataTree()
+  return `
+          <select name="${name}">
+            ${dataTree.getContext()
+      .filter(token => token.type === 'state' && token.exposed)
+      .map(token => {
+        const state = token as State
+        const value = getStateVariableName(state.componentId, state.storedStateId)
+        const component = (() => {
+          let c = editor.getSelected()
+          while (c) {
+            if (getPersistantId(c) === state.componentId) return c
+            c = c.parent()
+          }
+          return null
+        })()
+        if (!component) {
+          console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
+          return ''
+        }
+        return `<option selected="${options[name] === value}" value="${value}">${component.getName()}'s ${state.label}</option>`
+      })
+      .join('\n')
+    }
+          </select>
+          `
 }

@@ -15,62 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, getPersistantId, getStateVariableName } from ".."
-import { Field, Filter, Options, State } from "../types"
+import { DataSourceEditor, optionsFormButtons, convertKind, optionsFormStateSelector, getFieldType, optionsFormKeySelector } from ".."
+import { Field, Filter } from "../types"
 
 export default function(editor: DataSourceEditor): Filter[] {
-  const dataTree = editor.DataSourceManager.getDataTree()
-  function listToObject(field: Field | null): Field | null {
-    if (!field) {
-      return null
-    }
-    if(field.kind !== 'list') {
-      console.error('Field is not a list', field)
-      throw new Error(`Field ${field.label} is not a list`)
-    }
-    return {
-      ...field,
-      kind: 'object',
-    }
-  }
-  function getFieldType(field: Field | null, key: string | undefined): Field | null {
-    if (!field || !key) return null
-    const types = field.typeIds.map(typeId => dataTree.findType(typeId))
-    const fields = types.map(type => type?.fields.find(field => field.label === key))
-    switch(fields.length) {
-      case 0: return null
-      case 1: return fields[0]!
-      default: return {
-        id: `${field.id}.${key}`,
-        label: `${field.label}.${key}`,
-        typeIds: fields.reduce((typeIds, field) => typeIds
-          // Add typeIds of the field if not already present
-          .concat(field!.typeIds.filter(t => !typeIds.includes(t)))
-          , [] as string[]),
-        kind: 'object',
-      }
-    }
-  }
-  function keySelector(field: Field | null, options: Options, name: string): string {
-    // FIXME: here field is always null
-    if(!field) return `
-      <label>${name}
-        <input type="text" name="${name}" />
-      </label>
-    `
-    return `
-      <select name="${name}">
-        <option value="">Select a ${name}</option>
-        ${
-          field ? field.typeIds
-            .flatMap(typeId => dataTree.findType(typeId)!.fields)
-            .map(f => `<option value="${f.label}" ${f.label === options.key ? 'selected': ''}>${f.label}</option>`)
-            .join('\n') 
-            : ''
-        }
-      </select>
-    `
-  }
   return [
     {
       type: 'filter',
@@ -80,6 +28,24 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/<[^>]*>/g, ''),
       options: {},
+    }, {
+      type: 'filter',
+      id: 'append',
+      label: 'append',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str, options) => `${str}${options.suffix}`,
+      options: {
+        suffix: '',
+      },
+      optionsForm: () => `
+      <form>
+        <label>Suffix
+          <input type="text" name="suffix" placeholder="Suffix"/>
+        </label>
+        ${ optionsFormButtons() }
+      </form>
+      `
     }, {
       type: 'filter',
       id: 'where',
@@ -97,41 +63,15 @@ export default function(editor: DataSourceEditor): Filter[] {
       optionsForm: (input: Field | null, options) => `
       <form>
         <label>Key to filter on
-          ${ keySelector(input, options, 'key') }
+          ${ optionsFormKeySelector(editor, input, options, 'key') }
         </label>
         <label>Value to match (hard coded)
           <input type="text" name="value" placeholder="Value"/>
         </label>
         <label>Value to match (select a custom state)
-          <select name="state">
-            ${
-              dataTree.getContext()
-                .filter(token => token.type === 'state' && token.exposed)
-                .map(token => {
-                  const state = token as State
-                  const value = getStateVariableName(state.componentId, state.storedStateId)
-                  const component = (() => {
-                    let c = editor.getSelected()
-                    while (c) {
-                      if (getPersistantId(c) === state.componentId) return c
-                      c = c.parent()
-                    }
-                    return null
-                  })()
-                  if (!component) {
-                    console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
-                    return ''
-                  }
-                  return `<option selected="${options.state === value}" value="${value}">${component.getName()}'s ${state.label}</option>`
-                })
-                .join('\n')
-            }
-          </select>
+          ${ optionsFormStateSelector(editor, options, 'value') }
         </label>
-        <div class="buttons">
-          <input type="reset" value="Cancel" />
-          <input type="submit" value="Apply" />
-        </div>
+        ${ optionsFormButtons() }
       </form>
     `,
     }, {
@@ -139,7 +79,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'first',
       label: 'first',
       validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: (field: Field | null) => listToObject(field),
+      output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[0],
       options: {},
     }, {
@@ -147,7 +87,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'last',
       label: 'last',
       validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: (field: Field | null) => listToObject(field),
+      output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
       options: {},
     }, {
@@ -155,10 +95,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'join',
       label: 'join',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'list',
-      output: field => field ? {
-        ...field,
-        kind: 'scalar',
-      } : null,
+      output: (field: Field | null) => convertKind(field, 'list', 'scalar'),
       apply: (arr, options) => (arr as string[]).join(options.separator as string ?? ','),
       options: {
         separator: ',',
@@ -168,10 +105,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <label>Separator
           <input type="text" name="separator" placeholder="Separator"/>
         </label>
-        <div class="buttons">
-          <input type="reset" value="Cancel" />
-          <input type="submit" value="Apply" />
-        </div>
+        ${ optionsFormButtons() }
       </form>
     `,
     }, {
@@ -179,10 +113,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'split',
       label: 'split',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
-      output: field => field ? {
-        ...field,
-        kind: 'list',
-      } : null,
+      output: (field: Field | null) => convertKind(field, 'scalar', 'list'),
       apply: (str, options) => (str as string).split(options.separator as string ?? ','),
       options: {
         separator: ',',
@@ -192,10 +123,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <label>Separator
           <input type="text" name="separator" placeholder="Separator"/>
         </label>
-        <div class="buttons">
-          <input type="reset" value="Cancel" />
-          <input type="submit" value="Apply" />
-        </div>
+        ${ optionsFormButtons() }
       </form>
     `,
     }, {
@@ -203,7 +131,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'map',
       label: 'map',
       validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: (field, options) => getFieldType(field, options['key'] as string | undefined),
+      output: (field, options) => getFieldType(editor, field, options['key'] as string | undefined),
       apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
       options: {
         key: '',
@@ -211,12 +139,9 @@ export default function(editor: DataSourceEditor): Filter[] {
       optionsForm: (input: Field | null, options) => `
         <form>
           <label>Key
-            ${ keySelector(input, options, 'key') }
+            ${ optionsFormKeySelector(editor, input, options, 'key') }
           </label>
-          <div class="buttons">
-            <input type="reset" value="Cancel" />
-            <input type="submit" value="Apply" />
-          </div>
+          ${ optionsFormButtons() }
         </form>
       `,
     }, {
@@ -245,7 +170,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'at',
       label: 'at',
       validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: field => listToObject(field),
+      output: field => convertKind(field, 'list', 'object'),
       apply: (arr, options) => (arr as unknown[])[options.index as number],
       options: {
         index: 0,
@@ -255,10 +180,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <label>Index
           <input type="number" name="index" placeholder="Index"/>
         </label>
-          <div class="buttons">
-          <input type="reset" value="Cancel" />
-          <input type="submit" value="Apply" />
-        </div>
+        ${ optionsFormButtons() }
       </form>
     `,
     }
