@@ -19,7 +19,6 @@ import { Component } from "grapesjs"
 import { html, render } from "lit"
 import { Ref, createRef } from 'lit/directives/ref.js'
 
-import '@silexlabs/steps-selector' // For the web component to work
 import { StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { DataTree } from "../model/DataTree"
@@ -37,7 +36,7 @@ type PropsNames =
   | 'condition'
   | '__data'
 
-export class PropertiesUi {
+export class StatesUi {
 
   protected propsSelectorRefs: Map<PropsNames, Ref<StepsSelector>> = new Map([
     ['innerHTML', createRef<StepsSelector>()],

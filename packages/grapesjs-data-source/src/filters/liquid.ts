@@ -15,8 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, optionsFormButtons, convertKind, optionsFormStateSelector, getFieldType, optionsFormKeySelector } from ".."
+import { optionsFormButtons, convertKind, optionsFormStateSelector, getFieldType, optionsFormKeySelector } from "../utils"
 import { Field, Filter } from "../types"
+import { DataSourceEditor } from ".."
 
 export default function(editor: DataSourceEditor): Filter[] {
   return [

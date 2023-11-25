@@ -1,12 +1,12 @@
 import { Component } from "grapesjs"
 import { Expression, Field, FieldKind, Options, State, Token, TypeId } from "./types"
 import { DataTree } from "./model/DataTree"
-import { TemplateResult, html } from "lit"
 import { Ref, ref } from "lit/directives/ref.js"
 import { getParentByPersistentId, getPersistantId, getState, getStateLabel, getStateVariableName, setState } from "./model/state"
 import { Step, StepsSelector } from "@silexlabs/steps-selector"
 import { OPTIONS_STYLES } from "./view/defaultStyles"
 import { DataSourceEditor } from "."
+import { html } from "lit"
 
 /**
  * Get the display type of a field
@@ -138,7 +138,7 @@ export function toSteps(dataTree: DataTree, expression: Expression, component: C
 /**
  * Render an expression with the steps-selector web component
  */
-export function renderExpression(component: Component, dataTree: DataTree, name: string, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, maxSteps?: number): TemplateResult {
+export function renderExpression(component: Component, dataTree: DataTree, name: string, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, maxSteps?: number) {
   const state = getState(component, name, false) ?? {expression: []}
   const steps = toSteps(dataTree, state.expression, component)
   const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
@@ -262,22 +262,22 @@ export function getFieldType(editor: DataSourceEditor, field: Field | null, key:
     }
   }
 }
-export function optionsFormButtons(): string {
-  return `
+export function optionsFormButtons() {
+  return html`
       <div class="buttons">
         <input type="reset" value="Cancel" />
         <input type="submit" value="Apply" />
       </div>
     `
 }
-export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string {
+export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string) {
   const dataTree = editor.DataSourceManager.getDataTree()
-  if (!field) return `
+  if (!field) return html`
       <label>${name}
         <input type="text" name="${name}" />
       </label>
     `
-  return `
+  return html`
       <select name="${name}">
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
@@ -289,9 +289,9 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
       </select>
     `
 }
-export function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string {
+export function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string) {
   const dataTree = editor.DataSourceManager.getDataTree()
-  return `
+  return html`
           <select name="${name}">
             ${dataTree.getContext()
       .filter(token => token.type === 'state' && token.exposed)

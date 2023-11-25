@@ -1,6 +1,6 @@
 import Backbone from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
-import { LitElement, TemplateResult } from 'lit';
+import { LitElement } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
 
 export type PageId = string;
@@ -353,13 +353,18 @@ export declare function toSteps(dataTree: DataTree, expression: Expression, comp
 /**
  * Render an expression with the steps-selector web component
  */
-export declare function renderExpression(component: Component, dataTree: DataTree, name: string, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, maxSteps?: number): TemplateResult;
+export declare function renderExpression(component: Component, dataTree: DataTree, name: string, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, maxSteps?: number): import("lit-html").TemplateResult<1>;
 /**
  * Convert a token to a step
  * This will resolve the types of filters
  * @param field can be null, this happens when token is a filter with output resolving to null
  */
 export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
+export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
+export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
+export declare function optionsFormButtons(): string;
+export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
+export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
 /**
  * Types
  */
@@ -387,6 +392,7 @@ export declare function onStateChange(callback: (state: StoredState | null, comp
 export declare function getStateIds(component: Component, exported?: boolean): StateId[];
 /**
  * Get the name of a state variable
+ * Useful to generate code
  */
 export declare function getStateVariableName(componentId: string, stateId: StateId): string;
 /**
