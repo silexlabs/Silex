@@ -23,6 +23,7 @@ import { DataSourceManager } from './model/DataSourceManager'
 import { Filter, IDataSourceOptions } from './types'
 import view, { ViewOptions } from './view'
 
+export * from './model/state'
 export * from './types'
 export * from './utils'
 
@@ -81,5 +82,3 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
  * This is replaced by the build script
  */
 export const version = '__VERSION__'
-
-export * from './model/state'

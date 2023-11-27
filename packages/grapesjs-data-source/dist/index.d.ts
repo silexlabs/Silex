@@ -226,6 +226,13 @@ declare class DataTree {
 		options: Options;
 	} | null;
 	/**
+	 * Get the options of a token or a field
+	 */
+	optionsToOptionsForm(arr: {
+		name: string;
+		value: unknown;
+	}[]): (input: Field | null, options: Options) => string;
+	/**
 	 * Get the context of a component
 	 * This includes all parents states, data sources queryable values, values provided in the options
 	 */
@@ -252,6 +259,7 @@ declare class DataTree {
 	 * Get the type corresponding to a token
 	 */
 	tokenToField(token: Token, prev: Field | null, component: Component): Field | null;
+	propertyToField(property: Property): Field;
 	/**
 	 * Evaluate the types of each token in an expression
 	 */
@@ -337,40 +345,6 @@ export interface ViewOptions {
 	styles?: string;
 	optionsStyles?: string;
 }
-export declare function setOptionsFormStyles(styles: string): void;
-/**
- * Create a "fixed" token
- * It is a hard coded content with which you can start an expression
- */
-export declare function getFixedToken(value: string | number | boolean, typeId: TypeId): Token;
-/**
- * Set the completion function of a steps selector
- */
-export declare function setCompletion(dataTree: DataTree, component: Component, stepsSelector: StepsSelector): void;
-/**
- * Handle the change event of a steps selector
- */
-export declare function chagedStepsSelector(component: Component, name: string, label: string, stepsSelector: StepsSelector, exposed: boolean): void;
-/**
- * Convert an expression to steps
- * This will resolve the types of filters
- */
-export declare function toSteps(dataTree: DataTree, expression: Expression, component: Component): Step[];
-/**
- * Render an expression with the steps-selector web component
- */
-export declare function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number): import("lit-html").TemplateResult<1>;
-/**
- * Convert a token to a step
- * This will resolve the types of filters
- * @param field can be null, this happens when token is a filter with output resolving to null
- */
-export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
-export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
-export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
-export declare function optionsFormButtons(): string;
-export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
-export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
 /**
  * Types
  */
@@ -414,6 +388,42 @@ export declare function setState(component: Component, id: StateId, state: Store
  * Remove a state
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
+export declare function setOptionsFormStyles(styles: string): void;
+/**
+ * Create a "fixed" token
+ * It is a hard coded content with which you can start an expression
+ */
+export declare const FIXED_TOKEN_ID = "fixed";
+export declare function getFixedToken(value: string | number | boolean, typeId: TypeId): Token;
+/**
+ * Set the completion function of a steps selector
+ */
+export declare function setCompletion(dataTree: DataTree, component: Component, stepsSelector: StepsSelector): void;
+/**
+ * Handle the change event of a steps selector
+ */
+export declare function chagedStepsSelector(component: Component, name: string, label: string, stepsSelector: StepsSelector, exposed: boolean): void;
+/**
+ * Convert an expression to steps
+ * This will resolve the types of filters
+ */
+export declare function toSteps(dataTree: DataTree, expression: Expression, component: Component): Step[];
+/**
+ * Render an expression with the steps-selector web component
+ */
+export declare function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number): import("lit-html").TemplateResult<1>;
+/**
+ * Convert a token to a step
+ * This will resolve the types of filters
+ * @param field can be null, this happens when token is a filter with output resolving to null
+ */
+export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
+export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
+export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
+export declare function optionsFormButtons(): string;
+export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
+export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
+export declare const test = "test";
 /**
  * Add the DataSourceManager to the GrapesJs editor
  */

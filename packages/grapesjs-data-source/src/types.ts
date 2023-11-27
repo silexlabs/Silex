@@ -93,6 +93,11 @@ export interface Field {
  * A token can be a property or a filter
  */
 export type Token = Property | Filter | State
+
+/**
+ * Stored tokens are how the tokens are stored in the component as JSON
+ * Use DataTree#fromStored to convert them back to tokens
+ */
 export type StoredToken = StoredProperty | StoredFilter | State
 export type Options = Record<string, unknown>
 

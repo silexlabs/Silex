@@ -54,11 +54,8 @@ export function getFixedToken(value: string | number | boolean, typeId: TypeId):
       <form>
         <label>Value
           <input type="text" name="value" value="${value.toString()}">
-          <div class="buttons">
-            <input type="submit" value="Apply"/>
-            <input type="reset" value="Cancel"/>
-          </div>
         </label>
+        ${ optionsFormButtons() }
       </form>
     `),
   }
@@ -177,25 +174,14 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
         console.error('Unknown type (reading type)', token)
         throw new Error(`Unknown type`)
       }
-      switch (token.propType) {
-        //case 'type': return {
-        //  name: type.id,
-        //  icon: '',
-        //  type: getDisplayType([type.dataSourceId as string ?? 'Type'], null), // FIXME: use a data source option as a name
-        //  meta: { token, type }
-        //}
-        case 'field': return {
-          name: token.label,
-          icon: '',
-          type: getDisplayType(token.typeIds, token.kind),
-          meta: { token, type: field },
-          options: token.options,
-          optionsForm: token.optionsForm ? addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
-          category: token.dataSourceId as string,
-        }
-        default:
-          console.error('Unknown property type (reading propType)', token)
-          throw new Error(`Unknown property type`)
+      return {
+        name: token.label,
+        icon: '',
+        type: getDisplayType(token.typeIds, token.kind),
+        meta: { token, type: field },
+        options: token.options,
+        optionsForm: token.optionsForm ? addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
+        category: token.dataSourceId as string,
       }
     case 'filter':
       return {

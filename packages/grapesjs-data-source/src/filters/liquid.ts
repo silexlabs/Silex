@@ -35,9 +35,8 @@ export default function(editor: DataSourceEditor): Filter[] {
       label: 'append',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
       output: type => type,
-      apply: (str, options) => `${str}${options.suffix}`,
+      apply: (str, options) => `${str}${options.state}`,
       options: {
-        suffix: '',
         state: '',
       },
       optionsForm: (input: Field | null, options) => `
