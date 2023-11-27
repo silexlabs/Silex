@@ -25,7 +25,7 @@ import { DataTree } from "../model/DataTree"
 import { DataSourceEditor, StateId } from ".."
 import { StoredState, getState, getStateIds, removeState, setState } from "../model/state"
 import { renderExpression, setOptionsFormStyles } from "../utils"
-import { ArrayUi } from "./ArrayUi"
+import { States } from "./States"
 
 type PropsNames = 
   'innerHTML'
@@ -59,13 +59,13 @@ export class StatesUi {
   ])
 
   private statesSelectorRefs: Map<StateId, Ref<StepsSelector>> = new Map()
-  private statesArrayUi: ArrayUi<Item>
+  private statesUi: States<Item>
   private currentComponent: Component | undefined
 
   // Constructor
   constructor(private editor: DataSourceEditor, private options: ViewOptions, private wrapper: HTMLElement) {
     setOptionsFormStyles(options.optionsStyles ?? '')
-    this.statesArrayUi = new ArrayUi<Item>({
+    this.statesUi = new States<Item>({
       renderItem: item => this.renderCustomState(item),
       createItem: () => this.createCustomState(),
       renameItem: item => this.renameCustomState(item),
@@ -147,9 +147,9 @@ export class StatesUi {
   }
 
   /**
-   * Update the custom states array UI
+   * Update the custom states UI
    */
-  updateCustomStatesArrayUi(component: Component, wrapper: HTMLElement) {
+  updateCustomStatesUi(component: Component, wrapper: HTMLElement) {
     this.currentComponent = component
     const stateIds = getStateIds(component, true)
     stateIds.forEach(stateId => {
@@ -157,7 +157,7 @@ export class StatesUi {
         this.statesSelectorRefs.set(stateId, createRef<StepsSelector>())
       }
     })
-    this.statesArrayUi.setData(stateIds.map(stateId => ({
+    this.statesUi.setData(stateIds.map(stateId => ({
       stateId,
       component,
       storedState: getState(component, stateId, true),
@@ -181,7 +181,7 @@ export class StatesUi {
           <div
             ${ref(el => {
               if(!el) return
-              this.updateCustomStatesArrayUi(component, el as HTMLElement)
+              this.updateCustomStatesUi(component, el as HTMLElement)
             })}
             ></div>
         </main>
@@ -190,6 +190,11 @@ export class StatesUi {
         <div>
           <div class="gjs-traits-label">Element Properties</div>
         </div>
+        <details class="ds-states__help">
+          <summary>Help</summary>
+          Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
+          <a target="_blank" href="https://docs.silex.me/en/user/cms#element-properties">Learn more about element properties</a>
+        </details>
         <main>
           ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!, false)}
           ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!, false)}

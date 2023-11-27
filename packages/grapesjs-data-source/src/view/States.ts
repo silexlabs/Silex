@@ -1,16 +1,16 @@
 
 /**
- * @fileoverview This file defines the ArrayUi class.
+ * @fileoverview This file defines the States class.
  * This class is used to display the UI to edit an array of items. It has buttons to add, remove and reorder items.
  */
 
 import { TemplateResult, html, render } from "lit"
 
 /**
- * ArrayUi class
+ * States class
  * @class
  */
-export class ArrayUi<Item=unknown> {
+export class States<Item=unknown> {
   private items: Item[]
   private wrapper: HTMLElement | null = null
   private renderItem: (item: Item) => TemplateResult
@@ -42,52 +42,21 @@ export class ArrayUi<Item=unknown> {
       return
     }
     render(html`
-      <style>
-        .ds-array {
-          display: flex;
-          flex-direction: column;
-        }
-        .ds-array__buttons {
-          display: flex;
-          flex-direction: row;
-          margin: 0 5px;
-        }
-        .ds-array__button {
-          cursor: pointer;
-          border: 1px solid var(--ds-button-border);
-          border-radius: 2px;
-          padding: 5px;
-          background: var(--ds-button-bg);
-          color: var(--ds-button-color);
-          flex: 1;
-          margin: 5px;
-        }
-        .ds-array__button--disabled {
-          opacity: 0.5;
-          cursor: default;
-        }
-        .ds-array__remove-button {
-          margin-left: 1em;
-        }
-        .ds-array__add-button {
-          margin: 10px;
-          margin-bottom: 30px;
-        }
-        .ds-array__sep {
-          width: 100%;
-          border: none;
-          height: 1px;
-          background: var(--ds-button-bg);
-        }
-      </style>
-      <div class="ds-array">
-        <div class="ds-array__items">
+      <div class="ds-states">
+        <details class="ds-states__help">
+          <summary>Help</summary>
+          Custom states are used to store data in the component.
+          They are useful to store data that is not displayed in the page, but that is used in the expressions of the properties section bellow.
+          <a target="_blank" href="https://docs.silex.me/en/user/cms#custom-states">Learn more about custom states</a>
+        </details>
+        <div class="ds-states__items">
           ${this.items.map((item, index) => html`
-            <div class="ds-array__item">
+            <div class="ds-states__item">
               ${this.renderItem(item)}
-              <div class="ds-array__buttons">
+              <div class="ds-states__buttons">
                 <button
-                  class="ds-array__remove-button ds-array__button"
+                  title="Remove this state"
+                  class="ds-states__remove-button ds-states__button"
                   @click=${() => {
                     this.items.splice(index, 1)
                     this.onChange(this.items)
@@ -95,7 +64,8 @@ export class ArrayUi<Item=unknown> {
                   }}
                   >x</button>
                 <button
-                  class="ds-array__rename-button ds-array__button"
+                  title="Rename this state"
+                  class="ds-states__rename-button ds-states__button"
                   @click=${() => {
                     const newItem = this.renameItem(item)
                     if(!newItem) return
@@ -105,7 +75,8 @@ export class ArrayUi<Item=unknown> {
                   }}
                   >\u270F</button>
                 <button
-                  class="ds-array__item-move-up ds-array__button${ index === 0 ? ' ds-array__button--disabled' : '' }"
+                  title="Move this state up"
+                  class="ds-states__item-move-up ds-states__button${ index === 0 ? ' ds-states__button--disabled' : '' }"
                   @click=${() => {
                     this.items.splice(index - 1, 0, this.items.splice(index, 1)[0]);
                     this.onChange(this.items)
@@ -113,7 +84,8 @@ export class ArrayUi<Item=unknown> {
                   }}
                   >\u2191</button>
                 <button
-                  class="ds-array__item-move-down ds-array__button${ index === this.items.length - 1 ? ' ds-array__button--disabled' : '' }"
+                  title="Move this state down"
+                  class="ds-states__item-move-down ds-states__button${ index === this.items.length - 1 ? ' ds-states__button--disabled' : '' }"
                   @click=${() => {
                     this.items.splice(index + 1, 0, this.items.splice(index, 1)[0]);
                     this.onChange(this.items)
@@ -122,11 +94,12 @@ export class ArrayUi<Item=unknown> {
                   >\u2193</button>
               </div>
             </div>
-            <hr class="ds-array__sep" />
+            <hr class="ds-states__sep" />
           `)}
         </div>
         <button
-          class="ds-array__add-button ds-array__button"
+          title="Add a new state"
+          class="ds-states__add-button ds-states__button"
           @click=${() => {
             const item = this.createItem()
             if(!item) return

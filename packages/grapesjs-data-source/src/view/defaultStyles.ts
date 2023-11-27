@@ -195,6 +195,21 @@ export const PROPERTY_STYLES = `
   }
   steps-selector::part(steps-selector-item__add) {
   }
+  .ds-section details {
+    margin: 10px;
+    padding: 10px;
+    background-color: var(--ds-tertiary);
+    border-radius: 2px;
+    color: var(--ds-secondary);
+    text-align: left;
+  }
+  .ds-section details summary {
+    color: var(--ds-secondary);
+    cursor: pointer;
+  }
+  .ds-section details a {
+    color: var(--ds-link-color);
+  }
   .ds-section .gjs-traits-label {
     background-color: var(--ds-tertiary);
   }
@@ -209,5 +224,42 @@ export const PROPERTY_STYLES = `
   }
   .ds-section label.ds-label--disabled .ds-label__message {
     opacity: .5;
+  }
+  /* States CSS Styles */
+  .ds-states {
+    display: flex;
+    flex-direction: column;
+  }
+  .ds-states__buttons {
+    display: flex;
+    flex-direction: row;
+    margin: 0 5px;
+  }
+  .ds-states__button {
+    cursor: pointer;
+    border: 1px solid var(--ds-button-border);
+    border-radius: 2px;
+    padding: 5px;
+    background: var(--ds-button-bg);
+    color: var(--ds-button-color);
+    flex: 1;
+    margin: 5px;
+  }
+  .ds-states__button--disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .ds-states__remove-button {
+    margin-left: 1em;
+  }
+  .ds-states__add-button {
+    margin: 10px;
+    margin-bottom: 30px;
+  }
+  .ds-states__sep {
+    width: 100%;
+    border: none;
+    height: 1px;
+    background: var(--ds-button-bg);
   }
 `

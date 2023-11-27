@@ -18,7 +18,7 @@
 import { Button } from 'grapesjs'
 import { DataSourceEditor } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
-import { StatesUi } from './StatesUi'
+import { StatesUi } from './Properties'
 
 /**
  * 
