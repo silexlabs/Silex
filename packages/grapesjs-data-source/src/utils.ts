@@ -126,7 +126,7 @@ export function toSteps(dataTree: DataTree, expression: Expression, component: C
   const fields = dataTree.expressionToFields(expression, component)
   return fields
     .map((type, index) => {
-      const token = expression[index]
+      const token = dataTree.fromStored(expression[index])
       if (!type) {
         console.error('Unknown type (reading type)', token)
         throw new Error(`Unknown type`)
@@ -300,7 +300,6 @@ export function optionsFormStateSelector(editor: DataSourceEditor, options: Opti
       .map(token => {
         const state = token as State
         const value = getStateVariableName(state.componentId, state.storedStateId)
-        console.log('optionsFormStateSelector', { options, value })
         const component = (() => {
           let c = editor.getSelected()
           while (c) {

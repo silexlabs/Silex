@@ -128,24 +128,25 @@ export interface Field {
  * A token can be a property or a filter
  */
 export type Token = Property | Filter | State;
+export type StoredToken = StoredProperty | StoredFilter | State;
 export type Options = Record<string, unknown>;
 /**
  * A property is used to make expressions and access data from the data source
  */
-export type Property = FieldProperty;
 export interface BaseProperty {
 	type: "property";
 	propType: "field";
 	dataSourceId?: DataSourceId;
 }
-export type FieldOptions = Record<string, unknown>;
-export interface FieldProperty extends BaseProperty {
-	propType: "field";
+export type PropertyOptions = Record<string, unknown>;
+export interface StoredProperty extends BaseProperty {
 	typeIds: TypeId[];
 	fieldId: FieldId;
 	label: string;
 	kind: FieldKind;
-	options?: FieldOptions;
+	options?: PropertyOptions;
+}
+export interface Property extends StoredProperty {
 	optionsForm?: (input: Field | null, options: Options) => string | null;
 }
 /**
@@ -153,11 +154,13 @@ export interface FieldProperty extends BaseProperty {
  * It is provided in the options
  */
 export type FilterId = string;
-export interface Filter {
+export interface StoredFilter {
 	type: "filter";
 	id: FilterId;
 	label: string;
 	options: Options;
+}
+export interface Filter extends StoredFilter {
 	optionsForm?: (input: Field | null, options: Options) => string | null;
 	validate: (input: Field | null) => boolean;
 	output: (input: Field | null, options: Options) => Field | null;
@@ -183,7 +186,7 @@ export type Context = Token[];
  * An expression is a list of tokens which can be evaluated to a value
  * It is used to access data from the data source
  */
-export type Expression = Token[];
+export type Expression = StoredToken[];
 declare class DataTree {
 	protected editor: DataSourceEditor;
 	protected options: {
@@ -230,7 +233,7 @@ declare class DataTree {
 	/**
 	 * Create a property token from a field
 	 */
-	fieldToToken(field: Field): FieldProperty;
+	fieldToToken(field: Field): Property;
 	/**
 	 * Evaluate an expression to a value
 	 */
@@ -241,6 +244,10 @@ declare class DataTree {
 	 * When filters are stored they lose their methods
 	 */
 	getFilterFromToken(token: Filter, filters: Filter[]): Filter;
+	/**
+	 * Get the token from its stored form
+	 */
+	fromStored<T extends Token = Token>(token: StoredToken): T;
 	/**
 	 * Get the type corresponding to a token
 	 */
@@ -343,7 +350,7 @@ export declare function setCompletion(dataTree: DataTree, component: Component, 
 /**
  * Handle the change event of a steps selector
  */
-export declare function chagedStepsSelector(component: Component, name: string, stepsSelector: StepsSelector): void;
+export declare function chagedStepsSelector(component: Component, name: string, label: string, stepsSelector: StepsSelector, exposed: boolean): void;
 /**
  * Convert an expression to steps
  * This will resolve the types of filters
@@ -352,7 +359,7 @@ export declare function toSteps(dataTree: DataTree, expression: Expression, comp
 /**
  * Render an expression with the steps-selector web component
  */
-export declare function renderExpression(component: Component, dataTree: DataTree, name: string, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, maxSteps?: number): import("lit-html").TemplateResult<1>;
+export declare function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number): import("lit-html").TemplateResult<1>;
 /**
  * Convert a token to a step
  * This will resolve the types of filters
@@ -361,13 +368,14 @@ export declare function renderExpression(component: Component, dataTree: DataTre
 export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
 export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
 export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
-export declare function optionsFormButtons(): import("lit-html").TemplateResult<1>;
-export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): import("lit-html").TemplateResult<1>;
-export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): import("lit-html").TemplateResult<1>;
+export declare function optionsFormButtons(): string;
+export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
+export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
 /**
  * Types
  */
 export interface StoredState {
+	label?: string;
 	expression: Expression;
 }
 export type PersistantId = string;

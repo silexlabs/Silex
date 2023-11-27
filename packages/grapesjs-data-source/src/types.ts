@@ -93,31 +93,27 @@ export interface Field {
  * A token can be a property or a filter
  */
 export type Token = Property | Filter | State
+export type StoredToken = StoredProperty | StoredFilter | State
 export type Options = Record<string, unknown>
 
 /**
  * A property is used to make expressions and access data from the data source
  */
-export type Property = /*TypeProperty |*/ FieldProperty
-
 export interface BaseProperty {
   type: 'property'
   propType: /*'type' |*/ 'field'
   dataSourceId?: DataSourceId
 }
 
-//export interface TypeProperty extends BaseProperty {
-//  propType: 'type'
-//  typeId: TypeId
-//}
-export type FieldOptions = Record<string, unknown>
-export interface FieldProperty extends BaseProperty {
-  propType: 'field'
+export type PropertyOptions = Record<string, unknown>
+export interface StoredProperty extends BaseProperty {
   typeIds: TypeId[]
   fieldId: FieldId
   label: string
   kind: FieldKind
-  options?: FieldOptions
+  options?: PropertyOptions
+}
+export interface Property extends StoredProperty {
   optionsForm?: (input: Field | null, options: Options) => string | null
 }
 
@@ -126,11 +122,13 @@ export interface FieldProperty extends BaseProperty {
  * It is provided in the options
  */
 export type FilterId = string
-export interface Filter {
+export interface StoredFilter {
   type: 'filter'
   id: FilterId
   label: string
   options: Options
+}
+export interface Filter extends StoredFilter {
   optionsForm?: (input: Field | null, options: Options) => string | null
   validate: (input: Field | null) => boolean
   output: (input: Field | null, options: Options) => Field | null
@@ -160,4 +158,4 @@ export type Context = Token[]
  * An expression is a list of tokens which can be evaluated to a value
  * It is used to access data from the data source
  */
-export type Expression = Token[]
+export type Expression = StoredToken[]

@@ -40,13 +40,10 @@ export default function(editor: DataSourceEditor): Filter[] {
         suffix: '',
         state: '',
       },
-      optionsForm: () => `
+      optionsForm: (input: Field | null, options) => `
       <form>
-        <label>Suffix
-          <input type="text" name="suffix" placeholder="Suffix"/>
-        </label>
         <label>Suffix (select a custom state)
-          ${ optionsFormStateSelector(editor, {}, 'state') }
+          ${ optionsFormStateSelector(editor, options, 'state') }
         </label>
         ${ optionsFormButtons() }
       </form>
@@ -69,9 +66,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       <form>
         <label>Key to filter on
           ${ optionsFormKeySelector(editor, input, options, 'key') }
-        </label>
-        <label>Value to match (hard coded)
-          <input type="text" name="value" placeholder="Value"/>
         </label>
         <label>Value to match (select a custom state)
           ${ optionsFormStateSelector(editor, options, 'value') }

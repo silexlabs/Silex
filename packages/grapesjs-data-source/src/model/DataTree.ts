@@ -16,7 +16,7 @@
  */
 
 import { Component, Page } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, FieldProperty, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId } from '../types'
+import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, Property, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId, StoredToken } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
 
@@ -117,29 +117,35 @@ export class DataTree {
   getTokenOptions(field: Field): { optionsForm: (input: Field | null, options: Options) => string, options: Options} | null {
     if (field.arguments && field.arguments.length > 0) {
       return {
-        optionsForm: (input: Field | null, options: Options) => {
-          return `
-            <form>
-              ${
-                field.arguments!.map((arg: FieldArgument) => {
-                  const value = options[arg.name] ?? arg.defaultValue ?? ''
-                  return `<label>${arg.name}</label><input type="text" name="${arg.name}" value="${value}">`
-                }).join('\n')
-              }
-              <div class="buttons">
-                <input type="reset" value="Cancel">
-                <input type="submit" value="Apply">
-              </div>
-            </form>
-          `
-        },
-        options: field.arguments!.reduce((options: Record<string, unknown>, arg: FieldArgument) => {
+        optionsForm: this.optionsToOptionsForm(field.arguments.map((arg) => ({ name: arg.name, value: arg.defaultValue }))),
+        options: field.arguments.reduce((options: Record<string, unknown>, arg: FieldArgument) => {
           options[arg.name] = arg.defaultValue
           return options
         }, {}),
       }
     }
     return null
+  }
+
+  /**
+   * Get the options of a token or a field
+   */
+  optionsToOptionsForm(arr: {name: string, value: unknown}[]): (input: Field | null, options: Options) => string {
+    return (input: Field | null, options: Options) => {
+      return `
+            <form>
+              ${arr.map((obj) => {
+        const value = options[obj.name] ?? obj.value ?? ''
+        return `<label>${obj.name}</label><input type="text" name="${obj.name}" value="${value}">`
+      }).join('\n')
+        }
+              <div class="buttons">
+                <input type="reset" value="Cancel">
+                <input type="submit" value="Apply">
+              </div>
+            </form>
+          `
+    }
   }
 
   /**
@@ -152,7 +158,7 @@ export class DataTree {
       throw new Error('Component is required for context')
     }
     // Get all queryable values from all data sources
-    const queryable: FieldProperty[] = this.queryables
+    const queryable: Property[] = this.queryables
       .map((field: Field) => {
         if(!field.dataSourceId) throw new Error(`Type ${field.id} has no data source`)
         return this.fieldToToken(field)
@@ -212,7 +218,7 @@ export class DataTree {
   /**
    * Create a property token from a field
    */
-  fieldToToken(field: Field): FieldProperty {
+  fieldToToken(field: Field): Property {
     if(!field) throw new Error('Field is required for token')
     if(!field.dataSourceId) throw new Error(`Field ${field.id} has no data source`)
     return {
@@ -257,6 +263,43 @@ export class DataTree {
   }
 
   /**
+   * Get the token from its stored form
+   */
+  fromStored<T extends Token = Token>(token: StoredToken): T {
+    switch (token.type) {
+      case 'filter': {
+        if((token as Filter).optionsForm) return token as T
+        const original = this.filters.find(filter => filter.id === token.id) as T | undefined
+        if(!original) {
+          console.error('Filter not found', token)
+          throw new Error(`Filter ${token.id} not found`)
+        }
+        return {
+          ...original,
+          ...token,
+        } as T
+      }
+      case 'property': {
+        if((token as Property).optionsForm) return token as T
+        const field = this.propertyToField(token)
+        if(!field) {
+          console.error('Field not found for token', token)
+          throw new Error(`Field ${token.fieldId} not found`)
+        }
+        return {
+          ...this.getTokenOptions(field) ?? {},
+          ...token,
+        } as T
+      }
+      case 'state':
+        return token as T
+      default:
+        console.error('Unknown token type (reading type)', token)
+        throw new Error('Unknown token type')
+    }
+  }
+
+  /**
    * Get the type corresponding to a token
    */
   tokenToField(token: Token, prev: Field | null, component: Component): Field | null {
@@ -269,26 +312,7 @@ export class DataTree {
         return null
       }
       case 'property':
-        switch (token.propType) {
-          //case 'type':
-          //  return this.findType(token.typeId, token.dataSourceId) ?? null
-          case 'field': {
-            const typeNames = token.typeIds
-              .map((typeId: TypeId) => this.findType(typeId, token.dataSourceId))
-              .map((type: Type | null) => type?.label)
-
-            return {
-              id: token.fieldId,
-              label: typeNames.join(', '),
-              typeIds: token.typeIds,
-              kind: token.kind,
-              dataSourceId: token.dataSourceId,
-            }
-          }
-          default:
-            console.error('Unknown property type (reading propType)', token)
-            throw new Error('Unknown property type')
-        }
+        return this.propertyToField(token)
       case 'state': {
         const parent = getParentByPersistentId(token.componentId, component)
         if(!parent) {
@@ -314,14 +338,34 @@ export class DataTree {
     }
   }
 
+  propertyToField(property: Property): Field {
+    const typeNames = property.typeIds
+      .map((typeId: TypeId) => this.findType(typeId, property.dataSourceId))
+      .map((type: Type | null) => type?.label)
+
+    const args = property.options ? Object.entries(property.options).map(([name, value]) => ({
+      typeId: 'JSON', // FIXME: Why is this hardcoded?
+      name,
+      defaultValue: value, // FIXME: Why is this value, it should keep the inital default
+    })) : undefined
+    return {
+      id: property.fieldId,
+      label: typeNames.join(', '),
+      typeIds: property.typeIds,
+      kind: property.kind,
+      dataSourceId: property.dataSourceId,
+      arguments: args,
+    }
+  }
+
   /**
    * Evaluate the types of each token in an expression
    */
   expressionToFields(expression: Expression, component: Component): Field[] {
     // Resolve type of the expression 1 step at a time
     let prev: Field | null = null
-    return expression.map((token: Token) => {
-      const field = this.tokenToField(token, prev, component)
+    return expression.map((token) => {
+      const field = this.tokenToField(this.fromStored(token), prev, component)
       if(!field) {
         console.warn('Type not found for token in expressionToFields', {token, expression})
         return {
@@ -342,8 +386,8 @@ export class DataTree {
    */
   getExpressionResultType(expression: Expression, component: Component): Field | null {
     // Resolve type of the expression 1 step at a time
-    return expression.reduce((prev: Field | null, token: Token) => {
-      return this.tokenToField(token, prev, component)
+    return expression.reduce((prev: Field | null, token: StoredToken) => {
+      return this.tokenToField(this.fromStored(token), prev, component)
     }, null)
   }
 
@@ -433,10 +477,10 @@ export class DataTree {
       return null
     }
     return soredState.expression
-      .flatMap((token: Token) => {
+      .flatMap((token: StoredToken) => {
         switch (token.type) {
           case 'state': {
-            return this.resolveState(token, parent) ?? []
+            return this.resolveState(this.fromStored(token), parent) ?? []
           }
           default:
             return token
@@ -456,7 +500,7 @@ export class DataTree {
       // Hidden states (loop / internals)
       .concat(getStateIds(component, false).map(stateId => getState(component, stateId, false)?.expression))
       // Resolve state expressions
-      .map((expression) => expression?.flatMap((token: Token) => {
+      .map((expression) => expression?.flatMap((token: StoredToken) => {
         switch (token.type) {
           case 'state':
             return this.resolveState(token, component) ?? []

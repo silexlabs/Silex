@@ -16,7 +16,7 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, FieldOptions, FieldProperty, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
+import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, PropertyOptions, Property, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 import graphqlIntrospectionQuery from "./graphql-introspection-query"
 import dedent from "dedent-js"
 
@@ -70,7 +70,7 @@ export interface GQLType {
  * Exported for unit tests
  */
 export interface Tree {
-  token: FieldProperty
+  token: Property
   children: Tree[]
 }
 
@@ -78,7 +78,7 @@ export interface Tree {
  * Utility function to shallow compare two objects
  * Used to compare options of tree items
  */
-function shallowEqual(option1: FieldOptions | undefined, option2: FieldOptions | undefined) {
+function shallowEqual(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined) {
   // Handle the case where one or both are undefined
   if(!option1 && !option2) return true
   if(!option1 || !option2) return false

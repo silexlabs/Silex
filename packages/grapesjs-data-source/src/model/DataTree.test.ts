@@ -21,7 +21,7 @@
 
 import grapesjs, { Editor, Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, FieldProperty, Field, State, Expression } from '../types'
+import { Type, Filter, Property, Field, State, Expression } from '../types'
 import { DataSourceEditor } from '..'
 import { getState, getStateIds, getOrCreatePersistantId, getParentByPersistentId } from './state'
 
@@ -60,7 +60,7 @@ const simpleQueryables: Field[] = [{
   kind: 'scalar',
   dataSourceId: 'DataSourceId',
 }]
-const simpleQueryableTokens: FieldProperty[] = [{
+const simpleQueryableTokens: Property[] = [{
   fieldId: 'testSimpleQueryableId',
   label: 'test queryable',
   type: 'property',
@@ -232,65 +232,65 @@ test('get context with data source queryable values', () => {
   const context = dataTree.getContext(component)
   expect(context).toBeDefined()
   expect(context).toHaveLength(1)
-  const typeProp = context[0] as FieldProperty
+  const typeProp = context[0] as Property
   expect(typeProp.fieldId).toContain('testFieldId2')
 })
 
-//// TODO: Value tests
-//// const simpleExpression: Context = [
-////   {
-////     type: 'property',
-////     propType: 'type',
-////     typeId: 'testTypeId',
-////     dataSourceId: 'DataSourceId',
-////   }, {
-////     type: 'property',
-////     propType: 'field',
-////     fieldId: 'testFieldId',
-////     typeId: 'testTypeId',
-////     dataSourceId: 'DataSourceId',
-////   }
-//// ]
-//// test('get value with simple context', () => {
-////   const dataTree = new DataTree({
-////     filters: [],
-////     dataSources: [{
-////       id: 'DataSourceId',
-////       connect: async () => { },
-////       getTypes: () => simpleTypes,
-////     }],
-////   })
-//// 
-////   // Empty value
-////   expect(dataTree.getValue(simpleExpression, [])).toBeNull()
-//// 
-////   // 1 level value
-////   const value = dataTree.getValue(simpleExpression, [{
-////     type: 'property',
-////     propType: 'type',
-////     typeId: 'testTypeId',
-////     dataSourceId: 'DataSourceId',
-////   }])
-////   expect(value).not.toBeNull()
-////   // TODO: test value
-//// 
-////   // 2 levels value
-////   const value2 = dataTree.getValue(simpleExpression, [{
-////     type: 'property',
-////     propType: 'type',
-////     typeId: 'testTypeId',
-////     dataSourceId: 'DataSourceId',
-////   }, {
-////     type: 'property',
-////     propType: 'field',
-////     fieldId: 'testFieldId',
-////     typeId: 'testTypeId',
-////     dataSourceId: 'DataSourceId',
-////   }])
-////   expect(value2).not.toBeNull()
-////   // TODO: test value
-//// })
-//
+// TODO: Value tests
+// const simpleExpression: Context = [
+//   {
+//     type: 'property',
+//     propType: 'type',
+//     typeId: 'testTypeId',
+//     dataSourceId: 'DataSourceId',
+//   }, {
+//     type: 'property',
+//     propType: 'field',
+//     fieldId: 'testFieldId',
+//     typeId: 'testTypeId',
+//     dataSourceId: 'DataSourceId',
+//   }
+// ]
+// test('get value with simple context', () => {
+//   const dataTree = new DataTree({
+//     filters: [],
+//     dataSources: [{
+//       id: 'DataSourceId',
+//       connect: async () => { },
+//       getTypes: () => simpleTypes,
+//     }],
+//   })
+// 
+//   // Empty value
+//   expect(dataTree.getValue(simpleExpression, [])).toBeNull()
+// 
+//   // 1 level value
+//   const value = dataTree.getValue(simpleExpression, [{
+//     type: 'property',
+//     propType: 'type',
+//     typeId: 'testTypeId',
+//     dataSourceId: 'DataSourceId',
+//   }])
+//   expect(value).not.toBeNull()
+//   // TODO: test value
+// 
+//   // 2 levels value
+//   const value2 = dataTree.getValue(simpleExpression, [{
+//     type: 'property',
+//     propType: 'type',
+//     typeId: 'testTypeId',
+//     dataSourceId: 'DataSourceId',
+//   }, {
+//     type: 'property',
+//     propType: 'field',
+//     fieldId: 'testFieldId',
+//     typeId: 'testTypeId',
+//     dataSourceId: 'DataSourceId',
+//   }])
+//   expect(value2).not.toBeNull()
+//   // TODO: test value
+// })
+
 test('get type with simple context', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {
     filters: [],
@@ -304,7 +304,7 @@ test('get type with simple context', () => {
   })
 
   // Empty value
-  expect(dataTree.getExpressionResultType([], firstComponent)).toBeNull()
+  expect(dataTree.getExpressionResultType([] as Expression, firstComponent)).toBeNull()
 
   // 1 level value
   const type = dataTree.getExpressionResultType([{
@@ -371,7 +371,7 @@ test('get completion with simple context', () => {
     dataSourceId: 'DataSourceId',
   }])
   expect(completion2).toHaveLength(1)
-  const typeProp = completion2[0] as FieldProperty
+  const typeProp = completion2[0] as Property
   expect(typeProp.typeIds).toContain('testFieldTypeId')
 
   // 2 levels value
@@ -467,7 +467,7 @@ test('Get experessions used by a component', () => {
       typeIds: ['testTypeId'],
       kind: 'object',
       dataSourceId: 'DataSourceId',
-    }] as FieldProperty[]
+    }] as Property[]
   ;(getStateIds as jest.Mock).mockReturnValueOnce(['testStateId'])
   ;(getState as jest.Mock).mockImplementation(() => ({
     expression,
