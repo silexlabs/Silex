@@ -38,19 +38,15 @@ function addStyles(optionsForm: string | null): string {
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression
  */
+export const FIXED_TOKEN_ID = 'fixed'
 export function getFixedToken(value: string | number | boolean, typeId: TypeId): Token {
   return {
-    type: 'filter',
-    id: 'fixed',
+    type: 'property',
+    propType: 'field',
+    fieldId: FIXED_TOKEN_ID,
     label: 'Fixed value',
-    output: () => ({
-      id: 'fixed_value',
-      label: 'Fixed value',
-      kind: 'scalar',
-      typeIds: [typeId],
-    }),
-    validate: field => !field,
-    apply: () => value,
+    kind: 'scalar',
+    typeIds: [typeId],
     options: {
       value,
     },

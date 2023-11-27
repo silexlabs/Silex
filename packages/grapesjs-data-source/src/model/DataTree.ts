@@ -253,7 +253,7 @@ export class DataTree {
   getFilterFromToken(token: Filter, filters: Filter[]): Filter {
     const filter = filters.find(filter => filter.id === token.id)
     if(!filter) {
-      console.warn('Filter not found', token)
+      console.error('Filter not found', token)
       throw new Error(`Filter ${token.id} not found`)
     }
     return {
