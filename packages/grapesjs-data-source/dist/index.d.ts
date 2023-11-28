@@ -128,6 +128,10 @@ export interface Field {
  * A token can be a property or a filter
  */
 export type Token = Property | Filter | State;
+/**
+ * Stored tokens are how the tokens are stored in the component as JSON
+ * Use DataTree#fromStored to convert them back to tokens
+ */
 export type StoredToken = StoredProperty | StoredFilter | State;
 export type Options = Record<string, unknown>;
 /**
@@ -423,7 +427,6 @@ export declare function getFieldType(editor: DataSourceEditor, field: Field | nu
 export declare function optionsFormButtons(): string;
 export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
 export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
-export declare const test = "test";
 /**
  * Add the DataSourceManager to the GrapesJs editor
  */
