@@ -300,7 +300,6 @@ export default function (config: ServerConfig, opts = {}): Router {
                 path: `/${file.originalFilename}`,
                 content: createReadStream(file.filepath),
               }))
-            console.log('files', files)
             resolve(files)
           }
         })
