@@ -294,7 +294,7 @@ export function optionsFormStateSelector(editor: DataSourceEditor, options: Opti
           console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
           return ''
         }
-        return `<option${options[name] === value ? ' selected' : ''} value="${value}">${component.getName()}'s ${state.label}</option>`
+        return `<option${options[name] === value ? ' selected' : ''} value="${value}">${getStateLabel(component, state)}</option>`
       })
       .join('\n')
     }

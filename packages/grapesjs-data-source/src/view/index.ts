@@ -18,7 +18,7 @@
 import { Button } from 'grapesjs'
 import { DataSourceEditor } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
-import { StatesUi } from './Properties'
+import { Properties } from './Properties'
 
 /**
  * 
@@ -40,7 +40,7 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
     // create a wrapper for our UI
     const wrapper = document.createElement('section')
     wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
-    const propertiesUi = new StatesUi(editor, options, wrapper)
+    const propertiesUi = new Properties(editor, options, wrapper)
 
     // Data tree
     const dataTree = editor.DataSourceManager.getDataTree()

@@ -25,14 +25,20 @@ import { Expression, StateId, State } from '../types'
  */
 
 // Keys to store the states in the component
-const EXPORTED_STATES_KEY = 'states'
-const HIDDEN_STATES_KEY = 'hiddenStates'
+const EXPORTED_STATES_KEY = 'publicStates'
+const PRIVATE_STATES_KEY = 'privateStates'
+
+/**
+ * Override the prefix of state names
+ */
+export const COMPONENT_NAME_PREFIX = 'nameForDataSource'
 
 /**
  * Types
  */
 export interface StoredState {
   label?: string
+  hidden?: boolean
   expression: Expression
 }
 
@@ -64,7 +70,8 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
 
 export function getStateLabel(component: Component | null | undefined, state: State): string {
   const name = component?.getName() ?? '[Not found]'
-  return `${name}'s ${state.label || state.storedStateId}`
+  const prefix = component?.get(COMPONENT_NAME_PREFIX) ?? `${name}'s`
+  return  `${prefix ? prefix + ' ' : ''}${state.label || state.storedStateId}`
 }
 
 /**
@@ -96,7 +103,7 @@ function fireChange(state: StoredState | null, component: Component) {
  * List all exported states
  */
 export function getStateIds(component: Component, exported: boolean = true): StateId[] {
-  return Object.keys(component.get(exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY) ?? {})
+  return Object.keys(component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) ?? {})
 }
 
 /**
@@ -111,7 +118,7 @@ export function getStateVariableName(componentId: string, stateId: StateId): str
  * Get a state
  */
 export function getState(component: Component, id: StateId, exported: boolean = true): StoredState {
-  const states = component.get(exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY) ?? {}
+  const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) ?? {}
   return states[id]
 }
 
@@ -119,7 +126,7 @@ export function getState(component: Component, id: StateId, exported: boolean = 
  * Set a state
  */
 export function setState(component: Component, id: StateId, state: StoredState, exported: boolean = true): void {
-  const key = exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY
+  const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
   component.set(key, {
     ...component.get(key) ?? {},
     [id]: state,
@@ -131,7 +138,7 @@ export function setState(component: Component, id: StateId, state: StoredState, 
  * Remove a state
  */
 export function removeState(component: Component, id: StateId, exported: boolean = true): void {
-  const key = exported ? EXPORTED_STATES_KEY : HIDDEN_STATES_KEY
+  const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
   const states = component.get(key) ?? {}
   const newState = {
     ...states,

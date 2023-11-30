@@ -191,7 +191,29 @@ export type Context = Token[];
  * It is used to access data from the data source
  */
 export type Expression = StoredToken[];
-declare class DataTree {
+/**
+ * Options of the data tree
+ * They can be set on the instance too
+ */
+export interface DataTreeOptions {
+	filters: Partial<Filter>[] | string;
+	dataSources: IDataSource[];
+}
+/**
+ * Error thrown when a query cannot be built
+ */
+export interface BuildQueryErrorOptions {
+	expression: Expression;
+	component: Component;
+	token: Token;
+}
+export declare class BuildQueryError extends Error {
+	expression: Expression;
+	component: Component;
+	token: Token;
+	constructor(message: string, options: BuildQueryErrorOptions);
+}
+export declare class DataTree {
 	protected editor: DataSourceEditor;
 	protected options: {
 		dataSources: IDataSource[];
@@ -307,7 +329,17 @@ declare class DataTree {
 	 */
 	getComponentExpressions(component: Component): Expression[];
 }
-declare class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
+/**
+ * FIXME: Why sometimes the methods of the data source are in the attributes?
+ * @return ds if it has the getTypes method or ds.attributes if it has the getTypes method
+ */
+export declare function getDataSourceClass(ds: IDataSource | {
+	attributes: IDataSource;
+}): IDataSource;
+/**
+ * GrapesJs plugin to manage data sources
+ */
+export declare class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
 	protected editor: DataSourceEditor;
 	protected options: DataSourceEditorOptions;
 	protected dataTree: DataTree;
@@ -350,10 +382,15 @@ export interface ViewOptions {
 	optionsStyles?: string;
 }
 /**
+ * Override the prefix of state names
+ */
+export declare const COMPONENT_NAME_PREFIX = "nameForDataSource";
+/**
  * Types
  */
 export interface StoredState {
 	label?: string;
+	hidden?: boolean;
 	expression: Expression;
 }
 export type PersistantId = string;

@@ -165,7 +165,7 @@ export class DataTree {
       })
     // Get all states in the component scope
     const states: State[] = []
-    const loopProperties: State[] = []
+    const loopProperties: Token[] = []
     let parent = component
     while(parent) {
       // Get explicitely set states
@@ -190,7 +190,21 @@ export class DataTree {
                 componentId: getOrCreatePersistantId(parent),
                 exposed: false,
                 forceKind: 'object', // FIXME: this may be a scalar
-                label: '',
+                label: loopDataField.label,
+              }, {
+                type: 'property',
+                propType: 'field',
+                fieldId: 'loopindex0',
+                label: 'Loop index (0 based)',
+                kind: 'scalar',
+                typeIds: ['number'],
+              }, {
+                type: 'property',
+                propType: 'field',
+                fieldId: 'loopindex',
+                label: 'Loop index (starts at 1)',
+                kind: 'scalar',
+                typeIds: ['number'],
               })
             } else {
               console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)

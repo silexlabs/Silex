@@ -6,23 +6,27 @@
 
 import { TemplateResult, html, render } from "lit"
 
+export interface Item {
+  hide?: boolean
+}
+
 /**
  * States class
  * @class
  */
-export class States<Item=unknown> {
-  private items: Item[]
+export class States<T extends Item> {
+  private items: T[]
   private wrapper: HTMLElement | null = null
-  private renderItem: (item: Item) => TemplateResult
-  private onChange: (items: Item[]) => void
-  private renameItem: (item: Item) => Item
-  private createItem: () => Item | null
+  private renderItem: (item: T) => TemplateResult
+  private onChange: (items: T[]) => void
+  private renameItem: (item: T) => T
+  private createItem: () => T | null
 
   constructor(options: {
-    renderItem: (item: Item) => TemplateResult,
-    createItem: () => Item | null,
-    renameItem: (item: Item) => Item,
-    onChange: (items: Item[]) => void,
+    renderItem: (item: T) => TemplateResult,
+    createItem: () => T | null,
+    renameItem: (item: T) => T,
+    onChange: (items: T[]) => void,
   }) {
     this.items = []
     this.renderItem = options.renderItem
@@ -31,7 +35,7 @@ export class States<Item=unknown> {
     this.renameItem = options.renameItem
     this.renderUi()
   }
-  setData(items: Item[], wrapper: HTMLElement) {
+  setData(items: T[], wrapper: HTMLElement) {
     this.items = items
     this.wrapper = wrapper
     this.renderUi()
@@ -50,7 +54,9 @@ export class States<Item=unknown> {
           <a target="_blank" href="https://docs.silex.me/en/user/cms#custom-states">Learn more about custom states</a>
         </details>
         <div class="ds-states__items">
-          ${this.items.map((item, index) => html`
+          ${this.items
+            .filter(item => !item.hide)
+            .map((item, index) => html`
             <div class="ds-states__item">
               ${this.renderItem(item)}
               <div class="ds-states__buttons">

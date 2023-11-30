@@ -25,7 +25,7 @@ import { DataTree } from "../model/DataTree"
 import { DataSourceEditor, StateId } from ".."
 import { StoredState, getState, getStateIds, removeState, setState } from "../model/state"
 import { renderExpression, setOptionsFormStyles } from "../utils"
-import { States } from "./States"
+import { Item, States } from "./States"
 
 type PropsNames = 
   'innerHTML'
@@ -38,13 +38,13 @@ type PropsNames =
   | 'condition'
   | '__data'
 
-type Item = {
+interface StateItem extends Item {
   stateId: StateId
   component: Component
   storedState: StoredState
 }
 
-export class StatesUi {
+export class Properties {
 
   private propsSelectorRefs: Map<PropsNames, Ref<StepsSelector>> = new Map([
     ['innerHTML', createRef<StepsSelector>()],
@@ -59,13 +59,13 @@ export class StatesUi {
   ])
 
   private statesSelectorRefs: Map<StateId, Ref<StepsSelector>> = new Map()
-  private statesUi: States<Item>
+  private statesUi: States<StateItem>
   private currentComponent: Component | undefined
 
   // Constructor
   constructor(private editor: DataSourceEditor, private options: ViewOptions, private wrapper: HTMLElement) {
     setOptionsFormStyles(options.optionsStyles ?? '')
-    this.statesUi = new States<Item>({
+    this.statesUi = new States<StateItem>({
       renderItem: item => this.renderCustomState(item),
       createItem: () => this.createCustomState(),
       renameItem: item => this.renameCustomState(item),
@@ -76,7 +76,7 @@ export class StatesUi {
   /**
    * Render a custom state
    */
-  renderCustomState(item: Item): TemplateResult {
+  renderCustomState(item: StateItem): TemplateResult {
     return renderExpression(
       item.component,
       this.editor.DataSourceManager.getDataTree(),
@@ -91,7 +91,7 @@ export class StatesUi {
   /**
    * Rename a custom state
    */
-  renameCustomState(item: Item): Item {
+  renameCustomState(item: StateItem): StateItem {
     const label = prompt('Rename this state', item.storedState.label)
     return {
       ...item,
@@ -105,16 +105,10 @@ export class StatesUi {
   /**
    * Update the custom states, in the order of the list
    */
-  updateCustomStates(items: Item[]) {
+  updateCustomStates(items: StateItem[]) {
     if (!this.currentComponent) return
     const component = this.currentComponent
     const stateIds = getStateIds(this.currentComponent, true)
-    // // Remove states that are not in the list
-    // stateIds.forEach(stateId => {
-    //   if (!items.find(item => item.stateId === stateId)) {
-    //     removeState(component, stateId)
-    //   }
-    // })
     // Remove all states
     stateIds.forEach(stateId => {
       removeState(component, stateId, true)
@@ -129,7 +123,7 @@ export class StatesUi {
   /**
    * Create a new custom state
    */
-  createCustomState(): Item | null {
+  createCustomState(): StateItem | null {
     if (!this.currentComponent) throw new Error('No current component')
     const label = prompt('Name this state', 'New state')
     if (!label) return null
@@ -157,11 +151,17 @@ export class StatesUi {
         this.statesSelectorRefs.set(stateId, createRef<StepsSelector>())
       }
     })
-    this.statesUi.setData(stateIds.map(stateId => ({
-      stateId,
-      component,
-      storedState: getState(component, stateId, true),
-    })), wrapper)
+    this.statesUi.setData(stateIds
+      .map(stateId => ({
+        stateId,
+        component,
+        storedState: getState(component, stateId, true),
+      }))
+      .map(item => ({
+        ...item,
+        hide: item.storedState.hidden,
+      }))
+    , wrapper)
   }
 
   /**
@@ -186,41 +186,43 @@ export class StatesUi {
             ></div>
         </main>
       </section>
-      <section class="ds-section">
-        <div>
-          <div class="gjs-traits-label">Element Properties</div>
-        </div>
-        <details class="ds-states__help">
-          <summary>Help</summary>
-          Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
-          <a target="_blank" href="https://docs.silex.me/en/user/cms#element-properties">Learn more about element properties</a>
-        </details>
-        <main>
-          ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!, false)}
-          ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!, false)}
-          ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!, false)}
-          ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!, false)}
-          ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!, false)}
-          ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!, false)}
-          ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!, false)}
-        </main>
-      </section>
-      <section class="ds-section">
-        <div>
-          <div class="gjs-traits-label">Visibility</div>
-        </div>
-        <main>
-          ${renderExpression(component, dataTree, 'condition', 'condition', true, this.propsSelectorRefs.get('condition')!, false)}
-        </main>
-      </section>
-      <section class="ds-section">
-        <div>
-          <label class="gjs-traits-label ds-label">Loop</label>
-        </div>
-        <main>
-          ${renderExpression(component, dataTree, '__data', 'data', false, this.propsSelectorRefs.get('__data')!, false)}
-        </main>
-      </section>
+      ${ component.get('tagName') === 'body' ? '' : html`
+        <section class="ds-section">
+          <div>
+            <div class="gjs-traits-label">Element Properties</div>
+          </div>
+          <details class="ds-states__help">
+            <summary>Help</summary>
+            Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
+            <a target="_blank" href="https://docs.silex.me/en/user/cms#element-properties">Learn more about element properties</a>
+          </details>
+          <main>
+            ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!, false)}
+            ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!, false)}
+            ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!, false)}
+            ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!, false)}
+            ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!, false)}
+            ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!, false)}
+            ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!, false)}
+          </main>
+        </section>
+        <section class="ds-section">
+          <div>
+            <div class="gjs-traits-label">Visibility</div>
+          </div>
+          <main>
+            ${renderExpression(component, dataTree, 'condition', 'condition', true, this.propsSelectorRefs.get('condition')!, false)}
+          </main>
+        </section>
+        <section class="ds-section">
+          <div>
+            <label class="gjs-traits-label ds-label">Loop</label>
+          </div>
+          <main>
+            ${renderExpression(component, dataTree, '__data', 'data', false, this.propsSelectorRefs.get('__data')!, false)}
+          </main>
+        </section>
+      ` }
     `, this.wrapper)
   }
 
