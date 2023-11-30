@@ -44,6 +44,7 @@ import cssPropsPlugin from './css-props'
 import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
+import resizePanelPlugin from './resize-panel'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -89,6 +90,7 @@ const plugins = [
   {name: './footer', value: footerPlugin},
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
   {name: 'grapesjs-style-border', value: borderPugin},
+  {name: './resize-panel', value: resizePanelPlugin}
 ]
 // Check that all plugins are loaded correctly
 plugins

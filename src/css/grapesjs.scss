@@ -36,7 +36,7 @@
   left: auto;
 }
 .#{$cv-prefix}canvas {
-  width: calc(100% - $viewsPanelWidth - $projectBarWidth);
+  width: calc(100% - var(--viewsPanelWidth) - $projectBarWidth);
 }
 .#{$pn-prefix}devices-c {
   display: flex;
@@ -45,7 +45,6 @@
   }
 }
 .#{$pn-prefix}views-container {
-  width: $viewsPanelWidth;
 }
 
 .gjs-editor {
@@ -81,6 +80,14 @@
 // Property panels
 .gjs-pn-buttons {
   justify-content: unset;
+}
+
+.gjs-pn-views-container, .gjs-pn-views {
+  width: var(--viewsPanelWidth);
+}
+
+.gjs-pn-options {
+  right: var(--viewsPanelWidth);
 }
 
 /*
