@@ -3,7 +3,7 @@
 .gjs-pn-footer {
   bottom: 0;
   left: $projectBarWidth;
-  right: $viewsPanelWidth;
+  right: var(--viewsPanelWidth);
   display: flex;
   justify-content: space-between;
   align-items: center;

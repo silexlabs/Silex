@@ -11,7 +11,7 @@ $topBarHeight: 40px;
 $projectBarWidth: 35px;
 $projectPanelWidth: 13%;
 $projectPanelMinWidth: 150px;
-$viewsPanelWidth: 15%; // 15% is grapesjs default
+$viewsPanelWidth: 25%; // 15% is grapesjs default
 $footerHeight: 30px;
 $transitionSpeedMedium: .15s;
 $transitionSpeedSlow: .30s;
@@ -30,4 +30,5 @@ $fontFamily: 'Ubuntu', sans-serif;
   --quaternaryColor: #{$quaternaryColor};
   --darkerPrimaryColor: #{$darkerPrimaryColor};
   --lighterPrimaryColor: #{$lighterPrimaryColor};
+  --viewsPanelWidth: #{$viewsPanelWidth};
 }

@@ -29,6 +29,19 @@
   width: 100%;
 }
 
+// Resize options panel button
+.silex-workspace {
+  .gjs-pn-viewsOptions {
+      z-index: 9999;
+      right: 0;
+      left: auto;
+
+      .viewsOptions__size-btn::before {
+        content: '←';
+      }
+    }
+}
+
 .silex-hidden {
   /* do not really hide, because it breaks the code editor init in the site settings + for animation */
   visibility: hidden;
