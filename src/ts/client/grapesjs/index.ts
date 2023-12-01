@@ -347,6 +347,7 @@ export async function initEditor(config: EditorConfig) {
 
       // Remove useless buttons
       editor.Panels.getPanel('options').buttons.remove('export-template')
+      editor.Panels.getPanel('options').buttons.remove('fullscreen')
 
       // Render the block manager, otherwise it is empty
       editor.BlockManager.render(null)

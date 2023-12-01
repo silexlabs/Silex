@@ -58,18 +58,9 @@ export const projectBarPlugin = (editor, opts) => {
 
 function updateSqueez(editor: Editor) {
   const containerPanel = editor.Panels.getPanel(containerPanelId)
-  const containerPanelEl = containerPanel.view.el
-  const iframe = editor.Canvas.getFrameEl()
-  iframe.classList.remove('enable-squeeze')
-  setTimeout(() => {
-    const left = iframe.getClientRects()[0]?.left
-    const right = containerPanelEl.getClientRects()[0]?.right
-    if(left < right || !right) iframe.classList.add('enable-squeeze')
-    else iframe.classList.remove('enable-squeeze')
-  }, 400) // More than the transition duration
   // make sure the squeez corresponds to the state (reset when change page)
-  if(containerPanel.get('visible')) iframe.classList.add('silex-squeeze-left')
-  else iframe.classList.remove('silex-squeeze-left')
+  if(containerPanel.get('visible')) document.body.classList.add('silex-squeeze-left')
+  else document.body.classList.remove('silex-squeeze-left')
 }
 
 export function addButton(editor: Editor, panel: PanelObject) {
@@ -111,14 +102,14 @@ export function addButton(editor: Editor, panel: PanelObject) {
       if(panel.attributes.containerClassName) {
         containerPanel.set('visible', true)
         el.classList.remove('gjs-hidden')
-        editor.Canvas.getFrameEl().classList.add('silex-squeeze-left')
+        document.body.classList.add('silex-squeeze-left')
       }
     },
     stop() {
       if(panel.attributes.containerClassName) {
         containerPanel.set('visible', false)
         el.classList.add('gjs-hidden')
-        editor.Canvas.getFrameEl().classList.remove('silex-squeeze-left')
+        document.body.classList.remove('silex-squeeze-left')
       }
     },
   })

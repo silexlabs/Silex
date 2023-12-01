@@ -1,14 +1,17 @@
 @use "variables" as *;
 
 // squeeze the stage iframe when panel is open
-iframe.enable-squeeze.gjs-frame {
-  transition: width $transitionSpeedMedium, height $transitionSpeedMedium, left $transitionSpeedMedium;
+//.silex-squeeze-left .gjs-frame-wrapper {
+//  margin-left: 18%;
+//  width: auto;
+//}
+.silex-squeeze-left .gjs-cv-canvas {
+  left: calc(13% + 35px);
+  width: auto;
+  right: var(--viewsPanelWidth);
 }
-iframe.enable-squeeze.silex-squeeze-left {
-  --project-panel-width: max(150px, 15.7%); /* Why 16? Also sass vars do not work here */
-  left: var(--project-panel-width);
-  width: calc(100% - var(--project-panel-width));
-}
+
+
 // button bar
 .#{$pn-prefix}project-bar-panel {
   width: $projectBarWidth;
