@@ -65,7 +65,6 @@ export const projectBarPlugin = (editor, opts) => {
 
 function updateSqueez(editor: Editor) {
   const containerPanel = editor.Panels.getPanel(containerPanelId)
-  console.log('zzz', containerPanel, containerPanel.get('visible'))
   // make sure the squeez corresponds to the state (reset when change page)
   if(containerPanel.get('visible')) document.body.classList.add('silex-squeeze-left')
   else document.body.classList.remove('silex-squeeze-left')
