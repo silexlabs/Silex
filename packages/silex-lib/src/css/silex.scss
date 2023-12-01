@@ -32,7 +32,7 @@
 // Resize options panel button
 .silex-workspace {
   .gjs-pn-viewsOptions {
-      z-index: 9999;
+      z-index: $z-views-options-buttons;
       right: 0;
       left: auto;
 
