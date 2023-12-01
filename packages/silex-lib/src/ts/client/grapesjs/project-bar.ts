@@ -51,6 +51,13 @@ export const projectBarPlugin = (editor, opts) => {
   // add the panels to the container
   opts.panels.map(panel => addButton(editor, panel))
 
+  // Handle the preview mode which behaves oddly
+  editor.on('stop:preview', () => {
+    containerPanel.set('visible', false)
+    updateSqueez(editor)
+  })
+
+  // All other events where the canvas is resized
   editor.on('load device:select page', () => {
     updateSqueez(editor)
   })
@@ -58,9 +65,11 @@ export const projectBarPlugin = (editor, opts) => {
 
 function updateSqueez(editor: Editor) {
   const containerPanel = editor.Panels.getPanel(containerPanelId)
+  console.log('zzz', containerPanel, containerPanel.get('visible'))
   // make sure the squeez corresponds to the state (reset when change page)
   if(containerPanel.get('visible')) document.body.classList.add('silex-squeeze-left')
   else document.body.classList.remove('silex-squeeze-left')
+  editor.refresh()
 }
 
 export function addButton(editor: Editor, panel: PanelObject) {
@@ -103,6 +112,7 @@ export function addButton(editor: Editor, panel: PanelObject) {
         containerPanel.set('visible', true)
         el.classList.remove('gjs-hidden')
         document.body.classList.add('silex-squeeze-left')
+        editor.refresh()
       }
     },
     stop() {
@@ -110,6 +120,7 @@ export function addButton(editor: Editor, panel: PanelObject) {
         containerPanel.set('visible', false)
         el.classList.add('gjs-hidden')
         document.body.classList.remove('silex-squeeze-left')
+        editor.refresh()
       }
     },
   })
