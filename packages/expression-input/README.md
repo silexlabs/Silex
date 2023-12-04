@@ -1,8 +1,10 @@
 # Steps selector
 
-A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.
+A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data as a tree.
 
-This project was created from the LitElement TypeScript starter
+It implements the same API as HTML inputs and can be used in a form.
+
+> This is part of a bigger project: [Silex no-code website builder](https://www.silex.me)
 
 ## The UI
 
@@ -16,8 +18,8 @@ Use cases
 
 Project
 
-- [ ] Licence AGPL
-- [ ] publish to npm
+- [x] Licence AGPL
+- [x] publish to npm
 - [ ] Unit tests still fail on github actions (playwrite issue)
 
 Popin
@@ -31,7 +33,7 @@ Selector
 - [x] callback getNextChoices(pastChoices)
 - [x] message (if error or warning)
 - [x] events: change
-- [ ] styling
+- [x] styling
 - [ ] copy / paste / set / unset
 - [ ] result (the final value resulting the current choices)
 - [ ] state: valid, warning, error
