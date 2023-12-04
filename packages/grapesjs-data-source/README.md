@@ -160,6 +160,7 @@ grapesjs.init({
           method: 'POST',
           headers: {
             'Authorization': 'Bearer 79c9e74b3cf4a9f5ce2836b81fd8aaf8a986b5696769456d3646a3213f5d7228634a1a15a8bbad4e87c09ab864c501499c6f8955cf350e49b89311764009aee68589a4b78f22c06b7e09835b48cd6f21fb84311ce873cd5672bd4652fde3f5f0db6afb258dfe7b93371b7632b551ecdd969256ffc076ab8f735b5d8c7d228825',
+            'Content-Type': 'application/json',
           },
         },
       ],
@@ -188,6 +189,7 @@ Directus
   method: 'POST',
   headers: {
     'Authorization': 'Bearer yjgwcj...0c_0zex',
+    'Content-Type': 'application/json',
   },
 }
 ```
@@ -203,6 +205,7 @@ Strapi
   method: 'POST',
   headers: {
     'Authorization': 'Bearer 456fe45a764921a2...6b2298b3cc8',
+    'Content-Type': 'application/json',
   },
 }
 ```
@@ -218,6 +221,7 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
   method: 'POST',
   headers: {
     'Authorization': 'Bearer eyjhbgcioijiuz...tww8imndplsfm',
+    'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   },
