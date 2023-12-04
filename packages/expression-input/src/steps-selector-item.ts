@@ -1,9 +1,11 @@
-import {LitElement, html, css} from 'lit'
+import {LitElement, html, TemplateResult} from 'lit'
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import {customElement, property} from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
 
 import './popin-dialog.js'
+import { unsafeHTML } from 'lit/directives/unsafe-html.js'
+import { stepsSelectorItemStyles } from './styles.js'
 
 /**
  * @element steps-selector-item
@@ -46,81 +48,7 @@ import './popin-dialog.js'
 
 @customElement('steps-selector-item')
 export class StepsSelectorItem extends LitElement {
-  static override styles = css`
-    :host {
-      display: inline-flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-    :host header {
-      position: relative;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      border: solid 1px gray;
-    }
-    :host .value {
-      display: flex;
-      align-items: center;
-    }
-    :host .buttons {
-      display: flex;
-      align-items: center;
-    }
-    :host .button {
-      border: none;
-      background-color: transparent;
-    }
-    :host .svg-icon {
-      border: var(--steps-selector-item-button-border, none);
-      cursor: pointer;
-      margin: var(--steps-selector-item-button-margin, 3px);
-      padding: var(--steps-selector-item-button-padding, 3px);
-      border-radius: var(--steps-selector-item-button-border-radius, 50%);
-      width: var(--steps-selector-item-button-width, 20px);
-      height: var(--steps-selector-item-button-height, 20px);
-      background-color: var(--steps-selector-item-button-background-color, transparent);
-    }
-    /* button svg path white and size 10px
-    */
-    :host .svg-icon svg path {
-      fill: var(--steps-selector-item-button-color, #333);
-    }
-    /*
-    :host popin-dialog {
-      position: absolute;
-    }
-    */
-    slot[name="helpTitle"] {
-      display: flex;
-      align-items: center;
-      width: 20px;
-      height: 20px;
-    }
-    slot[name="name"] {
-      font-weight: bold;
-      cursor: pointer;
-    }
-    ::slotted([slot="name"]), ::slotted([slot="type"]) {
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    ::slotted([slot="name"]) {
-      font-weight: var(--steps-selector-item-name-font-weight, bold);
-      font-size: var(--steps-selector-item-name-font-size, 1rem);
-      padding: var(--steps-selector-item-name-padding, 5px);
-    }
-    ::slotted([slot="type"]), ::slotted([slot="type"]) {
-      font-weight: var(--steps-selector-item-type-font-weight, normal);
-      font-size: var(--steps-selector-item-type-font-size, 0.8rem);
-      padding: var(--steps-selector-item-type-padding, 5px);
-    }
-    .with-arrow::after {
-      content: "▼";
-      float: right;
-      padding: var(--steps-selector-item-arrow-padding, 5px);
-    }
-  `
+  static override styles = stepsSelectorItemStyles
 
   private _selectedItem = ''
   get selectedItem() {
@@ -282,7 +210,7 @@ export class StepsSelectorItem extends LitElement {
    * Update the form with the values from the formData
    * Returns the form as a string
    */
-  formToString(form: HTMLFormElement, formData: FormData) {
+  formToString(form: HTMLFormElement, formData: FormData): TemplateResult {
     const inputs = Array.from(form.querySelectorAll('input, select, textarea'))
     inputs.forEach(input => {
       const name = input.getAttribute('name')
@@ -295,7 +223,7 @@ export class StepsSelectorItem extends LitElement {
         console.warn('input has no name', input)
       }
     })
-    return form.outerHTML
+    return unsafeHTML(form.outerHTML.toString()) as any
   }
 
   cancelOptions() {

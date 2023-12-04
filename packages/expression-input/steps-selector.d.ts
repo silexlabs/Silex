@@ -1,4 +1,4 @@
-import { LitElement } from 'lit';
+import { LitElement, TemplateResult } from 'lit';
 import './steps-selector-item.js';
 /**
  * @element steps-selector
@@ -30,7 +30,7 @@ export interface Step {
     helpText?: string;
     errorText?: string;
     options?: any;
-    optionsForm?: string;
+    optionsForm?: TemplateResult | string | null;
     meta?: any;
     category?: string;
 }
@@ -50,17 +50,49 @@ export declare class StepsSelector extends LitElement {
     fixedPlaceholder: string;
     maxSteps: number | undefined;
     groupByCategory: boolean;
-    render(): import("lit").TemplateResult<1>;
+    /**
+     * Form id
+     * This is the same API as input elements
+     */
+    for: string;
+    /**
+     * Name of the property
+     * This is the same API as input elements
+     */
+    name: string;
+    /**
+     * Value setter/getter
+     * This will parse the value as JSON and set the steps
+     * This is the same API as input elements
+     */
+    get value(): string;
+    set value(newValue: string);
+    /**
+     * Form setter
+     * Handle formdata event to add the current value to the form
+     */
+    protected _form: HTMLFormElement | null;
+    set form(newForm: HTMLFormElement | null);
+    get form(): HTMLFormElement | null;
+    /**
+     * Handle formdata event to add the current value to the form
+     */
+    protected onFormdata(event: FormDataEvent): void;
+    /**
+     * Render the component
+     */
+    render(): TemplateResult<1>;
     group(completion: Step[]): Map<string, Step[]>;
-    renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): import("lit").TemplateResult<1>;
+    renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): TemplateResult<1>;
     connectedCallback(): void;
+    disconnectedCallback(): void;
     isFixedValue(): boolean;
     fixedValueChanged(value: string): void;
     /**
      * Set the step at the given index
      */
     setStepAt(at: number, step: Step | undefined): void;
-    setOptionsAt(at: number, options: unknown, optionsForm: string): void;
+    setOptionsAt(at: number, options: unknown, optionsForm: TemplateResult): void;
     /**
      * Delete the step at the given index and all the following steps
      */

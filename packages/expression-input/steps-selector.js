@@ -5,11 +5,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var StepsSelector_1;
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { customElement, property } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import './steps-selector-item.js';
+import { stepsSelectorStyles } from './styles.js';
 let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
     constructor() {
         super(...arguments);
@@ -25,6 +26,21 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         this.placeholder = 'Add a first step';
         this.fixedPlaceholder = 'Enter a fixed value or switch to expression';
         this.groupByCategory = false;
+        /**
+         * Form id
+         * This is the same API as input elements
+         */
+        this.for = '';
+        /**
+         * Name of the property
+         * This is the same API as input elements
+         */
+        this.name = '';
+        /**
+         * Form setter
+         * Handle formdata event to add the current value to the form
+         */
+        this._form = null;
     }
     static getFixedValueStep(value) {
         return {
@@ -34,8 +50,8 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
             options: {
                 value,
             },
-            optionsForm: `<form>
-        <input name="value" type="text" value="${value}" />
+            optionsForm: html `<form>
+        <input name="value" type="text" .value=${value} />
         <div class="buttons">
           <input type="reset" value="Cancel" />
           <input type="submit" value="Apply" />
@@ -57,6 +73,46 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         this.requestUpdate('steps', oldValue);
         this.dispatchEvent(new CustomEvent('change', { detail: { value } }));
     }
+    /**
+     * Value setter/getter
+     * This will parse the value as JSON and set the steps
+     * This is the same API as input elements
+     */
+    get value() {
+        return JSON.stringify(this._steps);
+    }
+    set value(newValue) {
+        if (newValue) {
+            this._steps = JSON.parse(newValue);
+        }
+        else {
+            this._steps = [];
+        }
+        // Done in "set _steps" this.dispatchEvent(new Event('change'))
+    }
+    set form(newForm) {
+        if (this._form) {
+            this._form.removeEventListener('formdata', this.onFormdata);
+        }
+        if (newForm) {
+            newForm.addEventListener('formdata', this.onFormdata);
+        }
+    }
+    get form() {
+        return this._form;
+    }
+    /**
+     * Handle formdata event to add the current value to the form
+     */
+    onFormdata(event) {
+        if (!this.name) {
+            throw new Error('Form name is required for steps-selector');
+        }
+        event.formData.append(this.name, JSON.stringify(this._steps));
+    }
+    /**
+     * Render the component
+     */
     render() {
         var _a;
         const nextSteps = this.completion(this._steps);
@@ -143,7 +199,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
                 <div slot="values">
                   ${this.renderValues(completion, completionMap, this._steps[index])}
                 </div>
-                <div slot="options">${unsafeHTML(step.optionsForm)}</div>
+                <div slot="options">${typeof step.optionsForm === 'string' ? unsafeHTML(step.optionsForm) : step.optionsForm}</div>
               </steps-selector-item>
             `;
         })}
@@ -219,7 +275,22 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
     }
     connectedCallback() {
         super.connectedCallback();
+        // Use the form to add formdata
+        if (this.for) {
+            const form = document.querySelector(`form#${this.for}`);
+            if (form) {
+                this.form = form;
+            }
+        }
+        else {
+            this.form = this.closest('form');
+        }
+        // Notify the parent app
         this.dispatchEvent(new Event('load'));
+    }
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.form = null;
     }
     isFixedValue() {
         return this.allowFixed && this.fixed && (this._steps.length === 0 || this._steps[0].type === 'fixed');
@@ -282,123 +353,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
         ];
     }
 };
-StepsSelector.styles = css `
-    ::part(header) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .dirty {
-      color: var(--steps-selector-dirty-color, red);
-    }
-    ::part(dirty-icon) {
-      display: inline-block;
-      width: 1rem;
-    }
-    ::part(property-container) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-    ::part(fixed-selector) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid var(--steps-selector-dirty-border-color, #ccc);
-      background-color: var(--steps-selector-dirty-background-color, #ccc);
-      border-radius: var(--steps-selector-dirty-border-radius, 3px);
-      padding: 3px;
-    }
-    ul[slot="tags"] {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    /* an arrow between elements */
-    .steps-container__separator {
-      display: inline;
-    }
-    .steps-container__separator::after {
-      content: "▶";
-      color: var(--steps-selector-separator-color, #333);
-      font-size: var(--steps-selector-separator-font-size, 1.5em);
-      margin: var(--steps-selector-separator-margin, 0);
-      padding: var(--steps-selector-separator-padding, 0);
-    }
-    /* selector between fixed value (text input) and steps */
-    .fixed-selector span {
-      padding: 3px;
-    }
-    .fixed-selector span:not(.active):hover {
-      color: var(--steps-selector-dirty-color, #0091ff);
-    }
-    .fixed-selector span:not(.active) {
-      cursor: pointer;
-    }
-    .fixed-selector span:last-child {
-      margin-left: 5px;
-    }
-    .fixed-selector span.active {
-      border-radius: var(--steps-selector-active-border-radius, 3px);
-      background-color: var(--steps-selector-active-background-color, #eee);
-      color: var(--steps-selector-active-color, #333);
-      cursor: default;
-    }
-    ul.values-ul {
-      list-style: none;
-      padding: var(--steps-selector-values-ul-padding, 0);
-      margin: var(--steps-selector-values-ul-margin, 0);
-      color: var(--steps-selector-values-ul-color, #000);
-      background-color: var(--steps-selector-values-ul-background-color, transparent);
-    }
-    li.values-li {
-      padding: var(--steps-selector-values-li-padding, 5px);
-      margin: var(--steps-selector-values-li-margin, 0);
-      background-color: var(--steps-selector-values-li-background-color, transparent);
-      border-bottom: var(--steps-selector-values-li-border, 1px solid #ccc);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-    }
-    li.values-li:last-child {
-      border-bottom: none;
-    }
-    li.values-li:hover {
-      background-color: var(--steps-selector-values-li-hover-background-color, #eee);
-    }
-    li.values-li.active {
-      background-color: var(--steps-selector-values-li-active-background-color, #ccc);
-      font-weight: var(--steps-selector-values-li-active-font-weight, bold);
-    }
-    li.values-li.values__title {
-      /* Display this line as an array title */
-      color: var(--steps-selector-values-li-title-color, #333);
-      background-color: var(--steps-selector-values-li-background-color, #eee);
-      text-transform: var(--steps-selector-values-li-title-text-transform, uppercase);
-      cursor: default;
-    }
-    li.values-li.values__title .values__name {
-      margin: var(--steps-selector-values-li-title-margin, auto);
-    }
-    li.values-li .values__icon {
-      margin-right: var(--steps-selector-values-li-icon-margin-right, 5px);
-    }
-    li.values-li .values__name {
-      margin-right: var(--steps-selector-values-li-name-margin-right, 25px);
-    }
-    li.values-li .values__type {
-      color: var(--steps-selector-values-li-type-color, #999);
-      width: max-content;
-    }
-    .placeholder > * {
-      color: var(--steps-selector-placeholder-color, #999);
-      font-style: var(--steps-selector-placeholder-font-style, italic);
-      margin: var(--steps-selector-placeholder-margin, 10px 0);
-    }
-  `;
+StepsSelector.styles = stepsSelectorStyles;
 __decorate([
     property({ type: Array })
 ], StepsSelector.prototype, "steps", void 0);
@@ -426,6 +381,15 @@ __decorate([
 __decorate([
     property({ type: Boolean, attribute: 'group-by-category' })
 ], StepsSelector.prototype, "groupByCategory", void 0);
+__decorate([
+    property({ type: String, attribute: 'for' })
+], StepsSelector.prototype, "for", void 0);
+__decorate([
+    property({ type: String })
+], StepsSelector.prototype, "name", void 0);
+__decorate([
+    property({ type: String, attribute: 'value' })
+], StepsSelector.prototype, "value", null);
 StepsSelector = StepsSelector_1 = __decorate([
     customElement('steps-selector')
 ], StepsSelector);

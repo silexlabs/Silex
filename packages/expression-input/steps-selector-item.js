@@ -4,11 +4,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import './popin-dialog.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { stepsSelectorItemStyles } from './styles.js';
 /**
  * @element steps-selector-item
  * This class is a step in the selection of the steps-selector component
@@ -205,7 +207,7 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
                 console.warn('input has no name', input);
             }
         });
-        return form.outerHTML;
+        return unsafeHTML(form.outerHTML.toString());
     }
     cancelOptions() {
         var _a;
@@ -213,81 +215,7 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
         //e.preventDefault()
     }
 };
-StepsSelectorItem.styles = css `
-    :host {
-      display: inline-flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-    :host header {
-      position: relative;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      border: solid 1px gray;
-    }
-    :host .value {
-      display: flex;
-      align-items: center;
-    }
-    :host .buttons {
-      display: flex;
-      align-items: center;
-    }
-    :host .button {
-      border: none;
-      background-color: transparent;
-    }
-    :host .svg-icon {
-      border: var(--steps-selector-item-button-border, none);
-      cursor: pointer;
-      margin: var(--steps-selector-item-button-margin, 3px);
-      padding: var(--steps-selector-item-button-padding, 3px);
-      border-radius: var(--steps-selector-item-button-border-radius, 50%);
-      width: var(--steps-selector-item-button-width, 20px);
-      height: var(--steps-selector-item-button-height, 20px);
-      background-color: var(--steps-selector-item-button-background-color, transparent);
-    }
-    /* button svg path white and size 10px
-    */
-    :host .svg-icon svg path {
-      fill: var(--steps-selector-item-button-color, #333);
-    }
-    /*
-    :host popin-dialog {
-      position: absolute;
-    }
-    */
-    slot[name="helpTitle"] {
-      display: flex;
-      align-items: center;
-      width: 20px;
-      height: 20px;
-    }
-    slot[name="name"] {
-      font-weight: bold;
-      cursor: pointer;
-    }
-    ::slotted([slot="name"]), ::slotted([slot="type"]) {
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    ::slotted([slot="name"]) {
-      font-weight: var(--steps-selector-item-name-font-weight, bold);
-      font-size: var(--steps-selector-item-name-font-size, 1rem);
-      padding: var(--steps-selector-item-name-padding, 5px);
-    }
-    ::slotted([slot="type"]), ::slotted([slot="type"]) {
-      font-weight: var(--steps-selector-item-type-font-weight, normal);
-      font-size: var(--steps-selector-item-type-font-size, 0.8rem);
-      padding: var(--steps-selector-item-type-padding, 5px);
-    }
-    .with-arrow::after {
-      content: "▼";
-      float: right;
-      padding: var(--steps-selector-item-arrow-padding, 5px);
-    }
-  `;
+StepsSelectorItem.styles = stepsSelectorItemStyles;
 __decorate([
     property({ type: Boolean, attribute: 'no-options-editor' })
 ], StepsSelectorItem.prototype, "noOptionsEditor", void 0);

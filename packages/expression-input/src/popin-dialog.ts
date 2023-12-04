@@ -1,5 +1,6 @@
-import {LitElement, html, css} from 'lit'
+import {LitElement, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
+import { popinStyles } from './styles.js'
 
 /**
  * This PopinDialog component is a simple dialog that can be used to display any html on top of your UI
@@ -43,60 +44,7 @@ import {customElement, property} from 'lit/decorators.js'
 
 @customElement('popin-dialog')
 export class PopinDialog extends LitElement {
-  static override styles = css`
-    :host {
-      display: inline-block;
-      position: fixed;
-      max-width: 100vw;
-      max-height: 80vh;
-      box-sizing: border-box;
-      z-index: 1000; /* Ensure it's on top of other content */
-      border-radius: var(--popin-dialog-border-radius, 3px);
-      overflow: hidden; /* To ensure border-radius applies to children elements */
-      overflow-y: auto;
-      outline: none;
-      border: var(--popin-dialog-border, 1px solid #ccc);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      display: inline-flex;
-      flex-direction: column;
-      background-color: var(--popin-dialog-background, #fff);
-      color: var(--popin-dialog-color, #000);
-    }
-    :host([hidden]) {
-      display: none !important;
-    }
-
-    header {
-      border-bottom: var(--popin-dialog-header-border-bottom, #f5f5f5);
-      background-color: var(--popin-dialog-header-background, transparent);
-      padding: var(--popin-dialog-header-padding, 0);
-      color: var(--popin-dialog-header-color, #000);
-    }
-
-    footer {
-      border-top: var(--popin-dialog-footer-border-top, 1px solid #f5f5f5);
-      display: flex;
-      justify-content: flex-end;
-      background-color: var(--popin-dialog-footer-background, transparent);
-      padding: var(--popin-dialog-footer-padding);
-      color: var(--popin-dialog-footer-color, #000);
-    }
-
-    main {
-      background-color: var(--popin-dialog-body-background, transparent);
-      padding: var(--popin-dialog-body-padding, 5px);
-      color: var(--popin-dialog-body-color, #000);
-    }
-
-    ::slotted([slot="header"]) {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    ::slotted([slot="body"]) * {
-      background: red !important;
-    }
-  `
+  static override styles = popinStyles
 
   @property()
   override hidden = false

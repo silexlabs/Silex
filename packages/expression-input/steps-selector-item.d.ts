@@ -1,4 +1,4 @@
-import { LitElement } from 'lit';
+import { LitElement, TemplateResult } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
 import './popin-dialog.js';
 /**
@@ -54,7 +54,7 @@ export declare class StepsSelectorItem extends LitElement {
     valuesPopin: Ref<HTMLElement>;
     optionsPopin: Ref<HTMLElement>;
     constructor();
-    render(): import("lit").TemplateResult<1>;
+    render(): TemplateResult<1>;
     connectedCallback(): void;
     disconnectedCallback(): void;
     attributeChangedCallback(name: string, _old: string | null, value: string | null): void;
@@ -68,7 +68,7 @@ export declare class StepsSelectorItem extends LitElement {
      * Update the form with the values from the formData
      * Returns the form as a string
      */
-    formToString(form: HTMLFormElement, formData: FormData): string;
+    formToString(form: HTMLFormElement, formData: FormData): TemplateResult;
     cancelOptions(): void;
 }
 declare global {

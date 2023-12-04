@@ -1,9 +1,10 @@
-import {LitElement, html, css} from 'lit'
+import {LitElement, html, TemplateResult} from 'lit'
 import { classMap } from 'lit/directives/class-map.js'
 import {customElement, property} from 'lit/decorators.js'
 import {unsafeHTML} from 'lit/directives/unsafe-html.js'
 
 import './steps-selector-item.js'
+import { stepsSelectorStyles } from './styles.js'
 
 /**
  * @element steps-selector
@@ -36,130 +37,14 @@ export interface Step {
   helpText?: string
   errorText?: string
   options?: any
-  optionsForm?: string
+  optionsForm?: TemplateResult | string | null
   meta?: any
   category?: string
 }
 
 @customElement('steps-selector')
 export class StepsSelector extends LitElement {
-  static override styles = css`
-    ::part(header) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .dirty {
-      color: var(--steps-selector-dirty-color, red);
-    }
-    ::part(dirty-icon) {
-      display: inline-block;
-      width: 1rem;
-    }
-    ::part(property-container) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-    }
-    ::part(fixed-selector) {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid var(--steps-selector-dirty-border-color, #ccc);
-      background-color: var(--steps-selector-dirty-background-color, #ccc);
-      border-radius: var(--steps-selector-dirty-border-radius, 3px);
-      padding: 3px;
-    }
-    ul[slot="tags"] {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    /* an arrow between elements */
-    .steps-container__separator {
-      display: inline;
-    }
-    .steps-container__separator::after {
-      content: "▶";
-      color: var(--steps-selector-separator-color, #333);
-      font-size: var(--steps-selector-separator-font-size, 1.5em);
-      margin: var(--steps-selector-separator-margin, 0);
-      padding: var(--steps-selector-separator-padding, 0);
-    }
-    /* selector between fixed value (text input) and steps */
-    .fixed-selector span {
-      padding: 3px;
-    }
-    .fixed-selector span:not(.active):hover {
-      color: var(--steps-selector-dirty-color, #0091ff);
-    }
-    .fixed-selector span:not(.active) {
-      cursor: pointer;
-    }
-    .fixed-selector span:last-child {
-      margin-left: 5px;
-    }
-    .fixed-selector span.active {
-      border-radius: var(--steps-selector-active-border-radius, 3px);
-      background-color: var(--steps-selector-active-background-color, #eee);
-      color: var(--steps-selector-active-color, #333);
-      cursor: default;
-    }
-    ul.values-ul {
-      list-style: none;
-      padding: var(--steps-selector-values-ul-padding, 0);
-      margin: var(--steps-selector-values-ul-margin, 0);
-      color: var(--steps-selector-values-ul-color, #000);
-      background-color: var(--steps-selector-values-ul-background-color, transparent);
-    }
-    li.values-li {
-      padding: var(--steps-selector-values-li-padding, 5px);
-      margin: var(--steps-selector-values-li-margin, 0);
-      background-color: var(--steps-selector-values-li-background-color, transparent);
-      border-bottom: var(--steps-selector-values-li-border, 1px solid #ccc);
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-    }
-    li.values-li:last-child {
-      border-bottom: none;
-    }
-    li.values-li:hover {
-      background-color: var(--steps-selector-values-li-hover-background-color, #eee);
-    }
-    li.values-li.active {
-      background-color: var(--steps-selector-values-li-active-background-color, #ccc);
-      font-weight: var(--steps-selector-values-li-active-font-weight, bold);
-    }
-    li.values-li.values__title {
-      /* Display this line as an array title */
-      color: var(--steps-selector-values-li-title-color, #333);
-      background-color: var(--steps-selector-values-li-background-color, #eee);
-      text-transform: var(--steps-selector-values-li-title-text-transform, uppercase);
-      cursor: default;
-    }
-    li.values-li.values__title .values__name {
-      margin: var(--steps-selector-values-li-title-margin, auto);
-    }
-    li.values-li .values__icon {
-      margin-right: var(--steps-selector-values-li-icon-margin-right, 5px);
-    }
-    li.values-li .values__name {
-      margin-right: var(--steps-selector-values-li-name-margin-right, 25px);
-    }
-    li.values-li .values__type {
-      color: var(--steps-selector-values-li-type-color, #999);
-      width: max-content;
-    }
-    .placeholder > * {
-      color: var(--steps-selector-placeholder-color, #999);
-      font-style: var(--steps-selector-placeholder-font-style, italic);
-      margin: var(--steps-selector-placeholder-margin, 10px 0);
-    }
-  `
+  static override styles = stepsSelectorStyles
 
   public static getFixedValueStep(value: string): Step {
     return {
@@ -169,8 +54,8 @@ export class StepsSelector extends LitElement {
       options: {
         value,
       },
-      optionsForm: `<form>
-        <input name="value" type="text" value="${value}" />
+      optionsForm: html`<form>
+        <input name="value" type="text" .value=${value} />
         <div class="buttons">
           <input type="reset" value="Cancel" />
           <input type="submit" value="Apply" />
@@ -228,6 +113,68 @@ export class StepsSelector extends LitElement {
   @property({type: Boolean, attribute: 'group-by-category'})
   groupByCategory = false
 
+  /**
+   * Form id
+   * This is the same API as input elements
+   */
+  @property({type: String, attribute: 'for'})
+  for = ''
+
+  /**
+   * Name of the property
+   * This is the same API as input elements
+   */
+  @property({type: String})
+  name = ''
+
+  /**
+   * Value setter/getter
+   * This will parse the value as JSON and set the steps
+   * This is the same API as input elements
+   */
+  @property({type: String, attribute: 'value'})
+  get value() {
+    return JSON.stringify(this._steps)
+  }
+  set value(newValue: string) {
+    if(newValue) {
+      this._steps = JSON.parse(newValue)
+    } else {
+      this._steps = []
+    }
+    // Done in "set _steps" this.dispatchEvent(new Event('change'))
+  }
+
+  /**
+   * Form setter
+   * Handle formdata event to add the current value to the form
+   */
+  protected _form: HTMLFormElement | null = null
+  set form(newForm: HTMLFormElement | null) {
+    if(this._form) {
+      this._form.removeEventListener('formdata', this.onFormdata)
+    }
+    if(newForm) {
+      newForm.addEventListener('formdata', this.onFormdata)
+    }
+  }
+  get form() {
+    return this._form
+  }
+
+  /**
+   * Handle formdata event to add the current value to the form
+   */
+  protected onFormdata(event: FormDataEvent) {
+    if(!this.name) {
+      throw new Error('Form name is required for steps-selector')
+    }
+    event.formData.append(this.name, JSON.stringify(this._steps))
+  }
+
+  /**
+   * Render the component
+   */
   override render() {
     const nextSteps = this.completion(this._steps)
     const nextStepsByCategory = this.group(nextSteps)
@@ -311,7 +258,7 @@ export class StepsSelector extends LitElement {
                 <div slot="values">
                   ${ this.renderValues(completion, completionMap, this._steps[index]) }
                 </div>
-                <div slot="options">${unsafeHTML(step.optionsForm)}</div>
+                <div slot="options">${typeof step.optionsForm === 'string' ? unsafeHTML(step.optionsForm) : step.optionsForm}</div>
               </steps-selector-item>
             `)}
         <!-- add a step -->
@@ -390,7 +337,23 @@ export class StepsSelector extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback()
+    // Use the form to add formdata
+    if(this.for) {
+      const form = document.querySelector<HTMLFormElement>(`form#${this.for}`)
+      if(form) {
+        this.form = form
+      }
+    } else {
+      this.form = this.closest('form')
+    }
+
+    // Notify the parent app
     this.dispatchEvent(new Event('load'))
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback()
+    this.form = null
   }
 
   isFixedValue() {
@@ -421,7 +384,7 @@ export class StepsSelector extends LitElement {
     }
   }
 
-  setOptionsAt(at: number, options: unknown, optionsForm: string) {
+  setOptionsAt(at: number, options: unknown, optionsForm: TemplateResult) {
     this._steps = [
       ...this._steps.slice(0, at),
       {
