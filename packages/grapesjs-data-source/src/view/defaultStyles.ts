@@ -19,9 +19,10 @@ export const OPTIONS_STYLES = `
   form {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     padding: 5px;
     color: var(--ds-tertiary);
+    min-width: 300px;
   }
   form label {
     text-align: left;

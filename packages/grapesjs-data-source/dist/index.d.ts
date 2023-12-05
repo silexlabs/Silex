@@ -1,6 +1,6 @@
 import Backbone from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
-import { LitElement } from 'lit';
+import { LitElement, TemplateResult } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
 
 /**
@@ -33,7 +33,7 @@ export interface Step {
 	helpText?: string;
 	errorText?: string;
 	options?: any;
-	optionsForm?: string;
+	optionsForm?: TemplateResult | string | null;
 	meta?: any;
 	category?: string;
 }
@@ -53,17 +53,49 @@ declare class StepsSelector extends LitElement {
 	fixedPlaceholder: string;
 	maxSteps: number | undefined;
 	groupByCategory: boolean;
-	render(): import("lit").TemplateResult<1>;
+	/**
+	 * Form id
+	 * This is the same API as input elements
+	 */
+	for: string;
+	/**
+	 * Name of the property
+	 * This is the same API as input elements
+	 */
+	name: string;
+	/**
+	 * Value setter/getter
+	 * This will parse the value as JSON and set the steps
+	 * This is the same API as input elements
+	 */
+	get value(): string;
+	set value(newValue: string);
+	/**
+	 * Form setter
+	 * Handle formdata event to add the current value to the form
+	 */
+	protected _form: HTMLFormElement | null;
+	set form(newForm: HTMLFormElement | null);
+	get form(): HTMLFormElement | null;
+	/**
+	 * Handle formdata event to add the current value to the form
+	 */
+	protected onFormdata(event: FormDataEvent): void;
+	/**
+	 * Render the component
+	 */
+	render(): TemplateResult<1>;
 	group(completion: Step[]): Map<string, Step[]>;
-	renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): import("lit").TemplateResult<1>;
+	renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): TemplateResult<1>;
 	connectedCallback(): void;
+	disconnectedCallback(): void;
 	isFixedValue(): boolean;
 	fixedValueChanged(value: string): void;
 	/**
 	 * Set the step at the given index
 	 */
 	setStepAt(at: number, step: Step | undefined): void;
-	setOptionsAt(at: number, options: unknown, optionsForm: string): void;
+	setOptionsAt(at: number, options: unknown, optionsForm: TemplateResult): void;
 	/**
 	 * Delete the step at the given index and all the following steps
 	 */
@@ -151,7 +183,7 @@ export interface StoredProperty extends BaseProperty {
 	options?: PropertyOptions;
 }
 export interface Property extends StoredProperty {
-	optionsForm?: (input: Field | null, options: Options) => string | null;
+	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
 }
 /**
  * A filter is used to alter data in an expression
@@ -165,7 +197,7 @@ export interface StoredFilter {
 	options: Options;
 }
 export interface Filter extends StoredFilter {
-	optionsForm?: (input: Field | null, options: Options) => string | null;
+	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
 	validate: (input: Field | null) => boolean;
 	output: (input: Field | null, options: Options) => Field | null;
 	apply: (input: unknown, options: Options) => unknown;
@@ -248,7 +280,7 @@ export declare class DataTree {
 	 * Get the options of a token
 	 */
 	getTokenOptions(field: Field): {
-		optionsForm: (input: Field | null, options: Options) => string;
+		optionsForm: (input: Field | null, options: Options) => TemplateResult;
 		options: Options;
 	} | null;
 	/**
@@ -257,7 +289,7 @@ export declare class DataTree {
 	optionsToOptionsForm(arr: {
 		name: string;
 		value: unknown;
-	}[]): (input: Field | null, options: Options) => string;
+	}[]): (input: Field | null, options: Options) => TemplateResult;
 	/**
 	 * Get the context of a component
 	 * This includes all parents states, data sources queryable values, values provided in the options
@@ -452,7 +484,21 @@ export declare function toSteps(dataTree: DataTree, expression: Expression, comp
 /**
  * Render an expression with the steps-selector web component
  */
-export declare function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number): import("lit-html").TemplateResult<1>;
+export declare function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number): TemplateResult<1>;
+/**
+ * Render an option of a filter with the steps-selector web component
+ * Takes an expression of tokens and calls onChange with the updated expression
+ */
+export declare function renderOption(opts: {
+	component: Component;
+	dataTree: DataTree;
+	expression: Expression;
+	name: string;
+	label: string;
+	allowFixed: boolean;
+	reference: Ref<StepsSelector>;
+	maxSteps?: number;
+}): TemplateResult;
 /**
  * Convert a token to a step
  * This will resolve the types of filters
@@ -461,9 +507,9 @@ export declare function renderExpression(component: Component, dataTree: DataTre
 export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
 export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
 export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
-export declare function optionsFormButtons(): string;
-export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): string;
-export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string): string;
+export declare function optionsFormButtons(): TemplateResult;
+export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
+export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string, reference: Ref<StepsSelector>, label?: string): TemplateResult;
 /**
  * Add the DataSourceManager to the GrapesJs editor
  */

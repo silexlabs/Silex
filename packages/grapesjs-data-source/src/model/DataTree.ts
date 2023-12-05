@@ -19,6 +19,7 @@ import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, Property, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId, StoredToken } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
+import { TemplateResult, html } from 'lit'
 
 /**
  * Options of the data tree
@@ -114,7 +115,7 @@ export class DataTree {
   /**
    * Get the options of a token
    */
-  getTokenOptions(field: Field): { optionsForm: (input: Field | null, options: Options) => string, options: Options} | null {
+  getTokenOptions(field: Field): { optionsForm: (input: Field | null, options: Options) => TemplateResult, options: Options} | null {
     if (field.arguments && field.arguments.length > 0) {
       return {
         optionsForm: this.optionsToOptionsForm(field.arguments.map((arg) => ({ name: arg.name, value: arg.defaultValue }))),
@@ -130,13 +131,13 @@ export class DataTree {
   /**
    * Get the options of a token or a field
    */
-  optionsToOptionsForm(arr: {name: string, value: unknown}[]): (input: Field | null, options: Options) => string {
+  optionsToOptionsForm(arr: {name: string, value: unknown}[]): (input: Field | null, options: Options) => TemplateResult {
     return (input: Field | null, options: Options) => {
-      return `
+      return html`
             <form>
               ${arr.map((obj) => {
         const value = options[obj.name] ?? obj.value ?? ''
-        return `<label>${obj.name}</label><input type="text" name="${obj.name}" value="${value}">`
+        return `<label>${obj.name}</label><input type="text" .name=${obj.name} .value=${value}>`
       }).join('\n')
         }
               <div class="buttons">

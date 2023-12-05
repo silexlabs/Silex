@@ -85,6 +85,7 @@ export class Properties {
       true,
       this.statesSelectorRefs.get(item.stateId)!,
       true,
+      'text',
     )
   }
 
@@ -115,7 +116,6 @@ export class Properties {
     })
     // Add states in the order of the list
     items.forEach(item => {
-      console.log('updateCustomStates', item.storedState)
       setState(item.component, item.stateId, item.storedState, true)
     })
   }
@@ -197,13 +197,13 @@ export class Properties {
             <a target="_blank" href="https://docs.silex.me/en/user/cms#element-properties">Learn more about element properties</a>
           </details>
           <main>
-            ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!, false)}
-            ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!, false)}
-            ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!, false)}
-            ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!, false)}
-            ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!, false)}
-            ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!, false)}
-            ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!, false)}
+            ${renderExpression(component, dataTree, 'innerHTML', 'Content', true, this.propsSelectorRefs.get('innerHTML')!, false, 'text')}
+            ${renderExpression(component, dataTree, 'title', 'title', true, this.propsSelectorRefs.get('title')!, false, 'text')}
+            ${renderExpression(component, dataTree, 'className', 'className', true, this.propsSelectorRefs.get('className')!, false, 'text')}
+            ${renderExpression(component, dataTree, 'style', 'style', true, this.propsSelectorRefs.get('style')!, false, 'text')}
+            ${renderExpression(component, dataTree, 'src', 'src', true, this.propsSelectorRefs.get('src')!, false, 'url')}
+            ${renderExpression(component, dataTree, 'href', 'href', true, this.propsSelectorRefs.get('href')!, false, 'url')}
+            ${renderExpression(component, dataTree, 'alt', 'alt', true, this.propsSelectorRefs.get('alt')!, false, 'text')}
           </main>
         </section>
         <section class="ds-section">
@@ -211,7 +211,7 @@ export class Properties {
             <div class="gjs-traits-label">Visibility</div>
           </div>
           <main>
-            ${renderExpression(component, dataTree, 'condition', 'condition', true, this.propsSelectorRefs.get('condition')!, false)}
+            ${renderExpression(component, dataTree, 'condition', 'condition', false, this.propsSelectorRefs.get('condition')!, false)}
           </main>
         </section>
         <section class="ds-section">
@@ -225,81 +225,4 @@ export class Properties {
       ` }
     `, this.wrapper)
   }
-
-  //renderPropertyUi(component: Component, dataTree: DataTree, name: PropsNames, label: string, field: Field | undefined): TemplateResult {
-  //  const state = getState(component, name, false) ?? {expression: []}
-  //  if(state?.expression.length !== 0 && state?.expression.length !== 1) {
-  //    console.error('Invalid state', state)
-  //    throw new Error('Invalid state')
-  //  }
-  //  if(!field) {
-  //    return html`
-  //      <label class="ds-label ds-label--disabled">
-  //        ${label}
-  //        <div class="ds-label__message">No data source</div>
-  //      </label>
-  //    `
-  //  }
-  //  //const steps = this.toSteps(dataTree, )
-  //  //const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
-  //  const reference = this.propsSelectorRefs.get(name)
-  //  const stepsSelector = this.propsSelectorRefs.get(name)?.value
-  //  // From fields to types (all the types for the current field)
-  //  const types = field.typeIds
-  //    .map(typeId => {
-  //      const type = dataTree.findType(typeId)
-  //      if(!type) {
-  //        console.error('Unknown type', typeId)
-  //        throw new Error(`Unknown type ${typeId}`)
-  //      }
-  //      return type
-  //    })
-  //  // From type to fields (the fields of the given type)
-  //  const completion = (): Step[] => {
-  //    return types
-  //      .flatMap(type => type.fields)
-  //      .filter(field => field.kind === 'scalar')
-  //      .map(field => {
-  //        const token = {
-  //          type: 'property',
-  //          propType: 'field',
-  //          dataSourceId: field.dataSourceId,
-  //          kind: field.kind,
-  //          typeId: field.typeIds,
-  //          fieldId: field.id,
-  //        }
-  //        return {
-  //          name: field.label,
-  //          icon: '',
-  //          type: this.getDisplayType(field.typeIds, field.kind),
-  //          meta: {
-  //            token,
-  //            type: field,
-  //          },
-  //        }
-  //      })
-  //  }
-  //  const steps = state.expression.length === 1 ? [this.toStep(dataTree, field, null, state.expression[0], component)] : []
-  //  if(stepsSelector) {
-  //    // This will not happen for the first render
-  //    // The first render will use onload
-  //    stepsSelector.steps = steps
-  //    stepsSelector.completion = completion
-  //  }
-
-  //  return html`
-  //    <steps-selector
-  //      ${ref(reference)}
-  //      max-steps="1"
-  //      @load=${(e: CustomEvent) => {
-  //        const stepsSelector = e.target as StepsSelector
-  //        stepsSelector.steps = steps
-  //        stepsSelector.completion = completion
-  //      }}
-  //      @change=${(e: SubmitEvent) => this.chagedStepsSelector(component, name, e.target as StepsSelector)}
-  //      >
-  //      ${label}
-  //    </steps-selector>
-  //  `
-  //}
 }

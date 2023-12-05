@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { TemplateResult } from "lit"
+
 // Queries
 export type PageId = string // GrapesJs page id type
 export interface Query {
@@ -119,7 +121,7 @@ export interface StoredProperty extends BaseProperty {
   options?: PropertyOptions
 }
 export interface Property extends StoredProperty {
-  optionsForm?: (input: Field | null, options: Options) => string | null
+  optionsForm?: (input: Field | null, options: Options) => TemplateResult | null
 }
 
 /**
@@ -134,7 +136,7 @@ export interface StoredFilter {
   options: Options
 }
 export interface Filter extends StoredFilter {
-  optionsForm?: (input: Field | null, options: Options) => string | null
+  optionsForm?: (input: Field | null, options: Options) => TemplateResult | null
   validate: (input: Field | null) => boolean
   output: (input: Field | null, options: Options) => Field | null
   apply: (input: unknown, options: Options) => unknown
@@ -152,6 +154,17 @@ export interface State {
   exposed: boolean
   forceKind?: FieldKind
 }
+
+///**
+// * A fixed value
+// */
+//export interface Fixed extends Step {
+//  type: 'fixed'
+//  options: {
+//    value: string
+//    inpuType: FixedType
+//  }
+//}
 
 /**
  * A context is a list of available tokens for a component

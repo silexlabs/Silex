@@ -1,11 +1,11 @@
 import { Component } from "grapesjs"
-import { Expression, Field, FieldKind, Options, State, StateId, Token, TypeId } from "./types"
+import { Expression, Field, FieldKind, Options, StateId, Token, TypeId } from "./types"
 import { DataTree } from "./model/DataTree"
-import { getParentByPersistentId, getPersistantId, getState, getStateLabel, getStateVariableName, setState } from "./model/state"
-import { Step, StepsSelector } from "@silexlabs/steps-selector"
+import { getParentByPersistentId, getState, getStateLabel, setState } from "./model/state"
+import { FixedType, Step, StepsSelector } from "@silexlabs/steps-selector"
 import { OPTIONS_STYLES } from "./view/defaultStyles"
 import { DataSourceEditor } from "."
-import { html } from "lit"
+import { TemplateResult, html } from "lit"
 import { Ref, ref } from "lit/directives/ref.js"
 
 /**
@@ -23,9 +23,9 @@ let _styles = ''
 export function setOptionsFormStyles(styles: string) {
   _styles = styles
 }
-function addStyles(optionsForm: string | null): string {
-  if(!optionsForm) return ''
-  return `
+function addStyles(optionsForm: TemplateResult | null): TemplateResult {
+  if(!optionsForm) return html``
+  return html`
     <style>
       ${OPTIONS_STYLES}
       ${_styles}
@@ -39,7 +39,7 @@ function addStyles(optionsForm: string | null): string {
  * It is a hard coded content with which you can start an expression
  */
 export const FIXED_TOKEN_ID = 'fixed'
-export function getFixedToken(value: string | number | boolean, typeId: TypeId): Token {
+export function getFixedToken(value: string | number | boolean, typeId: TypeId, inputType: FixedType = 'text'): Token {
   return {
     type: 'property',
     propType: 'field',
@@ -50,10 +50,10 @@ export function getFixedToken(value: string | number | boolean, typeId: TypeId):
     options: {
       value,
     },
-    optionsForm: () => addStyles(`
+    optionsForm: () => addStyles(html`
       <form>
         <label>Value
-          <input type="text" name="value" value="${value.toString()}">
+          <input type=${inputType} name="value" value=${value.toString()}>
         </label>
         ${ optionsFormButtons() }
       </form>
@@ -92,23 +92,32 @@ export function chagedStepsSelector(component: Component, name: string, label: s
   if(!component) throw new Error('Component is required')
   if(!name) throw new Error('Name is required')
   // Update the tokens with new options values
-  const steps = stepsSelector.steps.map(step => {
-    const token = step.meta?.token ?? getFixedToken(step.options?.value ?? '', 'String') // Add a fixed string if the token is not found
-    token.options = step.options
-    return {
-      ...step,
-      meta: {
-        ...step.meta,
-        token,
-      }
-    }
-  })
+  const steps = enrichSteps(stepsSelector.steps)
   // Update the state
   setState(component, name, {
     label,
     expression: steps.map(step => step.meta.token),
   }, exposed)
   stepsSelector.steps = steps
+}
+
+/**
+ * Handle the "fixed" value case and the step meta
+ */
+function enrichSteps(steps: Step[]): Step[] {
+  return steps
+    .map(step => {
+      const token = step.type === 'fixed' ? getFixedToken(step.options?.value ?? '', 'String', step.options?.inputType)
+        : step.meta?.token ?? getFixedToken(step.options?.value ?? '', 'String', step.options?.inputType) // Add a fixed string if the token is not found
+      token.options = step.options
+      return {
+        ...step,
+        meta: {
+          ...step.meta,
+          token,
+        }
+      }
+    })
 }
 
 /**
@@ -132,7 +141,7 @@ export function toSteps(dataTree: DataTree, expression: Expression, component: C
 /**
  * Render an expression with the steps-selector web component
  */
-export function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, maxSteps?: number) {
+export function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, inputType?: FixedType, maxSteps?: number) {
   const state = getState(component, stateId, exposed) ?? {expression: []}
   const steps = toSteps(dataTree, state.expression, component)
   const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
@@ -143,8 +152,59 @@ export function renderExpression(component: Component, dataTree: DataTree, state
     stepsSelector.steps = steps
     setCompletion(dataTree, component, stepsSelector)
   }
+
   return html`
     <steps-selector
+      ${ref(reference)}
+      name=${stateId}
+      group-by-category
+      ?allow-fixed=${allowFixed}
+      max-steps=${maxSteps ?? -1}
+      input-type=${inputType}
+      @load=${(e: CustomEvent) => {
+        const stepsSelector = e.target as StepsSelector
+        stepsSelector.steps = steps
+        setCompletion(dataTree, component, stepsSelector)
+      }}
+      @change=${(e: SubmitEvent) => chagedStepsSelector(component, stateId, label, e.target as StepsSelector, exposed)}
+      fixed=${fixed}
+      >
+      ${label}
+    </steps-selector>
+  `
+}
+
+/**
+ * Render an option of a filter with the steps-selector web component
+ * Takes an expression of tokens and calls onChange with the updated expression
+ */
+export function renderOption(opts: {
+    component: Component,
+    dataTree: DataTree,
+    expression: Expression,
+    name: string,
+    label: string,
+    allowFixed: boolean,
+    reference: Ref<StepsSelector>,
+    maxSteps?: number,
+    inputType?: FixedType,
+}): TemplateResult {
+  const { component, dataTree, expression, label, name, allowFixed, reference, maxSteps, inputType } = opts
+  const steps = toSteps(dataTree, expression, component)
+  const fixed = allowFixed && expression.length || expression.length === 1 && steps[0].options?.value === 'String'
+  const stepsSelector = reference?.value
+  if(stepsSelector) {
+    // This will not happen for the first render
+    // The first render will use onload
+    stepsSelector.steps = steps
+    setCompletion(dataTree, component, stepsSelector)
+  }
+  const value = JSON.stringify(expression)
+  return html`
+    <steps-selector
+      value=${value}
+      name=${name}
+      input-type=${inputType}
       ${ref(reference)}
       group-by-category
       ?allow-fixed=${allowFixed}
@@ -154,8 +214,24 @@ export function renderExpression(component: Component, dataTree: DataTree, state
         stepsSelector.steps = steps
         setCompletion(dataTree, component, stepsSelector)
       }}
-      @change=${(e: SubmitEvent) => chagedStepsSelector(component, stateId, label, e.target as StepsSelector, exposed)}
-      .fixed=${fixed}
+      @change=${(e: SubmitEvent) => {
+        const stepsSelector = e.target as StepsSelector
+        stepsSelector.steps = enrichSteps(stepsSelector.steps)
+          .map(step => {
+            const token = step.meta?.token
+            console.log('XXXXXX', {token, step})
+            if(!token) throw new Error('Token not found')
+            return {
+              ...step,
+              meta: {
+                ...step.meta,
+                token,
+              }
+            }
+          })
+        //reference.value?.dispatchEvent(new InputEvent('change'))
+      }}
+      fixed=${fixed}
       >
       ${label}
     </steps-selector>
@@ -180,8 +256,8 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
         type: getDisplayType(token.typeIds, token.kind),
         meta: { token, type: field },
         options: token.options,
-        optionsForm: token.optionsForm ? addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
-        category: token.dataSourceId as string,
+        optionsForm: token.optionsForm ? addStyles(token.optionsForm(prev, token.options ?? {})) ?? null : null,
+        category: token.dataSourceId as string | undefined,
       }
     case 'filter':
       return {
@@ -189,7 +265,7 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
         icon: '',
         type: 'Filter',
         options: token.options,
-        optionsForm: token.optionsForm ? addStyles(token.optionsForm(prev, token.options ?? {})) ?? undefined : undefined,
+        optionsForm: token.optionsForm ? addStyles(token.optionsForm(prev, token.options ?? {})) ?? null : null,
         meta: { token, type: field },
         category: 'Filters',
       }
@@ -245,59 +321,72 @@ export function getFieldType(editor: DataSourceEditor, field: Field | null, key:
     }
   }
 }
-export function optionsFormButtons() {
-  return `
+export function optionsFormButtons(): TemplateResult {
+  return html`
       <div class="buttons">
         <input type="reset" value="Cancel" />
         <input type="submit" value="Apply" />
       </div>
     `
 }
-export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string) {
+export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult {
   const dataTree = editor.DataSourceManager.getDataTree()
-  if (!field) return `
+  if (!field) return html`
       <label>${name}
-        <input type="text" name="${name}" />
+        <input type="text" name=${name} />
       </label>
     `
-  return `
-      <select name="${name}">
+  return html`
+      <select name=${name}>
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
       .flatMap(typeId => dataTree.findType(typeId)!.fields)
-      .map(f => `<option value="${f.label}" ${f.label === options.key ? 'selected' : ''}>${f.label}</option>`)
-      .join('\n')
-      : ''
+      .map(f => html`<option value=${f.label} ${f.label === options.key ? 'selected' : ''}>${f.label}</option>`)
+      : html``
     }
       </select>
     `
 }
-export function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string) {
+export function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string, reference: Ref<StepsSelector>, label: string = name): TemplateResult {
   const dataTree = editor.DataSourceManager.getDataTree()
-  return `
-          <select name="${name}">
-            <option value="">Select a ${name}</option>
-            ${dataTree.getContext()
-      .filter(token => token.type === 'state' && token.exposed)
-      .map(token => {
-        const state = token as State
-        const value = getStateVariableName(state.componentId, state.storedStateId)
-        const component = (() => {
-          let c = editor.getSelected()
-          while (c) {
-            if (getPersistantId(c) === state.componentId) return c
-            c = c.parent()
-          }
-          return null
-        })()
-        if (!component) {
-          console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
-          return ''
-        }
-        return `<option${options[name] === value ? ' selected' : ''} value="${value}">${getStateLabel(component, state)}</option>`
-      })
-      .join('\n')
-    }
-          </select>
-          `
+  const component = editor.getSelected()
+  if(!component) throw new Error('No component selected')
+  const expression = JSON.parse(options[name] as string || '[]') as Expression
+  return renderOption({
+    component,
+    dataTree,
+    expression,
+    label,
+    name,
+    allowFixed: true,
+    reference,
+  })
+
+  //return `
+  //        <select name="${name}">
+  //          <option value="">Select a ${label}</option>
+  //          ${
+  //            dataTree.getContext()
+  //    .filter(token => token.type === 'state' && token.exposed)
+  //    .map(token => {
+  //      const state = token as State
+  //      const value = getStateVariableName(state.componentId, state.storedStateId)
+  //      const component = (() => {
+  //        let c = editor.getSelected()
+  //        while (c) {
+  //          if (getPersistantId(c) === state.componentId) return c
+  //          c = c.parent()
+  //        }
+  //        return null
+  //      })()
+  //      if (!component) {
+  //        console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
+  //        return ''
+  //      }
+  //      return `<option${options[name] === value ? ' selected' : ''} value="${value}">${getStateLabel(component, state)}</option>`
+  //    })
+  //    .join('\n')
+  //  }
+  //        </select>
+  //        `
 }

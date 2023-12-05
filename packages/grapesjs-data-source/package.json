@@ -15,6 +15,7 @@
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
     "serve:mocks": "http-serve ./__mocks__/ -p 3000 --cors",
+    "serve:grapesjs": "http-serve `node_modules grapesjs`/grapesjs/dist -p 3001 --cors",
     "lint": "eslint src",
     "test": "node --experimental-vm-modules `node_modules jest`/.bin/jest --runInBand",
     "test:watch": "npm test -- --watch"
@@ -44,7 +45,7 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@apollo/client": "^3.8.7",
-    "@silexlabs/steps-selector": "^0.0.5",
+    "@silexlabs/steps-selector": "^0.0.6",
     "backbone": "^1.5.0",
     "dedent-js": "^1.0.1",
     "lit": "^3.1.0"

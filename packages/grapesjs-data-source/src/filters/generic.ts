@@ -16,10 +16,11 @@
  */
 
 
-import { DataTree } from "../model/DataTree"
+import { html } from "lit"
+import { DataSourceEditor } from ".."
 import { Filter } from "../types"
 
-export default function(dataTree: DataTree): Filter[] {
+export default function(editor: DataSourceEditor): Filter[] {
   return [
     {
       type: 'filter',
@@ -34,12 +35,12 @@ export default function(dataTree: DataTree): Filter[] {
       options: {
         type: 'String',
       },
-      optionsForm: (field, options) => `
+      optionsForm: (field, options) => html`
         <form>
           <label for="type">Type</label>
           <small class="form-text text-muted">The type to cast to</small>
           <select class="form-control" id="type" name="type">
-            ${ dataTree.allTypes.map(type => `<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`).join('\n') }
+            ${ editor.DataSourceManager.getDataTree().allTypes.map(type => `<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`).join('\n') }
           </select>
           <div class="buttons">
             <input type="reset" value="Cancel"/>

@@ -16,13 +16,16 @@
  */
 
 import { Editor } from 'grapesjs'
-import '@silexlabs/steps-selector' // For the web component to work
-
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
 import { Filter, IDataSourceOptions } from './types'
 import view, { ViewOptions } from './view'
 
+import '@silexlabs/steps-selector' // For the web component to work
+
+/**
+ * Export the public API
+ */
 export * from './model/state'
 export * from './model/DataTree'
 export * from './model/DataSourceManager'

@@ -22,6 +22,7 @@ import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
 import { StoredState, onStateChange } from "./state"
 import getLiquidFilters from "../filters/liquid"
+import getGenericFilters from "../filters/generic"
 
 /**
  * FIXME: Why sometimes the methods of the data source are in the attributes?
@@ -58,7 +59,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     const filters = typeof options.filters === 'string'
       // Include preset from filters/
       ? [
-        //...getGenericFilters(this),
+        ...getGenericFilters(editor),
         ...getLiquidFilters(editor),
       ]
       // Define filters in the options
