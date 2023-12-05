@@ -34,18 +34,21 @@ export interface Step {
     meta?: any;
     category?: string;
 }
+export declare type FixedType = 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url';
 export declare class StepsSelector extends LitElement {
     static styles: import("lit").CSSResult;
-    static getFixedValueStep(value: string): Step;
+    getFixedValueStep(value: string): Step;
     get dirty(): boolean;
-    steps: Step[];
+    protected __steps: Step[];
+    get steps(): Step[];
+    set steps(value: Step[]);
     protected get _steps(): Step[];
     protected set _steps(value: Step[]);
     protected initialValue: Step[];
     completion: (steps: Step[]) => Step[];
     allowFixed: boolean;
+    inputType: FixedType;
     fixed: boolean;
-    fixedType: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url';
     placeholder: string;
     fixedPlaceholder: string;
     maxSteps: number | undefined;
@@ -77,7 +80,7 @@ export declare class StepsSelector extends LitElement {
     /**
      * Handle formdata event to add the current value to the form
      */
-    protected onFormdata(event: FormDataEvent): void;
+    protected onFormdata: (event: FormDataEvent) => void;
     /**
      * Render the component
      */

@@ -4,25 +4,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var StepsSelector_1;
 import { LitElement, html } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { customElement, property } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import './steps-selector-item.js';
 import { stepsSelectorStyles } from './styles.js';
-let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
+import './steps-selector-item.js';
+let StepsSelector = class StepsSelector extends LitElement {
     constructor() {
         super(...arguments);
         // Steps currently selected
-        this.steps = [];
+        this.__steps = [];
         // Initial value
         this.initialValue = [];
         // Get the list of steps that can be added after the given selection
         this.completion = () => [];
         this.allowFixed = false;
+        this.inputType = 'text';
         this.fixed = false;
-        this.fixedType = 'text';
         this.placeholder = 'Add a first step';
         this.fixedPlaceholder = 'Enter a fixed value or switch to expression';
         this.groupByCategory = false;
@@ -41,17 +40,27 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
          * Handle formdata event to add the current value to the form
          */
         this._form = null;
+        /**
+         * Handle formdata event to add the current value to the form
+         */
+        this.onFormdata = (event) => {
+            if (!this.name) {
+                throw new Error('Attribute name is required for steps-selector');
+            }
+            event.formData.append(this.name, JSON.stringify(this._steps));
+        };
     }
-    static getFixedValueStep(value) {
+    getFixedValueStep(value) {
         return {
             name: 'Fixed value',
             icon: '',
             type: 'fixed',
             options: {
                 value,
+                inputType: this.inputType,
             },
             optionsForm: html `<form>
-        <input name="value" type="text" .value=${value} />
+        <input name="value" type=${this.inputType} value=${value} />
         <div class="buttons">
           <input type="reset" value="Cancel" />
           <input type="submit" value="Apply" />
@@ -63,14 +72,20 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
     get dirty() {
         return JSON.stringify(this._steps) !== JSON.stringify(this.initialValue);
     }
+    get steps() {
+        return this.__steps;
+    }
+    set steps(value) {
+        const oldValue = this.__steps;
+        this.__steps = value;
+        this.requestUpdate('steps', oldValue);
+    }
     // Steps with change events - internal use only
     get _steps() {
         return this.steps;
     }
     set _steps(value) {
-        const oldValue = this.steps;
         this.steps = value;
-        this.requestUpdate('steps', oldValue);
         this.dispatchEvent(new CustomEvent('change', { detail: { value } }));
     }
     /**
@@ -79,16 +94,16 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
      * This is the same API as input elements
      */
     get value() {
-        return JSON.stringify(this._steps);
+        return JSON.stringify(this.steps);
     }
     set value(newValue) {
         if (newValue) {
-            this._steps = JSON.parse(newValue);
+            this.steps = JSON.parse(newValue);
         }
         else {
-            this._steps = [];
+            this.steps = [];
         }
-        // Done in "set _steps" this.dispatchEvent(new Event('change'))
+        this.dispatchEvent(new Event('change'));
     }
     set form(newForm) {
         if (this._form) {
@@ -100,15 +115,6 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
     }
     get form() {
         return this._form;
-    }
-    /**
-     * Handle formdata event to add the current value to the form
-     */
-    onFormdata(event) {
-        if (!this.name) {
-            throw new Error('Form name is required for steps-selector');
-        }
-        event.formData.append(this.name, JSON.stringify(this._steps));
     }
     /**
      * Render the component
@@ -141,16 +147,16 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
               part="fixed-selector-expression"
             >Expression</span>
           </div>
-        ` : ''}
+        ` : html ``}
       </header>
       <!-- fixed value -->
       ${this.fixed ? html `
         <div part="property-container" class="property-container">
           <input
             part="property-input" class="property-input"
-            .placeholder=${this.fixedPlaceholder}
-            .type=${this.fixedType}
-            .value=${((_a = this._steps[0]) === null || _a === void 0 ? void 0 : _a.options) ? this._steps[0].options['value'] : ''}
+            placeholder=${this.fixedPlaceholder}
+            type=${this.inputType}
+            value=${((_a = this._steps[0]) === null || _a === void 0 ? void 0 : _a.options) ? this._steps[0].options['value'] : ''}
             @change=${(event) => this.fixedValueChanged(event.target.value)}
           >
         </div>
@@ -298,7 +304,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
     fixedValueChanged(value) {
         if (value && value !== '') {
             this._steps = [
-                StepsSelector_1.getFixedValueStep(value),
+                this.getFixedValueStep(value),
             ];
         }
         else {
@@ -356,7 +362,7 @@ let StepsSelector = StepsSelector_1 = class StepsSelector extends LitElement {
 StepsSelector.styles = stepsSelectorStyles;
 __decorate([
     property({ type: Array })
-], StepsSelector.prototype, "steps", void 0);
+], StepsSelector.prototype, "__steps", void 0);
 __decorate([
     property({ type: Function })
 ], StepsSelector.prototype, "completion", void 0);
@@ -364,11 +370,11 @@ __decorate([
     property({ type: Boolean, attribute: 'allow-fixed' })
 ], StepsSelector.prototype, "allowFixed", void 0);
 __decorate([
+    property({ type: String, attribute: 'input-type' })
+], StepsSelector.prototype, "inputType", void 0);
+__decorate([
     property({ type: Boolean, attribute: 'fixed', reflect: true })
 ], StepsSelector.prototype, "fixed", void 0);
-__decorate([
-    property({ type: String, attribute: 'fixed-type' })
-], StepsSelector.prototype, "fixedType", void 0);
 __decorate([
     property()
 ], StepsSelector.prototype, "placeholder", void 0);
@@ -390,7 +396,7 @@ __decorate([
 __decorate([
     property({ type: String, attribute: 'value' })
 ], StepsSelector.prototype, "value", null);
-StepsSelector = StepsSelector_1 = __decorate([
+StepsSelector = __decorate([
     customElement('steps-selector')
 ], StepsSelector);
 export { StepsSelector };

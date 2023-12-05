@@ -61,8 +61,8 @@ Use in your HTML as a web component:
 
 ```html
 <html><body>
-  <steps-selector onload="initStepSelector(event.target)"></steps-selector>
-  <steps-selector onload="initStepSelector(event.target)">
+  <steps-selector name="form-data-name" onload="initStepSelector(event.target)"></steps-selector>
+  <steps-selector name="form-data-name" onload="initStepSelector(event.target)">
     Label
   </steps-selector>
 ```

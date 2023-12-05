@@ -2,10 +2,10 @@ import {LitElement, html, TemplateResult} from 'lit'
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import {customElement, property} from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
-
-import './popin-dialog.js'
 import { unsafeHTML } from 'lit/directives/unsafe-html.js'
 import { stepsSelectorItemStyles } from './styles.js'
+
+import './popin-dialog.js'
 
 /**
  * @element steps-selector-item

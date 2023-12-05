@@ -8,9 +8,9 @@ import { LitElement, html } from 'lit';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import './popin-dialog.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { stepsSelectorItemStyles } from './styles.js';
+import './popin-dialog.js';
 /**
  * @element steps-selector-item
  * This class is a step in the selection of the steps-selector component

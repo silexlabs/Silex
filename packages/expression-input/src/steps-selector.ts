@@ -2,9 +2,9 @@ import {LitElement, html, TemplateResult} from 'lit'
 import { classMap } from 'lit/directives/class-map.js'
 import {customElement, property} from 'lit/decorators.js'
 import {unsafeHTML} from 'lit/directives/unsafe-html.js'
+import { stepsSelectorStyles } from './styles.js'
 
 import './steps-selector-item.js'
-import { stepsSelectorStyles } from './styles.js'
 
 /**
  * @element steps-selector
@@ -42,20 +42,23 @@ export interface Step {
   category?: string
 }
 
+export type FixedType = 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url'
+
 @customElement('steps-selector')
 export class StepsSelector extends LitElement {
   static override styles = stepsSelectorStyles
 
-  public static getFixedValueStep(value: string): Step {
+  public getFixedValueStep(value: string): Step {
     return {
       name: 'Fixed value',
       icon: '',
       type: 'fixed',
       options: {
         value,
+        inputType: this.inputType,
       },
       optionsForm: html`<form>
-        <input name="value" type="text" .value=${value} />
+        <input name="value" type=${this.inputType} value=${value} />
         <div class="buttons">
           <input type="reset" value="Cancel" />
           <input type="submit" value="Apply" />
@@ -72,16 +75,22 @@ export class StepsSelector extends LitElement {
 
   // Steps currently selected
   @property({type: Array})
-  steps: Step[] = []
+  protected __steps: Step[] = []
+  get steps() {
+    return this.__steps
+  }
+  set steps(value) {
+    const oldValue = this.__steps
+    this.__steps = value
+    this.requestUpdate('steps', oldValue)
+  }
 
   // Steps with change events - internal use only
   protected get _steps() {
     return this.steps
   }
   protected set _steps(value) {
-    const oldValue = this.steps
     this.steps = value
-    this.requestUpdate('steps', oldValue)
     this.dispatchEvent(new CustomEvent('change', {detail: {value}}))
   }
 
@@ -95,11 +104,11 @@ export class StepsSelector extends LitElement {
   @property({type: Boolean, attribute: 'allow-fixed'})
   allowFixed = false
 
+  @property({type: String, attribute: 'input-type'})
+  inputType: FixedType = 'text'
+
   @property({type: Boolean, attribute: 'fixed', reflect: true})
   fixed = false
-
-  @property({type: String, attribute: 'fixed-type'})
-  fixedType: 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
 
   @property()
   placeholder = 'Add a first step'
@@ -134,15 +143,15 @@ export class StepsSelector extends LitElement {
    */
   @property({type: String, attribute: 'value'})
   get value() {
-    return JSON.stringify(this._steps)
+    return JSON.stringify(this.steps)
   }
   set value(newValue: string) {
     if(newValue) {
-      this._steps = JSON.parse(newValue)
+      this.steps = JSON.parse(newValue)
     } else {
-      this._steps = []
+      this.steps = []
     }
-    // Done in "set _steps" this.dispatchEvent(new Event('change'))
+    this.dispatchEvent(new Event('change'))
   }
 
   /**
@@ -165,9 +174,9 @@ export class StepsSelector extends LitElement {
   /**
    * Handle formdata event to add the current value to the form
    */
-  protected onFormdata(event: FormDataEvent) {
+  protected onFormdata = (event: FormDataEvent) => {
     if(!this.name) {
-      throw new Error('Form name is required for steps-selector')
+      throw new Error('Attribute name is required for steps-selector')
     }
     event.formData.append(this.name, JSON.stringify(this._steps))
   }
@@ -202,16 +211,16 @@ export class StepsSelector extends LitElement {
               part="fixed-selector-expression"
             >Expression</span>
           </div>
-        ` : ''}
+        ` : html``}
       </header>
       <!-- fixed value -->
       ${this.fixed ? html`
         <div part="property-container" class="property-container">
           <input
             part="property-input" class="property-input"
-            .placeholder=${this.fixedPlaceholder}
-            .type=${this.fixedType}
-            .value=${this._steps[0]?.options ? this._steps[0].options['value'] : ''}
+            placeholder=${this.fixedPlaceholder}
+            type=${this.inputType}
+            value=${this._steps[0]?.options ? this._steps[0].options['value'] : ''}
             @change=${(event: InputEvent) => this.fixedValueChanged((event.target as HTMLInputElement).value)}
           >
         </div>
@@ -363,7 +372,7 @@ export class StepsSelector extends LitElement {
   fixedValueChanged(value: string) {
     if (value && value !== '') {
       this._steps = [
-        StepsSelector.getFixedValueStep(value),
+        this.getFixedValueStep(value),
       ]
     } else {
       this._steps = []
