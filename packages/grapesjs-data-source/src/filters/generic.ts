@@ -40,7 +40,7 @@ export default function(editor: DataSourceEditor): Filter[] {
           <label for="type">Type</label>
           <small class="form-text text-muted">The type to cast to</small>
           <select class="form-control" id="type" name="type">
-            ${ editor.DataSourceManager.getDataTree().allTypes.map(type => `<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`).join('\n') }
+            ${ editor.DataSourceManager.getDataTree().allTypes.map(type => html`<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`) }
           </select>
           <div class="buttons">
             <input type="reset" value="Cancel"/>

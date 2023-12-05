@@ -137,8 +137,8 @@ export class DataTree {
             <form>
               ${arr.map((obj) => {
         const value = options[obj.name] ?? obj.value ?? ''
-        return `<label>${obj.name}</label><input type="text" .name=${obj.name} .value=${value}>`
-      }).join('\n')
+        return html`<label>${obj.name}</label><input type="text" name=${obj.name} value=${value}>`
+      })
         }
               <div class="buttons">
                 <input type="reset" value="Cancel">

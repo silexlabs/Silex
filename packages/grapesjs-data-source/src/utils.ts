@@ -1,7 +1,7 @@
 import { Component } from "grapesjs"
-import { Expression, Field, FieldKind, Options, StateId, Token, TypeId } from "./types"
+import { Expression, Field, FieldKind, Options, State, StateId, Token, TypeId } from "./types"
 import { DataTree } from "./model/DataTree"
-import { getParentByPersistentId, getState, getStateLabel, setState } from "./model/state"
+import { getParentByPersistentId, getPersistantId, getState, getStateLabel, getStateVariableName, setState } from "./model/state"
 import { FixedType, Step, StepsSelector } from "@silexlabs/steps-selector"
 import { OPTIONS_STYLES } from "./view/defaultStyles"
 import { DataSourceEditor } from "."
@@ -142,10 +142,14 @@ export function toSteps(dataTree: DataTree, expression: Expression, component: C
  * Render an expression with the steps-selector web component
  */
 export function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, inputType?: FixedType, maxSteps?: number) {
-  const state = getState(component, stateId, exposed) ?? {expression: []}
-  const steps = toSteps(dataTree, state.expression, component)
-  const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].meta?.type?.id === 'String'
   const stepsSelector = reference?.value
+  const state = getState(component, stateId, exposed) ?? {expression: []}
+  const steps = toSteps(
+    dataTree,
+    state.expression,
+    component
+  )
+  const fixed = allowFixed && !state.expression.length || state.expression.length === 1 && steps[0].type === 'fixed'
   if(stepsSelector) {
     // This will not happen for the first render
     // The first render will use onload
@@ -167,7 +171,7 @@ export function renderExpression(component: Component, dataTree: DataTree, state
         setCompletion(dataTree, component, stepsSelector)
       }}
       @change=${(e: SubmitEvent) => chagedStepsSelector(component, stateId, label, e.target as StepsSelector, exposed)}
-      fixed=${fixed}
+      .fixed=${fixed}
       >
       ${label}
     </steps-selector>
@@ -190,8 +194,12 @@ export function renderOption(opts: {
     inputType?: FixedType,
 }): TemplateResult {
   const { component, dataTree, expression, label, name, allowFixed, reference, maxSteps, inputType } = opts
-  const steps = toSteps(dataTree, expression, component)
-  const fixed = allowFixed && expression.length || expression.length === 1 && steps[0].options?.value === 'String'
+  const steps = toSteps(
+    dataTree,
+    expression,
+    component
+  )
+  const fixed = allowFixed && expression.length || expression.length === 1 && steps[0].type === 'fixed'
   const stepsSelector = reference?.value
   if(stepsSelector) {
     // This will not happen for the first render
@@ -219,7 +227,6 @@ export function renderOption(opts: {
         stepsSelector.steps = enrichSteps(stepsSelector.steps)
           .map(step => {
             const token = step.meta?.token
-            console.log('XXXXXX', {token, step})
             if(!token) throw new Error('Token not found')
             return {
               ...step,
@@ -229,9 +236,8 @@ export function renderOption(opts: {
               }
             }
           })
-        //reference.value?.dispatchEvent(new InputEvent('change'))
       }}
-      fixed=${fixed}
+      .fixed=${fixed}
       >
       ${label}
     </steps-selector>
@@ -351,42 +357,42 @@ export function optionsFormStateSelector(editor: DataSourceEditor, options: Opti
   const dataTree = editor.DataSourceManager.getDataTree()
   const component = editor.getSelected()
   if(!component) throw new Error('No component selected')
-  const expression = JSON.parse(options[name] as string || '[]') as Expression
-  return renderOption({
-    component,
-    dataTree,
-    expression,
-    label,
-    name,
-    allowFixed: true,
-    reference,
-  })
+  // Fixme: Render the options form with the steps selector
+  //const expression = JSON.parse(options[name] as string || '[]') as Expression
+  //return renderOption({
+  //  component,
+  //  dataTree,
+  //  expression,
+  //  label,
+  //  name,
+  //  allowFixed: true,
+  //  reference,
+  //})
 
-  //return `
-  //        <select name="${name}">
-  //          <option value="">Select a ${label}</option>
-  //          ${
-  //            dataTree.getContext()
-  //    .filter(token => token.type === 'state' && token.exposed)
-  //    .map(token => {
-  //      const state = token as State
-  //      const value = getStateVariableName(state.componentId, state.storedStateId)
-  //      const component = (() => {
-  //        let c = editor.getSelected()
-  //        while (c) {
-  //          if (getPersistantId(c) === state.componentId) return c
-  //          c = c.parent()
-  //        }
-  //        return null
-  //      })()
-  //      if (!component) {
-  //        console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
-  //        return ''
-  //      }
-  //      return `<option${options[name] === value ? ' selected' : ''} value="${value}">${getStateLabel(component, state)}</option>`
-  //    })
-  //    .join('\n')
-  //  }
-  //        </select>
-  //        `
+  return html`
+          <select name="${name}">
+            <option value="">Select a custom state (${label})</option>
+            ${
+              dataTree.getContext()
+      .filter(token => token.type === 'state' && token.exposed)
+      .map(token => {
+        const state = token as State
+        const value = getStateVariableName(state.componentId, state.storedStateId)
+        const component = (() => {
+          let c = editor.getSelected()
+          while (c) {
+            if (getPersistantId(c) === state.componentId) return c
+            c = c.parent()
+          }
+          return null
+        })()
+        if (!component) {
+          console.warn(`Could not find component with persistent ID ${state.componentId}`, { state })
+          return ''
+        }
+        return html`<option ${options[name] === value ? ' selected' : ''} value="${value}">${getStateLabel(component, state)}</option>`
+      })
+    }
+          </select>
+          `
 }
