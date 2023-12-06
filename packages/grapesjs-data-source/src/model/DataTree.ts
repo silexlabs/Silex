@@ -19,7 +19,10 @@ import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, Property, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId, StoredToken } from '../types'
 import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
-import { TemplateResult, html } from 'lit'
+
+// FIXME: Workaround to avoid import of lit-html which breakes unit tests
+type TemplateResult = any
+const html = (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => ({ strings, values })
 
 /**
  * Options of the data tree

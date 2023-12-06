@@ -183,12 +183,13 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     }
   }
   protected graphQLToField(field: GQLField): Field {
+    const kind = this.ofKindToKind(field.type)
     return {
       id: field.name,
       dataSourceId: this.get('id')!,
       label: field.name,
       typeIds: this.graphQLToTypes(field),
-      kind: this.graphQLToKind(this.ofKindToKind(field.type)),
+      kind: kind ? this.graphQLToKind(kind) : 'unknown',
       arguments: field.args?.map(arg => ({
         name: arg.name,
         typeId: this.getOfTypeProp<string>('name', arg.type, arg.name),
@@ -256,7 +257,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   /**
    * Recursively search for a GraphQL kind of type list, object or scalar
    */
-  protected ofKindToKind(ofKind: GQLOfType): GQLKind {
+  protected ofKindToKind(ofKind: GQLOfType): GQLKind | null {
     if(ofKind.possibleTypes) {
       const foundKind = ofKind.possibleTypes
       .reduce((prev: GQLKind | null, type: {kind: GQLKind, name: string}) => {
@@ -268,21 +269,21 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         return prev as GQLKind
       }, null)
       if(!foundKind) {
-        console.error('Unable to find a valid kind', ofKind)
-        throw new Error(`Unable to find a valid kind for ${ofKind.kind}`)
+        console.error('Unable to find a valid kind (1)', ofKind)
+        return null
       }
       return foundKind
     }
     if(this.validKind(ofKind.kind)) return ofKind.kind
     if(ofKind.ofType) return this.ofKindToKind(ofKind.ofType)
-    console.error('Unable to find a valid kind', ofKind)
-    throw new Error(`Unable to find a valid kind for ${ofKind.kind}`)
+    console.error('Unable to find a valid kind (2)', ofKind)
+    return null
   }
 
   /**
    * Convert a GraphQL type to a Type
    */
-  protected graphQLToType(allTypes: TypeId[], type: GQLType, kind: GQLKind, queryable: boolean): Type {
+  protected graphQLToType(allTypes: TypeId[], type: GQLType, kind: GQLKind | null, queryable: boolean): Type {
     const queryableOverride = this.get('queryable')
     const result = {
       id: type.name,

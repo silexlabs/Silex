@@ -74,7 +74,7 @@ export const builtinTypes: Type[] = builtinTypeIds.map(id => ({
 
 // Fileds
 export type FieldId = string
-export type FieldKind = 'scalar' | 'object' | 'list'
+export type FieldKind = 'scalar' | 'object' | 'list' | 'unknown'
 export interface FieldArgument {
   name: string
   typeId: TypeId
