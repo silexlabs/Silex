@@ -108,6 +108,17 @@ function isJson(str: string) {
   return true;
 }
 
+function isEmpty(value: unknown): boolean {
+  const isString = typeof value === 'string'
+  const isJsonString = isString && isJson(value)
+  if (isString && !isJsonString) return value === ''
+  const json = isJsonString ? JSON.parse(value) : value
+  if (Array.isArray(json)) return json.length === 0
+  if (typeof json === 'object') return Object.keys(json).length === 0
+  return false
+}
+
+
 /**
  * GraphQL DataSource implementation
  * This is a Backbone model used in the DataSourceManager collection
@@ -466,12 +477,14 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           Object
           .keys(tree.token.options)
           .map(key => ({key, value: tree.token.options![key]}))
-          .filter(({value}) => !!value)
+          .filter(({value}) => !isEmpty(value))
           .map(({key, value}) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
           .join(', ')
         })` : ''
+        // Valid args for GraphQL canot be just ()
+        const validArgs = args === '()' ? '' : args
         // The query
-        return dedent`${indent}${tree.token.fieldId}${args} {
+        return dedent`${indent}${tree.token.fieldId}${validArgs} {
         ${indent}  __typename
         ${children}
         ${indent}}`
