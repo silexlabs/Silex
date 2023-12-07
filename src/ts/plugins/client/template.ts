@@ -204,39 +204,41 @@ export default async (config, opts: any = {}) => {
         // put back together
         .join('\n')
     }
-    editor.on(ClientEvent.PUBLISH_START, () => {
-      // Insert templates
-      onAll(editor, c => {
-        const template = c.get(templateKey)
-        const toHTML = c.toHTML
-        const classes = c.getClasses()
-        const before = cleanup(template?.before || '')
-        const replace = cleanup(template?.replace || '')
-        const after = cleanup(template?.after || '')
-        const classname = cleanup(template?.classname || '')
-        const style = cleanup(template?.style || '')
-        const attributes = cleanup(template?.attributes || '')
-        // Store the initial method
-        if (!c.has('tmpHtml')) c.set('tmpHtml', toHTML)
-        // Override the method
-        c.toHTML = () => {
-          return `${before
-          }${c.get('tagName') ? `<${c.get('tagName')}
+    if (opts.publication !== false) {
+      editor.on(ClientEvent.PUBLISH_START, () => {
+        // Insert templates
+        onAll(editor, c => {
+          const template = c.get(templateKey)
+          const toHTML = c.toHTML
+          const classes = c.getClasses()
+          const before = cleanup(template?.before || '')
+          const replace = cleanup(template?.replace || '')
+          const after = cleanup(template?.after || '')
+          const classname = cleanup(template?.classname || '')
+          const style = cleanup(template?.style || '')
+          const attributes = cleanup(template?.attributes || '')
+          // Store the initial method
+          if (!c.has('tmpHtml')) c.set('tmpHtml', toHTML)
+          // Override the method
+          c.toHTML = () => {
+            return `${before
+            }${c.get('tagName') ? `<${c.get('tagName')}
             ${Object.entries(c.get('attributes') as object).map(([key, value]) => makeAttribute(key, value)).join(' ')}
             ${classes.length || classname ? `class="${classes.join(' ')} ${classname}"` : ''}
             ${attributes}
             ${style ? `style="${style}"` : ''}
             >` : ''}${replace || c.getInnerHTML()
-          }${c.get('tagName') ? `</${c.get('tagName')}>` : ''}${after
-          }`
-        }
+            }${c.get('tagName') ? `</${c.get('tagName')}>` : ''}${after
+            }`
+          }
+        })
       })
-    })
-    editor.on(ClientEvent.PUBLISH_END, () => {
-      onAll(editor, c => {
-        // Restore the original method
-        c.toHTML = c.get('tmpHtml')
+      editor.on(ClientEvent.PUBLISH_END, () => {
+        onAll(editor, c => {
+          // Restore the original method
+          c.toHTML = c.get('tmpHtml')
+        })
       })
-    })
+    }
   })
 }
