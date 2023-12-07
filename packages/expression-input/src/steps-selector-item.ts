@@ -201,7 +201,7 @@ export class StepsSelectorItem extends LitElement {
     const formData = new FormData(form)
     const options = Object.fromEntries(formData.entries())
     // Update the optionsForm too
-    const optionsForm = this.formToString(form, formData)
+    const optionsForm = this.formToHtml(form, formData)
     // Notify the steps-selector
     this.dispatchEvent(new CustomEvent('set-options', {detail: {options, optionsForm}}))
   }
@@ -210,7 +210,7 @@ export class StepsSelectorItem extends LitElement {
    * Update the form with the values from the formData
    * Returns the form as a string
    */
-  formToString(form: HTMLFormElement, formData: FormData): TemplateResult {
+  formToHtml(form: HTMLFormElement, formData: FormData): TemplateResult {
     const inputs = Array.from(form.querySelectorAll('input, select, textarea'))
     inputs.forEach(input => {
       const name = input.getAttribute('name')

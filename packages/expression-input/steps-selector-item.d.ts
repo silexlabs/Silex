@@ -68,7 +68,7 @@ export declare class StepsSelectorItem extends LitElement {
      * Update the form with the values from the formData
      * Returns the form as a string
      */
-    formToString(form: HTMLFormElement, formData: FormData): TemplateResult;
+    formToHtml(form: HTMLFormElement, formData: FormData): TemplateResult;
     cancelOptions(): void;
 }
 declare global {
