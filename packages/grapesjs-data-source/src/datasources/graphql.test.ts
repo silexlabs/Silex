@@ -557,7 +557,7 @@ test('Get query with options', async () => {
   const query = await dataSource.getQuery([[{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'testFieldId1',
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
@@ -566,7 +566,7 @@ test('Get query with options', async () => {
   }], [{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'testFieldId1',
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
@@ -575,7 +575,7 @@ test('Get query with options', async () => {
   }], [{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'testFieldId2',
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
@@ -584,7 +584,7 @@ test('Get query with options', async () => {
   }], [{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'testFieldId3',
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
@@ -593,15 +593,15 @@ test('Get query with options', async () => {
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
   __typename
-  testFieldId(id: 1) {
+  testFieldId1(id: 1) {
     __typename
 
   }
-  testFieldId(name: "test") {
+  testFieldId2(name: "test") {
     __typename
 
   }
-  testFieldId {
+  testFieldId3 {
     __typename
 
   }
@@ -623,7 +623,23 @@ test('Get query from multiple expressions', async () => {
   }, {
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId',
+    fieldId: 'testFieldPropertyId1',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId1.1',
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
@@ -650,7 +666,8 @@ test('Get query from multiple expressions', async () => {
   __typename
   testFieldId1 {
     __typename
-    testFieldPropertyId
+    testFieldPropertyId1
+    testFieldPropertyId1.1
   }
   testFieldId2 {
     __typename
@@ -658,6 +675,198 @@ test('Get query from multiple expressions', async () => {
   }
 }`)
 })
+
+test('Get query with property options', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const query = await dataSource.getQuery([[{
+    // LEVEL 1
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+    options: {id: 'option'},
+  }, {
+    // LEVEL 2
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId1',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+    options: {prop: 'option1'},
+  }], [{
+    // LEVEL 1
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+    options: {id: 'option'},
+  }, {
+    // LEVEL 2
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId2',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+    options: {},
+  }], [{
+    // LEVEL 1
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: 'TestDataSourceId',
+    options: {id: 'option'},
+  }, {
+    // LEVEL 2
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldPropertyId3',
+    label: 'test field property name',
+    typeIds: ['testFieldPropertyTypeId'],
+    kind: 'scalar',
+    dataSourceId: 'TestDataSourceId',
+    options: {prop: 'option3'},
+  }]])
+  expect(query).not.toBeUndefined()
+  expect(query).toEqual(`query {
+  __typename
+  testFieldId1(id: "option") {
+    __typename
+    testFieldPropertyId1(prop: "option1")
+    testFieldPropertyId2
+    testFieldPropertyId3(prop: "option3")
+  }
+}`)
+})
+
+test('Merge trees with empty and no options', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const trees = [{
+    "token": {
+      "dataSourceId": "TestDataSourceId",
+      "fieldId": "query",
+      "kind": "object"
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "TestDataSourceId"
+        },
+        "children": []
+      }
+    ]
+  }, {
+    "token": {
+      "dataSourceId": "TestDataSourceId",
+      "fieldId": "query",
+      "kind": "object"
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "TestDataSourceId",
+          "options": {}
+        },
+        "children": []
+      }
+    ]
+  }]
+  expect(async () => dataSource.mergeTrees(...trees))
+  .not.toThrow('Cannot have options on a field without children')
+  
+  // The 2 trees are the same
+  // The 2nd tree has empty options which should be ignored
+  expect(dataSource.mergeTrees(...trees))
+  .toEqual(trees[0])
+})
+
+test('Get query with errors in options', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  expect(() => dataSource.mergeTrees({
+    "token": {
+      "dataSourceId": "TestDataSourceId",
+      "fieldId": "query",
+      "kind": "object"
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "TestDataSourceId"
+        },
+        "children": []
+      }
+    ]
+  }, {
+    "token": {
+      "dataSourceId": "TestDataSourceId",
+      "fieldId": "query",
+      "kind": "object"
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "TestDataSourceId",
+          "options": {
+            "id": "option"
+          }
+        },
+        "children": []
+      }
+    ]
+  }))
+    .toThrow()
+})
+
 
 // test('Get data', async () => {
 //   const DataSource = (await importDataSource([connect, postsId, postsDetails]))
