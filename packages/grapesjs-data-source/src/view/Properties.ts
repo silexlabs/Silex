@@ -131,7 +131,7 @@ export class Properties {
       alert('A state with this name already exists')
       return null
     }
-    const stateId = `${this.currentComponent.getId()}-${Math.random().toString(36)}`
+    const stateId = `${this.currentComponent.getId()}-${Math.random().toString(36).slice(2)}`
     const storedState: StoredState = {
       label,
       expression: [],
