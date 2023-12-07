@@ -34,7 +34,7 @@ export interface Step {
     meta?: any;
     category?: string;
 }
-export declare type FixedType = 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url';
+export type FixedType = 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url';
 export declare class StepsSelector extends LitElement {
     static styles: import("lit").CSSResult;
     getFixedValueStep(value: string): Step;

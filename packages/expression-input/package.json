@@ -50,6 +50,7 @@
     "@playwright/test": "^1.40.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
+    "@types/mocha": "^10.0.6",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "@web/dev-server": "^0.4.1",
@@ -62,8 +63,6 @@
     "prettier": "^3.1.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.6.1",
-    "rollup-plugin-summary": "^2.0.0",
-    "rollup-plugin-terser": "^7.0.2",
     "typescript": "~5.3.3"
   }
 }

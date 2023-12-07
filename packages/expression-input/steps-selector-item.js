@@ -50,6 +50,17 @@ import './popin-dialog.js';
  * ```
  */
 let StepsSelectorItem = class StepsSelectorItem extends LitElement {
+    get selectedItem() {
+        return this._selectedItem;
+    }
+    set selectedItem(value) {
+        this._selectedItem = value;
+        this.dispatchEvent(new CustomEvent('set', { detail: { value } }));
+    }
+    get values() {
+        const list = this.querySelector('slot[name="values"]');
+        return Array.from((list === null || list === void 0 ? void 0 : list.querySelectorAll('li')) || []).map(li => { var _a; return (_a = li.getAttribute('value')) !== null && _a !== void 0 ? _a : ''; });
+    }
     constructor() {
         super();
         this._selectedItem = '';
@@ -61,17 +72,6 @@ let StepsSelectorItem = class StepsSelectorItem extends LitElement {
         this.helpTextSlot = createRef();
         this.valuesPopin = createRef();
         this.optionsPopin = createRef();
-    }
-    get selectedItem() {
-        return this._selectedItem;
-    }
-    set selectedItem(value) {
-        this._selectedItem = value;
-        this.dispatchEvent(new CustomEvent('set', { detail: { value } }));
-    }
-    get values() {
-        const list = this.querySelector('slot[name="values"]');
-        return Array.from((list === null || list === void 0 ? void 0 : list.querySelectorAll('li')) || []).map(li => { var _a; return (_a = li.getAttribute('value')) !== null && _a !== void 0 ? _a : ''; });
     }
     render() {
         return html `
