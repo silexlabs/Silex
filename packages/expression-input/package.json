@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/steps-selector",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.",
   "main": "steps-selector.js",
   "module": "steps-selector.js",
