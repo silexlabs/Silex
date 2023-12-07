@@ -28,7 +28,7 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.3",
     "@jest/globals": "^29.7.0",
-    "@types/jest": "^29.5.10",
+    "@types/jest": "^29.5.11",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^8.55.0",
@@ -40,12 +40,12 @@
     "jquery": "^3.7.1",
     "node_modules-path": "^2.0.7",
     "ts-jest": "^29.1.1",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.3"
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@apollo/client": "^3.8.8",
-    "@silexlabs/steps-selector": "^0.0.7",
+    "@silexlabs/steps-selector": "^0.0.9",
     "backbone": "^1.5.0",
     "dedent-js": "^1.0.1",
     "lit": "^3.1.0"
