@@ -214,6 +214,20 @@ export const PROPERTY_STYLES = `
   .ds-section .gjs-traits-label {
     background-color: var(--ds-tertiary);
   }
+  .ds-section main {
+    display: flex;
+    flex-direction: column;
+  }
+  .ds-section select {
+    flex: 1 1 auto;
+    margin: 10px;
+    margin-top: 0;
+    padding: 4px;
+    background-color: var(--ds-tertiary);
+    border-radius: 2px;
+    color: var(--ds-secondary);
+    border: 1px solid rgba(0,0,0,.15);
+  }
   .ds-section label.ds-label {
     display: flex;
     align-items: center;

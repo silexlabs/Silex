@@ -117,6 +117,26 @@ export type Context = Token[];
  * It is used to access data from the data source
  */
 export type Expression = StoredToken[];
+/**
+ * Operators for condition in visibility property
+ */
+export declare enum UnariOperator {
+	TRUTHY = "truthy",
+	FALSY = "falsy",
+	EMPTY_ARR = "empty array",
+	NOT_EMPTY_ARR = "not empty array"
+}
+/**
+ * Operators for condition in visibility property
+ */
+export declare enum BinariOperator {
+	EQUAL = "==",
+	NOT_EQUAL = "!=",
+	GREATER_THAN = ">",
+	LESS_THAN = "<",
+	GREATER_THAN_OR_EQUAL = ">=",
+	LESS_THAN_OR_EQUAL = "<="
+}
 export type TemplateResult = any;
 /**
  * Options of the data tree
@@ -342,7 +362,7 @@ export interface Step {
 	meta?: any;
 	category?: string;
 }
-export declare type FixedType = "text" | "date" | "email" | "number" | "password" | "tel" | "time" | "url";
+export type FixedType = "text" | "date" | "email" | "number" | "password" | "tel" | "time" | "url";
 declare class StepsSelector extends LitElement {
 	static styles: import("lit").CSSResult;
 	getFixedValueStep(value: string): Step;

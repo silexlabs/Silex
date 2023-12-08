@@ -22,7 +22,7 @@ import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { StepsSelector } from "@silexlabs/steps-selector"
 import { ViewOptions } from "."
 import { DataTree } from "../model/DataTree"
-import { DataSourceEditor, StateId } from ".."
+import { BinariOperator, DataSourceEditor, StateId, UnariOperator } from ".."
 import { StoredState, getState, getStateIds, removeState, setState } from "../model/state"
 import { renderExpression, setOptionsFormStyles } from "../utils"
 import { Item, States } from "./States"
@@ -36,6 +36,7 @@ type PropsNames =
   | 'href'
   | 'alt'
   | 'condition'
+  | 'condition2'
   | '__data'
 
 interface StateItem extends Item {
@@ -55,6 +56,7 @@ export class Properties {
     ['href', createRef<StepsSelector>()],
     ['alt', createRef<StepsSelector>()],
     ['condition', createRef<StepsSelector>()],
+    ['condition2', createRef<StepsSelector>()],
     ['__data', createRef<StepsSelector>()],
   ])
 
@@ -211,7 +213,29 @@ export class Properties {
             <div class="gjs-traits-label">Visibility</div>
           </div>
           <main>
-            ${renderExpression(component, dataTree, 'condition', 'condition', false, this.propsSelectorRefs.get('condition')!, false)}
+            <!-- first expression -->
+            ${renderExpression(component, dataTree, 'condition1', '', true, this.propsSelectorRefs.get('condition')!, false)}
+            <!-- operator -->
+            <select
+              @change=${(e: Event) => {
+                const select = e.target as HTMLSelectElement
+                const value = select.value
+                if(!value) throw new Error('Selection required for operator select element')
+                component.set('conditionOperator', value)
+                this.updateUi(component, dataTree)
+              }}
+            >
+              ${ Object.values<string>(UnariOperator)
+                  .concat(Object.values(BinariOperator))
+                  .map(operator => html`
+                    <option value="${operator}" .selected=${component.get('conditionOperator') === operator} >${operator}</option>
+                  `)
+              }
+            </select>
+            <!-- second expression if binari operator -->
+            ${ component.has('conditionOperator') && Object.values(BinariOperator).includes(component.get('conditionOperator')) ? html`
+              ${renderExpression(component, dataTree, 'condition2', '', true, this.propsSelectorRefs.get('condition2')!, false)}
+            ` : '' }
           </main>
         </section>
         <section class="ds-section">
