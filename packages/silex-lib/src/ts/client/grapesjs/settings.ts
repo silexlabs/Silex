@@ -190,7 +190,10 @@ function saveSettings(editor, config, model = editor.getModel()) {
   const formData = new FormData(form)
   const data = Array.from(formData as any)
     .reduce((aggregate, [key, value]) => {
-      aggregate[key] = value
+      // Keep only the values that are set
+      if(value !== '') {
+        aggregate[key] = value
+      }
       return aggregate
     }, {}) as {[key: string]: any}
   // take the name out to the main model (by design in grapesjs pages)
