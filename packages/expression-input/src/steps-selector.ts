@@ -29,8 +29,10 @@ import './steps-selector-item.js'
  * - paste value from clipboard
  */
 
+export type StepId = string
 export interface Step {
   name: string
+  id: StepId
   icon: string
   type: string
   tags?: string[]
@@ -51,6 +53,7 @@ export class StepsSelector extends LitElement {
   public getFixedValueStep(value: string): Step {
     return {
       name: 'Fixed value',
+      id: 'fixed' as StepId,
       icon: '',
       type: 'fixed',
       options: {
@@ -249,7 +252,7 @@ export class StepsSelector extends LitElement {
                 key=${index}
                 ?no-options-editor=${!step.optionsForm}
                 ?no-info=${!step.helpText}
-                @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
+                @set=${(event: CustomEvent) => this.setStepAt(index, completion.find(s => s.id === event.detail.value))}
                 @delete=${() => this.deleteStepAt(index)}
                 @set-options=${(event: CustomEvent) => this.setOptionsAt(index, event.detail.options, event.detail.optionsForm)}
                 part="steps-selector-item"
@@ -281,7 +284,7 @@ export class StepsSelector extends LitElement {
             no-delete
             no-arrow
             no-info
-            @set=${(event: CustomEvent) => this.setStepAt(this._steps.length, nextSteps.find(step => step.name === event.detail.value))}
+            @set=${(event: CustomEvent) => this.setStepAt(this._steps.length, nextSteps.find(step => step.id === event.detail.value))}
           >
             <div name="add-button" part="add-button" slot="name">+</div>
             <div slot="values">
@@ -319,7 +322,7 @@ export class StepsSelector extends LitElement {
           <li class="values-li values__title" value=${category}>
             <span class="values__name">${unsafeHTML(category)}</span>
           </li>
-          ${steps.map(step => html`<li class=${classMap({'values-li': true, active: step.name === currentStep?.name})} value=${step.name}>
+          ${steps.map(step => html`<li class=${classMap({'values-li': true, active: step.id === currentStep?.id})} value=${step.id}>
             <span class="values__name">
               <span class="values__icon">${unsafeHTML(step.icon)}</span>
               ${unsafeHTML(step.name)}
@@ -332,7 +335,7 @@ export class StepsSelector extends LitElement {
       <ul class="values-ul">
         ${
           completion
-            .map(step => html`<li class=${classMap({'values-li': true, active: step.name === currentStep?.name})} value=${step.name}>
+            .map(step => html`<li class=${classMap({'values-li': true, active: step.id === currentStep?.id})} value=${step.id}>
               <span class="values__name">
                 <span class="values__icon">${unsafeHTML(step.icon)}</span>
                 ${unsafeHTML(step.name)}

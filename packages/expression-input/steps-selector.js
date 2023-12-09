@@ -53,6 +53,7 @@ let StepsSelector = class StepsSelector extends LitElement {
     getFixedValueStep(value) {
         return {
             name: 'Fixed value',
+            id: 'fixed',
             icon: '',
             type: 'fixed',
             options: {
@@ -187,7 +188,7 @@ let StepsSelector = class StepsSelector extends LitElement {
                 key=${index}
                 ?no-options-editor=${!step.optionsForm}
                 ?no-info=${!step.helpText}
-                @set=${(event) => this.setStepAt(index, completion.find(s => s.name === event.detail.value))}
+                @set=${(event) => this.setStepAt(index, completion.find(s => s.id === event.detail.value))}
                 @delete=${() => this.deleteStepAt(index)}
                 @set-options=${(event) => this.setOptionsAt(index, event.detail.options, event.detail.optionsForm)}
                 part="steps-selector-item"
@@ -220,7 +221,7 @@ let StepsSelector = class StepsSelector extends LitElement {
             no-delete
             no-arrow
             no-info
-            @set=${(event) => this.setStepAt(this._steps.length, nextSteps.find(step => step.name === event.detail.value))}
+            @set=${(event) => this.setStepAt(this._steps.length, nextSteps.find(step => step.id === event.detail.value))}
           >
             <div name="add-button" part="add-button" slot="name">+</div>
             <div slot="values">
@@ -257,7 +258,7 @@ let StepsSelector = class StepsSelector extends LitElement {
           <li class="values-li values__title" value=${category}>
             <span class="values__name">${unsafeHTML(category)}</span>
           </li>
-          ${steps.map(step => html `<li class=${classMap({ 'values-li': true, active: step.name === (currentStep === null || currentStep === void 0 ? void 0 : currentStep.name) })} value=${step.name}>
+          ${steps.map(step => html `<li class=${classMap({ 'values-li': true, active: step.id === (currentStep === null || currentStep === void 0 ? void 0 : currentStep.id) })} value=${step.id}>
             <span class="values__name">
               <span class="values__icon">${unsafeHTML(step.icon)}</span>
               ${unsafeHTML(step.name)}
@@ -269,7 +270,7 @@ let StepsSelector = class StepsSelector extends LitElement {
     ` : html `
       <ul class="values-ul">
         ${completion
-            .map(step => html `<li class=${classMap({ 'values-li': true, active: step.name === (currentStep === null || currentStep === void 0 ? void 0 : currentStep.name) })} value=${step.name}>
+            .map(step => html `<li class=${classMap({ 'values-li': true, active: step.id === (currentStep === null || currentStep === void 0 ? void 0 : currentStep.id) })} value=${step.id}>
               <span class="values__name">
                 <span class="values__icon">${unsafeHTML(step.icon)}</span>
                 ${unsafeHTML(step.name)}

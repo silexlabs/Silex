@@ -22,8 +22,10 @@ import './steps-selector-item.js';
  * - copy value to clipboard
  * - paste value from clipboard
  */
+export type StepId = string;
 export interface Step {
     name: string;
+    id: StepId;
     icon: string;
     type: string;
     tags?: string[];
