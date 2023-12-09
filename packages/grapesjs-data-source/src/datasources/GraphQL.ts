@@ -454,21 +454,23 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       throw new Error(`Unable to build GraphQL query: unable to merge trees: \n* ${errors.join('\n* ')}`)
     }
 
-
     const different = tree1.children
       .filter(child1 => !tree2.children.find(child2 =>
         child1.token.fieldId === child2.token.fieldId
+        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
         && sameOptions(child1.token.options, child2.token.options)
       ))
       .concat(tree2.children
         .filter(child2 => !tree1.children.find(child1 =>
           child1.token.fieldId === child2.token.fieldId
+          && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
           && sameOptions(child1.token.options, child2.token.options)
         ))
       )
     const same = tree1.children
       .filter(child1 => tree2.children.find(child2 =>
         child1.token.fieldId === child2.token.fieldId
+        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
         && sameOptions(child1.token.options, child2.token.options)
       ))
 
@@ -483,34 +485,61 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     }
   }
 
-  /**
-   * Build a GraphQL query from a tree
-   */
-  protected buildQuery(tree: Tree, indent = ''): string {
-    // Build the arguments
-    const args = tree.token.options ? `(${Object
-        .keys(tree.token.options)
-        .map(key => ({ key, value: tree.token.options![key] }))
+  protected buildArgs(options: PropertyOptions | undefined): string {
+    const args = options ? `(${Object
+        .keys(options)
+        .map(key => ({ key, value: options![key] }))
         .filter(({ value }) => !isEmpty(value))
         .map(({ key, value }) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
         .join(', ')
       })` : ''
     // Valid args for GraphQL canot be just ()
     const validArgs = args === '()' ? '' : args
+    return validArgs
+  }
+
+  /**
+   * Build a GraphQL query from a tree
+   */
+  protected buildQuery(tree: Tree, indent = '', fragment = ''): string {
+    const typeOrFragment = fragment ? `...on ${fragment}` : `${tree.token.fieldId}${this.buildArgs(tree.token.options)}`
     // Build the value
     switch(tree.token.kind) {
       case 'scalar':
-        return indent + tree.token.fieldId + validArgs
+        return indent + typeOrFragment
       case 'object':
       case 'list': {
-        // Children
-        const children = tree.children
-          .map(child => this.buildQuery(child, indent + '  '))
+        // Group children by fieldId in order to create fragments
+        const childrenByFieldId = tree.children.reduce((prev, child) => {
+          const fieldId = child.token.fieldId
+          if(!prev[fieldId]) prev[fieldId] = []
+          prev[fieldId].push(child)
+          return prev
+        }, {} as Record<string, Tree[]>)
+        // Fragments
+        const childQuery = Object.keys(childrenByFieldId)
+          .flatMap(fieldId => {
+            const children = childrenByFieldId[fieldId]
+            if(children.length === 1) {
+              // Simple case, no fragment
+              return children
+                .map(child => this.buildQuery(child, indent + '  '))
+            } else {
+              return dedent`
+                  ${indent}${fieldId} {
+                  ${children
+                    .map(child => this.buildQuery(child, indent + '  ', child.token.typeIds[0]))
+                    .join('\n')
+                  }
+                  }
+                `
+            }
+          })
           .join('\n')
-        // The query
-        return dedent`${indent}${tree.token.fieldId}${validArgs} {
+
+        return dedent`${indent}${typeOrFragment} {
         ${indent}  __typename
-        ${children}
+        ${childQuery}
         ${indent}}`
       }
       default:

@@ -258,6 +258,7 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
       }
       return {
         name: token.label,
+        id: token.label + '_' + token.typeIds.join('_'),
         icon: '',
         type: getDisplayType(token.typeIds, token.kind),
         meta: { token, type: field },
@@ -268,6 +269,7 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
     case 'filter':
       return {
         name: token.label,
+        id: token.id,
         icon: '',
         type: 'Filter',
         options: token.options,
@@ -283,6 +285,7 @@ export function toStep(dataTree: DataTree, field: Field | null, prev: Field | nu
       }
       return {
         name: getStateLabel(parent, token),
+        id: token.componentId + '_' + token.storedStateId,
         icon: '',
         type: token.forceKind ?? field?.label ?? 'Unknown',
         meta: { token, type: field },

@@ -430,11 +430,14 @@ export class DataTree {
         // Add all of their fields
         .flatMap((type: Type | null) => type?.fields ?? [])
         // To token
-        .map(
-          (field: Field): Token  => {
+        .flatMap(
+          (fieldOfField: Field): Token[]  => {
             // const t: Type | null = this.findType(field.typeIds, field.dataSourceId) 
             // if(!t) throw new Error(`Type ${field.typeIds} not found`)
-            return this.fieldToToken(field)
+            return fieldOfField.typeIds.map((typeId: TypeId) => ({
+              ...this.fieldToToken(fieldOfField),
+              typeIds: [typeId],
+            }))
           }
         ) : [])
       // Add filters

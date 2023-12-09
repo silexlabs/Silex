@@ -16,8 +16,9 @@
  */
 
 import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType, Tree } from './GraphQL'
-import {directusSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
+import { directusTestSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
 import { Expression, Field, Type } from '../types'
+import dedent from 'dedent-js'
 
 const bearerToken = process.env.BEARER ?? ''
 
@@ -72,8 +73,9 @@ class GQLTest extends GraphQL {
     return super.mergeTrees(tree1, tree2)
   }
 
-  buildQuery(tree: Tree): string {
-    return super.buildQuery(tree)
+  buildQuery(...args: any[]): string {
+    /* @ts-ignore */
+    return super.buildQuery(...args)
   }
 }
 
@@ -223,7 +225,7 @@ test('getTypes simple mocks', async () => {
 })
 
 test('getTypes directus', async () => {
-  const GraphQLDataSource = (await importDataSource([directusSchema]))
+  const GraphQLDataSource = (await importDataSource([directusTestSchema]))
   const dataSource = new GraphQLDataSource(options)
   await dataSource.connect()
   const types = await dataSource.getTypes()
@@ -318,8 +320,92 @@ test('build query from tree', () => {
   expect(query)
     .toEqual(`testFieldId {
   __typename
-testFieldPropertyId
+  testFieldPropertyId
 }`)
+})
+
+test('build query with fragments', () => {
+  const gql = new GQLTest({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  const tree: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'parentFieldId',
+      label: 'test parent name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId1'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'ONLY_TEST_TYPE_ID1',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId1'],
+          kind: 'scalar',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      }],
+    }, {
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId2'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'ONLY_TEST_TYPE_ID2',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId2'],
+          kind: 'scalar',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      }],
+    }],
+  }
+  const query = gql.buildQuery(tree)
+  expect(query)
+    .toEqual(dedent`
+    parentFieldId {
+      __typename
+    testFieldId {
+      ...on testTypeId1 {
+        __typename
+        ONLY_TEST_TYPE_ID1
+      }
+      ...on testTypeId2 {
+        __typename
+        ONLY_TEST_TYPE_ID2
+      }
+    }
+    }`)
 })
 
 test('merge trees', () => {
@@ -423,6 +509,143 @@ test('merge trees', () => {
         },
         children: [],
       }],
+    })
+})
+
+test('merge trees with multiple possible types', () => {
+  const gql = new GQLTest({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  const tree1: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'parentFieldId',
+      label: 'test parent name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId1'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'ONLY_TEST_TYPE_ID1',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId1'],
+          kind: 'scalar',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      }],
+    }],
+  }
+  const tree2: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'parentFieldId',
+      label: 'test parent name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: 'DataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId2'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'ONLY_TEST_TYPE_ID2',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId2'],
+          kind: 'scalar',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [],
+      }],
+    }],
+  }
+  expect(gql.mergeTrees(tree1, tree2))
+    .toEqual({
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'parentFieldId',
+        label: 'test parent name',
+        typeIds: ['testParentId'],
+        kind: 'object',
+        dataSourceId: 'DataSourceId',
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldId',
+          label: 'test field name',
+          typeIds: ['testTypeId1'],
+          kind: 'object',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [{
+          token: {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'ONLY_TEST_TYPE_ID1',
+            label: 'test field property name',
+            typeIds: ['testFieldPropertyTypeId1'],
+            kind: 'scalar',
+            dataSourceId: 'DataSourceId',
+          },
+          children: [],
+        }],
+      }, {
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldId',
+          label: 'test field name',
+          typeIds: ['testTypeId2'],
+          kind: 'object',
+          dataSourceId: 'DataSourceId',
+        },
+        children: [{
+          token: {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'ONLY_TEST_TYPE_ID2',
+            label: 'test field property name',
+            typeIds: ['testFieldPropertyTypeId2'],
+            kind: 'scalar',
+            dataSourceId: 'DataSourceId',
+          },
+          children: [],
+        }],
+      }]
     })
 })
 
