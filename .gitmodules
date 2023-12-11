@@ -52,6 +52,9 @@
 [submodule "packages/silex-plugin-11ty"]
 	path = packages/silex-plugin-11ty
 	url = git@github.com:silexlabs/silex-plugin-11ty.git
-[submodule "packages/steps-selector-ui"]
-	path = packages/steps-selector-ui
-	url = git@github.com:silexlabs/steps-selector-ui.git
+[submodule "packages/expression-input"]
+	path = packages/expression-input
+	url = git@github.com:silexlabs/expression-input.git
+[submodule "packages/silex-strapi-11ty"]
+	path = packages/silex-strapi-11ty
+	url = git@github.com:silexlabs/silex-strapi-11ty.git

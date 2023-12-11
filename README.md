@@ -16,7 +16,7 @@ There is no issue on this repo, please use the individual project's issues
 
 | Name | Directory | Repo | Description |
 | ---- | --------- | ---- | ----------- |
-| Steps selector | `packages/steps-selector-ui` | `git@github.com:silexlabs/steps-selector-ui.git` | A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree. |
+| Steps selector | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree. |
 | Silex | `packages/Silex` | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
 | Silex plugins | `packages/silex-plugins` | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
 | Silex Plugin Starter | `packages/silex-plugin-starter` | `git@github.com:silexlabs/silex-plugin-starter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
