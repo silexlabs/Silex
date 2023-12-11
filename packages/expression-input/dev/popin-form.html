@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;popin-form> Demo</title>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/lit/polyfill-support.js"></script>
+    <script type="module" src="../dist/popin-form.js"></script>
+    <style>
+      section {
+        border: solid 1px blue;
+        padding: 8px;
+        min-height: 300px;
+      }
+      #first {
+        width: 600px;
+      }
+    </style>
+    <script>
+      function submit3(event) {
+        event.preventDefault();
+        document.querySelector('#result3').textContent = JSON.stringify(Object.fromEntries(new FormData(event.target)), null, 2);
+      }
+    </script>
+  </head>
+  <body>
+    <section>
+      <span>This is a parent container</span>
+      <popin-form id="first">
+        <p>This is child content</p>
+      </popin-form>
+    </section>
+    <hr><hr>
+    <section style="margin: 100px;">
+      <p>This is a parent container</p>
+      <popin-form style="width: 400px;">
+        <p>This is child content <a href="#">with focusabe link</a> <button>and a button</button></p>
+      </popin-form>
+    </section>
+    <hr><hr>
+    <section>
+      <div>
+        <button onclick="document.querySelector('popin-form#popin2').removeAttribute('hidden')">Show</button>
+        <button onclick="document.querySelector('popin-form#popin2').setAttribute('hidden', true)">Hide</button>
+        <p>This is a parent container
+          <popin-form id="popin2" hidden>
+            <span>This is child content</span>
+          </popin-form>
+          with a popin in the middle
+        </p>
+      </div>
+    </section>
+    <section>
+      <p>This is a popin-form in a form</p>
+      <form onsubmit="submit3(event)">
+        <popin-form id="popin3" name="popin3">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" placeholder="Your name" required>
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="Your email" required>
+          <label for="message">Message</label>
+          <textarea id="message" name="message" placeholder="Your message" required></textarea>
+        </popin-form>
+        <output id="result3"></output>
+        <button type="submit">Send</button>
+      </form>
+    </section>
+  </body>
+</html>

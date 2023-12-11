@@ -1,6 +1,5 @@
-import { css } from 'lit'
-
-export const inputChainStyles = css`
+import { css } from 'lit';
+export const inputChainStyles = css `
   ::part(header) {
     display: flex;
     flex-direction: row;
@@ -124,9 +123,8 @@ export const inputChainStyles = css`
     font-style: var(--steps-selector-placeholder-font-style, italic);
     margin: var(--steps-selector-placeholder-margin, 10px 0);
   }
-`
-
-export const stepsSelectorItemStyles = css`
+`;
+export const stepsSelectorItemStyles = css `
   :host {
     display: inline-flex;
     flex-direction: column;
@@ -200,9 +198,8 @@ export const stepsSelectorItemStyles = css`
     float: right;
     padding: var(--steps-selector-item-arrow-padding, 5px);
   }
-`
-
-export const popinStyles = css`
+`;
+export const popinStyles = css `
   :host {
     display: inline-block;
     position: fixed;
@@ -291,4 +288,5 @@ export const popinStyles = css`
   ::slotted([slot="body"]) * {
     background: red !important;
   }
-`
+`;
+//# sourceMappingURL=styles.js.map

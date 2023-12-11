@@ -1,4 +1,4 @@
-# Steps selector
+# Expression Input component and familly
 
 A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data as a tree.
 
@@ -6,7 +6,15 @@ It implements the same API as HTML inputs and can be used in a form.
 
 > This is part of a bigger project: [Silex no-code website builder](https://www.silex.me)
 
-## The UI
+This feature is made of these components
+
+* [x] `<popin-overlay>` behaves like a popin, disapears when it loses the focus
+* [x] `<popin-form>` extends the `<popin-overlay>` component, behaves both like a form and like an input for a parent form
+* [ ] `<custom-select>` can replace native `<select>` in the `<input-chain>` component, with label, options and help buttons
+* [ ] `<custom-option>` a custom version of the `option` tag for use with the `<custom-select>` component
+* [ ] `<custom-optgroup>` a custom version of the `optgroup` tag for use with the `<custom-select>` component
+* [ ] `<input-chain>` behaves like a select input with multi-selection but looks like a chain of `<select>` inputs
+* [x] `<expression-input>` extends `<input-chain>` and handles fixed values UI
 
 Use cases
 
@@ -52,22 +60,22 @@ SelectorItem
 Install the npm package in your project
 
 ```shell
-$ npm install --save @silexlabs/steps-selector
+$ npm install --save @silexlabs/expression-input
 ```
 
-Include the library with ESNext `import "steps-selector"` or directly in the HTML with `<script src="/path/to/steps-selector.js"></script>`
+Include the library with ESNext `import "@silexlabs/expression-input"` or directly in the HTML with `<script src="/path/to/expression-input.js"></script>`
 
 Use in your HTML as a web component:
 
 ```html
 <html><body>
-  <steps-selector name="form-data-name" onload="initStepSelector(event.target)"></steps-selector>
-  <steps-selector name="form-data-name" onload="initStepSelector(event.target)">
+  <expression-input name="form-data-name" onload="initStepSelector(event.target)"></expression-input>
+  <expression-input name="form-data-name" onload="initStepSelector(event.target)">
     Label
-  </steps-selector>
+  </expression-input>
 ```
 
-The `steps-selector` component has these events:
+The `expression-input` component has these events:
 - load
 - change
 

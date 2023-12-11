@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;expression-input&gt; Demo</title>
+    <script src="../node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../node_modules/lit/polyfill-support.js"></script>
+    <script type="module" src="../dist/expression-input.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #eee;
+        margin: 0;
+      }
+      .container {
+        max-width: 400px;
+        min-height: 100vh;
+        box-sizing: border-box;
+        margin: 0 0 0 auto;
+        padding: 10px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <section class="container">
+      <expression-input
+        id="inputChain1"
+        name="inputChain1"
+        group-by-category
+        fixed=""
+        >
+        <span slot="label">Test label</span>
+        <input value="test value" />
+      </expression-input>
+      <hr />
+      <expression-input
+        id="inputChain2"
+        name="inputChain2"
+        onchange="event => console.log('onchange', event)"
+        >
+        <select>
+          <option value="">+</option>
+          <option value="Blog Post" selected>Blog Post</option>
+          <option value="Page">Page</option>
+          <option value="Settings">Settings</option>
+          <option value="User">User</option>
+          <option value="Where">Where</option>
+          <option value="Upcase">Upcase</option>
+          <option value="Truncate">Truncate</option>
+          <option value="Current">Current</option>
+          <option value="Category">Category</option>
+          <option value="Tag">Tag</option>
+          <option value="Menu">Menu</option>
+          <option value="MenuItem">MenuItem</option>
+          <option value="Comment">Comment</option>
+          <option value="Asset">Asset</option>
+          <option value="Append">Append</option>
+          <option value="Prepend">Prepend</option>
+          <option value="Replace">Replace</option>
+          <option value="Split">Split</option>
+          <option value="Join">Join</option>
+          <option value="Sort">Sort</option>
+          <option value="Map">Map</option>
+        </select>
+        <select>
+          <option value="">+</option>
+          <option value="title">Title</option>
+          <option value="content">Content</option>
+          <option value="seo" selected>SEO</option>
+        </select>
+        <select>
+          <option value="">+</option>
+          <option value="title">Title</option>
+          <option value="content">Content</option>
+        </select>
+      </expression-input>
+    </section>
+    <script>
+      const inputChain = document.querySelector('expression-input#inputChain2');
+      console.log(inputChain, inputChain.name, inputChain.options);
+      inputChain.addEventListener('change', event => console.log('addEventListener("change")', event.target.options.filter(o => o.selected).map(o => o.value)))
+    </script>
+  </body>
+</html>
+

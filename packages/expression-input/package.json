@@ -1,14 +1,14 @@
 {
-  "name": "@silexlabs/steps-selector",
+  "name": "@silexlabs/expression-input",
   "version": "0.0.10",
   "description": "A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.",
-  "main": "steps-selector.js",
-  "module": "steps-selector.js",
+  "main": "dist/steps-selector.js",
+  "module": "dist/steps-selector.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "clean": "rimraf steps-selector.{d.ts,d.ts.map,js,js.map} test/steps-selector.{d.ts,d.ts.map,js,js.map} test/steps-selector.{d.ts,d.ts.map,js,js.map}",
+    "clean": "rimraf dist/steps-selector.{d.ts,d.ts.map,js,js.map} dist/test/steps-selector.{d.ts,d.ts.map,js,js.map} dist/test/steps-selector.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:lit-analyzer": "lit-analyzer --rules.no-incompatible-property-type=off --rules.no-missing-import=off --rules.no-unknown-attribute=off",
@@ -29,7 +29,7 @@
     "test:watch": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ wtr --watch",
     "test:prod": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ MODE=prod wtr",
     "test:prod:watch": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ MODE=prod wtr --watch",
-    "checksize": "rollup -c ; cat steps-selector.bundled.js | gzip -9 | wc -c ; rm steps-selector.bundled.js"
+    "checksize": "rollup -c ; cat dist/steps-selector.bundled.js | gzip -9 | wc -c ; rm dist/steps-selector.bundled.js"
   },
   "keywords": [
     "web-components",
