@@ -49,7 +49,7 @@
     "packages/silex-plugin-starter",
     "packages/silex-plugins",
     "packages/Silex",
-    "packages/steps-selector-ui"
+    "packages/expression-input"
   ],
   "devDependencies": {
     "cloc": "^1.98.0-cloc",
