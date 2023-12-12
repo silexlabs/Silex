@@ -12,7 +12,7 @@ export const inputChainStyles = css `
     justify-content: space-between;
   }
   .dirty {
-    color: var(--steps-selector-dirty-color, red);
+    color: var(--expression-input-dirty-color, red);
     cursor: pointer;
   }
   ::part(dirty-icon) {
@@ -32,9 +32,9 @@ export const inputChainStyles = css `
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid var(--steps-selector-dirty-border-color, #ccc);
-    background-color: var(--steps-selector-dirty-background-color, #ccc);
-    border-radius: var(--steps-selector-dirty-border-radius, 3px);
+    border: 1px solid var(--expression-input-dirty-border-color, #ccc);
+    background-color: var(--expression-input-dirty-background-color, #ccc);
+    border-radius: var(--expression-input-dirty-border-radius, 3px);
     padding: 3px;
   }
   ul[slot="tags"] {
@@ -48,17 +48,17 @@ export const inputChainStyles = css `
   }
   .steps-container__separator::after {
     content: "▶";
-    color: var(--steps-selector-separator-color, #333);
-    font-size: var(--steps-selector-separator-font-size, 1.5em);
-    margin: var(--steps-selector-separator-margin, 0);
-    padding: var(--steps-selector-separator-padding, 0);
+    color: var(--expression-input-separator-color, #333);
+    font-size: var(--expression-input-separator-font-size, 1.5em);
+    margin: var(--expression-input-separator-margin, 0);
+    padding: var(--expression-input-separator-padding, 0);
   }
   /* selector between fixed value (text input) and steps */
   .fixed-selector span {
     padding: 3px;
   }
   .fixed-selector span:not(.active):hover {
-    color: var(--steps-selector-dirty-color, #0091ff);
+    color: var(--expression-input-dirty-color, #0091ff);
   }
   .fixed-selector span:not(.active) {
     cursor: pointer;
@@ -67,23 +67,23 @@ export const inputChainStyles = css `
     margin-left: 5px;
   }
   .fixed-selector span.active {
-    border-radius: var(--steps-selector-active-border-radius, 3px);
-    background-color: var(--steps-selector-active-background-color, #eee);
-    color: var(--steps-selector-active-color, #333);
+    border-radius: var(--expression-input-active-border-radius, 3px);
+    background-color: var(--expression-input-active-background-color, #eee);
+    color: var(--expression-input-active-color, #333);
     cursor: default;
   }
   ul.values-ul {
     list-style: none;
-    padding: var(--steps-selector-values-ul-padding, 0);
-    margin: var(--steps-selector-values-ul-margin, 0);
-    color: var(--steps-selector-values-ul-color, #000);
-    background-color: var(--steps-selector-values-ul-background-color, transparent);
+    padding: var(--expression-input-values-ul-padding, 0);
+    margin: var(--expression-input-values-ul-margin, 0);
+    color: var(--expression-input-values-ul-color, #000);
+    background-color: var(--expression-input-values-ul-background-color, transparent);
   }
   li.values-li {
-    padding: var(--steps-selector-values-li-padding, 5px);
-    margin: var(--steps-selector-values-li-margin, 0);
-    background-color: var(--steps-selector-values-li-background-color, transparent);
-    border-bottom: var(--steps-selector-values-li-border, 1px solid #ccc);
+    padding: var(--expression-input-values-li-padding, 5px);
+    margin: var(--expression-input-values-li-margin, 0);
+    background-color: var(--expression-input-values-li-background-color, transparent);
+    border-bottom: var(--expression-input-values-li-border, 1px solid #ccc);
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -92,36 +92,36 @@ export const inputChainStyles = css `
     border-bottom: none;
   }
   li.values-li:hover {
-    background-color: var(--steps-selector-values-li-hover-background-color, #eee);
+    background-color: var(--expression-input-values-li-hover-background-color, #eee);
   }
   li.values-li.active {
-    background-color: var(--steps-selector-values-li-active-background-color, #ccc);
-    font-weight: var(--steps-selector-values-li-active-font-weight, bold);
+    background-color: var(--expression-input-values-li-active-background-color, #ccc);
+    font-weight: var(--expression-input-values-li-active-font-weight, bold);
   }
   li.values-li.values__title {
     /* Display this line as an array title */
-    color: var(--steps-selector-values-li-title-color, #333);
-    background-color: var(--steps-selector-values-li-background-color, #eee);
-    text-transform: var(--steps-selector-values-li-title-text-transform, uppercase);
+    color: var(--expression-input-values-li-title-color, #333);
+    background-color: var(--expression-input-values-li-background-color, #eee);
+    text-transform: var(--expression-input-values-li-title-text-transform, uppercase);
     cursor: default;
   }
   li.values-li.values__title .values__name {
-    margin: var(--steps-selector-values-li-title-margin, auto);
+    margin: var(--expression-input-values-li-title-margin, auto);
   }
   li.values-li .values__icon {
-    margin-right: var(--steps-selector-values-li-icon-margin-right, 5px);
+    margin-right: var(--expression-input-values-li-icon-margin-right, 5px);
   }
   li.values-li .values__name {
-    margin-right: var(--steps-selector-values-li-name-margin-right, 25px);
+    margin-right: var(--expression-input-values-li-name-margin-right, 25px);
   }
   li.values-li .values__type {
-    color: var(--steps-selector-values-li-type-color, #999);
+    color: var(--expression-input-values-li-type-color, #999);
     width: max-content;
   }
   .placeholder > * {
-    color: var(--steps-selector-placeholder-color, #999);
-    font-style: var(--steps-selector-placeholder-font-style, italic);
-    margin: var(--steps-selector-placeholder-margin, 10px 0);
+    color: var(--expression-input-placeholder-color, #999);
+    font-style: var(--expression-input-placeholder-font-style, italic);
+    margin: var(--expression-input-placeholder-margin, 10px 0);
   }
 `;
 export const stepsSelectorItemStyles = css `
@@ -150,19 +150,19 @@ export const stepsSelectorItemStyles = css `
     background-color: transparent;
   }
   :host .svg-icon {
-    border: var(--steps-selector-item-button-border, none);
+    border: var(--expression-input-item-button-border, none);
     cursor: pointer;
-    margin: var(--steps-selector-item-button-margin, 3px);
-    padding: var(--steps-selector-item-button-padding, 3px);
-    border-radius: var(--steps-selector-item-button-border-radius, 50%);
-    width: var(--steps-selector-item-button-width, 20px);
-    height: var(--steps-selector-item-button-height, 20px);
-    background-color: var(--steps-selector-item-button-background-color, transparent);
+    margin: var(--expression-input-item-button-margin, 3px);
+    padding: var(--expression-input-item-button-padding, 3px);
+    border-radius: var(--expression-input-item-button-border-radius, 50%);
+    width: var(--expression-input-item-button-width, 20px);
+    height: var(--expression-input-item-button-height, 20px);
+    background-color: var(--expression-input-item-button-background-color, transparent);
   }
   /* button svg path white and size 10px
   */
   :host .svg-icon svg path {
-    fill: var(--steps-selector-item-button-color, #333);
+    fill: var(--expression-input-item-button-color, #333);
   }
   /*
   :host popin-form {
@@ -184,21 +184,21 @@ export const stepsSelectorItemStyles = css `
     flex-shrink: 0;
   }
   ::slotted([slot="name"]) {
-    font-weight: var(--steps-selector-item-name-font-weight, bold);
-    font-size: var(--steps-selector-item-name-font-size, 1rem);
-    padding: var(--steps-selector-item-name-padding, 5px);
+    font-weight: var(--expression-input-item-name-font-weight, bold);
+    font-size: var(--expression-input-item-name-font-size, 1rem);
+    padding: var(--expression-input-item-name-padding, 5px);
   }
   ::slotted([slot="type"]), ::slotted([slot="type"]) {
-    font-weight: var(--steps-selector-item-type-font-weight, normal);
-    font-size: var(--steps-selector-item-type-font-size, 0.8rem);
-    padding: var(--steps-selector-item-type-padding, 5px);
+    font-weight: var(--expression-input-item-type-font-weight, normal);
+    font-size: var(--expression-input-item-type-font-size, 0.8rem);
+    padding: var(--expression-input-item-type-padding, 5px);
   }
   .with-arrow::after {
     content: "▼";
     float: right;
-    padding: var(--steps-selector-item-arrow-padding, 5px);
+    padding: var(--expression-input-item-arrow-padding, 5px);
   }
-`;
+`
 export const popinStyles = css `
   :host {
     display: inline-block;

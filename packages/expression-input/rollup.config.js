@@ -10,9 +10,9 @@ import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 
 export default {
-  input: 'steps-selector.js',
+  input: 'expression-input.js',
   output: {
-    file: 'steps-selector.bundled.js',
+    file: 'expression-input.bundled.js',
     format: 'esm',
   },
   onwarn(warning) {

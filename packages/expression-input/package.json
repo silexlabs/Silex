@@ -1,14 +1,14 @@
 {
   "name": "@silexlabs/expression-input",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.",
-  "main": "dist/steps-selector.js",
-  "module": "dist/steps-selector.js",
+  "main": "dist/expression-input.js",
+  "module": "dist/expression-input.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "clean": "rimraf dist/steps-selector.{d.ts,d.ts.map,js,js.map} dist/test/steps-selector.{d.ts,d.ts.map,js,js.map} dist/test/steps-selector.{d.ts,d.ts.map,js,js.map}",
+    "clean": "rimraf dist/expression-input.{d.ts,d.ts.map,js,js.map} dist/test/expression-input.{d.ts,d.ts.map,js,js.map} dist/test/expression-input.{d.ts,d.ts.map,js,js.map}",
     "lint": "npm run lint:lit-analyzer && npm run lint:eslint",
     "lint:eslint": "eslint 'src/**/*.ts'",
     "lint:lit-analyzer": "lit-analyzer --rules.no-incompatible-property-type=off --rules.no-missing-import=off --rules.no-unknown-attribute=off",
@@ -17,7 +17,7 @@
     "docs:clean": "rimraf docs",
     "docs:gen": "eleventy --config=.eleventy.cjs",
     "docs:gen:watch": "eleventy --config=.eleventy.cjs --watch",
-    "docs:build": "rollup -c --file docs/steps-selector.bundled.js",
+    "docs:build": "rollup -c --file docs/expression-input.bundled.js",
     "docs:assets": "cp node_modules/prismjs/themes/prism-okaidia.css docs/",
     "docs:serve": "wds --root-dir=docs --node-resolve --watch",
     "analyze": "cem analyze --litelement --globs \"src/**/*.ts\"",
@@ -29,7 +29,7 @@
     "test:watch": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ wtr --watch",
     "test:prod": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ MODE=prod wtr",
     "test:prod:watch": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ MODE=prod wtr --watch",
-    "checksize": "rollup -c ; cat dist/steps-selector.bundled.js | gzip -9 | wc -c ; rm dist/steps-selector.bundled.js"
+    "checksize": "rollup -c ; cat dist/expression-input.bundled.js | gzip -9 | wc -c ; rm dist/expression-input.bundled.js"
   },
   "keywords": [
     "web-components",
