@@ -20,8 +20,11 @@ import { DataSourceEditor } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
-import './properties-editor'
+import { CustomStatesEditor } from './custom-states-editor'
+
 import '@silexlabs/expression-input/dist/popin-form.js'
+import './properties-editor'
+import './custom-states-editor'
 
 /**
  * 
@@ -46,6 +49,11 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
 
     // Add the web components
     wrapper.innerHTML = `
+      <custom-states-editor>
+        <style>
+          ${options.styles}
+        </style>
+      </custom-states-editor>
       <properties-editor>
         <style>
           ${options.styles}
@@ -73,7 +81,12 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
 
       // Get references to the web components
       const propertiesUi = wrapper.querySelector('properties-editor') as PropertiesEditor
+      const statesUi = wrapper.querySelector('custom-states-editor') as CustomStatesEditor
+
+      // Init web components
       propertiesUi.setEditor(editor)
+      statesUi.setEditor(editor)
+
 
       // Show the UI when the button is clicked
       if (options.button) {
@@ -87,11 +100,13 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
             wrapper.style.display = 'block'
             // Change web components state
             propertiesUi.removeAttribute('disabled')
+            statesUi.removeAttribute('disabled')
           } else {
             // Hide the UI
             wrapper.style.display = 'none'
             // Change web components state
             propertiesUi.setAttribute('disabled', '')
+            statesUi.setAttribute('disabled', '')
           }
         })
         wrapper.style.display = button.active ? 'block' : 'none'
