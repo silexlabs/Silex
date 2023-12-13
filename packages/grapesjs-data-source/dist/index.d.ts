@@ -375,6 +375,19 @@ export declare function setState(component: Component, id: StateId, state: Store
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
 /**
+ * Create a "fixed" token
+ * It is a hard coded content with which you can start an expression
+ */
+export declare const FIXED_TOKEN_ID = "fixed";
+export declare function getFixedToken(value: string): Token;
+export declare function toString(token: Token): string;
+export declare function toId(token: Token): string;
+export declare function fromString(editor: DataSourceEditor, id: string): Token;
+export declare function equals(a: Token, b: Token): boolean;
+export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
+export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
+export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
+/**
  * Add the DataSourceManager to the GrapesJs editor
  */
 export interface DataSourceEditor extends Editor {

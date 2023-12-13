@@ -28,6 +28,7 @@ export * from './model/state'
 export * from './model/DataTree'
 export * from './model/DataSourceManager'
 export * from './types'
+export * from './utils'
 
 /**
  * Add the DataSourceManager to the GrapesJs editor
