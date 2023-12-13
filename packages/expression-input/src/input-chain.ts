@@ -78,7 +78,6 @@ export class InputChain extends LitElement {
    */
   @property({type: Array})
   get options(): HTMLOptionElement[] {
-    console.log('get options', this.querySelectorAll(':scope > select option, :scope > select custom-option'), this.querySelectorAll('select option'))
     return Array.from(this.querySelectorAll(':scope > select option, :scope > select custom-option'))
   }
 
@@ -133,11 +132,9 @@ export class InputChain extends LitElement {
    * Reset the steps after the change
    */
   private onChange(event: Event) {
-    console.log('input-chain change', event.target)
     const target = event.target as HTMLSelectElement
     const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select')) as HTMLSelectElement[]
     if(!children.includes(target)) {
-      console.log('input-chain change not in children', target, children)
       return
     }
     this.changeAt(children.indexOf(target))

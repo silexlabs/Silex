@@ -90,7 +90,7 @@ export class PopinForm extends PopinOverlay {
     return this._form
   }
 
-  get value() {
+  get value(): Record<string, unknown> {
     return Object.fromEntries(this.formData.entries())
   }
 
@@ -142,13 +142,7 @@ export class PopinForm extends PopinOverlay {
    */
   private inputs: HTMLInputElement[] = []
   private slotChanged() {
-    this.inputs = Array.from(this.querySelectorAll('input, select, textarea'))
-    this.inputs.forEach(input => {
-      if(input.name) {
-        input.setAttribute('data-name', input.name)
-        input.name = ''
-      }
-    })
+    this.inputs = Array.from(this.querySelectorAll('input, select, textarea, [data-is-input]'))
   }
 
   /**
@@ -167,7 +161,7 @@ export class PopinForm extends PopinOverlay {
     event.stopImmediatePropagation()
     this.formData = new FormData()
     for(const input of this.inputs) {
-      this.formData.set(input.getAttribute('data-name')!, input.value)
+      this.formData.set(input.getAttribute('name')!, input.value)
     }
     this.close()
     this.dispatchEvent(new Event('change'))

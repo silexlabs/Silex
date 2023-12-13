@@ -138,13 +138,7 @@ let PopinForm = class PopinForm extends PopinOverlay {
         super.disconnectedCallback();
     }
     slotChanged() {
-        this.inputs = Array.from(this.querySelectorAll('input, select, textarea'));
-        this.inputs.forEach(input => {
-            if (input.name) {
-                input.setAttribute('data-name', input.name);
-                input.name = '';
-            }
-        });
+        this.inputs = Array.from(this.querySelectorAll('input, select, textarea, [data-is-input]'));
     }
     /**
      * Handle formdata event to add the current value to the form
@@ -161,7 +155,7 @@ let PopinForm = class PopinForm extends PopinOverlay {
         event.stopImmediatePropagation();
         this.formData = new FormData();
         for (const input of this.inputs) {
-            this.formData.set(input.getAttribute('data-name'), input.value);
+            this.formData.set(input.getAttribute('name'), input.value);
         }
         this.close();
         this.dispatchEvent(new Event('change'));

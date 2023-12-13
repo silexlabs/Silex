@@ -84,7 +84,11 @@ export class PopinOverlay extends LitElement {
     setTimeout(() => {
       // Check if the focus is still inside the dialog
       const focusedElement = this.getActiveElementRecursive()
-      const popin = focusedElement?.closest(this.tagName)
+      let popin = focusedElement as Node | ShadowRoot | null
+      while(popin && popin !== this) {
+        /* @ts-ignore */
+        popin = popin.parentNode || popin.host
+      }
       if(popin !== this) {
         // Hide the dialog
         this.close()
