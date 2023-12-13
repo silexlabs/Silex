@@ -115,7 +115,6 @@ export class StateEditor extends LitElement {
   }
 
   rerender() {
-    console.log('rerender', this.data)
     this._data = this.data
     this.requestUpdate()
   }
@@ -254,7 +253,6 @@ export class StateEditor extends LitElement {
       case 'property':
       case 'filter':
         if(token.optionsForm) {
-          console.log('render options', fields, token.options)
           const form = token.optionsForm(fields[fields.length - 1], token.options || {})
           return form || ''
         }
