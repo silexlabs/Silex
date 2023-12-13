@@ -59,13 +59,22 @@ export class PopinOverlay extends LitElement {
     this.addEventListener('keydown', this.keydown_)
     // Attach elements on window
     window.addEventListener('resize', this.resized_)
+    window.addEventListener('blur', this.blured_)
   }
 
   override disconnectedCallback() {
     window.removeEventListener('resize', this.resized_)
+    window.removeEventListener('blur', this.blured_)
     this.removeEventListener('blur', this.blured_)
     this.removeEventListener('keydown', this.keydown_)
     super.disconnectedCallback()
+  }
+
+  private getActiveElementRecursive(element: Element | null = document.activeElement): Element | null {
+    if (element?.shadowRoot) {
+      return this.getActiveElementRecursive(element.shadowRoot.activeElement as HTMLElement)
+    }
+    return element
   }
 
   private blured() {
@@ -74,7 +83,7 @@ export class PopinOverlay extends LitElement {
     // Give the time to the click event to be processed
     setTimeout(() => {
       // Check if the focus is still inside the dialog
-      const focusedElement = document.activeElement
+      const focusedElement = this.getActiveElementRecursive()
       const popin = focusedElement?.closest(this.tagName)
       if(popin !== this) {
         // Hide the dialog
@@ -82,7 +91,7 @@ export class PopinOverlay extends LitElement {
       } else {
         // Focus the dialog again so that this function
         // will be called again when the user click outside
-        this.focus()
+        //this.focus()
       }
     })
   }

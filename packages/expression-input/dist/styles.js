@@ -6,14 +6,32 @@ export const inputChainStyles = css `
     justify-content: space-between;
     align-items: center;
   }
+  .fixed .hide-when-fixed,
+  :not(.fixed) .show-when-fixed {
+    visibility: hidden;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    display: none;
+  }
   label {
     width: 100%;
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    font-size: var(--input-chain-label-font-size, 1rem);
   }
   .dirty {
     color: var(--expression-input-dirty-color, red);
     cursor: pointer;
+  }
+  ::part(fixed) {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: auto;
+    width: 100%;
   }
   ::part(dirty-icon) {
     display: inline-block;
@@ -55,7 +73,8 @@ export const inputChainStyles = css `
   }
   /* selector between fixed value (text input) and steps */
   .fixed-selector span {
-    padding: 3px;
+    padding: 4px 4px 2px 4px;
+    font-size: small;
   }
   .fixed-selector span:not(.active):hover {
     color: var(--expression-input-dirty-color, #0091ff);
@@ -198,7 +217,7 @@ export const stepsSelectorItemStyles = css `
     float: right;
     padding: var(--expression-input-item-arrow-padding, 5px);
   }
-`
+`;
 export const popinStyles = css `
   :host {
     display: inline-block;

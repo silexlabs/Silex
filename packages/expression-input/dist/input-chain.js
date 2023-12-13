@@ -55,7 +55,7 @@ let InputChain = class InputChain extends LitElement {
          * Handle formdata event to add the current value to the form
          */
         this._form = null;
-        this.onChanged_ = this.onChanged.bind(this);
+        this.onChange_ = this.onChange.bind(this);
         /**
          * Handle formdata event to add the current value to the form
          */
@@ -86,7 +86,8 @@ let InputChain = class InputChain extends LitElement {
      * @readonly
      */
     get options() {
-        return Array.from(this.querySelectorAll('option, custom-option'));
+        console.log('get options', this.querySelectorAll(':scope > select option, :scope > select custom-option'), this.querySelectorAll('select option'));
+        return Array.from(this.querySelectorAll(':scope > select option, :scope > select custom-option'));
     }
     /**
      * Render the component
@@ -109,10 +110,10 @@ let InputChain = class InputChain extends LitElement {
             this.form = this.closest('form');
         }
         // Listen to slots changes
-        this.shadowRoot.addEventListener('change', this.onChanged_);
+        this.shadowRoot.addEventListener('change', this.onChange_);
     }
     disconnectedCallback() {
-        this.removeEventListener('change', this.onChanged_);
+        this.removeEventListener('change', this.onChange_);
         this.form = null;
         super.disconnectedCallback();
     }
@@ -120,12 +121,15 @@ let InputChain = class InputChain extends LitElement {
      * The data changed
      * Reset the steps after the change
      */
-    onChanged(event) {
+    onChange(event) {
+        console.log('input-chain change', event.target);
         const target = event.target;
-        if (target.parentElement !== this) {
-            throw new Error('Changed element is not a child of input-chain');
+        const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
+        if (!children.includes(target)) {
+            console.log('input-chain change not in children', target, children);
+            return;
         }
-        this.changeAt(Array.from(this.children).indexOf(target));
+        this.changeAt(children.indexOf(target));
         // Dispatch our own event
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -136,11 +140,11 @@ let InputChain = class InputChain extends LitElement {
      * Reset the steps after the given index
      */
     changeAt(idx) {
-        const children = Array.from(this.children);
+        const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
         const target = idx >= 0 ? children[idx] : null;
-        const next = (target === null || target === void 0 ? void 0 : target.value) ? target.nextElementSibling : target || children[0];
+        const next = (target === null || target === void 0 ? void 0 : target.value) ? children[idx + 1] : target || children[0];
+        const nextIndex = (target === null || target === void 0 ? void 0 : target.value) ? idx + 1 : idx;
         if (next) {
-            const nextIndex = children.indexOf(next);
             // Remove all elements after next
             children.slice(nextIndex + 1)
                 .forEach(child => child.remove());

@@ -90,10 +90,14 @@ export class PopinForm extends PopinOverlay {
     return this._form
   }
 
+  get value() {
+    return Object.fromEntries(this.formData.entries())
+  }
+
   override render() {
     super.render() // For placement
     return html`
-    <form @submit=${this.submit}>
+    <form @submit=${this.submit} @change=${this.change}>
       <header>
         <slot class="header" name="header"></slot>
       </header>
@@ -102,8 +106,8 @@ export class PopinForm extends PopinOverlay {
       </main>
       <footer>
         <slot class="footer" name="footer">
-          <button type="submit">Apply</button>
           <button type="button" class="secondary" @click=${this.close}>Cancel</button>
+          <button type="submit">Apply</button>
         </slot>
       </footer>
     </form>
@@ -138,7 +142,6 @@ export class PopinForm extends PopinOverlay {
    */
   private inputs: HTMLInputElement[] = []
   private slotChanged() {
-    console.log('slot changed')
     this.inputs = Array.from(this.querySelectorAll('input, select, textarea'))
     this.inputs.forEach(input => {
       if(input.name) {
@@ -161,11 +164,21 @@ export class PopinForm extends PopinOverlay {
 
   private submit(event: Event) {
     event.preventDefault()
+    event.stopImmediatePropagation()
     this.formData = new FormData()
     for(const input of this.inputs) {
       this.formData.set(input.getAttribute('data-name')!, input.value)
     }
     this.close()
+    this.dispatchEvent(new Event('change'))
+  }
+
+  private change(event: Event) {
+    const me = (event.target as HTMLFormElement).closest(this.tagName)
+    if(me === this) {
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
   }
 }
 

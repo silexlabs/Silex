@@ -40,7 +40,7 @@ let ExpressionInput = class ExpressionInput extends InputChain {
         //initialValue: string[] = []
         //initialContent: Node[] = []
         this.allowFixed = true;
-        this.fixed = false;
+        this._fixed = false;
         this.placeholder = 'Enter a fixed value or switch to expression';
     }
     /**
@@ -50,19 +50,28 @@ let ExpressionInput = class ExpressionInput extends InputChain {
     get dirty() {
         var _a, _b;
         //return JSON.stringify(this.value) !== JSON.stringify(this.initialValue)
-        console.log(this.options.filter(o => o.selected));
-        return !!this.options
+        return this.fixed ? !!((_b = (_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.length) : !!this.options
             .filter(o => o.selected && !!o.value)
-            .length || !!((_b = (_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.length);
+            .length;
     }
     /**
      * Value is the concatenation of all options' values
      * @readonly
      */
     get value() {
-        return this.options
-            .filter(o => o.selected)
-            .map(o => o.value);
+        var _a;
+        return this.fixed ? [(_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value]
+            .filter(v => !!v)
+            : this.options
+                .filter(o => o.selected)
+                .map(o => o.value);
+    }
+    get fixed() {
+        return this._fixed;
+    }
+    set fixed(value) {
+        this._fixed = value;
+        this.dispatchEvent(new Event('fixedChange'));
     }
     connectedCallback() {
         super.connectedCallback();
@@ -76,8 +85,8 @@ let ExpressionInput = class ExpressionInput extends InputChain {
       <!-- header -->
       <header part="header" class="header">
         <label>
-          <slot name="label"></slot>
           <div class=${classMap({ dirty: this.dirty, 'property-name': true })} part="property-name">
+            <slot name="label"></slot>
             ${this.dirty ? html `
               <slot name="dirty-icon" part="dirty-icon" class="dirty-icon" @click=${this.reset}>
                 <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
@@ -100,8 +109,9 @@ let ExpressionInput = class ExpressionInput extends InputChain {
           ` : html ``}
         </label>
       </header>
-      <div part="property-container" class="property-container">
-        <slot>${this.options.length ? '' : this.placeholder}</slot>
+      <div part="property-container" class=${classMap({ 'property-container': true, fixed: this.fixed })}>
+        <slot class="hide-when-fixed">${this.options.length ? '' : this.placeholder}</slot>
+        <slot name="fixed" part="fixed" class="show-when-fixed"></slot>
       </div>
     `;
     }
@@ -118,7 +128,6 @@ let ExpressionInput = class ExpressionInput extends InputChain {
     //  event.preventDefault()
     //  event.stopImmediatePropagation()
     //  const value = (event.target as HTMLInputElement).value
-    //  console.log('fixedValueChanged', value)
     //  // Remove all options but the first
     //  const options = this.options
     //  options
@@ -166,6 +175,7 @@ let ExpressionInput = class ExpressionInput extends InputChain {
         else {
             this.changeAt(-1);
         }
+        this.dispatchEvent(new Event('change'));
         this.requestUpdate();
     }
     getFixedInput() {
@@ -177,7 +187,7 @@ __decorate([
 ], ExpressionInput.prototype, "allowFixed", void 0);
 __decorate([
     property({ type: Boolean, attribute: 'fixed', reflect: true })
-], ExpressionInput.prototype, "fixed", void 0);
+], ExpressionInput.prototype, "_fixed", void 0);
 __decorate([
     property()
 ], ExpressionInput.prototype, "placeholder", void 0);

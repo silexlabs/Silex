@@ -54,7 +54,7 @@ export declare class InputChain extends LitElement {
      * @readonly
      */
     get options(): HTMLOptionElement[];
-    private onChanged_;
+    private onChange_;
     /**
      * Handle formdata event to add the current value to the form
      */
@@ -69,7 +69,7 @@ export declare class InputChain extends LitElement {
      * The data changed
      * Reset the steps after the change
      */
-    private onChanged;
+    private onChange;
     /**
      * Reset the steps after the given index
      */

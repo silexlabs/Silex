@@ -37,7 +37,9 @@ export declare class ExpressionInput extends InputChain {
      * Initial value to be set to track changes
      */
     allowFixed: boolean;
-    fixed: boolean;
+    _fixed: boolean;
+    get fixed(): boolean;
+    set fixed(value: boolean);
     placeholder: string;
     connectedCallback(): void;
     /**

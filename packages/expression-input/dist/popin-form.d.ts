@@ -69,6 +69,9 @@ export declare class PopinForm extends PopinOverlay {
     protected _form: HTMLFormElement | null;
     set form(newForm: HTMLFormElement | null);
     get form(): HTMLFormElement | null;
+    get value(): {
+        [k: string]: FormDataEntryValue;
+    };
     render(): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     disconnectedCallback(): void;
@@ -82,6 +85,7 @@ export declare class PopinForm extends PopinOverlay {
      */
     private onFormdata;
     private submit;
+    private change;
 }
 declare global {
     interface HTMLElementTagNameMap {
