@@ -36,7 +36,6 @@ export default function(editor: DataSourceEditor): Filter[] {
         type: 'String',
       },
       optionsForm: (field, options) => html`
-        <form>
           <label for="type">Type</label>
           <small class="form-text text-muted">The type to cast to</small>
           <select class="form-control" id="type" name="type">
@@ -46,7 +45,6 @@ export default function(editor: DataSourceEditor): Filter[] {
             <input type="reset" value="Cancel"/>
             <input type="submit" value="Apply" />
           </div>
-        </form>
       `,
     },
   ]

@@ -17,12 +17,9 @@
 
 import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, Property, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId, StoredToken } from '../types'
-import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
+import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId, getPersistantId } from './state'
 import { DataSourceEditor } from '..'
-
-// FIXME: Workaround to avoid import of lit-html which breakes unit tests
-type TemplateResult = any
-const html = (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => ({ strings, values })
+import { TemplateResult, html } from 'lit'
 
 /**
  * Options of the data tree
@@ -137,17 +134,11 @@ export class DataTree {
   optionsToOptionsForm(arr: {name: string, value: unknown}[]): (input: Field | null, options: Options) => TemplateResult {
     return (input: Field | null, options: Options) => {
       return html`
-            <form>
               ${arr.map((obj) => {
         const value = options[obj.name] ?? obj.value ?? ''
         return html`<label>${obj.name}</label><input type="text" name=${obj.name} value=${value}>`
       })
         }
-              <div class="buttons">
-                <input type="reset" value="Cancel">
-                <input type="submit" value="Apply">
-              </div>
-            </form>
           `
     }
   }

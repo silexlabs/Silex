@@ -291,7 +291,9 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     }
     if(this.validKind(ofKind.kind)) return ofKind.kind
     if(ofKind.ofType) return this.ofKindToKind(ofKind.ofType)
-    console.error('Unable to find a valid kind (2)', ofKind)
+    // This happens when the type is missing
+    // Remove the warning because it happens with directus and polutes the logs
+    // console.error('Unable to find a valid kind (2)', ofKind)
     return null
   }
 

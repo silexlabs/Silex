@@ -15,21 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { optionsFormButtons, convertKind, optionsFormStateSelector, getFieldType, optionsFormKeySelector } from "../utils"
 import { Field, Filter } from "../types"
 import { DataSourceEditor } from ".."
-import { StepsSelector } from "@silexlabs/steps-selector"
-import { Ref, createRef } from "lit/directives/ref.js"
-import { Component } from "grapesjs"
 import { html } from "lit"
-
-const refs = new Map<Component, Map<string, Ref<StepsSelector>>>()
-function getRef(component: Component, id: string): Ref<StepsSelector> {
-  if(!refs.has(component)) refs.set(component, new Map())
-  const componentRefs = refs.get(component) as Map<string, Ref<StepsSelector>>
-  if(!componentRefs.has(id)) componentRefs.set(id, createRef<StepsSelector>())
-  return componentRefs.get(id) as Ref<StepsSelector>
-}
+import { convertKind, getFieldType } from "../utils"
 
 export default function(editor: DataSourceEditor): Filter[] {
   return [
@@ -52,12 +41,12 @@ export default function(editor: DataSourceEditor): Filter[] {
         state: '',
       },
       optionsForm: (input: Field | null, options) => html`
-      <form>
         <label>Suffix (select a custom state)
-          ${ optionsFormStateSelector(editor, options, 'state', getRef(editor.getSelected()!, 'strip_html-state'), 'text') }
+          <expression-input
+            name="append-value"
+          >
+          </expression-input>
         </label>
-        ${ optionsFormButtons() }
-      </form>
       `
     }, {
       type: 'filter',
@@ -74,15 +63,18 @@ export default function(editor: DataSourceEditor): Filter[] {
         value: '',
       },
       optionsForm: (input: Field | null, options) => html`
-      <form>
         <label>Key to filter on
-          ${ optionsFormKeySelector(editor, input, options, 'key') }
+          <expression-input
+            name="key"
+          >
+          </expression-input>
         </label>
         <label>Value to match (select a custom state)
-          ${ optionsFormStateSelector(editor, options, 'value', getRef(editor.getSelected()!, 'where-state'), 'text') }
+          <expression-input
+            name="value"
+          >
+          </expression-input>
         </label>
-        ${ optionsFormButtons() }
-      </form>
     `,
     }, {
       type: 'filter',
@@ -111,12 +103,9 @@ export default function(editor: DataSourceEditor): Filter[] {
         separator: ',',
       },
       optionsForm: () => html`
-      <form>
         <label>Separator
           <input type="text" name="separator" placeholder="Separator"/>
         </label>
-        ${ optionsFormButtons() }
-      </form>
     `,
     }, {
       type: 'filter',
@@ -129,12 +118,9 @@ export default function(editor: DataSourceEditor): Filter[] {
         separator: ',',
       },
       optionsForm: () => html`
-      <form>
         <label>Separator
           <input type="text" name="separator" placeholder="Separator"/>
         </label>
-        ${ optionsFormButtons() }
-      </form>
     `,
     }, {
       type: 'filter',
@@ -147,12 +133,12 @@ export default function(editor: DataSourceEditor): Filter[] {
         key: '',
       },
       optionsForm: (input: Field | null, options) => html`
-        <form>
           <label>Key
-            ${ optionsFormKeySelector(editor, input, options, 'key') }
+            <expression-input
+              name="key"
+            >
+            </expression-input>
           </label>
-          ${ optionsFormButtons() }
-        </form>
       `,
     }, {
       type: 'filter',
@@ -186,12 +172,9 @@ export default function(editor: DataSourceEditor): Filter[] {
         index: 0,
       },
       optionsForm: () => html`
-      <form>
         <label>Index
           <input type="number" name="index" placeholder="Index"/>
         </label>
-        ${ optionsFormButtons() }
-      </form>
     `,
     }
   ]

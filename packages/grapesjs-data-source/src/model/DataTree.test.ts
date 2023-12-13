@@ -34,6 +34,12 @@ jest.mock('./state', () => ({
   getParentByPersistentId: jest.fn(),
 }))
 
+// FIXME: Workaround to avoid import of lit-html which breakes unit tests
+jest.mock('lit', () => ({
+  html: jest.fn(),
+  render: jest.fn(),
+}))
+
 const simpleTypes: Type[] = [{
   id: 'testTypeId',
   label: 'test type name',

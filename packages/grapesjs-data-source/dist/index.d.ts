@@ -1,7 +1,6 @@
 import Backbone from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
-import { LitElement, TemplateResult } from 'lit';
-import { Ref } from 'lit/directives/ref.js';
+import { TemplateResult } from 'lit';
 
 export type PageId = string;
 export interface Query {
@@ -137,7 +136,6 @@ export declare enum BinariOperator {
 	GREATER_THAN_OR_EQUAL = ">=",
 	LESS_THAN_OR_EQUAL = "<="
 }
-export type TemplateResult = any;
 /**
  * Options of the data tree
  * They can be set on the instance too
@@ -329,115 +327,6 @@ export interface ViewOptions {
 	optionsStyles?: string;
 }
 /**
- * @element steps-selector
- * Web component to select a sequence of steps
- *
- * It has these events:
- * - load
- * - change
- *
- * It has these properties:
- * - steps
- * - dirty
- *
- * It has these slots:
- * - placeholder
- * - dirty-icon
- *
- * User actions:
- * - add a next step at the end of the selection
- * - reset to default value
- * - copy value to clipboard
- * - paste value from clipboard
- */
-export interface Step {
-	name: string;
-	icon: string;
-	type: string;
-	tags?: string[];
-	helpText?: string;
-	errorText?: string;
-	options?: any;
-	optionsForm?: TemplateResult | string | null;
-	meta?: any;
-	category?: string;
-}
-export type FixedType = "text" | "date" | "email" | "number" | "password" | "tel" | "time" | "url";
-declare class StepsSelector extends LitElement {
-	static styles: import("lit").CSSResult;
-	getFixedValueStep(value: string): Step;
-	get dirty(): boolean;
-	protected __steps: Step[];
-	get steps(): Step[];
-	set steps(value: Step[]);
-	protected get _steps(): Step[];
-	protected set _steps(value: Step[]);
-	protected initialValue: Step[];
-	completion: (steps: Step[]) => Step[];
-	allowFixed: boolean;
-	inputType: FixedType;
-	fixed: boolean;
-	placeholder: string;
-	fixedPlaceholder: string;
-	maxSteps: number | undefined;
-	groupByCategory: boolean;
-	/**
-	 * Form id
-	 * This is the same API as input elements
-	 */
-	for: string;
-	/**
-	 * Name of the property
-	 * This is the same API as input elements
-	 */
-	name: string;
-	/**
-	 * Value setter/getter
-	 * This will parse the value as JSON and set the steps
-	 * This is the same API as input elements
-	 */
-	get value(): string;
-	set value(newValue: string);
-	/**
-	 * Form setter
-	 * Handle formdata event to add the current value to the form
-	 */
-	protected _form: HTMLFormElement | null;
-	set form(newForm: HTMLFormElement | null);
-	get form(): HTMLFormElement | null;
-	/**
-	 * Handle formdata event to add the current value to the form
-	 */
-	protected onFormdata: (event: FormDataEvent) => void;
-	/**
-	 * Render the component
-	 */
-	render(): TemplateResult<1>;
-	group(completion: Step[]): Map<string, Step[]>;
-	renderValues(completion: Step[], completionMap: Map<string, Step[]>, currentStep?: Step): TemplateResult<1>;
-	connectedCallback(): void;
-	disconnectedCallback(): void;
-	isFixedValue(): boolean;
-	fixedValueChanged(value: string): void;
-	/**
-	 * Set the step at the given index
-	 */
-	setStepAt(at: number, step: Step | undefined): void;
-	setOptionsAt(at: number, options: unknown, optionsForm: TemplateResult): void;
-	/**
-	 * Delete the step at the given index and all the following steps
-	 */
-	deleteStepAt(at: number): void;
-	/**
-	 * Reset dirty flag and store the current value as initial value
-	 */
-	save(): void;
-	/**
-	 * Reset dirty flag and restore the initial value
-	 */
-	reset(): void;
-}
-/**
  * Override the prefix of state names
  */
 export declare const COMPONENT_NAME_PREFIX = "nameForDataSource";
@@ -485,56 +374,6 @@ export declare function setState(component: Component, id: StateId, state: Store
  * Remove a state
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
-export declare function setOptionsFormStyles(styles: string): void;
-/**
- * Create a "fixed" token
- * It is a hard coded content with which you can start an expression
- */
-export declare const FIXED_TOKEN_ID = "fixed";
-export declare function getFixedToken(value: string | number | boolean, typeId: TypeId, inputType?: FixedType): Token;
-/**
- * Set the completion function of a steps selector
- */
-export declare function setCompletion(dataTree: DataTree, component: Component, stepsSelector: StepsSelector): void;
-/**
- * Handle the change event of a steps selector
- */
-export declare function chagedStepsSelector(component: Component, name: string, label: string, stepsSelector: StepsSelector, exposed: boolean): void;
-/**
- * Convert an expression to steps
- * This will resolve the types of filters
- */
-export declare function toSteps(dataTree: DataTree, expression: Expression, component: Component): Step[];
-/**
- * Render an expression with the steps-selector web component
- */
-export declare function renderExpression(component: Component, dataTree: DataTree, stateId: StateId, label: string, allowFixed: boolean, reference: Ref<StepsSelector>, exposed: boolean, inputType?: FixedType, maxSteps?: number): TemplateResult<1>;
-/**
- * Render an option of a filter with the steps-selector web component
- * Takes an expression of tokens and calls onChange with the updated expression
- */
-export declare function renderOption(opts: {
-	component: Component;
-	dataTree: DataTree;
-	expression: Expression;
-	name: string;
-	label: string;
-	allowFixed: boolean;
-	reference: Ref<StepsSelector>;
-	maxSteps?: number;
-	inputType?: FixedType;
-}): TemplateResult;
-/**
- * Convert a token to a step
- * This will resolve the types of filters
- * @param field can be null, this happens when token is a filter with output resolving to null
- */
-export declare function toStep(dataTree: DataTree, field: Field | null, prev: Field | null, token: Token, component: Component): Step;
-export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
-export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
-export declare function optionsFormButtons(): TemplateResult;
-export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
-export declare function optionsFormStateSelector(editor: DataSourceEditor, options: Options, name: string, reference: Ref<StepsSelector>, label?: string): TemplateResult;
 /**
  * Add the DataSourceManager to the GrapesJs editor
  */

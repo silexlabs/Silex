@@ -18,7 +18,10 @@
 import { Button } from 'grapesjs'
 import { DataSourceEditor } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
-import { Properties } from './Properties'
+
+import { PropertiesEditor } from './properties-editor'
+import './properties-editor'
+import '@silexlabs/expression-input/dist/popin-form.js'
 
 /**
  * 
@@ -40,10 +43,15 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
     // create a wrapper for our UI
     const wrapper = document.createElement('section')
     wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
-    const propertiesUi = new Properties(editor, options, wrapper)
 
-    // Data tree
-    const dataTree = editor.DataSourceManager.getDataTree()
+    // Add the web components
+    wrapper.innerHTML = `
+      <properties-editor>
+        <style>
+          ${options.styles}
+        </style>
+      </properties-editor>
+    `
 
     // The options appendTo and button can be functions which use editor so they need to be called asynchronously
     let appendTo: HTMLElement
@@ -63,6 +71,10 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
       if (!appendTo) throw new Error(`Element ${options.appendTo} not found`)
       appendTo.appendChild(wrapper)
 
+      // Get references to the web components
+      const propertiesUi = wrapper.querySelector('properties-editor') as PropertiesEditor
+      propertiesUi.setEditor(editor)
+
       // Show the UI when the button is clicked
       if (options.button) {
         const button = typeof options.button === 'function' ? options.button() : options.button
@@ -73,24 +85,18 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
             appendTo.appendChild(wrapper)
             // Show the UI
             wrapper.style.display = 'block'
+            // Change web components state
+            propertiesUi.removeAttribute('disabled')
           } else {
             // Hide the UI
             wrapper.style.display = 'none'
+            // Change web components state
+            propertiesUi.setAttribute('disabled', '')
           }
         })
         wrapper.style.display = button.active ? 'block' : 'none'
       }
     })
-
-    // Update the UI when a page is added/renamed/removed
-    editor.on('page', () => propertiesUi.updateUi(editor.getSelected(), dataTree))
-
-    // Update the UI on component selection change
-    editor.on('component:selected', () => propertiesUi.updateUi(editor.getSelected(), dataTree))
-
-    // Update the UI on component change
-    editor.on('component:update', () => propertiesUi.updateUi(editor.getSelected(), dataTree))
-
   } else {
     console.warn('Dynamic data UI not enabled, please set the appendTo option to enable it')
   }

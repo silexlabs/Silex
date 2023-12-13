@@ -64,30 +64,30 @@ export const PROPERTY_STYLES = `
     --ds-button-bg: rgba(255,255,255,.15);
     --ds-button-border: rgba(255,255,255,.15);
 
-    --steps-selector-dirty-background-color: rgba(0,0,0,.2);
-    --steps-selector-dirty-border-color: rgba(0,0,0,.2);
-    --steps-selector-dirty-color: #d278c9;
-    --steps-selector-active-color: #ddd;
-    --steps-selector-active-background-color: rgba(255,255,255,.15);
+    --expression-input-dirty-background-color: rgba(0,0,0,.2);
+    --expression-input-dirty-border-color: rgba(0,0,0,.2);
+    --expression-input-dirty-color: #d278c9;
+    --expression-input-active-color: #ddd;
+    --expression-input-active-background-color: rgba(255,255,255,.15);
     --popin-dialog-background: var(--ds-secondary);
     --popin-dialog-color: var(--ds-tertiary);
     --popin-dialog-header-background: transparent;
     --popin-dialog-body-background: transparent;
     --popin-dialog-footer-background: transparent;
-    --steps-selector-placeholder-margin: 0 10px;
-    --steps-selector-item-button-margin: 0;
-    --steps-selector-item-button-padding: 2px;
-    --steps-selector-item-button-border-radius: 50%;
-    --steps-selector-item-button-width: 20px;
-    --steps-selector-item-button-height: 20px;
-    --steps-selector-item-button-background-color: transparent;
-    --steps-selector-item-button-color: var(--ds-button-color);
-    --steps-selector-separator-color: var(--ds-button-color);
-    --steps-selector-separator-font-size: 0.7em;
-    --steps-selector-separator-margin: 0;
-    --steps-selector-separator-padding: 0 3px 0 1px;
-    --steps-selector-item-arrow-padding: 5px 5px 0 5px;
-    --steps-selector-values-li-icon-margin-right: 0;
+    --expression-input-placeholder-margin: 0 10px;
+    --expression-input-item-button-margin: 0;
+    --expression-input-item-button-padding: 2px;
+    --expression-input-item-button-border-radius: 50%;
+    --expression-input-item-button-width: 20px;
+    --expression-input-item-button-height: 20px;
+    --expression-input-item-button-background-color: transparent;
+    --expression-input-item-button-color: var(--ds-button-color);
+    --expression-input-separator-color: var(--ds-button-color);
+    --expression-input-separator-font-size: 0.7em;
+    --expression-input-separator-margin: 0;
+    --expression-input-separator-padding: 0 3px 0 1px;
+    --expression-input-item-arrow-padding: 5px 5px 0 5px;
+    --expression-input-values-li-icon-margin-right: 0;
     /*
     --popin-dialog-header-color: #333;
     --popin-dialog-body-color: #666;
@@ -99,15 +99,15 @@ export const PROPERTY_STYLES = `
     --popin-dialog-footer-padding: 0;
     */
   }
-  steps-selector {
+  expression-input {
     padding: 10px;
     display: block;
   }
-  steps-selector::part(separator__delete) {
+  expression-input::part(separator__delete) {
     border-right: 1px solid var(--ds-button-border);
     height: 20px;
   }
-  steps-selector::part(add-button) {
+  expression-input::part(add-button) {
     background-color: rgba(255,255,255,.15);
     border-radius: 2px;
     padding: 3px;
@@ -118,47 +118,42 @@ export const PROPERTY_STYLES = `
     box-sizing: border-box;
     cursor: pointer;
   }
-  .test {
-    display: flex;
-    align-items: center;
-    background: red !important;
-  }
-  steps-selector::part(delete-button) {
+  expression-input::part(delete-button) {
     margin: 0;
     padding: 0;
     display: flex;
     justify-content: center;
     color: var(--ds-button);
   }
-  steps-selector::part(header) {
+  expression-input::part(header) {
     border: none;
   }
-  steps-selector::part(type) {
+  expression-input::part(type) {
     padding-bottom: 0;
     padding-top: 4px;
     display: none;
   }
-  steps-selector::part(name) {
+  expression-input::part(name) {
     font-weight: normal;
     padding-bottom: 0;
     padding-top: 0;
     padding-left: 5px;
   }
-  steps-selector::part(property-input) {
+  expression-input::part(property-input) {
     padding: 4px;
     border: medium;
     flex: 1 1 auto;
     background-color: transparent;
     color: var(--ds-secondary);
   }
-  steps-selector::part(property-container) {
+  expression-input::part(property-container) {
     background-color: rgba(0,0,0,.2);
     border-radius: 2px;
     box-sizing: border-box;
     padding: 5px;
     margin: 5px 0;
   }
-  steps-selector::part(scroll-container) {
+  expression-input::part(scroll-container) {
     overflow: auto;
     box-sizing: border-box;
 
@@ -166,7 +161,7 @@ export const PROPERTY_STYLES = `
     box-shadow: inset 0 0 5px 0 rgba(0,0,0,.2);
 
   }
-  steps-selector::part(steps-container) {
+  expression-input::part(steps-container) {
     display: flex;
     align-items: center;
     background-color: rgba(0,0,0,.2);
@@ -177,24 +172,22 @@ export const PROPERTY_STYLES = `
     min-width: 100%;
     box-sizing: border-box;
   }
-  steps-selector::part(dirty-icon) {
+  expression-input::part(dirty-icon) {
     cursor: pointer;
     margin: 0 10px;
     color: var(--ds-highlight);
   }
-  steps-selector::part(dirty-icon) {
+  expression-input::part(dirty-icon) {
     color: var(--ds-highlight);
     vertical-align: bottom;
     display: inline-flex;
     margin: 0;
   }
-  steps-selector::part(steps-selector-item) {
+  expression-input::part(expression-input-item) {
     border: 1px solid rgba(0,0,0,.15);
     background-color: rgba(255,255,255,.15);
     border-radius: 2px;
     margin-right: 5px;
-  }
-  steps-selector::part(steps-selector-item__add) {
   }
   .ds-section details {
     margin: 10px;
@@ -218,15 +211,45 @@ export const PROPERTY_STYLES = `
     display: flex;
     flex-direction: column;
   }
+  .ds-slot-fixed {
+    width: 100%;
+  }
   .ds-section select {
-    flex: 1 1 auto;
-    margin: 10px;
-    margin-top: 0;
-    padding: 4px;
+    width: 150px;
+    flex: 0;
+    margin: 5px;
+    padding: 5px;
     background-color: var(--ds-tertiary);
     border-radius: 2px;
     color: var(--ds-secondary);
     border: 1px solid rgba(0,0,0,.15);
+    cursor: pointer;
+  }
+  .ds-section input.ds-expression-input__fixed {
+    color: var(--ds-secondary);
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    width: 100%;
+  }
+  .ds-section .ds-expression-input__add {
+    max-width: 40px;
+    text-align: center;
+    font-size: large;
+    padding-right: 9px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-indent: 1px;
+    text-overflow: '';
+  }
+  .ds-section .ds-expression-input__options-button {
+    background-color: transparent;
+    border: none;
+    color: var(--ds-secondary);
+    cursor: pointer;
+    padding: 0;
+    margin: 10px;
+    margin-left: 0;
   }
   .ds-section label.ds-label {
     display: flex;

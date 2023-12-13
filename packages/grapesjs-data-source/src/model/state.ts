@@ -119,6 +119,7 @@ export function getStateVariableName(componentId: string, stateId: StateId): str
  */
 export function getState(component: Component, id: StateId, exported: boolean = true): StoredState {
   const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) ?? {}
+  console.log('getState', component.cid, id, exported, states[id])
   return states[id]
 }
 
@@ -126,6 +127,7 @@ export function getState(component: Component, id: StateId, exported: boolean = 
  * Set a state
  */
 export function setState(component: Component, id: StateId, state: StoredState, exported: boolean = true): void {
+  console.log('setState', component.cid, id, state, exported)
   const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
   component.set(key, {
     ...component.get(key) ?? {},
