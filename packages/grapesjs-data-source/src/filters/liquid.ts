@@ -15,10 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Field, Filter } from "../types"
+import { Field, Filter, Options } from "../types"
 import { DataSourceEditor } from ".."
 import { html } from "lit"
+import { ref } from "lit/directives/ref.js"
 import { convertKind, getFieldType } from "../utils"
+import { StateEditor } from "../view/state-editor"
 
 export default function(editor: DataSourceEditor): Filter[] {
   return [
@@ -40,14 +42,18 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         state: '',
       },
-      optionsForm: (input: Field | null, options) => html`
-        <label>Suffix (select a custom state)
-          <expression-input
-            name="append-value"
-          >
-          </expression-input>
-        </label>
-      `
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          name="value"
+          data-is-input
+          no-filters
+          value=${options.value || '[]'}
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+          @change=${({target}: {target: StateEditor}) => target.rerender()}
+        >
+          <label slot="label">Suffix</label>
+        </state-editor>
+      `,
     }, {
       type: 'filter',
       id: 'where',
@@ -62,19 +68,27 @@ export default function(editor: DataSourceEditor): Filter[] {
         key: '',
         value: '',
       },
-      optionsForm: (input: Field | null, options) => html`
-        <label>Key to filter on
-          <expression-input
-            name="key"
-          >
-          </expression-input>
-        </label>
-        <label>Value to match (select a custom state)
-          <expression-input
-            name="value"
-          >
-          </expression-input>
-        </label>
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          no-filters
+          data-is-input
+          value=${options.key || []}
+          name="key"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+          @change=${({target}: {target: StateEditor}) => target.rerender()}
+        >
+          <label slot="label">Key to filter on</label>
+        </state-editor>
+        <state-editor
+          no-filters
+          data-is-input
+          value=${options.value || []}
+          name="value"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+          @change=${({target}: {target: StateEditor}) => target.rerender()}
+        >
+          <label slot="label">Value to match</label>
+        </state-editor>
     `,
     }, {
       type: 'filter',
@@ -102,9 +116,57 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
-      optionsForm: () => html`
+      optionsForm: (field: Field | null, options: Options) => html`
+          <state-editor
+            no-filters
+            data-is-input
+            value=${options.key || []}
+            name="key"
+            ${ref(el => el && (el as StateEditor).setEditor(editor))}
+            @change=${({target}: {target: StateEditor}) => target.rerender()}
+          >
+            <label slot="label">Key to filter on</label>
+          </state-editor>
+          <state-editor
+            no-filters
+            data-is-input
+            value=${options.value || []}
+            name="value"
+            ${ref(el => el && (el as StateEditor).setEditor(editor))}
+            @change=${({target}: {target: StateEditor}) => target.rerender()}
+          >
+            <label slot="label">Value to match</label>
+          </state-editor>
+    `,
+    }, {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: (field: Field | null) => convertKind(field, 'list', 'object'),
+      apply: (arr) => (arr as unknown[])[0],
+      options: {},
+    }, {
+      type: 'filter',
+      id: 'last',
+      label: 'last',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: (field: Field | null) => convertKind(field, 'list', 'object'),
+      apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
+      options: {},
+    }, {
+      type: 'filter',
+      id: 'join',
+      label: 'join',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'list',
+      output: (field: Field | null) => convertKind(field, 'list', 'scalar'),
+      apply: (arr, options) => (arr as string[]).join(options.separator as string ?? ','),
+      options: {
+        separator: ',',
+      },
+      optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
-          <input type="text" name="separator" placeholder="Separator"/>
+          <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
         </label>
     `,
     }, {
@@ -117,9 +179,9 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
-      optionsForm: () => html`
+      optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
-          <input type="text" name="separator" placeholder="Separator"/>
+          <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
         </label>
     `,
     }, {
@@ -132,13 +194,17 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         key: '',
       },
-      optionsForm: (input: Field | null, options) => html`
-          <label>Key
-            <expression-input
-              name="key"
-            >
-            </expression-input>
-          </label>
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          no-filters
+          data-is-input
+          value=${options.key || []}
+            name="key"
+            ${ref(el => el && (el as StateEditor).setEditor(editor))}
+            @change=${({target}: {target: StateEditor}) => target.rerender()}
+          >
+          <label slot="label">Key</label>
+        </state-editor>
       `,
     }, {
       type: 'filter',
@@ -171,9 +237,9 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         index: 0,
       },
-      optionsForm: () => html`
+      optionsForm: (field: Field | null, options: Options) => html`
         <label>Index
-          <input type="number" name="index" placeholder="Index"/>
+          <input type="number" name="index" placeholder="Index" value=${options.index}/>
         </label>
     `,
     }

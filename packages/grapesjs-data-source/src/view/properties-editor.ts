@@ -15,34 +15,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {LitElement, TemplateResult, html} from 'lit'
-import {customElement, property} from 'lit/decorators.js'
-import { OPTIONS_STYLES, PROPERTY_STYLES } from './defaultStyles'
-import { DataSourceEditor, DataTree, Filter, Property, Token, getState, setState } from '..'
+import {LitElement, html} from 'lit'
+import { ref } from 'lit/directives/ref.js'
+import {customElement, property, query} from 'lit/decorators.js'
+import { DataSourceEditor, DataTree, Token, getState, setState } from '..'
 
-import '@silexlabs/expression-input'
-import { createRef, ref } from 'lit/directives/ref.js'
-import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, toString } from '../utils'
-import { ExpressionInput } from '@silexlabs/expression-input'
+import './state-editor'
+import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
-import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
 
-declare global {
-  interface Window { silex: any }
+enum PropsNames {
+  innerHTML = 'innerHTML',
+  title = 'title',
+  className = 'className',
+  style = 'style',
+  src = 'src',
+  href = 'href',
+  alt = 'alt',
+  condition = 'condition',
+  condition2 = 'condition2',
+  __data = '__data',
 }
-
-type PropsNames = 
-  'innerHTML'
-  | 'title'
-  | 'className'
-  | 'style'
-  | 'src'
-  | 'href'
-  | 'alt'
-  | 'condition'
-  | 'condition2'
-  | '__data'
 
 /**
  * Editor for selected element's properties
@@ -62,16 +55,17 @@ export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
   disabled = false
 
+  @query('state-editor#innerHTML')
+  innerHTMLInput: StateEditor | undefined
+
   private editor: DataSourceEditor | null = null
   private redrawing = false
 
-  constructor() {
-    super()
-  }
-
   setEditor(editor: DataSourceEditor) {
-    if (this.editor) throw new Error('editor already set')
-
+    if (this.editor) {
+      console.warn('property-editor setEditor already set')
+      return
+    }
     this.editor = editor
 
     // Update the UI when a page is added/renamed/removed
@@ -89,9 +83,6 @@ export class PropertiesEditor extends LitElement {
     this.redrawing = true
     const selected = this.editor?.getSelected()
     const head = html`
-      <style>
-        ${PROPERTY_STYLES}
-      </style>
       <slot></slot>
       <section class="ds-section">
         <div>
@@ -108,106 +99,36 @@ export class PropertiesEditor extends LitElement {
       ${head}
       <p class="ds-empty">Select an element to edit its properties</p>
     `
-    if(!this.editor || this.disabled) {
-      this.redrawing = false
+    if(!this.editor) {
+    this.redrawing = false
       return html``
     }
     if(!selected || selected.get('tagName') === 'body') {
-      this.redrawing = false
+    this.redrawing = false
       return empty
     }
-    const dataTree = this.editor.DataSourceManager.getDataTree()
-    const innerHTMLRef = createRef<ExpressionInput>()
-    const innerHTML = this.getTokens(dataTree, selected, 'innerHTML', false)
-    //const title = this.getTokens(dataTree, selected, 'title')
-    //const className = this.getTokens(dataTree, selected, 'className')
-    //const style = this.getTokens(dataTree, selected, 'style')
-    //const src = this.getTokens(dataTree, selected, 'src')
-    //const href = this.getTokens(dataTree, selected, 'href')
-    //const alt = this.getTokens(dataTree, selected, 'alt')
-    //const conditionOperator = selected.get('conditionOperator') || 'truthy'
-    //const condition = this.getTokens(dataTree, selected, 'condition')
-    //const condition2 = this.getTokens(dataTree, selected, 'condition2')
-    //const __data = this.getTokens(dataTree, selected, '__data', true)
-
-    const fixed = innerHTML?.length === 1 && innerHTML[0].type === 'property' && innerHTML[0].fieldId === FIXED_TOKEN_ID
-    const text = fixed ? (innerHTML![0] as Property).options?.value || '' : ''
-    const result = html`
+    const result =  html`
       ${head}
       <section class="ds-section">
         <div>
           <div class="gjs-traits-label">Properties</div>
         </div>
         <main>
-            <expression-input
-              ${ref(innerHTMLRef)}
-              @change=${() => this.onChange(selected, innerHTMLRef.value!, 'innerHTML', false)}
-              .fixed=${fixed}
+            <state-editor
+              id="innerHTML"
+              name=${PropsNames.innerHTML}
+              ${ref(el => {
+                if (el) {
+                  const stateEditor = el as StateEditor
+                  stateEditor.setEditor(this.editor!)
+                  stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, PropsNames.innerHTML, false)
+                }
+              })}
+              @change=${() => this.onChange(selected, this.innerHTMLInput!, PropsNames.innerHTML, false)}
+              .disabled=${this.disabled}
             >
               <label slot="label">Content</label>
-              <div slot="fixed" class="ds-slot-fixed">
-                <input
-                  type="text"
-                  class="ds-expression-input__fixed"
-                  placeholder="Enter a text or switch to expression mode"
-                  value=${text}
-                  />
-              </div>
-              ${ innerHTML && innerHTML.length > 0 ? html`
-                ${ innerHTML?.map((token: Token, idx: number) => {
-                  const partialExpression = innerHTML.slice(0, idx)
-                  const popinRef = createRef<PopinForm>()
-                  const optionsForm = this.getOptions(selected, innerHTML, idx)
-                  return html`
-                    <select>
-                      <option value="">-</option>
-                      ${ dataTree
-                      .getCompletion(selected, partialExpression)
-                        .map(partialToken => {
-                          return html`
-                            <option value="${toString(partialToken)}" .selected=${equals(partialToken, token)}>${partialToken.label}</option>
-                          `
-                        })
-                      }
-                    </select>
-                    <button
-                      class="ds-expression-input__options-button"
-                      style=${styleMap({ display: optionsForm === '' ? 'none' : '' })}
-                      @click=${() => {
-                        popinRef.value?.removeAttribute('hidden')
-                      }}
-                    >...</button>
-                    <popin-form
-                      ${ref(popinRef)}
-                      hidden
-                      name=${`innerHTML_options_${idx}`}
-                      @change=${() => this.setChangeOptions(selected, innerHTMLRef.value!, 'innerHTML', false, popinRef.value!, idx)}
-                    >
-                      <style>
-                        ${OPTIONS_STYLES}
-                      </style>
-                      ${optionsForm}
-                    </popin-form>
-                    `
-                  })
-                }
-              ` : '' }
-              <select
-                class="ds-expression-input__add"
-                ${ref(el => el && ((el as HTMLSelectElement).value = ''))}
-              >
-                <option value="" selected>+</option>
-                ${ dataTree
-                    .getCompletion(selected, innerHTML || [])
-                      .map(partialToken => {
-                        return html`
-                          <option value="${toString(partialToken)}">${partialToken.label}</option>
-                        `
-                      })
-                  }
-                }
-              </select>
-            </expression-input>
+            </state-editor>
         </main>
       </section>
       <section class="ds-section">
@@ -228,63 +149,16 @@ export class PropertiesEditor extends LitElement {
     this.redrawing = false
     return result
   }
-
-  getTokens(dataTree: DataTree, component: Component, key: PropsNames, isPublic = false): Token[] | null {
-    const state = getState(component, key, isPublic)
-    if(!state || !state.expression) return null
+  onChange(component: Component, stateEditor: StateEditor, name: PropsNames, publicState: boolean) {
+    if(this.redrawing) return
+    setState(component, name, {
+      expression: stateEditor.data
+    }, publicState)
+  }
+  getTokens(dataTree: DataTree, component: Component, name: PropsNames, publicState: boolean): Token[] {
+    const state = getState(component, name, publicState)
+    if(!state || !state.expression) return []
     return state.expression.map(token => dataTree.fromStored(token))
-  }
-
-  onChange(component: Component, input: ExpressionInput, key: string, isPublic: boolean) {
-    if(this.redrawing) return
-    if(input.fixed) {
-      setState(component, key, {
-        expression: [getFixedToken(input.value[0] || '')],
-      }, isPublic)
-    } else {
-      const ids = input.value
-      setState(component, key, {
-        expression: ids
-          .filter(id => !!id)
-          .map(id => fromString(this.editor!, id)),
-      }, isPublic)
-    }
-  }
-
-  setChangeOptions(component: Component, input: ExpressionInput, key: PropsNames, isPublic: boolean, popin: PopinForm, idx: number) {
-    if(this.redrawing) return
-    const tokensStrings = input.value
-    // Get tokens as objects
-    const tokens = tokensStrings
-      .filter(id => !!id)
-      .map(id => fromString(this.editor!, id))
-    // Update the options of the token
-    console.log('setChangeOptions', tokens[idx], popin.value)
-    ;(tokens[idx] as Property | Filter).options = popin.value
-    // Update the state
-    setState(component, key, {
-      expression: tokens
-    }, isPublic)
-  }
-
-  getOptions(component: Component, tokens: Token[], idx: number): TemplateResult | '' {
-    const dataTree = this.editor!.DataSourceManager.getDataTree()
-    const token = tokens[idx]
-    const beforeToken = tokens.slice(0, idx)
-    const fields = beforeToken
-      .map(token => dataTree.getExpressionResultType(tokens.concat(token), component))
-
-    switch(token.type) {
-      case 'property':
-      case 'filter':
-        if(token.optionsForm) {
-          const form = token.optionsForm(fields[fields.length - 1], token.options || {})
-          return form || ''
-        }
-        return ''
-      default:
-        return ''
-    }
   }
 }
 

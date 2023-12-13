@@ -41,10 +41,6 @@ export default function(editor: DataSourceEditor): Filter[] {
           <select class="form-control" id="type" name="type">
             ${ editor.DataSourceManager.getDataTree().allTypes.map(type => html`<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`) }
           </select>
-          <div class="buttons">
-            <input type="reset" value="Cancel"/>
-            <input type="submit" value="Apply" />
-          </div>
       `,
     },
   ]

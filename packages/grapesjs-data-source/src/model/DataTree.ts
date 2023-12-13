@@ -17,7 +17,7 @@
 
 import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, Property, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId, StoredToken } from '../types'
-import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId, getPersistantId } from './state'
+import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
 import { DataSourceEditor } from '..'
 import { TemplateResult, html } from 'lit'
 

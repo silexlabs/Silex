@@ -53,6 +53,9 @@ export const OPTIONS_STYLES = `
   form .buttons input:hover {
     color: var(--ds-primary);
   }
+  .ds-section input.ds-expression-input__fixed {
+    color: black;
+  }
 `
 export const PROPERTY_STYLES = `
   :root {

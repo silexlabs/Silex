@@ -1,4 +1,4 @@
-import { Field, FieldKind, Options, Token, TypeId } from "./types"
+import { Field, FieldKind, Options, Token } from "./types"
 import { DataSourceEditor } from "."
 import { TemplateResult, html } from "lit"
 
@@ -307,7 +307,6 @@ export function toId(token: Token): string {
 }
 
 export function fromString(editor: DataSourceEditor, id: string): Token {
-  console.log('fromString', id)
   return editor.DataSourceManager.getDataTree().fromStored(JSON.parse(id)) as Token
 }
 
