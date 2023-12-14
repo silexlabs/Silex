@@ -125,7 +125,7 @@ export class PropertiesEditor extends LitElement {
         </div>
         <main>
           ${[
-            {label: 'Conten', name: PropsNames.innerHTML, publicState: false},
+            {label: 'Content', name: PropsNames.innerHTML, publicState: false},
             {label: 'Title', name: PropsNames.title, publicState: false},
             {label: 'Classes', name: PropsNames.className, publicState: false},
             {label: 'Inline styles', name: PropsNames.style, publicState: false},
@@ -165,13 +165,14 @@ export class PropertiesEditor extends LitElement {
           <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${this.getStateEditor(selected, 'Data', PropsNames.__data, true)}
+          ${this.getStateEditor(selected, 'Data', PropsNames.__data, false)}
         </main>
       </section>
     `
     this.redrawing = false
     return result
   }
+
   getStateEditor(selected: Component, label: string, name: PropsNames, publicState: boolean) {
     return html`
       <state-editor
