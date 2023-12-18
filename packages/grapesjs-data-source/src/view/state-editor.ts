@@ -18,7 +18,7 @@
 import {LitElement, TemplateResult, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import { OPTIONS_STYLES, PROPERTY_STYLES } from './defaultStyles'
-import { DataSourceEditor, Filter, Property, Token, getStateLabel } from '..'
+import { DataSourceEditor, Filter, Property, Token } from '..'
 
 import { createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
