@@ -103,12 +103,12 @@ export class PropertiesEditor extends LitElement {
       ${head}
       <p class="ds-empty">Select an element to edit its properties</p>
     `
-    if(!this.editor) {
-    this.redrawing = false
+    if(!this.editor || this.disabled) {
+      this.redrawing = false
       return html``
     }
     if(!selected || selected.get('tagName') === 'body') {
-    this.redrawing = false
+      this.redrawing = false
       return empty
     }
     const result =  html`

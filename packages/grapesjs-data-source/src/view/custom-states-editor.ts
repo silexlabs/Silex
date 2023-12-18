@@ -85,12 +85,12 @@ export class CustomStatesEditor extends LitElement {
       ${head}
       <p class="ds-empty">Select an element to edit its states</p>
     `
-    if(!this.editor) {
-    this.redrawing = false
+    if(!this.editor || this.disabled) {
+      this.redrawing = false
       return html``
     }
-    if(!selected || selected.get('tagName') === 'body') {
-    this.redrawing = false
+    if(!selected) {
+      this.redrawing = false
       return empty
     }
     const items: Item[] = getStateIds(selected, true)
