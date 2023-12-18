@@ -1,13 +1,13 @@
 import { Field, FieldKind, Options, Token, TypeId } from "./types"
 import { DataSourceEditor } from "."
-import { getStateLabel } from "./model/state"
+import { getStateDisplayName } from "./model/state"
 import { TemplateResult, html } from "lit"
 import { Component } from "grapesjs"
 
 /**
  * Get the display type of a field
  */
-function getDisplayType(typeIds: TypeId[], kind: FieldKind | null): string {
+function getTypeDisplayName(typeIds: TypeId[], kind: FieldKind | null): string {
   const typeLabel = typeIds.join(', ')
   return kind === 'list' ? `${typeLabel} [ ]` : kind === 'object' ? `${typeLabel} { }` : typeLabel
 }
@@ -15,7 +15,7 @@ function getDisplayType(typeIds: TypeId[], kind: FieldKind | null): string {
 export function getTokenDisplayName(component: Component, token: Token, desiredNumChars = -1): string {
   switch (token.type) {
     case 'property': {
-      const type = getDisplayType(token.typeIds, token.kind)
+      const type = getTypeDisplayName(token.typeIds, token.kind)
       if(desiredNumChars > 0) {
         const diff = desiredNumChars - `${token.label} ${type}`.length
         return `${token.label}${'\xA0'.repeat(diff * 2)} ${type}`
@@ -23,7 +23,7 @@ export function getTokenDisplayName(component: Component, token: Token, desiredN
       return `${token.label} ${type}`
     }
     case 'filter': return token.label
-    case 'state': return getStateLabel(component, token)
+    case 'state': return getStateDisplayName(component, token)
     default:
       console.error('Unknown token type (reading type)', token)
       throw new Error(`Unknown token type`)

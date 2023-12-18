@@ -347,11 +347,11 @@ export declare function getPersistantId(component: Component): PersistantId | nu
  * Get the persistant ID of a component and create it if it does not exist
  */
 export declare function getOrCreatePersistantId(component: Component): PersistantId;
-export declare function getStateLabel(component: Component | null | undefined, state: State): string;
 /**
  * Find a component by its persistant ID in the current page
  */
 export declare function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null;
+export declare function getStateDisplayName(child: Component, state: State): string;
 export declare function onStateChange(callback: (state: StoredState | null, component: Component) => void): () => void;
 /**
  * List all exported states
@@ -374,6 +374,7 @@ export declare function setState(component: Component, id: StateId, state: Store
  * Remove a state
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
+export declare function getTokenDisplayName(component: Component, token: Token, desiredNumChars?: number): string;
 /**
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression
