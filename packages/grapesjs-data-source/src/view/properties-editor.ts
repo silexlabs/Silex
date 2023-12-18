@@ -23,6 +23,7 @@ import { BinariOperator, DataSourceEditor, DataTree, Token, UnariOperator, getSt
 import './state-editor'
 import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
+import { PROPERTY_STYLES } from './defaultStyles'
 
 enum PropsNames {
   innerHTML = 'innerHTML',
@@ -93,17 +94,10 @@ export class PropertiesEditor extends LitElement {
     this.redrawing = true
     const selected = this.editor?.getSelected()
     const head = html`
+      <style>
+        ${PROPERTY_STYLES}
+      </style>
       <slot></slot>
-      <section class="ds-section">
-        <div>
-          <div class="gjs-traits-label">Element Properties</div>
-        </div>
-        <details class="ds-states__help">
-          <summary>Help</summary>
-          Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
-          <a target="_blank" href="https://docs.silex.me/en/user/cms#element-properties">Learn more about element properties</a>
-        </details>
-      </section>
     `
     const empty = html`
       ${head}
@@ -123,15 +117,20 @@ export class PropertiesEditor extends LitElement {
         <div>
           <div class="gjs-traits-label">Properties</div>
         </div>
+        <details class="ds-states__help">
+          <summary>Help</summary>
+          Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
+          <a target="_blank" href="https://docs.silex.me/en/user/cms#element-properties">Learn more about element properties</a>
+        </details>
         <main>
           ${[
-            {label: 'Content', name: PropsNames.innerHTML, publicState: false},
-            {label: 'Title', name: PropsNames.title, publicState: false},
-            {label: 'Classes', name: PropsNames.className, publicState: false},
+            {label: 'Content (innerHTML)', name: PropsNames.innerHTML, publicState: false},
+            {label: 'Title (title attribute)', name: PropsNames.title, publicState: false},
+            {label: 'Classes (class attribute)', name: PropsNames.className, publicState: false},
             {label: 'Inline styles', name: PropsNames.style, publicState: false},
-            {label: 'src', name: PropsNames.src, publicState: false},
-            {label: 'href', name: PropsNames.href, publicState: false},
-            {label: 'alt', name: PropsNames.alt, publicState: false},
+            {label: 'src attribute', name: PropsNames.src, publicState: false},
+            {label: 'href attribute', name: PropsNames.href, publicState: false},
+            {label: 'alt attribute', name: PropsNames.alt, publicState: false},
           ].map(({label, name, publicState}) => this.getStateEditor(selected, label, name, publicState))}
         </main>
       </section>
@@ -141,7 +140,10 @@ export class PropertiesEditor extends LitElement {
         </div>
         <main>
           ${this.getStateEditor(selected, 'Condition', PropsNames.condition, false)}
+          <div>
+          <span>... is</span>
           <select
+            class="ds-visibility__condition-operator"
             @change=${(e: Event) => {
               const select = e.target as HTMLSelectElement
               const value = select.value
@@ -150,6 +152,7 @@ export class PropertiesEditor extends LitElement {
               this.requestUpdate()
             }}
           >
+          </div>
           ${ Object.values<string>(UnariOperator)
               .concat(Object.values(BinariOperator))
               .map(operator => html`

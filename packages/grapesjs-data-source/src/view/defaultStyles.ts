@@ -102,6 +102,12 @@ export const PROPERTY_STYLES = `
     --popin-dialog-footer-padding: 0;
     */
   }
+  .gjs-traits-label {
+    font-family: "Ubuntu", sans-serif;
+    font-size: 0.85rem;
+    padding: 9px 10px 9px 20px;
+    text-align: left;
+  }
   expression-input {
     padding: 10px;
     display: block;
@@ -193,16 +199,21 @@ export const PROPERTY_STYLES = `
     margin-right: 5px;
   }
   .ds-section details {
-    margin: 10px;
+    margin: 2px;
     padding: 10px;
-    background-color: var(--ds-tertiary);
+    padding-top: 0;
+    background-color: transparent;
     border-radius: 2px;
     color: var(--ds-secondary);
     text-align: left;
   }
+  .ds-section details[open] {
+    background-color: var(--ds-tertiary);
+  }
   .ds-section details summary {
     color: var(--ds-secondary);
     cursor: pointer;
+    padding: 10px 0;
   }
   .ds-section details a {
     color: var(--ds-link-color);
@@ -302,5 +313,8 @@ export const PROPERTY_STYLES = `
     border: none;
     height: 1px;
     background: var(--ds-button-bg);
+  }
+  .ds-section select.ds-visibility__condition-operator {
+    margin: 10px;
   }
 `

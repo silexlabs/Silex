@@ -23,6 +23,7 @@ import { DataSourceEditor, DataTree, StoredState, Token, getState, getStateIds, 
 import './state-editor'
 import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
+import { PROPERTY_STYLES } from './defaultStyles'
 
 interface Item {
   name: string
@@ -64,6 +65,9 @@ export class CustomStatesEditor extends LitElement {
     this.redrawing = true
     const selected = this.editor?.getSelected()
     const head = html`
+      <style>
+        ${PROPERTY_STYLES}
+      </style>
       <slot></slot>
       <section class="ds-section">
         <div>
