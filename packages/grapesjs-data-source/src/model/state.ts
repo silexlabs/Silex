@@ -79,7 +79,6 @@ export function getParentByPersistentId(id: PersistantId, component: Component |
 
 export function getStateDisplayName(child: Component, state: State): string {
   const component = getParentByPersistentId(state.componentId, child)
-  console.log('getStateDisplayName', child, state, component)
   const name = component?.getName() ?? '[Not found]'
   const prefix = component?.get(COMPONENT_NAME_PREFIX) ?? `${name}'s`
   return  `${prefix ? prefix + ' ' : ''}${state.label || state.storedStateId}`
