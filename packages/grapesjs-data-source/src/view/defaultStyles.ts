@@ -238,6 +238,7 @@ export const PROPERTY_STYLES = `
     color: var(--ds-secondary);
     border: 1px solid rgba(0,0,0,.15);
     cursor: pointer;
+    font-size: medium;
   }
   .ds-section input.ds-expression-input__fixed {
     color: var(--ds-secondary);
@@ -255,6 +256,9 @@ export const PROPERTY_STYLES = `
     -moz-appearance: none;
     text-indent: 1px;
     text-overflow: '';
+  }
+  .ds-section .ds-expression-input__add option {
+    font-size: medium;
   }
   .ds-section .ds-expression-input__options-button {
     background-color: transparent;

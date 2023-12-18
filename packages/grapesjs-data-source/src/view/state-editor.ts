@@ -18,11 +18,11 @@
 import {LitElement, TemplateResult, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import { OPTIONS_STYLES, PROPERTY_STYLES } from './defaultStyles'
-import { DataSourceEditor, Filter, Property, Token } from '..'
+import { DataSourceEditor, Filter, Property, Token, getStateLabel } from '..'
 
 import { createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, toString } from '../utils'
+import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, getTokenDisplayName, toString } from '../utils'
 import { ExpressionInput } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
 import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
@@ -140,6 +140,7 @@ export class StateEditor extends LitElement {
     const completion = this.noFilters ? _completion
       .filter(token => token.type !== 'filter')
       : _completion
+    const maxLineWidth = Math.max(...completion.map(token => getTokenDisplayName(selected, token).length))
     const result = html`
       <expression-input
         @change=${() => this.dispatchEvent(new Event('change'))}
@@ -163,17 +164,19 @@ export class StateEditor extends LitElement {
         </div>
         ${ _currentValue && _currentValue.length > 0 ? html`
           ${ _currentValue?.map((token: Token, idx: number) => {
-            const partialExpression = _currentValue.slice(0, idx)
             const popinRef = createRef<PopinForm>()
             const optionsForm = this.getOptions(selected, _currentValue, idx)
+            const partialExpression = _currentValue.slice(0, idx)
+            const partialCompletion = dataTree
+                .getCompletion(selected, partialExpression)
+            const partialMaxLineWidth = Math.max(...partialCompletion.map(token => getTokenDisplayName(selected, token).length))
             return html`
               <select>
                 <option value="">-</option>
-                ${ dataTree
-                .getCompletion(selected, partialExpression)
+                ${ partialCompletion
                   .map(partialToken => {
                     return html`
-                      <option value="${toString(partialToken)}" .selected=${equals(partialToken, token)}>${partialToken.label}</option>
+                      <option value="${toString(partialToken)}" .selected=${equals(partialToken, token)}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
                     `
                   })
                 }
@@ -209,7 +212,7 @@ export class StateEditor extends LitElement {
             ${ completion
                   .map(partialToken => {
                     return html`
-                      <option value="${toString(partialToken)}">${partialToken.label}</option>
+                      <option value="${toString(partialToken)}">${getTokenDisplayName(selected, partialToken, maxLineWidth)}</option>
                     `
                   })
             }
