@@ -60,18 +60,28 @@ export class CustomStatesEditor extends LitElement {
     this.editor.on('component:update', () => this.requestUpdate())
   }
 
-  override render() {
-    super.render()
-    this.redrawing = true
-    const selected = this.editor?.getSelected()
-    const head = html`
+  getHead(selected: Component | null) {
+    return html`
       <style>
         ${PROPERTY_STYLES}
       </style>
       <slot></slot>
       <section class="ds-section">
         <div>
-          <div class="gjs-traits-label">Element States</div>
+          <div class="gjs-traits-label">
+            <span>Element States</span>
+            ${ selected ? html`
+            <button
+              title="Add a new state"
+              class="ds-states__add-button ds-states__button"
+              @click=${() => {
+                const item = this.createCustomState(selected)
+                if(!item) return
+                setState(selected, item.name, item.state, !!item.publicState)
+              }}
+              >+</button>
+            ` : ''}
+          </div>
         </div>
         <details class="ds-states__help">
           <summary>Help</summary>
@@ -81,8 +91,14 @@ export class CustomStatesEditor extends LitElement {
         </details>
       </section>
     `
+  }
+
+  override render() {
+    super.render()
+    this.redrawing = true
+    const selected = this.editor?.getSelected()
     const empty = html`
-      ${head}
+      ${this.getHead(null)}
       <p class="ds-empty">Select an element to edit its states</p>
     `
     if(!this.editor || this.disabled) {
@@ -100,7 +116,7 @@ export class CustomStatesEditor extends LitElement {
         state: getState(selected, stateId, true),
       }))
     const result =  html`
-      ${head}
+      ${this.getHead(selected)}
       <div class="ds-states">
         <div class="ds-states__items">
           ${items
@@ -149,16 +165,7 @@ export class CustomStatesEditor extends LitElement {
             <hr class="ds-states__sep" />
           `)}
         </div>
-        <button
-          title="Add a new state"
-          class="ds-states__add-button ds-states__button"
-          @click=${() => {
-            const item = this.createCustomState(selected)
-            if(!item) return
-            setState(selected, item.name, item.state, !!item.publicState)
-          }}
-          >+</button>
-        </div>
+      </div>
     `
     this.redrawing = false
     return result

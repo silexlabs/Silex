@@ -120,6 +120,9 @@ export const PROPERTY_STYLES = `
     font-size: 0.85rem;
     padding: 9px 10px 9px 20px;
     text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   expression-input {
     padding: 10px;
@@ -302,6 +305,7 @@ export const PROPERTY_STYLES = `
   .ds-states__buttons {
     display: flex;
     flex-direction: row;
+    justify-content: flex-end;
     margin: 0 5px;
   }
   .ds-states__button {
@@ -313,6 +317,7 @@ export const PROPERTY_STYLES = `
     color: var(--ds-button-color);
     flex: 1;
     margin: 5px;
+    max-width: 40px;
   }
   .ds-states__button--disabled {
     opacity: 0.5;
@@ -320,10 +325,6 @@ export const PROPERTY_STYLES = `
   }
   .ds-states__remove-button {
     margin-left: 1em;
-  }
-  .ds-states__add-button {
-    margin: 10px;
-    margin-bottom: 30px;
   }
   .ds-states__sep {
     width: 100%;
