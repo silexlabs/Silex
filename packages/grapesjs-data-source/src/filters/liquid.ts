@@ -76,11 +76,13 @@ export default function(editor: DataSourceEditor): Filter[] {
           class="ds-state-editor__options"
           value=${options.key || []}
           name="key"
+          root-type=${field?.typeIds[0] ?? ''}
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
           @change=${({target}: {target: StateEditor}) => target.rerender()}
         >
           <label slot="label">Key to filter on</label>
         </state-editor>
+        <p>==</p>
         <state-editor
           no-filters
           data-is-input
@@ -127,9 +129,10 @@ export default function(editor: DataSourceEditor): Filter[] {
             value=${options.key || []}
             name="key"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
+            root-type=${field?.typeIds[0] ?? ''}
             @change=${({target}: {target: StateEditor}) => target.rerender()}
           >
-            <label slot="label">Key to filter on</label>
+            <label slot="label">Separator</label>
           </state-editor>
           <state-editor
             no-filters
@@ -207,9 +210,10 @@ export default function(editor: DataSourceEditor): Filter[] {
           value=${options.key || []}
             name="key"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
+            root-type=${field?.typeIds[0] ?? ''}
             @change=${({target}: {target: StateEditor}) => target.rerender()}
           >
-          <label slot="label">Key</label>
+          <label slot="label">Key to map</label>
         </state-editor>
       `,
     }, {

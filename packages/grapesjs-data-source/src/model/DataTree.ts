@@ -404,10 +404,21 @@ export class DataTree {
    * Auto complete an expression
    * @returns a list of possible tokens to add to the expression
    */
-  getCompletion(component: Component, expression: Expression): Context {
+  getCompletion(component: Component, expression: Expression, rootType?: TypeId): Context {
     if(!component) throw new Error('Component is required for completion')
     if(!expression) throw new Error('Expression is required for completion')
-    if(expression.length === 0) return this.getContext(component)
+    if(expression.length === 0) {
+      if(rootType) {
+        const type = this.findType(rootType)
+        if(!type) {
+          console.warn('Root type not found', rootType)
+          return []
+        }
+        return type.fields
+          .map((field: Field) => this.fieldToToken(field))
+      }
+      return this.getContext(component)
+    }
     const field = this.getExpressionResultType(expression, component)
     if(!field) {
       console.warn('Result type not found for expression', expression)

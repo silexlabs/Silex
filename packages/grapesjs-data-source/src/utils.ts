@@ -30,12 +30,12 @@ export function getTokenDisplayName(component: Component, token: Token, desiredN
   }
 }
 
-export function groupByType(component: Component, completion: Token[]): Record<string, Token[]> {
+export function groupByType(component: Component, completion: Token[], collectionLabel: string): Record<string, Token[]> {
   return completion
     .reduce((acc, token) => {
       let label
       switch (token.type) {
-        case 'property': label = 'Collections'; break
+        case 'property': label = collectionLabel; break
         case 'filter': label = 'Filters'; break
         case 'state': {
           const parent = getParentByPersistentId(token.componentId, component)

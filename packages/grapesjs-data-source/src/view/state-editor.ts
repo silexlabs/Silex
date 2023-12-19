@@ -53,6 +53,9 @@ export class StateEditor extends LitElement {
   @property({type: Boolean, attribute: 'no-filters'})
   noFilters = false
 
+  @property({type: String, attribute: 'root-type'})
+  rootType = ''
+
   /**
    * Value string for for submissions
    */
@@ -136,12 +139,12 @@ export class StateEditor extends LitElement {
 
     const fixed = _currentValue?.length === 1 && _currentValue[0].type === 'property' && _currentValue[0].fieldId === FIXED_TOKEN_ID
     const text = fixed ? (_currentValue![0] as Property).options?.value || '' : ''
-    const _completion = dataTree.getCompletion(selected, _currentValue || [])
+    const _completion = dataTree.getCompletion(selected, _currentValue || [], this.rootType)
     const completion = this.noFilters ? _completion
       .filter(token => token.type !== 'filter')
       : _completion
     const maxLineWidth = Math.max(...completion.map(token => getTokenDisplayName(selected, token).length))
-    const groupedCompletion = groupByType(selected, completion)
+    const groupedCompletion = groupByType(selected, completion, _currentValue.length ? 'Fields' : 'Collections')
     const result = html`
       <expression-input
         @change=${() => this.dispatchEvent(new Event('change'))}
@@ -169,12 +172,12 @@ export class StateEditor extends LitElement {
             const optionsForm = this.getOptions(selected, _currentValue, idx)
             const partialExpression = _currentValue.slice(0, idx)
             const _partialCompletion = dataTree
-                .getCompletion(selected, partialExpression)
+                .getCompletion(selected, partialExpression, this.rootType)
             const partialCompletion = this.noFilters ? _partialCompletion
               .filter(token => token.type !== 'filter')
               : _partialCompletion
             const partialMaxLineWidth = Math.max(...partialCompletion.map(token => getTokenDisplayName(selected, token).length))
-            const partialGroupedCompletion = groupByType(selected, partialCompletion)
+            const partialGroupedCompletion = groupByType(selected, partialCompletion, idx ? 'Fields' : 'Collections')
             return html`
               <select>
                 <option value="">-</option>
