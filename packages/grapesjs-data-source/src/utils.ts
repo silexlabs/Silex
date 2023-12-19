@@ -1,6 +1,6 @@
 import { Field, FieldKind, Options, Token, TypeId } from "./types"
 import { DataSourceEditor } from "."
-import { getStateDisplayName } from "./model/state"
+import { getParentByPersistentId, getStateDisplayName } from "./model/state"
 import { TemplateResult, html } from "lit"
 import { Component } from "grapesjs"
 
@@ -28,6 +28,29 @@ export function getTokenDisplayName(component: Component, token: Token, desiredN
       console.error('Unknown token type (reading type)', token)
       throw new Error(`Unknown token type`)
   }
+}
+
+export function groupByType(component: Component, completion: Token[]): Record<string, Token[]> {
+  return completion
+    .reduce((acc, token) => {
+      let label
+      switch (token.type) {
+        case 'property': label = 'Collections'; break
+        case 'filter': label = 'Filters'; break
+        case 'state': {
+          const parent = getParentByPersistentId(token.componentId, component)
+          const name = parent?.get('tagName') === 'body' ? 'Website' : parent?.getName()
+          label = name ? `${name}'s states` : 'States'
+          break;
+        }
+        default:
+          console.error('Unknown token type (reading type)', token)
+          throw new Error(`Unknown token type`)
+      }
+      if (!acc[label]) acc[label] = []
+      acc[label].push(token)
+      return acc
+    }, {} as Record<string, Token[]>)
 }
 ///**
 // * Add css styles to options forms

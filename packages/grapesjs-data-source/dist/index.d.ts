@@ -375,6 +375,7 @@ export declare function setState(component: Component, id: StateId, state: Store
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
 export declare function getTokenDisplayName(component: Component, token: Token, desiredNumChars?: number): string;
+export declare function groupByType(component: Component, completion: Token[]): Record<string, Token[]>;
 /**
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression

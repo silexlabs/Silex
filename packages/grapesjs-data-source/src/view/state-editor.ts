@@ -22,7 +22,7 @@ import { DataSourceEditor, Filter, Property, Token } from '..'
 
 import { createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, getTokenDisplayName, toString } from '../utils'
+import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, getTokenDisplayName, groupByType, toString } from '../utils'
 import { ExpressionInput } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
 import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
@@ -141,6 +141,7 @@ export class StateEditor extends LitElement {
       .filter(token => token.type !== 'filter')
       : _completion
     const maxLineWidth = Math.max(...completion.map(token => getTokenDisplayName(selected, token).length))
+    const groupedCompletion = groupByType(selected, completion)
     const result = html`
       <expression-input
         @change=${() => this.dispatchEvent(new Event('change'))}
@@ -163,20 +164,32 @@ export class StateEditor extends LitElement {
             />
         </div>
         ${ _currentValue && _currentValue.length > 0 ? html`
-          ${ _currentValue?.map((token: Token, idx: number) => {
+          ${ _currentValue.map((token: Token, idx: number) => {
             const popinRef = createRef<PopinForm>()
             const optionsForm = this.getOptions(selected, _currentValue, idx)
             const partialExpression = _currentValue.slice(0, idx)
-            const partialCompletion = dataTree
+            const _partialCompletion = dataTree
                 .getCompletion(selected, partialExpression)
+            const partialCompletion = this.noFilters ? _partialCompletion
+              .filter(token => token.type !== 'filter')
+              : _partialCompletion
             const partialMaxLineWidth = Math.max(...partialCompletion.map(token => getTokenDisplayName(selected, token).length))
+            const partialGroupedCompletion = groupByType(selected, partialCompletion)
             return html`
               <select>
                 <option value="">-</option>
-                ${ partialCompletion
-                  .map(partialToken => {
+                ${ Object.entries(partialGroupedCompletion)
+                  .map(([type, completion]) => {
                     return html`
-                      <option value="${toString(partialToken)}" .selected=${equals(partialToken, token)}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
+                      <optgroup label="${type}">
+                      ${ completion
+                        .map(partialToken => {
+                          return html`
+                            <option value="${toString(partialToken)}" .selected=${equals(partialToken, token)}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
+                          `
+                        })
+                      }
+                      </optgroup>
                     `
                   })
                 }
@@ -203,21 +216,29 @@ export class StateEditor extends LitElement {
             })
           }
         ` : '' }
-        ${ completion.length ? html`
+        ${Object.entries(groupedCompletion).length ? html`
           <select
             class="ds-expression-input__add"
             ${ref(el => el && ((el as HTMLSelectElement).value = ''))}
-          >
+            >
             <option value="" selected>+</option>
-            ${ completion
-                  .map(partialToken => {
-                    return html`
-                      <option value="${toString(partialToken)}">${getTokenDisplayName(selected, partialToken, maxLineWidth)}</option>
-                    `
-                  })
+            ${ Object.entries(groupedCompletion)
+              .map(([type, completion]) => {
+                return html`
+                    <optgroup label="${type}">
+                    ${ completion
+                      .map(token => {
+                        return html`
+                          <option value="${toString(token)}">${getTokenDisplayName(selected, token, maxLineWidth)}</option>
+                        `
+                      })
+                    }
+                    </optgroup>
+                `
+              })
             }
           </select>
-        ` : '' }
+      ` : ''}
       </expression-input>
     `
     this.redrawing = false
