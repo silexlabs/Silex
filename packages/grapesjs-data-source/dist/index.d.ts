@@ -244,7 +244,7 @@ export declare class DataTree {
 	 * Auto complete an expression
 	 * @returns a list of possible tokens to add to the expression
 	 */
-	getCompletion(component: Component, expression: Expression): Context;
+	getCompletion(component: Component, expression: Expression, rootType?: TypeId): Context;
 	/**
 	 * Get all expressions used in all pages
 	 */
@@ -375,7 +375,7 @@ export declare function setState(component: Component, id: StateId, state: Store
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
 export declare function getTokenDisplayName(component: Component, token: Token, desiredNumChars?: number): string;
-export declare function groupByType(component: Component, completion: Token[]): Record<string, Token[]>;
+export declare function groupByType(component: Component, completion: Token[], collectionLabel: string): Record<string, Token[]>;
 /**
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression
