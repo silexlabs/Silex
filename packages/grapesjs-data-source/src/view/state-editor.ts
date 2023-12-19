@@ -144,7 +144,7 @@ export class StateEditor extends LitElement {
       .filter(token => token.type !== 'filter')
       : _completion
     const maxLineWidth = Math.max(...completion.map(token => getTokenDisplayName(selected, token).length))
-    const groupedCompletion = groupByType(selected, completion, _currentValue.length ? 'Fields' : 'Collections')
+    const groupedCompletion = groupByType(this.editor, selected, completion, _currentValue)
     const result = html`
       <expression-input
         @change=${() => this.dispatchEvent(new Event('change'))}
@@ -177,7 +177,7 @@ export class StateEditor extends LitElement {
               .filter(token => token.type !== 'filter')
               : _partialCompletion
             const partialMaxLineWidth = Math.max(...partialCompletion.map(token => getTokenDisplayName(selected, token).length))
-            const partialGroupedCompletion = groupByType(selected, partialCompletion, idx ? 'Fields' : 'Collections')
+            const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
             return html`
               <select>
                 <option value="">-</option>

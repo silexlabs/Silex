@@ -1,4 +1,4 @@
-import { Field, FieldKind, Options, Token, TypeId } from "./types"
+import { Expression, Field, FieldKind, IDataSourceModel, Options, Token, TypeId } from "./types"
 import { DataSourceEditor } from "."
 import { getParentByPersistentId, getStateDisplayName } from "./model/state"
 import { TemplateResult, html } from "lit"
@@ -30,18 +30,36 @@ export function getTokenDisplayName(component: Component, token: Token, desiredN
   }
 }
 
-export function groupByType(component: Component, completion: Token[], collectionLabel: string): Record<string, Token[]> {
+export function groupByType(editor: DataSourceEditor, component: Component, completion: Token[], expression: Expression): Record<string, Token[]> {
   return completion
     .reduce((acc, token) => {
       let label
       switch (token.type) {
-        case 'property': label = collectionLabel; break
         case 'filter': label = 'Filters'; break
+        case 'property': {
+          if(token.dataSourceId) {
+            if(expression.length) {
+              const type = editor.DataSourceManager.getDataTree().getExpressionResultType(expression, component)
+              label = type?.label ?? type?.id ?? 'Unknown'
+            } else {
+              const dataSource: IDataSourceModel = editor.DataSourceManager.get(token.dataSourceId)
+              if(dataSource) {
+                label = dataSource.get('label')
+              } else {
+                console.error('Data source not found', token.dataSourceId)
+                throw new Error(`Data source not found: ${token.dataSourceId}`)
+              }
+            }
+          } else {
+            label = 'Fields';
+          }
+          break
+        }
         case 'state': {
           const parent = getParentByPersistentId(token.componentId, component)
           const name = parent?.get('tagName') === 'body' ? 'Website' : parent?.getName()
           label = name ? `${name}'s states` : 'States'
-          break;
+          break
         }
         default:
           console.error('Unknown token type (reading type)', token)
