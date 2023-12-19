@@ -138,7 +138,7 @@ let InputChain = class InputChain extends LitElement {
      */
     changeAt(idx) {
         const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
-        const target = idx >= 0 ? children[idx] : null;
+        const target = idx >= 0 ? children[idx] : children[0];
         const next = (target === null || target === void 0 ? void 0 : target.value) ? children[idx + 1] : target || children[0];
         const nextIndex = (target === null || target === void 0 ? void 0 : target.value) ? idx + 1 : idx;
         if (next) {

@@ -81,7 +81,6 @@ let PopinOverlay = class PopinOverlay extends LitElement {
             const focusedElement = this.getActiveElementRecursive();
             let popin = focusedElement;
             while (popin && popin !== this) {
-                /* @ts-ignore */
                 popin = popin.parentNode || popin.host;
             }
             if (popin !== this) {

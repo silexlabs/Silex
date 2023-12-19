@@ -150,7 +150,7 @@ export class InputChain extends LitElement {
    */
   protected changeAt(idx: number) {
     const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select')) as HTMLSelectElement[]
-    const target = idx >= 0 ? children[idx] : null
+    const target = idx >= 0 ? children[idx] : children[0]
     const next = target?.value ? children[idx+1] : target || children[0]
     const nextIndex = target?.value ? idx+1 : idx
     if(next) {
@@ -168,4 +168,3 @@ declare global {
     'input-chain': InputChain
   }
 }
-

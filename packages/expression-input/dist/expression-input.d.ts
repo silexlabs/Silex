@@ -7,6 +7,7 @@ import { InputChain } from './input-chain.js';
  * - [x] dirty state
  * - [x] placeholder
  * - [x] reset mechanism
+ * - [ ] copy/paste hole expressions (using clipboard API)
  *
  * It adds these properties
  * - [x] value and initial value
@@ -37,7 +38,7 @@ export declare class ExpressionInput extends InputChain {
      * Initial value to be set to track changes
      */
     allowFixed: boolean;
-    _fixed: boolean;
+    private _fixed;
     get fixed(): boolean;
     set fixed(value: boolean);
     placeholder: string;

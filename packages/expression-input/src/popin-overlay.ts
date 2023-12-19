@@ -86,8 +86,7 @@ export class PopinOverlay extends LitElement {
       const focusedElement = this.getActiveElementRecursive()
       let popin = focusedElement as Node | ShadowRoot | null
       while(popin && popin !== this) {
-        /* @ts-ignore */
-        popin = popin.parentNode || popin.host
+        popin = popin.parentNode || (popin as ShadowRoot).host
       }
       if(popin !== this) {
         // Hide the dialog

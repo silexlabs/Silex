@@ -11,6 +11,7 @@ import { InputChain } from './input-chain.js'
  * - [x] dirty state
  * - [x] placeholder
  * - [x] reset mechanism
+ * - [ ] copy/paste hole expressions (using clipboard API)
  *
  * It adds these properties
  * - [x] value and initial value
@@ -61,8 +62,9 @@ export class ExpressionInput extends InputChain {
   @property({type: Boolean, attribute: 'allow-fixed'})
   allowFixed = true
 
+  private _fixed = false
+
   @property({type: Boolean, attribute: 'fixed', reflect: true})
-  _fixed = false
   get fixed() {
     return this._fixed
   }
@@ -118,56 +120,10 @@ export class ExpressionInput extends InputChain {
     `
   }
 
-  // <slot name="fixed">
-  //   <input
-  //     part="property-input" class="property-input"
-  //     placeholder=${this.placeholder}
-  //     type="text"
-  //     value=${this.options[0]?.value}
-  //     @change=${(event: InputEvent) => this.fixedValueChanged(event)}
-  //   >
-  // </slot>
-  //fixedValueChanged(event: Event) {
-  //  event.preventDefault()
-  //  event.stopImmediatePropagation()
-  //  const value = (event.target as HTMLInputElement).value
-  //  // Remove all options but the first
-  //  const options = this.options
-  //  options
-  //    .slice(1)
-  //    .forEach(o => o.remove())
-  //  // Reset the first
-  //  options[0].selected = false
-  //  // Change event
-  //  this.dispatchEvent(new Event('change'))
-  //  this.requestUpdate()
-  //}
-
-  // /**
-  //  * Reset dirty flag and store the current value as initial value
-  //  */
-  // public save() {
-  //   this.initialValue = this.options
-  //     .filter(o => o.selected)
-  //     .map(o => o.value)
-  //   this.initialContent = Array.from(this.children)
-  //     .map(o => o.cloneNode(true))
-  //   this.dispatchEvent(new Event('change'))
-  //   this.requestUpdate()
-  // }
-
   /**
    * Reset dirty flag and restore the initial value
    */
   reset() {
-    //// Remove all children
-    //Array.from(this.children)
-    //  .forEach(o => o.remove())
-    //// Add the previous content
-    //this.initialContent
-    //  .map(o => o.cloneNode(true))
-    //  .forEach(o => this.appendChild(o))
-    // Remove all children but the first
     if(this.fixed) {
       const input = this.getFixedInput()
       if(input) {
