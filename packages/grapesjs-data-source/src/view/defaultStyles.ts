@@ -63,15 +63,16 @@ export const PROPERTY_STYLES = `
     --ds-secondary: #ddd;
     --ds-tertiary: #3d3d3d;
     --ds-highlight: #d278c9;
-    --ds-button-color: #ddd;
-    --ds-button-bg: rgba(255,255,255,.15);
-    --ds-button-border: rgba(255,255,255,.15);
+    --ds-lowlight: #363636;
+    --ds-button-color: #fff;
+    --ds-button-bg: #606060;
+    --ds-button-border: var(--ds-button-bg);
 
-    --expression-input-dirty-background-color: rgba(0,0,0,.2);
-    --expression-input-dirty-border-color: rgba(0,0,0,.2);
-    --expression-input-dirty-color: #d278c9;
-    --expression-input-active-color: #ddd;
-    --expression-input-active-background-color: rgba(255,255,255,.15);
+    --expression-input-dirty-background-color: var(--ds-lowlight);
+    --expression-input-dirty-border-color: var(--ds-lowlight);
+    --expression-input-dirty-color: var(--ds-highlight);
+    --expression-input-active-color: var(--ds-secondary);
+    --expression-input-active-background-color: var(--ds-button-bg);
     --popin-dialog-background: var(--ds-secondary);
     --popin-dialog-color: var(--ds-tertiary);
     --popin-dialog-header-background: transparent;
@@ -101,6 +102,18 @@ export const PROPERTY_STYLES = `
     --popin-dialog-body-padding: 5px;
     --popin-dialog-footer-padding: 0;
     */
+  }
+  .ds-state-editor__options {
+    --ds-secondary: #363636;
+    --ds-tertiary: #ffffff;
+    --ds-lowlight: #ddd;
+    --ds-button-color: #606060;
+    --ds-button-bg: #fff;
+    --expression-input-dirty-background-color: var(--ds-lowlight);
+    --expression-input-dirty-border-color: var(--ds-lowlight);
+    --expression-input-dirty-color: var(--ds-highlight);
+    --expression-input-active-color: var(--ds-secondary);
+    --expression-input-active-background-color: var(--ds-button-bg);
   }
   .gjs-traits-label {
     font-family: "Ubuntu", sans-serif;
@@ -156,7 +169,7 @@ export const PROPERTY_STYLES = `
     color: var(--ds-secondary);
   }
   expression-input::part(property-container) {
-    background-color: rgba(0,0,0,.2);
+    background-color: var(--ds-lowlight);
     border-radius: 2px;
     box-sizing: border-box;
     padding: 5px;

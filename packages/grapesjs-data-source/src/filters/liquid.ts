@@ -47,6 +47,7 @@ export default function(editor: DataSourceEditor): Filter[] {
           name="value"
           data-is-input
           no-filters
+          class="ds-state-editor__options"
           value=${options.value || '[]'}
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
           @change=${({target}: {target: StateEditor}) => target.rerender()}
@@ -72,6 +73,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <state-editor
           no-filters
           data-is-input
+          class="ds-state-editor__options"
           value=${options.key || []}
           name="key"
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
@@ -82,6 +84,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <state-editor
           no-filters
           data-is-input
+          class="ds-state-editor__options"
           value=${options.value || []}
           name="value"
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
@@ -120,6 +123,7 @@ export default function(editor: DataSourceEditor): Filter[] {
           <state-editor
             no-filters
             data-is-input
+            class="ds-state-editor__options"
             value=${options.key || []}
             name="key"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
@@ -130,6 +134,7 @@ export default function(editor: DataSourceEditor): Filter[] {
           <state-editor
             no-filters
             data-is-input
+            class="ds-state-editor__options"
             value=${options.value || []}
             name="value"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
@@ -198,6 +203,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <state-editor
           no-filters
           data-is-input
+          class="ds-state-editor__options"
           value=${options.key || []}
             name="key"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}

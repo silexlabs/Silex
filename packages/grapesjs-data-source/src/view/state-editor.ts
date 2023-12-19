@@ -207,9 +207,6 @@ export class StateEditor extends LitElement {
                 name=${`${this.name}_options_${idx}`}
                 @change=${() => this.setChangeOptions(selected, popinRef.value!, idx)}
               >
-                <style>
-                  ${OPTIONS_STYLES}
-                </style>
                 ${optionsForm}
               </popin-form>
               `
