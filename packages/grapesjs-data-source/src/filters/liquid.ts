@@ -32,6 +32,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/<[^>]*>/g, ''),
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'append',
@@ -42,6 +43,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         state: '',
       },
+      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           name="value"
@@ -68,6 +70,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         key: '',
         value: '',
       },
+      quotedOptions: ['key'],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           no-filters
@@ -100,6 +103,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[0],
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'last',
@@ -108,6 +112,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'join',
@@ -118,6 +123,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
+      quotedOptions: ['key'],
       optionsForm: (field: Field | null, options: Options) => html`
           <state-editor
             no-filters
@@ -149,6 +155,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[0],
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'last',
@@ -157,6 +164,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'join',
@@ -167,6 +175,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
+      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
           <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
@@ -182,6 +191,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
+      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
           <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
@@ -197,16 +207,17 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         key: '',
       },
+      quotedOptions: ['key'],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           no-filters
           data-is-input
           class="ds-state-editor__options"
           value=${options.key || []}
-            name="key"
-            ${ref(el => el && (el as StateEditor).setEditor(editor))}
-            root-type=${field?.typeIds[0] ?? ''}
-          >
+          name="key"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+          root-type=${field?.typeIds[0] ?? ''}
+        >
           <label slot="label">Key to map</label>
         </state-editor>
       `,
@@ -218,6 +229,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: field => field,
       apply: (arr) => (arr as unknown[]).reverse(),
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'size',
@@ -231,6 +243,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       }),
       apply: (arr) => (arr as unknown[]).length,
       options: {},
+      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'at',
@@ -241,6 +254,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         index: 0,
       },
+      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Index
           <input type="number" name="index" placeholder="Index" value=${options.index}/>
