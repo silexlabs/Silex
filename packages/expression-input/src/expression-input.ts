@@ -132,7 +132,7 @@ export class ExpressionInput extends InputChain {
         throw new Error('Input not found for fixed value')
       }
     } else {
-      this.changeAt(-1)
+      this.changeAt(0, true)
     }
     this.dispatchEvent(new Event('change'))
     this.requestUpdate()

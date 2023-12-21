@@ -82,6 +82,7 @@ The `expression-input` component has these events:
 It has these attributes:
 - fixed
 - fixed-type: 'none' | 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
+- reactive: boolean = false, if true, the component will not update the DOM when the value changes, you need to listen to the `change` event and update the DOM yourself
 
 It has these properties:
 - steps

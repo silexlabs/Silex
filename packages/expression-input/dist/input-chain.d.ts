@@ -1,34 +1,4 @@
 import { LitElement } from 'lit';
-/**
- * @element input-chain
- * Web component to select a sequence of steps, each step being a <select> element.
- *
- * Children are expected to be input or select html elements
- *
- * Features
- * - Nested Select Elements: Allows embedding <select> elements as children.
- * - Dynamic Interaction: Automatically updates subsequent select elements upon a change in any select element, resetting them to a default state.
- * - Event Handling: Emits change events whenever the value of a child select element changes.
- * - Validation Support: Supports form validation attributes like required, minlength, and maxlength.
- * - Combined Options Property: Holds a property with a concatenation of all options from child select elements.
- * - Supports option groups: Allows grouping options in the same select element.
- *
- * It has these events:
- * - [x] change
- *
- * It has these attributes:
- * - [x] name for form submission
- * - [x] for (form id)
- * - [ ] maxlength
- * - [ ] minlength
- *
- * It has these properties:
- * - [x] options: a concatenation of all options from child select elements
- *
- * It has these slots:
- * - [x] default: contains the select elements
- *
- */
 export declare class InputChain extends LitElement {
     static styles: import("lit").CSSResult;
     /**
@@ -41,6 +11,7 @@ export declare class InputChain extends LitElement {
      * This is the same API as input elements
      */
     name: string;
+    reactive: boolean;
     constructor();
     /**
      * Form setter
@@ -69,11 +40,12 @@ export declare class InputChain extends LitElement {
      * The data changed
      * Reset the steps after the change
      */
-    private onChange;
+    private onChangeValue;
+    private redrawing;
     /**
      * Reset the steps after the given index
      */
-    protected changeAt(idx: number): void;
+    protected changeAt(idx: number, reset?: boolean): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

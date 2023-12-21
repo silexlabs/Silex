@@ -130,7 +130,7 @@ let ExpressionInput = class ExpressionInput extends InputChain {
             }
         }
         else {
-            this.changeAt(-1);
+            this.changeAt(0, true);
         }
         this.dispatchEvent(new Event('change'));
         this.requestUpdate();

@@ -37,6 +37,8 @@ import { inputChainStyles } from './styles.js';
  * - [x] default: contains the select elements
  *
  */
+const SELECT_QUERY = ':scope > select, :scope > custom-select';
+const OPTION_QUERY = ':scope option, :scope custom-option';
 let InputChain = class InputChain extends LitElement {
     constructor() {
         super();
@@ -50,12 +52,13 @@ let InputChain = class InputChain extends LitElement {
          * This is the same API as input elements
          */
         this.name = '';
+        this.reactive = false;
         /**
          * Form setter
          * Handle formdata event to add the current value to the form
          */
         this._form = null;
-        this.onChange_ = this.onChange.bind(this);
+        this.onChange_ = this.onChangeValue.bind(this);
         /**
          * Handle formdata event to add the current value to the form
          */
@@ -69,6 +72,7 @@ let InputChain = class InputChain extends LitElement {
                 event.formData.append(this.name, option.value);
             });
         };
+        this.redrawing = false;
     }
     set form(newForm) {
         if (this._form) {
@@ -86,7 +90,8 @@ let InputChain = class InputChain extends LitElement {
      * @readonly
      */
     get options() {
-        return Array.from(this.querySelectorAll(':scope > select option, :scope > select custom-option'));
+        return Array.from(this.querySelectorAll(OPTION_QUERY))
+            .filter(option => option.selected);
     }
     /**
      * Render the component
@@ -112,7 +117,7 @@ let InputChain = class InputChain extends LitElement {
         this.shadowRoot.addEventListener('change', this.onChange_);
     }
     disconnectedCallback() {
-        this.removeEventListener('change', this.onChange_);
+        this.shadowRoot.removeEventListener('change', this.onChange_);
         this.form = null;
         super.disconnectedCallback();
     }
@@ -120,9 +125,9 @@ let InputChain = class InputChain extends LitElement {
      * The data changed
      * Reset the steps after the change
      */
-    onChange(event) {
+    onChangeValue(event) {
         const target = event.target;
-        const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
+        const children = Array.from(this.querySelectorAll(SELECT_QUERY));
         if (!children.includes(target)) {
             return;
         }
@@ -130,24 +135,39 @@ let InputChain = class InputChain extends LitElement {
         // Dispatch our own event
         event.preventDefault();
         event.stopImmediatePropagation();
-        this.dispatchEvent(new Event('change'));
+        event.stopPropagation();
         this.requestUpdate();
     }
     /**
      * Reset the steps after the given index
      */
-    changeAt(idx) {
-        const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
-        const target = idx >= 0 ? children[idx] : children[0];
-        const next = (target === null || target === void 0 ? void 0 : target.value) ? children[idx + 1] : target || children[0];
-        const nextIndex = (target === null || target === void 0 ? void 0 : target.value) ? idx + 1 : idx;
-        if (next) {
-            // Remove all elements after next
-            children.slice(nextIndex + 1)
-                .forEach(child => child.remove());
-            // Reset next
-            next.value = '';
+    changeAt(idx, reset = false) {
+        if (this.redrawing)
+            return;
+        this.redrawing = true;
+        if (this.reactive) {
+            if (reset) {
+                const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
+                children[0].value = '';
+            }
+            this.dispatchEvent(new CustomEvent('change', { detail: { idx } }));
         }
+        else {
+            // Messes with lit:
+            const children = Array.from(this.querySelectorAll(':scope > select, :scope > custom-select'));
+            const target = idx >= 0 ? children[idx] : children[0];
+            const next = (target === null || target === void 0 ? void 0 : target.value) ? children[idx + 1] : target || children[0];
+            const nextIndex = (target === null || target === void 0 ? void 0 : target.value) ? idx + 1 : idx;
+            if (next) {
+                // Remove all elements after next
+                children.slice(nextIndex + 1)
+                    .forEach(child => child.remove());
+                // Reset next
+                next.value = '';
+            }
+            this.dispatchEvent(new Event('change'));
+        }
+        this.redrawing = false;
     }
 };
 InputChain.styles = inputChainStyles;
@@ -157,6 +177,9 @@ __decorate([
 __decorate([
     property({ type: String })
 ], InputChain.prototype, "name", void 0);
+__decorate([
+    property({ type: Boolean })
+], InputChain.prototype, "reactive", void 0);
 __decorate([
     property({ type: Array })
 ], InputChain.prototype, "options", null);
