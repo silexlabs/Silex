@@ -48,13 +48,13 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
         case 'filter': label = 'Filters'; break
         case 'property': {
           if(token.dataSourceId) {
-            if(expression.length) {
+            if(expression.length > 0) {
               const type = editor.DataSourceManager.getDataTree().getExpressionResultType(expression, component)
               label = type?.label ?? type?.id ?? 'Unknown'
             } else {
               const dataSource: IDataSourceModel = editor.DataSourceManager.get(token.dataSourceId)
               if(dataSource) {
-                label = dataSource.get('label')
+                label = dataSource.get('label') || token.dataSourceId
               } else {
                 console.error('Data source not found', token.dataSourceId)
                 throw new Error(`Data source not found: ${token.dataSourceId}`)
