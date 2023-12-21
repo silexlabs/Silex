@@ -34,7 +34,7 @@ import { inputChainStyles } from './styles.js'
  */
 
 const SELECT_QUERY = ':scope > select, :scope > custom-select'
-const OPTION_QUERY = ':scope option, :scope custom-option'
+const OPTION_QUERY = ':scope > select > option, :scope > select > optgroup > option, :scope > custom-select > custom-option'
 
 @customElement('input-chain')
 export class InputChain extends LitElement {
@@ -85,7 +85,6 @@ export class InputChain extends LitElement {
   @property({type: Array})
   get options(): HTMLOptionElement[] {
     return Array.from(this.querySelectorAll(OPTION_QUERY))
-      .filter(option => (option as HTMLOptionElement).selected) as HTMLOptionElement[]
   }
 
   private onChange_ = this.onChangeValue.bind(this)
