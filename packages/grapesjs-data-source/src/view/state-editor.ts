@@ -247,12 +247,15 @@ export class StateEditor extends LitElement {
   private onChangeValue(event: Event) {
     if(this.redrawing) return
     const idx = (event as CustomEvent).detail?.idx
-    this.data = this.data.slice(0, idx + 1)
+    if(idx >= 0) {
+      this.data = this.data.slice(0, idx + 1)
+    } else {
+      throw new Error('Missing index in change event (supposed to be coming from input-chain web component)')
+    }
     event.preventDefault()
     event.stopImmediatePropagation()
     event.stopPropagation()
     this.dispatchEvent(new Event('change'))
-
   }
 
   private onChangeOptions(component: Component, popin: PopinForm, idx: number) {
