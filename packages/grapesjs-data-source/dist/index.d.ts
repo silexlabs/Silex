@@ -374,20 +374,50 @@ export declare function setState(component: Component, id: StateId, state: Store
  * Remove a state
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
+/**
+ * Get the label for a token
+ * This is mostly about formatting a string for the dropdowns
+ */
 export declare function getTokenDisplayName(component: Component, token: Token, desiredNumChars?: number): string;
-export declare function groupByType(component: Component, completion: Token[], collectionLabel: string): Record<string, Token[]>;
+/**
+ * Group tokens by type
+ * This is used to create the groups in dropdowns
+ */
+export declare function groupByType(editor: DataSourceEditor, component: Component, completion: Token[], expression: Expression): Record<string, Token[]>;
 /**
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression
  */
 export declare const FIXED_TOKEN_ID = "fixed";
 export declare function getFixedToken(value: string): Token;
+/**
+ * Convert a token to a string
+ * This is used to store the token in the component
+ */
 export declare function toString(token: Token): string;
+/**
+ * Convert a token to an option's tag value (json string)
+ */
 export declare function toId(token: Token): string;
+/**
+ * Revert an option's tag value to a token
+ */
 export declare function fromString(editor: DataSourceEditor, id: string): Token;
+/**
+ * Compare two tokens by stringifying them
+ */
 export declare function equals(a: Token, b: Token): boolean;
+/**
+ * Apply a kind to a field
+ */
 export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
+/**
+ * Get the type of a field, as provided by the data source
+ */
 export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
+/**
+ * Generate a form to edit the options of a token
+ */
 export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
 /**
  * Add the DataSourceManager to the GrapesJs editor

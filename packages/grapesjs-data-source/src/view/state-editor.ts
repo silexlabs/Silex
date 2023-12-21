@@ -107,22 +107,24 @@ export class StateEditor extends LitElement {
 
     this.editor = editor
 
-    // Update the UI when a page is added/renamed/removed
-    this.editor.on('page', () => this.requestUpdate())
+    //// Update the UI when a page is added/renamed/removed
+    //this.editor.on('page', () => this.requestUpdate())
 
-    // Update the UI on component selection change
-    this.editor.on('component:selected', () => this.requestUpdate())
+    //// Update the UI on component selection change
+    //this.editor.on('component:selected', () => this.requestUpdate())
 
-    // Update the UI on component change
-    this.editor.on('component:update', () => this.requestUpdate())
+    //// Update the UI on component change
+    //this.editor.on('component:update', () => this.requestUpdate())
   }
 
+  // FIXME: is this even useful?
   rerender() {
-    this._data = this.data
-    this.requestUpdate()
+    //this._data = this.data
+    //this.requestUpdate()
   }
 
   override render() {
+    this.redrawing = true
     super.render()
     const selected = this.editor?.getSelected()
     if(!this.editor) {
@@ -147,12 +149,13 @@ export class StateEditor extends LitElement {
     const groupedCompletion = groupByType(this.editor, selected, completion, _currentValue)
     const result = html`
       <expression-input
-        @change=${() => this.dispatchEvent(new Event('change'))}
+        @change=${(event: Event) => this.onChangeValue(event)}
         data-is-input
         ${ref(this.expressionInputRef)}
         .fixed=${fixed}
         class="ds-section"
         name=${this.name}
+        reactive
       >
         <style>
           ${PROPERTY_STYLES}
@@ -208,7 +211,7 @@ export class StateEditor extends LitElement {
                 ${ref(popinRef)}
                 hidden
                 name=${`${this.name}_options_${idx}`}
-                @change=${() => this.setChangeOptions(selected, popinRef.value!, idx)}
+                @change=${() => this.onChangeOptions(selected, popinRef.value!, idx)}
               >
                 ${optionsForm}
               </popin-form>
@@ -227,11 +230,7 @@ export class StateEditor extends LitElement {
                 return html`
                     <optgroup label="${type}">
                     ${ completion
-                      .map(token => {
-                        return html`
-                          <option value="${toString(token)}">${getTokenDisplayName(selected, token, maxLineWidth)}</option>
-                        `
-                      })
+                      .map(token => html`<option value="${toString(token)}">${getTokenDisplayName(selected, token, maxLineWidth)}</option>`)
                     }
                     </optgroup>
                 `
@@ -245,7 +244,18 @@ export class StateEditor extends LitElement {
     return result
   }
 
-  private setChangeOptions(component: Component, popin: PopinForm, idx: number) {
+  private onChangeValue(event: Event) {
+    if(this.redrawing) return
+    const idx = (event as CustomEvent).detail?.idx
+    this.data = this.data.slice(0, idx + 1)
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    event.stopPropagation()
+    this.dispatchEvent(new Event('change'))
+
+  }
+
+  private onChangeOptions(component: Component, popin: PopinForm, idx: number) {
     if(this.redrawing) return
     const input = this.expressionInputRef.value!
     const tokensStrings = input.value

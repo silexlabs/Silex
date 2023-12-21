@@ -56,7 +56,7 @@ export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
   disabled = false
 
-  inputs: Record<PropsNames, StateEditor | undefined> = {
+  inputs: Record<PropsNames, {stateEditor: StateEditor, selected: Component | undefined} | undefined> = {
     innerHTML: undefined,
     title: undefined,
     className: undefined,
@@ -104,10 +104,12 @@ export class PropertiesEditor extends LitElement {
       <p class="ds-empty">Select an element to edit its properties</p>
     `
     if(!this.editor || this.disabled) {
+      this.resetInputs()
       this.redrawing = false
       return html``
     }
     if(!selected || selected.get('tagName') === 'body') {
+      this.resetInputs()
       this.redrawing = false
       return empty
     }
@@ -131,7 +133,7 @@ export class PropertiesEditor extends LitElement {
             {label: 'src attribute', name: PropsNames.src, publicState: false},
             {label: 'href attribute', name: PropsNames.href, publicState: false},
             {label: 'alt attribute', name: PropsNames.alt, publicState: false},
-          ].map(({label, name, publicState}) => this.getStateEditor(selected, label, name, publicState))}
+          ].map(({label, name, publicState}) => this.renderStateEditor(selected, label, name, publicState))}
         </main>
       </section>
       <section class="ds-section">
@@ -139,7 +141,7 @@ export class PropertiesEditor extends LitElement {
           <div class="gjs-traits-label">Visibility</div>
         </div>
         <main>
-          ${this.getStateEditor(selected, 'Condition', PropsNames.condition, false)}
+          ${this.renderStateEditor(selected, 'Condition', PropsNames.condition, false)}
           <div>
           <span>... is</span>
           <select
@@ -160,7 +162,7 @@ export class PropertiesEditor extends LitElement {
               `)
           }
           </select>
-          ${ selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator')) ? this.getStateEditor(selected, 'Condition 2', PropsNames.condition2, false) : '' }
+          ${ selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator')) ? this.renderStateEditor(selected, 'Condition 2', PropsNames.condition2, false) : '' }
         </main>
       </section>
       <section class="ds-section">
@@ -168,7 +170,7 @@ export class PropertiesEditor extends LitElement {
           <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${this.getStateEditor(selected, 'Data', PropsNames.__data, false)}
+          ${this.renderStateEditor(selected, 'Data', PropsNames.__data, false)}
         </main>
       </section>
     `
@@ -176,17 +178,52 @@ export class PropertiesEditor extends LitElement {
     return result
   }
 
-  getStateEditor(selected: Component, label: string, name: PropsNames, publicState: boolean) {
+  resetInputs() {
+    this.inputs = {
+      innerHTML: undefined,
+      title: undefined,
+      className: undefined,
+      style: undefined,
+      src: undefined,
+      href: undefined,
+      alt: undefined,
+      condition: undefined,
+      condition2: undefined,
+      __data: undefined,
+    }
+  }
+
+  renderStateEditor(selected: Component, label: string, name: PropsNames, publicState: boolean) {
     return html`
       <state-editor
         id="${name}"
         name=${name}
         ${ref(el => {
+          // Get the stateEditor ref
           if (el) {
+            // Set the editor - we could do this only once
             const stateEditor = el as StateEditor
             stateEditor.setEditor(this.editor!)
-            stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
-            this.inputs[name] = stateEditor
+            // Store the stateEditor ref and the component it is representing
+            if (!this.inputs[name]) {
+              this.inputs[name] = {
+                stateEditor,
+                selected: undefined, // clear the selected component so that we update the data
+              }
+            }
+          }
+          // Finally update the data
+          if (this.inputs[name]) {
+            const stateEditorFinally = this.inputs[name]!.stateEditor
+            const selectedFinally = this.inputs[name]!.selected
+            if (!selectedFinally || selectedFinally !== selected) {
+              this.redrawing = true
+              // Update the data only if the selected component changed
+              stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+              this.redrawing = false
+            }
+            // Store the selected component
+            this.inputs[name]!.selected = selected
           }
         })}
         @change=${() => this.onChange(selected, name, publicState)}
@@ -198,7 +235,7 @@ export class PropertiesEditor extends LitElement {
   }
 
   onChange(component: Component, name: PropsNames, publicState: boolean) {
-    const stateEditor = this.inputs[name]!
+    const {stateEditor} = this.inputs[name]!
     if(this.redrawing) return
     setState(component, name, {
       expression: stateEditor.data
