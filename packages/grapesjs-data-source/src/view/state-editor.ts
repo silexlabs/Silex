@@ -117,12 +117,6 @@ export class StateEditor extends LitElement {
     //this.editor.on('component:update', () => this.requestUpdate())
   }
 
-  // FIXME: is this even useful?
-  rerender() {
-    //this._data = this.data
-    //this.requestUpdate()
-  }
-
   override render() {
     this.redrawing = true
     super.render()
@@ -211,7 +205,7 @@ export class StateEditor extends LitElement {
                 ${ref(popinRef)}
                 hidden
                 name=${`${this.name}_options_${idx}`}
-                @change=${() => this.onChangeOptions(selected, popinRef.value!, idx)}
+                @change=${(event: Event) => this.onChangeOptions(event, selected, popinRef.value!, idx)}
               >
                 ${optionsForm}
               </popin-form>
@@ -248,9 +242,10 @@ export class StateEditor extends LitElement {
     if(this.redrawing) return
     const idx = (event as CustomEvent).detail?.idx
     if(idx >= 0) {
+      // Custom event coming from the expression input
       this.data = this.data.slice(0, idx + 1)
     } else {
-      throw new Error('Missing index in change event (supposed to be coming from input-chain web component)')
+      // Event coming from the options
     }
     event.preventDefault()
     event.stopImmediatePropagation()
@@ -258,7 +253,7 @@ export class StateEditor extends LitElement {
     this.dispatchEvent(new Event('change'))
   }
 
-  private onChangeOptions(component: Component, popin: PopinForm, idx: number) {
+  private onChangeOptions(event: Event, component: Component, popin: PopinForm, idx: number) {
     if(this.redrawing) return
     const input = this.expressionInputRef.value!
     const tokensStrings = input.value
@@ -275,6 +270,10 @@ export class StateEditor extends LitElement {
     options[idx].value = toString(tokens[idx])
     // Update the state
     this.requestUpdate()
+    // Stop the original event
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    event.stopPropagation()
     // Notify the owner
     this.dispatchEvent(new Event('change'))
   }

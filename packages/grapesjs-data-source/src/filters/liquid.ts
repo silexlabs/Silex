@@ -50,7 +50,6 @@ export default function(editor: DataSourceEditor): Filter[] {
           class="ds-state-editor__options"
           value=${options.value || '[]'}
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
-          @change=${({target}: {target: StateEditor}) => target.rerender()}
         >
           <label slot="label">Suffix</label>
         </state-editor>
@@ -78,7 +77,6 @@ export default function(editor: DataSourceEditor): Filter[] {
           name="key"
           root-type=${field?.typeIds[0] ?? ''}
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
-          @change=${({target}: {target: StateEditor}) => target.rerender()}
         >
           <label slot="label">Key to filter on</label>
         </state-editor>
@@ -90,7 +88,6 @@ export default function(editor: DataSourceEditor): Filter[] {
           value=${options.value || []}
           name="value"
           ${ref(el => el && (el as StateEditor).setEditor(editor))}
-          @change=${({target}: {target: StateEditor}) => target.rerender()}
         >
           <label slot="label">Value to match</label>
         </state-editor>
@@ -130,7 +127,6 @@ export default function(editor: DataSourceEditor): Filter[] {
             name="key"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
             root-type=${field?.typeIds[0] ?? ''}
-            @change=${({target}: {target: StateEditor}) => target.rerender()}
           >
             <label slot="label">Separator</label>
           </state-editor>
@@ -141,7 +137,6 @@ export default function(editor: DataSourceEditor): Filter[] {
             value=${options.value || []}
             name="value"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
-            @change=${({target}: {target: StateEditor}) => target.rerender()}
           >
             <label slot="label">Value to match</label>
           </state-editor>
@@ -211,7 +206,6 @@ export default function(editor: DataSourceEditor): Filter[] {
             name="key"
             ${ref(el => el && (el as StateEditor).setEditor(editor))}
             root-type=${field?.typeIds[0] ?? ''}
-            @change=${({target}: {target: StateEditor}) => target.rerender()}
           >
           <label slot="label">Key to map</label>
         </state-editor>
