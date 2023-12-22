@@ -38,7 +38,7 @@ import { inputChainStyles } from './styles.js';
  *
  */
 const SELECT_QUERY = ':scope > select, :scope > custom-select';
-const OPTION_QUERY = ':scope option, :scope custom-option';
+const OPTION_QUERY = ':scope > select > option, :scope > select > optgroup > option, :scope > custom-select > custom-option';
 let InputChain = class InputChain extends LitElement {
     constructor() {
         super();
@@ -90,8 +90,7 @@ let InputChain = class InputChain extends LitElement {
      * @readonly
      */
     get options() {
-        return Array.from(this.querySelectorAll(OPTION_QUERY))
-            .filter(option => option.selected);
+        return Array.from(this.querySelectorAll(OPTION_QUERY));
     }
     /**
      * Render the component

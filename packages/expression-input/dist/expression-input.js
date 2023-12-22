@@ -49,11 +49,8 @@ let ExpressionInput = class ExpressionInput extends InputChain {
      * @readonly
      */
     get dirty() {
-        var _a, _b;
         //return JSON.stringify(this.value) !== JSON.stringify(this.initialValue)
-        return this.fixed ? !!((_b = (_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value) === null || _b === void 0 ? void 0 : _b.length) : !!this.options
-            .filter(o => o.selected && !!o.value)
-            .length;
+        return this.value.length > 0;
     }
     /**
      * Value is the concatenation of all options' values
@@ -64,7 +61,7 @@ let ExpressionInput = class ExpressionInput extends InputChain {
         return this.fixed ? [(_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value]
             .filter(v => !!v)
             : this.options
-                .filter(o => o.selected)
+                .filter(o => o.selected && o.value)
                 .map(o => o.value);
     }
     get fixed() {
@@ -82,13 +79,14 @@ let ExpressionInput = class ExpressionInput extends InputChain {
      * Render the component
      */
     render() {
+        const dirty = this.dirty;
         return html `
       <!-- header -->
       <header part="header" class="header">
         <label>
-          <div class=${classMap({ dirty: this.dirty, 'property-name': true })} part="property-name">
+          <div class=${classMap({ dirty, 'property-name': true })} part="property-name">
             <slot name="label"></slot>
-            ${this.dirty ? html `
+            ${dirty ? html `
               <slot name="dirty-icon" part="dirty-icon" class="dirty-icon" @click=${this.reset}>
                 <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
               </slot>
