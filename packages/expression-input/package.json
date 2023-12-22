@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/expression-input",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.",
   "main": "dist/expression-input.js",
   "module": "dist/expression-input.js",
