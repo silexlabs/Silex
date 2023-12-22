@@ -395,7 +395,7 @@ export declare function getFixedToken(value: string): Token;
  * Convert a token to a string
  * This is used to store the token in the component
  */
-export declare function toString(token: Token): string;
+export declare function toValue(token: Token): string;
 /**
  * Convert a token to an option's tag value (json string)
  */
@@ -404,10 +404,6 @@ export declare function toId(token: Token): string;
  * Revert an option's tag value to a token
  */
 export declare function fromString(editor: DataSourceEditor, id: string): Token;
-/**
- * Compare two tokens by stringifying them
- */
-export declare function equals(a: Token, b: Token): boolean;
 /**
  * Apply a kind to a field
  */

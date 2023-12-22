@@ -137,13 +137,6 @@ export function fromString(editor: DataSourceEditor, id: string): Token {
 }
 
 /**
- * Compare two tokens by stringifying them
- */
-export function equals(a: Token, b: Token): boolean {
-  return toId(a) === toId(b)
-}
-
-/**
  * Apply a kind to a field
  */
 export function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null {

@@ -22,7 +22,7 @@ import { DataSourceEditor, Filter, Property, Token } from '..'
 
 import { createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, getTokenDisplayName, groupByType, toId, toValue } from '../utils'
+import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toId, toValue } from '../utils'
 import { ExpressionInput } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
 import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
