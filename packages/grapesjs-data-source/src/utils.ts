@@ -109,7 +109,7 @@ export function getFixedToken(value: string): Token {
  * Convert a token to a string
  * This is used to store the token in the component
  */
-export function toString(token: Token): string {
+export function toValue(token: Token): string {
   return JSON.stringify({
     ...token,
   })

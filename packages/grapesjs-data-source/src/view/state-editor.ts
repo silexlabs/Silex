@@ -22,7 +22,7 @@ import { DataSourceEditor, Filter, Property, Token } from '..'
 
 import { createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, getTokenDisplayName, groupByType, toString } from '../utils'
+import { FIXED_TOKEN_ID, equals, fromString, getFixedToken, getTokenDisplayName, groupByType, toId, toValue } from '../utils'
 import { ExpressionInput } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
 import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
@@ -166,17 +166,21 @@ export class StateEditor extends LitElement {
               : _partialCompletion
             const partialMaxLineWidth = Math.max(...partialCompletion.map(token => getTokenDisplayName(selected, token).length))
             const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
+            const id = toId(token)
             return html`
               <select>
                 <option value="">-</option>
                 ${ Object.entries(partialGroupedCompletion)
                   .map(([type, completion]) => {
+                    console.log('completion', type)
                     return html`
                       <optgroup label="${type}">
                       ${ completion
                         .map(partialToken => {
+                          const partialId = toId(partialToken)
+                          console.log('partialToken', {partialToken, partialId, id})
                           return html`
-                            <option value="${toString(partialToken)}" .selected=${equals(partialToken, token)}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
+                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
                           `
                         })
                       }
@@ -215,7 +219,7 @@ export class StateEditor extends LitElement {
                 return html`
                     <optgroup label="${type}">
                     ${ completion
-                      .map(token => html`<option value="${toString(token)}">${getTokenDisplayName(selected, token, maxLineWidth)}</option>`)
+                      .map(token => html`<option value="${toValue(token)}">${getTokenDisplayName(selected, token, maxLineWidth)}</option>`)
                     }
                     </optgroup>
                 `
@@ -258,7 +262,7 @@ export class StateEditor extends LitElement {
     // Update the options of the token
     ;(tokens[idx] as Property | Filter).options = popin.value
     // Update the dom
-    options[idx].value = toString(tokens[idx])
+    options[idx].value = toValue(tokens[idx])
     // Update the state
     this.requestUpdate()
     // Stop the original event
