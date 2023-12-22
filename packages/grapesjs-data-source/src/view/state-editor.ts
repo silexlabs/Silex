@@ -172,13 +172,11 @@ export class StateEditor extends LitElement {
                 <option value="">-</option>
                 ${ Object.entries(partialGroupedCompletion)
                   .map(([type, completion]) => {
-                    console.log('completion', type)
                     return html`
                       <optgroup label="${type}">
                       ${ completion
                         .map(partialToken => {
                           const partialId = toId(partialToken)
-                          console.log('partialToken', {partialToken, partialId, id})
                           return html`
                             <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
                           `

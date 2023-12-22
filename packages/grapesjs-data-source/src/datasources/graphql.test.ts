@@ -17,8 +17,14 @@
 
 import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType, Tree } from './GraphQL'
 import { directusTestSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
-import { Expression, Field, Type } from '../types'
+import { Expression, Field, Filter, Token, Type } from '../types'
 import dedent from 'dedent-js'
+
+// FIXME: Workaround to avoid import of lit-html which breakes unit tests
+jest.mock('lit', () => ({
+  html: jest.fn(),
+  render: jest.fn(),
+}))
 
 const bearerToken = process.env.BEARER ?? ''
 
@@ -65,8 +71,8 @@ class GQLTest extends GraphQL {
     return super.getOfTypeProp(prop, type, defaultValue)
   }
 
-  getTree(expression: Expression): Tree {
-    return super.getTree(expression)
+  getTrees(expression: Expression): Tree[] {
+    return super.getTrees(expression)
   }
 
   mergeTrees(tree1: Tree, tree2: Tree): Tree {
@@ -668,8 +674,8 @@ test('get tree', () => {
     kind: 'object',
     dataSourceId: 'DataSourceId',
   }]
-  expect(gql.getTree(expression))
-    .toEqual({
+  expect(gql.getTrees(expression))
+    .toEqual([{
       token: {
         type: 'property',
         propType: 'field',
@@ -680,7 +686,227 @@ test('get tree', () => {
         dataSourceId: 'DataSourceId',
       },
       children: [],
-    })
+    }])
+})
+
+const tokens: Record<string, Token> = {
+  rootField1: {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'rootField1',
+    label: 'test',
+    typeIds: ['rootTypeId1'],
+    kind: 'object',
+    dataSourceId: 'DataSourceId',
+  },
+  filter: {
+    type: 'filter',
+    id: 'filterId',
+    label: 'filter name',
+    validate: () => true,
+    output: () => null,
+    apply: () => null,
+    options: {},
+    quotedOptions: [],
+  },
+  rootField2: {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'rootField2',
+    label: 'test',
+    typeIds: ['rootTypeId2'],
+    kind: 'object',
+    dataSourceId: 'DataSourceId',
+  },
+  childField1: {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'childField1',
+    label: 'test',
+    typeIds: ['childTypeId1'],
+    kind: 'scalar',
+    dataSourceId: 'DataSourceId',
+  },
+  childField2: {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'childField2',
+    label: 'test',
+    typeIds: ['childTypeId2'],
+    kind: 'scalar',
+    dataSourceId: 'DataSourceId',
+  },
+  childField3: {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'childField3',
+    label: 'test',
+    typeIds: ['childTypeId3'],
+    kind: 'scalar',
+    dataSourceId: 'DataSourceId',
+  },
+}
+
+// test('get query with options', () => {
+//   const fn = jest.fn(expression => ([{
+//     token: tokens.rootField1,
+//     children: [],
+//   }] as Tree[]))
+//   class GQLTestQuery extends GraphQL {
+//     getTrees(expression: Expression): Tree[] {
+//       return fn(expression)
+//     }
+//   }
+//   const gql = new GQLTestQuery({
+//     url: 'http://localhost',
+//     method: 'POST',
+//     headers: {},
+//     queryable: [],
+//     id: 'testDataSourceId',
+//     label: 'test',
+//     type: 'graphql',
+//   })
+//   const expression: Expression = [{
+//       ...tokens.rootField1,
+//     }, {
+//       ...tokens.filter,
+//       options: {
+//         id: 1,
+//         childExpressionAbsolute: JSON.stringify([tokens.rootField2, tokens.childField2]),
+//         childExpressionRelative: JSON.stringify([tokens.childField1]),
+//       },
+//     } as Filter,
+//     tokens.childField3
+//   ]
+//   expect(() => gql.getQuery([expression])).not.toThrow()
+//   fn.mockClear()
+//   gql.getQuery([expression])
+//   expect(fn).toHaveBeenCalledTimes(1)
+//   expect(fn).toHaveBeenCalledWith(
+//     [{
+//       token: tokens.rootField1,
+//       children: [{
+//         token: tokens.childField3,
+//         children: [],
+//       }],
+//     }, {
+//       token: tokens.rootField1,
+//       children: [{
+//         token: tokens.childField1,
+//         children: [],
+//       }],
+//     }, {
+//       token: tokens.rootField2,
+//       children: [{
+//         token: tokens.childField2,
+//         children: [],
+//       }],
+//     }]
+//   )
+// })
+
+test('get tree with options', () => {
+  const fn = jest.fn(() => ([{
+    id: 'rootField1',
+    label: 'test',
+    dataSourceId: 'DataSourceId',
+    fields: [{
+      id: 'childField1',
+      label: 'test',
+      typeIds: ['childTypeId1'],
+      kind: 'scalar',
+      dataSourceId: 'DataSourceId',
+    }, {
+      id: 'childField3',
+      label: 'test',
+      typeIds: ['childTypeId3'],
+      kind: 'scalar',
+      dataSourceId: 'DataSourceId',
+    }],
+  }, {
+    id: 'rootField2',
+    label: 'test',
+    dataSourceId: 'DataSourceId',
+    fields: [{
+      id: 'childField2',
+      label: 'test',
+      typeIds: ['childTypeId2'],
+      kind: 'scalar',
+      dataSourceId: 'DataSourceId',
+    }],
+  }] as Type[]))
+  class GQLTestTrees extends GraphQL {
+    getTypes(): Type[] {
+      return fn()
+    }
+    getTrees(expression: Expression): Tree[] {
+      return super.getTrees(expression)
+    }
+  }
+  const gql = new GQLTestTrees({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+
+  // Simple expression with relative child expression
+  const expression1 = [
+    tokens.rootField1,
+    {
+      ...tokens.filter,
+      options: {
+        childExpressionRelative: JSON.stringify([tokens.childField1]),
+      },
+    } as Filter,
+  ] as Expression
+  expect(() => gql.getTrees(expression1)).not.toThrow()
+  expect(gql.getTrees(expression1))
+  .toEqual([{
+    token: tokens.rootField1,
+    children: [{
+      token: tokens.childField1,
+      children: [],
+    }],
+  }])
+
+  // More complex expression with absolute child expression
+  const expression2: Expression = [{
+      ...tokens.rootField1,
+    }, {
+      ...tokens.filter,
+      options: {
+        id: 1,
+        childExpressionAbsolute: JSON.stringify([tokens.rootField2, tokens.childField2]),
+        childExpressionRelative: JSON.stringify([tokens.childField1]),
+      },
+    } as Filter,
+    tokens.childField3
+  ]
+  expect(() => gql.getTrees(expression2)).not.toThrow()
+  expect(gql.getTrees(expression2))
+  .toEqual([{
+    token: tokens.rootField1,
+    children: [{
+      token: tokens.childField3,
+      children: [],
+    }],
+  }, {
+    token: tokens.rootField2,
+    children: [{
+      token: tokens.childField2,
+      children: [],
+    }],
+  }, {
+    token: tokens.rootField1,
+    children: [{
+      token: tokens.childField1,
+      children: [],
+    }],
+  }])
 })
 
 test('Get query from 1 expression', async () => {
@@ -974,6 +1200,82 @@ test('Get query with property options', async () => {
     testFieldPropertyId3(prop: "option3")
   }
 }`)
+})
+
+test('Get query with filter options', () => {
+  const fn = jest.fn(() => ([{
+    id: 'rootField1',
+    label: 'test',
+    dataSourceId: 'DataSourceId',
+    fields: [{
+      id: 'childField1',
+      label: 'test',
+      typeIds: ['childTypeId1'],
+      kind: 'scalar',
+      dataSourceId: 'DataSourceId',
+    }, {
+      id: 'childField3',
+      label: 'test',
+      typeIds: ['childTypeId3'],
+      kind: 'scalar',
+      dataSourceId: 'DataSourceId',
+    }],
+  }, {
+    id: 'rootField2',
+    label: 'test',
+    dataSourceId: 'DataSourceId',
+    fields: [{
+      id: 'childField2',
+      label: 'test',
+      typeIds: ['childTypeId2'],
+      kind: 'scalar',
+      dataSourceId: 'DataSourceId',
+    }],
+  }] as Type[]))
+  class GQLTestTrees extends GraphQL {
+    getTypes(): Type[] {
+      return fn()
+    }
+    getTrees(expression: Expression): Tree[] {
+      return super.getTrees(expression)
+    }
+  }
+  const gql = new GQLTestTrees({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  const expression: Expression = [{
+      ...tokens.rootField1,
+    }, {
+      ...tokens.filter,
+      options: {
+        id: 1,
+        childExpressionAbsolute: JSON.stringify([tokens.rootField2, tokens.childField2]),
+        childExpressionRelative: JSON.stringify([tokens.childField1]),
+      },
+    } as Filter,
+    tokens.childField3
+  ]
+  expect(gql.getQuery([expression]))
+    .toEqual(dedent`
+      query {
+        __typename
+        rootField2 {
+          __typename
+          childField2
+        }
+        rootField1 {
+          __typename
+          childField3
+          childField1
+        }
+      }
+    `)
 })
 
 test('Merge trees with empty and no options', async () => {

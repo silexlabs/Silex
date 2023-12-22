@@ -137,6 +137,50 @@ export function fromString(editor: DataSourceEditor, id: string): Token {
 }
 
 /**
+ * Check if a json is an expression, i.e. an array of tokens
+ */
+export function isExpression(json: unknown): boolean {
+  if(typeof json === 'string') throw new Error('json must be parsed')
+  if (!Array.isArray(json)) return false
+  return json.every(token => {
+    if (typeof token !== 'object') return false
+    if (!token.type) return false
+    switch (token.type) {
+      case 'property': {
+        if (!token.fieldId) return false
+        if (token.fieldId === FIXED_TOKEN_ID) {
+          if (!token.options?.value) return false
+        }
+        break
+      }
+      case 'state': {
+        if (!token.componentId) return false
+        if (!token.storedStateId) return false
+        break
+      }
+      case 'filter': {
+        if (!token.id) return false
+        break
+      }
+    }
+    return true
+  })
+}
+
+/**
+ * Convert a json to an expression
+ */
+export function toExpression(json: unknown | string): Expression | null {
+  try {
+    if(typeof json === 'string') json = JSON.parse(json)
+    if(isExpression(json)) return json as Expression
+    return null
+  } catch(e) {
+    return null
+  }
+}
+
+/**
  * Apply a kind to a field
  */
 export function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null {

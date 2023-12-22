@@ -19,6 +19,7 @@ import Backbone from "backbone"
 import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, PropertyOptions, Property, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 import graphqlIntrospectionQuery from "./graphql-introspection-query"
 import dedent from "dedent-js"
+import { toExpression } from "../utils"
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -391,10 +392,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     if(expressions.length === 0) return ''
     const tree: Tree = expressions
       // From Expression to Tree
-      .map(expression => this.getTree(expression
-        // Ignore filters
-        .filter(token => token.type !== 'filter'))
-      )
+      .flatMap(expression => this.getTrees(expression))
       // Add the main query object which is the root of the tree
       .map(tree => ({
         token: {
@@ -410,18 +408,37 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     return this.buildQuery(tree)
   }
 
-  protected getTree(expression: Expression): Tree {
+  protected getTrees(expression: Expression): Tree[] {
+    if(expression.length === 0) return []
     const next = expression[0]
     switch(next.type) {
-      case 'property':
-        return {
+      case 'property': {
+        const trees = this.getTrees(expression.slice(1))
+        if(trees.length === 0) return [{
           token: next,
-          children: expression.length > 1
-            ? [this.getTree(expression.slice(1))]
-            : [],
-        }
+          children: [],
+        }]
+        return trees
+          .flatMap(tree => {
+            // Check if this is a "relative" property or "absolute" (a root type)
+            const type = this.getTypes().find(t => t.id === tree.token.fieldId)
+            if(type) return tree
+            return {
+              token: next,
+              children: [tree],
+            }
+          })
+      }
+      case 'filter': {
+        const options = Object.values(next.options)
+          .map((value: unknown) => toExpression(value))
+          .filter((exp: Expression | null) => !!exp && exp.length > 0)
+          .flatMap(exp => this.getTrees(exp!))
 
-      case 'filter':
+        const trees = this.getTrees(expression.slice(1))
+        if(trees.length === 0) return options
+        return trees.flatMap(tree => [tree, ...options])
+      }
       case 'state': // This will not occure as components states are resolved to properties and filters
       default:
         console.error('Invalid expression', expression)

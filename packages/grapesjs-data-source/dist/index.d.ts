@@ -405,6 +405,14 @@ export declare function toId(token: Token): string;
  */
 export declare function fromString(editor: DataSourceEditor, id: string): Token;
 /**
+ * Check if a json is an expression, i.e. an array of tokens
+ */
+export declare function isExpression(json: unknown): boolean;
+/**
+ * Convert a json to an expression
+ */
+export declare function toExpression(json: unknown | string): Expression | null;
+/**
  * Apply a kind to a field
  */
 export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
