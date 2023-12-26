@@ -49,12 +49,12 @@
 [submodule "packages/grapesjs-storage-rate-limit"]
 	path = packages/grapesjs-storage-rate-limit
 	url = git@github.com:silexlabs/grapesjs-storage-rate-limit.git
-[submodule "packages/silex-plugin-11ty"]
-	path = packages/silex-plugin-11ty
-	url = git@github.com:silexlabs/silex-plugin-11ty.git
 [submodule "packages/expression-input"]
 	path = packages/expression-input
 	url = git@github.com:silexlabs/expression-input.git
 [submodule "packages/silex-strapi-11ty"]
 	path = packages/silex-strapi-11ty
 	url = git@github.com:silexlabs/silex-strapi-11ty.git
+[submodule "packages/silex-cms"]
+	path = packages/silex-cms
+	url = git@github.com:silexlabs/silex-cms.git
