@@ -376,6 +376,11 @@ export declare function setState(component: Component, id: StateId, state: Store
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
 /**
+ * Concatenate strings to get a desired length string as result
+ * Exported for tests
+ */
+export declare function concatWithLength(desiredNumChars: number, ...strings: string[]): string;
+/**
  * Get the label for a token
  * This is mostly about formatting a string for the dropdowns
  */

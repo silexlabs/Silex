@@ -15,6 +15,23 @@ function getTypeDisplayName(typeIds: TypeId[], kind: FieldKind | null): string {
 }
 
 /**
+ * Concatenate strings to get a desired length string as result
+ * Exported for tests
+ */
+export function concatWithLength(desiredNumChars: number, ...strings: string[]): string {
+  // const diff = desiredNumChars - `${token.label} ${type}`.length
+  // return `${token.label}${'\xA0'.repeat(diff * 2)} ${type} ${desiredNumChars}`
+  // Get current string length
+  const len = strings.reduce((acc, str) => acc + str.length, 0)
+  const diff = Math.max(desiredNumChars - len, 0)
+  // Give the fist string the desired length
+  const [first, ...rest] = strings
+  const newFirst = first + '\xA0'.repeat(diff)
+  // Return the concatenated string
+  return [newFirst, ...rest].join('')
+}
+
+/**
  * Get the label for a token
  * This is mostly about formatting a string for the dropdowns
  */
@@ -23,8 +40,7 @@ export function getTokenDisplayName(component: Component, token: Token, desiredN
     case 'property': {
       const type = getTypeDisplayName(token.typeIds, token.kind)
       if(desiredNumChars > 0) {
-        const diff = desiredNumChars - `${token.label} ${type}`.length
-        return `${token.label}${'\xA0'.repeat(diff * 2)} ${type}`
+        return concatWithLength(desiredNumChars, token.label, type)
       }
       return `${token.label} ${type}`
     }
