@@ -7,7 +7,6 @@ jest.mock('lit', () => ({
 }))
 
 test('Test string length', () => {
-  console.log('concatWithLength', concatWithLength(5, 'xxx', 'yyy'))
   expect(concatWithLength(5, 'a')).toHaveLength(5)
   expect(concatWithLength(5, 'a', 'b')).toHaveLength(5)
   expect(concatWithLength(5, 'a', 'b', 'c')).toHaveLength(5)

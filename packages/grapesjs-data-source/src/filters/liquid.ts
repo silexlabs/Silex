@@ -22,6 +22,18 @@ import { ref } from "lit/directives/ref.js"
 import { convertKind, getFieldType } from "../utils"
 import { StateEditor } from "../view/state-editor"
 
+/**
+ * Check if a field is a number
+ */
+function isNumber(field: Field | null): boolean {
+  if (!field || field.kind !== 'scalar') return false
+  const typeIds = field.typeIds.map(typeId => typeId.toLowerCase())
+  return typeIds.includes('number') || typeIds.includes('int')
+}
+
+/**
+ * Liquid filters
+ */
 export default function(editor: DataSourceEditor): Filter[] {
   return [
     {
@@ -260,6 +272,140 @@ export default function(editor: DataSourceEditor): Filter[] {
           <input type="number" name="index" placeholder="Index" value=${options.index}/>
         </label>
     `,
-    }
+    }, {
+      type: 'filter',
+      id: 'slice',
+      label: 'slice',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: field => field,
+      apply: (arr, options) => (arr as unknown[]).slice(options.start as number, options.end as number),
+      options: {
+        start: 0,
+        end: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Start
+          <input type="number" name="start" placeholder="Start" value=${options.start}/>
+        </label>
+        <label>End
+          <input type="number" name="end" placeholder="End" value=${options.end}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'sort',
+      label: 'sort',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: field => field,
+      apply: (arr, options) => (arr as Record<string, string | number>[]).sort((a, b) => {
+        if (a[options.key as string] < b[options.key as string]) {
+          return -1
+        }
+        if (a[options.key as string] > b[options.key as string]) {
+          return 1
+        }
+        return 0
+      }),
+      quotedOptions: ['key'],
+      options: {
+        key: '',
+      },
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          no-filters
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.key || []}
+          name="key"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+          root-type=${field?.typeIds[0] ?? ''}
+        >
+          <label slot="label">Key to sort on</label>
+        </state-editor>
+      `,
+    }, {
+      type: 'filter',
+      id: 'plus',
+      label: 'plus',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => (num as number) + (options.value as number),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'minus',
+      label: 'minus',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => (num as number) - (options.value as number),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'times',
+      label: 'times',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => (num as number) * (options.value as number),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'divided_by',
+      label: 'divided_by',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => (num as number) / (options.value as number),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'modulo',
+      label: 'modulo',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => (
+        (num as number) % (options.value as number)
+      ),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    } 
   ]
 }

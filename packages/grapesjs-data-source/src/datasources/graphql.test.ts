@@ -290,7 +290,7 @@ test('build query from tree', () => {
       label: 'test field name',
       typeIds: ['testTypeId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     },
     children: [{
       token: {
@@ -300,7 +300,7 @@ test('build query from tree', () => {
         label: 'test field property name',
         typeIds: ['testFieldPropertyTypeId'],
         kind: 'scalar',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [],
     }],
@@ -331,7 +331,7 @@ test('build query with fragments', () => {
       label: 'test parent name',
       typeIds: ['testParentId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     },
     children: [{
       token: {
@@ -341,7 +341,7 @@ test('build query with fragments', () => {
         label: 'test field name',
         typeIds: ['testTypeId1'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [{
         token: {
@@ -351,7 +351,7 @@ test('build query with fragments', () => {
           label: 'test field property name',
           typeIds: ['testFieldPropertyTypeId1'],
           kind: 'scalar',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [],
       }],
@@ -363,7 +363,7 @@ test('build query with fragments', () => {
         label: 'test field name',
         typeIds: ['testTypeId2'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [{
         token: {
@@ -373,7 +373,7 @@ test('build query with fragments', () => {
           label: 'test field property name',
           typeIds: ['testFieldPropertyTypeId2'],
           kind: 'scalar',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [],
       }],
@@ -415,7 +415,7 @@ test('merge trees', () => {
       label: 'test field name',
       typeIds: ['testTypeId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     },
     children: [{
       token: {
@@ -425,7 +425,7 @@ test('merge trees', () => {
         label: 'test field property name',
         typeIds: ['testFieldPropertyTypeId'],
         kind: 'scalar',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [],
     }],
@@ -438,7 +438,7 @@ test('merge trees', () => {
       label: 'test field name',
       typeIds: ['testTypeId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     },
     children: [{
       token: {
@@ -448,7 +448,7 @@ test('merge trees', () => {
         label: 'test field property name',
         typeIds: ['testFieldPropertyTypeId'],
         kind: 'scalar',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [],
     }, {
@@ -459,7 +459,7 @@ test('merge trees', () => {
         label: 'test field property name',
         typeIds: ['testFieldPropertyTypeId'],
         kind: 'scalar',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [],
     }],
@@ -473,7 +473,7 @@ test('merge trees', () => {
         label: 'test field name',
         typeIds: ['testTypeId'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [{
         token: {
@@ -483,7 +483,7 @@ test('merge trees', () => {
           label: 'test field property name',
           typeIds: ['testFieldPropertyTypeId'],
           kind: 'scalar',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [],
       }, {
@@ -494,7 +494,7 @@ test('merge trees', () => {
           label: 'test field property name',
           typeIds: ['testFieldPropertyTypeId'],
           kind: 'scalar',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [],
       }],
@@ -519,7 +519,7 @@ test('merge trees with multiple possible types', () => {
       label: 'test parent name',
       typeIds: ['testParentId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     },
     children: [{
       token: {
@@ -529,7 +529,7 @@ test('merge trees with multiple possible types', () => {
         label: 'test field name',
         typeIds: ['testTypeId1'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [{
         token: {
@@ -539,7 +539,7 @@ test('merge trees with multiple possible types', () => {
           label: 'test field property name',
           typeIds: ['testFieldPropertyTypeId1'],
           kind: 'scalar',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [],
       }],
@@ -553,7 +553,7 @@ test('merge trees with multiple possible types', () => {
       label: 'test parent name',
       typeIds: ['testParentId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     },
     children: [{
       token: {
@@ -563,7 +563,7 @@ test('merge trees with multiple possible types', () => {
         label: 'test field name',
         typeIds: ['testTypeId2'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [{
         token: {
@@ -573,7 +573,7 @@ test('merge trees with multiple possible types', () => {
           label: 'test field property name',
           typeIds: ['testFieldPropertyTypeId2'],
           kind: 'scalar',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [],
       }],
@@ -588,7 +588,7 @@ test('merge trees with multiple possible types', () => {
         label: 'test parent name',
         typeIds: ['testParentId'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [{
         token: {
@@ -598,7 +598,7 @@ test('merge trees with multiple possible types', () => {
           label: 'test field name',
           typeIds: ['testTypeId1'],
           kind: 'object',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [{
           token: {
@@ -608,7 +608,7 @@ test('merge trees with multiple possible types', () => {
             label: 'test field property name',
             typeIds: ['testFieldPropertyTypeId1'],
             kind: 'scalar',
-            dataSourceId: 'DataSourceId',
+            dataSourceId: 'testDataSourceId',
           },
           children: [],
         }],
@@ -620,7 +620,7 @@ test('merge trees with multiple possible types', () => {
           label: 'test field name',
           typeIds: ['testTypeId2'],
           kind: 'object',
-          dataSourceId: 'DataSourceId',
+          dataSourceId: 'testDataSourceId',
         },
         children: [{
           token: {
@@ -630,7 +630,7 @@ test('merge trees with multiple possible types', () => {
             label: 'test field property name',
             typeIds: ['testFieldPropertyTypeId2'],
             kind: 'scalar',
-            dataSourceId: 'DataSourceId',
+            dataSourceId: 'testDataSourceId',
           },
           children: [],
         }],
@@ -655,7 +655,7 @@ test('get tree', () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
   }]
   expect(gql.getTrees(expression))
     .toEqual([{
@@ -666,7 +666,7 @@ test('get tree', () => {
         label: 'test field name',
         typeIds: ['testTypeId'],
         kind: 'object',
-        dataSourceId: 'DataSourceId',
+        dataSourceId: 'testDataSourceId',
       },
       children: [],
     }])
@@ -680,7 +680,7 @@ const tokens: Record<string, Token> = {
     label: 'test',
     typeIds: ['rootTypeId1'],
     kind: 'object',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
   },
   filter: {
     type: 'filter',
@@ -699,7 +699,7 @@ const tokens: Record<string, Token> = {
     label: 'test',
     typeIds: ['rootTypeId2'],
     kind: 'object',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
   },
   childField1: {
     type: 'property',
@@ -708,7 +708,7 @@ const tokens: Record<string, Token> = {
     label: 'test',
     typeIds: ['childTypeId1'],
     kind: 'scalar',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
   },
   childField2: {
     type: 'property',
@@ -717,7 +717,7 @@ const tokens: Record<string, Token> = {
     label: 'test',
     typeIds: ['childTypeId2'],
     kind: 'scalar',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
   },
   childField3: {
     type: 'property',
@@ -726,7 +726,7 @@ const tokens: Record<string, Token> = {
     label: 'test',
     typeIds: ['childTypeId3'],
     kind: 'scalar',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
   },
 }
 
@@ -792,30 +792,30 @@ test('get tree with options', () => {
   const fn = jest.fn(() => ([{
     id: 'rootField1',
     label: 'test',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
     fields: [{
       id: 'childField1',
       label: 'test',
       typeIds: ['childTypeId1'],
       kind: 'scalar',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     }, {
       id: 'childField3',
       label: 'test',
       typeIds: ['childTypeId3'],
       kind: 'scalar',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     }],
   }, {
     id: 'rootField2',
     label: 'test',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
     fields: [{
       id: 'childField2',
       label: 'test',
       typeIds: ['childTypeId2'],
       kind: 'scalar',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     }],
   }] as Type[]))
   class GQLTestTrees extends GraphQL {
@@ -903,7 +903,7 @@ test('Get query from 1 expression', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -911,7 +911,7 @@ test('Get query from 1 expression', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
@@ -934,7 +934,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -942,7 +942,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }], [{
     type: 'property',
     propType: 'field',
@@ -950,7 +950,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -958,7 +958,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'list',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -966,7 +966,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
@@ -993,7 +993,7 @@ test('Get query with options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {id: 1},
   }], [{
     type: 'property',
@@ -1002,7 +1002,7 @@ test('Get query with options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {id: 1},
   }], [{
     type: 'property',
@@ -1011,7 +1011,7 @@ test('Get query with options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {name: 'test'},
   }], [{
     type: 'property',
@@ -1020,7 +1020,7 @@ test('Get query with options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
@@ -1051,7 +1051,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -1059,7 +1059,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }], [{
     type: 'property',
     propType: 'field',
@@ -1067,7 +1067,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -1075,7 +1075,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }], [{
     type: 'property',
     propType: 'field',
@@ -1083,7 +1083,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
@@ -1091,7 +1091,7 @@ test('Get query from multiple expressions', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
   }]])
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
@@ -1120,7 +1120,7 @@ test('Get query with property options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {id: 'option'},
   }, {
     // LEVEL 2
@@ -1130,7 +1130,7 @@ test('Get query with property options', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {prop: 'option1'},
   }], [{
     // LEVEL 1
@@ -1140,7 +1140,7 @@ test('Get query with property options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {id: 'option'},
   }, {
     // LEVEL 2
@@ -1150,7 +1150,7 @@ test('Get query with property options', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {},
   }], [{
     // LEVEL 1
@@ -1160,7 +1160,7 @@ test('Get query with property options', async () => {
     label: 'test field name',
     typeIds: ['testTypeId'],
     kind: 'object',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {id: 'option'},
   }, {
     // LEVEL 2
@@ -1170,7 +1170,7 @@ test('Get query with property options', async () => {
     label: 'test field property name',
     typeIds: ['testFieldPropertyTypeId'],
     kind: 'scalar',
-    dataSourceId: 'TestDataSourceId',
+    dataSourceId: 'testDataSourceId',
     options: {prop: 'option3'},
   }]])
   expect(query).not.toBeUndefined()
@@ -1189,30 +1189,30 @@ test('Get query with filter options', () => {
   const fn = jest.fn(() => ([{
     id: 'rootField1',
     label: 'test',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
     fields: [{
       id: 'childField1',
       label: 'test',
       typeIds: ['childTypeId1'],
       kind: 'scalar',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     }, {
       id: 'childField3',
       label: 'test',
       typeIds: ['childTypeId3'],
       kind: 'scalar',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     }],
   }, {
     id: 'rootField2',
     label: 'test',
-    dataSourceId: 'DataSourceId',
+    dataSourceId: 'testDataSourceId',
     fields: [{
       id: 'childField2',
       label: 'test',
       typeIds: ['childTypeId2'],
       kind: 'scalar',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: 'testDataSourceId',
     }],
   }] as Type[]))
   class GQLTestTrees extends GraphQL {
@@ -1267,7 +1267,7 @@ test('Merge trees with empty and no options', async () => {
   await dataSource.connect()
   const trees = [{
     "token": {
-      "dataSourceId": "TestDataSourceId",
+      "dataSourceId": "testDataSourceId",
       "fieldId": "query",
       "kind": "object"
     },
@@ -1282,14 +1282,14 @@ test('Merge trees with empty and no options', async () => {
             "testTypeId"
           ],
           "kind": "object",
-          "dataSourceId": "TestDataSourceId"
+          "dataSourceId": "testDataSourceId"
         },
         "children": []
       }
     ]
   }, {
     "token": {
-      "dataSourceId": "TestDataSourceId",
+      "dataSourceId": "testDataSourceId",
       "fieldId": "query",
       "kind": "object"
     },
@@ -1304,7 +1304,7 @@ test('Merge trees with empty and no options', async () => {
             "testTypeId"
           ],
           "kind": "object",
-          "dataSourceId": "TestDataSourceId",
+          "dataSourceId": "testDataSourceId",
           "options": {}
         },
         "children": []
@@ -1326,7 +1326,7 @@ test('Get query with errors in options', async () => {
   await dataSource.connect()
   expect(() => dataSource.mergeTrees({
     "token": {
-      "dataSourceId": "TestDataSourceId",
+      "dataSourceId": "testDataSourceId",
       "fieldId": "query",
       "kind": "object"
     },
@@ -1341,14 +1341,14 @@ test('Get query with errors in options', async () => {
             "testTypeId"
           ],
           "kind": "object",
-          "dataSourceId": "TestDataSourceId"
+          "dataSourceId": "testDataSourceId"
         },
         "children": []
       }
     ]
   }, {
     "token": {
-      "dataSourceId": "TestDataSourceId",
+      "dataSourceId": "testDataSourceId",
       "fieldId": "query",
       "kind": "object"
     },
@@ -1363,7 +1363,7 @@ test('Get query with errors in options', async () => {
             "testTypeId"
           ],
           "kind": "object",
-          "dataSourceId": "TestDataSourceId",
+          "dataSourceId": "testDataSourceId",
           "options": {
             "id": "option"
           }

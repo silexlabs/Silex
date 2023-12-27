@@ -522,7 +522,6 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * Build a GraphQL query from a tree
    */
   protected buildQuery(tree: Tree, indent = '', fragment = ''): string {
-    console.log('buildQuery', tree)
     const typeOrFragment = fragment ? `...on ${fragment}` : `${tree.token.fieldId}${this.buildArgs(tree.token.options)}`
     // Build the value
     switch(tree.token.kind) {
