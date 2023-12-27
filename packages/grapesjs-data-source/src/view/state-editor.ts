@@ -171,6 +171,7 @@ export class StateEditor extends LitElement {
               <select>
                 <option value="">-</option>
                 ${ Object.entries(partialGroupedCompletion)
+                  .reverse()
                   .map(([type, completion]) => {
                     return html`
                       <optgroup label="${type}">
@@ -213,6 +214,7 @@ export class StateEditor extends LitElement {
             >
             <option value="" selected>+</option>
             ${ Object.entries(groupedCompletion)
+              .reverse()
               .map(([type, completion]) => {
                 return html`
                     <optgroup label="${type}">
