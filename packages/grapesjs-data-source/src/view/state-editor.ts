@@ -178,7 +178,7 @@ export class StateEditor extends LitElement {
                         .map(partialToken => {
                           const partialId = toId(partialToken)
                           return html`
-                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth)}</option>
+                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth + 10)}</option>
                           `
                         })
                       }
@@ -217,7 +217,7 @@ export class StateEditor extends LitElement {
                 return html`
                     <optgroup label="${type}">
                     ${ completion
-                      .map(token => html`<option value="${toValue(token)}">${getTokenDisplayName(selected, token, maxLineWidth)}</option>`)
+                      .map(token => html`<option value="${toValue(token)}">${getTokenDisplayName(selected, token, maxLineWidth + 10)}</option>`)
                     }
                     </optgroup>
                 `

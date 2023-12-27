@@ -19,7 +19,7 @@ import Backbone from "backbone"
 import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, PropertyOptions, Property, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 import graphqlIntrospectionQuery from "./graphql-introspection-query"
 import dedent from "dedent-js"
-import { toExpression } from "../utils"
+import { FIXED_TOKEN_ID, toExpression } from "../utils"
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -521,10 +521,12 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * Build a GraphQL query from a tree
    */
   protected buildQuery(tree: Tree, indent = '', fragment = ''): string {
+    console.log('buildQuery', tree)
     const typeOrFragment = fragment ? `...on ${fragment}` : `${tree.token.fieldId}${this.buildArgs(tree.token.options)}`
     // Build the value
     switch(tree.token.kind) {
       case 'scalar':
+        if(tree.token.fieldId === FIXED_TOKEN_ID) return ''
         return indent + typeOrFragment
       case 'object':
       case 'list': {
