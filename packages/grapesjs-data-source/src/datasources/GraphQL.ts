@@ -413,6 +413,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     const next = expression[0]
     switch(next.type) {
       case 'property': {
+        if(next.dataSourceId !== this.id) return []
         const trees = this.getTrees(expression.slice(1))
         if(trees.length === 0) return [{
           token: next,
