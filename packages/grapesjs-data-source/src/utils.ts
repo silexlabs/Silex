@@ -10,8 +10,7 @@ import { Component } from "grapesjs"
  * @example "String", "String [ ]", "String { }"
  */
 function getTypeDisplayName(typeIds: TypeId[], kind: FieldKind | null): string {
-  const typeLabel = typeIds.join(', ')
-  return kind === 'list' ? `${typeLabel} [ ]` : kind === 'object' ? `${typeLabel} { }` : typeLabel
+  return kind === 'list' ? ` [ ]` : kind === 'object' ? ` { }` : ` (${typeIds.join(', ').toLowerCase()})`
 }
 
 /**
@@ -35,17 +34,15 @@ export function concatWithLength(desiredNumChars: number, ...strings: string[]):
  * Get the label for a token
  * This is mostly about formatting a string for the dropdowns
  */
-export function getTokenDisplayName(component: Component, token: Token, desiredNumChars = -1): string {
+export function getTokenDisplayName(component: Component, token: Token): string {
   switch (token.type) {
     case 'property': {
       const type = getTypeDisplayName(token.typeIds, token.kind)
-      if(desiredNumChars > 0) {
-        return concatWithLength(desiredNumChars, token.label, type)
-      }
       return `${token.label} ${type}`
     }
     case 'filter': return token.label
-    case 'state': return getStateDisplayName(component, token)
+    case 'state':
+      return getStateDisplayName(component, token)
     default:
       console.error('Unknown token type (reading type)', token)
       throw new Error(`Unknown token type`)

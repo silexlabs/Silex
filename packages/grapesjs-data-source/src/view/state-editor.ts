@@ -126,11 +126,10 @@ export class StateEditor extends LitElement {
 
     const fixed = _currentValue?.length === 1 && _currentValue[0].type === 'property' && _currentValue[0].fieldId === FIXED_TOKEN_ID
     const text = fixed ? (_currentValue![0] as Property).options?.value || '' : ''
-    const _completion = dataTree.getCompletion(selected, _currentValue || [], this.rootType)
-    const completion = this.noFilters ? _completion
+    const rawCompletion = dataTree.getCompletion(selected, _currentValue || [], this.rootType)
+    const completion = this.noFilters ? rawCompletion
       .filter(token => token.type !== 'filter')
-      : _completion
-    const maxLineWidth = Math.max(...completion.map(token => getTokenDisplayName(selected, token).length))
+      : rawCompletion
     const groupedCompletion = groupByType(this.editor, selected, completion, _currentValue)
     const result = html`
       <expression-input
@@ -164,7 +163,6 @@ export class StateEditor extends LitElement {
             const partialCompletion = this.noFilters ? _partialCompletion
               .filter(token => token.type !== 'filter')
               : _partialCompletion
-            const partialMaxLineWidth = Math.max(...partialCompletion.map(token => getTokenDisplayName(selected, token).length))
             const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
             const id = toId(token)
             return html`
@@ -179,7 +177,7 @@ export class StateEditor extends LitElement {
                         .map(partialToken => {
                           const partialId = toId(partialToken)
                           return html`
-                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken, partialMaxLineWidth + 10)}</option>
+                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken)}</option>
                           `
                         })
                       }
@@ -219,7 +217,7 @@ export class StateEditor extends LitElement {
                 return html`
                     <optgroup label="${type}">
                     ${ completion
-                      .map(token => html`<option value="${toValue(token)}">${getTokenDisplayName(selected, token, maxLineWidth + 10)}</option>`)
+                      .map(token => html`<option value="${toValue(token)}">${getTokenDisplayName(selected, token)}</option>`)
                     }
                     </optgroup>
                 `
@@ -245,7 +243,7 @@ export class StateEditor extends LitElement {
     event.preventDefault()
     event.stopImmediatePropagation()
     event.stopPropagation()
-    this.dispatchEvent(new Event('change'))
+    this.dispatchEvent(new Event('change', { bubbles: true }))
   }
 
   private onChangeOptions(event: Event, component: Component, popin: PopinForm, idx: number) {
@@ -270,7 +268,7 @@ export class StateEditor extends LitElement {
     event.stopImmediatePropagation()
     event.stopPropagation()
     // Notify the owner
-    this.dispatchEvent(new Event('change'))
+    this.dispatchEvent(new Event('change', { bubbles: true }))
   }
 
   private getOptions(component: Component, tokens: Token[], idx: number): TemplateResult | '' {

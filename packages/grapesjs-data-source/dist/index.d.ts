@@ -384,7 +384,7 @@ export declare function concatWithLength(desiredNumChars: number, ...strings: st
  * Get the label for a token
  * This is mostly about formatting a string for the dropdowns
  */
-export declare function getTokenDisplayName(component: Component, token: Token, desiredNumChars?: number): string;
+export declare function getTokenDisplayName(component: Component, token: Token): string;
 /**
  * Group tokens by type
  * This is used to create the groups in dropdowns
