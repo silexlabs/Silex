@@ -22,6 +22,10 @@ import { inputChainStyles } from './styles.js'
  * It has these attributes:
  * - [x] name for form submission
  * - [x] for (form id)
+ * - [x] reactive (the parent app needs to update the options on change)
+ * - [x] select-tag-name (default: select) to change the tag name of the select elements
+ * - [x] option-tag-name (default: option) to change the tag name of the option elements
+ * - [ ] required
  * - [ ] maxlength
  * - [ ] minlength
  * 
@@ -33,12 +37,12 @@ import { inputChainStyles } from './styles.js'
  * 
  */
 
-const SELECT_QUERY = ':scope > select, :scope > custom-select'
-const OPTION_QUERY = ':scope > select > option, :scope > select > optgroup > option, :scope > custom-select > custom-option'
-
 @customElement('input-chain')
 export class InputChain extends LitElement {
   static override styles = inputChainStyles
+  SELECT_QUERY = ':scope > select, :scope > custom-select'
+  OPTION_QUERY = ':scope > select > option, :scope > select > optgroup > option, :scope > custom-select > custom-option'
+
 
   /**
    * Form id
@@ -56,6 +60,29 @@ export class InputChain extends LitElement {
 
   @property({type: Boolean})
   reactive = false
+
+  _selectTagName = 'select'
+  @property({type: String, attribute: 'select-tag-name'})
+  get selectTagName() {
+    return this._selectTagName
+  }
+  set selectTagName(newTagName: string) {
+    this._selectTagName = newTagName
+    this.SELECT_QUERY = `:scope > ${this._selectTagName}`
+    this.OPTION_QUERY = `:scope > ${this._selectTagName} > ${this._optionTagName}, :scope > ${this._selectTagName} > optgroup > ${this._optionTagName}`
+    this.requestUpdate()
+  }
+
+  _optionTagName = 'option'
+  @property({type: String, attribute: 'option-tag-name'})
+  get optionTagName() {
+    return this._optionTagName
+  }
+  set optionTagName(newTagName: string) {
+    this._optionTagName = newTagName
+    this.OPTION_QUERY = `:scope > ${this._selectTagName} > ${newTagName}, :scope > ${this._selectTagName} > optgroup > ${newTagName}`
+    this.requestUpdate()
+  }
 
   constructor() {
     super()
@@ -84,7 +111,7 @@ export class InputChain extends LitElement {
    */
   @property({type: Array})
   get options(): HTMLOptionElement[] {
-    return Array.from(this.querySelectorAll(OPTION_QUERY))
+    return Array.from(this.querySelectorAll(this.OPTION_QUERY))
   }
 
   private onChange_ = this.onChangeValue.bind(this)
@@ -139,7 +166,7 @@ export class InputChain extends LitElement {
    */
   private onChangeValue(event: Event) {
     const target = event.target as HTMLSelectElement
-    const children = Array.from(this.querySelectorAll(SELECT_QUERY))
+    const children = Array.from(this.querySelectorAll(this.SELECT_QUERY))
 
     if(!children.includes(target)) {
       return

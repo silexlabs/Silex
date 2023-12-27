@@ -37,11 +37,28 @@ import { inputChainStyles } from './styles.js';
  * - [x] default: contains the select elements
  *
  */
-const SELECT_QUERY = ':scope > select, :scope > custom-select';
-const OPTION_QUERY = ':scope > select > option, :scope > select > optgroup > option, :scope > custom-select > custom-option';
 let InputChain = class InputChain extends LitElement {
+    get selectTagName() {
+        return this._selectTagName;
+    }
+    set selectTagName(newTagName) {
+        this._selectTagName = newTagName;
+        this.SELECT_QUERY = `:scope > ${this._selectTagName}`;
+        this.OPTION_QUERY = `:scope > ${this._selectTagName} > ${this._optionTagName}, :scope > ${this._selectTagName} > optgroup > ${this._optionTagName}`;
+        this.requestUpdate();
+    }
+    get optionTagName() {
+        return this._optionTagName;
+    }
+    set optionTagName(newTagName) {
+        this._optionTagName = newTagName;
+        this.OPTION_QUERY = `:scope > ${this._selectTagName} > ${newTagName}, :scope > ${this._selectTagName} > optgroup > ${newTagName}`;
+        this.requestUpdate();
+    }
     constructor() {
         super();
+        this.SELECT_QUERY = ':scope > select, :scope > custom-select';
+        this.OPTION_QUERY = ':scope > select > option, :scope > select > optgroup > option, :scope > custom-select > custom-option';
         /**
          * Form id
          * This is the same API as input elements
@@ -53,6 +70,8 @@ let InputChain = class InputChain extends LitElement {
          */
         this.name = '';
         this.reactive = false;
+        this._selectTagName = 'select';
+        this._optionTagName = 'option';
         /**
          * Form setter
          * Handle formdata event to add the current value to the form
@@ -90,7 +109,7 @@ let InputChain = class InputChain extends LitElement {
      * @readonly
      */
     get options() {
-        return Array.from(this.querySelectorAll(OPTION_QUERY));
+        return Array.from(this.querySelectorAll(this.OPTION_QUERY));
     }
     /**
      * Render the component
@@ -126,7 +145,7 @@ let InputChain = class InputChain extends LitElement {
      */
     onChangeValue(event) {
         const target = event.target;
-        const children = Array.from(this.querySelectorAll(SELECT_QUERY));
+        const children = Array.from(this.querySelectorAll(this.SELECT_QUERY));
         if (!children.includes(target)) {
             return;
         }
@@ -179,6 +198,12 @@ __decorate([
 __decorate([
     property({ type: Boolean })
 ], InputChain.prototype, "reactive", void 0);
+__decorate([
+    property({ type: String, attribute: 'select-tag-name' })
+], InputChain.prototype, "selectTagName", null);
+__decorate([
+    property({ type: String, attribute: 'option-tag-name' })
+], InputChain.prototype, "optionTagName", null);
 __decorate([
     property({ type: Array })
 ], InputChain.prototype, "options", null);

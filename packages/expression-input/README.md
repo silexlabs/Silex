@@ -83,6 +83,8 @@ It has these attributes:
 - fixed
 - fixed-type: 'none' | 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
 - reactive: boolean = false, if true, the component will not update the DOM when the value changes, you need to listen to the `change` event and update the DOM yourself
+- select-tag-name (default: select) to change the tag name of the select elements
+- option-tag-name (default: option) to change the tag name of the option elements
 
 It has these properties:
 - steps
