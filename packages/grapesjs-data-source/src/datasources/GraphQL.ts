@@ -149,14 +149,16 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   }
   protected async loadData(): Promise<[Type[], Field[]]> {
     try {
-      const result = await this.call(graphqlIntrospectionQuery) as {data: {__schema: {types: GQLType[]}}}
+      const result = await this.call(graphqlIntrospectionQuery) as {data: {__schema: {types: GQLType[], queryType: {name: string}}}}
       if (!result.data?.__schema?.types) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
       const allTypes = result.data.__schema.types.map((type: GQLType) => type.name)
           .concat(builtinTypeIds)
 
-      const query: GQLType | undefined = result.data.__schema.types.find((type: GQLType) => type.name === 'Query')
+      const queryType: string = result.data.__schema.queryType.name
+      if(!queryType) return this.triggerError(`Invalid response, queryType not found: ${JSON.stringify(result)}`)
 
-      if(!query) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
+      const query: GQLType | undefined = result.data.__schema.types.find((type: GQLType) => type.name === queryType)
+      if(!query) return this.triggerError(`Invalid response, query not found: ${JSON.stringify(result)}`)
 
       // Get non-queryable types
       const nonQueryables = result.data.__schema.types
