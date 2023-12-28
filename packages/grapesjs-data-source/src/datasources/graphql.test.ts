@@ -672,6 +672,68 @@ test('get tree', () => {
     }])
 })
 
+test('get tree with filters', async () => {
+  const queryObjects: Expression = [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testId1',
+    label: 'test field name',
+    typeIds: ['PostEntityResponseCollection'],
+    kind: 'list',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'filter',
+    id: 'testFilterId1',
+    label: 'test filter name',
+    options: {},
+    quotedOptions: [],
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'data',
+    label: 'test field name',
+    typeIds: ['PostEntity'],
+    kind: 'list',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'filter',
+    id: 'testFilterId1',
+    label: 'test filter name',
+    options: {},
+    quotedOptions: [],
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'id',
+    label: 'test field name',
+    typeIds: ['ID'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  }]
+  const GQL = await importDataSource([simpleSchema])
+  const gql = new GQL({
+    url: 'http://localhost',
+    method: 'POST',
+    headers: {},
+    queryable: [],
+    id: 'testDataSourceId',
+    label: 'test',
+    type: 'graphql',
+  })
+  await gql.connect()
+  expect(gql.getTrees([...queryObjects]))
+    .toEqual([{
+      token: queryObjects[0],
+      children: [{
+        token: queryObjects[2],
+        children: [{
+          token: queryObjects[4],
+          children: [],
+        }],
+      }],
+    }])
+})
+
 const tokens: Record<string, Token> = {
   rootField1: {
     type: 'property',
@@ -790,7 +852,7 @@ const tokens: Record<string, Token> = {
 
 test('get tree with options', () => {
   const fn = jest.fn(() => ([{
-    id: 'rootField1',
+    id: 'rootTypeId1',
     label: 'test',
     dataSourceId: 'testDataSourceId',
     fields: [{
@@ -807,7 +869,7 @@ test('get tree with options', () => {
       dataSourceId: 'testDataSourceId',
     }],
   }, {
-    id: 'rootField2',
+    id: 'rootTypeId2',
     label: 'test',
     dataSourceId: 'testDataSourceId',
     fields: [{
@@ -855,7 +917,6 @@ test('get tree with options', () => {
       children: [],
     }],
   }])
-
   // More complex expression with absolute child expression
   const expression2: Expression = [{
       ...tokens.rootField1,
@@ -877,6 +938,9 @@ test('get tree with options', () => {
       token: tokens.childField3,
       children: [],
     }],
+  }, {
+    token: tokens.rootField1,
+    children: [],
   }, {
     token: tokens.rootField2,
     children: [{
@@ -901,15 +965,15 @@ test('Get query from 1 expression', async () => {
     propType: 'field',
     fieldId: 'testFieldId',
     label: 'test field name',
-    typeIds: ['testTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'object',
     dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId',
+    fieldId: 'test',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
+    typeIds: ['String'],
     kind: 'scalar',
     dataSourceId: 'testDataSourceId',
   }]])
@@ -918,7 +982,7 @@ test('Get query from 1 expression', async () => {
   __typename
   testFieldId {
     __typename
-    testFieldPropertyId
+    test
   }
 }`)
 })
@@ -932,15 +996,15 @@ test('Get query from multiple expressions', async () => {
     propType: 'field',
     fieldId: 'testFieldId',
     label: 'test field name',
-    typeIds: ['testTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'object',
     dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId',
+    fieldId: 'test',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
+    typeIds: ['String'],
     kind: 'scalar',
     dataSourceId: 'testDataSourceId',
   }], [{
@@ -948,23 +1012,23 @@ test('Get query from multiple expressions', async () => {
     propType: 'field',
     fieldId: 'testFieldId',
     label: 'test field name',
-    typeIds: ['testTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'object',
     dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId2',
+    fieldId: 'attributes',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'list',
     dataSourceId: 'testDataSourceId',
   }, {
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId3',
+    fieldId: 'test',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
+    typeIds: ['String'],
     kind: 'scalar',
     dataSourceId: 'testDataSourceId',
   }]])
@@ -973,13 +1037,142 @@ test('Get query from multiple expressions', async () => {
   __typename
   testFieldId {
     __typename
-    testFieldPropertyId
-    testFieldPropertyId2 {
+    test
+    attributes {
       __typename
-      testFieldPropertyId3
+      test
     }
   }
 }`)
+})
+
+test('Get query from multiple expressions', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  await dataSource.connect()
+  const query = await dataSource.getQuery([[{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['PostEntity'],
+    kind: 'object',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'test',
+    label: 'test field property name',
+    typeIds: ['String'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId1',
+    label: 'test field name',
+    typeIds: ['PostEntity'],
+    kind: 'object',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'id',
+    label: 'test field property name',
+    typeIds: ['ID'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  }], [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId2',
+    label: 'test field name',
+    typeIds: ['PostEntity'],
+    kind: 'object',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'attributes',
+    label: 'test field property name',
+    typeIds: ['PostEntity'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  }]])
+  expect(query).not.toBeUndefined()
+  expect(query).toEqual(`query {
+  __typename
+  testFieldId1 {
+    __typename
+    test
+    id
+  }
+  testFieldId2 {
+    __typename
+    attributes
+  }
+}`)
+})
+
+test('Get query from expression with filters', async () => {
+  const DataSource = (await importDataSource([simpleSchema]))
+  const dataSource = new DataSource(options)
+  const buildQuery = jest.fn(() => 'testQuery')
+  dataSource.buildQuery = buildQuery
+  await dataSource.connect()
+  const queryObjects = [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testId1',
+    label: 'test field name',
+    typeIds: ['PostEntityResponseCollection'],
+    kind: 'list',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'filter',
+    id: 'testFilterId1',
+    label: 'test filter name',
+    options: {},
+    quotedOptions: [],
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'data',
+    label: 'test field name',
+    typeIds: ['PostEntity'],
+    kind: 'list',
+    dataSourceId: 'testDataSourceId',
+  }, {
+    type: 'filter',
+    id: 'testFilterId1',
+    label: 'test filter name',
+    options: {},
+    quotedOptions: [],
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'id',
+    label: 'test field name',
+    typeIds: ['ID'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  }]
+  await dataSource.getQuery([[...queryObjects]])
+  expect(buildQuery).toHaveBeenCalledTimes(1)
+  expect(buildQuery).toHaveBeenCalledWith({
+    token: {
+      dataSourceId: 'testDataSourceId',
+      fieldId: 'query',
+      kind: 'object'
+    },
+    children: [
+      { token: queryObjects[0], children: [
+        { token: queryObjects[2], children: [
+          { token: queryObjects[4], children: [] }
+        ]},
+      ]},
+    ]
+  })
 })
 
 test('Get query with options', async () => {
@@ -1040,85 +1233,18 @@ test('Get query with options', async () => {
 }`)
 })
 
-test('Get query from multiple expressions', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  await dataSource.connect()
-  const query = await dataSource.getQuery([[{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldPropertyId1',
-    label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldPropertyId1.1',
-    label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId2',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldPropertyId2',
-    label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }]])
-  expect(query).not.toBeUndefined()
-  expect(query).toEqual(`query {
-  __typename
-  testFieldId1 {
-    __typename
-    testFieldPropertyId1
-    testFieldPropertyId1.1
-  }
-  testFieldId2 {
-    __typename
-    testFieldPropertyId2
-  }
-}`)
-})
-
 test('Get query with property options', async () => {
   const DataSource = (await importDataSource([simpleSchema]))
   const dataSource = new DataSource(options)
+  dataSource.buildQuery = jest.fn(() => 'testQuery')
   await dataSource.connect()
-  const query = await dataSource.getQuery([[{
+  await dataSource.getQuery([[{
     // LEVEL 1
     type: 'property',
     propType: 'field',
     fieldId: 'testFieldId1',
     label: 'test field name',
-    typeIds: ['testTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'object',
     dataSourceId: 'testDataSourceId',
     options: {id: 'option'},
@@ -1126,9 +1252,9 @@ test('Get query with property options', async () => {
     // LEVEL 2
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId1',
+    fieldId: 'test',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
+    typeIds: ['String'],
     kind: 'scalar',
     dataSourceId: 'testDataSourceId',
     options: {prop: 'option1'},
@@ -1138,7 +1264,7 @@ test('Get query with property options', async () => {
     propType: 'field',
     fieldId: 'testFieldId1',
     label: 'test field name',
-    typeIds: ['testTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'object',
     dataSourceId: 'testDataSourceId',
     options: {id: 'option'},
@@ -1146,9 +1272,9 @@ test('Get query with property options', async () => {
     // LEVEL 2
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId2',
+    fieldId: 'id',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
+    typeIds: ['ID'],
     kind: 'scalar',
     dataSourceId: 'testDataSourceId',
     options: {},
@@ -1158,7 +1284,7 @@ test('Get query with property options', async () => {
     propType: 'field',
     fieldId: 'testFieldId1',
     label: 'test field name',
-    typeIds: ['testTypeId'],
+    typeIds: ['PostEntity'],
     kind: 'object',
     dataSourceId: 'testDataSourceId',
     options: {id: 'option'},
@@ -1166,28 +1292,69 @@ test('Get query with property options', async () => {
     // LEVEL 2
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldPropertyId3',
+    fieldId: 'attributes',
     label: 'test field property name',
-    typeIds: ['testFieldPropertyTypeId'],
-    kind: 'scalar',
+    typeIds: ['PostEntity'],
+    kind: 'Object',
     dataSourceId: 'testDataSourceId',
     options: {prop: 'option3'},
   }]])
-  expect(query).not.toBeUndefined()
-  expect(query).toEqual(`query {
-  __typename
-  testFieldId1(id: "option") {
-    __typename
-    testFieldPropertyId1(prop: "option1")
-    testFieldPropertyId2
-    testFieldPropertyId3(prop: "option3")
-  }
-}`)
+  expect(dataSource.buildQuery).toHaveBeenCalledTimes(1)
+  expect(dataSource.buildQuery).toHaveBeenCalledWith({
+    token: {
+      dataSourceId: 'testDataSourceId',
+      fieldId: 'query',
+      kind: 'object'
+    },
+    children: [
+      { token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId1',
+        label: 'test field name',
+        typeIds: ['PostEntity'],
+        kind: 'object',
+        dataSourceId: 'testDataSourceId',
+        options: {id: 'option'},
+      }, children: [
+        { token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'test',
+          label: 'test field property name',
+          typeIds: ['String'],
+          kind: 'scalar',
+          dataSourceId: 'testDataSourceId',
+          options: {prop: 'option1'},
+        }, children: [] },
+        { token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'id',
+          label: 'test field property name',
+          typeIds: ['ID'],
+          kind: 'scalar',
+          dataSourceId: 'testDataSourceId',
+          options: {},
+        }, children: [] },
+        { token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'attributes',
+          label: 'test field property name',
+          typeIds: ['PostEntity'],
+          kind: 'Object',
+          dataSourceId: 'testDataSourceId',
+          options: {prop: 'option3'},
+        }, children: [] },
+      ]},
+    ]
+  })
 })
 
 test('Get query with filter options', () => {
   const fn = jest.fn(() => ([{
-    id: 'rootField1',
+    id: 'rootTypeId1',
     label: 'test',
     dataSourceId: 'testDataSourceId',
     fields: [{
@@ -1204,7 +1371,7 @@ test('Get query with filter options', () => {
       dataSourceId: 'testDataSourceId',
     }],
   }, {
-    id: 'rootField2',
+    id: 'rootTypeId2',
     label: 'test',
     dataSourceId: 'testDataSourceId',
     fields: [{

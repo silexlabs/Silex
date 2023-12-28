@@ -154,7 +154,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       const allTypes = result.data.__schema.types.map((type: GQLType) => type.name)
           .concat(builtinTypeIds)
 
-      const queryType: string = result.data.__schema.queryType.name
+      const queryType: string = result.data.__schema.queryType?.name
       if(!queryType) return this.triggerError(`Invalid response, queryType not found: ${JSON.stringify(result)}`)
 
       const query: GQLType | undefined = result.data.__schema.types.find((type: GQLType) => type.name === queryType)
@@ -424,11 +424,16 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         return trees
           .flatMap(tree => {
             // Check if this is a "relative" property or "absolute" (a root type)
-            const type = this.getTypes().find(t => t.id === tree.token.fieldId)
-            if(type) return tree
-            return {
-              token: next,
-              children: [tree],
+            if(this.isRelative(next, tree.token)) {
+              return {
+                token: next,
+                children: [tree],
+              }
+            } else {
+              return [{
+                token: next,
+                children: [],
+              }, tree]
             }
           })
       }
@@ -447,6 +452,16 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         console.error('Invalid expression', expression)
         throw new Error(`Invalid expression ${JSON.stringify(expression)}`)
     }
+  }
+
+  /**
+   * Check if a property is relative to a type
+   * A type is "relative" if next has a type which has a field of type tree.token
+   */
+  isRelative(parent: Property, child: Property): boolean {
+    const parentTypes = this.getTypes().filter(t => parent.typeIds.includes(t.id))
+    const parentFieldsTypes = parentTypes.flatMap(t => t.fields.map(f => f.typeIds).flat())
+    return child.typeIds.some(typeId => parentFieldsTypes.includes(typeId))
   }
 
   /**

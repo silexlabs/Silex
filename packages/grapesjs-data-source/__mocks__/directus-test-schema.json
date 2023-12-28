@@ -1,6 +1,9 @@
 {
   "data": {
     "__schema": {
+      "queryType": {
+        "name": "Query"
+      },
       "types": [
         {
           "name": "Query",

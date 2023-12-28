@@ -1,6 +1,9 @@
 {
   "data": {
     "__schema": {
+      "queryType": {
+        "name": "Query"
+      },
       "types": [
         {
           "name": "String",
@@ -38,6 +41,14 @@
           "name": "PostEntity",
           "fields": [
             {
+              "name": "test",
+              "type": {
+                "name": "String",
+                "kind": "SCALAR",
+                "ofType": null
+              }
+            },
+            {
               "name": "id",
               "type": {
                 "name": "ID",
@@ -48,7 +59,7 @@
             {
               "name": "attributes",
               "type": {
-                "name": "Post",
+                "name": "PostEntity",
                 "kind": "OBJECT",
                 "ofType": null
               }
