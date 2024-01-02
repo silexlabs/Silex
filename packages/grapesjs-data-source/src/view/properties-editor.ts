@@ -215,13 +215,9 @@ export class PropertiesEditor extends LitElement {
           // Finally update the data
           if (this.inputs[name]) {
             const stateEditorFinally = this.inputs[name]!.stateEditor
-            const selectedFinally = this.inputs[name]!.selected
-            if (!selectedFinally || selectedFinally !== selected) {
-              this.redrawing = true
-              // Update the data only if the selected component changed
-              stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
-              this.redrawing = false
-            }
+            this.redrawing = true
+            stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+            this.redrawing = false
             // Store the selected component
             this.inputs[name]!.selected = selected
           }
