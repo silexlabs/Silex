@@ -248,7 +248,7 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
       .flatMap(typeId => dataTree.findType(typeId)!.fields)
-      .map(f => html`<option value=${f.label} ${f.label === options.key ? 'selected' : ''}>${f.label}</option>`)
+      .map(f => html`<option value=${f.label} .selected=${f.label === options.key}>${f.label}</option>`)
       : html``
     }
       </select>
