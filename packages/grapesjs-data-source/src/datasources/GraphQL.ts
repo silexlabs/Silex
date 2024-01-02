@@ -557,7 +557,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         const type = types[0] as Type
         const fieldTypes = tree.children.map(child => {
           const fieldType = type.fields.find(f => f.id === child.token.fieldId)
-          if(!fieldType) throw new Error(`Type not found for field ${child.token.fieldId}`)
+          if(!fieldType) throw new Error(`Type not found for field ${child.token.fieldId} in ${type.id}`)
           return {
             fieldType,
             child,

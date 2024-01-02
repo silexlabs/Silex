@@ -176,7 +176,6 @@ export class StateEditor extends LitElement {
                       ${ completion
                         .map(partialToken => {
                           const partialId = toId(partialToken)
-                          if(partialId === id) console.log('partialId', {partialId, id }, this.name)
                           return html`
                             <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken)}</option>
                           `

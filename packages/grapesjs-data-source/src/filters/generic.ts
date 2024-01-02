@@ -21,6 +21,8 @@ import { DataSourceEditor } from ".."
 import { Filter } from "../types"
 
 export default function(editor: DataSourceEditor): Filter[] {
+  return []
+  // TODO: implement as filter
   return [
     {
       type: 'filter',
