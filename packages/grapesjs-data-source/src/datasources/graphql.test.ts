@@ -171,14 +171,6 @@ test('graphQLToType', async () => {
 })
 
 test('graphQLToField', async () => {
-  const testField: GQLField = {
-    "name": "posts",
-    "type": {
-      "name": "PostEntityResponseCollection",
-      "kind": "OBJECT" as GQLKind,
-    },
-  }
-
   const gql = new GQLTest({
     url: 'http://localhost',
     method: 'POST',
@@ -188,11 +180,74 @@ test('graphQLToField', async () => {
     type: 'graphql',
   })
 
-  const result = gql.graphQLToField(testField)
+  const result = gql.graphQLToField({
+    "name": "posts",
+    "type": {
+      "name": "PostEntityResponseCollection",
+      "kind": "OBJECT" as GQLKind,
+    },
+  })
   expect(result).not.toBeUndefined()
   expect(result.id).toBe('posts')
   expect(result.label).toBe('posts')
   expect(result.typeIds).toEqual(['PostEntityResponseCollection'])
+
+  // With possible types
+  expect(gql.graphQLToField({
+    "name": "posts",
+    "type": {
+      "name": undefined,
+      "kind": "LIST",
+      "possibleTypes": [
+        {
+          "name": "PostEntityResponseCollection",
+          "kind": "OBJECT" as GQLKind,
+        },
+      ],
+    },
+  })).toEqual({
+    id: 'posts',
+    label: 'posts',
+    typeIds: ['PostEntityResponseCollection'],
+    kind: 'object',
+    dataSourceId: 'testDataSourceId',
+  })
+
+  expect(gql.graphQLToField({
+    "name": "posts",
+    "type": {
+      "name": undefined,
+      "kind": "LIST",
+      "possibleTypes": undefined,
+      "ofType": {
+        "kind": "NON_NULL",
+        "name": undefined,
+        "possibleTypes": undefined,
+        "ofType": {
+          "kind": "UNION",
+          "name": "PageDataModulesComponentUnionDto",
+          "possibleTypes": [
+            {
+              "kind": "OBJECT",
+              "name": "HeroWordSliderComponent"
+            },
+            {
+              "kind": "OBJECT",
+              "name": "SectionSlideshowUpComponent"
+            }
+          ],
+          "ofType": undefined,
+        }
+      }
+    },
+  })).toEqual({
+    id: 'posts',
+    label: 'posts',
+    typeIds: ['HeroWordSliderComponent', 'SectionSlideshowUpComponent'],
+    kind: 'list',
+    dataSourceId: 'testDataSourceId',
+    arguments: undefined,
+  })
 })
 
 test('connect', async () => {

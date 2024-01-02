@@ -246,7 +246,8 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * Handles list and object and non-null types with ofType
    */
   protected graphQLToTypes(field: GQLField): TypeId[] {
-    if(field.type.possibleTypes) return field.type.possibleTypes.map(type => type.name)
+    const possibleTypes = this.getOfTypeProp<{name: string, kind: GQLKind}[]>('possibleTypes', field.type, [])
+    if(possibleTypes.length > 0) return possibleTypes.map(type => type.name)
     return [this.getOfTypeProp<string>('name', field.type, field.name)]
   }
 
