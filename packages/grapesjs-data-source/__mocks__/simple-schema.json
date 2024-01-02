@@ -76,6 +76,14 @@
                 "kind": "OBJECT",
                 "ofType": null
               }
+            },
+            {
+              "name": "pages",
+              "type": {
+                "name": "PostEntityResponseCollection",
+                "kind": "OBJECT",
+                "ofType": null
+              }
             }
           ]
         },

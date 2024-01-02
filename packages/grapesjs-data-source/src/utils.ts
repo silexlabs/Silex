@@ -10,7 +10,8 @@ import { Component } from "grapesjs"
  * @example "String", "String [ ]", "String { }"
  */
 function getTypeDisplayName(typeIds: TypeId[], kind: FieldKind | null): string {
-  return kind === 'list' ? ` [ ]` : kind === 'object' ? ` { }` : ` (${typeIds.join(', ').toLowerCase()})`
+  const typeIdsStr = typeIds.join(', ').toLowerCase()
+  return kind === 'list' ? ` (${typeIdsStr}[])` : kind === 'object' ? ` (${typeIdsStr}{})` : ` (${typeIdsStr})`
 }
 
 /**
@@ -133,7 +134,7 @@ export function toValue(token: Token): string {
  */
 export function toId(token: Token): string {
   switch (token.type) {
-    case 'property': return `property__${token.dataSourceId || ''}__${token.fieldId}`
+    case 'property': return `property__${token.dataSourceId || ''}__${token.fieldId}__${token.kind}__${token.typeIds.join(',')}`
     case 'filter': return `filter____${token.id}`
     case 'state': return `state__${token.componentId}__${token.storedStateId}`
     default:

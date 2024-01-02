@@ -32,7 +32,7 @@ interface GraphQLQueryOptions {
   url: string
   headers: Record<string, string>
   method: 'GET' | 'POST'
-  queryable?: TypeId[] | ((type: GQLType) => boolean)
+  queryable?: TypeId[]
 }
 
 /**
@@ -131,6 +131,7 @@ function isEmpty(value: unknown): boolean {
 export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
   protected types: Type[] = []
   protected queryables: Field[] = []
+  protected queryType: string = ''
   protected ready = false
   constructor(options: GraphQLOptions) {
     super(options)
@@ -147,7 +148,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     this.trigger(DATA_SOURCE_ERROR, {message})
     throw new Error(message)
   }
-  protected async loadData(): Promise<[Type[], Field[]]> {
+  protected async loadData(): Promise<[Type[], Field[], string]> {
     try {
       const result = await this.call(graphqlIntrospectionQuery) as {data: {__schema: {types: GQLType[], queryType: {name: string}}}}
       if (!result.data?.__schema?.types) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
@@ -163,7 +164,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       // Get non-queryable types
       const nonQueryables = result.data.__schema.types
         // Filter out Query, Mutation, Subscription
-        .filter((type: GQLType) => !['Query', 'Mutation', 'Subscription'].includes(type.name))
+        //.filter((type: GQLType) => !['Query', 'Mutation', 'Subscription'].includes(type.name))
         // Filter out introspection types
         .filter((type: GQLType) => !type.name.startsWith('__'))
         // Filter out types that are not in Query
@@ -195,7 +196,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         .map((field: GQLField) => this.graphQLToField(field))
       
       // Return all types, queryables and non-queryables
-      return [queryableTypes.concat(nonQueryables), queryableFields]
+      return [queryableTypes.concat(nonQueryables), queryableFields, queryType]
     } catch (e) {
       return this.triggerError(`GraphQL introspection failed: ${(e as Error).message}`)
     }
@@ -316,10 +317,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         ?.filter((field) => allTypes.includes(this.getOfTypeProp<string>('name', field.type, field.name)))
         ?.map(field => this.graphQLToField(field))
         ?? [],
-      queryable: queryable && (!queryableOverride || (queryableOverride instanceof Array
-        ? queryableOverride!.includes(type.name)
-        : queryableOverride!(type))
-      ),
+      queryable: queryable && (!queryableOverride || queryableOverride!.includes(type.name)),
     }
     return result
   }
@@ -336,9 +334,13 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       //     }
       //   `) as any
       // if (!result?.data?.__typename) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
-      const [types, fields] = await this.loadData()
+      const [types, fields, queryType] = await this.loadData()
+      if(types.length === 0) return this.triggerError(`No types found in GraphQL schema`)
+      if(fields.length === 0) return this.triggerError(`No fields found in GraphQL schema`)
+      if(!queryType) return this.triggerError(`No query type found in GraphQL schema`)
       this.types = types
       this.queryables = fields
+      this.queryType = queryType
       this.ready = true
       this.trigger(DATA_SOURCE_READY)
     } catch (e) {
@@ -392,6 +394,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
 
   getQuery(expressions: Expression[]): string {
     if(expressions.length === 0) return ''
+    if(!this.queryType) return this.triggerError(`Missing query type - has this data source been connected?`)
     const tree: Tree = expressions
       // From Expression to Tree
       .flatMap(expression => this.getTrees(expression))
@@ -401,6 +404,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           dataSourceId: tree.token.dataSourceId,
           fieldId: 'query',
           kind: 'object',
+          typeIds: [this.queryType],
         },
         children: [tree],
       } as Tree))
@@ -547,37 +551,48 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         return indent + typeOrFragment
       case 'object':
       case 'list': {
-        // Group children by fieldId in order to create fragments
-        const childrenByFieldId = tree.children.reduce((prev, child) => {
-          const fieldId = child.token.fieldId
-          if(!prev[fieldId]) prev[fieldId] = []
-          prev[fieldId].push(child)
-          return prev
-        }, {} as Record<string, Tree[]>)
-        // Fragments
-        const childQuery = Object.keys(childrenByFieldId)
-          .flatMap(fieldId => {
-            const children = childrenByFieldId[fieldId]
-            if(children.length === 1) {
-              // Simple case, no fragment
-              return children
-                .map(child => this.buildQuery(child, indent + '  '))
-            } else {
-              return dedent`
-                  ${indent}${fieldId} {
-                  ${children
-                    .map(child => this.buildQuery(child, indent + '  ', child.token.typeIds[0]))
-                    .join('\n')
-                  }
-                  }
-                `
+        const types = this.getTypes().filter(t => tree.token.typeIds?.includes(t.id))
+        if(types.length === 0) throw new Error(`Type not found for ${tree.token.fieldId} (${tree.token.typeIds})`)
+        else if(types.length > 1) throw new Error(`Multiple types found for ${tree.token.fieldId}`)
+        const type = types[0] as Type
+        const fieldTypes = tree.children.map(child => {
+          const fieldType = type.fields.find(f => f.id === child.token.fieldId)
+          if(!fieldType) throw new Error(`Type not found for field ${child.token.fieldId}`)
+          return {
+            fieldType,
+            child,
+          }
+        })
+        const fragments = fieldTypes
+          // Cases with fragments
+          .filter(({fieldType}) => fieldType.typeIds.length > 1)
+          .map(({child}) => {
+            return {
+              query: this.buildQuery(child, indent + '  ', child.token.typeIds[0]),
+              child,
             }
+          })
+
+        const fragmentsQuery = fragments
+          .map(({query, child}) => dedent`
+            ${indent}${child.token.fieldId} {
+              ${query}
+            }
+          `)
+          .join('\n')
+
+        const childQuery = fieldTypes
+          // Simple case, no fragment
+          .filter(({fieldType}) => fieldType.typeIds.length === 1)
+          .map(({child}) => {
+            return this.buildQuery(child, indent + '  ')
           })
           .join('\n')
 
         return dedent`${indent}${typeOrFragment} {
         ${indent}  __typename
         ${childQuery}
+        ${fragmentsQuery}
         ${indent}}`
       }
       default:

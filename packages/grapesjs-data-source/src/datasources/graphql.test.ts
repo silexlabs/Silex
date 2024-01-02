@@ -42,6 +42,15 @@ async function importDataSource(datas?: unknown[]) {
 }
 
 class GQLTest extends GraphQL {
+  constructor(options: GraphQLOptions, private overrideTypes: Type[] = [], private overrideFields: Field[] = []) {
+    super(options)
+  }
+  getTypes(): Type[] {
+    return this.overrideTypes
+  }
+  getQueryables(): Field[] {
+    return this.overrideFields
+  }
   graphQLToField(field: GQLField): Field {
     return super.graphQLToField(field)
   }
@@ -77,7 +86,6 @@ test('getTypeProp', async () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -142,7 +150,6 @@ test('graphQLToType', async () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: () => true,
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -176,7 +183,6 @@ test('graphQLToField', async () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -277,18 +283,28 @@ test('build query from tree', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
-  })
+  }, [{
+    id: 'PostEntity',
+    label: 'test type name',
+    dataSourceId: 'testDataSourceId',
+    fields: [{
+      id: 'testFieldPropertyId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: 'testDataSourceId',
+    }],
+  }])
   const tree: Tree = {
     token: {
       type: 'property',
       propType: 'field',
-      fieldId: 'testFieldId',
+      fieldId: 'posts',
       label: 'test field name',
-      typeIds: ['testTypeId'],
+      typeIds: ['PostEntity'],
       kind: 'object',
       dataSourceId: 'testDataSourceId',
     },
@@ -307,9 +323,10 @@ test('build query from tree', () => {
   }
   const query = gql.buildQuery(tree)
   expect(query)
-    .toEqual(`testFieldId {
+    .toEqual(`posts {
   __typename
   testFieldPropertyId
+
 }`)
 })
 
@@ -318,11 +335,74 @@ test('build query with fragments', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
-  })
+  }, [{
+    id: 'testParentId',
+    label: 'test type name',
+    dataSourceId: 'testDataSourceId',
+    fields: [{
+      id: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId1', 'testTypeId2'],
+      kind: 'object',
+      dataSourceId: 'testDataSourceId',
+    }],
+  }, {
+    id: 'testTypeId1',
+    label: 'test type name',
+    dataSourceId: 'testDataSourceId',
+    fields: [],
+  }], [{
+    id: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId1', 'testTypeId2'],
+    kind: 'object',
+    dataSourceId: 'testDataSourceId',
+    arguments: [{
+      name: 'id',
+      typeId: 'ID',
+    }],
+  }])
+  // Simple case
+  expect(gql.buildQuery({
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'parentFieldId',
+      label: 'test parent name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: 'testDataSourceId',
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId1'],
+        kind: 'object',
+        dataSourceId: 'testDataSourceId',
+      },
+      children: [],
+    }],
+  }))
+    .toEqual(dedent`
+    parentFieldId {
+      __typename
+
+    testFieldId {
+        ...on testTypeId1 {
+        __typename
+
+
+      }
+    }
+    }`)
+    return;
+  // More complex
   const tree: Tree = {
     token: {
       type: 'property',
@@ -402,7 +482,6 @@ test('merge trees', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -506,7 +585,6 @@ test('merge trees with multiple possible types', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -643,7 +721,6 @@ test('get tree', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -715,7 +792,6 @@ test('get tree with filters', async () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -806,7 +882,6 @@ const tokens: Record<string, Token> = {
 //     url: 'http://localhost',
 //     method: 'POST',
 //     headers: {},
-//     queryable: [],
 //     id: 'testDataSourceId',
 //     label: 'test',
 //     type: 'graphql',
@@ -892,7 +967,6 @@ test('get tree with options', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -963,7 +1037,7 @@ test('Get query from 1 expression', async () => {
   const query = await dataSource.getQuery([[{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'posts',
     label: 'test field name',
     typeIds: ['PostEntity'],
     kind: 'object',
@@ -980,10 +1054,12 @@ test('Get query from 1 expression', async () => {
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
   __typename
-  testFieldId {
+  posts {
     __typename
     test
+
   }
+
 }`)
 })
 
@@ -994,7 +1070,7 @@ test('Get query from multiple expressions', async () => {
   const query = await dataSource.getQuery([[{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'posts',
     label: 'test field name',
     typeIds: ['PostEntity'],
     kind: 'object',
@@ -1010,7 +1086,7 @@ test('Get query from multiple expressions', async () => {
   }], [{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId',
+    fieldId: 'posts',
     label: 'test field name',
     typeIds: ['PostEntity'],
     kind: 'object',
@@ -1035,14 +1111,17 @@ test('Get query from multiple expressions', async () => {
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
   __typename
-  testFieldId {
+  posts {
     __typename
     test
     attributes {
       __typename
       test
+
     }
+
   }
+
 }`)
 })
 
@@ -1053,7 +1132,7 @@ test('Get query from multiple expressions', async () => {
   const query = await dataSource.getQuery([[{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId1',
+    fieldId: 'posts',
     label: 'test field name',
     typeIds: ['PostEntity'],
     kind: 'object',
@@ -1069,7 +1148,7 @@ test('Get query from multiple expressions', async () => {
   }], [{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId1',
+    fieldId: 'posts',
     label: 'test field name',
     typeIds: ['PostEntity'],
     kind: 'object',
@@ -1085,7 +1164,7 @@ test('Get query from multiple expressions', async () => {
   }], [{
     type: 'property',
     propType: 'field',
-    fieldId: 'testFieldId2',
+    fieldId: 'pages',
     label: 'test field name',
     typeIds: ['PostEntity'],
     kind: 'object',
@@ -1102,15 +1181,18 @@ test('Get query from multiple expressions', async () => {
   expect(query).not.toBeUndefined()
   expect(query).toEqual(`query {
   __typename
-  testFieldId1 {
+  posts {
     __typename
     test
     id
+
   }
-  testFieldId2 {
+  pages {
     __typename
     attributes
+
   }
+
 }`)
 })
 
@@ -1163,7 +1245,8 @@ test('Get query from expression with filters', async () => {
     token: {
       dataSourceId: 'testDataSourceId',
       fieldId: 'query',
-      kind: 'object'
+      kind: 'object',
+      typeIds: ['Query'],
     },
     children: [
       { token: queryObjects[0], children: [
@@ -1178,6 +1261,26 @@ test('Get query from expression with filters', async () => {
 test('Get query with options', async () => {
   const DataSource = (await importDataSource([simpleSchema]))
   const dataSource = new DataSource(options)
+  dataSource.getTypes = () => ([{
+    id: 'Query',
+    fields: [{
+      id: 'testFieldId1',
+      dataSourceId: 'testDataSourceId',
+      typeIds: ['rootTypeId1'],
+    }, {
+      id: 'testFieldId2',
+      dataSourceId: 'testDataSourceId',
+      typeIds: ['rootTypeId2'],
+    }, {
+      id: 'testFieldId3',
+      dataSourceId: 'testDataSourceId',
+      typeIds: ['rootTypeId1'],
+    }],
+  }, {
+    id: 'testTypeId',
+    dataSourceId: 'testDataSourceId',
+    fields: [],
+  }] as Type[])
   await dataSource.connect()
   const query = await dataSource.getQuery([[{
     type: 'property',
@@ -1221,15 +1324,19 @@ test('Get query with options', async () => {
   testFieldId1(id: 1) {
     __typename
 
+
   }
   testFieldId2(name: "test") {
     __typename
+
 
   }
   testFieldId3 {
     __typename
 
+
   }
+
 }`)
 })
 
@@ -1304,7 +1411,8 @@ test('Get query with property options', async () => {
     token: {
       dataSourceId: 'testDataSourceId',
       fieldId: 'query',
-      kind: 'object'
+      kind: 'object',
+      typeIds: ['Query'],
     },
     children: [
       { token: {
@@ -1354,6 +1462,19 @@ test('Get query with property options', async () => {
 
 test('Get query with filter options', () => {
   const fn = jest.fn(() => ([{
+    id: 'Query',
+    fields: [{
+      id: 'rootField1',
+      label: 'test',
+      dataSourceId: 'testDataSourceId',
+      typeIds: ['rootTypeId1'],
+    }, {
+      id: 'rootField2',
+      label: 'test',
+      dataSourceId: 'testDataSourceId',
+      typeIds: ['rootTypeId2'],
+    }],
+  }, {
     id: 'rootTypeId1',
     label: 'test',
     dataSourceId: 'testDataSourceId',
@@ -1383,6 +1504,7 @@ test('Get query with filter options', () => {
     }],
   }] as Type[]))
   class GQLTestTrees extends GraphQL {
+    protected queryType: string = 'Query'
     getTypes(): Type[] {
       return fn()
     }
@@ -1394,7 +1516,6 @@ test('Get query with filter options', () => {
     url: 'http://localhost',
     method: 'POST',
     headers: {},
-    queryable: [],
     id: 'testDataSourceId',
     label: 'test',
     type: 'graphql',
@@ -1418,12 +1539,15 @@ test('Get query with filter options', () => {
         rootField2 {
           __typename
           childField2
+
         }
         rootField1 {
           __typename
           childField3
           childField1
+
         }
+
       }
     `)
 })
