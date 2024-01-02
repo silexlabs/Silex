@@ -37,11 +37,14 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: [],
       optionsForm: (field, options) => html`
-          <label for="type">Type</label>
-          <small class="form-text text-muted">The type to cast to</small>
-          <select class="form-control" id="type" name="type">
-            ${ editor.DataSourceManager.getDataTree().allTypes.map(type => html`<option value="${type.id}" ${type.id === options.type ? 'selected': ''}>${type.label}</option>`) }
-          </select>
+        <label for="type">
+          <p>Type</p>
+          <small>The type to cast to</small>
+        </label>
+        <select class="form-control" id="type" name="type">
+          <option value="">Select a type</option>
+          ${editor.DataSourceManager.getDataTree().allTypes.map(type => html`<option value="${type.id}" .selected=${type.id === options.type}>${type.label}</option>`)}
+        </select>
       `,
     },
   ]
