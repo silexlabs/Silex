@@ -268,6 +268,8 @@ export class DataTree {
     return {
       ...token,
       ...filter,
+      // Keep the options as they are stored
+      options: token.options,
     }
   }
 
