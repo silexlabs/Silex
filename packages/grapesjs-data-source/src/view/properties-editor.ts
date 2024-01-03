@@ -25,7 +25,7 @@ import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 
-enum PropsNames {
+export enum Properties {
   innerHTML = 'innerHTML',
   title = 'title',
   className = 'className',
@@ -56,7 +56,7 @@ export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
   disabled = false
 
-  inputs: Record<PropsNames, {stateEditor: StateEditor, selected: Component | undefined} | undefined> = {
+  inputs: Record<Properties, {stateEditor: StateEditor, selected: Component | undefined} | undefined> = {
     innerHTML: undefined,
     title: undefined,
     className: undefined,
@@ -126,13 +126,13 @@ export class PropertiesEditor extends LitElement {
         </details>
         <main>
           ${[
-            {label: 'Content (innerHTML)', name: PropsNames.innerHTML, publicState: false},
-            {label: 'Title (title attribute)', name: PropsNames.title, publicState: false},
-            {label: 'Classes (class attribute)', name: PropsNames.className, publicState: false},
-            {label: 'Inline styles', name: PropsNames.style, publicState: false},
-            {label: 'src attribute', name: PropsNames.src, publicState: false},
-            {label: 'href attribute', name: PropsNames.href, publicState: false},
-            {label: 'alt attribute', name: PropsNames.alt, publicState: false},
+            {label: 'Content (innerHTML)', name: Properties.innerHTML, publicState: false},
+            {label: 'Title (title attribute)', name: Properties.title, publicState: false},
+            {label: 'Classes (class attribute)', name: Properties.className, publicState: false},
+            {label: 'Inline styles', name: Properties.style, publicState: false},
+            {label: 'src attribute', name: Properties.src, publicState: false},
+            {label: 'href attribute', name: Properties.href, publicState: false},
+            {label: 'alt attribute', name: Properties.alt, publicState: false},
           ].map(({label, name, publicState}) => this.renderStateEditor(selected, label, name, publicState))}
         </main>
       </section>
@@ -141,7 +141,7 @@ export class PropertiesEditor extends LitElement {
           <div class="gjs-traits-label">Visibility</div>
         </div>
         <main>
-          ${this.renderStateEditor(selected, 'Condition', PropsNames.condition, false)}
+          ${this.renderStateEditor(selected, 'Condition', Properties.condition, false)}
           <div>
           <span>... is</span>
           <select
@@ -162,7 +162,7 @@ export class PropertiesEditor extends LitElement {
               `)
           }
           </select>
-          ${ selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator')) ? this.renderStateEditor(selected, 'Condition 2', PropsNames.condition2, false) : '' }
+          ${ selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator')) ? this.renderStateEditor(selected, 'Condition 2', Properties.condition2, false) : '' }
         </main>
       </section>
       <section class="ds-section">
@@ -170,7 +170,7 @@ export class PropertiesEditor extends LitElement {
           <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${this.renderStateEditor(selected, 'Data', PropsNames.__data, false)}
+          ${this.renderStateEditor(selected, 'Data', Properties.__data, false)}
         </main>
       </section>
     `
@@ -193,7 +193,7 @@ export class PropertiesEditor extends LitElement {
     }
   }
 
-  renderStateEditor(selected: Component, label: string, name: PropsNames, publicState: boolean) {
+  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean) {
     return html`
       <state-editor
         id="${name}"
@@ -230,14 +230,14 @@ export class PropertiesEditor extends LitElement {
     `
   }
 
-  onChange(component: Component, name: PropsNames, publicState: boolean) {
+  onChange(component: Component, name: Properties, publicState: boolean) {
     const {stateEditor} = this.inputs[name]!
     if(this.redrawing) return
     setState(component, name, {
       expression: stateEditor.data
     }, publicState)
   }
-  getTokens(dataTree: DataTree, component: Component, name: PropsNames, publicState: boolean): Token[] {
+  getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
     return state.expression.map(token => dataTree.fromStored(token))
