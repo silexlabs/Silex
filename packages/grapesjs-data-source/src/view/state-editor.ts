@@ -28,6 +28,8 @@ import { Component } from 'grapesjs'
 import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
 
 import '@silexlabs/expression-input'
+import { getCompletion } from '../model/completion'
+import { getExpressionResultType } from '../model/token'
 
 /**
  * Editor for a state of the selected element's properties
@@ -126,7 +128,7 @@ export class StateEditor extends LitElement {
 
     const fixed = _currentValue?.length === 1 && _currentValue[0].type === 'property' && _currentValue[0].fieldId === FIXED_TOKEN_ID
     const text = fixed ? (_currentValue![0] as Property).options?.value || '' : ''
-    const rawCompletion = dataTree.getCompletion(selected, _currentValue || [], this.rootType)
+    const rawCompletion = getCompletion(selected, _currentValue || [], dataTree, this.rootType)
     const completion = this.noFilters ? rawCompletion
       .filter(token => token.type !== 'filter')
       : rawCompletion
@@ -158,8 +160,7 @@ export class StateEditor extends LitElement {
             const popinRef = createRef<PopinForm>()
             const optionsForm = this.getOptions(selected, _currentValue, idx)
             const partialExpression = _currentValue.slice(0, idx)
-            const _partialCompletion = dataTree
-                .getCompletion(selected, partialExpression, this.rootType)
+            const _partialCompletion = getCompletion(selected, partialExpression, dataTree, this.rootType)
             const partialCompletion = this.noFilters ? _partialCompletion
               .filter(token => token.type !== 'filter')
               : _partialCompletion
@@ -276,7 +277,7 @@ export class StateEditor extends LitElement {
     const token = tokens[idx]
     const beforeToken = tokens.slice(0, idx)
     const fields = beforeToken
-      .map(token => dataTree.getExpressionResultType(tokens.concat(token), component))
+      .map(token => getExpressionResultType(tokens.concat(token), component, dataTree))
 
     switch(token.type) {
       case 'property':

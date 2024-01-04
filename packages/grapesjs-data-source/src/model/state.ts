@@ -16,7 +16,10 @@
  */
 
 import { Component } from 'grapesjs'
-import { Expression, StateId, State } from '../types'
+import { Expression, StateId, State, StoredToken } from '../types'
+import { fromStored } from './token'
+import { DataTree } from './DataTree'
+import { DataSourceEditor } from '..'
 
 /**
  * @fileoverview This file contains the model for components states
@@ -66,6 +69,13 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
   const newPersistantId = component.ccid as PersistantId
   component.set(PERSISTANT_ID_KEY, newPersistantId)
   return newPersistantId
+}
+
+/**
+ * Find a component by its persistant ID in the current page
+ */
+export function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null {
+  return editor.Components.getAll().find((component: Component) => getPersistantId(component) === id)
 }
 
 /**
@@ -148,4 +158,33 @@ export function removeState(component: Component, id: StateId, exported: boolean
   delete newState[id]
   component.set(key, newState)
   fireChange(null, component)
+}
+
+/**
+ * Get all expressions used by a component
+ * Resolves all states token as expressions recursively
+ * Resulting expressions contain properties and filters only, no states anymore
+ */
+export function resolveState(state: State, component: Component, dataTree: DataTree): Expression | null {
+  const parent = getParentByPersistentId(state.componentId, component)
+  if(!parent) {
+    console.warn('Component not found for state', state)
+    return null
+  }
+  // Get the expression of the state
+  const soredState = getState(parent, state.storedStateId, state.exposed)
+  if(!soredState?.expression) {
+    console.warn('State is not defined on component', parent, state)
+    return null
+  }
+  return soredState.expression
+    .flatMap((token: StoredToken) => {
+      switch (token.type) {
+        case 'state': {
+          return resolveState(fromStored(token, dataTree), parent, dataTree) ?? []
+        }
+        default:
+          return token
+      }
+    })
 }

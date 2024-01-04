@@ -30,14 +30,14 @@ import './custom-states-editor'
  * 
  */
 export interface ViewOptions {
-  appendTo?: string | HTMLElement | (() => HTMLElement)
+  el?: HTMLElement | JQuery | string | undefined | (() => HTMLElement)
   button?: Button | (() => Button)
   styles?: string
   optionsStyles?: string
 }
 
 export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
-  if (opts.appendTo) {
+  if (opts.el) {
     const options: ViewOptions = {
       styles: PROPERTY_STYLES,
       ...opts,
@@ -61,23 +61,23 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
       </properties-editor>
     `
 
-    // The options appendTo and button can be functions which use editor so they need to be called asynchronously
-    let appendTo: HTMLElement
+    // The options el and button can be functions which use editor so they need to be called asynchronously
+    let el: HTMLElement
     editor.onReady(() => {
       // Get the container element for the UI
-      if (typeof options.appendTo === 'undefined') {
+      if (typeof options.el === 'undefined') {
         // This should never happen as we set a default value in /index.ts
-        throw new Error(`appendTo option must be set`)
-      } else if (typeof options.appendTo === 'string') {
-        if (!document.querySelector(options.appendTo)) throw new Error(`Element ${options.appendTo} not found`)
-      } else if (!(options.appendTo instanceof HTMLElement) && typeof options.appendTo !== 'function') {
-        throw new Error(`appendTo option must be a string or an HTMLElement or a function`)
+        throw new Error(`el option must be set`)
+      } else if (typeof options.el === 'string') {
+        if (!document.querySelector(options.el)) throw new Error(`Element ${options.el} not found`)
+      } else if (!(options.el instanceof HTMLElement) && typeof options.el !== 'function') {
+        throw new Error(`el option must be a string or an HTMLElement or a function`)
       }
 
       // Append the wrapper to the container
-      appendTo = (typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : typeof options.appendTo === 'function' ? options.appendTo() : options.appendTo) as HTMLElement
-      if (!appendTo) throw new Error(`Element ${options.appendTo} not found`)
-      appendTo.appendChild(wrapper)
+      el = (typeof options.el === 'string' ? document.querySelector(options.el) : typeof options.el === 'function' ? options.el() : options.el) as HTMLElement
+      if (!el) throw new Error(`Element ${options.el} not found`)
+      el.appendChild(wrapper)
 
       // Get references to the web components
       const propertiesUi = wrapper.querySelector('properties-editor') as PropertiesEditor
@@ -95,7 +95,7 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
         button.on('change', () => {
           if (button.active) {
             // Move at the bottom
-            appendTo.appendChild(wrapper)
+            el.appendChild(wrapper)
             // Show the UI
             wrapper.style.display = 'block'
             // Change web components state
@@ -113,6 +113,6 @@ export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
       }
     })
   } else {
-    console.warn('Dynamic data UI not enabled, please set the appendTo option to enable it')
+    console.warn('Dynamic data UI not enabled, please set the el option to enable it')
   }
 }

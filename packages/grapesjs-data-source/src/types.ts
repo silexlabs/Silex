@@ -15,12 +15,39 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Editor } from "grapesjs"
 import { TemplateResult } from "lit"
+import { DataSourceManager } from "./model/DataSourceManager"
+import { ViewOptions } from "backbone"
+
+/**
+ * Add the DataSourceManager to the GrapesJs editor
+ */
+export interface DataSourceEditor extends Editor {
+  DataSourceManager: DataSourceManager
+}
+
+/**
+ * Options for the DataSourceEditor plugin
+ */
+export interface DataSourceEditorOptions {
+  dataSources: IDataSourceOptions[],
+  view: ViewOptions,
+  filters: Filter[] | string,
+}
 
 // Queries
 export type PageId = string // GrapesJs page id type
 export interface Query {
   expression: Expression
+}
+
+/**
+ * Tree structure for creating query from components states
+ */
+export interface Tree {
+  token: Property
+  children: Tree[]
 }
 
 // Data sources must implement this interface
@@ -35,7 +62,7 @@ export interface IDataSource {
   // Introspection
   getTypes(): Type[]
   getQueryables(): Field[]
-  getQuery(expressions: Expression[]): string
+  getQuery(tree: Tree): string
 
   // Access data
   //fetchValues(query: Query): Promise<unknown[]>

@@ -15,11 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from 'grapesjs'
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
-import { Filter, IDataSourceOptions } from './types'
-import view, { ViewOptions } from './view'
+import { DataSourceEditor, DataSourceEditorOptions, IDataSourceOptions } from './types'
+import view from './view'
 
 /**
  * Export the public API
@@ -31,22 +30,6 @@ export * from './types'
 export * from './utils'
 
 /**
- * Add the DataSourceManager to the GrapesJs editor
- */
-export interface DataSourceEditor extends Editor {
-  DataSourceManager: DataSourceManager
-}
-
-/**
- * Options for the DataSourceEditor plugin
- */
-export interface DataSourceEditorOptions {
-  dataSources: IDataSourceOptions[],
-  view: ViewOptions,
-  filters: Filter[] | string,
-}
-
-/**
  * GrapeJs plugin entry point
  */
 export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions> = {}) => {
@@ -55,7 +38,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     filters: [],
     ...opts,
     view: {
-      appendTo: '.gjs-pn-panel.gjs-pn-views-container',
+      el: '.gjs-pn-panel.gjs-pn-views-container',
       ...opts?.view,
     },
   }

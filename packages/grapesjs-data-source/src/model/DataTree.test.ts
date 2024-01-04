@@ -21,9 +21,10 @@
 
 import grapesjs, { Editor, Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, Property, Field, State, Expression } from '../types'
+import { Type, Filter, Property, Expression, Tree } from '../types'
 import { DataSourceEditor } from '..'
-import { getState, getStateIds, getOrCreatePersistantId, getParentByPersistentId } from './state'
+import { getState, getStateIds } from './state'
+import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
 // Mock only getState
 jest.mock('./state', () => ({
@@ -39,70 +40,6 @@ jest.mock('lit', () => ({
   html: jest.fn(),
   render: jest.fn(),
 }))
-
-const simpleTypes: Type[] = [{
-  id: 'testTypeId',
-  label: 'test type name',
-  fields: [
-    {
-      id: 'testFieldId',
-      label: 'test field name',
-      typeIds: ['testFieldTypeId'],
-      kind: 'scalar',
-      dataSourceId: 'DataSourceId',
-    }
-  ],
-  dataSourceId: 'DataSourceId',
-}, {
-  id: 'testFieldTypeId',
-  label: 'test field type name',
-  fields: [],
-  dataSourceId: 'DataSourceId',
-}]
-const simpleQueryables: Field[] = [{
-  id: 'testSimpleQueryableId',
-  label: 'test queryable',
-  typeIds: ['testTypeId'],
-  kind: 'scalar',
-  dataSourceId: 'DataSourceId',
-}]
-const simpleQueryableTokens: Property[] = [{
-  fieldId: 'testSimpleQueryableId',
-  label: 'test queryable',
-  type: 'property',
-  propType: 'field',
-  typeIds: ['testTypeId'],
-  kind: 'scalar',
-  dataSourceId: 'DataSourceId',
-}]
-const simpleFilters: Filter[] = [{
-  type: 'filter',
-  id: 'testFilterAnyInput',
-  label: 'test filter any input',
-  validate: type => !type, // Just for empty expressions
-  output: () => null,
-  quotedOptions: [],
-  options: {},
-  apply: jest.fn(),
-}, {
-  type: 'filter',
-  id: 'testFilterId',
-  label: 'test filter name',
-  validate: type => !!type?.typeIds.includes('testTypeId'),
-  output: type => type!,
-  quotedOptions: [],
-  options: {},
-  apply: jest.fn(),
-}, {
-  type: 'filter',
-  id: 'testFilterId2',
-  label: 'test filter name 2',
-  validate: type => !!type?.typeIds.includes('testFieldTypeId'),
-  output: () => null,
-  quotedOptions: [],
-  options: {},
-  apply: jest.fn(),
-}]
 
 let editor: Editor
 let firstComponent: Component
@@ -124,7 +61,7 @@ test('DataTree instanciation', () => {
 
 test('Find type from  id', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
-    id: 'DataSourceId',
+    id: testDataSourceId,
     connect: async () => {},
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
@@ -132,23 +69,1041 @@ test('Find type from  id', () => {
   }]})
 
   // Type not found
-  expect(dataTree.findType('unknown')).toBeNull()
+  expect(() => dataTree.getType('unknown')).toThrow()
 
   // Type found
-  const type = dataTree.findType('testTypeId')
+  const type = dataTree.getType('testTypeId')
   expect(type).not.toBeNull()
   expect(type?.id).toBe('testTypeId')
 
   // With data source id
-  expect(dataTree.findType('testTypeId', 'DataSourceId')).not.toBeNull()
-  expect(dataTree.findType('testTypeId', 'unknown')).toBeNull()
+  expect(dataTree.getType('testTypeId', testDataSourceId)).not.toBeNull()
+  expect(() => dataTree.getType('testTypeId', 'unknown')).toThrow()
+})
+
+test('Expressions to tree', () => {
+  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const expression: Expression = [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: testDataSourceId,
+  }]
+  expect(dataTree.getTrees(expression, testDataSourceId))
+    .toEqual([{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId'],
+        kind: 'object',
+        dataSourceId: testDataSourceId,
+      },
+      children: [],
+    }])
+})
+
+test('merge trees', () => {
+  class DataTreeTest extends DataTree {
+    public mergeTrees(tree1: Tree, tree2: Tree): Tree {
+      return super.mergeTrees(tree1, tree2)
+    }
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const tree1: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: testDataSourceId,
+      },
+      children: [],
+    }],
+  }
+  const tree2: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: testDataSourceId,
+      },
+      children: [],
+    }, {
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldPropertyId2',
+        label: 'test field property name',
+        typeIds: ['testFieldPropertyTypeId'],
+        kind: 'scalar',
+        dataSourceId: testDataSourceId,
+      },
+      children: [],
+    }],
+  }
+  expect(dataTree.mergeTrees(tree1, tree2))
+    .toEqual({
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId'],
+        kind: 'object',
+        dataSourceId: testDataSourceId,
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldPropertyId2',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId'],
+          kind: 'scalar',
+          dataSourceId: testDataSourceId,
+        },
+        children: [],
+      }, {
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldPropertyId',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId'],
+          kind: 'scalar',
+          dataSourceId: testDataSourceId,
+        },
+        children: [],
+      }],
+    })
+})
+
+test('merge trees with multiple possible types', () => {
+  class DataTreeTest extends DataTree {
+    public mergeTrees(tree1: Tree, tree2: Tree): Tree {
+      return super.mergeTrees(tree1, tree2)
+    }
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const tree1: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'parentFieldId',
+      label: 'test parent name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId1'],
+        kind: 'object',
+        dataSourceId: testDataSourceId,
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'ONLY_TEST_TYPE_ID1',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId1'],
+          kind: 'scalar',
+          dataSourceId: testDataSourceId,
+        },
+        children: [],
+      }],
+    }],
+  }
+  const tree2: Tree = {
+    token: {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'parentFieldId',
+      label: 'test parent name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    },
+    children: [{
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'testFieldId',
+        label: 'test field name',
+        typeIds: ['testTypeId2'],
+        kind: 'object',
+        dataSourceId: testDataSourceId,
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'ONLY_TEST_TYPE_ID2',
+          label: 'test field property name',
+          typeIds: ['testFieldPropertyTypeId2'],
+          kind: 'scalar',
+          dataSourceId: testDataSourceId,
+        },
+        children: [],
+      }],
+    }],
+  }
+  expect(dataTree.mergeTrees(tree1, tree2))
+    .toEqual({
+      token: {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'parentFieldId',
+        label: 'test parent name',
+        typeIds: ['testParentId'],
+        kind: 'object',
+        dataSourceId: testDataSourceId,
+      },
+      children: [{
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldId',
+          label: 'test field name',
+          typeIds: ['testTypeId1'],
+          kind: 'object',
+          dataSourceId: testDataSourceId,
+        },
+        children: [{
+          token: {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'ONLY_TEST_TYPE_ID1',
+            label: 'test field property name',
+            typeIds: ['testFieldPropertyTypeId1'],
+            kind: 'scalar',
+            dataSourceId: testDataSourceId,
+          },
+          children: [],
+        }],
+      }, {
+        token: {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'testFieldId',
+          label: 'test field name',
+          typeIds: ['testTypeId2'],
+          kind: 'object',
+          dataSourceId: testDataSourceId,
+        },
+        children: [{
+          token: {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'ONLY_TEST_TYPE_ID2',
+            label: 'test field property name',
+            typeIds: ['testFieldPropertyTypeId2'],
+            kind: 'scalar',
+            dataSourceId: testDataSourceId,
+          },
+          children: [],
+        }],
+      }]
+    })
+})
+
+test('get tree with filters', async () => {
+  const queryObjects: Expression = [{
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testId1',
+    label: 'test field name',
+    typeIds: ['PostEntityResponseCollection'],
+    kind: 'list',
+    dataSourceId: testDataSourceId,
+  }, {
+    type: 'filter',
+    id: 'testFilterId1',
+    label: 'test filter name',
+    options: {},
+    quotedOptions: [],
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'data',
+    label: 'test field name',
+    typeIds: ['PostEntity'],
+    kind: 'list',
+    dataSourceId: testDataSourceId,
+  }, {
+    type: 'filter',
+    id: 'testFilterId1',
+    label: 'test filter name',
+    options: {},
+    quotedOptions: [],
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'id',
+    label: 'test field name',
+    typeIds: ['ID'],
+    kind: 'scalar',
+    dataSourceId: testDataSourceId,
+  }]
+  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+    id: testDataSourceId,
+    connect: async () => {},
+    getTypes: () => simpleTypes,
+    getQueryables: () => simpleTypes[0].fields,
+    getQuery: () => '',
+  }]})
+  // Make sure it treats them all as relative
+  dataTree.isRelative = () => true
+  const result = dataTree.getTrees([...queryObjects], testDataSourceId)
+  expect(result)
+    .toEqual([{
+      token: queryObjects[0],
+      children: [{
+        token: queryObjects[2],
+        children: [{
+          token: queryObjects[4],
+          children: [],
+        }],
+      }],
+    }])
+})
+
+test('Merge trees with empty and no options', async () => {
+  const trees = [{
+    "token": {
+      "type": "property",
+      "propType": "field",
+      "typeIds": [],
+      "label": "test field name",
+      "dataSourceId": "testDataSourceId",
+      "fieldId": "query",
+      "kind": "object"
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "testDataSourceId"
+        },
+        "children": []
+      }
+    ]
+  }, {
+    "token": {
+      "type": "property",
+      "propType": "field",
+      "typeIds": [],
+      "dataSourceId": "testDataSourceId",
+      "fieldId": "query",
+      "kind": "object"
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "testDataSourceId",
+          "options": {}
+        },
+        "children": []
+      }
+    ]
+  }] as Tree[]
+  class DataTreeTest extends DataTree {
+    public mergeTrees(tree1: Tree, tree2: Tree): Tree {
+      return super.mergeTrees(tree1, tree2)
+    }
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: [{
+    id: testDataSourceId,
+    connect: async () => {},
+    getTypes: () => simpleTypes,
+    getQueryables: () => simpleTypes[0].fields,
+    getQuery: () => '',
+  }]})
+  expect(async () => dataTree.mergeTrees(trees[0], trees[1]))
+  .not.toThrow('Cannot have options on a field without children')
+  
+  // The 2 trees are the same
+  // The 2nd tree has empty options which should be ignored
+  expect(dataTree.mergeTrees(trees[0], trees[1]))
+  .toEqual(trees[0])
+})
+
+test('Get query with errors in options', async () => {
+  class DataTreeTest extends DataTree {
+    public mergeTrees(tree1: Tree, tree2: Tree): Tree {
+      return super.mergeTrees(tree1, tree2)
+    }
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  expect(() => dataTree.mergeTrees({
+    "token": {
+      "dataSourceId": "testDataSourceId",
+      "fieldId": "query",
+      "kind": "object",
+      "typeIds": [],
+      "type": "property",
+      "propType": "field",
+      "label": "test field name",
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "testDataSourceId"
+        },
+        "children": []
+      }
+    ]
+  }, {
+    "token": {
+      "dataSourceId": "testDataSourceId",
+      "fieldId": "query",
+      "kind": "object",
+      "typeIds": [],
+      "type": "property",
+      "propType": "field",
+      "label": "test field name",
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "testDataSourceId",
+          "options": {
+            "id": "option"
+          }
+        },
+        "children": []
+      }
+    ]
+  }))
+    .toThrow()
+})
+
+test('Get query from multiple expressions', async () => {
+  class DataTreeTest extends DataTree {
+    public mergeTrees(tree1: Tree, tree2: Tree): Tree {
+      return super.mergeTrees(tree1, tree2)
+    }
+  }
+  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const tree = dataTree.mergeTrees({
+    "token": {
+      "dataSourceId": "testDataSourceId",
+      "fieldId": "query",
+      "kind": "object",
+      "typeIds": [],
+      "type": "property",
+      "propType": "field",
+      "label": "test field name",
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId1",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "testDataSourceId"
+        },
+        "children": []
+      }
+    ]
+  }, {
+    "token": {
+      "dataSourceId": "testDataSourceId",
+      "fieldId": "query",
+      "kind": "object",
+      "typeIds": [],
+      "type": "property",
+      "propType": "field",
+      "label": "test field name",
+    },
+    "children": [
+      {
+        "token": {
+          "type": "property",
+          "propType": "field",
+          "fieldId": "testFieldId2",
+          "label": "test field name",
+          "typeIds": [
+            "testTypeId"
+          ],
+          "kind": "object",
+          "dataSourceId": "testDataSourceId"
+        },
+        "children": []
+      }
+    ]
+  })
+  expect(tree).not.toBeUndefined()
+  expect(tree.token).not.toBeUndefined()
+  expect(tree.token.fieldId).toBe('query')
+  expect(tree.children).toHaveLength(2)
+  expect(tree.children[0].token.fieldId).toBe('testFieldId1')
+})
+
+//test('Get query from expression with filters', async () => {
+//  const queryObjects = [{
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testId1',
+//    label: 'test field name',
+//    typeIds: ['PostEntityResponseCollection'],
+//    kind: 'list',
+//    dataSourceId: 'testDataSourceId',
+//  }, {
+//    type: 'filter',
+//    id: 'testFilterId1',
+//    label: 'test filter name',
+//    options: {},
+//    quotedOptions: [],
+//  }, {
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'data',
+//    label: 'test field name',
+//    typeIds: ['PostEntity'],
+//    kind: 'list',
+//    dataSourceId: 'testDataSourceId',
+//  }, {
+//    type: 'filter',
+//    id: 'testFilterId1',
+//    label: 'test filter name',
+//    options: {},
+//    quotedOptions: [],
+//  }, {
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'id',
+//    label: 'test field name',
+//    typeIds: ['ID'],
+//    kind: 'scalar',
+//    dataSourceId: 'testDataSourceId',
+//  }]
+//  await dataSource.getQuery([[...queryObjects]])
+//  expect(getQuery).toHaveBeenCalledTimes(1)
+//  expect(getQuery).toHaveBeenCalledWith({
+//    token: {
+//      dataSourceId: 'testDataSourceId',
+//      fieldId: 'query',
+//      kind: 'object',
+//      typeIds: ['Query'],
+//    },
+//    children: [
+//      { token: queryObjects[0], children: [
+//        { token: queryObjects[2], children: [
+//          { token: queryObjects[4], children: [] }
+//        ]},
+//      ]},
+//    ]
+//  })
+//})
+
+//test('Get query with options', async () => {
+//  const DataSource = (await importDataSource([simpleSchema]))
+//  const dataSource = new DataSource(options)
+//  dataSource.getTypes = () => ([{
+//    id: 'Query',
+//    fields: [{
+//      id: 'testFieldId1',
+//      dataSourceId: 'testDataSourceId',
+//      typeIds: ['rootTypeId1'],
+//    }, {
+//      id: 'testFieldId2',
+//      dataSourceId: 'testDataSourceId',
+//      typeIds: ['rootTypeId2'],
+//    }, {
+//      id: 'testFieldId3',
+//      dataSourceId: 'testDataSourceId',
+//      typeIds: ['rootTypeId1'],
+//    }],
+//  }, {
+//    id: 'testTypeId',
+//    dataSourceId: 'testDataSourceId',
+//    fields: [],
+//  }] as Type[])
+//  await dataSource.connect()
+//  const query = await dataSource.getQuery([[{
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId1',
+//    label: 'test field name',
+//    typeIds: ['testTypeId'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {id: 1},
+//  }], [{
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId1',
+//    label: 'test field name',
+//    typeIds: ['testTypeId'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {id: 1},
+//  }], [{
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId2',
+//    label: 'test field name',
+//    typeIds: ['testTypeId'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {name: 'test'},
+//  }], [{
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId3',
+//    label: 'test field name',
+//    typeIds: ['testTypeId'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//  }]])
+//  expect(query).not.toBeUndefined()
+//  expect(query).toEqual(`query {
+//  __typename
+//  testFieldId1(id: 1) {
+//    __typename
+//
+//
+//  }
+//  testFieldId2(name: "test") {
+//    __typename
+//
+//
+//  }
+//  testFieldId3 {
+//    __typename
+//
+//
+//  }
+//
+//}`)
+//})
+//
+//test('Get query with property options', async () => {
+//  const DataSource = (await importDataSource([simpleSchema]))
+//  const dataSource = new DataSource(options)
+//  dataSource.getQuery = jest.fn(() => 'testQuery')
+//  await dataSource.connect()
+//  await dataSource.getQuery([[{
+//    // LEVEL 1
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId1',
+//    label: 'test field name',
+//    typeIds: ['PostEntity'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {id: 'option'},
+//  }, {
+//    // LEVEL 2
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'test',
+//    label: 'test field property name',
+//    typeIds: ['String'],
+//    kind: 'scalar',
+//    dataSourceId: 'testDataSourceId',
+//    options: {prop: 'option1'},
+//  }], [{
+//    // LEVEL 1
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId1',
+//    label: 'test field name',
+//    typeIds: ['PostEntity'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {id: 'option'},
+//  }, {
+//    // LEVEL 2
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'id',
+//    label: 'test field property name',
+//    typeIds: ['ID'],
+//    kind: 'scalar',
+//    dataSourceId: 'testDataSourceId',
+//    options: {},
+//  }], [{
+//    // LEVEL 1
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'testFieldId1',
+//    label: 'test field name',
+//    typeIds: ['PostEntity'],
+//    kind: 'object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {id: 'option'},
+//  }, {
+//    // LEVEL 2
+//    type: 'property',
+//    propType: 'field',
+//    fieldId: 'attributes',
+//    label: 'test field property name',
+//    typeIds: ['PostEntity'],
+//    kind: 'Object',
+//    dataSourceId: 'testDataSourceId',
+//    options: {prop: 'option3'},
+//  }]])
+//  expect(dataSource.getQuery).toHaveBeenCalledTimes(1)
+//  expect(dataSource.getQuery).toHaveBeenCalledWith({
+//    token: {
+//      dataSourceId: 'testDataSourceId',
+//      fieldId: 'query',
+//      kind: 'object',
+//      typeIds: ['Query'],
+//    },
+//    children: [
+//      { token: {
+//        type: 'property',
+//        propType: 'field',
+//        fieldId: 'testFieldId1',
+//        label: 'test field name',
+//        typeIds: ['PostEntity'],
+//        kind: 'object',
+//        dataSourceId: 'testDataSourceId',
+//        options: {id: 'option'},
+//      }, children: [
+//        { token: {
+//          type: 'property',
+//          propType: 'field',
+//          fieldId: 'test',
+//          label: 'test field property name',
+//          typeIds: ['String'],
+//          kind: 'scalar',
+//          dataSourceId: 'testDataSourceId',
+//          options: {prop: 'option1'},
+//        }, children: [] },
+//        { token: {
+//          type: 'property',
+//          propType: 'field',
+//          fieldId: 'id',
+//          label: 'test field property name',
+//          typeIds: ['ID'],
+//          kind: 'scalar',
+//          dataSourceId: 'testDataSourceId',
+//          options: {},
+//        }, children: [] },
+//        { token: {
+//          type: 'property',
+//          propType: 'field',
+//          fieldId: 'attributes',
+//          label: 'test field property name',
+//          typeIds: ['PostEntity'],
+//          kind: 'Object',
+//          dataSourceId: 'testDataSourceId',
+//          options: {prop: 'option3'},
+//        }, children: [] },
+//      ]},
+//    ]
+//  })
+//})
+//
+//test('Get query with filter options', () => {
+//  const fn = jest.fn(() => ([{
+//    id: 'Query',
+//    fields: [{
+//      id: 'rootField1',
+//      label: 'test',
+//      dataSourceId: 'testDataSourceId',
+//      typeIds: ['rootTypeId1'],
+//    }, {
+//      id: 'rootField2',
+//      label: 'test',
+//      dataSourceId: 'testDataSourceId',
+//      typeIds: ['rootTypeId2'],
+//    }],
+//  }, {
+//    id: 'rootTypeId1',
+//    label: 'test',
+//    dataSourceId: 'testDataSourceId',
+//    fields: [{
+//      id: 'childField1',
+//      label: 'test',
+//      typeIds: ['childTypeId1'],
+//      kind: 'scalar',
+//      dataSourceId: 'testDataSourceId',
+//    }, {
+//      id: 'childField3',
+//      label: 'test',
+//      typeIds: ['childTypeId3'],
+//      kind: 'scalar',
+//      dataSourceId: 'testDataSourceId',
+//    }],
+//  }, {
+//    id: 'rootTypeId2',
+//    label: 'test',
+//    dataSourceId: 'testDataSourceId',
+//    fields: [{
+//      id: 'childField2',
+//      label: 'test',
+//      typeIds: ['childTypeId2'],
+//      kind: 'scalar',
+//      dataSourceId: 'testDataSourceId',
+//    }],
+//  }] as Type[]))
+//  class GQLTestTrees extends GraphQL {
+//    protected queryType: string = 'Query'
+//    getTypes(): Type[] {
+//      return fn()
+//    }
+//  }
+//  const gql = new GQLTestTrees({
+//    url: 'http://localhost',
+//    method: 'POST',
+//    headers: {},
+//    id: 'testDataSourceId',
+//    label: 'test',
+//    type: 'graphql',
+//  })
+//  expect(gql.getQuery({
+//    token: testTokens.rootField1 as Property,
+//    children: [{
+//      token: testTokens.childField3 as Property,
+//      children: [],
+//    }],
+//  }))
+//    .toEqual(dedent`
+//      query {
+//        __typename
+//        rootField2 {
+//          __typename
+//          childField2
+//
+//        }
+//        rootField1 {
+//          __typename
+//          childField3
+//          childField1
+//
+//        }
+//
+//      }
+//    `)
+//})
+
+test('isRelative', () => {
+  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+    id: testDataSourceId,
+    connect: async () => {},
+    getTypes: () => ([{
+      id: 'parentType',
+      label: 'test',
+      dataSourceId: testDataSourceId,
+      fields: [{
+        id: 'testId1',
+        label: 'test',
+        typeIds: ['childType'],
+        kind: 'list',
+        dataSourceId: testDataSourceId,
+      }],
+    }, {
+      id: 'childType',
+      label: 'test',
+      dataSourceId: testDataSourceId,
+      fields: [{
+        id: 'testId2',
+        label: 'test',
+        typeIds: ['childType'],
+        kind: 'scalar',
+        dataSourceId: testDataSourceId,
+      }],
+    }] as Type[]),
+    getQueryables: () => ([]),
+    getQuery: () => '',
+  }]})
+  expect(dataTree.isRelative({
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testId1',
+    label: 'test field name',
+    typeIds: ['parentType'],
+    kind: 'list',
+    dataSourceId: testDataSourceId,
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testId2',
+    label: 'test field name',
+    typeIds: ['childType'],
+    kind: 'scalar',
+    dataSourceId: testDataSourceId,
+  }, testDataSourceId)).toBeTruthy()
+})
+
+test('get tree with options', () => {
+  const fn = jest.fn(() => ([{
+    id: 'rootTypeId1',
+    label: 'test',
+    dataSourceId: testDataSourceId,
+    fields: [{
+      id: 'childField1',
+      label: 'test',
+      typeIds: ['childTypeId1'],
+      kind: 'scalar',
+      dataSourceId: testDataSourceId,
+    }, {
+      id: 'childField3',
+      label: 'test',
+      typeIds: ['childTypeId3'],
+      kind: 'scalar',
+      dataSourceId: testDataSourceId,
+    }],
+  }, {
+    id: 'rootTypeId2',
+    label: 'test',
+    dataSourceId: testDataSourceId,
+    fields: [{
+      id: 'childField2',
+      label: 'test',
+      typeIds: ['childTypeId2'],
+      kind: 'scalar',
+      dataSourceId: testDataSourceId,
+    }],
+  }] as Type[]))
+
+  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+    id: testDataSourceId,
+    connect: async () => {},
+    getTypes: fn,
+    getQueryables: () => [],
+    getQuery: () => '',
+  }]})
+
+  // Simple expression with relative child expression
+  const expression1 = [
+    testTokens.rootField1,
+    {
+      ...testTokens.filter,
+      options: {
+        childExpressionRelative: JSON.stringify([testTokens.childField1]),
+      },
+    } as Filter,
+  ] as Expression
+  expect(() => dataTree.getTrees(expression1, testDataSourceId)).not.toThrow()
+  expect(dataTree.getTrees(expression1, testDataSourceId))
+  .toEqual([{
+    token: testTokens.rootField1,
+    children: [{
+      token: testTokens.childField1,
+      children: [],
+    }],
+  }])
+  // More complex expression with absolute child expression
+  const expression2: Expression = [{
+      ...testTokens.rootField1,
+    }, {
+      ...testTokens.filter,
+      options: {
+        id: 1,
+        childExpressionAbsolute: JSON.stringify([testTokens.rootField2, testTokens.childField2]),
+        childExpressionRelative: JSON.stringify([testTokens.childField1]),
+      },
+    } as Filter,
+    testTokens.childField3
+  ]
+  expect(() => dataTree.getTrees(expression2, testDataSourceId)).not.toThrow()
+  expect(dataTree.getTrees(expression2, testDataSourceId))
+  .toEqual([{
+    token: testTokens.rootField1,
+    children: [{
+      token: testTokens.childField3,
+      children: [],
+    }],
+  }, {
+    token: testTokens.rootField1,
+    children: [],
+  }, {
+    token: testTokens.rootField2,
+    children: [{
+      token: testTokens.childField2,
+      children: [],
+    }],
+  }, {
+    token: testTokens.rootField1,
+    children: [{
+      token: testTokens.childField1,
+      children: [],
+    }],
+  }])
 })
 
 test('get types map', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {
     filters: [],
     dataSources: [{
-      id: 'DataSourceId',
+      id: testDataSourceId,
       connect: async () => {},
       getTypes: () => simpleTypes,
       getQueryables: () => simpleTypes[0].fields,
@@ -161,110 +1116,26 @@ test('get types map', () => {
   expect(types[0].id).toBe('testTypeId')
 })
 
-test('get empty context', () => {
-  const editor = grapesjs.init({
-    container: document.createElement('div'),
-    components: '<div></div>',
-  })
-  const component = editor.getComponents().first()
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
-  const context = dataTree.getContext(component)
-  expect(context).toBeDefined()
-  expect(context).toHaveLength(0)
-})
-
-test('get context with filters', () => {
-  const component = editor.getComponents().first()
-  const dataTree = new DataTree(editor as DataSourceEditor, {
-    dataSources: [],
-    filters: simpleFilters,
-  })
-  const context = dataTree.getContext(component)
-  expect(context).toBeDefined()
-  expect(context).toHaveLength(1) // 1 Filter only for no input
-  const filter = context[0] as Filter
-  expect(filter.id).toBe('testFilterAnyInput')
-})
-
-test('get context with parent compontent states', () => {
-  const component = editor.getComponents().first()
-  const child: Component = component.append('<div></div>')[0]
-  expect(component.get('components')).toHaveLength(1)
-  expect(child).toBeDefined()
-
-  // Define mock values
-  ;(getStateIds as jest.Mock).mockImplementation((c: unknown) => {
-    if(c === component) return ['testStateId']
-    else return []
-  })
-  ;(getOrCreatePersistantId as jest.Mock).mockReturnValue('testPersistentId')
-  const dataTree = new DataTree(editor as DataSourceEditor, { filters: [], dataSources: [] })
-  const context = dataTree.getContext(child)
-  expect(context).toBeDefined()
-  expect(context).toHaveLength(1)
-  const typeProp = context[0] as State
-  expect(typeProp.type).toBe('state')
-  expect(typeProp.componentId).toBe('testPersistentId')
-  expect(typeProp.storedStateId).toBe('testStateId')
-})
-
-test('get context with data source queryable values', () => {
-  const component = editor.getComponents().first()
-  const dataTree = new DataTree(editor as DataSourceEditor, {
-    filters: [],
-    dataSources: [{
-      id: 'DataSourceId',
-      connect: async () => {},
-      getTypes: () => [{
-        id: 'testTypeId1',
-        label: 'test type name 1',
-        kind: 'scalar',
-        fields: [],
-        dataSourceId: 'DataSourceId',
-      }, {
-        id: 'testTypeId2',
-        label: 'test type name 2',
-        kind: 'scalar',
-        fields: [],
-        dataSourceId: 'DataSourceId',
-      }],
-      getQueryables: () => [{
-        id: 'testFieldId2',
-        label: 'test field name 2',
-        typeIds: ['testTypeId2'],
-        kind: 'scalar',
-        dataSourceId: 'DataSourceId',
-      }],
-      getQuery: () => '',
-    }],
-  })
-  const context = dataTree.getContext(component)
-  expect(context).toBeDefined()
-  expect(context).toHaveLength(1)
-  const typeProp = context[0] as Property
-  expect(typeProp.fieldId).toContain('testFieldId2')
-})
-
 // TODO: Value tests
 // const simpleExpression: Context = [
 //   {
 //     type: 'property',
 //     propType: 'type',
 //     typeId: 'testTypeId',
-//     dataSourceId: 'DataSourceId',
+//     dataSourceId: DataSourceId,
 //   }, {
 //     type: 'property',
 //     propType: 'field',
 //     fieldId: 'testFieldId',
 //     typeId: 'testTypeId',
-//     dataSourceId: 'DataSourceId',
+//     dataSourceId: DataSourceId,
 //   }
 // ]
 // test('get value with simple context', () => {
 //   const dataTree = new DataTree({
 //     filters: [],
 //     dataSources: [{
-//       id: 'DataSourceId',
+//       id: DataSourceId,
 //       connect: async () => { },
 //       getTypes: () => simpleTypes,
 //     }],
@@ -278,7 +1149,7 @@ test('get context with data source queryable values', () => {
 //     type: 'property',
 //     propType: 'type',
 //     typeId: 'testTypeId',
-//     dataSourceId: 'DataSourceId',
+//     dataSourceId: DataSourceId,
 //   }])
 //   expect(value).not.toBeNull()
 //   // TODO: test value
@@ -288,179 +1159,23 @@ test('get context with data source queryable values', () => {
 //     type: 'property',
 //     propType: 'type',
 //     typeId: 'testTypeId',
-//     dataSourceId: 'DataSourceId',
+//     dataSourceId: DataSourceId,
 //   }, {
 //     type: 'property',
 //     propType: 'field',
 //     fieldId: 'testFieldId',
 //     typeId: 'testTypeId',
-//     dataSourceId: 'DataSourceId',
+//     dataSourceId: DataSourceId,
 //   }])
 //   expect(value2).not.toBeNull()
 //   // TODO: test value
 // })
 
-test('get type with simple context', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
-    filters: [],
-    dataSources: [{
-      id: 'DataSourceId',
-      connect: async () => { },
-      getTypes: () => simpleTypes,
-      getQueryables: () => simpleQueryables,
-      getQuery: () => '',
-    }],
-  })
-
-  // Empty value
-  expect(dataTree.getExpressionResultType([] as Expression, firstComponent)).toBeNull()
-
-  // 1 level value
-  const type = dataTree.getExpressionResultType([{
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    type: 'property',
-    propType: 'field',
-    typeIds: ['testFieldTypeId'],
-    dataSourceId: 'DataSourceId',
-    kind: 'object',
-  }], firstComponent)
-  expect(type).not.toBeNull()
-  expect(type?.id).toBe('testFieldId')
-
-  // 2 levels value
-  const type2 = dataTree.getExpressionResultType([{
-    fieldId: 'first',
-    label: 'test field name',
-    type: 'property',
-    propType: 'field',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'second',
-    label: 'test field name',
-    typeIds: ['testFieldTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }], firstComponent)
-  expect(type2).not.toBeNull()
-  expect(type2?.id).toBe('second')
-})
-
-test('get completion with simple context', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
-    filters: [],
-    dataSources: [{
-      id: 'DataSourceId',
-      connect: async () => { },
-      getTypes: () => simpleTypes,
-      getQueryables: () => simpleQueryables,
-      getQuery: () => '',
-    }],
-  })
-  const component = editor.getComponents().first()
-
-  // Empty value
-  // The context is the queryables here
-  const completion1 = dataTree.getCompletion(component, [])
-  expect(completion1).toHaveLength(1) 
-  expect(completion1).toEqual(simpleQueryableTokens)
-
-  // 1 level value
-  const completion2 = dataTree.getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }])
-  expect(completion2).toHaveLength(1)
-  const typeProp = completion2[0] as Property
-  expect(typeProp.typeIds).toContain('testFieldTypeId')
-
-  // 2 levels value
-  const completion3 = dataTree.getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testFieldTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }])
-  expect(completion3).toHaveLength(0)
-})
-
-test('get completion with filters', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
-    filters: simpleFilters,
-    dataSources: [{
-      id: 'DataSourceId',
-      connect: async () => { },
-      getTypes: () => simpleTypes,
-      getQueryables: () => simpleQueryables,
-      getQuery: () => '',
-    }],
-  })
-  const component = editor.getComponents().first()
-
-  // Empty value
-  expect(dataTree.getCompletion(component, [])).toEqual([
-    simpleQueryableTokens[0],
-    simpleFilters[0],
-  ])
-
-  // 1 level value
-  const completion = dataTree.getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }])
-  expect(completion).toHaveLength(2) // 1 field and 1 filters
-
-  // 2 levels value
-  const completion2 = dataTree.getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testFieldTypeId'],
-    kind: 'object',
-    dataSourceId: 'DataSourceId',
-  }])
-  expect(completion2).toHaveLength(1) // 1 filter
-})
-
 test('Get experessions used by a component', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {
     filters: simpleFilters,
     dataSources: [{
-      id: 'DataSourceId',
+      id: testDataSourceId,
       connect: async () => { },
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
@@ -475,7 +1190,7 @@ test('Get experessions used by a component', () => {
       label: 'test field name',
       typeIds: ['testTypeId'],
       kind: 'object',
-      dataSourceId: 'DataSourceId',
+      dataSourceId: testDataSourceId,
     }] as Property[]
   ;(getStateIds as jest.Mock).mockReturnValueOnce(['testStateId'])
   ;(getState as jest.Mock).mockImplementation(() => ({
@@ -518,91 +1233,4 @@ test('Get experessions used by all pages', () => {
   })
   dataTree.getAllPagesExpressions()
   expect(dataTree.getPageExpressions).toHaveBeenCalledTimes(1) // 1 per page
-})
-
-test('Get experessions used by 2 components with 2 loops', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
-    filters: [],
-    dataSources: [],
-  })
-  const parent = editor.getComponents().first()
-  const child: Component = parent.append('<div></div>')[0]
-  const grandChild: Component = child.append('<div></div>')[0]
-  expect(parent.get('components')).toHaveLength(1)
-  expect(child).toBeDefined()
-  expect(grandChild).toBeDefined()
-  
-  const parentExpression = [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    kind: 'list',
-  }] as Expression
-  const childExpression = [{
-    type: "state",
-    storedStateId: "parentStateId",
-    componentId: "parentPersistentId",
-    exposed: false,
-    forceKind: "object",
-    label: "parent loop item"
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'comments',
-    kind: 'list',
-  }] as Expression
-  const grandChildExpression = [{
-    type: 'state',
-    storedStateId: 'childStateId',
-    componentId: 'childPersistentId',
-    exposed: false,
-    forceKind: 'object',
-    label: 'child loop item',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'body',
-    kind: 'scalar',
-  }] as Expression
-  const resultGrandChildExpression = [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    kind: 'list',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'comments',
-    kind: 'list',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'body',
-    kind: 'scalar',
-  }] as Expression
-
-  ;(getStateIds as jest.Mock).mockImplementation((comp: unknown, hidden: boolean) => {
-    if(comp === parent && hidden === true) return ['parentStateId']
-    else if(comp === child && hidden === true) return ['childStateId']
-    else if(comp === grandChild && hidden === true) return ['grandChildStateId']
-    return []
-  })
-  ;(getState as jest.Mock).mockImplementation((comp: unknown, id: string) => {
-    if(id === 'parentStateId') return { expression: parentExpression }
-    else if(id === 'childStateId') return { expression: childExpression }
-    else if(id === 'grandChildStateId') return { expression: grandChildExpression }
-    return null
-  })
-  ;(getOrCreatePersistantId as jest.Mock).mockImplementation((c: unknown) => {
-    if(c === parent) return 'parentPersistentId'
-    else if(c === child) return 'childPersistentId'
-    return null
-  })
-  ;(getParentByPersistentId as jest.Mock).mockImplementation((id: string) => {
-    if(id === 'parentPersistentId') return parent
-    else if(id === 'childPersistentId') return child
-    return null
-  })
-  const result = dataTree.getComponentExpressions(grandChild)
-  expect(result).toEqual([resultGrandChildExpression])
 })

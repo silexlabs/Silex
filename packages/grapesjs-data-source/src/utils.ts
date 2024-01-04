@@ -3,6 +3,7 @@ import { DataSourceEditor } from "."
 import { getParentByPersistentId, getStateDisplayName } from "./model/state"
 import { TemplateResult, html } from "lit"
 import { Component } from "grapesjs"
+import { fromStored, getExpressionResultType } from "./model/token"
 
 /**
  * Get the display type of a field
@@ -63,7 +64,7 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
         case 'property': {
           if(token.dataSourceId) {
             if(expression.length > 0) {
-              const type = editor.DataSourceManager.getDataTree().getExpressionResultType(expression, component)
+              const type = getExpressionResultType(expression, component, editor.DataSourceManager.getDataTree())
               label = type?.label ?? type?.id ?? 'Unknown'
             } else {
               const dataSource: IDataSourceModel = editor.DataSourceManager.get(token.dataSourceId)
@@ -147,7 +148,7 @@ export function toId(token: Token): string {
  * Revert an option's tag value to a token
  */
 export function fromString(editor: DataSourceEditor, id: string): Token {
-  return editor.DataSourceManager.getDataTree().fromStored(JSON.parse(id)) as Token
+  return fromStored(JSON.parse(id), editor.DataSourceManager.getDataTree()) as Token
 }
 
 /**
@@ -217,7 +218,7 @@ export function convertKind(field: Field | null, from: FieldKind, to: FieldKind)
 export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null {
   const dataTree = editor.DataSourceManager.getDataTree()
   if (!field || !key) return null
-  const types = field.typeIds.map(typeId => dataTree.findType(typeId))
+  const types = field.typeIds.map(typeId => dataTree.getType(typeId))
   const fields = types.map(type => type?.fields.find(field => field.label === key))
   switch (fields.length) {
     case 0: return null
@@ -248,7 +249,7 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
       <select name=${name}>
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
-      .flatMap(typeId => dataTree.findType(typeId)!.fields)
+      .flatMap(typeId => dataTree.getType(typeId)!.fields)
       .map(f => html`<option value=${f.label} .selected=${f.label === options.key}>${f.label}</option>`)
       : html``
     }

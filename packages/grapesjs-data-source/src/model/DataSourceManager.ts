@@ -16,7 +16,7 @@
  */
 
 import Backbone from "backbone"
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel } from "../types"
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Expression, Filter, IDataSource, IDataSourceModel } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
 import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
@@ -143,21 +143,30 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     const expressions = this.dataTree.getPageExpressions(page)
     return this.models
       .map(ds => {
-        const query = getDataSourceClass(ds)
-          .getQuery(expressions
-            .filter(e => {
-              const first = e[0]
-              if (!first || first.type !== 'property') {
-                console.warn('Invalid expression', e)
-                return false
-              }
-              return first.dataSourceId === ds.id
-            }))
+        const dsExpressions: Expression[] = expressions
+          .filter(e => {
+            const first = e[0]
+            if (!first || first.type !== 'property') {
+              console.warn('Invalid expression', e)
+              return false
+            }
+            return first.dataSourceId === ds.id
+          })
+        const tree = this.dataTree.toTree(dsExpressions, ds.id)
+        if(!tree) {
+          return {
+            dataSourceId: ds.id.toString(),
+            query: '',
+          }
+          throw new Error(`No tree for data source ${ds.id}`)
+        }
+        const query = getDataSourceClass(ds).getQuery(tree)
         return {
           dataSourceId: ds.id.toString(),
           query,
         }
       })
+      .filter(obj => !!obj.query)
       .reduce((acc, { dataSourceId, query }) => {
         acc[dataSourceId] = query
         return acc

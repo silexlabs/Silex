@@ -24,6 +24,7 @@ import './state-editor'
 import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
+import { fromStored } from '../model/token'
 
 interface Item {
   name: string
@@ -203,7 +204,7 @@ export class CustomStatesEditor extends LitElement {
   getTokens(dataTree: DataTree, component: Component, name: string, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
-    return state.expression.map(token => dataTree.fromStored(token))
+    return state.expression.map(token => fromStored(token, dataTree))
   }
 
   /**

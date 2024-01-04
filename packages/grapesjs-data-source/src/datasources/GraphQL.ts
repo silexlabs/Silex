@@ -16,10 +16,11 @@
  */
 
 import Backbone from "backbone"
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Expression, Field, FieldKind, PropertyOptions, Property, IDataSource, IDataSourceOptions, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
+import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, FieldKind, IDataSource, IDataSourceOptions, Tree, Type, TypeId, builtinTypeIds, builtinTypes } from "../types"
 import graphqlIntrospectionQuery from "./graphql-introspection-query"
 import dedent from "dedent-js"
-import { FIXED_TOKEN_ID, toExpression } from "../utils"
+import { FIXED_TOKEN_ID } from "../utils"
+import { buildArgs } from "../model/token"
 
 /**
  * @fileoverview GraphQL DataSource implementation
@@ -65,64 +66,6 @@ export interface GQLType {
   name: string,
   fields: GQLField[],
 }
-
-/**
- * Useful interface to create a tree of fields
- * Exported for unit tests
- */
-export interface Tree {
-  token: Property
-  children: Tree[]
-}
-
-/**
- * Utility function to shallow compare two objects
- * Used to compare options of tree items
- */
-function sameOptions(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined) {
-  // Handle the case where one or both are undefined or empty
-  if(!option1 && !option2) return true
-  if(isEmpty(option1) && isEmpty(option2)) return true
-  // Handle the case where one is undefined or empty and the other is not
-  if(!option1 || !option2) return false
-  if(isEmpty(option1) || isEmpty(option2)) return false
-
-  const keys1 = Object.keys(option1);
-  const keys2 = Object.keys(option2);
-
-  if (keys1.length !== keys2.length) {
-    return false;
-  }
-
-  for (const key of keys1) {
-    if (option1[key] !== option2[key]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function isJson(str: string) {
-  try {
-    JSON.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
-
-function isEmpty(value: unknown): boolean {
-  if(value === null || typeof value === 'undefined') return true
-  const isString = typeof value === 'string'
-  const isJsonString = isString && isJson(value)
-  if (isString && !isJsonString) return value === ''
-  const json = isJsonString ? JSON.parse(value) : value
-  if (Array.isArray(json)) return json.length === 0
-  if (typeof json === 'object') return Object.keys(json).length === 0
-  return false
-}
-
 
 /**
  * GraphQL DataSource implementation
@@ -393,158 +336,26 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     return response.json()
   }
 
-  getQuery(expressions: Expression[]): string {
-    if(expressions.length === 0) return ''
-    if(!this.queryType) return this.triggerError(`Missing query type - has this data source been connected?`)
-    const tree: Tree = expressions
-      // From Expression to Tree
-      .flatMap(expression => this.getTrees(expression))
-      // Add the main query object which is the root of the tree
-      .map(tree => ({
-        token: {
-          dataSourceId: tree.token.dataSourceId,
-          fieldId: 'query',
-          kind: 'object',
-          typeIds: [this.queryType],
-        },
-        children: [tree],
-      } as Tree))
-      // Merge all trees from the root
-      .reduce((finalTree, tree) => this.mergeTrees(finalTree, tree))
-    // To GraphQL query
-    return this.buildQuery(tree)
-  }
-
-  protected getTrees(expression: Expression): Tree[] {
-    if(expression.length === 0) return []
-    const next = expression[0]
-    switch(next.type) {
-      case 'property': {
-        if(next.dataSourceId !== this.id) return []
-        const trees = this.getTrees(expression.slice(1))
-        if(trees.length === 0) return [{
-          token: next,
-          children: [],
-        }]
-        return trees
-          .flatMap(tree => {
-            // Check if this is a "relative" property or "absolute" (a root type)
-            if(this.isRelative(next, tree.token)) {
-              return {
-                token: next,
-                children: [tree],
-              }
-            } else {
-              return [{
-                token: next,
-                children: [],
-              }, tree]
-            }
-          })
-      }
-      case 'filter': {
-        const options = Object.values(next.options)
-          .map((value: unknown) => toExpression(value))
-          .filter((exp: Expression | null) => !!exp && exp.length > 0)
-          .flatMap(exp => this.getTrees(exp!))
-
-        const trees = this.getTrees(expression.slice(1))
-        if(trees.length === 0) return options
-        return trees.flatMap(tree => [tree, ...options])
-      }
-      case 'state': // This will not occure as components states are resolved to properties and filters
-      default:
-        console.error('Invalid expression', expression)
-        throw new Error(`Invalid expression ${JSON.stringify(expression)}`)
-    }
-  }
-
-  /**
-   * Check if a property is relative to a type
-   * A type is "relative" if next has a type which has a field of type tree.token
-   */
-  isRelative(parent: Property, child: Property): boolean {
-    const parentTypes = this.getTypes().filter(t => parent.typeIds.includes(t.id))
-    const parentFieldsTypes = parentTypes.flatMap(t => t.fields.map(f => f.typeIds).flat())
-    return child.typeIds.some(typeId => parentFieldsTypes.includes(typeId))
-  }
-
-  /**
-   * Recursively merge two trees
-   */
-  protected mergeTrees(tree1: Tree, tree2: Tree): Tree {
-    // Check if the trees have the same fieldId
-    if (tree1.token.kind !== tree2.token.kind || tree1.token.dataSourceId !== tree2.token.dataSourceId) {
-      console.error('Unable to merge trees', tree1, tree2)
-      throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
-    }
-
-    // Check if there are children with the same fieldId but different options
-    // FIXME: we should use graphql aliases: https://graphql.org/learn/queries/#aliases but then it changes the variable name in the result
-    const errors = tree1.children
-      .filter(child1 => tree2.children.find(child2 =>
-        child1.token.fieldId === child2.token.fieldId
-        && !sameOptions(child1.token.options, child2.token.options)
-      ))
-      .map(child1 => {
-        const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
-        return `${child1.token.fieldId} appears twice with different options: ${JSON.stringify(child1.token.options)} vs ${JSON.stringify(child2?.token.options)}`
-      })
-
-    if(errors.length > 0) {
-      console.error('Unable to merge trees', errors)
-      throw new Error(`Unable to build GraphQL query: unable to merge trees: \n* ${errors.join('\n* ')}`)
-    }
-
-    const different = tree1.children
-      .filter(child1 => !tree2.children.find(child2 =>
-        child1.token.fieldId === child2.token.fieldId
-        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-        && sameOptions(child1.token.options, child2.token.options)
-      ))
-      .concat(tree2.children
-        .filter(child2 => !tree1.children.find(child1 =>
-          child1.token.fieldId === child2.token.fieldId
-          && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-          && sameOptions(child1.token.options, child2.token.options)
-        ))
-      )
-    const same = tree1.children
-      .filter(child1 => tree2.children.find(child2 =>
-        child1.token.fieldId === child2.token.fieldId
-        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-        && sameOptions(child1.token.options, child2.token.options)
-      ))
-
-    return {
-      token: tree1.token,
-      children: different
-        .concat(same
-          .map(child1 => {
-            const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
-            return this.mergeTrees(child1, child2!)
-          })),
-    }
-  }
-
-  protected buildArgs(options: PropertyOptions | undefined): string {
-    const args = options ? `(${Object
-        .keys(options)
-        .map(key => ({ key, value: options![key] }))
-        .filter(({ value }) => !isEmpty(value))
-        .map(({ key, value }) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
-        .join(', ')
-      })` : ''
-    // Valid args for GraphQL canot be just ()
-    const validArgs = args === '()' ? '' : args
-    return validArgs
-  }
-
   /**
    * Build a GraphQL query from a tree
    */
-  protected buildQuery(tree: Tree, indent = '', fragment = ''): string {
-    const typeOrFragment = fragment ? `...on ${fragment}` : `${tree.token.fieldId}${this.buildArgs(tree.token.options)}`
+  getQuery(tree: Tree): string {
+    return this.getQueryRecursive({
+      // Add the main query object which is the root of the tree
+      token: {
+        dataSourceId: tree.token.dataSourceId,
+        fieldId: 'query',
+        kind: 'object',
+        typeIds: [this.queryType],
+      },
+      children: [tree],
+    } as Tree)
+  }
+
+  protected getQueryRecursive(tree: Tree, indent = '', fragment = ''): string {
+    // Check if the tree is a fragment
+    const typeOrFragment = fragment ? `...on ${fragment}` : `${tree.token.fieldId}${buildArgs(tree.token.options)}`
+
     // Build the value
     switch(tree.token.kind) {
       case 'scalar':
@@ -553,8 +364,9 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       case 'object':
       case 'list': {
         const types = this.getTypes().filter(t => tree.token.typeIds?.includes(t.id))
-        if(types.length === 0) throw new Error(`Type not found for ${tree.token.fieldId} (${tree.token.typeIds})`)
-        else if(types.length > 1) throw new Error(`Multiple types found for ${tree.token.fieldId}`)
+        if(types.length === 0) {
+          throw new Error(`Type not found for ${tree.token.fieldId} (${tree.token.typeIds})`)
+        } else if(types.length > 1) throw new Error(`Multiple types found for ${tree.token.fieldId}`)
         const type = types[0] as Type
         const fieldTypes = tree.children.map(child => {
           const fieldType = type.fields.find(f => f.id === child.token.fieldId)
@@ -569,7 +381,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           .filter(({fieldType}) => fieldType.typeIds.length > 1)
           .map(({child}) => {
             return {
-              query: this.buildQuery(child, indent + '  ', child.token.typeIds[0]),
+              query: this.getQueryRecursive(child, indent + '  ', child.token.typeIds[0]),
               child,
             }
           })
@@ -586,7 +398,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           // Simple case, no fragment
           .filter(({fieldType}) => fieldType.typeIds.length === 1)
           .map(({child}) => {
-            return this.buildQuery(child, indent + '  ')
+            return this.getQueryRecursive(child, indent + '  ')
           })
           .join('\n')
 

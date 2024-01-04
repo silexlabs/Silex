@@ -16,10 +16,10 @@
  */
 
 import { Component, Page } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, FieldArgument, Property, Filter, IDataSource, Options, State, StateId, Token, Type, TypeId, StoredToken } from '../types'
-import { getStateIds, getState, getOrCreatePersistantId, getParentByPersistentId } from './state'
-import { DataSourceEditor } from '..'
-import { TemplateResult, html } from 'lit'
+import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, Token, Tree, Type, TypeId } from '../types'
+import { getStateIds, getState, resolveState, getComponentByPersistentId } from './state'
+import { sameOptions } from './token'
+import { toExpression } from '../utils'
 
 /**
  * Options of the data tree
@@ -93,6 +93,34 @@ export class DataTree {
   }
 
   /**
+   * Get type from typeId and dataSourceId
+   */
+  getTypes(dataSourceId?: DataSourceId): Type[] {
+    const types = this.dataSources
+      // Get the data source
+      .find((dataSource: IDataSource) => dataSource.id === dataSourceId)
+      // Get its types
+      ?.getTypes()
+    if(!types) throw new Error(`Data source not found ${dataSourceId}`)
+    return types
+  }
+
+  /**
+   * Get type from typeId and dataSourceId
+   */
+  getType(typeId: TypeId, dataSourceId?: DataSourceId): Type {
+    const type = this.dataSources
+      // Get the data source
+      .find((dataSource: IDataSource) => !dataSourceId || dataSource.id === dataSourceId)
+      // Get its types
+      ?.getTypes()
+      // Return the requested type
+      .find((type: Type) => type.id === typeId)
+    if(!type) throw new Error(`Type not found ${dataSourceId}.${typeId}`)
+    return type
+  }
+
+  /**
    * Get all types from all data sources
    */
   getAllTypes(): Type[] {
@@ -113,343 +141,11 @@ export class DataTree {
   }
 
   /**
-   * Get the options of a token
-   */
-  getTokenOptions(field: Field): { optionsForm: (input: Field | null, options: Options) => TemplateResult, options: Options} | null {
-    if (field.arguments && field.arguments.length > 0) {
-      return {
-        optionsForm: this.optionsToOptionsForm(field.arguments.map((arg) => ({ name: arg.name, value: arg.defaultValue }))),
-        options: field.arguments.reduce((options: Record<string, unknown>, arg: FieldArgument) => {
-          options[arg.name] = arg.defaultValue
-          return options
-        }, {}),
-      }
-    }
-    return null
-  }
-
-  /**
-   * Get the options of a token or a field
-   */
-  optionsToOptionsForm(arr: {name: string, value: unknown}[]): (input: Field | null, options: Options) => TemplateResult {
-    return (input: Field | null, options: Options) => {
-      return html`
-              ${arr.map((obj) => {
-        const value = options[obj.name] ?? obj.value ?? ''
-        return html`<label>${obj.name}</label><input type="text" name=${obj.name} value=${value}>`
-      })
-        }
-          `
-    }
-  }
-
-  /**
-   * Get the context of a component
-   * This includes all parents states, data sources queryable values, values provided in the options
-   */
-  getContext(component = this.editor.getSelected()): Context {
-    if(!component) {
-      console.error('Component is required for context')
-      throw new Error('Component is required for context')
-    }
-    // Get all queryable values from all data sources
-    const queryable: Property[] = this.queryables
-      .map((field: Field) => {
-        if(!field.dataSourceId) throw new Error(`Type ${field.id} has no data source`)
-        return this.fieldToToken(field)
-      })
-    // Get all states in the component scope
-    const states: State[] = []
-    const loopProperties: Token[] = []
-    let parent = component
-    while(parent) {
-      // Get explicitely set states
-      states.push(...(getStateIds(parent, true)
-        .map((stateId: StateId): State => ({
-          type: 'state',
-          storedStateId: stateId,
-          label: getState(parent, stateId, true)?.label || stateId,
-          componentId: getOrCreatePersistantId(parent),
-          exposed: true,
-        }))))
-      // Get states from loops
-      //if (parent !== component) {
-        const loopDataState = getState(parent, '__data', false)
-        if (loopDataState) {
-          const loopDataField = this.getExpressionResultType(loopDataState.expression, parent)
-          if (loopDataField) {
-            if (loopDataField.kind === 'list') {
-              loopProperties.push({
-                type: 'state',
-                storedStateId: '__data',
-                componentId: getOrCreatePersistantId(parent),
-                exposed: false,
-                forceKind: 'object', // FIXME: this may be a scalar
-                label: loopDataField.label,
-              }, {
-                type: 'property',
-                propType: 'field',
-                fieldId: 'loopindex0',
-                label: 'Loop index (0 based)',
-                kind: 'scalar',
-                typeIds: ['number'],
-              }, {
-                type: 'property',
-                propType: 'field',
-                fieldId: 'loopindex',
-                label: 'Loop index (starts at 1)',
-                kind: 'scalar',
-                typeIds: ['number'],
-              })
-            } else {
-              console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
-            }
-          } else {
-            console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
-          }
-        }
-      //}
-      // Go up to parent
-      parent = parent.parent() as Component
-    }
-    // Get filters which accept no input
-    const filters: Filter[] = this.filters
-      .filter(filter => filter.validate(null))
-    // Return the context
-    return [
-      ...queryable,
-      ...states,
-      ...loopProperties,
-      ...filters,
-    ]
-  }
-
-  /**
-   * Create a property token from a field
-   */
-  fieldToToken(field: Field): Property {
-    if(!field) throw new Error('Field is required for token')
-    if(!field.dataSourceId) throw new Error(`Field ${field.id} has no data source`)
-    return {
-      type: 'property',
-      propType: 'field',
-      fieldId: field.id,
-      label: field.label,
-      typeIds: field.typeIds,
-      dataSourceId: field.dataSourceId,
-      kind: field.kind,
-      ...this.getTokenOptions(field) ?? {},
-    }
-  }
-
-  /**
    * Evaluate an expression to a value
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getValue(context: Context, expression: Expression): unknown {
     throw new Error('Not implemented')
-  }
-
-  findType(typeId: TypeId, dataSourceId?: DataSourceId): Type | null {
-    return this.allTypes
-      .find((type: Type) => (!dataSourceId || type.dataSourceId === dataSourceId) && type.id === typeId) ?? null
-  }
-
-  /**
-   * Add missing methonds to the filter
-   * When filters are stored they lose their methods
-   */
-  getFilterFromToken(token: Filter, filters: Filter[]): Filter {
-    const filter = filters.find(filter => filter.id === token.id)
-    if(!filter) {
-      console.error('Filter not found', token)
-      throw new Error(`Filter ${token.id} not found`)
-    }
-    return {
-      ...token,
-      ...filter,
-      // Keep the options as they are stored
-      options: token.options,
-    }
-  }
-
-  /**
-   * Get the token from its stored form
-   */
-  fromStored<T extends Token = Token>(token: StoredToken): T {
-    switch (token.type) {
-      case 'filter': {
-        if((token as Filter).optionsForm) return token as T
-        const original = this.filters.find(filter => filter.id === token.id) as T | undefined
-        if(!original) {
-          console.error('Filter not found', token)
-          throw new Error(`Filter ${token.id} not found`)
-        }
-        return {
-          ...original,
-          ...token,
-        } as T
-      }
-      case 'property': {
-        if((token as Property).optionsForm) return token as T
-        const field = this.propertyToField(token)
-        if(!field) {
-          console.error('Field not found for token', token)
-          throw new Error(`Field ${token.fieldId} not found`)
-        }
-        return {
-          ...this.getTokenOptions(field) ?? {},
-          ...token,
-        } as T
-      }
-      case 'state':
-        return token as T
-      default:
-        console.error('Unknown token type (reading type)', token)
-        throw new Error('Unknown token type')
-    }
-  }
-
-  /**
-   * Get the type corresponding to a token
-   */
-  tokenToField(token: Token, prev: Field | null, component: Component): Field | null {
-    switch (token.type) {
-      case 'filter': {
-        const filter = this.getFilterFromToken(token, this.filters)
-        if(filter.validate(prev)) {
-          return filter.output(prev, filter.options ?? {})
-        }
-        return null
-      }
-      case 'property':
-        return this.propertyToField(token)
-      case 'state': {
-        const parent = getParentByPersistentId(token.componentId, component)
-        if(!parent) {
-          console.warn('Component not found for state', token)
-          // TODO: notification
-          return null
-        }
-        const expression = getState(parent, token.storedStateId, token.exposed)?.expression
-        if(!expression) {
-          console.warn('State is not defined on component', { component: parent, token })
-          // TODO: notification
-          return null
-        }
-        const field = this.getExpressionResultType(expression, parent)
-        return field ? {
-          ...field,
-          kind: token.forceKind ?? field.kind,
-        } : null
-      }
-      default:
-        console.error('Unknown token type (reading type)', token)
-        throw new Error('Unknown token type')
-    }
-  }
-
-  propertyToField(property: Property): Field {
-    const typeNames = property.typeIds
-      .map((typeId: TypeId) => this.findType(typeId, property.dataSourceId))
-      .map((type: Type | null) => type?.label)
-
-    const args = property.options ? Object.entries(property.options).map(([name, value]) => ({
-      typeId: 'JSON', // FIXME: Why is this hardcoded?
-      name,
-      defaultValue: value, // FIXME: Why is this value, it should keep the inital default
-    })) : undefined
-    return {
-      id: property.fieldId,
-      label: typeNames.join(', '),
-      typeIds: property.typeIds,
-      kind: property.kind,
-      dataSourceId: property.dataSourceId,
-      arguments: args,
-    }
-  }
-
-  /**
-   * Evaluate the types of each token in an expression
-   */
-  expressionToFields(expression: Expression, component: Component): Field[] {
-    // Resolve type of the expression 1 step at a time
-    let prev: Field | null = null
-    return expression.map((token) => {
-      const field = this.tokenToField(this.fromStored(token), prev, component)
-      if(!field) {
-        console.warn('Type not found for token in expressionToFields', {token, expression})
-        return {
-          id: 'unknown',
-          label: 'unknown',
-          typeIds: [],
-          kind: 'scalar',
-        }
-      }
-      prev = field
-      return field
-    })
-  }
-
-  /**
-   * Evaluate an expression to a type
-   * This is used to validate expressions and for autocompletion
-   */
-  getExpressionResultType(expression: Expression, component: Component): Field | null {
-    // Resolve type of the expression 1 step at a time
-    return expression.reduce((prev: Field | null, token: StoredToken) => {
-      return this.tokenToField(this.fromStored(token), prev, component)
-    }, null)
-  }
-
-  /**
-   * Auto complete an expression
-   * @returns a list of possible tokens to add to the expression
-   */
-  getCompletion(component: Component, expression: Expression, rootType?: TypeId): Context {
-    if(!component) throw new Error('Component is required for completion')
-    if(!expression) throw new Error('Expression is required for completion')
-    if(expression.length === 0) {
-      if(rootType) {
-        const type = this.findType(rootType)
-        if(!type) {
-          console.warn('Root type not found', rootType)
-          return []
-        }
-        return type.fields
-          .map((field: Field) => this.fieldToToken(field))
-      }
-      return this.getContext(component)
-    }
-    const field = this.getExpressionResultType(expression, component)
-    if(!field) {
-      console.warn('Result type not found for expression', expression)
-      return []
-    }
-    return ([] as Token[])
-      // Add fields if the kind is object
-      .concat(field.kind === 'object' ? field.typeIds
-        // Find possible types
-        .map((typeId: TypeId) => this.findType(typeId, field.dataSourceId))
-        // Add all of their fields
-        .flatMap((type: Type | null) => type?.fields ?? [])
-        // To token
-        .flatMap(
-          (fieldOfField: Field): Token[]  => {
-            // const t: Type | null = this.findType(field.typeIds, field.dataSourceId) 
-            // if(!t) throw new Error(`Type ${field.typeIds} not found`)
-            return fieldOfField.typeIds.map((typeId: TypeId) => ({
-              ...this.fieldToToken(fieldOfField),
-              typeIds: [typeId],
-            }))
-          }
-        ) : [])
-      // Add filters
-      .concat(
-        this.filters
-          // Match input type
-          .filter(filter => filter.validate(field))
-      )
   }
 
   /**
@@ -486,37 +182,6 @@ export class DataTree {
 
   /**
    * Get all expressions used by a component
-   * Resolves all states token as expressions recursively
-   * Resulting expressions contain properties and filters only, no states anymore
-   */
-  resolveState(state: State, component: Component): Expression | null {
-    const parent = getParentByPersistentId(state.componentId, component)
-    if(!parent) {
-      console.warn('Component not found for state', state)
-      return null
-    }
-    // Get the expression of the state
-    const soredState = getState(parent, state.storedStateId, state.exposed)
-    if(!soredState?.expression) {
-      console.warn('State is not defined on component', parent, state)
-      return null
-    }
-    return soredState.expression
-      .flatMap((token: StoredToken) => {
-        switch (token.type) {
-          case 'state': {
-            return this.resolveState(this.fromStored(token), parent) ?? []
-          }
-          default:
-            return token
-        }
-      })
-  }
-
-  /**
-   * Get all expressions used by a component
-   * Resolves all states token as expressions recursively
-   * Resulting expressions contain properties and filters only, no states anymore
    */
   getComponentExpressions(component: Component): Expression[] {
     return ([] as Expression[])
@@ -524,14 +189,138 @@ export class DataTree {
       .concat(getStateIds(component, true).map(stateId => getState(component, stateId, true)?.expression))
       // Hidden states (loop / internals)
       .concat(getStateIds(component, false).map(stateId => getState(component, stateId, false)?.expression))
-      // Resolve state expressions
-      .map((expression) => expression?.flatMap((token: StoredToken) => {
-        switch (token.type) {
-          case 'state':
-            return this.resolveState(token, component) ?? []
-          default:
-            return token
-        }
-      }))
+  }
+
+  /**
+   * Build a tree of expressions
+   */
+  getTrees(expression: Expression, dataSourceId: DataSourceId): Tree[] {
+    if(expression.length === 0) return []
+    const next = expression[0]
+    switch(next.type) {
+      case 'property': {
+        if(next.dataSourceId !== dataSourceId) return []
+        const trees = this.getTrees(expression.slice(1), dataSourceId)
+        if(trees.length === 0) return [{
+          token: next,
+          children: [],
+        }]
+        return trees
+          .flatMap(tree => {
+            // Check if this is a "relative" property or "absolute" (a root type)
+            if(this.isRelative(next, tree.token, dataSourceId)) {
+              return {
+                token: next,
+                children: [tree],
+              }
+            } else {
+              return [{
+                token: next,
+                children: [],
+              }, tree]
+            }
+          })
+      }
+      case 'filter': {
+        const options = Object.values(next.options)
+          .map((value: unknown) => toExpression(value))
+          .filter((exp: Expression | null) => !!exp && exp.length > 0)
+          .flatMap(exp => this.getTrees(exp!, dataSourceId))
+
+        const trees = this.getTrees(expression.slice(1), dataSourceId)
+        if(trees.length === 0) return options
+        return trees.flatMap(tree => [tree, ...options])
+      }
+      case 'state': {
+        const component = getComponentByPersistentId(next.componentId, this.editor)
+        if(!component) throw new Error(`Component not found ${next.componentId}`)
+        const resolved = resolveState(next, component, this)
+        if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}`)
+        return this.getTrees(resolved, dataSourceId)
+      }
+      default:
+        console.error('Invalid expression', expression)
+        throw new Error(`Invalid expression ${JSON.stringify(expression)}`)
+    }
+  }
+
+  /**
+   * Check if a property is relative to a type
+   * A type is "relative" if next has a type which has a field of type tree.token
+   */
+  isRelative(parent: Property, child: Property, dataSourceId: DataSourceId): boolean {
+    const parentTypes = this.getTypes(dataSourceId).filter(t => parent.typeIds.includes(t.id))
+    const parentFieldsTypes = parentTypes.flatMap(t => t.fields.map(f => f.typeIds).flat())
+    return child.typeIds.some(typeId => parentFieldsTypes.includes(typeId))
+  }
+
+  /**
+   * From expressions to a tree
+   */
+  toTree(expressions: Expression[], dataSourceId: DataSourceId): Tree | null {
+    if(expressions.length === 0) return null
+    return expressions
+      // From Expression to Tree
+      .flatMap(expression => this.getTrees(expression, dataSourceId))
+      // Merge all trees from the root
+      .reduce((finalTree, tree) => this.mergeTrees(finalTree, tree))
+  }
+
+  /**
+   * Recursively merge two trees
+   */
+  protected mergeTrees(tree1: Tree, tree2: Tree): Tree {
+    // Check if the trees have the same fieldId
+    if (tree1.token.kind !== tree2.token.kind || tree1.token.dataSourceId !== tree2.token.dataSourceId) {
+      console.error('Unable to merge trees', tree1, tree2)
+      throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
+    }
+
+    // Check if there are children with the same fieldId but different options
+    // FIXME: we should use graphql aliases: https://graphql.org/learn/queries/#aliases but then it changes the variable name in the result
+    const errors = tree1.children
+      .filter(child1 => tree2.children.find(child2 =>
+        child1.token.fieldId === child2.token.fieldId
+        && !sameOptions(child1.token.options, child2.token.options)
+      ))
+      .map(child1 => {
+        const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
+        return `${child1.token.fieldId} appears twice with different options: ${JSON.stringify(child1.token.options)} vs ${JSON.stringify(child2?.token.options)}`
+      })
+
+    if(errors.length > 0) {
+      console.error('Unable to merge trees', errors)
+      throw new Error(`Unable to build GraphQL query: unable to merge trees: \n* ${errors.join('\n* ')}`)
+    }
+
+    const different = tree1.children
+      .filter(child1 => !tree2.children.find(child2 =>
+        child1.token.fieldId === child2.token.fieldId
+        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
+        && sameOptions(child1.token.options, child2.token.options)
+      ))
+      .concat(tree2.children
+        .filter(child2 => !tree1.children.find(child1 =>
+          child1.token.fieldId === child2.token.fieldId
+          && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
+          && sameOptions(child1.token.options, child2.token.options)
+        ))
+      )
+    const same = tree1.children
+      .filter(child1 => tree2.children.find(child2 =>
+        child1.token.fieldId === child2.token.fieldId
+        && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
+        && sameOptions(child1.token.options, child2.token.options)
+      ))
+
+    return {
+      token: tree1.token,
+      children: different
+        .concat(same
+          .map(child1 => {
+            const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
+            return this.mergeTrees(child1, child2!)
+          })),
+    }
   }
 }

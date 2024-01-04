@@ -1,7 +1,8 @@
-import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType, Tree } from './GraphQL'
+import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType } from './GraphQL'
 import { directusTestSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
-import { Expression, Field, Filter, Token, Type } from '../types'
+import { Field, Tree, Type } from '../types'
 import dedent from 'dedent-js'
+import { importDataSource } from '../test-data'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
@@ -24,24 +25,8 @@ const options: GraphQLOptions = {
   //queryable: ['posts', 'Contact', 'test'],
 }
 
-async function importDataSource(datas?: unknown[]) {
-  if (datas?.length) {
-    global.fetch = jest.fn()
-    datas?.forEach(data => {
-      global.fetch = (global.fetch as jest.Mock)
-      .mockImplementationOnce(() => {
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(data),
-        })
-      })
-    })
-  }
-  // @ts-ignore
-  return (await import('./GraphQL')).default.default // Why default.default?
-}
-
 class GQLTest extends GraphQL {
+  protected queryType = 'query'
   constructor(options: GraphQLOptions, private overrideTypes: Type[] = [], private overrideFields: Field[] = []) {
     super(options)
   }
@@ -63,17 +48,9 @@ class GQLTest extends GraphQL {
     return super.getOfTypeProp(prop, type, defaultValue)
   }
 
-  getTrees(expression: Expression): Tree[] {
-    return super.getTrees(expression)
-  }
-
-  mergeTrees(tree1: Tree, tree2: Tree): Tree {
-    return super.mergeTrees(tree1, tree2)
-  }
-
-  buildQuery(...args: any[]): string {
+  getQuery(...args: any[]): string {
     /* @ts-ignore */
-    return super.buildQuery(...args)
+    return super.getQuery(...args)
   }
 }
 
@@ -342,6 +319,16 @@ test('build query from tree', () => {
     label: 'test',
     type: 'graphql',
   }, [{
+    id: 'query',
+    label: 'test type name',
+    dataSourceId: 'testDataSourceId',
+    fields: [{
+      id: 'posts',
+      label: 'test field name',
+      typeIds: ['PostEntity'],
+      kind: 'object',
+    }],
+  }, {
     id: 'PostEntity',
     label: 'test type name',
     dataSourceId: 'testDataSourceId',
@@ -376,11 +363,15 @@ test('build query from tree', () => {
       children: [],
     }],
   }
-  const query = gql.buildQuery(tree)
+  const query = gql.getQuery(tree)
   expect(query)
-    .toEqual(`posts {
+    .toEqual(`query {
   __typename
-  testFieldPropertyId
+  posts {
+    __typename
+    testFieldPropertyId
+
+  }
 
 }`)
 })
@@ -394,6 +385,17 @@ test('build query with fragments', () => {
     label: 'test',
     type: 'graphql',
   }, [{
+    id: 'query',
+    label: 'test type name',
+    dataSourceId: 'testDataSourceId',
+    fields: [{
+      id: 'parentFieldId',
+      label: 'test field name',
+      typeIds: ['testParentId'],
+      kind: 'object',
+      dataSourceId: 'testDataSourceId',
+    }],
+  }, {
     id: 'testParentId',
     label: 'test type name',
     dataSourceId: 'testDataSourceId',
@@ -408,7 +410,24 @@ test('build query with fragments', () => {
     id: 'testTypeId1',
     label: 'test type name',
     dataSourceId: 'testDataSourceId',
-    fields: [],
+    fields: [{
+      id: 'ONLY_TEST_TYPE_ID1',
+      label: 'test field property name',
+      typeIds: ['testFieldPropertyTypeId1'],
+      kind: 'scalar',
+      dataSourceId: 'testDataSourceId',
+    }],
+  }, {
+    id: 'testTypeId2',
+    label: 'test type name',
+    dataSourceId: 'testDataSourceId',
+    fields: [{
+      id: 'ONLY_TEST_TYPE_ID2',
+      label: 'test field property name',
+      typeIds: ['testFieldPropertyTypeId2'],
+      kind: 'scalar',
+      dataSourceId: 'testDataSourceId',
+    }],
   }], [{
     id: 'testFieldId',
     label: 'test field name',
@@ -419,9 +438,15 @@ test('build query with fragments', () => {
       name: 'id',
       typeId: 'ID',
     }],
+  }, {
+    id: 'parentFieldId',
+    label: 'test field name',
+    typeIds: ['testParentId'],
+    kind: 'object',
+    dataSourceId: 'testDataSourceId',
   }])
   // Simple case
-  expect(gql.buildQuery({
+  expect(gql.getQuery({
     token: {
       type: 'property',
       propType: 'field',
@@ -445,18 +470,21 @@ test('build query with fragments', () => {
     }],
   }))
     .toEqual(dedent`
-    parentFieldId {
+    query {
       __typename
-
-    testFieldId {
-        ...on testTypeId1 {
+      parentFieldId {
         __typename
 
+      testFieldId {
+          ...on testTypeId1 {
+          __typename
 
-      }
+
+        }
     }
+      }
+
     }`)
-    return;
   // More complex
   const tree: Tree = {
     token: {
@@ -514,418 +542,36 @@ test('build query with fragments', () => {
       }],
     }],
   }
-  const query = gql.buildQuery(tree)
+  const query = gql.getQuery(tree)
   expect(query)
     .toEqual(dedent`
-    parentFieldId {
+    query {
       __typename
-    testFieldId {
-      ...on testTypeId1 {
+      parentFieldId {
         __typename
-        ONLY_TEST_TYPE_ID1
-      }
-      ...on testTypeId2 {
-        __typename
-        ONLY_TEST_TYPE_ID2
-      }
+
+      testFieldId {
+          ...on testTypeId1 {
+          __typename
+          ONLY_TEST_TYPE_ID1
+
+        }
     }
+      testFieldId {
+          ...on testTypeId2 {
+          __typename
+          ONLY_TEST_TYPE_ID2
+
+        }
+    }
+      }
+
     }`)
 })
 
-test('merge trees', () => {
-  const gql = new GQLTest({
-    url: 'http://localhost',
-    method: 'POST',
-    headers: {},
-    id: 'testDataSourceId',
-    label: 'test',
-    type: 'graphql',
-  })
-  const tree1: Tree = {
-    token: {
-      type: 'property',
-      propType: 'field',
-      fieldId: 'testFieldId',
-      label: 'test field name',
-      typeIds: ['testTypeId'],
-      kind: 'object',
-      dataSourceId: 'testDataSourceId',
-    },
-    children: [{
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldPropertyId',
-        label: 'test field property name',
-        typeIds: ['testFieldPropertyTypeId'],
-        kind: 'scalar',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [],
-    }],
-  }
-  const tree2: Tree = {
-    token: {
-      type: 'property',
-      propType: 'field',
-      fieldId: 'testFieldId',
-      label: 'test field name',
-      typeIds: ['testTypeId'],
-      kind: 'object',
-      dataSourceId: 'testDataSourceId',
-    },
-    children: [{
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldPropertyId',
-        label: 'test field property name',
-        typeIds: ['testFieldPropertyTypeId'],
-        kind: 'scalar',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [],
-    }, {
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldPropertyId2',
-        label: 'test field property name',
-        typeIds: ['testFieldPropertyTypeId'],
-        kind: 'scalar',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [],
-    }],
-  }
-  expect(gql.mergeTrees(tree1, tree2))
-    .toEqual({
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldId',
-        label: 'test field name',
-        typeIds: ['testTypeId'],
-        kind: 'object',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [{
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'testFieldPropertyId2',
-          label: 'test field property name',
-          typeIds: ['testFieldPropertyTypeId'],
-          kind: 'scalar',
-          dataSourceId: 'testDataSourceId',
-        },
-        children: [],
-      }, {
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'testFieldPropertyId',
-          label: 'test field property name',
-          typeIds: ['testFieldPropertyTypeId'],
-          kind: 'scalar',
-          dataSourceId: 'testDataSourceId',
-        },
-        children: [],
-      }],
-    })
-})
-
-test('merge trees with multiple possible types', () => {
-  const gql = new GQLTest({
-    url: 'http://localhost',
-    method: 'POST',
-    headers: {},
-    id: 'testDataSourceId',
-    label: 'test',
-    type: 'graphql',
-  })
-  const tree1: Tree = {
-    token: {
-      type: 'property',
-      propType: 'field',
-      fieldId: 'parentFieldId',
-      label: 'test parent name',
-      typeIds: ['testParentId'],
-      kind: 'object',
-      dataSourceId: 'testDataSourceId',
-    },
-    children: [{
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldId',
-        label: 'test field name',
-        typeIds: ['testTypeId1'],
-        kind: 'object',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [{
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'ONLY_TEST_TYPE_ID1',
-          label: 'test field property name',
-          typeIds: ['testFieldPropertyTypeId1'],
-          kind: 'scalar',
-          dataSourceId: 'testDataSourceId',
-        },
-        children: [],
-      }],
-    }],
-  }
-  const tree2: Tree = {
-    token: {
-      type: 'property',
-      propType: 'field',
-      fieldId: 'parentFieldId',
-      label: 'test parent name',
-      typeIds: ['testParentId'],
-      kind: 'object',
-      dataSourceId: 'testDataSourceId',
-    },
-    children: [{
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldId',
-        label: 'test field name',
-        typeIds: ['testTypeId2'],
-        kind: 'object',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [{
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'ONLY_TEST_TYPE_ID2',
-          label: 'test field property name',
-          typeIds: ['testFieldPropertyTypeId2'],
-          kind: 'scalar',
-          dataSourceId: 'testDataSourceId',
-        },
-        children: [],
-      }],
-    }],
-  }
-  expect(gql.mergeTrees(tree1, tree2))
-    .toEqual({
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'parentFieldId',
-        label: 'test parent name',
-        typeIds: ['testParentId'],
-        kind: 'object',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [{
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'testFieldId',
-          label: 'test field name',
-          typeIds: ['testTypeId1'],
-          kind: 'object',
-          dataSourceId: 'testDataSourceId',
-        },
-        children: [{
-          token: {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'ONLY_TEST_TYPE_ID1',
-            label: 'test field property name',
-            typeIds: ['testFieldPropertyTypeId1'],
-            kind: 'scalar',
-            dataSourceId: 'testDataSourceId',
-          },
-          children: [],
-        }],
-      }, {
-        token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'testFieldId',
-          label: 'test field name',
-          typeIds: ['testTypeId2'],
-          kind: 'object',
-          dataSourceId: 'testDataSourceId',
-        },
-        children: [{
-          token: {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'ONLY_TEST_TYPE_ID2',
-            label: 'test field property name',
-            typeIds: ['testFieldPropertyTypeId2'],
-            kind: 'scalar',
-            dataSourceId: 'testDataSourceId',
-          },
-          children: [],
-        }],
-      }]
-    })
-})
-
-test('get tree', () => {
-  const gql = new GQLTest({
-    url: 'http://localhost',
-    method: 'POST',
-    headers: {},
-    id: 'testDataSourceId',
-    label: 'test',
-    type: 'graphql',
-  })
-  const expression: Expression = [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }]
-  expect(gql.getTrees(expression))
-    .toEqual([{
-      token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldId',
-        label: 'test field name',
-        typeIds: ['testTypeId'],
-        kind: 'object',
-        dataSourceId: 'testDataSourceId',
-      },
-      children: [],
-    }])
-})
-
-test('get tree with filters', async () => {
-  const queryObjects: Expression = [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testId1',
-    label: 'test field name',
-    typeIds: ['PostEntityResponseCollection'],
-    kind: 'list',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'filter',
-    id: 'testFilterId1',
-    label: 'test filter name',
-    options: {},
-    quotedOptions: [],
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'data',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'list',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'filter',
-    id: 'testFilterId1',
-    label: 'test filter name',
-    options: {},
-    quotedOptions: [],
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'id',
-    label: 'test field name',
-    typeIds: ['ID'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }]
-  const GQL = await importDataSource([simpleSchema])
-  const gql = new GQL({
-    url: 'http://localhost',
-    method: 'POST',
-    headers: {},
-    id: 'testDataSourceId',
-    label: 'test',
-    type: 'graphql',
-  })
-  await gql.connect()
-  expect(gql.getTrees([...queryObjects]))
-    .toEqual([{
-      token: queryObjects[0],
-      children: [{
-        token: queryObjects[2],
-        children: [{
-          token: queryObjects[4],
-          children: [],
-        }],
-      }],
-    }])
-})
-
-const tokens: Record<string, Token> = {
-  rootField1: {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'rootField1',
-    label: 'test',
-    typeIds: ['rootTypeId1'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  },
-  filter: {
-    type: 'filter',
-    id: 'filterId',
-    label: 'filter name',
-    validate: () => true,
-    output: () => null,
-    apply: () => null,
-    options: {},
-    quotedOptions: [],
-  },
-  rootField2: {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'rootField2',
-    label: 'test',
-    typeIds: ['rootTypeId2'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  },
-  childField1: {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'childField1',
-    label: 'test',
-    typeIds: ['childTypeId1'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  },
-  childField2: {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'childField2',
-    label: 'test',
-    typeIds: ['childTypeId2'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  },
-  childField3: {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'childField3',
-    label: 'test',
-    typeIds: ['childTypeId3'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  },
-}
-
 // test('get query with options', () => {
 //   const fn = jest.fn(expression => ([{
-//     token: tokens.rootField1,
+//     token: testTokens.rootField1,
 //     children: [],
 //   }] as Tree[]))
 //   class GQLTestQuery extends GraphQL {
@@ -942,16 +588,16 @@ const tokens: Record<string, Token> = {
 //     type: 'graphql',
 //   })
 //   const expression: Expression = [{
-//       ...tokens.rootField1,
+//       ...testTokens.rootField1,
 //     }, {
-//       ...tokens.filter,
+//       ...testTokens.filter,
 //       options: {
 //         id: 1,
-//         childExpressionAbsolute: JSON.stringify([tokens.rootField2, tokens.childField2]),
-//         childExpressionRelative: JSON.stringify([tokens.childField1]),
+//         childExpressionAbsolute: JSON.stringify([testTokens.rootField2, testTokens.childField2]),
+//         childExpressionRelative: JSON.stringify([testTokens.childField1]),
 //       },
 //     } as Filter,
-//     tokens.childField3
+//     testTokens.childField3
 //   ]
 //   expect(() => gql.getQuery([expression])).not.toThrow()
 //   fn.mockClear()
@@ -959,794 +605,52 @@ const tokens: Record<string, Token> = {
 //   expect(fn).toHaveBeenCalledTimes(1)
 //   expect(fn).toHaveBeenCalledWith(
 //     [{
-//       token: tokens.rootField1,
+//       token: testTokens.rootField1,
 //       children: [{
-//         token: tokens.childField3,
+//         token: testTokens.childField3,
 //         children: [],
 //       }],
 //     }, {
-//       token: tokens.rootField1,
+//       token: testTokens.rootField1,
 //       children: [{
-//         token: tokens.childField1,
+//         token: testTokens.childField1,
 //         children: [],
 //       }],
 //     }, {
-//       token: tokens.rootField2,
+//       token: testTokens.rootField2,
 //       children: [{
-//         token: tokens.childField2,
+//         token: testTokens.childField2,
 //         children: [],
 //       }],
 //     }]
 //   )
 // })
 
-test('get tree with options', () => {
-  const fn = jest.fn(() => ([{
-    id: 'rootTypeId1',
-    label: 'test',
-    dataSourceId: 'testDataSourceId',
-    fields: [{
-      id: 'childField1',
-      label: 'test',
-      typeIds: ['childTypeId1'],
-      kind: 'scalar',
-      dataSourceId: 'testDataSourceId',
-    }, {
-      id: 'childField3',
-      label: 'test',
-      typeIds: ['childTypeId3'],
-      kind: 'scalar',
-      dataSourceId: 'testDataSourceId',
-    }],
-  }, {
-    id: 'rootTypeId2',
-    label: 'test',
-    dataSourceId: 'testDataSourceId',
-    fields: [{
-      id: 'childField2',
-      label: 'test',
-      typeIds: ['childTypeId2'],
-      kind: 'scalar',
-      dataSourceId: 'testDataSourceId',
-    }],
-  }] as Type[]))
-  class GQLTestTrees extends GraphQL {
-    getTypes(): Type[] {
-      return fn()
-    }
-    getTrees(expression: Expression): Tree[] {
-      return super.getTrees(expression)
-    }
-  }
-  const gql = new GQLTestTrees({
-    url: 'http://localhost',
-    method: 'POST',
-    headers: {},
-    id: 'testDataSourceId',
-    label: 'test',
-    type: 'graphql',
-  })
-
-  // Simple expression with relative child expression
-  const expression1 = [
-    tokens.rootField1,
-    {
-      ...tokens.filter,
-      options: {
-        childExpressionRelative: JSON.stringify([tokens.childField1]),
-      },
-    } as Filter,
-  ] as Expression
-  expect(() => gql.getTrees(expression1)).not.toThrow()
-  expect(gql.getTrees(expression1))
-  .toEqual([{
-    token: tokens.rootField1,
-    children: [{
-      token: tokens.childField1,
-      children: [],
-    }],
-  }])
-  // More complex expression with absolute child expression
-  const expression2: Expression = [{
-      ...tokens.rootField1,
-    }, {
-      ...tokens.filter,
-      options: {
-        id: 1,
-        childExpressionAbsolute: JSON.stringify([tokens.rootField2, tokens.childField2]),
-        childExpressionRelative: JSON.stringify([tokens.childField1]),
-      },
-    } as Filter,
-    tokens.childField3
-  ]
-  expect(() => gql.getTrees(expression2)).not.toThrow()
-  expect(gql.getTrees(expression2))
-  .toEqual([{
-    token: tokens.rootField1,
-    children: [{
-      token: tokens.childField3,
-      children: [],
-    }],
-  }, {
-    token: tokens.rootField1,
-    children: [],
-  }, {
-    token: tokens.rootField2,
-    children: [{
-      token: tokens.childField2,
-      children: [],
-    }],
-  }, {
-    token: tokens.rootField1,
-    children: [{
-      token: tokens.childField1,
-      children: [],
-    }],
-  }])
-})
-
-test('Get query from 1 expression', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  await dataSource.connect()
-  const query = await dataSource.getQuery([[{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'test',
-    label: 'test field property name',
-    typeIds: ['String'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }]])
-  expect(query).not.toBeUndefined()
-  expect(query).toEqual(`query {
-  __typename
-  posts {
-    __typename
-    test
-
-  }
-
-}`)
-})
-
-test('Get query from multiple expressions', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  await dataSource.connect()
-  const query = await dataSource.getQuery([[{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'test',
-    label: 'test field property name',
-    typeIds: ['String'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'attributes',
-    label: 'test field property name',
-    typeIds: ['PostEntity'],
-    kind: 'list',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'test',
-    label: 'test field property name',
-    typeIds: ['String'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }]])
-  expect(query).not.toBeUndefined()
-  expect(query).toEqual(`query {
-  __typename
-  posts {
-    __typename
-    test
-    attributes {
-      __typename
-      test
-
-    }
-
-  }
-
-}`)
-})
-
-test('Get query from multiple expressions', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  await dataSource.connect()
-  const query = await dataSource.getQuery([[{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'test',
-    label: 'test field property name',
-    typeIds: ['String'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'posts',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'id',
-    label: 'test field property name',
-    typeIds: ['ID'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'pages',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'attributes',
-    label: 'test field property name',
-    typeIds: ['PostEntity'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }]])
-  expect(query).not.toBeUndefined()
-  expect(query).toEqual(`query {
-  __typename
-  posts {
-    __typename
-    test
-    id
-
-  }
-  pages {
-    __typename
-    attributes
-
-  }
-
-}`)
-})
-
-test('Get query from expression with filters', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  const buildQuery = jest.fn(() => 'testQuery')
-  dataSource.buildQuery = buildQuery
-  await dataSource.connect()
-  const queryObjects = [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testId1',
-    label: 'test field name',
-    typeIds: ['PostEntityResponseCollection'],
-    kind: 'list',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'filter',
-    id: 'testFilterId1',
-    label: 'test filter name',
-    options: {},
-    quotedOptions: [],
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'data',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'list',
-    dataSourceId: 'testDataSourceId',
-  }, {
-    type: 'filter',
-    id: 'testFilterId1',
-    label: 'test filter name',
-    options: {},
-    quotedOptions: [],
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'id',
-    label: 'test field name',
-    typeIds: ['ID'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-  }]
-  await dataSource.getQuery([[...queryObjects]])
-  expect(buildQuery).toHaveBeenCalledTimes(1)
-  expect(buildQuery).toHaveBeenCalledWith({
-    token: {
-      dataSourceId: 'testDataSourceId',
-      fieldId: 'query',
-      kind: 'object',
-      typeIds: ['Query'],
-    },
-    children: [
-      { token: queryObjects[0], children: [
-        { token: queryObjects[2], children: [
-          { token: queryObjects[4], children: [] }
-        ]},
-      ]},
-    ]
-  })
-})
-
-test('Get query with options', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  dataSource.getTypes = () => ([{
-    id: 'Query',
-    fields: [{
-      id: 'testFieldId1',
-      dataSourceId: 'testDataSourceId',
-      typeIds: ['rootTypeId1'],
-    }, {
-      id: 'testFieldId2',
-      dataSourceId: 'testDataSourceId',
-      typeIds: ['rootTypeId2'],
-    }, {
-      id: 'testFieldId3',
-      dataSourceId: 'testDataSourceId',
-      typeIds: ['rootTypeId1'],
-    }],
-  }, {
-    id: 'testTypeId',
-    dataSourceId: 'testDataSourceId',
-    fields: [],
-  }] as Type[])
-  await dataSource.connect()
-  const query = await dataSource.getQuery([[{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-    options: {id: 1},
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-    options: {id: 1},
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId2',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-    options: {name: 'test'},
-  }], [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId3',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-  }]])
-  expect(query).not.toBeUndefined()
-  expect(query).toEqual(`query {
-  __typename
-  testFieldId1(id: 1) {
-    __typename
-
-
-  }
-  testFieldId2(name: "test") {
-    __typename
-
-
-  }
-  testFieldId3 {
-    __typename
-
-
-  }
-
-}`)
-})
-
-test('Get query with property options', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  dataSource.buildQuery = jest.fn(() => 'testQuery')
-  await dataSource.connect()
-  await dataSource.getQuery([[{
-    // LEVEL 1
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-    options: {id: 'option'},
-  }, {
-    // LEVEL 2
-    type: 'property',
-    propType: 'field',
-    fieldId: 'test',
-    label: 'test field property name',
-    typeIds: ['String'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-    options: {prop: 'option1'},
-  }], [{
-    // LEVEL 1
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-    options: {id: 'option'},
-  }, {
-    // LEVEL 2
-    type: 'property',
-    propType: 'field',
-    fieldId: 'id',
-    label: 'test field property name',
-    typeIds: ['ID'],
-    kind: 'scalar',
-    dataSourceId: 'testDataSourceId',
-    options: {},
-  }], [{
-    // LEVEL 1
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId1',
-    label: 'test field name',
-    typeIds: ['PostEntity'],
-    kind: 'object',
-    dataSourceId: 'testDataSourceId',
-    options: {id: 'option'},
-  }, {
-    // LEVEL 2
-    type: 'property',
-    propType: 'field',
-    fieldId: 'attributes',
-    label: 'test field property name',
-    typeIds: ['PostEntity'],
-    kind: 'Object',
-    dataSourceId: 'testDataSourceId',
-    options: {prop: 'option3'},
-  }]])
-  expect(dataSource.buildQuery).toHaveBeenCalledTimes(1)
-  expect(dataSource.buildQuery).toHaveBeenCalledWith({
-    token: {
-      dataSourceId: 'testDataSourceId',
-      fieldId: 'query',
-      kind: 'object',
-      typeIds: ['Query'],
-    },
-    children: [
-      { token: {
-        type: 'property',
-        propType: 'field',
-        fieldId: 'testFieldId1',
-        label: 'test field name',
-        typeIds: ['PostEntity'],
-        kind: 'object',
-        dataSourceId: 'testDataSourceId',
-        options: {id: 'option'},
-      }, children: [
-        { token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'test',
-          label: 'test field property name',
-          typeIds: ['String'],
-          kind: 'scalar',
-          dataSourceId: 'testDataSourceId',
-          options: {prop: 'option1'},
-        }, children: [] },
-        { token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'id',
-          label: 'test field property name',
-          typeIds: ['ID'],
-          kind: 'scalar',
-          dataSourceId: 'testDataSourceId',
-          options: {},
-        }, children: [] },
-        { token: {
-          type: 'property',
-          propType: 'field',
-          fieldId: 'attributes',
-          label: 'test field property name',
-          typeIds: ['PostEntity'],
-          kind: 'Object',
-          dataSourceId: 'testDataSourceId',
-          options: {prop: 'option3'},
-        }, children: [] },
-      ]},
-    ]
-  })
-})
-
-test('Get query with filter options', () => {
-  const fn = jest.fn(() => ([{
-    id: 'Query',
-    fields: [{
-      id: 'rootField1',
-      label: 'test',
-      dataSourceId: 'testDataSourceId',
-      typeIds: ['rootTypeId1'],
-    }, {
-      id: 'rootField2',
-      label: 'test',
-      dataSourceId: 'testDataSourceId',
-      typeIds: ['rootTypeId2'],
-    }],
-  }, {
-    id: 'rootTypeId1',
-    label: 'test',
-    dataSourceId: 'testDataSourceId',
-    fields: [{
-      id: 'childField1',
-      label: 'test',
-      typeIds: ['childTypeId1'],
-      kind: 'scalar',
-      dataSourceId: 'testDataSourceId',
-    }, {
-      id: 'childField3',
-      label: 'test',
-      typeIds: ['childTypeId3'],
-      kind: 'scalar',
-      dataSourceId: 'testDataSourceId',
-    }],
-  }, {
-    id: 'rootTypeId2',
-    label: 'test',
-    dataSourceId: 'testDataSourceId',
-    fields: [{
-      id: 'childField2',
-      label: 'test',
-      typeIds: ['childTypeId2'],
-      kind: 'scalar',
-      dataSourceId: 'testDataSourceId',
-    }],
-  }] as Type[]))
-  class GQLTestTrees extends GraphQL {
-    protected queryType: string = 'Query'
-    getTypes(): Type[] {
-      return fn()
-    }
-    getTrees(expression: Expression): Tree[] {
-      return super.getTrees(expression)
-    }
-  }
-  const gql = new GQLTestTrees({
-    url: 'http://localhost',
-    method: 'POST',
-    headers: {},
-    id: 'testDataSourceId',
-    label: 'test',
-    type: 'graphql',
-  })
-  const expression: Expression = [{
-      ...tokens.rootField1,
-    }, {
-      ...tokens.filter,
-      options: {
-        id: 1,
-        childExpressionAbsolute: JSON.stringify([tokens.rootField2, tokens.childField2]),
-        childExpressionRelative: JSON.stringify([tokens.childField1]),
-      },
-    } as Filter,
-    tokens.childField3
-  ]
-  expect(gql.getQuery([expression]))
-    .toEqual(dedent`
-      query {
-        __typename
-        rootField2 {
-          __typename
-          childField2
-
-        }
-        rootField1 {
-          __typename
-          childField3
-          childField1
-
-        }
-
-      }
-    `)
-})
-
-test('Merge trees with empty and no options', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  await dataSource.connect()
-  const trees = [{
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object"
-    },
-    "children": [
-      {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
-          ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId"
-        },
-        "children": []
-      }
-    ]
-  }, {
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object"
-    },
-    "children": [
-      {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
-          ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId",
-          "options": {}
-        },
-        "children": []
-      }
-    ]
-  }]
-  expect(async () => dataSource.mergeTrees(...trees))
-  .not.toThrow('Cannot have options on a field without children')
-  
-  // The 2 trees are the same
-  // The 2nd tree has empty options which should be ignored
-  expect(dataSource.mergeTrees(...trees))
-  .toEqual(trees[0])
-})
-
-test('Get query with errors in options', async () => {
-  const DataSource = (await importDataSource([simpleSchema]))
-  const dataSource = new DataSource(options)
-  await dataSource.connect()
-  expect(() => dataSource.mergeTrees({
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object"
-    },
-    "children": [
-      {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
-          ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId"
-        },
-        "children": []
-      }
-    ]
-  }, {
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object"
-    },
-    "children": [
-      {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
-          ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId",
-          "options": {
-            "id": "option"
-          }
-        },
-        "children": []
-      }
-    ]
-  }))
-    .toThrow()
-})
-
-
-// test('Get data', async () => {
-//   const DataSource = (await importDataSource([connect, postsId, postsDetails]))
-//   const dataSource = new DataSource(options)
-//   await dataSource.connect()
-//   const dataPostsId = await dataSource.getData({
-//     name: 'posts',
-//     attributes: [['limit', '1']],
-//   })
-//   expect(dataPostsId).not.toBeUndefined()
-//   expect(dataPostsId).toHaveLength(1)
-//   expect(dataPostsId[0].author).toBeUndefined()
-// 
-//   const dataPostsDetails = await dataSource.getData({
-//     name: 'posts',
-//     attributes: [['limit', '1']],
-//     children: [{
-//       name: 'author',
-//       children: ['email', 'first_name', {
-//         name: 'avatar',
-//         children: ['id', 'filename_disk'],
-//       }],
-//     }, 'title', 'content'], 
-//   })
-//   expect(dataPostsDetails).not.toBeUndefined()
-//   expect(dataPostsDetails).toHaveLength(1)
-//   expect(dataPostsDetails[0].author).not.toBeUndefined()
-//   expect(dataPostsDetails[0].author.avatar).not.toBeUndefined()
-// })
+//// test('Get data', async () => {
+////   const DataSource = (await importDataSource([connect, postsId, postsDetails]))
+////   const dataSource = new DataSource(options)
+////   await dataSource.connect()
+////   const dataPostsId = await dataSource.getData({
+////     name: 'posts',
+////     attributes: [['limit', '1']],
+////   })
+////   expect(dataPostsId).not.toBeUndefined()
+////   expect(dataPostsId).toHaveLength(1)
+////   expect(dataPostsId[0].author).toBeUndefined()
+//// 
+////   const dataPostsDetails = await dataSource.getData({
+////     name: 'posts',
+////     attributes: [['limit', '1']],
+////     children: [{
+////       name: 'author',
+////       children: ['email', 'first_name', {
+////         name: 'avatar',
+////         children: ['id', 'filename_disk'],
+////       }],
+////     }, 'title', 'content'], 
+////   })
+////   expect(dataPostsDetails).not.toBeUndefined()
+////   expect(dataPostsDetails).toHaveLength(1)
+////   expect(dataPostsDetails[0].author).not.toBeUndefined()
+////   expect(dataPostsDetails[0].author.avatar).not.toBeUndefined()
+//// })

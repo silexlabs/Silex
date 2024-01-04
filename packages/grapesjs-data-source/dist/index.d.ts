@@ -6,13 +6,20 @@ export type PageId = string;
 export interface Query {
 	expression: Expression;
 }
+/**
+ * Tree structure for creating query from components states
+ */
+export interface Tree {
+	token: Property;
+	children: Tree[];
+}
 export type DataSourceId = string | number;
 export interface IDataSource {
 	id: DataSourceId;
 	connect(): Promise<void>;
 	getTypes(): Type[];
 	getQueryables(): Field[];
-	getQuery(expressions: Expression[]): string;
+	getQuery(tree: Tree): string;
 }
 export declare const DATA_SOURCE_READY = "data-source:ready";
 export declare const DATA_SOURCE_ERROR = "data-source:error";
@@ -183,6 +190,14 @@ export declare class DataTree {
 		filters: Filter[];
 	});
 	/**
+	 * Get type from typeId and dataSourceId
+	 */
+	getTypes(dataSourceId?: DataSourceId): Type[];
+	/**
+	 * Get type from typeId and dataSourceId
+	 */
+	getType(typeId: TypeId, dataSourceId?: DataSourceId): Type;
+	/**
 	 * Get all types from all data sources
 	 */
 	getAllTypes(): Type[];
@@ -191,61 +206,9 @@ export declare class DataTree {
 	 */
 	getAllQueryables(): Field[];
 	/**
-	 * Get the options of a token
-	 */
-	getTokenOptions(field: Field): {
-		optionsForm: (input: Field | null, options: Options) => TemplateResult;
-		options: Options;
-	} | null;
-	/**
-	 * Get the options of a token or a field
-	 */
-	optionsToOptionsForm(arr: {
-		name: string;
-		value: unknown;
-	}[]): (input: Field | null, options: Options) => TemplateResult;
-	/**
-	 * Get the context of a component
-	 * This includes all parents states, data sources queryable values, values provided in the options
-	 */
-	getContext(component?: Component | undefined): Context;
-	/**
-	 * Create a property token from a field
-	 */
-	fieldToToken(field: Field): Property;
-	/**
 	 * Evaluate an expression to a value
 	 */
 	getValue(context: Context, expression: Expression): unknown;
-	findType(typeId: TypeId, dataSourceId?: DataSourceId): Type | null;
-	/**
-	 * Add missing methonds to the filter
-	 * When filters are stored they lose their methods
-	 */
-	getFilterFromToken(token: Filter, filters: Filter[]): Filter;
-	/**
-	 * Get the token from its stored form
-	 */
-	fromStored<T extends Token = Token>(token: StoredToken): T;
-	/**
-	 * Get the type corresponding to a token
-	 */
-	tokenToField(token: Token, prev: Field | null, component: Component): Field | null;
-	propertyToField(property: Property): Field;
-	/**
-	 * Evaluate the types of each token in an expression
-	 */
-	expressionToFields(expression: Expression, component: Component): Field[];
-	/**
-	 * Evaluate an expression to a type
-	 * This is used to validate expressions and for autocompletion
-	 */
-	getExpressionResultType(expression: Expression, component: Component): Field | null;
-	/**
-	 * Auto complete an expression
-	 * @returns a list of possible tokens to add to the expression
-	 */
-	getCompletion(component: Component, expression: Expression, rootType?: TypeId): Context;
 	/**
 	 * Get all expressions used in all pages
 	 */
@@ -264,16 +227,25 @@ export declare class DataTree {
 	getComponentExpressionsRecursive(component: Component): Expression[];
 	/**
 	 * Get all expressions used by a component
-	 * Resolves all states token as expressions recursively
-	 * Resulting expressions contain properties and filters only, no states anymore
-	 */
-	resolveState(state: State, component: Component): Expression | null;
-	/**
-	 * Get all expressions used by a component
-	 * Resolves all states token as expressions recursively
-	 * Resulting expressions contain properties and filters only, no states anymore
 	 */
 	getComponentExpressions(component: Component): Expression[];
+	/**
+	 * Build a tree of expressions
+	 */
+	getTrees(expression: Expression, dataSourceId: DataSourceId): Tree[];
+	/**
+	 * Check if a property is relative to a type
+	 * A type is "relative" if next has a type which has a field of type tree.token
+	 */
+	isRelative(parent: Property, child: Property, dataSourceId: DataSourceId): boolean;
+	/**
+	 * From expressions to a tree
+	 */
+	toTree(expressions: Expression[], dataSourceId: DataSourceId): Tree | null;
+	/**
+	 * Recursively merge two trees
+	 */
+	protected mergeTrees(tree1: Tree, tree2: Tree): Tree;
 }
 /**
  * FIXME: Why sometimes the methods of the data source are in the attributes?
@@ -351,6 +323,10 @@ export declare function getOrCreatePersistantId(component: Component): Persistan
 /**
  * Find a component by its persistant ID in the current page
  */
+export declare function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null;
+/**
+ * Find a component by its persistant ID in the current page
+ */
 export declare function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null;
 export declare function getStateDisplayName(child: Component, state: State): string;
 export declare function onStateChange(callback: (state: StoredState | null, component: Component) => void): () => void;
@@ -375,6 +351,12 @@ export declare function setState(component: Component, id: StateId, state: Store
  * Remove a state
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
+/**
+ * Get all expressions used by a component
+ * Resolves all states token as expressions recursively
+ * Resulting expressions contain properties and filters only, no states anymore
+ */
+export declare function resolveState(state: State, component: Component, dataTree: DataTree): Expression | null;
 /**
  * Concatenate strings to get a desired length string as result
  * Exported for tests

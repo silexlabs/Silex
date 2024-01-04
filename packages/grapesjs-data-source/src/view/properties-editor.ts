@@ -24,6 +24,7 @@ import './state-editor'
 import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
+import { fromStored } from '../model/token'
 
 export enum Properties {
   innerHTML = 'innerHTML',
@@ -240,7 +241,7 @@ export class PropertiesEditor extends LitElement {
   getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
-    return state.expression.map(token => dataTree.fromStored(token))
+    return state.expression.map(token => fromStored(token, dataTree))
   }
 }
 
