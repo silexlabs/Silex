@@ -69,7 +69,7 @@ export interface IDataSource {
   // Introspection
   getTypes(): Type[]
   getQueryables(): Field[]
-  getQuery(tree: Tree): string
+  getQuery(trees: Tree[]): string
 
   // Access data
   //fetchValues(query: Query): Promise<unknown[]>

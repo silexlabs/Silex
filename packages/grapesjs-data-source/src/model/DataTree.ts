@@ -108,15 +108,19 @@ export class DataTree {
   /**
    * Get type from typeId and dataSourceId
    */
-  getType(typeId: TypeId, dataSourceId?: DataSourceId): Type {
-    const type = this.dataSources
-      // Get the data source
-      .find((dataSource: IDataSource) => !dataSourceId || dataSource.id === dataSourceId)
-      // Get its types
-      ?.getTypes()
-      // Return the requested type
-      .find((type: Type) => type.id === typeId)
-    if(!type) throw new Error(`Type not found ${dataSourceId}.${typeId}`)
+  getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type {
+    const type = dataSourceId ?
+      // Search in the specified data source
+      this.dataSources
+        // Get the data source
+        .find((dataSource: IDataSource) => !dataSourceId || dataSource.id === dataSourceId)
+        // Get its types
+        ?.getTypes()
+        // Return the requested type
+        .find((type: Type) => type.id === typeId)
+      // No data source id: search in all types
+      : this.allTypes.find(type => type.id === typeId)
+    if (!type) throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
     return type
   }
 
@@ -257,13 +261,26 @@ export class DataTree {
   /**
    * From expressions to a tree
    */
-  toTree(expressions: Expression[], dataSourceId: DataSourceId): Tree | null {
-    if(expressions.length === 0) return null
+  toTrees(expressions: Expression[], dataSourceId: DataSourceId): Tree[] {
+    if(expressions.length === 0) return []
     return expressions
       // From Expression to Tree
       .flatMap(expression => this.getTrees(expression, dataSourceId))
+      // Group by root token
+      .reduce((acc: Tree[][], tree: Tree) => {
+        const existing = acc.find(t => t[0].token.fieldId === tree.token.fieldId && (!tree.token.dataSourceId || t[0].token.dataSourceId === tree.token.dataSourceId))
+        if(existing) {
+          existing.push(tree)
+        } else {
+          acc.push([tree])
+        }
+        return acc
+      }, [] as Tree[][])
       // Merge all trees from the root
-      .reduce((finalTree, tree) => this.mergeTrees(finalTree, tree))
+      .map((grouped: Tree[]) => {
+        const merged = grouped.reduce((acc, tree) => this.mergeTrees(acc, tree))
+        return merged
+      })
   }
 
   /**

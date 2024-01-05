@@ -218,7 +218,7 @@ export function convertKind(field: Field | null, from: FieldKind, to: FieldKind)
 export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null {
   const dataTree = editor.DataSourceManager.getDataTree()
   if (!field || !key) return null
-  const types = field.typeIds.map(typeId => dataTree.getType(typeId))
+  const types = field.typeIds.map(typeId => dataTree.getType(typeId, field.dataSourceId ?? null))
   const fields = types.map(type => type?.fields.find(field => field.label === key))
   switch (fields.length) {
     case 0: return null
@@ -231,6 +231,7 @@ export function getFieldType(editor: DataSourceEditor, field: Field | null, key:
         .concat(field!.typeIds.filter(t => !typeIds.includes(t)))
         , [] as string[]),
       kind: 'object',
+      dataSourceId: field.dataSourceId,
     }
   }
 }
@@ -249,7 +250,7 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
       <select name=${name}>
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
-      .flatMap(typeId => dataTree.getType(typeId)!.fields)
+      .flatMap(typeId => dataTree.getType(typeId, field.dataSourceId ?? null)!.fields)
       .map(f => html`<option value=${f.label} .selected=${f.label === options.key}>${f.label}</option>`)
       : html``
     }

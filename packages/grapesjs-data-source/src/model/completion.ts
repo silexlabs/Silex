@@ -112,7 +112,7 @@ export function getCompletion(component: Component, expression: Expression, data
   if (!expression) throw new Error('Expression is required for completion')
   if (expression.length === 0) {
     if (rootType) {
-      const type = dataTree.getType(rootType)
+      const type = dataTree.getType(rootType, null)
       if (!type) {
         console.warn('Root type not found', rootType)
         return []
@@ -131,7 +131,7 @@ export function getCompletion(component: Component, expression: Expression, data
     // Add fields if the kind is object
     .concat(field.kind === 'object' ? field.typeIds
       // Find possible types
-      .map((typeId: TypeId) => dataTree.getType(typeId, field.dataSourceId))
+      .map((typeId: TypeId) => dataTree.getType(typeId, field.dataSourceId ?? null))
       // Add all of their fields
       .flatMap((type: Type | null) => type?.fields ?? [])
       // To token

@@ -66,7 +66,7 @@ export function getPersistantId(component: Component): PersistantId | null {
 export function getOrCreatePersistantId(component: Component): PersistantId {
   const persistantId = component.get(PERSISTANT_ID_KEY)
   if(persistantId) return persistantId
-  const newPersistantId = component.ccid as PersistantId
+  const newPersistantId = `${component.ccid}-${Math.round(Math.random() * 10000)}` as PersistantId
   component.set(PERSISTANT_ID_KEY, newPersistantId)
   return newPersistantId
 }
@@ -75,7 +75,10 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
  * Find a component by its persistant ID in the current page
  */
 export function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null {
-  return editor.Components.getAll().find((component: Component) => getPersistantId(component) === id)
+  const components: Component[] = editor.Pages.getAll()
+    .map((page) => page.getMainComponent())
+    .flatMap((body) => body.components().models.concat(body))
+  return components.find((component: Component) => getPersistantId(component) === id) ?? null
 }
 
 /**

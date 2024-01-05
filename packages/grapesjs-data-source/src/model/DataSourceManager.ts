@@ -16,11 +16,11 @@
  */
 
 import Backbone from "backbone"
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Expression, Filter, IDataSource, IDataSourceModel } from "../types"
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Expression, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
 import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
-import { StoredState, onStateChange } from "./state"
+import { StoredState, getComponentByPersistentId, onStateChange, resolveState } from "./state"
 import getLiquidFilters from "../filters/liquid"
 import getGenericFilters from "../filters/generic"
 
@@ -140,27 +140,42 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
   }
 
   getPageQuery(page: Page): Record<DataSourceId, string> {
-    const expressions = this.dataTree.getPageExpressions(page)
+    const expressions: Expression[] = this.dataTree.getPageExpressions(page)
     return this.models
       .map(ds => {
         const dsExpressions: Expression[] = expressions
-          .filter(e => {
-            const first = e[0]
-            if (!first || first.type !== 'property') {
-              console.warn('Invalid expression', e)
-              return false
+          .map((e: Expression) => e.flatMap((token: StoredToken) => {
+            switch(token.type) {
+              case 'property':
+              case 'filter':
+                return token
+              case 'state': {
+                const component = getComponentByPersistentId(token.componentId, this.editor)
+                if(!component) throw new Error(`Component ${token.componentId} not found`)
+                const resolved = resolveState(token, component, this.dataTree)
+                if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}`)
+                return resolved
+              }
             }
+          }))
+          .filter((e: Expression) => {
+            if(e.length === 0) return false
+            // We resolved all states
+            // An expression can not start with a filter
+            // So this is a property
+            const first = e[0] as Property
+            // Keep only the expressions for the current data source
             return first.dataSourceId === ds.id
           })
-        const tree = this.dataTree.toTree(dsExpressions, ds.id)
-        if(!tree) {
+        const trees = this.dataTree.toTrees(dsExpressions, ds.id)
+        if(trees.length === 0) {
           return {
             dataSourceId: ds.id.toString(),
             query: '',
           }
           throw new Error(`No tree for data source ${ds.id}`)
         }
-        const query = getDataSourceClass(ds).getQuery(tree)
+        const query = getDataSourceClass(ds).getQuery(trees)
         return {
           dataSourceId: ds.id.toString(),
           query,

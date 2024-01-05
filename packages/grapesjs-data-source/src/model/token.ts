@@ -101,7 +101,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
 
 export function propertyToField(property: Property, dataTree: DataTree): Field {
   const typeNames = property.typeIds
-    .map((typeId: TypeId) => dataTree.getType(typeId, property.dataSourceId))
+    .map((typeId: TypeId) => dataTree.getType(typeId, property.dataSourceId ?? null))
     .map((type: Type | null) => type?.label)
 
   const args = property.options ? Object.entries(property.options).map(([name, value]) => ({

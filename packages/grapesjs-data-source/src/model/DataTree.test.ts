@@ -69,10 +69,10 @@ test('Find type from  id', () => {
   }]})
 
   // Type not found
-  expect(() => dataTree.getType('unknown')).toThrow()
+  expect(() => dataTree.getType('unknown', null)).toThrow()
 
   // Type found
-  const type = dataTree.getType('testTypeId')
+  const type = dataTree.getType('testTypeId', null)
   expect(type).not.toBeNull()
   expect(type?.id).toBe('testTypeId')
 

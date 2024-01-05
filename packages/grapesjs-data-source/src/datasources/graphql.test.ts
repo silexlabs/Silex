@@ -363,7 +363,7 @@ test('build query from tree', () => {
       children: [],
     }],
   }
-  const query = gql.getQuery(tree)
+  const query = gql.getQuery([tree])
   expect(query)
     .toEqual(`query {
   __typename
@@ -446,7 +446,7 @@ test('build query with fragments', () => {
     dataSourceId: 'testDataSourceId',
   }])
   // Simple case
-  expect(gql.getQuery({
+  expect(gql.getQuery([{
     token: {
       type: 'property',
       propType: 'field',
@@ -468,7 +468,7 @@ test('build query with fragments', () => {
       },
       children: [],
     }],
-  }))
+  }]))
     .toEqual(dedent`
     query {
       __typename
@@ -542,7 +542,7 @@ test('build query with fragments', () => {
       }],
     }],
   }
-  const query = gql.getQuery(tree)
+  const query = gql.getQuery([tree])
   expect(query)
     .toEqual(dedent`
     query {

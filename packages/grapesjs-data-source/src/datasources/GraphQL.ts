@@ -339,16 +339,16 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   /**
    * Build a GraphQL query from a tree
    */
-  getQuery(tree: Tree): string {
+  getQuery(children: Tree[]): string {
     return this.getQueryRecursive({
       // Add the main query object which is the root of the tree
       token: {
-        dataSourceId: tree.token.dataSourceId,
+        dataSourceId: this.get('id'),
         fieldId: 'query',
         kind: 'object',
         typeIds: [this.queryType],
       },
-      children: [tree],
+      children,
     } as Tree)
   }
 

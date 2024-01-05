@@ -54,7 +54,7 @@ export declare class DataTree {
 	/**
 	 * Get type from typeId and dataSourceId
 	 */
-	getType(typeId: TypeId, dataSourceId?: DataSourceId): Type;
+	getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type;
 	/**
 	 * Get all types from all data sources
 	 */
@@ -99,7 +99,7 @@ export declare class DataTree {
 	/**
 	 * From expressions to a tree
 	 */
-	toTree(expressions: Expression[], dataSourceId: DataSourceId): Tree | null;
+	toTrees(expressions: Expression[], dataSourceId: DataSourceId): Tree[];
 	/**
 	 * Recursively merge two trees
 	 */
@@ -185,7 +185,7 @@ export interface IDataSource {
 	connect(): Promise<void>;
 	getTypes(): Type[];
 	getQueryables(): Field[];
-	getQuery(tree: Tree): string;
+	getQuery(trees: Tree[]): string;
 }
 export declare const DATA_SOURCE_READY = "data-source:ready";
 export declare const DATA_SOURCE_ERROR = "data-source:error";
