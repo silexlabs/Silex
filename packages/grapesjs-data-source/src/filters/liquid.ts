@@ -70,6 +70,29 @@ export default function(editor: DataSourceEditor): Filter[] {
       `,
     }, {
       type: 'filter',
+      id: 'prepend',
+      label: 'prepend',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str, options) => `${options.state}${str}`,
+      options: {
+        state: '',
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          name="value"
+          data-is-input
+          no-filters
+          class="ds-state-editor__options"
+          value=${options.value || '[]'}
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">Prefix</label>
+        </state-editor>
+      `,
+    }, {
+      type: 'filter',
       id: 'where',
       label: 'where',
       validate: (field: Field | null) => !!field && field.kind === 'list',
@@ -406,6 +429,174 @@ export default function(editor: DataSourceEditor): Filter[] {
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
         </label>
       `,
-    } 
+    }, {
+      type: 'filter',
+      id: 'abs',
+      label: 'abs',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num) => Math.abs(num as number),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'ceil',
+      label: 'ceil',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num) => Math.ceil(num as number),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'floor',
+      label: 'floor',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num) => Math.floor(num as number),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'round',
+      label: 'round',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num) => Math.round(num as number),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'at_least',
+      label: 'at_least',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => Math.max(num as number, options.value as number),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'at_most',
+      label: 'at_most',
+      validate: (field: Field | null) => !!field && isNumber(field),
+      output: type => type,
+      apply: (num, options) => Math.min(num as number, options.value as number),
+      options: {
+        value: 0,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Value
+          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'compact',
+      label: 'compact',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: field => field,
+      apply: (arr) => (arr as unknown[]).filter(item => !!item),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'default',
+      label: 'default',
+      validate: (field: Field | null) => !!field && field.kind === 'scalar',
+      output: field => field,
+      apply: (value, options) => value ?? options.value,
+      options: {
+        value: '',
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          name="value"
+          data-is-input
+          no-filters
+          class="ds-state-editor__options"
+          value=${options.value || '[]'}
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">Default value</label>
+        </state-editor>
+      `,
+    }, {
+      type: 'filter',
+      id: 'escape',
+      label: 'escape',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str) => (str as string).replace(/"/g, '\\"'),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'escape_once',
+      label: 'escape_once',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str) => (str as string).replace(/"/g, '\\"'),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'newline_to_br',
+      label: 'newline_to_br',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str) => (str as string).replace(/\n/g, '<br />'),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'strip_newlines',
+      label: 'strip_newlines',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str) => (str as string).replace(/\n/g, ''),
+      options: {},
+      quotedOptions: [],
+    }, {
+      type: 'filter',
+      id: 'truncate',
+      label: 'truncate',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str, options) => (str as string).slice(0, options.length as number),
+      options: {
+        length: 50,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Length
+          <input type="number" name="length" placeholder="Length" value=${options.length}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'truncatewords',
+      label: 'truncatewords',
+      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      output: type => type,
+      apply: (str, options) => (str as string).split(' ').slice(0, options.length as number).join(' '),
+      options: {
+        length: 15,
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <label>Length
+          <input type="number" name="length" placeholder="Length" value=${options.length}/>
+        </label>
+      `,
+    },
   ]
 }
