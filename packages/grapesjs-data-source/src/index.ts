@@ -26,6 +26,8 @@ import view from './view'
 export * from './model/state'
 export * from './model/DataTree'
 export * from './model/DataSourceManager'
+export * from './model/token'
+export * from './model/completion'
 export * from './types'
 export * from './utils'
 

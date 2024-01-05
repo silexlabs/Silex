@@ -18,7 +18,7 @@
 import { Editor } from "grapesjs"
 import { TemplateResult } from "lit"
 import { DataSourceManager } from "./model/DataSourceManager"
-import { ViewOptions } from "backbone"
+import { Button } from 'grapesjs'
 
 /**
  * Add the DataSourceManager to the GrapesJs editor
@@ -27,12 +27,19 @@ export interface DataSourceEditor extends Editor {
   DataSourceManager: DataSourceManager
 }
 
+export interface DataSourceEditorViewOptions {
+  el?: HTMLElement | string | undefined | (() => HTMLElement)
+  button?: Button | (() => Button)
+  styles?: string
+  optionsStyles?: string
+}
+
 /**
  * Options for the DataSourceEditor plugin
  */
 export interface DataSourceEditorOptions {
   dataSources: IDataSourceOptions[],
-  view: ViewOptions,
+  view: DataSourceEditorViewOptions,
   filters: Filter[] | string,
 }
 

@@ -15,8 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Button } from 'grapesjs'
-import { DataSourceEditor } from ".."
+import { DataSourceEditor, DataSourceEditorViewOptions } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
@@ -26,19 +25,9 @@ import '@silexlabs/expression-input/dist/popin-form.js'
 import './properties-editor'
 import './custom-states-editor'
 
-/**
- * 
- */
-export interface ViewOptions {
-  el?: HTMLElement | JQuery | string | undefined | (() => HTMLElement)
-  button?: Button | (() => Button)
-  styles?: string
-  optionsStyles?: string
-}
-
-export default (editor: DataSourceEditor, opts: Partial<ViewOptions> = {}) => {
+export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOptions> = {}) => {
   if (opts.el) {
-    const options: ViewOptions = {
+    const options: DataSourceEditorViewOptions = {
       styles: PROPERTY_STYLES,
       ...opts,
     }

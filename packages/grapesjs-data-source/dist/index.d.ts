@@ -2,148 +2,6 @@ import Backbone from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
 import { TemplateResult } from 'lit';
 
-export type PageId = string;
-export interface Query {
-	expression: Expression;
-}
-/**
- * Tree structure for creating query from components states
- */
-export interface Tree {
-	token: Property;
-	children: Tree[];
-}
-export type DataSourceId = string | number;
-export interface IDataSource {
-	id: DataSourceId;
-	connect(): Promise<void>;
-	getTypes(): Type[];
-	getQueryables(): Field[];
-	getQuery(tree: Tree): string;
-}
-export declare const DATA_SOURCE_READY = "data-source:ready";
-export declare const DATA_SOURCE_ERROR = "data-source:error";
-export declare const DATA_SOURCE_CHANGED = "data-source:changed";
-export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
-export interface IDataSourceModel extends Backbone.Model, IDataSource {
-}
-export interface IDataSourceOptions extends Backbone.ModelSetOptions {
-	id: DataSourceId;
-	label: string;
-	type: "graphql";
-}
-export type TypeId = string;
-export type Type = {
-	id: TypeId;
-	label: string;
-	fields: Field[];
-	dataSourceId?: DataSourceId;
-};
-export declare const builtinTypeIds: string[];
-export declare const builtinTypes: Type[];
-export type FieldId = string;
-export type FieldKind = "scalar" | "object" | "list" | "unknown";
-export interface FieldArgument {
-	name: string;
-	typeId: TypeId;
-	defaultValue?: unknown;
-}
-export interface Field {
-	id: FieldId;
-	label: string;
-	typeIds: TypeId[];
-	kind: FieldKind;
-	dataSourceId?: DataSourceId;
-	arguments?: FieldArgument[];
-}
-/**
- * A token can be a property or a filter
- */
-export type Token = Property | Filter | State;
-/**
- * Stored tokens are how the tokens are stored in the component as JSON
- * Use DataTree#fromStored to convert them back to tokens
- */
-export type StoredToken = StoredProperty | StoredFilter | State;
-export type Options = Record<string, unknown>;
-/**
- * A property is used to make expressions and access data from the data source
- */
-export interface BaseProperty {
-	type: "property";
-	propType: "field";
-	dataSourceId?: DataSourceId;
-}
-export type PropertyOptions = Record<string, unknown>;
-export interface StoredProperty extends BaseProperty {
-	typeIds: TypeId[];
-	fieldId: FieldId;
-	label: string;
-	kind: FieldKind;
-	options?: PropertyOptions;
-}
-export interface Property extends StoredProperty {
-	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
-}
-/**
- * A filter is used to alter data in an expression
- * It is provided in the options
- */
-export type FilterId = string;
-export interface StoredFilter {
-	type: "filter";
-	id: FilterId;
-	label: string;
-	options: Options;
-	quotedOptions: string[];
-}
-export interface Filter extends StoredFilter {
-	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
-	validate: (input: Field | null) => boolean;
-	output: (input: Field | null, options: Options) => Field | null;
-	apply: (input: unknown, options: Options) => unknown;
-}
-/**
- * A component state
- */
-export type StateId = string;
-export interface State {
-	type: "state";
-	storedStateId: StateId;
-	label: string;
-	componentId: string;
-	exposed: boolean;
-	forceKind?: FieldKind;
-}
-/**
- * A context is a list of available tokens for a component
- */
-export type Context = Token[];
-/**
- * An expression is a list of tokens which can be evaluated to a value
- * It is used to access data from the data source
- */
-export type Expression = StoredToken[];
-/**
- * Operators for condition in visibility property
- */
-export declare enum UnariOperator {
-	TRUTHY = "truthy",
-	FALSY = "falsy",
-	EMPTY_ARR = "empty array",
-	NOT_EMPTY_ARR = "not empty array"
-}
-/**
- * Operators for condition in visibility property
- */
-export declare enum BinariOperator {
-	EQUAL = "==",
-	NOT_EQUAL = "!=",
-	GREATER_THAN = ">",
-	LESS_THAN = "<",
-	GREATER_THAN_OR_EQUAL = ">=",
-	LESS_THAN_OR_EQUAL = "<="
-}
 /**
  * Options of the data tree
  * They can be set on the instance too
@@ -291,13 +149,166 @@ export declare class DataSourceManager extends Backbone.Collection<IDataSourceMo
 	getPageQuery(page: Page): Record<DataSourceId, string>;
 }
 /**
- *
+ * Add the DataSourceManager to the GrapesJs editor
  */
-export interface ViewOptions {
-	appendTo?: string | HTMLElement | (() => HTMLElement);
+export interface DataSourceEditor extends Editor {
+	DataSourceManager: DataSourceManager;
+}
+export interface DataSourceEditorViewOptions {
+	el?: HTMLElement | string | undefined | (() => HTMLElement);
 	button?: Button | (() => Button);
 	styles?: string;
 	optionsStyles?: string;
+}
+/**
+ * Options for the DataSourceEditor plugin
+ */
+export interface DataSourceEditorOptions {
+	dataSources: IDataSourceOptions[];
+	view: DataSourceEditorViewOptions;
+	filters: Filter[] | string;
+}
+export type PageId = string;
+export interface Query {
+	expression: Expression;
+}
+/**
+ * Tree structure for creating query from components states
+ */
+export interface Tree {
+	token: Property;
+	children: Tree[];
+}
+export type DataSourceId = string | number;
+export interface IDataSource {
+	id: DataSourceId;
+	connect(): Promise<void>;
+	getTypes(): Type[];
+	getQueryables(): Field[];
+	getQuery(tree: Tree): string;
+}
+export declare const DATA_SOURCE_READY = "data-source:ready";
+export declare const DATA_SOURCE_ERROR = "data-source:error";
+export declare const DATA_SOURCE_CHANGED = "data-source:changed";
+export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
+export interface IDataSourceModel extends Backbone.Model, IDataSource {
+}
+export interface IDataSourceOptions extends Backbone.ModelSetOptions {
+	id: DataSourceId;
+	label: string;
+	type: "graphql";
+}
+export type TypeId = string;
+export type Type = {
+	id: TypeId;
+	label: string;
+	fields: Field[];
+	dataSourceId?: DataSourceId;
+};
+export declare const builtinTypeIds: string[];
+export declare const builtinTypes: Type[];
+export type FieldId = string;
+export type FieldKind = "scalar" | "object" | "list" | "unknown";
+export interface FieldArgument {
+	name: string;
+	typeId: TypeId;
+	defaultValue?: unknown;
+}
+export interface Field {
+	id: FieldId;
+	label: string;
+	typeIds: TypeId[];
+	kind: FieldKind;
+	dataSourceId?: DataSourceId;
+	arguments?: FieldArgument[];
+}
+/**
+ * A token can be a property or a filter
+ */
+export type Token = Property | Filter | State;
+/**
+ * Stored tokens are how the tokens are stored in the component as JSON
+ * Use DataTree#fromStored to convert them back to tokens
+ */
+export type StoredToken = StoredProperty | StoredFilter | State;
+export type Options = Record<string, unknown>;
+/**
+ * A property is used to make expressions and access data from the data source
+ */
+export interface BaseProperty {
+	type: "property";
+	propType: "field";
+	dataSourceId?: DataSourceId;
+}
+export type PropertyOptions = Record<string, unknown>;
+export interface StoredProperty extends BaseProperty {
+	typeIds: TypeId[];
+	fieldId: FieldId;
+	label: string;
+	kind: FieldKind;
+	options?: PropertyOptions;
+}
+export interface Property extends StoredProperty {
+	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
+}
+/**
+ * A filter is used to alter data in an expression
+ * It is provided in the options
+ */
+export type FilterId = string;
+export interface StoredFilter {
+	type: "filter";
+	id: FilterId;
+	label: string;
+	options: Options;
+	quotedOptions: string[];
+}
+export interface Filter extends StoredFilter {
+	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
+	validate: (input: Field | null) => boolean;
+	output: (input: Field | null, options: Options) => Field | null;
+	apply: (input: unknown, options: Options) => unknown;
+}
+/**
+ * A component state
+ */
+export type StateId = string;
+export interface State {
+	type: "state";
+	storedStateId: StateId;
+	label: string;
+	componentId: string;
+	exposed: boolean;
+	forceKind?: FieldKind;
+}
+/**
+ * A context is a list of available tokens for a component
+ */
+export type Context = Token[];
+/**
+ * An expression is a list of tokens which can be evaluated to a value
+ * It is used to access data from the data source
+ */
+export type Expression = StoredToken[];
+/**
+ * Operators for condition in visibility property
+ */
+export declare enum UnariOperator {
+	TRUTHY = "truthy",
+	FALSY = "falsy",
+	EMPTY_ARR = "empty array",
+	NOT_EMPTY_ARR = "not empty array"
+}
+/**
+ * Operators for condition in visibility property
+ */
+export declare enum BinariOperator {
+	EQUAL = "==",
+	NOT_EQUAL = "!=",
+	GREATER_THAN = ">",
+	LESS_THAN = "<",
+	GREATER_THAN_OR_EQUAL = ">=",
+	LESS_THAN_OR_EQUAL = "<="
 }
 /**
  * Override the prefix of state names
@@ -358,6 +369,63 @@ export declare function removeState(component: Component, id: StateId, exported?
  */
 export declare function resolveState(state: State, component: Component, dataTree: DataTree): Expression | null;
 /**
+ * Add missing methonds to the filter
+ * When filters are stored they lose their methods
+ */
+export declare function getFilterFromToken(token: Filter, filters: Filter[]): Filter;
+/**
+ * Get the token from its stored form
+ */
+export declare function fromStored<T extends Token = Token>(token: StoredToken, dataTree: DataTree): T;
+/**
+ * Get the type corresponding to a token
+ */
+export declare function tokenToField(token: Token, prev: Field | null, component: Component, dataTree: DataTree): Field | null;
+export declare function propertyToField(property: Property, dataTree: DataTree): Field;
+/**
+ * Evaluate the types of each token in an expression
+ */
+export declare function expressionToFields(expression: Expression, component: Component, dataTree: DataTree): Field[];
+/**
+ * Evaluate an expression to a type
+ * This is used to validate expressions and for autocompletion
+ */
+export declare function getExpressionResultType(expression: Expression, component: Component, dataTree: DataTree): Field | null;
+/**
+ * Get the options of a token
+ */
+export declare function getTokenOptions(field: Field): {
+	optionsForm: (input: Field | null, options: Options) => TemplateResult;
+	options: Options;
+} | null;
+/**
+ * Get the options of a token or a field
+ */
+export declare function optionsToOptionsForm(arr: {
+	name: string;
+	value: unknown;
+}[]): (input: Field | null, options: Options) => TemplateResult;
+/**
+ * Utility function to shallow compare two objects
+ * Used to compare options of tree items
+ */
+export declare function sameOptions(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): boolean;
+export declare function buildArgs(options: PropertyOptions | undefined): string;
+/**
+ * Get the context of a component
+ * This includes all parents states, data sources queryable values, values provided in the options
+ */
+export declare function getContext(component: Component, dataTree: DataTree): Context;
+/**
+ * Create a property token from a field
+ */
+export declare function fieldToToken(field: Field): Property;
+/**
+ * Auto complete an expression
+ * @returns a list of possible tokens to add to the expression
+ */
+export declare function getCompletion(component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId): Context;
+/**
  * Concatenate strings to get a desired length string as result
  * Exported for tests
  */
@@ -411,20 +479,6 @@ export declare function getFieldType(editor: DataSourceEditor, field: Field | nu
  * Generate a form to edit the options of a token
  */
 export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
-/**
- * Add the DataSourceManager to the GrapesJs editor
- */
-export interface DataSourceEditor extends Editor {
-	DataSourceManager: DataSourceManager;
-}
-/**
- * Options for the DataSourceEditor plugin
- */
-export interface DataSourceEditorOptions {
-	dataSources: IDataSourceOptions[];
-	view: ViewOptions;
-	filters: Filter[] | string;
-}
 declare const _default: (editor: DataSourceEditor, opts?: Partial<DataSourceEditorOptions>) => void;
 /**
  * Version of the plugin
