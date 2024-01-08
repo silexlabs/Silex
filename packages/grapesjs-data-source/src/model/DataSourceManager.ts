@@ -20,7 +20,7 @@ import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_S
 import { DataSourceEditor, DataSourceEditorOptions } from ".."
 import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
-import { StoredState, getComponentByPersistentId, onStateChange, resolveState } from "./state"
+import { StoredState, getComponentByPersistentId, onStateChange } from "./state"
 import getLiquidFilters from "../filters/liquid"
 import getGenericFilters from "../filters/generic"
 
@@ -152,7 +152,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
               case 'state': {
                 const component = getComponentByPersistentId(token.componentId, this.editor)
                 if(!component) throw new Error(`Component ${token.componentId} not found`)
-                const resolved = resolveState(token, component, this.dataTree)
+                const resolved = this.dataTree.resolveState(token, component)
                 if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}`)
                 return resolved
               }

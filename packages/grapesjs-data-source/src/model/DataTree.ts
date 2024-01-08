@@ -16,9 +16,9 @@
  */
 
 import { Component, Page } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, Token, Tree, Type, TypeId } from '../types'
-import { getStateIds, getState, resolveState, getComponentByPersistentId } from './state'
-import { sameOptions } from './token'
+import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Token, Tree, Type, TypeId } from '../types'
+import { getStateIds, getState, getComponentByPersistentId, getParentByPersistentId } from './state'
+import { fromStored, sameOptions } from './token'
 import { toExpression } from '../utils'
 
 /**
@@ -238,7 +238,7 @@ export class DataTree {
       case 'state': {
         const component = getComponentByPersistentId(next.componentId, this.editor)
         if(!component) throw new Error(`Component not found ${next.componentId}`)
-        const resolved = resolveState(next, component, this)
+        const resolved = this.resolveState(next, component)
         if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}`)
         return this.getTrees(resolved, dataSourceId)
       }
@@ -339,5 +339,34 @@ export class DataTree {
             return this.mergeTrees(child1, child2!)
           })),
     }
+  }
+
+  /**
+   * Get all expressions used by a component
+   * Resolves all states token as expressions recursively
+   * Resulting expressions contain properties and filters only, no states anymore
+   */
+  resolveState(state: State, component: Component): Expression | null {
+    const parent = getParentByPersistentId(state.componentId, component)
+    if (!parent) {
+      console.warn('Component not found for state', state)
+      return null
+    }
+    // Get the expression of the state
+    const soredState = getState(parent, state.storedStateId, state.exposed)
+    if (!soredState?.expression) {
+      console.warn('State is not defined on component', parent, state)
+      return null
+    }
+    return soredState.expression
+      .flatMap((token: StoredToken) => {
+        switch (token.type) {
+          case 'state': {
+            return this.resolveState(fromStored(token, this), parent) ?? []
+          }
+          default:
+            return token
+        }
+      })
   }
 }

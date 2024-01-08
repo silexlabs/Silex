@@ -16,9 +16,7 @@
  */
 
 import { Component } from 'grapesjs'
-import { Expression, StateId, State, StoredToken } from '../types'
-import { fromStored } from './token'
-import { DataTree } from './DataTree'
+import { Expression, StateId, State } from '../types'
 import { DataSourceEditor } from '..'
 
 /**
@@ -30,6 +28,12 @@ import { DataSourceEditor } from '..'
 // Keys to store the states in the component
 const EXPORTED_STATES_KEY = 'publicStates'
 const PRIVATE_STATES_KEY = 'privateStates'
+
+/**
+ * Persistant ID is used to identify a component reliably
+ * It will be stored with the website data
+ */
+const PERSISTANT_ID_KEY = 'id-plugin-data-source'
 
 /**
  * Override the prefix of state names
@@ -46,12 +50,6 @@ export interface StoredState {
 }
 
 export type PersistantId = string
-
-/**
- * Persistant ID is used to identify a component reliably
- * It will be stored with the website data
- */
-const PERSISTANT_ID_KEY = 'id-plugin-data-source'
 
 /**
  * Get the persistant ID of a component
@@ -75,10 +73,25 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
  * Find a component by its persistant ID in the current page
  */
 export function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null {
-  const components: Component[] = editor.Pages.getAll()
-    .map((page) => page.getMainComponent())
-    .flatMap((body) => body.components().models.concat(body))
-  return components.find((component: Component) => getPersistantId(component) === id) ?? null
+  const pages = editor.Pages.getAll()
+  for(const page of pages) {
+    const body = page.getMainComponent()
+    const component = getChildByPersistantId(id, body)
+    if(component) return component
+  }
+  return null
+}
+
+/**
+ * Find a component by its persistant ID in 
+ */
+export function getChildByPersistantId(id: PersistantId, parent: Component): Component | null {
+  if(getPersistantId(parent) === id) return parent
+  for(const child of parent.components()) {
+    const component = getChildByPersistantId(id, child)
+    if(component) return component
+  }
+  return null
 }
 
 /**
@@ -161,33 +174,4 @@ export function removeState(component: Component, id: StateId, exported: boolean
   delete newState[id]
   component.set(key, newState)
   fireChange(null, component)
-}
-
-/**
- * Get all expressions used by a component
- * Resolves all states token as expressions recursively
- * Resulting expressions contain properties and filters only, no states anymore
- */
-export function resolveState(state: State, component: Component, dataTree: DataTree): Expression | null {
-  const parent = getParentByPersistentId(state.componentId, component)
-  if(!parent) {
-    console.warn('Component not found for state', state)
-    return null
-  }
-  // Get the expression of the state
-  const soredState = getState(parent, state.storedStateId, state.exposed)
-  if(!soredState?.expression) {
-    console.warn('State is not defined on component', parent, state)
-    return null
-  }
-  return soredState.expression
-    .flatMap((token: StoredToken) => {
-      switch (token.type) {
-        case 'state': {
-          return resolveState(fromStored(token, dataTree), parent, dataTree) ?? []
-        }
-        default:
-          return token
-      }
-    })
 }
