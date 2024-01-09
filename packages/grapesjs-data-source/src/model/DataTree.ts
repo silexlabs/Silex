@@ -109,19 +109,23 @@ export class DataTree {
    * Get type from typeId and dataSourceId
    */
   getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type {
-    const type = dataSourceId ?
-      // Search in the specified data source
-      this.dataSources
-        // Get the data source
+    if(dataSourceId) {
+      // Get the data source
+      const dataSource = this.dataSources
         .find((dataSource: IDataSource) => !dataSourceId || dataSource.id === dataSourceId)
-        // Get its types
-        ?.getTypes()
-        // Return the requested type
-        .find((type: Type) => type.id === typeId)
+      if(!dataSource) throw new Error(`Data source not found ${dataSourceId}`)
+      // Get its types
+      const types = dataSource?.getTypes()
+      // Return the requested type
+      const type = types.find((type: Type) => type.id === typeId)
+      if (!type) throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
+      return type
+    } else {
       // No data source id: search in all types
-      : this.allTypes.find(type => type.id === typeId)
-    if (!type) throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
-    return type
+      const type = this.allTypes.find(type => type.id === typeId)
+      if (!type) throw new Error(`Unknown type ${typeId}`)
+      return type
+    }
   }
 
   /**
