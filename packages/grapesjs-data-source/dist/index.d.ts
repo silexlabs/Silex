@@ -104,6 +104,12 @@ export declare class DataTree {
 	 * Recursively merge two trees
 	 */
 	protected mergeTrees(tree1: Tree, tree2: Tree): Tree;
+	/**
+	 * Get all expressions used by a component
+	 * Resolves all states token as expressions recursively
+	 * Resulting expressions contain properties and filters only, no states anymore
+	 */
+	resolveState(state: State, component: Component): Expression | null;
 }
 /**
  * FIXME: Why sometimes the methods of the data source are in the attributes?
@@ -336,6 +342,10 @@ export declare function getOrCreatePersistantId(component: Component): Persistan
  */
 export declare function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null;
 /**
+ * Find a component by its persistant ID in
+ */
+export declare function getChildByPersistantId(id: PersistantId, parent: Component): Component | null;
+/**
  * Find a component by its persistant ID in the current page
  */
 export declare function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null;
@@ -362,12 +372,6 @@ export declare function setState(component: Component, id: StateId, state: Store
  * Remove a state
  */
 export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
-/**
- * Get all expressions used by a component
- * Resolves all states token as expressions recursively
- * Resulting expressions contain properties and filters only, no states anymore
- */
-export declare function resolveState(state: State, component: Component, dataTree: DataTree): Expression | null;
 /**
  * Add missing methonds to the filter
  * When filters are stored they lose their methods

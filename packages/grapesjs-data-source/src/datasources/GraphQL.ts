@@ -368,16 +368,23 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           throw new Error(`Type not found for ${tree.token.fieldId} (${tree.token.typeIds})`)
         } else if(types.length > 1) throw new Error(`Multiple types found for ${tree.token.fieldId}`)
         const type = types[0] as Type
-        const fieldTypes = tree.children.map(child => {
-          const fieldType = type.fields.find(f => f.id === child.token.fieldId)
-          if(!fieldType) throw new Error(`Type not found for field ${child.token.fieldId} in ${type.id}`)
-          return {
-            fieldType,
-            child,
-          }
-        })
+        const fieldTypes = tree.children
+          .map(child => {
+            const fieldType = type.fields.find(f => f.id === child.token.fieldId)
+            if(!fieldType) {
+              // Not a queryable type
+              return null
+            }
+            return {
+              fieldType,
+              child,
+            }
+          })
+          // Remove non-queryable types
+          .filter(fieldType => fieldType !== null) as {fieldType: Field, child: Tree}[]
+
+        // Handle fragments
         const fragments = fieldTypes
-          // Cases with fragments
           .filter(({fieldType}) => fieldType.typeIds.length > 1)
           .map(({child}) => {
             return {
@@ -394,8 +401,8 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
           `)
           .join('\n')
 
+        // Handle simple case, no fragment
         const childQuery = fieldTypes
-          // Simple case, no fragment
           .filter(({fieldType}) => fieldType.typeIds.length === 1)
           .map(({child}) => {
             return this.getQueryRecursive(child, indent + '  ')
