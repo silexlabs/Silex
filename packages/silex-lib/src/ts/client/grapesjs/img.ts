@@ -23,8 +23,13 @@ import { Editor } from 'grapesjs'
 
 export default (editor: Editor, opts) => {
   opts = {
+    // Default options
     labelSrc: 'Image URL',
     placeholderSrc: 'https://example.com/image.jpg',
+    // These default values will never be used,
+    // as there is default values in config
+    replacedElements: ['img'],
+    // Override with provided config
     ...opts,
   }
   // Add src trait in the properties
@@ -77,8 +82,8 @@ export default (editor: Editor, opts) => {
   // Wait for the editor to be ready
   editor.on('load', () => {
     // Add a sector to the style manager
-    const sector = editor.StyleManager.addSector('image', {
-      name: 'Image',
+    const sector = editor.StyleManager.addSector('object', {
+      name: 'Object',
       open: false,
       properties: [{
         label: 'object-fit',
@@ -125,7 +130,7 @@ export default (editor: Editor, opts) => {
     let showSector = false
     // It shows up when the selection is an image
     editor.on('component:selected', (model) => {
-      if (model && model.get('type') === 'image') {
+      if (model && opts.replacedElements.includes(model.get('tagName')?.toLowerCase())) {
         // Not necessary, grapesjs does it automatically
         // sector.set('visible', true);
         showSector = true
