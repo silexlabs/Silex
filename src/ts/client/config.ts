@@ -61,6 +61,23 @@ export class ClientConfig extends Config {
   debug = false
 
   /**
+   * Replaced elements
+   * This is a list of elements which support the object-fit and object-position CSS properties
+   * https://developer.mozilla.org/en-US/docs/Web/CSS/Replaced_element
+   * When selected, Silex will show the object-fit and object-position properties in the style panel
+   */
+  replacedElements = [
+    'img',
+    'video',
+    'iframe',
+    'embed',
+    'object',
+    'audio',
+    'canvas',
+    // 'option',
+  ]
+
+  /**
    * Grapesjs config
    */
   grapesJsConfig: EditorConfig = {
@@ -79,7 +96,7 @@ export class ClientConfig extends Config {
    */
   initGrapesConfig() {
     // Get the initial config
-    const config = getEditorConfig(this.websiteId, this.storageId, this.rootUrl)
+    const config = getEditorConfig(this)
 
     // Merge with the config modified by plugins
     this.grapesJsConfig = {

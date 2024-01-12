@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs, { Editor, EditorConfig, RichTextEditorAction } from 'grapesjs'
+import grapesjs, { Editor, EditorConfig } from 'grapesjs'
 import openImport from './openImport'
 
 /**
@@ -57,8 +57,8 @@ import { internalLinksPlugin } from './internal-links'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
-import { ConnectorId, WebsiteId } from '../../types'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
+import { ClientConfig } from '../config'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -113,7 +113,8 @@ const LIGHTER_PRIMARY_COLOR = '#575757'
 const catBasic = 'Containers'
 const catComponents = 'Components'
 
-export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl: string): EditorConfig {
+export function getEditorConfig(config: ClientConfig): EditorConfig {
+  const { websiteId, storageId, rootUrl } = config
   return {
     container: '#gjs',
     height: '100%',
@@ -131,7 +132,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
     },
 
     assetManager: {
-      upload: `${rootUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSETS_WRITE}/?websiteId=${id}${ connectorId ? `&connectorId=${connectorId}` : ''}`,
+      upload: `${rootUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSETS_WRITE}/?websiteId=${websiteId}${ storageId ? `&connectorId=${storageId}` : ''}`,
     },
 
     storageManager: {
@@ -139,8 +140,8 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       type: 'connector',
       options: {
         connector: {
-          id,
-          connectorId,
+          id: websiteId,
+          connectorId: storageId,
         },
       },
     },
@@ -260,7 +261,7 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
       },
       [publicationManagerPlugin.toString()]: {
         appendTo: 'options',
-        websiteId: id,
+        websiteId,
       } as PublicationManagerOptions,
       [pagePanelPlugin.toString()]: {
         cmdOpenNewPageDialog,
@@ -295,10 +296,13 @@ export function getEditorConfig(id: WebsiteId, connectorId: ConnectorId, rootUrl
         api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
       },
       [loginDialogPlugin.toString()]: {
-        id,
+        id: websiteId,
       } as LoginDialogOptions,
       [rateLimitPlugin.toString()]: {
         time: 5000,
+      },
+      [imgPlugin.toString()]: {
+        replacedElements: config.replacedElements,
       },
     },
   }
