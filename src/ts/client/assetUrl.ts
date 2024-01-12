@@ -41,6 +41,11 @@ export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId:
     //  .replace(/^\//, '') // remove the first slash if it exists
     //return decodeURIComponent(encodedPath)
   } else {
+    if(path.startsWith('<svg') || path.startsWith('data:image')) {
+      // SVG or data URL
+      return path
+    }
+    // Not a stored path, is there a problem?
     console.warn('storedToDisplayed: path is not a stored path', path)
     return path
   }
@@ -69,6 +74,10 @@ export function displayedToStored(path: string): string {
       .replace(/^\//, '') // remove the first slash if it exists
     return decodeURIComponent(encodedPath)
   } else {
+    if(path.startsWith('<svg') || path.startsWith('data:image')) {
+      // SVG or data URL
+      return path
+    }
     console.warn('displayedToStored: path is not a displayed path', path)
     return path
   }
