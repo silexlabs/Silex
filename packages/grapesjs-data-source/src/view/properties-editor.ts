@@ -18,26 +18,15 @@
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
 import {customElement, property} from 'lit/decorators.js'
-import { BinariOperator, DataSourceEditor, DataTree, Token, UnariOperator, getState, setState } from '..'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
-
-export enum Properties {
-  innerHTML = 'innerHTML',
-  title = 'title',
-  className = 'className',
-  style = 'style',
-  src = 'src',
-  href = 'href',
-  alt = 'alt',
-  condition = 'condition',
-  condition2 = 'condition2',
-  __data = '__data',
-}
+import { BinariOperator, DataSourceEditor, Properties, Token, UnariOperator } from '../types'
+import { getState, setState } from '../model/state'
+import { DataTree } from '../model/DataTree'
 
 /**
  * Editor for selected element's properties
@@ -59,12 +48,6 @@ export class PropertiesEditor extends LitElement {
 
   inputs: Record<Properties, {stateEditor: StateEditor, selected: Component | undefined} | undefined> = {
     innerHTML: undefined,
-    title: undefined,
-    className: undefined,
-    style: undefined,
-    src: undefined,
-    href: undefined,
-    alt: undefined,
     condition: undefined,
     condition2: undefined,
     __data: undefined,
@@ -128,12 +111,6 @@ export class PropertiesEditor extends LitElement {
         <main>
           ${[
             {label: 'Content (innerHTML)', name: Properties.innerHTML, publicState: false},
-            {label: 'Title (title attribute)', name: Properties.title, publicState: false},
-            {label: 'Classes (class attribute)', name: Properties.className, publicState: false},
-            {label: 'Inline styles', name: Properties.style, publicState: false},
-            {label: 'src attribute', name: Properties.src, publicState: false},
-            {label: 'href attribute', name: Properties.href, publicState: false},
-            {label: 'alt attribute', name: Properties.alt, publicState: false},
           ].map(({label, name, publicState}) => this.renderStateEditor(selected, label, name, publicState))}
         </main>
       </section>
@@ -168,7 +145,7 @@ export class PropertiesEditor extends LitElement {
       </section>
       <section class="ds-section">
         <div>
-          <label class="gjs-traits-label ds-label">Loop</label>
+          <label class="gjs-traits-label ds-label">Repeat</label>
         </div>
         <main>
           ${this.renderStateEditor(selected, 'Data', Properties.__data, false)}
@@ -182,12 +159,6 @@ export class PropertiesEditor extends LitElement {
   resetInputs() {
     this.inputs = {
       innerHTML: undefined,
-      title: undefined,
-      className: undefined,
-      style: undefined,
-      src: undefined,
-      href: undefined,
-      alt: undefined,
       condition: undefined,
       condition2: undefined,
       __data: undefined,

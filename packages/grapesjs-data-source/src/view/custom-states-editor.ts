@@ -18,18 +18,25 @@
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
 import {customElement, property} from 'lit/decorators.js'
-import { DataSourceEditor, DataTree, StoredState, Token, getState, getStateIds, removeState, setState } from '..'
+import { StoredState, getState, getStateIds, removeState, setState } from '../model/state'
+import { DataSourceEditor, Properties, Token  } from '../types'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
 import { Component } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
+import { DataTree } from '../model/DataTree'
 
 interface Item {
   name: string
   publicState?: boolean
   state: StoredState
+}
+
+enum Type {
+  States = 'states',
+  Attributes = 'attributes',
 }
 
 /**
@@ -40,6 +47,12 @@ interface Item {
 export class CustomStatesEditor extends LitElement {
   @property({type: Boolean})
   disabled = false
+
+  @property({type: Type})
+  type = Type.States
+
+  @property({type: String})
+  title = 'Custom states'
 
   private editor: DataSourceEditor | null = null
   private redrawing = false
@@ -70,7 +83,7 @@ export class CustomStatesEditor extends LitElement {
       <section class="ds-section">
         <div>
           <div class="gjs-traits-label">
-            <span>Element States</span>
+            <span>${this.title}</span>
             ${ selected ? html`
             <button
               title="Add a new state"
@@ -78,7 +91,7 @@ export class CustomStatesEditor extends LitElement {
               @click=${() => {
                 const item = this.createCustomState(selected)
                 if(!item) return
-                setState(selected, item.name, item.state, !!item.publicState)
+                this.setState(selected, item.name, item.state)
               }}
               >+</button>
             ` : ''}
@@ -110,27 +123,27 @@ export class CustomStatesEditor extends LitElement {
       this.redrawing = false
       return empty
     }
-    const items: Item[] = getStateIds(selected, true)
+    const items: Item[] = this.getStateIds(selected)
       .map(stateId => ({
         name: stateId,
-        publicState: true,
-        state: getState(selected, stateId, true),
+        publicState: this.type === Type.States,
+        state: this.getState(selected, stateId),
       }))
+      .filter(item => !item.state.hidden)
     const result =  html`
       ${this.getHead(selected)}
       <div class="ds-states">
         <div class="ds-states__items">
           ${items
-            .filter(item => !item.state.hidden)
             .map((item, index) => html`
             <div class="ds-states__item">
-              ${this.getStateEditor(selected, item.state.label || '', item.name, !!item.publicState)}
+              ${this.getStateEditor(selected, item.state.label || '', item.name)}
               <div class="ds-states__buttons">
                 <button
                   title="Remove this state"
                   class="ds-states__remove-button ds-states__button"
                   @click=${() => {
-                    removeState(selected, item.name, !!item.publicState)
+                    this.removeState(selected, item.name)
                     this.requestUpdate()
                   }}
                   >x</button>
@@ -140,8 +153,8 @@ export class CustomStatesEditor extends LitElement {
                   @click=${() => {
                     const newItem = this.renameCustomState(item)
                     if(!newItem) return
-                    removeState(selected, item.name, !!item.publicState)
-                    setState(selected, newItem.name, newItem.state, !!newItem.publicState)
+                    this.removeState(selected, item.name)
+                    this.setState(selected, newItem.name, newItem.state)
                     this.requestUpdate()
                   }}
                   >\u270F</button>
@@ -150,7 +163,7 @@ export class CustomStatesEditor extends LitElement {
                     class="ds-states__item-move-up ds-states__button${ index === 0 ? ' ds-states__button--disabled' : '' }"
                     @click=${() => {
                       items.splice(index - 1, 0, items.splice(index, 1)[0]);
-                      this.updateCustomStates(selected, items)
+                      this.updateOrderCustomStates(selected, items)
                     }}
                     >\u2191</button>
                   <button
@@ -158,7 +171,7 @@ export class CustomStatesEditor extends LitElement {
                     class="ds-states__item-move-down ds-states__button${ index === items.length - 1 ? ' ds-states__button--disabled' : '' }"
                     @click=${() => {
                       items.splice(index + 1, 0, items.splice(index, 1)[0]);
-                      this.updateCustomStates(selected, items)
+                      this.updateOrderCustomStates(selected, items)
                     }}
                   >\u2193</button>
               </div>
@@ -172,7 +185,44 @@ export class CustomStatesEditor extends LitElement {
     return result
   }
 
-  getStateEditor(selected: Component, label: string, name: string, publicState: boolean) {
+  /**
+   * Get the states for this type of editor
+   */
+  getStateIds(component: Component): string[] {
+    const stateIds = getStateIds(component, this.type === Type.States)
+    switch(this.type) {
+      case Type.States:
+        // All public states are states
+        return stateIds
+      case Type.Attributes:
+        return stateIds
+          // Filter out the states which are properties
+          .filter(stateId => !Object.keys(Properties).includes(stateId))
+    }
+  }
+
+  /**
+   * Get the states for this type of editor
+   */
+  getState(component: Component, name: string): StoredState {
+    return getState(component, name, this.type === Type.States)
+  }
+
+  /**
+   * Set the states for this type of editor
+   */
+  setState(component: Component, name: string, state: StoredState) {
+    setState(component, name, state, this.type === Type.States)
+  }
+
+  /**
+   * Remove the states for this type of editor
+   */
+  removeState(component: Component, name: string) {
+    removeState(component, name, this.type === Type.States)
+  }
+
+  getStateEditor(selected: Component, label: string, name: string) {
     return html`
       <state-editor
         id="${name}"
@@ -181,10 +231,10 @@ export class CustomStatesEditor extends LitElement {
           if (el) {
             const stateEditor = el as StateEditor
             stateEditor.setEditor(this.editor!)
-            stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+            stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name)
           }
         })}
-        @change=${() => this.onChange(selected, name, label, publicState)}
+        @change=${() => this.onChange(selected, name, label)}
         .disabled=${this.disabled}
       >
         <label slot="label">${label}</label>
@@ -192,17 +242,17 @@ export class CustomStatesEditor extends LitElement {
     `
   }
 
-  onChange(component: Component, name: string, label: string, publicState: boolean) {
+  onChange(component: Component, name: string, label: string) {
     if(this.redrawing) return
     const stateEditor = this.shadowRoot!.querySelector(`#${name}`) as StateEditor
-    setState(component, name, {
+    this.setState(component, name, {
       expression: stateEditor.data,
       label,
-    }, publicState)
+    })
   }
 
-  getTokens(dataTree: DataTree, component: Component, name: string, publicState: boolean): Token[] {
-    const state = getState(component, name, publicState)
+  getTokens(dataTree: DataTree, component: Component, name: string): Token[] {
+    const state = this.getState(component, name)
     if(!state || !state.expression) return []
     return state.expression.map(token => fromStored(token, dataTree))
   }
@@ -225,15 +275,17 @@ export class CustomStatesEditor extends LitElement {
   /**
    * Update the custom states, in the order of the list
    */
-  updateCustomStates(component: Component, items: Item[]) {
-    const stateIds = getStateIds(component, true)
+  updateOrderCustomStates(component: Component, items: Item[]) {
+    const stateIds = this.getStateIds(component)
     // Remove all states
     stateIds.forEach(stateId => {
-      removeState(component, stateId, true)
+      if(items.map(item => item.name).includes(stateId)) {
+        this.removeState(component, stateId)
+      }
     })
     // Add states in the order of the list
     items.forEach(item => {
-      setState(component, item.name, item.state, true)
+      this.setState(component, item.name, item.state)
     })
   }
   
@@ -243,16 +295,20 @@ export class CustomStatesEditor extends LitElement {
   createCustomState(component: Component): Item | null {
     const label = prompt('Name this state', 'New state')
     if (!label) return null
+    if(this.type === Type.Attributes && Object.keys(Properties).includes(label)) {
+      alert(`The name ${label} is reserved, please choose another name`)
+      return null
+    }
     const stateId = `${component.getId()}-${Math.random().toString(36).slice(2)}`
     const state: StoredState = {
       label,
       expression: [],
     }
-    setState(component, stateId, state, true)
+    this.setState(component, stateId, state)
     return {
       name: stateId,
       state,
-      publicState: true,
+      publicState: this.type === Type.States, // Only states are public, attributes are private
     }
   }
 }

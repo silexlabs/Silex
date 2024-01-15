@@ -317,6 +317,16 @@ export declare enum BinariOperator {
 	LESS_THAN_OR_EQUAL = "<="
 }
 /**
+ * Properties of elements
+ * What is not a property is an attribute or a state
+ */
+export declare enum Properties {
+	innerHTML = "innerHTML",
+	condition = "condition",
+	condition2 = "condition2",
+	__data = "__data"
+}
+/**
  * Override the prefix of state names
  */
 export declare const COMPONENT_NAME_PREFIX = "nameForDataSource";

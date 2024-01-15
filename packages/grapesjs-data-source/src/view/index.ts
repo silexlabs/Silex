@@ -38,7 +38,18 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
 
     // Add the web components
     wrapper.innerHTML = `
-      <custom-states-editor>
+      <custom-states-editor
+        type="states"
+        title="States"
+        >
+        <style>
+          ${options.styles}
+        </style>
+      </custom-states-editor>
+      <custom-states-editor
+        type="attributes"
+        title="Attributes"
+        >
         <style>
           ${options.styles}
         </style>
@@ -70,11 +81,13 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
 
       // Get references to the web components
       const propertiesUi = wrapper.querySelector('properties-editor') as PropertiesEditor
-      const statesUi = wrapper.querySelector('custom-states-editor') as CustomStatesEditor
+      const statesUi = wrapper.querySelector('custom-states-editor[type="states"]') as CustomStatesEditor
+      const attributesUi = wrapper.querySelector('custom-states-editor[type="attributes"]') as CustomStatesEditor
 
       // Init web components
       propertiesUi.setEditor(editor)
       statesUi.setEditor(editor)
+      attributesUi.setEditor(editor)
 
 
       // Show the UI when the button is clicked
@@ -90,12 +103,14 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
             // Change web components state
             propertiesUi.removeAttribute('disabled')
             statesUi.removeAttribute('disabled')
+            attributesUi.removeAttribute('disabled')
           } else {
             // Hide the UI
             wrapper.style.display = 'none'
             // Change web components state
             propertiesUi.setAttribute('disabled', '')
             statesUi.setAttribute('disabled', '')
+            attributesUi.setAttribute('disabled', '')
           }
         })
         wrapper.style.display = button.active ? 'block' : 'none'

@@ -234,3 +234,14 @@ export enum BinariOperator {
   GREATER_THAN_OR_EQUAL = '>=',
   LESS_THAN_OR_EQUAL = '<=',
 }
+
+/**
+ * Properties of elements
+ * What is not a property is an attribute or a state
+ */
+export enum Properties {
+  innerHTML = 'innerHTML',
+  condition = 'condition',
+  condition2 = 'condition2',
+  __data = '__data',
+}
