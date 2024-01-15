@@ -237,7 +237,7 @@ export class CustomStatesEditor extends LitElement {
         @change=${() => this.onChange(selected, name, label)}
         .disabled=${this.disabled}
       >
-        <label slot="label">${label ?? name}</label>
+        <label slot="label">${label || name}</label>
       </state-editor>
     `
   }
