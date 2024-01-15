@@ -56,20 +56,35 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     this.editor.UndoManager.add(this)
 
     // Add filters from config
-    const filters = typeof options.filters === 'string'
+    const filters = (() => {
       // Include preset from filters/
-      ? [
-        ...getGenericFilters(editor),
-        ...getLiquidFilters(editor),
-      ]
-      // Define filters in the options
-      : options.filters.flatMap((filter: Partial<Filter>) => typeof filter === 'string' ? {
-        ...filter === 'liquid' ? getLiquidFilters(editor) : [],
-        ...filter === 'generic' ? getGenericFilters(editor) : [],
-      } : {
-      type: 'filter',
-      ...filter,
-    } as Filter)
+      if (typeof options.filters === 'string') {
+        return [
+          ...getGenericFilters(editor),
+          ...getLiquidFilters(editor),
+        ]
+      } else {
+        // Define filters in the options
+        return (options.filters as Filter[])
+          .flatMap((filter: Partial<Filter> | string): Filter[] => {
+            if (typeof filter === 'string') {
+              switch (filter) {
+                case 'liquid': return getLiquidFilters(editor)
+                case 'generic': return getGenericFilters(editor)
+                default: throw new Error(`Unknown filters ${filter}`)
+              }
+            } else {
+              return [{
+                ...filter as Partial<Filter>,
+                type: 'filter',
+              } as Filter]
+            }
+          })
+          .map((filter: Filter)=> ({ ...filter, type: 'filter' })) as Filter[]
+      }
+    })()
+
+    console.log('DataSourceManager xxxx', {models, options, filters})
 
     // Init the data tree
     this.dataTree = new DataTree(editor, {
