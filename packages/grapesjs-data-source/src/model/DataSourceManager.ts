@@ -63,10 +63,13 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
         ...getLiquidFilters(editor),
       ]
       // Define filters in the options
-      : options.filters.map((filter: Partial<Filter>) => ({
+      : options.filters.flatMap((filter: Partial<Filter>) => typeof filter === 'string' ? {
+        ...filter === 'liquid' ? getLiquidFilters(editor) : [],
+        ...filter === 'generic' ? getGenericFilters(editor) : [],
+      } : {
       type: 'filter',
       ...filter,
-    } as Filter))
+    } as Filter)
 
     // Init the data tree
     this.dataTree = new DataTree(editor, {
