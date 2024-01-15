@@ -237,7 +237,7 @@ export class CustomStatesEditor extends LitElement {
         @change=${() => this.onChange(selected, name, label)}
         .disabled=${this.disabled}
       >
-        <label slot="label">${label}</label>
+        <label slot="label">${label ?? name}</label>
       </state-editor>
     `
   }
@@ -262,6 +262,9 @@ export class CustomStatesEditor extends LitElement {
    */
   renameCustomState(item: Item): Item {
     const label = prompt('Rename this state', item.state.label)
+      ?.toLowerCase()
+      ?.replace(/[^a-z0-9]/g, '-')
+      ?.replace(/^-+|-+$/g, '')
     if (!label || label === item.state.label) return item
     return {
       ...item,
@@ -294,6 +297,9 @@ export class CustomStatesEditor extends LitElement {
    */
   createCustomState(component: Component): Item | null {
     const label = prompt('Name this state', 'New state')
+      ?.toLowerCase()
+      ?.replace(/[^a-z0-9]/g, '-')
+      ?.replace(/^-+|-+$/g, '')
     if (!label) return null
     if(this.type === Type.Attributes && Object.keys(Properties).includes(label)) {
       alert(`The name ${label} is reserved, please choose another name`)
