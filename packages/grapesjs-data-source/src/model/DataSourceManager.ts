@@ -84,8 +84,6 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       }
     })()
 
-    console.log('DataSourceManager xxxx', {models, options, filters})
-
     // Init the data tree
     this.dataTree = new DataTree(editor, {
       dataSources: this.models,
