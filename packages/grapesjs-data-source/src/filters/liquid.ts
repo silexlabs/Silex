@@ -184,40 +184,6 @@ export default function(editor: DataSourceEditor): Filter[] {
     `,
     }, {
       type: 'filter',
-      id: 'first',
-      label: 'first',
-      validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: (field: Field | null) => convertKind(field, 'list', 'object'),
-      apply: (arr) => (arr as unknown[])[0],
-      options: {},
-      quotedOptions: [],
-    }, {
-      type: 'filter',
-      id: 'last',
-      label: 'last',
-      validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: (field: Field | null) => convertKind(field, 'list', 'object'),
-      apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
-      options: {},
-      quotedOptions: [],
-    }, {
-      type: 'filter',
-      id: 'join',
-      label: 'join',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'list',
-      output: (field: Field | null) => convertKind(field, 'list', 'scalar'),
-      apply: (arr, options) => (arr as string[]).join(options.separator as string ?? ','),
-      options: {
-        separator: ',',
-      },
-      quotedOptions: [],
-      optionsForm: (field: Field | null, options: Options) => html`
-        <label>Separator
-          <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
-        </label>
-    `,
-    }, {
-      type: 'filter',
       id: 'split',
       label: 'split',
       validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
