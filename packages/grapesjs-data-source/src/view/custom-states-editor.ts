@@ -152,7 +152,7 @@ export class CustomStatesEditor extends LitElement {
                   class="ds-states__rename-button ds-states__button"
                   @click=${() => {
                     const newItem = this.renameCustomState(item)
-                    if(!newItem) return
+                    if(!newItem || newItem === item) return
                     this.removeState(selected, item.name)
                     this.setState(selected, newItem.name, newItem.state)
                     this.requestUpdate()
@@ -262,7 +262,7 @@ export class CustomStatesEditor extends LitElement {
    */
   renameCustomState(item: Item): Item {
     const label = prompt('Rename this state', item.state.label)
-    if (!label) return item
+    if (!label || label === item.state.label) return item
     return {
       ...item,
       state: {
