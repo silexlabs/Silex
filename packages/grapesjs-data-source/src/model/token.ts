@@ -190,7 +190,6 @@ export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (
 export function getOptionObject(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): { error: boolean, result: PropertyOptions | undefined } {
   // Handle the case where one or both are undefined or empty
   if(!option1 && !option2) return { error: false, result: undefined }
-  console.log('option1', option1, 'option2', option2, 'isEmpty(option1)', isEmpty(option1), 'isEmpty(option2)', isEmpty(option2))
   if(isEmpty(option1) && isEmpty(option2)) return { error: false, result: undefined }
   // Handle the case where one is undefined or empty and the other is not
   if(!option1 || !option2) return { error: true, result: undefined }
