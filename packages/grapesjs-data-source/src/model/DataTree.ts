@@ -18,7 +18,7 @@
 import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Token, Tree, Type, TypeId } from '../types'
 import { getStateIds, getState, getComponentByPersistentId, getParentByPersistentId } from './state'
-import { fromStored, sameOptions } from './token'
+import { fromStored, getOptionObject } from './token'
 import { toExpression } from '../utils'
 
 /**
@@ -302,7 +302,7 @@ export class DataTree {
     const errors = tree1.children
       .filter(child1 => tree2.children.find(child2 =>
         child1.token.fieldId === child2.token.fieldId
-        && !sameOptions(child1.token.options, child2.token.options)
+        && getOptionObject(child1.token.options, child2.token.options).error
       ))
       .map(child1 => {
         const child2 = tree2.children.find(child2 => child1.token.fieldId === child2.token.fieldId)
@@ -318,20 +318,20 @@ export class DataTree {
       .filter(child1 => !tree2.children.find(child2 =>
         child1.token.fieldId === child2.token.fieldId
         && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-        && sameOptions(child1.token.options, child2.token.options)
+        && !getOptionObject(child1.token.options, child2.token.options).error
       ))
       .concat(tree2.children
         .filter(child2 => !tree1.children.find(child1 =>
           child1.token.fieldId === child2.token.fieldId
           && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-          && sameOptions(child1.token.options, child2.token.options)
+          && !getOptionObject(child1.token.options, child2.token.options).error
         ))
       )
     const same = tree1.children
       .filter(child1 => tree2.children.find(child2 =>
         child1.token.fieldId === child2.token.fieldId
         && child1.token.typeIds.join(',') === child2.token.typeIds.join(',')
-        && sameOptions(child1.token.options, child2.token.options)
+        && !getOptionObject(child1.token.options, child2.token.options).error
       ))
 
     return {

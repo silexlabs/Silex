@@ -187,37 +187,38 @@ export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (
  * Utility function to shallow compare two objects
  * Used to compare options of tree items
  */
-export function sameOptions(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined) {
+export function getOptionObject(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): { error: boolean, result: PropertyOptions | undefined } {
   // Handle the case where one or both are undefined or empty
-  if(!option1 && !option2) return true
-  if(isEmpty(option1) && isEmpty(option2)) return true
+  if(!option1 && !option2) return { error: false, result: undefined }
+  console.log('option1', option1, 'option2', option2, 'isEmpty(option1)', isEmpty(option1), 'isEmpty(option2)', isEmpty(option2))
+  if(isEmpty(option1) && isEmpty(option2)) return { error: false, result: undefined }
   // Handle the case where one is undefined or empty and the other is not
-  if(!option1 || !option2) return false
-  if(isEmpty(option1) || isEmpty(option2)) return false
+  if(!option1 || !option2) return { error: true, result: undefined }
+  if(isEmpty(option1) || isEmpty(option2)) return { error: true, result: undefined }
 
-  const keys1 = Object.keys(option1);
-  const keys2 = Object.keys(option2);
+  const keys1 = Object.keys(option1)
+  const keys2 = Object.keys(option2)
 
   if (keys1.length !== keys2.length) {
-    return false;
+    return { error: true, result: undefined }
   }
 
   for (const key of keys1) {
     if (option1[key] !== option2[key]) {
-      return false;
+      return { error: true, result: undefined }
     }
   }
 
-  return true;
+  return { error: false, result: option1 }
 }
 
 function isJson(str: string) {
   try {
-    JSON.parse(str);
+    JSON.parse(str)
   } catch (e) {
-    return false;
+    return false
   }
-  return true;
+  return true
 }
 
 function isEmpty(value: unknown): boolean {
@@ -227,7 +228,7 @@ function isEmpty(value: unknown): boolean {
   if (isString && !isJsonString) return value === ''
   const json = isJsonString ? JSON.parse(value) : value
   if (Array.isArray(json)) return json.length === 0
-  if (typeof json === 'object') return Object.keys(json).length === 0
+  if (typeof json === 'object') return Object.values(json).filter(v => !!v).length === 0
   return false
 }
 

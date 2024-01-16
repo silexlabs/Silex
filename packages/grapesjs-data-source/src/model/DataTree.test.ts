@@ -429,7 +429,7 @@ test('Merge trees with empty and no options', async () => {
         },
         "children": []
       }
-    ]
+    ],
   }, {
     "token": {
       "type": "property",
@@ -451,11 +451,14 @@ test('Merge trees with empty and no options', async () => {
           ],
           "kind": "object",
           "dataSourceId": "testDataSourceId",
-          "options": {}
+          "options": {
+            "test": undefined,
+            "test2": "",
+          },
         },
         "children": []
       }
-    ]
+    ],
   }] as Tree[]
   class DataTreeTest extends DataTree {
     public mergeTrees(tree1: Tree, tree2: Tree): Tree {
@@ -469,13 +472,14 @@ test('Merge trees with empty and no options', async () => {
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
   }]})
+
   expect(async () => dataTree.mergeTrees(trees[0], trees[1]))
-  .not.toThrow('Cannot have options on a field without children')
+    .not.toThrow()
   
   // The 2 trees are the same
   // The 2nd tree has empty options which should be ignored
   expect(dataTree.mergeTrees(trees[0], trees[1]))
-  .toEqual(trees[0])
+    .toEqual(trees[0])
 })
 
 test('Get query with errors in options', async () => {

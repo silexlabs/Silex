@@ -423,7 +423,10 @@ export declare function optionsToOptionsForm(arr: {
  * Utility function to shallow compare two objects
  * Used to compare options of tree items
  */
-export declare function sameOptions(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): boolean;
+export declare function getOptionObject(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): {
+	error: boolean;
+	result: PropertyOptions | undefined;
+};
 export declare function buildArgs(options: PropertyOptions | undefined): string;
 /**
  * Get the context of a component
