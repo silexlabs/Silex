@@ -93,7 +93,8 @@ export declare class DataTree {
 	getTrees(expression: Expression, dataSourceId: DataSourceId): Tree[];
 	/**
 	 * Check if a property is relative to a type
-	 * A type is "relative" if next has a type which has a field of type tree.token
+	 * A type is "relative" if parent has a type which has a field of type tree.token
+	 * FIXME: need a better way to check if a property is relative, e.g. have a "relative" flag on the property, set depending on <state-editor root-type
 	 */
 	isRelative(parent: Property, child: Property, dataSourceId: DataSourceId): boolean;
 	/**
