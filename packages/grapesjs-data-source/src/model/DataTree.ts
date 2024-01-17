@@ -254,12 +254,13 @@ export class DataTree {
 
   /**
    * Check if a property is relative to a type
-   * A type is "relative" if next has a type which has a field of type tree.token
+   * A type is "relative" if parent has a type which has a field of type tree.token
+   * FIXME: need a better way to check if a property is relative, e.g. have a "relative" flag on the property, set depending on <state-editor root-type
    */
   isRelative(parent: Property, child: Property, dataSourceId: DataSourceId): boolean {
     const parentTypes = this.getTypes(dataSourceId).filter(t => parent.typeIds.includes(t.id))
     const parentFieldsTypes = parentTypes.flatMap(t => t.fields.map(f => f.typeIds).flat())
-    return child.typeIds.some(typeId => parentFieldsTypes.includes(typeId))
+    return parentFieldsTypes.length > 0 && child.typeIds.some(typeId => parentFieldsTypes.includes(typeId))
   }
 
   /**
@@ -292,7 +293,13 @@ export class DataTree {
    */
   protected mergeTrees(tree1: Tree, tree2: Tree): Tree {
     // Check if the trees have the same fieldId
-    if (tree1.token.kind !== tree2.token.kind || tree1.token.dataSourceId !== tree2.token.dataSourceId) {
+    if (tree1.token.dataSourceId !== tree2.token.dataSourceId
+      // Don't check for kind because it can be different for the same fieldId
+      // For example `blog` collection (kind: list) for a loop/repeat
+      //   and `blog` item (kind: object) from inside the loop
+      // FIXME: why is this?
+      // || tree1.token.kind !== tree2.token.kind
+    ) {
       console.error('Unable to merge trees', tree1, tree2)
       throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
     }

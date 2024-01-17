@@ -206,7 +206,7 @@ export class PropertiesEditor extends LitElement {
     const {stateEditor} = this.inputs[name]!
     if(this.redrawing) return
     setState(component, name, {
-      expression: stateEditor.data
+      expression: stateEditor.data,
     }, publicState)
   }
   getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
