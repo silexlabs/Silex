@@ -2,6 +2,10 @@ import Backbone from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
 import { TemplateResult } from 'lit';
 
+export interface ComponentExpression {
+	expression: Expression;
+	component: Component;
+}
 /**
  * Options of the data tree
  * They can be set on the instance too
@@ -9,20 +13,6 @@ import { TemplateResult } from 'lit';
 export interface DataTreeOptions {
 	filters: Partial<Filter>[] | string;
 	dataSources: IDataSource[];
-}
-/**
- * Error thrown when a query cannot be built
- */
-export interface BuildQueryErrorOptions {
-	expression: Expression;
-	component: Component;
-	token: Token;
-}
-export declare class BuildQueryError extends Error {
-	expression: Expression;
-	component: Component;
-	token: Token;
-	constructor(message: string, options: BuildQueryErrorOptions);
 }
 export declare class DataTree {
 	protected editor: DataSourceEditor;
@@ -66,31 +56,31 @@ export declare class DataTree {
 	/**
 	 * Evaluate an expression to a value
 	 */
-	getValue(context: Context, expression: Expression): unknown;
+	getValue(context: Context, expression: ComponentExpression): unknown;
 	/**
 	 * Get all expressions used in all pages
 	 */
 	getAllPagesExpressions(): {
 		page: Page;
-		expressions: Expression[];
+		expressions: ComponentExpression[];
 	}[];
 	/**
 	 * Get all expressions used in a page
 	 * This will be used to fetch data for the page
 	 */
-	getPageExpressions(page: Page): Expression[];
+	getPageExpressions(page: Page): ComponentExpression[];
 	/**
 	 * Get all expressions used by a component and its children
 	 */
-	getComponentExpressionsRecursive(component: Component): Expression[];
+	getComponentExpressionsRecursive(component: Component): ComponentExpression[];
 	/**
 	 * Get all expressions used by a component
 	 */
-	getComponentExpressions(component: Component): Expression[];
+	getComponentExpressions(component: Component): ComponentExpression[];
 	/**
 	 * Build a tree of expressions
 	 */
-	getTrees(expression: Expression, dataSourceId: DataSourceId): Tree[];
+	getTrees({ expression, component }: ComponentExpression, dataSourceId: DataSourceId): Tree[];
 	/**
 	 * Check if a property is relative to a type
 	 * A type is "relative" if parent has a type which has a field of type tree.token
@@ -100,7 +90,7 @@ export declare class DataTree {
 	/**
 	 * From expressions to a tree
 	 */
-	toTrees(expressions: Expression[], dataSourceId: DataSourceId): Tree[];
+	toTrees(expressions: ComponentExpression[], dataSourceId: DataSourceId): Tree[];
 	/**
 	 * Recursively merge two trees
 	 */
@@ -444,6 +434,7 @@ export declare function fieldToToken(field: Field): Property;
  * @returns a list of possible tokens to add to the expression
  */
 export declare function getCompletion(component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId): Context;
+export declare function getComponentDebug(component: Component): string;
 /**
  * Concatenate strings to get a desired length string as result
  * Exported for tests
