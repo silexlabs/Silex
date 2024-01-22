@@ -169,7 +169,7 @@ export interface StoredFilter {
   label: string
   options: Options
   quotedOptions?: string[]
-  optionsKeys?: string[]
+  optionsKeys?: string[] // Optional, used to set a specific order
 }
 export interface Filter extends StoredFilter {
   optionsForm?: (input: Field | null, options: Options) => TemplateResult | null

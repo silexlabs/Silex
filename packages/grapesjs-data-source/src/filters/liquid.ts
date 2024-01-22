@@ -267,12 +267,26 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsKeys: ['start', 'end'],
       optionsForm: (field: Field | null, options: Options) => html`
-        <label>Start
-          <input type="number" name="start" placeholder="Start" value=${options.start}/>
-        </label>
-        <label>End
-          <input type="number" name="end" placeholder="End" value=${options.end}/>
-        </label>
+        <state-editor
+          no-filters
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.start || []}
+          name="start"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">Start index</label>
+        </state-editor>
+        <state-editor
+          no-filters
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.end || []}
+          name="end"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">End index</label>
+        </state-editor>
       `,
     }, {
       type: 'filter',
