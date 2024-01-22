@@ -20,7 +20,7 @@ import {customElement, property} from 'lit/decorators.js'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { DataSourceEditor, Filter, Property, Token } from '..'
 
-import { createRef, ref } from 'lit/directives/ref.js'
+import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toId, toValue } from '../utils'
 import { ExpressionInput } from '@silexlabs/expression-input'
@@ -85,8 +85,22 @@ export class StateEditor extends LitElement {
     } else {
       const ids = input.value
       return ids
-          .filter(id => !!id)
-          .map(id => fromString(this.editor!, id))
+        .filter(id => !!id)
+        .map(id => fromString(this.editor!, id))
+        // Here the data is missing options as data comes from completion
+        // Add the options
+        .map((token, idx) => {
+          const popin = this.popinsRef[idx]?.value
+          switch(token.type) {
+            case 'property':
+            case 'filter':
+              token.options = popin?.value || token.options
+              break
+            default:
+              break
+          }
+          return token
+        })
     }
   }
   set data(value: Token[] | string) {
@@ -101,6 +115,7 @@ export class StateEditor extends LitElement {
   private editor: DataSourceEditor | null = null
   private redrawing = false
   private expressionInputRef = createRef<ExpressionInput>()
+  private popinsRef: Ref<PopinForm>[] = []
 
   setEditor(editor: DataSourceEditor) {
     if (this.editor) {
@@ -157,7 +172,7 @@ export class StateEditor extends LitElement {
         </div>
         ${ _currentValue && _currentValue.length > 0 ? html`
           ${ _currentValue.map((token: Token, idx: number) => {
-            const popinRef = createRef<PopinForm>()
+            this.popinsRef[idx] = createRef<PopinForm>()
             const optionsForm = this.getOptions(selected, _currentValue, idx)
             const partialExpression = _currentValue.slice(0, idx)
             const _partialCompletion = getCompletion(selected, partialExpression, dataTree, this.rootType)
@@ -191,14 +206,14 @@ export class StateEditor extends LitElement {
                 class="ds-expression-input__options-button"
                 style=${styleMap({ display: optionsForm === '' ? 'none' : '' })}
                 @click=${() => {
-                  popinRef.value?.removeAttribute('hidden')
+                  this.popinsRef[idx].value?.removeAttribute('hidden')
                 }}
               >...</button>
               <popin-form
-                ${ref(popinRef)}
+                ${ref(this.popinsRef[idx])}
                 hidden
                 name=${`${this.name}_options_${idx}`}
-                @change=${(event: Event) => this.onChangeOptions(event, selected, popinRef.value!, idx)}
+                @change=${(event: Event) => this.onChangeOptions(event, selected, this.popinsRef[idx].value!, idx)}
               >
                 ${optionsForm}
               </popin-form>
@@ -237,6 +252,7 @@ export class StateEditor extends LitElement {
     const idx = (event as CustomEvent).detail?.idx
     if(idx >= 0) {
       // Custom event coming from the expression input
+      // Remove the tokens after the changed one
       this.data = this.data.slice(0, idx + 1)
     } else {
       // Event coming from the options
