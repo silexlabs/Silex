@@ -17,7 +17,7 @@
 
 import Backbone from "backbone"
 import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Expression, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from "../types"
-import { DataSourceEditor, DataSourceEditorOptions } from ".."
+import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug } from ".."
 import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
 import { StoredState, getComponentByPersistentId, onStateChange } from "./state"
@@ -156,25 +156,29 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
   }
 
   getPageQuery(page: Page): Record<DataSourceId, string> {
-    const expressions: Expression[] = this.dataTree.getPageExpressions(page)
+    const expressions = this.dataTree.getPageExpressions(page)
     return this.models
       .map(ds => {
-        const dsExpressions: Expression[] = expressions
-          .map((e: Expression) => e.flatMap((token: StoredToken) => {
-            switch(token.type) {
-              case 'property':
-              case 'filter':
-                return token
-              case 'state': {
-                const component = getComponentByPersistentId(token.componentId, this.editor)
-                if(!component) throw new Error(`Component ${token.componentId} not found`)
-                const resolved = this.dataTree.resolveState(token, component)
-                if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}`)
-                return resolved
+        const dsExpressions = expressions
+          // Resolve all states
+          .map((componentExpression) => ({
+            component: componentExpression.component,
+            expression: componentExpression.expression.flatMap((token: StoredToken) => {
+              switch(token.type) {
+                case 'property':
+                case 'filter':
+                  return token
+                case 'state': {
+                  const resolved = this.dataTree.resolveState(token, componentExpression.component)
+                  if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`)
+                  return resolved
+                }
               }
-            }
+            })
           }))
-          .filter((e: Expression) => {
+          // Keep only the expressions for the current data source
+          .filter(componentExpression => {
+            const e = componentExpression.expression
             if(e.length === 0) return false
             // We resolved all states
             // An expression can not start with a filter

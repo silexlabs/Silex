@@ -15,6 +15,19 @@ function getTypeDisplayName(typeIds: TypeId[], kind: FieldKind | null): string {
   return kind === 'list' ? ` (${typeIdsStr}[])` : kind === 'object' ? ` (${typeIdsStr}{})` : ` (${typeIdsStr})`
 }
 
+export function getComponentDebug(component: Component): string {
+  const parent = component.parent()
+  const parentName = parent?.getName()
+  const parentTagName = parent?.get('tagName')
+  const parentDebug = parentName ? `${parentName} (${parentTagName})` : parentTagName
+  const id = component.cid
+  const tagName = component.get('tagName')
+  const classes = component.getClasses()
+  const classesStr = classes.length ? `.${classes.join('.')}` : ''
+  const name = component.getName()
+  return `${parentDebug} > ${name} (${tagName}#${id}${classesStr})`
+}
+
 /**
  * Concatenate strings to get a desired length string as result
  * Exported for tests

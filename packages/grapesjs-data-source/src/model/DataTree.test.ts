@@ -92,7 +92,8 @@ test('Expressions to tree', () => {
     kind: 'object',
     dataSourceId: testDataSourceId,
   }]
-  expect(dataTree.getTrees(expression, testDataSourceId))
+  const component = editor.getComponents().first()
+  expect(dataTree.getTrees({expression, component}, testDataSourceId))
     .toEqual([{
       token: {
         type: 'property',
@@ -387,7 +388,8 @@ test('get tree with filters', async () => {
   }]})
   // Make sure it treats them all as relative
   dataTree.isRelative = () => true
-  const result = dataTree.getTrees([...queryObjects], testDataSourceId)
+  const component = editor.getComponents().first()
+  const result = dataTree.getTrees({expression: [...queryObjects], component}, testDataSourceId)
   expect(result)
     .toEqual([{
       token: queryObjects[0],
@@ -1051,8 +1053,9 @@ test('get tree with options', () => {
       },
     } as Filter,
   ] as Expression
-  expect(() => dataTree.getTrees(expression1, testDataSourceId)).not.toThrow()
-  expect(dataTree.getTrees(expression1, testDataSourceId))
+  const component = editor.getComponents().first()
+  expect(() => dataTree.getTrees({expression: expression1, component}, testDataSourceId)).not.toThrow()
+  expect(dataTree.getTrees({expression: expression1, component}, testDataSourceId))
   .toEqual([{
     token: testTokens.rootField1,
     children: [{
@@ -1073,8 +1076,8 @@ test('get tree with options', () => {
     } as Filter,
     testTokens.childField3
   ]
-  expect(() => dataTree.getTrees(expression2, testDataSourceId)).not.toThrow()
-  expect(dataTree.getTrees(expression2, testDataSourceId))
+  expect(() => dataTree.getTrees({expression: expression2, component}, testDataSourceId)).not.toThrow()
+  expect(dataTree.getTrees({expression: expression2, component}, testDataSourceId))
   .toEqual([{
     token: testTokens.rootField1,
     children: [{

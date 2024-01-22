@@ -19,7 +19,12 @@ import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Token, Tree, Type, TypeId } from '../types'
 import { getStateIds, getState, getComponentByPersistentId, getParentByPersistentId } from './state'
 import { fromStored, getOptionObject } from './token'
-import { toExpression } from '../utils'
+import { getComponentDebug, toExpression } from '../utils'
+
+interface ComponentExpression {
+  expression: Expression
+  component: Component
+}
 
 /**
  * Options of the data tree
@@ -30,26 +35,27 @@ export interface DataTreeOptions {
   dataSources: IDataSource[]
 }
 
-/**
- * Error thrown when a query cannot be built
- */
-export interface BuildQueryErrorOptions {
-  expression: Expression
-  component: Component
-  token: Token
-}
-export class BuildQueryError extends Error {
-  public expression: Expression
-  public component: Component
-  public token: Token
-
-  constructor(message: string, options: BuildQueryErrorOptions) {
-    super(message)
-    this.expression = options.expression
-    this.component = options.component
-    this.token = options.token
-  }
-}
+///**
+// * TODO
+// * Error thrown when a query cannot be built
+// */
+//export interface BuildQueryErrorOptions {
+//  expression: Expression
+//  component: Component
+//  token: Token
+//}
+//export class BuildQueryError extends Error {
+//  public expression: Expression
+//  public component: Component
+//  public token: Token
+//
+//  constructor(message: string, options: BuildQueryErrorOptions) {
+//    super(message)
+//    this.expression = options.expression
+//    this.component = options.component
+//    this.token = options.token
+//  }
+//}
 
 export class DataTree {
   public dataSources: IDataSource[] = []
@@ -152,14 +158,14 @@ export class DataTree {
    * Evaluate an expression to a value
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getValue(context: Context, expression: Expression): unknown {
+  getValue(context: Context, expression: ComponentExpression): unknown {
     throw new Error('Not implemented')
   }
 
   /**
    * Get all expressions used in all pages
    */
-  getAllPagesExpressions(): { page: Page, expressions: Expression[] }[] {
+  getAllPagesExpressions(): { page: Page, expressions: ComponentExpression[] }[] {
     return this.editor.Pages.getAll()
       .map((page: Page) => ({
         page,
@@ -171,15 +177,15 @@ export class DataTree {
    * Get all expressions used in a page
    * This will be used to fetch data for the page
    */
-  getPageExpressions(page: Page): Expression[] {
+  getPageExpressions(page: Page): ComponentExpression[] {
     return this.getComponentExpressionsRecursive(page.getMainComponent())
   }
 
   /**
    * Get all expressions used by a component and its children
    */
-  getComponentExpressionsRecursive(component: Component): Expression[] {
-    const queries = [] as Expression[]
+  getComponentExpressionsRecursive(component: Component): ComponentExpression[] {
+    const queries = [] as ComponentExpression[]
     queries.push(...this.getComponentExpressions(component))
     component.components()
       .forEach((child: Component) => {
@@ -191,24 +197,38 @@ export class DataTree {
   /**
    * Get all expressions used by a component
    */
-  getComponentExpressions(component: Component): Expression[] {
-    return ([] as Expression[])
+  getComponentExpressions(component: Component): ComponentExpression[] {
+    return ([] as ComponentExpression[])
       // Visible states (custom / user defined)
-      .concat(getStateIds(component, true).map(stateId => getState(component, stateId, true)?.expression))
+      .concat(
+        // For each state
+        getStateIds(component, true)
+          // Get its expression
+          .map(stateId => getState(component, stateId, true)?.expression)
+          // Add the component
+          .map(expression => ({expression, component}))
+      )
       // Hidden states (loop / internals)
-      .concat(getStateIds(component, false).map(stateId => getState(component, stateId, false)?.expression))
+      .concat(
+        // For each state
+        getStateIds(component, false)
+          // Get its expression
+          .map(stateId => getState(component, stateId, false)?.expression)
+          // Add the component
+          .map(expression => ({expression, component}))
+      )
   }
 
   /**
    * Build a tree of expressions
    */
-  getTrees(expression: Expression, dataSourceId: DataSourceId): Tree[] {
+  getTrees({expression, component}: ComponentExpression, dataSourceId: DataSourceId): Tree[] {
     if(expression.length === 0) return []
     const next = expression[0]
     switch(next.type) {
       case 'property': {
         if(next.dataSourceId !== dataSourceId) return []
-        const trees = this.getTrees(expression.slice(1), dataSourceId)
+        const trees = this.getTrees({expression: expression.slice(1), component}, dataSourceId)
         if(trees.length === 0) return [{
           token: next,
           children: [],
@@ -233,22 +253,20 @@ export class DataTree {
         const options = Object.values(next.options)
           .map((value: unknown) => toExpression(value))
           .filter((exp: Expression | null) => !!exp && exp.length > 0)
-          .flatMap(exp => this.getTrees(exp!, dataSourceId))
+          .flatMap(exp => this.getTrees({expression: exp!, component}, dataSourceId))
 
-        const trees = this.getTrees(expression.slice(1), dataSourceId)
+        const trees = this.getTrees({expression: expression.slice(1), component}, dataSourceId)
         if(trees.length === 0) return options
         return trees.flatMap(tree => [tree, ...options])
       }
       case 'state': {
-        const component = getComponentByPersistentId(next.componentId, this.editor)
-        if(!component) throw new Error(`Component not found ${next.componentId}`)
         const resolved = this.resolveState(next, component)
-        if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}`)
-        return this.getTrees(resolved, dataSourceId)
+        if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}. State defined on component ${getComponentDebug(component)}`)
+        return this.getTrees({expression: resolved, component}, dataSourceId)
       }
       default:
         console.error('Invalid expression', expression)
-        throw new Error(`Invalid expression ${JSON.stringify(expression)}`)
+        throw new Error(`Invalid expression ${JSON.stringify(expression)}. Expression used on component ${getComponentDebug(component)}`)
     }
   }
 
@@ -266,7 +284,7 @@ export class DataTree {
   /**
    * From expressions to a tree
    */
-  toTrees(expressions: Expression[], dataSourceId: DataSourceId): Tree[] {
+  toTrees(expressions: ComponentExpression[], dataSourceId: DataSourceId): Tree[] {
     if(expressions.length === 0) return []
     return expressions
       // From Expression to Tree
