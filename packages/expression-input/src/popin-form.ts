@@ -91,6 +91,7 @@ export class PopinForm extends PopinOverlay {
   }
 
   get value(): Record<string, unknown> {
+    this.updateFormData()
     return Object.fromEntries(this.formData.entries())
   }
 
@@ -156,13 +157,17 @@ export class PopinForm extends PopinOverlay {
     }
   }
 
-  private submit(event: Event) {
-    event.preventDefault()
-    event.stopImmediatePropagation()
+  private updateFormData() {
     this.formData = new FormData()
     for(const input of this.inputs) {
       this.formData.set(input.getAttribute('name')!, input.value)
     }
+  }
+
+  private submit(event: Event) {
+    event.preventDefault()
+    event.stopImmediatePropagation()
+    this.updateFormData()
     this.close()
     this.dispatchEvent(new Event('change'))
   }

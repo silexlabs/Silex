@@ -82,6 +82,7 @@ export declare class PopinForm extends PopinOverlay {
      * Handle formdata event to add the current value to the form
      */
     private onFormdata;
+    private updateFormData;
     private submit;
     private change;
 }

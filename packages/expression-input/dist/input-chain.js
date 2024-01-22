@@ -27,6 +27,10 @@ import { inputChainStyles } from './styles.js';
  * It has these attributes:
  * - [x] name for form submission
  * - [x] for (form id)
+ * - [x] reactive (the parent app needs to update the options on change)
+ * - [x] select-tag-name (default: select) to change the tag name of the select elements
+ * - [x] option-tag-name (default: option) to change the tag name of the option elements
+ * - [ ] required
  * - [ ] maxlength
  * - [ ] minlength
  *
