@@ -37,7 +37,6 @@ export const testTokens: Record<string, Token> = {
     output: () => null,
     apply: () => null,
     options: {},
-    quotedOptions: [],
   },
   rootField2: {
     type: 'property',
@@ -83,7 +82,6 @@ export const simpleFilters: Filter[] = [{
   label: 'test filter any input',
   validate: type => !type, // Just for empty expressions
   output: () => null,
-  quotedOptions: [],
   options: {},
   apply: jest.fn(),
 }, {
@@ -92,7 +90,6 @@ export const simpleFilters: Filter[] = [{
   label: 'test filter name',
   validate: type => !!type?.typeIds.includes('testTypeId'),
   output: type => type!,
-  quotedOptions: [],
   options: {},
   apply: jest.fn(),
 }, {
@@ -101,7 +98,6 @@ export const simpleFilters: Filter[] = [{
   label: 'test filter name 2',
   validate: type => !!type?.typeIds.includes('testFieldTypeId'),
   output: () => null,
-  quotedOptions: [],
   options: {},
   apply: jest.fn(),
 }]

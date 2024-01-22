@@ -44,7 +44,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/<[^>]*>/g, ''),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'append',
@@ -55,7 +54,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         state: '',
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           name="value"
@@ -78,7 +76,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         state: '',
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           name="value"
@@ -106,6 +103,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         value: '',
       },
       quotedOptions: ['key'],
+      optionsKeys: ['key', 'value'],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           no-filters
@@ -138,7 +136,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[0],
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'last',
@@ -147,7 +144,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: (field: Field | null) => convertKind(field, 'list', 'object'),
       apply: (arr) => (arr as unknown[])[(arr as unknown[]).length - 1],
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'join',
@@ -159,6 +155,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         separator: ',',
       },
       quotedOptions: ['key'],
+      optionsKeys: ['key', 'separator', 'value'],
       optionsForm: (field: Field | null, options: Options) => html`
           <state-editor
             no-filters
@@ -192,7 +189,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
           <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
@@ -230,7 +226,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: field => field,
       apply: (arr) => (arr as unknown[]).reverse(),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'size',
@@ -244,7 +239,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       }),
       apply: (arr) => (arr as unknown[]).length,
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'at',
@@ -255,7 +249,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         index: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Index
           <input type="number" name="index" placeholder="Index" value=${options.index}/>
@@ -272,7 +265,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         start: 0,
         end: 0,
       },
-      quotedOptions: [],
+      optionsKeys: ['start', 'end'],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Start
           <input type="number" name="start" placeholder="Start" value=${options.start}/>
@@ -323,7 +316,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -339,7 +331,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -355,7 +346,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -371,7 +361,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -389,7 +378,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -403,7 +391,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (num) => Math.abs(num as number),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'ceil',
@@ -412,7 +399,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (num) => Math.ceil(num as number),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'floor',
@@ -421,7 +407,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (num) => Math.floor(num as number),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'round',
@@ -430,7 +415,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (num) => Math.round(num as number),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'at_least',
@@ -441,7 +425,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -457,7 +440,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" value=${options.value}/>
@@ -471,7 +453,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: field => field,
       apply: (arr) => (arr as unknown[]).filter(item => !!item),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'default',
@@ -482,7 +463,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: '',
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <state-editor
           name="value"
@@ -503,7 +483,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/"/g, '\\"'),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'escape_once',
@@ -512,7 +491,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/"/g, '\\"'),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'newline_to_br',
@@ -521,7 +499,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/\n/g, '<br />'),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'strip_newlines',
@@ -530,7 +507,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).replace(/\n/g, ''),
       options: {},
-      quotedOptions: [],
     }, {
       type: 'filter',
       id: 'truncate',
@@ -541,7 +517,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         length: 50,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Length
           <input type="number" name="length" placeholder="Length" value=${options.length}/>
@@ -557,7 +532,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         length: 15,
       },
-      quotedOptions: [],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Length
           <input type="number" name="length" placeholder="Length" value=${options.length}/>

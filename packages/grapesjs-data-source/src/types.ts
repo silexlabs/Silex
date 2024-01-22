@@ -168,7 +168,8 @@ export interface StoredFilter {
   id: FilterId
   label: string
   options: Options
-  quotedOptions: string[]
+  quotedOptions?: string[]
+  optionsKeys?: string[]
 }
 export interface Filter extends StoredFilter {
   optionsForm?: (input: Field | null, options: Options) => TemplateResult | null

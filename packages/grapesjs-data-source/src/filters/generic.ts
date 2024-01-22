@@ -37,7 +37,6 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         type: 'String',
       },
-      quotedOptions: [],
       optionsForm: (field, options) => html`
         <label for="type">
           <p>Type</p>

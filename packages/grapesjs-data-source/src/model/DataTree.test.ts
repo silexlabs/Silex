@@ -356,7 +356,6 @@ test('get tree with filters', async () => {
     id: 'testFilterId1',
     label: 'test filter name',
     options: {},
-    quotedOptions: [],
   }, {
     type: 'property',
     propType: 'field',
@@ -370,7 +369,6 @@ test('get tree with filters', async () => {
     id: 'testFilterId1',
     label: 'test filter name',
     options: {},
-    quotedOptions: [],
   }, {
     type: 'property',
     propType: 'field',
@@ -629,7 +627,6 @@ test('Get query from multiple expressions', async () => {
 //    id: 'testFilterId1',
 //    label: 'test filter name',
 //    options: {},
-//    quotedOptions: [],
 //  }, {
 //    type: 'property',
 //    propType: 'field',
@@ -643,7 +640,6 @@ test('Get query from multiple expressions', async () => {
 //    id: 'testFilterId1',
 //    label: 'test filter name',
 //    options: {},
-//    quotedOptions: [],
 //  }, {
 //    type: 'property',
 //    propType: 'field',
