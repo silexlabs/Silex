@@ -190,10 +190,15 @@ export class StateEditor extends LitElement {
                     return html`
                       <optgroup label="${type}">
                       ${ completion
-                        .map(partialToken => {
+                        .map(partialToken => ({
+                          displayName: getTokenDisplayName(selected, partialToken),
+                          partialToken,
+                        }))
+                        .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                        .map(({partialToken, displayName}) => {
                           const partialId = toId(partialToken)
                           return html`
-                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${getTokenDisplayName(selected, partialToken)}</option>
+                            <option value=${toValue(partialToken)} .selected=${partialId === id}>${displayName}</option>
                           `
                         })
                       }
@@ -233,7 +238,14 @@ export class StateEditor extends LitElement {
                 return html`
                     <optgroup label="${type}">
                     ${ completion
-                      .map(token => html`<option value="${toValue(token)}">${getTokenDisplayName(selected, token)}</option>`)
+                      .map(token => ({
+                        displayName: getTokenDisplayName(selected, token),
+                        token,
+                      }))
+                      .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                      .map(({displayName, token}) => {
+                        return html`<option value="${toValue(token)}">${displayName}</option>`
+                      })
                     }
                     </optgroup>
                 `
