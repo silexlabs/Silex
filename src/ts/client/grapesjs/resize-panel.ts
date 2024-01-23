@@ -1,5 +1,4 @@
 export default function(editor) {
-  console.log('resize-panel.ts')
   editor.Panels.addPanel({
     id: 'viewsOptions',
     buttons: [{

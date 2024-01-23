@@ -78,7 +78,7 @@
     "release": "",
     "watch": "npm-watch",
     "start": "node dist/server/server/",
-    "start:debug": "cross-env SILEX_FS_ROOT=`pwd`/.silex cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
+    "start:debug": "cross-env SILEX_FS_ROOT=`pwd`/.silex cross-env SILEX_DEBUG=true SILEX_CLIENT_CONFIG=examples/client-config-transformers.js nodemon --watch dist/server dist/server/server/",
     "prepublishOnly": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "preversion": "$npm_execpath run prepublishOnly",
     "build": "run-s build:css:release build:html build:client:release build:server:release build:plugins:client build:plugins:server",

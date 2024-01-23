@@ -40,6 +40,7 @@ export default async function (config) {
     },
     // Transform files after they are rendered and before they are published
     transformFile(file) {
+      throw new Error('test publication transformer error')
       return file
     }
   })
