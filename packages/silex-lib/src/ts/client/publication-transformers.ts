@@ -148,13 +148,8 @@ export function renderComponents(editor: Editor) {
         c.set('src', src)
       }
       c.toHTML = () => {
-        return config.publicationTransformers.reduce((xxx: string, transformer: PublicationTransformer) => {
-          try {
-            return transformer.renderComponent ? transformer.renderComponent(c, () => xxx) ?? xxx : xxx
-          } catch (e) {
-            console.error('Publication transformer: error rendering component', c, e)
-            return xxx
-          }
+        return config.publicationTransformers.reduce((html: string, transformer: PublicationTransformer) => {
+          return transformer.renderComponent ? transformer.renderComponent(c, () => html) ?? html : html
         }, initialToHTML())
       }
       c.getStyle = () => transformBgImage(editor, initialGetStyle())
@@ -175,18 +170,13 @@ export function renderCssRules(editor: Editor) {
       const initialGetStyle = style.getStyle.bind(style)
       style[ATTRIBUTE_METHOD_STORE_CSS] = style.getStyle
       style.getStyle = () => {
-        try {
-          const initialStyle = transformBgImage(editor, initialGetStyle())
-          const result = config.publicationTransformers.reduce((s: CssRule, transformer: PublicationTransformer) => {
-            return {
-              ...transformer.renderCssRule ? transformer.renderCssRule(s, () => initialStyle) ?? s : s,
-            }
-          }, initialStyle)
-          return result
-        } catch (e) {
-          console.error('Publication transformer: error rendering style', style, e)
-          return initialGetStyle()
-        }
+        const initialStyle = transformBgImage(editor, initialGetStyle())
+        const result = config.publicationTransformers.reduce((s: CssRule, transformer: PublicationTransformer) => {
+          return {
+            ...transformer.renderCssRule ? transformer.renderCssRule(s, () => initialStyle) ?? s : s,
+          }
+        }, initialStyle)
+        return result
       }
     }
   })
@@ -215,13 +205,8 @@ export function transformFiles(editor: Editor, data: PublicationData) {
   const config = editor.getModel().get('config')
   data.files = config.publicationTransformers.reduce((files: ClientSideFile[], transformer: PublicationTransformer) => {
     return files.map((file, idx) => {
-      try {
-        const page = data.pages[idx] ?? null
-        return transformer.transformFile ? transformer.transformFile(file) as ClientSideFile ?? file : file
-      } catch (e) {
-        console.error('Publication transformer: error transforming file', file, e)
-        return file
-      }
+      const page = data.pages[idx] ?? null
+      return transformer.transformFile ? transformer.transformFile(file) as ClientSideFile ?? file : file
     })
   }, data.files)
 }
@@ -233,24 +218,14 @@ export function transformFiles(editor: Editor, data: PublicationData) {
 export function transformPermalink(editor: Editor, path: string, type: ClientSideFileType, initiator: Initiator): string {
   const config = editor.getModel().get('config')
   return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
-    try {
-      return transformer.transformPermalink ? transformer.transformPermalink(result, type, initiator) ?? result : result
-    } catch (e) {
-      console.error('Publication transformer: error transforming path', result, e)
-      return result
-    }
+    return transformer.transformPermalink ? transformer.transformPermalink(result, type, initiator) ?? result : result
   }, path)
 }
 
 export function transformPath(editor: Editor, path: string, type: ClientSideFileType): string {
   const config = editor.getModel().get('config')
   return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
-    try {
-      return transformer.transformPath ? transformer.transformPath(result, type) ?? result : result
-    } catch (e) {
-      console.error('Publication transformer: error transforming path', result, e)
-      return result
-    }
+    return transformer.transformPath ? transformer.transformPath(result, type) ?? result : result
   }, path)
 }
 

@@ -211,22 +211,7 @@ export class PublicationManager {
     }
   }
 
-  /**
-   * Start the publication process
-   * This is the command "publish"
-   */
-  async startPublication() {
-    if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
-    this.status = PublicationStatus.STATUS_PENDING
-    this.job = null
-    this.dialog && this.dialog.displayPending(this.job, this.status)
-    this.editor.trigger(ClientEvent.PUBLISH_START)
-    // User and where to publish
-    const storageUser = this.editor.getModel().get('user') as ConnectorUser
-    if(!storageUser) throw new Error('User not logged in to a storage connector')
-    if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
-    const websiteId = this.options.websiteId
-    const storageId = storageUser.storage.connectorId
+  async getPublicationData(): Promise<PublicationData> {
     // Data to publish
     // See assetUrl.ts which is a default transformer, always present
     this.setPublicationTransformers()
@@ -277,9 +262,33 @@ export class PublicationManager {
       files,
     }
     this.resetPublicationTransformers()
+    // Let plugins transform the data
     transformFiles(this.editor, data)
     this.editor.trigger(ClientEvent.PUBLISH_DATA, data)
+    // Return the data
+    return data
+  }
+
+  /**
+   * Start the publication process
+   * This is the command "publish"
+   */
+  async startPublication() {
     try {
+      if (this.status === PublicationStatus.STATUS_PENDING) throw new Error('Publication is already in progress')
+      this.status = PublicationStatus.STATUS_PENDING
+      this.job = null
+      this.dialog && this.dialog.displayPending(this.job, this.status)
+      this.editor.trigger(ClientEvent.PUBLISH_START)
+      // User and where to publish
+      const storageUser = this.editor.getModel().get('user') as ConnectorUser
+      if(!storageUser) throw new Error('User not logged in to a storage connector')
+      if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
+      const websiteId = this.options.websiteId
+      const storageId = storageUser.storage.connectorId
+      // Get the data to publish
+      const data = await this.getPublicationData()
+      // Use the publication API
       const [url, job] = await publish({
         websiteId,
         hostingId: this.settings.connector.connectorId,
