@@ -35,6 +35,34 @@ export interface DataTreeOptions {
   dataSources: IDataSource[]
 }
 
+export const STANDARD_TYPES: Type[] = [
+  {
+    id: 'string',
+    label: 'String',
+    fields: [],
+  },
+  {
+    id: 'number',
+    label: 'Number',
+    fields: [],
+  },
+  {
+    id: 'boolean',
+    label: 'Boolean',
+    fields: [],
+  },
+  {
+    id: 'date',
+    label: 'Date',
+    fields: [],
+  },
+  {
+    id: 'unknown',
+    label: 'Unknown',
+    fields: [],
+  },
+]
+
 ///**
 // * TODO
 // * Error thrown when a query cannot be built
@@ -127,6 +155,9 @@ export class DataTree {
       if (!type) throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
       return type
     } else {
+      // No data source id: search in standard types
+      const standardType = STANDARD_TYPES.find(type => type.id === typeId.toLowerCase())
+      if(standardType) return standardType
       // No data source id: search in all types
       const type = this.allTypes.find(type => type.id === typeId)
       if (!type) throw new Error(`Unknown type ${typeId}`)

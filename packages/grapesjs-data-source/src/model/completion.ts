@@ -39,6 +39,7 @@ export function getContext(component: Component, dataTree: DataTree): Context {
     if (loopDataState) {
       const loopDataField = getExpressionResultType(loopDataState.expression, parent, dataTree)
       if (loopDataField) {
+        const displayName = (label: string) => `${parent.getName() ?? 'Unknown'}'s ${loopDataField.label} ${label}`
         if (loopDataField.kind === 'list') {
           loopProperties.push({
             type: 'state',
@@ -46,21 +47,42 @@ export function getContext(component: Component, dataTree: DataTree): Context {
             componentId: getOrCreatePersistantId(parent),
             exposed: false,
             forceKind: 'object', // FIXME: this may be a scalar
-            label: loopDataField.label,
+            label: `Loop data (${loopDataField.label})`,
           }, {
             type: 'property',
             propType: 'field',
-            fieldId: 'loopindex0',
-            label: 'Loop index (0 based)',
+            fieldId: 'forloop.index0',
+            label: displayName('forloop.index0'),
             kind: 'scalar',
             typeIds: ['number'],
           }, {
             type: 'property',
             propType: 'field',
-            fieldId: 'loopindex',
-            label: 'Loop index (starts at 1)',
+            fieldId: 'forloop.index',
+            label: displayName('forloop.index'),
             kind: 'scalar',
             typeIds: ['number'],
+          }, {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'forloop.length',
+            label: displayName('forloop.length'),
+            kind: 'scalar',
+            typeIds: ['number'],
+          }, {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'forloop.first',
+            label: displayName('forloop.first'),
+            kind: 'scalar',
+            typeIds: ['boolean'],
+          }, {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'forloop.last',
+            label: displayName('forloop.last'),
+            kind: 'scalar',
+            typeIds: ['boolean'],
           })
         } else {
           console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)

@@ -145,7 +145,7 @@ export class PropertiesEditor extends LitElement {
       </section>
       <section class="ds-section">
         <div>
-          <label class="gjs-traits-label ds-label">Repeat</label>
+          <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
           ${this.renderStateEditor(selected, 'Data', Properties.__data, false)}
