@@ -168,7 +168,6 @@ export function getState(component: Component, id: StateId, exported: boolean = 
   const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
   const state = states.find(state => state.id === id) ?? null
   if(!state) {
-    console.error(`State ${id} not found`)
     return null
   }
   return {
