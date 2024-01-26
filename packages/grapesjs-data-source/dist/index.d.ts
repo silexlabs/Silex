@@ -14,6 +14,7 @@ export interface DataTreeOptions {
 	filters: Partial<Filter>[] | string;
 	dataSources: IDataSource[];
 }
+export declare const STANDARD_TYPES: Type[];
 export declare class DataTree {
 	protected editor: DataSourceEditor;
 	protected options: {
@@ -330,6 +331,9 @@ export interface StoredState {
 	hidden?: boolean;
 	expression: Expression;
 }
+export interface StoredStateWithId extends StoredState {
+	id: StateId;
+}
 export type PersistantId = string;
 /**
  * Get the persistant ID of a component
@@ -351,12 +355,19 @@ export declare function getChildByPersistantId(id: PersistantId, parent: Compone
  * Find a component by its persistant ID in the current page
  */
 export declare function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null;
+/**
+ * Get the display name of a state
+ */
 export declare function getStateDisplayName(child: Component, state: State): string;
 export declare function onStateChange(callback: (state: StoredState | null, component: Component) => void): () => void;
 /**
  * List all exported states
  */
 export declare function getStateIds(component: Component, exported?: boolean): StateId[];
+/**
+ * List all exported states
+ */
+export declare function getStates(component: Component, exported?: boolean): StoredState[];
 /**
  * Get the name of a state variable
  * Useful to generate code
@@ -365,9 +376,10 @@ export declare function getStateVariableName(componentId: string, stateId: State
 /**
  * Get a state
  */
-export declare function getState(component: Component, id: StateId, exported?: boolean): StoredState;
+export declare function getState(component: Component, id: StateId, exported?: boolean): StoredState | null;
 /**
  * Set a state
+ * The state will be updated or created at the end of the list
  */
 export declare function setState(component: Component, id: StateId, state: StoredState, exported?: boolean): void;
 /**

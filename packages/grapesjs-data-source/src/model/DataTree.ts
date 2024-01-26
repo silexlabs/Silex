@@ -17,7 +17,7 @@
 
 import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Token, Tree, Type, TypeId } from '../types'
-import { getStateIds, getState, getComponentByPersistentId, getParentByPersistentId } from './state'
+import { getStateIds, getState, getComponentByPersistentId, getParentByPersistentId, getStates } from './state'
 import { fromStored, getOptionObject } from './token'
 import { getComponentDebug, toExpression } from '../utils'
 
@@ -233,20 +233,16 @@ export class DataTree {
       // Visible states (custom / user defined)
       .concat(
         // For each state
-        getStateIds(component, true)
-          // Get its expression
-          .map(stateId => getState(component, stateId, true)?.expression)
+        getStates(component, true)
           // Add the component
-          .map(expression => ({expression, component}))
+          .map(({expression}) => ({expression, component}))
       )
       // Hidden states (loop / internals)
       .concat(
         // For each state
-        getStateIds(component, false)
-          // Get its expression
-          .map(stateId => getState(component, stateId, false)?.expression)
+        getStates(component, false)
           // Add the component
-          .map(expression => ({expression, component}))
+          .map(({expression}) => ({expression, component}))
       )
   }
 

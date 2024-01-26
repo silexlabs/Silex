@@ -23,14 +23,14 @@ import grapesjs, { Editor, Component } from 'grapesjs'
 import { DataTree } from './DataTree'
 import { Type, Filter, Property, Expression, Tree } from '../types'
 import { DataSourceEditor } from '..'
-import { getState, getStateIds } from './state'
+import { getStates } from './state'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
 // Mock only getState
 jest.mock('./state', () => ({
   ...jest.requireActual('./state'),
   getState: jest.fn(),
-  getStateIds: jest.fn(),
+  getStates: jest.fn(),
   getOrCreatePersistantId: jest.fn(),
   getParentByPersistentId: jest.fn(),
 }))
@@ -45,7 +45,7 @@ let editor: Editor
 let firstComponent: Component
 beforeEach(async () => {
   jest.resetAllMocks()
-  ;(getStateIds as jest.Mock).mockReturnValue([]) // Default for getStateIds
+  ;(getStates as jest.Mock).mockReturnValue([]) // Default for getStates
   editor = grapesjs.init({
     container: document.createElement('div'),
     components: '<div></div>',
@@ -69,7 +69,7 @@ test('Find type from  id', () => {
   }]})
 
   // Type not found
-  expect(() => dataTree.getType('unknown', null)).toThrow()
+  expect(() => dataTree.getType('unknown type', null)).toThrow()
 
   // Type found
   const type = dataTree.getType('testTypeId', null)
@@ -78,7 +78,7 @@ test('Find type from  id', () => {
 
   // With data source id
   expect(dataTree.getType('testTypeId', testDataSourceId)).not.toBeNull()
-  expect(() => dataTree.getType('testTypeId', 'unknown')).toThrow()
+  expect(() => dataTree.getType('testTypeId', 'unknown type')).toThrow()
 })
 
 test('Expressions to tree', () => {
@@ -1195,11 +1195,10 @@ test('Get experessions used by a component', () => {
       kind: 'object',
       dataSourceId: testDataSourceId,
     }] as Property[]
-  ;(getStateIds as jest.Mock).mockReturnValueOnce(['testStateId'])
-  ;(getState as jest.Mock).mockImplementation(() => ({
+  ;(getStates as jest.Mock).mockReturnValue([{
     expression,
-  }))
-  expect(dataTree.getComponentExpressions(component)).toEqual([expression])
+  }])
+  expect(dataTree.getComponentExpressions(component)[0].expression).toBe(expression)
 })
 
 test('Get experessions used by a component and its children', () => {

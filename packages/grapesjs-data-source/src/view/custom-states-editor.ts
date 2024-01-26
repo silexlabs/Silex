@@ -127,9 +127,9 @@ export class CustomStatesEditor extends LitElement {
       .map(stateId => ({
         name: stateId,
         publicState: this.type === Type.States,
-        state: this.getState(selected, stateId),
+        state: this.getState(selected, stateId)!,
       }))
-      .filter(item => !item.state.hidden)
+      .filter(item => item.state && !item.state.hidden)
     const result =  html`
       ${this.getHead(selected)}
       <div class="ds-states">
@@ -204,7 +204,7 @@ export class CustomStatesEditor extends LitElement {
   /**
    * Get the states for this type of editor
    */
-  getState(component: Component, name: string): StoredState {
+  getState(component: Component, name: string): StoredState | null {
     return getState(component, name, this.type === Type.States)
   }
 

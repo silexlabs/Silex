@@ -49,6 +49,10 @@ export interface StoredState {
   expression: Expression
 }
 
+export interface StoredStateWithId extends StoredState {
+  id: StateId
+}
+
 export type PersistantId = string
 
 /**
@@ -103,6 +107,9 @@ export function getParentByPersistentId(id: PersistantId, component: Component |
   return getParentByPersistentId(id, component.parent())
 }
 
+/**
+ * Get the display name of a state
+ */
 export function getStateDisplayName(child: Component, state: State): string {
   const component = getParentByPersistentId(state.componentId, child)
   //const name = component?.getName() ?? '[Not found]'
@@ -130,7 +137,20 @@ function fireChange(state: StoredState | null, component: Component) {
  * List all exported states
  */
 export function getStateIds(component: Component, exported: boolean = true): StateId[] {
-  return Object.keys(component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) ?? {})
+  const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
+  return states.map(state => state.id)
+}
+
+/**
+ * List all exported states
+ */
+export function getStates(component: Component, exported: boolean = true): StoredState[] {
+  const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
+  return states.map(state => ({
+    label: state.label,
+    hidden: state.hidden,
+    expression: state.expression,
+  }))
 }
 
 /**
@@ -144,21 +164,46 @@ export function getStateVariableName(componentId: string, stateId: StateId): str
 /**
  * Get a state
  */
-export function getState(component: Component, id: StateId, exported: boolean = true): StoredState {
-  const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) ?? {}
-  return states[id]
+export function getState(component: Component, id: StateId, exported: boolean = true): StoredState | null {
+  const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
+  const state = states.find(state => state.id === id) ?? null
+  if(!state) {
+    console.error(`State ${id} not found`)
+    return null
+  }
+  return {
+    label: state.label,
+    hidden: state.hidden,
+    expression: state.expression,
+  }
 }
 
 /**
  * Set a state
+ * The state will be updated or created at the end of the list
  */
 export function setState(component: Component, id: StateId, state: StoredState, exported: boolean = true): void {
   const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
-  component.set(key, {
-    ...component.get(key) ?? {},
-    [id]: state,
-  })
-  fireChange(state, component)
+  const states = component.get(key) as StoredStateWithId[] ?? []
+  const existing = states.find(s => s.id === id) ?? null
+  if(existing) {
+    existing.label = state.label
+    existing.hidden = state.hidden
+    existing.expression = state.expression
+  } else {
+    component.set(key, [
+      ...states,
+      {
+        id,
+        ...state,
+      }
+    ])
+  }
+  fireChange({
+    label: state.label,
+    hidden: state.hidden,
+    expression: state.expression,
+  }, component)
 }
 
 /**
@@ -166,12 +211,8 @@ export function setState(component: Component, id: StateId, state: StoredState, 
  */
 export function removeState(component: Component, id: StateId, exported: boolean = true): void {
   const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
-  const states = component.get(key) ?? {}
-  const newState = {
-    ...states,
-    [id]: undefined,
-  } // This is needed to fire component:update
-  delete newState[id]
-  component.set(key, newState)
+  const states = component.get(key) as StoredStateWithId[] ?? []
+  const newStates = states.filter(s => s.id !== id)
+  component.set(key, newStates)
   fireChange(null, component)
 }
