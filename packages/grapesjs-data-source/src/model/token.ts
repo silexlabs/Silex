@@ -7,6 +7,7 @@ import { TemplateResult, html } from "lit"
 /**
  * Add missing methonds to the filter
  * When filters are stored they lose their methods
+ * @throws Error if the filter is not found
  */
 export function getFilterFromToken(token: Filter, filters: Filter[]): Filter {
   if(token.type !== 'filter') throw new Error('Token is not a filter')
@@ -25,6 +26,7 @@ export function getFilterFromToken(token: Filter, filters: Filter[]): Filter {
 
 /**
  * Get the token from its stored form
+ * @throws Error if the token type is not found
  */
 export function fromStored < T extends Token = Token > (token: StoredToken, dataTree: DataTree): T {
   switch (token.type) {
@@ -66,14 +68,26 @@ export function fromStored < T extends Token = Token > (token: StoredToken, data
 export function tokenToField(token: Token, prev: Field | null, component: Component, dataTree: DataTree): Field | null {
   switch (token.type) {
     case 'filter': {
-      const filter = getFilterFromToken(token, dataTree.filters)
-      if (filter.validate(prev)) {
-        return filter.output(prev, filter.options ?? {})
+      try {
+        const filter = getFilterFromToken(token, dataTree.filters)
+        if (filter.validate(prev)) {
+          return filter.output(prev, filter.options ?? {})
+        }
+        return null
+      } catch (e) {
+        // FIXME: notify user
+        console.error('Error while getting filter result type', token, prev, component, dataTree)
+        return null
       }
-      return null
     }
     case 'property':
-      return propertyToField(token, dataTree)
+      try {
+        return propertyToField(token, dataTree)
+      } catch (e) {
+        // FIXME: notify user
+        console.error('Error while getting property result type', token, component, dataTree)
+        return null
+      }
     case 'state': {
       const parent = getParentByPersistentId(token.componentId, component)
       if (!parent) {
@@ -87,11 +101,17 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
         // TODO: notification
         return null
       }
-      const field = getExpressionResultType(expression, parent, dataTree)
-      return field ? {
-        ...field,
-        kind: token.forceKind ?? field.kind,
-      } : null
+      try {
+        const field = getExpressionResultType(expression, parent, dataTree)
+        return field ? {
+          ...field,
+          kind: token.forceKind ?? field.kind,
+        } : null
+      } catch (e) {
+        // FIXME: notify user
+        console.error('Error while getting expression result type', expression, parent, dataTree)
+        return null
+      }
     }
     default:
       console.error('Unknown token type (reading type)', token)
@@ -99,6 +119,10 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
   }
 }
 
+/**
+ * Get the type corresponding to a property
+ * @throws Error if the type is not found
+ */
 export function propertyToField(property: Property, dataTree: DataTree): Field {
   const typeNames = property.typeIds
     .map((typeId: TypeId) => dataTree.getType(typeId, property.dataSourceId ?? null))
@@ -125,25 +149,33 @@ export function propertyToField(property: Property, dataTree: DataTree): Field {
 export function expressionToFields(expression: Expression, component: Component, dataTree: DataTree): Field[] {
   // Resolve type of the expression 1 step at a time
   let prev: Field | null = null
+  const unknownField: Field = {
+    id: 'unknown',
+    label: 'unknown',
+    typeIds: [],
+    kind: 'scalar',
+  }
   return expression.map((token) => {
-    const field = tokenToField(fromStored(token, dataTree), prev, component, dataTree)
-    if (!field) {
-      console.warn('Type not found for token in expressionToFields', { token, expression })
-      return {
-        id: 'unknown',
-        label: 'unknown',
-        typeIds: [],
-        kind: 'scalar',
+    try {
+      const field = tokenToField(fromStored(token, dataTree), prev, component, dataTree)
+      if (!field) {
+        console.warn('Type not found for token in expressionToFields', { token, expression })
+        return unknownField
       }
+      prev = field
+      return field
+    } catch (e) {
+      // FIXME: notify user
+      console.error('Error while getting expression result type', expression, component, dataTree)
+      return unknownField
     }
-    prev = field
-    return field
   })
 }
 
 /**
  * Evaluate an expression to a type
  * This is used to validate expressions and for autocompletion
+ * @throws Error if the token type is not found
  */
 export function getExpressionResultType(expression: Expression, component: Component, dataTree: DataTree): Field | null {
   // Resolve type of the expression 1 step at a time

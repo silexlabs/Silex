@@ -37,58 +37,62 @@ export function getContext(component: Component, dataTree: DataTree): Context {
     //if (parent !== component) {
     const loopDataState = getState(parent, '__data', false)
     if (loopDataState) {
-      const loopDataField = getExpressionResultType(loopDataState.expression, parent, dataTree)
-      if (loopDataField) {
-        const displayName = (label: string) => `${parent.getName() ?? 'Unknown'}'s ${loopDataField.label} ${label}`
-        if (loopDataField.kind === 'list') {
-          loopProperties.push({
-            type: 'state',
-            storedStateId: '__data',
-            componentId: getOrCreatePersistantId(parent),
-            exposed: false,
-            forceKind: 'object', // FIXME: this may be a scalar
-            label: `Loop data (${loopDataField.label})`,
-          }, {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'forloop.index0',
-            label: displayName('forloop.index0'),
-            kind: 'scalar',
-            typeIds: ['number'],
-          }, {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'forloop.index',
-            label: displayName('forloop.index'),
-            kind: 'scalar',
-            typeIds: ['number'],
-          }, {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'forloop.length',
-            label: displayName('forloop.length'),
-            kind: 'scalar',
-            typeIds: ['number'],
-          }, {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'forloop.first',
-            label: displayName('forloop.first'),
-            kind: 'scalar',
-            typeIds: ['boolean'],
-          }, {
-            type: 'property',
-            propType: 'field',
-            fieldId: 'forloop.last',
-            label: displayName('forloop.last'),
-            kind: 'scalar',
-            typeIds: ['boolean'],
-          })
+      try {
+        const loopDataField = getExpressionResultType(loopDataState.expression, parent, dataTree)
+        if (loopDataField) {
+          const displayName = (label: string) => `${parent.getName() ?? 'Unknown'}'s ${loopDataField.label} ${label}`
+          if (loopDataField.kind === 'list') {
+            loopProperties.push({
+              type: 'state',
+              storedStateId: '__data',
+              componentId: getOrCreatePersistantId(parent),
+              exposed: false,
+              forceKind: 'object', // FIXME: this may be a scalar
+              label: `Loop data (${loopDataField.label})`,
+            }, {
+              type: 'property',
+              propType: 'field',
+              fieldId: 'forloop.index0',
+              label: displayName('forloop.index0'),
+              kind: 'scalar',
+              typeIds: ['number'],
+            }, {
+              type: 'property',
+              propType: 'field',
+              fieldId: 'forloop.index',
+              label: displayName('forloop.index'),
+              kind: 'scalar',
+              typeIds: ['number'],
+            }, {
+              type: 'property',
+              propType: 'field',
+              fieldId: 'forloop.length',
+              label: displayName('forloop.length'),
+              kind: 'scalar',
+              typeIds: ['number'],
+            }, {
+              type: 'property',
+              propType: 'field',
+              fieldId: 'forloop.first',
+              label: displayName('forloop.first'),
+              kind: 'scalar',
+              typeIds: ['boolean'],
+            }, {
+              type: 'property',
+              propType: 'field',
+              fieldId: 'forloop.last',
+              label: displayName('forloop.last'),
+              kind: 'scalar',
+              typeIds: ['boolean'],
+            })
+          } else {
+            console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
+          }
         } else {
-          console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
+          console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
         }
-      } else {
-        console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
+      } catch (e) {
+        console.error('Error while getting loop data for component', parent, 'and state', loopDataState)
       }
     }
     //}

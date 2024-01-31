@@ -77,8 +77,14 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
         case 'property': {
           if(token.dataSourceId) {
             if(expression.length > 0) {
-              const type = getExpressionResultType(expression, component, editor.DataSourceManager.getDataTree())
-              label = type?.label ?? type?.id ?? 'Unknown'
+              try {
+                const type = getExpressionResultType(expression, component, editor.DataSourceManager.getDataTree())
+                label = type?.label ?? type?.id ?? 'Unknown'
+              } catch(e) {
+                // FIXME: notify user
+                console.error('Error while getting expression result type', expression, component, editor.DataSourceManager.getDataTree())
+                label = 'Unknown'
+              }
             } else {
               const dataSource: IDataSourceModel = editor.DataSourceManager.get(token.dataSourceId)
               if(dataSource) {
@@ -159,6 +165,7 @@ export function toId(token: Token): string {
 
 /**
  * Revert an option's tag value to a token
+ * @throws Error if the token type is not found
  */
 export function fromString(editor: DataSourceEditor, id: string): Token {
   return fromStored(JSON.parse(id), editor.DataSourceManager.getDataTree()) as Token
@@ -227,6 +234,7 @@ export function convertKind(field: Field | null, from: FieldKind, to: FieldKind)
 
 /**
  * Get the type of a field, as provided by the data source
+ * @throws Error if the field has a token with an unknown type
  */
 export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null {
   const dataTree = editor.DataSourceManager.getDataTree()
@@ -251,6 +259,7 @@ export function getFieldType(editor: DataSourceEditor, field: Field | null, key:
 
 /**
  * Generate a form to edit the options of a token
+ * @throws Error if the field has a token with an unknown type
  */
 export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult {
   const dataTree = editor.DataSourceManager.getDataTree()

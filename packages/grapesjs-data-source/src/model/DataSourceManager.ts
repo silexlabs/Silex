@@ -16,11 +16,11 @@
  */
 
 import Backbone from "backbone"
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Expression, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from "../types"
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from "../types"
 import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug } from ".."
 import { DataTree } from "./DataTree"
 import { Component, Page } from "grapesjs"
-import { StoredState, getComponentByPersistentId, onStateChange } from "./state"
+import { StoredState, onStateChange } from "./state"
 import getLiquidFilters from "../filters/liquid"
 import getGenericFilters from "../filters/generic"
 

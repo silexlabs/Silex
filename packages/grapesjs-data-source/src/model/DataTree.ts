@@ -16,8 +16,8 @@
  */
 
 import { Component, Page } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Token, Tree, Type, TypeId } from '../types'
-import { getStateIds, getState, getComponentByPersistentId, getParentByPersistentId, getStates } from './state'
+import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
+import { getState, getParentByPersistentId, getStates } from './state'
 import { fromStored, getOptionObject } from './token'
 import { getComponentDebug, toExpression } from '../utils'
 
@@ -141,6 +141,7 @@ export class DataTree {
 
   /**
    * Get type from typeId and dataSourceId
+   * @throws Error if type is not found
    */
   getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type {
     if(dataSourceId) {

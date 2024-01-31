@@ -86,7 +86,24 @@ export class StateEditor extends LitElement {
       const ids = input.value
       return ids
         .filter(id => !!id)
-        .map(id => fromString(this.editor!, id))
+        .map(id => {
+          try {
+            return fromString(this.editor!, id)
+          } catch(e) {
+            // FIXME: notify user
+            console.error(`Error while getting token from id ${id}`, e)
+            // Return unknown
+            return {
+              type: 'property',
+              propType: 'field',
+              fieldId: 'unknown',
+              label: 'Unknown',
+              kind: 'scalar',
+              typeIds: [],
+              options: {},
+            } as Property
+          }
+        })
         // Here the data is missing options as data comes from completion
         // Add the options
         .map((token, idx) => {
@@ -282,7 +299,24 @@ export class StateEditor extends LitElement {
     // Get tokens as objects
     const tokens = tokensStrings
       .filter(id => !!id)
-      .map(id => fromString(this.editor!, id))
+      .map(id => {
+        try {
+          return fromString(this.editor!, id)
+        } catch(e) {
+          // FIXME: notify user
+          console.log('Error while getting token from string', {id}, e)
+          // Return unknown
+          return {
+            type: 'property',
+            propType: 'field',
+            fieldId: 'unknown',
+            label: 'Unknown',
+            kind: 'scalar',
+            typeIds: [],
+            options: {},
+          } as Property
+        }
+      })
     // Get the selected options
     const options = input.options
       .filter(o => o.selected)
@@ -305,7 +339,15 @@ export class StateEditor extends LitElement {
     const token = tokens[idx]
     const beforeToken = tokens.slice(0, idx)
     const fields = beforeToken
-      .map(token => getExpressionResultType(tokens.concat(token), component, dataTree))
+      .map(token => {
+        try {
+          return getExpressionResultType(tokens.concat(token), component, dataTree)
+        } catch(e) {
+          // FIXME: notify the user
+          console.error(`Error while getting expression result type for token ${token} on component ${component.getName()}#${component.get('id')}.${component.getClasses().join('.')} (${component.cid})`, e)
+          return null
+        }
+      })
 
     switch(token.type) {
       case 'property':
