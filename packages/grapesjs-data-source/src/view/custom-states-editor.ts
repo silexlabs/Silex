@@ -254,7 +254,22 @@ export class CustomStatesEditor extends LitElement {
   getTokens(dataTree: DataTree, component: Component, name: string): Token[] {
     const state = this.getState(component, name)
     if(!state || !state.expression) return []
-    return state.expression.map(token => fromStored(token, dataTree))
+    return state.expression.map(token => {
+      try {
+        return fromStored(token, dataTree)
+      } catch (e) {
+        // FIXME: notify user
+        console.error('Error while getting expression result type', state.expression, component, dataTree)
+        return {
+          type: 'property',
+          propType: 'field',
+          fieldId: 'unknown',
+          label: 'unknown',
+          kind: 'scalar',
+          typeIds: [],
+        }
+      }
+    })
   }
 
   /**
