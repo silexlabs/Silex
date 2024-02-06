@@ -42,10 +42,8 @@ throw 'This plugin is deprecated. Use the publication renderer plugin instead.'
 */
 
 import { getPageSlug } from '../../page.js'
-import { ClientSideFile } from '../../types.js'
 import { onAll } from '../../client/utils.js'
 import { ClientEvent } from '../../client/events.js'
-import { Page } from 'grapesjs'
 
 export default (config, opts: any = {}) => {
   const options = {
@@ -147,28 +145,5 @@ export default (config, opts: any = {}) => {
           })
       }
     })
-    //editor.on(ClientEvent.PUBLISH_DATA, data => {
-    //  data.pages.forEach((page: Page, idx) => {
-    //    const file = data.files[idx] as ClientSideFile
-    //    console.log('Silex: publication renderer: page', page, file)
-    //    // CSS
-    //    if(file.type === 'css') {
-    //    file.cssPath = file.cssPath.replace(/\.css$/, options.css.ext)
-    //    file.cssPath = options.css.path + file.cssPath
-    //    if (options.css.frontMatter) {
-    //      file.css = `---\npermalink: ${options.css.url}/${page.slug}.css\n---\n${file.css}`
-    //    }
-    //    // HTML
-    //    file.htmlPath = file.htmlPath.replace(/\.html$/, options.html.ext)
-    //    file.htmlPath = options.html.path + file.htmlPath
-    //    if (options.html.frontMatter) {
-    //      file.html = `---\npermalink: ${options.html.url}/${page.slug}.html\n---\n${file.html}`
-    //    }
-    //  })
-    //  data.assets.forEach((asset, idx) => {
-    //    asset.path = options.assets.path + asset.src
-    //    // The rest is handled by the editor.Css.getAll loop
-    //  })
-    //})
   })
 }

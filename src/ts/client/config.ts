@@ -26,6 +26,9 @@ import { assetsPublicationTransformer } from './assetUrl'
 import { SettingsSection } from './grapesjs/settings-sections'
 import { addSection, removeSection } from './grapesjs/settings'
 
+// Plugins
+import publishCustomCodeBlock from './publish-custom-code-block'
+
 /**
  * @fileoverview Silex client side config
  */
@@ -160,5 +163,12 @@ export class ClientConfig extends Config {
    */
   removeSettings(id: string, siteOrPage: 'site' | 'page') {
     removeSection(id, siteOrPage)
+  }
+
+  /**
+   * Add default plugins
+   */
+  async addDefaultPlugins() {
+    await this.addPlugin(publishCustomCodeBlock, {})
   }
 }
