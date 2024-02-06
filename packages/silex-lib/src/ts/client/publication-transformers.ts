@@ -108,7 +108,6 @@ export function validatePublicationTransformer(transformer: PublicationTransform
   })
 }
 
-
 /**
  * Alter the components rendering
  * Exported for unit tests

@@ -16,32 +16,18 @@
  */
 
 /**
- * @fileoverview Run Silex with publication transformers
- * Start silex with the environment variable SILEX_CLIENT_CONFIG or the CLI option --client-config set to this file
+ * @fileoverview Make sure custom script blocks include script tags when published
  */
 
 export default async function (config) {
   config.addPublicationTransformers({
-    // Override how components render at publication by grapesjs
     renderComponent(component, toHtml) {
+      if (component.get('type') === 'custom-code' && component.get('custom-code-plugin__code')) {
+        return component.get('custom-code-plugin__code')
+      }
       return toHtml()
     },
-    // Override how styles render at publication by grapesjs
-    renderCssRule(rule, initialCss) {
-      return initialCss()
-    },
-    // Define how files are named
-    transformPath(path) {
-      return path
-    },
-    // Difine files URLs
-    transformPermalink(link, type, initiator) {
-      return link
-    },
-    // Transform files after they are rendered and before they are published
-    transformFile(file) {
-      return file
-    }
   })
 }
+
 
