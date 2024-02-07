@@ -54,6 +54,15 @@ export class CustomStatesEditor extends LitElement {
   @property({type: String})
   title = 'Custom states'
 
+  @property({type: Boolean, attribute: 'default-fixed'})
+  defaultFixed = false
+
+  @property({type: String, attribute: 'create-prompt'})
+  createPrompt = 'Name this state'
+
+  @property({type: String, attribute: 'rename-prompt'})
+  renamePrompt = 'Rename this state'
+
   private editor: DataSourceEditor | null = null
   private redrawing = false
 
@@ -227,6 +236,7 @@ export class CustomStatesEditor extends LitElement {
       <state-editor
         id="${name}"
         name=${name}
+        default-fixed=${this.defaultFixed}
         ${ref(el => {
           if (el) {
             const stateEditor = el as StateEditor
@@ -276,7 +286,7 @@ export class CustomStatesEditor extends LitElement {
    * Rename a custom state
    */
   renameCustomState(item: Item): Item {
-    const label = prompt('Rename this state', item.state.label)
+    const label = prompt(this.renamePrompt, item.state.label)
       ?.toLowerCase()
       ?.replace(/[^a-z0-9]/g, '-')
       ?.replace(/^-+|-+$/g, '')
@@ -311,7 +321,7 @@ export class CustomStatesEditor extends LitElement {
    * Create a new custom state
    */
   createCustomState(component: Component): Item | null {
-    const label = prompt('Name this state', 'New state')
+    const label = prompt(this.createPrompt, 'New state')
       ?.toLowerCase()
       ?.replace(/[^a-z0-9]/g, '-')
       ?.replace(/^-+|-+$/g, '')

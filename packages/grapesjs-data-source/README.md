@@ -103,7 +103,7 @@ const editor = grapesjs.init({
         headers: {},
       }],
       properties: {
-        appendTo: () => editor.Panels.getPanel('views-container').view.el,
+        el: () => editor.Panels.getPanel('views-container').view.el,
         button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
       },
       filters: 'liquid',
@@ -165,7 +165,7 @@ grapesjs.init({
         },
       ],
       properties: {
-        appendTo: () => editor.Panels.getPanel('views-container').view.el,
+        el: () => editor.Panels.getPanel('views-container').view.el,
         button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
       },
       filters: 'liquid',
@@ -235,10 +235,11 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
 | `dataSources` | List of data sources, see config examples and the plugin code for docs ([data source options](./src/index.ts) and [GraphQL data source options](./src/datasources/GraphQL.ts)) | `[]` |
 | `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/liquid.ts`) | `[]` |
 | `view` | Options for the UI | `[]` |
-| `view.appendTo` | Where to attach the UI (the state inputs). It can be a string or an HTMLElement or a function | `.gjs-pn-panel.gjs-pn-views-container` |
+| `view.el` | UI element to attach properties, states, attributes, loop | `.gjs-pn-panel.gjs-pn-views-container` |
 | `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide the UI | `undefined` which means no button |
 | `view.styles` | CSS styles which are applied to the UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 | `view.optionsStyles` | CSS styles which are applied to each "expression selector" UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
+| `view.defaultFixed` | If true, the UI shows fixed by default or if false it shows expression by default | `false` |
 
 ## Download
 

@@ -29,6 +29,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
   if (opts.el) {
     const options: DataSourceEditorViewOptions = {
       styles: PROPERTY_STYLES,
+      defaultFixed: false,
       ...opts,
     }
 
@@ -41,6 +42,9 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
       <custom-states-editor
         type="states"
         title="States"
+        default-fixed=${options.defaultFixed}
+        create-prompt="Create a new state"
+        rename-prompt="Rename the state"
         >
         <style>
           ${options.styles}
@@ -49,12 +53,17 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
       <custom-states-editor
         type="attributes"
         title="Attributes"
+        default-fixed=${options.defaultFixed}
+        create-prompt="Name of the attribute"
+        rename-prompt="Rename the attribute"
         >
         <style>
           ${options.styles}
         </style>
       </custom-states-editor>
-      <properties-editor>
+      <properties-editor
+        default-fixed=${options.defaultFixed}
+      >
         <style>
           ${options.styles}
         </style>

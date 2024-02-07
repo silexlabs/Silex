@@ -44,6 +44,7 @@ export declare class DataTree {
 	getTypes(dataSourceId?: DataSourceId): Type[];
 	/**
 	 * Get type from typeId and dataSourceId
+	 * @throws Error if type is not found
 	 */
 	getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type;
 	/**
@@ -157,6 +158,7 @@ export interface DataSourceEditorViewOptions {
 	button?: Button | (() => Button);
 	styles?: string;
 	optionsStyles?: string;
+	defaultFixed?: boolean;
 }
 /**
  * Options for the DataSourceEditor plugin
@@ -389,16 +391,22 @@ export declare function removeState(component: Component, id: StateId, exported?
 /**
  * Add missing methonds to the filter
  * When filters are stored they lose their methods
+ * @throws Error if the filter is not found
  */
 export declare function getFilterFromToken(token: Filter, filters: Filter[]): Filter;
 /**
  * Get the token from its stored form
+ * @throws Error if the token type is not found
  */
 export declare function fromStored<T extends Token = Token>(token: StoredToken, dataTree: DataTree): T;
 /**
  * Get the type corresponding to a token
  */
 export declare function tokenToField(token: Token, prev: Field | null, component: Component, dataTree: DataTree): Field | null;
+/**
+ * Get the type corresponding to a property
+ * @throws Error if the type is not found
+ */
 export declare function propertyToField(property: Property, dataTree: DataTree): Field;
 /**
  * Evaluate the types of each token in an expression
@@ -407,6 +415,7 @@ export declare function expressionToFields(expression: Expression, component: Co
 /**
  * Evaluate an expression to a type
  * This is used to validate expressions and for autocompletion
+ * @throws Error if the token type is not found
  */
 export declare function getExpressionResultType(expression: Expression, component: Component, dataTree: DataTree): Field | null;
 /**
@@ -479,6 +488,7 @@ export declare function toValue(token: Token): string;
 export declare function toId(token: Token): string;
 /**
  * Revert an option's tag value to a token
+ * @throws Error if the token type is not found
  */
 export declare function fromString(editor: DataSourceEditor, id: string): Token;
 /**
@@ -495,10 +505,12 @@ export declare function toExpression(json: unknown | string): Expression | null;
 export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
 /**
  * Get the type of a field, as provided by the data source
+ * @throws Error if the field has a token with an unknown type
  */
 export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null;
 /**
  * Generate a form to edit the options of a token
+ * @throws Error if the field has a token with an unknown type
  */
 export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
 declare const _default: (editor: DataSourceEditor, opts?: Partial<DataSourceEditorOptions>) => void;

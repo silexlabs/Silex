@@ -58,6 +58,9 @@ export class StateEditor extends LitElement {
   @property({type: String, attribute: 'root-type'})
   rootType = ''
 
+  @property({type: Boolean, attribute: 'default-fixed'})
+  defaultFixed = false
+
   /**
    * Value string for for submissions
    */
@@ -158,13 +161,24 @@ export class StateEditor extends LitElement {
     const dataTree = this.editor.DataSourceManager.getDataTree()
     const _currentValue = this._data
 
-    const fixed = _currentValue?.length === 1 && _currentValue[0].type === 'property' && _currentValue[0].fieldId === FIXED_TOKEN_ID
-    const text = fixed ? (_currentValue![0] as Property).options?.value || '' : ''
+    // Get the data to show in the "+" drop down
     const rawCompletion = getCompletion(selected, _currentValue || [], dataTree, this.rootType)
     const completion = this.noFilters ? rawCompletion
       .filter(token => token.type !== 'filter')
       : rawCompletion
     const groupedCompletion = groupByType(this.editor, selected, completion, _currentValue)
+
+    // Check if the expression has a fixed value and nothing else
+    const fixed = (_currentValue?.length === 1 && _currentValue[0].type === 'property' && _currentValue[0].fieldId === FIXED_TOKEN_ID)
+      // If the value is empty and the default is fixed, then the input is fixed
+      || (this.defaultFixed && _currentValue.length === 0)
+      // If there is no completion and the value is empty
+      || (completion.length === 0 && _currentValue.length === 0)
+
+    // Fixed text
+    const text = fixed ? (_currentValue![0] as Property)?.options?.value || '' : ''
+
+    // Build the expression input
     const result = html`
       <expression-input
         @change=${(event: Event) => this.onChangeValue(event)}
@@ -304,7 +318,7 @@ export class StateEditor extends LitElement {
           return fromString(this.editor!, id)
         } catch(e) {
           // FIXME: notify user
-          console.log('Error while getting token from string', {id}, e)
+          console.error('Error while getting token from string', {id}, e)
           // Return unknown
           return {
             type: 'property',

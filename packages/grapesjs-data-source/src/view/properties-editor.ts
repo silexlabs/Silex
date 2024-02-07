@@ -46,6 +46,9 @@ export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
   disabled = false
 
+  @property({type: Boolean, attribute: 'default-fixed'})
+  defaultFixed = false
+
   inputs: Record<Properties, {stateEditor: StateEditor, selected: Component | undefined} | undefined> = {
     innerHTML: undefined,
     condition: undefined,
@@ -170,6 +173,7 @@ export class PropertiesEditor extends LitElement {
       <state-editor
         id="${name}"
         name=${name}
+        default-fixed=${this.defaultFixed}
         ${ref(el => {
           // Get the stateEditor ref
           if (el) {

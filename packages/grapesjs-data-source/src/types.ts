@@ -32,6 +32,7 @@ export interface DataSourceEditorViewOptions {
   button?: Button | (() => Button)
   styles?: string
   optionsStyles?: string
+  defaultFixed?: boolean
 }
 
 /**
