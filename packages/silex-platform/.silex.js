@@ -3,6 +3,8 @@ const FtpConnector = require('@silexlabs/silex/dist/plugins/server/plugins/serve
 const DownloadPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/DownloadConnector').default
 const GitlabConnector = require('@silexlabs/silex/dist/plugins/server/plugins/server/GitlabConnector').default
 const dash = require('@silexlabs/silex-dashboard')
+const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
+const node_modules = require('node_modules-path')
 
 module.exports = async function (config) {
   await config.addPlugin(dash)
@@ -24,4 +26,14 @@ module.exports = async function (config) {
       scope: process.env.GITLAB_SCOPE,
     }),
   ])
+
+  // CMS Plugin
+  config.addPlugin(StaticPlugin, {
+    routes: [
+      {
+        route: '/js/silex-cms/',
+        path: node_modules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/dist/',
+      },
+    ],
+  })
 }
