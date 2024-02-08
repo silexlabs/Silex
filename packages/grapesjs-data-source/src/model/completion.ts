@@ -25,7 +25,8 @@ export function getContext(component: Component, dataTree: DataTree): Context {
   let parent = component
   while (parent) {
     // Get explicitely set states
-    states.push(...(getStateIds(parent, true)
+    states
+      .push(...(getStateIds(parent, true)
       .map((stateId: StateId): State => ({
         type: 'state',
         storedStateId: stateId,

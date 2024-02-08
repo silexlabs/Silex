@@ -19,7 +19,7 @@ import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
 import {customElement, property} from 'lit/decorators.js'
 import { StoredState, getState, getStateIds, removeState, setState } from '../model/state'
-import { DataSourceEditor, Properties, Token  } from '../types'
+import { DataSourceEditor, Token  } from '../types'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
@@ -34,11 +34,6 @@ interface Item {
   state: StoredState
 }
 
-enum Type {
-  States = 'states',
-  Attributes = 'attributes',
-}
-
 /**
  * Editor for selected element's states
  * 
@@ -48,8 +43,8 @@ export class CustomStatesEditor extends LitElement {
   @property({type: Boolean})
   disabled = false
 
-  @property({type: Type})
-  type = Type.States
+  @property({type: Boolean, attribute: 'private-state'})
+  privateState = false
 
   @property({type: String})
   title = 'Custom states'
@@ -62,6 +57,12 @@ export class CustomStatesEditor extends LitElement {
 
   @property({type: String, attribute: 'rename-prompt'})
   renamePrompt = 'Rename this state'
+
+  @property({type: String, attribute: 'default-name'})
+  defaultName = 'New state'
+
+  @property({type: Array, attribute: 'reserved-names'})
+  reservedNames: string[] = []
 
   private editor: DataSourceEditor | null = null
   private redrawing = false
@@ -135,7 +136,7 @@ export class CustomStatesEditor extends LitElement {
     const items: Item[] = this.getStateIds(selected)
       .map(stateId => ({
         name: stateId,
-        publicState: this.type === Type.States,
+        publicState: !this.privateState,
         state: this.getState(selected, stateId)!,
       }))
       .filter(item => item.state && !item.state.hidden)
@@ -198,15 +199,15 @@ export class CustomStatesEditor extends LitElement {
    * Get the states for this type of editor
    */
   getStateIds(component: Component): string[] {
-    const stateIds = getStateIds(component, this.type === Type.States)
-    switch(this.type) {
-      case Type.States:
+    const stateIds = getStateIds(component, !this.privateState)
+    switch(this.privateState) {
+      case true:
         // All public states are states
         return stateIds
-      case Type.Attributes:
+      case false:
         return stateIds
           // Filter out the states which are properties
-          .filter(stateId => !Object.keys(Properties).includes(stateId))
+          .filter(stateId => !this.reservedNames.includes(stateId))
     }
   }
 
@@ -214,21 +215,21 @@ export class CustomStatesEditor extends LitElement {
    * Get the states for this type of editor
    */
   getState(component: Component, name: string): StoredState | null {
-    return getState(component, name, this.type === Type.States)
+    return getState(component, name, !this.privateState)
   }
 
   /**
    * Set the states for this type of editor
    */
   setState(component: Component, name: string, state: StoredState) {
-    setState(component, name, state, this.type === Type.States)
+    setState(component, name, state, !this.privateState)
   }
 
   /**
    * Remove the states for this type of editor
    */
   removeState(component: Component, name: string) {
-    removeState(component, name, this.type === Type.States)
+    removeState(component, name, !this.privateState)
   }
 
   getStateEditor(selected: Component, label: string, name: string) {
@@ -321,12 +322,12 @@ export class CustomStatesEditor extends LitElement {
    * Create a new custom state
    */
   createCustomState(component: Component): Item | null {
-    const label = prompt(this.createPrompt, 'New state')
+    const label = prompt(this.createPrompt, this.defaultName)
       ?.toLowerCase()
       ?.replace(/[^a-z0-9]/g, '-')
       ?.replace(/^-+|-+$/g, '')
     if (!label) return null
-    if(this.type === Type.Attributes && Object.keys(Properties).includes(label)) {
+    if(this.reservedNames.includes(label)) {
       alert(`The name ${label} is reserved, please choose another name`)
       return null
     }
@@ -339,7 +340,7 @@ export class CustomStatesEditor extends LitElement {
     return {
       name: stateId,
       state,
-      publicState: this.type === Type.States, // Only states are public, attributes are private
+      publicState: !this.privateState,
     }
   }
 }

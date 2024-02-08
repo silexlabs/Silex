@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, DataSourceEditorViewOptions } from ".."
+import { DataSourceEditor, DataSourceEditorViewOptions, Properties } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
@@ -30,6 +30,9 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
     const options: DataSourceEditorViewOptions = {
       styles: PROPERTY_STYLES,
       defaultFixed: false,
+      disableStates: false,
+      disableAttributes: false,
+      disableProperties: false,
       ...opts,
     }
 
@@ -38,36 +41,50 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
     wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
 
     // Add the web components
-    wrapper.innerHTML = `
+    const states = options.disableStates ? '' : `
       <custom-states-editor
-        type="states"
+        class="ds-states"
         title="States"
         default-fixed=${options.defaultFixed}
         create-prompt="Create a new state"
         rename-prompt="Rename the state"
+        default-name="New state"
+        reserved-names=${Object.keys(Properties)}
         >
         <style>
           ${options.styles}
         </style>
       </custom-states-editor>
+    `
+    const attributes = options.disableAttributes ? '' : `
       <custom-states-editor
-        type="attributes"
+        class="ds-attributes"
+        private-state
         title="Attributes"
         default-fixed=${options.defaultFixed}
         create-prompt="Name of the attribute"
         rename-prompt="Rename the attribute"
+        default-name="New attribute"
         >
         <style>
           ${options.styles}
         </style>
       </custom-states-editor>
+    `
+    const properties = options.disableProperties ? '' : `
       <properties-editor
+        class="ds-properties"
         default-fixed=${options.defaultFixed}
       >
         <style>
           ${options.styles}
         </style>
       </properties-editor>
+    `
+    wrapper.innerHTML = `
+      ${states}
+      ${attributes}
+      ${properties}
     `
 
     // The options el and button can be functions which use editor so they need to be called asynchronously
@@ -89,15 +106,14 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
       el.appendChild(wrapper)
 
       // Get references to the web components
-      const propertiesUi = wrapper.querySelector('properties-editor') as PropertiesEditor
-      const statesUi = wrapper.querySelector('custom-states-editor[type="states"]') as CustomStatesEditor
-      const attributesUi = wrapper.querySelector('custom-states-editor[type="attributes"]') as CustomStatesEditor
+      const propertiesUi = wrapper.querySelector('properties-editor.ds-properties') as PropertiesEditor
+      const statesUi = wrapper.querySelector('custom-states-editor.ds-states') as CustomStatesEditor
+      const attributesUi = wrapper.querySelector('custom-states-editor.ds-attributes') as CustomStatesEditor
 
       // Init web components
-      propertiesUi.setEditor(editor)
-      statesUi.setEditor(editor)
-      attributesUi.setEditor(editor)
-
+      propertiesUi?.setEditor(editor)
+      statesUi?.setEditor(editor)
+      attributesUi?.setEditor(editor)
 
       // Show the UI when the button is clicked
       if (options.button) {
@@ -110,16 +126,16 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
             // Show the UI
             wrapper.style.display = 'block'
             // Change web components state
-            propertiesUi.removeAttribute('disabled')
-            statesUi.removeAttribute('disabled')
-            attributesUi.removeAttribute('disabled')
+            propertiesUi?.removeAttribute('disabled')
+            statesUi?.removeAttribute('disabled')
+            attributesUi?.removeAttribute('disabled')
           } else {
             // Hide the UI
             wrapper.style.display = 'none'
             // Change web components state
-            propertiesUi.setAttribute('disabled', '')
-            statesUi.setAttribute('disabled', '')
-            attributesUi.setAttribute('disabled', '')
+            propertiesUi?.setAttribute('disabled', '')
+            statesUi?.setAttribute('disabled', '')
+            attributesUi?.setAttribute('disabled', '')
           }
         })
         wrapper.style.display = button.active ? 'block' : 'none'

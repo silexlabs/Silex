@@ -137,8 +137,14 @@ function fireChange(state: StoredState | null, component: Component) {
  * List all exported states
  */
 export function getStateIds(component: Component, exported: boolean = true): StateId[] {
-  const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
-  return states.map(state => state.id)
+  try {
+    const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
+    return states.map(state => state.id)
+  } catch(e) {
+    // this happens when the old deprecated state system is used
+    console.error('Error while getting state ids', e)
+    return []
+  }
 }
 
 /**

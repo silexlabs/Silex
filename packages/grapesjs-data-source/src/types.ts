@@ -33,6 +33,9 @@ export interface DataSourceEditorViewOptions {
   styles?: string
   optionsStyles?: string
   defaultFixed?: boolean
+  disableStates?: boolean
+  disableAttributes?: boolean
+  disableProperties?: boolean
 }
 
 /**
