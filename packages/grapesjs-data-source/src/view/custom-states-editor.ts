@@ -61,9 +61,16 @@ export class CustomStatesEditor extends LitElement {
   @property({type: String, attribute: 'default-name'})
   defaultName = 'New state'
 
-  @property({type: Array, attribute: 'reserved-names'})
-  reservedNames: string[] = []
+  // This is a comma separated list of reserved names
+  // Or an array of reserved names
+  @property({type: String, attribute: 'reserved-names'})
+  get reservedNames() { return this._reservedNames }
+  set reservedNames(value: string | string[]) {
+    if(typeof value === 'string') this._reservedNames = value.split(',').map(s => s.trim())
+    else this._reservedNames = value
+  }
 
+  private _reservedNames: string[] = []
   private editor: DataSourceEditor | null = null
   private redrawing = false
 

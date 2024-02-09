@@ -49,7 +49,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
         create-prompt="Create a new state"
         rename-prompt="Rename the state"
         default-name="New state"
-        reserved-names=${Object.keys(Properties)}
+        reserved-names=${Object.keys(Properties).join(',')}
         >
         <style>
           ${options.styles}
