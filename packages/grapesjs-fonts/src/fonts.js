@@ -108,17 +108,20 @@ export const fontsDialogPlugin = (editor, opts) => {
             modal.close()
         },
     })
-    // add fonts to the website
+    // add fonts to the website on save
     editor.on('storage:start:store', (data) => {
         data.fonts = editor.getModel().get('fonts')
     })
+    // add fonts to the website on load
     editor.on('storage:end:load', (data) => {
         const fonts = data.fonts || []
         editor.getModel().set('fonts', fonts)
-        setTimeout(() => {
-            updateHead(editor, fonts)
-            updateUi(editor, fonts, opts)
-        })
+    })
+    // update the head and the ui when the frame is loaded
+    editor.on('canvas:frame:load', () => {
+        const fonts = editor.getModel().get('fonts') || []
+        updateHead(editor, fonts)
+        updateUi(editor, fonts, opts)
     })
 }
 
@@ -252,49 +255,18 @@ function removeFont(editor, fonts, font) {
     fonts.splice(idx, 1)
 }
 
-function insertOnce(doc, attr, tag, attributes) {
-    if(!doc.head.querySelector(`[${ attr }]`)) {
-        insert(doc, attr, tag, attributes)
-    }
-}
-function insert(doc, attr, tag, attributes) {
-    const el = doc.createElement(tag)
-    el.setAttribute(attr, '')
-    Object.keys(attributes).forEach(key => el.setAttribute(key, attributes[key]))
-    doc.head.appendChild(el)
-}
 function removeAll(doc, attr) {
-    Array.from(doc.head.querySelector(`[${ attr }]`))
+    const all = doc.head.querySelectorAll(`[${ attr }]`)
+    Array.from(all)
         .forEach((el) => el.remove())
 }
-const GOOGLE_APIS_ATTR = 'data-silex-google-apis'
-const GSTATIC_ATTR = 'data-silex-gstatic'
+
 const GOOGLE_FONTS_ATTR = 'data-silex-gstatic'
 function updateHead(editor, fonts) {
     const doc = editor.Canvas.getDocument()
-    insertOnce(doc, GOOGLE_APIS_ATTR, 'link', { 'href': 'https://fonts.googleapis.com', 'rel': 'preconnect' })
-    insertOnce(doc, GSTATIC_ATTR, 'link', { 'href': 'https://fonts.gstatic.com', 'rel': 'preconnect', 'crossorigin': '' })
     removeAll(doc, GOOGLE_FONTS_ATTR)
-
-    // FIXME: how to use google fonts v2?
-    // google fonts V2: https://developers.google.com/fonts/docs/css2
-    //fonts.forEach(f => {
-    //  const prefix = f.variants.length ? ':' : ''
-    //  const variants = prefix + f.variants.map(v => {
-    //    const weight = parseInt(v)
-    //    const axis = v.replace(/\d+/g, '')
-    //    return `${axis},wght@${weight}`
-    //  }).join(',')
-    //  insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css2?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
-    //})
-
-    // Google fonts v1
-    // https://developers.google.com/fonts/docs/getting_started#a_quick_example
-    fonts.forEach(f => {
-        const prefix = f.variants.length ? ':' : ''
-        const variants = prefix + f.variants.map(v => v.replace(/\d+/g, '')).filter(v => !!v).join(',')
-        insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
-    })
+    const html = getHtml(fonts, GOOGLE_FONTS_ATTR)
+    doc.head.insertAdjacentHTML('beforeend', html)
 }
 
 function updateUi(editor, fonts, opts) {
@@ -311,8 +283,36 @@ function updateUi(editor, fonts, opts) {
 function updateRules(editor, fonts, font, value) {
     font.value = value
 }
+
 function updateVariant(editor, fonts, font, variant, checked) {
     const has = font.variants?.includes(variant)
     if(has && !checked) font.variants = font.variants.filter(v => v !== variant)
     else if(!has && checked) font.variants.push(variant)
+}
+
+export function getHtml(fonts, attr = '') {
+    // FIXME: how to use google fonts v2?
+    // google fonts V2: https://developers.google.com/fonts/docs/css2
+    //fonts.forEach(f => {
+    //  const prefix = f.variants.length ? ':' : ''
+    //  const variants = prefix + f.variants.map(v => {
+    //    const weight = parseInt(v)
+    //    const axis = v.replace(/\d+/g, '')
+    //    return `${axis},wght@${weight}`
+    //  }).join(',')
+    //  insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css2?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
+    //})
+
+    // Google fonts v1
+    // https://developers.google.com/fonts/docs/getting_started#a_quick_example
+    const preconnect = `<link href="https://fonts.googleapis.com" rel="preconnect" ${attr}><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin ${attr}>`
+    const links = fonts
+        .map(f => {
+            const prefix = f.variants.length ? ':' : ''
+            const variants = prefix + f.variants.map(v => v.replace(/\d+/g, '')).filter(v => !!v).join(',')
+            return `<link href="https://fonts.googleapis.com/css?family=${f.name.replace(/ /g, '+')}${variants}&display=swap" rel="stylesheet" ${attr}>`
+        })
+        .join('')
+
+    return preconnect + links
 }

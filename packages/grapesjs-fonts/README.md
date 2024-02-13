@@ -20,19 +20,43 @@ It looks like this:
 
 The plugin currently has these features
 
-* API to add / remove fonts from the site (from goole font name) 
-* Updates the DOM and the "font family" dropdown
-* Save the fonts with the site data
-* Load the fonts when site data is loaded (add to the DOM on load)
-* UI to manage fonts
-* Integration with google API
-* Store google fonts list in local storage for performance and API quotas
+* [x] API to add / remove fonts from the site (from goole font name) 
+* [x] Updates the DOM and the "font family" dropdown
+* [x] Save the fonts with the site data
+* [x] Load the fonts when site data is loaded (add to the DOM on load)
+* [x] UI to manage fonts
+* [x] Integration with google API
+* [x] Store google fonts list in local storage for performance and API quotas
+* [x] Generate HTML imports for the final website
+* [ ] Generate CSS imports for the final website
+* [ ] Handle variants and weights
+* [ ] Google fonts V3 API
 
-Limitations:
+### Limitations
 
 For now this plugin supports only Goolge fonts and use the V2 API. It should be upgraded to V3 and take advantage of variable fonts.
 
-See the "Development" section bellow to contribute
+### Export / publication
+
+In your app you probaly publish / export the website to a final format (html, css, js, images, etc).
+
+You need to add the font to the final website when you publish/export it, this is not done by the plugin. You can use the provided commands `get-fonts-css` OR `get-fonts-html` to get the code to add to the final website.
+
+```js
+// get the CSS to add to the final website
+const css = editor.runCommand('get-fonts-css')
+// Here css is like @import url('https://fonts.googleapis.com/css2?family=Protest+Strike&display=swap')
+```
+
+Or ues the `get-fonts-import-html` command to get the HTML to add to the final website
+
+```js
+// get the HTML to add to the final website
+const html = editor.runCommand('get-fonts-html')
+// Here html is like <link href="https://fonts.googleapis.com/css2?family=Protest+Strike&display=swap" rel="stylesheet">
+```
+
+You can check how it is done in [Silex website builder](https://github.com/silexlabs/Silex/blob/dev/src/ts/client/publish-fonts.ts)
 
 ### Motivations
 
@@ -58,8 +82,8 @@ This is quite easy but here are the things which took me time as I implemented g
 ## Use the plugin in your website builder
 
 ### HTML
-```html
 
+```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
 <script src="https://unpkg.com/@silexlabs/grapesjs-fonts"></script>
@@ -86,13 +110,8 @@ Here is how to open the fonts dialog:
 editor.runCommand('open-fonts')
 ```
 
-And you can use the plugin's API:
-
-```js
-// TODO
-```
-
 ### CSS
+
 ```css
 body, html {
   margin: 0;
@@ -113,8 +132,6 @@ Also you should style the dialog:
 | Option | Description | Default |
 |-|-|-
 | `api_key` | Google fonts API key, [see this doc to get an API key](https://developers.google.com/fonts/docs/developer_api#APIKey) | Required |
-
-
 
 ## Download
 
@@ -152,6 +169,7 @@ Directly in the browser
 ```
 
 Modern javascript
+
 ```js
 import grapesjs from 'grapesjs';
 import plugin from '@silexlabs/grapesjs-fonts';

@@ -1,4 +1,5 @@
-import { fontsDialogPlugin as _fontsDialogPlugin, cmdOpenFonts as _cmdOpenFonts } from './fonts.js'
+import { fontsDialogPlugin } from './fonts.js'
+import commands from './commands.js'
 import en from './locale/en.js'
 import fr from './locale/fr.js'
 
@@ -18,8 +19,10 @@ export default (editor, opts = {}) => {
         ...options.i18n,
     })
 
-    _fontsDialogPlugin(editor, options)
+    commands(editor, options)
+    fontsDialogPlugin(editor, options)
 }
 
-export const fontsDialogPlugin = _fontsDialogPlugin
-export const cmdOpenFonts = _cmdOpenFonts
+// Expose commands to the app
+export * from './fonts.js'
+export * from './commands.js'
