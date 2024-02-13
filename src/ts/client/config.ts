@@ -28,6 +28,7 @@ import { addSection, removeSection } from './grapesjs/settings'
 
 // Plugins
 import publishCustomCodeBlock from './publish-custom-code-block'
+import publishFonts from './publish-fonts'
 
 /**
  * @fileoverview Silex client side config
@@ -169,6 +170,9 @@ export class ClientConfig extends Config {
    * Add default plugins
    */
   async addDefaultPlugins() {
-    await this.addPlugin(publishCustomCodeBlock, {})
+    await this.addPlugin([
+      publishCustomCodeBlock,
+      publishFonts,
+    ], {})
   }
 }
