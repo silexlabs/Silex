@@ -15,17 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { ClientSideFile, ClientSideFileType, ClientSideFileWithContent } from '../types'
+import { cmdGetHtml } from '@silexlabs/grapesjs-fonts'
+
 /**
  * @fileoverview Make sure custom script blocks include script tags when published
  */
 
 export default async function (config) {
   config.addPublicationTransformers({
-    renderComponent(component, toHtml) {
-      if (component.get('type') === 'custom-code' && component.get('custom-code-plugin__code')) {
-        return component.get('custom-code-plugin__code')
+    transformFile(file: ClientSideFile): ClientSideFile {
+      const fileWithContent = file as ClientSideFileWithContent
+      if(fileWithContent.type === ClientSideFileType.HTML && fileWithContent.content) {
+        const htmlLinks = config.getEditor().runCommand(cmdGetHtml)
+        fileWithContent.content = fileWithContent.content.replace(/<\/head>/, `${htmlLinks}</head>`)
       }
-      return toHtml()
+      return file
     },
   })
 }
