@@ -87,6 +87,8 @@ export const settingsDialog = (editor, opts) => {
     const model = editor.getModel()
     model.set('settings', data.settings || {})
     model.set('name', data.name)
+  })
+  editor.on('canvas:frame:load', () => {
     updateDom(editor)
   })
   editor.on('page', (e) => {
