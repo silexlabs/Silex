@@ -116,13 +116,11 @@ export const fontsDialogPlugin = (editor, opts) => {
     editor.on('storage:end:load', (data) => {
         const fonts = data.fonts || []
         editor.getModel().set('fonts', fonts)
+        // FIXME: remove this timeout which is a workaround for issues in Silex storage providers
+        setTimeout(() => refresh(editor, opts), 1000)
     })
     // update the head and the ui when the frame is loaded
-    editor.on('canvas:frame:load', () => {
-        const fonts = editor.getModel().get('fonts') || []
-        updateHead(editor, fonts)
-        updateUi(editor, fonts, opts)
-    })
+    editor.on('canvas:frame:load', () => refresh(editor, opts))
 }
 
 function match(hay, s) {
@@ -264,6 +262,10 @@ function removeAll(doc, attr) {
 const GOOGLE_FONTS_ATTR = 'data-silex-gstatic'
 function updateHead(editor, fonts) {
     const doc = editor.Canvas.getDocument()
+    if(!doc) {
+        // This happens while grapesjs is not ready
+        return
+    }
     removeAll(doc, GOOGLE_FONTS_ATTR)
     const html = getHtml(fonts, GOOGLE_FONTS_ATTR)
     doc.head.insertAdjacentHTML('beforeend', html)
@@ -272,12 +274,22 @@ function updateHead(editor, fonts) {
 function updateUi(editor, fonts, opts) {
     const styleManager = editor.StyleManager
     const fontProperty = styleManager.getProperty('typography', 'font-family')
+    if(!fontProperty) {
+        // This happens while grapesjs is not ready
+        return
+    }
     if (opts.preserveDefaultFonts) {
         fonts = defaults.concat(fonts)
     } else if (fonts.length === 0) {
         fonts = defaults
     }
     fontProperty.setOptions(fonts)
+}
+
+export function refresh(editor, opts) {
+    const fonts = editor.getModel().get('fonts') || []
+    updateHead(editor, fonts)
+    updateUi(editor, fonts, opts)
 }
 
 function updateRules(editor, fonts, font, value) {
