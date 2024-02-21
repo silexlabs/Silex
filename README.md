@@ -77,18 +77,18 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 1.98  T=0.50 s (528.0 files/s, 60946.0 lines/s)
+github.com/AlDanial/cloc v 1.98  T=0.50 s (524.0 files/s, 60612.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-TypeScript                     151           1625           5831          17645
-JavaScript                     105            534           1030           3695
+TypeScript                     151           1625           5830          17645
+JavaScript                     103            523            956           3614
 Dockerfile                       2              8              7             54
 INI                              2              4              0             21
 liquid                           3              0              0             17
 Text                             1              0              0              2
 -------------------------------------------------------------------------------
-SUM:                           264           2171           6868          21434
+SUM:                           262           2160           6793          21353
 -------------------------------------------------------------------------------
 
 ```
