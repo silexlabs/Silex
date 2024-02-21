@@ -3,6 +3,7 @@
 const fs = require('fs/promises')
 
 async function main(content, key, code) {
+  console.log(content)
   // Read README.md
   const readme = await fs.readFile('README.md', 'utf-8')
   const keyText = `> Auto generated ${key}`

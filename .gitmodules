@@ -58,3 +58,6 @@
 [submodule "packages/silex-cms"]
 	path = packages/silex-cms
 	url = git@github.com:silexlabs/silex-cms.git
+[submodule "packages/11ty_silex.me-2024"]
+	path = packages/11ty_silex.me-2024
+	url = git@gitlab.com:lexoyo/11ty_silex.me-2024.git

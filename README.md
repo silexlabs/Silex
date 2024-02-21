@@ -11,14 +11,17 @@ There is no issue on this repo, please use the individual project's issues
 > Leave the line bellow as it is used in the doc script to insert content in the readme
 > 
 > Auto generated submodules
+Skipping silex-desktop - No readme file found
 
 # Silex packages
 
 | Name | Directory | Repo | Description |
 | ---- | --------- | ---- | ----------- |
 | Silex | `packages/Silex` | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
+| Example intergation of Silex with 11ty and strapi | `packages/silex-strapi-11ty` | `git@github.com:silexlabs/silex-strapi-11ty.git` | This is a simple example of how to integrate Silex with 11ty and strapi. |
 | Silex plugins | `packages/silex-plugins` | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
 | Silex Plugin Starter | `packages/silex-plugin-starter` | `git@github.com:silexlabs/silex-plugin-starter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
+| silex-desktop | `packages/silex-desktop` | `git@github.com:silexlabs/silex-desktop.git` |  |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
 | Access node_modules in package.json | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Use it in your `packge.json` like this: |
@@ -34,6 +37,7 @@ There is no issue on this repo, please use the individual project's issues
 | Eleventy Plugin Directus | `packages/eleventy-plugin-directus` | `git@github.com:silexlabs/eleventy-plugin-directus.git` | ![combined](https://user-images.githubusercontent.com/715377/202714740-44db41be-27a7-42d9-aa58-8d72d486bcbf.png) |
 | eleventy-plugin-concat | `packages/eleventy-plugin-concat` | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
 | Silex instances by Silex Labs | `packages/editor.silex.me` | `git@github.com:silexlabs/editor.silex.me.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me). |
+| 11ty_silex.me 2024 | `packages/11ty_silex.me-2024` | `git@gitlab.com:lexoyo/11ty_silex.me-2024.git` | ## Local dev |
 
 
 > Auto generated submodules
@@ -73,18 +77,18 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 1.98  T=0.50 s (472.0 files/s, 55262.0 lines/s)
+github.com/AlDanial/cloc v 1.98  T=0.50 s (528.0 files/s, 60946.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-TypeScript                     139           1549           5243          16518
-JavaScript                      89            383           1002           2823
+TypeScript                     151           1625           5831          17645
+JavaScript                     105            534           1030           3695
 Dockerfile                       2              8              7             54
 INI                              2              4              0             21
 liquid                           3              0              0             17
 Text                             1              0              0              2
 -------------------------------------------------------------------------------
-SUM:                           236           1944           6252          19435
+SUM:                           264           2171           6868          21434
 -------------------------------------------------------------------------------
 
 ```
