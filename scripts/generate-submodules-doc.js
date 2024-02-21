@@ -3,6 +3,15 @@
 const fs = require('fs/promises')
 const ini = require('js-ini')
 
+async function exists(path) {
+  try {
+    await fs.access(path)
+    return true
+  } catch(e) {
+    return false
+  }
+}
+
 async function main() {
   try {
     const data = await fs.readFile('.gitmodules', 'utf-8')
@@ -25,13 +34,23 @@ async function main() {
       let title = project.name
       let description = ''
       try {
-        const readme = await fs.readFile(`${project.path}/README.md`, 'utf-8')
-        readmeCount++
-        const lines = readme.split('\n')
-        const titleIndex = lines.findIndex((line) => line.match(/^(#+)/))
-        title = titleIndex >= 0 ? lines[titleIndex].replace(/^(#+)/, '').trim() : project.name
-        description = titleIndex >= 0 ? lines.slice(titleIndex + 1).find((line) => line.length > 0) ?? '' : ''
+        const readmeFile =
+          await exists(`${project.path}/README.md`) ? `${project.path}/README.md` :
+          await exists(`${project.path}/readme.md`) ? `${project.path}/readme.md` :
+          await exists(`${project.path}/README`) ? `${project.path}/README` : null
+
+        if (readmeFile) {
+          const readme = await fs.readFile(readmeFile, 'utf-8')
+          readmeCount++
+          const lines = readme.split('\n')
+          const titleIndex = lines.findIndex((line) => line.match(/^(#+)/))
+          title = titleIndex >= 0 ? lines[titleIndex].replace(/^(#+)/, '').trim() : project.name
+          description = titleIndex >= 0 ? lines.slice(titleIndex + 1).find((line) => line.length > 0) ?? '' : ''
+        } else {
+          console.log('Skipping', title, '- No readme file found')
+        }
       } catch (err) {
+        console.log('Skipping', title)
         if(err.code === 'ENOENT') continue
         else throw err
       }
