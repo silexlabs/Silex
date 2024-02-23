@@ -65,6 +65,14 @@ export class ClientConfig extends Config {
   debug = false
 
   /**
+   * Add hash in the file name of CSS at the time of publication
+   * If true, CSS files of generated pages will look like `page-name.123456.css`  instead of `page-name.css`
+   * This is useful to avoid caching issues
+   * @default true
+   */
+  addHashInCssFileName = true
+
+  /**
    * Replaced elements
    * This is a list of elements which support the object-fit and object-position CSS properties
    * https://developer.mozilla.org/en-US/docs/Web/CSS/Replaced_element

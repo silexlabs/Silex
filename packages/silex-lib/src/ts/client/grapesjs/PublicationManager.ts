@@ -24,6 +24,7 @@ import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constan
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { displayedToStored } from '../assetUrl'
+import { hashString } from '../utils'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -322,20 +323,24 @@ export class PublicationManager {
   }
 
   async getHtmlFiles(siteSettings: WebsiteSettings): Promise<WebsiteFile[]> {
-    return this.editor.Pages.getAll().map(page => {
+    return Promise.all(this.editor.Pages.getAll().map(async page => {
       const pageSettings = page.get('settings') as WebsiteSettings
       function getSetting(name) {
         return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
       }
       const component = page.getMainComponent()
+
+      // Get the content from GrapesJS
+      const cssContent = this.editor.getCss({ component })
+      const htmlContent = this.editor.getHtml({ component })
+
       // Transform the file paths
       const slug = getPageSlug(page.get('name'))
-      const cssInitialPath = `/css/${slug}.css`
+      const cssInitialPath = `/css/${slug}-${await hashString(cssContent)}.css`
       const htmlInitialPath = `/${slug}.html`
       const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS, Initiator.HTML)
       const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
-      const body = this.editor.getHtml({ component })
       return {
         html: `<!DOCTYPE html>
 <html lang="${getSetting('lang')}">
@@ -351,13 +356,13 @@ ${['description', 'og:title', 'og:description', 'og:image']
     .join('\n')
 }
 </head>
-${body}
+${htmlContent}
 </html>`,
-        css: this.editor.getCss({ component }),
+        css: cssContent,
         cssPath,
         htmlPath,
       }
-    })
+    }))
   }
 
   async trackProgress() {
