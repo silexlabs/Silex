@@ -137,13 +137,20 @@ describe('publication-transformers', () => {
     expect(transformPermalink.mock.calls[0][0]).toBe('test.png')
     expect(transformPermalink.mock.calls[0][1]).toBe('asset')
   })
+
   it('should transform a style rule with background image', () => {
     expect(transformBgImage(editor, { 'background-image': 'url(test.png)' })).toEqual({ 'background-image': 'url(test.png)' })
     const transformPermalink = transformer.transformPermalink as Mock
     const transformedSrc = 'transformed.png'
-    transformPermalink.mockImplementation((url, type) => (url as string).replace('test.png', transformedSrc))
-    expect(transformBgImage(editor, { 'background-image': 'url(test.png)' })).toEqual({ 'background-image': 'url(transformed.png)' })
-    expect(transformBgImage(editor, { 'background-image': 'url("test.png")' })).toEqual({ 'background-image': 'url(transformed.png)' })
+    const transformedSrc2 = 'transformed2.png'
+    transformPermalink.mockImplementation((url, type) => (url as string).replace('test.png', transformedSrc).replace('test2.png', transformedSrc2))
+    expect(transformBgImage(editor, { 'background-image': 'url(test.png)' })).toEqual({ 'background-image': `url(${transformedSrc})` })
+    expect(transformBgImage(editor, { 'background-image': 'url("test.png")' })).toEqual({ 'background-image': `url(${transformedSrc})` })
+    expect(transformBgImage(editor, {
+      'background-image': 'linear-gradient(to right, rgb(30 75 115 / 100%), url(test.png), linear-gradient(to left, rgb(30 75 115 / 10%), url(test2.png), rgb(255 255 255 / 0%));',
+    })).toEqual({
+      'background-image': `linear-gradient(to right, rgb(30 75 115 / 100%), url(${transformedSrc}), linear-gradient(to left, rgb(30 75 115 / 10%), url(${transformedSrc2}), rgb(255 255 255 / 0%));`,
+    })
   })
 
   it('should transform permalinks of background images in inline css', () => {

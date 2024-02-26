@@ -185,12 +185,19 @@ export function renderCssRules(editor: Editor) {
  * Transform background image url according to the transformed path of assets
  */
 export function transformBgImage(editor: Editor, style: ObjectStrings): ObjectStrings {
-  const url = style['background-image']
-  const bgUrl = url?.match(/url\(["']?(.*?)["']?\)/)?.pop()
-  if (bgUrl) {
+  const cssValue = style['background-image']
+  if (cssValue) {
+    const newCssValue = cssValue.replace(/url\(([^)]+)\)/g, (match, url) => {
+      // Support URLs with or without quotes
+      const cleanUrl = url.replace(/['"]/g, '')
+      // Transform URLs
+      const newUrl = transformPermalink(editor, cleanUrl, ClientSideFileType.ASSET, Initiator.CSS)
+      // Return the new URL with url keyword
+      return `url(${newUrl})`
+    })
     return {
       ...style,
-      'background-image': `url(${transformPermalink(editor, bgUrl, ClientSideFileType.ASSET, Initiator.CSS)})`,
+      'background-image': newCssValue,
     }
   }
   return style
