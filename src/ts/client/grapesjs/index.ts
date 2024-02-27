@@ -283,7 +283,10 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         blockLabel: 'HTML',
         blockCustomCode: {
           category: catComponents,
-        }
+        },
+        codeViewOptions: {
+          autoFormat: false,
+        },
       },
       [symbolsPlugin.toString()]: {
         appendTo: '.symbols-list-container',

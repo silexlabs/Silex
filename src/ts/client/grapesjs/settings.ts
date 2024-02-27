@@ -101,6 +101,7 @@ export const settingsDialog = (editor, opts) => {
     codeName: 'htmlmixed',
     lineNumbers: true,
     lineWrapping: true,
+    autoFormat: false,
   })
 }
 
