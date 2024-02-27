@@ -35,4 +35,5 @@ export enum ClientEvent {
   SETTINGS_CLOSE = 'silex:settings:close',
   SETTINGS_SAVE_START = 'silex:settings:save:start',
   SETTINGS_SAVE_END = 'silex:settings:save:end',
+  SETTINGS_SECTION_CHANGE = 'silex:settings:section-change',
 }
