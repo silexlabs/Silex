@@ -88,6 +88,14 @@ export const settingsDialog = (editor, opts) => {
     model.set('settings', data.settings || {})
     model.set('name', data.name)
   })
+  // On chrome this is needed to apply the head content to the DOM
+  editor.on('storage:end:load', () => {
+    setTimeout(() => {
+      updateDom(editor)
+    })
+  })
+  // Normal way to apply the head content to the DOM
+  // fix #1559 Custom <head> code must be reapplied
   editor.on('canvas:frame:load', () => {
     updateDom(editor)
   })
