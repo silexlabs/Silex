@@ -166,6 +166,11 @@ function displaySettings(editor, config, model = editor.getModel()) {
     mainItem.classList.remove('silex-hidden')
     // This messes up with the save / cancel mechanism
     // displaySettings(editor, config, model)
+    // Refresh the code editor just in case it went from hidden to visible
+    // This makes it ready to be used when the user clicks on the tab
+    headEditor.refresh()
+    // Notify other plugins
+    editor.trigger(ClientEvent.SETTINGS_SECTION_CHANGE, item.id)
   }}
               >
                 ${item.label}
