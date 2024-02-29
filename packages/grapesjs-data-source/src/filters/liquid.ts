@@ -220,6 +220,33 @@ export default function(editor: DataSourceEditor): Filter[] {
       `,
     }, {
       type: 'filter',
+      id: 'map-dynamic',
+      filterName: 'map',
+      label: 'map (dynamic key)',
+      validate: (field: Field | null) => !!field && (field.kind === 'list' || field.kind === 'object'),
+      // Any field can be chosen, so we return the first one
+      // Is multiple fields necessary? We will probably always have the same data structure there
+      output: (field) => field ? editor.DataSourceManager.getDataTree()
+        .getType(field.typeIds[0], field.dataSourceId ?? null)?.fields[0] ?? null : null,
+      apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
+      options: {
+        key: '',
+      },
+      quotedOptions: [],
+      optionsForm: (field: Field | null, options: Options) => html`
+        <state-editor
+          no-filters
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.key || []}
+          name="key"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">Key to map (dyanamic)</label>
+        </state-editor>
+      `,
+    }, {
+      type: 'filter',
       id: 'reverse',
       label: 'reverse',
       validate: (field: Field | null) => !!field && field.kind === 'list',

@@ -170,6 +170,7 @@ export type FilterId = string
 export interface StoredFilter {
   type: 'filter'
   id: FilterId
+  filterName?: FilterId // Override the id for the filter name if present
   label: string
   options: Options
   quotedOptions?: string[]

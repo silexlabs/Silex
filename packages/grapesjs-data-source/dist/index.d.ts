@@ -262,6 +262,7 @@ export type FilterId = string;
 export interface StoredFilter {
 	type: "filter";
 	id: FilterId;
+	filterName?: FilterId;
 	label: string;
 	options: Options;
 	quotedOptions?: string[];
