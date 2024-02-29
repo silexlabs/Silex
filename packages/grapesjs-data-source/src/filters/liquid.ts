@@ -189,7 +189,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
-      quotedOptions: ['key'],
+      quotedOptions: ['separator'],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
           <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
