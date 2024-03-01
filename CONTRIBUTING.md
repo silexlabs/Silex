@@ -35,7 +35,7 @@ The server-side is primarily handled by the files in the `src/ts/server` directo
 
 	 Open the [Silex Project](https://github.com/silexlabs/Silex/) in GitHub. Click `Fork` in the upper right corner of the window. This adds a copy of the Silex repository to your GitHub account.
 
-2. **Clone the fork**
+1. **Clone the fork**
 
    Now you'll make a local copy of the repository. From the command line:
 
@@ -46,7 +46,7 @@ The server-side is primarily handled by the files in the `src/ts/server` directo
    git clone https://github.com/<your-username>/Silex.git
     ```
 
-3. **Set the upstream repository**
+1. **Set the upstream repository**
 
    Assign Silex as the upstream repository. Setting the upstream repository tells Git where to pull from when you use the pull command (which you'll do in the next step).
 
@@ -55,13 +55,7 @@ The server-side is primarily handled by the files in the `src/ts/server` directo
 	 git remote add upstream https://github.com/silexlabs/Silex.git
 	 ```
 
-4. **Pull the latest upstream changes**
-
-   ```bash
-   git pull upstream main
-   ```
-
-5. **Create a new branch** (Recommended)
+1. **Create a new branch** (Recommended)
 
 	 Though you can work directly in the default dev branch, it is best practice to keep that branch synced with Silex and create a new working branch for your changes. Name the new branch whatever you'd like.
 
@@ -75,37 +69,29 @@ The server-side is primarily handled by the files in the `src/ts/server` directo
    git branch --set-upstream-to=dev <new-branch-name>
    ```
 
-   **Notes on branch management:**
-   You can easily see a list of all of the branches in the local repository. The branch with [*] is the current working branch.
+1. **Install the dependencies**
 
    ```bash
-   git branch
+   npm install
    ```
-   You can switch between local branches using this command:
+
+   This will install all the dependencies needed to run Silex.
+
+1. **Run the project**
 
    ```bash
-   git checkout <branch to which you wish to switch>
+   npm run dev
    ```
 
-6. **Make your changes**
+   This will start the Silex server, Silex will be available on `http://localhost:6805`.
+
+1. **Make your changes**
    Once changes are complete, use one of the following commands to stage the changes to be committed.
 
    ```bash
-   # Add all changes to commit
-   git add .
-
-   # Add changes from one file to commit
    git add <file-name>
    ```
 
-   **Note on change management:**
-   You can always use this command to see which changes are staged for commit and which aren't.
-
-   ```bash
-   git status
-   ```
-
-7. **Prepare to commit your changes**
    Once your changes are ready and all files you wish to commit have been added (step #5), you'll create your commit.
 
    ```bash
@@ -114,10 +100,14 @@ The server-side is primarily handled by the files in the `src/ts/server` directo
 
    **Note on commiting:** If you have multiple commits or wish to change your commit message, you can use [interactive rebase](https://help.github.com/articles/about-git-rebase) to clean up and consolidate your commits before making your pull request.
 
-8. **Rebase the upstream branch** into your local branch(es)
+1. **Rebase the upstream branch** into your local branch(es)
+
+   Do this from time to time to keep your local repository up to date with the latest changes in the upstream repository. This is especially important before you start making changes.
+
+   This assumes that your local folder is "clean", that all your work is committed.
 
    ```bash
-   git pull [--rebase] upstream dev
+   git pull --rebase upstream main
    ```
 
 9. **Push your local branch** up to your fork
