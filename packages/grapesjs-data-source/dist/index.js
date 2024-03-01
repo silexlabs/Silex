@@ -105,18 +105,7 @@
         >
           <label slot="label">Key to map</label>
         </state-editor>
-      `}},{type:'filter',id:'map-dynamic',filterName:'map',label:'map (dynamic key)',validate:e=>!!e&&('list'===e.kind||'object'===e.kind),output:t=>{var n,r,i;return t&&null!==(i=null===(r=e.DataSourceManager.getDataTree().getType(t.typeIds[0],null!==(n=t.dataSourceId)&&void 0!==n?n:null))||void 0===r?void 0:r.fields[0])&&void 0!==i?i:null},apply:(e,t)=>e.map((e=>e[t.key])),options:{key:''},quotedOptions:[],optionsForm:(t,n)=>lt`
-        <state-editor
-          no-filters
-          data-is-input
-          class="ds-state-editor__options"
-          value=${n.key||[]}
-          name="key"
-          ${bn((t=>t&&t.setEditor(e)))}
-        >
-          <label slot="label">Key to map (dyanamic)</label>
-        </state-editor>
-      `},{type:'filter',id:'reverse',label:'reverse',validate:e=>!!e&&'list'===e.kind,output:e=>e,apply:e=>e.reverse(),options:{}},{type:'filter',id:'size',label:'size',validate:e=>!!e&&'list'===e.kind,output:()=>({id:'Int',label:'Int',typeIds:['Int'],kind:'scalar'}),apply:e=>e.length,options:{}},{type:'filter',id:'at',label:'at',validate:e=>!!e&&'list'===e.kind,output:e=>Kt(e,'list','object'),apply:(e,t)=>e[t.index],options:{index:0},optionsForm:(e,t)=>lt`
+      `}},{type:'filter',id:'reverse',label:'reverse',validate:e=>!!e&&'list'===e.kind,output:e=>e,apply:e=>e.reverse(),options:{}},{type:'filter',id:'size',label:'size',validate:e=>!!e&&'list'===e.kind,output:()=>({id:'Int',label:'Int',typeIds:['Int'],kind:'scalar'}),apply:e=>e.length,options:{}},{type:'filter',id:'at',label:'at',validate:e=>!!e&&'list'===e.kind,output:e=>Kt(e,'list','object'),apply:(e,t)=>e[t.index],options:{index:0},optionsForm:(e,t)=>lt`
         <label>Index
           <input type="number" name="index" placeholder="Index" value=${t.index}/>
         </label>

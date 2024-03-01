@@ -219,33 +219,36 @@ export default function(editor: DataSourceEditor): Filter[] {
           <label slot="label">Key to map</label>
         </state-editor>
       `,
-    }, {
-      type: 'filter',
-      id: 'map-dynamic',
-      filterName: 'map',
-      label: 'map (dynamic key)',
-      validate: (field: Field | null) => !!field && (field.kind === 'list' || field.kind === 'object'),
-      // Any field can be chosen, so we return the first one
-      // Is multiple fields necessary? We will probably always have the same data structure there
-      output: (field) => field ? editor.DataSourceManager.getDataTree()
-        .getType(field.typeIds[0], field.dataSourceId ?? null)?.fields[0] ?? null : null,
-      apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
-      options: {
-        key: '',
-      },
-      quotedOptions: [],
-      optionsForm: (field: Field | null, options: Options) => html`
-        <state-editor
-          no-filters
-          data-is-input
-          class="ds-state-editor__options"
-          value=${options.key || []}
-          name="key"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
-        >
-          <label slot="label">Key to map (dyanamic)</label>
-        </state-editor>
-      `,
+    // This is a dynamic key, but it's not working yet
+    // The problem is that output method can only return a single field, but we need to return a list of fields
+    // This was an attempt returning the first field only but this makes it impossible to select fields inside the result object and the query will not include the content of the fields we should return
+    // }, {
+    //   type: 'filter',
+    //   id: 'map-dynamic',
+    //   filterName: 'map',
+    //   label: 'map (dynamic key)',
+    //   validate: (field: Field | null) => !!field && (field.kind === 'list' || field.kind === 'object'),
+    //   // Any field can be chosen, so we return the first one
+    //   // Is multiple fields necessary? We will probably always have the same data structure there
+    //   output: (field) => field ? editor.DataSourceManager.getDataTree()
+    //     .getType(field.typeIds[0], field.dataSourceId ?? null)?.fields[0] ?? null : null,
+    //   apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
+    //   options: {
+    //     key: '',
+    //   },
+    //   quotedOptions: [],
+    //   optionsForm: (field: Field | null, options: Options) => html`
+    //     <state-editor
+    //       no-filters
+    //       data-is-input
+    //       class="ds-state-editor__options"
+    //       value=${options.key || []}
+    //       name="key"
+    //       ${ref(el => el && (el as StateEditor).setEditor(editor))}
+    //     >
+    //       <label slot="label">Key to map (dyanamic)</label>
+    //     </state-editor>
+    //   `,
     }, {
       type: 'filter',
       id: 'reverse',
