@@ -15,9 +15,9 @@ Silex lets you create websites without coding, but it also has built-in editors 
 Useful links
 
 * [Official website](https://www.silex.me/)
-* [Road map (please help defining tasks and prioritising)](https://github.com/orgs/silexlabs/projects/1/views/7)
+* [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
 * [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)
-* [Forums in Github discussions](https://github.com/silexlabs/Silex/discussions)
+* [Forums in Github discussions](https://community.silex.me)
 * [Silex meta package with more source code](https://github.com/silexlabs/silex-meta)
 
 Here are the main features of Silex website builder:
