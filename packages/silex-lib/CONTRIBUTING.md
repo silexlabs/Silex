@@ -71,6 +71,8 @@ The server-side is primarily handled by the files in the `src/ts/server` directo
 
 1. **Install the dependencies**
 
+Be sure to have Node version >= 18.
+
    ```bash
    npm install
    ```
