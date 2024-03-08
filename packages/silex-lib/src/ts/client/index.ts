@@ -99,5 +99,7 @@ export async function start(options = {}): Promise<void> {
       document.querySelector('#gjs').classList.remove('silex-dialog-hide')
       config.emit(ClientEvent.STARTUP_END, { editor, config })
     }, 100)
+    const um = editor.UndoManager;
+    um.clear();
   }
 }
