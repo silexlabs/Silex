@@ -27,6 +27,7 @@ import { Component } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
+import { cleanStateName } from '../utils'
 
 interface Item {
   name: string
@@ -329,11 +330,9 @@ export class CustomStatesEditor extends LitElement {
    * Create a new custom state
    */
   createCustomState(component: Component): Item | null {
-    const label = prompt(this.createPrompt, this.defaultName)
-      ?.toLowerCase()
-      ?.replace(/[^a-z0-9]/g, '-')
-      ?.replace(/^-+|-+$/g, '')
+    const label = cleanStateName(prompt(this.createPrompt, this.defaultName))
     if (!label) return null
+    
     if(this.reservedNames.includes(label)) {
       alert(`The name ${label} is reserved, please choose another name`)
       return null

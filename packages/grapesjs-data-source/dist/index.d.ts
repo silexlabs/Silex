@@ -459,6 +459,10 @@ export declare function fieldToToken(field: Field): Property;
  * @returns a list of possible tokens to add to the expression
  */
 export declare function getCompletion(component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId): Context;
+/**
+ * Get the display name of a field
+ */
+export declare function cleanStateName(name: string | null): string | undefined;
 export declare function getComponentDebug(component: Component): string;
 /**
  * Concatenate strings to get a desired length string as result

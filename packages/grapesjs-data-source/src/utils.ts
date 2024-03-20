@@ -6,6 +6,15 @@ import { Component } from "grapesjs"
 import { fromStored, getExpressionResultType } from "./model/token"
 
 /**
+ * Get the display name of a field
+ */
+export function cleanStateName(name: string | null) {
+ return name?.toLowerCase()
+   ?.replace(/[^a-z-1-9:]/g, '-')
+   ?.replace(/-+$/g, '') // do not end with -
+}
+
+/**
  * Get the display type of a field
  * For the dropdown in expressions
  * @example "String", "String [ ]", "String { }"
