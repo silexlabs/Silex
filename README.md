@@ -48,8 +48,9 @@ To contribute to Silex you need to clone this repo with its submodules, make sur
 
 ```
 $ git clone git@github.com:silexlabs/silex-meta.git --recurse-submodules -j8
+$ git submodule update --init --recursive
 $ cd silex-meta
-$ nvm use
+$ nvm install
 $ npm install
 $ npm start
 ```

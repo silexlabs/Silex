@@ -19,6 +19,7 @@
 [submodule "packages/Silex"]
 	path = packages/Silex
 	url = git@github.com:silexlabs/Silex.git
+	branch = dev
 [submodule "packages/node_modules-path"]
 	path = packages/node_modules-path
 	url = git@github.com:lexoyo/node_modules-path.git
