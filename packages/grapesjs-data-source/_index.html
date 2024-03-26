@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Home</title>
+    <style>
+      body, html {
+        margin: 0;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <link href="http://localhost:3001/css/grapes.min.css" rel="stylesheet">
+    <script src="http://localhost:3001/grapes.min.js"></script>
+    <script src="./index.js"></script>
+
+    <div id="gjs"></div>
+    <script>
+      const editor = grapesjs.init({
+        container: '#gjs',
+        height: '100%',
+        fromElement: true,
+        storageManager: false,
+        plugins: ['@silexlabs/grapesjs-data-source'],
+        pluginsOpts: {
+          '@silexlabs/grapesjs-data-source': {
+            dataSources: [{
+              id: 'countries',
+              type: 'graphql',
+              label: 'Countries',
+              url: 'https://countries.trevorblades.com/graphql',
+              method: 'POST',
+              headers: {},
+            }],
+            properties: {
+              el: () => editor.Panels.getPanel('views-container').view.el,
+              button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
+            },
+            filters: 'liquid',
+          }
+        }
+      });
+      editor.on("load", () => {
+        editor.addComponents(`<div>
+          <h1>About this demo</h1>
+          <p>For this test I configured the plugin with a demo country API: https://studio.apollographql.com/public/countries/variant/current/home</p>
+          <p><strong>Select a component and check it's settings on the right</strong></p>
+          <p>This plugin lets you set "states" on components with the data coming from the API</p>
+        </div>`);
+      });
+    </script>
+  </body>
+</html>
