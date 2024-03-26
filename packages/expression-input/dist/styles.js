@@ -1,5 +1,6 @@
 import { css } from 'lit';
 export const inputChainStyles = css `
+  .header,
   ::part(header) {
     display: flex;
     flex-direction: row;
@@ -25,6 +26,7 @@ export const inputChainStyles = css `
     color: var(--expression-input-dirty-color, red);
     cursor: pointer;
   }
+  .fixed,
   ::part(fixed) {
     display: flex;
     flex-direction: row;
@@ -33,10 +35,12 @@ export const inputChainStyles = css `
     overflow-x: auto;
     width: 100%;
   }
+  .dirty-icon,
   ::part(dirty-icon) {
     display: inline-block;
     width: 1rem;
   }
+  .property-container,
   ::part(property-container) {
     display: flex;
     flex-direction: row;
@@ -44,7 +48,10 @@ export const inputChainStyles = css `
     align-items: center;
     overflow-x: auto;
     padding: 10px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--expression-input-active-color, #333) var(--expression-input-active-background-color, #eee);
   }
+  .fixed-selector,
   ::part(fixed-selector) {
     display: flex;
     flex-direction: row;
