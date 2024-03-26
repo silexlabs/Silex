@@ -65,6 +65,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
         create-prompt="Name of the attribute"
         rename-prompt="Rename the attribute"
         default-name="New attribute"
+        reserved-names=${Object.keys(Properties).join(',')}
         >
         <style>
           ${options.styles}

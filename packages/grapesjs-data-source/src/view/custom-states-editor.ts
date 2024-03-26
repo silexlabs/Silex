@@ -207,16 +207,9 @@ export class CustomStatesEditor extends LitElement {
    * Get the states for this type of editor
    */
   getStateIds(component: Component): string[] {
-    const stateIds = getStateIds(component, !this.privateState)
-    switch(this.privateState) {
-      case true:
-        // All public states are states
-        return stateIds
-      case false:
-        return stateIds
-          // Filter out the states which are properties
-          .filter(stateId => !this.reservedNames.includes(stateId))
-    }
+    return getStateIds(component, !this.privateState)
+      // Filter out the states which are properties
+      .filter(stateId => !this.reservedNames.includes(stateId))
   }
 
   /**

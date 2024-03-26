@@ -113,7 +113,7 @@ export class PropertiesEditor extends LitElement {
         </details>
         <main>
           ${[
-            {label: 'Content (innerHTML)', name: Properties.innerHTML, publicState: false},
+            {label: 'HTML content', name: Properties.innerHTML, publicState: false},
           ].map(({label, name, publicState}) => this.renderStateEditor(selected, label, name, publicState))}
         </main>
       </section>
