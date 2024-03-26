@@ -25,10 +25,19 @@ import { StateEditor } from "../view/state-editor"
 /**
  * Check if a field is a number
  */
-function isNumber(field: Field | null): boolean {
-  if (!field || field.kind !== 'scalar') return false
+function isNumber(field: Field | null, scalarOnly = true): boolean {
+  if (!field || (scalarOnly && field.kind !== 'scalar')) return false
   const typeIds = field.typeIds.map(typeId => typeId.toLowerCase())
   return typeIds.includes('number') || typeIds.includes('int')
+}
+
+/**
+ * Check if a field is a string
+ */
+function isString(field: Field | null, scalarOnly = true): boolean {
+  if (!field || (scalarOnly && field.kind !== 'scalar')) return false
+  const typeIds = field.typeIds.map(typeId => typeId.toLowerCase())
+  return typeIds.includes('string')
 }
 
 /**
@@ -40,7 +49,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'strip_html',
       label: 'strip_html',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str) => (str as string).replace(/<[^>]*>/g, ''),
       options: {},
@@ -48,7 +57,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'append',
       label: 'append',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str, options) => `${str}${options.state}`,
       options: {
@@ -70,7 +79,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'prepend',
       label: 'prepend',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str, options) => `${options.state}${str}`,
       options: {
@@ -148,7 +157,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'join',
       label: 'join',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'list',
+      validate: (field: Field | null) => isString(field, false) && field?.kind === 'list',
       output: (field: Field | null) => convertKind(field, 'list', 'scalar'),
       apply: (arr, options) => (arr as string[]).join(options.separator as string ?? ','),
       options: {
@@ -183,7 +192,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'split',
       label: 'split',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: (field: Field | null) => convertKind(field, 'scalar', 'list'),
       apply: (str, options) => (str as string).split(options.separator as string ?? ','),
       options: {
@@ -355,7 +364,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'plus',
       label: 'plus',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => (num as number) + (options.value as number),
       options: {
@@ -370,7 +379,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'minus',
       label: 'minus',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => (num as number) - (options.value as number),
       options: {
@@ -385,7 +394,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'times',
       label: 'times',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => (num as number) * (options.value as number),
       options: {
@@ -400,7 +409,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'divided_by',
       label: 'divided_by',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => (num as number) / (options.value as number),
       options: {
@@ -415,7 +424,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'modulo',
       label: 'modulo',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => (
         (num as number) % (options.value as number)
@@ -432,7 +441,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'abs',
       label: 'abs',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num) => Math.abs(num as number),
       options: {},
@@ -440,7 +449,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'ceil',
       label: 'ceil',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num) => Math.ceil(num as number),
       options: {},
@@ -448,7 +457,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'floor',
       label: 'floor',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num) => Math.floor(num as number),
       options: {},
@@ -456,7 +465,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'round',
       label: 'round',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num) => Math.round(num as number),
       options: {},
@@ -464,7 +473,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'at_least',
       label: 'at_least',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => Math.max(num as number, options.value as number),
       options: {
@@ -479,7 +488,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'at_most',
       label: 'at_most',
-      validate: (field: Field | null) => !!field && isNumber(field),
+      validate: (field: Field | null) => isNumber(field),
       output: type => type,
       apply: (num, options) => Math.min(num as number, options.value as number),
       options: {
@@ -524,7 +533,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'escape',
       label: 'escape',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str) => (str as string).replace(/"/g, '\\"'),
       options: {},
@@ -532,7 +541,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'escape_once',
       label: 'escape_once',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str) => (str as string).replace(/"/g, '\\"'),
       options: {},
@@ -540,7 +549,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'newline_to_br',
       label: 'newline_to_br',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str) => (str as string).replace(/\n/g, '<br />'),
       options: {},
@@ -548,7 +557,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'strip_newlines',
       label: 'strip_newlines',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str) => (str as string).replace(/\n/g, ''),
       options: {},
@@ -556,7 +565,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'truncate',
       label: 'truncate',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str, options) => (str as string).slice(0, options.length as number),
       options: {
@@ -571,7 +580,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       type: 'filter',
       id: 'truncatewords',
       label: 'truncatewords',
-      validate: (field: Field | null) => !!field && field.typeIds.includes('String') && field.kind === 'scalar',
+      validate: (field: Field | null) => isString(field),
       output: type => type,
       apply: (str, options) => (str as string).split(' ').slice(0, options.length as number).join(' '),
       options: {
