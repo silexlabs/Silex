@@ -201,7 +201,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       quotedOptions: ['separator'],
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Separator
-          <input type="text" name="separator" placeholder="Separator" value=${options.separator}/>
+          <input type="text" name="separator" placeholder="Separator" .value=${options.separator}/>
         </label>
     `,
     }, {
@@ -291,7 +291,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Index
-          <input type="number" name="index" placeholder="Index" value=${options.index}/>
+          <input type="number" name="index" placeholder="Index" .value=${options.index}/>
         </label>
     `,
     }, {
@@ -372,7 +372,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -387,7 +387,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -402,7 +402,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -417,7 +417,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -434,7 +434,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -481,7 +481,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -496,7 +496,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
       `,
     }, {
@@ -573,7 +573,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Length
-          <input type="number" name="length" placeholder="Length" value=${options.length}/>
+          <input type="number" name="length" placeholder="Length" .value=${options.length}/>
         </label>
       `,
     }, {
@@ -588,7 +588,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       optionsForm: (field: Field | null, options: Options) => html`
         <label>Length
-          <input type="number" name="length" placeholder="Length" value=${options.length}/>
+          <input type="number" name="length" placeholder="Length" .value=${options.length}/>
         </label>
       `,
     },

@@ -198,7 +198,7 @@ export class StateEditor extends LitElement {
             type="text"
             class="ds-expression-input__fixed"
             placeholder="Enter a text or switch to expression mode"
-            value=${text}
+            .value=${text}
             />
         </div>
         ${ _currentValue && _currentValue.length > 0 ? html`

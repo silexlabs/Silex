@@ -142,7 +142,7 @@ export function getFixedToken(value: string): Token {
     },
     optionsForm: () => html`
         <label>Value
-          <input type="text" name="value" value=${value}>
+          <input type="text" name="value" .value=${value}>
         </label>
     `,
   }

@@ -208,7 +208,7 @@ export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (
     return html`
               ${arr.map((obj) => {
       const value = options[obj.name] ?? obj.value ?? ''
-      return html`<label>${obj.name}</label><input type="text" name=${obj.name} value=${value}>`
+      return html`<label>${obj.name}</label><input type="text" name=${obj.name} .value=${value}>`
     })
       }
           `
