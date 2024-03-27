@@ -132,7 +132,9 @@ export class StateEditor extends LitElement {
     this.requestUpdate()
   }
 
-  private editor: DataSourceEditor | null = null
+  @property({type: Object})
+  public editor: DataSourceEditor | null = null
+
   private redrawing = false
   private expressionInputRef = createRef<ExpressionInput>()
   private popinsRef: Ref<PopinForm>[] = []
@@ -148,12 +150,12 @@ export class StateEditor extends LitElement {
   override render() {
     this.redrawing = true
     super.render()
-    const selected = this.editor?.getSelected()
     if(!this.editor) {
       throw new Error('editor not set')
     }
+    const selected = this.editor.getSelected() ?? this.editor.Pages.getSelected()?.getMainComponent()
     if(!selected) {
-      throw new Error('no selected component')
+      throw new Error('no selected component, is there no "body" or page selected?')
     }
     if(!this.name) {
       throw new Error('name is required on state-editor')

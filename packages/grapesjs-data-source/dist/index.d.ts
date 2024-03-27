@@ -1,6 +1,6 @@
 import Backbone from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
-import { TemplateResult } from 'lit';
+import { LitElement, TemplateResult } from 'lit';
 
 export interface ComponentExpression {
 	expression: Expression;
@@ -521,6 +521,45 @@ export declare function getFieldType(editor: DataSourceEditor, field: Field | nu
  * @throws Error if the field has a token with an unknown type
  */
 export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
+/**
+ * Editor for a state of the selected element's properties
+ *
+ * Usage:
+ *
+ * ```
+ * <properties-editor disabled>
+ *   <style> / * Custom styles * / </style>
+ * </properties-editor>
+ * ```
+ *
+ */
+export declare class StateEditor extends LitElement {
+	disabled: boolean;
+	name: string;
+	noFilters: boolean;
+	rootType: string;
+	defaultFixed: boolean;
+	/**
+	 * Value string for for submissions
+	 */
+	get value(): string;
+	set value(newValue: string);
+	/**
+	 * Structured data
+	 */
+	private _data;
+	get data(): Token[];
+	set data(value: Token[] | string);
+	editor: DataSourceEditor | null;
+	private redrawing;
+	private expressionInputRef;
+	private popinsRef;
+	setEditor(editor: DataSourceEditor): void;
+	render(): TemplateResult<1>;
+	private onChangeValue;
+	private onChangeOptions;
+	private getOptions;
+}
 declare const _default: (editor: DataSourceEditor, opts?: Partial<DataSourceEditorOptions>) => void;
 /**
  * Version of the plugin

@@ -30,6 +30,7 @@ export * from './model/token'
 export * from './model/completion'
 export * from './types'
 export * from './utils'
+export * from './view/state-editor'
 
 /**
  * GrapeJs plugin entry point
