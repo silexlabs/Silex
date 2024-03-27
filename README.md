@@ -4,6 +4,8 @@ This is a meta repository for Silex website builder
 
 It includes all projects needed for Silex development as git submodules. This is the repo you need to contribute to Silex as many of the projects are dependencies of each other, so we can iterate in all at the same time and benefit from using [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) or [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces).
 
+To execute a command in every package, use `scripts/exec.js ls` or `npm run exec -- ls`
+
 There is no issue on this repo, please use the individual project's issues
 
 ## Included repositories in this meta repo
