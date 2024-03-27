@@ -190,20 +190,13 @@ export function getState(component: Component, id: StateId, exported: boolean = 
 export function setState(component: Component, id: StateId, state: StoredState, exported: boolean = true): void {
   const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
   const states = component.get(key) as StoredStateWithId[] ?? []
-  const existing = states.find(s => s.id === id) ?? null
-  if(existing) {
-    existing.label = state.label
-    existing.hidden = state.hidden
-    existing.expression = state.expression
-  } else {
-    component.set(key, [
-      ...states,
-      {
-        id,
-        ...state,
-      }
-    ])
-  }
+  component.set(key, [
+    ...states.filter(s => s.id !== id),
+    {
+      id,
+      ...state,
+    }
+  ])
   fireChange({
     label: state.label,
     hidden: state.hidden,
