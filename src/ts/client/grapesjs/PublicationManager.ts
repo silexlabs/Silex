@@ -212,12 +212,10 @@ export class PublicationManager {
     }
   }
 
-  async getPublicationData(): Promise<PublicationData> {
+  async getPublicationData(projectData, siteSettings): Promise<PublicationData> {
     // Data to publish
     // See assetUrl.ts which is a default transformer, always present
     this.setPublicationTransformers()
-    const projectData = this.editor.getProjectData() as WebsiteData
-    const siteSettings = this.editor.getModel().get('settings') as WebsiteSettings
     // Build the files structure
     const files: ClientSideFile[] = (await this.getHtmlFiles(siteSettings))
       .flatMap(file => ([{
@@ -280,7 +278,10 @@ export class PublicationManager {
       this.status = PublicationStatus.STATUS_PENDING
       this.job = null
       this.dialog && this.dialog.displayPending(this.job, this.status)
-      this.editor.trigger(ClientEvent.PUBLISH_START)
+      // Get the data to publish, clone the objects because plugins can change it
+      const projectData = { ...this.editor.getProjectData() as WebsiteData }
+      const siteSettings = { ...this.editor.getModel().get('settings') as WebsiteSettings }
+      this.editor.trigger(ClientEvent.PUBLISH_START, {projectData, siteSettings})
       // User and where to publish
       const storageUser = this.editor.getModel().get('user') as ConnectorUser
       if(!storageUser) throw new Error('User not logged in to a storage connector')
@@ -288,7 +289,7 @@ export class PublicationManager {
       const websiteId = this.options.websiteId
       const storageId = storageUser.storage.connectorId
       // Get the data to publish
-      const data = await this.getPublicationData()
+      const data = await this.getPublicationData(projectData, siteSettings)
       // Use the publication API
       const [url, job] = await publish({
         websiteId,
@@ -299,12 +300,6 @@ export class PublicationManager {
       })
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
-      // Save the publication settings
-      // Useless because the url is useful after publish only
-      //if(this.settings.url !== url) {
-      //  this.settings.url = url
-      //  await this.editor.store(null)
-      //}
       this.trackProgress()
     } catch (e) {
       console.error('publish error', e)
@@ -324,15 +319,18 @@ export class PublicationManager {
 
   async getHtmlFiles(siteSettings: WebsiteSettings): Promise<WebsiteFile[]> {
     return Promise.all(this.editor.Pages.getAll().map(async page => {
-      const pageSettings = page.get('settings') as WebsiteSettings
+      // Clone the settings because plugins can change them
+      siteSettings = { ...siteSettings }
+      const pageSettings = { ...page.get('settings') as WebsiteSettings }
+      // Utility function to get a setting from the page or the site settings
       function getSetting(name) {
         return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
       }
-      const component = page.getMainComponent()
 
       // Get the content from GrapesJS
-      const cssContent = this.editor.getCss({ component })
-      const htmlContent = this.editor.getHtml({ component })
+      const body = page.getMainComponent()
+      const cssContent = this.editor.getCss({ component: body })
+      const htmlContent = this.editor.getHtml({ component: body })
 
       // Transform the file paths
       const slug = getPageSlug(page.get('name'))
@@ -341,6 +339,14 @@ export class PublicationManager {
       const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS, Initiator.HTML)
       const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
+
+      // Let plugins transform the data
+      this.editor.trigger(ClientEvent.PUBLISH_PAGE, { siteSettings, pageSettings })
+
+      // Useful data for HTML result
+      const title = getSetting('title')
+      const favicon = getSetting('favicon')
+      // Return the HTML file
       return {
         html: `<!DOCTYPE html>
 <html lang="${getSetting('lang')}">
@@ -349,9 +355,10 @@ export class PublicationManager {
 <link rel="stylesheet" href="${cssPermalink}" />
 ${siteSettings?.head || ''}
 ${pageSettings?.head || ''}
-<title>${getSetting('title')}</title>
-<link rel="icon" href="${getSetting('favicon')}" />
+${ title ? `<title>${ title }</title>` : '' }
+${ favicon ? `<link rel="icon" href="${favicon}" />` : '' }
 ${['description', 'og:title', 'og:description', 'og:image']
+    .filter(prop => !!getSetting(prop))
     .map(prop => `<meta name="${prop}" property="${prop}" content="${getSetting(prop)}"/>`)
     .join('\n')
 }
