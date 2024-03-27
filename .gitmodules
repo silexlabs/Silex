@@ -1,21 +1,27 @@
 [submodule "packages/editor.silex.me"]
 	path = packages/editor.silex.me
 	url = git@github.com:silexlabs/editor.silex.me.git
+	branch = main
 [submodule "packages/silex-desktop"]
 	path = packages/silex-desktop
 	url = git@github.com:silexlabs/silex-desktop.git
+	branch = main
 [submodule "packages/grapesjs-ui-suggest-classes"]
 	path = packages/grapesjs-ui-suggest-classes
 	url = git@github.com:silexlabs/grapesjs-ui-suggest-classes.git
+	branch = main
 [submodule "packages/grapesjs-symbols"]
 	path = packages/grapesjs-symbols
 	url = git@github.com:silexlabs/grapesjs-sympbols.git
+	branch = main
 [submodule "packages/eleventy-plugin-directus"]
 	path = packages/eleventy-plugin-directus
 	url = git@github.com:silexlabs/eleventy-plugin-directus.git
+	branch = main
 [submodule "packages/grapesjs-fonts"]
 	path = packages/grapesjs-fonts
 	url = git@github.com:silexlabs/grapesjs-fonts.git
+	branch = main
 [submodule "packages/Silex"]
 	path = packages/Silex
 	url = git@github.com:silexlabs/Silex.git
@@ -23,42 +29,56 @@
 [submodule "packages/node_modules-path"]
 	path = packages/node_modules-path
 	url = git@github.com:lexoyo/node_modules-path.git
+	branch = main
 [submodule "packages/grapesjs-directus-storage"]
 	path = packages/grapesjs-directus-storage
 	url = git@github.com:silexlabs/grapesjs-directus-storage.git
+	branch = main
 [submodule "packages/grapesjs-loading"]
 	path = packages/grapesjs-loading
 	url = git@github.com:silexlabs/grapesjs-loading.git
+	branch = main
 [submodule "packages/eleventy-plugin-concat"]
 	path = packages/eleventy-plugin-concat
 	url = git@github.com:silexlabs/eleventy-plugin-concat.git
+	branch = main
 [submodule "packages/silex-plugins"]
 	path = packages/silex-plugins
 	url = git@github.com:silexlabs/silex-plugins.git
+	branch = main
 [submodule "packages/silex-dashboard"]
 	path = packages/silex-dashboard
 	url = git@github.com:silexlabs/silex-dashboard.git
+	branch = main
 [submodule "packages/grapesjs-data-source"]
 	path = packages/grapesjs-data-source
 	url = git@github.com:silexlabs/grapesjs-data-source.git
+	branch = main
 [submodule "packages/silex-plugin-starter"]
 	path = packages/silex-plugin-starter
 	url = git@github.com:silexlabs/silex-plugin-starter.git
+	branch = main
 [submodule "packages/grapesjs-filter-styles"]
 	path = packages/grapesjs-filter-styles
 	url = git@github.com:silexlabs/grapesjs-filter-styles.git
+	branch = main
 [submodule "packages/grapesjs-storage-rate-limit"]
 	path = packages/grapesjs-storage-rate-limit
 	url = git@github.com:silexlabs/grapesjs-storage-rate-limit.git
+	branch = main
 [submodule "packages/expression-input"]
 	path = packages/expression-input
 	url = git@github.com:silexlabs/expression-input.git
+	branch = main
 [submodule "packages/silex-strapi-11ty"]
 	path = packages/silex-strapi-11ty
 	url = git@github.com:silexlabs/silex-strapi-11ty.git
+	branch = main
 [submodule "packages/silex-cms"]
 	path = packages/silex-cms
 	url = git@github.com:silexlabs/silex-cms.git
+	branch = main
 [submodule "packages/11ty_silex.me-2024"]
 	path = packages/11ty_silex.me-2024
 	url = git@gitlab.com:lexoyo/11ty_silex.me-2024.git
+	branch = main
