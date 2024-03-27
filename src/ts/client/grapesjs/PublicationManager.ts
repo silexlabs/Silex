@@ -341,7 +341,7 @@ export class PublicationManager {
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
 
       // Let plugins transform the data
-      this.editor.trigger(ClientEvent.PUBLISH_PAGE, { siteSettings, pageSettings })
+      this.editor.trigger(ClientEvent.PUBLISH_PAGE, { page, siteSettings, pageSettings })
 
       // Useful data for HTML result
       const title = getSetting('title')

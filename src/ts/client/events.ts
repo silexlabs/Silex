@@ -24,7 +24,7 @@ export enum ClientEvent {
 
   // Sent on GrapesJs editor object (returned by silex.getEditor())
   PUBLISH_START = 'silex:publish:start', /* Publication starts, you can read+write {projectData, siteSettings} */
-  PUBLISH_PAGE = 'silex:publish:page', /* Publication of a page, read+write { siteSettings, pageSettings } */
+  PUBLISH_PAGE = 'silex:publish:page', /* Publication of a page, read+write { siteSettings, pageSettings, page } */
   PUBLISH_DATA = 'silex:publish:data', /* Just before we send the published data to the server, read+write all publication data, check PublicationData type in types.ts */
   PUBLISH_END = 'silex:publish:end', /* Publication is over, the argument is the publication result with {success: boolean, message: string} */
   PUBLISH_ERROR = 'silex:publish:error', /* Publication failed, the argument is the publication result with {success: boolean, message: string} */
