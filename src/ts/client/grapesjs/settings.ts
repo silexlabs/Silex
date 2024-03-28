@@ -99,10 +99,9 @@ export const settingsDialog = (editor, opts) => {
   editor.on('canvas:frame:load', () => {
     updateDom(editor)
   })
+  // When the page changes, update the dom
   editor.on('page', (e) => {
-    editor.Canvas.getFrameEl().addEventListener('load', () => {
-      updateDom(editor)
-    })
+    updateDom(editor)
   })
   headEditor = editor.CodeManager.createViewer({
     readOnly: false,
