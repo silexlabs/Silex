@@ -52,12 +52,13 @@ function clonePage(editor, page) {
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
-  // Add page
-  const newPage = editor.Pages.add({ name: pageName })
   // Clone components
-  const clones = page.getMainComponent().components().map(c => c.clone())
-  newPage.getMainComponent()
-    .components(clones)
+  const body = page.getMainComponent().clone()
+  // Add page
+  const newPage = editor.Pages.add({
+    name: pageName,
+    component: body,
+  })
   // Select the new page
   editor.Pages.select(newPage)
 }
