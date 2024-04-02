@@ -5,7 +5,7 @@ const GitlabConnector = require('@silexlabs/silex/dist/plugins/server/plugins/se
 const dash = require('@silexlabs/silex-dashboard')
 const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
 const node_modules = require('node_modules-path')
-const onboarding = require('./server-plugins/onboarding')
+const onboarding = require('./server-plugins/onboarding.js')
 
 module.exports = async function (config) {
   await config.addPlugin(dash)
