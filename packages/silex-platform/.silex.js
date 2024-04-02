@@ -5,9 +5,11 @@ const GitlabConnector = require('@silexlabs/silex/dist/plugins/server/plugins/se
 const dash = require('@silexlabs/silex-dashboard')
 const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
 const node_modules = require('node_modules-path')
+const onboarding = require('./server-plugins/onboarding')
 
 module.exports = async function (config) {
   await config.addPlugin(dash)
+  await config.addPlugin(onboarding)
 
   config.setHostingConnectors([
     new FtpConnector(config, {
@@ -33,6 +35,10 @@ module.exports = async function (config) {
       {
         route: '/js/silex-cms/',
         path: node_modules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/dist/',
+      },
+      {
+        route: '/js/client-plugins/',
+        path: './client-plugins/',
       },
     ],
   })
