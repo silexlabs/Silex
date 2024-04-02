@@ -1,5 +1,8 @@
 FROM node:18
 
+RUN apt-get update
+EXPOSE 6805
+
 # see doc about env vars here: https://github.com/silexlabs/Silex/wiki/How-to-Host-An-Instance-of-Silex#environment-variables
 # these can be overriden using the `-e` option in docker run
 # SILEX_FS_ROOT=/repo.git/
@@ -26,9 +29,7 @@ ENV SILEX_URL=http://localhost:6805
 
 COPY . /silex
 WORKDIR /silex
-RUN apt-get update
 RUN npm install
 # RUN npm run build
 
-EXPOSE 6805
 CMD ["npm", "start"]
