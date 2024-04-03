@@ -28,7 +28,7 @@ export default (editor: Editor, opts) => {
       property: 'min-width',
       type: 'integer',
       units: ['px', '%', 'em'],
-      default: 'auto',
+      default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
     }, { at: 2 })
     editor.StyleManager.addProperty('dimension', {
@@ -36,7 +36,7 @@ export default (editor: Editor, opts) => {
       property: 'max-height',
       type: 'integer',
       units: ['px', '%', 'em'],
-      default: 'auto',
+      default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
     }, { at: 5 })
     editor.StyleManager.addProperty('dimension', {
@@ -81,15 +81,17 @@ export default (editor: Editor, opts) => {
       max: 10000,
       units: [],
       info: 'Stacking order of the element',
-      default: 'auto',
+      default: '',
       fixedValues: ['auto', 'unset', 'initial', 'inherit', 'revert'],
     }, { at: 1 })
     editor.StyleManager.addProperty('extra', {
       name: 'Pointer events',
       property: 'pointer-events',
       type: 'select',
-      defaults: 'auto',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
         /* @ts-ignore */
         { value: 'auto', name: 'auto' },
         /* @ts-ignore */
@@ -117,8 +119,10 @@ export default (editor: Editor, opts) => {
       name: 'Cursor',
       property: 'cursor',
       type: 'select',
-      defaults: 'auto',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
         /* @ts-ignore */
         { value: 'auto', name: 'auto' },
         /* @ts-ignore */
@@ -200,7 +204,7 @@ export default (editor: Editor, opts) => {
       type: 'integer',
       units: [],
       info: 'The column-count CSS property breaks an element\'s content into the specified number of columns.',
-      default: 'auto',
+      default: '',
       fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
       min: 1,
     }, { at: 4 })
@@ -210,7 +214,7 @@ export default (editor: Editor, opts) => {
       type: 'integer',
       units: ['px', '%', 'em'],
       info: 'The column-width CSS property suggests an optimal column width. This is not a absolute value but a mere hint. Browser will adjust the width of the element automatically.',
-      default: 'auto',
+      default: '',
       fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
     }, { at: 5 })
     editor.StyleManager.addProperty('extra', {
@@ -219,7 +223,7 @@ export default (editor: Editor, opts) => {
       type: 'integer',
       units: ['px', '%', 'em'],
       info: 'The column-gap CSS property sets the size of the gap (gutter) between an element\'s columns.',
-      default: 'normal',
+      default: '',
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
     }, { at: 5 })
     editor.StyleManager.addProperty('extra', {
@@ -232,14 +236,16 @@ export default (editor: Editor, opts) => {
         type: 'integer',
         units: ['px', '%', 'em'],
         info: 'The column-rule-width CSS property sets the width of the line drawn between columns in a multi-column layout.',
-        default: 'medium',
+        default: '',
         fixedValues: ['medium', 'thin', 'thick', 'inherit', 'initial', 'revert', 'unset'],
       }, {
         name: 'Column rule style',
         property: 'column-rule-style',
         type: 'select',
-        defaults: 'none',
+        defaults: '',
         options: [
+          /* @ts-ignore */
+          { value: '', name: '' },          
           /* @ts-ignore */
           { value: 'none', name: 'none' },
           /* @ts-ignore */
@@ -268,7 +274,7 @@ export default (editor: Editor, opts) => {
         name: 'Column rule color',
         property: 'column-rule-color',
         type: 'color',
-        defaults: 'none',
+        defaults: '',
         info: 'The column-rule-color CSS property sets the color of the line drawn between columns in a multi-column layout.',
       }],
     }, { at: 6 })
@@ -276,8 +282,10 @@ export default (editor: Editor, opts) => {
       name: 'Column span',
       property: 'column-span',
       type: 'select',
-      defaults: 'none',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
         /* @ts-ignore */
         { value: 'none', name: 'none' },
         /* @ts-ignore */
@@ -296,14 +304,16 @@ export default (editor: Editor, opts) => {
         type: 'integer',
         units: ['px', '%', 'em'],
         info: 'The outline-width CSS property sets the thickness of an element\'s outline. An outline is a line that is drawn around an element, outside the border.',
-        default: 'medium',
+        default: '',
         fixedValues: ['medium', 'thin', 'thick', 'inherit', 'initial', 'revert', 'unset'],
       }, {
         name: 'Outline style',
         property: 'outline-style',
         type: 'select',
-        defaults: 'none',
+        defaults: '',
         options: [
+          /* @ts-ignore */
+          { value: '', name: '' },          
           /* @ts-ignore */
           { value: 'none', name: 'none' },
           /* @ts-ignore */
@@ -330,7 +340,7 @@ export default (editor: Editor, opts) => {
         name: 'Outline color',
         property: 'outline-color',
         type: 'color',
-        defaults: 'none',
+        defaults: '',
         info: 'The outline-color CSS property sets the color of an element\'s outline.',
       }],
     }, { at: 8 })
@@ -338,8 +348,10 @@ export default (editor: Editor, opts) => {
       name: 'Word break',
       property: 'word-break',
       type: 'select',
-      defaults: 'normal',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
         /* @ts-ignore */
         { value: 'normal', name: 'normal' },
         /* @ts-ignore */
@@ -355,7 +367,7 @@ export default (editor: Editor, opts) => {
       name: 'Word wrap',
       property: 'word-wrap',
       type: 'radio',
-      defaults: 'normal',
+      defaults: '',
       options: [
         /* @ts-ignore */
         { value: 'normal', name: 'normal' },
@@ -368,8 +380,10 @@ export default (editor: Editor, opts) => {
       name: 'White space',
       property: 'white-space',
       type: 'select',
-      defaults: 'normal',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
         /* @ts-ignore */
         { value: 'normal', name: 'normal' },
         /* @ts-ignore */
@@ -393,9 +407,11 @@ export default (editor: Editor, opts) => {
         name: 'Text decoration line',
         property: 'text-decoration-line',
         type: 'select',
-        defaults: 'none',
+        defaults: '',
         fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
         options: [
+          /* @ts-ignore */
+          { value: '', name: '' },                  
           /* @ts-ignore */
           { value: 'none', name: 'none' },
           /* @ts-ignore */
@@ -412,8 +428,10 @@ export default (editor: Editor, opts) => {
         name: 'Text decoration style',
         property: 'text-decoration-style',
         type: 'select',
-        defaults: 'solid',
+        defaults: '',
         options: [
+          /* @ts-ignore */
+          { value: '', name: '' },              
           /* @ts-ignore */
           { value: 'solid', name: 'solid' },
           /* @ts-ignore */
@@ -430,7 +448,7 @@ export default (editor: Editor, opts) => {
         name: 'Text decoration color',
         property: 'text-decoration-color',
         type: 'color',
-        defaults: 'initial',
+        defaults: '',
         fixedValues: ['inherit', 'initial', 'revert', 'unset'],
         info: 'The text-decoration-color CSS property sets the color of decorations added to text by text-decoration-line.',
       }, {
@@ -439,7 +457,7 @@ export default (editor: Editor, opts) => {
         type: 'integer',
         units: ['px', '%', 'em'],
         info: 'The text-decoration-thickness CSS property sets the stroke thickness of the decoration line that is used on text in an element, such as a line-through, underline, or overline.',
-        default: 'auto',
+        default: '',
         fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
       }],
     }, { at: 10 })
@@ -448,8 +466,10 @@ export default (editor: Editor, opts) => {
 
       property: 'text-transform',
       type: 'select',
-      defaults: 'none',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },            
         /* @ts-ignore */
         { value: 'none', name: 'none' },
         /* @ts-ignore */
@@ -465,8 +485,10 @@ export default (editor: Editor, opts) => {
       name: 'Text overflow',
       property: 'text-overflow',
       type: 'select',
-      defaults: 'clip',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
         /* @ts-ignore */
         { value: 'clip', name: 'clip' },
         /* @ts-ignore */
@@ -474,13 +496,37 @@ export default (editor: Editor, opts) => {
       ],
       info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
     }, { at: 12 })
-
+    /** remove default module et add custom one */
+    editor.StyleManager.removeProperty('general', 'display')
+    editor.StyleManager.addProperty('general', {
+      name: 'Display',
+      property: 'display',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
+        /* @ts-ignore */
+        { value: 'block', name: 'block' },
+        /* @ts-ignore */
+        { value: 'inline', name: 'inline' },
+        /* @ts-ignore */
+        { value: 'inline-block', name: 'inline-block' },
+        /* @ts-ignore */
+        { value: 'flex', name: 'flex' },
+        /* @ts-ignore */
+        { value: 'none', name: 'none' }, 
+      ],
+      info: '',
+    }, { at: 0 })
     editor.StyleManager.addProperty('general', {
       name: 'Visibility',
       property: 'visibility',
       type: 'select',
-      defaults: 'visible',
+      defaults: '',
       options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
         /* @ts-ignore */
         { value: 'visible', name: 'visible' },
         /* @ts-ignore */
@@ -496,7 +542,7 @@ export default (editor: Editor, opts) => {
       name: 'Content',
       property: 'content',
       type: 'text',
-      defaults: 'none',
+      defaults: '',
       info: 'The content CSS property replaces an element with a generated value. Objects inserted using the content property are anonymous replaced elements.',
       full: true,
       visible: false,
