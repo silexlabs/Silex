@@ -59,7 +59,7 @@ export default (editor: Editor, opts) => {
       }, {
         name: 'Overflow Y',
         type: 'radio',
-        options: [     
+        options: [
           /* @ts-ignore */
           { value: 'auto', name: 'auto' },
           /* @ts-ignore */
@@ -368,7 +368,7 @@ export default (editor: Editor, opts) => {
       property: 'word-wrap',
       type: 'radio',
       defaults: '',
-      options: [    
+      options: [
         /* @ts-ignore */
         { value: 'normal', name: 'normal' },
         /* @ts-ignore */
