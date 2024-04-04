@@ -326,14 +326,20 @@ export class StateEditor extends LitElement {
     if(idx >= 0) {
       // Custom event coming from the expression input
       // Remove the tokens after the changed one
-      this.data = this.data.slice(0, idx + 1)
+      const data = this.data.slice(0, idx + 1)
+      // Clear options
+      if(data[idx].type === 'property' || data[idx].type === 'filter') {
+        (data[idx] as Property | Filter).options = {}
+      }
+      this.data = data
     } else {
       // Event coming from the options
     }
     event.preventDefault()
     event.stopImmediatePropagation()
     event.stopPropagation()
-    this.dispatchEvent(new Event('change', { bubbles: true }))
+    // Let the redraw update this.data
+    setTimeout(() => this.dispatchEvent(new Event('change', { bubbles: true })))
   }
 
   private onChangeOptions(event: Event, component: Component, popin: PopinForm, idx: number) {
