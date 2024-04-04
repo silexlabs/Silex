@@ -50,6 +50,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
         rename-prompt="Rename the state"
         default-name="New state"
         reserved-names=${Object.keys(Properties).join(',')}
+        hide-loop-data
         >
         <style>
           ${options.styles}

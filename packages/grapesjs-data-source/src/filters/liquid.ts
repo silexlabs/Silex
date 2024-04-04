@@ -63,9 +63,10 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         state: '',
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           name="value"
+          parent-name=${stateName}
           data-is-input
           no-filters
           class="ds-state-editor__options"

@@ -159,7 +159,7 @@ export interface StoredProperty extends BaseProperty {
   options?: PropertyOptions
 }
 export interface Property extends StoredProperty {
-  optionsForm?: (input: Field | null, options: Options) => TemplateResult | null
+  optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null
 }
 
 /**
@@ -177,7 +177,7 @@ export interface StoredFilter {
   optionsKeys?: string[] // Optional, used to set a specific order
 }
 export interface Filter extends StoredFilter {
-  optionsForm?: (input: Field | null, options: Options) => TemplateResult | null
+  optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null
   validate: (input: Field | null) => boolean
   output: (input: Field | null, options: Options) => Field | null
   apply: (input: unknown, options: Options) => unknown

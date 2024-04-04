@@ -168,12 +168,13 @@ export class PropertiesEditor extends LitElement {
     }
   }
 
-  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean, dismissCurrentComponentStates = false) {
+  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean, hideLoopData = false) {
     return html`
       <state-editor
         id="${name}"
         name=${name}
         default-fixed=${this.defaultFixed}
+        ?hide-loop-data=${hideLoopData}
         ${ref(el => {
           // Get the stateEditor ref
           if (el) {
@@ -200,7 +201,6 @@ export class PropertiesEditor extends LitElement {
         })}
         @change=${() => this.onChange(selected, name, publicState)}
         ?disabled=${this.disabled}
-        ?dismiss-current-component-states=${dismissCurrentComponentStates}
       >
         <label slot="label">${label}</label>
       </state-editor>

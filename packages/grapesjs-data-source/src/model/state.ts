@@ -192,8 +192,9 @@ export function getState(component: Component, id: StateId, exported: boolean = 
 /**
  * Set a state
  * The state will be updated or created at the end of the list
+ * Note: index is not used in this project anymore (maybe in apps using this plugins)
  */
-export function setState(component: Component, id: StateId, state: StoredState, exported: boolean = true): void {
+export function setState(component: Component, id: StateId, state: StoredState, exported = true, index = -1): void {
   const key = exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY
   const states = component.get(key) as StoredStateWithId[] ?? []
   const existing = states.find(s => s.id === id) ?? null
@@ -211,6 +212,17 @@ export function setState(component: Component, id: StateId, state: StoredState, 
       }
     ])
   }
+  // Set the index if needed
+  if(index >= 0) {
+    const states = [...component.get(key) as StoredStateWithId[]]
+    const state = states.find(s => s.id === id)
+    if(state && index < states.length) {
+      states.splice(states.indexOf(state), 1)
+      states.splice(index, 0, state)
+      component.set(key, states)
+    }
+  }
+  // Notify the change
   fireChange({
     label: state.label,
     hidden: state.hidden,

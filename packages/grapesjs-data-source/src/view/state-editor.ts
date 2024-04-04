@@ -52,6 +52,16 @@ export class StateEditor extends LitElement {
   @property({type: String})
   name = ''
 
+  @property({type: Boolean, attribute: 'hide-loop-data'})
+  hideLoopData = false
+
+  /**
+   * used in the expressions found in filters options
+   * This will be used to filter states which are not defined yet
+   */
+  @property({type: String, attribute: 'parent-name'})
+  parentName = ''
+
   @property({type: Boolean, attribute: 'no-filters'})
   noFilters = false
 
@@ -61,6 +71,7 @@ export class StateEditor extends LitElement {
   @property({type: Boolean, attribute: 'default-fixed'})
   defaultFixed = false
 
+  // Note: dismissCurrentComponentStates not used in this project anymore
   @property({type: Boolean, attribute: 'dismiss-current-component-states'})
   dismissCurrentComponentStates = false
 
@@ -172,7 +183,8 @@ export class StateEditor extends LitElement {
       expression: _currentValue || [],
       dataTree,
       rootType: this.rootType,
-      currentStateId: this.name,
+      currentStateId: this.parentName || this.name,
+      hideLoopData: this.hideLoopData,
     })
     const completion = this.noFilters ? rawCompletion
       .filter(token => token.type !== 'filter')
@@ -222,7 +234,8 @@ export class StateEditor extends LitElement {
               expression: partialExpression,
               dataTree,
               rootType: this.rootType,
-              currentStateId: idx === 0 ? this.name : undefined,
+              currentStateId: idx === 0 ? this.parentName || this.name : undefined,
+              hideLoopData: this.hideLoopData,
             })
             const partialCompletion = this.noFilters ? _partialCompletion
               .filter(token => token.type !== 'filter')
@@ -384,7 +397,7 @@ export class StateEditor extends LitElement {
       case 'property':
       case 'filter':
         if(token.optionsForm) {
-          const form = token.optionsForm(fields[fields.length - 1], token.options || {})
+          const form = token.optionsForm(fields[fields.length - 1], token.options || {}, this.parentName || this.name)
           return form || ''
         }
         return ''

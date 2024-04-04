@@ -252,7 +252,7 @@ export interface StoredProperty extends BaseProperty {
 	options?: PropertyOptions;
 }
 export interface Property extends StoredProperty {
-	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
+	optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null;
 }
 /**
  * A filter is used to alter data in an expression
@@ -269,7 +269,7 @@ export interface StoredFilter {
 	optionsKeys?: string[];
 }
 export interface Filter extends StoredFilter {
-	optionsForm?: (input: Field | null, options: Options) => TemplateResult | null;
+	optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null;
 	validate: (input: Field | null) => boolean;
 	output: (input: Field | null, options: Options) => Field | null;
 	apply: (input: unknown, options: Options) => unknown;
@@ -386,8 +386,9 @@ export declare function getState(component: Component, id: StateId, exported?: b
 /**
  * Set a state
  * The state will be updated or created at the end of the list
+ * Note: index is not used in this project anymore (maybe in apps using this plugins)
  */
-export declare function setState(component: Component, id: StateId, state: StoredState, exported?: boolean): void;
+export declare function setState(component: Component, id: StateId, state: StoredState, exported?: boolean, index?: number): void;
 /**
  * Remove a state
  */
@@ -449,7 +450,7 @@ export declare function buildArgs(options: PropertyOptions | undefined): string;
  * Get the context of a component
  * This includes all parents states, data sources queryable values, values provided in the options
  */
-export declare function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId): Context;
+export declare function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId, hideLoopData?: boolean): Context;
 /**
  * Create a property token from a field
  */
@@ -464,6 +465,7 @@ export declare function getCompletion(options: {
 	dataTree: DataTree;
 	rootType?: TypeId;
 	currentStateId?: StateId;
+	hideLoopData?: boolean;
 }): Context;
 /**
  * Get the display name of a field
@@ -542,6 +544,12 @@ export declare function optionsFormKeySelector(editor: DataSourceEditor, field: 
 export declare class StateEditor extends LitElement {
 	disabled: boolean;
 	name: string;
+	hideLoopData: boolean;
+	/**
+	 * used in the expressions found in filters options
+	 * This will be used to filter states which are not defined yet
+	 */
+	parentName: string;
 	noFilters: boolean;
 	rootType: string;
 	defaultFixed: boolean;

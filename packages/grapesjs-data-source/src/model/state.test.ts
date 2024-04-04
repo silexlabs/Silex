@@ -56,3 +56,21 @@ test('getStateIds', () => {
   expect(getStateIds(parent, true, 'state4')).toEqual(['state1', 'state2'])
   expect(getStateIds(parent, true, 'does not exist')).toEqual(['state1', 'state2', 'state4'])
 })
+test('getStateIds with specific index', () => {
+  const editor = grapesjs.init({
+    container: document.createElement('div'),
+    components: `<div id="parent"></div>`,
+  })
+  const parent = editor.Components.getById('parent')
+  setState(parent, 'state1', {label: 'State 1', expression: []}, true)
+  setState(parent, 'state2', {label: 'State 2', expression: []}, true)
+  setState(parent, 'state3', {label: 'State 3', expression: []}, false)
+  setState(parent, 'state4', {label: 'State 4', expression: []}, true)
+  setState(parent, 'statePos10', {label: 'State Pos 10', expression: []}, true, 10)
+  setState(parent, 'statePos0', {label: 'State Pos 0', expression: []}, true, 0)
+  setState(parent, 'statePos2', {label: 'State Pos 2', expression: []}, true, 2)
+  setState(parent, 'statePos11', {label: 'State Pos 11', expression: []}, true, 11)
+
+  expect(getStateIds(parent)).toEqual(['statePos0', 'state1', 'statePos2', 'state2', 'state4', 'statePos10', 'statePos11'])
+  expect(getStateIds(parent, false)).toEqual(['state3'])
+})

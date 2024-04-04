@@ -71,6 +71,9 @@ export class CustomStatesEditor extends LitElement {
     else this._reservedNames = value
   }
 
+  @property({type: Boolean, attribute: 'hide-loop-data'})
+  hideLoopData = false
+
   private _reservedNames: string[] = []
   private editor: DataSourceEditor | null = null
   private redrawing = false
@@ -238,6 +241,7 @@ export class CustomStatesEditor extends LitElement {
       <state-editor
         id="${name}"
         name=${name}
+        ?hide-loop-data=${this.hideLoopData}
         default-fixed=${this.defaultFixed}
         ${ref(el => {
           if (el) {

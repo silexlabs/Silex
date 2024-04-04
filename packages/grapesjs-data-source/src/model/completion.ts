@@ -8,7 +8,7 @@ import { getExpressionResultType, getTokenOptions } from "./token"
  * Get the context of a component
  * This includes all parents states, data sources queryable values, values provided in the options
  */
-export function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId): Context {
+export function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId, hideLoopData = false): Context {
   if (!component) {
     console.error('Component is required for context')
     throw new Error('Component is required for context')
@@ -35,68 +35,47 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
         exposed: true,
       }))))
     // Get states from loops
-    //if (parent !== component) {
-    const loopDataState = getState(parent, '__data', false)
-    if (loopDataState) {
-      try {
-        const loopDataField = getExpressionResultType(loopDataState.expression, parent, dataTree)
-        if (loopDataField) {
-          const displayName = (label: string) => `${parent.getName() ?? 'Unknown'}'s ${loopDataField.label} ${label}`
-          if (loopDataField.kind === 'list') {
-            loopProperties.push({
-              type: 'state',
-              storedStateId: '__data',
-              componentId: getOrCreatePersistantId(parent),
-              exposed: false,
-              forceKind: 'object', // FIXME: this may be a scalar
-              label: `Loop data (${loopDataField.label})`,
-            }, {
-              type: 'property',
-              propType: 'field',
-              fieldId: 'forloop.index0',
-              label: displayName('forloop.index0'),
-              kind: 'scalar',
-              typeIds: ['number'],
-            }, {
-              type: 'property',
-              propType: 'field',
-              fieldId: 'forloop.index',
-              label: displayName('forloop.index'),
-              kind: 'scalar',
-              typeIds: ['number'],
-            }, {
-              type: 'property',
-              propType: 'field',
-              fieldId: 'forloop.length',
-              label: displayName('forloop.length'),
-              kind: 'scalar',
-              typeIds: ['number'],
-            }, {
-              type: 'property',
-              propType: 'field',
-              fieldId: 'forloop.first',
-              label: displayName('forloop.first'),
-              kind: 'scalar',
-              typeIds: ['boolean'],
-            }, {
-              type: 'property',
-              propType: 'field',
-              fieldId: 'forloop.last',
-              label: displayName('forloop.last'),
-              kind: 'scalar',
-              typeIds: ['boolean'],
-            })
+    if (parent !== component || !hideLoopData) { // If it is a loop on the parent or if we don't hide the loop data
+      const loopDataState = getState(parent, '__data', false)
+      if (loopDataState) {
+        try {
+          const loopDataField = getExpressionResultType(loopDataState.expression, parent, dataTree)
+          if (loopDataField) {
+            const displayName = (label: string) => `${parent.getName() ?? 'Unknown'}'s ${loopDataField.label} ${label}`
+            if (loopDataField.kind === 'list') {
+              loopProperties.push({
+                type: 'state',
+                storedStateId: '__data',
+                componentId: getOrCreatePersistantId(parent),
+                exposed: false,
+                forceKind: 'object', // FIXME: this may be a scalar
+                label: `Loop data (${loopDataField.label})`,
+              }, {
+                type: 'property',
+                propType: 'field',
+                fieldId: 'forloop.index0',
+                label: displayName('forloop.index0'),
+                kind: 'scalar',
+                typeIds: ['number'],
+              }, {
+                type: 'property',
+                propType: 'field',
+                fieldId: 'forloop.index',
+                label: displayName('forloop.index'),
+                kind: 'scalar',
+                typeIds: ['number'],
+              })
+            } else {
+              console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
+            }
           } else {
-            console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
+            console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
           }
-        } else {
-          console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
+        } catch (e) {
+          console.error('Error while getting loop data for component', parent, 'and state', loopDataState)
         }
-      } catch (e) {
-        console.error('Error while getting loop data for component', parent, 'and state', loopDataState)
       }
     }
-    //}
     // Go up to parent
     parent = parent.parent() as Component
   }
@@ -134,8 +113,8 @@ export function fieldToToken(field: Field): Property {
  * Auto complete an expression
  * @returns a list of possible tokens to add to the expression
  */
-export function getCompletion(options: { component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId, currentStateId?: StateId}): Context {
-  const { component, expression, dataTree, rootType, currentStateId } = options;
+export function getCompletion(options: { component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId, currentStateId?: StateId, hideLoopData?: boolean}): Context {
+  const { component, expression, dataTree, rootType, currentStateId, hideLoopData } = options;
   if (!component) throw new Error('Component is required for completion')
   if (!expression) throw new Error('Expression is required for completion')
   if (expression.length === 0) {
@@ -148,7 +127,7 @@ export function getCompletion(options: { component: Component, expression: Expre
       return type.fields
         .map((field: Field) => fieldToToken(field))
     }
-    return getContext(component, dataTree, currentStateId)
+    return getContext(component, dataTree, currentStateId, hideLoopData)
   }
   const field = getExpressionResultType(expression, component, dataTree)
   if (!field) {
