@@ -8,7 +8,7 @@ import { getExpressionResultType, getTokenOptions } from "./token"
  * Get the context of a component
  * This includes all parents states, data sources queryable values, values provided in the options
  */
-export function getContext(component: Component, dataTree: DataTree): Context {
+export function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId): Context {
   if (!component) {
     console.error('Component is required for context')
     throw new Error('Component is required for context')
@@ -26,7 +26,7 @@ export function getContext(component: Component, dataTree: DataTree): Context {
   while (parent) {
     // Get explicitely set states
     states
-      .push(...(getStateIds(parent, true)
+      .push(...(getStateIds(parent, true, parent === component ? currentStateId : undefined)
       .map((stateId: StateId): State => ({
         type: 'state',
         storedStateId: stateId,
@@ -134,7 +134,8 @@ export function fieldToToken(field: Field): Property {
  * Auto complete an expression
  * @returns a list of possible tokens to add to the expression
  */
-export function getCompletion(component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId): Context {
+export function getCompletion(options: { component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId, currentStateId?: StateId}): Context {
+  const { component, expression, dataTree, rootType, currentStateId } = options;
   if (!component) throw new Error('Component is required for completion')
   if (!expression) throw new Error('Expression is required for completion')
   if (expression.length === 0) {
@@ -147,7 +148,7 @@ export function getCompletion(component: Component, expression: Expression, data
       return type.fields
         .map((field: Field) => fieldToToken(field))
     }
-    return getContext(component, dataTree)
+    return getContext(component, dataTree, currentStateId)
   }
   const field = getExpressionResultType(expression, component, dataTree)
   if (!field) {

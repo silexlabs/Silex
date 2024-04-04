@@ -118,7 +118,7 @@ export class CustomStatesEditor extends LitElement {
         <details class="ds-states__help">
           <summary>Help</summary>
           Custom states are used to store data in the component.
-          They are useful to store data that is not displayed in the page, but that is used in the expressions of the properties section bellow.
+          They are useful to store data that is not displayed in the page, but that is used in the expressions everywhere inside the element.
           <a target="_blank" href="https://docs.silex.me/en/user/cms#custom-states">Learn more about custom states</a>
         </details>
       </section>

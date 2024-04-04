@@ -369,7 +369,7 @@ export declare function onStateChange(callback: (state: StoredState | null, comp
 /**
  * List all exported states
  */
-export declare function getStateIds(component: Component, exported?: boolean): StateId[];
+export declare function getStateIds(component: Component, exported?: boolean, before?: StateId): StateId[];
 /**
  * List all exported states
  */
@@ -449,7 +449,7 @@ export declare function buildArgs(options: PropertyOptions | undefined): string;
  * Get the context of a component
  * This includes all parents states, data sources queryable values, values provided in the options
  */
-export declare function getContext(component: Component, dataTree: DataTree): Context;
+export declare function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId): Context;
 /**
  * Create a property token from a field
  */
@@ -458,7 +458,13 @@ export declare function fieldToToken(field: Field): Property;
  * Auto complete an expression
  * @returns a list of possible tokens to add to the expression
  */
-export declare function getCompletion(component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId): Context;
+export declare function getCompletion(options: {
+	component: Component;
+	expression: Expression;
+	dataTree: DataTree;
+	rootType?: TypeId;
+	currentStateId?: StateId;
+}): Context;
 /**
  * Get the display name of a field
  */
@@ -539,6 +545,7 @@ export declare class StateEditor extends LitElement {
 	noFilters: boolean;
 	rootType: string;
 	defaultFixed: boolean;
+	dismissCurrentComponentStates: boolean;
 	/**
 	 * Value string for for submissions
 	 */

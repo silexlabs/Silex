@@ -61,6 +61,9 @@ export class StateEditor extends LitElement {
   @property({type: Boolean, attribute: 'default-fixed'})
   defaultFixed = false
 
+  @property({type: Boolean, attribute: 'dismiss-current-component-states'})
+  dismissCurrentComponentStates = false
+
   /**
    * Value string for for submissions
    */
@@ -164,7 +167,13 @@ export class StateEditor extends LitElement {
     const _currentValue = this._data
 
     // Get the data to show in the "+" drop down
-    const rawCompletion = getCompletion(selected, _currentValue || [], dataTree, this.rootType)
+    const rawCompletion = getCompletion({
+      component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
+      expression: _currentValue || [],
+      dataTree,
+      rootType: this.rootType,
+      currentStateId: this.name,
+    })
     const completion = this.noFilters ? rawCompletion
       .filter(token => token.type !== 'filter')
       : rawCompletion
@@ -208,7 +217,13 @@ export class StateEditor extends LitElement {
             this.popinsRef[idx] = createRef<PopinForm>()
             const optionsForm = this.getOptions(selected, _currentValue, idx)
             const partialExpression = _currentValue.slice(0, idx)
-            const _partialCompletion = getCompletion(selected, partialExpression, dataTree, this.rootType)
+            const _partialCompletion = getCompletion({
+              component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
+              expression: partialExpression,
+              dataTree,
+              rootType: this.rootType,
+              currentStateId: idx === 0 ? this.name : undefined,
+            })
             const partialCompletion = this.noFilters ? _partialCompletion
               .filter(token => token.type !== 'filter')
               : _partialCompletion

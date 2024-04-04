@@ -91,6 +91,33 @@ test('get context with parent compontent states', () => {
   expect(typeProp.storedStateId).toBe('testStateId')
 })
 
+// Don't get the states which are not yet defined
+test('get context with available states only', () => {
+  const component = editor.getComponents().first()
+  const child: Component = component.append('<div></div>')[0]
+
+  // Define mock values
+  ;(getStateIds as jest.Mock).mockImplementation((c: unknown) => {
+    if(c === component) return ['testStateId0', 'testStateId1', 'testStateId2']
+    else if(c === child) return ['childStateId0', 'childStateId1', 'childStateId2']
+    else return []
+  })
+  const dataTree = new DataTree(editor as DataSourceEditor, { filters: [], dataSources: [] })
+  // Case of an attribute, all states are available
+  const context = getContext(component, dataTree)
+  expect(context).toBeDefined()
+  expect(getStateIds).toHaveBeenCalledTimes(2) // The component and the body, not the child
+  expect(getStateIds).toHaveBeenNthCalledWith(1, component, true, undefined)
+  expect(getStateIds).toHaveBeenNthCalledWith(2, component.parent(), true, undefined)
+  // Case of the first state, no states are available
+  ;(getStateIds as jest.Mock).mockClear()
+  const context2 = getContext(child, dataTree, 'childStateId0')
+  expect(context2).toBeDefined()
+  expect(getStateIds).toHaveBeenCalledTimes(3)
+  expect(getStateIds).toHaveBeenNthCalledWith(1, child, true, 'childStateId0')
+  expect(getStateIds).toHaveBeenNthCalledWith(2, child.parent(), true, undefined)
+})
+
 test('get context with data source queryable values', () => {
   const component = editor.getComponents().first()
   const dataTree = new DataTree(editor as DataSourceEditor, {
@@ -143,42 +170,54 @@ test('get completion with simple context', () => {
 
   // Empty value
   // The context is the queryables here
-  const completion1 = getCompletion(component, [], dataTree)
+  const completion1 = getCompletion({
+    component,
+    expression: [],
+    dataTree,
+  })
   expect(completion1).toHaveLength(1) 
   expect(completion1).toEqual(simpleQueryableTokens)
 
   // 1 level value
-  const completion2 = getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: testDataSourceId,
-  }], dataTree)
+  const completion2 = getCompletion({
+    component,
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    }],
+    dataTree,
+  })
   expect(completion2).toHaveLength(1)
   const typeProp = completion2[0] as Property
   expect(typeProp.typeIds).toContain('testFieldTypeId')
 
   // 2 levels value
-  const completion3 = getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: testDataSourceId,
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testFieldTypeId'],
-    kind: 'object',
-    dataSourceId: testDataSourceId,
-  }], dataTree)
+  const completion3 = getCompletion({
+    component,
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    }, {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testFieldTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    }],
+    dataTree,
+  })
   expect(completion3).toHaveLength(0)
 })
 
@@ -196,40 +235,52 @@ test('get completion with filters', () => {
   const component = editor.getComponents().first()
 
   // Empty value
-  expect(getCompletion(component, [], dataTree)).toEqual([
+  expect(getCompletion({
+    component,
+    expression: [],
+    dataTree,
+  })).toEqual([
     simpleQueryableTokens[0],
     simpleFilters[0],
   ])
 
   // 1 level value
-  const completion = getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: testDataSourceId,
-  }], dataTree)
+  const completion = getCompletion({
+    component,
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    }],
+    dataTree,
+  })
   expect(completion).toHaveLength(2) // 1 field and 1 filters
 
   // 2 levels value
-  const completion2 = getCompletion(component, [{
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testTypeId'],
-    kind: 'object',
-    dataSourceId: testDataSourceId,
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    label: 'test field name',
-    typeIds: ['testFieldTypeId'],
-    kind: 'object',
-    dataSourceId: testDataSourceId,
-  }], dataTree)
+  const completion2 = getCompletion({
+    component,
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    }, {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'testFieldId',
+      label: 'test field name',
+      typeIds: ['testFieldTypeId'],
+      kind: 'object',
+      dataSourceId: testDataSourceId,
+    }],
+    dataTree,
+  })
   expect(completion2).toHaveLength(1) // 1 filter
 })

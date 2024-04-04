@@ -151,7 +151,7 @@ export class PropertiesEditor extends LitElement {
           <label class="gjs-traits-label ds-label">Loop</label>
         </div>
         <main>
-          ${this.renderStateEditor(selected, 'Data', Properties.__data, false)}
+          ${this.renderStateEditor(selected, 'Data', Properties.__data, false, true)}
         </main>
       </section>
     `
@@ -168,7 +168,7 @@ export class PropertiesEditor extends LitElement {
     }
   }
 
-  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean) {
+  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean, dismissCurrentComponentStates = false) {
     return html`
       <state-editor
         id="${name}"
@@ -199,7 +199,8 @@ export class PropertiesEditor extends LitElement {
           }
         })}
         @change=${() => this.onChange(selected, name, publicState)}
-        .disabled=${this.disabled}
+        ?disabled=${this.disabled}
+        ?dismiss-current-component-states=${dismissCurrentComponentStates}
       >
         <label slot="label">${label}</label>
       </state-editor>

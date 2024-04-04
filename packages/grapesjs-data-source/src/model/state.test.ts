@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import grapesjs from "grapesjs"
-import { getChildByPersistantId, getComponentByPersistentId, getParentByPersistentId, getPersistantId } from "./state"
+import { getChildByPersistantId, getComponentByPersistentId, getParentByPersistentId, getPersistantId, getStateIds, setState } from "./state"
 import { DataSourceEditor } from "../types"
 
 test('getChildByPersistantId', () => {
@@ -32,4 +32,27 @@ test('getChildByPersistantId', () => {
   expect(getChildByPersistantId('test-id-child3', parent)).toBe(child3)
   expect(getComponentByPersistentId('test-id-child3', editor as DataSourceEditor)).toBe(child3)
   expect(getComponentByPersistentId('test-id-parent', editor as DataSourceEditor)).toBe(parent)
+})
+test('getStateIds', () => {
+  const editor = grapesjs.init({
+    container: document.createElement('div'),
+    components: `<div id="parent">
+      <div id="child1"></div>
+      <div id="child2">
+        <div id="child3"></div>
+      </div>
+    </div>`,
+  })
+  const parent = editor.Components.getById('parent')
+  setState(parent, 'state1', {label: 'State 1', expression: []})
+  setState(parent, 'state2', {label: 'State 2', expression: []}, true)
+  setState(parent, 'state3', {label: 'State 3', expression: []}, false)
+  setState(parent, 'state4', {label: 'State 4', expression: []}, true)
+
+  expect(getStateIds(parent)).toEqual(['state1', 'state2', 'state4'])
+  expect(getStateIds(parent, true)).toEqual(['state1', 'state2', 'state4'])
+  expect(getStateIds(parent, false)).toEqual(['state3'])
+  expect(getStateIds(parent, true, 'state2')).toEqual(['state1'])
+  expect(getStateIds(parent, true, 'state4')).toEqual(['state1', 'state2'])
+  expect(getStateIds(parent, true, 'does not exist')).toEqual(['state1', 'state2', 'state4'])
 })
