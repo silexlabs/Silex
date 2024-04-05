@@ -46,6 +46,8 @@ module.exports = {
   plugins: [
     new webpack.DefinePlugin({
       VERSION: JSON.stringify(require("./package.json").version),
+      FONTS_API_KEY: process.env.FONTS_API_KEY || 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc', // A test key for local development
+      FONTS_SERVER_URL: process.env.FONTS_SERVER_URL,
     }),
   ]
 };
