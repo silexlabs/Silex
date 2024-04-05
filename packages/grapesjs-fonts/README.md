@@ -8,7 +8,7 @@ Custom Fonts plugin for grapesjs
 
 Links
 
-* [DEMO on Codepen](https://codepen.io/lexoyo/pen/zYLWdxY)
+* [DEMO on Codepen](https://codepen.io/lexoyo/full/zYLWdxY)
 * [Npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-fonts)
 * [Discussion about ongoing developments](https://github.com/artf/grapesjs/discussions/4858#discussioncomment-4756119)
 
@@ -28,6 +28,7 @@ The plugin currently has these features
 * [x] Integration with google API
 * [x] Store google fonts list in local storage for performance and API quotas
 * [x] Generate HTML imports for the final website
+* [x] Support [Google fonts proxies, e.g fontlay](https://fontlay.com/) and a [privacy-friendly drop-in replacement for Google Fonts, e.g coollabsio's fonts server](https://github.com/coollabsio/fonts)
 * [ ] Generate CSS imports for the final website
 * [ ] Handle variants and weights
 * [ ] Google fonts V3 API
@@ -132,6 +133,7 @@ Also you should style the dialog:
 | Option | Description | Default |
 |-|-|-
 | `api_key` | Google fonts API key, [see this doc to get an API key](https://developers.google.com/fonts/docs/developer_api#APIKey) | Required |
+| `server_url` | Google fonts server or a free [privacy-friendly drop-in replacement for Google Fonts](https://github.com/coollabsio/fonts) or [a proxy server to speed up the load and protect privacy](https://fontlay.com/) | `https://fonts.googleapis.com` |
 
 ## Download
 

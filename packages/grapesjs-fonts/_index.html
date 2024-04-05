@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test fonts</title>
+  <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/grapesjs"></script>
+  <script src="https://unpkg.com/grapesjs-preset-webpage"></script>
+  <style>
+    body,
+    html {
+      margin: 0;
+      height: 100%;
+    }
+  
+    .grapesjs-fonts select {
+      background-color: #352d2f;
+      color: #b9a5a6;
+      padding: 5px;
+      border: none;
+    }
+  
+    .grapesjs-fonts input,
+    .grapesjs-fonts button {
+      background-color: #352d2f;
+      color: #b9a5a6;
+      padding: 5px;
+      border: none;
+    }
+  
+    .grapesjs-fonts .silex-bar {
+      display: flex;
+    }
+  
+    .grapesjs-fonts .silex-bar>* {
+      margin: 5px;
+    }
+  
+    .grapesjs-fonts input {}
+  
+    .grapesjs-fonts button {
+      padding: 5px;
+      margin: 5px;
+      padding-top: 8px;
+    }
+  
+    .grapesjs-fonts .silex-list__item__footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; left: 120px;"></div>
+  <div id="gjs"></div>
+  <script type="text/javascript">
+      window.addEventListener('load', () => {
+        var editor = grapesjs.init({
+          container: '#gjs',
+          fromElement: true,
+          height: '100%',
+          storageManager: { autoload: 0 },
+          plugins: ['grapesjs-preset-webpage', '@silexlabs/grapesjs-fonts'],
+          pluginsOpts: {
+            'gjs-preset-webpage': {
+              modalImportTitle: 'Import Template',
+              modalImportButton: 'Import',
+              modalImportLabel: '',
+              modalImportContent: '',
+              importViewerOptions: {},
+            },
+            '@silexlabs/grapesjs-fonts': {
+              api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
+            },
+          }
+        });
+        editor.on("load", () => {
+          editor.Panels.addPanel({
+            id: "basic-actions",
+            el: ".panel__basic-actions",
+            buttons: [
+              {
+                id: "create-button",
+                label: "Open font dialog",
+                command(editor) {
+                  editor.runCommand("open-fonts");
+                }
+              }
+            ]
+          });
+        })
+      })
+  </script>
+</body>
+</html>

@@ -22,6 +22,11 @@ let fonts
 let defaults = []
 
 /**
+ * Options
+ */
+let fontServer = 'https://fonts.googleapis.com'
+
+/**
  * Load available fonts only once per session
  * Use local storage
  */
@@ -76,6 +81,7 @@ async function loadFontList(url) {
 
 export const fontsDialogPlugin = (editor, opts) => {
     defaults = editor.StyleManager.getBuiltIn('font-family').options
+    if(opts.server_url) fontServer = opts.server_url
     if(!opts.api_key) throw new Error(editor.I18n.t('grapesjs-fonts.You must provide Google font api key'))
     editor.Commands.add(cmdOpenFonts, {
         /* eslint-disable-next-line */
@@ -91,7 +97,7 @@ export const fontsDialogPlugin = (editor, opts) => {
             modal.setContent(el)
             loadFonts(editor)
             displayFonts(editor, opts, [])
-            loadFontList('https://www.googleapis.com/webfonts/v1/webfonts?key=' + opts.api_key)
+            loadFontList(`${ fontServer }/webfonts/v1/webfonts?key=${ opts.api_key }`)
                 .then(fontsList => { // the run command will terminate before this is done, better for performance
                     displayFonts(editor, opts, fontsList)
                     const form = el.querySelector('form')
@@ -314,17 +320,17 @@ export function getHtml(fonts, attr = '') {
     //    const axis = v.replace(/\d+/g, '')
     //    return `${axis},wght@${weight}`
     //  }).join(',')
-    //  insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `https://fonts.googleapis.com/css2?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
+    //  insert(doc, GOOGLE_FONTS_ATTR, 'link', { 'href': `${ fontServer }/css2?family=${f.name.replace(/ /g, '+')}${variants}&display=swap`, 'rel': 'stylesheet' })
     //})
 
     // Google fonts v1
     // https://developers.google.com/fonts/docs/getting_started#a_quick_example
-    const preconnect = `<link href="https://fonts.googleapis.com" rel="preconnect" ${attr}><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin ${attr}>`
+    const preconnect = `<link href="${ fontServer }" rel="preconnect" ${attr}><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin ${attr}>`
     const links = fonts
         .map(f => {
             const prefix = f.variants.length ? ':' : ''
             const variants = prefix + f.variants.map(v => v.replace(/\d+/g, '')).filter(v => !!v).join(',')
-            return `<link href="https://fonts.googleapis.com/css?family=${f.name.replace(/ /g, '+')}${variants}&display=swap" rel="stylesheet" ${attr}>`
+            return `<link href="${ fontServer }/css?family=${f.name.replace(/ /g, '+')}${variants}&display=swap" rel="stylesheet" ${attr}>`
         })
         .join('')
 
