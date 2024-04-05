@@ -84,11 +84,12 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str, options) => `${options.state}${str}`,
       options: {
-        state: '',
+        value: '',
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           name="value"
+          parent-name=${stateName}
           data-is-input
           no-filters
           class="ds-state-editor__options"
@@ -114,7 +115,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['key'],
       optionsKeys: ['key', 'value'],
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           no-filters
           data-is-input
@@ -129,6 +130,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         <p>==</p>
         <state-editor
           no-filters
+          parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.value || []}
@@ -164,30 +166,19 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         separator: ',',
       },
-      quotedOptions: ['key'],
-      optionsKeys: ['key', 'separator', 'value'],
-      optionsForm: (field: Field | null, options: Options) => html`
-          <state-editor
-            no-filters
-            data-is-input
-            class="ds-state-editor__options"
-            value=${options.key || []}
-            name="key"
-            ${ref(el => el && (el as StateEditor).setEditor(editor))}
-            root-type=${field?.typeIds[0] ?? ''}
-          >
-            <label slot="label">Separator</label>
-          </state-editor>
-          <state-editor
-            no-filters
-            data-is-input
-            class="ds-state-editor__options"
-            value=${options.value || []}
-            name="value"
-            ${ref(el => el && (el as StateEditor).setEditor(editor))}
-          >
-            <label slot="label">Value to match</label>
-          </state-editor>
+      quotedOptions: ['separator'],
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+        <state-editor
+          no-filters
+          parent-name=${stateName}
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.separator || []}
+          name="separator"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">Separator</label>
+        </state-editor>
     `,
     }, {
       type: 'filter',
@@ -200,10 +191,18 @@ export default function(editor: DataSourceEditor): Filter[] {
         separator: ',',
       },
       quotedOptions: ['separator'],
-      optionsForm: (field: Field | null, options: Options) => html`
-        <label>Separator
-          <input type="text" name="separator" placeholder="Separator" .value=${options.separator}/>
-        </label>
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+        <state-editor
+          no-filters
+          parent-name=${stateName}
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.separator || []}
+          name="separator"
+          ${ref(el => el && (el as StateEditor).setEditor(editor))}
+        >
+          <label slot="label">Separator</label>
+        </state-editor>
     `,
     }, {
       type: 'filter',
@@ -307,9 +306,10 @@ export default function(editor: DataSourceEditor): Filter[] {
         end: 0,
       },
       optionsKeys: ['start', 'end'],
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           no-filters
+          parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.start || []}
@@ -320,6 +320,7 @@ export default function(editor: DataSourceEditor): Filter[] {
         </state-editor>
         <state-editor
           no-filters
+          parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.end || []}
@@ -518,9 +519,10 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: '',
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
         <state-editor
           name="value"
+          parent-name=${stateName}
           data-is-input
           no-filters
           class="ds-state-editor__options"
