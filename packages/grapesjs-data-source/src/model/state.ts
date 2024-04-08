@@ -139,7 +139,9 @@ function fireChange(state: StoredState | null, component: Component) {
 export function getStateIds(component: Component, exported: boolean = true, before?: StateId): StateId[] {
   try {
     const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
-    const allStates = states.map(state => state.id)
+    const allStates = states
+      .sort(a => a.hidden ? -1 : 0) // Hidden states first
+      .map(state => state.id)
     if(before) {
       const index = allStates.indexOf(before)
       if(index < 0) return allStates
