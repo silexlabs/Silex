@@ -104,6 +104,20 @@ export class ClientConfig extends Config {
   clientConfigUrl = `${this.rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
 
   /**
+   * Google fonts API key, see this doc to get an API key: https://developers.google.com/fonts/docs/developer_api#APIKey
+   * @default Test key for local dev
+   */
+  fontsApiKey = 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc'
+
+  /**
+   * Google fonts server or a free privacy-friendly drop-in replacement for Google Fonts or a proxy server to speed up the load and protect privacy
+   * @see https://github.com/coollabsio/fonts
+   * @see https://fontlay.com/
+   * @default Google Fonts
+   */
+  fontsServerUrl = 'https://www.googleapis.com'
+
+  /**
    * Init GrapesJS config which depend on the config file properties
    */
   initGrapesConfig() {
