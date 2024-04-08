@@ -51,3 +51,13 @@ export const API_WEBSITE_ASSET_READ = '/assets'
 export const API_WEBSITE_ASSETS_WRITE = '/assets'
 export const API_WEBSITE_META_READ = '/meta'
 export const API_WEBSITE_META_WRITE = '/meta'
+
+// Env vars (build time)
+// Get env vars from webpack
+// @see webpack.config.js
+declare const SILEX_VERSION_ENV: string
+export let SILEX_VERSION
+try { SILEX_VERSION = SILEX_VERSION_ENV } catch (e) {
+  // fallback to default value
+  SILEX_VERSION = SILEX_VERSION || '3.0.0'
+}

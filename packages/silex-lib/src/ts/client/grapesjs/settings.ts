@@ -24,6 +24,7 @@ import {defaultSections, idCodeWrapper, isSite} from './settings-sections'
 
 import { WebsiteSettings } from '../../types'
 import { ClientEvent } from '../events'
+import { SILEX_VERSION } from '../../constants'
 
 const sectionsSite = [...defaultSections]
 const sectionsPage = [...defaultSections]
@@ -31,21 +32,11 @@ const sectionsPage = [...defaultSections]
 const el = document.createElement('div')
 let modal
 
-// Get version from webpack (see plugin in webpack.config.js)
-declare const VERSION: string
-
 export const cmdOpenSettings = 'open-settings'
 
-let version = 'v3'
 let headEditor = null
 export const settingsDialog = (editor, opts) => {
-  // Display Silex version from package.json
-  try {
-    version = VERSION
-  } catch (error) {
-    // Cannot get version from webpack (see plugin in webpack.config.js)
-  }
-  console.info('Silex version:', version)
+  console.info('Silex version:', SILEX_VERSION)
   editor.Commands.add(cmdOpenSettings, {
     run: (_, sender, {page}) => {
       modal = editor.Modal.open({
@@ -190,7 +181,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
         </main>
       </section>
       <footer>
-        <p class="silex-version">Silex ${version}</p>
+        <p class="silex-version">Silex ${SILEX_VERSION}</p>
         <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenSettings)} value="Cancel">
         <input class="silex-button" type="submit" value="Apply">
       </footer>

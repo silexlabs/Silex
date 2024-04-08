@@ -23,9 +23,6 @@ import openImport from './openImport'
  * Handle plugins, options and initialization of the editor
  */
 
-declare const FONTS_API_KEY: string
-declare const FONTS_SERVER_URL: string
-
 // ////////////////////
 // Plugins
 // ////////////////////
@@ -299,8 +296,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         highlightColor: TERTIARY_COLOR,
       },
       [fontsDialogPlugin.toString()]: {
-        api_key: FONTS_API_KEY,
-        server_url: FONTS_SERVER_URL,
+        api_key: config.fontsApiKey,
+        server_url: config.fontsServerUrl,
       },
       [loginDialogPlugin.toString()]: {
         id: websiteId,
