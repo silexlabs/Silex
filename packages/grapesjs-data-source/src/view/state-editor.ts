@@ -327,9 +327,13 @@ export class StateEditor extends LitElement {
       // Custom event coming from the expression input
       // Remove the tokens after the changed one
       const data = this.data.slice(0, idx + 1)
-      // Clear options
-      if(data[idx].type === 'property' || data[idx].type === 'filter') {
-        (data[idx] as Property | Filter).options = {}
+      if(data.length > idx) {
+        // Clear options
+        if(data[idx].type === 'property' || data[idx].type === 'filter') {
+          (data[idx] as Property | Filter).options = {}
+        }
+      } else {
+        // We selected the "-" option, do nothing, this step will be removed
       }
       this.data = data
     } else {
