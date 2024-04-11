@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, CssRule, Editor, ObjectStrings, Page } from 'grapesjs'
-import { ClientSideFile, ClientSideFileType, ClientSideFileWithPermalink, Initiator, PublicationData } from '../types'
+import { Component, CssRule, StyleProps, Editor } from 'grapesjs'
+import { ClientSideFile, ClientSideFileType, Initiator, PublicationData } from '../types'
 import { onAll } from './utils'
 
 /**
@@ -43,7 +43,7 @@ export interface PublicationTransformer {
   // Temporarily override how components render at publication by grapesjs
   renderComponent?(component: Component, toHtml: () => string): string | undefined
   // Temporarily override how styles render at publication by grapesjs
-  renderCssRule?(rule: CssRule, initialRule: () => ObjectStrings): ObjectStrings | undefined
+  renderCssRule?(rule: CssRule, initialRule: () => StyleProps): StyleProps | undefined
   // Transform files after they are rendered and before they are published
   transformFile?(file: ClientSideFile): ClientSideFile
   // Define files URLs
@@ -58,7 +58,7 @@ export const publicationTransformerDefault: PublicationTransformer = {
     return toHtml()
   },
   // Override how styles render at publication by grapesjs
-  renderCssRule(rule: CssRule, initialRule: () => ObjectStrings): ObjectStrings | undefined {
+  renderCssRule(rule: CssRule, initialRule: () => StyleProps): StyleProps | undefined {
     return initialRule()
   },
   // Define where files are published
@@ -181,20 +181,24 @@ export function renderCssRules(editor: Editor) {
   })
 }
 
+function doTransformPermalink(editor: Editor, cssValue: string): string {
+  return cssValue.replace(/url\(([^)]+)\)/g, (match, url) => {
+    // Support URLs with or without quotes
+    const cleanUrl = url.replace(/['"]/g, '')
+    // Transform URLs
+    const newUrl = transformPermalink(editor, cleanUrl, ClientSideFileType.ASSET, Initiator.CSS)
+    // Return the new URL with url keyword
+    return `url(${newUrl})`
+  })
+}
+
 /**
  * Transform background image url according to the transformed path of assets
  */
-export function transformBgImage(editor: Editor, style: ObjectStrings): ObjectStrings {
+export function transformBgImage(editor: Editor, style: StyleProps): StyleProps {
   const cssValue = style['background-image']
   if (cssValue) {
-    const newCssValue = cssValue.replace(/url\(([^)]+)\)/g, (match, url) => {
-      // Support URLs with or without quotes
-      const cleanUrl = url.replace(/['"]/g, '')
-      // Transform URLs
-      const newUrl = transformPermalink(editor, cleanUrl, ClientSideFileType.ASSET, Initiator.CSS)
-      // Return the new URL with url keyword
-      return `url(${newUrl})`
-    })
+    const newCssValue = typeof cssValue === 'string' ? doTransformPermalink(editor, cssValue) : cssValue.map(value => doTransformPermalink(editor, value))
     return {
       ...style,
       'background-image': newCssValue,
