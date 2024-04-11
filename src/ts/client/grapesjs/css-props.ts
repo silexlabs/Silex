@@ -96,7 +96,7 @@ export default (editor: Editor, opts) => {
       property: 'top',
       type: 'number',
       defaults: '',
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       info: '',
     })
     editor.StyleManager.removeProperty('general', 'bottom')
@@ -105,7 +105,7 @@ export default (editor: Editor, opts) => {
       property: 'bottom',
       type: 'number',
       defaults: '',
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       info: '',
     })
     editor.StyleManager.removeProperty('general', 'right')
@@ -114,7 +114,7 @@ export default (editor: Editor, opts) => {
       property: 'right',
       type: 'number',
       defaults: '',
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       info: '',
     })
     editor.StyleManager.removeProperty('general', 'left')
@@ -123,7 +123,7 @@ export default (editor: Editor, opts) => {
       property: 'left',
       type: 'number',
       defaults: '',
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       info: '',
     })
     // Add content property, visible only when a pseudo element is selected
@@ -136,9 +136,9 @@ export default (editor: Editor, opts) => {
       full: true,
       visible: false,
     }, { at: 0 })
-  /***************/  
+  /***************/
   /* Dimension   */
-  /***************/  
+  /***************/
     /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'width')
     editor.StyleManager.addProperty('dimension', {
@@ -149,7 +149,7 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
     }, { at: 0 })
-      /** remove default property et add custom one */
+    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'height')
     editor.StyleManager.addProperty('dimension', {
       name: 'Height',
@@ -237,87 +237,89 @@ export default (editor: Editor, opts) => {
     /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'margin')
     editor.StyleManager.addProperty('dimension', {  
-      name: "Margin",
-      property: "margin",
-      type: "composite",
-      defaults: "",
-      fixedValues: [ "initial", "inherit" ],
+      name: 'Margin',
+      property: 'margin',
+      type: 'composite',
+      defaults: '',
+      fixedValues: [ 'initial', 'inherit' ],
       full: true,
       properties: [{
-        property: "margin-top",
-        name: "Margin top",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'margin-top',
+        name: 'Margin top',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "margin-right",
-        name: "Margin right",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'margin-right',
+        name: 'Margin right',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "margin-bottom",
-        name: "Margin bottom",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'margin-bottom',
+        name: 'Margin bottom',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "margin-left",
-        name: "Margin left",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'margin-left',
+        name: 'Margin left',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }],
     }, { at: 7 })
         /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'padding')
     editor.StyleManager.addProperty('dimension', {  
-      name: "Padding",
-      property: "padding",
-      type: "composite",
-      fixedValues: [ "initial", "inherit" ],
+      name: 'Padding',
+      property: 'padding',
+      type: 'composite',
+      fixedValues: [ 'initial', 'inherit' ],
       full: true,
       properties: [{
-        property: "padding-top",
-        name: "Padding top",
-        type: "number",
-        default: "",
-        value: "10",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'padding-top',
+        name: 'Padding top',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "padding-right",
-        name: "Padding right",
-        type: "number",
-        default: "",
-        value: "10",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'padding-right',
+        name: 'Padding right',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "padding-bottom",
-        name: "Padding bottom",
-        type: "number",
-        default: "",
-        value: "10",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'padding-bottom',
+        name: 'Padding bottom',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "padding-left",
-        name: "Padding left",
-        type: "number",
-        default: "",
-        value: "10",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'padding-left',
+        name: 'Padding left',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }],
     }, { at: 8 })
   /***************/  
   /* Typography  */
   /***************/
+    /* doesn't work ?
+    editor.StyleManager.getProperty('typography', 'font-family').set({ default: ' ' });*/
     /** remove default property et add custom one (doesn't work ?)
     editor.StyleManager.removeProperty('typography', 'font-family')
     editor.StyleManager.addProperty('typography', {
@@ -327,20 +329,20 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['inherit', 'initial'],
       options: [
-        { id: "", label: "" },
-        { id: "Arial, Helvetica, sans-serif", label: "Arial" },
-        { id: "Arial Black, Gadget, sans-serif", label: "Arial Black" },
-        { id: "Brush Script MT, sans-serif", label: "Brush Script MT" },
-        { id: "Comic Sans MS, cursive, sans-serif", label: "Comic Sans MS" },
-        { id: "Courier New, Courier, monospace", label: "Courier New" },
-        { id: "Georgia, serif", label: "Georgia" },
-        { id: "Helvetica, sans-serif", label: "Helvetica" },
-        { id: "Impact, Charcoal, sans-serif", label: "Impact" },
-        { id: "Lucida Sans Unicode, Lucida Grande, sans-serif", label: "Lucida Sans Unicode" },
-        { id: "Tahoma, Geneva, sans-serif", label: "Tahoma" },
-        { id: "Times New Roman, Times, serif", label: "Times New Roman" },
-        { id: "Trebuchet MS, Helvetica, sans-serif", label: "Trebuchet MS" },
-        { id: "Verdana, Geneva, sans-serif", label: "Verdana" }
+        { id: '', label: '' },
+        { id: 'Arial, Helvetica, sans-serif', label: 'Arial' },
+        { id: 'Arial Black, Gadget, sans-serif', label: 'Arial Black' },
+        { id: 'Brush Script MT, sans-serif', label: 'Brush Script MT' },
+        { id: 'Comic Sans MS, cursive, sans-serif', label: 'Comic Sans MS' },
+        { id: 'Courier New, Courier, monospace', label: 'Courier New' },
+        { id: 'Georgia, serif', label: 'Georgia' },
+        { id: 'Helvetica, sans-serif', label: 'Helvetica' },
+        { id: 'Impact, Charcoal, sans-serif', label: 'Impact' },
+        { id: 'Lucida Sans Unicode, Lucida Grande, sans-serif', label: 'Lucida Sans Unicode' },
+        { id: 'Tahoma, Geneva, sans-serif', label: 'Tahoma' },
+        { id: 'Times New Roman, Times, serif', label: 'Times New Roman' },
+        { id: 'Trebuchet MS, Helvetica, sans-serif', label: 'Trebuchet MS' },
+        { id: 'Verdana, Geneva, sans-serif', label: 'Verdana' }
       ]
     }, { at: 0 })*/
     /** remove default property et add custom one */
@@ -348,10 +350,10 @@ export default (editor: Editor, opts) => {
     editor.StyleManager.addProperty('typography', {
       name: 'Font size',
       property: 'font-size',
-      type: "number",
-      default: "",
-      fixedValues: [ "medium", "xx-small", "x-small", "small", "large", "x-large", "xx-large", "smaller", "larger", "length", "initial", "inherit" ],
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      type: 'number',
+      default: '',
+      fixedValues: [ 'medium', 'xx-small', 'x-small', 'small', 'large', 'x-large', 'xx-large', 'smaller', 'larger', 'length', 'initial', 'inherit' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
     }, { at: 1 })
     /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'font-weight')
@@ -362,16 +364,16 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['inherit', 'initial'],
       options: [
-        { id: "", label: "" },
-        { id: "100", label: "Thin" },
-        { id: "200", label: "Extra-Light" },
-        { id: "300", label: "Light" },
-        { id: "400", label: "Normal" },
-        { id: "500", label: "Medium" },
-        { id: "600", label: "Semi-Bold" },
-        { id: "700", label: "Bold" },
-        { id: "800", label: "Extra-Bold" },
-        { id: "900", label: "Ultra-Bold" }
+        { id: '', label: '' },
+        { id: '100', label: 'Thin' },
+        { id: '200', label: 'Extra-Light' },
+        { id: '300', label: 'Light' },
+        { id: '400', label: 'Normal' },
+        { id: '500', label: 'Medium' },
+        { id: '600', label: 'Semi-Bold' },
+        { id: '700', label: 'Bold' },
+        { id: '800', label: 'Extra-Bold' },
+        { id: '900', label: 'Ultra-Bold' }
       ]
     }, { at: 2 })
     /** remove default property et add custom one */
@@ -379,18 +381,18 @@ export default (editor: Editor, opts) => {
     editor.StyleManager.addProperty('typography', {
       name: 'Letter spacing',
       property: 'letter-spacing',
-      type: "number",
-      default: "",
-      fixedValues: [ "normal", "initial", "inherit" ],
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      type: 'number',
+      default: '',
+      fixedValues: [ 'normal', 'initial', 'inherit' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
     }, { at: 3 })
     /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'color')
     editor.StyleManager.addProperty('typography', {
       name: 'Color',
       property: 'color',
-      type: "color",
-      default: "",
+      type: 'color',
+      default: '',
       full: true,
     }, { at: 4 })
     /** remove default property et add custom one */
@@ -398,10 +400,10 @@ export default (editor: Editor, opts) => {
     editor.StyleManager.addProperty('typography', {
       name: 'Line height',
       property: 'line-height',
-      type: "number",
-      default: "",
-      fixedValues: [ "normal", "initial", "inherit" ],
-      units: [ "px", "%", "em", "rem", "vh", "vw" ],
+      type: 'number',
+      default: '',
+      fixedValues: [ 'normal', 'initial', 'inherit' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
     }, { at: 5 })
     /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'text-align')
@@ -579,47 +581,47 @@ export default (editor: Editor, opts) => {
     editor.StyleManager.addProperty('decorations', {
       name: 'Background color',
       property: 'background-color',
-      type: "color",
-      default: "",
+      type: 'color',
+      default: '',
       full: true,
     }, { at: 0 })
     /** remove default property et add custom one */
     editor.StyleManager.removeProperty('decorations', 'border-radius')
     editor.StyleManager.addProperty('decorations', {  
-      name: "Border radius",
-      property: "border-radius",
-      type: "composite",
-      defaults: "",
-      fixedValues: [ "initial", "inherit" ],
+      name: 'Border radius',
+      property: 'border-radius',
+      type: 'composite',
+      defaults: '',
+      fixedValues: [ 'initial', 'inherit' ],
       full: true,
       properties: [{
-        property: "border-top-left-radius",
-        name: "Top left",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'border-top-left-radius',
+        name: 'Top left',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "border-top-right-radius",
-        name: "Top right",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'border-top-right-radius',
+        name: 'Top right',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "border-bottom-right-radius",
-        name: "Bottom right",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'border-bottom-right-radius',
+        name: 'Bottom right',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
-        property: "border-bottom-left-radius",
-        name: "Botton left",
-        type: "number",
-        default: "",
-        fixedValues: [ "initial", "inherit", "auto" ],
-        units: [ "px", "%", "em", "rem", "vh", "vw" ],
+        property: 'border-bottom-left-radius',
+        name: 'Botton left',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }],
     }, { at: 2 })
 
