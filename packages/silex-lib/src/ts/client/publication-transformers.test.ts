@@ -10,7 +10,7 @@ import {
   transformBgImage
 } from './publication-transformers'
 import { ClientConfig } from './config'
-import grapesjs, { Component, Editor, ObjectStrings, Page } from 'grapesjs'
+import grapesjs, { Component, Editor, StyleProps, Page } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, PublicationData } from '../types'
 
 describe('publication-transformers', () => {
@@ -87,12 +87,12 @@ describe('publication-transformers', () => {
   it('should transform styles', () => {
     const transformCssRule = transformer.renderCssRule as Mock
     transformCssRule.mockImplementation((rule: any) => {
-      return { color: 'test'+rule.color } as ObjectStrings
+      return { color: 'test'+rule.color } as StyleProps
     })
     renderCssRules(editor)
     const css = editor.getCss()
     expect(transformCssRule).toBeCalledTimes(2)
-    const results = transformCssRule.mock.results.map(r => r.value as ObjectStrings)
+    const results = transformCssRule.mock.results.map(r => r.value as StyleProps)
     const parent = results.find(c => c.color === 'testred')
     expect(parent).not.toBeUndefined()
     const child = results.find(c => c.color === 'testblue')
@@ -103,7 +103,7 @@ describe('publication-transformers', () => {
 
   it('should reset transformed styles', () => {
     const renderCssRule = transformer.renderCssRule as Mock
-    const returned = {color: 'test'} as ObjectStrings
+    const returned = {color: 'test'} as StyleProps
     renderCssRule.mockReturnValue(returned)
     renderCssRules(editor)
     resetRenderCssRules(editor)
