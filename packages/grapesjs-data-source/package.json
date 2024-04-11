@@ -17,7 +17,7 @@
     "serve": "$npm_execpath run serve:mocks & $npm_execpath run serve:grapesjs",
     "serve:mocks": "http-serve ./__mocks__/ -p 3000 --cors",
     "serve:grapesjs": "http-serve `node_modules grapesjs`/grapesjs/dist -p 3001 --cors",
-    "lint": "eslint src",
+    "lint": "eslint src/**/* --config .eslintrc.cjs",
     "test": "node --experimental-vm-modules `node_modules jest`/.bin/jest --runInBand --no-cache",
     "test:watch": "npm test -- --watch"
   },
@@ -28,6 +28,7 @@
   ],
   "devDependencies": {
     "@babel/preset-typescript": "^7.24.1",
+    "@eslint/js": "^9.0.0",
     "@jest/globals": "^29.7.0",
     "@types/jest": "^29.5.12",
     "@typescript-eslint/eslint-plugin": "^7.4.0",
@@ -41,7 +42,8 @@
     "jquery": "^3.7.1",
     "node_modules-path": "^2.0.7",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.4.4"
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.6.0"
   },
   "license": "AGPL-3.0-or-later",
   "dependencies": {

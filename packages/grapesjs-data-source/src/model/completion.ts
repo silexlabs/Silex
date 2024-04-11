@@ -3,6 +3,7 @@ import { Context, Expression, Field, Filter, Property, State, StateId, Token, Ty
 import { DataTree } from "./DataTree"
 import { getOrCreatePersistantId, getState, getStateIds } from "./state"
 import { getExpressionResultType, getTokenOptions } from "./token"
+import { getFixedToken } from "../utils"
 
 /**
  * Get the context of a component
@@ -82,12 +83,15 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
   // Get filters which accept no input
   const filters: Filter[] = dataTree.filters
     .filter(filter => filter.validate(null))
+  // Add a fixed value
+  const fixedValue = getFixedToken('')
   // Return the context
   return [
     ...queryable,
     ...states,
     ...loopProperties,
     ...filters,
+    fixedValue,
   ]
 }
 

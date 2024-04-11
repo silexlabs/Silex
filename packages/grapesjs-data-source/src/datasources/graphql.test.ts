@@ -48,8 +48,8 @@ class GQLTest extends GraphQL {
     return super.getOfTypeProp(prop, type, defaultValue)
   }
 
-  getQuery(...args: any[]): string {
-    /* @ts-ignore */
+  getQuery(...args: unknown[]): string {
+    /* @ts-expect-error just a mock */
     return super.getQuery(...args)
   }
 }

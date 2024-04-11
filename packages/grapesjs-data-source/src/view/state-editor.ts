@@ -96,7 +96,7 @@ export class StateEditor extends LitElement {
   private _data: Token[] = []
   get data(): Token[] {
     const input = this.expressionInputRef.value
-    if(!input) return []
+    if(!input || input.value.length === 0) return []
     if(input.fixed) {
       return [getFixedToken(input.value[0] || '')]
     } else {

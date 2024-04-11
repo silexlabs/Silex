@@ -6,7 +6,7 @@ import grapesjs, { Component, Editor } from "grapesjs"
 import { DataTree } from "./DataTree"
 import { getCompletion, getContext } from "./completion"
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId } from "../test-data"
-import { DataSourceEditor, Filter, Property, State } from "../types"
+import { DataSourceEditor, Filter, Property, State, Token } from "../types"
 import { getOrCreatePersistantId, getStateIds } from "./state"
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
@@ -24,6 +24,15 @@ jest.mock('./state', () => ({
   getParentByPersistentId: jest.fn(),
 }))
 
+/**
+ * Remove the optionsForm from the token
+ * This is how tokens are stored
+ */
+function asStored(val: Token) {
+  delete (val as Property | Filter).optionsForm
+  return val
+}
+
 const simpleQueryableTokens: Property[] = [{
   fieldId: 'testSimpleQueryableId',
   label: 'test queryable',
@@ -33,6 +42,16 @@ const simpleQueryableTokens: Property[] = [{
   kind: 'scalar',
   dataSourceId: testDataSourceId,
 }]
+
+const fixedToken = {
+  fieldId: 'fixed',
+  label: 'Fixed value',
+  type: 'property',
+  propType: 'field',
+  kind: 'scalar',
+  typeIds: ['String'],
+  options: { value: '' },
+}
 
 let editor: Editor
 beforeEach(async () => {
@@ -53,7 +72,7 @@ test('get empty context', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
-  expect(context).toHaveLength(0)
+  expect(context).toHaveLength(1) // 1 Fixed value
 })
 
 test('get context with filters', () => {
@@ -64,7 +83,7 @@ test('get context with filters', () => {
   })
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
-  expect(context).toHaveLength(1) // 1 Filter only for no input
+  expect(context).toHaveLength(2) // 1 Filter only for no input + 1 Fixed value
   const filter = context[0] as Filter
   expect(filter.id).toBe('testFilterAnyInput')
 })
@@ -84,7 +103,7 @@ test('get context with parent compontent states', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, { filters: [], dataSources: [] })
   const context = getContext(child, dataTree)
   expect(context).toBeDefined()
-  expect(context).toHaveLength(1)
+  expect(context).toHaveLength(2) // 1 State + 1 Fixed value
   const typeProp = context[0] as State
   expect(typeProp.type).toBe('state')
   expect(typeProp.componentId).toBe('testPersistentId')
@@ -150,7 +169,7 @@ test('get context with data source queryable values', () => {
   })
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
-  expect(context).toHaveLength(1)
+  expect(context).toHaveLength(2) // 1 Queryable + 1 Fixed value
   const typeProp = context[0] as Property
   expect(typeProp.fieldId).toContain('testFieldId2')
 })
@@ -175,8 +194,11 @@ test('get completion with simple context', () => {
     expression: [],
     dataTree,
   })
-  expect(completion1).toHaveLength(1) 
-  expect(completion1).toEqual(simpleQueryableTokens)
+  expect(completion1).toHaveLength(2) 
+  expect(completion1.map(asStored)).toEqual([
+    ...simpleQueryableTokens,
+    fixedToken,
+  ])
 
   // 1 level value
   const completion2 = getCompletion({
@@ -239,9 +261,10 @@ test('get completion with filters', () => {
     component,
     expression: [],
     dataTree,
-  })).toEqual([
+  }).map(asStored)).toEqual([
     simpleQueryableTokens[0],
     simpleFilters[0],
+    fixedToken,
   ])
 
   // 1 level value
