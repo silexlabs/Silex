@@ -296,7 +296,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         highlightColor: TERTIARY_COLOR,
       },
       [fontsDialogPlugin.toString()]: {
-        api_key: 'AIzaSyAdJTYSLPlKz4w5Iqyy-JAF2o8uQKd1FKc',
+        api_key: config.fontsApiKey,
+        server_url: config.fontsServerUrl,
       },
       [loginDialogPlugin.toString()]: {
         id: websiteId,

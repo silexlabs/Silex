@@ -45,7 +45,7 @@ module.exports = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      VERSION: JSON.stringify(require("./package.json").version),
+      SILEX_VERSION_ENV: JSON.stringify(require("./package.json").version),
     }),
   ]
 };
