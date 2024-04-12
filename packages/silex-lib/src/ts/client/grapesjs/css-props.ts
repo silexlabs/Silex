@@ -23,6 +23,142 @@ import { Editor } from 'grapesjs'
 
 export default (editor: Editor, opts) => {
   editor.on('load', () => {
+  /***************/  
+  /* General     */
+  /***************/  
+    /** remove default module et add custom one */
+    editor.StyleManager.removeProperty('general', 'display')
+    editor.StyleManager.addProperty('general', {
+      name: 'Display',
+      property: 'display',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
+        /* @ts-ignore */
+        { value: 'block', name: 'block' },
+        /* @ts-ignore */
+        { value: 'inline', name: 'inline' },
+        /* @ts-ignore */
+        { value: 'inline-block', name: 'inline-block' },
+        /* @ts-ignore */
+        { value: 'flex', name: 'flex' },
+        /* @ts-ignore */
+        { value: 'none', name: 'none' }, 
+      ],
+      info: '',
+    })
+    editor.StyleManager.addProperty('general', {
+      name: 'Visibility',
+      property: 'visibility',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
+        /* @ts-ignore */
+        { value: 'visible', name: 'visible' },
+        /* @ts-ignore */
+        { value: 'hidden', name: 'hidden' },
+        /* @ts-ignore */
+        { value: 'collapse', name: 'collapse' },
+      ],
+      info: 'The visibility CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a <table>.',
+    })
+    /** remove float no more used (best practices) */
+    editor.StyleManager.removeProperty('general', 'float')
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('general', 'position')
+    editor.StyleManager.addProperty('general', {
+      name: 'Position',
+      property: 'position',
+      type: 'select',
+      defaults: '',
+      full: true,
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
+        /* @ts-ignore */
+        { value: 'static', name: 'static' },
+        /* @ts-ignore */
+        { value: 'relative', name: 'relative' },
+        /* @ts-ignore */
+        { value: 'absolute', name: 'absolute' },
+        /* @ts-ignore */
+        { value: 'fixed', name: 'fixed' },
+      ],
+      info: '',
+    })
+    editor.StyleManager.removeProperty('general', 'top')
+    editor.StyleManager.addProperty('general', {
+      name: 'Top',
+      property: 'top',
+      type: 'number',
+      defaults: '',
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      info: '',
+    })
+    editor.StyleManager.removeProperty('general', 'bottom')
+    editor.StyleManager.addProperty('general', {
+      name: 'Bottom',
+      property: 'bottom',
+      type: 'number',
+      defaults: '',
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      info: '',
+    })
+    editor.StyleManager.removeProperty('general', 'right')
+    editor.StyleManager.addProperty('general', {
+      name: 'Right',
+      property: 'right',
+      type: 'number',
+      defaults: '',
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      info: '',
+    })
+    editor.StyleManager.removeProperty('general', 'left')
+    editor.StyleManager.addProperty('general', {
+      name: 'Left',
+      property: 'left',
+      type: 'number',
+      defaults: '',
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      info: '',
+    })
+    // Add content property, visible only when a pseudo element is selected
+    const contentProp = editor.StyleManager.addProperty('general', {
+      name: 'Content',
+      property: 'content',
+      type: 'text',
+      defaults: '',
+      info: 'The content CSS property replaces an element with a generated value. Objects inserted using the content property are anonymous replaced elements.',
+      full: true,
+      visible: false,
+    }, { at: 0 })
+    /***************/
+    /* Dimension   */
+    /***************/
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('dimension', 'width')
+    editor.StyleManager.addProperty('dimension', {
+      name: 'Width',
+      property: 'width',
+      type: 'integer',
+      units: ['px', '%', 'em'],
+      default: '',
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+    }, { at: 0 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('dimension', 'height')
+    editor.StyleManager.addProperty('dimension', {
+      name: 'Height',
+      property: 'height',
+      type: 'integer',
+      units: ['px', '%', 'em'],
+      default: '',
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+    }, { at: 1 })
     editor.StyleManager.addProperty('dimension', {
       name: 'Min width',
       property: 'min-width',
@@ -31,6 +167,26 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
     }, { at: 2 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('dimension', 'max-width')
+    editor.StyleManager.addProperty('dimension', {
+      name: 'Max width',
+      property: 'max-width',
+      type: 'integer',
+      units: ['px', '%', 'em'],
+      default: '',
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+    }, { at: 3 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('dimension', 'min-height')
+    editor.StyleManager.addProperty('dimension', {
+      name: 'Min height',
+      property: 'min-height',
+      type: 'integer',
+      units: ['px', '%', 'em'],
+      default: '',
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+    }, { at: 4 })
     editor.StyleManager.addProperty('dimension', {
       name: 'Max height',
       property: 'max-height',
@@ -45,8 +201,11 @@ export default (editor: Editor, opts) => {
       type: 'composite',
       properties: [{
         name: 'Overflow X',
-        type: 'radio',
+        type: 'select',
+        defaults: '',
         options: [
+          /* @ts-ignore */
+          { value: '', name: '' },          
           /* @ts-ignore */
           { value: 'auto', name: 'auto' },
           /* @ts-ignore */
@@ -58,8 +217,11 @@ export default (editor: Editor, opts) => {
         ],
       }, {
         name: 'Overflow Y',
-        type: 'radio',
+        type: 'select',
+        defaults: '',
         options: [
+          /* @ts-ignore */
+          { value: '', name: '' },  
           /* @ts-ignore */
           { value: 'auto', name: 'auto' },
           /* @ts-ignore */
@@ -72,6 +234,450 @@ export default (editor: Editor, opts) => {
       }],
       info: 'The overflow CSS property sets what to do when an element\'s content is too big to fit in its block formatting context. It is a shorthand for overflow-x and overflow-y.',
     }, { at: 6 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('dimension', 'margin')
+    editor.StyleManager.addProperty('dimension', {  
+      name: 'Margin',
+      property: 'margin',
+      type: 'composite',
+      defaults: '',
+      fixedValues: [ 'initial', 'inherit' ],
+      full: true,
+      properties: [{
+        property: 'margin-top',
+        name: 'Margin top',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'margin-right',
+        name: 'Margin right',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'margin-bottom',
+        name: 'Margin bottom',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'margin-left',
+        name: 'Margin left',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }],
+    }, { at: 7 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('dimension', 'padding')
+    editor.StyleManager.addProperty('dimension', {  
+      name: 'Padding',
+      property: 'padding',
+      type: 'composite',
+      fixedValues: [ 'initial', 'inherit' ],
+      full: true,
+      properties: [{
+        property: 'padding-top',
+        name: 'Padding top',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'padding-right',
+        name: 'Padding right',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'padding-bottom',
+        name: 'Padding bottom',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'padding-left',
+        name: 'Padding left',
+        type: 'number',
+        default: '',
+        value: '10',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }],
+    }, { at: 8 })
+    /***************/  
+    /* Typography  */
+    /***************/
+    /* doesn't work ?
+    editor.StyleManager.getProperty('typography', 'font-family').set({ default: ' ' });*/
+    /** remove default property et add custom one (doesn't work ?)
+    editor.StyleManager.removeProperty('typography', 'font-family')
+    editor.StyleManager.addProperty('typography', {
+      property: 'font-family',
+      name: 'Font family',
+      type: 'select',
+      default: '',
+      fixedValues: ['inherit', 'initial'],
+      options: [
+        { id: '', label: '' },
+        { id: 'Arial, Helvetica, sans-serif', label: 'Arial' },
+        { id: 'Arial Black, Gadget, sans-serif', label: 'Arial Black' },
+        { id: 'Brush Script MT, sans-serif', label: 'Brush Script MT' },
+        { id: 'Comic Sans MS, cursive, sans-serif', label: 'Comic Sans MS' },
+        { id: 'Courier New, Courier, monospace', label: 'Courier New' },
+        { id: 'Georgia, serif', label: 'Georgia' },
+        { id: 'Helvetica, sans-serif', label: 'Helvetica' },
+        { id: 'Impact, Charcoal, sans-serif', label: 'Impact' },
+        { id: 'Lucida Sans Unicode, Lucida Grande, sans-serif', label: 'Lucida Sans Unicode' },
+        { id: 'Tahoma, Geneva, sans-serif', label: 'Tahoma' },
+        { id: 'Times New Roman, Times, serif', label: 'Times New Roman' },
+        { id: 'Trebuchet MS, Helvetica, sans-serif', label: 'Trebuchet MS' },
+        { id: 'Verdana, Geneva, sans-serif', label: 'Verdana' }
+      ]
+    }, { at: 0 })*/
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('typography', 'font-size')
+    editor.StyleManager.addProperty('typography', {
+      name: 'Font size',
+      property: 'font-size',
+      type: 'number',
+      default: '',
+      fixedValues: [ 'medium', 'xx-small', 'x-small', 'small', 'large', 'x-large', 'xx-large', 'smaller', 'larger', 'length', 'initial', 'inherit' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+    }, { at: 1 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('typography', 'font-weight')
+    editor.StyleManager.addProperty('typography', {
+      name: 'Font weight',
+      property: 'font-weight',
+      type: 'select',
+      default: '',
+      fixedValues: ['inherit', 'initial'],
+      options: [
+        { id: '', label: '' },
+        { id: '100', label: 'Thin' },
+        { id: '200', label: 'Extra-Light' },
+        { id: '300', label: 'Light' },
+        { id: '400', label: 'Normal' },
+        { id: '500', label: 'Medium' },
+        { id: '600', label: 'Semi-Bold' },
+        { id: '700', label: 'Bold' },
+        { id: '800', label: 'Extra-Bold' },
+        { id: '900', label: 'Ultra-Bold' }
+      ]
+    }, { at: 2 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('typography', 'letter-spacing')
+    editor.StyleManager.addProperty('typography', {
+      name: 'Letter spacing',
+      property: 'letter-spacing',
+      type: 'number',
+      default: '',
+      fixedValues: [ 'normal', 'initial', 'inherit' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+    }, { at: 3 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('typography', 'color')
+    editor.StyleManager.addProperty('typography', {
+      name: 'Color',
+      property: 'color',
+      type: 'color',
+      default: '',
+      full: true,
+    }, { at: 4 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('typography', 'line-height')
+    editor.StyleManager.addProperty('typography', {
+      name: 'Line height',
+      property: 'line-height',
+      type: 'number',
+      default: '',
+      fixedValues: [ 'normal', 'initial', 'inherit' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+    }, { at: 5 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('typography', 'text-align')
+    editor.StyleManager.addProperty('typography', {
+      name: 'Text align',
+      property: 'text-align',
+      type: 'select',
+      defaults: '',
+      options: [
+        { id: '', label: '' },                    
+        { id: 'left', label: 'left' },
+        { id: 'center', label: 'center' },
+        { id: 'right', label: 'right' },
+        { id: 'justified', label: 'justified' },
+      ],
+    }, { at: 6 })    
+    editor.StyleManager.addProperty('typography', {
+      name: 'Word break',
+      property: 'word-break',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
+        /* @ts-ignore */
+        { value: 'normal', name: 'normal' },
+        /* @ts-ignore */
+        { value: 'break-all', name: 'break-all' },
+        /* @ts-ignore */
+        { value: 'keep-all', name: 'keep-all' },
+        /* @ts-ignore */
+        { value: 'break-word', name: 'break-word' },
+      ],
+      info: 'The word-break CSS property sets whether line breaks appear wherever the text would otherwise overflow its content box.',
+    }, { at: 7 })
+    editor.StyleManager.addProperty('typography', {
+      name: 'Word wrap',
+      property: 'word-wrap',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
+        /* @ts-ignore */
+        { value: 'normal', name: 'normal' },
+        /* @ts-ignore */
+        { value: 'break-word', name: 'break-word' },
+      ],
+      info: 'The word-wrap CSS property sets whether the line may be broken within a word in order to prevent overflow when an otherwise unbreakable string is too long to fit in its containing box.',
+    }, { at: 8 })
+    editor.StyleManager.addProperty('typography', {
+      name: 'White space',
+      property: 'white-space',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },        
+        /* @ts-ignore */
+        { value: 'normal', name: 'normal' },
+        /* @ts-ignore */
+        { value: 'nowrap', name: 'nowrap' },
+        /* @ts-ignore */
+        { value: 'pre', name: 'pre' },
+        /* @ts-ignore */
+        { value: 'pre-wrap', name: 'pre-wrap' },
+        /* @ts-ignore */
+        { value: 'pre-line', name: 'pre-line' },
+        /* @ts-ignore */
+        { value: 'break-spaces', name: 'break-spaces' },
+      ],
+      info: 'The white-space CSS property sets how white space inside an element is handled.',
+    }, { at: 9 })
+    editor.StyleManager.addProperty('typography', {
+      name: 'Text decoration',
+      property: 'text-decoration',
+      type: 'composite',
+      properties: [{
+        name: 'Text decoration line',
+        property: 'text-decoration-line',
+        type: 'select',
+        defaults: '',
+        fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
+        options: [
+          /* @ts-ignore */
+          { value: '', name: '' },                  
+          /* @ts-ignore */
+          { value: 'none', name: 'none' },
+          /* @ts-ignore */
+          { value: 'underline', name: 'underline' },
+          /* @ts-ignore */
+          { value: 'overline', name: 'overline' },
+          /* @ts-ignore */
+          { value: 'line-through', name: 'line-through' },
+          /* @ts-ignore */
+          { value: 'blink', name: 'blink' },
+        ],
+        info: 'The text-decoration CSS property sets the appearance of decorative lines on text.',
+      }, {
+        name: 'Text decoration style',
+        property: 'text-decoration-style',
+        type: 'select',
+        defaults: '',
+        options: [
+          /* @ts-ignore */
+          { value: '', name: '' },              
+          /* @ts-ignore */
+          { value: 'solid', name: 'solid' },
+          /* @ts-ignore */
+          { value: 'double', name: 'double' },
+          /* @ts-ignore */
+          { value: 'dotted', name: 'dotted' },
+          /* @ts-ignore */
+          { value: 'dashed', name: 'dashed' },
+          /* @ts-ignore */
+          { value: 'wavy', name: 'wavy' },
+        ],
+        info: 'The text-decoration-style CSS property sets the style of the lines specified by text-decoration-line. The style applies to all lines, there is no way to define different styles for each of the lines.',
+      }, {
+        name: 'Text decoration color',
+        property: 'text-decoration-color',
+        type: 'color',
+        defaults: '',
+        fixedValues: ['inherit', 'initial', 'revert', 'unset'],
+        info: 'The text-decoration-color CSS property sets the color of decorations added to text by text-decoration-line.',
+      }, {
+        name: 'Text decoration thickness',
+        property: 'text-decoration-thickness',
+        type: 'integer',
+        units: ['px', '%', 'em'],
+        info: 'The text-decoration-thickness CSS property sets the stroke thickness of the decoration line that is used on text in an element, such as a line-through, underline, or overline.',
+        default: '',
+        fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
+      }],
+    }, { at: 10 })
+    editor.StyleManager.addProperty('typography', {
+      name: 'Text transform',
+      property: 'text-transform',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },            
+        /* @ts-ignore */
+        { value: 'none', name: 'none' },
+        /* @ts-ignore */
+        { value: 'capitalize', name: 'capitalize' },
+        /* @ts-ignore */
+        { value: 'uppercase', name: 'uppercase' },
+        /* @ts-ignore */
+        { value: 'lowercase', name: 'lowercase' },
+      ],
+      info: 'The text-transform CSS property sets how to capitalize an element\'s text. It can be used to make text appear in all-uppercase or all-lowercase, or with each word capitalized.',
+    }, { at: 11 })
+    editor.StyleManager.addProperty('typography', {
+      name: 'Text overflow',
+      property: 'text-overflow',
+      type: 'select',
+      defaults: '',
+      options: [
+        /* @ts-ignore */
+        { value: '', name: '' },                    
+        /* @ts-ignore */
+        { value: 'clip', name: 'clip' },
+        /* @ts-ignore */
+        { value: 'ellipsis', name: 'ellipsis' },
+      ],
+      info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
+    }, { at: 12 })
+    /***************/  
+    /* Decorations */
+    /***************/    
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('decorations', 'background-color')
+    editor.StyleManager.addProperty('decorations', {
+      name: 'Background color',
+      property: 'background-color',
+      type: 'color',
+      default: '',
+      full: true,
+    }, { at: 0 })
+    /** remove default property et add custom one */
+    editor.StyleManager.removeProperty('decorations', 'border-radius')
+    editor.StyleManager.addProperty('decorations', {  
+      name: 'Border radius',
+      property: 'border-radius',
+      type: 'composite',
+      defaults: '',
+      fixedValues: [ 'initial', 'inherit' ],
+      full: true,
+      properties: [{
+        property: 'border-top-left-radius',
+        name: 'Top left',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'border-top-right-radius',
+        name: 'Top right',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'border-bottom-right-radius',
+        name: 'Bottom right',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }, {
+        property: 'border-bottom-left-radius',
+        name: 'Botton left',
+        type: 'number',
+        default: '',
+        fixedValues: [ 'initial', 'inherit', 'auto' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      }],
+    }, { at: 2 })
+
+    editor.StyleManager.addProperty('decorations', {
+      name: 'Outline',
+      property: 'outline',
+      type: 'composite',
+      properties: [{
+        name: 'Outline width',
+        property: 'outline-width',
+        type: 'integer',
+        units: ['px', '%', 'em'],
+        info: 'The outline-width CSS property sets the thickness of an element\'s outline. An outline is a line that is drawn around an element, outside the border.',
+        default: '',
+        fixedValues: ['medium', 'thin', 'thick', 'inherit', 'initial', 'revert', 'unset'],
+      }, {
+        name: 'Outline style',
+        property: 'outline-style',
+        type: 'select',
+        defaults: '',
+        options: [
+          /* @ts-ignore */
+          { value: '', name: '' },          
+          /* @ts-ignore */
+          { value: 'none', name: 'none' },
+          /* @ts-ignore */
+          { value: 'hidden', name: 'hidden' },
+          /* @ts-ignore */
+          { value: 'dotted', name: 'dotted' },
+          /* @ts-ignore */
+          { value: 'dashed', name: 'dashed' },
+          /* @ts-ignore */
+          { value: 'solid', name: 'solid' },
+          /* @ts-ignore */
+          { value: 'double', name: 'double' },
+          /* @ts-ignore */
+          { value: 'groove', name: 'groove' },
+          /* @ts-ignore */
+          { value: 'ridge', name: 'ridge' },
+          /* @ts-ignore */
+          { value: 'inset', name: 'inset' },
+          /* @ts-ignore */
+          { value: 'outset', name: 'outset' },
+        ],
+        info: 'The outline-style CSS property sets the style of an element\'s outline. An outline is a line that is drawn around an element, outside the border.',
+      }, {
+        name: 'Outline color',
+        property: 'outline-color',
+        type: 'color',
+        defaults: '',
+        info: 'The outline-color CSS property sets the color of an element\'s outline.',
+      }],
+    }, { at: 8 })
+    /***************/    
+    /* Extra       */
+    /***************/  
     editor.StyleManager.addProperty('extra', {
       name: 'Z index',
       property: 'z-index',
@@ -293,260 +899,6 @@ export default (editor: Editor, opts) => {
       ],
       info: 'The column-span CSS property makes it possible for an element to span across all columns when its value is set to all.',
     }, { at: 7 })
-
-    editor.StyleManager.addProperty('decorations', {
-      name: 'Outline',
-      property: 'outline',
-      type: 'composite',
-      properties: [{
-        name: 'Outline width',
-        property: 'outline-width',
-        type: 'integer',
-        units: ['px', '%', 'em'],
-        info: 'The outline-width CSS property sets the thickness of an element\'s outline. An outline is a line that is drawn around an element, outside the border.',
-        default: '',
-        fixedValues: ['medium', 'thin', 'thick', 'inherit', 'initial', 'revert', 'unset'],
-      }, {
-        name: 'Outline style',
-        property: 'outline-style',
-        type: 'select',
-        defaults: '',
-        options: [
-          /* @ts-ignore */
-          { value: '', name: '' },          
-          /* @ts-ignore */
-          { value: 'none', name: 'none' },
-          /* @ts-ignore */
-          { value: 'hidden', name: 'hidden' },
-          /* @ts-ignore */
-          { value: 'dotted', name: 'dotted' },
-          /* @ts-ignore */
-          { value: 'dashed', name: 'dashed' },
-          /* @ts-ignore */
-          { value: 'solid', name: 'solid' },
-          /* @ts-ignore */
-          { value: 'double', name: 'double' },
-          /* @ts-ignore */
-          { value: 'groove', name: 'groove' },
-          /* @ts-ignore */
-          { value: 'ridge', name: 'ridge' },
-          /* @ts-ignore */
-          { value: 'inset', name: 'inset' },
-          /* @ts-ignore */
-          { value: 'outset', name: 'outset' },
-        ],
-        info: 'The outline-style CSS property sets the style of an element\'s outline. An outline is a line that is drawn around an element, outside the border.',
-      }, {
-        name: 'Outline color',
-        property: 'outline-color',
-        type: 'color',
-        defaults: '',
-        info: 'The outline-color CSS property sets the color of an element\'s outline.',
-      }],
-    }, { at: 8 })
-    editor.StyleManager.addProperty('typography', {
-      name: 'Word break',
-      property: 'word-break',
-      type: 'select',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'normal', name: 'normal' },
-        /* @ts-ignore */
-        { value: 'break-all', name: 'break-all' },
-        /* @ts-ignore */
-        { value: 'keep-all', name: 'keep-all' },
-        /* @ts-ignore */
-        { value: 'break-word', name: 'break-word' },
-      ],
-      info: 'The word-break CSS property sets whether line breaks appear wherever the text would otherwise overflow its content box.',
-    }, { at: 7 })
-    editor.StyleManager.addProperty('typography', {
-      name: 'Word wrap',
-      property: 'word-wrap',
-      type: 'radio',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: 'normal', name: 'normal' },
-        /* @ts-ignore */
-        { value: 'break-word', name: 'break-word' },
-      ],
-      info: 'The word-wrap CSS property sets whether the line may be broken within a word in order to prevent overflow when an otherwise unbreakable string is too long to fit in its containing box.',
-    }, { at: 8 })
-    editor.StyleManager.addProperty('typography', {
-      name: 'White space',
-      property: 'white-space',
-      type: 'select',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'normal', name: 'normal' },
-        /* @ts-ignore */
-        { value: 'nowrap', name: 'nowrap' },
-        /* @ts-ignore */
-        { value: 'pre', name: 'pre' },
-        /* @ts-ignore */
-        { value: 'pre-wrap', name: 'pre-wrap' },
-        /* @ts-ignore */
-        { value: 'pre-line', name: 'pre-line' },
-        /* @ts-ignore */
-        { value: 'break-spaces', name: 'break-spaces' },
-      ],
-      info: 'The white-space CSS property sets how white space inside an element is handled.',
-    }, { at: 9 })
-    editor.StyleManager.addProperty('typography', {
-      name: 'Text decoration',
-      property: 'text-decoration',
-      type: 'composite',
-      properties: [{
-        name: 'Text decoration line',
-        property: 'text-decoration-line',
-        type: 'select',
-        defaults: '',
-        fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
-        options: [
-          /* @ts-ignore */
-          { value: '', name: '' },                  
-          /* @ts-ignore */
-          { value: 'none', name: 'none' },
-          /* @ts-ignore */
-          { value: 'underline', name: 'underline' },
-          /* @ts-ignore */
-          { value: 'overline', name: 'overline' },
-          /* @ts-ignore */
-          { value: 'line-through', name: 'line-through' },
-          /* @ts-ignore */
-          { value: 'blink', name: 'blink' },
-        ],
-        info: 'The text-decoration CSS property sets the appearance of decorative lines on text.',
-      }, {
-        name: 'Text decoration style',
-        property: 'text-decoration-style',
-        type: 'select',
-        defaults: '',
-        options: [
-          /* @ts-ignore */
-          { value: '', name: '' },              
-          /* @ts-ignore */
-          { value: 'solid', name: 'solid' },
-          /* @ts-ignore */
-          { value: 'double', name: 'double' },
-          /* @ts-ignore */
-          { value: 'dotted', name: 'dotted' },
-          /* @ts-ignore */
-          { value: 'dashed', name: 'dashed' },
-          /* @ts-ignore */
-          { value: 'wavy', name: 'wavy' },
-        ],
-        info: 'The text-decoration-style CSS property sets the style of the lines specified by text-decoration-line. The style applies to all lines, there is no way to define different styles for each of the lines.',
-      }, {
-        name: 'Text decoration color',
-        property: 'text-decoration-color',
-        type: 'color',
-        defaults: '',
-        fixedValues: ['inherit', 'initial', 'revert', 'unset'],
-        info: 'The text-decoration-color CSS property sets the color of decorations added to text by text-decoration-line.',
-      }, {
-        name: 'Text decoration thickness',
-        property: 'text-decoration-thickness',
-        type: 'integer',
-        units: ['px', '%', 'em'],
-        info: 'The text-decoration-thickness CSS property sets the stroke thickness of the decoration line that is used on text in an element, such as a line-through, underline, or overline.',
-        default: '',
-        fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
-      }],
-    }, { at: 10 })
-    editor.StyleManager.addProperty('typography', {
-      name: 'Text transform',
-
-      property: 'text-transform',
-      type: 'select',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: '', name: '' },            
-        /* @ts-ignore */
-        { value: 'none', name: 'none' },
-        /* @ts-ignore */
-        { value: 'capitalize', name: 'capitalize' },
-        /* @ts-ignore */
-        { value: 'uppercase', name: 'uppercase' },
-        /* @ts-ignore */
-        { value: 'lowercase', name: 'lowercase' },
-      ],
-      info: 'The text-transform CSS property sets how to capitalize an element\'s text. It can be used to make text appear in all-uppercase or all-lowercase, or with each word capitalized.',
-    }, { at: 11 })
-    editor.StyleManager.addProperty('typography', {
-      name: 'Text overflow',
-      property: 'text-overflow',
-      type: 'select',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'clip', name: 'clip' },
-        /* @ts-ignore */
-        { value: 'ellipsis', name: 'ellipsis' },
-      ],
-      info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
-    }, { at: 12 })
-    /** remove default module et add custom one */
-    editor.StyleManager.removeProperty('general', 'display')
-    editor.StyleManager.addProperty('general', {
-      name: 'Display',
-      property: 'display',
-      type: 'select',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'block', name: 'block' },
-        /* @ts-ignore */
-        { value: 'inline', name: 'inline' },
-        /* @ts-ignore */
-        { value: 'inline-block', name: 'inline-block' },
-        /* @ts-ignore */
-        { value: 'flex', name: 'flex' },
-        /* @ts-ignore */
-        { value: 'none', name: 'none' }, 
-      ],
-      info: '',
-    }, { at: 0 })
-    editor.StyleManager.addProperty('general', {
-      name: 'Visibility',
-      property: 'visibility',
-      type: 'select',
-      defaults: '',
-      options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'visible', name: 'visible' },
-        /* @ts-ignore */
-        { value: 'hidden', name: 'hidden' },
-        /* @ts-ignore */
-        { value: 'collapse', name: 'collapse' },
-      ],
-      info: 'The visibility CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a <table>.',
-    }, { at: 1 })
-
-    // Add content property, visible only when a pseudo element is selected
-    const contentProp = editor.StyleManager.addProperty('general', {
-      name: 'Content',
-      property: 'content',
-      type: 'text',
-      defaults: '',
-      info: 'The content CSS property replaces an element with a generated value. Objects inserted using the content property are anonymous replaced elements.',
-      full: true,
-      visible: false,
-    }, { at: 0 })
     function refreshContentProp() {
       const state = editor.SelectorManager.getState()
       if (['before', 'after'].includes(state)) {
@@ -557,7 +909,6 @@ export default (editor: Editor, opts) => {
     }
     editor.on('selector:state component:selected component:styleUpdate style:sector:update', (state, opts) => setTimeout(() => refreshContentProp()))
     editor.StyleManager.getSector('general').on('change', () => refreshContentProp())
-
     // Add pseudo elements
     editor.SelectorManager.states.add({name: 'before', label: 'Before'})
     editor.SelectorManager.states.add({name: 'after', label: 'After'})
