@@ -78,9 +78,7 @@ export const settingsDialog = (editor, opts) => {
     const model = editor.getModel()
     model.set('settings', data.settings || {})
     model.set('name', data.name)
-  })
-  // On chrome this is needed to apply the head content to the DOM
-  editor.on('storage:end:load', () => {
+    // On chrome this is needed to apply the head content to the DOM
     setTimeout(() => {
       updateDom(editor)
     })
@@ -228,13 +226,15 @@ function getHeadContainer(doc, className) {
 }
 function updateDom(editor) {
   const doc = editor.Canvas.getDocument()
-  if(doc) {
+  const settings = editor.getModel().get('settings')
+  const pageSettings = editor.Pages.getSelected().get('settings')
+  if(doc && settings) {
     // Site head
     getHeadContainer(doc, 'site-head')
-      .innerHTML = editor.getModel().get('settings').head || ''
+      .innerHTML = settings.head || ''
     // Pages head
     getHeadContainer(doc, 'page-head')
-      .innerHTML = editor.Pages.getSelected().get('settings')?.head || ''
+      .innerHTML = pageSettings?.head || ''
   } else {
     // No document??
   }
