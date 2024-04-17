@@ -2,6 +2,7 @@
 *.sublime-project
 *.sublime-workspace
 *.DS_Store
+.idea/
 .temp
 .cache
 node_modules
