@@ -74,14 +74,14 @@ First, install Silex as a dev dependency in your project:
 npm install --save-dev @silexlabs/silex
 ```
 
-Then, you can run Silex with the `silex` command in your `package.json` scripts:
+Then, you need to build the project:
+```bash
+npm run build
+```
 
-```json
-{
-  "scripts": {
-    "start": "silex"
-  }
-}
+Silex is now ready to run. You can start it with the following command:
+```bash
+npm start
 ```
 
 ## Configuration
