@@ -5,7 +5,7 @@
   "scripts": {
     "release": "",
     "start": "silex --server-config `pwd`/.silex.js --client-config `pwd`/client-config.js",
-    "dev": "silex --server-config `pwd`/.silex.js --client-config `pwd`/client-config.js --debug"
+    "dev": "npm start -- --debug"
   },
   "engines": {
     "node": ">=18"
@@ -13,9 +13,9 @@
   "author": "lexoyo",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@silexlabs/silex": "^3.0.0-alpha.149",
-    "@silexlabs/silex-cms": "^0.0.93",
-    "@silexlabs/silex-dashboard": "^1.0.41"
+    "@silexlabs/silex": "^3.0.0-alpha.151",
+    "@silexlabs/silex-cms": "^0.0.112",
+    "@silexlabs/silex-dashboard": "^1.0.44"
   },
   "repository": {
     "type": "git",
