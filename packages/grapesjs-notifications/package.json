@@ -1,0 +1,47 @@
+{
+  "name": "@silexlabs/grapesjs-notifications",
+  "version": "0.0.0",
+  "description": "This GrapesJs plugin is designed to enhance the user experience within the editor by providing a robust notification system. This plugin captures and displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface.",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silexlabs/grapesjs-notifications.git"
+  },
+  "scripts": {
+    "start": "grapesjs-cli serve",
+    "build": "grapesjs-cli build --patch=false"
+  },
+  "devDependencies": {
+    "grapesjs-cli": "^4.1.3"
+  },
+  "peerDependencies": {
+    "grapesjs": "^0.21.10",
+    "lit": "^3.1.2"
+  },
+  "author": "@lexoyo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/silexlabs/Silex/issues"
+  },
+  "homepage": "https://github.com/silexlabs/grapesjs-notifications#readme",
+  "keywords": [
+    "grapesjs",
+    "plugin",
+    "grapesjs-plugin",
+    "notifications",
+    "web-design",
+    "web-development",
+    "UI",
+    "UX",
+    "error-handling",
+    "warning-system",
+    "activity-tracker",
+    "silex",
+    "silexlabs",
+    "no-code",
+    "editor",
+    "web-editor",
+    "frontend",
+    "website-builder"
+  ]
+}

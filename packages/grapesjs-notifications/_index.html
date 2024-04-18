@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>@silexlabs/grapesjs-notifications</title>
+    <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/grapesjs"></script>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+
+  <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; left: 120px;"></div>
+    <div id="gjs" style="height:0px; overflow:hidden">
+      <div style="margin:100px 100px 25px; padding:25px; font:caption">
+        This is a demo content from _index.html. You can use this template file for
+        development purpose. It won't be stored in your git repository
+      </div>
+    </div>
+
+
+    <script type="text/javascript">
+      // Wait for the plugin to be injected by the dev server
+      setTimeout(() => {
+        window.editor = grapesjs.init({
+          height: '100%',
+          container: '#gjs',
+          showOffsets: true,
+          fromElement: true,
+          noticeOnUnload: false,
+          storageManager: false,
+          plugins: ['@silexlabs/grapesjs-notifications'],
+          pluginsOpts: {
+            '@silexlabs/grapesjs-notifications': { /* Test here your options  */ }
+          }
+        })
+        editor.on('load', () => {
+          editor.addComponents(
+            `<div style="margin:100px; padding:25px;">
+                Content loaded from the plugin
+            </div>`,
+            { at: 0 }
+          )
+          console.log('Loaded')
+          editor.Panels.addPanel({
+            id: "basic-actions",
+            el: ".panel__basic-actions",
+            buttons: [
+              {
+                id: "add-notification",
+                label: "Add Notification",
+                command(editor) {
+                  const type = ["info", "warning", "error", "success"][Math.floor(Math.random() * 4)]
+                  editor.runCommand("notifications:add", {
+                    message: `This is a ${type} notification!`,
+                    type,
+                    component: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)),
+                    timeout: 5000,
+                  })
+                }
+              },
+              {
+                id: "clear-notifications",
+                label: "Clear Notifications",
+                command(editor) {
+                  editor.runCommand("notifications:clear")
+                }
+              },
+            ]
+          })
+          editor.on('notifications:added', notification => {
+            console.log('Notification added', notification)
+          })
+          editor.on('notifications:cleared', () => {
+            console.log('Notifications cleared')
+          })
+          editor.on('notifications:removed', notification => {
+            console.log('Notification removed', notification)
+          })
+          editor.on('notifications:changed', () => {
+            console.log('Notification changed')
+          })
+        })
+      }, 100)
+    </script>
+  </body>
+</html>
