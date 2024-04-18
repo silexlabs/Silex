@@ -1,5 +1,6 @@
 export default {
     '@silexlabs/grapesjs-notifications': {
-        // 'key': 'value',
+        'Close': 'Dismiss',
+        'Select': 'Select component {componentName}',
     },
 };

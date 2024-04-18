@@ -13,6 +13,7 @@ function defaultContainer(container: HTMLElement | undefined): HTMLElement | nul
   el.style.position = 'fixed'
   el.style.bottom = '10px'
   el.style.zIndex = '9999'
+  //el.classList.add('gjs-sm', 'gjs-one-bg', 'gjs-two-color')
   document.body.appendChild(el)
   return el
 }
@@ -23,18 +24,17 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
     style: {
       top: '10px',
       right: '10px',
+      maxWidth: '300px',
       zIndex: 9999,
       listStyle: 'none',
       padding: '10px',
       margin: '10px',
-      backgroundColor: '#fff',
-      border: '1px solid #ccc',
-      borderRadius: '3px',
-      boxShadow: '0 0 5px rgba(0,0,0,.3)',
-      transition: 'all .3s',
+      fontFamily: 'var(--gjs-main-font)',
+      fontSize: 'var(--gjs-font-size)',
     },
     container: defaultContainer(opts.container)!,
     storeKey: undefined,
+    maxNotifications: 5,
   },  ...opts }  
   
   // Load i18n files
@@ -56,7 +56,7 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
     // Update the storage when the notifications change
     storage?.save(editor.NotificationManager.getAll())
     // Render the notifications
-    view(options.container, editor.NotificationManager.getAll(), options)
+    view(editor, options.container, editor.NotificationManager.getAll(), options)
   })
 
 }

@@ -17,10 +17,6 @@
 
   <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; left: 120px;"></div>
     <div id="gjs" style="height:0px; overflow:hidden">
-      <div style="margin:100px 100px 25px; padding:25px; font:caption">
-        This is a demo content from _index.html. You can use this template file for
-        development purpose. It won't be stored in your git repository
-      </div>
     </div>
 
 
@@ -40,12 +36,13 @@
           }
         })
         editor.on('load', () => {
-          editor.addComponents(
-            `<div style="margin:100px; padding:25px;">
-                Content loaded from the plugin
-            </div>`,
-            { at: 0 }
-          )
+          for (let i = 0; i < 100; i++) {
+            const color = ['red', 'green', 'blue', 'yellow'][Math.floor(Math.random() * 4)]
+            const backgroundColor = ['red', 'green', 'blue', 'yellow'][Math.floor(Math.random() * 4)]
+            editor.addComponents(`<div style="margin:100px; padding:25px; color: ${color}; background: ${backgroundColor};" data-gjs-name="${i}">
+                Test content ${i}
+            </div>`)
+          }
           editor.Panels.addPanel({
             id: "basic-actions",
             el: ".panel__basic-actions",
@@ -56,7 +53,7 @@
                 command(editor) {
                   const type = ["info", "warning", "error", "success"][Math.floor(Math.random() * 4)]
                   editor.runCommand("notifications:add", {
-                    message: `This is a ${type} notification!`,
+                    message: `This is a ${type} notification! `.repeat(Math.floor(Math.random() * 10) + 1),
                     type,
                     component: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)).getId(),
                     timeout: Math.floor(Math.random() * 5000) + 5000,
