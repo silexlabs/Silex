@@ -1,8 +1,25 @@
-# GrapesJs Notifications
+# GrapesJs Notifications Plugin
 
 This GrapesJs plugin is designed to enhance the user experience within the editor by providing a robust notification system. This plugin captures and displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface.
 
-[DEMO](##) (coming soon)
+> This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+
+[DEMO](https://codepen.io/lexoyo/full/mdgzKQb)
+
+Features
+
+* [x] Notification types with corresponding icons
+* [x] Select component attached to the notification
+* [x] Customizable notification style
+* [x] Internationalization
+* [x] Local storage for persistent notifications
+* [x] Maximum number of notifications to display
+* [x] Notification timeout
+* [x] Custom notification container
+* [x] Notification events
+* [x] Notification commands
+* [x] editor.NotificationManager API
+* [ ] Group notifications
 
 ### HTML
 ```html
@@ -34,7 +51,7 @@ body, html {
 
 ## Summary
 
-* Plugin name: `@silexlabs/grapesjs-notifications`
+Plugin name: `@silexlabs/grapesjs-notifications`
 
 API:
 
