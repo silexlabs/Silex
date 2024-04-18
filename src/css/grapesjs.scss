@@ -128,6 +128,16 @@
   margin-top: 0;
 }
 
+// Adapting the layout of the suggestion list
+
+.gjs-suggest {
+  max-height: 30vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-top: 7px;
+  border-bottom: solid $primaryColor 7px;
+}
+
 /*
 */
 // Font awesome 5 fix
