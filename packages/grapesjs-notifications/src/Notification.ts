@@ -1,11 +1,31 @@
 import { Component, Page } from 'grapesjs'
 import { NotificationEditor } from './NotificationManager'
-import {LitElement, TemplateResult, html} from 'lit'
 
 export interface NotificationOptions {
   message: string
   timeout?: number
   component?: string | Component
+  type: 'info' | 'warning' | 'error' | 'success'
+  icons: {
+    info: string
+    warning: string
+    error: string
+    success: string
+  }
+}
+
+export function getDefaultOptions(opts: Partial<NotificationOptions>): NotificationOptions {
+  return {
+    ...{
+      icons: {
+        info: '\u{1F6A7}',
+        warning: '\u{26A0}',
+        error: '\u{1F6AB}',
+        success: '\u{2705}',
+        ...opts.icons,
+      },
+    }, ...opts
+  } as NotificationOptions
 }
 
 function getAllComponents(editor: NotificationEditor): Component[] {
@@ -26,19 +46,28 @@ export interface NotificationModel extends Backbone.Model<NotificationOptions> {
 
 export class Notification {
   component: Component | null = null
-  constructor(protected editor: NotificationEditor, protected options: NotificationModel) {
-    if(options.attributes.timeout) {
-      setTimeout(() => this.remove(), options.attributes.timeout)
+  timeoutRef
+  message: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  protected options: NotificationOptions
+  constructor(protected editor: NotificationEditor, protected model: NotificationModel) {
+    this.options = getDefaultOptions(model.attributes)
+    if(this.options.timeout) {
+      this.timeoutRef = setTimeout(() => this.remove(), this.options.timeout)
     }
-    if(options.attributes.component) {
-      if(typeof options.attributes.component === 'string') {
-        this.component = getAllComponents(editor).find((c: Component) => c.getId() === options.attributes.component) || null
+    if(this.options.component) {
+      if(typeof this.options.component === 'string') {
+        this.component = getAllComponents(editor).find((c: Component) => c.getId() === this.options.component) || null
       } else {
-        this.component = options.attributes.component
+        this.component = this.options.component
       }
     }
-    console.log('Creating notification', options, this.component)
+    this.message = this.options.message!
+    this.type = this.options.type!
   }
+  //get(key: keyof NotificationOptions): unknown {
+  //  return this.options.attributes[key]
+  //}
   select() {
     if(this.component) {
       this.editor.select(this.component)
@@ -46,17 +75,11 @@ export class Notification {
     }
   }
   remove() {
-    console.log('Destroying notification')
-    this.editor.NotificationManager.remove(this.options)
+    this.editor.NotificationManager.remove(this.model)
+    this.timeoutRef && clearTimeout(this.timeoutRef)
   }
-  render(): TemplateResult {
-    console.log('Rendering notification', this)
-    return html`
-      <p>${this.options.attributes.message}</p>
-      <button @click=${() => this.remove()}>Close</button>
-      ${this.component ? html`
-      <button @click=${() => this.select()}>Select ${this.component.getName() || 'source'}</button>
-      ` : ''}
-    `
+
+  getSvgIcon(type: string): string {
+    return this.options.icons?.[type as keyof NotificationOptions['icons']]!
   }
 }

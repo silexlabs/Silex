@@ -4,7 +4,7 @@ export const NOTIFICATION_ADD = 'notifications:add'
 export const NOTIFICATION_REMOVE = 'notifications:remove'
 export const NOTIFICATION_CLEAR = 'notifications:clear'
 
-export default (editor: NotificationEditor, opts: NotificationManagerOptions = {}) => {
+export default (editor: NotificationEditor) => {
   editor.Commands.add(NOTIFICATION_ADD, (editor: NotificationEditor, sender: any, notification: NotificationOptions) => {
     editor.NotificationManager.add(notification)
   })

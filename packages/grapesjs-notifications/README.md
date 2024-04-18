@@ -65,6 +65,7 @@ API:
 | `timeout` | Default timeout for the notification in ms | `number` | No timeout |
 | `container` | Container for the notifications | `HTMLElement` | `document.body` |
 | `storeKey` | Store notifications in local storage under this key | `string` | No storage |
+| `icons` | Icons for the notification types | `object` | `{error: '\u2716', warning: '\u26A0', success: '\u2714', info: '\u2139'}` |
 
 ## Download
 

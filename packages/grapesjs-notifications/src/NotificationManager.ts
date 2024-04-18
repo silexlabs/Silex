@@ -1,6 +1,7 @@
 import Backbone from "backbone"
 import { Editor } from "grapesjs"
 import { Notification, NotificationModel } from "./Notification"
+import { StyleInfo } from "lit/directives/style-map"
 
 export interface NotificationEditor extends Editor {
   NotificationManager: NotificationManager
@@ -12,10 +13,16 @@ export const NOTIFICATION_REMOVE = 'notifications:removed'
 export const NOTIFICATION_CLEAR = 'notifications:cleared'
 
 export interface NotificationManagerOptions {
-  style?: object
+  style: Readonly<StyleInfo>
+  container: HTMLElement
   timeout?: number
-  container?: HTMLElement
   storeKey?: string
+  icons?: {
+    info?: string
+    warning?: string
+    error?: string
+    success?: string
+  }
 }
 
 /**
