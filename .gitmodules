@@ -82,3 +82,6 @@
 	path = packages/11ty_silex.me-2024
 	url = git@gitlab.com:lexoyo/11ty_silex.me-2024.git
 	branch = main
+[submodule "packages/grapesjs-notifications"]
+	path = packages/grapesjs-notifications
+	url = git@github.com:silexlabs/grapesjs-notifications.git

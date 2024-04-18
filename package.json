@@ -25,33 +25,8 @@
     "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && $npm_execpath run count | scripts/insert-in-readme.js count --code",
     "exec": "scripts/exec.js"
   },
-  "wip": [
-    "packages/grapesjs-links",
-    "packages/silex-desktop",
-    "packages/node_modules-path"
-  ],
-  "xworkspaces": [
-    "packages/**/*"
-  ],
   "workspaces": [
-    "packages/editor.silex.me",
-    "packages/eleventy-plugin-concat",
-    "packages/eleventy-plugin-directus",
-    "packages/grapesjs-data-source",
-    "packages/grapesjs-directus-storage",
-    "packages/grapesjs-filter-styles",
-    "packages/grapesjs-fonts",
-    "packages/grapesjs-loading",
-    "packages/grapesjs-symbols",
-    "packages/grapesjs-storage-rate-limit",
-    "packages/grapesjs-ui-suggest-classes",
-    "packages/silex-cms",
-    "packages/silex-dashboard",
-    "packages/silex-plugin-starter",
-    "packages/silex-plugins",
-    "packages/Silex",
-    "packages/expression-input",
-    "packages/silex-strapi-11ty"
+    "packages/*"
   ],
   "devDependencies": {
     "cloc": "^1.98.0-cloc",
