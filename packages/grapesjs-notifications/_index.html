@@ -59,8 +59,8 @@
                   editor.runCommand("notifications:add", {
                     message: `This is a ${type} notification!`,
                     type,
-                    component: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)),
-                    timeout: 5000,
+                    component: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)).getId(),
+                    timeout: Math.floor(Math.random() * 50000) + 5000,
                   })
                 }
               },

@@ -42,7 +42,7 @@ API:
   * `type`: `error`, `warning`, `success`, `info`
   * `message`: `string`
   * `timeout`: `number` (ms)
-  * `componentId`: `string` (optional)
+  * `component`: `string` or GrapesJs `Component` (optional)
 * `editor.Notifications` methods:
   * `add(notification)`
   * `remove(notification)` 
