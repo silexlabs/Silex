@@ -4,6 +4,7 @@ import { StyleInfo } from 'lit/directives/style-map';
 
 export interface NotificationOptions {
 	message: string;
+	group?: string;
 	timeout?: number;
 	component?: string | Component;
 	type: "info" | "warning" | "error" | "success";
@@ -20,6 +21,7 @@ declare class Notification {
 	protected editor: NotificationEditor;
 	protected model: NotificationModel;
 	component: Component | null;
+	group: string | null;
 	timeoutRef: NodeJS.Timeout | undefined;
 	message: string;
 	type: "info" | "warning" | "error" | "success";
@@ -36,6 +38,7 @@ export interface NotificationManagerOptions {
 	style: Readonly<StyleInfo>;
 	container: HTMLElement;
 	maxNotifications?: number;
+	reverse?: boolean;
 	timeout?: number;
 	storeKey?: string;
 	icons?: {

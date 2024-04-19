@@ -16,6 +16,7 @@
   <body>
 
   <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; left: 120px;"></div>
+    <div id="test" style="position: fixed; top: 0; right: 0; z-index: 9999; padding: 10px; background: #333; color: white;"></div>
     <div id="gjs" style="height:0px; overflow:hidden">
     </div>
 
@@ -35,6 +36,7 @@
             '@silexlabs/grapesjs-notifications': {
               maxNotifications: 10,
               reverse: true,
+              container: '#test',
             }
           }
         })

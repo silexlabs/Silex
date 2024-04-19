@@ -45,7 +45,14 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
         .map(item => typeof item === 'string' ? renderGroup(editor, item, notifications.filter(n => n.group === item)) : renderNotification(editor, item))
       }
     </ul>
-  `, container)
+  `, getContainer(container))
+}
+
+function getContainer(container: HTMLElement | string): HTMLElement {
+  if (typeof container === 'string') {
+    return document.querySelector(container) as HTMLElement
+  }
+  return container
 }
 
 function organizeNotifications(notifications: Notification[]): (Notification | string)[] {
@@ -66,7 +73,7 @@ function organizeNotifications(notifications: Notification[]): (Notification | s
 
 function renderGroup(editor: NotificationEditor, groupName: string, groupedNotifications: Notification[]): TemplateResult {
   return html`
-    <li class="gjs-sm gjs-one-bg gjs-two-color gjs-notification-group">
+    <li class="gjs-sm gjs-one-bg gjs-two-color gjs-notification__group">
     <details class="gjs-sm gjs-one-bg gjs-two-color">
       <summary class="gjs-sm-header gjs-label">
         <div>\u{1F4CC} ${groupName}</div>
@@ -87,7 +94,6 @@ function renderGroup(editor: NotificationEditor, groupName: string, groupedNotif
 }
 
 function renderNotification(editor: NotificationEditor, notification: Notification): TemplateResult {
-  console.log('notification', notification)
   return html`
     <li class=${classMap({
       'gjs-sm': true,
