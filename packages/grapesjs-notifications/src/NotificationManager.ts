@@ -16,6 +16,7 @@ export interface NotificationManagerOptions {
   style: Readonly<StyleInfo>
   container: HTMLElement
   maxNotifications?: number
+  reverse?: boolean
   timeout?: number
   storeKey?: string
   icons?: {
@@ -58,10 +59,6 @@ export class NotificationManager extends Backbone.Collection<NotificationModel> 
    */
   modelChanged(e?: CustomEvent) {
     this.editor.trigger(NOTIFICATION_CHANGED, e?.detail)
-    // Max notifications
-    if (this.models.length > this.options.maxNotifications!) {
-      this.models.shift()
-    }
   }
 
   /**

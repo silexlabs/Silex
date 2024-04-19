@@ -32,7 +32,10 @@
           storageManager: false,
           plugins: ['@silexlabs/grapesjs-notifications'],
           pluginsOpts: {
-            '@silexlabs/grapesjs-notifications': { /* Test here your options  */ }
+            '@silexlabs/grapesjs-notifications': {
+              maxNotifications: 10,
+              reverse: true,
+            }
           }
         })
         editor.on('load', () => {
@@ -52,11 +55,13 @@
                 label: "Add Notification",
                 command(editor) {
                   const type = ["info", "warning", "error", "success"][Math.floor(Math.random() * 4)]
+                  const group = Math.random() > 0.5 ? 'Group ' + Math.floor(Math.random() * 2) : null
                   editor.runCommand("notifications:add", {
-                    message: `This is a ${type} notification! `.repeat(Math.floor(Math.random() * 10) + 1),
+                    message: `This is a ${type} notification${group ? `from group ${group}` : ''}! `.repeat(Math.floor(Math.random() * 10) + 1),
+                    group,
                     type,
                     component: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)).getId(),
-                    timeout: Math.floor(Math.random() * 5000) + 5000,
+                    //timeout: Math.floor(Math.random() * 5000) + 5000,
                   })
                 }
               },

@@ -35,6 +35,7 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
     container: defaultContainer(opts.container)!,
     storeKey: undefined,
     maxNotifications: 5,
+    reverse: false,
   },  ...opts }  
   
   // Load i18n files

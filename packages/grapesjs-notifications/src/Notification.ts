@@ -3,6 +3,7 @@ import { NotificationEditor } from './NotificationManager'
 
 export interface NotificationOptions {
   message: string
+  group?: string
   timeout?: number
   component?: string | Component
   type: 'info' | 'warning' | 'error' | 'success'
@@ -22,6 +23,7 @@ export function getDefaultOptions(opts: Partial<NotificationOptions>): Notificat
         warning: '\u{26A0}',
         error: '\u{1F6AB}',
         success: '\u{2705}',
+        group: '\u{1F4CC}',
         ...opts.icons,
       },
     }, ...opts
@@ -46,6 +48,7 @@ export interface NotificationModel extends Backbone.Model<NotificationOptions> {
 
 export class Notification {
   component: Component | null = null
+  group: string | null = null
   timeoutRef
   message: string
   type: 'info' | 'warning' | 'error' | 'success'
@@ -64,6 +67,7 @@ export class Notification {
     }
     this.message = this.options.message!
     this.type = this.options.type!
+    this.group = model.attributes.group || null
   }
   //get(key: keyof NotificationOptions): unknown {
   //  return this.options.attributes[key]
