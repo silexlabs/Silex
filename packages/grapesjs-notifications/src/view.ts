@@ -28,6 +28,9 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
       max-height: 80vh;
       overflow-y: auto;
     }
+    .gjs-notifications details summary {
+      list-style: none;
+    }
     .gjs-notifications li {
       border-radius: 5px;
       margin: 10px 0;
@@ -62,17 +65,23 @@ function organizeNotifications(notifications: Notification[]): (Notification | s
 
 function renderGroup(editor: NotificationEditor, groupName: string, groupedNotifications: Notification[]): TemplateResult {
   return html`
-    <li><details class="gjs-sm gjs-one-bg gjs-two-color">
+    <li class="gjs-sm gjs-one-bg gjs-two-color">
+    <details class="gjs-sm gjs-one-bg gjs-two-color">
       <summary class="gjs-sm-header gjs-label">
-        \u{1F4CC} ${groupName}
+        <div>\u{1F4CC} ${groupName}</div>
         <button @click=${() => groupedNotifications.forEach(notification => notification.remove())} class="gjs-btn-prim">${editor.I18n.t('@silexlabs/grapesjs-notifications.CloseAll')}</button>
+        <button
+          @click=${(e: any) => e.currentTarget.closest('details').toggleAttribute('open')}
+          class="gjs-btn-prim"
+        >${ editor.I18n.t('@silexlabs/grapesjs-notifications.Show') }</button>
       </summary>
       <ul>
         ${groupedNotifications.map(notification => html`
           ${renderNotification(editor, notification)}
         `)}
       </ul>
-    </details></li>
+    </details>
+    </li>
   `
 }
 

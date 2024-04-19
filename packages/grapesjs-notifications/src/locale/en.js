@@ -1,7 +1,8 @@
 export default {
     '@silexlabs/grapesjs-notifications': {
-        'Close': 'Dismiss',
-        'CloseAll': 'Dismiss all',
-        'Select': 'Select component {componentName}',
+        'Close': '\u2716 Dismiss',
+        'CloseAll': '\u2716 Dismiss all',
+        'Select': '\u2713 Select component {componentName}',
+        'Show': '\u2193 Show',
     },
 };
