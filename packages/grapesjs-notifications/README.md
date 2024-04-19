@@ -19,7 +19,7 @@ Features
 * [x] Notification events
 * [x] Notification commands
 * [x] editor.NotificationManager API
-* [ ] Group notifications
+* [x] Group notifications
 
 ### HTML
 ```html
@@ -78,7 +78,6 @@ API:
 
 | Option | Description | Type | Default |
 |-|-|-|-
-| `style` | Custom style for the notification | `object` | `{}` |
 | `timeout` | Default timeout for the notification in ms | `number` | No timeout |
 | `container` | Container for the notifications | `HTMLElement` | `document.body` |
 | `storeKey` | Store notifications in local storage under this key | `string` | No storage |
@@ -86,6 +85,31 @@ API:
 | `i18n` | Internationalization | `object` | Check the values in locale/en.js |
 | `maxNotifications` | Maximum number of notifications to display | `number` | `5` |
 | `reverse` | Reverse the order of the notifications | `boolean` | `false` |
+
+## Styling
+
+Note that you are free to style the container since you provide it in the options. You also can change the icons from the options.
+
+The notifications are styled using the following CSS classes:
+
+* `.gjs-notification` - The notification container
+* `.gjs-notification__group` - The notification group container
+* `.gjs-notification__item` - The notification item
+* `.gjs-notification__error` - The error notification
+* `.gjs-notification__warning` - The warning notification
+* `.gjs-notification__success` - The success notification
+* `.gjs-notification__info` - The info notification
+* `.gjs-notification__message` - The notification message
+* `.gjs-notification__close` - The close button for the notification
+
+```css
+.gjs-notification {
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0,0,0,.3);
+}
+```
 
 ## Download
 

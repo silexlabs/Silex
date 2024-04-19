@@ -21,17 +21,6 @@ function defaultContainer(container: HTMLElement | undefined): HTMLElement | nul
 export default (editor: NotificationEditor, opts: Partial<NotificationManagerOptions> = {}) => {
   const options = { ...{
     i18n: {},
-    style: {
-      top: '10px',
-      right: '10px',
-      maxWidth: '300px',
-      zIndex: 9999,
-      listStyle: 'none',
-      padding: '10px',
-      margin: '10px',
-      fontFamily: 'var(--gjs-main-font)',
-      fontSize: 'var(--gjs-font-size)',
-    },
     container: defaultContainer(opts.container)!,
     storeKey: undefined,
     maxNotifications: 5,
@@ -48,7 +37,7 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
   const storage = options.storeKey ? new Storage() : null
 
   // Register the Notification Manager
-  editor.NotificationManager = new NotificationManager(storage?.getAll() || [], editor, options)
+  editor.NotificationManager = new NotificationManager(storage?.getAll() || [], editor, options as any)
   
   // Add commands
   commands(editor)
@@ -57,7 +46,7 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
     // Update the storage when the notifications change
     storage?.save(editor.NotificationManager.getAll())
     // Render the notifications
-    view(editor, options.container, editor.NotificationManager.getAll(), options)
+    view(editor, options.container, editor.NotificationManager.getAll(), options as any)
   })
 
 }

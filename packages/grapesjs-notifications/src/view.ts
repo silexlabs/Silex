@@ -1,4 +1,5 @@
 import { html, render as litRender, TemplateResult } from 'lit'
+import { classMap } from 'lit-html/directives/class-map.js'
 import { Notification } from './Notification'
 import { NotificationEditor, NotificationManagerOptions } from './NotificationManager'
 
@@ -15,7 +16,7 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
 
   litRender(html`
     <style>
-    .gjs-notifications {
+    .gjs-notification {
       top: 10px;
       right: 10px;
       max-width: 300px;
@@ -28,17 +29,17 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
       max-height: 80vh;
       overflow-y: auto;
     }
-    .gjs-notifications details summary {
+    .gjs-notification details summary {
       list-style: none;
     }
-    .gjs-notifications li {
+    .gjs-notification li {
       border-radius: 5px;
       margin: 10px 0;
       padding: 10px;
       list-style: none;
     }
     </style>
-    <ul class="gjs-notifications">
+    <ul class="gjs-notification">
       ${
         organizedNotifications
         .map(item => typeof item === 'string' ? renderGroup(editor, item, notifications.filter(n => n.group === item)) : renderNotification(editor, item))
@@ -65,7 +66,7 @@ function organizeNotifications(notifications: Notification[]): (Notification | s
 
 function renderGroup(editor: NotificationEditor, groupName: string, groupedNotifications: Notification[]): TemplateResult {
   return html`
-    <li class="gjs-sm gjs-one-bg gjs-two-color">
+    <li class="gjs-sm gjs-one-bg gjs-two-color gjs-notification-group">
     <details class="gjs-sm gjs-one-bg gjs-two-color">
       <summary class="gjs-sm-header gjs-label">
         <div>\u{1F4CC} ${groupName}</div>
@@ -88,7 +89,16 @@ function renderGroup(editor: NotificationEditor, groupName: string, groupedNotif
 function renderNotification(editor: NotificationEditor, notification: Notification): TemplateResult {
   console.log('notification', notification)
   return html`
-    <li class="gjs-sm gjs-one-bg gjs-two-color">
+    <li class=${classMap({
+      'gjs-sm': true,
+      'gjs-one-bg': true,
+      'gjs-two-color': true,
+      'gjs-notification__item': true,
+      'gjs-notification__info': notification.type === 'info',
+      'gjs-notification__warning': notification.type === 'warning',
+      'gjs-notification__error': notification.type === 'error',
+      'gjs-notification__success': notification.type === 'success',
+    })}>
       <header class="gjs-sm-header gjs-label">
         <span>${notification.getSvgIcon(notification.type)}</span>
         <span class="gjs-sm-header">${notification.message}</span>
