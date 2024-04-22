@@ -92,9 +92,9 @@
 
 // Sticky CSS tags section
 
-.gjs-pn-views-container > div > div:first-child > div:first-child {
+.top-style-section {
   position: sticky;
-  top: 0;
+  top: -1px; /* Fixes a visual gap on the top */
   border-bottom: solid $lighterPrimaryColor 1px;
   background-color: $primaryColor;
   box-shadow: 0 0 15px 0 #00000060;
@@ -126,16 +126,6 @@
 
 #gjs-clm-up {
   margin-top: 0;
-}
-
-// Adapting the layout of the suggestion list
-
-.gjs-suggest {
-  max-height: 30vh;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  padding-top: 7px;
-  border-bottom: solid $primaryColor 7px;
 }
 
 /*

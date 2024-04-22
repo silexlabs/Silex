@@ -32,3 +32,12 @@
   @include square-borders-before;
   border-right-color: $secondaryColor;
 }
+
+// Adapting the layout of the suggestion list
+.gjs-suggest {
+  max-height: 30vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-top: 7px;
+  border-bottom: solid $primaryColor 7px;
+}
