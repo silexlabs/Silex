@@ -40,4 +40,28 @@
   overflow-x: hidden;
   padding-top: 7px;
   border-bottom: solid $primaryColor 7px;
+
+// grapesjs-notifications
+.gjs-editor .gjs-notification {
+  max-height: initial;
+  text-align: left;
+}
+.gjs-editor .gjs-notification,
+.gjs-editor .gjs-notification .gjs-sm-header,
+.gjs-editor .gjs-notification .gjs-notification__item,
+.gjs-editor .gjs-notification .gjs-notification__group > details,
+.gjs-editor .gjs-notification .gjs-notification__group > details > ul,
+.gjs-editor .gjs-notification .gjs-notification__group > details > summary,
+.gjs-editor .gjs-notification .gjs-notification__group {
+  padding: 0;
+  margin: 0;
+}
+.gjs-editor .gjs-notification .gjs-notification__group,
+.gjs-editor .gjs-notification .gjs-notification__item {
+  margin: 10px 0;
+  padding: 10px 0;
+}
+
+.gjs-editor .gjs-notification .gjs-notification__group .gjs-notification__item {
+  margin-left: 10px;
 }

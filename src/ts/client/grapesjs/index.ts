@@ -23,6 +23,8 @@ import openImport from './openImport'
  * Handle plugins, options and initialization of the editor
  */
 
+const notificationContainer = document.createElement('div')
+
 // ////////////////////
 // Plugins
 // ////////////////////
@@ -45,10 +47,11 @@ import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
+import notificationsPlugin, { NotificationEditor } from '@silexlabs/grapesjs-notifications'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
-import { projectBarPlugin } from './project-bar'
+import { PROJECT_BAR_PANEL_ID, projectBarPlugin } from './project-bar'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
@@ -90,7 +93,8 @@ const plugins = [
   {name: './footer', value: footerPlugin},
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
   {name: 'grapesjs-style-border', value: borderPugin},
-  {name: './resize-panel', value: resizePanelPlugin}
+  {name: './resize-panel', value: resizePanelPlugin},
+  {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
 ]
 // Check that all plugins are loaded correctly
 plugins
@@ -201,9 +205,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             buttons: [
               {
                 id: 'symbol-create-button',
-                className: 'pages__add-page fa-solid fa-plus',
-                label: 'Create symbol from selection',
+                className: 'gjs-pn-btn',
                 command: cmdPromptAddSymbol,
+                text: '\u271A',
               },
             ],
           }, {
@@ -212,9 +216,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
             command: cmdTogglePages,
             buttons: [{
-              className: 'pages__add-page fa fa-file',
+              className: 'gjs-pn-btn',
               command: cmdAddPage,
-              text: '+',
+              text: '\u271A',
             }],
           }, {
             id: 'layer-manager-btn',
@@ -237,6 +241,16 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             id: 'spacer',
             attributes: {},
             className: 'project-bar-spacer',
+          }, {
+            id: 'notifications-btn',
+            className: 'notifications-btn fa-regular fa-bell',
+            attributes: { title: 'Notifications', containerClassName: 'notifications-container', },
+            command: 'open-notifications',
+            buttons: [{
+              className: 'gjs-pn-btn',
+              command: 'notifications:clear',
+              text: '\u2716',
+            }],
           }, {
             id: 'dash2',
             className: 'fa-solid fa-house',
@@ -308,6 +322,10 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       [imgPlugin.toString()]: {
         replacedElements: config.replacedElements,
       },
+      [notificationsPlugin.toString()]: {
+        container: notificationContainer,
+        reverse: true,
+      },
     },
   }
 }
@@ -365,6 +383,19 @@ export async function initEditor(config: EditorConfig) {
 
       // Add a class to the Style Manager's sticky top section
       editor.SelectorManager.selectorTags.el.parentElement.classList.add("top-style-section")
+
+      // Add the notifications container
+      document.body.querySelector('.notifications-container').appendChild(notificationContainer)
+      // Mark the button as dirty when there are notifications
+      // TODO: move this in the notifications plugin options
+      editor.on(
+        'notifications:changed',
+        () => {
+          const notificationButton = editor.Panels.getPanel(PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn')
+          ;(editor as NotificationEditor)
+          .NotificationManager.length ? notificationButton.classList.add('project-bar__dirty') : notificationButton.classList.remove('project-bar__dirty')
+        }
+      )
 
       // GrapesJs editor is ready
       resolve(editor)
