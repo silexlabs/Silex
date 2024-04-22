@@ -30,7 +30,11 @@
         background-color: $lighterPrimaryColor;
         width: $projectBarWidth;
         box-shadow: none;
-     }
+      }
+    }
+    .#{$pn-prefix}btn.project-bar__dirty {
+      background-color: $quaternaryColor;
+      color: white;
     }
   }
   .logo {

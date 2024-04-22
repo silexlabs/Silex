@@ -51,7 +51,7 @@ import notificationsPlugin, { NotificationEditor } from '@silexlabs/grapesjs-not
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
-import { projectBarPlugin } from './project-bar'
+import { PROJECT_BAR_PANEL_ID, projectBarPlugin } from './project-bar'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
@@ -383,10 +383,15 @@ export async function initEditor(config: EditorConfig) {
 
       // Add the notifications container
       document.body.querySelector('.notifications-container').appendChild(notificationContainer)
+      // Mark the button as dirty when there are notifications
+      // TODO: move this in the notifications plugin options
       editor.on(
         'notifications:changed',
-        () => (editor as NotificationEditor)
-          .NotificationManager.length ? notificationContainer.classList.add('dirty') : notificationContainer.classList.remove('dirty')
+        () => {
+          const notificationButton = editor.Panels.getPanel(PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn')
+          ;(editor as NotificationEditor)
+          .NotificationManager.length ? notificationButton.classList.add('project-bar__dirty') : notificationButton.classList.remove('project-bar__dirty')
+        }
       )
 
       // GrapesJs editor is ready
