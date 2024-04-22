@@ -23,7 +23,7 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
     i18n: {},
     container: defaultContainer(opts.container)!,
     storeKey: undefined,
-    maxNotifications: 5,
+    maxNotifications: undefined,
     reverse: false,
   },  ...opts }  
   

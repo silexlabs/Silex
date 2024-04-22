@@ -62,7 +62,7 @@
                     message: `This is a ${type} notification${group ? `from group ${group}` : ''}! `.repeat(Math.floor(Math.random() * 10) + 1),
                     group,
                     type,
-                    component: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)).getId(),
+                    componentId: editor.getComponents().at(Math.floor(Math.random() * editor.getComponents().length)).getId(),
                     timeout: Math.floor(Math.random() * 5000) + 5000,
                   })
                 }

@@ -12,7 +12,7 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
   }
   
   const organizedNotifications = organizeNotifications(notifications)
-    .slice(0, options.maxNotifications)
+    .slice(0, options.maxNotifications || notifications.length)
 
   litRender(html`
     <style>
@@ -111,8 +111,8 @@ function renderNotification(editor: NotificationEditor, notification: Notificati
       </header>
       <footer class="gjs-sm-footer">
         <button @click=${() => notification.remove()} class="gjs-btn-prim">${editor.I18n.t('@silexlabs/grapesjs-notifications.Close')}</button>
-        ${notification.component ? html`
-          <button @click=${() => notification.select()} class="gjs-btn-prim">${editor.I18n.t('@silexlabs/grapesjs-notifications.Select', { params: { componentName: notification.component.getName() }})}</button>
+        ${notification.componentId ? html`
+          <button @click=${() => notification.select()} class="gjs-btn-prim">${editor.I18n.t('@silexlabs/grapesjs-notifications.Select')}</button>
         ` : ''}
       </footer>
     </li>

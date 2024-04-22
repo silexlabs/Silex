@@ -7,10 +7,11 @@ export interface NotificationEditor extends Editor {
   NotificationManager: NotificationManager
 }
 
+// Events
 export const NOTIFICATION_CHANGED = 'notifications:changed'
-export const NOTIFICATION_ADD = 'notifications:added'
-export const NOTIFICATION_REMOVE = 'notifications:removed'
-export const NOTIFICATION_CLEAR = 'notifications:cleared'
+export const NOTIFICATION_ADDED = 'notifications:added'
+export const NOTIFICATION_REMOVED = 'notifications:removed'
+export const NOTIFICATION_CLEARED = 'notifications:cleared'
 
 export interface NotificationManagerOptions {
   style: Readonly<StyleInfo>
@@ -39,9 +40,9 @@ export class NotificationManager extends Backbone.Collection<NotificationModel> 
 
     // Relay events from model to the editor
     this.on('all', () => this.modelChanged())
-    this.on('reset', () => this.editor.trigger(NOTIFICATION_CLEAR))
-    this.on('add', (model: Notification) => this.editor.trigger(NOTIFICATION_ADD, model))
-    this.on('remove', (model: Notification) => this.editor.trigger(NOTIFICATION_REMOVE, model))
+    this.on('reset', () => this.editor.trigger(NOTIFICATION_CLEARED))
+    this.on('add', (model: Notification) => this.editor.trigger(NOTIFICATION_ADDED, model))
+    this.on('remove', (model: Notification) => this.editor.trigger(NOTIFICATION_REMOVED, model))
 
     // Init with the current models
     this.modelInit()

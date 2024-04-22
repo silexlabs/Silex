@@ -9,7 +9,7 @@ This GrapesJs plugin is designed to enhance the user experience within the edito
 Features
 
 * [x] Notification types with corresponding icons
-* [x] Select component attached to the notification
+* [x] Select component attached to the notification (supports components on different pages)
 * [x] Customizable notification style
 * [x] Internationalization
 * [x] Local storage for persistent notifications
@@ -20,6 +20,7 @@ Features
 * [x] Notification commands
 * [x] editor.NotificationManager API
 * [x] Group notifications
+* [x] Support pages
 
 ### HTML
 ```html
@@ -59,7 +60,7 @@ API:
   * `type`: `error`, `warning`, `success`, `info`
   * `message`: `string`
   * `timeout`: `number` (ms)
-  * `component`: `string` or GrapesJs `Component` (optional)
+  * `componentId`: `string`
 * `editor.Notifications` methods:
   * `add(notification)`
   * `remove(notification)` 
@@ -83,7 +84,7 @@ API:
 | `storeKey` | Store notifications in local storage under this key | `string` | No storage |
 | `icons` | Icons for the notification types | `object` | `{error: '\u2716', warning: '\u26A0', success: '\u2714', info: '\u2139'}` |
 | `i18n` | Internationalization | `object` | Check the values in locale/en.js |
-| `maxNotifications` | Maximum number of notifications to display | `number` | `5` |
+| `maxNotifications` | Maximum number of notifications to display | `number` | No limit |
 | `reverse` | Reverse the order of the notifications | `boolean` | `false` |
 
 ## Styling

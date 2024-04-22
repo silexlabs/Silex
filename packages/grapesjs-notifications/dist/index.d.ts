@@ -1,12 +1,12 @@
 import Backbone from 'backbone';
-import { Component, Editor } from 'grapesjs';
+import { Editor } from 'grapesjs';
 import { StyleInfo } from 'lit/directives/style-map';
 
 export interface NotificationOptions {
 	message: string;
 	group?: string;
 	timeout?: number;
-	component?: string | Component;
+	componentId?: string;
 	type: "info" | "warning" | "error" | "success";
 	icons: {
 		info: string;
@@ -20,7 +20,7 @@ export interface NotificationModel extends Backbone.Model<NotificationOptions> {
 declare class Notification {
 	protected editor: NotificationEditor;
 	protected model: NotificationModel;
-	component: Component | null;
+	componentId: string | null;
 	group: string | null;
 	timeoutRef: NodeJS.Timeout | undefined;
 	message: string;
@@ -30,6 +30,14 @@ declare class Notification {
 	select(): void;
 	remove(): void;
 	getSvgIcon(type: string): string;
+	private getDefaultOptions;
+	/**
+	 * Get all components in the editor
+	 * This is a heavy operation
+	 */
+	private getAllComponents;
+	private getAllComponentInPage;
+	private getAllChildrenComponent;
 }
 export interface NotificationEditor extends Editor {
 	NotificationManager: NotificationManager;
