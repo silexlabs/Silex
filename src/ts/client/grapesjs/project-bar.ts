@@ -18,8 +18,8 @@
 import { Editor, Panel } from 'grapesjs'
 import {html, render} from 'lit-html'
 
-const panelId = 'project-bar-panel'
-const containerPanelId = 'project-bar-container'
+export const PROJECT_BAR_PANEL_ID = 'project-bar-panel'
+export const containerPanelId = 'project-bar-container'
 
 export interface PanelObject {
   command: string | ((editor: Editor) => void)
@@ -34,6 +34,7 @@ export interface PanelObject {
     text: string
     className: string
   }[]
+  onClick?: (editor: Editor) => void
 }
 
 export const projectBarPlugin = (editor, opts) => {
@@ -44,7 +45,7 @@ export const projectBarPlugin = (editor, opts) => {
   })
   // create the project bar panel in grapesjs
   editor.Panels.addPanel({
-    id: panelId,
+    id: PROJECT_BAR_PANEL_ID,
     buttons: opts.panels,
     visible  : true,
   })
@@ -113,6 +114,10 @@ export function addButton(editor: Editor, panel: PanelObject) {
         document.body.classList.add('silex-squeeze-left')
         editor.refresh()
       }
+      // Call the onClick function if it exists
+      if(panel.onClick) panel.onClick(editor)
+      // Remove the dirty flag
+      el.classList.remove('project-bar__dirty')
     },
     stop() {
       if(panel.attributes.containerClassName) {
@@ -121,6 +126,10 @@ export function addButton(editor: Editor, panel: PanelObject) {
         document.body.classList.remove('silex-squeeze-left')
         editor.refresh()
       }
+      // Call the onClick function if it exists
+      if(panel.onClick) panel.onClick(editor)
+      // Remove the dirty flag
+      el.classList.remove('project-bar__dirty')
     },
   })
 }
