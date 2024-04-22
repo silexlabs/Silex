@@ -1,5 +1,6 @@
 import { html, render as litRender, TemplateResult } from 'lit'
 import { classMap } from 'lit-html/directives/class-map.js'
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 import { Notification } from './Notification'
 import { NotificationEditor, NotificationManagerOptions } from './NotificationManager'
 
@@ -37,6 +38,9 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
       margin: 10px 0;
       padding: 10px;
       list-style: none;
+    }
+    .gjs-notification ul {
+      padding: 0;
     }
     </style>
     <ul class="gjs-notification">
@@ -107,7 +111,7 @@ function renderNotification(editor: NotificationEditor, notification: Notificati
     })}>
       <header class="gjs-sm-header gjs-label">
         <span>${notification.getSvgIcon(notification.type)}</span>
-        <span class="gjs-sm-header">${notification.message}</span>
+        <span class="gjs-sm-header">${unsafeHTML(notification.message)}</span>
       </header>
       <footer class="gjs-sm-footer">
         <button @click=${() => notification.remove()} class="gjs-btn-prim">${editor.I18n.t('@silexlabs/grapesjs-notifications.Close')}</button>

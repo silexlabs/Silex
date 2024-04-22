@@ -13,7 +13,6 @@ function defaultContainer(container: HTMLElement | undefined): HTMLElement | nul
   el.style.position = 'fixed'
   el.style.bottom = '10px'
   el.style.zIndex = '9999'
-  //el.classList.add('gjs-sm', 'gjs-one-bg', 'gjs-two-color')
   document.body.appendChild(el)
   return el
 }
