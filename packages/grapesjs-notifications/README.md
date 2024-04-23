@@ -1,10 +1,16 @@
 # GrapesJs Notifications Plugin
 
-This GrapesJs plugin is designed to enhance the user experience within the editor by providing a robust notification system. This plugin captures and displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface.
+Why this plugin? GrapesJs is a powerful framework to build no-code tools and allow users to create templates using a drag-and-drop interface. However, the framework does not offer a standard way of notifying users and each plugin implements its own, which is messy and not user friendly. This plugin provides a centralized notification system that can be used by all plugins to display messages to the user.
+
+It displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface. The most important feature is probably that it allows users to interact with the notifications by clicking on them to select a specific component in the editor, go to a page or scroll to the component.
 
 > This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 
-[DEMO](https://codepen.io/lexoyo/full/mdgzKQb)
+Here is a [demo page on codepen](https://codepen.io/lexoyo/full/mdgzKQb)
+
+Here is a screenshot of the notifications in action:
+
+![Notifications in action](https://github.com/silexlabs/grapesjs-notifications/assets/715377/994a2932-bcc4-4eae-b100-139cb5a4dfa3)
 
 Features
 
