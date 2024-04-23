@@ -106,6 +106,7 @@
     "@silexlabs/grapesjs-filter-styles": "^1.0.0",
     "@silexlabs/grapesjs-fonts": "^1.0.18",
     "@silexlabs/grapesjs-loading": "1.0.9",
+    "@silexlabs/grapesjs-notifications": "^0.0.7",
     "@silexlabs/grapesjs-storage-rate-limit": "^1.0.8",
     "@silexlabs/grapesjs-symbols": "1.0.39",
     "@silexlabs/grapesjs-ui-suggest-classes": "1.0.23",
