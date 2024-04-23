@@ -1,10 +1,11 @@
 const apiUrl = '/api/onboarding'
 
-async function hook(type) {
+async function hook(type, lang) {
   const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language': lang,
     },
     body: JSON.stringify({
       type,
@@ -22,25 +23,25 @@ async function hook(type) {
 
 function notify(editor, onboarding) {
   if(!onboarding) return
-  if(editor.Notification) {
-    const {title, content} = onboarding
-    editor.Notification.add({
-      type: 'info',
-      title,
-      content,
-    })
-  } else {
-    console.warn('Notification not available', onboarding)
-  }
+  const { title, content } = onboarding
+  editor.runCommand("notifications:add", {
+    type: 'info',
+    message: `
+      <marquee
+        style="width: calc(100% - 25px);"
+      >${title}</marquee>
+      <p>${content}</p>
+    `,
+  })
 }
 
 export default async (config) => {
   // After init
   config.on('silex:grapesjs:end', async ({ editor }) => {
-    notify(editor, await hook('STORAGE'))
+    notify(editor, await hook('STORAGE', config.lang))
     editor.on('silex:publish:end', async ({success}) => {
       if(success) {
-        notify(editor, await hook('HOSTING'))
+        notify(editor, await hook('HOSTING', config.lang))
       }
     })
   })

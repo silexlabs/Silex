@@ -1,10 +1,22 @@
 {
-  "STORAGE": {
-    "title": "Welcome to Silex",
-    "content": "The first step is to play with the interface, and maybe check <a href='https://docs.silex.me'>the documetation</a>, <a href='https://video.silex.me/'>the video tutorials</a> and in particular <a href='https://video.silex.me/w/p/17h3h3PyjdT9XBKhR5ijNb?playlistPosition=4&resume=true'>this video to learn how to publish your website live</a>."
+  "en": {
+    "STORAGE": {
+      "title": "Welcome to Silex",
+      "content": "The first step is to play with the interface, and maybe check <a href='https://docs.silex.me'>the documetation</a>, <a href='https://video.silex.me/'>the video tutorials</a> and in particular <a href='https://video.silex.me/w/p/17h3h3PyjdT9XBKhR5ijNb?playlistPosition=4&resume=true'>this video to learn how to publish your website live</a>."
+    },
+    "HOSTING": {
+      "title": "Your website is live? What's next?",
+      "content": "Please take a moment to <a href='mailto:contact@silex.me'>email me and share your website</a>, <a href='https://www.g2.com/products/silex-website-builder/reviews'>give Silex a 5 stars review</a>. And if you want to <a href='https://opencollective.com/silex'>support the project on Open Collective.</a>."
+    }
   },
-  "HOSTING": {
-    "title": "Your website is live? What's next?",
-    "content": "Please take a moment to <a href='mailto:contact@silex.me'>email me and share your website</a>, <a href='https://www.g2.com/products/silex-website-builder/reviews'>give Silex a 5 stars review</a>. And if you want to <a href='https://opencollective.com/silex'>support the project on Open Collective.</a>."
+  "fr": {
+    "STORAGE": {
+      "title": "Bienvenue sur Silex",
+      "content": "Le premier pas est de jouer avec l'interface, et peut-être de consulter <a href='https://docs.silex.me'>la documentation</a>, <a href='https://video.silex.me/'>les tutoriels vidéo</a> et en particulier <a href='https://video.silex.me/w/p/17h3h3PyjdT9XBKhR5ijNb?playlistPosition=4&resume=true'>cette vidéo pour apprendre à publier votre site web en ligne</a>."
+    },
+    "HOSTING": {
+      "title": "Votre site web est en ligne? Et après?",
+      "content": "Prenez un moment pour <a href='mailto:contact@silex.me'>m'envoyer un email et partager votre site web</a>, <a href='https://www.g2.com/products/silex-website-builder/reviews'>donnez 5 étoiles à Silex</a>. Et si vous voulez <a href='https://opencollective.com/silex'>soutenir le projet sur Open Collective.</a>."
+    }
   }
 }

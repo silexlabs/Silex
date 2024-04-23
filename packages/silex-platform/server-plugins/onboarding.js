@@ -12,20 +12,25 @@ const ONBOADRDING_STEPS = require('../onboarding.json')
 
 const apiUrl = '/api/onboarding'
 
-function getOnboarding(type, old) {
+function getOnboarding(type, oldUser, lang) {
+  const steps = ONBOADRDING_STEPS[lang]
+  if(!steps) {
+    console.warn('No onboarding steps for lang', lang, 'defaulting to en')
+    steps = ONBOADRDING_STEPS['en']
+  }
   switch(type) {
     case 'STORAGE':
       // User already in brevo
-      if(old) return null
+      if(oldUser) return null
       // First time no see
-      return ONBOADRDING_STEPS.STORAGE
+      return steps.STORAGE
     case 'HOSTING':
       // Something went wrong, no user found in brevo
-      if(!old?.attributes) return null
+      if(!oldUser?.attributes) return null
       // User already published
-      if(old.attributes.HAS_PUBLISHED) return null
+      if(oldUser.attributes.HAS_PUBLISHED) return null
       // First time publishing
-      return ONBOADRDING_STEPS.HOSTING
+      return steps.HOSTING
   }
 }
 
@@ -121,19 +126,20 @@ module.exports = async function(config, options) {
     const editorRouter = express.Router()
     editorRouter.post(apiUrl, express.json(), async (request, response) => {
       try {
+        const lang = request.headers['accept-language']
         // Get all the connectors
         const connectors = config.getConnectors()
         // Find the first connected storage connector
         const user = await getUserFromConnector(connectors, request.session)
         if(user) {
           // Get the user from brevo
-          const old = await getUserFromBrevo(user.email)
+          const oldUser = await getUserFromBrevo(user.email)
           // Store the user in brevo
           await storeUser(user, request.body.type)
           // Return the connector info
           response.json({
             success: true,
-            onboarding: getOnboarding(request.body.type, old),
+            onboarding: getOnboarding(request.body.type, oldUser, lang),
           })
         }
       } catch (error) {
