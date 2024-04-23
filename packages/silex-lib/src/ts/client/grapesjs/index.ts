@@ -381,6 +381,9 @@ export async function initEditor(config: EditorConfig) {
       // use the style filter plugin
       editor.StyleManager.addProperty('extra', { extend: 'filter' })
 
+      // Add a class to the Style Manager's sticky top section
+      editor.SelectorManager.selectorTags.el.parentElement.classList.add("top-style-section")
+
       // Add the notifications container
       document.body.querySelector('.notifications-container').appendChild(notificationContainer)
       // Mark the button as dirty when there are notifications
