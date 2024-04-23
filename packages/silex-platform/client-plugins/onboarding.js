@@ -11,7 +11,6 @@ async function hook(type, lang) {
       type,
     })
   })
-  console.log('onboarding hook', response)
   if(response.status < 400) {
     const responseData = await response.json()
     return responseData.onboarding
