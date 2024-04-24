@@ -15,8 +15,31 @@
     <script src="http://localhost:3001/grapes.min.js"></script>
     <script src="./index.js"></script>
 
+    <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; left: 120px;"></div>
     <div id="gjs"></div>
     <script>
+      function createSettingsContainer() {
+        const el = document.createElement('div')
+        el.style.display = 'none'
+        el.style.position = 'fixed'
+        el.style.top = '10%'
+        el.style.right = '10%'
+        el.style.width = '80%'
+        el.style.height = '80%'
+        el.style.backgroundColor = 'var(--ds-tertiary)'
+        el.style.color = 'var(--ds-secondary)'
+        el.style.zIndex = '10'
+        el.style.overflow = 'auto'
+        el.style.padding = '10px'
+        el.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)'
+        el.innerHTML = `
+        <h1>Settings</h1>
+        <div id="ds-settings"></div>
+      `
+        document.body.appendChild(el)
+        return el
+      }
+      const settings = createSettingsContainer()
       const editor = grapesjs.init({
         container: '#gjs',
         height: '100%',
@@ -33,9 +56,10 @@
               method: 'POST',
               headers: {},
             }],
-            properties: {
+            view: {
               el: () => editor.Panels.getPanel('views-container').view.el,
               button: () => editor.Panels.getPanel('views').get('buttons').get('open-tm'),
+              settingsEl: '#ds-settings',
             },
             filters: 'liquid',
           }
@@ -48,6 +72,21 @@
           <p><strong>Select a component and check it's settings on the right</strong></p>
           <p>This plugin lets you set "states" on components with the data coming from the API</p>
         </div>`);
+        editor.Panels.addPanel({
+          id: "basic-actions",
+          el: ".panel__basic-actions",
+          buttons: [
+            {
+              id: "show-settings",
+              label: "Show Settings",
+              command(editor) {
+                settings.style.display = 'block';
+              },
+            },
+          ]
+        })
+        // Test
+        settings.style.display = 'block';
       });
     </script>
   </body>

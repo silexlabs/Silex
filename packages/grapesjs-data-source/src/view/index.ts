@@ -15,11 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, DataSourceEditorViewOptions, Properties } from ".."
+import { DataSourceEditor, DataSourceEditorViewOptions, getElementFromOption, Properties } from ".."
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
 import { CustomStatesEditor } from './custom-states-editor'
+
+import settings from './settings'
 
 import '@silexlabs/expression-input/dist/popin-form.js'
 import './properties-editor'
@@ -89,22 +91,15 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
       ${properties}
     `
 
+    // Build the settings view
+    settings(editor, options, opts)
+
     // The options el and button can be functions which use editor so they need to be called asynchronously
-    let el: HTMLElement
     editor.onReady(() => {
       // Get the container element for the UI
-      if (typeof options.el === 'undefined') {
-        // This should never happen as we set a default value in /index.ts
-        throw new Error(`el option must be set`)
-      } else if (typeof options.el === 'string') {
-        if (!document.querySelector(options.el)) throw new Error(`Element ${options.el} not found`)
-      } else if (!(options.el instanceof HTMLElement) && typeof options.el !== 'function') {
-        throw new Error(`el option must be a string or an HTMLElement or a function`)
-      }
+      const el = getElementFromOption(options.el)
 
       // Append the wrapper to the container
-      el = (typeof options.el === 'string' ? document.querySelector(options.el) : typeof options.el === 'function' ? options.el() : options.el) as HTMLElement
-      if (!el) throw new Error(`Element ${options.el} not found`)
       el.appendChild(wrapper)
 
       // Get references to the web components

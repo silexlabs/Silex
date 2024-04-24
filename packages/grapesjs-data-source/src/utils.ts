@@ -288,3 +288,27 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
       </select>
     `
 }
+
+/**
+ * Get a container element from an option
+ * @throws Error if the option is not a string or an HTMLElement or a function
+ * @throws Error if the element is not found
+ */
+export function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined): HTMLElement {
+  // Get the container element for the UI
+  if (typeof option === 'undefined') {
+    // This should never happen as we set a default value in /index.ts
+    throw new Error(`el option must be set`)
+  } else if (typeof option === 'string') {
+    const el = document.querySelector(option)
+    if (!el) throw new Error(`Element ${option} not found`)
+    return el as HTMLElement
+  } else if (typeof option === 'function') {
+    const el = option()
+    if (!el) throw new Error(`el option must be a returned by the provided function`)
+    return el
+  } else if (option instanceof HTMLElement) {
+    return option
+  }
+  throw new Error(`el option must be a string or an HTMLElement or a function`)
+}

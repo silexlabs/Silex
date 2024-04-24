@@ -34,6 +34,7 @@ interface GraphQLQueryOptions {
   headers: Record<string, string>
   method: 'GET' | 'POST'
   queryable?: TypeId[]
+  readonly?: boolean
 }
 
 /**
@@ -83,6 +84,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     this.set('url', options.url)
     this.set('headers', options.headers)
     this.set('queryable', options.queryable)
+    this.set('readonly', options.readonly)
   }
   /**
    * @throws Error

@@ -29,6 +29,7 @@ export interface DataSourceEditor extends Editor {
 
 export interface DataSourceEditorViewOptions {
   el?: HTMLElement | string | undefined | (() => HTMLElement)
+  settingsEl?: HTMLElement | string | (() => HTMLElement)
   button?: Button | (() => Button)
   styles?: string
   optionsStyles?: string
@@ -91,6 +92,7 @@ export interface IDataSourceOptions extends Backbone.ModelSetOptions {
   id: DataSourceId
   label: string
   type: 'graphql'
+  readonly?: boolean
 }
 
 // Types
