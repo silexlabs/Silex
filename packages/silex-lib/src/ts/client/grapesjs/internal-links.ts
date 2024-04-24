@@ -67,7 +67,7 @@ export const internalLinksPlugin = (editor, opts) => {
             type: 'error',
             message: `Page ${page.previous('name')} was removed, please fix the following links:`,
             componentId: component.getId(),
-            group: `Broken internal links`,
+            group: 'Broken internal links',
           })
         })
       }
