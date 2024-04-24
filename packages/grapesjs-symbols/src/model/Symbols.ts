@@ -98,7 +98,21 @@ export class Symbols extends Backbone.Collection<Symbol>  {
           symbol.addInstance(c)
         }
       } else {
-        console.warn('Could not add instance', c, `Could not find the symbol with id ${symbolId} (maybe later?)`)
+        // The symbol is not yet loaded
+        setTimeout(() => {
+          // Check again
+          if(this.get(symbolId)) {
+            // Allright in the end, it was just during loading
+          } else {
+            console.error(`Could not make component with id \`${c.getId()}\` an instance of symbol with id \`${symbolId}\`: symbol not found`)
+            this.editor.runCommand('notifications:add', {
+              type: 'error',
+              group: 'Symbols errors',
+              message: `There is a problem with this component: it is supposed to be an instance of a symbol, but the symbol is not found. Symbol id: ${symbolId}`,
+              componentId: c.getId(),
+            })
+          }
+        })
       }
     }
   }
