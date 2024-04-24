@@ -289,10 +289,6 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       [filterStyles]: {
         appendBefore: '.gjs-sm-sectors',
       },
-      [internalLinksPlugin.toString()]: {
-        // FIXME: warn the user about links in error
-        onError: (errors) => console.warn('Links errors:', errors),
-      },
       [codePlugin.toString()]: {
         blockLabel: 'HTML',
         blockCustomCode: {
