@@ -57,3 +57,12 @@
 .gjs-editor .gjs-notification .gjs-notification__group .gjs-notification__item {
   margin-left: 10px;
 }
+
+// Adapting the layout of the suggestion list
+.gjs-suggest {
+  max-height: 30vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-top: 7px;
+  border-bottom: solid $primaryColor 7px;
+}
