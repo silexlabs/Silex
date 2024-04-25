@@ -90,7 +90,7 @@ API:
 | `storeKey` | Store notifications in local storage under this key | `string` | No storage |
 | `icons` | Icons for the notification types | `object` | `{error: '\u2716', warning: '\u26A0', success: '\u2714', info: '\u2139'}` |
 | `i18n` | Internationalization | `object` | Check the values in locale/en.js |
-| `maxNotifications` | Maximum number of notifications to display | `number` | No limit |
+| `maxNotifications` | Maximum number of notifications to display | `number` | 50 |
 | `reverse` | Reverse the order of the notifications | `boolean` | `false` |
 
 ## Styling

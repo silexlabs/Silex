@@ -46,7 +46,7 @@ export default function(editor: NotificationEditor, container: HTMLElement, noti
     <ul class="gjs-notification">
       ${
         organizedNotifications
-        .map(item => typeof item === 'string' ? renderGroup(editor, item, notifications.filter(n => n.group === item)) : renderNotification(editor, item))
+        .map(item => typeof item === 'string' ? renderGroup(editor, options, item, notifications.filter(n => n.group === item)) : renderNotification(editor, item))
       }
     </ul>
   `, getContainer(container))
@@ -75,7 +75,7 @@ function organizeNotifications(notifications: Notification[]): (Notification | s
   return organized
 }
 
-function renderGroup(editor: NotificationEditor, groupName: string, groupedNotifications: Notification[]): TemplateResult {
+function renderGroup(editor: NotificationEditor, options: NotificationManagerOptions, groupName: string, groupedNotifications: Notification[]): TemplateResult {
   return html`
     <li class="gjs-sm gjs-one-bg gjs-two-color gjs-notification__group">
     <details class="gjs-sm gjs-one-bg gjs-two-color">
@@ -88,7 +88,9 @@ function renderGroup(editor: NotificationEditor, groupName: string, groupedNotif
         >${ editor.I18n.t('@silexlabs/grapesjs-notifications.Show') }</button>
       </summary>
       <ul>
-        ${groupedNotifications.map(notification => html`
+        ${groupedNotifications
+          .slice(0, options.maxNotifications || groupedNotifications.length)
+          .map(notification => html`
           ${renderNotification(editor, notification)}
         `)}
       </ul>
