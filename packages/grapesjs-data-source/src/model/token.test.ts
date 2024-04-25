@@ -32,6 +32,7 @@ test('get type with simple context', () => {
     dataSources: [{
       id: testDataSourceId,
       connect: async () => { },
+      isConnected: () => true,
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',

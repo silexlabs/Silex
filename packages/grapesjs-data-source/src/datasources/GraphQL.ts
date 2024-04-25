@@ -295,6 +295,14 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   }
 
   /**
+   * Check if the DataSource is ready
+   * This has to be implemented as it is a DataSource method
+   */
+  isConnected(): boolean {
+    return this.ready
+  }
+
+  /**
    * Get all types
    * This has to be implemented as it is a DataSource method
    */

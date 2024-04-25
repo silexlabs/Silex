@@ -52,7 +52,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
   constructor(models: IDataSourceModel[], protected editor: DataSourceEditor,  protected options: DataSourceEditorOptions) {
     super(models, options)
 
-    // Make sure the symbol CRUD operations are undoable
+    // Make sure the operations are undoable
     this.editor.UndoManager.add(this)
 
     // Add filters from config
@@ -147,6 +147,12 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       dataSource.on(DATA_SOURCE_READY, this.dataSourceReadyBinded)
       dataSource.on(DATA_SOURCE_CHANGED, this.dataChangedBinded)
       dataSource.on(DATA_SOURCE_ERROR, this.dataSourceErrorBinded)
+    })
+    // Make sure the operations are undoable
+    this.models.forEach((dataSource: IDataSourceModel) => {
+      console.log('ATTACH', dataSource)
+      this.editor.UndoManager.add(dataSource)
+      dataSource.on('all', (e) => console.log('DS changed in backbone', e, dataSource))
     })
     this.editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
   }

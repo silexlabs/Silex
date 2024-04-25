@@ -63,6 +63,7 @@ test('Find type from  id', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
+    isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
@@ -382,6 +383,7 @@ test('get tree with filters', async () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
+    isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
@@ -468,6 +470,7 @@ test('Merge trees with empty and no options', async () => {
   const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
+    isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
@@ -959,6 +962,7 @@ test('isRelative', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
+    isConnected: () => true,
     getTypes: () => ([{
       id: 'parentType',
       label: 'test',
@@ -1038,6 +1042,7 @@ test('get tree with options', () => {
   const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
+    isConnected: () => true,
     getTypes: fn,
     getQueryables: () => [],
     getQuery: () => '',
@@ -1108,6 +1113,7 @@ test('get types map', () => {
     dataSources: [{
       id: testDataSourceId,
       connect: async () => {},
+      isConnected: () => true,
       getTypes: () => simpleTypes,
       getQueryables: () => simpleTypes[0].fields,
       getQuery: () => '',
@@ -1180,6 +1186,7 @@ test('Get experessions used by a component', () => {
     dataSources: [{
       id: testDataSourceId,
       connect: async () => { },
+      isConnected: () => true,
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',

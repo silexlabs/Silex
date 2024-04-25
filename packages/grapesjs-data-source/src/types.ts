@@ -70,6 +70,7 @@ export interface IDataSource {
 
   // Initialization
   connect(): Promise<void>
+  isConnected(): boolean
 
   // Introspection
   getTypes(): Type[]

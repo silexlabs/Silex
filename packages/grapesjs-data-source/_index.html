@@ -20,6 +20,7 @@
     <script>
       function createSettingsContainer() {
         const el = document.createElement('div')
+        el.id = 'ds-settings-container'
         el.style.display = 'none'
         el.style.position = 'fixed'
         el.style.top = '10%'
@@ -33,7 +34,10 @@
         el.style.padding = '10px'
         el.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)'
         el.innerHTML = `
-        <h1>Settings</h1>
+        <h1>
+          Settings
+          <button onclick="document.querySelector('#ds-settings-container').style.display = 'none'">Close</button>
+        </h1>
         <div id="ds-settings"></div>
       `
         document.body.appendChild(el)
@@ -44,7 +48,7 @@
         container: '#gjs',
         height: '100%',
         fromElement: true,
-        storageManager: false,
+        //storageManager: false,
         plugins: ['@silexlabs/grapesjs-data-source'],
         pluginsOpts: {
           '@silexlabs/grapesjs-data-source': {

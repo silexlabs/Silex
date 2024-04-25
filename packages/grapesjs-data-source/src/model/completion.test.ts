@@ -144,6 +144,7 @@ test('get context with data source queryable values', () => {
     dataSources: [{
       id: testDataSourceId,
       connect: async () => {},
+      isConnected: () => true,
       getTypes: () => [{
         id: 'testTypeId1',
         label: 'test type name 1',
@@ -180,6 +181,7 @@ test('get completion with simple context', () => {
     dataSources: [{
       id: testDataSourceId,
       connect: async () => { },
+      isConnected: () => true,
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',
@@ -249,6 +251,7 @@ test('get completion with filters', () => {
     dataSources: [{
       id: testDataSourceId,
       connect: async () => { },
+      isConnected: () => true,
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',
