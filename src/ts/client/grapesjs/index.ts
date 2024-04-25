@@ -394,8 +394,11 @@ export async function initEditor(config: EditorConfig) {
       // Render the block manager, otherwise it is empty
       editor.BlockManager.render(null)
 
-      // use the style filter plugin
+      // Use the style filter plugin
       editor.StyleManager.addProperty('extra', { extend: 'filter' })
+
+      // Add a class to the Style Manager's sticky top section
+      editor.SelectorManager.selectorTags.el.parentElement.classList.add('top-style-section')
 
       // Add the notifications container
       document.body.querySelector('.notifications-container').appendChild(notificationContainer)
