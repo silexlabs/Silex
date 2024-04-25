@@ -148,13 +148,14 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       dataSource.on(DATA_SOURCE_CHANGED, this.dataChangedBinded)
       dataSource.on(DATA_SOURCE_ERROR, this.dataSourceErrorBinded)
     })
-    // Make sure the operations are undoable
-    this.models.forEach((dataSource: IDataSourceModel) => {
-      console.log('ATTACH', dataSource)
-      this.editor.UndoManager.add(dataSource)
-      dataSource.on('all', (e) => console.log('DS changed in backbone', e, dataSource))
-    })
+    // // Make sure the operations are undoable
+    // this.models.forEach((dataSource: IDataSourceModel) => {
+    //   this.editor.UndoManager.add(dataSource)
+    // })
     this.editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
+
+    // Update undo manager
+    this.editor.getModel().handleUpdates(this, this.toJSON())
   }
 
   getDataTree() {
