@@ -97,7 +97,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
     // The options el and button can be functions which use editor so they need to be called asynchronously
     editor.onReady(() => {
       // Get the container element for the UI
-      const el = getElementFromOption(options.el)
+      const el = getElementFromOption(options.el, 'options.el')
 
       // Append the wrapper to the container
       el.appendChild(wrapper)

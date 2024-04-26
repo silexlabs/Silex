@@ -30,7 +30,7 @@ export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewO
   // Settings dialog
   if (options.settingsEl) {
     // Get the container element for the UI
-    const settingsEl = getElementFromOption(options.settingsEl)
+    const settingsEl = getElementFromOption(options.settingsEl, 'options.settingsEl')
     const dsSettings: Ref<SettingsDataSources> = createRef()
     editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_ERROR} ${DATA_SOURCE_READY}`, () => {
       if(dsSettings.value) {

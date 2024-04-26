@@ -537,7 +537,7 @@ export declare function optionsFormKeySelector(editor: DataSourceEditor, field: 
  * @throws Error if the option is not a string or an HTMLElement or a function
  * @throws Error if the element is not found
  */
-export declare function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined): HTMLElement;
+export declare function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined, optionNameForError: string): HTMLElement;
 /**
  * Editor for a state of the selected element's properties
  *
