@@ -90,6 +90,7 @@ class SettingsDataSources extends LitElement {
     const dsDataSource: Ref<SettingsDataSources> = createRef()
     render(html`
       <button
+        type="button"
         class="gjs-btn-prim"
         @click=${() => {
     const options: GraphQLOptions = {
@@ -297,6 +298,7 @@ class SettingsDataSource extends LitElement {
             <div>
               ${this.dataSource.get('readonly') !== false ? '' : html`
                 <button
+                  type="button"
                   class="gjs-btn-prim ds-btn-danger"
                   @click=${() => {
     this.dispatchEvent(new CustomEvent('delete'))
@@ -304,8 +306,8 @@ class SettingsDataSource extends LitElement {
                 >Delete</button>
               `}
               <button
-                class="gjs-btn-prim ds-btn-primary"
                 type="submit"
+                class="gjs-btn-prim ds-btn-primary"
                 >Test connection</button>
             </div>
           </div>
@@ -362,6 +364,7 @@ class SettingsHeaders extends LitElement {
       <fieldset>
       ${this.readonly ? '' : html`
         <button
+          type="button"
           class="gjs-btn-prim"
           @click=${() => {
     this.headers = {
@@ -405,6 +408,7 @@ class SettingsHeaders extends LitElement {
             </label>
             ${this.readonly ? '' : html`
               <button
+                type="button"
                 class="gjs-btn-prim"
                 @click=${() => {
     typeof this.headers[name] !== 'undefined' && delete this.headers[name]

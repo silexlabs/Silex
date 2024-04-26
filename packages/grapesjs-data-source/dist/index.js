@@ -203,6 +203,7 @@
       ></ds-settings>
   `,n)}(e,r,n)}))}};let sn=class extends Be{constructor(){super(),this.dataSources=[]}connectedCallback(){this.render()}render(){const e=Ht();Ue(Se`
       <button
+        type="button"
         class="gjs-btn-prim"
         @click=${()=>{const e={id:`ds_${Math.random().toString(36).slice(2,8)}`,label:'New data source',type:'graphql',url:'',method:'GET',headers:{},readonly:!1};this.dispatchEvent(new CustomEvent('add',{detail:e}))}}>Add</button>
       ${Xt(this.dataSources,(e=>e.get('id')),(t=>Se`
@@ -343,13 +344,14 @@
             <div>
               ${!1!==this.dataSource.get('readonly')?'':Se`
                 <button
+                  type="button"
                   class="gjs-btn-prim ds-btn-danger"
                   @click=${()=>{this.dispatchEvent(new CustomEvent('delete'))}}
                 >Delete</button>
               `}
               <button
-                class="gjs-btn-prim ds-btn-primary"
                 type="submit"
+                class="gjs-btn-prim ds-btn-primary"
                 >Test connection</button>
             </div>
           </div>
@@ -383,6 +385,7 @@
       <fieldset>
       ${this.readonly?'':Se`
         <button
+          type="button"
           class="gjs-btn-prim"
           @click=${()=>{this.headers=Object.assign(Object.assign({},this.headers),{Authorization:'Bearer XXXXXX'}),this.dispatchEvent(new CustomEvent('change'))}}
         >Add</button>
@@ -410,6 +413,7 @@
             </label>
             ${this.readonly?'':Se`
               <button
+                type="button"
                 class="gjs-btn-prim"
                 @click=${()=>{void 0!==this.headers[e]&&delete this.headers[e],this.dispatchEvent(new CustomEvent('change'))}}
                 .disabled=${this.readonly}
