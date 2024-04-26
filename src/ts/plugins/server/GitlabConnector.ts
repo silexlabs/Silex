@@ -307,7 +307,7 @@ export default class GitlabConnector implements StorageConnector {
           client_id: this.options.clientId,
           client_secret: this.options.clientSecret,
         }
-        const response = await fetch(this.options.domain+'/oauth/token', {
+        const response = await fetch(this.options.domain + '/oauth/token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -423,7 +423,7 @@ export default class GitlabConnector implements StorageConnector {
     if(!session.gitlab?.codeVerifier) throw new ApiError('Missing code verifier', 401)
     if(!session.gitlab?.codeChallenge) throw new ApiError('Missing code challenge', 401)
 
-    const response = await fetch(this.options.domain+'/oauth/token', {
+    const response = await fetch(this.options.domain + '/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
