@@ -91,6 +91,62 @@ export class StateEditor extends LitElement {
   }
 
   /**
+   * Form id
+   * This is the same API as input elements
+   */
+  @property({type: String, attribute: 'for'})
+  for = ''
+
+  /**
+   * FormData listener
+   */
+  private onFormdata_ = this.onFormdata.bind(this)
+
+  override connectedCallback() {
+    super.connectedCallback()
+    // Use the form to add formdata
+    if(this.for) {
+      const form = document.querySelector<HTMLFormElement>(`form#${this.for}`)
+      if(form) {
+        this.form = form
+      }
+    } else {
+      this.form = this.closest('form')
+    }
+  }
+
+  override disconnectedCallback() {
+    this.form = null
+    super.disconnectedCallback()
+  }
+
+  /**
+   * Handle formdata event to add the current value to the form
+   */
+  private onFormdata(event: FormDataEvent) {
+    event.preventDefault()
+    const formData = event.formData
+    formData.set(this.name, this.value)
+  }
+
+  /**
+   * Form setter
+   * Handle formdata event to add the current value to the form
+   */
+  protected _form: HTMLFormElement | null = null
+  set form(newForm: HTMLFormElement | null) {
+    if(this._form) {
+      this._form.removeEventListener('formdata', this.onFormdata_)
+    }
+    if(newForm) {
+      newForm.addEventListener('formdata', this.onFormdata_)
+    }
+  }
+  get form() {
+    return this._form
+  }
+
+  /**
    * Structured data
    */
   private _data: Token[] = []

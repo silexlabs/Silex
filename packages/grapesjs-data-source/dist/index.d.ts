@@ -569,6 +569,28 @@ export declare class StateEditor extends LitElement {
 	get value(): string;
 	set value(newValue: string);
 	/**
+	 * Form id
+	 * This is the same API as input elements
+	 */
+	for: string;
+	/**
+	 * FormData listener
+	 */
+	private onFormdata_;
+	connectedCallback(): void;
+	disconnectedCallback(): void;
+	/**
+	 * Handle formdata event to add the current value to the form
+	 */
+	private onFormdata;
+	/**
+	 * Form setter
+	 * Handle formdata event to add the current value to the form
+	 */
+	protected _form: HTMLFormElement | null;
+	set form(newForm: HTMLFormElement | null);
+	get form(): HTMLFormElement | null;
+	/**
 	 * Structured data
 	 */
 	private _data;
