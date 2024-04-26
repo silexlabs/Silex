@@ -1,9 +1,9 @@
 /**
  * @jest-environment jsdom
  */
-import grapesjs from "grapesjs"
-import { getChildByPersistantId, getComponentByPersistentId, getParentByPersistentId, getPersistantId, getStateIds, setState } from "./state"
-import { DataSourceEditor } from "../types"
+import grapesjs from 'grapesjs'
+import { getChildByPersistantId, getComponentByPersistentId, getParentByPersistentId, getPersistantId, getStateIds, setState } from './state'
+import { DataSourceEditor } from '../types'
 
 test('getChildByPersistantId', () => {
   const editor = grapesjs.init({
@@ -59,7 +59,7 @@ test('getStateIds', () => {
 test('getStateIds with specific index', () => {
   const editor = grapesjs.init({
     container: document.createElement('div'),
-    components: `<div id="parent"></div>`,
+    components: '<div id="parent"></div>',
   })
   const parent = editor.Components.getById('parent')
   setState(parent, 'state1', {label: 'State 1', expression: []}, true)

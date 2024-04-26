@@ -74,19 +74,19 @@ test('getTypeProp', async () => {
   expect(gql.getOfTypeProp('kind', {kind: 'NON_NULL', ofType: {kind: 'LIST', ofType: {kind: 'NON_NULL', ofType: {kind: 'LIST', ofType: {kind: 'SCALAR'}}}}})).toBe('SCALAR')
 
   const testType: GQLType = {
-    "name": "PostEntityResponseCollection",
-    "fields": [
+    'name': 'PostEntityResponseCollection',
+    'fields': [
       {
-        "name": "data",
-        "type": {
-          "kind": "NON_NULL",
-          "ofType": {
-            "kind": "LIST",
-            "ofType": {
-              "kind": "NON_NULL",
-              "ofType": {
-                "name": "PostEntity",
-                "kind": "OBJECT"
+        'name': 'data',
+        'type': {
+          'kind': 'NON_NULL',
+          'ofType': {
+            'kind': 'LIST',
+            'ofType': {
+              'kind': 'NON_NULL',
+              'ofType': {
+                'name': 'PostEntity',
+                'kind': 'OBJECT'
               }
             }
           }
@@ -100,19 +100,19 @@ test('getTypeProp', async () => {
 
 test('graphQLToType', async () => {
   const testType: GQLType = {
-    "name": "PostEntityResponseCollection",
-    "fields": [
+    'name': 'PostEntityResponseCollection',
+    'fields': [
       {
-        "name": "data",
-        "type": {
-          "kind": "NON_NULL",
-          "ofType": {
-            "kind": "LIST",
-            "ofType": {
-              "kind": "NON_NULL",
-              "ofType": {
-                "name": "PostEntity",
-                "kind": "OBJECT"
+        'name': 'data',
+        'type': {
+          'kind': 'NON_NULL',
+          'ofType': {
+            'kind': 'LIST',
+            'ofType': {
+              'kind': 'NON_NULL',
+              'ofType': {
+                'name': 'PostEntity',
+                'kind': 'OBJECT'
               }
             }
           }
@@ -158,10 +158,10 @@ test('graphQLToField', async () => {
   })
 
   const result = gql.graphQLToField({
-    "name": "posts",
-    "type": {
-      "name": "PostEntityResponseCollection",
-      "kind": "OBJECT" as GQLKind,
+    'name': 'posts',
+    'type': {
+      'name': 'PostEntityResponseCollection',
+      'kind': 'OBJECT' as GQLKind,
     },
   })
   expect(result).not.toBeUndefined()
@@ -171,14 +171,14 @@ test('graphQLToField', async () => {
 
   // With possible types
   expect(gql.graphQLToField({
-    "name": "posts",
-    "type": {
-      "name": undefined,
-      "kind": "LIST",
-      "possibleTypes": [
+    'name': 'posts',
+    'type': {
+      'name': undefined,
+      'kind': 'LIST',
+      'possibleTypes': [
         {
-          "name": "PostEntityResponseCollection",
-          "kind": "OBJECT" as GQLKind,
+          'name': 'PostEntityResponseCollection',
+          'kind': 'OBJECT' as GQLKind,
         },
       ],
     },
@@ -191,29 +191,29 @@ test('graphQLToField', async () => {
   })
 
   expect(gql.graphQLToField({
-    "name": "posts",
-    "type": {
-      "name": undefined,
-      "kind": "LIST",
-      "possibleTypes": undefined,
-      "ofType": {
-        "kind": "NON_NULL",
-        "name": undefined,
-        "possibleTypes": undefined,
-        "ofType": {
-          "kind": "UNION",
-          "name": "PageDataModulesComponentUnionDto",
-          "possibleTypes": [
+    'name': 'posts',
+    'type': {
+      'name': undefined,
+      'kind': 'LIST',
+      'possibleTypes': undefined,
+      'ofType': {
+        'kind': 'NON_NULL',
+        'name': undefined,
+        'possibleTypes': undefined,
+        'ofType': {
+          'kind': 'UNION',
+          'name': 'PageDataModulesComponentUnionDto',
+          'possibleTypes': [
             {
-              "kind": "OBJECT",
-              "name": "HeroWordSliderComponent"
+              'kind': 'OBJECT',
+              'name': 'HeroWordSliderComponent'
             },
             {
-              "kind": "OBJECT",
-              "name": "SectionSlideshowUpComponent"
+              'kind': 'OBJECT',
+              'name': 'SectionSlideshowUpComponent'
             }
           ],
-          "ofType": undefined,
+          'ofType': undefined,
         }
       }
     },

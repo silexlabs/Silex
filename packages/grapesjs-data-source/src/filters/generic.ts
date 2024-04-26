@@ -16,9 +16,9 @@
  */
 
 
-import { html } from "lit"
-import { DataSourceEditor } from ".."
-import { Filter } from "../types"
+import { html } from 'lit'
+import { DataSourceEditor } from '..'
+import { Filter } from '../types'
 
 export default function(editor: DataSourceEditor): Filter[] {
   return []

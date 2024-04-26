@@ -44,10 +44,10 @@ import { DataTree } from '../model/DataTree'
 @customElement('properties-editor')
 export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
-  disabled = false
+    disabled = false
 
   @property({type: Boolean, attribute: 'default-fixed'})
-  defaultFixed = false
+    defaultFixed = false
 
   inputs: Record<Properties, {stateEditor: StateEditor, selected: Component | undefined} | undefined> = {
     innerHTML: undefined,
@@ -113,8 +113,8 @@ export class PropertiesEditor extends LitElement {
         </details>
         <main>
           ${[
-            {label: 'HTML content', name: Properties.innerHTML, publicState: false},
-          ].map(({label, name, publicState}) => this.renderStateEditor(selected, label, name, publicState))}
+    {label: 'HTML content', name: Properties.innerHTML, publicState: false},
+  ].map(({label, name, publicState}) => this.renderStateEditor(selected, label, name, publicState))}
         </main>
       </section>
       <section class="ds-section">
@@ -128,20 +128,20 @@ export class PropertiesEditor extends LitElement {
           <select
             class="ds-visibility__condition-operator"
             @change=${(e: Event) => {
-              const select = e.target as HTMLSelectElement
-              const value = select.value
-              if(!value) throw new Error('Selection required for operator select element')
-              selected.set('conditionOperator', value)
-              this.requestUpdate()
-            }}
+    const select = e.target as HTMLSelectElement
+    const value = select.value
+    if(!value) throw new Error('Selection required for operator select element')
+    selected.set('conditionOperator', value)
+    this.requestUpdate()
+  }}
           >
           </div>
           ${ Object.values<string>(UnariOperator)
-              .concat(Object.values(BinariOperator))
-              .map(operator => html`
+    .concat(Object.values(BinariOperator))
+    .map(operator => html`
                 <option value="${operator}" .selected=${selected.get('conditionOperator') === operator} >${operator}</option>
               `)
-          }
+}
           </select>
           ${ selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator')) ? this.renderStateEditor(selected, 'Condition 2', Properties.condition2, false) : '' }
         </main>
@@ -176,29 +176,29 @@ export class PropertiesEditor extends LitElement {
         default-fixed=${this.defaultFixed}
         ?hide-loop-data=${hideLoopData}
         ${ref(el => {
-          // Get the stateEditor ref
-          if (el) {
-            // Set the editor - we could do this only once
-            const stateEditor = el as StateEditor
-            stateEditor.setEditor(this.editor!)
-            // Store the stateEditor ref and the component it is representing
-            if (!this.inputs[name]) {
-              this.inputs[name] = {
-                stateEditor,
-                selected: undefined, // clear the selected component so that we update the data
-              }
-            }
-          }
-          // Finally update the data
-          if (this.inputs[name]) {
-            const stateEditorFinally = this.inputs[name]!.stateEditor
-            this.redrawing = true
-            stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
-            this.redrawing = false
+    // Get the stateEditor ref
+    if (el) {
+      // Set the editor - we could do this only once
+      const stateEditor = el as StateEditor
+      stateEditor.setEditor(this.editor!)
+      // Store the stateEditor ref and the component it is representing
+      if (!this.inputs[name]) {
+        this.inputs[name] = {
+          stateEditor,
+          selected: undefined, // clear the selected component so that we update the data
+        }
+      }
+    }
+    // Finally update the data
+    if (this.inputs[name]) {
+      const stateEditorFinally = this.inputs[name]!.stateEditor
+      this.redrawing = true
+      stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+      this.redrawing = false
             // Store the selected component
             this.inputs[name]!.selected = selected
-          }
-        })}
+    }
+  })}
         @change=${() => this.onChange(selected, name, publicState)}
         ?disabled=${this.disabled}
       >

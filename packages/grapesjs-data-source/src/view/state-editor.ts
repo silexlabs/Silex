@@ -47,33 +47,33 @@ import { getExpressionResultType } from '../model/token'
 @customElement('state-editor')
 export class StateEditor extends LitElement {
   @property({type: Boolean})
-  disabled = false
+    disabled = false
 
   @property({type: String})
-  name = ''
+    name = ''
 
   @property({type: Boolean, attribute: 'hide-loop-data'})
-  hideLoopData = false
+    hideLoopData = false
 
   /**
    * used in the expressions found in filters options
    * This will be used to filter states which are not defined yet
    */
   @property({type: String, attribute: 'parent-name'})
-  parentName = ''
+    parentName = ''
 
   @property({type: Boolean, attribute: 'no-filters'})
-  noFilters = false
+    noFilters = false
 
   @property({type: String, attribute: 'root-type'})
-  rootType = ''
+    rootType = ''
 
   @property({type: Boolean, attribute: 'default-fixed'})
-  defaultFixed = false
+    defaultFixed = false
 
   // Note: dismissCurrentComponentStates not used in this project anymore
   @property({type: Boolean, attribute: 'dismiss-current-component-states'})
-  dismissCurrentComponentStates = false
+    dismissCurrentComponentStates = false
 
   /**
    * Value string for for submissions
@@ -126,12 +126,12 @@ export class StateEditor extends LitElement {
         .map((token, idx) => {
           const popin = this.popinsRef[idx]?.value
           switch(token.type) {
-            case 'property':
-            case 'filter':
-              token.options = popin?.value || token.options
-              break
-            default:
-              break
+          case 'property':
+          case 'filter':
+            token.options = popin?.value || token.options
+            break
+          default:
+            break
           }
           return token
         })
@@ -226,54 +226,54 @@ export class StateEditor extends LitElement {
         </div>
         ${ _currentValue && _currentValue.length > 0 ? html`
           ${ _currentValue.map((token: Token, idx: number) => {
-            this.popinsRef[idx] = createRef<PopinForm>()
-            const optionsForm = this.getOptions(selected, _currentValue, idx)
-            const partialExpression = _currentValue.slice(0, idx)
-            const _partialCompletion = getCompletion({
-              component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
-              expression: partialExpression,
-              dataTree,
-              rootType: this.rootType,
-              currentStateId: idx === 0 ? this.parentName || this.name : undefined,
-              hideLoopData: this.hideLoopData,
-            })
-            const partialCompletion = this.noFilters ? _partialCompletion
-              .filter(token => token.type !== 'filter')
-              : _partialCompletion
-            const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
-            const id = toId(token)
-            return html`
+    this.popinsRef[idx] = createRef<PopinForm>()
+    const optionsForm = this.getOptions(selected, _currentValue, idx)
+    const partialExpression = _currentValue.slice(0, idx)
+    const _partialCompletion = getCompletion({
+      component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
+      expression: partialExpression,
+      dataTree,
+      rootType: this.rootType,
+      currentStateId: idx === 0 ? this.parentName || this.name : undefined,
+      hideLoopData: this.hideLoopData,
+    })
+    const partialCompletion = this.noFilters ? _partialCompletion
+      .filter(token => token.type !== 'filter')
+      : _partialCompletion
+    const partialGroupedCompletion = groupByType(this.editor!, selected, partialCompletion, _currentValue.slice(0, idx))
+    const id = toId(token)
+    return html`
               <select>
                 <option value="">-</option>
                 ${ Object.entries(partialGroupedCompletion)
-                  .reverse()
-                  .map(([type, completion]) => {
-                    return html`
+    .reverse()
+    .map(([type, completion]) => {
+      return html`
                       <optgroup label="${type}">
                       ${ completion
-                        .map(partialToken => ({
-                          displayName: getTokenDisplayName(selected, partialToken),
-                          partialToken,
-                        }))
-                        .sort((a, b) => a.displayName.localeCompare(b.displayName))
-                        .map(({partialToken, displayName}) => {
-                          const partialId = toId(partialToken)
-                          return html`
+    .map(partialToken => ({
+      displayName: getTokenDisplayName(selected, partialToken),
+      partialToken,
+    }))
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    .map(({partialToken, displayName}) => {
+      const partialId = toId(partialToken)
+      return html`
                             <option value=${toValue(partialToken)} .selected=${partialId === id}>${displayName}</option>
                           `
-                        })
-                      }
+    })
+}
                       </optgroup>
                     `
-                  })
-                }
+    })
+}
               </select>
               <button
                 class="ds-expression-input__options-button"
                 style=${styleMap({ display: optionsForm === '' ? 'none' : '' })}
                 @click=${() => {
-                  this.popinsRef[idx].value?.removeAttribute('hidden')
-                }}
+    this.popinsRef[idx].value?.removeAttribute('hidden')
+  }}
               >...</button>
               <popin-form
                 ${ref(this.popinsRef[idx])}
@@ -284,8 +284,8 @@ export class StateEditor extends LitElement {
                 ${optionsForm}
               </popin-form>
               `
-            })
-          }
+  })
+}
         ` : '' }
         ${Object.entries(groupedCompletion).length ? html`
           <select
@@ -294,24 +294,24 @@ export class StateEditor extends LitElement {
             >
             <option value="" selected>+</option>
             ${ Object.entries(groupedCompletion)
-              .reverse()
-              .map(([type, completion]) => {
-                return html`
+    .reverse()
+    .map(([type, completion]) => {
+      return html`
                     <optgroup label="${type}">
                     ${ completion
-                      .map(token => ({
-                        displayName: getTokenDisplayName(selected, token),
-                        token,
-                      }))
-                      .sort((a, b) => a.displayName.localeCompare(b.displayName))
-                      .map(({displayName, token}) => {
-                        return html`<option value="${toValue(token)}">${displayName}</option>`
-                      })
-                    }
+    .map(token => ({
+      displayName: getTokenDisplayName(selected, token),
+      token,
+    }))
+    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+    .map(({displayName, token}) => {
+      return html`<option value="${toValue(token)}">${displayName}</option>`
+    })
+}
                     </optgroup>
                 `
-              })
-            }
+    })
+}
           </select>
       ` : ''}
       </expression-input>
@@ -404,15 +404,15 @@ export class StateEditor extends LitElement {
       })
 
     switch(token.type) {
-      case 'property':
-      case 'filter':
-        if(token.optionsForm) {
-          const form = token.optionsForm(fields[fields.length - 1], token.options || {}, this.parentName || this.name)
-          return form || ''
-        }
-        return ''
-      default:
-        return ''
+    case 'property':
+    case 'filter':
+      if(token.optionsForm) {
+        const form = token.optionsForm(fields[fields.length - 1], token.options || {}, this.parentName || this.name)
+        return form || ''
+      }
+      return ''
+    default:
+      return ''
     }
   }
 }

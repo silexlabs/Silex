@@ -2,12 +2,12 @@
  * @jest-environment jsdom
  */
 
-import grapesjs, { Component, Editor } from "grapesjs"
-import { Expression } from "../types"
-import { getExpressionResultType } from "./token"
-import { simpleQueryables, simpleTypes, testDataSourceId } from "../test-data"
-import { DataSourceEditor } from "../types"
-import { DataTree } from "./DataTree"
+import grapesjs, { Component, Editor } from 'grapesjs'
+import { Expression } from '../types'
+import { getExpressionResultType } from './token'
+import { simpleQueryables, simpleTypes, testDataSourceId } from '../test-data'
+import { DataSourceEditor } from '../types'
+import { DataTree } from './DataTree'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({

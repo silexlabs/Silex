@@ -15,12 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Field, Filter, Options } from "../types"
-import { DataSourceEditor } from ".."
-import { html } from "lit"
-import { ref } from "lit/directives/ref.js"
-import { convertKind, getFieldType } from "../utils"
-import { StateEditor } from "../view/state-editor"
+import { Field, Filter, Options } from '../types'
+import { DataSourceEditor } from '..'
+import { html } from 'lit'
+import { ref } from 'lit/directives/ref.js'
+import { convertKind, getFieldType } from '../utils'
+import { StateEditor } from '../view/state-editor'
 
 /**
  * Check if a field is a number

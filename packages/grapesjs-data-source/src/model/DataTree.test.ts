@@ -407,58 +407,58 @@ test('get tree with filters', async () => {
 
 test('Merge trees with empty and no options', async () => {
   const trees = [{
-    "token": {
-      "type": "property",
-      "propType": "field",
-      "typeIds": [],
-      "label": "test field name",
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object"
+    'token': {
+      'type': 'property',
+      'propType': 'field',
+      'typeIds': [],
+      'label': 'test field name',
+      'dataSourceId': 'testDataSourceId',
+      'fieldId': 'query',
+      'kind': 'object'
     },
-    "children": [
+    'children': [
       {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
+        'token': {
+          'type': 'property',
+          'propType': 'field',
+          'fieldId': 'testFieldId1',
+          'label': 'test field name',
+          'typeIds': [
+            'testTypeId'
           ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId"
+          'kind': 'object',
+          'dataSourceId': 'testDataSourceId'
         },
-        "children": []
+        'children': []
       }
     ],
   }, {
-    "token": {
-      "type": "property",
-      "propType": "field",
-      "typeIds": [],
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object"
+    'token': {
+      'type': 'property',
+      'propType': 'field',
+      'typeIds': [],
+      'dataSourceId': 'testDataSourceId',
+      'fieldId': 'query',
+      'kind': 'object'
     },
-    "children": [
+    'children': [
       {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
+        'token': {
+          'type': 'property',
+          'propType': 'field',
+          'fieldId': 'testFieldId1',
+          'label': 'test field name',
+          'typeIds': [
+            'testTypeId'
           ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId",
-          "options": {
-            "test": undefined,
-            "test2": "",
+          'kind': 'object',
+          'dataSourceId': 'testDataSourceId',
+          'options': {
+            'test': undefined,
+            'test2': '',
           },
         },
-        "children": []
+        'children': []
       }
     ],
   }] as Tree[]
@@ -493,58 +493,58 @@ test('Get query with errors in options', async () => {
   }
   const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
   expect(() => dataTree.mergeTrees({
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object",
-      "typeIds": [],
-      "type": "property",
-      "propType": "field",
-      "label": "test field name",
+    'token': {
+      'dataSourceId': 'testDataSourceId',
+      'fieldId': 'query',
+      'kind': 'object',
+      'typeIds': [],
+      'type': 'property',
+      'propType': 'field',
+      'label': 'test field name',
     },
-    "children": [
+    'children': [
       {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
+        'token': {
+          'type': 'property',
+          'propType': 'field',
+          'fieldId': 'testFieldId1',
+          'label': 'test field name',
+          'typeIds': [
+            'testTypeId'
           ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId"
+          'kind': 'object',
+          'dataSourceId': 'testDataSourceId'
         },
-        "children": []
+        'children': []
       }
     ]
   }, {
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object",
-      "typeIds": [],
-      "type": "property",
-      "propType": "field",
-      "label": "test field name",
+    'token': {
+      'dataSourceId': 'testDataSourceId',
+      'fieldId': 'query',
+      'kind': 'object',
+      'typeIds': [],
+      'type': 'property',
+      'propType': 'field',
+      'label': 'test field name',
     },
-    "children": [
+    'children': [
       {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
+        'token': {
+          'type': 'property',
+          'propType': 'field',
+          'fieldId': 'testFieldId1',
+          'label': 'test field name',
+          'typeIds': [
+            'testTypeId'
           ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId",
-          "options": {
-            "id": "option"
+          'kind': 'object',
+          'dataSourceId': 'testDataSourceId',
+          'options': {
+            'id': 'option'
           }
         },
-        "children": []
+        'children': []
       }
     ]
   }))
@@ -559,55 +559,55 @@ test('Get query from multiple expressions', async () => {
   }
   const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
   const tree = dataTree.mergeTrees({
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object",
-      "typeIds": [],
-      "type": "property",
-      "propType": "field",
-      "label": "test field name",
+    'token': {
+      'dataSourceId': 'testDataSourceId',
+      'fieldId': 'query',
+      'kind': 'object',
+      'typeIds': [],
+      'type': 'property',
+      'propType': 'field',
+      'label': 'test field name',
     },
-    "children": [
+    'children': [
       {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId1",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
+        'token': {
+          'type': 'property',
+          'propType': 'field',
+          'fieldId': 'testFieldId1',
+          'label': 'test field name',
+          'typeIds': [
+            'testTypeId'
           ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId"
+          'kind': 'object',
+          'dataSourceId': 'testDataSourceId'
         },
-        "children": []
+        'children': []
       }
     ]
   }, {
-    "token": {
-      "dataSourceId": "testDataSourceId",
-      "fieldId": "query",
-      "kind": "object",
-      "typeIds": [],
-      "type": "property",
-      "propType": "field",
-      "label": "test field name",
+    'token': {
+      'dataSourceId': 'testDataSourceId',
+      'fieldId': 'query',
+      'kind': 'object',
+      'typeIds': [],
+      'type': 'property',
+      'propType': 'field',
+      'label': 'test field name',
     },
-    "children": [
+    'children': [
       {
-        "token": {
-          "type": "property",
-          "propType": "field",
-          "fieldId": "testFieldId2",
-          "label": "test field name",
-          "typeIds": [
-            "testTypeId"
+        'token': {
+          'type': 'property',
+          'propType': 'field',
+          'fieldId': 'testFieldId2',
+          'label': 'test field name',
+          'typeIds': [
+            'testTypeId'
           ],
-          "kind": "object",
-          "dataSourceId": "testDataSourceId"
+          'kind': 'object',
+          'dataSourceId': 'testDataSourceId'
         },
-        "children": []
+        'children': []
       }
     ]
   })
@@ -1061,50 +1061,50 @@ test('get tree with options', () => {
   const component = editor.getComponents().first()
   expect(() => dataTree.getTrees({expression: expression1, component}, testDataSourceId)).not.toThrow()
   expect(dataTree.getTrees({expression: expression1, component}, testDataSourceId))
-  .toEqual([{
-    token: testTokens.rootField1,
-    children: [{
-      token: testTokens.childField1,
-      children: [],
-    }],
-  }])
+    .toEqual([{
+      token: testTokens.rootField1,
+      children: [{
+        token: testTokens.childField1,
+        children: [],
+      }],
+    }])
   // More complex expression with absolute child expression
   const expression2: Expression = [{
-      ...testTokens.rootField1,
-    }, {
-      ...testTokens.filter,
-      options: {
-        id: 1,
-        childExpressionAbsolute: JSON.stringify([testTokens.rootField2, testTokens.childField2]),
-        childExpressionRelative: JSON.stringify([testTokens.childField1]),
-      },
-    } as Filter,
-    testTokens.childField3
+    ...testTokens.rootField1,
+  }, {
+    ...testTokens.filter,
+    options: {
+      id: 1,
+      childExpressionAbsolute: JSON.stringify([testTokens.rootField2, testTokens.childField2]),
+      childExpressionRelative: JSON.stringify([testTokens.childField1]),
+    },
+  } as Filter,
+  testTokens.childField3
   ]
   expect(() => dataTree.getTrees({expression: expression2, component}, testDataSourceId)).not.toThrow()
   expect(dataTree.getTrees({expression: expression2, component}, testDataSourceId))
-  .toEqual([{
-    token: testTokens.rootField1,
-    children: [{
-      token: testTokens.childField3,
+    .toEqual([{
+      token: testTokens.rootField1,
+      children: [{
+        token: testTokens.childField3,
+        children: [],
+      }],
+    }, {
+      token: testTokens.rootField1,
       children: [],
-    }],
-  }, {
-    token: testTokens.rootField1,
-    children: [],
-  }, {
-    token: testTokens.rootField2,
-    children: [{
-      token: testTokens.childField2,
-      children: [],
-    }],
-  }, {
-    token: testTokens.rootField1,
-    children: [{
-      token: testTokens.childField1,
-      children: [],
-    }],
-  }])
+    }, {
+      token: testTokens.rootField2,
+      children: [{
+        token: testTokens.childField2,
+        children: [],
+      }],
+    }, {
+      token: testTokens.rootField1,
+      children: [{
+        token: testTokens.childField1,
+        children: [],
+      }],
+    }])
 })
 
 test('get types map', () => {
@@ -1194,14 +1194,14 @@ test('Get experessions used by a component', () => {
   })
   const component = editor.getComponents().first()
   const expression = [{
-      type: 'property',
-      propType: 'field',
-      fieldId: 'testFieldId',
-      label: 'test field name',
-      typeIds: ['testTypeId'],
-      kind: 'object',
-      dataSourceId: testDataSourceId,
-    }] as Property[]
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    label: 'test field name',
+    typeIds: ['testTypeId'],
+    kind: 'object',
+    dataSourceId: testDataSourceId,
+  }] as Property[]
   ;(getStates as jest.Mock).mockReturnValue([{
     expression,
   }])

@@ -15,14 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Backbone from "backbone"
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from "../types"
-import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug } from ".."
-import { DataTree } from "./DataTree"
-import { Component, Page } from "grapesjs"
-import { StoredState, onStateChange } from "./state"
-import getLiquidFilters from "../filters/liquid"
-import getGenericFilters from "../filters/generic"
+import Backbone from 'backbone'
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from '../types'
+import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug } from '..'
+import { DataTree } from './DataTree'
+import { Component, Page } from 'grapesjs'
+import { StoredState, onStateChange } from './state'
+import getLiquidFilters from '../filters/liquid'
+import getGenericFilters from '../filters/generic'
 
 /**
  * FIXME: Why sometimes the methods of the data source are in the attributes?
@@ -69,9 +69,9 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
           .flatMap((filter: Partial<Filter> | string): Filter[] => {
             if (typeof filter === 'string') {
               switch (filter) {
-                case 'liquid': return getLiquidFilters(editor)
-                case 'generic': return getGenericFilters(editor)
-                default: throw new Error(`Unknown filters ${filter}`)
+              case 'liquid': return getLiquidFilters(editor)
+              case 'generic': return getGenericFilters(editor)
+              default: throw new Error(`Unknown filters ${filter}`)
               }
             } else {
               return [{
@@ -172,14 +172,14 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
             component: componentExpression.component,
             expression: componentExpression.expression.flatMap((token: StoredToken) => {
               switch(token.type) {
-                case 'property':
-                case 'filter':
-                  return token
-                case 'state': {
-                  const resolved = this.dataTree.resolveState(token, componentExpression.component)
-                  if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`)
-                  return resolved
-                }
+              case 'property':
+              case 'filter':
+                return token
+              case 'state': {
+                const resolved = this.dataTree.resolveState(token, componentExpression.component)
+                if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`)
+                return resolved
+              }
               }
             })
           }))

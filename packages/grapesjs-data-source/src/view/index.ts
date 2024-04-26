@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, DataSourceEditorViewOptions, getElementFromOption, Properties } from ".."
+import { DataSourceEditor, DataSourceEditorViewOptions, getElementFromOption, Properties } from '..'
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'

@@ -254,47 +254,47 @@ export class DataTree {
     if(expression.length === 0) return []
     const next = expression[0]
     switch(next.type) {
-      case 'property': {
-        if(next.dataSourceId !== dataSourceId) return []
-        const trees = this.getTrees({expression: expression.slice(1), component}, dataSourceId)
-        if(trees.length === 0) return [{
-          token: next,
-          children: [],
-        }]
-        return trees
-          .flatMap(tree => {
-            // Check if this is a "relative" property or "absolute" (a root type)
-            if(this.isRelative(next, tree.token, dataSourceId)) {
-              return {
-                token: next,
-                children: [tree],
-              }
-            } else {
-              return [{
-                token: next,
-                children: [],
-              }, tree]
+    case 'property': {
+      if(next.dataSourceId !== dataSourceId) return []
+      const trees = this.getTrees({expression: expression.slice(1), component}, dataSourceId)
+      if(trees.length === 0) return [{
+        token: next,
+        children: [],
+      }]
+      return trees
+        .flatMap(tree => {
+          // Check if this is a "relative" property or "absolute" (a root type)
+          if(this.isRelative(next, tree.token, dataSourceId)) {
+            return {
+              token: next,
+              children: [tree],
             }
-          })
-      }
-      case 'filter': {
-        const options = Object.values(next.options)
-          .map((value: unknown) => toExpression(value))
-          .filter((exp: Expression | null) => !!exp && exp.length > 0)
-          .flatMap(exp => this.getTrees({expression: exp!, component}, dataSourceId))
+          } else {
+            return [{
+              token: next,
+              children: [],
+            }, tree]
+          }
+        })
+    }
+    case 'filter': {
+      const options = Object.values(next.options)
+        .map((value: unknown) => toExpression(value))
+        .filter((exp: Expression | null) => !!exp && exp.length > 0)
+        .flatMap(exp => this.getTrees({expression: exp!, component}, dataSourceId))
 
-        const trees = this.getTrees({expression: expression.slice(1), component}, dataSourceId)
-        if(trees.length === 0) return options
-        return trees.flatMap(tree => [tree, ...options])
-      }
-      case 'state': {
-        const resolved = this.resolveState(next, component)
-        if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}. State defined on component ${getComponentDebug(component)}`)
-        return this.getTrees({expression: resolved, component}, dataSourceId)
-      }
-      default:
-        console.error('Invalid expression', expression)
-        throw new Error(`Invalid expression ${JSON.stringify(expression)}. Expression used on component ${getComponentDebug(component)}`)
+      const trees = this.getTrees({expression: expression.slice(1), component}, dataSourceId)
+      if(trees.length === 0) return options
+      return trees.flatMap(tree => [tree, ...options])
+    }
+    case 'state': {
+      const resolved = this.resolveState(next, component)
+      if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}. State defined on component ${getComponentDebug(component)}`)
+      return this.getTrees({expression: resolved, component}, dataSourceId)
+    }
+    default:
+      console.error('Invalid expression', expression)
+      throw new Error(`Invalid expression ${JSON.stringify(expression)}. Expression used on component ${getComponentDebug(component)}`)
     }
   }
 
@@ -340,11 +340,11 @@ export class DataTree {
   protected mergeTrees(tree1: Tree, tree2: Tree): Tree {
     // Check if the trees have the same fieldId
     if (tree1.token.dataSourceId !== tree2.token.dataSourceId
-      // Don't check for kind because it can be different for the same fieldId
-      // For example `blog` collection (kind: list) for a loop/repeat
-      //   and `blog` item (kind: object) from inside the loop
-      // FIXME: why is this?
-      // || tree1.token.kind !== tree2.token.kind
+    // Don't check for kind because it can be different for the same fieldId
+    // For example `blog` collection (kind: list) for a loop/repeat
+    //   and `blog` item (kind: object) from inside the loop
+    // FIXME: why is this?
+    // || tree1.token.kind !== tree2.token.kind
     ) {
       console.error('Unable to merge trees', tree1, tree2)
       throw new Error(`Unable to build GraphQL query: unable to merge trees ${JSON.stringify(tree1)} and ${JSON.stringify(tree2)}`)
@@ -418,11 +418,11 @@ export class DataTree {
     return soredState.expression
       .flatMap((token: StoredToken) => {
         switch (token.type) {
-          case 'state': {
-            return this.resolveState(fromStored(token, this), parent) ?? []
-          }
-          default:
-            return token
+        case 'state': {
+          return this.resolveState(fromStored(token, this), parent) ?? []
+        }
+        default:
+          return token
         }
       })
   }

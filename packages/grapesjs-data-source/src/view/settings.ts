@@ -1,12 +1,12 @@
-import { createRef, Ref, ref } from "lit/directives/ref.js"
+import { createRef, Ref, ref } from 'lit/directives/ref.js'
 import {repeat} from 'lit/directives/repeat.js'
-import GraphQL, { GraphQLOptions } from "../datasources/GraphQL"
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel, IDataSourceOptions } from "../types"
-import { getElementFromOption } from "../utils"
-import { html, LitElement, render, TemplateResult } from 'lit'
-import { customElement, property } from "lit/decorators.js"
+import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel } from '../types'
+import { getElementFromOption } from '../utils'
+import { html, LitElement, render } from 'lit'
+import { customElement, property } from 'lit/decorators.js'
 
-export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewOptions> = {}, opts: any) => {
+export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewOptions> = {}) => {
   // Save and load data sources
   editor.on('storage:start:store', data => {
     data.dataSources = editor.DataSourceManager
@@ -37,36 +37,36 @@ export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewO
         dsSettings.value.dataSources = [...editor.DataSourceManager]
         dsSettings.value.render()
       } else {
-        renderSettings()
+        renderSettings(editor, dsSettings, settingsEl)
       }
     })
-
-    function renderSettings() {
-      render(html`
-        <ds-settings
-          ${ref(dsSettings)}
-          .dataSources=${[]}
-          @change=${(e: CustomEvent) => {
-            const ds = e.detail as IDataSourceModel
-            editor.DataSourceManager
-              //.set([ds], { merge: true, remove: false })
-              .get(ds.get('id'))
-              ?.set(ds.toJSON())
-              //.reset(dsSettings.value?.dataSources || [])
-          }}
-          @add=${(e: CustomEvent) => {
-            const ds = e.detail as GraphQLOptions
-            const newDS = new GraphQL(ds)
-            editor.DataSourceManager.add(newDS, { at: 0 })
-          }}
-          @delete=${(e: CustomEvent) => {
-            const ds = e.detail as IDataSourceModel
-            editor.DataSourceManager.remove(ds)
-          }}
-          ></ds-settings>
-      `, settingsEl)
-    }
   }
+}
+
+function renderSettings(editor: DataSourceEditor, dsSettings: Ref, settingsEl: HTMLElement) {
+  render(html`
+    <ds-settings
+      ${ref(dsSettings)}
+      .dataSources=${[]}
+      @change=${(e: CustomEvent) => {
+    const ds = e.detail as IDataSourceModel
+    editor.DataSourceManager
+    //.set([ds], { merge: true, remove: false })
+      .get(ds.get('id'))
+      ?.set(ds.toJSON())
+      //.reset(dsSettings.value?.dataSources || [])
+  }}
+      @add=${(e: CustomEvent) => {
+    const ds = e.detail as GraphQLOptions
+    const newDS = new GraphQL(ds)
+    editor.DataSourceManager.add(newDS, { at: 0 })
+  }}
+      @delete=${(e: CustomEvent) => {
+    const ds = e.detail as IDataSourceModel
+    editor.DataSourceManager.remove(ds)
+  }}
+      ></ds-settings>
+  `, settingsEl)
 }
 
 /**
@@ -75,7 +75,7 @@ export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewO
 @customElement('ds-settings')
 class SettingsDataSources extends LitElement {
   @property({ type: Array })
-  dataSources: IDataSourceModel[]
+    dataSources: IDataSourceModel[]
 
   constructor() {
     super()
@@ -92,29 +92,29 @@ class SettingsDataSources extends LitElement {
       <button
         class="gjs-btn-prim"
         @click=${() => {
-        const options: GraphQLOptions = {
-          id: `ds_${Math.random().toString(36).slice(2, 8)}`,
-          label: 'New data source',
-          type: 'graphql',
-          url: '',
-          method: 'GET',
-          headers: {},
-          readonly: false,
-        }
-        this.dispatchEvent(new CustomEvent('add', { detail: options }))
-      }}>Add</button>
+    const options: GraphQLOptions = {
+      id: `ds_${Math.random().toString(36).slice(2, 8)}`,
+      label: 'New data source',
+      type: 'graphql',
+      url: '',
+      method: 'GET',
+      headers: {},
+      readonly: false,
+    }
+    this.dispatchEvent(new CustomEvent('add', { detail: options }))
+  }}>Add</button>
       ${repeat(this.dataSources, (ds: IDataSourceModel) => ds.get('id'), (ds: IDataSourceModel) => html`
         <ds-settings__data-source
           ${ref(dsDataSource)}
           .dataSource=${ds}
           @change=${(e: CustomEvent) => {
-            e.preventDefault()
-            e.stopImmediatePropagation()
-            this.dispatchEvent(new CustomEvent('change', { detail: ds }))
-          }}
+    e.preventDefault()
+    e.stopImmediatePropagation()
+    this.dispatchEvent(new CustomEvent('change', { detail: ds }))
+  }}
           @delete=${() => {
-            this.dispatchEvent(new CustomEvent('delete', { detail: ds }))
-          }}
+    this.dispatchEvent(new CustomEvent('delete', { detail: ds }))
+  }}
           ></ds-settings__data-source>
       `)}
     `, this)
@@ -122,9 +122,10 @@ class SettingsDataSources extends LitElement {
 }
 
 @customElement('ds-settings__data-source')
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class SettingsDataSource extends LitElement {
   @property({ type: Object })
-  dataSource: IDataSourceModel | null
+    dataSource: IDataSourceModel | null
   errorMessage: string = ''
   connected: boolean = false
   
@@ -205,10 +206,10 @@ class SettingsDataSource extends LitElement {
       class="gjs-sm-properties gjs-sm-sector gjs-two-color"
       ?readonly=${this.dataSource.get('readonly') !== false}
       @submit=${(e: Event) => {
-        e.preventDefault()
-        e.stopImmediatePropagation()
-        this.connectDataSource()
-      }}
+    e.preventDefault()
+    e.stopImmediatePropagation()
+    this.connectDataSource()
+  }}
       >
       <h3 class="ds-property__title">
         ${this.dataSource.get('label')}
@@ -222,10 +223,10 @@ class SettingsDataSource extends LitElement {
           name="label"
           value=${this.dataSource.get('label')}
           @input=${(e: Event) => {
-            this.dataSource?.set('label', (e.target as HTMLInputElement).value)
-            // Update the label in the title
-            this.render()
-          }}
+    this.dataSource?.set('label', (e.target as HTMLInputElement).value)
+    // Update the label in the title
+    this.render()
+  }}
           ?readonly=${this.dataSource.get('readonly') !== false}
           />
       </label>
@@ -278,10 +279,10 @@ class SettingsDataSource extends LitElement {
           <ds-settings__headers
             ${ref(dsHeaders)}
             .headers=${this.dataSource.get('headers')}
-            @change=${(e: CustomEvent) => {
-              this.dataSource?.set('headers', dsHeaders.value?.headers)
-              dsHeaders.value?.render()
-            }}
+            @change=${() => {
+    this.dataSource?.set('headers', dsHeaders.value?.headers)
+    dsHeaders.value?.render()
+  }}
             ?readonly=${this.dataSource.get('readonly') !== false}
             ></ds-settings__headers>
         </details>
@@ -298,8 +299,8 @@ class SettingsDataSource extends LitElement {
                 <button
                   class="gjs-btn-prim ds-btn-danger"
                   @click=${() => {
-                    this.dispatchEvent(new CustomEvent('delete'))
-                  }}
+    this.dispatchEvent(new CustomEvent('delete'))
+  }}
                 >Delete</button>
               `}
               <button
@@ -318,10 +319,10 @@ class SettingsDataSource extends LitElement {
 @customElement('ds-settings__headers')
 class SettingsHeaders extends LitElement {
   @property({ type: Array })
-  headers: Record<string, string>
+    headers: Record<string, string>
 
   @property({ type: Boolean })
-  readonly: boolean
+    readonly: boolean
 
   constructor() {
     super()
@@ -363,12 +364,12 @@ class SettingsHeaders extends LitElement {
         <button
           class="gjs-btn-prim"
           @click=${() => {
-            this.headers = {
-              ...this.headers,
-              'Authorization': 'Bearer XXXXXX',
-            }
-            this.dispatchEvent(new CustomEvent('change'))
-          }}
+    this.headers = {
+      ...this.headers,
+      'Authorization': 'Bearer XXXXXX',
+    }
+    this.dispatchEvent(new CustomEvent('change'))
+  }}
         >Add</button>
       `}
       <ul>
@@ -381,12 +382,12 @@ class SettingsHeaders extends LitElement {
                 value=${name}
                 name=${`header-key-${encodeURI(name)}`}
                 @change=${(e: Event) => {
-                  const target = e.target as HTMLInputElement
-                  if(!target.value) return
-                  typeof this.headers[name] !== 'undefined' && delete this.headers[name]
-                  this.headers[target.value] = value
-                  this.dispatchEvent(new CustomEvent('change'))
-                }}
+    const target = e.target as HTMLInputElement
+    if(!target.value) return
+    typeof this.headers[name] !== 'undefined' && delete this.headers[name]
+    this.headers[target.value] = value
+    this.dispatchEvent(new CustomEvent('change'))
+  }}
                 />
             </label>
             <label class="gjs-field">
@@ -396,19 +397,19 @@ class SettingsHeaders extends LitElement {
                 value=${value}
                 name=${`header-value-${encodeURI(value)}`}
                 @change=${(e: Event) => {
-                  const target = e.target as HTMLInputElement
-                  this.headers[name] = target.value
-                  this.dispatchEvent(new CustomEvent('change'))
-                }}
+    const target = e.target as HTMLInputElement
+    this.headers[name] = target.value
+    this.dispatchEvent(new CustomEvent('change'))
+  }}
                 />
             </label>
             ${this.readonly ? '' : html`
               <button
                 class="gjs-btn-prim"
                 @click=${() => {
-                  typeof this.headers[name] !== 'undefined' && delete this.headers[name]
-                  this.dispatchEvent(new CustomEvent('change'))
-                }}
+    typeof this.headers[name] !== 'undefined' && delete this.headers[name]
+    this.dispatchEvent(new CustomEvent('change'))
+  }}
                 .disabled=${this.readonly}
               >Delete</button>
             `}

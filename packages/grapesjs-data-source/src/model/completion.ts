@@ -1,9 +1,9 @@
-import { Component } from "grapesjs"
-import { Context, Expression, Field, Filter, Property, State, StateId, Token, Type, TypeId } from "../types"
-import { DataTree } from "./DataTree"
-import { getOrCreatePersistantId, getState, getStateIds } from "./state"
-import { getExpressionResultType, getTokenOptions } from "./token"
-import { getFixedToken } from "../utils"
+import { Component } from 'grapesjs'
+import { Context, Expression, Field, Filter, Property, State, StateId, Token, Type, TypeId } from '../types'
+import { DataTree } from './DataTree'
+import { getOrCreatePersistantId, getState, getStateIds } from './state'
+import { getExpressionResultType, getTokenOptions } from './token'
+import { getFixedToken } from '../utils'
 
 /**
  * Get the context of a component
@@ -28,13 +28,13 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
     // Get explicitely set states
     states
       .push(...(getStateIds(parent, true, parent === component ? currentStateId : undefined)
-      .map((stateId: StateId): State => ({
-        type: 'state',
-        storedStateId: stateId,
-        label: getState(parent, stateId, true)?.label || stateId,
-        componentId: getOrCreatePersistantId(parent),
-        exposed: true,
-      }))))
+        .map((stateId: StateId): State => ({
+          type: 'state',
+          storedStateId: stateId,
+          label: getState(parent, stateId, true)?.label || stateId,
+          componentId: getOrCreatePersistantId(parent),
+          exposed: true,
+        }))))
     // Get states from loops
     if (parent !== component || !hideLoopData) { // If it is a loop on the parent or if we don't hide the loop data
       const loopDataState = getState(parent, '__data', false)
@@ -118,7 +118,7 @@ export function fieldToToken(field: Field): Property {
  * @returns a list of possible tokens to add to the expression
  */
 export function getCompletion(options: { component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId, currentStateId?: StateId, hideLoopData?: boolean}): Context {
-  const { component, expression, dataTree, rootType, currentStateId, hideLoopData } = options;
+  const { component, expression, dataTree, rootType, currentStateId, hideLoopData } = options
   if (!component) throw new Error('Component is required for completion')
   if (!expression) throw new Error('Expression is required for completion')
   if (expression.length === 0) {

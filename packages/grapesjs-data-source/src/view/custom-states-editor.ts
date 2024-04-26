@@ -42,25 +42,25 @@ interface Item {
 @customElement('custom-states-editor')
 export class CustomStatesEditor extends LitElement {
   @property({type: Boolean})
-  disabled = false
+    disabled = false
 
   @property({type: Boolean, attribute: 'private-state'})
-  privateState = false
+    privateState = false
 
   @property({type: String})
-  title = 'Custom states'
+    title = 'Custom states'
 
   @property({type: Boolean, attribute: 'default-fixed'})
-  defaultFixed = false
+    defaultFixed = false
 
   @property({type: String, attribute: 'create-prompt'})
-  createPrompt = 'Name this state'
+    createPrompt = 'Name this state'
 
   @property({type: String, attribute: 'rename-prompt'})
-  renamePrompt = 'Rename this state'
+    renamePrompt = 'Rename this state'
 
   @property({type: String, attribute: 'default-name'})
-  defaultName = 'New state'
+    defaultName = 'New state'
 
   // This is a comma separated list of reserved names
   // Or an array of reserved names
@@ -72,7 +72,7 @@ export class CustomStatesEditor extends LitElement {
   }
 
   @property({type: Boolean, attribute: 'hide-loop-data'})
-  hideLoopData = false
+    hideLoopData = false
 
   private _reservedNames: string[] = []
   private editor: DataSourceEditor | null = null
@@ -110,10 +110,10 @@ export class CustomStatesEditor extends LitElement {
               title="Add a new state"
               class="ds-states__add-button ds-states__button"
               @click=${() => {
-                const item = this.createCustomState(selected)
-                if(!item) return
-                this.setState(selected, item.name, item.state)
-              }}
+    const item = this.createCustomState(selected)
+    if(!item) return
+    this.setState(selected, item.name, item.state)
+  }}
               >+</button>
             ` : ''}
           </div>
@@ -156,7 +156,7 @@ export class CustomStatesEditor extends LitElement {
       <div class="ds-states">
         <div class="ds-states__items">
           ${items
-            .map((item, index) => html`
+    .map((item, index) => html`
             <div class="ds-states__item">
               ${this.getStateEditor(selected, item.state.label || '', item.name)}
               <div class="ds-states__buttons">
@@ -164,36 +164,36 @@ export class CustomStatesEditor extends LitElement {
                   title="Remove this state"
                   class="ds-states__remove-button ds-states__button"
                   @click=${() => {
-                    this.removeState(selected, item.name)
-                    this.requestUpdate()
-                  }}
+    this.removeState(selected, item.name)
+    this.requestUpdate()
+  }}
                   >x</button>
                 <button
                   title="Rename this state"
                   class="ds-states__rename-button ds-states__button"
                   @click=${() => {
-                    const newItem = this.renameCustomState(item)
-                    if(!newItem || newItem === item) return
-                    this.removeState(selected, item.name)
-                    this.setState(selected, newItem.name, newItem.state)
-                    this.requestUpdate()
-                  }}
+    const newItem = this.renameCustomState(item)
+    if(!newItem || newItem === item) return
+    this.removeState(selected, item.name)
+    this.setState(selected, newItem.name, newItem.state)
+    this.requestUpdate()
+  }}
                   >\u270F</button>
                   <button
                     title="Move this state up"
                     class="ds-states__item-move-up ds-states__button${ index === 0 ? ' ds-states__button--disabled' : '' }"
                     @click=${() => {
-                      items.splice(index - 1, 0, items.splice(index, 1)[0]);
-                      this.updateOrderCustomStates(selected, items)
-                    }}
+    items.splice(index - 1, 0, items.splice(index, 1)[0])
+    this.updateOrderCustomStates(selected, items)
+  }}
                     >\u2191</button>
                   <button
                     title="Move this state down"
                     class="ds-states__item-move-down ds-states__button${ index === items.length - 1 ? ' ds-states__button--disabled' : '' }"
                     @click=${() => {
-                      items.splice(index + 1, 0, items.splice(index, 1)[0]);
-                      this.updateOrderCustomStates(selected, items)
-                    }}
+    items.splice(index + 1, 0, items.splice(index, 1)[0])
+    this.updateOrderCustomStates(selected, items)
+  }}
                   >\u2193</button>
               </div>
             </div>
@@ -244,12 +244,12 @@ export class CustomStatesEditor extends LitElement {
         ?hide-loop-data=${this.hideLoopData}
         default-fixed=${this.defaultFixed}
         ${ref(el => {
-          if (el) {
-            const stateEditor = el as StateEditor
-            stateEditor.setEditor(this.editor!)
-            stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name)
-          }
-        })}
+    if (el) {
+      const stateEditor = el as StateEditor
+      stateEditor.setEditor(this.editor!)
+      stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name)
+    }
+  })}
         @change=${() => this.onChange(selected, name, label)}
         .disabled=${this.disabled}
       >

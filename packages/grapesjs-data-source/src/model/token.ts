@@ -1,8 +1,8 @@
-import { Component } from "grapesjs"
-import { Expression, Field, FieldArgument, Filter, Options, Property, PropertyOptions, StoredToken, Token, Type, TypeId } from "../types"
-import { DataTree } from "./DataTree"
-import { getParentByPersistentId, getState } from "./state"
-import { TemplateResult, html } from "lit"
+import { Component } from 'grapesjs'
+import { Expression, Field, FieldArgument, Filter, Options, Property, PropertyOptions, StoredToken, Token, Type, TypeId } from '../types'
+import { DataTree } from './DataTree'
+import { getParentByPersistentId, getState } from './state'
+import { TemplateResult, html } from 'lit'
 
 /**
  * Add missing methonds to the filter
@@ -30,35 +30,35 @@ export function getFilterFromToken(token: Filter, filters: Filter[]): Filter {
  */
 export function fromStored < T extends Token = Token > (token: StoredToken, dataTree: DataTree): T {
   switch (token.type) {
-    case 'filter': {
-      if ((token as Filter).optionsForm) return token as T
-      const original = dataTree.filters.find(filter => filter.id === token.id) as T | undefined
-      if (!original) {
-        console.error('Filter not found', token)
-        throw new Error(`Filter ${token.id} not found`)
-      }
-      return {
-        ...original,
-        ...token,
-      } as T
+  case 'filter': {
+    if ((token as Filter).optionsForm) return token as T
+    const original = dataTree.filters.find(filter => filter.id === token.id) as T | undefined
+    if (!original) {
+      console.error('Filter not found', token)
+      throw new Error(`Filter ${token.id} not found`)
     }
-    case 'property': {
-      if ((token as Property).optionsForm) return token as T
-      const field = propertyToField(token, dataTree)
-      if (!field) {
-        console.error('Field not found for token', token)
-        throw new Error(`Field ${token.fieldId} not found`)
-      }
-      return {
-        ...getTokenOptions(field) ?? {},
-        ...token,
-      } as T
+    return {
+      ...original,
+      ...token,
+    } as T
+  }
+  case 'property': {
+    if ((token as Property).optionsForm) return token as T
+    const field = propertyToField(token, dataTree)
+    if (!field) {
+      console.error('Field not found for token', token)
+      throw new Error(`Field ${token.fieldId} not found`)
     }
-    case 'state':
-      return token as T
-    default:
-      console.error('Unknown token type (reading type)', token)
-      throw new Error('Unknown token type')
+    return {
+      ...getTokenOptions(field) ?? {},
+      ...token,
+    } as T
+  }
+  case 'state':
+    return token as T
+  default:
+    console.error('Unknown token type (reading type)', token)
+    throw new Error('Unknown token type')
   }
 }
 
@@ -67,55 +67,55 @@ export function fromStored < T extends Token = Token > (token: StoredToken, data
  */
 export function tokenToField(token: Token, prev: Field | null, component: Component, dataTree: DataTree): Field | null {
   switch (token.type) {
-    case 'filter': {
-      try {
-        const filter = getFilterFromToken(token, dataTree.filters)
-        if (filter.validate(prev)) {
-          return filter.output(prev, filter.options ?? {})
-        }
-        return null
-      } catch (e) {
-        // FIXME: notify user
-        console.error('Error while getting filter result type', token, prev, component, dataTree)
-        return null
+  case 'filter': {
+    try {
+      const filter = getFilterFromToken(token, dataTree.filters)
+      if (filter.validate(prev)) {
+        return filter.output(prev, filter.options ?? {})
       }
+      return null
+    } catch (e) {
+      // FIXME: notify user
+      console.error('Error while getting filter result type', token, prev, component, dataTree)
+      return null
     }
-    case 'property':
-      try {
-        return propertyToField(token, dataTree)
-      } catch (e) {
-        // FIXME: notify user
-        console.error('Error while getting property result type', token, component, dataTree)
-        return null
-      }
-    case 'state': {
-      const parent = getParentByPersistentId(token.componentId, component)
-      if (!parent) {
-        console.warn('Component not found for state', token)
-        // TODO: notification
-        return null
-      }
-      const expression = getState(parent, token.storedStateId, token.exposed)?.expression
-      if (!expression) {
-        console.warn('State is not defined on component', { component: parent, token })
-        // TODO: notification
-        return null
-      }
-      try {
-        const field = getExpressionResultType(expression, parent, dataTree)
-        return field ? {
-          ...field,
-          kind: token.forceKind ?? field.kind,
-        } : null
-      } catch (e) {
-        // FIXME: notify user
-        console.error('Error while getting expression result type', expression, parent, dataTree)
-        return null
-      }
+  }
+  case 'property':
+    try {
+      return propertyToField(token, dataTree)
+    } catch (e) {
+      // FIXME: notify user
+      console.error('Error while getting property result type', token, component, dataTree)
+      return null
     }
-    default:
-      console.error('Unknown token type (reading type)', token)
-      throw new Error('Unknown token type')
+  case 'state': {
+    const parent = getParentByPersistentId(token.componentId, component)
+    if (!parent) {
+      console.warn('Component not found for state', token)
+      // TODO: notification
+      return null
+    }
+    const expression = getState(parent, token.storedStateId, token.exposed)?.expression
+    if (!expression) {
+      console.warn('State is not defined on component', { component: parent, token })
+      // TODO: notification
+      return null
+    }
+    try {
+      const field = getExpressionResultType(expression, parent, dataTree)
+      return field ? {
+        ...field,
+        kind: token.forceKind ?? field.kind,
+      } : null
+    } catch (e) {
+      // FIXME: notify user
+      console.error('Error while getting expression result type', expression, parent, dataTree)
+      return null
+    }
+  }
+  default:
+    console.error('Unknown token type (reading type)', token)
+    throw new Error('Unknown token type')
   }
 }
 
@@ -207,10 +207,10 @@ export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (
   return (input: Field | null, options: Options) => {
     return html`
               ${arr.map((obj) => {
-      const value = options[obj.name] ?? obj.value ?? ''
-      return html`<label>${obj.name}</label><input type="text" name=${obj.name} .value=${value}>`
-    })
-      }
+    const value = options[obj.name] ?? obj.value ?? ''
+    return html`<label>${obj.name}</label><input type="text" name=${obj.name} .value=${value}>`
+  })
+}
           `
   }
 }
@@ -265,12 +265,12 @@ function isEmpty(value: unknown): boolean {
 
 export function buildArgs(options: PropertyOptions | undefined): string {
   const args = options ? `(${Object
-      .keys(options)
-      .map(key => ({ key, value: options![key] }))
-      .filter(({ value }) => !isEmpty(value))
-      .map(({ key, value }) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
-      .join(', ')
-    })` : ''
+    .keys(options)
+    .map(key => ({ key, value: options![key] }))
+    .filter(({ value }) => !isEmpty(value))
+    .map(({ key, value }) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
+    .join(', ')
+  })` : ''
   // Valid args for GraphQL canot be just ()
   const validArgs = args === '()' ? '' : args
   return validArgs
