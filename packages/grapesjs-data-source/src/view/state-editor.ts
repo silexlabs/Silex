@@ -95,7 +95,7 @@ export class StateEditor extends LitElement {
    * This is the same API as input elements
    */
   @property({type: String, attribute: 'for'})
-  for = ''
+    for = ''
 
   /**
    * FormData listener
