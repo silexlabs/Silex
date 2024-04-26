@@ -90,7 +90,8 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * @throws Error
    */
   protected triggerError<T>(message: string): T {
-    this.trigger(DATA_SOURCE_ERROR, {message})
+    console.error('GraphQL error:', message)
+    this.trigger(DATA_SOURCE_ERROR, message, this)
     throw new Error(message)
   }
   protected async loadData(): Promise<[Type[], Field[], string]> {
@@ -121,6 +122,10 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         .map((type: GQLType) => this.graphQLToType(allTypes, type, 'SCALAR', false))
         // Add builtin types
         .concat(builtinTypes)
+
+      if(!query) {
+        return this.triggerError(`Query type not found in GraphQL schema`)
+      }
 
       // Get queryable types
       const queryableTypes = query.fields
@@ -288,7 +293,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       this.queryables = fields
       this.queryType = queryType
       this.ready = true
-      this.trigger(DATA_SOURCE_READY)
+      this.trigger(DATA_SOURCE_READY, this)
     } catch (e) {
       return this.triggerError(`GraphQL connection failed: ${(e as Error).message}`)
     }

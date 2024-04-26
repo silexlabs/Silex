@@ -119,16 +119,16 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
    * Forward events from data sources to the editor
    */
   protected dataSourceReadyBinded = this.dataSourceReady.bind(this)
-  dataSourceReady(e?: CustomEvent) {
-    this.editor.trigger(DATA_SOURCE_READY, e?.detail)
+  dataSourceReady(ds: IDataSource) {
+    this.editor.trigger(DATA_SOURCE_READY, ds)
   }
 
   /**
    * Forward events from data sources to the editor
    */
   protected dataSourceErrorBinded = this.dataSourceError.bind(this)
-  dataSourceError(e?: CustomEvent) {
-    this.editor.trigger(DATA_SOURCE_ERROR, e?.detail)
+  dataSourceError(message: string, ds: IDataSource) {
+    this.editor.trigger(DATA_SOURCE_ERROR, message, ds)
   }
 
   /**

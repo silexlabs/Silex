@@ -1,7 +1,7 @@
 import { createRef, Ref, ref } from "lit/directives/ref.js"
 import {repeat} from 'lit/directives/repeat.js'
 import GraphQL, { GraphQLOptions } from "../datasources/GraphQL"
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel, IDataSourceOptions } from "../types"
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel, IDataSourceOptions } from "../types"
 import { getElementFromOption } from "../utils"
 import { html, LitElement, render, TemplateResult } from 'lit'
 import { customElement, property } from "lit/decorators.js"
@@ -32,7 +32,7 @@ export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewO
     // Get the container element for the UI
     const settingsEl = getElementFromOption(options.settingsEl)
     const dsSettings: Ref<SettingsDataSources> = createRef()
-    editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_ERROR}`, (e) => {
+    editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_ERROR} ${DATA_SOURCE_READY}`, () => {
       if(dsSettings.value) {
         dsSettings.value.dataSources = [...editor.DataSourceManager]
         dsSettings.value.render()
@@ -145,7 +145,7 @@ class SettingsDataSource extends LitElement {
       this.connected = true
       this.render()
     }).catch((err: Error) => {
-      console.error({ err })
+      console.error('Data source connection error', { err })
       this.errorMessage = err.message
       this.connected = false
       this.render()
