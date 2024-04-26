@@ -133,13 +133,13 @@ export declare class DataSourceManager extends Backbone.Collection<IDataSourceMo
 	/**
 	 * Forward events from data sources to the editor
 	 */
-	protected dataSourceReadyBinded: (e?: CustomEvent) => void;
-	dataSourceReady(e?: CustomEvent): void;
+	protected dataSourceReadyBinded: (ds: IDataSource) => void;
+	dataSourceReady(ds: IDataSource): void;
 	/**
 	 * Forward events from data sources to the editor
 	 */
-	protected dataSourceErrorBinded: (e?: CustomEvent) => void;
-	dataSourceError(e?: CustomEvent): void;
+	protected dataSourceErrorBinded: (message: string, ds: IDataSource) => void;
+	dataSourceError(message: string, ds: IDataSource): void;
 	/**
 	 * Listen to data source changes
 	 */
@@ -155,6 +155,7 @@ export interface DataSourceEditor extends Editor {
 }
 export interface DataSourceEditorViewOptions {
 	el?: HTMLElement | string | undefined | (() => HTMLElement);
+	settingsEl?: HTMLElement | string | (() => HTMLElement);
 	button?: Button | (() => Button);
 	styles?: string;
 	optionsStyles?: string;
@@ -186,6 +187,7 @@ export type DataSourceId = string | number;
 export interface IDataSource {
 	id: DataSourceId;
 	connect(): Promise<void>;
+	isConnected(): boolean;
 	getTypes(): Type[];
 	getQueryables(): Field[];
 	getQuery(trees: Tree[]): string;
@@ -200,6 +202,7 @@ export interface IDataSourceOptions extends Backbone.ModelSetOptions {
 	id: DataSourceId;
 	label: string;
 	type: "graphql";
+	readonly?: boolean;
 }
 export type TypeId = string;
 export type Type = {
@@ -529,6 +532,12 @@ export declare function getFieldType(editor: DataSourceEditor, field: Field | nu
  * @throws Error if the field has a token with an unknown type
  */
 export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
+/**
+ * Get a container element from an option
+ * @throws Error if the option is not a string or an HTMLElement or a function
+ * @throws Error if the element is not found
+ */
+export declare function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined): HTMLElement;
 /**
  * Editor for a state of the selected element's properties
  *

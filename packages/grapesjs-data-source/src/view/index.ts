@@ -92,7 +92,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
     `
 
     // Build the settings view
-    settings(editor, options, opts)
+    settings(editor, options)
 
     // The options el and button can be functions which use editor so they need to be called asynchronously
     editor.onReady(() => {
