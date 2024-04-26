@@ -127,7 +127,7 @@ class SettingsDataSource extends LitElement {
   dataSource: IDataSourceModel | null
   errorMessage: string = ''
   connected: boolean = false
-
+  
   constructor() {
     super()
     this.dataSource = null
@@ -162,6 +162,9 @@ class SettingsDataSource extends LitElement {
         flex-direction: column;
         align-items: stretch;
       }
+      form.gjs-sm-properties :focus {
+        outline: 1px solid var(--ds-highlight);
+      }
       [disabled],
       [readonly] {
         font-style: italic;
@@ -186,15 +189,22 @@ class SettingsDataSource extends LitElement {
       .ds-property__wrapper--vert {
         flex-direction: column;
       }
-      .ds-property__title {
-
+      .ds-btn-danger {
+        color: var(--gjs-light-color);
+        background-color: transparent;
+      }
+      .ds-btn-danger:hover {
+        color: var(--ds-highlight);
+      }
+      .ds-button-bar {
+        display: flex;
+        justify-content: space-between;
       }
     </style>
     <form
       class="gjs-sm-properties gjs-sm-sector gjs-two-color"
       ?readonly=${this.dataSource.get('readonly') !== false}
       @submit=${(e: Event) => {
-        //this.dispatchEvent(new CustomEvent('change'))
         e.preventDefault()
         e.stopImmediatePropagation()
         this.connectDataSource()
@@ -211,7 +221,11 @@ class SettingsDataSource extends LitElement {
           type="text"
           name="label"
           value=${this.dataSource.get('label')}
-          @change=${(e: Event) => this.dataSource?.set('label', (e.target as HTMLInputElement).value)}
+          @input=${(e: Event) => {
+            this.dataSource?.set('label', (e.target as HTMLInputElement).value)
+            // Update the label in the title
+            this.render()
+          }}
           ?readonly=${this.dataSource.get('readonly') !== false}
           />
       </label>
@@ -271,27 +285,27 @@ class SettingsDataSource extends LitElement {
             ?readonly=${this.dataSource.get('readonly') !== false}
             ></ds-settings__headers>
         </details>
-        <div class="gjs-field">
+        <div class="gjs-field ds-button-bar">
           <div>
             <div>
-              <span>Status: ${this.dataSource.isConnected() ? '\u2713 Connected' : '\u2717 Unknown'}</span>
-              <span>${this.errorMessage}</span>
+              <p>Status: ${this.dataSource.isConnected() ? '\u2713 Connected' : '\u2717 Unknown'}</p>
+              <p>${this.errorMessage}</p>
             </div>
           </div>
           <div>
             <div>
-              <button
-                class="gjs-btn-prim"
-                type="submit"
-                >Connect</button>
               ${this.dataSource.get('readonly') !== false ? '' : html`
                 <button
-                  class="gjs-btn-prim"
+                  class="gjs-btn-prim ds-btn-danger"
                   @click=${() => {
                     this.dispatchEvent(new CustomEvent('delete'))
                   }}
                 >Delete</button>
               `}
+              <button
+                class="gjs-btn-prim ds-btn-primary"
+                type="submit"
+                >Test connection</button>
             </div>
           </div>
         </div>
