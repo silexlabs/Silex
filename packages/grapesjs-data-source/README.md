@@ -12,7 +12,7 @@ Finally there is a [settings dialog](#settings-dialog) to manage the data source
 
 [DEMO](https://codepen.io/lexoyo/full/xxMbxeB)
 
-Discussions, bug reports in [Silex community forums](https://community.silex.me/) or [GitHub issues](./issues)
+Discussions, bug reports in [Silex community forums](https://community.silex.me/) or [GitHub issues](https://github.com/silexlabs/grapesjs-data-source/issues)
 
 Features
 
