@@ -12,6 +12,23 @@ Finally there is a [settings dialog](#settings-dialog) to manage the data source
 
 [DEMO](https://codepen.io/lexoyo/full/xxMbxeB)
 
+Discussions, bug reports in [Silex community forums](https://community.silex.me/) or [GitHub issues](./issues)
+
+Features
+
+* [x] Import data from data source (GraphQL APIs) in the editor
+* [x] Configure data sources from config
+* [x] Dialog to configure data sources from the editor
+* [x] Edit component attributes, and dynamic properties (loop, visibility, innerHTML)
+* [x] Use states and liquid filters in expressions
+* [x] Generate GraphQL query from component states
+* [x] Save data sources with the website data
+* [x] Compatible with [GrapesJS notifications plugin](https://github.com/silexlabs/grapesjs-notifications)
+* [x] Events and API to manage the data, the completion of exrpessions, and the GraphQL query
+* [x] Web component to display the expressions and edit them
+* [ ] Add more liquid filters
+* [ ] Add more data sources (REST, Open API)
+
 ## Definitions
 
 **Expressions** are made of tokens, which are the building blocks of the expressions. Tokens are the properties of the data source, like `post.data.attributes.title` or `post.data.attributes.content`.
