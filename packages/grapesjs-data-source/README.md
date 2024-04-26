@@ -2,13 +2,41 @@
 
 This GrapesJS plugin integrates various APIs into the editor. 
 
-It makes a new UI available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
+It makes a new [expressions UI](#expressions-ui) available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
 
 The plugin also has data management feature needed to manage components states, expressions made of tokens, build a query from the component states.
+
+Finally there is a [settings dialog](#settings-dialog) to manage the data sources and save them with the website.
 
 > This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 
 [DEMO](https://codepen.io/lexoyo/full/xxMbxeB)
+
+## Definitions
+
+**Expressions** are made of tokens, which are the building blocks of the expressions. Tokens are the properties of the data source, like `post.data.attributes.title` or `post.data.attributes.content`.
+
+**States** belong to a component, they are expressions which are not output in the final website, they are made to be included in other expressions. Also they are used in the generated GraphQL query.
+
+**Attributes** are the HTML attributes of a component, like `src` or `href` or any other attribute. Special attributes are `class` and `style` which if you put several of them will not override each other but will be merged.
+
+**Properties** are the dynamic properties of a component which include the HTML content (innerHTML), the visibility (a condition to show or hide the component), a loop property (to repeat the component for each item in a list).
+
+**Data source** is a service which provides the data to the editor. For now it has to be a GraphQL API, maybe I'll add open API later.
+
+## Included UI elements
+
+### Expressions UI
+
+This UI is used to manage the states, attributes and dynamic properties of the components. It is a panel which shows the expressions of the selected component and allows the user to add, edit, and remove them.
+
+![Screenshot from 2024-04-26 11-18-05](https://github.com/silexlabs/Silex/assets/715377/ca61e3e6-e3ba-4000-9d15-cff9fafac0ac)
+
+### Settings dialog
+
+This dialog is used to manage the data sources. It allows the user to add, edit, and remove data sources. It also allows the user to test the data sources and (comming in v2) see the data they provide.
+
+![Screenshot from 2024-04-26 11-16-29](https://github.com/silexlabs/Silex/assets/715377/f3fd9cd3-4732-44ef-b223-1214851da048)
 
 ## Use
 
@@ -234,9 +262,10 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
 |-|-|-
 | `dataSources` | List of data sources, see config examples and the plugin code for docs ([data source options](./src/index.ts) and [GraphQL data source options](./src/datasources/GraphQL.ts)) | `[]` |
 | `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/liquid.ts`) | `[]` |
-| `view` | Options for the UI | `[]` |
-| `view.el` | UI element to attach properties, states, attributes, loop | `.gjs-pn-panel.gjs-pn-views-container` |
-| `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide the UI | `undefined` which means no button |
+| `view` | Options for the UIs included with this plugin | `[]` |
+| `view.el` | UI element to attach [the expressions UI](#expressions-ui) | `.gjs-pn-panel.gjs-pn-views-container` |
+| `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide [the expressions UI](#expressions-ui), it's just a helper to save you from doing it yourself. | `undefined` which means no button |
+| `view.settingsEl | UI element to attach the [settings dialog](#settings-dialog). You can provide a string (css selector), a function which returns a DOM element, or a DOM element directly. | `.gjs-pn-views` |
 | `view.styles` | CSS styles which are applied to the UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 | `view.optionsStyles` | CSS styles which are applied to each "expression selector" UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 | `view.defaultFixed` | If true, the UI shows fixed by default or if false it shows expression by default | `false` |
