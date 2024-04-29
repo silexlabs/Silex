@@ -5,9 +5,9 @@ export default (editor, opts = {}) => {
       appendTo: null,
       appendBefore: null,
       ...opts
-    };
+    }
 
-    const prefix = editor.Config.selectorManager.pStylePrefix;
+    const prefix = editor.Config.selectorManager.pStylePrefix
     const id = `${prefix}filter-styles`
     const container = document.createElement('div')
     container.innerHTML = `
