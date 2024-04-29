@@ -18,7 +18,7 @@
 import {LitElement, TemplateResult, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import { PROPERTY_STYLES } from './defaultStyles'
-import { DataSourceEditor, Filter, Property, Token } from '..'
+import { DATA_SOURCE_CHANGED, DataSourceEditor, Filter, Property, Token } from '..'
 
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
@@ -98,9 +98,10 @@ export class StateEditor extends LitElement {
     for = ''
 
   /**
-   * FormData listener
+   * Binded listeners
    */
   private onFormdata_ = this.onFormdata.bind(this)
+  private renderBinded = this.requestUpdate.bind(this)
 
   override connectedCallback() {
     super.connectedCallback()
@@ -113,11 +114,14 @@ export class StateEditor extends LitElement {
     } else {
       this.form = this.closest('form')
     }
+
+    this.editor?.on(DATA_SOURCE_CHANGED, this.renderBinded)
   }
 
   override disconnectedCallback() {
     this.form = null
     super.disconnectedCallback()
+    this.editor?.off(DATA_SOURCE_CHANGED, this.renderBinded)
   }
 
   /**

@@ -68,6 +68,9 @@ export interface IDataSource {
   // For reference in expressions
   id: DataSourceId
 
+  // Hide from users settings
+  hidden?: boolean
+
   // Initialization
   connect(): Promise<void>
   isConnected(): boolean

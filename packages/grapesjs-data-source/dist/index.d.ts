@@ -186,6 +186,7 @@ export interface Tree {
 export type DataSourceId = string | number;
 export interface IDataSource {
 	id: DataSourceId;
+	hidden?: boolean;
 	connect(): Promise<void>;
 	isConnected(): boolean;
 	getTypes(): Type[];
@@ -574,9 +575,10 @@ export declare class StateEditor extends LitElement {
 	 */
 	for: string;
 	/**
-	 * FormData listener
+	 * Binded listeners
 	 */
 	private onFormdata_;
+	private renderBinded;
 	connectedCallback(): void;
 	disconnectedCallback(): void;
 	/**

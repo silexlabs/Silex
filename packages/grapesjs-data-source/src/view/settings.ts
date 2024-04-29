@@ -104,7 +104,7 @@ class SettingsDataSources extends LitElement {
     }
     this.dispatchEvent(new CustomEvent('add', { detail: options }))
   }}>Add</button>
-      ${repeat(this.dataSources, (ds: IDataSourceModel) => ds.get('id'), (ds: IDataSourceModel) => html`
+      ${repeat(this.dataSources.filter(ds => !ds.hidden), (ds: IDataSourceModel) => ds.get('id'), (ds: IDataSourceModel) => html`
         <ds-settings__data-source
           ${ref(dsDataSource)}
           .dataSource=${ds}
