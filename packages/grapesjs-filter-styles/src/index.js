@@ -1,11 +1,10 @@
 export default (editor, opts = {}) => {
   editor.on('load', () => {
     const options = {
-      ...{
-        placeholder: 'Search...',
-        appendTo: null,
-        appendBefore: null,
-      }, ...opts
+      placeholder: 'Search...',
+      appendTo: null,
+      appendBefore: null,
+      ...opts
     };
 
     const prefix = editor.Config.selectorManager.pStylePrefix;
