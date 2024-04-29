@@ -47,7 +47,7 @@ export default (editor, opts = {}) => {
     const appendBefore = typeof options.appendBefore === 'string' ? document.querySelector(options.appendBefore) : options.appendBefore
     const appendTo = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : options.appendTo
     const wrapper = appendBefore ? appendBefore.parentElement : appendTo ?? tags.parentElement.parentElement
-    wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild);
+    wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild)
     const input = wrapper.querySelector(`#${id}`)
     input.onkeyup = () => refresh(editor, input, wrapper)
     const button = wrapper.querySelector(`#${id}-btn`)
@@ -55,7 +55,7 @@ export default (editor, opts = {}) => {
       input.value = ''
       refresh(editor, input, wrapper)
     }
-    editor.on('component:selected component:styleUpdate', () => {
+    editor.on('component:selected component:styleUpdate style:target', () => {
       resetAll(editor)
       setTimeout(() => refresh(editor, input, wrapper))
     })
