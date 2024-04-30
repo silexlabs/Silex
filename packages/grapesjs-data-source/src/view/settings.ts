@@ -3,8 +3,58 @@ import {repeat} from 'lit/directives/repeat.js'
 import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
 import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel } from '../types'
 import { getElementFromOption } from '../utils'
-import { html, LitElement, render } from 'lit'
+import { css, html, LitElement, render } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
+
+const COMMON_STYLES = css`
+    :host {
+      font-family: var(--gjs-main-font);
+      font-size: var(--gjs-font-size);
+    }
+    .ds-btn-prim {
+      color:inherit;
+      background-color:var(--gjs-main-light-color);
+      border-radius:2px;
+      padding:3px 6px;
+      padding:var(--gjs-input-padding);
+      cursor:pointer;
+      border:none
+    }
+    .ds-btn-prim:active {
+      background-color:var(--gjs-main-light-color)
+    }
+    .ds-field {
+      padding: 10px;
+    }
+    .ds-field > span {
+      display: block;
+    }
+    .ds-field input,
+    .ds-field select {
+      background-color: var(--gjs-main-dark-color);
+      border: none;
+      box-shadow: none;
+      border-radius: 2px;
+      box-sizing: border-box;
+      padding: 0;
+      position: relative;
+
+      padding: 10px;
+      color: inherit;
+      width: 100%;
+    }
+    .ds-btn-danger {
+      color: var(--gjs-light-color);
+      background-color: transparent;
+    }
+    .ds-btn-danger:hover {
+      color: var(--ds-highlight);
+    }
+    [disabled],
+    [readonly] {
+      font-style: italic;
+    }
+`
 
 export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewOptions> = {}) => {
   // Save and load data sources
@@ -35,7 +85,7 @@ export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewO
     editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_ERROR} ${DATA_SOURCE_READY}`, () => {
       if(dsSettings.value) {
         dsSettings.value.dataSources = [...editor.DataSourceManager]
-        dsSettings.value.render()
+        dsSettings.value.requestUpdate()
       } else {
         renderSettings(editor, dsSettings, settingsEl)
       }
@@ -74,6 +124,7 @@ function renderSettings(editor: DataSourceEditor, dsSettings: Ref, settingsEl: H
  */
 @customElement('ds-settings')
 class SettingsDataSources extends LitElement {
+
   @property({ type: Array })
     dataSources: IDataSourceModel[]
 
@@ -83,15 +134,20 @@ class SettingsDataSources extends LitElement {
   }
 
   connectedCallback() {
-    this.render()
+    super.connectedCallback()
   }
 
-  render() {
+  static styles = [
+    COMMON_STYLES,
+  ]
+
+  protected render() {
     const dsDataSource: Ref<SettingsDataSources> = createRef()
-    render(html`
+    return html`
+    <section>
       <button
         type="button"
-        class="gjs-btn-prim"
+        class="ds-btn-prim"
         @click=${() => {
     const options: GraphQLOptions = {
       id: `ds_${Math.random().toString(36).slice(2, 8)}`,
@@ -118,7 +174,8 @@ class SettingsDataSources extends LitElement {
   }}
           ></ds-settings__data-source>
       `)}
-    `, this)
+    </section>
+    `
   }
 }
 
@@ -129,14 +186,14 @@ class SettingsDataSource extends LitElement {
     dataSource: IDataSourceModel | null
   errorMessage: string = ''
   connected: boolean = false
-  
+
   constructor() {
     super()
     this.dataSource = null
   }
 
   connectedCallback() {
-    this.render()
+    super.connectedCallback()
   }
 
   connectDataSource() {
@@ -145,66 +202,56 @@ class SettingsDataSource extends LitElement {
       this.dispatchEvent(new CustomEvent('change'))
       this.errorMessage = ''
       this.connected = true
-      this.render()
+      this.requestUpdate()
     }).catch((err: Error) => {
       console.error('Data source connection error', { err })
       this.errorMessage = err.message
       this.connected = false
-      this.render()
+      this.requestUpdate()
     })
   }
 
-  render() {
+  static styles = [
+    css`
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    form :focus {
+      outline: 1px solid var(--ds-highlight);
+    }
+    .ds-field--large {
+      flex: 1 1 auto;
+    }
+    .ds-property__wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .ds-property__wrapper--horiz {
+      flex-direction: row;
+    }
+    .ds-property__wrapper--vert {
+      flex-direction: column;
+    }
+    .ds-button-bar {
+      display: flex;
+      justify-content: space-between;
+    }
+    .ds-no-resize {
+      flex: 0 0 auto;
+    }
+    `,
+    COMMON_STYLES,
+  ]
+
+  protected render() {
     if(!this.dataSource) throw new Error('No data source provided')
     const dsHeaders: Ref<SettingsHeaders> = createRef()
-    render(html`
-    <style>
-      form.gjs-sm-properties {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-      }
-      form.gjs-sm-properties :focus {
-        outline: 1px solid var(--ds-highlight);
-      }
-      [disabled],
-      [readonly] {
-        font-style: italic;
-      }
-      .gjs-field {
-        padding: 10px;
-      }
-      :not([disabled]) .gjs-field input {
-        background-color: var(--gjs-main-dark-color);
-      }
-      .ds-field--large {
-        flex: 1;
-      }
-      .ds-property__wrapper {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-      }
-      .ds-property__wrapper--horiz {
-        flex-direction: row;
-      }
-      .ds-property__wrapper--vert {
-        flex-direction: column;
-      }
-      .ds-btn-danger {
-        color: var(--gjs-light-color);
-        background-color: transparent;
-      }
-      .ds-btn-danger:hover {
-        color: var(--ds-highlight);
-      }
-      .ds-button-bar {
-        display: flex;
-        justify-content: space-between;
-      }
-    </style>
+    return html`
     <form
-      class="gjs-sm-properties gjs-sm-sector gjs-two-color"
       ?readonly=${this.dataSource.get('readonly') !== false}
       @submit=${(e: Event) => {
     e.preventDefault()
@@ -217,7 +264,7 @@ class SettingsDataSource extends LitElement {
         <small>${this.dataSource.get('readonly') !== false ? ' (Read-only)' : ''}</small>
       </h3>
       <div class="ds-property__wrapper ds-property__wrapper--horiz">
-      <label class="gjs-field">
+      <label class="ds-field">
         <span>Label</span>
         <input
           type="text"
@@ -226,12 +273,12 @@ class SettingsDataSource extends LitElement {
           @input=${(e: Event) => {
     this.dataSource?.set('label', (e.target as HTMLInputElement).value)
     // Update the label in the title
-    this.render()
+    this.requestUpdate()
   }}
           ?readonly=${this.dataSource.get('readonly') !== false}
           />
       </label>
-      <label class="gjs-field ds-field--large">
+      <label class="ds-field ds-field--large">
         <span>URL</span>
         <input
           type="url"
@@ -241,7 +288,7 @@ class SettingsDataSource extends LitElement {
           ?readonly=${this.dataSource.get('readonly') !== false}
           />
       </label>
-      <label class="gjs-field">
+      <label class="ds-field">
         <span>ID</span>
         <input
           type="text"
@@ -251,7 +298,7 @@ class SettingsDataSource extends LitElement {
           disabled
           />
       </label>
-      <label class="gjs-field">
+      <label class="ds-field">
         <span>Type</span>
         <select
           name="type"
@@ -261,7 +308,7 @@ class SettingsDataSource extends LitElement {
           <option value="graphql" selected>GraphQL</option>
         </select>
       </label>
-      <label class="gjs-field">
+      <label class="ds-field">
         <span>Method</span>
         <select
           name="method"
@@ -274,32 +321,32 @@ class SettingsDataSource extends LitElement {
         </select>
       </label>
       </div>
-      <div class="ds-property__wrapper ds-property__wrapper--vert">
-        <details class="gjs-field">
+      <div class="ds-field">
+        <details>
           <summary>Headers</summary>
           <ds-settings__headers
             ${ref(dsHeaders)}
             .headers=${this.dataSource.get('headers')}
             @change=${() => {
     this.dataSource?.set('headers', dsHeaders.value?.headers)
-    dsHeaders.value?.render()
+    dsHeaders.value?.requestUpdate()
   }}
             ?readonly=${this.dataSource.get('readonly') !== false}
             ></ds-settings__headers>
         </details>
-        <div class="gjs-field ds-button-bar">
+        <div class="ds-field ds-button-bar">
           <div>
             <div>
               <p>Status: ${this.dataSource.isConnected() ? '\u2713 Connected' : '\u2717 Unknown'}</p>
               <p>${this.errorMessage}</p>
             </div>
           </div>
-          <div>
+          <div class="ds-no-resize">
             <div>
               ${this.dataSource.get('readonly') !== false ? '' : html`
                 <button
                   type="button"
-                  class="gjs-btn-prim ds-btn-danger"
+                  class="ds-btn-prim ds-btn-danger"
                   @click=${() => {
     this.dispatchEvent(new CustomEvent('delete'))
   }}
@@ -307,14 +354,14 @@ class SettingsDataSource extends LitElement {
               `}
               <button
                 type="submit"
-                class="gjs-btn-prim ds-btn-primary"
+                class="ds-btn-prim ds-btn-primary"
                 >Test connection</button>
             </div>
           </div>
         </div>
       </div>
     </form>
-    `, this)
+    `
   }
 }
 
@@ -326,6 +373,32 @@ class SettingsHeaders extends LitElement {
   @property({ type: Boolean })
     readonly: boolean
 
+  static styles = [
+    css`
+    fieldset {
+      display: block;
+      border: none;
+      padding: 0;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    ul > li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    ul > li > label {
+      flex: 1 1 auto;
+    }
+    ul > li > button {
+      margin: 10px;
+    }
+    `,
+    COMMON_STYLES,
+  ]
+
   constructor() {
     super()
     this.headers = {}
@@ -333,39 +406,17 @@ class SettingsHeaders extends LitElement {
   }
 
   connectedCallback() {
-    this.render()
+    super.connectedCallback()
   }
 
-  render() {
-    render(html`
-      <style>
-        fieldset {
-          display: block;
-          border: none;
-          padding: 0;
-        }
-        .gjs-sm-properties ul {
-          list-style: none;
-          padding: 0;
-        }
-        ul > li {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        ul > li > label {
-          flex: 1;
-          margin: 10px;
-        }
-        ul > li > button {
-          margin: 10px;
-        }
-      </style>
+  protected render() {
+    return html`
+      <div class="ds-field">
       <fieldset>
       ${this.readonly ? '' : html`
         <button
           type="button"
-          class="gjs-btn-prim"
+          class="ds-btn-prim"
           @click=${() => {
     this.headers = {
       ...this.headers,
@@ -378,7 +429,7 @@ class SettingsHeaders extends LitElement {
       <ul>
         ${Object.entries(this.headers).map(([name, value]) => html`
           <li>
-            <label class="gjs-field">
+            <label class="ds-field">
               <span>Name</span>
               <input
                 type="text"
@@ -393,7 +444,7 @@ class SettingsHeaders extends LitElement {
   }}
                 />
             </label>
-            <label class="gjs-field">
+            <label class="ds-field">
               <span>Value</span>
               <input
                 type="text"
@@ -409,7 +460,7 @@ class SettingsHeaders extends LitElement {
             ${this.readonly ? '' : html`
               <button
                 type="button"
-                class="gjs-btn-prim"
+                class="ds-btn-prim"
                 @click=${() => {
     typeof this.headers[name] !== 'undefined' && delete this.headers[name]
     this.dispatchEvent(new CustomEvent('change'))
@@ -421,6 +472,7 @@ class SettingsHeaders extends LitElement {
         `)}
       </ul>
       </fieldset>
-    `, this)
+      </div>
+    `
   }
 }
