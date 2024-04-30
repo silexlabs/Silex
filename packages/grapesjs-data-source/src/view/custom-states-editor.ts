@@ -74,6 +74,12 @@ export class CustomStatesEditor extends LitElement {
   @property({type: Boolean, attribute: 'hide-loop-data'})
     hideLoopData = false
 
+  @property({type: String, attribute: 'help-text'})
+    helpText = ''
+
+  @property({type: String, attribute: 'help-link'})
+  helpLink = ''
+
   private _reservedNames: string[] = []
   private editor: DataSourceEditor | null = null
   private redrawing = false
@@ -118,12 +124,19 @@ export class CustomStatesEditor extends LitElement {
             ` : ''}
           </div>
         </div>
+        ${this.helpText ? html`
         <details class="ds-states__help">
           <summary>Help</summary>
-          Custom states are used to store data in the component.
-          They are useful to store data that is not displayed in the page, but that is used in the expressions everywhere inside the element.
-          <a target="_blank" href="https://docs.silex.me/en/user/cms#custom-states">Learn more about custom states</a>
+          <span>${ this.helpText }</span>
+          ${this.helpLink ? html`
+          <a
+            class="ds-states__help-link"
+            href="${this.helpLink}"
+            target="_blank"
+            >\u{1F517} Read more...</a>
+          ` : ''}
         </details>
+        ` : ''}
       </section>
     `
   }

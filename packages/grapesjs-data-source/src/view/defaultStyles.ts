@@ -234,6 +234,9 @@ export const PROPERTY_STYLES = `
   .ds-section details a {
     color: var(--ds-link-color);
   }
+  .ds-section details .ds-states__help-link {
+    display: block;
+  }
   .ds-section .gjs-traits-label {
     background-color: var(--ds-tertiary);
   }

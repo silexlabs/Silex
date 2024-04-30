@@ -11,18 +11,6 @@ const COMMON_STYLES = css`
       font-family: var(--gjs-main-font);
       font-size: var(--gjs-font-size);
     }
-    .ds-btn-prim {
-      color:inherit;
-      background-color:var(--gjs-main-light-color);
-      border-radius:2px;
-      padding:3px 6px;
-      padding:var(--gjs-input-padding);
-      cursor:pointer;
-      border:none
-    }
-    .ds-btn-prim:active {
-      background-color:var(--gjs-main-light-color)
-    }
     .ds-field {
       padding: 10px;
     }
@@ -42,6 +30,18 @@ const COMMON_STYLES = css`
       padding: 10px;
       color: inherit;
       width: 100%;
+    }
+    .ds-btn-prim {
+      color:inherit;
+      background-color:var(--gjs-main-light-color);
+      border-radius:2px;
+      padding:3px 6px;
+      padding:var(--gjs-input-padding);
+      cursor:pointer;
+      border:none
+    }
+    .ds-btn-prim:active {
+      background-color:var(--gjs-main-light-color)
     }
     .ds-btn-danger {
       color: var(--gjs-light-color);
@@ -109,6 +109,11 @@ function renderSettings(editor: DataSourceEditor, dsSettings: Ref, settingsEl: H
       @add=${(e: CustomEvent) => {
     const ds = e.detail as GraphQLOptions
     const newDS = new GraphQL(ds)
+    editor.DataSourceManager.add(newDS)
+  }}
+      @add-top=${(e: CustomEvent) => {
+    const ds = e.detail as GraphQLOptions
+    const newDS = new GraphQL(ds)
     editor.DataSourceManager.add(newDS, { at: 0 })
   }}
       @delete=${(e: CustomEvent) => {
@@ -139,16 +144,22 @@ class SettingsDataSources extends LitElement {
 
   static styles = [
     COMMON_STYLES,
+    css`
+      .ds-btn-prim--large {
+        padding: 10px;
+        margin: auto;
+        display: block;
+      }
+      .ds-btn-prim--icon {
+        background-color: var(--ds-primary);
+        position: absolute;
+        right: 20px;
+      }
+    `,
   ]
 
   protected render() {
     const dsDataSource: Ref<SettingsDataSources> = createRef()
-    return html`
-    <section>
-      <button
-        type="button"
-        class="ds-btn-prim"
-        @click=${() => {
     const options: GraphQLOptions = {
       id: `ds_${Math.random().toString(36).slice(2, 8)}`,
       label: 'New data source',
@@ -158,8 +169,14 @@ class SettingsDataSources extends LitElement {
       headers: {},
       readonly: false,
     }
-    this.dispatchEvent(new CustomEvent('add', { detail: options }))
-  }}>Add</button>
+    return html`
+    <section>
+      <button
+        type="button"
+        class="ds-btn-prim ds-btn-prim--icon"
+        @click=${() => {
+    this.dispatchEvent(new CustomEvent('add-top', { detail: options }))
+  }}>\u2795</button>
       ${repeat(this.dataSources.filter(ds => !ds.hidden), (ds: IDataSourceModel) => ds.get('id'), (ds: IDataSourceModel) => html`
         <ds-settings__data-source
           ${ref(dsDataSource)}
@@ -174,6 +191,12 @@ class SettingsDataSources extends LitElement {
   }}
           ></ds-settings__data-source>
       `)}
+      <button
+        type="button"
+        class="ds-btn-prim ds-btn-prim--large"
+        @click=${() => {
+    this.dispatchEvent(new CustomEvent('add', { detail: options }))
+  }}>Add a Data Source</button>
     </section>
     `
   }
@@ -323,7 +346,7 @@ class SettingsDataSource extends LitElement {
       </div>
       <div class="ds-field">
         <details>
-          <summary>Headers</summary>
+          <summary>HTTP Headers</summary>
           <ds-settings__headers
             ${ref(dsHeaders)}
             .headers=${this.dataSource.get('headers')}
@@ -424,7 +447,7 @@ class SettingsHeaders extends LitElement {
     }
     this.dispatchEvent(new CustomEvent('change'))
   }}
-        >Add</button>
+        >Add a header</button>
       `}
       <ul>
         ${Object.entries(this.headers).map(([name, value]) => html`
