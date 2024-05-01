@@ -45,8 +45,9 @@ export declare class DataTree {
 	/**
 	 * Get type from typeId and dataSourceId
 	 * @throws Error if type is not found
+	 * @param componentId is used for error messages
 	 */
-	getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type;
+	getType(typeId: TypeId, dataSourceId: DataSourceId | null, componentId?: string): Type;
 	/**
 	 * Get all types from all data sources
 	 */

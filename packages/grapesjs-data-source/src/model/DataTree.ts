@@ -142,8 +142,9 @@ export class DataTree {
   /**
    * Get type from typeId and dataSourceId
    * @throws Error if type is not found
+   * @param componentId is used for error messages
    */
-  getType(typeId: TypeId, dataSourceId: DataSourceId | null): Type {
+  getType(typeId: TypeId, dataSourceId: DataSourceId | null, componentId?: string): Type {
     if(dataSourceId) {
       // Get the data source
       const dataSource = this.dataSources
@@ -153,7 +154,15 @@ export class DataTree {
       const types = dataSource?.getTypes()
       // Return the requested type
       const type = types.find((type: Type) => type.id === typeId)
-      if (!type) throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
+      if (!type) {
+        this.editor.trigger('notifications:add', {
+          type: 'error',
+          group: NOTIFICATION_GROUP,
+          message: `Type not found ${dataSourceId ?? ''}.${typeId}`,
+          componentId,
+        })
+        throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
+      }
       return type
     } else {
       // No data source id: search in standard types
