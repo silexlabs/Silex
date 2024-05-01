@@ -144,7 +144,7 @@ export class DataTree {
    * @throws Error if type is not found
    * @param componentId is used for error messages
    */
-  getType(typeId: TypeId, dataSourceId: DataSourceId | null, componentId?: string): Type {
+  getType(typeId: TypeId, dataSourceId: DataSourceId | null, componentId: string | null): Type {
     if(dataSourceId) {
       // Get the data source
       const dataSource = this.dataSources
@@ -155,7 +155,7 @@ export class DataTree {
       // Return the requested type
       const type = types.find((type: Type) => type.id === typeId)
       if (!type) {
-        this.editor.trigger('notifications:add', {
+        this.editor.runCommand('notifications:add', {
           type: 'error',
           group: NOTIFICATION_GROUP,
           message: `Type not found ${dataSourceId ?? ''}.${typeId}`,
@@ -299,7 +299,7 @@ export class DataTree {
     case 'state': {
       const resolved = this.resolveState(next, component)
       if(!resolved) {
-        this.editor.trigger('notifications:add', {
+        this.editor.runCommand('notifications:add', {
           type: 'error',
           group: NOTIFICATION_GROUP,
           message: `Unable to resolve state <pre>${JSON.stringify(next)}</pre>`,
@@ -310,7 +310,7 @@ export class DataTree {
       return this.getTrees({expression: resolved, component}, dataSourceId)
     }
     default:
-      this.editor.trigger('notifications:add', {
+      this.editor.runCommand('notifications:add', {
         type: 'error',
         group: NOTIFICATION_GROUP,
         message: `Invalid expression <pre>${JSON.stringify(expression)}</pre>`,
@@ -355,7 +355,7 @@ export class DataTree {
           const merged = grouped.reduce((acc, tree) => this.mergeTrees(acc, tree))
           return merged
         } catch(e) {
-          this.editor.trigger('notifications:add', {
+          this.editor.runCommand('notifications:add', {
             type: 'error',
             group: NOTIFICATION_GROUP,
             message: `Unable to merge trees <pre>${JSON.stringify(grouped)}</pre>`,
@@ -451,7 +451,7 @@ export class DataTree {
       .flatMap((token: StoredToken) => {
         switch (token.type) {
         case 'state': {
-          return this.resolveState(fromStored(token, this), parent) ?? []
+          return this.resolveState(fromStored(token, this, component.getId()), parent) ?? []
         }
         default:
           return token

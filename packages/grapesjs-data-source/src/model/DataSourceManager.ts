@@ -178,7 +178,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
               case 'state': {
                 const resolved = this.dataTree.resolveState(token, componentExpression.component)
                 if (!resolved) {
-                  this.editor.trigger('notifications:add', {
+                  this.editor.runCommand('notifications:add', {
                     type: 'error',
                     group: NOTIFICATION_GROUP,
                     message: `Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`,

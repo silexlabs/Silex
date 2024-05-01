@@ -70,16 +70,16 @@ test('Find type from  id', () => {
   }]})
 
   // Type not found
-  expect(() => dataTree.getType('unknown type', null)).toThrow()
+  expect(() => dataTree.getType('unknown type', null, null)).toThrow()
 
   // Type found
-  const type = dataTree.getType('testTypeId', null)
+  const type = dataTree.getType('testTypeId', null, null)
   expect(type).not.toBeNull()
   expect(type?.id).toBe('testTypeId')
 
   // With data source id
-  expect(dataTree.getType('testTypeId', testDataSourceId)).not.toBeNull()
-  expect(() => dataTree.getType('testTypeId', 'unknown type')).toThrow()
+  expect(dataTree.getType('testTypeId', testDataSourceId, null)).not.toBeNull()
+  expect(() => dataTree.getType('testTypeId', 'unknown type', null)).toThrow()
 })
 
 test('Expressions to tree', () => {

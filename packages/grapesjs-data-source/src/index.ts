@@ -69,7 +69,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
 
   // Use grapesjs-notifications plugin for errors
   editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))
-  editor.on(DATA_SOURCE_READY, (ds: IDataSource) => editor.runCommand('notifications:add', { type: 'success', message: `Data source ready: ${ds.id}`, group: NOTIFICATION_GROUP }))
+  //editor.on(DATA_SOURCE_READY, (ds: IDataSource) => editor.runCommand('notifications:add', { type: 'success', message: `Data source ready: ${ds.id}`, group: NOTIFICATION_GROUP }))
 }
 
 /**

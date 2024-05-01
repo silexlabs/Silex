@@ -165,7 +165,8 @@ export class StateEditor extends LitElement {
         .filter(id => !!id)
         .map(id => {
           try {
-            return fromString(this.editor!, id)
+            const selected = this.editor?.getSelected() ?? this.editor?.Pages.getSelected()?.getMainComponent()
+            return fromString(this.editor!, id, selected ? selected.getId(): null)
           } catch(e) {
             // FIXME: notify user
             console.error(`Error while getting token from id ${id}`, e)
@@ -415,7 +416,7 @@ export class StateEditor extends LitElement {
       .filter(id => !!id)
       .map(id => {
         try {
-          return fromString(this.editor!, id)
+          return fromString(this.editor!, id, component.getId())
         } catch(e) {
           // FIXME: notify user
           console.error('Error while getting token from string', {id}, e)

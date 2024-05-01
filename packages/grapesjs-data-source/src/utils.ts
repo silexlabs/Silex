@@ -102,7 +102,7 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
                 label = dataSource.get('label') || token.dataSourceId
               } else {
                 console.error('Data source not found', token.dataSourceId)
-                editor.trigger('notifications:add', {
+                editor.runCommand('notifications:add', {
                   type: 'error',
                   group: NOTIFICATION_GROUP,
                   message: `Data source not found: ${token.dataSourceId}`,
@@ -183,8 +183,8 @@ export function toId(token: Token): string {
  * Revert an option's tag value to a token
  * @throws Error if the token type is not found
  */
-export function fromString(editor: DataSourceEditor, id: string): Token {
-  return fromStored(JSON.parse(id), editor.DataSourceManager.getDataTree()) as Token
+export function fromString(editor: DataSourceEditor, id: string, componentId: string | null): Token {
+  return fromStored(JSON.parse(id), editor.DataSourceManager.getDataTree(), componentId) as Token
 }
 
 /**
@@ -252,10 +252,10 @@ export function convertKind(field: Field | null, from: FieldKind, to: FieldKind)
  * Get the type of a field, as provided by the data source
  * @throws Error if the field has a token with an unknown type
  */
-export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined): Field | null {
+export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined, componentId: string | null): Field | null {
   const dataTree = editor.DataSourceManager.getDataTree()
   if (!field || !key) return null
-  const types = field.typeIds.map(typeId => dataTree.getType(typeId, field.dataSourceId ?? null))
+  const types = field.typeIds.map(typeId => dataTree.getType(typeId, field.dataSourceId ?? null, componentId))
   const fields = types.map(type => type?.fields.find(field => field.label === key))
   switch (fields.length) {
     case 0: return null
@@ -288,7 +288,7 @@ export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | 
       <select name=${name}>
         <option value="">Select a ${name}</option>
         ${field ? field.typeIds
-      .flatMap(typeId => dataTree.getType(typeId, field.dataSourceId ?? null)!.fields)
+      .flatMap(typeId => dataTree.getType(typeId, field.dataSourceId ?? null, null)!.fields)
       .map(f => html`<option value=${f.label} .selected=${f.label === options.key}>${f.label}</option>`)
       : html``
     }

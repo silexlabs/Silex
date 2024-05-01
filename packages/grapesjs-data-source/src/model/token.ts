@@ -28,7 +28,7 @@ export function getFilterFromToken(token: Filter, filters: Filter[]): Filter {
  * Get the token from its stored form
  * @throws Error if the token type is not found
  */
-export function fromStored < T extends Token = Token > (token: StoredToken, dataTree: DataTree): T {
+export function fromStored<T extends Token = Token>(token: StoredToken, dataTree: DataTree, componentId: string | null): T {
   switch (token.type) {
   case 'filter': {
     if ((token as Filter).optionsForm) return token as T
@@ -44,7 +44,7 @@ export function fromStored < T extends Token = Token > (token: StoredToken, data
   }
   case 'property': {
     if ((token as Property).optionsForm) return token as T
-    const field = propertyToField(token, dataTree)
+    const field = propertyToField(token, dataTree, componentId)
     if (!field) {
       console.error('Field not found for token', token)
       throw new Error(`Field ${token.fieldId} not found`)
@@ -82,7 +82,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
   }
   case 'property':
     try {
-      return propertyToField(token, dataTree)
+      return propertyToField(token, dataTree, component.getId())
     } catch (e) {
       // FIXME: notify user
       console.error('Error while getting property result type', token, component, dataTree)
@@ -123,9 +123,9 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
  * Get the type corresponding to a property
  * @throws Error if the type is not found
  */
-export function propertyToField(property: Property, dataTree: DataTree): Field {
+export function propertyToField(property: Property, dataTree: DataTree, componentId: string | null): Field {
   const typeNames = property.typeIds
-    .map((typeId: TypeId) => dataTree.getType(typeId, property.dataSourceId ?? null))
+    .map((typeId: TypeId) => dataTree.getType(typeId, property.dataSourceId ?? null, componentId))
     .map((type: Type | null) => type?.label)
 
   const args = property.options ? Object.entries(property.options).map(([name, value]) => ({
@@ -157,7 +157,7 @@ export function expressionToFields(expression: Expression, component: Component,
   }
   return expression.map((token) => {
     try {
-      const field = tokenToField(fromStored(token, dataTree), prev, component, dataTree)
+      const field = tokenToField(fromStored(token, dataTree, component.getId()), prev, component, dataTree)
       if (!field) {
         console.warn('Type not found for token in expressionToFields', { token, expression })
         return unknownField
@@ -180,7 +180,7 @@ export function expressionToFields(expression: Expression, component: Component,
 export function getExpressionResultType(expression: Expression, component: Component, dataTree: DataTree): Field | null {
   // Resolve type of the expression 1 step at a time
   return expression.reduce((prev: Field | null, token: StoredToken) => {
-    return tokenToField(fromStored(token, dataTree), prev, component, dataTree)
+    return tokenToField(fromStored(token, dataTree, component.getId()), prev, component, dataTree)
   }, null)
 }
 

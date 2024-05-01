@@ -217,7 +217,7 @@ export class PropertiesEditor extends LitElement {
   getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
-    return state.expression.map(token => fromStored(token, dataTree))
+    return state.expression.map(token => fromStored(token, dataTree, component.getId()))
   }
 }
 

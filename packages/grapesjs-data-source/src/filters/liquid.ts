@@ -209,7 +209,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       id: 'map',
       label: 'map',
       validate: (field: Field | null) => !!field && (field.kind === 'list' || field.kind === 'object'),
-      output: (field, options) => getFieldType(editor, field, options['key'] as string | undefined),
+      output: (field, options) => getFieldType(editor, field, options['key'] as string | undefined, null),
       apply: (arr, options) => (arr as Record<string, unknown>[]).map(item => item[options.key as string]),
       options: {
         key: '',
