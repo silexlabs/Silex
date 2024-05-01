@@ -5,6 +5,8 @@ import { TemplateResult, html } from "lit"
 import { Component } from "grapesjs"
 import { fromStored, getExpressionResultType } from "./model/token"
 
+export const NOTIFICATION_GROUP = 'Data source'
+
 /**
  * Get the display name of a field
  */
@@ -100,6 +102,11 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
                 label = dataSource.get('label') || token.dataSourceId
               } else {
                 console.error('Data source not found', token.dataSourceId)
+                editor.trigger('notifications:add', {
+                  type: 'error',
+                  group: NOTIFICATION_GROUP,
+                  message: `Data source not found: ${token.dataSourceId}`,
+                })
                 throw new Error(`Data source not found: ${token.dataSourceId}`)
               }
             }

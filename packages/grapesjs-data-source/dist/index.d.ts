@@ -471,6 +471,7 @@ export declare function getCompletion(options: {
 	currentStateId?: StateId;
 	hideLoopData?: boolean;
 }): Context;
+export declare const NOTIFICATION_GROUP = "Data source";
 /**
  * Get the display name of a field
  */

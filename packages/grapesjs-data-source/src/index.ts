@@ -18,6 +18,7 @@
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
 import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
+import { NOTIFICATION_GROUP } from './utils'
 import view from './view'
 
 /**
@@ -51,7 +52,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     .map((ds: IDataSourceOptions) => {
       switch (ds.type) {
         case 'graphql': return new GraphQL(ds as GraphQLOptions)
-        default: throw new Error(`Unknown data source: ${ds.label}`)
+        default: throw new Error(`Unknown data source type: ${ds.label}`)
       }
     })
   
@@ -67,8 +68,8 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
   view(editor, options.view)
 
   // Use grapesjs-notifications plugin for errors
-  editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: 'Data source events' }))
-  editor.on(DATA_SOURCE_READY, (ds: IDataSource) => editor.runCommand('notifications:add', { type: 'success', message: `Data source ready: ${ds.id}`, group: 'Data source events' }))
+  editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))
+  editor.on(DATA_SOURCE_READY, (ds: IDataSource) => editor.runCommand('notifications:add', { type: 'success', message: `Data source ready: ${ds.id}`, group: NOTIFICATION_GROUP }))
 }
 
 /**

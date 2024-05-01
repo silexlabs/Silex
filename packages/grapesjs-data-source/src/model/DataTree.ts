@@ -19,7 +19,7 @@ import { Component, Page } from 'grapesjs'
 import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
 import { getState, getParentByPersistentId, getStates } from './state'
 import { fromStored, getOptionObject } from './token'
-import { getComponentDebug, toExpression } from '../utils'
+import { getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
 
 interface ComponentExpression {
   expression: Expression
@@ -289,11 +289,24 @@ export class DataTree {
     }
     case 'state': {
       const resolved = this.resolveState(next, component)
-      if(!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(next)}. State defined on component ${getComponentDebug(component)}`)
+      if(!resolved) {
+        this.editor.trigger('notifications:add', {
+          type: 'error',
+          group: NOTIFICATION_GROUP,
+          message: `Unable to resolve state <pre>${JSON.stringify(next)}</pre>`,
+          componentId: component.getId(),
+        })
+        throw new Error(`Unable to resolve state ${JSON.stringify(next)}. State defined on component ${getComponentDebug(component)}`)
+      }
       return this.getTrees({expression: resolved, component}, dataSourceId)
     }
     default:
-      console.error('Invalid expression', expression)
+      this.editor.trigger('notifications:add', {
+        type: 'error',
+        group: NOTIFICATION_GROUP,
+        message: `Invalid expression <pre>${JSON.stringify(expression)}</pre>`,
+        componentId: component.getId(),
+      })
       throw new Error(`Invalid expression ${JSON.stringify(expression)}. Expression used on component ${getComponentDebug(component)}`)
     }
   }
@@ -329,8 +342,18 @@ export class DataTree {
       }, [] as Tree[][])
       // Merge all trees from the root
       .map((grouped: Tree[]) => {
-        const merged = grouped.reduce((acc, tree) => this.mergeTrees(acc, tree))
-        return merged
+        try {
+          const merged = grouped.reduce((acc, tree) => this.mergeTrees(acc, tree))
+          return merged
+        } catch(e) {
+          this.editor.trigger('notifications:add', {
+            type: 'error',
+            group: NOTIFICATION_GROUP,
+            message: `Unable to merge trees <pre>${JSON.stringify(grouped)}</pre>`,
+            componentId: expressions[0].component.getId(),
+          })
+          throw e
+        }
       })
   }
 

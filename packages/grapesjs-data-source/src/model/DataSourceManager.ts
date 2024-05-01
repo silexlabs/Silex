@@ -17,7 +17,7 @@
 
 import Backbone from 'backbone'
 import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from '../types'
-import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug } from '..'
+import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug, NOTIFICATION_GROUP } from '..'
 import { DataTree } from './DataTree'
 import { Component, Page } from 'grapesjs'
 import { StoredState, onStateChange } from './state'
@@ -177,7 +177,15 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
                 return token
               case 'state': {
                 const resolved = this.dataTree.resolveState(token, componentExpression.component)
-                if (!resolved) throw new Error(`Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`)
+                if (!resolved) {
+                  this.editor.trigger('notifications:add', {
+                    type: 'error',
+                    group: NOTIFICATION_GROUP,
+                    message: `Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`,
+                    componentId: componentExpression.component.getId(),
+                  })
+                  throw new Error(`Unable to resolve state ${JSON.stringify(token)}. State defined on component ${getComponentDebug(componentExpression.component)}`)
+                }
                 return resolved
               }
               }
@@ -200,7 +208,6 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
             dataSourceId: ds.id.toString(),
             query: '',
           }
-          throw new Error(`No tree for data source ${ds.id}`)
         }
         const query = getDataSourceClass(ds).getQuery(trees)
         return {

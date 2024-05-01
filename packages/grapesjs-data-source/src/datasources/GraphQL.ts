@@ -233,7 +233,6 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         .reduce((prev: GQLKind | null, type: {kind: GQLKind, name: string}) => {
           if(!prev) return type.kind as GQLKind
           if(prev !== type.kind) {
-            console.error('Unable to find a valid kind, union types with different kind is not supported', ofKind)
             throw new Error(`Unable to find a valid kind for ${ofKind.kind}. Union types with different kind is not supported`)
           }
           return prev as GQLKind

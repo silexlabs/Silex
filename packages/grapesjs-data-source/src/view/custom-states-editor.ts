@@ -78,7 +78,7 @@ export class CustomStatesEditor extends LitElement {
     helpText = ''
 
   @property({type: String, attribute: 'help-link'})
-  helpLink = ''
+    helpLink = ''
 
   private _reservedNames: string[] = []
   private editor: DataSourceEditor | null = null
