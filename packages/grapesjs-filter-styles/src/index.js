@@ -1,14 +1,13 @@
 export default (editor, opts = {}) => {
   editor.on('load', () => {
     const options = {
-      ...{
-        placeholder: 'Search...',
-        appendTo: null,
-        appendBefore: null,
-      }, ...opts
-    };
+      placeholder: 'Search...',
+      appendTo: null,
+      appendBefore: null,
+      ...opts
+    }
 
-    const prefix = editor.Config.selectorManager.pStylePrefix;
+    const prefix = editor.Config.selectorManager.pStylePrefix
     const id = `${prefix}filter-styles`
     const container = document.createElement('div')
     container.innerHTML = `
@@ -48,7 +47,7 @@ export default (editor, opts = {}) => {
     const appendBefore = typeof options.appendBefore === 'string' ? document.querySelector(options.appendBefore) : options.appendBefore
     const appendTo = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : options.appendTo
     const wrapper = appendBefore ? appendBefore.parentElement : appendTo ?? tags.parentElement.parentElement
-    wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild);
+    wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild)
     const input = wrapper.querySelector(`#${id}`)
     input.onkeyup = () => refresh(editor, input, wrapper)
     const button = wrapper.querySelector(`#${id}-btn`)
@@ -56,14 +55,17 @@ export default (editor, opts = {}) => {
       input.value = ''
       refresh(editor, input, wrapper)
     }
-    editor.on('component:selected component:styleUpdate', () => {
+    editor.on('component:selected component:styleUpdate style:target', () => {
       resetAll(editor)
       setTimeout(() => refresh(editor, input, wrapper))
     })
   })
 }
 
-// Reset all sectors
+/**
+ * Resets all sectors (and therefore all properties).
+ * @param editor The editor.
+ */
 function resetAll(editor) {
   getSectors(editor)
     .forEach(sector => {
@@ -75,8 +77,17 @@ function resetAll(editor) {
     })
 }
 
-// Sectors
+/**
+ * A data structure containing the sectors whose visibility is altered.
+ * @type {WeakMap<WeakKey, any>}
+ */
 const changedSectors = new WeakMap()
+
+/**
+ * Sets the visibility of a sector.
+ * @param sector The sector to show/hide.
+ * @param visible A boolean used to determine the sector's visibility.
+ */
 function showSector(sector, visible) {
   if(!changedSectors.has(sector)) {
     changedSectors.set(sector, {
@@ -86,14 +97,28 @@ function showSector(sector, visible) {
   }
   sector.setOpen(visible)
 }
+
+/**
+ * Reverts the visibility state of the sector specified as a parameter.
+ * @param sector The sector to reset.
+ */
 function resetSector(sector) {
   const item = changedSectors.get(sector)
   item?.sector.setOpen(item?.initial)
   changedSectors.delete(sector)
 }
 
-// Properties
+/**
+ * A data structure containing the properties whose visibility is altered.
+ * @type {WeakMap<WeakKey, any>}
+ */
 const changedProperties = new WeakMap()
+
+/**
+ * Sets the visibility of a property.
+ * @param property The property to show/hide.
+ * @param visible A boolean used to determine the property's visibility.
+ */
 function showProperty(property, visible) {
   if(!changedProperties.has(property)) {
     changedProperties.set(property, {
@@ -103,18 +128,33 @@ function showProperty(property, visible) {
   }
   property.set('visible', visible)
 }
+
+/**
+ * Reverts the visibility state of the property specified as a parameter.
+ * @param property The property to reset.
+ */
 function resetProperty(property) {
   const item = changedProperties.get(property)
   item?.property.set('visible', item?.initial)
   changedProperties.delete(property)
 }
 
-// Filters
+/**
+ * Returns currently visible sectors.
+ * @param editor The editor.
+ * @returns {T[]} An array containing the visible sectors.
+ */
 function getSectors(editor) {
   return editor.StyleManager.getSectors().toArray()
     // Filter visible sectors
     .filter(sector => sector.isVisible())
 }
+
+/**
+ * Returns searchable properties. Used by the ``refresh()`` function to filter properties.
+ * @param editor The editor.
+ * @returns {{property: *, sector: *, searchable: string}[]} An array containing the searchable properties.
+ */
 function getSearchableItems(editor) {
   return getSectors(editor)
     // Handles composite properties
@@ -140,12 +180,18 @@ function getSearchableItems(editor) {
     }))
 }
 
-// Main action
+/**
+ * The main function of the plugin. Refreshes the properties while applying a filter on their names
+ * according to a text input.
+ * @param editor The editor.
+ * @param input The text input.
+ * @param wrapper The wrapper element.
+ */
 function refresh(editor, input, wrapper) {
   if (input.value) {
     // Display
     wrapper.classList.remove('empty')
-    
+
     // Get searchable items
     const properties = getSearchableItems(editor)
       // Keep only the matching items
