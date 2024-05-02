@@ -26,10 +26,9 @@ export function onAll(editor: Editor, cbk: (c: Component) => void) {
         .onAll(c => cbk(c))
     })
 }
-
 /**
  * SHA256 hash a string
- */
+ 
 export async function hashString(str: string): Promise<string> {
   // Convert the string to an ArrayBuffer
   const encoder = new TextEncoder()
@@ -43,4 +42,22 @@ export async function hashString(str: string): Promise<string> {
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
   return hashHex
-}
+}*/
+
+/**
+ * SHA256 hash a string
+ */
+export async function hashString(str: string): Promise<string> {
+  // Convert the string to an ArrayBuffer
+  const encoder = new TextEncoder()
+  const data = encoder.encode(str)
+
+  // Hash the data with SHA-256
+  if (crypto.subtle != undefined) {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    // Convert the ArrayBuffer to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    return hashHex}
+    else {return 'local'}
+  }
