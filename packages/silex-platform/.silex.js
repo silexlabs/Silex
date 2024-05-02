@@ -7,6 +7,15 @@ const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/serve
 const node_modules = require('node_modules-path')
 const onboarding = require(__dirname + '/server-plugins/onboarding.js')
 
+// Create an alternate version of the the Gitlab connector
+class FramagitConnector extends GitlabConnector {
+  connectorId = 'framagit'
+  displayName = 'Framagit'
+  constructor(config, options) {
+    super(config, options)
+  }
+}
+
 module.exports = async function (config) {
   await config.addPlugin(dash)
   await config.addPlugin(onboarding)
@@ -25,7 +34,12 @@ module.exports = async function (config) {
     new GitlabConnector(config, {
       clientId: process.env.GITLAB_CLIENT_ID,
       clientSecret: process.env.GITLAB_CLIENT_SECRET,
-      scope: process.env.GITLAB_SCOPE,
+      domain: process.env.GITLAB_DOMAIN,
+    }),
+    new FramagitConnector(config, {
+      clientId: process.env.FRAMAGIT_CLIENT_ID,
+      clientSecret: process.env.FRAMAGIT_CLIENT_SECRET,
+      domain: process.env.FRAMAGIT_DOMAIN,
     }),
   ])
 

@@ -29,11 +29,11 @@ export default async function (config) {
         dataSources: [],
         imagePlugin: false,
         i18nPlugin: false,
-        enable11ty: false,
+        // enable11ty: false,
         view: {
-            disableStates: true,
-            disableAttributes: false,
-            disableProperties: true,
+            // disableStates: true,
+            // disableAttributes: false,
+            // disableProperties: true,
         },
     })
     return {}
