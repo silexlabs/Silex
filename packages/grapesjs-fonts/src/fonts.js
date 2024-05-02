@@ -24,7 +24,7 @@ let defaults = []
 /**
  * Options
  */
-let fontServer = 'https://www.googleapis.com'
+let fontServer = 'https://fonts.googleapis.com'
 
 /**
  * Load available fonts only once per session

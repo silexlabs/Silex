@@ -133,7 +133,7 @@ Also you should style the dialog:
 | Option | Description | Default |
 |-|-|-
 | `api_key` | Google fonts API key, [see this doc to get an API key](https://developers.google.com/fonts/docs/developer_api#APIKey) | Required |
-| `server_url` | Google fonts server or a free [privacy-friendly drop-in replacement for Google Fonts](https://github.com/coollabsio/fonts) or [a proxy server to speed up the load and protect privacy](https://fontlay.com/) | `https://www.googleapis.com` |
+| `server_url` | Google fonts server or a free [privacy-friendly drop-in replacement for Google Fonts](https://github.com/coollabsio/fonts) or [a proxy server to speed up the load and protect privacy](https://fontlay.com/) | `https://fonts.googleapis.com` |
 
 ## Download
 
