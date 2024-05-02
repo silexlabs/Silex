@@ -42,9 +42,9 @@ export interface GitlabOptions {
 }
 
 interface GitlabToken {
-  state: string
-  codeVerifier: string
-  codeChallenge: string
+  state?: string
+  codeVerifier?: string
+  codeChallenge?: string
   token?: {
     access_token: string
     token_type: string
@@ -58,9 +58,7 @@ interface GitlabToken {
   username?: string
 }
 
-interface GitlabSession {
-  gitlab?: GitlabToken
-}
+type GitlabSession = Record<string, GitlabToken>
 
 interface GitlabAction {
   action: 'create' | 'delete' | 'move' | 'update'
@@ -227,7 +225,7 @@ export default class GitlabConnector implements StorageConnector {
   async readFile(session: GitlabSession, websiteId: string, fileName: string): Promise<Buffer> {
     const safePath = fileName.replace(/^\//, '')
     // Call the API
-    const url = `${this.options.domain}/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
+    const url = `${this.options.domain}/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${this.getSessionToken(session).token?.access_token}`
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -247,8 +245,8 @@ export default class GitlabConnector implements StorageConnector {
    * The meta repo contains a JSON file which contains the list of websites
    */
   //private getMetaRepoPath(session: GitlabSession): string {
-  //  if(!session.gitlab?.username) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
-  //  return encodeURIComponent(`${session.gitlab.username}/${this.options.metaRepo}`)
+  //  if(!this.getSessionToken(session).username) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
+  //  return encodeURIComponent(`${this.getSessionToken(session).username}/${this.options.metaRepo}`)
   //}
 
   ///**
@@ -273,7 +271,7 @@ export default class GitlabConnector implements StorageConnector {
    * Call the Gitlab API with the user's token and handle errors
    */
   private async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | null = null, params: any = {}): Promise<any> {
-    const token = session?.gitlab?.token
+    const token = this.getSessionToken(session).token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')
     const url = `${this.options.domain}/${path}?${tokenParam}${paramsStr}`
@@ -298,12 +296,12 @@ export default class GitlabConnector implements StorageConnector {
     if(!response.ok) {
       if (text.includes('A file with this name doesn\'t exist')) {
         throw new ApiError('Gitlab API error (5): Not Found', 404)
-      } else if (response.status === 401 && session?.gitlab?.token?.refresh_token) {
+      } else if (response.status === 401 && this.getSessionToken(session).token?.refresh_token) {
         // Refresh the token
-        const token = session?.gitlab?.token
+        const token = this.getSessionToken(session).token
         const body = {
           grant_type: 'refresh_token',
-          refresh_token: token.refresh_token,
+          refresh_token: token?.refresh_token,
           client_id: this.options.clientId,
           client_secret: this.options.clientSecret,
         }
@@ -316,14 +314,16 @@ export default class GitlabConnector implements StorageConnector {
         })
         const refreshJson = await response.json()
         if (response.ok) {
-          session.gitlab.token = {
-            ...token,
-            ...refreshJson,
-          }
+          this.setSessionToken(session, {
+            token: {
+              ...token,
+              ...refreshJson,
+            },
+          } as GitlabToken)
           return await this.callApi(session, path, method, body as any, params)
         } else {
           const message = typeof refreshJson?.message === 'object' ? Object.entries(refreshJson.message).map(entry => entry.join(' ')).join(' ') : refreshJson?.message ?? refreshJson?.error ?? response.statusText
-          console.error('Gitlab API error (2) - could not refresh token', response.status, response.statusText, {message}, 'refresh_token:', token.refresh_token)
+          console.error('Gitlab API error (2) - could not refresh token', response.status, response.statusText, {message}, 'refresh_token:', token?.refresh_token)
           // Workaround for when the token is invalid
           // It happens often which is not normal (refresh token should last 6 months)
           this.logout(session)
@@ -332,6 +332,7 @@ export default class GitlabConnector implements StorageConnector {
         }
       } else {
         const message = typeof json?.message === 'object' ? Object.entries(json.message).map(entry => entry.join(' ')).join(' ') : json?.message ?? json?.error ?? response.statusText
+        console.error('Gitlab API error (1)', response.status, response.statusText, {url, method, body, params, text, message})
         throw new ApiError(`Gitlab API error (1): ${message}`, response.status)
       }
     }
@@ -388,13 +389,23 @@ export default class GitlabConnector implements StorageConnector {
     const codeChallenge = await this.generateCodeChallenge(codeVerifier)
 
     // Store the code verifier and code challenge in the session
-    session.gitlab = {
-      ...session.gitlab,
+    this.setSessionToken(session, {
+      ...this.getSessionToken(session),
       state,
       codeVerifier,
       codeChallenge,
-    }
-    return `${this.options.domain}/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${session.gitlab.state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
+    })
+    return `${this.options.domain}/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${this.getSessionToken(session).state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
+  }
+
+  getSessionToken(session: GitlabSession | undefined): GitlabToken {
+    return (session ?? {})[this.connectorId] ?? {}
+  }
+  setSessionToken(session: GitlabSession, token: GitlabToken): void {
+    session[this.connectorId] = token
+  }
+  resetSessionToken(session: GitlabSession): void {
+    delete session[this.connectorId]
   }
 
   getOptions(formData: object): object {
@@ -410,7 +421,7 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async isLoggedIn(session: GitlabSession): Promise<boolean> {
-    return !!session?.gitlab?.token
+    return !!this.getSessionToken(session).token
   }
 
   /**
@@ -419,9 +430,10 @@ export default class GitlabConnector implements StorageConnector {
    * OAuth2 Step #2 from https://docs.gitlab.com/ee/api/oauth2.html#authorization-code-with-proof-key-for-code-exchange-pkce
    */
   async setToken(session: GitlabSession, loginResult: any): Promise<void> {
-    if(!loginResult.state || loginResult.state !== session.gitlab?.state) throw new ApiError('Invalid state', 401)
-    if(!session.gitlab?.codeVerifier) throw new ApiError('Missing code verifier', 401)
-    if(!session.gitlab?.codeChallenge) throw new ApiError('Missing code challenge', 401)
+    const sessionToken = this.getSessionToken(session)
+    if(!loginResult.state || loginResult.state !== sessionToken?.state) throw new ApiError('Invalid state', 401)
+    if(!sessionToken?.codeVerifier) throw new ApiError('Missing code verifier', 401)
+    if(!sessionToken?.codeChallenge) throw new ApiError('Missing code challenge', 401)
 
     const response = await fetch(this.options.domain + '/oauth/token', {
       method: 'POST',
@@ -434,23 +446,31 @@ export default class GitlabConnector implements StorageConnector {
         code: loginResult.code,
         grant_type: 'authorization_code',
         redirect_uri: this.getRedirect(),
-        code_verifier: session.gitlab.codeVerifier,
+        code_verifier: sessionToken.codeVerifier,
       }),
     })
 
     const token = await response.json()
 
     // Store the token in the session
-    session.gitlab = { token, state: session.gitlab.state, codeVerifier: session.gitlab.codeVerifier, codeChallenge: session.gitlab.codeChallenge }
+    this.setSessionToken(session, {
+      token,
+      ...this.getSessionToken(session),
+    })
 
     // We need to get the user ID for listWebsites
     const user = await this.callApi(session, 'api/v4/user') as any
-    session.gitlab.userId = user.id
-    session.gitlab.username = user.username
+
+    // Store the user details in the session
+    this.setSessionToken(session, {
+      ...this.getSessionToken(session),
+      userId: user.id,
+      username: user.username,
+    })
   }
 
   async logout(session: GitlabSession): Promise<void> {
-    delete session.gitlab
+    this.resetSessionToken(session)
   }
 
   async getUser(session: GitlabSession): Promise<ConnectorUser> {
@@ -486,7 +506,7 @@ export default class GitlabConnector implements StorageConnector {
     //    throw e
     //  }
     //}
-    const projects = await this.callApi(session, `api/v4/users/${session.gitlab?.userId}/projects`) as any[]
+    const projects = await this.callApi(session, `api/v4/users/${this.getSessionToken(session).userId}/projects`) as any[]
     return projects
       .filter(p => p.name.startsWith(this.options.repoPrefix))
       .map(p => ({

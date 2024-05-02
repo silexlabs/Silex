@@ -79,7 +79,7 @@
     "dev": "run-p watch start:debug start:http-server",
     "watch": "npm-watch",
     "start": "node dist/server/server/",
-    "start:debug": "cross-env SILEX_FS_ROOT=`pwd`/silex SILEX_DEBUG=true SILEX_CLIENT_CONFIG=examples/client-config-transformers.js nodemon --watch dist/server dist/server/server/",
+    "start:debug": "cross-env SILEX_FS_ROOT=`pwd`/silex SILEX_DEBUG=true SILEX_CLIENT_CONFIG=examples/client-config-transformers.js SILEX_SERVER_CONFIG=`pwd`/examples/server-config-connectors.js nodemon --watch dist/server dist/server/server/",
     "start:http-server": "http-server silex/hosting",
     "prepublishOnly": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "preversion": "$npm_execpath run prepublishOnly",

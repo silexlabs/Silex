@@ -19,6 +19,14 @@ const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector
 const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
 const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default
 
+class FramaGitConnector extends GitlabConnector {
+  connectorId = 'framagit'
+  displayName = 'FramaGit'
+  constructor(config, options) {
+    super(config, options)
+  }
+}
+
 module.exports = async function (config, options) {
   if (!FtpConnector) throw new Error('FtpConnector not found')
   if (!GitlabConnector) throw new Error('GitlabConnector not found')
@@ -37,6 +45,12 @@ module.exports = async function (config, options) {
     new GitlabConnector(config, {
       clientId: process.env.GITLAB_CLIENT_ID,
       clientSecret: process.env.GITLAB_CLIENT_SECRET,
+      domain: process.env.GITLAB_DOMAIN,
+    }),
+    new FramaGitConnector(config, {
+      clientId: process.env.FRAMAGIT_CLIENT_ID,
+      clientSecret: process.env.FRAMAGIT_CLIENT_SECRET,
+      domain: process.env.FRAMAGIT_DOMAIN,
     }),
   ])
 
