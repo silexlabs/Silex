@@ -30,7 +30,6 @@ export function onAll(editor: Editor, cbk: (c: Component) => void) {
 /**
  * SHA256 hash a string
  */
-
 export async function hashString(str: string): Promise<string> {
 if (crypto.subtle != undefined) {
   // Convert the string to an ArrayBuffer
