@@ -15,7 +15,7 @@
   "dependencies": {
     "@silexlabs/silex": "^3.0.0-alpha.152",
     "@silexlabs/silex-cms": "^0.0.122",
-    "@silexlabs/silex-dashboard": "^1.0.48"
+    "@silexlabs/silex-dashboard": "^1.0.49"
   },
   "repository": {
     "type": "git",
