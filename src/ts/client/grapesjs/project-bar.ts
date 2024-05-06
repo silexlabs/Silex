@@ -41,13 +41,13 @@ export const projectBarPlugin = (editor, opts) => {
   // create the panels container for all panels in grapesjs
   const containerPanel = editor.Panels.addPanel({
     id: containerPanelId,
-    visible  : false,
+    visible: false,
   })
   // create the project bar panel in grapesjs
   editor.Panels.addPanel({
     id: PROJECT_BAR_PANEL_ID,
     buttons: opts.panels,
-    visible  : true,
+    visible: true,
   })
   // add the panels to the container
   opts.panels.map(panel => addButton(editor, panel))
