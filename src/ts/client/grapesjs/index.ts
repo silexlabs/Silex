@@ -372,6 +372,26 @@ export async function initEditor(config: EditorConfig) {
       modalImportTitle: 'Import from website',
     }))
 
+    // Detect loading errors
+    // Display a useful notification
+    const typeConfig = {
+      view: {
+        onRender({editor, el, model}) {
+          const src = model.getAttributes().src
+          el.addEventListener('error', () => {
+            editor.runCommand('notifications:add', {
+              type: 'error',
+              group: 'Image loading error',
+              message: `Error loading image: ${src}`,
+              componentId: model.getId(),
+            })
+          })
+        },
+      },
+    }
+    editor.DomComponents.addType('image', typeConfig)
+    editor.DomComponents.addType('iframe', typeConfig)
+
     // Adjustments to do when the editor is ready
     editor.on('load', () => {
       const views = editor.Panels.getPanel('views')
@@ -388,8 +408,11 @@ export async function initEditor(config: EditorConfig) {
       // Render the block manager, otherwise it is empty
       editor.BlockManager.render(null)
 
-      // use the style filter plugin
+      // Use the style filter plugin
       editor.StyleManager.addProperty('extra', { extend: 'filter' })
+
+      // Add a class to the Style Manager's sticky top section
+      editor.SelectorManager.selectorTags.el.parentElement.classList.add('top-style-section')
 
       // Add the notifications container
       document.body.querySelector('.notifications-container').appendChild(notificationContainer)
