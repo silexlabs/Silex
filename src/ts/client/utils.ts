@@ -31,16 +31,19 @@ export function onAll(editor: Editor, cbk: (c: Component) => void) {
  * SHA256 hash a string
  */
 export async function hashString(str: string): Promise<string> {
-  // Convert the string to an ArrayBuffer
-  const encoder = new TextEncoder()
-  const data = encoder.encode(str)
+  if (crypto.subtle != undefined) { 
+    // Convert the string to an ArrayBuffer
+    const encoder = new TextEncoder()
+    const data = encoder.encode(str)
 
-  // Hash the data with SHA-256
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    // Hash the data with SHA-256
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
 
-  // Convert the ArrayBuffer to hex string
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    // Convert the ArrayBuffer to hex string
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
-  return hashHex
+    return hashHex
+  }
+  else {return 'local'} 
 }
