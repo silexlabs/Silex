@@ -169,7 +169,7 @@ export class PublicationUi {
     return html`
     <header>
       <span>${unsafeHTML(svgConnector)} You are connected to <span class="connector">${this.settings.connector.displayName}</span></span>
-      ${this.settings.connector.disableLogout && 0 ? '' : html`
+      ${this.settings.connector.disableLogout ? '' : html`
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -191,7 +191,10 @@ export class PublicationUi {
       ` : ''}
       ${this.isError(status) || this.isLoggedOut(status) ? html`
         <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
-        <div class="details"><p class="label">Details</p>${unsafeHTML(this.errorMessage)} ${unsafeHTML(this.errorMessage)} ${unsafeHTML(this.errorMessage)} ${unsafeHTML(this.errorMessage)}</div>
+        <details class="details" open>
+          <summary class="label">Details</summary>
+          ${unsafeHTML(this.errorMessage)}
+        </details>
       ` : ''}
       ${job?.message ? html`
         <p>${unsafeHTML(job.message)}</p>

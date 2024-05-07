@@ -79,6 +79,7 @@
       border-radius: 50px;
       padding: 4px 9px;
       background-color: #444;
+      color: $secondaryColor;
     }
 
     .connector {
@@ -103,7 +104,6 @@
     }
 
     .details {
-      border: solid $lighterPrimaryColor 2px;
       border-radius: 5px;
       background-color: $darkerPrimaryColor;
       margin: 10px 0;
@@ -114,9 +114,8 @@
       position: relative;
 
       .label {
-        opacity: 0.5;
         font-size: 0.95rem;
-        margin-bottom: 15px;
+        opacity: 0.7;
       }
     }
 
