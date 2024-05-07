@@ -57,3 +57,76 @@
 .gjs-editor .gjs-notification .gjs-notification__group .gjs-notification__item {
   margin-left: 10px;
 }
+
+// publication-ui
+#publish-dialog {
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-size: 0.95rem;
+
+    svg {
+      width: 1.4rem;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    button {
+      border: solid 2px #484848;
+      border-radius: 50px;
+      padding: 4px 9px;
+      background-color: #444;
+    }
+
+    .connector {
+      color: $quaternaryColor;
+    }
+  }
+
+  main {
+    max-height: none;
+
+    svg {
+      height: 0.9rem;
+      margin-left: 5px;
+    }
+
+    h3 {
+      margin: 0;
+    }
+
+    p {
+      margin-top: 0;
+    }
+
+    .details {
+      border: solid $lighterPrimaryColor 2px;
+      border-radius: 5px;
+      background-color: $darkerPrimaryColor;
+      margin: 10px 0;
+      padding: 10px;
+      word-break: break-word;
+      overflow-y: auto;
+      max-height: 200px;
+      position: relative;
+
+      .label {
+        opacity: 0.5;
+        font-size: 0.95rem;
+        margin-bottom: 15px;
+      }
+    }
+
+    .silex-button--primary {
+      background-color: $tertiaryColor;
+    }
+
+    .silex-button {
+      padding: 10px;
+      width: 100%;
+    }
+  }
+}
