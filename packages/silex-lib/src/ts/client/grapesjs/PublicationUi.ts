@@ -168,8 +168,8 @@ export class PublicationUi {
   async renderOpenDialog(job: PublicationJobData, status: PublicationStatus): Promise<TemplateResult> {
     return html`
     <header>
-      <span>${unsafeHTML(svgConnector)} You are connected to <span class="connector">${this.settings.connector.displayName}</span></span>
-      ${this.settings.connector.disableLogout ? '' : html`
+      <span>${unsafeHTML(svgConnector)} Connected to <span class="connector">${this.settings.connector.displayName}</span></span>
+      ${this.settings.connector.disableLogout && 0 ? '' : html`
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -191,13 +191,16 @@ export class PublicationUi {
       ` : ''}
       ${this.isError(status) || this.isLoggedOut(status) ? html`
         <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
-        <details class="details" open>
-          <summary class="label">Details</summary>
+        <details open>
+          <summary>Details</summary>
           ${unsafeHTML(this.errorMessage)}
         </details>
       ` : ''}
       ${job?.message ? html`
-        <p>${unsafeHTML(job.message)}</p>
+        <details open>
+          <summary>Details</summary>
+          ${unsafeHTML(job.message)}
+        </details>
       ` : ''}
       ${this.isPending(status) ? html`
         <progress
@@ -206,17 +209,13 @@ export class PublicationUi {
         ></progress>
       ` : ''}
       ${job?.logs?.length && job.logs[0].length ? html`
-        <br><details>
+        <details>
           <summary>Logs</summary>
-          <pre style="
-            max-width: 100%;
-            font-size: x-small;
-            " >${unsafeHTML(cleanupLogEntry(job.logs))}
-          </pre>
+          <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
         </details>
       ` : ''}
       ${job?.errors?.length && job.errors[0].length ? html`
-        <br><details>
+        <details>
           <summary>Errors</summary>
           <pre style="
             max-width: 100%;

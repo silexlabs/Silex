@@ -67,6 +67,7 @@
     padding-top: 10px;
     padding-bottom: 10px;
     font-size: 0.95rem;
+    transition: 200ms;
 
     svg {
       width: 1.4rem;
@@ -103,9 +104,10 @@
       margin-top: 0;
     }
 
-    .details {
+    details {
       border-radius: 5px;
-      background-color: $darkerPrimaryColor;
+      border: solid #222 2px;
+      background-color: #222;
       margin: 10px 0;
       padding: 10px;
       word-break: break-word;
@@ -113,10 +115,45 @@
       max-height: 200px;
       position: relative;
 
-      .label {
+      pre {
+        word-break: break-word;
+      }
+
+      summary {
         font-size: 0.95rem;
         opacity: 0.7;
       }
+
+      .logs {
+        font-family: monospace;
+
+        * {
+          margin: 0;
+          padding-top: 3px;
+          padding-bottom: 3px;
+          border-radius: 5px;
+          list-style: '-';
+
+          &:hover {
+            transition: 200ms;
+            background-color: rgba(255, 255, 255, 0.05);
+          }
+        }
+      }
+
+      &:hover {
+        transition: 200ms;
+        border-color: $lighterPrimaryColor;
+        background-color: $darkerPrimaryColor;
+      }
+
+      * {
+        transition: 200ms;
+      }
+    }
+
+    details[open] summary {
+      margin-bottom: 10px;
     }
 
     .silex-button--primary {
