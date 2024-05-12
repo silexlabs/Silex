@@ -44,3 +44,12 @@ export async function hashString(str: string): Promise<string> {
 
   return hashHex
 }
+
+/**
+ * Select the <body> element in the editor.
+ * @param editor The GrapesJS editor.
+ */
+
+export function selectBody(editor: Editor): void {
+  editor.select(editor.DomComponents.getWrapper())
+}

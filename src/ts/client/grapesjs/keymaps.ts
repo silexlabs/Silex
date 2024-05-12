@@ -4,13 +4,11 @@ import {cmdOpenFonts} from '@silexlabs/grapesjs-fonts'
 import {cmdToggleBlocks, cmdToggleLayers, cmdToggleNotifications, cmdToggleSymbols} from './index'
 import {cmdTogglePages} from './page-panel'
 import {cmdOpenSettings} from './settings'
+import {selectBody} from '../utils'
+
+export const cmdSelectBody = 'select-body'
 
 // Utility functions
-
-const selectBody = (editor: Editor): void => {
-  const wrapper = editor.DomComponents.getWrapper()
-  editor.select(wrapper)
-}
 
 const toggleCommand = (editor: Editor, name: string): void => {
   const cmd = editor.Commands
@@ -39,12 +37,12 @@ const resetPanel = (editor: Editor): void => {
 // Main part
 
 export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
+  // Commands
+  editor.Commands.add(cmdSelectBody, selectBody)
+
   if (opts.disableKeymaps) return
 
   const km = editor.Keymaps
-
-  // General keymaps
-  // TODO: Add a keymap to actually publish the site
 
   // Panels
   km.add('general:open-settings', 'shift+alt+s', editor => toggleCommand(editor, cmdOpenSettings))
@@ -56,9 +54,9 @@ export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
   km.add('panel:notifications', 'shift+n', editor => toggleCommand(editor, cmdToggleNotifications))
   km.add('panel:pages', 'shift+p', editor => toggleCommand(editor, cmdTogglePages))
   km.add('panel:symbols', 'shift+s', editor => toggleCommand(editor, cmdToggleSymbols))
-  km.add('panel:close', 'escape', resetPanel)
+  km.add('panel:close', 'tab', resetPanel)
   // TODO: Add a keymap to close the left panel on Escape
 
   // Workflow-specific keymaps
-  km.add('workflow:select-body', 'shift+b', selectBody)
+  km.add('workflow:select-body', 'shift+b', cmdSelectBody)
 }
