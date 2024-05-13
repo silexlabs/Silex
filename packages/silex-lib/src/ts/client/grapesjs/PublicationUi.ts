@@ -169,7 +169,7 @@ export class PublicationUi {
     return html`
     <header>
       <span>${unsafeHTML(svgConnector)} Connected to <span class="connector">${this.settings.connector.displayName}</span></span>
-      ${this.settings.connector.disableLogout && 0 ? '' : html`
+      ${this.settings.connector.disableLogout ? '' : html`
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -254,7 +254,7 @@ export class PublicationUi {
       render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
-      if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && 0) {
+      if (hostingConnectors.length === 1 && loggedConnectors.length === 1) {
         this.settings.connector = loggedConnectors[0]
         return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
@@ -276,11 +276,7 @@ export class PublicationUi {
             class="silex-button"
             id="publish-button--primary"
             @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
-          >${connector.displayName}</button><button
-            class="silex-button"
-            id="publish-button--primary"
-            @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
-          >GitLab hosting</button>
+          >${connector.displayName}</button>
         `)}
         </div>
       </main>
