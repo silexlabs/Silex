@@ -17,6 +17,10 @@ const COMMON_STYLES = css`
     .ds-field > span {
       display: block;
     }
+    hr.ds-separator {
+      border: none;
+      border-top: 1px solid var(--ds-button-bg);
+    }
     .ds-field input,
     .ds-field select {
       background-color: var(--gjs-main-dark-color);
@@ -171,12 +175,15 @@ class SettingsDataSources extends LitElement {
     }
     return html`
     <section>
+    <!--
       <button
         type="button"
         class="ds-btn-prim ds-btn-prim--icon"
         @click=${() => {
     this.dispatchEvent(new CustomEvent('add-top', { detail: options }))
   }}>\u2795</button>
+    -->
+      <hr class="ds-separator">
       ${repeat(this.dataSources.filter(ds => !ds.hidden), (ds: IDataSourceModel) => ds.get('id'), (ds: IDataSourceModel) => html`
         <ds-settings__data-source
           ${ref(dsDataSource)}
@@ -190,6 +197,7 @@ class SettingsDataSources extends LitElement {
     this.dispatchEvent(new CustomEvent('delete', { detail: ds }))
   }}
           ></ds-settings__data-source>
+          <hr class="ds-separator">
       `)}
       <button
         type="button"
