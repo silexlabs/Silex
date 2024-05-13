@@ -1,4 +1,4 @@
-import {Editor, Keymap, PluginOptions} from 'grapesjs'
+import {Editor, PluginOptions} from 'grapesjs'
 import {cmdPublish} from './PublicationUi'
 import {cmdOpenFonts} from '@silexlabs/grapesjs-fonts'
 import {cmdToggleBlocks, cmdToggleLayers, cmdToggleNotifications, cmdToggleSymbols} from './index'
@@ -50,7 +50,7 @@ export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
   km.add('general:open-settings', prefixKey + '+alt+s', editor => toggleCommand(editor, cmdOpenSettings))
   km.add('general:open-publish', prefixKey + '+alt+p', editor => toggleCommand(editor, cmdPublish))
   km.add('general:open-fonts', prefixKey + '+alt+f', editor => toggleCommand(editor, cmdOpenFonts))
-  km.add('panels:preview-mode', 'space', editor => toggleCommand(editor, 'preview'))
+  km.add('general:preview-mode', 'tab', editor => toggleCommand(editor, 'preview'), {prevent: true})
   km.add('panels:layers', prefixKey + '+l', editor => toggleCommand(editor, cmdToggleLayers))
   km.add('panels:blocks', prefixKey + '+a', editor => toggleCommand(editor, cmdToggleBlocks))
   km.add('panels:notifications', prefixKey + '+n', editor => toggleCommand(editor, cmdToggleNotifications))
