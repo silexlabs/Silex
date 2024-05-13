@@ -165,6 +165,15 @@
 
     .silex-button--primary {
       background-color: $tertiaryColor;
+      transition: 200ms;
+
+      &:hover {
+        background-color: #9886ff;
+      }
+
+      &:active {
+        background-color: #8067ff;
+      }
     }
 
     .silex-button {
