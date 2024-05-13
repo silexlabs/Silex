@@ -16,7 +16,7 @@
  */
 
 import {html, render} from 'lit-html'
-import {defaultSections, idCodeWrapper, isSite} from './settings-sections'
+import {defaultSections, idCodeWrapper, isSite, SettingsSection} from './settings-sections'
 
 /**
  * @fileoverview This file contains the settings dialog. The config API lets plugins add sections to the settings dialog.
@@ -39,6 +39,7 @@ export const settingsDialog = (editor, opts) => {
   console.info('Silex version:', SILEX_VERSION)
   editor.Commands.add(cmdOpenSettings, {
     run: (_, sender, {page}) => {
+      console.log('open settings', page)
       modal = editor.Modal.open({
         title: page ? 'Page settings' : 'Site Settings',
         content: '',
@@ -101,6 +102,37 @@ export const settingsDialog = (editor, opts) => {
   })
 }
 
+function showSection(item: SettingsSection) {
+  const aside = el.querySelector('aside.silex-bar') as HTMLElement
+  const ul = aside.querySelector('ul.silex-list--menu') as HTMLUListElement
+  const li = ul.querySelector('li#settings-' + item.id) as HTMLLIElement
+  currentSection = item
+  console.log('show section', item.id, {aside, ul, li})
+  if(!li) {
+    console.warn('Cannot find section', item.id, 'in the side bar, fallback to the first section')
+    showSection(defaultSections[0]) // Fallback to the first section
+    return
+  }
+  // Update active
+  Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
+  li.classList.add('active')
+  const main = el.querySelector('main#settings__main') as HTMLElement
+  const mainItem = el.querySelector(`div#settings-${item.id}`)
+  if(!mainItem) {
+    console.warn('Cannot find section', item.id, 'in the settings dialog, fallback to the first section')
+    showSection(defaultSections[0]) // Fallback to the first section
+    return
+  }
+  // Update hidden
+  Array.from(main.querySelectorAll('.silex-hideable')).forEach(el => el.classList.add('silex-hidden'))
+  mainItem.classList.remove('silex-hidden')
+  // This messes up with the save / cancel mechanism
+  // displaySettings(editor, config, model)
+  // Refresh the code editor just in case it went from hidden to visible
+  // This makes it ready to be used when the user clicks on the tab
+  headEditor.refresh()
+}
+
 export function addSection(section, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number) {
   const sections = siteOrPage === 'site' ? sectionsSite : sectionsPage
   if (position === 'first') {
@@ -122,6 +154,7 @@ export function removeSection(id, siteOrPage: 'site' | 'page') {
 }
 
 
+let currentSection
 function displaySettings(editor, config, model = editor.getModel()) {
   // Update the model with the current settings
   const settings = model.get('settings') || {} as WebsiteSettings
@@ -129,7 +162,8 @@ function displaySettings(editor, config, model = editor.getModel()) {
   // Get the current sections for page or site
   const menuItemsCurrent = isSite(model) ? sectionsSite : sectionsPage
   // Init the current section selection
-  let sections = menuItemsCurrent[0]
+  currentSection = currentSection || menuItemsCurrent[0]
+  // Render the settings dialog
   render(html`
     <form class="silex-form">
       <div class="silex-help">
@@ -146,25 +180,12 @@ function displaySettings(editor, config, model = editor.getModel()) {
           <ul class="silex-list silex-list--menu">
             ${menuItemsCurrent.map(item => html`
               <li
-                class=${item.id === sections.id ? 'active' : ''}
+                id="settings-${item.id}"
+                class=${item.id === currentSection.id ? 'active' : ''}
                 @click=${e => {
     e.preventDefault()
-    sections = item
-    const li = e.target as HTMLElement
-    const ul = li.closest('ul')
-    const section = li.closest('section')
-    const mainItem = section.querySelector(`#settings-${item.id}`)
-    // Update active
-    Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
-    li.classList.add('active')
-    // Update hidden
-    Array.from(section.querySelectorAll('.silex-hideable')).forEach(el => el.classList.add('silex-hidden'))
-    mainItem.classList.remove('silex-hidden')
-    // This messes up with the save / cancel mechanism
-    // displaySettings(editor, config, model)
-    // Refresh the code editor just in case it went from hidden to visible
-    // This makes it ready to be used when the user clicks on the tab
-    headEditor.refresh()
+    // Show the new section
+    showSection(item)
     // Notify other plugins
     editor.trigger(ClientEvent.SETTINGS_SECTION_CHANGE, item.id)
   }}
@@ -174,7 +195,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
             `)}
           </ul>
         </aside>
-        <main>
+        <main id="settings__main">
             ${menuItemsCurrent.map(item => item.render(settings, model))}
         </main>
       </section>
@@ -185,6 +206,9 @@ function displaySettings(editor, config, model = editor.getModel()) {
       </footer>
     </form>
   `, el)
+  // Display the current section
+  showSection(currentSection)
+  // Init the code editor
   el.querySelector(`#${idCodeWrapper}`)?.appendChild(headEditor.getElement())
   headEditor.setContent(settings.head || '')
 }

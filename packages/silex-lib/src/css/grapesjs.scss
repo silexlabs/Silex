@@ -90,6 +90,37 @@
   right: var(--viewsPanelWidth);
 }
 
+// Sticky CSS tags section
+.top-style-section {
+  position: sticky;
+  top: -1px; /* Fixes a visual gap on the top */
+  border-bottom: solid $lighterPrimaryColor 1px;
+  background-color: $primaryColor;
+  box-shadow: 0 0 15px 0 #00000060;
+  z-index: 999;
+}
+.gjs-clm-label-sel {
+  opacity: 0.5;
+}
+.gjs-clm-sels-info {
+  padding: 7px 0;
+  margin: 0;
+  overflow-x: scroll;
+}
+.gjs-clm-sel-rule {
+  word-break: break-all;
+}
+#gjs-clm-tags-field.gjs-field {
+  margin: 0;
+}
+.gjs-clm-tags {
+  padding-top: 7px;
+  padding-bottom: 0;
+}
+#gjs-clm-up {
+  margin-top: 0;
+}
+
 /*
 */
 // Font awesome 5 fix

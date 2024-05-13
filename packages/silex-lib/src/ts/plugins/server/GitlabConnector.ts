@@ -38,6 +38,7 @@ export interface GitlabOptions {
   //metaRepoFile: string
   repoPrefix: string
   scope: string
+  domain: string
 }
 
 interface GitlabToken {
@@ -189,6 +190,8 @@ export default class GitlabConnector implements StorageConnector {
     } as GitlabOptions
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
     if(!this.options.clientSecret) throw new Error('Missing Gitlab client secret')
+    if(!this.options.domain) throw new Error('Missing Gitlab domain')
+
   }
 
   // **
@@ -224,7 +227,7 @@ export default class GitlabConnector implements StorageConnector {
   async readFile(session: GitlabSession, websiteId: string, fileName: string): Promise<Buffer> {
     const safePath = fileName.replace(/^\//, '')
     // Call the API
-    const url = `https://gitlab.com/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
+    const url = `${this.options.domain}/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${session.gitlab?.token?.access_token}`
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -273,7 +276,7 @@ export default class GitlabConnector implements StorageConnector {
     const token = session?.gitlab?.token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')
-    const url = `https://gitlab.com/${path}?${tokenParam}${paramsStr}`
+    const url = `${this.options.domain}/${path}?${tokenParam}${paramsStr}`
     const headers = {
       'Content-Type': 'application/json',
     }
@@ -304,7 +307,7 @@ export default class GitlabConnector implements StorageConnector {
           client_id: this.options.clientId,
           client_secret: this.options.clientSecret,
         }
-        const response = await fetch('https://gitlab.com/oauth/token', {
+        const response = await fetch(this.options.domain + '/oauth/token', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -391,7 +394,7 @@ export default class GitlabConnector implements StorageConnector {
       codeVerifier,
       codeChallenge,
     }
-    return `https://gitlab.com/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${session.gitlab.state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
+    return `${this.options.domain}/oauth/authorize?client_id=${this.options.clientId}&redirect_uri=${redirect_uri}&response_type=code&state=${session.gitlab.state}&scope=${this.options.scope}&code_challenge=${codeChallenge}&code_challenge_method=S256`
   }
 
   getOptions(formData: object): object {
@@ -420,7 +423,7 @@ export default class GitlabConnector implements StorageConnector {
     if(!session.gitlab?.codeVerifier) throw new ApiError('Missing code verifier', 401)
     if(!session.gitlab?.codeChallenge) throw new ApiError('Missing code challenge', 401)
 
-    const response = await fetch('https://gitlab.com/oauth/token', {
+    const response = await fetch(this.options.domain + '/oauth/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

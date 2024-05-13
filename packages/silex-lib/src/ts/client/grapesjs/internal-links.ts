@@ -60,7 +60,17 @@ export const internalLinksPlugin = (editor, opts) => {
           issues.push(component)
         }
       })
-      opts?.onError(issues)
+      // Add a notification for the issues
+      if(issues.length) {
+        issues.forEach(component => {
+          editor.runCommand('notifications:add', {
+            type: 'error',
+            message: `Page ${page.previous('name')} was removed, please fix the following links:`,
+            componentId: component.getId(),
+            group: 'Broken internal links',
+          })
+        })
+      }
       break
     }
   })
