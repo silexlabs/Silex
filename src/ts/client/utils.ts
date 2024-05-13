@@ -53,3 +53,13 @@ export async function hashString(str: string): Promise<string> {
 export function selectBody(editor: Editor): void {
   editor.select(editor.DomComponents.getWrapper())
 }
+
+/**
+ * Converts a kebab-case string into a text
+ * in which each word's first letter is capitalized.
+ * @param text The string to be converted.
+ */
+export function kebabToTitleCase(text: string): string {
+  const split = text.split('-')
+  return split.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
