@@ -63,7 +63,7 @@ import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
 import { ClientConfig } from '../config'
-import {selectBody} from "../utils";
+import {selectBody} from '../utils'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
