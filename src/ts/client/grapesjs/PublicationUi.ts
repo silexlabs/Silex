@@ -254,7 +254,7 @@ export class PublicationUi {
       render(html`<main><p>Loading</p></main>`, this.el)
       const hostingConnectors = await connectorList({ type: ConnectorType.HOSTING })
       const loggedConnectors: ConnectorData[] = hostingConnectors.filter(connector => connector.isLoggedIn)
-      if (hostingConnectors.length === 1 && loggedConnectors.length === 1) {
+      if (hostingConnectors.length === 1 && loggedConnectors.length === 1 && 0) {
         this.settings.connector = loggedConnectors[0]
         return this.renderOpenDialog(null, PublicationStatus.STATUS_NONE)
       }
@@ -265,18 +265,24 @@ export class PublicationUi {
       //}
       return html`
       <main>
-        <p>You need to connect a hosting connector to publish your website</p>
+        <p>You need to select a hosting connector to publish your website.</p>
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <p>Login error</p>
           <div>${unsafeHTML(this.errorMessage)}</div>
         ` : ''}
-        ${hostingConnectors.map(connector => html`
+        <div class="buttons">
+          ${hostingConnectors.map(connector => html`
           <button
-            class="silex-button silex-button--primary"
+            class="silex-button"
             id="publish-button--primary"
             @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
-          >${connector.displayName}</button>
+          >${connector.displayName}</button><button
+            class="silex-button"
+            id="publish-button--primary"
+            @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
+          >GitLab hosting</button>
         `)}
+        </div>
       </main>
       <footer>
         <button
