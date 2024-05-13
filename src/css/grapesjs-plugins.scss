@@ -96,6 +96,7 @@
       grid-template-columns: 1fr;
       grid-template-rows: auto;
       grid-row-gap: 0.5rem;
+      transition: 200ms;
     }
 
     svg {
@@ -163,22 +164,22 @@
       margin-bottom: 10px;
     }
 
-    .silex-button--primary {
-      background-color: $tertiaryColor;
-      transition: 200ms;
-
-      &:hover {
-        background-color: #9886ff;
-      }
-
-      &:active {
-        background-color: #8067ff;
-      }
-    }
-
     .silex-button {
       padding: 10px;
       width: 100%;
+      transition: 200ms;
+
+      &:hover {
+        filter: brightness(1.2);
+      }
+
+      &:active {
+        filter: brightness(0.8);
+      }
+    }
+
+    .silex-button--primary {
+      background-color: $tertiaryColor;
     }
   }
 }
