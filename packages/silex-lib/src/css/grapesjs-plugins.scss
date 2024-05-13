@@ -91,6 +91,13 @@
   main {
     max-height: none;
 
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      grid-row-gap: 0.5rem;
+    }
+
     svg {
       height: 0.9rem;
       margin-left: 5px;
