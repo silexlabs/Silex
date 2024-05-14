@@ -21,6 +21,7 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
 import { ConnectorData, ConnectorType, PublicationJobData, PublicationSettings } from '../../types'
 import { connectorList } from '../api'
+import { defaultKms } from './keymaps'
 
 /**
  * @fileoverview define the publication dialog
@@ -132,7 +133,7 @@ export class PublicationUi {
         id: 'publish-button',
         className: 'silex-button--size publish-button',
         command: cmdPublish,
-        attributes: { title: 'Publish' },
+        attributes: { title: `Publish [${defaultKms.kmOpenPublish}]` },
         label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
       })
     })

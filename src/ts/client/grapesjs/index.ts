@@ -57,13 +57,13 @@ import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
 import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
-import { keymapsPlugin } from './keymaps'
+import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
 import { ClientConfig } from '../config'
-import {selectBody} from '../utils'
+import { selectBody } from '../utils'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -204,12 +204,14 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'block-manager-btn',
             className: 'block-manager-btn fa fa-fw fa-plus',
-            attributes: { title: 'Blocks', containerClassName: 'block-manager-container', },
+            name: 'Blocks',
+            attributes: { title: `Blocks [${defaultKms.kmBlocks}]`, containerClassName: 'block-manager-container', },
             command: cmdToggleBlocks,
           }, {
             id: 'symbols-btn',
             className: 'symbols-btn fa-regular fa-gem',
-            attributes: { title: 'Symbols', containerClassName: 'symbols-list-container', },
+            name: 'Symbols',
+            attributes: { title: `Symbols [${defaultKms.kmSymbols}]`, containerClassName: 'symbols-list-container', },
             command: cmdToggleSymbols,
             buttons: [
               {
@@ -222,7 +224,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'page-panel-btn',
             className: 'page-panel-btn fa fa-fw fa-file',
-            attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
+            name: 'Pages',
+            attributes: { title: `Pages [${defaultKms.kmPages}]`, containerClassName: 'page-panel-container', },
             command: cmdTogglePages,
             buttons: [{
               className: 'gjs-pn-btn',
@@ -232,19 +235,22 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'layer-manager-btn',
             className: 'layer-manager-btn fa-solid fa-layer-group',
-            attributes: { title: 'Layers', containerClassName: 'layer-manager-container', },
+            name: 'Layers',
+            attributes: { title: `Layers [${defaultKms.kmLayers}]`, containerClassName: 'layer-manager-container', },
             command: cmdToggleLayers,
           }, {
             id: 'font-dialog-btn',
             className: 'font-manager-btn fa-solid fa-font',
-            attributes: { title: 'Fonts' },
+            name: 'Fonts',
+            attributes: { title: `Fonts [${defaultKms.kmOpenFonts}]` },
             command: () => {
               editor.runCommand(cmdOpenFonts)
             },
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa-solid fa-gears',
-            attributes: { title: 'Settings' },
+            name: 'Settings',
+            attributes: { title: `Settings [${defaultKms.kmOpenSettings}]` },
             command: cmdOpenSettings,
           }, {
             id: 'spacer',
@@ -253,7 +259,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'notifications-btn',
             className: 'notifications-btn fa-regular fa-bell',
-            attributes: { title: 'Notifications', containerClassName: 'notifications-container', },
+            name: 'Notifications',
+            attributes: { title: `Notifications [${defaultKms.kmNotifications}]`, containerClassName: 'notifications-container', },
             command: cmdToggleNotifications,
             buttons: [{
               className: 'gjs-pn-btn',

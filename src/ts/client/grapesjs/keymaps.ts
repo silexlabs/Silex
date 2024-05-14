@@ -7,7 +7,19 @@ import {cmdOpenSettings} from './settings'
 import {selectBody} from '../utils'
 
 export const cmdSelectBody = 'select-body'
-export let prefixKey = 'shift'
+export let prefixKey = 'Shift'
+export const defaultKms = {
+  kmOpenSettings: prefixKey + '+Alt+S',
+  kmOpenPublish: prefixKey + '+Alt+P',
+  kmOpenFonts: prefixKey + '+Alt+F',
+  kmPreviewMode: 'tab',
+  kmLayers: prefixKey + '+L',
+  kmBlocks: prefixKey + '+A',
+  kmNotifications: prefixKey + '+N',
+  kmPages: prefixKey + '+P',
+  kmSymbols: prefixKey + '+S',
+  kmClosePanel: 'Escape'
+}
 
 // Utility functions
 
@@ -47,16 +59,16 @@ export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
   const km = editor.Keymaps
 
   // Panels
-  km.add('general:open-settings', prefixKey + '+alt+s', editor => toggleCommand(editor, cmdOpenSettings))
-  km.add('general:open-publish', prefixKey + '+alt+p', editor => toggleCommand(editor, cmdPublish))
-  km.add('general:open-fonts', prefixKey + '+alt+f', editor => toggleCommand(editor, cmdOpenFonts))
-  km.add('general:preview-mode', 'tab', editor => toggleCommand(editor, 'preview'), {prevent: true})
-  km.add('panels:layers', prefixKey + '+l', editor => toggleCommand(editor, cmdToggleLayers))
-  km.add('panels:blocks', prefixKey + '+a', editor => toggleCommand(editor, cmdToggleBlocks))
-  km.add('panels:notifications', prefixKey + '+n', editor => toggleCommand(editor, cmdToggleNotifications))
-  km.add('panels:pages', prefixKey + '+p', editor => toggleCommand(editor, cmdTogglePages))
-  km.add('panels:symbols', prefixKey + '+s', editor => toggleCommand(editor, cmdToggleSymbols))
-  km.add('panels:close-panel', 'escape', resetPanel)
+  km.add('general:open-settings', defaultKms.kmOpenSettings.toLowerCase(), editor => toggleCommand(editor, cmdOpenSettings))
+  km.add('general:open-publish', defaultKms.kmOpenPublish.toLowerCase(), editor => toggleCommand(editor, cmdPublish))
+  km.add('general:open-fonts', defaultKms.kmOpenFonts.toLowerCase(), editor => toggleCommand(editor, cmdOpenFonts))
+  km.add('general:preview-mode', defaultKms.kmPreviewMode.toLowerCase(), editor => toggleCommand(editor, 'preview'), {prevent: true})
+  km.add('panels:layers', defaultKms.kmLayers.toLowerCase(), editor => toggleCommand(editor, cmdToggleLayers))
+  km.add('panels:blocks', defaultKms.kmBlocks.toLowerCase(), editor => toggleCommand(editor, cmdToggleBlocks))
+  km.add('panels:notifications', defaultKms.kmNotifications.toLowerCase(), editor => toggleCommand(editor, cmdToggleNotifications))
+  km.add('panels:pages', defaultKms.kmPages.toLowerCase(), editor => toggleCommand(editor, cmdTogglePages))
+  km.add('panels:symbols', defaultKms.kmSymbols.toLowerCase(), editor => toggleCommand(editor, cmdToggleSymbols))
+  km.add('panels:close-panel', defaultKms.kmClosePanel.toLowerCase(), resetPanel)
   // TODO: Add a keymap to close the left panel on Escape
 
   // Workflow-specific keymaps
