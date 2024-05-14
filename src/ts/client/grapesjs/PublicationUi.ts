@@ -37,6 +37,12 @@ import { connectorList } from '../api'
 export const cmdPublish = 'publish-open-dialog'
 
 // **
+// Semantic Icons
+const svgConnector = '<svg width="100%" height="100%" viewBox="0 0 44 23" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"><g><g><path d="M2,11.427c0,0 3.846,-2.655 7.376,0c3.531,2.656 7.45,0 7.45,0" style="fill:none;stroke:#a291ff;stroke-width:4px;"/></g><path d="M32.165,6.424l9.156,0" style="fill:none;stroke:#a291ff;stroke-width:4px;"/><path d="M32.165,2l0,18.854" style="fill:none;stroke:#a291ff;stroke-width:4px;"/><path d="M32.165,16.43l9.156,0" style="fill:none;stroke:#a291ff;stroke-width:4px;"/><path d="M26.253,20.854c-5.203,0 -9.427,-4.224 -9.427,-9.427c-0,-5.203 4.224,-9.427 9.427,-9.427l5.912,-0l0,18.854l-5.912,0Z" style="fill:none;stroke:#a291ff;stroke-width:4px;"/></g></svg>'
+const svgSuccess = '<svg viewBox="0 0 40 28" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"><path d="M3,12.969l11.868,11.869l21.838,-21.838" style="fill:none;stroke:#37bf76;stroke-width:6px;"/></svg>'
+const svgError = '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;"><g><path d="M3,28.915l25.915,-25.915" style="fill:none;stroke:#cf4443;stroke-width:6px;"/><path d="M28.915,28.915l-25.915,-25.915" style="fill:none;stroke:#cf4443;stroke-width:6px;"/></g></svg>'
+
+// **
 // Types
 export type PublicationDialogOptions = {
   appendTo: string
@@ -162,26 +168,39 @@ export class PublicationUi {
   async renderOpenDialog(job: PublicationJobData, status: PublicationStatus): Promise<TemplateResult> {
     return html`
     <header>
-      <h3>Publication</h3>
+      <span>${unsafeHTML(svgConnector)} Connected to <span class="connector">${this.settings.connector.displayName}</span></span>
+      ${this.settings.connector.disableLogout ? '' : html`
+      <button
+        class="silex-button silex-button--secondary"
+        id="publish-button--secondary"
+        @click=${() => this.editor.Commands.run(cmdPublicationLogout)}
+      >Disconnect
+      </button>`}
     </header>
     <main>
       ${this.isPending(status) ? html`
-        <p>Publication in progress</p>
+        <p>Publication in progress...</p>
       ` : ''}
       ${this.isReady(status) ? html`
-        <p>You are connected to ${this.settings.connector.displayName}</p><p>Click on the publish button to publish your website</p>
+        <p>Click on the button below to publish your website.</p>
         ${this.settings.options && Object.entries(this.settings.options).length && html`<p>Publication options: <ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul></p>`}
       ` : ''}
       ${this.isSuccess(status) ? html`
-        <p>Publication success</p>
+        <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
         ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : ''}
       ` : ''}
       ${this.isError(status) || this.isLoggedOut(status) ? html`
-        <p>Publication error</p>
-        <div>${unsafeHTML(this.errorMessage)}</div>
+        <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
+        <details open>
+          <summary>Details</summary>
+          ${unsafeHTML(this.errorMessage)}
+        </details>
       ` : ''}
       ${job?.message ? html`
-        <p>${unsafeHTML(job.message)}</p>
+        <details open>
+          <summary>Details</summary>
+          ${unsafeHTML(job.message)}
+        </details>
       ` : ''}
       ${this.isPending(status) ? html`
         <progress
@@ -190,17 +209,13 @@ export class PublicationUi {
         ></progress>
       ` : ''}
       ${job?.logs?.length && job.logs[0].length ? html`
-        <br><details>
+        <details>
           <summary>Logs</summary>
-          <pre style="
-            max-width: 100%;
-            font-size: x-small;
-            " >${unsafeHTML(cleanupLogEntry(job.logs))}
-          </pre>
+          <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
         </details>
       ` : ''}
       ${job?.errors?.length && job.errors[0].length ? html`
-        <br><details>
+        <details>
           <summary>Errors</summary>
           <pre style="
             max-width: 100%;
@@ -210,8 +225,6 @@ export class PublicationUi {
           </pre>
         </details>
       ` : ''}
-    </main>
-    <footer>
       ${this.isPending(status) || this.isLoggedOut(status) ? '' : html`
         <button
           class="silex-button silex-button--primary"
@@ -219,19 +232,15 @@ export class PublicationUi {
           @click=${() => this.editor.Commands.run(cmdPublicationStart)}
         >Publish</button>
       `}
+    </main>
+    <footer>
       ${this.isLoggedOut(status) ? html`
         <button
           class="silex-button silex-button--primary"
           id="publish-button--primary"
           @click=${() => this.editor.Commands.run(cmdPublicationLogin, this.settings.connector)}
         >Connect</button>
-      `: this.settings.connector.disableLogout ? '' : html`
-        <button
-          class="silex-button silex-button--secondary"
-          id="publish-button--secondary"
-          @click=${() => this.editor.Commands.run(cmdPublicationLogout)}
-        >Disconnect</button>
-      `}
+      `: ''}
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -256,18 +265,20 @@ export class PublicationUi {
       //}
       return html`
       <main>
-        <p>You need to connect a hosting connector to publish your website</p>
+        <p>You need to select a hosting connector to publish your website.</p>
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <p>Login error</p>
           <div>${unsafeHTML(this.errorMessage)}</div>
         ` : ''}
-        ${hostingConnectors.map(connector => html`
+        <div class="buttons">
+          ${hostingConnectors.map(connector => html`
           <button
-            class="silex-button silex-button--primary"
+            class="silex-button"
             id="publish-button--primary"
             @click=${() => this.editor.Commands.run(cmdPublicationLogin, connector)}
           >${connector.displayName}</button>
         `)}
+        </div>
       </main>
       <footer>
         <button
