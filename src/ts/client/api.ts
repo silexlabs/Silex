@@ -141,7 +141,14 @@ export async function api<ReqQuery, ReqBody, ResBody>(route: ApiRoute | string, 
   })
 
   if (!response.ok) {
-    const json = await response.json()
+    let json
+    try {
+      json = await response.json()
+    } catch (err) {
+      // If the response is not JSON, throw a generic error
+      // This is the case when Silex backend has an uncatched error, e.g. expressjs 413 PayloadTooLargeError: request entity too large
+      throw new ApiError(response.statusText, response.status)
+    }
     throw new ApiError(json.message, response.status)
   }
 
