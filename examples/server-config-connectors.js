@@ -15,6 +15,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * This file is an example of a server configuration file.
+ * It is used to test hosting and storage connectors.
+ *
+ * You can run the server with the following environment variable to use this configuration file:
+ * SILEX_SERVER_CONFIG=`pwd`/examples/server-config-connectors.js
+ *
+ * It expects the following environment variables to be set:
+ * - GITLAB_CLIENT_ID
+ * - GITLAB_CLIENT_SECRET
+ * - GITLAB_DOMAIN
+ * - FRAMAGIT_CLIENT_ID
+ * - FRAMAGIT_CLIENT_SECRET
+ * - FRAMAGIT_DOMAIN
+ *
+ * Suggested values:
+ * - GITLAB_DOMAIN=https://gitlab.com
+ * - FRAMAGIT_DOMAIN=https://framagit.org
+ *
+ * You need to create an application on gitlab.com and framagit.org
+ * and set the callback url to http://localhost:6805/auth/gitlab/callback
+ *
+ */
+
 const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector').default
 const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
 const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default

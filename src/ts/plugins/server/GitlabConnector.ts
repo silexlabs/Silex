@@ -104,10 +104,6 @@ interface MetaRepoFileContent {
   }
 }
 
-async function wait(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 const svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    xmlns:svg="http://www.w3.org/2000/svg"
