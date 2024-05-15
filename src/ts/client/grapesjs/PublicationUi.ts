@@ -153,6 +153,8 @@ export class PublicationUi {
     `, this.el)
       if (this.isOpen) {
         this.el.classList.remove('silex-dialog-hide')
+        const primaryBtn = this.el.querySelector('.silex-button--primary') as HTMLElement
+        if (primaryBtn) primaryBtn.focus()
       } else {
         this.el.classList.add('silex-dialog-hide')
       }

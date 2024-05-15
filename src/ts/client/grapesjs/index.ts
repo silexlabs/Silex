@@ -423,6 +423,14 @@ export async function initEditor(config: EditorConfig) {
       // Add a class to the Style Manager's sticky top section
       editor.SelectorManager.selectorTags.el.parentElement.classList.add('top-style-section')
 
+      // Automatically focuses the submit button in the modal
+      editor.on('modal', e => {
+        const submitButton = e.content.querySelector('button[type="submit"], input[type="submit"]')
+        if (submitButton) {
+          submitButton.focus()
+        }
+      })
+
       // Add the notifications container
       document.body.querySelector('.notifications-container').appendChild(notificationContainer)
       // Mark the button as dirty when there are notifications

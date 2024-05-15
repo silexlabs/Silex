@@ -23,14 +23,6 @@ export const defaultKms = {
 
 // Utility functions
 
-const isTextEditing = (editor: Editor, event: KeyboardEvent): boolean => {
-  const target = event.target as HTMLElement | null
-  const richEditing: boolean = !!editor.getEditing()
-  const inTextInput: boolean = target && ['TEXTAREA', 'INPUT'].includes(target.tagName)
-
-  return richEditing || inTextInput
-}
-
 const toggleCommand = (editor: Editor, name: string): void => {
   const cmd = editor.Commands
 

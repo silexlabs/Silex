@@ -59,7 +59,6 @@ export const settingsDialog = (editor, opts) => {
         editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
         editor.stopCommand(cmdOpenSettings)
       }
-      form.querySelector('input')?.focus()
       // Notify other plugins
       editor.trigger(ClientEvent.SETTINGS_OPEN, page)
       // Return the dialog
