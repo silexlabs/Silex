@@ -31,7 +31,7 @@ export function onAll(editor: Editor, cbk: (c: Component) => void) {
  * SHA256 hash a string
  */
 export async function hashString(str: string): Promise<string> {
-  if (crypto.subtle != undefined) { 
+  if (crypto.subtle != undefined) {
     // Convert the string to an ArrayBuffer
     const encoder = new TextEncoder()
     const data = encoder.encode(str)
@@ -45,7 +45,7 @@ export async function hashString(str: string): Promise<string> {
 
     return hashHex
   }
-  else {return 'local'} 
+  else {return 'local'}
 }
 
 /**
@@ -55,4 +55,9 @@ export async function hashString(str: string): Promise<string> {
 
 export function selectBody(editor: Editor): void {
   editor.select(editor.DomComponents.getWrapper())
+}
+
+export function isTextOrInputField(element: HTMLElement): boolean {
+  return element.tagName === 'TEXTAREA' ||
+    (element.tagName === 'INPUT' && element.getAttribute('type') !== 'submit')
 }
