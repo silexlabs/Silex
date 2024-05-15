@@ -9,9 +9,9 @@ import {selectBody} from '../utils'
 export const cmdSelectBody = 'select-body'
 export let prefixKey = 'Shift'
 export const defaultKms = {
-  kmOpenSettings: prefixKey + '+Alt+S',
-  kmOpenPublish: prefixKey + '+Alt+P',
-  kmOpenFonts: prefixKey + '+Alt+F',
+  kmOpenSettings: 'Alt+S',
+  kmOpenPublish: 'Alt+P',
+  kmOpenFonts: 'Alt+F',
   kmPreviewMode: 'tab',
   kmLayers: prefixKey + '+L',
   kmBlocks: prefixKey + '+A',
@@ -22,6 +22,14 @@ export const defaultKms = {
 }
 
 // Utility functions
+
+const isTextEditing = (editor: Editor, event: KeyboardEvent): boolean => {
+  const target = event.target as HTMLElement | null
+  const richEditing: boolean = !!editor.getEditing()
+  const inTextInput: boolean = target && ['TEXTAREA', 'INPUT'].includes(target.tagName)
+
+  return richEditing || inTextInput
+}
 
 const toggleCommand = (editor: Editor, name: string): void => {
   const cmd = editor.Commands
@@ -69,7 +77,20 @@ export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
   km.add('panels:pages', defaultKms.kmPages.toLowerCase(), editor => toggleCommand(editor, cmdTogglePages))
   km.add('panels:symbols', defaultKms.kmSymbols.toLowerCase(), editor => toggleCommand(editor, cmdToggleSymbols))
   km.add('panels:close-panel', defaultKms.kmClosePanel.toLowerCase(), resetPanel)
-  // TODO: Add a keymap to close the left panel on Escape
+
+  // Handling the Escape keymap during text edition
+  document.addEventListener('keydown', event => {
+    if (event.key === defaultKms.kmClosePanel) {
+      const target = event.target as HTMLElement | null
+      const rte = editor.getEditing()
+
+      if (rte) { // If in Rich Text edition...
+        // TODO: Close the Rich Text edition and un-focus the text field
+      } else if (target && ['TEXTAREA', 'INPUT'].includes(target.tagName)) { // If in a text field...
+        target.blur()
+      }
+    }
+  })
 
   // Workflow-specific keymaps
   km.add('workflow:select-body', prefixKey + '+b', cmdSelectBody)
