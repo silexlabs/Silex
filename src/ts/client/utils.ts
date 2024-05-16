@@ -58,6 +58,8 @@ export function selectBody(editor: Editor): void {
 }
 
 export function isTextOrInputField(element: HTMLElement): boolean {
-  return element.tagName === 'TEXTAREA' ||
-    (element.tagName === 'INPUT' && element.getAttribute('type') !== 'submit')
+  const isInput: boolean = element.tagName === 'INPUT' && element.getAttribute('type') !== 'submit'
+  const isOtherFormElement: boolean = ['TEXTAREA', 'OPTION', 'OPTGROUP', 'SELECT'].includes(element.tagName)
+
+  return isInput || isOtherFormElement
 }
