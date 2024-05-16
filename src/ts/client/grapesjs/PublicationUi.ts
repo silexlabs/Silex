@@ -22,6 +22,7 @@ import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, Publica
 import { ConnectorData, ConnectorType, PublicationJobData, PublicationSettings } from '../../types'
 import { connectorList } from '../api'
 import { defaultKms } from './keymaps'
+import { titleCase } from '../utils'
 
 /**
  * @fileoverview define the publication dialog
@@ -133,7 +134,7 @@ export class PublicationUi {
         id: 'publish-button',
         className: 'silex-button--size publish-button',
         command: cmdPublish,
-        attributes: { title: `Publish [${defaultKms.kmOpenPublish}]` },
+        attributes: { title: `Publish [${titleCase(defaultKms.kmOpenPublish.keys, '+')}]` },
         label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
       })
     })

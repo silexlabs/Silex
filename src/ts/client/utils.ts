@@ -63,3 +63,8 @@ export function isTextOrInputField(element: HTMLElement): boolean {
 
   return isInput || isOtherFormElement
 }
+
+export function titleCase(str: string, sep: string = ' '): string {
+  const split = str.split(sep)
+  return split.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(sep)
+}

@@ -7,24 +7,9 @@ import {cmdOpenSettings} from './settings'
 import {isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
 
-export const cmdSelectBody = 'select-body'
-export let prefixKey = 'Shift'
-export const defaultKms = {
-  kmOpenSettings: 'Alt+S',
-  kmOpenPublish: 'Alt+P',
-  kmOpenFonts: 'Alt+F',
-  kmPreviewMode: 'tab',
-  kmLayers: prefixKey + '+L',
-  kmBlocks: prefixKey + '+A',
-  kmNotifications: prefixKey + '+N',
-  kmPages: prefixKey + '+P',
-  kmSymbols: prefixKey + '+S',
-  kmClosePanel: 'Escape'
-}
-
 // Utility functions
 
-const toggleCommand = (editor: Editor, name: string): void => {
+function toggleCommand (editor: Editor, name: string): void {
   const cmd = editor.Commands
 
   if (!cmd.isActive(name)) {
@@ -35,7 +20,7 @@ const toggleCommand = (editor: Editor, name: string): void => {
   }
 }
 
-const resetPanel = (editor: Editor): void => {
+function resetPanel(editor: Editor): void {
   const panels: string[] = [
     cmdToggleBlocks,
     cmdToggleLayers,
@@ -52,7 +37,7 @@ const resetPanel = (editor: Editor): void => {
  * Escapes the current context in this order : modal, Publish dialog, left panel.
  * @param editor The editor.
  */
-const escapeContext = (editor: Editor): void => {
+function escapeContext(editor: Editor): void {
   const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
 
   if (editor.Modal.isOpen()) {
@@ -65,9 +50,73 @@ const escapeContext = (editor: Editor): void => {
   }
 }
 
+// Constants
+
+export const cmdSelectBody = 'select-body'
+export let prefixKey = 'shift'
+
+export const defaultKms = {
+  kmOpenSettings: {
+    id: 'general:open-settings',
+    keys: 'alt+s',
+    handler: editor => toggleCommand(editor, cmdOpenSettings)
+  },
+  kmOpenPublish: {
+    id: 'general:open-publish',
+    keys: 'alt+p',
+    handler: editor => toggleCommand(editor, cmdPublish)
+  },
+  kmOpenFonts: {
+    id: 'general:open-fonts',
+    keys: 'alt+f',
+    handler: editor => toggleCommand(editor, cmdOpenFonts)
+  },
+  kmPreviewMode: {
+    id: 'general:preview-mode',
+    keys: 'tab',
+    handler: editor => toggleCommand(editor, 'preview'),
+    options: {prevent: true}
+  },
+  kmLayers: {
+    id: 'panels:layers',
+    keys: prefixKey + '+l',
+    handler: editor => toggleCommand(editor, cmdToggleLayers)
+  },
+  kmBlocks: {
+    id: 'panels:blocks',
+    keys: prefixKey + '+a',
+    handler: editor => toggleCommand(editor, cmdToggleBlocks)
+  },
+  kmNotifications: {
+    id: 'panels:notifications',
+    keys: prefixKey + '+n',
+    handler: editor => toggleCommand(editor, cmdToggleNotifications)
+  },
+  kmPages: {
+    id: 'panels:pages',
+    keys: prefixKey + '+p',
+    handler: editor => toggleCommand(editor, cmdTogglePages)
+  },
+  kmSymbols: {
+    id: 'panels:symbols',
+    keys: prefixKey + '+s',
+    handler: editor => toggleCommand(editor, cmdToggleSymbols)
+  },
+  kmClosePanel: {
+    id: 'panels:close-panel',
+    keys: 'escape',
+    handler: escapeContext
+  },
+  kmSelectBody: {
+    id: 'workflow:select-body',
+    keys: prefixKey + '+b',
+    handler: cmdSelectBody
+  }
+}
+
 // Main part
 
-export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
+export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
   // Commands
   editor.Commands.add(cmdSelectBody, selectBody)
 
@@ -76,21 +125,14 @@ export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
 
   const km = editor.Keymaps
 
-  // Panels
-  km.add('general:open-settings', defaultKms.kmOpenSettings.toLowerCase(), editor => toggleCommand(editor, cmdOpenSettings))
-  km.add('general:open-publish', defaultKms.kmOpenPublish.toLowerCase(), editor => toggleCommand(editor, cmdPublish))
-  km.add('general:open-fonts', defaultKms.kmOpenFonts.toLowerCase(), editor => toggleCommand(editor, cmdOpenFonts))
-  km.add('general:preview-mode', defaultKms.kmPreviewMode.toLowerCase(), editor => toggleCommand(editor, 'preview'), {prevent: true})
-  km.add('panels:layers', defaultKms.kmLayers.toLowerCase(), editor => toggleCommand(editor, cmdToggleLayers))
-  km.add('panels:blocks', defaultKms.kmBlocks.toLowerCase(), editor => toggleCommand(editor, cmdToggleBlocks))
-  km.add('panels:notifications', defaultKms.kmNotifications.toLowerCase(), editor => toggleCommand(editor, cmdToggleNotifications))
-  km.add('panels:pages', defaultKms.kmPages.toLowerCase(), editor => toggleCommand(editor, cmdTogglePages))
-  km.add('panels:symbols', defaultKms.kmSymbols.toLowerCase(), editor => toggleCommand(editor, cmdToggleSymbols))
-  km.add('panels:close-panel', defaultKms.kmClosePanel.toLowerCase(), escapeContext)
+  // Default keymaps
+  for (const keymap in defaultKms) {
+    km.add(defaultKms[keymap].id, defaultKms[keymap].keys, defaultKms[keymap].handler, defaultKms[keymap].options)
+  }
 
   // Handling the Escape keymap during text edition
   document.addEventListener('keydown', event => {
-    if (event.key === defaultKms.kmClosePanel) {
+    if (event.key.toLowerCase() === defaultKms.kmClosePanel.keys) {
       const target = event.target as HTMLElement | null
       const rte = editor.getEditing()
 
@@ -105,7 +147,4 @@ export const keymapsPlugin = (editor: Editor, opts: PluginOptions): void => {
       }
     }
   })
-
-  // Workflow-specific keymaps
-  km.add('workflow:select-body', prefixKey + '+b', cmdSelectBody)
 }
