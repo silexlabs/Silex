@@ -9,6 +9,18 @@ import {PublishableEditor} from './PublicationManager'
 
 // Utility functions
 
+function getPanelCommandIds (): string[] {
+  return [
+    cmdToggleBlocks,
+    cmdToggleLayers,
+    cmdToggleNotifications,
+    cmdToggleSymbols,
+    cmdTogglePages,
+    cmdOpenSettings,
+    cmdOpenFonts
+  ]
+}
+
 function toggleCommand (editor: Editor, name: string): void {
   const cmd = editor.Commands
 
@@ -21,32 +33,25 @@ function toggleCommand (editor: Editor, name: string): void {
 }
 
 function resetPanel(editor: Editor): void {
-  const panels: string[] = [
-    cmdToggleBlocks,
-    cmdToggleLayers,
-    cmdToggleNotifications,
-    cmdToggleSymbols,
-    cmdTogglePages,
-    cmdOpenSettings,
-    cmdOpenFonts
-  ]
-  panels.forEach(p => editor.Commands.stop(p))
+  getPanelCommandIds().forEach(p => editor.Commands.stop(p))
 }
 
 /**
  * Escapes the current context in this order : modal, Publish dialog, left panel.
+ * If none of these are open, it selects the body.
  * @param editor The editor.
  */
 function escapeContext(editor: Editor): void {
   const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
 
   if (editor.Modal.isOpen()) {
-    console.log('closing modal')
     editor.Modal.close()
   } else if (publishDialog && publishDialog.isOpen) {
     publishDialog.closeDialog()
-  } else {
+  } else if (getPanelCommandIds().some(cmd => editor.Commands.isActive(cmd))) {
     resetPanel(editor)
+  } else {
+    selectBody(editor)
   }
 }
 
