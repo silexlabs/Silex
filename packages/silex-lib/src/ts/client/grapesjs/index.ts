@@ -57,11 +57,13 @@ import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
 import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
+import { defaultKms, keymapsPlugin } from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
 import { ClientConfig } from '../config'
+import { titleCase } from '../utils'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -79,6 +81,7 @@ const plugins = [
   {name: 'grapesjs-plugin-forms', value: formPlugin},
   {name: 'grapesjs-custom-code', value: codePlugin},
   {name: './internal-links', value: internalLinksPlugin},
+  {name: './keymaps', value: keymapsPlugin},
   {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
   {name: '@silexlabs/grapesjs-filter-styles', value: filterStyles},
   {name: './symbolDialogs', value: symbolDialogsPlugin},
@@ -110,6 +113,12 @@ const TERTIARY_COLOR = '#8873FE'
 const QUATERNARY_COLOR = '#A291FF'
 const DARKER_PRIMARY_COLOR = '#363636'
 const LIGHTER_PRIMARY_COLOR = '#575757'
+
+// Commands
+export const cmdToggleLayers = 'open-layers'
+export const cmdToggleBlocks = 'open-blocks'
+export const cmdToggleSymbols = 'open-symbols'
+export const cmdToggleNotifications = 'open-notifications'
 
 // ////////////////////
 // Config
@@ -195,13 +204,15 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'block-manager-btn',
             className: 'block-manager-btn fa fa-fw fa-plus',
-            attributes: { title: 'Blocks', containerClassName: 'block-manager-container', },
-            command: 'open-blocks',
+            name: 'Blocks',
+            attributes: { title: `Blocks [${titleCase(defaultKms.kmBlocks.keys, '+')}]`, containerClassName: 'block-manager-container', },
+            command: cmdToggleBlocks,
           }, {
             id: 'symbols-btn',
             className: 'symbols-btn fa-regular fa-gem',
-            attributes: { title: 'Symbols', containerClassName: 'symbols-list-container', },
-            command: 'open-symbols',
+            name: 'Symbols',
+            attributes: { title: `Symbols [${titleCase(defaultKms.kmSymbols.keys, '+')}]`, containerClassName: 'symbols-list-container', },
+            command: cmdToggleSymbols,
             buttons: [
               {
                 id: 'symbol-create-button',
@@ -213,7 +224,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'page-panel-btn',
             className: 'page-panel-btn fa fa-fw fa-file',
-            attributes: { title: 'Pages', containerClassName: 'page-panel-container', },
+            name: 'Pages',
+            attributes: { title: `Pages [${titleCase(defaultKms.kmPages.keys, '+')}]`, containerClassName: 'page-panel-container', },
             command: cmdTogglePages,
             buttons: [{
               className: 'gjs-pn-btn',
@@ -223,19 +235,22 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'layer-manager-btn',
             className: 'layer-manager-btn fa-solid fa-layer-group',
-            attributes: { title: 'Layers', containerClassName: 'layer-manager-container', },
-            command: 'open-layers',
+            name: 'Layers',
+            attributes: { title: `Layers [${titleCase(defaultKms.kmLayers.keys, '+')}]`, containerClassName: 'layer-manager-container', },
+            command: cmdToggleLayers,
           }, {
             id: 'font-dialog-btn',
             className: 'font-manager-btn fa-solid fa-font',
-            attributes: { title: 'Fonts' },
+            name: 'Fonts',
+            attributes: { title: `Fonts [${titleCase(defaultKms.kmOpenFonts.keys, '+')}]` },
             command: () => {
               editor.runCommand(cmdOpenFonts)
             },
           }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa-solid fa-gears',
-            attributes: { title: 'Settings' },
+            name: 'Settings',
+            attributes: { title: `Settings [${titleCase(defaultKms.kmOpenSettings.keys, '+')}]` },
             command: cmdOpenSettings,
           }, {
             id: 'spacer',
@@ -244,8 +259,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           }, {
             id: 'notifications-btn',
             className: 'notifications-btn fa-regular fa-bell',
-            attributes: { title: 'Notifications', containerClassName: 'notifications-container', },
-            command: 'open-notifications',
+            name: 'Notifications',
+            attributes: { title: `Notifications [${titleCase(defaultKms.kmNotifications.keys, '+')}]`, containerClassName: 'notifications-container', },
+            command: cmdToggleNotifications,
             buttons: [{
               className: 'gjs-pn-btn',
               command: 'notifications:clear',
@@ -288,6 +304,13 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       },
       [filterStyles]: {
         appendBefore: '.gjs-sm-sectors',
+      },
+      [internalLinksPlugin.toString()]: {
+        // FIXME: warn the user about links in error
+        onError: (errors) => console.warn('Links errors:', errors),
+      },
+      [keymapsPlugin.toString()]: {
+        disableKeymaps: false,
       },
       [codePlugin.toString()]: {
         blockLabel: 'HTML',
@@ -384,8 +407,8 @@ export async function initEditor(config: EditorConfig) {
 
       // Remove blocks and layers buttons from the properties
       // This is because in Silex they are on the left
-      views.buttons.remove('open-blocks')
-      views.buttons.remove('open-layers')
+      views.buttons.remove(cmdToggleBlocks)
+      views.buttons.remove(cmdToggleLayers)
 
       // Remove useless buttons
       editor.Panels.getPanel('options').buttons.remove('export-template')
