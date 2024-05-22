@@ -58,7 +58,7 @@ export interface GitlabToken {
   username?: string
 }
 
-type GitlabSession = Record<string, GitlabToken>
+export type GitlabSession = Record<string, GitlabToken>
 
 interface GitlabAction {
   action: 'create' | 'delete' | 'move' | 'update'

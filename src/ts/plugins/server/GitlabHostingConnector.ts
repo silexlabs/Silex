@@ -22,19 +22,15 @@
  * @see https://docs.gitlab.com/ee/user/project/pages/getting_started/pages_ci_cd_template.html
  */
 
-import GitlabConnector, { GitlabOptions, GitlabToken } from './GitlabConnector'
+import GitlabConnector, { GitlabOptions, GitlabSession} from './GitlabConnector'
 import { HostingConnector, ConnectorFile } from '../../server/connectors/connectors'
 import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '../../types'
 import { JobManager } from '../../server/jobs'
 import { join } from 'path'
 import { ServerConfig } from '../../server/config'
 
-//type GitlabSession = ConnectorSession
-//type GitlabOption = GitlabOptions
-type GitlabSession = Record<string, GitlabToken>
+export default class GitlabHostingConnector extends GitlabConnector implements HostingConnector {
 
-export default class GitlabHostingConnector extends GitlabConnector implements HostingConnector/*<GitlabSession>*/ {
-  connectorId = 'gitlab_hosting'
   displayName = 'Gitlab hosting'
   connectorType = ConnectorType.HOSTING
 
@@ -70,8 +66,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           - public
       rules:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH`
-    console.log(session)
-        try {
+    try {
       await this.readFile(session, websiteId, pathYml)
     } catch (e) {
       // If the file .gitlab-ci.yml does not exist, create it, otherwise do nothing (do not overwriting existing one)
@@ -80,10 +75,6 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       }
     }
 
-    /* Get Url Gitlab Pages */
-    const response = await this.callApi(session, `api/v4/projects/${websiteId}/pages`, 'GET')
-    const publicationUrl = response.url
-
     /* publishing all files for website*/
     await this.writeAssets(session, websiteId, files, async ({status, message}) => {
       // Update the job status
@@ -91,7 +82,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       job.message = message
       job.logs[0].push(message)
       if(status === JobStatus.SUCCESS) {
-        jobSuccess(job.jobId, '<a href="' + publicationUrl + '" target="_blank">' + publicationUrl + '<a>')
+        jobSuccess(job.jobId, 'Gitlab pages Published')
       } else if(status === JobStatus.ERROR) {
         job.errors[0].push(message)
         jobError(job.jobId, message)
@@ -100,10 +91,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return job
   }
 
+  /* Get and return Url Gitlab Pages */
   async getUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
-    const id = websiteId
-    const filePath = join(this.options.domain, id, 'index.html')
-    const fileUrl = new URL(filePath, 'file://')
-    return fileUrl.toString()
+    const response = await this.callApi(session, `api/v4/projects/${websiteId}/pages`, 'GET')
+    return response.url
   }
 }
