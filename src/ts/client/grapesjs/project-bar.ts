@@ -25,6 +25,7 @@ export interface PanelObject {
   command: string | ((editor: Editor) => void)
   text: string
   className: string
+  name?: string
   attributes: {
     title?: string
     containerClassName?: string
@@ -41,13 +42,13 @@ export const projectBarPlugin = (editor, opts) => {
   // create the panels container for all panels in grapesjs
   const containerPanel = editor.Panels.addPanel({
     id: containerPanelId,
-    visible  : false,
+    visible: false,
   })
   // create the project bar panel in grapesjs
   editor.Panels.addPanel({
     id: PROJECT_BAR_PANEL_ID,
     buttons: opts.panels,
-    visible  : true,
+    visible: true,
   })
   // add the panels to the container
   opts.panels.map(panel => addButton(editor, panel))
@@ -79,10 +80,11 @@ export function addButton(editor: Editor, panel: PanelObject) {
   if(panel.attributes.containerClassName) {
     el.classList.add('project-bar__panel', panel.attributes.containerClassName, 'gjs-hidden')
     // add header
-    if(panel.attributes.title) {
+    const title = panel.name ?? panel.attributes.title
+    if(title) {
       render(html`
         <header class="project-bar__panel-header">
-          <h3 class="project-bar__panel-header-title">${ panel.attributes.title }</h3>
+          <h3 class="project-bar__panel-header-title">${ title }</h3>
           ${ panel.buttons?.map(button => {
     return html`
               <div
