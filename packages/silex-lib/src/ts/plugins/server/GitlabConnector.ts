@@ -18,7 +18,7 @@
 import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE } from '../../constants'
 import { ServerConfig } from '../../server/config'
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '../../server/connectors/connectors'
-import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent } from '../../types'
+import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus } from '../../types'
 import fetch from 'node-fetch'
 import crypto, { createHash } from 'crypto'
 import { join } from 'path'
@@ -41,7 +41,7 @@ export interface GitlabOptions {
   domain: string
 }
 
-interface GitlabToken {
+export interface GitlabToken {
   state?: string
   codeVerifier?: string
   codeChallenge?: string
@@ -58,7 +58,7 @@ interface GitlabToken {
   username?: string
 }
 
-type GitlabSession = Record<string, GitlabToken>
+export type GitlabSession = Record<string, GitlabToken>
 
 interface GitlabAction {
   action: 'create' | 'delete' | 'move' | 'update'
@@ -194,26 +194,28 @@ export default class GitlabConnector implements StorageConnector {
     return encodeURIComponent(join(this.options.assetsFolder, path))
   }
 
-  private async createFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
+  async createFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
     // Remove leading slash
     const safePath = path.replace(/^\//, '')
+    const encodePath = decodeURIComponent(path)
     return this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${safePath}`, 'POST', {
       id: websiteId,
       branch: this.options.branch,
       content,
-      commit_message: `Create file ${path} from Silex`,
+      commit_message: `Create file ${encodePath} from Silex`,
       encoding: isBase64 ? 'base64' : undefined,
     })
   }
 
-  private async updateFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
+  async updateFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
     // Remove leading slash
     const safePath = path.replace(/^\//, '')
+    const encodePath = decodeURIComponent(path)
     return this.callApi(session, `api/v4/projects/${websiteId}/repository/files/${safePath}`, 'PUT', {
       id: websiteId,
       branch: this.options.branch,
       content: await contentToString(content),
-      commit_message: `Update website asset ${path} from Silex`,
+      commit_message: `Update website asset ${encodePath} from Silex`,
       encoding: isBase64 ? 'base64' : undefined,
     })
   }
@@ -266,7 +268,7 @@ export default class GitlabConnector implements StorageConnector {
   /**
    * Call the Gitlab API with the user's token and handle errors
    */
-  private async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | null = null, params: any = {}): Promise<any> {
+  async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | null = null, params: any = {}): Promise<any> {
     const token = this.getSessionToken(session).token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')
@@ -663,6 +665,7 @@ export default class GitlabConnector implements StorageConnector {
   }
 
   async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback | undefined): Promise<void> {
+    status && await status({ message: 'in progress...', status: JobStatus.IN_PROGRESS })
     // For each file
     for (const file of files) {
       // Convert to base64
@@ -676,10 +679,12 @@ export default class GitlabConnector implements StorageConnector {
         if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
           await this.createFile(session, websiteId, path, content, true)
         } else {
+          status && await status({ message: 'Error', status: JobStatus.ERROR })
           throw e
         }
       }
     }
+    status && await status({ message: 'Successfull', status: JobStatus.SUCCESS })
   }
 
   async readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent> {

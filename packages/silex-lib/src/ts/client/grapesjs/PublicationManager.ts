@@ -298,6 +298,11 @@ export class PublicationManager {
         data: data as ApiPublicationPublishBody,
         options: this.settings.options,
       })
+      
+      // in gitlab pages situation, getUrl from gitlabHostingConnector gives publication url obtained with Gitlab API pages
+      console.info('Gitlab url: ', url)
+      // could be used in an future UI
+
       this.job = job
       this.status = jobStatusToPublicationStatus(this.job.status)
       this.trackProgress()
