@@ -21,6 +21,8 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
 import { ConnectorData, ConnectorType, PublicationJobData, PublicationSettings } from '../../types'
 import { connectorList } from '../api'
+import { defaultKms } from './keymaps'
+import { titleCase } from '../utils'
 
 /**
  * @fileoverview define the publication dialog
@@ -138,7 +140,7 @@ export class PublicationUi {
         id: 'publish-button',
         className: 'silex-button--size publish-button',
         command: cmdPublish,
-        attributes: { title: 'Publish' },
+        attributes: { title: `Publish [${titleCase(defaultKms.kmOpenPublish.keys, '+')}]` },
         label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
       })
     })
@@ -158,6 +160,8 @@ export class PublicationUi {
     `, this.el)
       if (this.isOpen) {
         this.el.classList.remove('silex-dialog-hide')
+        const primaryBtn = this.el.querySelector('.silex-button--primary') as HTMLElement
+        if (primaryBtn) primaryBtn.focus()
       } else {
         this.el.classList.add('silex-dialog-hide')
       }
