@@ -331,6 +331,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       [fontsDialogPlugin.toString()]: {
         api_key: config.fontsApiKey,
         server_url: config.fontsServerUrl,
+        api_url: config.fontsApiUrl,
       },
       [loginDialogPlugin.toString()]: {
         id: websiteId,

@@ -116,6 +116,7 @@ export class ClientConfig extends Config {
    * @default Google Fonts
    */
   fontsServerUrl = 'https://fonts.googleapis.com'
+  fontsApiUrl = 'https://www.googleapis.com'
 
   /**
    * Init GrapesJS config which depend on the config file properties
