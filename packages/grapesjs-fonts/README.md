@@ -130,10 +130,13 @@ Also you should style the dialog:
 
 ## Options
 
+The options `api_url` and `server_url` are used to support Google fonts proxies, e.g fontlay and a privacy-friendly drop-in replacement for Google Fonts, e.g coollabsio's fonts server. Their default values are the Google fonts API and server.
+
 | Option | Description | Default |
 |-|-|-
 | `api_key` | Google fonts API key, [see this doc to get an API key](https://developers.google.com/fonts/docs/developer_api#APIKey) | Required |
-| `server_url` | Google fonts server or a free [privacy-friendly drop-in replacement for Google Fonts](https://github.com/coollabsio/fonts) or [a proxy server to speed up the load and protect privacy](https://fontlay.com/) | `https://fonts.googleapis.com` |
+| `api_url` | Fonts API | `https://www.googleapis.com` |
+| `server_url` | Fonts server | `https://fonts.googleapis.com` |
 
 ## Download
 

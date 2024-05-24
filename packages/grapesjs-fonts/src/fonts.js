@@ -25,6 +25,7 @@ let defaults = []
  * Options
  */
 let fontServer = 'https://fonts.googleapis.com'
+let fontApi = 'https://www.googleapis.com'
 
 /**
  * Load available fonts only once per session
@@ -82,6 +83,7 @@ async function loadFontList(url) {
 export const fontsDialogPlugin = (editor, opts) => {
     defaults = editor.StyleManager.getBuiltIn('font-family').options
     if(opts.server_url) fontServer = opts.server_url
+    if(opts.api_url) fontApi = opts.api_url
     if(!opts.api_key) throw new Error(editor.I18n.t('grapesjs-fonts.You must provide Google font api key'))
     editor.Commands.add(cmdOpenFonts, {
         /* eslint-disable-next-line */
@@ -97,7 +99,7 @@ export const fontsDialogPlugin = (editor, opts) => {
             modal.setContent(el)
             loadFonts(editor)
             displayFonts(editor, opts, [])
-            loadFontList(`${ fontServer }/webfonts/v1/webfonts?key=${ opts.api_key }`)
+            loadFontList(`${ fontApi }/webfonts/v1/webfonts?key=${ opts.api_key }`)
                 .then(fontsList => { // the run command will terminate before this is done, better for performance
                     displayFonts(editor, opts, fontsList)
                     const form = el.querySelector('form')
