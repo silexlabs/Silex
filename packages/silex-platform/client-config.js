@@ -29,6 +29,7 @@ export default async function (config) {
         dataSources: [],
         imagePlugin: false,
         i18nPlugin: false,
+        fetchPlugin: false,
         // enable11ty: false,
         view: {
             // disableStates: true,
