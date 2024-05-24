@@ -61,9 +61,10 @@ export interface GitlabToken {
 export type GitlabSession = Record<string, GitlabToken>
 
 interface GitlabAction {
-  action: 'create' | 'delete' | 'move' | 'update'
-  file_path: string
+  action: 'create' | 'delete' | 'move' | 'update' | 'cherry-pick'
+  file_path?: string
   content?: string
+  commit_id?: string
 }
 
 interface GitlabWriteFile {
@@ -92,6 +93,21 @@ interface GitlabWebsiteName {
 interface GitlabCreateBranch {
   branch: string
   ref: string
+}
+
+interface GitlabGetTags {
+  per_page?: number
+}
+
+interface GitlabCreateTag {
+  tag_name: string
+  ref: string
+  message: string
+}
+
+interface GitlabFetchCommits {
+  ref_name: string
+  since: string
 }
 
 interface MetaRepoFileContent {
@@ -268,7 +284,7 @@ export default class GitlabConnector implements StorageConnector {
   /**
    * Call the Gitlab API with the user's token and handle errors
    */
-  async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | null = null, params: any = {}): Promise<any> {
+  async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null = null, params: any = {}): Promise<any> {
     const token = this.getSessionToken(session).token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')

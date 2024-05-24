@@ -28,6 +28,7 @@ import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from
 import { JobManager } from '../../server/jobs'
 import { join } from 'path'
 import { ServerConfig } from '../../server/config'
+import { stat } from 'fs'
 
 export default class GitlabHostingConnector extends GitlabConnector implements HostingConnector {
 
@@ -60,7 +61,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
         paths:
           - public
       rules:
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+        - if: '$CI_COMMIT_TAG'
     `
     try {
       await this.readFile(session, websiteId, pathYml)
@@ -68,25 +69,37 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       // If the file .gitlab-ci.yml does not exist, create it, otherwise do nothing (do not overwriting existing one)
       if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
         await this.createFile(session, websiteId, pathYml, contentYml)
+      } else {
+        jobError(job.jobId, e.message)
       }
     }
 
+    // From here we will return the job and continue the publication in the background
+
     /* publishing all files for website*/
-    await this.writeAssets(session, websiteId, files, async ({status, message}) => {
+    this.writeAssets(session, websiteId, files, async ({status, message}) => {
       // Update the job status
-      job.status = status
-      job.message = message
-      job.logs[0].push(message)
       if(status === JobStatus.SUCCESS) {
-        const gitlabUrl = await this.getUrl(session, websiteId)
-        job.message = gitlabUrl
-        job.logs[0].push(gitlabUrl)
-        jobSuccess(job.jobId, 'Gitlab pages PUBLISHED: ' + '<a href="' + gitlabUrl + '" target="_blank">' + gitlabUrl + '</a>')
+        /* Squash and tag the commits */
+        const succes = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
+        if(succes) {
+          const gitlabUrl = await this.getUrl(session, websiteId)
+          job.message = gitlabUrl
+          job.logs[0].push(gitlabUrl)
+          jobSuccess(job.jobId, 'Gitlab pages PUBLISHED: ' + '<a href="' + gitlabUrl + '" target="_blank">' + gitlabUrl + '</a>')
+        } else {
+          // jobError will have been called in createTag
+        }
       } else if(status === JobStatus.ERROR) {
         job.errors[0].push(message)
         jobError(job.jobId, message)
       }
+      // Update the job status AFTER it has create the tag
+      job.status = status
+      job.message = message
+      job.logs[0].push(message)
     })
+
     return job
   }
 
@@ -95,4 +108,42 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     const response = await this.callApi(session, `api/v4/projects/${websiteId}/pages`, 'GET')
     return response.url
   }
+
+  async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<boolean> {
+    const projectId = websiteId // Assuming websiteId corresponds to GitLab project ID
+
+    // Fetch the latest tag and determine the new tag
+    let newTag, tags
+    try {
+      job.message = 'Fetching latest tag and commits...'
+      // Fetch the latest tag
+      tags = await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'GET', {
+        per_page: 1,
+      })
+      const latestTag = tags[0]?.name || 'v0.0.0'
+      const [major, minor, patch] = latestTag.slice(1).split('.').map(Number)
+      // Increment the minor version
+      newTag = `v${major}.${minor + 1}.${patch}`
+    } catch (error) {
+      console.error('Error during fetching latest tag:', error.message)
+      jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
+      return false
+    }
+
+    // Create a new tag
+    try {
+      job.message = `Creating new tag ${newTag}...`
+      await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'POST', {
+        tag_name: newTag,
+        ref: 'main',
+        message: 'Publication from Silex',
+      })
+    } catch (error) {
+      console.error('Error during creating new tag:', error.message)
+      jobError(job.jobId, `Failed to create new tag: ${error.message}`)
+      return false
+    }
+    return true
+  }
+
 }
