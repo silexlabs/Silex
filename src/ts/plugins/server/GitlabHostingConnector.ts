@@ -46,26 +46,21 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     job.errors = [[]]
     /* Configuration file .gitlab-ci.yml contains template for plain html Gitlab pages*/
     const pathYml = '.gitlab-ci.yml'
-    const contentYml = 
-    `# This file is a template, and might need editing before it works on your project.
-    # To contribute improvements to CI/CD templates, please follow the Development guide at:
-    # https://docs.gitlab.com/ee/development/cicd/templates.html
-    # This specific template is located at:
-    # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Pages/HTML.gitlab-ci.yml
-    
-    # Full project: https://gitlab.com/pages/plain-html
-    image: busybox
-    
+    const contentYml = `image: busybox
     pages:
       stage: deploy
       environment: production
-      script:
-        - echo "The site will be deployed to $CI_PAGES_URL"
+      script:${files.find(file => file.path.includes('.11tydata.')) ? `
+        - npx @11ty/eleventy@canary --input=public --output=_site
+        - mkdir -p public/css public/assets && cp -R public/css public/assets _site/
+        - rm -rf public && mv _site public`  : `
+        - echo "The site will be deployed to $CI_PAGES_URL"`}
       artifacts:
         paths:
           - public
       rules:
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH`
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    `
     try {
       await this.readFile(session, websiteId, pathYml)
     } catch (e) {
