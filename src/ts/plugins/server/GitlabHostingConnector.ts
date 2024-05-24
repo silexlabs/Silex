@@ -46,7 +46,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     job.errors = [[]]
     /* Configuration file .gitlab-ci.yml contains template for plain html Gitlab pages*/
     const pathYml = '.gitlab-ci.yml'
-    const contentYml = `image: busybox
+    const contentYml = `image: node:20
     pages:
       stage: deploy
       environment: production
