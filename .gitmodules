@@ -85,3 +85,6 @@
 [submodule "packages/grapesjs-notifications"]
 	path = packages/grapesjs-notifications
 	url = git@github.com:silexlabs/grapesjs-notifications.git
+[submodule "packages/grapesjs-keymaps-dialog"]
+	path = packages/grapesjs-keymaps-dialog
+	url = git@github.com:silexlabs/grapesjs-keymaps-dialog.git
