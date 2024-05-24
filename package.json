@@ -104,7 +104,7 @@
     "@fontsource/ubuntu": "^5.0.12",
     "@fortawesome/fontawesome-free": "6.5.1",
     "@silexlabs/grapesjs-filter-styles": "^1.0.0",
-    "@silexlabs/grapesjs-fonts": "^1.0.19",
+    "@silexlabs/grapesjs-fonts": "^1.0.20",
     "@silexlabs/grapesjs-loading": "1.0.9",
     "@silexlabs/grapesjs-notifications": "^0.0.8",
     "@silexlabs/grapesjs-storage-rate-limit": "^1.0.8",
