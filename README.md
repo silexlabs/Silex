@@ -30,15 +30,17 @@ Skipping silex-desktop - No readme file found
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | [DEMO](https://codepen.io/lexo1000/pen/abErmeW) |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
+| GrapesJs Notifications Plugin | `packages/grapesjs-notifications` | `git@github.com:silexlabs/grapesjs-notifications.git` | Why this plugin? GrapesJs is a powerful framework to build no-code tools and allow users to create templates using a drag-and-drop interface. However, the framework does not offer a standard way of notifying users and each plugin implements its own, which is messy and not user friendly. This plugin provides a centralized notification system that can be used by all plugins to display messages to the user. |
 | Grapesjs Loading | `packages/grapesjs-loading` | `git@github.com:silexlabs/grapesjs-loading.git` | Shows a loading bar while the site is loaded or saved. By default it looks like the classic loading bar on top of the page, e.g. on github.com. |
+| GrapesJS Keymap Dialog | `packages/grapesjs-keymaps-dialog` | `git@github.com:silexlabs/grapesjs-keymaps-dialog.git` | This GrapesJS plugin implements a floating UI showing the available keymaps for the editor. |
 | Grapesjs Fonts | `packages/grapesjs-fonts` | `git@github.com:silexlabs/grapesjs-fonts.git` | Custom Fonts plugin for grapesjs |
 | Grapesjs Filter Styles | `packages/grapesjs-filter-styles` | `git@github.com:silexlabs/grapesjs-filter-styles.git` | This plugin adds a search bar in the Style manager so that users can search for a CSS style |
 | Grapesjs Directus Storage | `packages/grapesjs-directus-storage` | `git@github.com:silexlabs/grapesjs-directus-storage.git` | Directus as a backend for GrapesJS |
 | GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
 | Expression Input component and familly | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data as a tree. |
-| Eleventy Plugin Directus | `packages/eleventy-plugin-directus` | `git@github.com:silexlabs/eleventy-plugin-directus.git` | ![combined](https://user-images.githubusercontent.com/715377/202714740-44db41be-27a7-42d9-aa58-8d72d486bcbf.png) |
+| Eleventy Plugin Directus | `packages/eleventy-plugin-directus` | `git@github.com:silexlabs/eleventy-plugin-directus.git` | # ⚠️ **Deprecated** ⚠️ |
 | eleventy-plugin-concat | `packages/eleventy-plugin-concat` | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
-| Silex instances by Silex Labs | `packages/editor.silex.me` | `git@github.com:silexlabs/editor.silex.me.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me). |
+| Silex instances by Silex Labs | `packages/editor.silex.me` | `git@github.com:silexlabs/editor.silex.me.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me). |
 | 11ty_silex.me 2024 | `packages/11ty_silex.me-2024` | `git@gitlab.com:lexoyo/11ty_silex.me-2024.git` | ## Local dev |
 
 
@@ -61,7 +63,7 @@ Useful commands
 
 * Start Silex: `npm start` (or use `npm run start:debug`)
 * Release a package (which is in packages/$PACKAGE_NAME) and bump version of a library and all its dependents: `scripts/release-version packages/$PACKAGE_NAME $VERSION`, then you probably want to `git push --follow-tags` the changed packages
-* Add a project: `git submodules add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`, then add it to `workspaces` in `package.json`, then run `npm run doc`
+* Add a project: `git submodules add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`, then run `npm run doc`
 
 ## Third party dependencies
 
@@ -80,18 +82,20 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 1.98  T=0.50 s (524.0 files/s, 60612.0 lines/s)
+github.com/AlDanial/cloc v 1.98  T=0.50 s (576.0 files/s, 364400.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-TypeScript                     151           1625           5830          17645
-JavaScript                     103            523            956           3614
-Dockerfile                       2              8              7             54
+JavaScript                     121           8599          19785         125156
+TypeScript                     156           1837           5756          19930
+GraphQL                          3             63              6            666
+JSX                              1              0              2            256
+Dockerfile                       2              9              7             54
+Text                             2              6              0             34
 INI                              2              4              0             21
-liquid                           3              0              0             17
-Text                             1              0              0              2
+liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           262           2160           6793          21353
+SUM:                           288          10518          25556         146126
 -------------------------------------------------------------------------------
 
 ```
