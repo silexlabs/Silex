@@ -119,10 +119,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
         job.logs[0].push(message)
       }
     })
-    .catch(e => {
-      console.error('Error uploading files to gitlab:', e.message)
-      jobError(job.jobId, `Failed to upload files: ${e.message}`)
-    })
+      .catch(e => {
+        console.error('Error uploading files to gitlab:', e.message)
+        jobError(job.jobId, `Failed to upload files: ${e.message}`)
+      })
 
     return job
   }
