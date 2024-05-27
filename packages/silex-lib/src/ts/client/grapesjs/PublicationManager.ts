@@ -160,7 +160,7 @@ export class PublicationManager {
       }
       this.status = PublicationStatus.STATUS_NONE
       // Save the website with the new settings
-      this.editor.store(null)
+      await this.editor.store(null)
       // Display the dialog
       this.dialog && this.dialog.displayPending(this.job, this.status)
       return
@@ -298,7 +298,7 @@ export class PublicationManager {
         data: data as ApiPublicationPublishBody,
         options: this.settings.options,
       })
-      
+
       // in gitlab pages situation, getUrl from gitlabHostingConnector gives publication url obtained with Gitlab API pages
       console.info('Gitlab url: ', url)
       // could be used in an future UI

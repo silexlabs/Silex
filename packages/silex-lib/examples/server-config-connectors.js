@@ -41,6 +41,7 @@
 
 const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector').default
 const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
+const GitlabHostingConnector = require('../dist/plugins/server/plugins/server/GitlabHostingConnector').default
 const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default
 
 class FramaGitConnector extends GitlabConnector {
@@ -59,6 +60,11 @@ module.exports = async function (config, options) {
   config.setHostingConnectors([
     new FtpConnector(config, {
       type: 'HOSTING',
+    }),
+    new GitlabHostingConnector(config, {
+      clientId: process.env.GITLAB_CLIENT_ID,
+      clientSecret: process.env.GITLAB_CLIENT_SECRET,
+      domain: process.env.GITLAB_DOMAIN,
     }),
     new DownloadPlugin(config),
   ])
