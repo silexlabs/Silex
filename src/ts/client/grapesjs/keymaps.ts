@@ -54,11 +54,19 @@ function openStyleManager(editor: Editor): void {
 }
 
 /**
+ * Opens the Publish dialog.
+ * @param editor The editor.
+ */
+function openPublish(editor: Editor): void {
+  editor.Panels.getButton('options', 'publish-button').set('active', true)
+}
+
+/**
  * Opens the Publish dialog and publishes the website.
  * @param editor The editor.
  */
 function publish(editor: Editor): void {
-  editor.runCommand(cmdPublish)
+  openPublish(editor)
   editor.runCommand('publish')
 }
 
@@ -104,7 +112,7 @@ export const defaultKms = {
   kmOpenPublish: {
     id: 'general:open-publish',
     keys: 'alt+p',
-    handler: cmdPublish
+    handler: openPublish
   },
   kmOpenFonts: {
     id: 'general:open-fonts',
