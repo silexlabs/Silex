@@ -604,6 +604,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     await this.mkdir(ftp, join(rootPath, this.options.assetsFolder))
     await this.mkdir(ftp, join(rootPath, this.options.cssFolder))
     // Write files
+    // Do not await for the result, return the job and continue the publication in the background
     this.writeFile(session, '', files, '', async ({status, message}) => {
       // Update the job status
       job.status = status

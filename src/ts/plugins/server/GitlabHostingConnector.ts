@@ -37,7 +37,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
   constructor( config: ServerConfig, opts: Partial<GitlabOptions>) {
     super (config, opts)
-    /* public directory for standard gitlab pages */
+    // public directory for standard gitlab pages
     this.options.assetsFolder= 'public'
   }
 
@@ -74,30 +74,54 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       }
     }
 
-    // From here we will return the job and continue the publication in the background
-
-    /* publishing all files for website*/
+    // publishing all files for website
+    // Do not await for the result, return the job and continue the publication in the background
     this.writeAssets(session, websiteId, files, async ({status, message}) => {
       // Update the job status
       if(status === JobStatus.SUCCESS) {
         /* Squash and tag the commits */
         const succes = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
-        if(succes) {
-          const gitlabUrl = await this.getUrl(session, websiteId)
-          job.message = gitlabUrl
-          job.logs[0].push(gitlabUrl)
-          jobSuccess(job.jobId, 'Gitlab pages PUBLISHED: ' + '<a href="' + gitlabUrl + '" target="_blank">' + gitlabUrl + '</a>')
-        } else {
+        if(!succes) {
           // jobError will have been called in createTag
+          return
+        }
+        try {
+          job.message = 'Getting the website URL...'
+          job.logs[0].push(job.message)
+          const gitlabUrl = await this.getUrl(session, websiteId)
+          job.logs[0].push(`Website URL: ${gitlabUrl}`)
+          job.message = 'Getting the admin URL...'
+          job.logs[0].push(job.message)
+          const adminUrl = await this.getAdminUrl(session, websiteId)
+          job.logs[0].push(`Admin URL: ${adminUrl}`)
+          job.message = 'Getting the deployment logs URL...'
+          job.logs[0].push(job.message)
+          const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, adminUrl)
+          job.logs[0].push(`Deployment logs URL: ${gitlabJobLogsUrl}`)
+          const message = `
+            <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
+            <p>Changes may take a few minutes to appear, <a href="${gitlabJobLogsUrl}" target="_blank">follow deployment here</a>.</p>
+            <p>Manage <a href="${adminUrl}" target="_blank">GitLab Pages settings</a>.</p>
+          `
+          job.logs[0].push(message)
+          jobSuccess(job.jobId, message)
+        } catch (error) {
+          console.error('Error during getting the website URLs:', error.message)
+          jobError(job.jobId, `Failed to get the website URLs: ${error.message}`)
         }
       } else if(status === JobStatus.ERROR) {
         job.errors[0].push(message)
         jobError(job.jobId, message)
+      } else {
+        // Update the job status while uploading files
+        job.status = status
+        job.message = message
+        job.logs[0].push(message)
       }
-      // Update the job status AFTER it has create the tag
-      job.status = status
-      job.message = message
-      job.logs[0].push(message)
+    })
+    .catch(e => {
+      console.error('Error uploading files to gitlab:', e.message)
+      jobError(job.jobId, `Failed to upload files: ${e.message}`)
     })
 
     return job
@@ -109,6 +133,16 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return response.url
   }
 
+  async getAdminUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
+    const projectInfo = await this.callApi(session, `api/v4/projects/${websiteId}`, 'GET')
+    return `${projectInfo.web_url}/pages`
+  }
+
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string> {
+    const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+    return `${projectUrl}/-/jobs/${jobs[0].id}`
+  }
+
   async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<boolean> {
     const projectId = websiteId // Assuming websiteId corresponds to GitLab project ID
 
@@ -117,13 +151,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     try {
       job.message = 'Fetching latest tag and commits...'
       // Fetch the latest tag
-      tags = await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'GET', {
-        per_page: 1,
-      })
+      tags = await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'GET')
       const latestTag = tags[0]?.name || 'v0.0.0'
       const [major, minor, patch] = latestTag.slice(1).split('.').map(Number)
-      // Increment the minor version
-      newTag = `v${major}.${minor + 1}.${patch}`
+      newTag = `v${major}.${minor}.${patch + 1}`
     } catch (error) {
       console.error('Error during fetching latest tag:', error.message)
       jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
