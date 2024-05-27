@@ -94,6 +94,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.logs[0].push(job.message)
           const adminUrl = await this.getAdminUrl(session, websiteId)
           job.logs[0].push(`Admin URL: ${adminUrl}`)
+          job.message = 'Getting the page URL...'
+          job.logs[0].push(job.message)
+          const pageUrl = await this.getPageUrl(session, websiteId, adminUrl)
+          job.logs[0].push(`Page URL: ${pageUrl}`)
           job.message = 'Getting the deployment logs URL...'
           job.logs[0].push(job.message)
           const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, adminUrl)
@@ -101,7 +105,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           const message = `
             <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
             <p>Changes may take a few minutes to appear, <a href="${gitlabJobLogsUrl}" target="_blank">follow deployment here</a>.</p>
-            <p>Manage <a href="${adminUrl}" target="_blank">GitLab Pages settings</a>.</p>
+            <p>Manage <a href="${pageUrl}" target="_blank">GitLab Pages settings</a>.</p>
           `
           job.logs[0].push(message)
           jobSuccess(job.jobId, message)
@@ -135,7 +139,11 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
   async getAdminUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
     const projectInfo = await this.callApi(session, `api/v4/projects/${websiteId}`, 'GET')
-    return `${projectInfo.web_url}/pages`
+    return projectInfo.web_url
+  }
+
+  async getPageUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string> {
+    return `${projectUrl}/pages`
   }
 
   async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string> {
