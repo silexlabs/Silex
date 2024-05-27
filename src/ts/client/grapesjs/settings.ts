@@ -39,7 +39,6 @@ export const settingsDialog = (editor, opts) => {
   console.info('Silex version:', SILEX_VERSION)
   editor.Commands.add(cmdOpenSettings, {
     run: (_, sender, {page}) => {
-      console.log('open settings', page)
       modal = editor.Modal.open({
         title: page ? 'Page settings' : 'Site Settings',
         content: '',
@@ -107,7 +106,6 @@ function showSection(item: SettingsSection) {
   const ul = aside.querySelector('ul.silex-list--menu') as HTMLUListElement
   const li = ul.querySelector('li#settings-' + item.id) as HTMLLIElement
   currentSection = item
-  console.log('show section', item.id, {aside, ul, li})
   if(!li) {
     console.warn('Cannot find section', item.id, 'in the side bar, fallback to the first section')
     showSection(defaultSections[0]) // Fallback to the first section

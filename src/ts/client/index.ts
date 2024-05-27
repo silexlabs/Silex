@@ -90,16 +90,17 @@ export async function start(options = {}): Promise<void> {
     }
   } finally {
     setTimeout(() => {
-      // This needs time for grapesjs
-      editor.editor.set('changesCount', 0)
-      editor.StorageManager.setAutosave(true)
-
       // This needs time for the loader to be hidden
       document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
       document.querySelector('#gjs').classList.remove('silex-dialog-hide')
       config.emit(ClientEvent.STARTUP_END, { editor, config })
-    }, 100)
-    const um = editor.UndoManager
-    um.clear()
+      setTimeout(() => {
+        // This needs time for grapesjs to change the dom
+        // Otherwise a save is triggered on load
+        editor.editor.set('changesCount', 0)
+        editor.UndoManager.clear()
+        editor.StorageManager.setAutosave(true)
+      })
+    })
   }
 }
