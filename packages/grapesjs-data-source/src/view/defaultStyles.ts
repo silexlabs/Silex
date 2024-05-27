@@ -265,6 +265,7 @@ export const PROPERTY_STYLES = `
     border: none;
     background-color: transparent;
     width: 100%;
+    box-sizing: border-box;
   }
   .ds-section .ds-expression-input__add {
     max-width: 40px;
