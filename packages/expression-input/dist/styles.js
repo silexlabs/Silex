@@ -8,12 +8,17 @@ export const inputChainStyles = css `
     align-items: center;
   }
   .fixed .hide-when-fixed,
-  :not(.fixed) .show-when-fixed {
+  .show-when-fixed {
     visibility: hidden;
     position: absolute;
     top: -9999px;
     left: -9999px;
     display: none;
+  }
+  .fixed .show-when-fixed {
+    visibility: visible;
+    position: static;
+    display: block;
   }
   label {
     width: 100%;

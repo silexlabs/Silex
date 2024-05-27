@@ -46,7 +46,7 @@ export declare class ExpressionInput extends InputChain {
     /**
      * Render the component
      */
-    render(): import("lit").TemplateResult<1>;
+    render(): import("lit-html").TemplateResult<1>;
     /**
      * Reset dirty flag and restore the initial value
      */
