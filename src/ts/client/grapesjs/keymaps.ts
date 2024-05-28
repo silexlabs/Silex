@@ -5,7 +5,6 @@ import {cmdTogglePages} from './page-panel'
 import {cmdOpenSettings} from './settings'
 import {isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
-import {cmdPublish} from './PublicationUi'
 
 function getPanelCommandIds (): string[] {
   return [
@@ -37,28 +36,9 @@ function toggleCommand (editor: Editor, name: string): void {
   }
 }
 
-/**
- * Opens the Traits Manager panel.
- * @param editor The editor.
- */
-function openTraitsManager(editor: Editor): void {
-  editor.Panels.getButton('views', 'open-tm').set('active', true)
-}
-
-/**
- * Opens the Style Manager panel.
- * @param editor The editor.
- */
-function openStyleManager(editor: Editor): void {
-  editor.Panels.getButton('views', 'open-sm').set('active', true)
-}
-
-/**
- * Opens the Publish dialog.
- * @param editor The editor.
- */
-function openPublish(editor: Editor): void {
-  editor.Panels.getButton('options', 'publish-button').set('active', true)
+function setButton(editor: Editor, panel_id: string, btn_id: string, active?: boolean): void {
+  const button = editor.Panels.getButton(panel_id, btn_id)
+  button.set('active', active ?? !button.get('active'))
 }
 
 /**
@@ -66,7 +46,7 @@ function openPublish(editor: Editor): void {
  * @param editor The editor.
  */
 function publish(editor: Editor): void {
-  openPublish(editor)
+  setButton(editor, 'options', 'publish-button', true)
   editor.runCommand('publish')
 }
 
@@ -75,7 +55,8 @@ function publish(editor: Editor): void {
  * @param editor The editor.
  */
 function resetPanel(editor: Editor): void {
-  getPanelCommandIds().forEach(p => editor.Commands.stop(p))
+  const projectBarBtns = editor.Panels.getPanels().get('project-bar-panel').buttons
+  projectBarBtns.forEach(button => button.set('active', false))
 }
 
 /**
@@ -100,65 +81,63 @@ function escapeContext(editor: Editor): void {
 // Constants
 
 export const cmdSelectBody = 'select-body'
-export const cmdDuplicateSelection = 'duplicate-selection'
 export let prefixKey = 'shift'
 
 export const defaultKms = {
   kmOpenSettings: {
     id: 'general:open-settings',
     keys: 'alt+s',
-    handler: editor => toggleCommand(editor, cmdOpenSettings)
+    handler: editor => setButton(editor, 'project-bar-panel', 'settings-dialog-btn')
   },
   kmOpenPublish: {
     id: 'general:open-publish',
     keys: 'alt+p',
-    handler: openPublish
+    handler: editor => setButton(editor, 'options', 'publish-button')
   },
   kmOpenFonts: {
     id: 'general:open-fonts',
     keys: 'alt+f',
-    handler: editor => toggleCommand(editor, cmdOpenFonts)
+    handler: editor => setButton(editor, 'project-bar-panel', 'font-dialog-btn')
   },
   kmPreviewMode: {
     id: 'general:preview-mode',
     keys: 'tab',
-    handler: editor => toggleCommand(editor, 'preview'),
-    options: {prevent: true}
+    handler: editor => setButton(editor, 'options', 'preview')
   },
   kmLayers: {
     id: 'panels:layers',
     keys: prefixKey + '+l',
-    handler: editor => toggleCommand(editor, cmdToggleLayers)
+    handler: editor => setButton(editor, 'project-bar-panel', 'layer-manager-btn')
   },
   kmBlocks: {
     id: 'panels:blocks',
     keys: prefixKey + '+a',
-    handler: editor => toggleCommand(editor, cmdToggleBlocks)
+    handler: editor => setButton(editor, 'project-bar-panel', 'block-manager-btn')
   },
   kmNotifications: {
     id: 'panels:notifications',
     keys: prefixKey + '+n',
-    handler: editor => toggleCommand(editor, cmdToggleNotifications)
+    handler: editor => setButton(editor, 'project-bar-panel', 'notifications-btn')
   },
   kmPages: {
     id: 'panels:pages',
     keys: prefixKey + '+p',
-    handler: editor => toggleCommand(editor, cmdTogglePages)
+    handler: editor => setButton(editor, 'project-bar-panel', 'page-panel-btn')
   },
   kmSymbols: {
     id: 'panels:symbols',
     keys: prefixKey + '+s',
-    handler: editor => toggleCommand(editor, cmdToggleSymbols)
+    handler: editor => setButton(editor, 'project-bar-panel', 'symbols-btn')
   },
   kmStyleManager: {
     id: 'panels:style-manager',
     keys: 'r',
-    handler: openStyleManager
+    handler: editor => setButton(editor, 'views', 'open-sm', true)
   },
   kmTraitsManager: {
     id: 'panels:traits',
     keys: 't',
-    handler: openTraitsManager
+    handler: editor => setButton(editor, 'views', 'open-tm', true)
   },
   kmClosePanel: {
     id: 'panels:close-panel',
@@ -174,7 +153,6 @@ export const defaultKms = {
     id: 'workflow:duplicate-selection',
     keys: 'ctrl+d',
     handler: 'tlb-clone',
-    options: {prevent: true}
   },
   kmPublish: {
     id: 'workflow:publish',
@@ -196,7 +174,10 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
 
   // Default keymaps
   for (const keymap in defaultKms) {
-    km.add(defaultKms[keymap].id, defaultKms[keymap].keys, defaultKms[keymap].handler, defaultKms[keymap].options)
+    km.add(defaultKms[keymap].id, defaultKms[keymap].keys, defaultKms[keymap].handler, {
+      ...defaultKms[keymap].options,
+      prevent: true
+    })
   }
 
   // Handling the Escape keymap during text edition
