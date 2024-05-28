@@ -346,11 +346,6 @@ export default class GitlabConnector implements StorageConnector {
         }
       } else {
         const message = typeof json?.message === 'object' ? Object.entries(json.message).map(entry => entry.join(' ')).join(' ') : json?.message ?? json?.error ?? response.statusText
-        if(text === '{"message":"404 User Not Found"}') {
-          // The front end sometimes try to login with a wrong user ID (e.g. undefined after Silex server update)
-          // In that case we need to logout
-          throw new ApiError('Gitlab API error (6): User Not Found', 401)
-        }
         console.error('Gitlab API error (1)', response.status, response.statusText, {url, method, body, params, text, message})
         throw new ApiError(`Gitlab API error (1): ${message}`, response.status)
       }
@@ -525,7 +520,9 @@ export default class GitlabConnector implements StorageConnector {
     //    throw e
     //  }
     //}
-    const projects = await this.callApi(session, `api/v4/users/${this.getSessionToken(session).userId}/projects`) as any[]
+    const userId = this.getSessionToken(session).userId
+    if(!userId) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
+    const projects = await this.callApi(session, `api/v4/users/${userId}/projects`) as any[]
     return projects
       .filter(p => p.name.startsWith(this.options.repoPrefix))
       .map(p => ({
