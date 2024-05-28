@@ -1,40 +1,8 @@
 import {Editor, PluginOptions} from 'grapesjs'
-import {cmdOpenFonts} from '@silexlabs/grapesjs-fonts'
-import {cmdToggleBlocks, cmdToggleLayers, cmdToggleNotifications, cmdToggleSymbols} from './index'
-import {cmdTogglePages} from './page-panel'
-import {cmdOpenSettings} from './settings'
 import {isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
 
-function getPanelCommandIds (): string[] {
-  return [
-    cmdToggleBlocks,
-    cmdToggleLayers,
-    cmdToggleNotifications,
-    cmdToggleSymbols,
-    cmdTogglePages,
-    cmdOpenSettings,
-    cmdOpenFonts
-  ]
-}
-
 // Utility functions
-
-/**
- * Toggles a stateful command.
- * @param editor The editor.
- * @param name The command name.
- */
-function toggleCommand (editor: Editor, name: string): void {
-  const cmd = editor.Commands
-
-  if (!cmd.isActive(name)) {
-    resetPanel(editor)
-    cmd.run(name)
-  } else {
-    cmd.stop(name)
-  }
-}
 
 function setButton(editor: Editor, panel_id: string, btn_id: string, active?: boolean): void {
   const button = editor.Panels.getButton(panel_id, btn_id)
@@ -66,12 +34,13 @@ function resetPanel(editor: Editor): void {
  */
 function escapeContext(editor: Editor): void {
   const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
+  const projectBarPanel = editor.Panels.getPanel('project-bar-panel')
 
   if (editor.Modal.isOpen()) {
     editor.Modal.close()
   } else if (publishDialog && publishDialog.isOpen) {
     publishDialog.closeDialog()
-  } else if (getPanelCommandIds().some(cmd => editor.Commands.isActive(cmd))) {
+  } else if (projectBarPanel.buttons.some(b => b.get('active'))) {
     resetPanel(editor)
   } else {
     selectBody(editor)
