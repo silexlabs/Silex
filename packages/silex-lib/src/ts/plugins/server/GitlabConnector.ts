@@ -349,7 +349,6 @@ export default class GitlabConnector implements StorageConnector {
         if(text === '{"message":"404 User Not Found"}') {
           // The front end sometimes try to login with a wrong user ID (e.g. undefined after Silex server update)
           // In that case we need to logout
-          // FIXME: check the client side code to avoid this
           throw new ApiError('Gitlab API error (6): User Not Found', 401)
         }
         console.error('Gitlab API error (1)', response.status, response.statusText, {url, method, body, params, text, message})
