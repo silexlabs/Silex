@@ -144,8 +144,8 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
   // Default keymaps
   for (const keymap in defaultKms) {
     km.add(defaultKms[keymap].id, defaultKms[keymap].keys, defaultKms[keymap].handler, {
-      ...defaultKms[keymap].options,
-      prevent: true
+      prevent: true,
+      ...defaultKms[keymap].options
     })
   }
 
