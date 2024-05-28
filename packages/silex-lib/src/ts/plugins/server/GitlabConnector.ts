@@ -445,9 +445,18 @@ export default class GitlabConnector implements StorageConnector {
    */
   async setToken(session: GitlabSession, loginResult: any): Promise<void> {
     const sessionToken = this.getSessionToken(session)
-    if(!loginResult.state || loginResult.state !== sessionToken?.state) throw new ApiError('Invalid state', 401)
-    if(!sessionToken?.codeVerifier) throw new ApiError('Missing code verifier', 401)
-    if(!sessionToken?.codeChallenge) throw new ApiError('Missing code challenge', 401)
+    if(!loginResult.state || loginResult.state !== sessionToken?.state) {
+      this.logout(session)
+      throw new ApiError('Invalid state', 401)
+    }
+    if(!sessionToken?.codeVerifier) {
+      this.logout(session)
+      throw new ApiError('Missing code verifier', 401)
+    }
+    if(!sessionToken?.codeChallenge) {
+      this.logout(session)
+      throw new ApiError('Missing code challenge', 401)
+    }
 
     const response = await fetch(this.options.domain + '/oauth/token', {
       method: 'POST',
@@ -521,7 +530,10 @@ export default class GitlabConnector implements StorageConnector {
     //  }
     //}
     const userId = this.getSessionToken(session).userId
-    if(!userId) throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
+    if(!userId) {
+      this.logout(session)
+      throw new ApiError('Missing Gitlab user ID. User not logged in?', 401)
+    }
     const projects = await this.callApi(session, `api/v4/users/${userId}/projects`) as any[]
     return projects
       .filter(p => p.name.startsWith(this.options.repoPrefix))
