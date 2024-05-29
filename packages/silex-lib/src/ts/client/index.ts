@@ -79,7 +79,6 @@ export async function start(options = {}): Promise<void> {
   await config.addDefaultPlugins()
 
   // Load the site
-  editor.StorageManager.setAutosave(false)
   try {
     await editor.load(null)
   } catch(e) {
@@ -89,18 +88,11 @@ export async function start(options = {}): Promise<void> {
       // Will display an error message, see in storage.ts
     }
   } finally {
-    setTimeout(() => {
+    editor.once('canvas:frame:load', ({ window }) => {
       // This needs time for the loader to be hidden
       document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
       document.querySelector('#gjs').classList.remove('silex-dialog-hide')
       config.emit(ClientEvent.STARTUP_END, { editor, config })
-      setTimeout(() => {
-        // This needs time for grapesjs to change the dom
-        // Otherwise a save is triggered on load
-        editor.editor.set('changesCount', 0)
-        editor.UndoManager.clear()
-        editor.StorageManager.setAutosave(true)
-      })
     })
   }
 }
