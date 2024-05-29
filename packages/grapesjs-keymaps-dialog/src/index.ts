@@ -1,16 +1,19 @@
 import { Editor } from 'grapesjs'
 import { KeymapsDialogManager } from './KeymapsDialogManager'
 
-const cmdKeymapsDialog = 'open-keymaps-dialog'
+export const cmdKeymapsDialog = 'open-keymaps-dialog'
+
+export const defaultOptions = {
+  longPressKey: 'shift',
+  longPressDuration: 800,
+  shortcut: 'shift+k',
+  css: null
+}
 
 export default (editor: Editor, opts = {}): void => {
   const options = {
-    ...{
-      longPressKey: 'shift',
-      longPressDuration: 800,
-      shortcut: 'shift+k',
-      css: null
-    }, ...opts
+    ...defaultOptions,
+    ...opts
   }
 
   const manager = new KeymapsDialogManager(editor, options)
