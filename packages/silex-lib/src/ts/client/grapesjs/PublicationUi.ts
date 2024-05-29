@@ -327,7 +327,9 @@ export class PublicationUi {
   async closeDialog() {
     this.isOpen = false
     this.renderDialog(null, null)
-    if(this.sender) this.sender.set('active', 0) // Deactivate the button to make it ready to be clicked again
+    if (this.sender && typeof this.sender.set === 'function') {
+      this.sender.set('active', 0)
+    } // Deactivate the button to make it ready to be clicked again
     this.sender = null
   }
   async toggleDialog() {

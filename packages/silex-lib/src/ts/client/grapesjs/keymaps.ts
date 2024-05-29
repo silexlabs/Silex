@@ -1,39 +1,30 @@
 import {Editor, PluginOptions} from 'grapesjs'
-import {cmdPublish} from './PublicationUi'
-import {cmdOpenFonts} from '@silexlabs/grapesjs-fonts'
-import {cmdToggleBlocks, cmdToggleLayers, cmdToggleNotifications, cmdToggleSymbols} from './index'
-import {cmdTogglePages} from './page-panel'
-import {cmdOpenSettings} from './settings'
 import {isTextOrInputField, selectBody} from '../utils'
 import {PublishableEditor} from './PublicationManager'
 
 // Utility functions
 
-function getPanelCommandIds (): string[] {
-  return [
-    cmdToggleBlocks,
-    cmdToggleLayers,
-    cmdToggleNotifications,
-    cmdToggleSymbols,
-    cmdTogglePages,
-    cmdOpenSettings,
-    cmdOpenFonts
-  ]
+function setButton(editor: Editor, panel_id: string, btn_id: string, active?: boolean): void {
+  const button = editor.Panels.getButton(panel_id, btn_id)
+  button.set('active', active ?? !button.get('active'))
 }
 
-function toggleCommand (editor: Editor, name: string): void {
-  const cmd = editor.Commands
-
-  if (!cmd.isActive(name)) {
-    resetPanel(editor)
-    cmd.run(name)
-  } else {
-    cmd.stop(name)
-  }
+/**
+ * Opens the Publish dialog and publishes the website.
+ * @param editor The editor.
+ */
+function publish(editor: Editor): void {
+  setButton(editor, 'options', 'publish-button', true)
+  editor.runCommand('publish')
 }
 
+/**
+ * Closes any open left panel.
+ * @param editor The editor.
+ */
 function resetPanel(editor: Editor): void {
-  getPanelCommandIds().forEach(p => editor.Commands.stop(p))
+  const projectBarBtns = editor.Panels.getPanels().get('project-bar-panel').buttons
+  projectBarBtns.forEach(button => button.set('active', false))
 }
 
 /**
@@ -43,12 +34,13 @@ function resetPanel(editor: Editor): void {
  */
 function escapeContext(editor: Editor): void {
   const publishDialog = (editor as PublishableEditor).PublicationManager.dialog
+  const projectBarPanel = editor.Panels.getPanel('project-bar-panel')
 
   if (editor.Modal.isOpen()) {
     editor.Modal.close()
   } else if (publishDialog && publishDialog.isOpen) {
     publishDialog.closeDialog()
-  } else if (getPanelCommandIds().some(cmd => editor.Commands.isActive(cmd))) {
+  } else if (projectBarPanel.buttons.some(b => b.get('active'))) {
     resetPanel(editor)
   } else {
     selectBody(editor)
@@ -64,48 +56,57 @@ export const defaultKms = {
   kmOpenSettings: {
     id: 'general:open-settings',
     keys: 'alt+s',
-    handler: editor => toggleCommand(editor, cmdOpenSettings)
+    handler: editor => setButton(editor, 'project-bar-panel', 'settings-dialog-btn')
   },
   kmOpenPublish: {
     id: 'general:open-publish',
     keys: 'alt+p',
-    handler: editor => toggleCommand(editor, cmdPublish)
+    handler: editor => setButton(editor, 'options', 'publish-button')
   },
   kmOpenFonts: {
     id: 'general:open-fonts',
     keys: 'alt+f',
-    handler: editor => toggleCommand(editor, cmdOpenFonts)
+    handler: editor => setButton(editor, 'project-bar-panel', 'font-dialog-btn')
   },
   kmPreviewMode: {
     id: 'general:preview-mode',
     keys: 'tab',
-    handler: editor => toggleCommand(editor, 'preview'),
-    options: {prevent: true}
+    handler: editor => setButton(editor, 'options', 'preview')
   },
   kmLayers: {
     id: 'panels:layers',
     keys: prefixKey + '+l',
-    handler: editor => toggleCommand(editor, cmdToggleLayers)
+    handler: editor => setButton(editor, 'project-bar-panel', 'layer-manager-btn')
   },
   kmBlocks: {
     id: 'panels:blocks',
     keys: prefixKey + '+a',
-    handler: editor => toggleCommand(editor, cmdToggleBlocks)
+    handler: editor => setButton(editor, 'project-bar-panel', 'block-manager-btn')
   },
   kmNotifications: {
     id: 'panels:notifications',
     keys: prefixKey + '+n',
-    handler: editor => toggleCommand(editor, cmdToggleNotifications)
+    handler: editor => setButton(editor, 'project-bar-panel', 'notifications-btn')
   },
   kmPages: {
     id: 'panels:pages',
     keys: prefixKey + '+p',
-    handler: editor => toggleCommand(editor, cmdTogglePages)
+    handler: editor => setButton(editor, 'project-bar-panel', 'page-panel-btn')
   },
   kmSymbols: {
     id: 'panels:symbols',
     keys: prefixKey + '+s',
-    handler: editor => toggleCommand(editor, cmdToggleSymbols)
+    handler: editor => setButton(editor, 'project-bar-panel', 'symbols-btn')
+  },
+  kmStyleManager: {
+    id: 'panels:style-manager',
+    keys: 'r',
+    handler: editor => setButton(editor, 'views', 'open-sm', true)
+  },
+  kmTraitsManager: {
+    id: 'panels:traits',
+    keys: 't',
+    handler: editor => setButton(editor, 'views', 'open-tm', true)
   },
   kmClosePanel: {
     id: 'panels:close-panel',
@@ -116,6 +117,16 @@ export const defaultKms = {
     id: 'workflow:select-body',
     keys: prefixKey + '+b',
     handler: cmdSelectBody
+  },
+  kmDuplicateSelection: {
+    id: 'workflow:duplicate-selection',
+    keys: 'ctrl+d',
+    handler: 'tlb-clone',
+  },
+  kmPublish: {
+    id: 'workflow:publish',
+    keys: 'ctrl+alt+p',
+    handler: publish
   }
 }
 
@@ -132,7 +143,10 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
 
   // Default keymaps
   for (const keymap in defaultKms) {
-    km.add(defaultKms[keymap].id, defaultKms[keymap].keys, defaultKms[keymap].handler, defaultKms[keymap].options)
+    km.add(defaultKms[keymap].id, defaultKms[keymap].keys, defaultKms[keymap].handler, {
+      prevent: true,
+      ...defaultKms[keymap].options
+    })
   }
 
   // Handling the Escape keymap during text edition

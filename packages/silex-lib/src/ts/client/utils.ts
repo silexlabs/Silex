@@ -52,11 +52,14 @@ export async function hashString(str: string): Promise<string> {
  * Select the <body> element in the editor.
  * @param editor The GrapesJS editor.
  */
-
 export function selectBody(editor: Editor): void {
   editor.select(editor.DomComponents.getWrapper())
 }
 
+/**
+ * Checks if an element is a text or input field.
+ * @param element The element to check.
+ */
 export function isTextOrInputField(element: HTMLElement): boolean {
   const isInput: boolean = element.tagName === 'INPUT' && element.getAttribute('type') !== 'submit'
   const isOtherFormElement: boolean = ['TEXTAREA', 'OPTION', 'OPTGROUP', 'SELECT'].includes(element.tagName)
@@ -64,6 +67,11 @@ export function isTextOrInputField(element: HTMLElement): boolean {
   return isInput || isOtherFormElement
 }
 
+/**
+ * Makes every word in a string start with an uppercase letter.
+ * @param str The string to title-case.
+ * @param sep The separator between words.
+ */
 export function titleCase(str: string, sep: string = ' '): string {
   const split = str.split(sep)
   return split.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(sep)
