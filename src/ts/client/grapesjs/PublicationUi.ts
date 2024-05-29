@@ -140,7 +140,7 @@ export class PublicationUi {
         id: 'publish-button',
         className: 'silex-button--size publish-button',
         command: cmdPublish,
-        attributes: { title: `Publish [${titleCase(defaultKms.kmOpenPublish.keys, '+')}]` },
+        attributes: { title: `Publish (${titleCase(defaultKms.kmOpenPublish.keys, '+')})` },
         label: '<span class="fa-solid fa-upload"></span><span class="silex-button--small">Publish</span>',
       })
     })
