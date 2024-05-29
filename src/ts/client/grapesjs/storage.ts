@@ -38,9 +38,7 @@ export const storagePlugin = (editor) => {
             try {
               editor.StorageManager.setAutosave(false)
               const data = await editor.Storage.load(options)
-              editor.on('canvas:frame:load', ({ window }) => {
-                // This needs time for grapesjs to change the dom
-                // Otherwise a save is triggered on load
+              editor.once('canvas:frame:load', ({ window }) => {
                 editor.editor.set('changesCount', 0)
                 editor.UndoManager.clear()
                 editor.StorageManager.setAutosave(true)

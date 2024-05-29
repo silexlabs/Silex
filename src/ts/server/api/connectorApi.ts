@@ -97,7 +97,7 @@ async function routeUser(req: Request, res: Response) {
     res.json(user as ApiConnectorUserResponse)
   } catch (error) {
     console.error('Error in the user request', error, error.code)
-    res.status(validateStatus(error?.code ?? error?.httpStatusCode, 500)).json({
+    res.status(validateStatus(error.code ?? error.httpStatusCode, 500)).json({
       error: true,
       message: error.message,
     } as ApiResponseError)
