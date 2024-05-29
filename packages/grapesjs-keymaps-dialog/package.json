@@ -1,6 +1,6 @@
 {
   "name": "grapesjs-keymaps-dialog",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "GrapesJS Keymap Dialog",
   "main": "dist/index.js",
   "repository": {
