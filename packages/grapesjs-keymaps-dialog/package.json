@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SuperDelphi/grapesjs-keymaps-dialog.git"
+    "url": "git+https://github.com/SuperDelphi/grapesjs-keymaps-dialog.git"
   },
   "scripts": {
     "start": "grapesjs-cli serve",
