@@ -16,9 +16,7 @@ You can open it by holding a key (``Shift`` by default) during a certain amount 
 
 You can check a demonstration of this plugin [here](##). [SOON]
 
-![image](https://github.com/SuperDelphi/grapesjs-keymaps-dialog/assets/44942598/0e4ff5b2-1695-4ce2-9b16-7d331d7220b9)
-
-
+![demo](https://github.com/SuperDelphi/grapesjs-keymaps-dialog/assets/44942598/32a4bc74-d8ff-4855-910f-fb6e6167c168)
 
 ## Options
 
@@ -34,11 +32,11 @@ You can check a demonstration of this plugin [here](##). [SOON]
 ## Download
 
 * CDN
-  * `https://unpkg.com/grapesjs-keymaps-dialog`
+  * `https://unpkg.com/@silexlabs/grapesjs-keymaps-dialog`
 * NPM
-  * `npm i grapesjs-keymaps-dialog`
+  * `npm i silexlabs@grapesjs-keymaps-dialog`
 * GIT
-  * `git clone https://github.com/SuperDelphi/grapesjs-keymaps-dialog.git`
+  * `git clone https://github.com/silexlabs/grapesjs-keymaps-dialog.git`
 
 
 
@@ -48,7 +46,7 @@ Directly in the browser
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/grapesjs-keymaps-dialog.min.js"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-keymaps-dialog"></script>
 
 <div id="gjs"></div>
 
@@ -67,7 +65,7 @@ Directly in the browser
 Modern javascript
 ```js
 import grapesjs from 'grapesjs';
-import plugin from 'grapesjs-keymaps-dialog';
+import plugin from '@silexlabs/grapesjs-keymaps-dialog';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
@@ -91,7 +89,7 @@ const editor = grapesjs.init({
 Clone the repository
 
 ```sh
-$ git clone https://github.com/SuperDelphi/grapesjs-keymaps-dialog.git
+$ git clone https://github.com/silexlabs/grapesjs-keymaps-dialog.git
 $ cd grapesjs-keymaps-dialog
 ```
 
@@ -117,4 +115,4 @@ $ npm run build
 
 ## License
 
-MIT
+AGPL-3.0-or-later

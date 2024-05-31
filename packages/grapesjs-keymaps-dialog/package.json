@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build",
+    "build": "grapesjs-cli build --patch=false",
     "bump": "npm version patch -m 'Bump v%s'"
   },
   "keywords": [
