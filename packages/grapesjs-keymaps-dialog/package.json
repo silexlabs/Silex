@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-keymaps-dialog",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "GrapesJS Keymap Dialog",
   "main": "dist/index.js",
   "repository": {
