@@ -48,6 +48,7 @@ import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
 import notificationsPlugin, { NotificationEditor } from '@silexlabs/grapesjs-notifications'
+import keymapsDialogPlugin, { cmdKeymapsDialog, defaultOptions as keymapsDialogOpts } from '@silexlabs/grapesjs-keymaps-dialog'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -57,7 +58,7 @@ import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
 import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
-import { defaultKms, keymapsPlugin } from './keymaps'
+import {defaultKms, keymapsPlugin, prefixKey} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
@@ -98,6 +99,7 @@ const plugins = [
   {name: 'grapesjs-style-border', value: borderPugin},
   {name: './resize-panel', value: resizePanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
+  {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
 ]
 // Check that all plugins are loaded correctly
 plugins
@@ -205,13 +207,13 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             id: 'block-manager-btn',
             className: 'block-manager-btn fa fa-fw fa-plus',
             name: 'Blocks',
-            attributes: { title: `Blocks [${titleCase(defaultKms.kmBlocks.keys, '+')}]`, containerClassName: 'block-manager-container', },
+            attributes: { title: `Blocks (${titleCase(defaultKms.kmBlocks.keys, '+')})`, containerClassName: 'block-manager-container', },
             command: cmdToggleBlocks,
           }, {
             id: 'symbols-btn',
             className: 'symbols-btn fa-regular fa-gem',
             name: 'Symbols',
-            attributes: { title: `Symbols [${titleCase(defaultKms.kmSymbols.keys, '+')}]`, containerClassName: 'symbols-list-container', },
+            attributes: { title: `Symbols (${titleCase(defaultKms.kmSymbols.keys, '+')})`, containerClassName: 'symbols-list-container', },
             command: cmdToggleSymbols,
             buttons: [
               {
@@ -225,7 +227,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             id: 'page-panel-btn',
             className: 'page-panel-btn fa fa-fw fa-file',
             name: 'Pages',
-            attributes: { title: `Pages [${titleCase(defaultKms.kmPages.keys, '+')}]`, containerClassName: 'page-panel-container', },
+            attributes: { title: `Pages (${titleCase(defaultKms.kmPages.keys, '+')})`, containerClassName: 'page-panel-container', },
             command: cmdTogglePages,
             buttons: [{
               className: 'gjs-pn-btn',
@@ -236,13 +238,13 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             id: 'layer-manager-btn',
             className: 'layer-manager-btn fa-solid fa-layer-group',
             name: 'Layers',
-            attributes: { title: `Layers [${titleCase(defaultKms.kmLayers.keys, '+')}]`, containerClassName: 'layer-manager-container', },
+            attributes: { title: `Layers (${titleCase(defaultKms.kmLayers.keys, '+')})`, containerClassName: 'layer-manager-container', },
             command: cmdToggleLayers,
           }, {
             id: 'font-dialog-btn',
             className: 'font-manager-btn fa-solid fa-font',
             name: 'Fonts',
-            attributes: { title: `Fonts [${titleCase(defaultKms.kmOpenFonts.keys, '+')}]` },
+            attributes: { title: `Fonts (${titleCase(defaultKms.kmOpenFonts.keys, '+')})` },
             command: () => {
               editor.runCommand(cmdOpenFonts)
             },
@@ -250,17 +252,23 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa-solid fa-gears',
             name: 'Settings',
-            attributes: { title: `Settings [${titleCase(defaultKms.kmOpenSettings.keys, '+')}]` },
+            attributes: { title: `Settings (${titleCase(defaultKms.kmOpenSettings.keys, '+')})` },
             command: cmdOpenSettings,
           }, {
             id: 'spacer',
             attributes: {},
             className: 'project-bar-spacer',
           }, {
+            id: 'keymaps-btn',
+            className: 'keymaps-btn fa-solid fa-keyboard',
+            name: 'Shortcuts',
+            attributes: { title: `Keyboard Shortcuts (${titleCase(keymapsDialogOpts.shortcut, '+')})` },
+            command: cmdKeymapsDialog,
+          }, {
             id: 'notifications-btn',
             className: 'notifications-btn fa-regular fa-bell',
             name: 'Notifications',
-            attributes: { title: `Notifications [${titleCase(defaultKms.kmNotifications.keys, '+')}]`, containerClassName: 'notifications-container', },
+            attributes: { title: `Notifications (${titleCase(defaultKms.kmNotifications.keys, '+')})`, containerClassName: 'notifications-container', },
             command: cmdToggleNotifications,
             buttons: [{
               className: 'gjs-pn-btn',
@@ -345,6 +353,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       [notificationsPlugin.toString()]: {
         container: notificationContainer,
         reverse: true,
+      },
+      [keymapsDialogPlugin.toString()]: {
+        longPressKey: prefixKey,
       },
     },
   }
