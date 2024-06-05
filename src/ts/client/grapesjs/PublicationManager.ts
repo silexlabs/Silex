@@ -173,7 +173,7 @@ export class PublicationManager {
       type: connector.type,
     }
     window.open(connector.oauthUrl || `${SERVER_URL}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN}?connectorId=${params.connectorId}&type=${params.type}`, '_blank')
-    return new Promise(resolve => {
+    return new Promise<void>((resolve, reject) => {
       const onMessage = async (event) => {
         const data = event.data as ApiConnectorLoggedInPostMessage
         if (data?.type === 'login') {
@@ -182,6 +182,7 @@ export class PublicationManager {
             this.status = PublicationStatus.STATUS_LOGGED_OUT
             this.settings = {}
             this.dialog && this.dialog.displayError(data.message, this.job, this.status)
+            reject(new Error(data.message))
           } else {
             this.editor.trigger(ClientEvent.PUBLISH_LOGIN_END)
             //const uesr = await getUser({type: connector.type, connectorId: data.connectorId})
@@ -189,10 +190,11 @@ export class PublicationManager {
             this.settings.options = data.options
             this.status = PublicationStatus.STATUS_NONE
             // Save the website with the new settings
-            this.editor.store(null)
+            await this.editor.store(null)
             // Display the dialog
             this.dialog && this.dialog.displayPending(this.job, this.status)
             //await this.startPublication()
+            resolve()
           }
         }
       }
