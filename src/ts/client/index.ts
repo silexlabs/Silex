@@ -88,11 +88,16 @@ export async function start(options = {}): Promise<void> {
       // Will display an error message, see in storage.ts
     }
   } finally {
-    editor.once('canvas:frame:load', ({ window }) => {
-      // This needs time for the loader to be hidden
-      document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
-      document.querySelector('#gjs').classList.remove('silex-dialog-hide')
-      config.emit(ClientEvent.STARTUP_END, { editor, config })
-    })
+    if(editor.getModel().getCurrentFrame().loaded) {
+      loaded(editor)
+    } else {
+      editor.once('canvas:frame:load', () => loaded(editor))
+    }
   }
+}
+
+function loaded(editor) {
+  document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
+  document.querySelector('#gjs').classList.remove('silex-dialog-hide')
+  config.emit(ClientEvent.STARTUP_END, { editor, config })
 }
