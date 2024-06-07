@@ -80,8 +80,8 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       // Update the job status
       if(status === JobStatus.SUCCESS) {
         /* Squash and tag the commits */
-        const succes = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
-        if(!succes) {
+        const successTag = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
+        if(successTag === 'failed') {
           // jobError will have been called in createTag
           return
         }
@@ -100,7 +100,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.logs[0].push(`Page URL: ${pageUrl}`)
           job.message = 'Getting the deployment logs URL...'
           job.logs[0].push(job.message)
-          const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, adminUrl)
+          const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, job, { startJob, jobSuccess, jobError }, adminUrl, successTag)
           job.logs[0].push(`Deployment logs URL: ${gitlabJobLogsUrl}`)
           const message = `
             <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
@@ -146,12 +146,32 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return `${projectUrl}/pages`
   }
 
-  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string> {
-    const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
-    return `${projectUrl}/-/jobs/${jobs[0].id}`
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string> {
+    let jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+    // waiting for the job corresponding to the current tag
+    let i = 0
+      setTimeout (() => {
+        while (jobs[0].ref !== tag && i<20) {
+          jobs = this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+          i++
+        }
+      }, 100)
+    
+    // return jobs page or job id page following timer (avoiding infinite loop)
+    if ( i===20 ) {
+      console.error('unable to get job id, waiting for ', i+1, ' cycles')
+      jobError(job.jobId, 'Failed to get job id')
+      job.message = 'Unable to get job id'
+      job.logs[0].push(job.message)
+      return `${projectUrl}/-/jobs/`
+    }
+    else {
+      console.log('job id obtained in ', i+1, ' cycles')
+      return `${projectUrl}/-/jobs/${jobs[0].id}`
+    }
   }
 
-  async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<boolean> {
+  async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<string> {
     const projectId = websiteId // Assuming websiteId corresponds to GitLab project ID
 
     // Fetch the latest tag and determine the new tag
@@ -166,7 +186,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during fetching latest tag:', error.message)
       jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
-      return false
+      return 'Failed'
     }
 
     // Create a new tag
@@ -180,9 +200,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during creating new tag:', error.message)
       jobError(job.jobId, `Failed to create new tag: ${error.message}`)
-      return false
+      return 'Failed'
     }
-    return true
+    // return new tag
+    return newTag
   }
 
 }
