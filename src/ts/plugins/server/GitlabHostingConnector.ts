@@ -150,12 +150,12 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     let jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
     // waiting for the job corresponding to the current tag
     let i = 0
-      setTimeout (() => {
-        while (jobs[0].ref !== tag && i<20) {
-          jobs = this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
-          i++
-        }
-      }, 100)
+    setTimeout (() => {
+      while (jobs[0].ref !== tag && i<20) {
+        jobs = this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+        i++
+      }
+    }, 100)
     
     // return jobs page or job id page following timer (avoiding infinite loop)
     if ( i===20 ) {
