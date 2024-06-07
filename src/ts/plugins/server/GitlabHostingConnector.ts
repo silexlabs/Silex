@@ -81,7 +81,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       if(status === JobStatus.SUCCESS) {
         /* Squash and tag the commits */
         const successTag = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
-        if(successTag === 'failed') {
+        if(successTag === 'Failed') {
           // jobError will have been called in createTag
           return
         }
