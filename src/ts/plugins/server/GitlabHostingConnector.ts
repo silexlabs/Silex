@@ -152,7 +152,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     let i = 0
     do {
       i++
-      let jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+      const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(5)
     } while (i<19)
