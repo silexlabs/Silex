@@ -155,7 +155,6 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(5000)
     } while ((Date.now() - t0) < 15000)
-    
     // failed in timelaps allowed (avoiding infinite loop)
     jobError(job.jobId, 'Failed to get job id')
     job.message = 'Unable to get job id'
