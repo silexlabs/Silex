@@ -1,4 +1,4 @@
-import { cleanStateName, concatWithLength } from "./utils"
+import { cleanStateName, concatWithLength } from './utils'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({

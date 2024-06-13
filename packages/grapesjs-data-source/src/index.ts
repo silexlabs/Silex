@@ -17,7 +17,7 @@
 
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
+import { DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { NOTIFICATION_GROUP } from './utils'
 import view from './view'
 
@@ -51,15 +51,15 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
   const dataSources = options.dataSources
     .map((ds: IDataSourceOptions) => {
       switch (ds.type) {
-        case 'graphql': return new GraphQL(ds as GraphQLOptions)
-        default: throw new Error(`Unknown data source type: ${ds.label}`)
+      case 'graphql': return new GraphQL(ds as GraphQLOptions)
+      default: throw new Error(`Unknown data source type: ${ds.label}`)
       }
     })
   
   // Connect the data sources (async)
   Promise.all(dataSources.map(ds => ds.connect()))
-  .then(() => console.info('Data sources connected'))
-  .catch(err => console.error('Error while connecting data sources', err))
+    .then(() => console.info('Data sources connected'))
+    .catch(err => console.error('Error while connecting data sources', err))
 
   // Register the data source manager
   editor.DataSourceManager = new DataSourceManager(dataSources, editor, options)

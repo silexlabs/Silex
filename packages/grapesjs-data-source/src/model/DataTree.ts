@@ -442,12 +442,12 @@ export class DataTree {
       return null
     }
     // Get the expression of the state
-    const soredState = getState(parent, state.storedStateId, state.exposed)
-    if (!soredState?.expression) {
+    const storedState = getState(parent, state.storedStateId, state.exposed)
+    if (!storedState?.expression) {
       console.warn('State is not defined on component', parent, state)
       return null
     }
-    return soredState.expression
+    return storedState.expression
       .flatMap((token: StoredToken) => {
         switch (token.type) {
         case 'state': {

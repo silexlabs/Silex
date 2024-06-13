@@ -15,9 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from "grapesjs"
-import { TemplateResult } from "lit"
-import { DataSourceManager } from "./model/DataSourceManager"
+import { Editor } from 'grapesjs'
+import { TemplateResult } from 'lit'
+import { DataSourceManager } from './model/DataSourceManager'
 import { Button } from 'grapesjs'
 
 /**

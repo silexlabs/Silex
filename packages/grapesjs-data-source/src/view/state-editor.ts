@@ -168,7 +168,6 @@ export class StateEditor extends LitElement {
             const selected = this.editor?.getSelected() ?? this.editor?.Pages.getSelected()?.getMainComponent()
             return fromString(this.editor!, id, selected ? selected.getId(): null)
           } catch(e) {
-            // FIXME: notify user
             console.error(`Error while getting token from id ${id}`, e)
             // Return unknown
             return {
@@ -239,7 +238,7 @@ export class StateEditor extends LitElement {
     const _currentValue = this._data
 
     // Get the data to show in the "+" drop down
-    const rawCompletion = getCompletion({
+    const completion = getCompletion({
       component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
       expression: _currentValue || [],
       dataTree,
@@ -247,9 +246,8 @@ export class StateEditor extends LitElement {
       currentStateId: this.parentName || this.name,
       hideLoopData: this.hideLoopData,
     })
-    const completion = this.noFilters ? rawCompletion
-      .filter(token => token.type !== 'filter')
-      : rawCompletion
+      .filter(token => token.type !== 'filter' || !this.noFilters)
+
     const groupedCompletion = groupByType(this.editor, selected, completion, _currentValue)
 
     // Check if the expression has a fixed value and nothing else
@@ -290,6 +288,7 @@ export class StateEditor extends LitElement {
     this.popinsRef[idx] = createRef<PopinForm>()
     const optionsForm = this.getOptions(selected, _currentValue, idx)
     const partialExpression = _currentValue.slice(0, idx)
+
     const _partialCompletion = getCompletion({
       component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
       expression: partialExpression,
