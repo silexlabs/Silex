@@ -160,7 +160,8 @@ export class PublicationManager {
       }
       this.status = PublicationStatus.STATUS_NONE
       // Save the website with the new settings
-      await this.editor.store(null)
+      // WIP: prevent saving during publication
+      // await this.editor.store(null)
       // Display the dialog
       this.dialog && this.dialog.displayPending(this.job, this.status)
       return
@@ -190,7 +191,8 @@ export class PublicationManager {
             this.settings.options = data.options
             this.status = PublicationStatus.STATUS_NONE
             // Save the website with the new settings
-            await this.editor.store(null)
+            // WIP: prevent saving during publication
+            // await this.editor.store(null)
             // Display the dialog
             this.dialog && this.dialog.displayPending(this.job, this.status)
             //await this.startPublication()
