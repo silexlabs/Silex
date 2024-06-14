@@ -153,6 +153,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     do {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+      i++
+>>>>>>> parent of 84ca8ec1 (with setTimout problem corrected 3)
 =======
       i++
 >>>>>>> parent of 84ca8ec1 (with setTimout problem corrected 3)
