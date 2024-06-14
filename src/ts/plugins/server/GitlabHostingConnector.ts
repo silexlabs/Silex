@@ -149,19 +149,24 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
   // waiting for the job corresponding to the current tag
   async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string> {
-    const t0 = Date.now()
+    let i = 0
     do {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+      i++
+>>>>>>> parent of 84ca8ec1 (with setTimout problem corrected 3)
       const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
 =======
       i++
       let jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
 >>>>>>> parent of a845e081 (with setTimout problem corrected 2)
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
-      await setTimeout(5000)
-    } while ((Date.now() - t0) < 15000)
+      await setTimeout(5)
+    } while (i<19)
     
     // failed in timelaps allowed (avoiding infinite loop)
+    console.error('unable to get job id, waiting for ', i+1, ' cycles')
     jobError(job.jobId, 'Failed to get job id')
     job.message = 'Unable to get job id'
     job.logs[0].push(job.message)
