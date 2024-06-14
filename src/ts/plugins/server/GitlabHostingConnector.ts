@@ -154,17 +154,16 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       i++
 >>>>>>> parent of 84ca8ec1 (with setTimout problem corrected 3)
 =======
       i++
 >>>>>>> parent of 84ca8ec1 (with setTimout problem corrected 3)
+=======
+>>>>>>> parent of 5bd90856 (with setTimout problem corrected 4)
       const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
-=======
-      i++
-      let jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
->>>>>>> parent of a845e081 (with setTimout problem corrected 2)
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(5)
     } while (i<19)
