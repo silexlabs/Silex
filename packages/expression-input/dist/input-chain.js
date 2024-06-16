@@ -90,8 +90,8 @@ let InputChain = class InputChain extends LitElement {
                 throw new Error('Attribute name is required for input-chain');
             }
             this.options
-                .filter(option => option.selected)
-                .forEach(option => {
+                .filter((option) => option.selected)
+                .forEach((option) => {
                 event.formData.append(this.name, option.value);
             });
         };
@@ -119,9 +119,7 @@ let InputChain = class InputChain extends LitElement {
      * Render the component
      */
     render() {
-        return html `
-      <slot></slot>
-    `;
+        return html ` <slot></slot> `;
     }
     connectedCallback() {
         super.connectedCallback();
@@ -182,8 +180,7 @@ let InputChain = class InputChain extends LitElement {
             const nextIndex = (target === null || target === void 0 ? void 0 : target.value) ? idx + 1 : idx;
             if (next) {
                 // Remove all elements after next
-                children.slice(nextIndex + 1)
-                    .forEach(child => child.remove());
+                children.slice(nextIndex + 1).forEach((child) => child.remove());
                 // Reset next
                 next.value = '';
             }

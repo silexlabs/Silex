@@ -8,19 +8,19 @@ It implements the same API as HTML inputs and can be used in a form.
 
 This feature is made of these components
 
-* [x] `<popin-overlay>` behaves like a popin, disapears when it loses the focus
-* [x] `<popin-form>` extends the `<popin-overlay>` component, behaves both like a form and like an input for a parent form
-* [ ] `<custom-select>` can replace native `<select>` in the `<input-chain>` component, with label, options and help buttons
-* [ ] `<custom-option>` a custom version of the `option` tag for use with the `<custom-select>` component
-* [ ] `<custom-optgroup>` a custom version of the `optgroup` tag for use with the `<custom-select>` component
-* [ ] `<input-chain>` behaves like a select input with multi-selection but looks like a chain of `<select>` inputs
-* [x] `<expression-input>` extends `<input-chain>` and handles fixed values UI
+- [x] `<popin-overlay>` behaves like a popin, disapears when it loses the focus
+- [x] `<popin-form>` extends the `<popin-overlay>` component, behaves both like a form and like an input for a parent form
+- [ ] `<custom-select>` can replace native `<select>` in the `<input-chain>` component, with label, options and help buttons
+- [ ] `<custom-option>` a custom version of the `option` tag for use with the `<custom-select>` component
+- [ ] `<custom-optgroup>` a custom version of the `optgroup` tag for use with the `<custom-select>` component
+- [ ] `<input-chain>` behaves like a select input with multi-selection but looks like a chain of `<select>` inputs
+- [x] `<expression-input>` extends `<input-chain>` and handles fixed values UI
 
 Use cases
 
-* Build an expression the no-code way - e.g. `obj.prop1.subProp` (js), `posts | where: 'id', '123'` (liquidjs)
-* Select a folder in a file system
-* Make decisions in a decision tree
+- Build an expression the no-code way - e.g. `obj.prop1.subProp` (js), `posts | where: 'id', '123'` (liquidjs)
+- Select a folder in a file system
+- Make decisions in a decision tree
 
 ## Roadmap
 
@@ -68,18 +68,29 @@ Include the library with ESNext `import "@silexlabs/expression-input"` or direct
 Use in your HTML as a web component:
 
 ```html
-<html><body>
-  <expression-input name="form-data-name" onload="initStepSelector(event.target)"></expression-input>
-  <expression-input name="form-data-name" onload="initStepSelector(event.target)">
-    Label
-  </expression-input>
+<html>
+  <body>
+    <expression-input
+      name="form-data-name"
+      onload="initStepSelector(event.target)"
+    ></expression-input>
+    <expression-input
+      name="form-data-name"
+      onload="initStepSelector(event.target)"
+    >
+      Label
+    </expression-input>
+  </body>
+</html>
 ```
 
 The `expression-input` component has these events:
+
 - load
 - change
 
 It has these attributes:
+
 - fixed
 - fixed-type: 'none' | 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
 - reactive: boolean = false, if true, the component will not update the DOM when the value changes, you need to listen to the `change` event and update the DOM yourself
@@ -87,11 +98,13 @@ It has these attributes:
 - option-tag-name (default: option) to change the tag name of the option elements
 
 It has these properties:
+
 - steps
 - dirty
 - completion
 
 It has these slots:
+
 - placeholder
 - dirty-icon
 
@@ -109,14 +122,16 @@ function initStepSelector(stepsSelector) {
   // [Required] Provide the completion fucntion
   stepsSelector.completion = (steps) => {
     // In this example just return the same for each step
-    return [{
-      name: 'Posts',
-      icon: '',
-      type: 'Collection',
-      tags: [],
-      helpText: 'Some text with <a href="#">html links</a>',
-      errorText: 'Some error text',
-    }]
+    return [
+      {
+        name: 'Posts',
+        icon: '',
+        type: 'Collection',
+        tags: [],
+        helpText: 'Some text with <a href="#">html links</a>',
+        errorText: 'Some error text',
+      },
+    ]
   }
 }
 ```

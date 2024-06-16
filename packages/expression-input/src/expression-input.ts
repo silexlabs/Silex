@@ -1,7 +1,7 @@
 import {html} from 'lit'
-import { classMap } from 'lit/directives/class-map.js'
+import {classMap} from 'lit/directives/class-map.js'
 import {customElement, property} from 'lit/decorators.js'
-import { InputChain } from './input-chain.js'
+import {InputChain} from './input-chain.js'
 
 /**
  * @element expression-input
@@ -16,13 +16,13 @@ import { InputChain } from './input-chain.js'
  * It adds these properties
  * - [x] value and initial value
  * - [ ] dirty
- * 
+ *
  * It adds these attributes
  * - [x] allowFixed
  * - [x] fixed
- * 
+ *
  * It has these spots
- * 
+ *
  * - [x] default: the select elements for the expression
  * - [x] label
  * - [x] dirty-icon
@@ -44,11 +44,9 @@ export class ExpressionInput extends InputChain {
    * @readonly
    */
   get value(): string[] {
-    return this.fixed ? [this.getFixedInput()?.value]
-      .filter(v => !!v) as string[]
-    : this.options
-      .filter(o => o.selected && o.value)
-      .map(o => o.value)
+    return this.fixed
+      ? ([this.getFixedInput()?.value].filter((v) => !!v) as string[])
+      : this.options.filter((o) => o.selected && o.value).map((o) => o.value)
   }
 
   /**
@@ -88,32 +86,62 @@ export class ExpressionInput extends InputChain {
       <!-- header -->
       <header part="header" class="header">
         <label>
-          <div class=${classMap({dirty, 'property-name': true})} part="property-name">
+          <div
+            class=${classMap({dirty, 'property-name': true})}
+            part="property-name"
+          >
             <slot name="label"></slot>
-            ${dirty ? html`
-              <slot name="dirty-icon" part="dirty-icon" class="dirty-icon" @click=${this.reset}>
-                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
-              </slot>
-            ` : html``}
+            ${dirty
+              ? html`
+                  <slot
+                    name="dirty-icon"
+                    part="dirty-icon"
+                    class="dirty-icon"
+                    @click=${this.reset}
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
+                      ></path>
+                    </svg>
+                  </slot>
+                `
+              : html``}
           </div>
-          ${this.allowFixed ? html`
-            <div part="fixed-selector" class="fixed-selector">
-              <span
-                class=${classMap({active: this.fixed, 'fixed-selector-fixed': true})}
-                @click=${() => this.fixed = true}
-                part="fixed-selector-fixed"
-              >Fixed</span>
-              <span
-                class=${classMap({active: !this.fixed, 'fixed-selector-expression': true})}
-                @click=${() => this.fixed = false}
-                part="fixed-selector-expression"
-              >Expression</span>
-            </div>
-          ` : html``}
+          ${this.allowFixed
+            ? html`
+                <div part="fixed-selector" class="fixed-selector">
+                  <span
+                    class=${classMap({
+                      active: this.fixed,
+                      'fixed-selector-fixed': true,
+                    })}
+                    @click=${() => (this.fixed = true)}
+                    part="fixed-selector-fixed"
+                    >Fixed</span
+                  >
+                  <span
+                    class=${classMap({
+                      active: !this.fixed,
+                      'fixed-selector-expression': true,
+                    })}
+                    @click=${() => (this.fixed = false)}
+                    part="fixed-selector-expression"
+                    >Expression</span
+                  >
+                </div>
+              `
+            : html``}
         </label>
       </header>
-      <div part="property-container" class=${classMap({'property-container': true, fixed: this.fixed})}>
-        <slot class="hide-when-fixed">${this.options.length ? '' : this.placeholder}</slot>
+      <div
+        part="property-container"
+        class=${classMap({'property-container': true, fixed: this.fixed})}
+      >
+        <slot class="hide-when-fixed"
+          >${this.options.length ? '' : this.placeholder}</slot
+        >
         <slot name="fixed" part="fixed" class="show-when-fixed"></slot>
       </div>
     `
@@ -123,9 +151,9 @@ export class ExpressionInput extends InputChain {
    * Reset dirty flag and restore the initial value
    */
   reset() {
-    if(this.fixed) {
+    if (this.fixed) {
       const input = this.getFixedInput()
-      if(input) {
+      if (input) {
         input.value = ''
       } else {
         throw new Error('Input not found for fixed value')

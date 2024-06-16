@@ -54,7 +54,8 @@ export const inputChainStyles = css `
     overflow-x: auto;
     padding: 10px;
     scrollbar-width: thin;
-    scrollbar-color: var(--expression-input-active-color, #333) var(--expression-input-active-background-color, #eee);
+    scrollbar-color: var(--expression-input-active-color, #333)
+      var(--expression-input-active-background-color, #eee);
   }
   .fixed-selector,
   ::part(fixed-selector) {
@@ -67,7 +68,7 @@ export const inputChainStyles = css `
     border-radius: var(--expression-input-dirty-border-radius, 3px);
     padding: 3px;
   }
-  ul[slot="tags"] {
+  ul[slot='tags'] {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -77,7 +78,7 @@ export const inputChainStyles = css `
     display: inline;
   }
   .steps-container__separator::after {
-    content: "▶";
+    content: '▶';
     color: var(--expression-input-separator-color, #333);
     font-size: var(--expression-input-separator-font-size, 1.5em);
     margin: var(--expression-input-separator-margin, 0);
@@ -108,12 +109,18 @@ export const inputChainStyles = css `
     padding: var(--expression-input-values-ul-padding, 0);
     margin: var(--expression-input-values-ul-margin, 0);
     color: var(--expression-input-values-ul-color, #000);
-    background-color: var(--expression-input-values-ul-background-color, transparent);
+    background-color: var(
+      --expression-input-values-ul-background-color,
+      transparent
+    );
   }
   li.values-li {
     padding: var(--expression-input-values-li-padding, 5px);
     margin: var(--expression-input-values-li-margin, 0);
-    background-color: var(--expression-input-values-li-background-color, transparent);
+    background-color: var(
+      --expression-input-values-li-background-color,
+      transparent
+    );
     border-bottom: var(--expression-input-values-li-border, 1px solid #ccc);
     cursor: pointer;
     display: flex;
@@ -123,17 +130,26 @@ export const inputChainStyles = css `
     border-bottom: none;
   }
   li.values-li:hover {
-    background-color: var(--expression-input-values-li-hover-background-color, #eee);
+    background-color: var(
+      --expression-input-values-li-hover-background-color,
+      #eee
+    );
   }
   li.values-li.active {
-    background-color: var(--expression-input-values-li-active-background-color, #ccc);
+    background-color: var(
+      --expression-input-values-li-active-background-color,
+      #ccc
+    );
     font-weight: var(--expression-input-values-li-active-font-weight, bold);
   }
   li.values-li.values__title {
     /* Display this line as an array title */
     color: var(--expression-input-values-li-title-color, #333);
     background-color: var(--expression-input-values-li-background-color, #eee);
-    text-transform: var(--expression-input-values-li-title-text-transform, uppercase);
+    text-transform: var(
+      --expression-input-values-li-title-text-transform,
+      uppercase
+    );
     cursor: default;
   }
   li.values-li.values__title .values__name {
@@ -188,7 +204,10 @@ export const stepsSelectorItemStyles = css `
     border-radius: var(--expression-input-item-button-border-radius, 50%);
     width: var(--expression-input-item-button-width, 20px);
     height: var(--expression-input-item-button-height, 20px);
-    background-color: var(--expression-input-item-button-background-color, transparent);
+    background-color: var(
+      --expression-input-item-button-background-color,
+      transparent
+    );
   }
   /* button svg path white and size 10px
   */
@@ -200,32 +219,34 @@ export const stepsSelectorItemStyles = css `
     position: absolute;
   }
   */
-  slot[name="helpTitle"] {
+  slot[name='helpTitle'] {
     display: flex;
     align-items: center;
     width: 20px;
     height: 20px;
   }
-  slot[name="name"] {
+  slot[name='name'] {
     font-weight: bold;
     cursor: pointer;
   }
-  ::slotted([slot="name"]), ::slotted([slot="type"]) {
+  ::slotted([slot='name']),
+  ::slotted([slot='type']) {
     cursor: pointer;
     flex-shrink: 0;
   }
-  ::slotted([slot="name"]) {
+  ::slotted([slot='name']) {
     font-weight: var(--expression-input-item-name-font-weight, bold);
     font-size: var(--expression-input-item-name-font-size, 1rem);
     padding: var(--expression-input-item-name-padding, 5px);
   }
-  ::slotted([slot="type"]), ::slotted([slot="type"]) {
+  ::slotted([slot='type']),
+  ::slotted([slot='type']) {
     font-weight: var(--expression-input-item-type-font-weight, normal);
     font-size: var(--expression-input-item-type-font-size, 0.8rem);
     padding: var(--expression-input-item-type-padding, 5px);
   }
   .with-arrow::after {
-    content: "▼";
+    content: '▼';
     float: right;
     padding: var(--expression-input-item-arrow-padding, 5px);
   }
@@ -311,12 +332,12 @@ export const popinStyles = css `
     flex-direction: column;
   }
 
-  ::slotted([slot="header"]) {
+  ::slotted([slot='header']) {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  ::slotted([slot="body"]) * {
+  ::slotted([slot='body']) * {
     background: red !important;
   }
 `;

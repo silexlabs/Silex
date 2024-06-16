@@ -58,11 +58,9 @@ let ExpressionInput = class ExpressionInput extends InputChain {
      */
     get value() {
         var _a;
-        return this.fixed ? [(_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value]
-            .filter(v => !!v)
-            : this.options
-                .filter(o => o.selected && o.value)
-                .map(o => o.value);
+        return this.fixed
+            ? [(_a = this.getFixedInput()) === null || _a === void 0 ? void 0 : _a.value].filter((v) => !!v)
+            : this.options.filter((o) => o.selected && o.value).map((o) => o.value);
     }
     get fixed() {
         return this._fixed;
@@ -84,32 +82,62 @@ let ExpressionInput = class ExpressionInput extends InputChain {
       <!-- header -->
       <header part="header" class="header">
         <label>
-          <div class=${classMap({ dirty, 'property-name': true })} part="property-name">
+          <div
+            class=${classMap({ dirty, 'property-name': true })}
+            part="property-name"
+          >
             <slot name="label"></slot>
-            ${dirty ? html `
-              <slot name="dirty-icon" part="dirty-icon" class="dirty-icon" @click=${this.reset}>
-                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
-              </slot>
-            ` : html ``}
+            ${dirty
+            ? html `
+                  <slot
+                    name="dirty-icon"
+                    part="dirty-icon"
+                    class="dirty-icon"
+                    @click=${this.reset}
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
+                      ></path>
+                    </svg>
+                  </slot>
+                `
+            : html ``}
           </div>
-          ${this.allowFixed ? html `
-            <div part="fixed-selector" class="fixed-selector">
-              <span
-                class=${classMap({ active: this.fixed, 'fixed-selector-fixed': true })}
-                @click=${() => this.fixed = true}
-                part="fixed-selector-fixed"
-              >Fixed</span>
-              <span
-                class=${classMap({ active: !this.fixed, 'fixed-selector-expression': true })}
-                @click=${() => this.fixed = false}
-                part="fixed-selector-expression"
-              >Expression</span>
-            </div>
-          ` : html ``}
+          ${this.allowFixed
+            ? html `
+                <div part="fixed-selector" class="fixed-selector">
+                  <span
+                    class=${classMap({
+                active: this.fixed,
+                'fixed-selector-fixed': true,
+            })}
+                    @click=${() => (this.fixed = true)}
+                    part="fixed-selector-fixed"
+                    >Fixed</span
+                  >
+                  <span
+                    class=${classMap({
+                active: !this.fixed,
+                'fixed-selector-expression': true,
+            })}
+                    @click=${() => (this.fixed = false)}
+                    part="fixed-selector-expression"
+                    >Expression</span
+                  >
+                </div>
+              `
+            : html ``}
         </label>
       </header>
-      <div part="property-container" class=${classMap({ 'property-container': true, fixed: this.fixed })}>
-        <slot class="hide-when-fixed">${this.options.length ? '' : this.placeholder}</slot>
+      <div
+        part="property-container"
+        class=${classMap({ 'property-container': true, fixed: this.fixed })}
+      >
+        <slot class="hide-when-fixed"
+          >${this.options.length ? '' : this.placeholder}</slot
+        >
         <slot name="fixed" part="fixed" class="show-when-fixed"></slot>
       </div>
     `;
@@ -128,7 +156,7 @@ let ExpressionInput = class ExpressionInput extends InputChain {
             }
         }
         else {
-            this.changeAt(0, true);
+            this.changeAt(-1, true);
         }
         this.dispatchEvent(new Event('change'));
         this.requestUpdate();

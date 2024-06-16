@@ -100,20 +100,22 @@ let PopinForm = class PopinForm extends PopinOverlay {
     render() {
         super.render(); // For placement
         return html `
-    <form @submit=${this.submit} @change=${this.change}>
-      <header>
-        <slot class="header" name="header"></slot>
-      </header>
-      <main>
-        <slot class="body" part="body"></slot>
-      </main>
-      <footer>
-        <slot class="footer" name="footer">
-          <button type="button" class="secondary" @click=${this.close}>Cancel</button>
-          <button type="submit">Apply</button>
-        </slot>
-      </footer>
-    </form>
+      <form @submit=${this.submit} @change=${this.change}>
+        <header>
+          <slot class="header" name="header"></slot>
+        </header>
+        <main>
+          <slot class="body" part="body"></slot>
+        </main>
+        <footer>
+          <slot class="footer" name="footer">
+            <button type="button" class="secondary" @click=${this.close}>
+              Cancel
+            </button>
+            <button type="submit">Apply</button>
+          </slot>
+        </footer>
+      </form>
     `;
     }
     connectedCallback() {

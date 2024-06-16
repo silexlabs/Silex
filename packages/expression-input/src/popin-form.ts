@@ -1,13 +1,13 @@
 import {html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import { PopinOverlay } from './popin-overlay.js'
+import {PopinOverlay} from './popin-overlay.js'
 
 /**
  * This component extends the `<popin-overlay>` component and the native `<form>` tag
  * It handles form submissions both as an input for the parent form and with it's children inputs
- * 
+ *
  * Usage:
- * 
+ *
  * ```
  * <popin-form hidden style="width: 400px" no-auto-close>
  *   <div slot="header">Header</div>
@@ -15,9 +15,9 @@ import { PopinOverlay } from './popin-overlay.js'
  *   <div slot="footer">Footer</div>
  * </popin-form>
  * ```
- * 
- * @element popin-form 
- * @htmltag popin-form 
+ *
+ * @element popin-form
+ * @htmltag popin-form
  * @htmlslot header - The header of the dialog
  * @htmlslot default - The body of the dialog
  * @htmlslot footer - The footer of the dialog
@@ -53,7 +53,7 @@ import { PopinOverlay } from './popin-overlay.js'
  * @cssprop {Padding} --popin-button-hover-padding--secondary - The padding of the secondary button when hovered
  * @cssprop {Margin} --popin-button-margin--secondary - The margin of the secondary button
  * @cssprop {Margin} --popin-button-hover-margin--secondary - The margin of the secondary button when hovered
- * 
+ *
  */
 
 @customElement('popin-form')
@@ -79,10 +79,10 @@ export class PopinForm extends PopinOverlay {
    */
   protected _form: HTMLFormElement | null = null
   set form(newForm: HTMLFormElement | null) {
-    if(this._form) {
+    if (this._form) {
       this._form.removeEventListener('formdata', this.onFormdata_)
     }
-    if(newForm) {
+    if (newForm) {
       newForm.addEventListener('formdata', this.onFormdata_)
     }
   }
@@ -98,29 +98,31 @@ export class PopinForm extends PopinOverlay {
   override render() {
     super.render() // For placement
     return html`
-    <form @submit=${this.submit} @change=${this.change}>
-      <header>
-        <slot class="header" name="header"></slot>
-      </header>
-      <main>
-        <slot class="body" part="body"></slot>
-      </main>
-      <footer>
-        <slot class="footer" name="footer">
-          <button type="button" class="secondary" @click=${this.close}>Cancel</button>
-          <button type="submit">Apply</button>
-        </slot>
-      </footer>
-    </form>
+      <form @submit=${this.submit} @change=${this.change}>
+        <header>
+          <slot class="header" name="header"></slot>
+        </header>
+        <main>
+          <slot class="body" part="body"></slot>
+        </main>
+        <footer>
+          <slot class="footer" name="footer">
+            <button type="button" class="secondary" @click=${this.close}>
+              Cancel
+            </button>
+            <button type="submit">Apply</button>
+          </slot>
+        </footer>
+      </form>
     `
   }
 
   override connectedCallback() {
     super.connectedCallback()
     // Use the form to add formdata
-    if(this.for) {
+    if (this.for) {
       const form = document.querySelector<HTMLFormElement>(`form#${this.for}`)
-      if(form) {
+      if (form) {
         this.form = form
       }
     } else {
@@ -143,7 +145,9 @@ export class PopinForm extends PopinOverlay {
    */
   private inputs: HTMLInputElement[] = []
   private slotChanged() {
-    this.inputs = Array.from(this.querySelectorAll('input, select, textarea, [data-is-input]'))
+    this.inputs = Array.from(
+      this.querySelectorAll('input, select, textarea, [data-is-input]')
+    )
   }
 
   /**
@@ -152,14 +156,14 @@ export class PopinForm extends PopinOverlay {
   private onFormdata(event: FormDataEvent) {
     event.preventDefault()
     const formData = event.formData
-    for(const [key, value] of this.formData.entries()) {
+    for (const [key, value] of this.formData.entries()) {
       formData.set(`${this.name}-${key}`, value)
     }
   }
 
   private updateFormData() {
     this.formData = new FormData()
-    for(const input of this.inputs) {
+    for (const input of this.inputs) {
       this.formData.set(input.getAttribute('name')!, input.value)
     }
   }
@@ -174,7 +178,7 @@ export class PopinForm extends PopinOverlay {
 
   private change(event: Event) {
     const me = (event.target as HTMLFormElement).closest(this.tagName)
-    if(me === this) {
+    if (me === this) {
       event.preventDefault()
       event.stopImmediatePropagation()
     }

@@ -1,14 +1,14 @@
 import {LitElement, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import { popinStyles } from './styles.js'
+import {popinStyles} from './styles.js'
 
 /**
  * This PopinOverlay component is a simple dialog that can be used to display any html on top of your UI
  * It is not a modal, it is not blocking the UI, it is just a simple dialog that will catch focus and hide when the user press escape or click outside of it
  * The dialog will be automatically positioned where placed in the DOM but it will be moved and resized to be fully visible on all screen sizes
- * 
+ *
  * Usage:
- * 
+ *
  * ```
  * <popin-overlay hidden style="width: 400px" no-auto-close>
  *   <div slot="header">Header</div>
@@ -16,9 +16,9 @@ import { popinStyles } from './styles.js'
  *   <div slot="footer">Footer</div>
  * </popin-overlay>
  * ```
- * 
- * @element popin-overlay 
- * @htmltag popin-overlay 
+ *
+ * @element popin-overlay
+ * @htmltag popin-overlay
  * @htmlslot The content of the dialog
  * @htmlattr hidden - Hide the dialog
  * @htmlattr no-auto-close - Do not close the dialog when the user click outside of it
@@ -26,7 +26,7 @@ import { popinStyles } from './styles.js'
  * @fires {CustomEvent} popin-opened - Fires when the dialog is opened
  * @cssprop {Color} --popin-background - The background color of the dialog
  * @cssprop {Color} --popin-color - The text color of the dialog
- * 
+ *
  */
 
 @customElement('popin-overlay')
@@ -45,9 +45,7 @@ export class PopinOverlay extends LitElement {
 
   override render() {
     setTimeout(() => this.ensureElementInView())
-    return html`
-      <slot></slot>
-    `
+    return html` <slot></slot> `
   }
 
   override connectedCallback() {
@@ -70,25 +68,29 @@ export class PopinOverlay extends LitElement {
     super.disconnectedCallback()
   }
 
-  private getActiveElementRecursive(element: Element | null = document.activeElement): Element | null {
+  private getActiveElementRecursive(
+    element: Element | null = document.activeElement
+  ): Element | null {
     if (element?.shadowRoot) {
-      return this.getActiveElementRecursive(element.shadowRoot.activeElement as HTMLElement)
+      return this.getActiveElementRecursive(
+        element.shadowRoot.activeElement as HTMLElement
+      )
     }
     return element
   }
 
   private blured() {
-    if(this.noAutoClose) return
+    if (this.noAutoClose) return
 
     // Give the time to the click event to be processed
     setTimeout(() => {
       // Check if the focus is still inside the dialog
       const focusedElement = this.getActiveElementRecursive()
       let popin = focusedElement as Node | ShadowRoot | null
-      while(popin && popin !== this) {
+      while (popin && popin !== this) {
         popin = popin.parentNode || (popin as ShadowRoot).host
       }
-      if(popin !== this) {
+      if (popin !== this) {
         // Hide the dialog
         this.close()
       } else {
@@ -110,7 +112,11 @@ export class PopinOverlay extends LitElement {
     }
   }
 
-  override attributeChangedCallback(name: string, _old: string | null, value: string | null): void {
+  override attributeChangedCallback(
+    name: string,
+    _old: string | null,
+    value: string | null
+  ): void {
     super.attributeChangedCallback(name, _old, value)
     if (name === 'hidden' && value === null) {
       this.focus()
@@ -131,9 +137,9 @@ export class PopinOverlay extends LitElement {
     const offsetY = 0
 
     // // Get the element's bounding rectangle
-     const rect = this.getBoundingClientRect()
-     const viewportWidth = window.innerWidth
-     const viewportHeight = window.innerHeight
+    const rect = this.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
 
     // Check if the element is out of the viewport on the right side
     if (rect.left + rect.width + offsetX > viewportWidth) {

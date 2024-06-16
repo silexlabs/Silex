@@ -44,9 +44,7 @@ let PopinOverlay = class PopinOverlay extends LitElement {
     }
     render() {
         setTimeout(() => this.ensureElementInView());
-        return html `
-      <slot></slot>
-    `;
+        return html ` <slot></slot> `;
     }
     connectedCallback() {
         super.connectedCallback();
