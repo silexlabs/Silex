@@ -26,10 +26,10 @@ import GitlabConnector, { GitlabOptions, GitlabSession} from './GitlabConnector'
 import { HostingConnector, ConnectorFile } from '../../server/connectors/connectors'
 import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '../../types'
 import { JobManager } from '../../server/jobs'
-import { join } from 'path'
 import { ServerConfig } from '../../server/config'
-import { stat } from 'fs'
 import { setTimeout } from 'timers/promises'
+
+const waitTimeOut = 5000 /* for wait loop in job pages getting */
 
 export default class GitlabHostingConnector extends GitlabConnector implements HostingConnector {
 
@@ -153,8 +153,8 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     do {
       const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
-      await setTimeout(5000)
-    } while ((Date.now() - t0) < 15000)
+      await setTimeout(waitTimeOut)
+    } while ((Date.now() - t0) < this.options.timeOut)
     
     // failed in timelaps allowed (avoiding infinite loop)
     jobError(job.jobId, 'Failed to get job id')

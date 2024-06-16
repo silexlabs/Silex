@@ -39,6 +39,7 @@ export interface GitlabOptions {
   repoPrefix: string
   scope: string
   domain: string
+  timeOut: number
 }
 
 export interface GitlabToken {
@@ -201,7 +202,7 @@ export default class GitlabConnector implements StorageConnector {
     if(!this.options.clientId) throw new Error('Missing Gitlab client ID')
     if(!this.options.clientSecret) throw new Error('Missing Gitlab client secret')
     if(!this.options.domain) throw new Error('Missing Gitlab domain')
-
+    if(!this.options.timeOut) this.options.timeOut = 15000 /* default value */
   }
 
   // **
