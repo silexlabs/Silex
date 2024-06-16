@@ -244,6 +244,8 @@ export function getOptionObject(option1: PropertyOptions | undefined, option2: P
 }
 
 function isJson(str: string) {
+  if(typeof str !== 'string') return false
+  if(str.length === 0) return false
   try {
     JSON.parse(str)
   } catch (e) {
