@@ -347,8 +347,8 @@ class SettingsDataSource extends LitElement {
           ?readonly=${this.dataSource.get('readonly') !== false}
           ?disabled=${this.dataSource.get('readonly') !== false}
           >
+          <option value="POST" ?selected=${!this.dataSource.get('method') || this.dataSource.get('method') === 'POST'}>POST</option>
           <option value="GET" ?selected=${this.dataSource.get('method') === 'GET'}>GET</option>
-          <option value="POST" ?selected=${this.dataSource.get('method') === 'POST'}>POST</option>
         </select>
       </label>
       </div>

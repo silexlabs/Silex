@@ -76,7 +76,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
       return null
     } catch (e) {
       // FIXME: notify user
-      console.error('Error while getting filter result type', token, prev, component, dataTree)
+      console.error('Error while getting filter result type', {token, prev, component, dataTree})
       return null
     }
   }
@@ -85,7 +85,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
       return propertyToField(token, dataTree, component.getId())
     } catch (e) {
       // FIXME: notify user
-      console.error('Error while getting property result type', token, component, dataTree)
+      console.error('Error while getting property result type', {token, component, dataTree})
       return null
     }
   case 'state': {
@@ -109,7 +109,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
       } : null
     } catch (e) {
       // FIXME: notify user
-      console.error('Error while getting expression result type', expression, parent, dataTree)
+      console.error('Error while getting expression result type in tokenToField', {expression, parent, dataTree, component, token, prev})
       return null
     }
   }
@@ -166,7 +166,7 @@ export function expressionToFields(expression: Expression, component: Component,
       return field
     } catch (e) {
       // FIXME: notify user
-      console.error('Error while getting expression result type', expression, component, dataTree)
+      console.error('Error while getting expression result type in expressionToFields', {expression, component, dataTree, token, prev})
       return unknownField
     }
   })
@@ -268,7 +268,9 @@ export function buildArgs(options: PropertyOptions | undefined): string {
     .keys(options)
     .map(key => ({ key, value: options![key] }))
     .filter(({ value }) => !isEmpty(value))
-    .map(({ key, value }) => typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`)
+    .map(({ key, value }) => {
+      return typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`
+    })
     .join(', ')
   })` : ''
   // Valid args for GraphQL canot be just ()

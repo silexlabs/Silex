@@ -93,7 +93,7 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
               label = type?.label ?? type?.id ?? 'Unknown'
             } catch(e) {
               // FIXME: notify user
-              console.error('Error while getting expression result type', expression, component, editor.DataSourceManager.getDataTree())
+              console.error('Error while getting expression result type in groupByType', {expression, component, dataTree: editor.DataSourceManager.getDataTree()})
               label = 'Unknown'
             }
           } else {
