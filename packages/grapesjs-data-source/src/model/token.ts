@@ -271,7 +271,8 @@ export function buildArgs(options: PropertyOptions | undefined): string {
     .map(key => ({ key, value: options![key] }))
     .filter(({ value }) => !isEmpty(value))
     .map(({ key, value }) => {
-      return typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`
+      //return typeof value === 'string' && !isJson(value) ? `${key}: "${value}"` : `${key}: ${value}`
+      return `${key}: ${value}`
     })
     .join(', ')
   })` : ''
