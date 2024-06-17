@@ -257,7 +257,7 @@ export interface StoredProperty extends BaseProperty {
 	options?: PropertyOptions;
 }
 export interface Property extends StoredProperty {
-	optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null;
+	optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null;
 }
 /**
  * A filter is used to alter data in an expression
@@ -274,7 +274,7 @@ export interface StoredFilter {
 	optionsKeys?: string[];
 }
 export interface Filter extends StoredFilter {
-	optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null;
+	optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null;
 	validate: (input: Field | null) => boolean;
 	output: (input: Field | null, options: Options) => Field | null;
 	apply: (input: unknown, options: Options) => unknown;
@@ -432,7 +432,7 @@ export declare function getExpressionResultType(expression: Expression, componen
  * Get the options of a token
  */
 export declare function getTokenOptions(field: Field): {
-	optionsForm: (input: Field | null, options: Options) => TemplateResult;
+	optionsForm: (selected: Component, input: Field | null, options: Options) => TemplateResult;
 	options: Options;
 } | null;
 /**
@@ -441,7 +441,7 @@ export declare function getTokenOptions(field: Field): {
 export declare function optionsToOptionsForm(arr: {
 	name: string;
 	value: unknown;
-}[]): (input: Field | null, options: Options) => TemplateResult;
+}[]): (selected: Component, input: Field | null, options: Options) => TemplateResult;
 /**
  * Utility function to shallow compare two objects
  * Used to compare options of tree items
@@ -566,6 +566,9 @@ export declare class StateEditor extends LitElement {
 	rootType: string;
 	defaultFixed: boolean;
 	dismissCurrentComponentStates: boolean;
+	private _selected;
+	get selected(): Component | null;
+	set selected(value: Component | null);
 	/**
 	 * Value string for for submissions
 	 */
@@ -600,11 +603,12 @@ export declare class StateEditor extends LitElement {
 	private _data;
 	get data(): Token[];
 	set data(value: Token[] | string);
-	editor: DataSourceEditor | null;
+	private _editor;
+	get editor(): DataSourceEditor | null;
+	set editor(value: DataSourceEditor | null);
 	private redrawing;
 	private expressionInputRef;
 	private popinsRef;
-	setEditor(editor: DataSourceEditor): void;
 	render(): TemplateResult<1>;
 	private onChangeValue;
 	private onChangeOptions;

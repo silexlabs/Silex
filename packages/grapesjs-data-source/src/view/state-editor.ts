@@ -22,14 +22,14 @@ import { DATA_SOURCE_CHANGED, DataSourceEditor, Filter, Property, Token } from '
 
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toId, toValue } from '../utils'
+import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
 import { ExpressionInput } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
 import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
 
 import '@silexlabs/expression-input'
 import { getCompletion } from '../model/completion'
-import { getExpressionResultType } from '../model/token'
+import { fromStored, getExpressionResultType } from '../model/token'
 
 /**
  * Editor for a state of the selected element's properties
@@ -75,6 +75,16 @@ export class StateEditor extends LitElement {
   @property({type: Boolean, attribute: 'dismiss-current-component-states'})
     dismissCurrentComponentStates = false
 
+  private _selected: Component | null = null
+  @property({type: Object})
+  get selected(): Component | null {
+    return this._selected
+  }
+  set selected(value: Component | null) {
+    this._selected = value
+    this.requestUpdate()
+  }
+
   /**
    * Value string for for submissions
    */
@@ -83,11 +93,12 @@ export class StateEditor extends LitElement {
     return JSON.stringify(this.data)
   }
   set value(newValue: string) {
-    try {
-      this.data = JSON.parse(newValue)
-    } catch(e) {
+    const expression = toExpression(newValue)
+    if (!expression) {
       this.data = newValue
+      return
     }
+    this.data = expression as Token[]
   }
 
   /**
@@ -156,6 +167,11 @@ export class StateEditor extends LitElement {
   private _data: Token[] = []
   get data(): Token[] {
     const input = this.expressionInputRef.value
+    if(!this._selected || !this.editor) {
+      console.error('selected and editor are required', this._selected, this.editor)
+      //throw new Error('selected and editor are required')
+      return []
+    }
     if(!input || input.value.length === 0) return []
     if(input.fixed) {
       return [getFixedToken(input.value[0] || '')]
@@ -165,8 +181,7 @@ export class StateEditor extends LitElement {
         .filter(id => !!id)
         .map(id => {
           try {
-            const selected = this.editor?.getSelected() ?? this.editor?.Pages.getSelected()?.getMainComponent()
-            return fromString(this.editor!, id, selected ? selected.getId(): null)
+            return fromString(this.editor!, id, this.selected!.getId())
           } catch(e) {
             console.error(`Error while getting token from id ${id}`, e)
             // Return unknown
@@ -203,39 +218,37 @@ export class StateEditor extends LitElement {
     } else {
       this._data = value
     }
-    this.requestUpdate()
+    if (this.editor) this.requestUpdate()
   }
 
+  private _editor: DataSourceEditor | null = null
   @property({type: Object})
-  public editor: DataSourceEditor | null = null
+  get editor(): DataSourceEditor | null {
+    return this._editor
+  }
+  set editor(value: DataSourceEditor | null) {
+    this._editor = value
+    this.requestUpdate()
+  }
 
   private redrawing = false
   private expressionInputRef = createRef<ExpressionInput>()
   private popinsRef: Ref<PopinForm>[] = []
 
-  setEditor(editor: DataSourceEditor) {
-    if (this.editor) {
-      return
-    }
-
-    this.editor = editor
-  }
-
   override render() {
     this.redrawing = true
     super.render()
-    if(!this.editor) {
-      throw new Error('editor not set')
+    if(!this.name) throw new Error('name is required on state-editor')
+    if(!this.editor || !this.selected) {
+      console.error('editor and selected are required', this.editor, this.selected)
+      return html`<div class="ds-section
+        ds-section--error">Error rendering state-editor component: editor and selected are required</div>`
     }
-    const selected = this.editor.getSelected() ?? this.editor.Pages.getSelected()?.getMainComponent()
-    if(!selected) {
-      throw new Error('no selected component, is there no "body" or page selected?')
-    }
-    if(!this.name) {
-      throw new Error('name is required on state-editor')
-    }
+
+    const selected = this.selected
     const dataTree = this.editor.DataSourceManager.getDataTree()
-    const _currentValue = this._data
+    // FIXME: fromStored every time we render is not efficient, it is supposed to have been done before
+    const _currentValue = this._data.map(token => fromStored(token, dataTree, selected.getId()))
 
     // Get the data to show in the "+" drop down
     const completion = getCompletion({
@@ -408,6 +421,7 @@ export class StateEditor extends LitElement {
 
   private onChangeOptions(event: Event, component: Component, popin: PopinForm, idx: number) {
     if(this.redrawing) return
+    if(!this.editor) throw new Error('editor is required')
     const input = this.expressionInputRef.value!
     const tokensStrings = input.value
     // Get tokens as objects
@@ -449,7 +463,8 @@ export class StateEditor extends LitElement {
   }
 
   private getOptions(component: Component, tokens: Token[], idx: number): TemplateResult | '' {
-    const dataTree = this.editor!.DataSourceManager.getDataTree()
+    if(!this.editor) throw new Error('editor is required')
+    const dataTree = this.editor.DataSourceManager.getDataTree()
     const token = tokens[idx]
     const beforeToken = tokens.slice(0, idx)
     const fields = beforeToken
@@ -467,7 +482,7 @@ export class StateEditor extends LitElement {
     case 'property':
     case 'filter':
       if(token.optionsForm) {
-        const form = token.optionsForm(fields[fields.length - 1], token.options || {}, this.parentName || this.name)
+        const form = token.optionsForm(component, fields[fields.length - 1], token.options || {}, this.parentName || this.name)
         return form || ''
       }
       return ''

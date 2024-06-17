@@ -187,7 +187,7 @@ export function getExpressionResultType(expression: Expression, component: Compo
 /**
  * Get the options of a token
  */
-export function getTokenOptions(field: Field): { optionsForm: (input: Field | null, options: Options) => TemplateResult, options: Options } | null {
+export function getTokenOptions(field: Field): { optionsForm: (selected: Component, input: Field | null, options: Options) => TemplateResult, options: Options } | null {
   if (field.arguments && field.arguments.length > 0) {
     return {
       optionsForm: optionsToOptionsForm(field.arguments.map((arg) => ({ name: arg.name, value: arg.defaultValue }))),
@@ -203,8 +203,8 @@ export function getTokenOptions(field: Field): { optionsForm: (input: Field | nu
 /**
  * Get the options of a token or a field
  */
-export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (input: Field | null, options: Options) => TemplateResult {
-  return (input: Field | null, options: Options) => {
+export function optionsToOptionsForm(arr: { name: string, value: unknown }[]): (selected: Component, input: Field | null, options: Options) => TemplateResult {
+  return (selected: Component, input: Field | null, options: Options) => {
     return html`
               ${arr.map((obj) => {
     const value = options[obj.name] ?? obj.value ?? ''

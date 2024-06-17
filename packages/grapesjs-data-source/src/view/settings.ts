@@ -169,7 +169,7 @@ class SettingsDataSources extends LitElement {
       label: 'New data source',
       type: 'graphql',
       url: '',
-      method: 'GET',
+      method: 'POST',
       headers: {},
       readonly: false,
     }
@@ -347,7 +347,7 @@ class SettingsDataSource extends LitElement {
           ?readonly=${this.dataSource.get('readonly') !== false}
           ?disabled=${this.dataSource.get('readonly') !== false}
           >
-          <option value="POST" ?selected=${!this.dataSource.get('method') || this.dataSource.get('method') === 'POST'}>POST</option>
+          <option value="POST" ?selected=${this.dataSource.get('method') === 'POST'}>POST</option>
           <option value="GET" ?selected=${this.dataSource.get('method') === 'GET'}>GET</option>
         </select>
       </label>

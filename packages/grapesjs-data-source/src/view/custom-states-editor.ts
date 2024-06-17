@@ -252,6 +252,8 @@ export class CustomStatesEditor extends LitElement {
   getStateEditor(selected: Component, label: string, name: string) {
     return html`
       <state-editor
+        .selected=${selected}
+        editor=${this.editor}
         id="${name}"
         name=${name}
         ?hide-loop-data=${this.hideLoopData}
@@ -259,7 +261,6 @@ export class CustomStatesEditor extends LitElement {
         ${ref(el => {
     if (el) {
       const stateEditor = el as StateEditor
-      stateEditor.setEditor(this.editor!)
       stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name)
     }
   })}

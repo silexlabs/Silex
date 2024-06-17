@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { TemplateResult } from 'lit'
 import { DataSourceManager } from './model/DataSourceManager'
 import { Button } from 'grapesjs'
@@ -165,7 +165,7 @@ export interface StoredProperty extends BaseProperty {
   options?: PropertyOptions
 }
 export interface Property extends StoredProperty {
-  optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null
+  optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null
 }
 
 /**
@@ -183,7 +183,7 @@ export interface StoredFilter {
   optionsKeys?: string[] // Optional, used to set a specific order
 }
 export interface Filter extends StoredFilter {
-  optionsForm?: (input: Field | null, options: Options, stateName: string) => TemplateResult | null
+  optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null
   validate: (input: Field | null) => boolean
   output: (input: Field | null, options: Options) => Field | null
   apply: (input: unknown, options: Options) => unknown

@@ -27,6 +27,7 @@ import { fromStored } from '../model/token'
 import { BinariOperator, DataSourceEditor, Properties, Token, UnariOperator } from '../types'
 import { getState, setState } from '../model/state'
 import { DataTree } from '../model/DataTree'
+import { getFixedToken } from '../utils'
 
 /**
  * Editor for selected element's properties
@@ -171,6 +172,8 @@ export class PropertiesEditor extends LitElement {
   renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean, hideLoopData = false) {
     return html`
       <state-editor
+        .selected=${selected}
+        .editor=${this.editor}
         id="${name}"
         name=${name}
         default-fixed=${this.defaultFixed}
@@ -180,7 +183,6 @@ export class PropertiesEditor extends LitElement {
     if (el) {
       // Set the editor - we could do this only once
       const stateEditor = el as StateEditor
-      stateEditor.setEditor(this.editor!)
       // Store the stateEditor ref and the component it is representing
       if (!this.inputs[name]) {
         this.inputs[name] = {
@@ -193,7 +195,12 @@ export class PropertiesEditor extends LitElement {
     if (this.inputs[name]) {
       const stateEditorFinally = this.inputs[name]!.stateEditor
       this.redrawing = true
-      stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+      try {
+        stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+      } catch (e) {
+        console.error('Error setting data', e)
+        stateEditorFinally.data = [getFixedToken(`Error setting data: ${e}`)]
+      }
       this.redrawing = false
             // Store the selected component
             this.inputs[name]!.selected = selected

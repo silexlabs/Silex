@@ -18,9 +18,8 @@
 import { Field, Filter, Options } from '../types'
 import { DataSourceEditor } from '..'
 import { html } from 'lit'
-import { ref } from 'lit/directives/ref.js'
 import { convertKind, getFieldType } from '../utils'
-import { StateEditor } from '../view/state-editor'
+import { Component } from 'grapesjs'
 
 /**
  * Check if a field is a number
@@ -63,15 +62,16 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         state: '',
       },
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           name="value"
           parent-name=${stateName}
           data-is-input
           no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Suffix</label>
         </state-editor>
@@ -86,15 +86,16 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: '',
       },
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           name="value"
           parent-name=${stateName}
           data-is-input
           no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Prefix</label>
         </state-editor>
@@ -115,27 +116,29 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['key'],
       optionsKeys: ['key', 'value'],
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           data-is-input
           class="ds-state-editor__options"
           value=${options.key || []}
           name="key"
           root-type=${field?.typeIds[0] ?? ''}
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Key to filter on</label>
         </state-editor>
         <p>==</p>
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.value || []}
           name="value"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Value to match</label>
         </state-editor>
@@ -167,15 +170,16 @@ export default function(editor: DataSourceEditor): Filter[] {
         separator: ',',
       },
       quotedOptions: ['separator'],
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.separator || []}
           name="separator"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Separator</label>
         </state-editor>
@@ -191,15 +195,16 @@ export default function(editor: DataSourceEditor): Filter[] {
         separator: ',',
       },
       quotedOptions: ['separator'],
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.separator || []}
           name="separator"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Separator</label>
         </state-editor>
@@ -215,14 +220,15 @@ export default function(editor: DataSourceEditor): Filter[] {
         key: '',
       },
       quotedOptions: ['key'],
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           data-is-input
           class="ds-state-editor__options"
           value=${options.key || []}
           name="key"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
           root-type=${field?.typeIds[0] ?? ''}
         >
           <label slot="label">Key to map</label>
@@ -289,7 +295,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         index: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Index
           <input type="number" name="index" placeholder="Index" .value=${options.index}/>
         </label>
@@ -306,26 +312,28 @@ export default function(editor: DataSourceEditor): Filter[] {
         end: 0,
       },
       optionsKeys: ['start', 'end'],
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.start || []}
           name="start"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Start index</label>
         </state-editor>
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           parent-name=${stateName}
           data-is-input
           class="ds-state-editor__options"
           value=${options.end || []}
           name="end"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">End index</label>
         </state-editor>
@@ -349,14 +357,15 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         key: '',
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           no-filters
           data-is-input
           class="ds-state-editor__options"
           value=${options.key || []}
           name="key"
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
           root-type=${field?.typeIds[0] ?? ''}
         >
           <label slot="label">Key to sort on</label>
@@ -372,7 +381,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -387,7 +396,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -402,7 +411,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -417,7 +426,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -434,7 +443,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -481,7 +490,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -496,7 +505,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: 0,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
           <input type="number" name="value" placeholder="Value" .value=${options.value}/>
         </label>
@@ -519,15 +528,16 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         value: '',
       },
-      optionsForm: (field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
+          .selected=${selected}
+          .editor=${editor}
           name="value"
           parent-name=${stateName}
           data-is-input
           no-filters
           class="ds-state-editor__options"
           value=${options.value || '[]'}
-          ${ref(el => el && (el as StateEditor).setEditor(editor))}
         >
           <label slot="label">Default value</label>
         </state-editor>
@@ -574,7 +584,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         length: 50,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Length
           <input type="number" name="length" placeholder="Length" .value=${options.length}/>
         </label>
@@ -589,7 +599,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       options: {
         length: 15,
       },
-      optionsForm: (field: Field | null, options: Options) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Length
           <input type="number" name="length" placeholder="Length" .value=${options.length}/>
         </label>
