@@ -19,6 +19,8 @@ import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiE
 import { websiteLoad, websiteSave } from '../api'
 import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
 import { addTempDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
+import { PublicationStatus } from './PublicationManager'
+import { ClientEvent } from '../events'
 
 export const storagePlugin = (editor) => {
   editor.Storage.add('connector', {
@@ -57,6 +59,13 @@ export const storagePlugin = (editor) => {
     },
 
     async store(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
+      console.log('store', editor.PublicationManager.status, PublicationStatus.STATUS_PENDING)
+      if(editor.PublicationManager.status === PublicationStatus.STATUS_PENDING) {
+        console.warn('Publication is pending, saving later')
+        return new Promise((resolve) => {
+          editor.once(ClientEvent.PUBLISH_END, () => resolve(this.store(data, options)))
+        })
+      }
       try {
         if(await getCurrentUser(editor)) {
           const user = await getCurrentUser(editor)
