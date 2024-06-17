@@ -253,7 +253,7 @@ export class CustomStatesEditor extends LitElement {
     return html`
       <state-editor
         .selected=${selected}
-        editor=${this.editor}
+        .editor=${this.editor}
         id="${name}"
         name=${name}
         ?hide-loop-data=${this.hideLoopData}
