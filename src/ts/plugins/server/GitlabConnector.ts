@@ -210,6 +210,11 @@ export default class GitlabConnector implements StorageConnector {
     return encodeURIComponent(join(this.options.assetsFolder, path))
   }
 
+  isUsingOfficialInstance(): boolean {
+    const gitlabDomainRegexp = /(^|\b)(gitlab\.com)($|\b)/
+    return gitlabDomainRegexp.test(this.options.domain)
+  }
+
   async createFile(session: GitlabSession, websiteId: WebsiteId, path: string, content: string, isBase64 = false): Promise<void> {
     // Remove leading slash
     const safePath = path.replace(/^\//, '')
@@ -292,7 +297,7 @@ export default class GitlabConnector implements StorageConnector {
     const headers = {
       'Content-Type': 'application/json',
     }
-    if(method === 'GET' && body) {
+    if (method === 'GET' && body) {
       console.error('Gitlab API error (4) - GET request with body', {url, method, body, params})
     }
     // With or without body
@@ -311,9 +316,9 @@ export default class GitlabConnector implements StorageConnector {
       throw new ApiError(`Gitlab API error (0): ${e.message} ${e.code} ${e.name} ${e.type}`, 500)
     }
     let json: { message: string, error: string } | any
-    // Handle the case when the server returns an non-JSON response (e.g. 400 Bad Request)
+    // Handle the case when the server returns a non-JSON response (e.g. 400 Bad Request)
     const text = await response.text()
-    if(!response.ok) {
+    if (!response.ok) {
       if (text.includes('A file with this name doesn\'t exist')) {
         throw new ApiError('Gitlab API error (5): Not Found', 404)
       } else if (response.status === 401 && this.getSessionToken(session).token?.refresh_token) {

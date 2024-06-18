@@ -101,6 +101,23 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.message = 'Getting the deployment logs URL...'
           job.logs[0].push(job.message)
           const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, adminUrl)
+
+          // Because of the GitLab policy, this can be undefined (and we suggest the user to verify their account)
+          if (!gitlabJobLogsUrl) {
+            let errorMessage = 'Could not retrieve the deployment logs URL.'
+
+            if (this.isUsingOfficialInstance()) {
+              const verifyURL = 'https://gitlab.com/-/identity_verification'
+              errorMessage +=
+                `<div class="notice">
+                    If your GitLab account is recent, you may need to verify it <a href="${verifyURL}">here</a>
+                    in order to be able to use pipelines (this is GitLab's policy, not Silex's).
+                 </div>`
+            }
+
+            throw new Error(errorMessage)
+          }
+
           job.logs[0].push(`Deployment logs URL: ${gitlabJobLogsUrl}`)
           const message = `
             <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
@@ -146,8 +163,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return `${projectUrl}/pages`
   }
 
-  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string> {
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string | undefined> {
     const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+    if (!jobs.length) return undefined
     return `${projectUrl}/-/jobs/${jobs[0].id}`
   }
 
