@@ -165,7 +165,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
   }
 
   // waiting for the job corresponding to the current tag
-  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string> {
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string | null> {
     const t0 = Date.now()
     do {
       const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
@@ -196,7 +196,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during fetching latest tag:', error.message)
       jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
-      return null
+      return false
     }
 
     // Create a new tag
@@ -210,10 +210,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during creating new tag:', error.message)
       jobError(job.jobId, `Failed to create new tag: ${error.message}`)
-      return null
+      return false
     }
-    // return new tag
-    return newTag
+    return true
   }
 
 }
