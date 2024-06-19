@@ -131,7 +131,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           console.error('Error during getting the website URLs:', error.message)
           jobError(job.jobId, `Failed to get the website URLs: ${error.message}`)
         }
-      } else if(status === JobStatus.ERROR) {
+      } else if (status === JobStatus.ERROR) {
         job.errors[0].push(message)
         jobError(job.jobId, message)
       } else {
