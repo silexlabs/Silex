@@ -102,7 +102,6 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.message = 'Getting the deployment logs URL...'
           job.logs[0].push(job.message)
           const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, job, { startJob, jobSuccess, jobError }, adminUrl, successTag)
-
           // Because of the GitLab policy, this can be null (and we suggest the user to verify their account)
           if (!gitlabJobLogsUrl) {
             let errorMessage = 'Could not retrieve the deployment logs URL.'
@@ -118,7 +117,6 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
             throw new Error(errorMessage)
           }
-
           job.logs[0].push(`Deployment logs URL: ${gitlabJobLogsUrl}`)
           const message = `
             <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
@@ -173,7 +171,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(waitTimeOut)
     } while ((Date.now() - t0) < this.options.timeOut)
-
+      
     // failed in timelaps allowed (avoiding infinite loop)
     jobError(job.jobId, 'Failed to get job id')
     job.message = 'Unable to get job id'
@@ -212,6 +210,8 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       jobError(job.jobId, `Failed to create new tag: ${error.message}`)
       return null
     }
+    
+    // Return new tag
     return newTag
   }
 
