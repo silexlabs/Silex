@@ -110,7 +110,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
               const verifyURL = 'https://gitlab.com/-/identity_verification'
               errorMessage +=
                 `<div class="notice">
-                    If your GitLab account is recent, you may need to verify it <a href="${verifyURL}">here</a>
+                    If your GitLab account is recent, you may need to verify it <a href="${verifyURL}" target="_blank">here</a>
                     in order to be able to use pipelines (this is GitLab's policy, not Silex's).
                  </div>`
             }
