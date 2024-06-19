@@ -189,8 +189,14 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       // Fetch the latest tag
       tags = await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'GET')
       const latestTag = tags[0]?.name || 'v0.0.0'
-      const [major, minor, patch] = latestTag.slice(1).split('.').map(Number)
-      newTag = `v${major}.${minor}.${patch + 1}`
+      const validRex = /\bv[0-9]+\.[0-9]+\.[0-9]+\b/
+      if (latestTag.search(validRex) === 0) {
+        const [major, minor, patch] = latestTag.slice(1).split('.').map(Number)
+        newTag = `v${major}.${minor}.${patch + 1}`
+      } else {
+        console.error('Invalid tag name, unable to increment patch, should be : vx.y.z, like v1.2.0 \n===> Please modify it in your gitlab tag page')
+        throw new Error('Invalid tag name, unable to increment patch, should be : vx.y.z, like v1.2.0 \n===> Please modify it in your gitlab tag page')
+      }
     } catch (error) {
       console.error('Error during fetching latest tag:', error.message)
       jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
