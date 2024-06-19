@@ -102,7 +102,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.logs[0].push(job.message)
           const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, adminUrl)
 
-          // Because of the GitLab policy, this can be undefined (and we suggest the user to verify their account)
+          // Because of the GitLab policy, this can be null (and we suggest the user to verify their account)
           if (!gitlabJobLogsUrl) {
             let errorMessage = 'Could not retrieve the deployment logs URL.'
 
@@ -163,9 +163,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return `${projectUrl}/pages`
   }
 
-  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string | undefined> {
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string | null> {
     const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
-    if (!jobs.length) return undefined
+    if (!jobs.length) return null
     return `${projectUrl}/-/jobs/${jobs[0].id}`
   }
 
