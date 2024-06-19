@@ -196,7 +196,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during fetching latest tag:', error.message)
       jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
-      return false
+      return null
     }
 
     // Create a new tag
@@ -210,9 +210,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during creating new tag:', error.message)
       jobError(job.jobId, `Failed to create new tag: ${error.message}`)
-      return false
+      return null
     }
-    return true
+    return newTag
   }
 
 }
