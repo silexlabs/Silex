@@ -102,6 +102,21 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.message = 'Getting the deployment logs URL...'
           job.logs[0].push(job.message)
           const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, job, { startJob, jobSuccess, jobError }, adminUrl, successTag)
+          // Because of the GitLab policy, this can be null (and we suggest the user to verify their account)
+          if (!gitlabJobLogsUrl) {
+            let errorMessage = 'Could not retrieve the deployment logs URL.'
+
+            if (this.isUsingOfficialInstance()) {
+              const verifyURL = 'https://gitlab.com/-/identity_verification'
+              errorMessage +=
+                `<div class="notice">
+                    If your GitLab account is recent, you may need to verify it <a href="${verifyURL}" target="_blank">here</a>
+                    in order to be able to use pipelines (this is GitLab's policy, not Silex's).
+                 </div>`
+            }
+
+            throw new Error(errorMessage)
+          }
           job.logs[0].push(`Deployment logs URL: ${gitlabJobLogsUrl}`)
           const message = `
             <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
@@ -114,7 +129,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           console.error('Error during getting the website URLs:', error.message)
           jobError(job.jobId, `Failed to get the website URLs: ${error.message}`)
         }
-      } else if(status === JobStatus.ERROR) {
+      } else if (status === JobStatus.ERROR) {
         job.errors[0].push(message)
         jobError(job.jobId, message)
       } else {
@@ -148,14 +163,15 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
   }
 
   // waiting for the job corresponding to the current tag
-  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string> {
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string | null> {
     const t0 = Date.now()
     do {
       const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+      if (!jobs.length) return null
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(waitTimeOut)
     } while ((Date.now() - t0) < this.options.timeOut)
-    
+      
     // failed in timelaps allowed (avoiding infinite loop)
     jobError(job.jobId, 'Failed to get job id')
     job.message = 'Unable to get job id'
@@ -194,7 +210,8 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       jobError(job.jobId, `Failed to create new tag: ${error.message}`)
       return null
     }
-    // return new tag
+    
+    // Return new tag
     return newTag
   }
 
