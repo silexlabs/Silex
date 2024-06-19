@@ -26,9 +26,10 @@ import GitlabConnector, { GitlabOptions, GitlabSession} from './GitlabConnector'
 import { HostingConnector, ConnectorFile } from '../../server/connectors/connectors'
 import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '../../types'
 import { JobManager } from '../../server/jobs'
-import { join } from 'path'
 import { ServerConfig } from '../../server/config'
-import { stat } from 'fs'
+import { setTimeout } from 'timers/promises'
+
+const waitTimeOut = 5000 /* for wait loop in job pages getting */
 
 export default class GitlabHostingConnector extends GitlabConnector implements HostingConnector {
 
@@ -80,8 +81,8 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
       // Update the job status
       if(status === JobStatus.SUCCESS) {
         /* Squash and tag the commits */
-        const succes = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
-        if(!succes) {
+        const successTag = await this.createTag(session, websiteId, job, { startJob, jobSuccess, jobError })
+        if(!successTag) {
           // jobError will have been called in createTag
           return
         }
@@ -100,7 +101,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.logs[0].push(`Page URL: ${pageUrl}`)
           job.message = 'Getting the deployment logs URL...'
           job.logs[0].push(job.message)
-          const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, adminUrl)
+          const gitlabJobLogsUrl = await this.getGitlabJobLogsUrl(session, websiteId, job, { startJob, jobSuccess, jobError }, adminUrl, successTag)
 
           // Because of the GitLab policy, this can be null (and we suggest the user to verify their account)
           if (!gitlabJobLogsUrl) {
@@ -163,13 +164,24 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return `${projectUrl}/pages`
   }
 
-  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, projectUrl: string): Promise<string | null> {
-    const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
-    if (!jobs.length) return null
-    return `${projectUrl}/-/jobs/${jobs[0].id}`
+  // waiting for the job corresponding to the current tag
+  async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string> {
+    const t0 = Date.now()
+    do {
+      const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+      if (!jobs.length) return null
+      if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
+      await setTimeout(waitTimeOut)
+    } while ((Date.now() - t0) < this.options.timeOut)
+
+    // failed in timelaps allowed (avoiding infinite loop)
+    jobError(job.jobId, 'Failed to get job id')
+    job.message = 'Unable to get job id'
+    job.logs[0].push(job.message)
+    return `${projectUrl}/-/jobs/`
   }
 
-  async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<boolean> {
+  async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<string | null> {
     const projectId = websiteId // Assuming websiteId corresponds to GitLab project ID
 
     // Fetch the latest tag and determine the new tag
@@ -184,7 +196,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during fetching latest tag:', error.message)
       jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
-      return false
+      return null
     }
 
     // Create a new tag
@@ -198,9 +210,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     } catch (error) {
       console.error('Error during creating new tag:', error.message)
       jobError(job.jobId, `Failed to create new tag: ${error.message}`)
-      return false
+      return null
     }
-    return true
+    // return new tag
+    return newTag
   }
 
 }
