@@ -59,7 +59,40 @@
 }
 
 // publication-ui
+@keyframes pub-blink {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 #publish-dialog {
+  .notice {
+    margin: 10px 0;
+    background-color: rgba(255, 166, 0, 0.2);
+    border-radius: 5px;
+    padding: 10px;
+  }
+
+  progress {
+    width: 100%;
+    border-radius: 50px;
+    border: none;
+    height: 5px;
+    animation: pub-blink 0.33s infinite alternate;
+    background-color: $tertiaryColor;
+  }
+
+  progress::-webkit-progress-bar {
+    background-color: $tertiaryColor;
+  }
+
+  progress::-moz-progress-bar {
+    background-color: $tertiaryColor;
+  }
+
   header {
     display: flex;
     align-items: center;
