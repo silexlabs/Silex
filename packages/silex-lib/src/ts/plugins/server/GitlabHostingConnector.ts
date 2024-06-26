@@ -179,27 +179,13 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return `${projectUrl}/-/jobs/`
   }
 
-  async createTag(session: GitlabSession, websiteId: WebsiteId, job: JobData, { startJob, jobSuccess, jobError }: JobManager): Promise<string | null> {
+  async createTag(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager): Promise<string | null> {
     const projectId = websiteId // Assuming websiteId corresponds to GitLab project ID
-
-    // Fetch the latest tag and determine the new tag
-    let newTag, tags
-    try {
-      job.message = 'Fetching latest tag and commits...'
-      // Fetch the latest tag
-      tags = await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'GET')
-      const latestTag = tags[0]?.name || 'v0.0.0'
-      const [major, minor, patch] = latestTag.slice(1).split('.').map(Number)
-      newTag = `v${major}.${minor}.${patch + 1}`
-    } catch (error) {
-      console.error('Error during fetching latest tag:', error.message)
-      jobError(job.jobId, `Failed to fetch latest tag: ${error.message}`)
-      return null
-    }
-
+    const newTag = '_silex_' + Date.now()
     // Create a new tag
     try {
       job.message = `Creating new tag ${newTag}...`
+      job.logs[0].push(job.message)
       await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'POST', {
         tag_name: newTag,
         ref: 'main',
