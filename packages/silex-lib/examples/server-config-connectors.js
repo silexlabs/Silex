@@ -43,6 +43,8 @@ const FtpConnector = require('../dist/plugins/server/plugins/server/FtpConnector
 const GitlabConnector = require('../dist/plugins/server/plugins/server/GitlabConnector').default
 const GitlabHostingConnector = require('../dist/plugins/server/plugins/server/GitlabHostingConnector').default
 const DownloadPlugin = require('../dist/plugins/server/plugins/server/DownloadConnector').default
+const StaticPlugin = require('@silexlabs/silex/dist/plugins/server/plugins/server/StaticPlugin').default
+const node_modules = require('node_modules-path')
 
 class FramaGitConnector extends GitlabConnector {
   connectorId = 'framagit'
@@ -84,6 +86,13 @@ module.exports = async function (config, options) {
     }),
   ])
 
+  config.addPlugin(StaticPlugin, {
+    routes: [{
+        route: '/js/silex-cms/',
+        path: node_modules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/dist',
+      },
+    ],
+  })
   return {}
 }
 

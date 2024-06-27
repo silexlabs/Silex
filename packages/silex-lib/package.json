@@ -76,7 +76,7 @@
   },
   "scripts": {
     "release": "",
-    "dev": "run-p watch start:debug start:preview",
+    "dev": "run-p watch start:debug",
     "watch": "npm-watch",
     "start": "node dist/server/server/",
     "start:debug": "cross-env SILEX_FS_ROOT=`pwd`/silex SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
