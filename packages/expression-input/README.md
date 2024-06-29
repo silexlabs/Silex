@@ -1,33 +1,30 @@
-# Expression Input component and familly
+# Expression Input web component
 
-A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data as a tree.
+A web component to include in your JS/TS projects. Your users can create an expression which is a ordoned list of tokens. It feels like auto completion without typing text. The token can have options too.
 
-It implements the same API as HTML inputs and can be used in a form.
+This web component implements the same API as HTML inputs so it can be used inside a `<form>`, with support of the `FormData` API. It supports focus and keyboard navigation too.
 
 > This is part of a bigger project: [Silex no-code website builder](https://www.silex.me)
 
 This feature is made of these components
 
-- [x] `<popin-overlay>` behaves like a popin, disapears when it loses the focus
-- [x] `<popin-form>` extends the `<popin-overlay>` component, behaves both like a form and like an input for a parent form
-- [ ] `<custom-select>` can replace native `<select>` in the `<input-chain>` component, with label, options and help buttons
-- [ ] `<custom-option>` a custom version of the `option` tag for use with the `<custom-select>` component
-- [ ] `<custom-optgroup>` a custom version of the `optgroup` tag for use with the `<custom-select>` component
-- [ ] `<input-chain>` behaves like a select input with multi-selection but looks like a chain of `<select>` inputs
-- [x] `<expression-input>` extends `<input-chain>` and handles fixed values UI
+- [x] `<popin-overlay>` behaves like a popin, disapears when it loses focus
+- [x] `<popin-form>` extends the `<popin-overlay>` component, behaves both like a form with the inputs inside it and like an input for a parent form
+- [x] `<expression-input>` handles "fixed value" which is a simple text input and "expression" which is an editable list of tokens
 
 Use cases
 
 - Build an expression the no-code way - e.g. `obj.prop1.subProp` (js), `posts | where: 'id', '123'` (liquidjs)
 - Select a folder in a file system
 - Make decisions in a decision tree
+- Edit a list of tokens
 
 ## Roadmap
 
 Project
 
 - [x] Licence AGPL
-- [x] publish to npm
+- [x] Automated publish to npm with github action
 - [ ] Unit tests still fail on github actions (playwrite issue)
 
 Popin
