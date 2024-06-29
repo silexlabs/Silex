@@ -76,7 +76,7 @@ Use in your HTML as a web component:
 </html>
 ```
 
-Check the files in `/dev/` folder
+Check the files in `/dev/` folder for examples.
 
 ## API
 
