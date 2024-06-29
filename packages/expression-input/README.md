@@ -76,6 +76,10 @@ Use in your HTML as a web component:
 </html>
 ```
 
+Check the files in `/dev/` folder
+
+## API
+
 The `expression-input` component has these events:
 
 - load
@@ -100,34 +104,8 @@ It has these slots:
 
 - placeholder
 - dirty-icon
-
-The property `completion` is a function you need to provide to the component so that it knows what can be selected at each steps:
-
-```js
-function initStepSelector(stepsSelector) {
-  // [Optional] Initial state
-  stepsSelector.steps = [
-    // ... Initial selection here
-  ]
-  // [Optional] Reset dirty flag and store the current value as initial value
-  stepsSelector.save()
-
-  // [Required] Provide the completion fucntion
-  stepsSelector.completion = (steps) => {
-    // In this example just return the same for each step
-    return [
-      {
-        name: 'Posts',
-        icon: '',
-        type: 'Collection',
-        tags: [],
-        helpText: 'Some text with <a href="#">html links</a>',
-        errorText: 'Some error text',
-      },
-    ]
-  }
-}
-```
+- fixed: you can use it to control the text input. Add an `<inout>` or a `<textarea>` into it
+- default: contains the select elements
 
 ## Development / contribution
 
