@@ -85,15 +85,16 @@ It has these attributes:
 
 - fixed: if present the UI shows a text input 
 - fixed-type: 'none' | 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
-- reactive: boolean = false, if true, the component will not update the DOM when the value changes, you need to listen to the `change` event and update the DOM yourself
-- select-tag-name (default: select) to change the tag name of the select elements
-- option-tag-name (default: option) to change the tag name of the option elements
+- allow-fixed: shows the buttons to switch from expression to fixed
+- placeholder
+- for: Form id. This is the same API as input elements
+- reactive: if present, when the user changes the selection of a select, then all the selects after it will be removed. This feels like data is a tree.
 
 It has these properties:
 
-- steps
+- value: the concatenation of all select' values. This is readonly.
+- options: array of all selected `<option>`
 - dirty
-- completion
 
 It has these slots:
 
