@@ -32,7 +32,7 @@ Popin
 - [x] Display where placed
 - [x] Handle focus
 
-Selector
+ExpressionInput
 
 - [x] values: icon, name (may be a function of options), tags, options, optionsForm, type, helpText (with html links to directus collection)
 - [x] callback getNextChoices(pastChoices)
@@ -42,14 +42,6 @@ Selector
 - [ ] copy / paste / set / unset
 - [ ] result (the final value resulting the current choices)
 - [ ] state: valid, warning, error
-
-SelectorItem
-
-- [x] value
-- [x] events: set, unset
-- [x] openChoices/close, openOptions/close
-- [x] state
-- [x] message
 - [x] helpText
 
 ## Integration guide
@@ -69,13 +61,16 @@ Use in your HTML as a web component:
   <body>
     <expression-input
       name="form-data-name"
-      onload="initStepSelector(event.target)"
-    ></expression-input>
-    <expression-input
-      name="form-data-name"
-      onload="initStepSelector(event.target)"
+      onload="event => console.log(event.target)"
+      onchange="event => console.log('onchange', event)"
     >
-      Label
+      <span slot="label">Test label</span>
+      <select>
+          <option value="">+</option>
+          <option value="Blog Post" selected>Blog Post</option>
+          <option value="Page">Page</option>
+          <option value="Settings">Settings</option>
+      </select>
     </expression-input>
   </body>
 </html>
@@ -88,7 +83,7 @@ The `expression-input` component has these events:
 
 It has these attributes:
 
-- fixed
+- fixed: if present the UI shows a text input 
 - fixed-type: 'none' | 'text' | 'date' | 'email' | 'number' | 'password' | 'tel' | 'time' | 'url' = 'text'
 - reactive: boolean = false, if true, the component will not update the DOM when the value changes, you need to listen to the `change` event and update the DOM yourself
 - select-tag-name (default: select) to change the tag name of the select elements
