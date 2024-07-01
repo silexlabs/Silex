@@ -88,3 +88,6 @@
 [submodule "packages/grapesjs-keymaps-dialog"]
 	path = packages/grapesjs-keymaps-dialog
 	url = git@github.com:silexlabs/grapesjs-keymaps-dialog.git
+[submodule "packages/grapesjs-advanced-selector"]
+	path = packages/grapesjs-advanced-selector
+	url = git@github.com:silexlabs/grapesjs-advanced-selector.git
