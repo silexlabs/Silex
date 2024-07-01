@@ -23,7 +23,6 @@ Use cases
 
 Project
 
-- [x] Licence AGPL
 - [x] Automated publish to npm with github action
 - [ ] Unit tests still fail on github actions (playwrite issue)
 

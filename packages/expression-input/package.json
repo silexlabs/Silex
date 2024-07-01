@@ -37,8 +37,8 @@
     "typescript",
     "lit"
   ],
-  "author": "Google LLC",
-  "license": "BSD-3-Clause",
+  "author": "Alex Hoyau (https://github.com/lexoyo)",
+  "license": "MIT",
   "dependencies": {
     "lit": "^3.1.0"
   },
