@@ -37,7 +37,8 @@ Skipping silex-desktop - No readme file found
 | Grapesjs Filter Styles | `packages/grapesjs-filter-styles` | `git@github.com:silexlabs/grapesjs-filter-styles.git` | This plugin adds a search bar in the Style manager so that users can search for a CSS style |
 | Grapesjs Directus Storage | `packages/grapesjs-directus-storage` | `git@github.com:silexlabs/grapesjs-directus-storage.git` | Directus as a backend for GrapesJS |
 | GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
-| Expression Input component and familly | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data as a tree. |
+| Grapesjs Advanced Selector | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | Links |
+| Expression Input web component | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A web component to include in your JS/TS projects. Your users can create an expression which is a ordoned list of tokens. It feels like auto completion without typing text. The token can have options too. |
 | Eleventy Plugin Directus | `packages/eleventy-plugin-directus` | `git@github.com:silexlabs/eleventy-plugin-directus.git` | # ⚠️ **Deprecated** ⚠️ |
 | eleventy-plugin-concat | `packages/eleventy-plugin-concat` | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
 | Silex instances by Silex Labs | `packages/editor.silex.me` | `git@github.com:silexlabs/editor.silex.me.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me). |
@@ -82,20 +83,20 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 1.98  T=0.50 s (576.0 files/s, 364400.0 lines/s)
+github.com/AlDanial/cloc v 2.00  T=1.00 s (298.0 files/s, 92481.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     121           8599          19785         125156
-TypeScript                     156           1837           5756          19930
+JavaScript                     129           1099           2150          60043
+TypeScript                     156           1862           5841          20333
 GraphQL                          3             63              6            666
 JSX                              1              0              2            256
-Dockerfile                       2              9              7             54
+Dockerfile                       4             13              9             64
 Text                             2              6              0             34
 INI                              2              4              0             21
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           288          10518          25556         146126
+SUM:                           298           3047           8008          81426
 -------------------------------------------------------------------------------
 
 ```
