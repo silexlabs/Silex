@@ -4,6 +4,24 @@ Links
 
 * [DEMO](##) (TODO: **Provide a live demo of your plugin**)
 * [Discussion about this plugin](https://github.com/GrapesJS/grapesjs/discussions/5262)
+* [Feature request in Silex project](https://github.com/silexlabs/Silex/issues/1496)
+
+### Roadmap
+
+Features
+
+* [ ] Replace the Selector Manager UI with a custom one
+* [ ] Use the Style Manager to edit the current CSS selector
+
+Use cases
+
+* [ ] `.child` (default Selector Manager)
+* [ ] `.child:pseudo` (default Selector Manager)
+* [ ] `.parent > .child`
+* [ ] `.parent:pseudo > .child`
+* [ ] `.parent:pseudo .child`
+* [ ] `tag .child`
+* [ ] Pseudo with param, e.g. `:nth-child(2)`
 
 ### HTML
 ```html
