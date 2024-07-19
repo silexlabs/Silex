@@ -91,3 +91,6 @@
 [submodule "packages/grapesjs-advanced-selector"]
 	path = packages/grapesjs-advanced-selector
 	url = git@github.com:silexlabs/grapesjs-advanced-selector.git
+[submodule "packages/silex_silex-me-2024"]
+	path = packages/silex_silex-me-2024
+	url = git@gitlab.com:lexoyo/silex_silex-me-2024.git
