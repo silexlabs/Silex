@@ -32,18 +32,20 @@ function isNumber(field: Field | null, scalarOnly = true): boolean {
 
 /**
  * Check if a field is a string
+ * Exported for testing
  */
-function isString(field: Field | null, scalarOnly = true): boolean {
+export function isString(field: Field | null, scalarOnly = true): boolean {
   if (!field || (scalarOnly && field.kind !== 'scalar')) return false
   return field.typeIds.map(typeId => typeId.toLowerCase()).includes('string')
 }
 
 /**
  * Check if a field is a date
+ * Exported for testing
  */
-function isDate(field: Field | null): boolean {
-  if (!field || field.kind !== 'scalar') return false
-  return field.typeIds.map(typeId => typeId.toLowerCase()).includes('date')
+export function isDate(field: Field | null, scalarOnly = true): boolean {
+  if (!field || (scalarOnly && field.kind !== 'scalar')) return false
+  return field.typeIds.map(typeId => typeId.toLowerCase()).some(typeId => ['date', 'instant'].includes(typeId))
 }
 
 /**

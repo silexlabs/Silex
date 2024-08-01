@@ -75,6 +75,29 @@ export const testTokens: Record<string, Token> = {
     dataSourceId: 'testDataSourceId',
   },
 }
+export const testFields: Record<string, Field> = {
+  stringField1: {
+    id: 'stringField1',
+    label: 'test',
+    typeIds: ['String'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  },
+  dateField1: {
+    id: 'dateField1',
+    label: 'test',
+    typeIds: ['SomeType', 'date'],
+    kind: 'scalar',
+    dataSourceId: 'testDataSourceId',
+  },
+  dateField2: {
+    id: 'dateField2',
+    label: 'test',
+    typeIds: ['SomeType', 'Instant'],
+    kind: 'list',
+    dataSourceId: 'testDataSourceId',
+  },
+}
 
 export const simpleFilters: Filter[] = [{
   type: 'filter',
