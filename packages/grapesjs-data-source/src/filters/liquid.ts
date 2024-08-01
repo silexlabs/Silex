@@ -35,8 +35,15 @@ function isNumber(field: Field | null, scalarOnly = true): boolean {
  */
 function isString(field: Field | null, scalarOnly = true): boolean {
   if (!field || (scalarOnly && field.kind !== 'scalar')) return false
-  const typeIds = field.typeIds.map(typeId => typeId.toLowerCase())
-  return typeIds.includes('string')
+  return field.typeIds.map(typeId => typeId.toLowerCase()).includes('string')
+}
+
+/**
+ * Check if a field is a date
+ */
+function isDate(field: Field | null): boolean {
+  if (!field || field.kind !== 'scalar') return false
+  return field.typeIds.map(typeId => typeId.toLowerCase()).includes('date')
 }
 
 /**
@@ -58,9 +65,9 @@ export default function(editor: DataSourceEditor): Filter[] {
       label: 'append',
       validate: (field: Field | null) => isString(field),
       output: type => type,
-      apply: (str, options) => `${str}${options.state}`,
+      apply: (str, options) => `${str}${options.value}`,
       options: {
-        state: '',
+        value: '',
       },
       optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
         <state-editor
@@ -144,6 +151,110 @@ export default function(editor: DataSourceEditor): Filter[] {
         </state-editor>
     `,
     }, {
+    // FIXME: the fields used in the expression are not available in the query
+    //   // https://liquidjs.com/filters/where_exp.html
+    //   type: 'filter',
+    //   id: 'where_exp',
+    //   label: 'where_exp',
+    //   validate: (field: Field | null) => !!field && field.kind === 'list',
+    //   output: field => field,
+    //   apply: (arr, options) => {
+    //     const { objectName, expression } = options as { objectName: string, expression: string }
+    //     return (arr as Record<string, unknown>[]).filter(item => {
+    //       // eslint-disable-next-line no-new-func
+    //       const fn = new Function(objectName, `return ${expression}`)
+    //       return fn(item)
+    //     })
+    //   },
+    //   options: {
+    //     objectName: 'item',
+    //     expression: 'item.key === "value"',
+    //   },
+    //   quotedOptions: ['objectName', 'expression'],
+    //   optionsKeys: ['objectName', 'expression'],
+    //   optionsForm: (selected: Component, field: Field | null, options: Options) => html`
+    //     <label>Object name
+    //       <input type="text" name="objectName" placeholder="Object name" .value=${options.objectName || 'item'}/>
+    //     </label>
+    //     <label>Expression (JS)
+    //       <input type="text" name="expression" placeholder="Expression" .value=${options.expression || 'item.key === "value"'}/>
+    //     </label>
+    //   `,
+    // }, {
+      // https://liquidjs.com/filters/find.html
+      type: 'filter',
+      id: 'find',
+      label: 'find',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: field => convertKind(field, 'list', 'object'),
+      apply: (arr, options) => {
+        const { key, value } = options as { key: string, value: string }
+        return (arr as Record<string, unknown>[]).find(item => item[key] === value)
+      },
+      options: {
+        key: '',
+        value: '',
+      },
+      quotedOptions: ['key'],
+      optionsKeys: ['key', 'value'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <state-editor
+          .selected=${selected}
+          .editor=${editor}
+          no-filters
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.key || []}
+          name="key"
+          root-type=${field?.typeIds[0] ?? ''}
+        >
+          <label slot="label">Key to filter on</label>
+        </state-editor>
+        <p>==</p>
+        <state-editor
+          .selected=${selected}
+          .editor=${editor}
+          no-filters
+          parent-name=${stateName}
+          data-is-input
+          class="ds-state-editor__options"
+          value=${options.value || []}
+          name="value"
+        >
+          <label slot="label">Value to match</label>
+        </state-editor>
+      `,
+    }, {
+    // FIXME: the fields used in the expression are not available in the query
+    //   // https://liquidjs.com/filters/find_exp.html
+    //   type: 'filter',
+    //   id: 'find_exp',
+    //   label: 'find_exp',
+    //   validate: (field: Field | null) => !!field && field.kind === 'list',
+    //   output: field => convertKind(field, 'list', 'object'),
+    //   apply: (arr, options) => {
+    //     const { objectName, expression } = options as { objectName: string, expression: string }
+    //     return (arr as Record<string, unknown>[]).find(item => {
+    //       // eslint-disable-next-line no-new-func
+    //       const fn = new Function(objectName, `return ${expression}`)
+    //       return fn(item)
+    //     })
+    //   },
+    //   options: {
+    //     objectName: 'item',
+    //     expression: 'item.key === "value"',
+    //   },
+    //   quotedOptions: ['objectName', 'expression'],
+    //   optionsKeys: ['objectName', 'expression'],
+    //   optionsForm: (selected: Component, field: Field | null, options: Options) => html`
+    //     <label>Object name
+    //       <input type="text" name="objectName" placeholder="Object name" .value=${options.objectName || 'item'}/>
+    //     </label>
+    //     <label>Expression (JS)
+    //       <input type="text" name="expression" placeholder="Expression" .value=${options.expression || 'item.key === "value"'}/>
+    //     </label>
+    //   `,
+    // }, {
       type: 'filter',
       id: 'first',
       label: 'first',
@@ -602,6 +713,31 @@ export default function(editor: DataSourceEditor): Filter[] {
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Length
           <input type="number" name="length" placeholder="Length" .value=${options.length}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'date',
+      label: 'date',
+      validate: (field: Field | null) => isDate(field),
+      output: () => ({
+        id: 'String',
+        label: 'String',
+        typeIds: ['String'],
+        kind: 'scalar',
+      }),
+      apply: (date, options) => {
+        const d = new Date(date as string)
+        return d.toLocaleDateString(options.format as string)
+      },
+      options: {
+        format: '%a, %b %d, %y', // Fri, Jul 17, 15
+        timeZone: '',
+      },
+      optionsKeys: ['format', 'timeZone'],
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
+        <label>Format
+          <input type="text" name="format" placeholder="Format" .value=${options.format}/>
         </label>
       `,
     },
