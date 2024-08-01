@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-data-source",
-  "version": "0.0.110",
+  "version": "0.0.111",
   "description": "Grapesjs Data Source",
   "main": "dist/index.js",
   "files": [
