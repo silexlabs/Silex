@@ -742,6 +742,9 @@ export default function(editor: DataSourceEditor): Filter[] {
         <label>Format
           <input type="text" name="format" placeholder="Format" .value=${options.format || '%a, %b %d, %y'}/>
         </label>
+        <label>Time zone
+          <input type="text" name="timeZone" placeholder="Time zone" .value=${options.timeZone || '' }/>
+        </label>
       `,
     },
   ]
