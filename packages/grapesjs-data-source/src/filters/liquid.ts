@@ -739,7 +739,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       optionsKeys: ['format', 'timeZone'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Format
-          <input type="text" name="format" placeholder="Format" .value=${options.format}/>
+          <input type="text" name="format" placeholder="Format" .value=${options.format || '%a, %b %d, %y'}/>
         </label>
       `,
     },
