@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { testFields } from "../test-data"
-import { isDate, isString } from "./liquid"
+import { testFields } from '../test-data'
+import { isDate, isString } from './liquid'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
