@@ -17,20 +17,9 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-import Backbone from 'backbone';
-import { html, render } from 'lit-html';
+import { render, html } from 'lit-html';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
-//let render: any
-//let html: any
-//let unsafeHTML: any
-//async function loadLitHtml() {
-//  const litHtml = await import('lit-html')
-//  render = litHtml.render
-//  html = litHtml.html
-//  const unsafeLitHTML = await import('lit-html/directives/unsafe-html.js')
-//  unsafeHTML = unsafeLitHTML.unsafeHTML
-//}
-//loadLitHtml()
+import Backbone from 'backbone';
 function closestHtml(child, attr) {
     var ptr = child;
     while (ptr && !ptr.getAttribute(attr)) {

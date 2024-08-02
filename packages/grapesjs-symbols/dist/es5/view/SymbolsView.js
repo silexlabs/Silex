@@ -23,20 +23,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.confirmDialog = void 0;
-var backbone_1 = __importDefault(require("backbone"));
 var lit_html_1 = require("lit-html");
 var unsafe_html_js_1 = require("lit-html/directives/unsafe-html.js");
-//let render: any
-//let html: any
-//let unsafeHTML: any
-//async function loadLitHtml() {
-//  const litHtml = await import('lit-html')
-//  render = litHtml.render
-//  html = litHtml.html
-//  const unsafeLitHTML = await import('lit-html/directives/unsafe-html.js')
-//  unsafeHTML = unsafeLitHTML.unsafeHTML
-//}
-//loadLitHtml()
+var backbone_1 = __importDefault(require("backbone"));
 function closestHtml(child, attr) {
     var ptr = child;
     while (ptr && !ptr.getAttribute(attr)) {

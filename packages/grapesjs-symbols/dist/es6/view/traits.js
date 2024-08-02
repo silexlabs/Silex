@@ -2,28 +2,11 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
 };
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
+import { html, render } from 'lit-html';
 import { SymbolEvents } from '../events';
 import { SYMBOL_SYNC_ATTRIBUTE, getSymbolId } from '../model/Symbol';
 import { cmdUnlink } from '../SymbolsCommands';
 import { confirmDialog } from './SymbolsView';
-import { html, render } from 'lit-html';
-//let html: any
-//let render: any
-//async function loadLitHtml() {
-//  const litHtml = await import('lit-html')
-//  html = litHtml.html
-//  render = litHtml.render
-//}
-//loadLitHtml()
 // Same signature as a grapesjs plugin
 export default function (editor, options) {
     function setSync(el, component, sync) {
@@ -78,28 +61,34 @@ export default function (editor, options) {
             updateUi(elInput, component);
         },
     });
-    // Add the new trait to all component types
-    editor.DomComponents.getTypes().map(function (type) {
-        editor.DomComponents.addType(type.id, {
-            //isComponent: el => isComponent(el),
-            model: {
-                defaults: {
-                    traits: __spreadArray(__spreadArray([], editor.DomComponents.getType(type.id).model.prototype.defaults.traits, true), [
-                        // Add the new trait
-                        //{
-                        //  type: 'checkbox',
-                        //  name: 'In sync',
-                        //  //valueTrue: 'YES', // Value to assign when is checked, default: `true`
-                        //  //valueFalse: 'NO', // Value to assign when is unchecked, default: `false`
-                        //}
-                        {
-                            type: 'symbol-trait',
-                            name: 'Symbol',
-                        }
-                    ], false)
-                }
-            }
-        });
+    // Add trait to symbols when the user selects one
+    editor.on('component:selected', function (component) {
+        var symbolId = component && getSymbolId(component);
+        if (symbolId) {
+            component.addTrait({
+                type: 'symbol-trait',
+                name: 'Symbol',
+            });
+        }
     });
+    //// Add the new trait to all component types
+    //editor.DomComponents.getTypes().forEach(type => {
+    //  editor.DomComponents.addType(type.id, {
+    //    //isComponent: el => isComponent(el),
+    //    model: {
+    //      defaults: {
+    //        traits: [
+    //          // Keep the type original traits
+    //          ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
+    //          // Add the new trait
+    //          {
+    //            type: 'symbol-trait',
+    //            name: 'Symbol',
+    //          }
+    //        ]
+    //      }
+    //    }
+    //  })
+    //})
 }
 var templateObject_1;

@@ -194,6 +194,7 @@ var Symbols = /** @class */ (function (_super) {
      * @private
      */
     Symbols.prototype.onAdd = function (c) {
+        var _this = this;
         var symbolId = (0, Symbol_1.getSymbolId)(c);
         if (symbolId) {
             var symbol = this.get(symbolId);
@@ -209,7 +210,22 @@ var Symbols = /** @class */ (function (_super) {
                 }
             }
             else {
-                console.warn('Could not add instance', c, "Could not find the symbol with id ".concat(symbolId, " (maybe later?)"));
+                // The symbol is not yet loaded
+                setTimeout(function () {
+                    // Check again
+                    if (_this.get(symbolId)) {
+                        // Allright in the end, it was just during loading
+                    }
+                    else {
+                        console.error("Could not make component with id `".concat(c.getId(), "` an instance of symbol with id `").concat(symbolId, "`: symbol not found"));
+                        _this.editor.runCommand('notifications:add', {
+                            type: 'error',
+                            group: 'Symbols errors',
+                            message: "There is a problem with this component: it is supposed to be an instance of a symbol, but the symbol is not found. Symbol id: ".concat(symbolId),
+                            componentId: c.getId(),
+                        });
+                    }
+                });
             }
         }
     };

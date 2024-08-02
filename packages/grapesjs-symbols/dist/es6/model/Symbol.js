@@ -24,9 +24,9 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
-import { find, all, children, getCaret, setCaret, closestInstance } from '../utils';
 import Backbone from 'backbone';
-import _ from 'underscore';
+import { find, all, children, getCaret, setCaret, closestInstance } from '../utils';
+import { uniqueId } from 'underscore';
 export var SYMBOL_ID_ATTRIBUTE = 'symbolId';
 export var SYMBOL_CHILD_ID_ATTRIBUTE = 'symbolChildId';
 export var SYMBOL_SYNC_ATTRIBUTE = 'symbolSync';
@@ -429,7 +429,7 @@ export function initSymbolChild(c, force) {
  */
 export function createSymbol(editor, c, attributes) {
     var _a;
-    var symbolId = (_a = attributes.symbolId) !== null && _a !== void 0 ? _a : "s_".concat(_.uniqueId(), "_").concat(new Date().getTime());
+    var symbolId = (_a = attributes.symbolId) !== null && _a !== void 0 ? _a : "s_".concat(uniqueId(), "_").concat(new Date().getTime());
     // If the component is in a symbol, we need to update all instances
     var inst = closestInstance(c);
     // Init component with symbolId and children

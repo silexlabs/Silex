@@ -48,6 +48,6 @@
   "dependencies": {
     "backbone": "^1.4.1",
     "jquery": "^3.7.0",
-    "lit-html": "^2.7.4"
+    "lit-html": "^3.1.4"
   }
 }

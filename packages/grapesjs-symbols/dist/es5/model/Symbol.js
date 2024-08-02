@@ -30,9 +30,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSymbol = exports.initSymbolChild = exports.initModel = exports.cleanup = exports.getSymbolId = exports.SYMBOL_SYNC_ATTRIBUTE = exports.SYMBOL_CHILD_ID_ATTRIBUTE = exports.SYMBOL_ID_ATTRIBUTE = void 0;
-var utils_1 = require("../utils");
 var backbone_1 = __importDefault(require("backbone"));
-var underscore_1 = __importDefault(require("underscore"));
+var utils_1 = require("../utils");
+var underscore_1 = require("underscore");
 exports.SYMBOL_ID_ATTRIBUTE = 'symbolId';
 exports.SYMBOL_CHILD_ID_ATTRIBUTE = 'symbolChildId';
 exports.SYMBOL_SYNC_ATTRIBUTE = 'symbolSync';
@@ -439,7 +439,7 @@ exports.initSymbolChild = initSymbolChild;
  */
 function createSymbol(editor, c, attributes) {
     var _a;
-    var symbolId = (_a = attributes.symbolId) !== null && _a !== void 0 ? _a : "s_".concat(underscore_1.default.uniqueId(), "_").concat(new Date().getTime());
+    var symbolId = (_a = attributes.symbolId) !== null && _a !== void 0 ? _a : "s_".concat((0, underscore_1.uniqueId)(), "_").concat(new Date().getTime());
     // If the component is in a symbol, we need to update all instances
     var inst = (0, utils_1.closestInstance)(c);
     // Init component with symbolId and children

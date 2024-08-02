@@ -5,26 +5,15 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createSymbolInstance = exports.unlinkSymbolInstance = exports.removeSymbol = exports.addSymbol = exports.displayError = exports.cmdCreate = exports.cmdUnlink = exports.cmdRemove = exports.cmdAdd = void 0;
+var lit_html_1 = require("lit-html");
+var unsafe_html_js_1 = require("lit-html/directives/unsafe-html.js");
 var Symbol_1 = require("./model/Symbol");
 var utils_1 = require("./utils");
 var events_1 = require("./events");
-var lit_html_1 = require("lit-html");
-var unsafe_html_js_1 = require("lit-html/directives/unsafe-html.js");
 exports.cmdAdd = 'symbols:add';
 exports.cmdRemove = 'symbols:remove';
 exports.cmdUnlink = 'symbols:unlink';
 exports.cmdCreate = 'symbols:create';
-//let html: any
-//let render: any
-//let unsafeHTML: any
-//async function loadLitHtml() {
-//  const litHtml = await import('lit-html')
-//  html = litHtml.html
-//  render = litHtml.render
-//  const unsafeLitHTML = await import('lit-html/directives/unsafe-html.js')
-//  unsafeHTML = unsafeLitHTML.unsafeHTML
-//}
-//loadLitHtml()
 // Same signature as a grapesjs plugin
 function default_1(editor, options) {
     if (options === void 0) { options = {}; }

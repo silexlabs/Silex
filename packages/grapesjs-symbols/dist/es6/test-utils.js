@@ -1,5 +1,5 @@
 import grapesjs from 'grapesjs';
-import { createSymbol } from './model/Symbol.js';
+import { createSymbol } from './model/Symbol';
 //  let's use the editor in headless mode
 //  to create components
 var editor = grapesjs.init({

@@ -1,6 +1,6 @@
+import Backbone from 'backbone';
 import { Component, ComponentProperties } from 'grapesjs';
 import { SymbolEditor } from './Symbols';
-import Backbone from 'backbone';
 export declare const SYMBOL_ID_ATTRIBUTE = "symbolId";
 export declare const SYMBOL_CHILD_ID_ATTRIBUTE = "symbolChildId";
 export declare const SYMBOL_SYNC_ATTRIBUTE = "symbolSync";

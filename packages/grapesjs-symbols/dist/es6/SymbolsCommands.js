@@ -2,26 +2,15 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
 };
+import { html, render } from 'lit-html';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 import { createSymbol, getSymbolId } from './model/Symbol';
 import { allowDrop, setDirty } from './utils';
 import { SymbolEvents } from './events';
-import { html, render } from 'lit-html';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 export var cmdAdd = 'symbols:add';
 export var cmdRemove = 'symbols:remove';
 export var cmdUnlink = 'symbols:unlink';
 export var cmdCreate = 'symbols:create';
-//let html: any
-//let render: any
-//let unsafeHTML: any
-//async function loadLitHtml() {
-//  const litHtml = await import('lit-html')
-//  html = litHtml.html
-//  render = litHtml.render
-//  const unsafeLitHTML = await import('lit-html/directives/unsafe-html.js')
-//  unsafeHTML = unsafeLitHTML.unsafeHTML
-//}
-//loadLitHtml()
 // Same signature as a grapesjs plugin
 export default function (editor, options) {
     if (options === void 0) { options = {}; }

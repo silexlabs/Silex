@@ -1,4 +1,4 @@
-import Backbone from 'backbone';
+import Backbone, { ViewOptions } from 'backbone';
 import { SymbolEditor } from '../model/Symbols';
 import { Position } from 'grapesjs';
 export declare function confirmDialog({ editor, content: main, title, primaryLabel, secondaryLabel, cbk, lsKey, }: {
@@ -10,7 +10,7 @@ export declare function confirmDialog({ editor, content: main, title, primaryLab
     cbk: () => void;
     lsKey: string;
 }): void;
-export interface SymbolsViewOptions extends Backbone.ViewOptions {
+export interface SymbolsViewOptions extends ViewOptions {
     editor: SymbolEditor;
     appendTo: string;
     highlightColor: string;
