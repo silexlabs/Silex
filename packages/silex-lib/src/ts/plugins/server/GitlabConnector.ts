@@ -177,7 +177,7 @@ const svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
   </g>
 </svg>`
 const encodedSvg = encodeURIComponent(svg)
-const ICON = `data:image/svg+xml,${encodedSvg}`
+const ICON = '/assets/gitlab.png'
 
 export default class GitlabConnector implements StorageConnector {
   connectorId = 'gitlab'
