@@ -50,8 +50,8 @@ module.exports = async function (config) {
 }
 
 const env = {
-  STORAGE_CONNECTORS: process.env.STORAGE_CONNECTORS || 'ftp,gitlab,gitlab2',
-  HOSTING_CONNECTORS: process.env.HOSTING_CONNECTORS || 'ftp,gitlab,gitlab2,download',
+  STORAGE_CONNECTORS: process.env.STORAGE_CONNECTORS || 'gitlab,gitlab2,ftp',
+  HOSTING_CONNECTORS: process.env.HOSTING_CONNECTORS || 'gitlab,gitlab2,ftp,download',
   SILEX_FS_ROOT: process.env.SILEX_FS_ROOT || join(process.cwd(), '/silex/storage'),
   SILEX_FS_HOSTING_ROOT: process.env.SILEX_FS_HOSTING_ROOT || join(process.cwd(), '/silex/hosting'),
   GITLAB_DISPLAY_NAME: process.env.GITLAB_DISPLAY_NAME || 'Gitlab',
