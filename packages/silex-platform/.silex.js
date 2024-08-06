@@ -63,7 +63,7 @@ const env = {
   GITLAB2_CLIENT_SECRET: process.env.GITLAB2_CLIENT_SECRET,
   GITLAB2_DOMAIN: process.env.GITLAB2_DOMAIN,
   FTP_STORAGE_PATH: process.env.FTP_STORAGE_PATH || '/silex/storage',
-  FTP_HOSTING_PATH: process.env.FTP_HOSTING_PATH || '/silex/hosting',
+  FTP_HOSTING_PATH: process.env.FTP_HOSTING_PATH || '',
 }
 
 // Create alternate versions of the the Gitlab connector
