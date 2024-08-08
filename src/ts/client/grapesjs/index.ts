@@ -443,7 +443,7 @@ export async function initEditor(config: EditorConfig) {
       editor.SelectorManager.selectorTags.el.parentElement.classList.add('top-style-section')
 
       // Add the notifications container
-      document.body.querySelector('.notifications-container').appendChild(notificationContainer)
+      document.body.querySelector('.notifications-container')?.appendChild(notificationContainer)
       // Mark the button as dirty when there are notifications
       // TODO: move this in the notifications plugin options
       editor.on(
@@ -451,7 +451,7 @@ export async function initEditor(config: EditorConfig) {
         () => {
           const notificationButton = editor.Panels.getPanel(PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn')
           ;(editor as NotificationEditor)
-            .NotificationManager.length ? notificationButton.classList.add('project-bar__dirty') : notificationButton.classList.remove('project-bar__dirty')
+            .NotificationManager.length ? notificationButton?.classList.add('project-bar__dirty') : notificationButton?.classList.remove('project-bar__dirty')
         }
       )
 
