@@ -21,13 +21,44 @@
 
 const SslPlugin = require('./dist/plugins/server/plugins/server/SslPlugin').default
 const StaticPlugin = require('./dist/plugins/server/plugins/server/StaticPlugin').default
+const { join } = require('path')
+const nodeModules = require('node_modules-path')
 
 module.exports = async function(config, options) {
   try {
     await config.addPlugin([
       SslPlugin,
       StaticPlugin,
-    ])
+    ], {
+      [StaticPlugin]: {
+        routes: [
+          {
+            route: '/',
+            path: join(__dirname, 'public'),
+          }, {
+            route: '/css/',
+            path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/css/',
+          }, {
+            route: '/webfonts/',
+            path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/webfonts/',
+          }, {
+            route: '/css/files/',
+            path: nodeModules('@fontsource/ubuntu') + '/@fontsource/ubuntu/files/',
+          }, {
+            route: '/',
+            path: join(__dirname, 'dist', 'client'),
+          }, {
+            route: '/',
+            path: join(__dirname, 'dist', 'plugins', 'client'),
+          },
+        ]
+          // add project route for source maps
+          .concat(config.debug ? [{
+            route: '/',
+            path: './',
+          }] : []),
+      },
+    })
   } catch(e) {
     console.error(e)
   }

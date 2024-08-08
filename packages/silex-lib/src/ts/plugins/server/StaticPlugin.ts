@@ -16,10 +16,8 @@
  */
 
 import express from 'express'
-import nodeModules from 'node_modules-path'
 import serveStatic from 'serve-static'
 import { withCache } from './Cache'
-import { join } from 'path'
 import { ServerEvent } from '../../server/events'
 
 type StaticOptions = {
@@ -29,41 +27,9 @@ type StaticOptions = {
   }[]
 }
 
-export default async function(config, opts = {}) {
-  // Options with defaults
-  const options: StaticOptions = {
-    routes: [
-      {
-        route: '/',
-        path: join(__dirname, '../../../../..', 'public'),
-      }, {
-        route: '/css/',
-        path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/css/',
-      }, {
-        route: '/webfonts/',
-        path: nodeModules('@fortawesome/fontawesome-free') + '/@fortawesome/fontawesome-free/webfonts/',
-      }, {
-        route: '/css/files/',
-        path: nodeModules('@fontsource/ubuntu') + '/@fontsource/ubuntu/files/',
-      //}, {
-      //  route: '/node_modules/',
-      //  path: nodeModules(),
-      }, {
-        route: '/',
-        path: join(__dirname, '../../../../..', 'dist', 'client'),
-      }, {
-        route: '/',
-        path: join(__dirname, '../../../../..', 'dist', 'plugins', 'client'),
-      },
-    ]
-    // add project route for source maps
-      .concat(config.debug ? [{
-        route: '/',
-        path: './',
-      }] : []),
-    ...opts,
-  }
-  console.info('> [StaticPlugin] Serving static files')
+export default async function(config, options: StaticOptions = { routes: [] }) {
+  if(!options.routes) throw new Error('The config for static module has no `routes` attribute')
+  console.info(`> [StaticPlugin] Serving ${options.routes.length} static files`)
 
   config.on(ServerEvent.STARTUP_START, ({app}) => {
     const router = express.Router()
