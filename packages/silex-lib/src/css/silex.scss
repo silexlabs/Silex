@@ -3,10 +3,10 @@
 
 .silex-workspace {
   @include mixins.silex-ui-full;
+  display: flex;
   body {
     font-family: $fontFamily;
   }
-  display: flex;
   a {
     color: inherit;
   }
