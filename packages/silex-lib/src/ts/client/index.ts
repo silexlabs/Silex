@@ -24,6 +24,7 @@
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
+import { pauseAutoSave } from './grapesjs/storage'
 
 // Expose API to calling app as window.silex
 export * from './expose'
@@ -80,6 +81,7 @@ export async function start(options = {}): Promise<void> {
 
   // Load the site
   try {
+    pauseAutoSave(editor)
     await editor.load(null)
   } catch(e) {
     if(e.httpStatusCode === 401) {
