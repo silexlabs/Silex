@@ -58,7 +58,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
   
   // Connect the data sources (async)
   Promise.all(dataSources.map(ds => ds.connect()))
-    .then(() => console.info('Data sources connected'))
+    // .then(() => console.info('Data sources connected'))
     .catch(err => console.error('Error while connecting data sources', err))
 
   // Register the data source manager

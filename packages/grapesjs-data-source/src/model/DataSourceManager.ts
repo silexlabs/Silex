@@ -159,8 +159,8 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
    * Listen to data source changes
    */
   modelReady(e?: CustomEvent) {
-      // Forward the event
-      this.editor.trigger(DATA_SOURCE_READY, e?.detail)
+    // Forward the event
+    this.editor.trigger(DATA_SOURCE_READY, e?.detail)
   }
 
   getDataTree() {
