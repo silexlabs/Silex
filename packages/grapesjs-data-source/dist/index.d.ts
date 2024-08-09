@@ -145,6 +145,10 @@ export declare class DataSourceManager extends Backbone.Collection<IDataSourceMo
 	 * Listen to data source changes
 	 */
 	modelChanged(e?: CustomEvent): void;
+	/**
+	 * Listen to data source changes
+	 */
+	modelReady(e?: CustomEvent): void;
 	getDataTree(): DataTree;
 	getPageQuery(page: Page): Record<DataSourceId, string>;
 }
