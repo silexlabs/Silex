@@ -91,7 +91,8 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     })
 
     // Update the data tree when the data sources change
-    this.on('all', () => this.modelChanged())
+    this.on('add update remove change', () => this.modelChanged())
+    this.on(DATA_SOURCE_READY, () => this.modelReady())
 
     // Start listening to data sources
     this.modelChanged()
@@ -148,14 +149,18 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       dataSource.on(DATA_SOURCE_CHANGED, this.dataChangedBinded)
       dataSource.on(DATA_SOURCE_ERROR, this.dataSourceErrorBinded)
     })
-    // // Make sure the operations are undoable
-    // this.models.forEach((dataSource: IDataSourceModel) => {
-    //   this.editor.UndoManager.add(dataSource)
-    // })
-    this.editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
-
     // Update undo manager
     this.editor.getModel().handleUpdates(this, this.toJSON())
+    // Forward the event
+    this.editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
+  }
+
+  /**
+   * Listen to data source changes
+   */
+  modelReady(e?: CustomEvent) {
+      // Forward the event
+      this.editor.trigger(DATA_SOURCE_READY, e?.detail)
   }
 
   getDataTree() {
