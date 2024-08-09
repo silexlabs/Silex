@@ -52,6 +52,9 @@
         height: '100%',
         fromElement: true,
         //storageManager: false,
+        storageManager: {
+          type: 'local2',
+        },
         plugins: ['@silexlabs/grapesjs-data-source'],
         pluginsOpts: {
           '@silexlabs/grapesjs-data-source': {
@@ -73,12 +76,6 @@
         }
       });
       editor.on("load", () => {
-        editor.addComponents(`<div>
-          <h1>About this demo</h1>
-          <p>For this test I configured the plugin with a demo country API: https://studio.apollographql.com/public/countries/variant/current/home</p>
-          <p><strong>Select a component and check it's settings on the right</strong></p>
-          <p>This plugin lets you set "states" on components with the data coming from the API</p>
-        </div>`);
         editor.Panels.addPanel({
           id: "basic-actions",
           el: ".panel__basic-actions",
@@ -92,8 +89,22 @@
             },
           ]
         })
-        // Test
-        //settings.style.display = 'block';
+        // Check storage usage
+        //editor.StorageManager.add('local2', {
+        //  async load(storageOptions) {
+        //    console.log('load', storageOptions);
+        //  },
+        //  async store(data, storageOptions) {
+        //    console.log('store', data, storageOptions);
+        //  },
+        //});
+        // Add a test component
+        editor.addComponents(`<div>
+          <h1>About this demo</h1>
+          <p>For this test I configured the plugin with a demo country API: https://studio.apollographql.com/public/countries/variant/current/home</p>
+          <p><strong>Select a component and check it's settings on the right</strong></p>
+          <p>This plugin lets you set "states" on components with the data coming from the API</p>
+        </div>`);
       });
     </script>
   </body>
