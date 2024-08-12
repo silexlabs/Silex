@@ -204,10 +204,11 @@ export declare const DATA_SOURCE_CHANGED = "data-source:changed";
 export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
 export interface IDataSourceModel extends Backbone.Model, IDataSource {
 }
+export type DataSourceType = "graphql";
 export interface IDataSourceOptions extends Backbone.ModelSetOptions {
 	id: DataSourceId;
 	label: string;
-	type: "graphql";
+	type: DataSourceType;
 	readonly?: boolean;
 }
 export type TypeId = string;
@@ -476,6 +477,25 @@ export declare function getCompletion(options: {
 	currentStateId?: StateId;
 	hideLoopData?: boolean;
 }): Context;
+/**
+ * @fileoverview GraphQL DataSource implementation
+ */
+/**
+ * GraphQL Data source options
+ */
+export interface GraphQLQueryOptions {
+	url: string;
+	headers: Record<string, string>;
+	method: "GET" | "POST";
+	queryable?: TypeId[];
+	readonly?: boolean;
+}
+/**
+ * GraphQL Data source options with server to server options
+ */
+export interface GraphQLOptions extends GraphQLQueryOptions, IDataSourceOptions {
+	serverToServer?: GraphQLQueryOptions;
+}
 export declare const NOTIFICATION_GROUP = "Data source";
 /**
  * Get the display name of a field
@@ -545,6 +565,8 @@ export declare function optionsFormKeySelector(editor: DataSourceEditor, field: 
  * @throws Error if the element is not found
  */
 export declare function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined, optionNameForError: string): HTMLElement;
+export declare function getDefaultOptions(postFix?: string): GraphQLOptions;
+export declare function createDataSource(opts?: Partial<GraphQLOptions>, postFix?: string): IDataSourceModel;
 /**
  * Editor for a state of the selected element's properties
  *
