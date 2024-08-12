@@ -26,6 +26,7 @@ Features
 * [x] Compatible with [GrapesJS notifications plugin](https://github.com/silexlabs/grapesjs-notifications)
 * [x] Events and API to manage the data, the completion of exrpessions, and the GraphQL query
 * [x] Web component to display the expressions and edit them
+* [ ] GrapesJs commands to handle data sources instead of a programmatic API
 * [ ] Add more liquid filters
 * [ ] Add more data sources (REST, Open API)
 

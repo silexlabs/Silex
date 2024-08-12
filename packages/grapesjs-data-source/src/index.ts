@@ -18,7 +18,7 @@
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
 import { DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
-import { NOTIFICATION_GROUP } from './utils'
+import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
 
 /**
@@ -49,12 +49,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
 
   // Create the data sources from config
   const dataSources = options.dataSources
-    .map((ds: IDataSourceOptions) => {
-      switch (ds.type) {
-      case 'graphql': return new GraphQL(ds as GraphQLOptions)
-      default: throw new Error(`Unknown data source type: ${ds.label}`)
-      }
-    })
+    .map((ds: IDataSourceOptions) => createDataSource(ds))
   
   // Connect the data sources (async)
   Promise.all(dataSources.map(ds => ds.connect()))

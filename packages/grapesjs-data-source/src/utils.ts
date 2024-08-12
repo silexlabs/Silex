@@ -1,9 +1,10 @@
-import { Expression, Field, FieldKind, IDataSourceModel, Options, Token, TypeId } from './types'
+import { DataSourceType, Expression, Field, FieldKind, IDataSourceModel, Options, Token, TypeId } from './types'
 import { DataSourceEditor } from '.'
 import { getParentByPersistentId, getStateDisplayName } from './model/state'
 import { TemplateResult, html } from 'lit'
 import { Component } from 'grapesjs'
 import { fromStored, getExpressionResultType } from './model/token'
+import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 
 export const NOTIFICATION_GROUP = 'Data source'
 
@@ -318,4 +319,29 @@ export function getElementFromOption(option: HTMLElement | string | (() => HTMLE
     return option
   }
   throw new Error(`${optionNameForError} must be a string or an HTMLElement or a function`)
+}
+
+export function getDefaultOptions(postFix = Math.random().toString(36).slice(2, 8)): GraphQLOptions {
+  return {
+    id: `ds-${postFix}`,
+    label: 'New data source',
+    type: 'graphql',
+    url: '',
+    method: 'POST',
+    headers: {},
+    readonly: false,
+  }
+}
+
+export function createDataSource(opts: Partial<GraphQLOptions> = {}, postFix?: string): IDataSourceModel {
+  const options = {
+    ...getDefaultOptions(postFix),
+    ...opts,
+  }
+  switch (options.type) {
+    case 'graphql':
+      return new GraphQL(options)
+    default:
+      throw new Error(`Unknown data source type: ${options.type}`)
+  }
 }

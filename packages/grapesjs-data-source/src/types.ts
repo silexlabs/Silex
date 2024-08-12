@@ -91,11 +91,13 @@ export const COMPONENT_STATE_CHANGED = 'component:state:changed'
 // For use by the DataSourceManager class which is a Backbone collection
 export interface IDataSourceModel extends Backbone.Model, IDataSource {}
 
+export type DataSourceType = 'graphql'
+
 // Options of a data source
 export interface IDataSourceOptions extends Backbone.ModelSetOptions {
   id: DataSourceId
   label: string
-  type: 'graphql'
+  type: DataSourceType
   readonly?: boolean
 }
 

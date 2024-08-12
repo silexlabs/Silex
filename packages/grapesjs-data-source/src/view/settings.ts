@@ -2,7 +2,7 @@ import { createRef, Ref, ref } from 'lit/directives/ref.js'
 import {repeat} from 'lit/directives/repeat.js'
 import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
 import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel } from '../types'
-import { getElementFromOption } from '../utils'
+import { getDefaultOptions, getElementFromOption } from '../utils'
 import { css, html, LitElement, render } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 
@@ -94,6 +94,7 @@ export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewO
         renderSettings(editor, dsSettings, settingsEl)
       }
     })
+    renderSettings(editor, dsSettings, settingsEl)
   }
 }
 
@@ -164,15 +165,7 @@ class SettingsDataSources extends LitElement {
 
   protected render() {
     const dsDataSource: Ref<SettingsDataSources> = createRef()
-    const options: GraphQLOptions = {
-      id: `ds_${Math.random().toString(36).slice(2, 8)}`,
-      label: 'New data source',
-      type: 'graphql',
-      url: '',
-      method: 'POST',
-      headers: {},
-      readonly: false,
-    }
+    const options: GraphQLOptions = getDefaultOptions(this.dataSources.length.toString())
     return html`
     <section>
     <!--
@@ -449,9 +442,21 @@ class SettingsHeaders extends LitElement {
           type="button"
           class="ds-btn-prim"
           @click=${() => {
+    // Default name and value
+    let name = 'Authorization'
+    let value = 'Bearera XXXXXX'
+    // Make sure the header name is unique
+    // Add a number if the header already exists
+    let i = 0
+    while(typeof this.headers[name] !== 'undefined') {
+      i++
+      name = `Header ${i}`
+      value = ''
+    }
+    // Add the header
     this.headers = {
       ...this.headers,
-      'Authorization': 'Bearer XXXXXX',
+      [name]: value,
     }
     this.dispatchEvent(new CustomEvent('change'))
   }}
