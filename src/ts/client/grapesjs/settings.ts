@@ -79,9 +79,7 @@ export const settingsDialog = (editor, opts) => {
     model.set('settings', data.settings || {})
     model.set('name', data.name)
     editor.once('canvas:frame:load', () => {
-      setTimeout(() => {
-        updateDom(editor)
-      })
+      updateDom(editor)
     })
   })
   // Normal way to apply the head content to the DOM
@@ -272,12 +270,15 @@ function updateDom(editor) {
   const settings = editor.getModel().get('settings')
   const pageSettings = editor.Pages.getSelected().get('settings')
   if(doc && settings) {
-    // Site head
-    getHeadContainer(doc, 'site-head')
-      .innerHTML = settings.head || ''
-    // Pages head
-    getHeadContainer(doc, 'page-head')
-      .innerHTML = pageSettings?.head || ''
+    // Delay the update to let the DOM be ready
+    setTimeout(() => {
+      // Site head
+      getHeadContainer(doc, 'site-head')
+        .innerHTML = settings.head || ''
+      // Pages head
+      getHeadContainer(doc, 'page-head')
+        .innerHTML = pageSettings?.head || ''
+    })
   } else {
     // No document??
   }
