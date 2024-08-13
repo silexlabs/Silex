@@ -22,14 +22,7 @@ import { addTempDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeT
 import { PublicationStatus } from './PublicationManager'
 import { ClientEvent } from '../events'
 
-export function pauseAutoSave(editor) {
-  editor.StorageManager.setAutosave(false)
-  editor.once('canvas:frame:load', ({ window }) => {
-    editor.editor.set('changesCount', 0)
-    editor.UndoManager.clear()
-    editor.StorageManager.setAutosave(true)
-  })
-}
+export const cmdPauseAutoSave = 'pause-auto-save'
 
 // Mechanism to keep only the last save during publication
 let lastPendingSaving: WebsiteData = null
@@ -39,6 +32,19 @@ let lastPendingSaving: WebsiteData = null
 let isSaving = false
 
 export const storagePlugin = (editor) => {
+  // Add useful commands
+  editor.Commands.add(cmdPauseAutoSave, {
+    run: () => {
+      if(!editor.StorageManager.isAutosave()) throw new Error('Autosave is not enabled')
+      editor.StorageManager.setAutosave(false)
+    },
+    stop: () => {
+      editor.editor.set('changesCount', 0)
+      editor.UndoManager.clear()
+      editor.StorageManager.setAutosave(true)
+    },
+  })
+  // Add the storage connector
   editor.Storage.add('connector', {
     async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
       try {
@@ -55,8 +61,9 @@ export const storagePlugin = (editor) => {
         if (err.httpStatusCode === 401) {
           editor.once(eventLoggedIn, async () => {
             try {
-              pauseAutoSave(editor)
+              editor.runCommand(cmdPauseAutoSave)
               const data = await editor.Storage.load(options)
+              editor.once('canvas:frame:load', () => editor.stopCommand(cmdPauseAutoSave))
               editor.loadProjectData(data)
             } catch (err) {
               console.error('connectorPlugin load error', err)
@@ -79,7 +86,7 @@ export const storagePlugin = (editor) => {
     async addToQueue(data: WebsiteData, options) {
       // Handle concurrent saving
       if (lastPendingSaving && lastPendingSaving !== data) {
-        console.log('Previous saving CANCELED')
+        // Cancel previous saving
       }
       lastPendingSaving = data
       // Go ahaed and save
@@ -88,7 +95,7 @@ export const storagePlugin = (editor) => {
 
     async doStore(data, options) {
       if (editor.PublicationManager?.status === PublicationStatus.STATUS_PENDING) {
-        console.log('Publication is pending, saving DELAYED')
+        // Publication is pending, save is delayed
         return new Promise((resolve) => {
           editor.once(ClientEvent.PUBLISH_END, () => {
             resolve(this.doStore(data, options))
@@ -97,7 +104,7 @@ export const storagePlugin = (editor) => {
       }
       try {
         if (isSaving) {
-          console.log('Saving is already in progress, saving DELAYED')
+          // Concurrent saving, save is delayed
           editor.once('storage:start:store', () => {
             this.doStore(data, options)
           })
@@ -113,7 +120,7 @@ export const storagePlugin = (editor) => {
               await websiteSave({ websiteId: options.id, connectorId: user.storage.connectorId, data })
               isSaving = false
             } else {
-              console.log('Not logged in, saving DELAYED')
+              // Not logged in save is delayed
               editor.once(eventLoggedIn, () => {
                 isSaving = false
                 return editor.Storage.store()
@@ -121,7 +128,7 @@ export const storagePlugin = (editor) => {
               editor.Commands.run(cmdLogin)
             }
           } else {
-            console.log('This saving was CANCELED')
+            // Canceled saving
           }
         }
       } catch (err) {

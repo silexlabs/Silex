@@ -56,6 +56,9 @@ module.exports = async function(config, options) {
           .concat(config.debug ? [{
             route: '/',
             path: './',
+          }, {
+            route: '/js/',
+            path: nodeModules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/',
           }] : []),
       },
     })

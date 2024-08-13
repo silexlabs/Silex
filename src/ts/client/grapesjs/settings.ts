@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import {html, render} from 'lit-html'
+import {html, render, TemplateResult} from 'lit-html'
 import {defaultSections, idCodeWrapper, isSite, SettingsSection} from './settings-sections'
 
 /**
@@ -103,22 +103,34 @@ export const settingsDialog = (editor, opts) => {
 }
 
 function showSection(item: SettingsSection) {
+  // **
+  // Handle the side bar
   const aside = el.querySelector('aside.silex-bar') as HTMLElement
   const ul = aside.querySelector('ul.silex-list--menu') as HTMLUListElement
-  const li = ul.querySelector('li#settings-' + item.id) as HTMLLIElement
+  const li = ul.querySelector('li#settings-sidebar-' + item.id) as HTMLLIElement
   currentSection = item
   if(!li) {
     console.warn('Cannot find section', item.id, 'in the side bar, fallback to the first section')
+    if(!defaultSections[0] || defaultSections[0].id === item.id) {
+      console.error('Cannot find the default section in the side bar')
+      return
+    }
     showSection(defaultSections[0]) // Fallback to the first section
     return
   }
   // Update active
   Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
   li.classList.add('active')
+  // **
+  // Handle the main section
   const main = el.querySelector('main#settings__main') as HTMLElement
-  const mainItem = el.querySelector(`div#settings-${item.id}`)
+  const mainItem = main.querySelector(`#settings-${item.id}`)
   if(!mainItem) {
     console.warn('Cannot find section', item.id, 'in the settings dialog, fallback to the first section')
+    if(!defaultSections[0] || defaultSections[0].id === item.id) {
+      console.error('Cannot find the default section in the settings dialog')
+      return
+    }
     showSection(defaultSections[0]) // Fallback to the first section
     return
   }
@@ -162,6 +174,14 @@ function displaySettings(editor, config, model = editor.getModel()) {
   const menuItemsCurrent = isSite(model) ? sectionsSite : sectionsPage
   // Init the current section selection
   currentSection = currentSection || menuItemsCurrent[0]
+  const sections: TemplateResult[] = menuItemsCurrent.map(item => {
+    try {
+      return item.render(settings, model)
+    } catch (e) {
+      console.error('Error rendering settings section', item.id, e)
+      return html`<div class="silex-error">Error rendering settings section ${item.id}</div>`
+    }
+  })
   // Render the settings dialog
   render(html`
     <form class="silex-form">
@@ -179,7 +199,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
           <ul class="silex-list silex-list--menu">
             ${menuItemsCurrent.map(item => html`
               <li
-                id="settings-${item.id}"
+                id="settings-sidebar-${item.id}"
                 class=${item.id === currentSection.id ? 'active' : ''}
                 @click=${e => {
     e.preventDefault()
@@ -195,7 +215,7 @@ function displaySettings(editor, config, model = editor.getModel()) {
           </ul>
         </aside>
         <main id="settings__main">
-            ${menuItemsCurrent.map(item => item.render(settings, model))}
+            ${ sections }
         </main>
       </section>
       <footer>
