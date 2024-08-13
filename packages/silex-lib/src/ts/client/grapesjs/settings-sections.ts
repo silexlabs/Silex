@@ -1,5 +1,5 @@
 import {live} from 'lit-html/directives/live.js'
-import {html} from 'lit-html'
+import {html, TemplateResult} from 'lit-html'
 import { WebsiteSettings } from '../../types'
 
 // ID of the code editor wrapper
@@ -11,7 +11,7 @@ export function isSite(model) { return !!model.getHtml }
 export interface SettingsSection {
   id: string
   label: string
-  render: (settings: WebsiteSettings, model) => any
+  render: (settings: WebsiteSettings, model) => TemplateResult
 }
 
 /**

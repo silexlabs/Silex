@@ -17,7 +17,6 @@
 
 import { Component, Editor } from 'grapesjs'
 
-
 // Browse all elements of all pages
 export function onAll(editor: Editor, cbk: (c: Component) => void) {
   editor.Pages.getAll()
