@@ -108,6 +108,13 @@ input.silex-button[type="submit"] {
   background-color: $lighterPrimaryColor;
   border-color: transparent;
   padding: 5px;
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px $tertiaryColor;
+  }
+  &:hover {
+    background-color: $darkerPrimaryColor;
+  }
 }
 
 .silex-button.disabled,
