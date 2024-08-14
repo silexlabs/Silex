@@ -59,7 +59,7 @@ import { blocksPlugin } from './blocks'
 import { semanticPlugin } from './semantic'
 import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
-import {defaultKms, keymapsPlugin, prefixKey} from './keymaps'
+import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
@@ -357,7 +357,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         reverse: true,
       },
       [keymapsDialogPlugin.toString()]: {
-        longPressKey: prefixKey,
+        longPressDuration: null,
+        shortcut: 'shift+h',
       },
       [navbarPlugin.toString()]:{
         block:{
