@@ -144,7 +144,7 @@ export class PropertiesEditor extends LitElement {
               `)
 }
           </select>
-          ${ selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator')) ? this.renderStateEditor(selected, 'Condition 2', Properties.condition2, false) : '' }
+          ${ this.renderStateEditor(selected, '', Properties.condition2, false, false, selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator'))) }
         </main>
       </section>
       <section class="ds-section">
@@ -169,9 +169,10 @@ export class PropertiesEditor extends LitElement {
     }
   }
 
-  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean, hideLoopData = false) {
+  renderStateEditor(selected: Component, label: string, name: Properties, publicState: boolean, hideLoopData = false, visible = true) {
     return html`
       <state-editor
+        .style=${visible ? '' : 'display: none;'}
         .selected=${selected}
         .editor=${this.editor}
         id="${name}"
@@ -202,8 +203,8 @@ export class PropertiesEditor extends LitElement {
         stateEditorFinally.data = [getFixedToken(`Error setting data: ${e}`)]
       }
       this.redrawing = false
-            // Store the selected component
-            this.inputs[name]!.selected = selected
+      // Store the selected component
+      this.inputs[name]!.selected = selected
     }
   })}
         @change=${() => this.onChange(selected, name, publicState)}
