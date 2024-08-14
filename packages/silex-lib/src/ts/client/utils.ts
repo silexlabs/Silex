@@ -60,8 +60,9 @@ export function selectBody(editor: Editor): void {
  * @param element The element to check.
  */
 export function isTextOrInputField(element: HTMLElement): boolean {
-  const isInput: boolean = element.tagName === 'INPUT' && element.getAttribute('type') !== 'submit'
-  const isOtherFormElement: boolean = ['TEXTAREA', 'OPTION', 'OPTGROUP', 'SELECT'].includes(element.tagName)
+  if(element.getAttribute('type') === 'submit') return false
+  const isInput: boolean = element.tagName === 'INPUT'
+  const isOtherFormElement: boolean = ['TEXTAREA', 'OPTION', 'OPTGROUP', 'SELECT', 'BUTTON'].includes(element.tagName)
 
   return isInput || isOtherFormElement
 }
