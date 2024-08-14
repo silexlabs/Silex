@@ -180,7 +180,7 @@ export class KeymapsDialog {
       <style>${this.renderCSS()}</style>
       <div id="keymaps-dialog" class="${this.isOpen ? 'open' : ''}">
         <header>
-          <h3>Keyboard Shortcuts (hold ${titleCase(this.options.longPressKey)} to show)</h3>
+          <h3>Keyboard Shortcuts ${this.options.longPressDuration && this.options.longPressKey ? html`(hold ${titleCase(this.options.longPressKey)} to show)` : ''}</h3>
         </header>
         <main>
           ${reg && Object.keys(reg).map(category => html`

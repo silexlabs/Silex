@@ -42,27 +42,29 @@ export default (editor: Editor, opts = {}): void => {
     })
   }
 
-  let longPressTimeout: NodeJS.Timeout | undefined = undefined
+  if (options.longPressDuration && options.longPressKey) {
+    let longPressTimeout: NodeJS.Timeout | undefined = undefined
 
-  document.addEventListener('keydown', event => {
-    // Handle long press of the longPressKey
-    if (event.key.toLowerCase() === options.longPressKey) {
-      if (!longPressTimeout) {
-        longPressTimeout = setTimeout(() => {
-          editor.runCommand(cmdKeymapsDialog)
-        }, options.longPressDuration)
+    document.addEventListener('keydown', event => {
+      // Handle long press of the longPressKey
+      if (event.key.toLowerCase() === options.longPressKey) {
+        if (!longPressTimeout) {
+          longPressTimeout = setTimeout(() => {
+            editor.runCommand(cmdKeymapsDialog)
+          }, options.longPressDuration)
+        }
       }
-    }
-  })
+    })
 
-  document.addEventListener('keyup', event => {
-    // Clear the long press timeout if the key is released (and close the dialog)
-    if (event.key.toLowerCase() === options.longPressKey && !isShortcutActive) {
-      if (longPressTimeout) {
-        clearTimeout(longPressTimeout)
-        longPressTimeout = undefined
+    document.addEventListener('keyup', event => {
+      // Clear the long press timeout if the key is released (and close the dialog)
+      if (event.key.toLowerCase() === options.longPressKey && !isShortcutActive) {
+        if (longPressTimeout) {
+          clearTimeout(longPressTimeout)
+          longPressTimeout = undefined
+        }
+        editor.stopCommand(cmdKeymapsDialog)
       }
-      editor.stopCommand(cmdKeymapsDialog)
-    }
-  })
+    })
+  }
 }
