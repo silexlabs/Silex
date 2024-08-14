@@ -15,13 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Editor } from 'grapesjs'
 import {html, render} from 'lit-html'
+import {ref} from 'lit-html/directives/ref.js'
 
 const pluginName = 'page-panel'
 let open
 
 export const cmdTogglePages = 'pages:open-panel'
 export const cmdAddPage = 'pages:add'
+export const cmdRemovePage = 'pages:remove'
+export const cmdClonePage = 'pages:clone'
+export const cmdSelectNextPage = 'pages:select-next'
+export const cmdSelectPrevPage = 'pages:select-prev'
+export const cmdSelectFirstPage = 'pages:select-first'
 
 function selectPage(editor, page) {
   editor.Pages.select(page)
@@ -76,6 +83,54 @@ function removePage(editor, page) {
   }
 }
 
+function removePageWithConfirm(editor, page) {
+  const content = document.createElement('div')
+  const modal = editor.Modal.open({
+    title: 'Are you sure?',
+    content,
+  })
+  render(html`
+    <p>Do you really want to remove this page?</p>
+    <footer>
+      <button
+        ${ref((el: HTMLButtonElement) => {
+          console.log('focus', el)
+          setTimeout(() => el.focus())
+        })}
+        @click=${() => {
+          removePage(editor, page)
+          modal.close()
+        }}
+        class="silex-button silex-button--primary">Delete page</button>
+      <button
+        @click=${() => modal.close()}
+        class="silex-button silex-button--secondary">Cancel</button
+    </footer>
+  `, content)
+}
+
+function selectNextPage(editor) {
+  const pages = editor.Pages.getAll()
+  const selected = editor.Pages.getSelected()
+  const idx = pages.indexOf(selected)
+  if(idx < pages.length - 1) {
+    selectPage(editor, pages[idx + 1])
+  } else {
+    selectPage(editor, pages[0])
+  }
+}
+
+function selectPrevPage(editor) {
+  const pages = editor.Pages.getAll()
+  const selected = editor.Pages.getSelected()
+  const idx = pages.indexOf(selected)
+  if(idx > 0) {
+    selectPage(editor, pages[idx - 1])
+  } else {
+    selectPage(editor, pages[pages.length - 1])
+  }
+}
+
 function settingsPage(editor, config, page) {
   editor.runCommand(config.cmdOpenSettings, {page})
 }
@@ -114,7 +169,7 @@ function renderPages(editor, config) {
     </main></section>`
 }
 
-export const pagePanelPlugin = (editor, opts) => {
+export const pagePanelPlugin = (editor: Editor, opts) => {
   // create wrapper
   const el = document.createElement('div')
   el.classList.add('pages__wrapper')
@@ -125,9 +180,9 @@ export const pagePanelPlugin = (editor, opts) => {
   })
   editor.on('load', () => {
     open = false
-    document.querySelector(opts.appendTo)
-      .appendChild(el)
+    document.querySelector(opts.appendTo).appendChild(el)
     doRender()
+
     // click anywhere close it
     // const close = (event) => {
     //   if(open) {
@@ -136,8 +191,13 @@ export const pagePanelPlugin = (editor, opts) => {
     //   }
     // }
     // document.addEventListener('mousedown', close)
-    // add command to add pages
+
+    // add useful commands
     editor.Commands.add(cmdAddPage, () => addPage(editor, opts))
+    editor.Commands.add(cmdRemovePage, () => removePageWithConfirm(editor, editor.Pages.getSelected()))
+    editor.Commands.add(cmdClonePage, () => clonePage(editor, editor.Pages.getSelected()))
+    editor.Commands.add(cmdSelectNextPage, () => selectNextPage(editor))
+    editor.Commands.add(cmdSelectPrevPage, () => selectPrevPage(editor))
+    editor.Commands.add(cmdSelectFirstPage, () => selectPage(editor, editor.Pages.getAll()[0]))
   })
 }
-

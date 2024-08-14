@@ -60,3 +60,8 @@
     color: variables.$quaternaryColor;
   }
 }
+
+:focus-visible {
+  outline: 2px solid variables.$tertiaryColor;
+  outline-offset: 2px;
+}

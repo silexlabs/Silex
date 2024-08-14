@@ -47,6 +47,15 @@ function escapeContext(editor: Editor): void {
   }
 }
 
+function whenNoFocus(editor: Editor, cbk: () => void): void {
+  if(editor.getEditing()) return
+  if(editor.Modal.isOpen()) return
+  const target = document.activeElement as HTMLElement | null
+  if (target && target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') return
+  if (target && isTextOrInputField(target)) return
+  cbk()
+}
+
 // Constants
 
 export const cmdSelectBody = 'select-body'
@@ -71,7 +80,7 @@ export const defaultKms = {
   kmPreviewMode: {
     id: 'general:preview-mode',
     keys: 'tab',
-    handler: editor => setButton(editor, 'options', 'preview')
+    handler: editor => whenNoFocus(editor, () => setButton(editor, 'options', 'preview'))
   },
   kmLayers: {
     id: 'panels:layers',
@@ -127,6 +136,36 @@ export const defaultKms = {
     id: 'workflow:publish',
     keys: 'ctrl+alt+p',
     handler: publish
+  },
+  kmAddPage: {
+    id: 'pages:add-page',
+    keys: 'ctrl+alt+n',
+    handler: 'pages:add'
+  },
+  kmRemovePage: {
+    id: 'pages:remove-page',
+    keys: 'ctrl+alt+backspace',
+    handler: 'pages:remove'
+  },
+  kmClonePage: {
+    id: 'pages:clone-page',
+    keys: 'ctrl+alt+d',
+    handler: 'pages:clone'
+  },
+  kmSelectNextPage: {
+    id: 'pages:select-next',
+    keys: 'ctrl+alt+j',
+    handler: 'pages:select-next'
+  },
+  kmSelectPrevPage: {
+    id: 'pages:select-previous',
+    keys: 'ctrl+alt+k',
+    handler: 'pages:select-prev'
+  },
+  kmSelectFirstPage: {
+    id: 'pages:select-first',
+    keys: 'ctrl+alt+h',
+    handler: 'pages:select-first'
   }
 }
 
@@ -153,10 +192,9 @@ export function keymapsPlugin(editor: Editor, opts: PluginOptions): void {
   document.addEventListener('keydown', event => {
     if (event.key.toLowerCase() === defaultKms.kmClosePanel.keys) {
       const target = event.target as HTMLElement | null
-      const rte = editor.getEditing()
-
-      if (rte) { // If in Rich Text edition...
-        // TODO: Close the Rich Text edition and un-focus the text field
+      if(editor.getEditing()) return // Close the rich text edition
+      if(editor.Modal.isOpen()) {
+        editor.Modal.close()
       } else if (target) { // If target exists...
         if (target.tagName === 'INPUT' && target.getAttribute('type') === 'submit') { // If it's a submit button...
           escapeContext(editor)
