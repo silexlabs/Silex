@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
+    "dev": "grapesjs-cli serve & http-server -p 8081 ../../node_modules/grapesjs",
     "build": "grapesjs-cli build --patch=false",
     "bump": "npm version patch -m 'Bump v%s'"
   },
@@ -17,8 +18,15 @@
     "plugin"
   ],
   "devDependencies": {
+    "grapesjs": "^0.21.12",
     "grapesjs-cli": "^4.1.3"
   },
   "license": "MIT",
-  "contributors": ["Gaspar Laprida (https://github.com/glaprida)", "Alex Hoyau (https://github.com/lexoyo)"]
+  "contributors": [
+    "Alex Hoyau (https://github.com/lexoyo)"
+  ],
+  "dependencies": {
+    "@silexlabs/expression-input": "^0.0.23",
+    "lit": "^3.1.4"
+  }
 }
