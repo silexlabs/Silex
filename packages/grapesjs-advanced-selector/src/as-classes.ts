@@ -53,6 +53,8 @@ export class ASClasses extends LitElement {
           class="as-class"
           .editor=${this.editor}
           .selector=${selector}
+          .active=${selector.getActive()}
+          @click=${() => this.toggleSelector(selector)}
           @change=${(event: CustomEvent) => this.changeSelector(selector, event.detail.selector)}
           @remove=${() => this.removeSelector(selector)}
         ></as-tag>
@@ -78,6 +80,10 @@ export class ASClasses extends LitElement {
     }
     this.editor?.SelectorManager.add(value)
     this.editor?.SelectorManager.addSelected(selectorOpts)
+  }
+
+  toggleSelector(selector: Selector) {
+    selector.setActive(!selector.getActive())
   }
 }
 

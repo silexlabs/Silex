@@ -5,11 +5,19 @@ import { createRef, ref } from 'lit/directives/ref.js'
 
 @customElement('as-tag')
 export class AsTag extends LitElement {
+  private _selector: Selector | null = null
   @property({ type: String })
-  public selector: Selector | null = null
-  constructor() {
-    super()
+  public get selector(): Selector | null {
+    return this._selector
   }
+  public set selector(value: Selector | null) {
+    this._selector?.off('change')
+    value?.on('change', () => this.requestUpdate())
+    const oldValue = this._selector
+    this._selector = value
+    this.requestUpdate('selector', oldValue)
+  }
+
   private _contentEditable = false
   @property({ type: String })
   override get contentEditable(): string {
@@ -27,7 +35,6 @@ export class AsTag extends LitElement {
 
   static override styles = css`
     * {
-      box-sizing: border-box;
       font-family: var(--gjs-main-font);
     }
     .as-tag {
@@ -35,15 +42,15 @@ export class AsTag extends LitElement {
       border-radius: 5px;
       display: inline-flex;
       justify-content: space-between;
-      margin: 5px;
+      margin: 3px;
       min-width: 50px;
     }
     .as-tag span {
-      padding: 5px;
+      padding: var(--gjs-input-padding);
       cursor: pointer;
       flex-grow: 1;
     }
-    .as-tag:hover {
+    .as-tag--active {
       background-color: var(--gjs-quaternary-color);
     }
     .as-tag span[contenteditable="true"] {
@@ -65,9 +72,15 @@ export class AsTag extends LitElement {
 
   private inputRef = createRef<HTMLSpanElement>()
 
+  constructor() {
+    super()
+  }
+
   override render() {
     return html`
-      <div class="as-tag">
+      <div
+        class=${this.selector?.getActive() ? 'as-tag as-tag--active' : 'as-tag'}
+      >
         <span
           ${ref(this.inputRef)}
           @dblclick=${() => this.makeEditable()}

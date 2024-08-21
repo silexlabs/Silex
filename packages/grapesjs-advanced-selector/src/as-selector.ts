@@ -22,9 +22,27 @@ export class ASSelector extends LitElement {
   public showNewTag = false
 
   static override styles = css`
-    .as-class {
+    * {
+      font-family: var(--gjs-main-font);
+    }
+    .as-selector {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
       background-color: var(--gjs-main-dark-color);
-      text-align: left;
+      padding: var(--gjs-input-padding);
+    }
+    .as-selector__add {
+      color: var(--gjs-secondary-color);
+      background-color: var(--gjs-main-light-color);
+      border-radius: 2px;
+      padding: var(--gjs-input-padding);
+      margin: 3px;
+      border: 1px solid rgba(0,0,0,.15);
+      width: 24px;
+      height: 24px;
+      box-sizing: border-box;
+      cursor: pointer;
     }
   `
 
@@ -35,20 +53,23 @@ export class ASSelector extends LitElement {
   override render() {
     return html`
       <div>State: ${this.state}</div>
-      <div class="as-class">
+      <div class="as-selector">
         <slot name="label"></slot>
         <slot></slot>
         ${this.showNewTag ? html`
           <as-tag
             contenteditable="true"
             @change=${(event: CustomEvent) => {
-              this.dispatchEvent(new CustomEvent('add', { detail: event.detail }))
+              if(event.detail.selector) {
+                this.dispatchEvent(new CustomEvent('add', { detail: event.detail }))
+              }
               this.showNewTag = false
               this.requestUpdate()
             }}
           ></as-tag>
         ` : html`
           <button
+            class="as-selector__add"
             @click=${() => {
             this.showNewTag = true
             this.requestUpdate()
