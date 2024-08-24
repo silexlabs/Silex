@@ -4,8 +4,7 @@ RUN apt-get update
 EXPOSE 6805
 
 # see doc about env vars here: https://github.com/silexlabs/Silex/wiki/How-to-Host-An-Instance-of-Silex#environment-variables
-# these can be overriden using the `-e` option in docker run
-# SILEX_FS_ROOT=/repo.git/
+# these can be overridden using the `-e` option in docker run
 
 ENV SILEX_EXPRESS_JSON_LIMIT=1mb
 ENV SILEX_EXPRESS_TEXT_LIMIT=10mb
@@ -26,6 +25,21 @@ ENV SILEX_CORS_URL=
 ENV SILEX_CLIENT_CONFIG=
 ENV SILEX_FS_ROOT=
 ENV SILEX_URL=http://localhost:6805
+
+# Additional environment variables based on README
+ENV STORAGE_CONNECTORS=ftp,gitlab,gitlab2
+ENV HOSTING_CONNECTORS=ftp,gitlab,gitlab2,download
+ENV SILEX_FS_HOSTING_ROOT=/silex/hosting/
+ENV FTP_STORAGE_PATH=/silex/storage/
+ENV FTP_HOSTING_PATH=/silex/hosting/
+ENV GITLAB_DISPLAY_NAME=Gitlab
+ENV GITLAB_DOMAIN=
+ENV GITLAB_CLIENT_ID=
+ENV GITLAB_CLIENT_SECRET=
+ENV GITLAB2_DISPLAY_NAME=Gitlab2
+ENV GITLAB2_DOMAIN=
+ENV GITLAB2_CLIENT_ID=
+ENV GITLAB2_CLIENT_SECRET=
 
 COPY . /silex
 WORKDIR /silex
