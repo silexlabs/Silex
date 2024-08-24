@@ -20,8 +20,8 @@ You can set the following environment variables to customize the instance:
 
 | Name | Description | Type | Default value |
 |------|-------------| ---- |---------------|
-| `STORAGE_CONNECTORS` | List of storage connectors to enable | `ftp` or `gitlab` or `gitlab2` or `fs` | `ftp,gitlab,gitlab2` |
-| `HOSTING_CONNECTORS` | List of hosting connectors to enable | `ftp` or `gitlab` or `gitlab2` or `fs` or `download` | `ftp,gitlab,gitlab2,download` |
+| `STORAGE_CONNECTORS` | List of storage connectors to enable | `ftp` or `gitlab` or `gitlab2` or `fs` | `ftp` |
+| `HOSTING_CONNECTORS` | List of hosting connectors to enable | `ftp` or `gitlab` or `gitlab2` or `fs` or `download` | `ftp,download` |
 | `SILEX_FS_ROOT` | Root folder for the file system storage | string | current directory + `/silex/storage/` |
 | `SILEX_FS_HOSTING_ROOT` | Root folder for the file system hosting | string | current directory + `/silex/hosting/` |
 | `FTP_STORAGE_PATH` | Path to the FTP storage | string | `/silex/storage/` |
