@@ -1,0 +1,27 @@
+config:
+    runTime: 'NodeJs'
+    version: '18'
+    framework: ''
+    installCommand: "npm install"
+    runCommand: 'npm start'
+    buildCommand: ''
+    buildDir: '/'
+    icon: "picto-silex@3x.png"
+    screenshot: "screenzy-1688071680205.png"
+ports:
+  - protocol: "HTTPS"
+    targetProtocol: "HTTP"
+    listeningPort: "443"
+    targetPort: "6805"
+    targetIP: "172.17.0.1"
+    public: true
+    path: "/"
+    isAuth: false
+    login: ""
+    password: ""
+environments:
+    -  key: 'SILEX_URL'
+       value: "https://[CI_CD_DOMAIN]"
+webUI:
+  - url: "https://[CI_CD_DOMAIN]"
+    label: "Dashboard"
