@@ -20,8 +20,10 @@ ports:
     login: ""
     password: ""
 environments:
-    -  key: 'SILEX_URL'
-       value: "https://[CI_CD_DOMAIN]"
+    - key: 'SILEX_URL'
+      value: "https://[CI_CD_DOMAIN]"
+    - key: 'SILEX_SESSION_SECRET'
+      value: 'random_password'
 webUI:
   - url: "https://[CI_CD_DOMAIN]"
     label: "Dashboard"
