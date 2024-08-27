@@ -22,6 +22,7 @@
  * @see https://docs.gitlab.com/ee/user/project/pages/getting_started/pages_ci_cd_template.html
  */
 
+import dedent from 'dedent'
 import GitlabConnector, { GitlabOptions, GitlabSession} from './GitlabConnector'
 import { HostingConnector, ConnectorFile } from '../../server/connectors/connectors'
 import { ConnectorType, WebsiteId, JobData, JobStatus, PublicationJobData } from '../../types'
@@ -30,6 +31,7 @@ import { ServerConfig } from '../../server/config'
 import { setTimeout } from 'timers/promises'
 
 const waitTimeOut = 5000 /* for wait loop in job pages getting */
+const SILEX_OVERWRITE_NOTICE = '# silexOverwrite: true'
 
 export default class GitlabHostingConnector extends GitlabConnector implements HostingConnector {
 
@@ -48,24 +50,31 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     job.errors = [[]]
     /* Configuration file .gitlab-ci.yml contains template for plain html Gitlab pages*/
     const pathYml = '.gitlab-ci.yml'
-    const contentYml = `
-    image: node:20
-    pages:
-      stage: deploy
-      environment: production
-      script:${files.find(file => file.path.includes('.11tydata.')) ? `
-        - npx @11ty/eleventy@canary --input=public --output=_site
-        - mkdir -p public/css public/assets && cp -R public/css public/assets _site/
-        - rm -rf public && mv _site public`  : `
-        - echo "The site will be deployed to $CI_PAGES_URL"`}
-      artifacts:
-        paths:
-          - public
-      rules:
-        - if: '$CI_COMMIT_TAG'
+    const contentYml = dedent`
+      ${SILEX_OVERWRITE_NOTICE}
+      # You will want to remove these lines if you customize your build process
+      # Silex will overwrite this file unless you remove these lines
+      # This is the default build process for plain eleventy sites
+      image: node:20
+      pages:
+        stage: deploy
+        environment: production
+        script:${files.find(file => file.path.includes('.11tydata.')) ? `
+          - npx @11ty/eleventy@canary --input=public --output=_site
+          - mkdir -p public/css public/assets && cp -R public/css public/assets _site/
+          - rm -rf public && mv _site public`  : `
+          - echo "The site will be deployed to $CI_PAGES_URL"`}
+        artifacts:
+          paths:
+            - public
+        rules:
+          - if: '$CI_COMMIT_TAG'
     `
     try {
-      await this.readFile(session, websiteId, pathYml)
+      const originalCi = await this.readFile(session, websiteId, pathYml)
+      if(originalCi.toString().startsWith(SILEX_OVERWRITE_NOTICE)) {
+        await this.updateFile(session, websiteId, pathYml, contentYml)
+      }
     } catch (e) {
       // If the file .gitlab-ci.yml does not exist, create it, otherwise do nothing (do not overwriting existing one)
       if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
@@ -119,7 +128,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           }
           job.logs[0].push(`Deployment logs URL: ${gitlabJobLogsUrl}`)
           const message = `
-            <p><a href="${gitlabUrl}" target="_blank">Your website is now live here</a>.</p>
+            <p><a href="${gitlabUrl}" target="_blank">Your website will soon be live here</a>.</p>
             <p>Changes may take a few minutes to appear, <a href="${gitlabJobLogsUrl}" target="_blank">follow deployment here</a>.</p>
             <p>Manage <a href="${pageUrl}" target="_blank">GitLab Pages settings</a>.</p>
           `
