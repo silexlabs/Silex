@@ -94,13 +94,13 @@ function removePageWithConfirm(editor, page) {
     <footer>
       <button
         ${ref((el: HTMLButtonElement) => {
-          console.log('focus', el)
-          setTimeout(() => el.focus())
-        })}
+    console.log('focus', el)
+    setTimeout(() => el.focus())
+  })}
         @click=${() => {
-          removePage(editor, page)
-          modal.close()
-        }}
+    removePage(editor, page)
+    modal.close()
+  }}
         class="silex-button silex-button--primary">Delete page</button>
       <button
         @click=${() => modal.close()}
