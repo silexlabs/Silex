@@ -264,7 +264,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             id: 'keymaps-btn',
             className: 'keymaps-btn fa-solid fa-keyboard',
             name: 'Shortcuts',
-            attributes: { title: `Keyboard Shortcuts (Shift+H)` },
+            attributes: { title: 'Keyboard Shortcuts (Shift+H)' },
             command: cmdKeymapsDialog,
           }, {
             id: 'notifications-btn',
