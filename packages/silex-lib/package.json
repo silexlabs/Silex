@@ -156,6 +156,7 @@
     "@typescript-eslint/eslint-plugin": "6.10.0",
     "@typescript-eslint/parser": "6.10.0",
     "css-loader": "7.1.2",
+    "dedent": "^1.5.3",
     "eslint": "8.53.0",
     "file-loader": "6.2.0",
     "http-server": "^14.1.1",
