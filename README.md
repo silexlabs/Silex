@@ -14,6 +14,7 @@ There is no issue on this repo, please use the individual project's issues
 > 
 > Auto generated submodules
 Skipping silex-desktop - No readme file found
+Skipping silex_silex-me-2024 - No readme file found
 
 # Silex packages
 
@@ -26,7 +27,9 @@ Skipping silex-desktop - No readme file found
 | silex-desktop | `packages/silex-desktop` | `git@github.com:silexlabs/silex-desktop.git` |  |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
+| silex_silex-me-2024 | `packages/silex_silex-me-2024` | `git@gitlab.com:lexoyo/silex_silex-me-2024.git` |  |
 | Access node_modules in package.json | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Use it in your `packge.json` like this: |
+| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` |  |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | [DEMO](https://codepen.io/lexo1000/pen/abErmeW) |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
@@ -83,20 +86,20 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 2.00  T=1.00 s (298.0 files/s, 92481.0 lines/s)
+github.com/AlDanial/cloc v 2.00  T=0.50 s (614.0 files/s, 372198.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     129           1099           2150          60043
-TypeScript                     156           1862           5841          20333
-GraphQL                          3             63              6            666
+JavaScript                     130           8808          20031         127184
+TypeScript                     164           1921           5946          21040
+GraphQL                          3             63              6            667
 JSX                              1              0              2            256
-Dockerfile                       4             13              9             64
+Dockerfile                       4             14              9             78
 Text                             2              6              0             34
 INI                              2              4              0             21
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           298           3047           8008          81426
+SUM:                           307          10816          25994         149289
 -------------------------------------------------------------------------------
 
 ```
