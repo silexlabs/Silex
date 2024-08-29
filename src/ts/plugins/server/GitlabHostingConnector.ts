@@ -60,10 +60,14 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
         stage: deploy
         environment: production
         script:${files.find(file => file.path.includes('.11tydata.')) ? `
-          - npx @11ty/eleventy@canary --input=public --output=_site
+          - mkdir -p node_modules
+          - npm install liquidjs@10.16.4 --save-exact --no-package-lock --no-save
+          - npm install @11ty/eleventy@3.0.0-beta.1 --no-package-lock --no-save
+          - npx @11ty/eleventy --input=public --output=_site
           - mkdir -p public/css public/assets && cp -R public/css public/assets _site/
-          - rm -rf public && mv _site public`  : `
-          - echo "The site will be deployed to $CI_PAGES_URL"`}
+          - rm -rf public && mv _site public`
+    : ''}
+          - echo "The site will be deployed to $CI_PAGES_URL"
         artifacts:
           paths:
             - public
