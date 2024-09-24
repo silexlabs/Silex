@@ -409,8 +409,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       const ftp = await this.getClient(this.sessionData(session))
       // Get stats for the website folder
       const folder = join(this.rootPath(session), websiteId)
-      //const lastMod = await ftp.lastMod(folder)
-      // Read the meta data file to get the meta data set by the user
       const path = join(this.rootPath(session), websiteId, WEBSITE_META_DATA_FILE)
       const readable = await this.read(ftp, path)
       const meta = JSON.parse(await contentToString(readable)) as WebsiteMetaFileContent
@@ -418,9 +416,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       // Return all meta
       return {
         websiteId,
-        //url: await this.getFileUrl(session, websiteId, WEBSITE_DATA_FILE_NAME),
-        createdAt: new Date(NaN),
-        updatedAt: new Date(NaN),
         ...meta,
       }
     } catch(err) {
