@@ -308,8 +308,8 @@ export interface WebsiteMetaFileContent {
  */
 export interface WebsiteMeta extends WebsiteMetaFileContent {
   websiteId: WebsiteId
-  createdAt?: Date
-  updatedAt?: Date
+  createdAt: Date
+  updatedAt: Date
 }
 
 /**
