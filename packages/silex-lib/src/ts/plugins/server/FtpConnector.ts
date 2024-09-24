@@ -416,6 +416,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       // Return all meta
       return {
         websiteId,
+        //url: await this.getFileUrl(session, websiteId, WEBSITE_DATA_FILE_NAME),
         ...meta,
       }
     } catch(err) {
