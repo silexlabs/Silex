@@ -16,7 +16,7 @@
  */
 
 import { Client } from 'basic-ftp'
-import { PassThrough, Readable, Writable } from 'stream'
+import { Readable } from 'stream'
 import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToReadable, contentToString, toConnectorData, toConnectorEnum} from '../../server/connectors/connectors'
 import { requiredParam } from '../../server/utils/validation'
 import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
@@ -26,7 +26,8 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 import { v4 as uuid } from 'uuid'
 import { JobManager } from '../../server/jobs'
-import { mkdtemp } from 'fs/promises'
+import { mkdtemp, rm, rmdir } from 'fs/promises'
+import { createReadStream } from 'fs'
 
 /**
  * @fileoverview FTP connector for Silex
@@ -273,9 +274,13 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
   }
 
   private async read(ftp: Client, path: string): Promise<Readable> {
-    const stream = new PassThrough()
-    await ftp.downloadTo(stream, path)
-    return stream
+    const tempDir = await mkdtemp(join(tmpdir(), 'silex-tmp'))
+    const tempPath = join(tempDir, 'silex-ftp.tmp')
+    await ftp.downloadTo(tempPath, path)
+    const rStream = createReadStream(tempPath)
+    await rm(tempPath)
+    await rmdir(tempDir)
+    return rStream
   }
 
   private async readdir(ftp: Client, path: string): Promise<FileMeta[]> {
@@ -404,8 +409,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       const ftp = await this.getClient(this.sessionData(session))
       // Get stats for the website folder
       const folder = join(this.rootPath(session), websiteId)
-      const lastMod = await ftp.lastMod(folder)
-      // Read the meta data file to get the meta data set by the user
       const path = join(this.rootPath(session), websiteId, WEBSITE_META_DATA_FILE)
       const readable = await this.read(ftp, path)
       const meta = JSON.parse(await contentToString(readable)) as WebsiteMetaFileContent
@@ -413,9 +416,6 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       // Return all meta
       return {
         websiteId,
-        //url: await this.getFileUrl(session, websiteId, WEBSITE_DATA_FILE_NAME),
-        createdAt: lastMod,
-        updatedAt: lastMod,
         ...meta,
       }
     } catch(err) {
@@ -570,7 +570,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const dirPath = join(this.options.path, storageRootPath, id, this.options.assetsFolder, path)
-    const asset = this.read(ftp, dirPath)
+    const asset = await this.read(ftp, dirPath)
     this.closeClient(ftp)
     return asset
   }
