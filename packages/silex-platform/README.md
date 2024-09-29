@@ -24,8 +24,8 @@ You can set the following environment variables to customize the instance:
 | `HOSTING_CONNECTORS` | List of hosting connectors to enable | `ftp` or `gitlab` or `gitlab2` or `fs` or `download` | `ftp,download` |
 | `SILEX_FS_ROOT` | Root folder for the file system storage | string | current directory + `/silex/storage/` |
 | `SILEX_FS_HOSTING_ROOT` | Root folder for the file system hosting | string | current directory + `/silex/hosting/` |
-| `FTP_STORAGE_PATH` | Path to the FTP storage | string | `/silex/storage/` |
-| `FTP_HOSTING_PATH` | Path to the FTP hosting | string | `/silex/hosting/` |
+| `FTP_STORAGE_PATH` | Path to the FTP storage | string | `` |
+| `FTP_HOSTING_PATH` | Path to the FTP hosting | string | `` |
 | `GITLAB_DISPLAY_NAME` | Display name for the Gitlab storage | string | `Gitlab` |
 | `GITLAB_DOMAIN` | Domain of the Gitlab server, e.g `https://gitlab.com` | string | required with gitlab connector |
 | `GITLAB_CLIENT_ID` | Client ID for the Gitlab OAuth | string | required with gitlab connector |
