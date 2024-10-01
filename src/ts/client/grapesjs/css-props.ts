@@ -26,7 +26,6 @@ export default (editor: Editor, opts) => {
   /***************/  
   /* General     */
   /***************/  
-    /** remove default module et add custom one */
     editor.StyleManager.removeProperty('general', 'display')
     editor.StyleManager.addProperty('general', {
       name: 'Display',
@@ -66,9 +65,7 @@ export default (editor: Editor, opts) => {
       ],
       info: 'The visibility CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a <table>.',
     })
-    /** remove float no more used (best practices) */
     editor.StyleManager.removeProperty('general', 'float')
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('general', 'position')
     editor.StyleManager.addProperty('general', {
       name: 'Position',
@@ -126,7 +123,6 @@ export default (editor: Editor, opts) => {
       units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       info: '',
     })
-    // Add content property, visible only when a pseudo element is selected
     const contentProp = editor.StyleManager.addProperty('general', {
       name: 'Content',
       property: 'content',
@@ -139,61 +135,57 @@ export default (editor: Editor, opts) => {
     /***************/
     /* Dimension   */
     /***************/
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'width')
     editor.StyleManager.addProperty('dimension', {
       name: 'Width',
       property: 'width',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
       default: '',
-      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 0 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'height')
     editor.StyleManager.addProperty('dimension', {
       name: 'Height',
       property: 'height',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       default: '',
-      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 1 })
     editor.StyleManager.addProperty('dimension', {
       name: 'Min width',
       property: 'min-width',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
       default: '',
-      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 2 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'max-width')
     editor.StyleManager.addProperty('dimension', {
       name: 'Max width',
       property: 'max-width',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
       default: '',
-      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 3 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'min-height')
     editor.StyleManager.addProperty('dimension', {
       name: 'Min height',
       property: 'min-height',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
       default: '',
-      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 4 })
     editor.StyleManager.addProperty('dimension', {
       name: 'Max height',
       property: 'max-height',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
       default: '',
-      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content'],
+      fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 5 })
     editor.StyleManager.addProperty('dimension', {
       name: 'Overflow',
@@ -234,14 +226,13 @@ export default (editor: Editor, opts) => {
       }],
       info: 'The overflow CSS property sets what to do when an element\'s content is too big to fit in its block formatting context. It is a shorthand for overflow-x and overflow-y.',
     }, { at: 6 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'margin')
     editor.StyleManager.addProperty('dimension', {  
       name: 'Margin',
       property: 'margin',
       type: 'composite',
       defaults: '',
-      fixedValues: [ 'initial', 'inherit' ],
+      fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
       properties: [{
         property: 'margin-top',
@@ -273,13 +264,12 @@ export default (editor: Editor, opts) => {
         units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }],
     }, { at: 7 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('dimension', 'padding')
     editor.StyleManager.addProperty('dimension', {  
       name: 'Padding',
       property: 'padding',
       type: 'composite',
-      fixedValues: [ 'initial', 'inherit' ],
+      fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
       properties: [{
         property: 'padding-top',
@@ -318,34 +308,6 @@ export default (editor: Editor, opts) => {
     /***************/  
     /* Typography  */
     /***************/
-    /* doesn't work ?
-    editor.StyleManager.getProperty('typography', 'font-family').set({ default: ' ' });*/
-    /** remove default property et add custom one (doesn't work ?)
-    editor.StyleManager.removeProperty('typography', 'font-family')
-    editor.StyleManager.addProperty('typography', {
-      property: 'font-family',
-      name: 'Font family',
-      type: 'select',
-      default: '',
-      fixedValues: ['inherit', 'initial'],
-      options: [
-        { id: '', label: '' },
-        { id: 'Arial, Helvetica, sans-serif', label: 'Arial' },
-        { id: 'Arial Black, Gadget, sans-serif', label: 'Arial Black' },
-        { id: 'Brush Script MT, sans-serif', label: 'Brush Script MT' },
-        { id: 'Comic Sans MS, cursive, sans-serif', label: 'Comic Sans MS' },
-        { id: 'Courier New, Courier, monospace', label: 'Courier New' },
-        { id: 'Georgia, serif', label: 'Georgia' },
-        { id: 'Helvetica, sans-serif', label: 'Helvetica' },
-        { id: 'Impact, Charcoal, sans-serif', label: 'Impact' },
-        { id: 'Lucida Sans Unicode, Lucida Grande, sans-serif', label: 'Lucida Sans Unicode' },
-        { id: 'Tahoma, Geneva, sans-serif', label: 'Tahoma' },
-        { id: 'Times New Roman, Times, serif', label: 'Times New Roman' },
-        { id: 'Trebuchet MS, Helvetica, sans-serif', label: 'Trebuchet MS' },
-        { id: 'Verdana, Geneva, sans-serif', label: 'Verdana' }
-      ]
-    }, { at: 0 })*/
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'font-size')
     editor.StyleManager.addProperty('typography', {
       name: 'Font size',
@@ -355,38 +317,45 @@ export default (editor: Editor, opts) => {
       fixedValues: [ 'medium', 'xx-small', 'x-small', 'small', 'large', 'x-large', 'xx-large', 'smaller', 'larger', 'length', 'initial', 'inherit' ],
       units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
     }, { at: 1 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'font-weight')
     editor.StyleManager.addProperty('typography', {
       name: 'Font weight',
       property: 'font-weight',
       type: 'select',
       default: '',
-      fixedValues: ['inherit', 'initial'],
+      fixedValues: ['inherit', 'initial', 'unset', 'auto'],
       options: [
+        /* @ts-ignore */
         { id: '', label: '' },
+        /* @ts-ignore */
         { id: '100', label: 'Thin' },
+        /* @ts-ignore */
         { id: '200', label: 'Extra-Light' },
+        /* @ts-ignore */
         { id: '300', label: 'Light' },
+        /* @ts-ignore */
         { id: '400', label: 'Normal' },
+        /* @ts-ignore */
         { id: '500', label: 'Medium' },
+        /* @ts-ignore */
         { id: '600', label: 'Semi-Bold' },
+        /* @ts-ignore */
         { id: '700', label: 'Bold' },
+        /* @ts-ignore */
         { id: '800', label: 'Extra-Bold' },
+        /* @ts-ignore */
         { id: '900', label: 'Ultra-Bold' }
       ]
     }, { at: 2 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'letter-spacing')
     editor.StyleManager.addProperty('typography', {
       name: 'Letter spacing',
       property: 'letter-spacing',
       type: 'number',
       default: '',
-      fixedValues: [ 'normal', 'initial', 'inherit' ],
+      fixedValues: [ 'normal', 'initial', 'inherit', 'unset' ],
       units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
     }, { at: 3 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'color')
     editor.StyleManager.addProperty('typography', {
       name: 'Color',
@@ -395,17 +364,15 @@ export default (editor: Editor, opts) => {
       default: '',
       full: true,
     }, { at: 4 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'line-height')
     editor.StyleManager.addProperty('typography', {
       name: 'Line height',
       property: 'line-height',
       type: 'number',
       default: '',
-      fixedValues: [ 'normal', 'initial', 'inherit' ],
+      fixedValues: [ 'normal', 'initial', 'inherit', 'unset' ],
       units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
     }, { at: 5 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('typography', 'text-align')
     editor.StyleManager.addProperty('typography', {
       name: 'Text align',
@@ -413,10 +380,15 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
+        /* @ts-ignore */
         { id: '', label: '' },                    
+        /* @ts-ignore */
         { id: 'left', label: 'left' },
+        /* @ts-ignore */
         { id: 'center', label: 'center' },
+        /* @ts-ignore */
         { id: 'right', label: 'right' },
+        /* @ts-ignore */
         { id: 'justified', label: 'justified' },
       ],
     }, { at: 6 })    
@@ -576,7 +548,6 @@ export default (editor: Editor, opts) => {
     /***************/  
     /* Decorations */
     /***************/    
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('decorations', 'background-color')
     editor.StyleManager.addProperty('decorations', {
       name: 'Background color',
@@ -585,14 +556,13 @@ export default (editor: Editor, opts) => {
       default: '',
       full: true,
     }, { at: 0 })
-    /** remove default property et add custom one */
     editor.StyleManager.removeProperty('decorations', 'border-radius')
     editor.StyleManager.addProperty('decorations', {  
       name: 'Border radius',
       property: 'border-radius',
       type: 'composite',
       defaults: '',
-      fixedValues: [ 'initial', 'inherit' ],
+      fixedValues: [ 'initial', 'inherit', 'auto' ],
       full: true,
       properties: [{
         property: 'border-top-left-radius',
@@ -617,7 +587,7 @@ export default (editor: Editor, opts) => {
         units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }, {
         property: 'border-bottom-left-radius',
-        name: 'Botton left',
+        name: 'Bottom left',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
@@ -697,7 +667,7 @@ export default (editor: Editor, opts) => {
       defaults: '',
       options: [
         /* @ts-ignore */
-        { value: '', name: '' },        
+        { value: '', name: '' },
         /* @ts-ignore */
         { value: 'auto', name: 'auto' },
         /* @ts-ignore */
@@ -819,7 +789,7 @@ export default (editor: Editor, opts) => {
       property: 'column-width',
       type: 'integer',
       units: ['px', '%', 'em'],
-      info: 'The column-width CSS property suggests an optimal column width. This is not a absolute value but a mere hint. Browser will adjust the width of the element automatically.',
+      info: 'The column-width CSS property suggests an optimal column width. This is not an absolute value but a mere hint. Browser will adjust the width of the element automatically.',
       default: '',
       fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
     }, { at: 5 })
@@ -831,7 +801,7 @@ export default (editor: Editor, opts) => {
       info: 'The column-gap CSS property sets the size of the gap (gutter) between an element\'s columns.',
       default: '',
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
-    }, { at: 5 })
+    }, { at: 6 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column rule',
       property: 'column-rule',
@@ -883,7 +853,7 @@ export default (editor: Editor, opts) => {
         defaults: '',
         info: 'The column-rule-color CSS property sets the color of the line drawn between columns in a multi-column layout.',
       }],
-    }, { at: 6 })
+    }, { at: 7 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column span',
       property: 'column-span',
@@ -898,7 +868,7 @@ export default (editor: Editor, opts) => {
         { value: 'all', name: 'all' },
       ],
       info: 'The column-span CSS property makes it possible for an element to span across all columns when its value is set to all.',
-    }, { at: 7 })
+    }, { at: 8 })
     function refreshContentProp() {
       const state = editor.SelectorManager.getState()
       if (['before', 'after'].includes(state)) {
@@ -909,7 +879,6 @@ export default (editor: Editor, opts) => {
     }
     editor.on('selector:state component:selected component:styleUpdate style:sector:update', (state, opts) => setTimeout(() => refreshContentProp()))
     editor.StyleManager.getSector('general').on('change', () => refreshContentProp())
-    // Add pseudo elements
     editor.SelectorManager.states.add({name: 'before', label: 'Before'})
     editor.SelectorManager.states.add({name: 'after', label: 'After'})
     editor.SelectorManager.states.add({name: 'active', label: 'Active'})
