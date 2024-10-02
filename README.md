@@ -13,24 +13,20 @@ There is no issue on this repo, please use the individual project's issues
 > Leave the line bellow as it is used in the doc script to insert content in the readme
 > 
 > Auto generated submodules
-Skipping silex-desktop - No readme file found
-Skipping silex_silex-me-2024 - No readme file found
 
 # Silex packages
 
 | Name | Directory | Repo | Description |
 | ---- | --------- | ---- | ----------- |
 | Silex | `packages/Silex` | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
-| Example intergation of Silex with 11ty and strapi | `packages/silex-strapi-11ty` | `git@github.com:silexlabs/silex-strapi-11ty.git` | This is a simple example of how to integrate Silex with 11ty and strapi. |
 | Silex plugins | `packages/silex-plugins` | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
 | Silex Plugin Starter | `packages/silex-plugin-starter` | `git@github.com:silexlabs/silex-plugin-starter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
-| silex-desktop | `packages/silex-desktop` | `git@github.com:silexlabs/silex-desktop.git` |  |
+| Silex desktop | `packages/silex-desktop` | `git@github.com:silexlabs/silex-desktop.git` | This is the official [Silex](https://www.silex.me) desktop version, an installable application for Windows, MacOS and linux. |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
-| silex_silex-me-2024 | `packages/silex_silex-me-2024` | `git@gitlab.com:lexoyo/silex_silex-me-2024.git` |  |
-| Access node_modules in package.json | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Use it in your `packge.json` like this: |
-| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` |  |
-| Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | [DEMO](https://codepen.io/lexo1000/pen/abErmeW) |
+| node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
+| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` | |
+| Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | A grapesjs plugin to enable auto-complete of classes in the SelectorManager UI  |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
 | GrapesJs Notifications Plugin | `packages/grapesjs-notifications` | `git@github.com:silexlabs/grapesjs-notifications.git` | Why this plugin? GrapesJs is a powerful framework to build no-code tools and allow users to create templates using a drag-and-drop interface. However, the framework does not offer a standard way of notifying users and each plugin implements its own, which is messy and not user friendly. This plugin provides a centralized notification system that can be used by all plugins to display messages to the user. |
@@ -42,26 +38,39 @@ Skipping silex_silex-me-2024 - No readme file found
 | GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
 | Grapesjs Advanced Selector | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | Links |
 | Expression Input web component | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A web component to include in your JS/TS projects. Your users can create an expression which is a ordoned list of tokens. It feels like auto completion without typing text. The token can have options too. |
-| Eleventy Plugin Directus | `packages/eleventy-plugin-directus` | `git@github.com:silexlabs/eleventy-plugin-directus.git` | # ⚠️ **Deprecated** ⚠️ |
 | eleventy-plugin-concat | `packages/eleventy-plugin-concat` | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
 | Silex instances by Silex Labs | `packages/editor.silex.me` | `git@github.com:silexlabs/editor.silex.me.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me). |
-| 11ty_silex.me 2024 | `packages/11ty_silex.me-2024` | `git@gitlab.com:lexoyo/11ty_silex.me-2024.git` | ## Local dev |
 
 
 > Auto generated submodules
 
 ## Instruction
 
-To contribute to Silex you need to clone this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (you can replace `npm` with `yarn`):
+To contribute to Silex you need to fork this repo then clone locally this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (you can replace `npm` with `yarn`):
+
+* On github, fork this repo
+* Then clone and setup the project:
 
 ```
-$ git clone git@github.com:silexlabs/silex-meta.git --recurse-submodules -j8
-$ git submodule update --init --recursive
+$ git clone git@github.com:<your github handle>/silex-meta.git --recurse-submodules -j8
 $ cd silex-meta
+$ git submodule update --init --recursive
 $ nvm install
 $ npm install
 $ npm start
 ```
+
+Then you can open your browser at [http://localhost:6800](http://localhost:6800) to see the Silex editor running locally.
+
+When you are ready to contribute to a specific library or libraries, you can do the following:
+
+* On github, fork the libraries you intend to contribute to, e.g. `silex-desktop`
+* In your local clone of this meta repo, update submodule URLs to point to your own forks of each library, e.g:
+```sh
+$ cd packages/silex-desktop
+$ git remote set-url origin git@github.com:<your-username>/silex-desktop.git'
+```
+* Sync Changes: Once your contributions are merged into the main library repositories, they will automatically sync with the meta repository when submodules are updated.
 
 Useful commands
 
@@ -86,20 +95,18 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 2.00  T=0.50 s (614.0 files/s, 372198.0 lines/s)
+github.com/AlDanial/cloc v 2.00  T=1.00 s (268.0 files/s, 181429.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     130           8808          20031         127184
-TypeScript                     164           1921           5946          21040
-GraphQL                          3             63              6            667
-JSX                              1              0              2            256
-Dockerfile                       4             14              9             78
+JavaScript                     100           8545          19905         125126
+TypeScript                     160           1773           5917          19995
+Dockerfile                       3             12              9             73
 Text                             2              6              0             34
 INI                              2              4              0             21
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           307          10816          25994         149289
+SUM:                           268          10340          25831         145258
 -------------------------------------------------------------------------------
 
 ```
