@@ -2,10 +2,6 @@
 	path = packages/editor.silex.me
 	url = git@github.com:silexlabs/editor.silex.me.git
 	branch = main
-[submodule "packages/silex-desktop"]
-	path = packages/silex-desktop
-	url = git@github.com:silexlabs/silex-desktop.git
-	branch = main
 [submodule "packages/grapesjs-ui-suggest-classes"]
 	path = packages/grapesjs-ui-suggest-classes
 	url = git@github.com:silexlabs/grapesjs-ui-suggest-classes.git
@@ -13,10 +9,6 @@
 [submodule "packages/grapesjs-symbols"]
 	path = packages/grapesjs-symbols
 	url = git@github.com:silexlabs/grapesjs-sympbols.git
-	branch = main
-[submodule "packages/eleventy-plugin-directus"]
-	path = packages/eleventy-plugin-directus
-	url = git@github.com:silexlabs/eleventy-plugin-directus.git
 	branch = main
 [submodule "packages/grapesjs-fonts"]
 	path = packages/grapesjs-fonts
@@ -70,17 +62,9 @@
 	path = packages/expression-input
 	url = git@github.com:silexlabs/expression-input.git
 	branch = main
-[submodule "packages/silex-strapi-11ty"]
-	path = packages/silex-strapi-11ty
-	url = git@github.com:silexlabs/silex-strapi-11ty.git
-	branch = main
 [submodule "packages/silex-cms"]
 	path = packages/silex-cms
 	url = git@github.com:silexlabs/silex-cms.git
-	branch = main
-[submodule "packages/11ty_silex.me-2024"]
-	path = packages/11ty_silex.me-2024
-	url = git@gitlab.com:lexoyo/11ty_silex.me-2024.git
 	branch = main
 [submodule "packages/grapesjs-notifications"]
 	path = packages/grapesjs-notifications
@@ -91,9 +75,9 @@
 [submodule "packages/grapesjs-advanced-selector"]
 	path = packages/grapesjs-advanced-selector
 	url = git@github.com:silexlabs/grapesjs-advanced-selector.git
-[submodule "packages/silex_silex-me-2024"]
-	path = packages/silex_silex-me-2024
-	url = git@gitlab.com:lexoyo/silex_silex-me-2024.git
 [submodule "packages/libre-friends"]
 	path = packages/libre-friends
 	url = git@gitlab.com:silexlabs/libre-friends.git
+[submodule "packages/silex-desktop"]
+	path = packages/silex-desktop
+	url = git@github.com:silexlabs/silex-desktop.git
