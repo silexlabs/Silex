@@ -339,7 +339,9 @@ export class PublicationManager {
       // Get the content from GrapesJS
       const body = page.getMainComponent()
       const cssContent = this.editor.getCss({ component: body })
+      console.time(`getHtml ${page.getId()} ${page.get('name')}`)
       const htmlContent = this.editor.getHtml({ component: body })
+      console.timeEnd(`getHtml ${page.getId()} ${page.get('name')}`)
 
       // Transform the file paths
       const slug = getPageSlug(page.get('name'))
