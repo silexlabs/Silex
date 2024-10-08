@@ -78,6 +78,6 @@
 [submodule "packages/libre-friends"]
 	path = packages/libre-friends
 	url = git@gitlab.com:silexlabs/libre-friends.git
-[submodule "packages/silex-desktop"]
-	path = packages/silex-desktop
-	url = git@github.com:silexlabs/silex-desktop.git
+[submodule "packages/silex-puter"]
+	path = packages/silex-puter
+	url = git@github.com:silexlabs/silex-puter.git
