@@ -1,4 +1,4 @@
-import Backbone  from 'backbone'
+import Backbone from 'backbone'
 import { Component, ComponentProperties } from 'grapesjs'
 
 import { SymbolEditor, Symbols } from './Symbols'

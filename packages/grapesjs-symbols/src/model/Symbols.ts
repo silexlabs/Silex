@@ -40,7 +40,12 @@ export class Symbols extends Backbone.Collection<Symbol>  {
     this.editor.on('component:update:attributes', c => this.onUpdateAttributes(c))
     this.editor.on('component:update:classes', c => this.onUpdateClasses(c))
     this.editor.on('component:input', c => this.onUpdateContent(c))
-    this.editor.on('styleable:change', cssRule => this.onStyleChanged(cssRule))
+    this.editor.on('styleable:change', cssRule => {
+      // Sometimes the event is fired with a Component instead of a CssRule
+      if (!cssRule.getComponent) return
+      if (!cssRule.changed) return
+      this.onStyleChanged(cssRule)
+    })
     this.editor.on('component:drag', ({target, parent}) => this.onDrag({target, parent}))
     //this.editor.on('undo', () => {
     //  this.updating = true

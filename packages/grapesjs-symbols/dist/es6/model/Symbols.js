@@ -118,7 +118,14 @@ var Symbols = /** @class */ (function (_super) {
         this.editor.on('component:update:attributes', function (c) { return _this.onUpdateAttributes(c); });
         this.editor.on('component:update:classes', function (c) { return _this.onUpdateClasses(c); });
         this.editor.on('component:input', function (c) { return _this.onUpdateContent(c); });
-        this.editor.on('styleable:change', function (cssRule) { return _this.onStyleChanged(cssRule); });
+        this.editor.on('styleable:change', function (cssRule) {
+            // Sometimes the event is fired with a Component instead of a CssRule
+            if (!cssRule.getComponent)
+                return;
+            if (!cssRule.changed)
+                return;
+            _this.onStyleChanged(cssRule);
+        });
         this.editor.on('component:drag', function (_a) {
             var target = _a.target, parent = _a.parent;
             return _this.onDrag({ target: target, parent: parent });
