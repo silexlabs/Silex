@@ -452,7 +452,7 @@ export async function initEditor(config: EditorConfig) {
         () => {
           const notificationButton = editor.Panels.getPanel(PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn')
           ;(editor as NotificationEditor)
-            .NotificationManager.length ? notificationButton?.classList.add('project-bar__dirty') : notificationButton?.classList.remove('project-bar__dirty')
+            .NotificationManager['length'] ? notificationButton?.classList.add('project-bar__dirty') : notificationButton?.classList.remove('project-bar__dirty')
         }
       )
 

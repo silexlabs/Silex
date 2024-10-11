@@ -23,6 +23,7 @@ import { ConnectorData, ConnectorType, PublicationJobData, PublicationSettings }
 import { connectorList } from '../api'
 import { defaultKms } from './keymaps'
 import { titleCase } from '../utils'
+import { ClientEvent } from '../events'
 
 /**
  * @fileoverview define the publication dialog
@@ -120,12 +121,9 @@ export class PublicationUi {
 
   // **
   // Functions to open and close the dialog
-  getDialogElements(): { el: HTMLElement, primary: HTMLElement, secondary: HTMLElement } {
-    const el = document.querySelector('#publish-dialog') as HTMLElement
-    const primary = el?.querySelector('#publish-button--primary') as HTMLElement
-    const secondary = el?.querySelector('#publish-button--secondary') as HTMLElement
-    if(!el || !primary || !secondary) throw new Error('Publication dialog elements not found')
-    return { el, primary, secondary }
+  userContent: TemplateResult | null = null
+  setUserContent(content: TemplateResult) {
+    this.userContent = content
   }
   createDialogElements(): HTMLElement {
     // Create the dialog element
@@ -182,59 +180,61 @@ export class PublicationUi {
       </button>`}
     </header>
     <main>
-      ${this.isPending(status) ? html`
-        <p>Publication in progress...</p>
-      ` : ''}
-      ${this.isReady(status) ? html`
-        <p>Click on the button below to publish your website.</p>
-        ${this.settings.options && Object.entries(this.settings.options).length && html`<p>Publication options: <ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul></p>`}
-      ` : ''}
-      ${this.isSuccess(status) ? html`
-        <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
-        ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : ''}
-      ` : ''}
-      ${this.isError(status) || this.isLoggedOut(status) ? html`
-        <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
-        <details open>
-          <summary>Details</summary>
-          ${unsafeHTML(this.errorMessage)}
-        </details>
-      ` : ''}
-      ${job?.message ? html`
-        <details open>
-          <summary>Details</summary>
-          ${unsafeHTML(job.message)}
-        </details>
-      ` : ''}
-      ${this.isPending(status) ? html`
-        <progress
-          value=""
-          style="width: 100%;"
-        ></progress>
-      ` : ''}
-      ${job?.logs?.length && job.logs[0].length ? html`
-        <details>
-          <summary>Logs</summary>
-          <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
-        </details>
-      ` : ''}
-      ${job?.errors?.length && job.errors[0].length ? html`
-        <details>
-          <summary>Errors</summary>
-          <pre style="
-            max-width: 100%;
-            font-size: x-small;
-            "
-          >${unsafeHTML(cleanupLogEntry(job.errors))}
-          </pre>
-        </details>
-      ` : ''}
-      ${this.isPending(status) || this.isLoggedOut(status) ? '' : html`
-        <button
-          class="silex-button silex-button--primary"
-          id="publish-button--primary"
-          @click=${() => this.editor.Commands.run(cmdPublicationStart)}
-        >Publish</button>
+      ${this.userContent || html`
+        ${this.isPending(status) ? html`
+          <p>Publication in progress...</p>
+        ` : ''}
+        ${this.isReady(status) ? html`
+          <p>Click on the button below to publish your website.</p>
+          ${this.settings.options && Object.entries(this.settings.options).length && html`<p>Publication options: <ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul></p>`}
+        ` : ''}
+        ${this.isSuccess(status) ? html`
+          <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
+          ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : ''}
+        ` : ''}
+        ${this.isError(status) || this.isLoggedOut(status) ? html`
+          <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
+          <details open>
+            <summary>Details</summary>
+            ${unsafeHTML(this.errorMessage)}
+          </details>
+        ` : ''}
+        ${job?.message ? html`
+          <details open>
+            <summary>Details</summary>
+            ${unsafeHTML(job.message)}
+          </details>
+        ` : ''}
+        ${this.isPending(status) ? html`
+          <progress
+            value=""
+            style="width: 100%;"
+          ></progress>
+        ` : ''}
+        ${job?.logs?.length && job.logs[0].length ? html`
+          <details>
+            <summary>Logs</summary>
+            <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
+          </details>
+        ` : ''}
+        ${job?.errors?.length && job.errors[0].length ? html`
+          <details>
+            <summary>Errors</summary>
+            <pre style="
+              max-width: 100%;
+              font-size: x-small;
+              "
+            >${unsafeHTML(cleanupLogEntry(job.errors))}
+            </pre>
+          </details>
+        ` : ''}
+        ${this.isPending(status) || this.isLoggedOut(status) ? '' : html`
+          <button
+            class="silex-button silex-button--primary"
+            id="publish-button--primary"
+            @click=${() => this.editor.Commands.run(cmdPublicationStart)}
+          >Publish</button>
+        `}
       `}
     </main>
     <footer>
@@ -331,6 +331,7 @@ export class PublicationUi {
       this.sender.set('active', 0)
     } // Deactivate the button to make it ready to be clicked again
     this.sender = null
+    this.editor.trigger(ClientEvent.PUBLICATION_UI_CLOSE, { publicationUi: this })
   }
   async toggleDialog() {
     if (this.isOpen) this.closeDialog()
@@ -360,5 +361,6 @@ export class PublicationUi {
     // Publication
     //this.editor.Commands.run(cmdPublicationStart)
     this.renderDialog(null, PublicationStatus.STATUS_NONE)
+    this.editor.trigger(ClientEvent.PUBLICATION_UI_OPEN, { publicationUi: this })
   }
 }

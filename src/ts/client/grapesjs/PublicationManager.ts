@@ -152,6 +152,13 @@ export class PublicationManager {
   }
 
   async goLogin(connector: ConnectorData) {
+    let preventDefault = false
+    this.editor.trigger(ClientEvent.PUBLISH_LOGIN_START, { connector, publicationManager: this, preventDefault: () => preventDefault = true })
+    if(preventDefault) {
+      this.status = PublicationStatus.STATUS_NONE
+      this.dialog && this.dialog.displayPending(this.job, this.status)
+      return
+    }
     // Check if the user is already logged in
     if(connector.isLoggedIn) {
       this.settings = {
@@ -216,12 +223,12 @@ export class PublicationManager {
     }
   }
 
-  async getPublicationData(projectData, siteSettings): Promise<PublicationData> {
+  async getPublicationData(projectData, siteSettings, preventDefault: () => void): Promise<PublicationData> {
     // Data to publish
     // See assetUrl.ts which is a default transformer, always present
     this.setPublicationTransformers()
     // Build the files structure
-    const files: ClientSideFile[] = (await this.getHtmlFiles(siteSettings))
+    const files: ClientSideFile[] = (await this.getHtmlFiles(siteSettings, preventDefault))
       .flatMap(file => ([{
         path: file.htmlPath, // Already "transformed" in getHtmlFiles
         content: file.html,
@@ -267,7 +274,7 @@ export class PublicationManager {
     this.resetPublicationTransformers()
     // Let plugins transform the data
     transformFiles(this.editor, data)
-    this.editor.trigger(ClientEvent.PUBLISH_DATA, data)
+    this.editor.trigger(ClientEvent.PUBLISH_DATA, { data, preventDefault, publicationManager: this })
     // Return the data
     return data
   }
@@ -285,15 +292,27 @@ export class PublicationManager {
       // Get the data to publish, clone the objects because plugins can change it
       const projectData = { ...this.editor.getProjectData() as WebsiteData }
       const siteSettings = { ...this.editor.getModel().get('settings') as WebsiteSettings }
-      this.editor.trigger(ClientEvent.PUBLISH_START, {projectData, siteSettings})
+      let preventDefaultStart = false
+      this.editor.trigger(ClientEvent.PUBLISH_START, {projectData, siteSettings, preventDefault: () => preventDefaultStart = true, publicationManager: this })
+      if(preventDefaultStart) {
+        this.status = PublicationStatus.STATUS_NONE
+        this.dialog && this.dialog.displayPending(this.job, this.status)
+        return
+      }
+      // Get the data to publish
+      let preventDefaultData = false
+      const data = await this.getPublicationData(projectData, siteSettings, () => preventDefaultData = true)
+      if(preventDefaultData) {
+        this.status = PublicationStatus.STATUS_NONE
+        this.dialog && this.dialog.displayPending(this.job, this.status)
+        return
+      }
       // User and where to publish
       const storageUser = this.editor.getModel().get('user') as ConnectorUser
       if(!storageUser) throw new Error('User not logged in to a storage connector')
       if(!this.settings.connector?.connectorId) throw new Error('User not logged in to a hosting connector')
       const websiteId = this.options.websiteId
       const storageId = storageUser.storage.connectorId
-      // Get the data to publish
-      const data = await this.getPublicationData(projectData, siteSettings)
       // Use the publication API
       const [url, job] = await publish({
         websiteId,
@@ -326,7 +345,7 @@ export class PublicationManager {
     }
   }
 
-  async getHtmlFiles(siteSettings: WebsiteSettings): Promise<WebsiteFile[]> {
+  async getHtmlFiles(siteSettings: WebsiteSettings, preventDefault): Promise<WebsiteFile[]> {
     return Promise.all(this.editor.Pages.getAll().map(async page => {
       // Clone the settings because plugins can change them
       siteSettings = { ...siteSettings }
@@ -352,7 +371,7 @@ export class PublicationManager {
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
 
       // Let plugins transform the data
-      this.editor.trigger(ClientEvent.PUBLISH_PAGE, { page, siteSettings, pageSettings })
+      this.editor.trigger(ClientEvent.PUBLISH_PAGE, { page, siteSettings, pageSettings, preventDefault, publicationManager: this })
 
       // Useful data for HTML result
       const title = getSetting('title')

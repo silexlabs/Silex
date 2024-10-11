@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError, Asset, Page, Component, Style } from '../../types'
+import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError } from '../../types'
 import { websiteLoad, websiteSave } from '../api'
 import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
 import { addTempDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
