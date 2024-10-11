@@ -34,6 +34,9 @@ You can set the following environment variables to customize the instance:
 | `GITLAB2_DOMAIN` | Domain of the 2nd Gitlab server, e.g `https://gitlab.com` | string | required |
 | `GITLAB2_CLIENT_ID` | Client ID for the 2nd Gitlab OAuth | string | required |
 | `GITLAB2_CLIENT_SECRET` | Client secret for the 2nd Gitlab OAuth | string | required |
+| `BREVO_API_KEY` | The API key for the Brevo service (onboarding, optional) | string | - |
+| `BREVO_API_URL` | The API URL for the Brevo service (onboarding, optional) | string | - |
+| `BREVO_LIST_ID` | The list ID for the Brevo service (onboarding, optional) | string | - |
 
 ## Support
 
