@@ -78,8 +78,9 @@ export class ASClasses extends LitElement {
       name: value,
       label: value,
     }
-    this.editor?.SelectorManager.add(value)
+    const added = this.editor?.SelectorManager.add(value)
     this.editor?.SelectorManager.addSelected(selectorOpts)
+    console.log('ADD SELECTOR', {value, added, selectorOpts})
   }
 
   toggleSelector(selector: Selector) {

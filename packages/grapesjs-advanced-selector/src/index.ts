@@ -13,12 +13,10 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
 
   editor.config.selectorManager = {
     ...editor.config.selectorManager,
-    escapeName: (name: string) => `as-${name}`,
-    // FIXME: does not work
-    // custom: true,
-    // render: (props: CustomSelectorEventProps) => {
-    //   return '<div id="as-container">xxxxxxxxxxxx</div>'
-    // },
+    escapeName: (name: string) => {
+      console.log('escapeName ===========', name)
+      return `as-${name}`
+    },
   }
 
   initSelectorCustom(editor, options)

@@ -2,6 +2,7 @@ import { Selector } from 'grapesjs'
 import { css, html, LitElement } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
+import { classMap } from 'lit/directives/class-map.js'
 
 @customElement('as-tag')
 export class AsTag extends LitElement {
@@ -38,34 +39,43 @@ export class AsTag extends LitElement {
       font-family: var(--gjs-main-font);
     }
     .as-tag {
-      background-color: var(--gjs-tertiary-color);
       border-radius: 5px;
       display: inline-flex;
       justify-content: space-between;
       margin: 3px;
       min-width: 50px;
-    }
-    .as-tag span {
-      padding: var(--gjs-input-padding);
-      cursor: pointer;
-      flex-grow: 1;
-    }
-    .as-tag--active {
-      background-color: var(--gjs-quaternary-color);
-    }
-    .as-tag span[contenteditable="true"] {
-      background-color: var(--gjs-secondary-dark-color);
-      color: var(--gjs-secondary-light-color);
-      cursor: text;
-    }
-    .as-tag__remove {
-      cursor: pointer;
-      border: none;
-      background-color: transparent;
-      color: var(--gjs-font-color);
-      &:hover {
-        background-color: var(--gjs-color-warn);
-        color: var(--gjs-color-red);
+      opacity: 0.5;
+      &.as-tag--active {
+        opacity: 1;
+      }
+      &.as-tag__class {
+        background-color: var(--gjs-tertiary-color);
+        color: var(--gjs-secondary-light-color);
+      }
+      &.as-tag__tag {
+        background-color: var(--gjs-quaternary-color);
+        color: var(--gjs-secondary-light-color);
+      }
+      span {
+        padding: var(--gjs-input-padding);
+        cursor: pointer;
+        flex-grow: 1;
+      }
+      span[contenteditable="true"] {
+        background-color: var(--gjs-secondary-dark-color);
+        color: var(--gjs-secondary-light-color);
+        cursor: text;
+        width: 100%;
+      }
+      .as-tag__remove {
+        cursor: pointer;
+        border: none;
+        background-color: transparent;
+        color: var(--gjs-font-color);
+        &:hover {
+          background-color: var(--gjs-color-warn);
+          color: var(--gjs-color-red);
+        }
       }
     }
   `
@@ -77,18 +87,27 @@ export class AsTag extends LitElement {
   }
 
   override render() {
+    const isEditable = this.inputRef.value?.contentEditable === 'true'
     return html`
       <div
-        class=${this.selector?.getActive() ? 'as-tag as-tag--active' : 'as-tag'}
+        class=${classMap({
+          'as-tag': true,
+          'as-tag--active': !!this.selector?.getActive(),
+          'as-tag__class': this.getType() === 'class',
+          'as-tag__tag': this.getType() === 'tag',
+          'as-tag__editable': isEditable,
+        })}
       >
         <span
           ${ref(this.inputRef)}
           @dblclick=${() => this.makeEditable()}
         >${this.selector?.getLabel()}</span>
-        <button
-          class="as-tag__remove"
-          @click=${() => this.dispatchEvent(new CustomEvent('remove', { detail: { selector: this.selector } }))}
-        >x</button>
+        ${isEditable ? '' : html`
+          <button
+            class="as-tag__remove"
+            @click=${() => this.dispatchEvent(new CustomEvent('remove', { detail: { selector: this.selector } }))}
+          >x</button>
+        `}
       </div>
     `
   }
@@ -110,9 +129,14 @@ export class AsTag extends LitElement {
           input.contentEditable = 'false'
         }
       })
+      this.requestUpdate()
     }
   }
 
+  getType() {
+    console.log('TYPE', this.selector?.getName(), this.selector?.getFullName(), this.selector?.getLabel(), this.selector)
+    return this.selector?.getFullName().startsWith('.') ? 'class' : 'tag'
+  }
 }
 
 declare global {
