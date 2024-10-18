@@ -9,8 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -45,7 +45,19 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.allowDrop = exports.setCaret = exports.getCaret = exports.getNode = exports.getNodePath = exports.wait = exports.hasSymbolId = exports.closestInstance = exports.find = exports.all = exports.children = exports.getAllComponentsFromEditor = exports.setDirty = void 0;
+exports.setDirty = setDirty;
+exports.getAllComponentsFromEditor = getAllComponentsFromEditor;
+exports.children = children;
+exports.all = all;
+exports.find = find;
+exports.closestInstance = closestInstance;
+exports.hasSymbolId = hasSymbolId;
+exports.wait = wait;
+exports.getNodePath = getNodePath;
+exports.getNode = getNode;
+exports.getCaret = getCaret;
+exports.setCaret = setCaret;
+exports.allowDrop = allowDrop;
 var Symbol_1 = require("./model/Symbol");
 /**
  * set editor as dirty
@@ -59,7 +71,6 @@ function setDirty(editor) {
         // this occures in headless mode and UT
     }
 }
-exports.setDirty = setDirty;
 /**
  * browse all pages and retrieve all website components
  */
@@ -72,7 +83,6 @@ function getAllComponentsFromEditor(editor) {
     });
     return res;
 }
-exports.getAllComponentsFromEditor = getAllComponentsFromEditor;
 /**
  * Get all the children excluding symbols children
  * @param {Component} c - the root component
@@ -83,7 +93,6 @@ function children(c) {
     return children
         .flatMap(function (child) { return all(child); });
 }
-exports.children = children;
 /**
  * Get an array of the component + its children excluding symbols children
  * @param {Component} c - the root component
@@ -99,7 +108,6 @@ function all(c) {
         return all(child);
     }));
 }
-exports.all = all;
 /**
  * Find a component in a component's children, with a given symbolChildId or symbolId
  * @param {Component} c - the root component
@@ -122,7 +130,6 @@ function find(c, symbolChildId) {
         return found_1;
     }
 }
-exports.find = find;
 /**
  * find the first symbol in the parents (or the element itself)
  * @private
@@ -134,7 +141,6 @@ function closestInstance(c) {
     }
     return ptr;
 }
-exports.closestInstance = closestInstance;
 /**
  * @param {Component} c - a component
  * @return {Boolean} true if the component has a symbol id
@@ -142,16 +148,14 @@ exports.closestInstance = closestInstance;
 function hasSymbolId(c) {
     return !!c.get('symbolId');
 }
-exports.hasSymbolId = hasSymbolId;
-function wait(ms) {
-    if (ms === void 0) { ms = 0; }
-    return __awaiter(this, void 0, void 0, function () {
+function wait() {
+    return __awaiter(this, arguments, void 0, function (ms) {
+        if (ms === void 0) { ms = 0; }
         return __generator(this, function (_a) {
             return [2 /*return*/, new Promise(function (resolve) { return setTimeout(resolve, ms); })];
         });
     });
 }
-exports.wait = wait;
 /**
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
@@ -168,7 +172,6 @@ function getNodePath(root, node) {
     }
     return path;
 }
-exports.getNodePath = getNodePath;
 /**
  * Get an array of the indexes of the node in its parent nodes
  * @example <div><div></div><div><div id="test"/> => returns [1, 0] for #test
@@ -181,7 +184,6 @@ function getNode(root, path) {
     }
     return result;
 }
-exports.getNode = getNode;
 /**
  * Gets the caret position
  */
@@ -195,7 +197,6 @@ function getCaret(el) {
     var path = getNodePath(el, caretEl);
     return { path: path, pos: pos };
 }
-exports.getCaret = getCaret;
 /**
  * Sets the caret position
  */
@@ -217,7 +218,6 @@ function setCaret(el, _a) {
         console.error('Could not keep the caret position', { el: el, path: path });
     }
 }
-exports.setCaret = setCaret;
 /**
  * find the all the symbols in the parents (or the element itself)
  * @private
@@ -254,4 +254,3 @@ function allowDrop(_a) {
     var allChildren = allChildrenInstances(target, false);
     return !allParents.find(function (p) { return allChildren.find(function (c) { return (0, Symbol_1.getSymbolId)(c) === (0, Symbol_1.getSymbolId)(p); }); });
 }
-exports.allowDrop = allowDrop;

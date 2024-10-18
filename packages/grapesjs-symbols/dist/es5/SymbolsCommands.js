@@ -4,7 +4,13 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
     return cooked;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSymbolInstance = exports.unlinkSymbolInstance = exports.removeSymbol = exports.addSymbol = exports.displayError = exports.cmdCreate = exports.cmdUnlink = exports.cmdRemove = exports.cmdAdd = void 0;
+exports.cmdCreate = exports.cmdUnlink = exports.cmdRemove = exports.cmdAdd = void 0;
+exports.default = default_1;
+exports.displayError = displayError;
+exports.addSymbol = addSymbol;
+exports.removeSymbol = removeSymbol;
+exports.unlinkSymbolInstance = unlinkSymbolInstance;
+exports.createSymbolInstance = createSymbolInstance;
 var lit_html_1 = require("lit-html");
 var unsafe_html_js_1 = require("lit-html/directives/unsafe-html.js");
 var Symbol_1 = require("./model/Symbol");
@@ -22,7 +28,6 @@ function default_1(editor, options) {
     editor.Commands.add(exports.cmdUnlink, unlinkSymbolInstance);
     editor.Commands.add(exports.cmdCreate, createSymbolInstance);
 }
-exports.default = default_1;
 // Symbol management functions
 // These are exported for unit tests
 function displayError(editor, title, message) {
@@ -33,7 +38,6 @@ function displayError(editor, title, message) {
     });
     (0, lit_html_1.render)((0, lit_html_1.html)(templateObject_1 || (templateObject_1 = __makeTemplateObject(["<main>\n      <p>", "</p>\n    </main><footer style=\"\n      display: flex;\n      justify-content: space-between;\n      margin-top: 30px;\n    \">\n      <div></div>\n      <button class=\"gjs-btn-prim\" @click=", ">Close</button>\n    </footer>"], ["<main>\n      <p>", "</p>\n    </main><footer style=\"\n      display: flex;\n      justify-content: space-between;\n      margin-top: 30px;\n    \">\n      <div></div>\n      <button class=\"gjs-btn-prim\" @click=", ">Close</button>\n    </footer>"])), (0, unsafe_html_js_1.unsafeHTML)(message), function () { return editor.Modal.close(); }), content);
 }
-exports.displayError = displayError;
 /**
  * Create a new symbol
  * @param options.component - the component which will become the first instance of the symbol
@@ -55,7 +59,6 @@ function addSymbol(editor, sender, _a) {
         throw new Error('Can not create the symbol: missing required param');
     }
 }
-exports.addSymbol = addSymbol;
 /**
  * Delete a symbol
  * @param {symbolId: string} - object containing the symbolId
@@ -85,7 +88,6 @@ function removeSymbol(editor, sender, _a) {
         throw new Error('Could not remove symbol: missing param symbolId');
     }
 }
-exports.removeSymbol = removeSymbol;
 function unlinkSymbolInstance(editor, sender, _a) {
     var component = _a.component;
     if (component) {
@@ -105,7 +107,6 @@ function unlinkSymbolInstance(editor, sender, _a) {
         throw new Error('Can not unlink the component: missing param component');
     }
 }
-exports.unlinkSymbolInstance = unlinkSymbolInstance;
 /**
  * @param {{index, indexEl, method}} pos Where to insert the component, as [defined by the Sorter](https://github.com/artf/grapesjs/blob/0842df7c2423300f772e9e6cdc88c6ae8141c732/src/utils/Sorter.js#L871)
  */
@@ -144,5 +145,4 @@ function createSymbolInstance(editor, sender, _a) {
         throw new Error('Can not create the symbol: missing param symbol or pos or target');
     }
 }
-exports.createSymbolInstance = createSymbolInstance;
 var templateObject_1;

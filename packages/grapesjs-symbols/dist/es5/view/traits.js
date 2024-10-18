@@ -4,6 +4,7 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
     return cooked;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = default_1;
 var lit_html_1 = require("lit-html");
 var events_1 = require("../events");
 var Symbol_1 = require("../model/Symbol");
@@ -93,5 +94,4 @@ function default_1(editor, options) {
     //  })
     //})
 }
-exports.default = default_1;
 var templateObject_1;

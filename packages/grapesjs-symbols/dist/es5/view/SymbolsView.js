@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmDialog = void 0;
+exports.confirmDialog = confirmDialog;
 var lit_html_1 = require("lit-html");
 var unsafe_html_js_1 = require("lit-html/directives/unsafe-html.js");
 var backbone_1 = __importDefault(require("backbone"));
@@ -56,7 +56,6 @@ function confirmDialog(_a) {
         }, primaryLabel), content);
     }
 }
-exports.confirmDialog = confirmDialog;
 var default_1 = /** @class */ (function (_super) {
     __extends(default_1, _super);
     //initialize(model, { editor, options }) {

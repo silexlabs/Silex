@@ -11,8 +11,10 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": [
-      "src/**/*.test.ts",
-      "**/node_modules",
-      "lib"
+    "src/**/*.test.ts",
+    "**/node_modules",
+    "lib",
+    "node_modules/@types/mocha",
+    "**/node_modules/@types/mocha"
   ]
 }

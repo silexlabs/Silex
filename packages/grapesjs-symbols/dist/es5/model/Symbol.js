@@ -29,7 +29,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createSymbol = exports.initSymbolChild = exports.initModel = exports.cleanup = exports.getSymbolId = exports.SYMBOL_SYNC_ATTRIBUTE = exports.SYMBOL_CHILD_ID_ATTRIBUTE = exports.SYMBOL_ID_ATTRIBUTE = void 0;
+exports.SYMBOL_SYNC_ATTRIBUTE = exports.SYMBOL_CHILD_ID_ATTRIBUTE = exports.SYMBOL_ID_ATTRIBUTE = void 0;
+exports.getSymbolId = getSymbolId;
+exports.cleanup = cleanup;
+exports.initModel = initModel;
+exports.initSymbolChild = initSymbolChild;
+exports.createSymbol = createSymbol;
 var backbone_1 = __importDefault(require("backbone"));
 var utils_1 = require("../utils");
 var underscore_1 = require("underscore");
@@ -378,7 +383,6 @@ var Symbol = /** @class */ (function (_super) {
 function getSymbolId(c) {
     return c.get(exports.SYMBOL_ID_ATTRIBUTE);
 }
-exports.getSymbolId = getSymbolId;
 /**
  * remove symbols IDs from an instance
  */
@@ -386,7 +390,6 @@ function cleanup(c) {
     c.set(exports.SYMBOL_ID_ATTRIBUTE);
     c.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE);
 }
-exports.cleanup = cleanup;
 /**
  * Init a component to be this symbol's `model`
  * Also init the component's children
@@ -419,7 +422,6 @@ function initModel(c, _a) {
     (0, utils_1.children)(c)
         .forEach(function (child) { return initSymbolChild(child); });
 }
-exports.initModel = initModel;
 /**
  * Init a component to be this symbol's `model`'s child
  * @param {Component} c
@@ -430,7 +432,6 @@ function initSymbolChild(c, force) {
         c.set(exports.SYMBOL_CHILD_ID_ATTRIBUTE, c.cid);
     }
 }
-exports.initSymbolChild = initSymbolChild;
 /**
  * create a new symbol ou of a component
  * the component and its children will be init
@@ -477,5 +478,4 @@ function createSymbol(editor, c, attributes) {
     }
     return s;
 }
-exports.createSymbol = createSymbol;
 exports.default = Symbol;

@@ -4,3 +4,4 @@ private/
 node_modules/
 *.log
 stats.json
+*.tsbuildinfo

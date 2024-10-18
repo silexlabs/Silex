@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTestSymbols = void 0;
+exports.getTestSymbols = getTestSymbols;
 var grapesjs_1 = __importDefault(require("grapesjs"));
 var Symbol_1 = require("./model/Symbol");
 //  let's use the editor in headless mode
@@ -58,4 +58,3 @@ function getTestSymbols() {
         .set(comp3.cid, comp3);
     return { child11: child11, child12: child12, child21: child21, child22: child22, child111: child111, child211: child211, comp1: comp1, comp2: comp2, s1: s1, s2: s2, s1Data: s1Data, editor: editor };
 }
-exports.getTestSymbols = getTestSymbols;
