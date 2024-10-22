@@ -70,6 +70,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
             - public
         rules:
           - if: '$CI_COMMIT_TAG'
+          - if: '$CI_PIPELINE_SOURCE == "trigger"'
     `
     try {
       const originalCi = await this.readFile(session, websiteId, pathYml)
