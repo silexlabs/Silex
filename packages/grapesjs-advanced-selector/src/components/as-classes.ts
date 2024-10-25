@@ -1,17 +1,16 @@
 import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { createRef, ref } from "lit/directives/ref.js"
 import { Component, Editor, Selector } from "grapesjs"
 
 import './as-tag'
 import './as-selector'
-import { removeSelector, setSelector } from '../model';
+import { deleteSelector, editSelector } from '../model';
 
 export type ASClassesOptions = {
   cssClassesLabel: string
 }
 
-@customElement('as-classes')
 export class ASClasses extends LitElement {
   @property({ type: Array })
   public selected: Selector[] = []
@@ -64,7 +63,7 @@ export class ASClasses extends LitElement {
   }
 
   removeSelector(selector: string) {
-    removeSelector(this.editor!, selector)
+    deleteSelector(this.editor!, selector)
     //this.editor?.SelectorManager.removeSelected(selector)
     // TODO: if it is not referenced anywhere else? this.editor?.SelectorManager.remove(selector)
   }
@@ -74,7 +73,7 @@ export class ASClasses extends LitElement {
     //this.editor?.SelectorManager.addSelected(selectorOpts)
     const rule = this.editor!.CssComposer.getRule(selector) || this.editor!.CssComposer.setRule(selector)
     this.components.forEach(component => component.get('classes')?.add(rule))
-    setSelector(this.editor!, selector)
+    editSelector(this.editor!, selector)
     console.log('ADD SELECTOR', { value: selector })
   }
 
@@ -84,8 +83,6 @@ export class ASClasses extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'as-classes': ASClasses;
-  }
+if (!customElements.get('as-classes')) {
+  customElements.define('as-classes', ASClasses)
 }

@@ -1,8 +1,7 @@
 import { Editor } from 'grapesjs'
 import { LitElement, css, html } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { property } from 'lit/decorators.js'
 
-@customElement('as-selector')
 export class ASSelector extends LitElement {
   @property({ type: String })
   public state = ''
@@ -85,8 +84,6 @@ export class ASSelector extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'as-selector': ASSelector
-  }
+if (!customElements.get('as-selector')) {
+  customElements.define('as-selector', ASSelector)
 }

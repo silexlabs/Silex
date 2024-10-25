@@ -14,6 +14,8 @@ export default (editor: Editor, options: AdvancedSelectorOptions, container: HTM
 const inputRef = createRef<HTMLSpanElement>()
 
 function updateUi(editor: Editor, options: AdvancedSelectorOptions, container: HTMLElement, props: CustomSelectorEventProps) {
+  const selected = getSelectors(editor, editor.getSelectedAll()) 
+  const components = editor.getSelectedAll()
   render(html`
     <div>
       <input
@@ -40,15 +42,18 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions, container: H
        >GET</button>
     </div>
     <as-classes
+      .editor=${editor}
       .data-old-selected=${props.selected}
-      .selected=${ getSelectors(editor, editor.getSelectedAll()) }
-      .component=${editor.getSelectedAll()}
+      .selected=${ selected }
+      .components=${ components }
       .states=${props.states}
       .options=${options.classSelector}
-      .editor=${editor}
     ></as-classes>
     <as-completion
       .editor=${editor}
+      .selected=${ selected }
+      .components=${ components }
+      .combinator=${ null }
     ></as-completion>
     ${ display(editor) }
   `, container)

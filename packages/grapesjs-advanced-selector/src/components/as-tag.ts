@@ -1,7 +1,8 @@
 import { Selector } from 'grapesjs'
 import { css, html, LitElement } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { property } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
+import { live } from 'lit/directives/live.js'
 import { classMap } from 'lit/directives/class-map.js'
 
 /**
@@ -13,7 +14,13 @@ import { classMap } from 'lit/directives/class-map.js'
  *
  */
 
-@customElement('as-tag')
+interface CustomEventDetail {
+  input: HTMLElement
+  bindedBlurListener?: (event: Event) => void
+  bindedKeyDownListener?: (event: Event) => void
+  originalEvent?: Event
+}
+
 export class AsTag extends LitElement {
   private _selector: string = ''
   @property({ type: String })
@@ -40,7 +47,7 @@ export class AsTag extends LitElement {
     this._contentEditable = value === 'true'
     this.requestUpdate('contentEditable', oldValue)
     setTimeout(() => {
-      this.makeEditable()
+      this.setEditable()
     })
   }
 
@@ -155,8 +162,6 @@ export class AsTag extends LitElement {
   `
 
   private inputRef = createRef<HTMLSpanElement>()
-  private openCheckboxRef = createRef<HTMLInputElement>()
-  private formRef = createRef<HTMLFormElement>()
 
   constructor() {
     super()
@@ -176,103 +181,82 @@ export class AsTag extends LitElement {
       >
         <span
           ${ref(this.inputRef)}
-          @dblclick=${() => this.makeEditable()}
-        >${ this.selector }</span>
+          @dblclick=${(event: KeyboardEvent) => {
+            event.preventDefault() // Don't click to toggle
+            this.setEditable()
+          }}
+          @click=${() => this.dispatchEvent(new CustomEvent('toggle'))}
+          .innerText=${live( this.selector )}
+        ></span>
         ${isEditable ? '' : html`
-          <label
-            for=${this.openCheckboxRef}
-            class="as-tag__open"
-            @click=${(event: Event) => {
-              console.log('CLICK', event)
-              this.openCheckboxRef.value?.click()
-            }}
-          >v</label>
-          <input
-            ref=${ref(this.openCheckboxRef)}
-            type="checkbox"
-            class="as-tag__open"
-          />
-          <form
-            ref=${ref(this.formRef)}
-            class="as-tag__properties"
-            @submit=${(event: Event) => {
-              console.log('SUBMIT', event)
-              event.preventDefault()
-              const form = this.formRef.value
-              if (!form) throw new Error('Form not found')
-              if (!this.selector) throw new Error('Selector not found')
-              this.selector = (form.querySelector('input[name="full-name"]') as HTMLInputElement).value
-              //this.dispatchEvent(new CustomEvent('change', { detail: { selector: this.selector } }))
-              this.openCheckboxRef.value && (this.openCheckboxRef.value.checked = false)
-            }}
-            @reset=${() => {
-              this.openCheckboxRef.value && (this.openCheckboxRef.value.checked = false)
-            }}
-          >
-            <main>
-              <h3>Properties</h3>
-              <details>
-                <summary>Advanced</summary>
-                <label>Selector
-                  <input
-                    name="full-name"
-                    type="text"
-                    value=${this.selector}
-                  />
-                </label>
-              </details>
-              <div>
-                When
-                <select name="operator">
-                  <option value=" ">Nested in</option>
-                  <option value=" > ">Direct child of</option>
-                  <option value=" + ">Next sibling of</option>
-                  <option value=" ~ ">After sibling of</option>
-                </select>
-              </div>
-            </main>
-            <footer
-              class="as-tag__footer"
-            >
-              <button
-                class="as-tag__remove"
-                @click=${() => this.dispatchEvent(new CustomEvent('remove', { detail: { selector: this.selector } }))}
-              >Remove</button>
-              <button
-                type="reset"
-                class="as-tag__cancel"
-              >Cancel</button>
-              <button
-                type="submit"
-                class="as-tag__apply"
-              >Apply</button>
-            </footer>
-          </form>
+          <button
+            class="as-tag__remove"
+            @click=${() => this.dispatchEvent(new CustomEvent('remove', { detail: { selector: this.selector } }))}
+          >x</button>
         `}
       </div>
     `
   }
 
-  makeEditable() {
+  setEditable() {
     console.log('MAKE EDITABLE', this.inputRef.value)
     if (this.inputRef.value) {
-      const input = this.inputRef.value
-      input.contentEditable = 'true'
-      input.focus()
-      input.addEventListener('blur', () => {
-        input.contentEditable = 'false'
-        this.dispatchEvent(new CustomEvent('change', { detail: { selector: input.innerText } }))
-      })
-      input.addEventListener('keydown', (event: KeyboardEvent) => {
-        if (event.key === 'Enter') {
-          input.contentEditable = 'false'
-          this.dispatchEvent(new CustomEvent('change', { detail: { selector: input.innerText } }))
-        } else if (event.key === 'Escape') {
-          input.contentEditable = 'false'
-        }
-      })
+      // Create the detail object, used mainly to remove event listeners
+      const detail = {
+        input: this.inputRef.value,
+      } as CustomEventDetail
+      detail.bindedBlurListener = this.getBinded(this.blurListener.bind(this), detail)
+      detail.bindedKeyDownListener = this.getBinded(this.keyDownListener.bind(this), detail)
+      console.log('EDITABLE', detail)
+      // Start the editable mode
+      detail.input.contentEditable = 'true'
+      detail.input.focus()
+      detail.input.addEventListener('blur', detail.bindedBlurListener)
+      detail.input.addEventListener('keydown', detail.bindedKeyDownListener)
+      // Redraw the ui
       this.requestUpdate()
     }
+  }
+
+  unsetEditable(detail: CustomEventDetail) {
+    console.log('NOT EDITABLE', detail)
+    detail.input.removeEventListener('blur', detail.bindedBlurListener!)
+    detail.input.removeEventListener('keydown', detail.bindedKeyDownListener!)
+    detail.input.contentEditable = 'false'
+    if(!this.selector) this.dispatchEvent(new CustomEvent('remove'))
+    this.requestUpdate()
+  }
+
+  getBinded(cbk: any, detail: CustomEventDetail) {
+    return (event: Event) => {
+      const newEvent = new CustomEvent(event.type, { detail: {
+        ...detail,
+        originalEvent: event,
+      }})
+      cbk(newEvent)
+    }
+  }
+
+  keyDownListener(event: CustomEvent) {
+    const detail: CustomEventDetail = event.detail
+    if (event.detail.originalEvent.key === 'Enter') {
+      // Apply change
+      console.log('enter', detail)
+      if(!!detail.input.innerText) {
+        this.selector = detail.input.innerText // FIXME: this should be reactive and set by the parent
+        this.dispatchEvent(new CustomEvent('change', { detail: { selector: detail.input.innerText } }))
+      }
+      detail.input.blur()
+    } else if (event.detail.originalEvent.key === 'Escape') {
+      console.log('cancel', detail)
+      detail.input.blur()
+    }
+  }
+
+  blurListener(event: CustomEvent) {
+    console.log('blur', event.detail)
+    console.log('blur', event.detail, this.selector, event.detail.input.innerText)
+    this.unsetEditable(event.detail)
   }
 
   getType() {
@@ -280,8 +264,6 @@ export class AsTag extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'as-tag': AsTag
-  }
+if (!customElements.get('as-tag')) {
+  customElements.define('as-tag', AsTag)
 }

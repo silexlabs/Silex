@@ -1,11 +1,9 @@
-import { LitElement } from 'lit'
-import { customElement } from 'lit/decorators.js'
+import { html, LitElement, TemplateResult } from 'lit'
 
 /**
  * @fileoverview This component handles the completion of the selector manager, i.e the list of tags and css classes that can be added to the selected component
  */
 
-@customElement('as-completion')
 export class AsCompletion extends LitElement {
   //input.addEventListener('keydown', (event: KeyboardEvent) => {
   //  if (event.key === 'Enter') {
@@ -15,10 +13,16 @@ export class AsCompletion extends LitElement {
   //    input.contentEditable = 'false'
   //  }
   //})
+  protected override render(): TemplateResult {
+    super.render()
+    return html`
+      <section>
+        Completion
+      </section>
+    `
+  }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'as-completion': AsCompletion
-  }
+if (!customElements.get('as-completion')) {
+  customElements.define('as-completion', AsCompletion)
 }
