@@ -1,5 +1,5 @@
 import { Selector, State } from 'grapesjs'
-import { ASClassesOptions } from './as-classes'
+import { ASClassesOptions } from './components/as-classes'
 
 export type AdvancedSelectorOptions = {
   classSelector: ASClassesOptions
