@@ -8,12 +8,10 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     rules: {
-      // Set indentation to 2 spaces
       'indent': ['error', 2],
-      // Forbid unused variables
-      'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }],
-      // Remove unnecessary semicolons
-      'semi': ['error', 'never']
+      'semi': ['error', 'never'],
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": ["error"]
     }
   }
 )

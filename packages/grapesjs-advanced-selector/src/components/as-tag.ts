@@ -16,8 +16,8 @@ import { classMap } from 'lit/directives/class-map.js'
 
 interface CustomEventDetail {
   input: HTMLElement
-  bindedBlurListener?: (_event: CustomEvent) => void
-  bindedKeyDownListener?: (_event: CustomEvent) => void
+  bindedBlurListener?: (event: CustomEvent) => void
+  bindedKeyDownListener?: (event: CustomEvent) => void
   originalEvent?: Event
 }
 
@@ -227,7 +227,7 @@ export class AsTag extends LitElement {
     this.requestUpdate()
   }
 
-  getBinded(cbk: (_event: CustomEvent) => void, detail: CustomEventDetail): (_event: Event) => void {
+  getBinded(cbk: (event: CustomEvent) => void, detail: CustomEventDetail): (event: Event) => void {
     return (event: Event) => {
       const newEvent = new CustomEvent(event.type, { detail: {
         ...detail,

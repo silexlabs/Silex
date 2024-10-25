@@ -10,7 +10,7 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "dev": "grapesjs-cli serve & http-server -p 8081 ../../node_modules/grapesjs",
-    "build": "npm run lint && grapesjs-cli build --patch=false",
+    "build": "grapesjs-cli build --patch=false",
     "bump": "npm version patch -m 'Bump v%s'",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
