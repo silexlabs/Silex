@@ -59,20 +59,20 @@ export class ASSelector extends LitElement {
           <as-tag
             contenteditable="true"
             @change=${(event: CustomEvent) => {
-              if(event.detail.selector) {
-                this.dispatchEvent(new CustomEvent('add', { detail: event.detail }))
-              }
-              this.showNewTag = false
-              this.requestUpdate()
-            }}
+    if(event.detail.selector) {
+      this.dispatchEvent(new CustomEvent('add', { detail: event.detail }))
+    }
+    this.showNewTag = false
+    this.requestUpdate()
+  }}
           ></as-tag>
         ` : html`
           <button
             class="as-selector__add"
             @click=${() => {
-            this.showNewTag = true
-            this.requestUpdate()
-          }}>+</button>
+    this.showNewTag = true
+    this.requestUpdate()
+  }}>+</button>
         `}
       </div>
     `

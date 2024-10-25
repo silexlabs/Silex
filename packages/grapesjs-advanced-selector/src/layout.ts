@@ -24,21 +24,21 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions, container: H
       />
       <button
         @click=${() => {
-          const input = inputRef.value as HTMLInputElement
-          console.log('APPLY', input.value)
-          editStyle(editor, input.value)
-        }}
+    const input = inputRef.value as HTMLInputElement
+    console.log('APPLY', input.value)
+    editStyle(editor, input.value)
+  }}
       />APPLY</button>
       <button
         @click=${() => {
-          const component = editor.getSelected()
-          const rules = editor.CssComposer.getRules()
-            .filter((rule: CssRule) => component?.view?.el.matches(rule.getSelectorsString()))
+    const component = editor.getSelected()
+    const rules = editor.CssComposer.getRules()
+      .filter((rule: CssRule) => component?.view?.el.matches(rule.getSelectorsString()))
 
-          console.log('GET', rules, rules.map(
-            (rule: CssRule) => rule.getSelectorsString()
-          ))
-        }}
+    console.log('GET', rules, rules.map(
+      (rule: CssRule) => rule.getSelectorsString()
+    ))
+  }}
        >GET</button>
     </div>
     <as-classes
@@ -63,11 +63,11 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions, container: H
 function editStyle(editor: Editor, selector: string) {
   
   // Get the selected component
-  const selectedComponent = editor.getSelected();
+  const selectedComponent = editor.getSelected()
 
   if (!selectedComponent) {
-    console.warn('No component is selected');
-    return;
+    console.warn('No component is selected')
+    return
   }
 
   // Add the class (or use tag selector if it's a tag like `.title`)
@@ -75,7 +75,7 @@ function editStyle(editor: Editor, selector: string) {
   //console.log({_class})
 
   // Get or create the CSS rule for the given selector
-  const rule = editor.CssComposer.setRule(selector);
+  const rule = editor.CssComposer.setRule(selector)
   console.log({rule})
 
   editor.StyleManager.select(rule)

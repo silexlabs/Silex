@@ -16,8 +16,8 @@ import { classMap } from 'lit/directives/class-map.js'
 
 interface CustomEventDetail {
   input: HTMLElement
-  bindedBlurListener?: (event: Event) => void
-  bindedKeyDownListener?: (event: Event) => void
+  bindedBlurListener?: (_event: CustomEvent) => void
+  bindedKeyDownListener?: (_event: CustomEvent) => void
   originalEvent?: Event
 }
 
@@ -172,19 +172,19 @@ export class AsTag extends LitElement {
     return html`
       <div
         class=${classMap({
-          'as-tag': true,
-          'as-tag--active': this.active,
-          'as-tag__class': this.getType() === 'class',
-          'as-tag__tag': this.getType() === 'tag',
-          'as-tag__editable': isEditable,
-        })}
+    'as-tag': true,
+    'as-tag--active': this.active,
+    'as-tag__class': this.getType() === 'class',
+    'as-tag__tag': this.getType() === 'tag',
+    'as-tag__editable': isEditable,
+  })}
       >
         <span
           ${ref(this.inputRef)}
           @dblclick=${(event: KeyboardEvent) => {
-            event.preventDefault() // Don't click to toggle
-            this.setEditable()
-          }}
+    event.preventDefault() // Don't click to toggle
+    this.setEditable()
+  }}
           @click=${() => this.dispatchEvent(new CustomEvent('toggle'))}
           .innerText=${live( this.selector )}
         ></span>
@@ -227,7 +227,7 @@ export class AsTag extends LitElement {
     this.requestUpdate()
   }
 
-  getBinded(cbk: any, detail: CustomEventDetail) {
+  getBinded(cbk: (_event: CustomEvent) => void, detail: CustomEventDetail): (_event: Event) => void {
     return (event: Event) => {
       const newEvent = new CustomEvent(event.type, { detail: {
         ...detail,
@@ -242,7 +242,7 @@ export class AsTag extends LitElement {
     if (event.detail.originalEvent.key === 'Enter') {
       // Apply change
       console.log('enter', detail)
-      if(!!detail.input.innerText) {
+      if(detail.input.innerText) {
         this.selector = detail.input.innerText // FIXME: this should be reactive and set by the parent
         this.dispatchEvent(new CustomEvent('change', { detail: { selector: detail.input.innerText } }))
       }

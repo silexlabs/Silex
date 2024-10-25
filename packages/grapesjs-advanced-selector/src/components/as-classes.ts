@@ -1,11 +1,11 @@
-import { LitElement, html } from 'lit';
-import { property } from 'lit/decorators.js';
+import { LitElement, html } from 'lit'
+import { property } from 'lit/decorators.js'
 import { createRef, ref } from "lit/directives/ref.js"
 import { Component, Editor, Selector } from "grapesjs"
 
 import './as-tag'
 import './as-selector'
-import { deleteSelector, editSelector } from '../model';
+import { deleteSelector, editSelector } from '../model'
 
 export type ASClassesOptions = {
   cssClassesLabel: string
@@ -31,9 +31,9 @@ export class ASClasses extends LitElement {
   <select
     ${ref(this.statesSelectRef)}
     @change=${(event: Event) => {
-        this.currentState = (event.target as HTMLSelectElement).value
-        this.requestUpdate()
-      }}
+    this.currentState = (event.target as HTMLSelectElement).value
+    this.requestUpdate()
+  }}
   >
     <option value="">Normal</option>
     ${this.states.map(state => html`

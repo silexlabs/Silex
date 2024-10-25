@@ -1,4 +1,4 @@
-import { Editor, Component, CssRule, Selector } from 'grapesjs'
+import { Editor, Component, Selector } from 'grapesjs'
 
 export enum SelectorType {
   SELECTOR = 'SELECTOR', // Primary selector applied directly to the target element (e.g., `.button` in `.container .button`)
@@ -12,12 +12,12 @@ export enum Combinator {
   GENERAL_SIBLING = '~', // Matches elements that are general siblings
 }
 
-export type PseudoSelector {
+export type PseudoSelector = {
   name: string
   param?: string
 }
 
-export type PseudoSelectorDescriptor {
+export type PseudoSelectorDescriptor = {
   name: string
   param: boolean | { type: string, example: string }
 }
@@ -100,40 +100,40 @@ export interface EditableSelector {
 
 export function setClasses(components: Component[], type: SelectorType, selectors: Selector[]) {
   switch (type) {
-    case SelectorType.SELECTOR:
-      components.forEach(component => component.classes.set(selectors))
-      break
-    case SelectorType.NESTED_SELECTOR:
-      components.forEach(component => component.set('nestedClasses', selectors))
-      break
-    default:
-      throw new Error(`Unknown type: ${type}`)
+  case SelectorType.SELECTOR:
+    components.forEach(component => component.classes.set(selectors))
+    break
+  case SelectorType.NESTED_SELECTOR:
+    components.forEach(component => component.set('nestedClasses', selectors))
+    break
+  default:
+    throw new Error(`Unknown type: ${type}`)
   }
 }
 
 export function addClasses(components: Component[], type: SelectorType, selectors: Selector[]) {
   switch (type) {
-    case SelectorType.SELECTOR:
-      components.forEach(component => component.classes.add(selectors))
-      break
-    case SelectorType.NESTED_SELECTOR:
-      components.forEach(component => component.set('nestedClasses', [...component.get('nestedClasses'), ...selectors]))
-      break
-    default:
-      throw new Error(`Unknown type: ${type}`)
+  case SelectorType.SELECTOR:
+    components.forEach(component => component.classes.add(selectors))
+    break
+  case SelectorType.NESTED_SELECTOR:
+    components.forEach(component => component.set('nestedClasses', (component.get('nestedClasses') || []).concat(selectors)))
+    break
+  default:
+    throw new Error(`Unknown type: ${type}`)
   }
 }
 
 export function removeClasses(components: Component[], type: SelectorType, selectors: Selector[]) {
   switch (type) {
-    case SelectorType.SELECTOR:
-      components.forEach(component => component.classes.remove(selectors))
-      break
-    case SelectorType.NESTED_SELECTOR:
-      components.forEach(component => component.set('nestedClasses', component.get('nestedClasses').filter((nestedSelector: Selector) => !selectors.includes(nestedSelector))))
-      break
-    default:
-      throw new Error(`Unknown type: ${type}`)
+  case SelectorType.SELECTOR:
+    components.forEach(component => component.classes.remove(selectors))
+    break
+  case SelectorType.NESTED_SELECTOR:
+    components.forEach(component => component.set('nestedClasses', (component.get('nestedClasses') || []).filter((nestedSelector: Selector) => !selectors.includes(nestedSelector))))
+    break
+  default:
+    throw new Error(`Unknown type: ${type}`)
   }
 }
 
@@ -142,12 +142,13 @@ export function removeClasses(components: Component[], type: SelectorType, selec
  */
 function getSelectors(component: Component, type: SelectorType): Selector[] {
   switch (type) {
-    case SelectorType.SELECTOR:
-      return component.get('classes')?.models || []
-    case SelectorType.NESTED_SELECTOR:
-      return component.get('nestedClasses') || []
-    default:
-      throw new Error(`Unknown type: ${type}`)
+  case SelectorType.SELECTOR:
+    return component.classes.models
+    //return component.get('classes')?.models || []
+  case SelectorType.NESTED_SELECTOR:
+    return component.get('nestedClasses') || []
+  default:
+    throw new Error(`Unknown type: ${type}`)
   }
 }
 
@@ -183,20 +184,24 @@ function getFullName(selectors: Selector[]): string {
 }
 
 function getPseudoParam(pseudoParam: Selector | string): string {
-  return pseudoParam instanceof Selector ? pseudoParam.getFullName() : pseudoParam
+  return typeof pseudoParam === 'string' ? pseudoParam : pseudoParam.getFullName()
+}
+
+export function getSelectorString({ selectors, nestedSelectors, combinator, pseudoSelector, pseudoParam }: EditableSelector): string {
+  return `${
+    getFullName(selectors)
+  }${
+    combinator === Combinator.DESCENDANT ? combinator : ` ${combinator} `
+  }${
+    getFullName(nestedSelectors)
+  }${
+    pseudoSelector ? `:${pseudoSelector.name}${pseudoParam ? `(${getPseudoParam(pseudoParam)})` : ''}` : ''
+  }`
 }
 
 export function editSelectors(editor: Editor, { selectors, nestedSelectors, combinator, pseudoSelector, pseudoParam }: EditableSelector) {
   //const rule = editor.CssComposer.setRule(selector)
-  editor.StyleManager.select(`${
-    getFullName(selectors)
-  }${
-    combinator
-  }${
-    getFullName(nestedSelectors)
-  }${
-    pseudoSelector ? `:${pseudoSelector}${pseudoParam ? `(${getPseudoParam(pseudoParam)})` : ''}` : ''
-  }`)
+  editor.StyleManager.select(getSelectorString({ selectors, nestedSelectors, combinator, pseudoSelector, pseudoParam }))
 }
 
 export function deleteSelectors(editor: Editor, selectors: Selector[]) {

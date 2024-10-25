@@ -1,5 +1,5 @@
-import { Editor } from "grapesjs";
-import { html, TemplateResult } from "lit";
+import { Editor } from "grapesjs"
+import { html, TemplateResult } from "lit"
 
 import { getSelectors } from '../model'
 
