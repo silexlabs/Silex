@@ -1,29 +1,73 @@
-# Grapesjs Advanced Selector
+# GrapesJS Advanced Selector Manager
 
-Links
+An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short, especially in complex design environments such as Silex v3. The Advanced Selector Manager empowers designers to apply nested and pseudo-selectors, and style HTML tags directly.
 
-* [DEMO](##) (TODO: **Provide a live demo of your plugin**)
-* [Discussion about this plugin](https://github.com/GrapesJS/grapesjs/discussions/5262)
-* [Feature request in Silex project](https://github.com/silexlabs/Silex/issues/1496)
+### Key Features
+
+- **Advanced Selector Management**: Create and manage nested, pseudo, and combinator-based selectors for precise control over CSS styling.
+- **Dynamic & Conditional Styling**: Style elements loaded dynamically from headless CMSs or other sources, allowing selections like `.container img`, or `.my-text ul li`.
+- **Style HTML Tags**: Apply styles directly to HTML tags (e.g., `h2`, `nav`), with controls to add nested rules.
+- **Multi-level Selector Management**: Link parent-child selector pairs with combinators, including `>` and other relational operators.
+
+### Use Cases
+
+- Style unselectable dynamic elements at design-time, such as `.container img`.
+- Create complex styles for lists or cards using pseudo-selectors (e.g., `.list ul.cell:nth-child(odd) > li`).
+- Style rich text blocks from CMSs with selectors like `.my-text ul li`.
+- Apply and manage multiple selector pairs, including `pseudo` classes and nested elements.
+
+### Links
+
+- [DEMO](##) (TODO: **Provide a live demo**)
+- [Discussion on GrapesJS Forum](https://github.com/GrapesJS/grapesjs/discussions/5262)
+- [Feature Request in Silex Project](https://github.com/silexlabs/Silex/issues/1496)
 
 ### Roadmap
 
-Features
+#### Feature Goals
 
-* [ ] Replace the Selector Manager UI with a custom one
-* [ ] Use the Style Manager to edit the current CSS selector
+- [ ] Replace the default Selector Manager UI with a custom interface
+- [ ] Integrate with the Style Manager for editing complex CSS selectors
 
-Use cases
+#### Selector Examples
 
-* [ ] `.child` (default Selector Manager)
-* [ ] `.child:pseudo` (default Selector Manager)
-* [ ] `.parent > .child`
-* [ ] `.parent:pseudo > .child`
-* [ ] `.parent:pseudo .child`
-* [ ] `tag .child`
-* [ ] Pseudo with param, e.g. `:nth-child(2)`
+- `.child` (already possible with the default Selector Manager)
+- `.child:pseudo` (already possible with the default Selector Manager)
+- `.parent > .child`
+- `.parent:pseudo > .child`
+- `.parent:pseudo .child`
+- `tag .child`
+- Pseudo selectors with parameters, e.g., `:nth-child(2)`
+- Pseudo selectors with a selector, e.g., `:not(.child)`
 
-### HTML
+---
+
+## Installation
+
+Choose one of the following methods:
+
+### CDN
+```html
+<script src="https://unpkg.com/@silexlabs/grapesjs-advanced-selector"></script>
+```
+
+### NPM
+```bash
+npm i @silexlabs/grapesjs-advanced-selector
+```
+
+### GIT
+```bash
+git clone https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git
+```
+
+---
+
+## Usage
+
+### Basic HTML Setup
+Include the plugin with GrapesJS in your HTML:
+
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
 <script src="https://unpkg.com/grapesjs"></script>
@@ -32,10 +76,10 @@ Use cases
 <div id="gjs"></div>
 ```
 
-### JS
+### Basic JS Initialization
 ```js
 const editor = grapesjs.init({
-	container: '#gjs',
+  container: '#gjs',
   height: '100%',
   fromElement: true,
   storageManager: false,
@@ -43,121 +87,65 @@ const editor = grapesjs.init({
 });
 ```
 
-### CSS
-```css
-body, html {
-  margin: 0;
-  height: 100%;
-}
-```
+---
 
+### Options
 
-## Summary
+Customize the plugin’s behavior by passing options:
 
-* Plugin name: `@silexlabs/grapesjs-advanced-selector`
-* Components
-    * `component-id-1`
-    * `component-id-2`
-    * ...
-* Blocks
-    * `block-id-1`
-    * `block-id-2`
-    * ...
+| Option      | Description                            | Default          |
+|-------------|----------------------------------------|------------------|
+| `option1`   | Description for option1                | `default value`  |
 
+---
 
+## Advanced Usage
 
-## Options
+Use the plugin with modern JavaScript imports:
 
-| Option | Description | Default |
-|-|-|-
-| `option1` | Description option | `default value` |
-
-
-
-## Download
-
-* CDN
-  * `https://unpkg.com/@silexlabs/grapesjs-advanced-selector`
-* NPM
-  * `npm i @silexlabs/grapesjs-advanced-selector`
-* GIT
-  * `git clone https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git`
-
-
-
-## Usage
-
-Directly in the browser
-```html
-<link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
-<script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/@silexlabs/grapesjs-advanced-selector.min.js"></script>
-
-<div id="gjs"></div>
-
-<script type="text/javascript">
-  var editor = grapesjs.init({
-      container: '#gjs',
-      // ...
-      plugins: ['@silexlabs/grapesjs-advanced-selector'],
-      pluginsOpts: {
-        '@silexlabs/grapesjs-advanced-selector': { /* options */ }
-      }
-  });
-</script>
-```
-
-Modern javascript
 ```js
 import grapesjs from 'grapesjs';
 import plugin from '@silexlabs/grapesjs-advanced-selector';
 import 'grapesjs/dist/css/grapes.min.css';
 
 const editor = grapesjs.init({
-  container : '#gjs',
-  // ...
+  container: '#gjs',
   plugins: [plugin],
   pluginsOpts: {
     [plugin]: { /* options */ }
-  }
-  // or
-  plugins: [
-    editor => plugin(editor, { /* options */ }),
-  ],
+  },
 });
 ```
 
-
+---
 
 ## Development
 
-Clone the repository
+To contribute, follow these steps:
 
-```sh
-$ git clone https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git
-$ cd @silexlabs/grapesjs-advanced-selector
-```
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git
+   cd @silexlabs/grapesjs-advanced-selector
+   ```
 
-Install dependencies
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-```sh
-$ npm i
-```
+3. **Start Development Server**:
+   ```bash
+   npm start
+   ```
 
-Start the dev server
+4. **Build the Plugin**:
+   ```bash
+   npm run build
+   ```
 
-```sh
-$ npm start
-```
-
-Build the source
-
-```sh
-$ npm run build
-```
-
-
+---
 
 ## License
 
-MIT
+MIT License
