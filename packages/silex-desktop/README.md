@@ -2,6 +2,14 @@
 
 This is the official [Silex](https://www.silex.me) desktop version, an installable application for Windows, MacOS and linux.
 
+# Silex Desktop (v2)
+
+🚨 **Notice:** This repository currently contains the v2 version of Silex Desktop. It has not yet been updated to the latest v3 version of Silex. 🚨
+
+We have a feature request to upgrade Silex Desktop to v3 with improved features! If you'd like to see this happen, please support the request by voting [here on our roadmap](https://roadmap.silex.me/posts/3/silex-desktop).
+
+Your support helps prioritize this upgrade, so every vote counts. Thank you!
+
 ![Silex desktop app](https://user-images.githubusercontent.com/715377/36344714-bf264de2-141e-11e8-8c87-f698e96d91c9.png)
 
 
