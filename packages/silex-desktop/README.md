@@ -1,8 +1,6 @@
-# Silex desktop
+# Silex desktop (v2) 
 
 This is the official [Silex](https://www.silex.me) desktop version, an installable application for Windows, MacOS and linux.
-
-# Silex Desktop (v2)
 
 🚨 **Notice:** This repository currently contains the v2 version of Silex Desktop. It has not yet been updated to the latest v3 version of Silex. 🚨
 
