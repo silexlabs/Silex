@@ -2,6 +2,15 @@
 
 An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short, 
 
+Before: GrapesJs default Selector Manager
+
+![GrapesJs default Selector Manager](https://github.com/user-attachments/assets/dcd85a63-78f4-4bb9-bde3-06009b02ae68)
+
+After: GrapesJs Advanced Selector Manager
+
+-screenshot to come soon-
+
+
 ### Links
 
 - [DEMO](##) (TODO: **Provide a live demo**)
