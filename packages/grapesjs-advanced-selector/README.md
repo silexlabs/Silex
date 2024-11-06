@@ -1,20 +1,6 @@
 # GrapesJS Advanced Selector Manager
 
-An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short, especially in complex design environments such as Silex v3. The Advanced Selector Manager empowers designers to apply nested and pseudo-selectors, and style HTML tags directly.
-
-### Key Features
-
-- **Advanced Selector Management**: Create and manage nested, pseudo, and combinator-based selectors for precise control over CSS styling.
-- **Dynamic & Conditional Styling**: Style elements loaded dynamically from headless CMSs or other sources, allowing selections like `.container img`, or `.my-text ul li`.
-- **Style HTML Tags**: Apply styles directly to HTML tags (e.g., `h2`, `nav`), with controls to add nested rules.
-- **Multi-level Selector Management**: Link parent-child selector pairs with combinators, including `>` and other relational operators.
-
-### Use Cases
-
-- Style unselectable dynamic elements at design-time, such as `.container img`.
-- Create complex styles for lists or cards using pseudo-selectors (e.g., `.list ul.cell:nth-child(odd) > li`).
-- Style rich text blocks from CMSs with selectors like `.my-text ul li`.
-- Apply and manage multiple selector pairs, including `pseudo` classes and nested elements.
+An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short, 
 
 ### Links
 

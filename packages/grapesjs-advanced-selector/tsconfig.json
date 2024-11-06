@@ -29,6 +29,6 @@
     ],
     "types": ["mocha", "jest"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/model.test.js"],
   "exclude": []
 }

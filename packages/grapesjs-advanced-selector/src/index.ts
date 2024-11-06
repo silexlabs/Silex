@@ -1,6 +1,6 @@
 import { Editor } from 'grapesjs'
 import { AdvancedSelectorOptions, CustomSelectorEventProps } from './types'
-import layout from './layout'
+import layout from './components'
 
 export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => {
   const options = {

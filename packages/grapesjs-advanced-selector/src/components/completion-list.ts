@@ -1,8 +1,15 @@
+import { Selector } from 'grapesjs'
 import { html, LitElement, TemplateResult } from 'lit'
 
 /**
  * @fileoverview This component handles the completion of the selector manager, i.e the list of tags and css classes that can be added to the selected component
  */
+
+export interface CompletionSelectEvent extends CustomEvent {
+  detail: {
+    selector: Selector,
+  }
+}
 
 export class AsCompletion extends LitElement {
   //input.addEventListener('keydown', (event: KeyboardEvent) => {

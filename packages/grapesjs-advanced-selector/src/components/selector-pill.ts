@@ -16,8 +16,8 @@ import { classMap } from 'lit/directives/class-map.js'
 
 interface CustomEventDetail {
   input: HTMLElement
-  bindedBlurListener?: (event: CustomEvent) => void
-  bindedKeyDownListener?: (event: CustomEvent) => void
+  bindedBlurListener?: (event: Event) => void
+  bindedKeyDownListener?: (event: KeyboardEvent) => void
   originalEvent?: Event
 }
 
@@ -205,8 +205,8 @@ export class AsTag extends LitElement {
       const detail = {
         input: this.inputRef.value,
       } as CustomEventDetail
-      detail.bindedBlurListener = this.getBinded(this.blurListener.bind(this), detail)
-      detail.bindedKeyDownListener = this.getBinded(this.keyDownListener.bind(this), detail)
+      detail.bindedBlurListener = this.getBinded<Event>(this.blurListener.bind(this), detail)
+      detail.bindedKeyDownListener = this.getBinded<KeyboardEvent>(this.keyDownListener.bind(this), detail)
       console.log('EDITABLE', detail)
       // Start the editable mode
       detail.input.contentEditable = 'true'
@@ -227,8 +227,8 @@ export class AsTag extends LitElement {
     this.requestUpdate()
   }
 
-  getBinded(cbk: (event: CustomEvent) => void, detail: CustomEventDetail): (event: Event) => void {
-    return (event: Event) => {
+  getBinded<T extends Event>(cbk: (event: CustomEvent) => void, detail: CustomEventDetail): (event: T) => void {
+    return (event: T) => {
       const newEvent = new CustomEvent(event.type, { detail: {
         ...detail,
         originalEvent: event,

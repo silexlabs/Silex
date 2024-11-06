@@ -10,8 +10,9 @@ export default tseslint.config(
     rules: {
       'indent': ['error', 2],
       'semi': ['error', 'never'],
-      "no-unused-vars": "off",
-      "@typescript-eslint/no-unused-vars": ["error"]
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': ['error'],
+      'object-curly-spacing': ['error', 'always'] // Add this line
     }
   }
 )

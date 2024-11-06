@@ -1,48 +1,30 @@
 import { LitElement, html } from 'lit'
 import { property } from 'lit/decorators.js'
-import { createRef, ref } from "lit/directives/ref.js"
+import { createRef } from "lit/directives/ref.js"
 import { Component, Editor, Selector } from "grapesjs"
 
-import './as-tag'
+import './selector-pill'
 import './as-selector'
-import { deleteSelector, editSelector } from '../model'
+import { removeSelectorsByType, SelectorType } from '../model'
 
-export type ASClassesOptions = {
+export type SelectorsListOptions = {
   cssClassesLabel: string
 }
 
-export class ASClasses extends LitElement {
+export class SelectorsList extends LitElement {
   @property({ type: Array })
   public selected: Selector[] = []
-  @property({ type: Array })
-  public states: Selector[] = []
   @property({ type: Object })
-  public options: ASClassesOptions = { cssClassesLabel: 'CSS Classes' }
+  public options: SelectorsListOptions = { cssClassesLabel: 'CSS Classes' }
   @property({ type: Object })
   public editor: Editor | null = null
   @property({ type: Array })
   public components: Component[] = []
 
   private statesSelectRef = createRef<HTMLSelectElement>()
-  private currentState = ''
 
   override render() {
     return html`
-  <select
-    ${ref(this.statesSelectRef)}
-    @change=${(event: Event) => {
-    this.currentState = (event.target as HTMLSelectElement).value
-    this.requestUpdate()
-  }}
-  >
-    <option value="">Normal</option>
-    ${this.states.map(state => html`
-      <option
-        .value="${state.get('name')}"
-        ?selected=${state.get('name') === this.currentState}
-      >${state.get('name')}</option>
-    `)}
-  </select>
   <as-selector
     .state=${this.statesSelectRef.value?.value || ''}
     .editor=${this.editor}
@@ -55,7 +37,7 @@ export class ASClasses extends LitElement {
         .editor=${this.editor}
         .selector=${selector}
         @toggle=${() => this.toggleSelector(selector)}
-        @remove=${() => this.removeSelector(selector.getFullName())}
+        @remove=${() => removeSelectorsByType(components, selector, SelectorType.PRIMARY)}
       ></as-tag>
     `)}
   </as-selector>
@@ -83,6 +65,6 @@ export class ASClasses extends LitElement {
   }
 }
 
-if (!customElements.get('as-classes')) {
-  customElements.define('as-classes', ASClasses)
+if (!customElements.get('selectors-list')) {
+  customElements.define('selectors-list', SelectorsList)
 }
