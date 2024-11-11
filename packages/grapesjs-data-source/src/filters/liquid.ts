@@ -759,7 +759,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['search', 'replace'],
       optionsKeys: ['search', 'replace'],
-      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
           <input type="text" name="search" placeholder="Search" .value=${options.search}/>
         </label>
@@ -780,7 +780,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['search', 'replace'],
       optionsKeys: ['search', 'replace'],
-      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
           <input type="text" name="search" placeholder="Search" .value=${options.search}/>
         </label>
@@ -805,7 +805,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['search', 'replace'],
       optionsKeys: ['search', 'replace'],
-      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
           <input type="text" name="search" placeholder="Search" .value=${options.search}/>
         </label>
@@ -825,7 +825,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['search'],
       optionsKeys: ['search'],
-      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
           <input type="text" name="search" placeholder="Search" .value=${options.search}/>
         </label>
@@ -842,7 +842,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['search'],
       optionsKeys: ['search'],
-      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
           <input type="text" name="search" placeholder="Search" .value=${options.search}/>
         </label>
@@ -863,7 +863,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       },
       quotedOptions: ['search'],
       optionsKeys: ['search'],
-      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
           <input type="text" name="search" placeholder="Search" .value=${options.search}/>
         </label>
