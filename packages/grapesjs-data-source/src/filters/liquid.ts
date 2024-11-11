@@ -746,6 +746,152 @@ export default function(editor: DataSourceEditor): Filter[] {
           <input type="text" name="timeZone" placeholder="Time zone" .value=${options.timeZone || '' }/>
         </label>
       `,
+    }, {
+      type: 'filter',
+      id: 'replace',
+      label: 'replace',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str, options) => (str as string).replace(options.search as string, options.replace as string),
+      options: {
+        search: '',
+        replace: '',
+      },
+      quotedOptions: ['search', 'replace'],
+      optionsKeys: ['search', 'replace'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <label>Search
+          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        </label>
+        <label>Replace
+          <input type="text" name="replace" placeholder="Replace" .value=${options.replace}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'replace_first',
+      label: 'replace_first',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str, options) => (str as string).replace(options.search as string, options.replace as string),
+      options: {
+        search: '',
+        replace: '',
+      },
+      quotedOptions: ['search', 'replace'],
+      optionsKeys: ['search', 'replace'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <label>Search
+          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        </label>
+        <label>Replace
+          <input type="text" name="replace" placeholder="Replace" .value=${options.replace}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'replace_last',
+      label: 'replace_last',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str, options) => {
+        const index = (str as string).lastIndexOf(options.search as string)
+        if (index === -1) return str
+        return (str as string).slice(0, index) + (options.replace as string) + (str as string).slice(index + (options.search as string).length)
+      },
+      options: {
+        search: '',
+        replace: '',
+      },
+      quotedOptions: ['search', 'replace'],
+      optionsKeys: ['search', 'replace'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <label>Search
+          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        </label>
+        <label>Replace
+          <input type="text" name="replace" placeholder="Replace" .value=${options.replace}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'remove',
+      label: 'remove',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str, options) => (str as string).replace(options.search as string, ''),
+      options: {
+        search: '',
+      },
+      quotedOptions: ['search'],
+      optionsKeys: ['search'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <label>Search
+          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'remove_first',
+      label: 'remove_first',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str, options) => (str as string).replace(options.search as string, ''),
+      options: {
+        search: '',
+      },
+      quotedOptions: ['search'],
+      optionsKeys: ['search'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <label>Search
+          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'remove_last',
+      label: 'remove_last',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str, options) => {
+        const index = (str as string).lastIndexOf(options.search as string)
+        if (index === -1) return str
+        return (str as string).slice(0, index) + (str as string).slice(index + (options.search as string).length)
+      },
+      options: {
+        search: '',
+      },
+      quotedOptions: ['search'],
+      optionsKeys: ['search'],
+      optionsForm: (selected: Component, field: Field | null, options: Options, stateName: string) => html`
+        <label>Search
+          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        </label>
+      `,
+    }, {
+      type: 'filter',
+      id: 'downcase',
+      label: 'downcase',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str) => (str as string).toLowerCase(),
+      options: {},
+    }, {
+      type: 'filter',
+      id: 'upcase',
+      label: 'upcase',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str) => (str as string).toUpperCase(),
+      options: {},
+    }, {
+      type: 'filter',
+      id: 'capitalize',
+      label: 'capitalize',
+      validate: (field: Field | null) => isString(field),
+      output: type => type,
+      apply: (str) => (str as string).charAt(0).toUpperCase() + (str as string).slice(1).toLowerCase(),
+      options: {},
     },
   ]
 }
