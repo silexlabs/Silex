@@ -105,7 +105,6 @@ async function saveUserToDatabase(user, type, lang) {
 
   if (existingUser) {
     const updated = getCurrentDateForMySQL()
-    console.log('date_first_published', created);
     // Update the existing user
     const updateData = {
       Id: existingUser.Id,
@@ -132,7 +131,6 @@ async function saveUserToDatabase(user, type, lang) {
     }
   } else {
     const updated = getCurrentDateForMySQL()
-    console.log('date_first_published', updated);
     // Create a new user
     const createData = {
       email: user.email,
