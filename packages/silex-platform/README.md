@@ -14,6 +14,41 @@ This code adds features to the editor specific to our instance (in `index.js` an
 * [x] Enable or disable cloud services and hosting providers with env vars
 * [ ] Analytics: add a tag in Silex editor
 
+## Run the code
+
+### With Docker
+
+```bash
+docker run -p 8080:8080 silexlabs/silex-instances
+```
+
+Add environment variables to customize the instance - here is an example with FTP storage and FTP hosting:
+
+```bash
+docker run -p 8080:8080 -e STORAGE_CONNECTORS=ftp -e HOSTING_CONNECTORS=ftp,download silexlabs/silex-instances
+```
+
+More info:
+
+* [Env vars are described below](#environment-variables)
+* [Docker Hub](https://hub.docker.com/r/silexlabs/silex-instances)
+* [Dockerfile](Dockerfile)
+* [What is storage and hosting](https://docs.silex.me/en/dev/connect)
+
+### With Node.js
+
+```bash
+npm install
+npm start
+```
+
+Or for development:
+
+```bash
+npm install
+npm run dev
+```
+
 ## Environment variables
 
 You can set the following environment variables to customize the instance:
