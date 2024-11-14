@@ -11,6 +11,9 @@ const node_modules = require('node_modules-path')
 const onboarding = require(__dirname + '/server-plugins/onboarding.js')
 const { join } = require('path')
 
+// Load .env file
+require('dotenv').config()
+
 module.exports = async function (config) {
   await config.addPlugin(dash)
   await config.addPlugin(onboarding)

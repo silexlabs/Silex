@@ -9,6 +9,7 @@ async function hook(type, lang) {
     },
     body: JSON.stringify({
       type,
+      lang,
     })
   })
   if(response.status < 400) {

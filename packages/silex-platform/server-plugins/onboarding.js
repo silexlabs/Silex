@@ -5,7 +5,7 @@ const ONBOADRDING_STEPS = require('../onboarding.json')
 
 /**
  * @fileoverview
- * This plugin is used to store user information in brevo
+ * This plugin is used to store user information in db
  * It will start an onboarding process the first time the user logs in
  * and the first time the user publishes a website.
  */
@@ -20,12 +20,12 @@ function getOnboarding(type, oldUser, lang) {
   }
   switch(type) {
     case 'STORAGE':
-      // User already in brevo
+      // User already in db
       if(oldUser) return null
       // First time no see
       return steps.STORAGE
     case 'HOSTING':
-      // Something went wrong, no user found in brevo
+      // Something went wrong, no user found in db
       if(!oldUser?.attributes) return null
       // User already published
       if(oldUser.attributes.HAS_PUBLISHED) return null
@@ -46,79 +46,127 @@ async function getUserFromConnector(connectors, session) {
   return null
 }
 
-async function getUserFromBrevo(email) {
-  const response = await fetch(`https://api.brevo.com/v3/contacts/${email}`, {
-    headers: {
-      'accept': 'application/json',
-      'api-key': process.env.BREVO_API_KEY,
+const nocoUrl = process.env.NOCO_URL
+const nocoTableName = process.env.NOCO_TABLE
+const nocoApiKey = process.env.NOCO_API_KEY
+
+async function loadUserFromDatabase(email) {
+  try {
+    const limit = 1
+    const url = `${ nocoUrl }/api/v2/tables/${ nocoTableName }/records?where=${ encodeURI(`where=(email,eq,${ email })`) }&limit=${ limit }`
+    const response = await fetch(url, {
+      "headers": {
+        "xc-token": `${ nocoApiKey }`,
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      },
+      "method": "GET",
+    })
+
+    if (response.status < 400) {
+      const responseData = await response.json();
+      if (responseData.list && responseData.list.length > 0) {
+        return responseData.list[0]; // Return the first user if found
+      } else {
+        return null; // Return null if no user is found
+      }
+    } else {
+      const errorText = await response.text();
+      console.error('Error while fetching user from NocoDB', response.status, response.statusText, errorText);
+      throw new Error(`Error while fetching user from NocoDB: ${ response.statusText } - ${ errorText }`);
     }
-  })
-  if(response.status < 400) {
-    const responseData = await response.json()
-    return responseData
-  } else if(response.status === 404) {
-    return null
-  } else {
-    console.error('Error while fetching user from brevo', response.statusText, await response.text())
-    throw new Error('Error while fetching user from brevo: ' + response.statusText, await response.text())
+  } catch (error) {
+    console.error('Error in loadUserFromDatabase:', error);
+    throw error;
   }
+}
+
+function getCurrentDateForMySQL() {
+  const today = new Date();
+  const day = String(today.getDate()).padStart(2, '0');
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const year = today.getFullYear();
+  return `${year}-${month}-${day}`;
 }
 
 /**
  * @returns true if the user was updated, false if the user was created
  */
-async function storeUser(user, type) {
+async function saveUserToDatabase(user, type, lang) {
   const headers = {
     'accept': 'application/json',
-    'api-key': process.env.BREVO_API_KEY,
-    'content-type': 'application/json'
-  }
-  const data = {
-    updateEnabled: true,
-    email: user.email,
-    attributes: {
-      FIRSTNAME: user.name.split(' ')[0],
-      LASTNAME: user.name.split(' ')[1],
-    },
-    listIds: process.env.BREVO_LIST_ID.split(',').map(id => parseInt(id)),
-  }
-  if(type === 'HOSTING') {
-    data.attributes.HAS_PUBLISHED = true
-  }
+    'xc-token': process.env.NOCO_API_KEY,
+    'content-type': 'application/json',
+  };
 
-  const response = await fetch(process.env.BREVO_API_URL, {
-    method: 'POST',
-    headers: headers,
-    body: JSON.stringify(data)
-  })
+  // Check if the user already exists
+  const existingUser = await loadUserFromDatabase(user.email);
+  const [first_name, last_name] = user.name.split(' ');
 
-  if(response.status < 400) {
-    // If response is empty
-    if(response.status === 204) {
-      return true
+  if (existingUser) {
+    const updated = getCurrentDateForMySQL()
+    console.log('date_first_published', created);
+    // Update the existing user
+    const updateData = {
+      Id: existingUser.Id,
+      name: user.name,
+      last_name,
+      first_name,
+      updated,
+      lang,
+    };
+
+    const response = await fetch(`${process.env.NOCO_URL}/api/v2/tables/${process.env.NOCO_TABLE}/records/`, {
+      method: 'PATCH',
+      headers: headers,
+      body: JSON.stringify({
+        ...updateData,
+      }),
+    });
+
+    if (response.status < 400) {
+      return true;
     } else {
-      const responseData = await response.json()
-      return false
+      console.error('Error while updating user in NocoDB', response.statusText, await response.text());
+      throw new Error('Error while updating user in NocoDB: ' + response.statusText);
     }
   } else {
-    console.error('Error while storing user in brevo', response.statusText, await response.text())
-    throw new Error('Error while storing user in brevo: ' + response.statusText, await response.text())
+    const updated = getCurrentDateForMySQL()
+    console.log('date_first_published', updated);
+    // Create a new user
+    const createData = {
+      email: user.email,
+      name: user.name,
+      last_name,
+      first_name,
+      updated,
+      ...(type === 'HOSTING' && { date_first_published: updated }), // Conditional attribute
+      lang,
+    };
+
+    const response = await fetch(`${process.env.NOCO_URL}/api/v2/tables/${process.env.NOCO_TABLE}/records`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(createData),
+    });
+
+    if (response.status < 400) {
+      return false;
+    } else {
+      console.error('Error while creating user in NocoDB', response.statusText, await response.text());
+      throw new Error('Error while creating user in NocoDB: ' + response.statusText);
+    }
   }
 }
 
+
 module.exports = async function(config, options) {
-  console.info('> Silex brevo plugin starting', {options})
+  console.info('> Silex onboarding plugin starting', {options})
 
   // Check the environment variables
-  if(!process.env.BREVO_API_KEY) {
-    console.warn('No BREVO_API_KEY env variable => skipping brevo')
+  if(!['NOCO_URL', 'NOCO_API_KEY', 'NOCO_TABLE'].every(env => process.env[env])) {
+    console.warn('Missing NOCODB env variables => NOCODB off')
     return
-  }
-  if(!process.env.BREVO_API_URL) {
-    throw new Error('No BREVO_API_URL env variable')
-  }
-  if(!process.env.BREVO_LIST_ID) {
-    throw new Error('No BREVO_LIST_ID env variable')
   }
 
   // Serve the dashboard and the editor
@@ -126,24 +174,23 @@ module.exports = async function(config, options) {
     const editorRouter = express.Router()
     editorRouter.post(apiUrl, express.json(), async (request, response) => {
       try {
-        const lang = request.headers['accept-language']
         // Get all the connectors
         const connectors = config.getConnectors()
         // Find the first connected storage connector
         const user = await getUserFromConnector(connectors, request.session)
         if(user) {
-          // Get the user from brevo
-          const oldUser = await getUserFromBrevo(user.email)
-          // Store the user in brevo
-          await storeUser(user, request.body.type)
+          // Get the user from db
+          const oldUser = await loadUserFromDatabase(user.email)
+          // Store the user in db
+          await saveUserToDatabase(user, request.body.type, request.body.lang)
           // Return the connector info
           response.json({
             success: true,
-            onboarding: getOnboarding(request.body.type, oldUser, lang),
+            onboarding: getOnboarding(request.body.type, oldUser, request.body.lang),
           })
         }
       } catch (error) {
-        console.error('Error while storing user in brevo', error)
+        console.error('Error while storing user in db', error)
         // Ignore any error as onboarding is not critical
         response.json({success: false})
       }
