@@ -113,6 +113,7 @@ async function saveUserToDatabase(user, type, lang) {
       first_name,
       updated,
       lang,
+      ...(type === 'HOSTING' && !existingUser.date_first_published && { date_first_published: updated }), // Conditional attribute
     };
 
     const response = await fetch(`${process.env.NOCO_URL}/api/v2/tables/${process.env.NOCO_TABLE}/records/`, {
@@ -138,8 +139,8 @@ async function saveUserToDatabase(user, type, lang) {
       last_name,
       first_name,
       updated,
-      ...(type === 'HOSTING' && { date_first_published: updated }), // Conditional attribute
       lang,
+      ...(type === 'HOSTING' && { date_first_published: updated }), // Conditional attribute
     };
 
     const response = await fetch(`${process.env.NOCO_URL}/api/v2/tables/${process.env.NOCO_TABLE}/records`, {
