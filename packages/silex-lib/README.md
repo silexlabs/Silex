@@ -1,4 +1,3 @@
-[![status of silex.me instance](https://monitoshi.lexoyo.me/badge/1525963562293-6552)](https://v3.silex.me)
 
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
