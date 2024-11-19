@@ -8,6 +8,7 @@
     "url": "https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git"
   },
   "scripts": {
+    "postinstall": "$npm_execpath run build",
     "start": "grapesjs-cli serve",
     "dev": "grapesjs-cli serve & http-server -p 8081 ../../node_modules/grapesjs",
     "build": "grapesjs-cli build --patch=false",
