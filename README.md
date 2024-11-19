@@ -54,9 +54,9 @@ To contribute to Silex you need to fork this repo then clone locally this repo w
 ```
 $ git clone git@github.com:<your github handle>/silex-meta.git --recurse-submodules -j8
 $ cd silex-meta
-$ nvm install # Get the node version from .nvmrc
-$ npm install
-$ npm start
+$ nvm install # [optional] Get the node version from .nvmrc
+$ npm install # Will install dependencies in all submodules too
+$ npm start # Will run the Silex editor from packages/Silex
 ```
 
 Troubleshooting:
