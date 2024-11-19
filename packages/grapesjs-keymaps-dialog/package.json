@@ -8,6 +8,7 @@
     "url": "git+https://github.com/silexlabs/grapesjs-keymaps-dialog.git"
   },
   "scripts": {
+    "postinstall": "$npm_execpath run build",
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
     "bump": "npm version patch -m 'Bump v%s'"
