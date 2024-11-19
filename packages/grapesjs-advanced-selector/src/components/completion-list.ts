@@ -11,7 +11,7 @@ export interface CompletionSelectEvent extends CustomEvent {
   }
 }
 
-export class AsCompletion extends LitElement {
+export class CompletionList extends LitElement {
   //input.addEventListener('keydown', (event: KeyboardEvent) => {
   //  if (event.key === 'Enter') {
   //    input.contentEditable = 'false'
@@ -31,5 +31,5 @@ export class AsCompletion extends LitElement {
 }
 
 if (!customElements.get('as-completion')) {
-  customElements.define('as-completion', AsCompletion)
+  customElements.define('as-completion', CompletionList)
 }

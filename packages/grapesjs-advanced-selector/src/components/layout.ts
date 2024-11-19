@@ -1,17 +1,19 @@
-import { Editor } from "grapesjs"
+import { Component, Editor } from "grapesjs"
 import { AdvancedSelectorOptions } from "../types"
-import { addSelectorsByType, getSelectors, SelectorType, setSelectors } from "../model"
+import { addSelectorsByType, getSelectors, SelectorType } from "../model"
 import selectorsString from "./selectors-string"
 import { createRef, ref } from "lit/directives/ref"
-import { CompletionSelectEvent } from "./completion-list"
+import { CompletionList, CompletionSelectEvent } from "./completion-list"
+import { SelectorsList } from "./selectors-list"
+import { html, TemplateResult } from "lit"
 
-const primarySelectorsList = createRef()
-const completionList = createRef()
+const primarySelectorsList = createRef<SelectorsList>()
+const completionList = createRef<CompletionList>()
 
-export default function (editor: Editor, options: AdvancedSelectorOptions) {
+export default function (editor: Editor, options: AdvancedSelectorOptions): TemplateResult {
   const components = editor.getSelectedAll()
   const selector = getSelectors(components)
-  return `
+  return html`
     <selectors-list
       ${ ref(primarySelectorsList) }
       .editor=${editor}
@@ -43,8 +45,9 @@ export default function (editor: Editor, options: AdvancedSelectorOptions) {
   `
 }
 
-function change(components) {
-  const selectors = primarySelectorsList?.value.getSelectors()
+function change(components: Component[]) {
+  const selectors = primarySelectorsList?.value?.getSelectors()
+  console.log('change', { components, selectors })
   if(!selectors) return
   // const pseudoSelectors = pseudoSelectorsList.value.selected
   // const combinator = combinatorList.value.selected
