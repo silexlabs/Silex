@@ -2,6 +2,7 @@
 // This script executes a command in each submodule
 // It supports replacing `{{branch}}` with the branch name
 // In most cases you will want to use `npm run exec` instead of running this script directly
+// Or `git submodule foreach --recursive 'echo "Running command in $name"'`
 const fs = require('fs');
 const { spawnSync } = require('child_process');
 
@@ -18,7 +19,6 @@ if (!command) {
 const gitmodules = fs.readFileSync('.gitmodules', 'utf8');
 const repos = gitmodules.match(/\[submodule "(.*)"\]/g).map(repo => repo.match(/\[submodule "(.*)"\]/)[1]);
 const branches = gitmodules.match(/branch = (.*)/g).map(branch => branch.match(/branch = (.*)/)[1]);
-console.log('repos:', {repos, branches});
 
 repos.forEach((repo, index) => {
   const branch = branches[index];
