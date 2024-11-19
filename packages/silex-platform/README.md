@@ -73,6 +73,12 @@ You can set the following environment variables to customize the instance:
 | `BREVO_API_URL` | The API URL for the Brevo service (onboarding, optional) | string | - |
 | `BREVO_LIST_ID` | The list ID for the Brevo service (onboarding, optional) | string | - |
 
+
+## For Your Gitlab App 
+- see https://docs.gitlab.com/ee/integration/oauth_provider.html#create-a-user-owned-application
+- Your redirect url should be : `https://[yourdomain]/api/connector/login/callback`
+
+
 ## Support
 
 [Please use the main Silex repository](https://github.com/silexlabs/Silex/) for docs and issues
