@@ -25,8 +25,7 @@ There is no issue on this repo, please use the individual project's issues
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
 | node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
-| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` | 
- |
+| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` |  |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | A grapesjs plugin to enable auto-complete of classes in the SelectorManager UI  |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
@@ -55,11 +54,16 @@ To contribute to Silex you need to fork this repo then clone locally this repo w
 ```
 $ git clone git@github.com:<your github handle>/silex-meta.git --recurse-submodules -j8
 $ cd silex-meta
-$ git submodule update --init --recursive
-$ scripts/exec.js "git checkout {{branch}}" # checkout the default branch in all submodules
 $ nvm install # Get the node version from .nvmrc
 $ npm install
 $ npm start
+```
+
+Troubleshooting:
+```
+$ scripts/exec.js "git checkout {{branch}}" # checkout the default branch in all submodules
+$ scripts/exec.js "npm install" # install dependencies in all submodules
+$ cd packages/Silex && npm run build && cd ../.. # build the Silex editor
 ```
 
 Then you can open your browser at [http://localhost:6800](http://localhost:6800) to see the Silex editor running locally.
