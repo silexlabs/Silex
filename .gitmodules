@@ -69,15 +69,20 @@
 [submodule "packages/grapesjs-notifications"]
 	path = packages/grapesjs-notifications
 	url = git@github.com:silexlabs/grapesjs-notifications.git
+	branch = main
 [submodule "packages/grapesjs-keymaps-dialog"]
 	path = packages/grapesjs-keymaps-dialog
 	url = git@github.com:silexlabs/grapesjs-keymaps-dialog.git
+	branch = main
 [submodule "packages/grapesjs-advanced-selector"]
 	path = packages/grapesjs-advanced-selector
 	url = git@github.com:silexlabs/grapesjs-advanced-selector.git
+	branch = main
 [submodule "packages/libre-friends"]
 	path = packages/libre-friends
 	url = git@gitlab.com:silexlabs/libre-friends.git
+	branch = main
 [submodule "packages/silex-puter"]
 	path = packages/silex-puter
 	url = git@github.com:silexlabs/silex-puter.git
+	branch = main
