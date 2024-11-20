@@ -44,13 +44,13 @@ More info:
 ### With npx
 
 ```bash
-npx silexlabs/silex-platform
+npx silexlabs/silex-platform start
 ```
 
 Add environment variables to customize the instance - here is an example with FTP storage and FTP hosting:
 
 ```bash
-STORAGE_CONNECTORS=ftp HOSTING_CONNECTORS=ftp,download npx silexlabs/silex-platform
+STORAGE_CONNECTORS=ftp HOSTING_CONNECTORS=ftp,download npx silexlabs/silex-platform start
 ```
 
 More info:
