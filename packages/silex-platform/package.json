@@ -2,6 +2,7 @@
   "name": "@silexlabs/silex-platform",
   "version": "1.0.166",
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
+  "bin": "./bin/silex",
   "scripts": {
     "release": "",
     "start": "silex --server-config `pwd`/.silex.js --client-config `pwd`/client-config.js",
