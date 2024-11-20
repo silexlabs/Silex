@@ -1,10 +1,10 @@
-## Silex instances by Silex Labs
+## Silex Platform by Silex Labs
 
 This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me).
 
 This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment.
 
-It has convenient env vars and many plugins enabled by default, and it is ready to be deployed on CapRover.
+It has convenient environment variables and many plugins enabled by default, and it is ready to be deployed on CapRover.
 
 Check [the docs for how to run it with Docker, npx or nodejs](https://docs.silex.me/en/dev/run).
 
@@ -17,7 +17,7 @@ This code adds features to the editor specific to our instance (in `index.js` an
 * [x] Onboarding: Send an email with [brevo the 1st time we see a user](https://brevo.co/) + use Silex notification system to guide users through the first steps
 * [x] Enable or disable cloud services and hosting providers with env vars
 * [x] [Docker image](https://hub.docker.com/r/silexlabs/silex-platform)
-* [x] [npm package](https://www.npmjs.com/package/silexlabs/silex-platform)
+* [x] [npm package](https://www.npmjs.com/package/@silexlabs/silex-platform)
 
 ## Run the code
 
