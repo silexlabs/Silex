@@ -2,7 +2,11 @@
 
 This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me).
 
-This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment
+This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment.
+
+It has convenient env vars and many plugins enabled by default, and it is ready to be deployed on CapRover.
+
+Check [the docs for how to run it with Docker, npx or nodejs](https://docs.silex.me/en/dev/run).
 
 ## Features
 
@@ -19,23 +23,43 @@ This code adds features to the editor specific to our instance (in `index.js` an
 ### With Docker
 
 ```bash
-docker run -p 8080:8080 silexlabs/silex-instances
+docker run -p 8080:8080 silexlabs/silex-platform
 ```
 
 Add environment variables to customize the instance - here is an example with FTP storage and FTP hosting:
 
 ```bash
-docker run -p 8080:8080 -e STORAGE_CONNECTORS=ftp -e HOSTING_CONNECTORS=ftp,download silexlabs/silex-instances
+docker run -p 8080:8080 -e STORAGE_CONNECTORS=ftp -e HOSTING_CONNECTORS=ftp,download silexlabs/silex-platform
 ```
 
 More info:
 
+* [Docs](https://docs.silex.me/en/dev/run)
 * [Env vars are described below](#environment-variables)
-* [Docker Hub](https://hub.docker.com/r/silexlabs/silex-instances)
+* [Docker Hub](https://hub.docker.com/r/silexlabs/silex-platform)
 * [Dockerfile](Dockerfile)
 * [What is storage and hosting](https://docs.silex.me/en/dev/connect)
 
-### With Node.js
+### With npx
+
+```bash
+npx silexlabs/silex-platform
+```
+
+Add environment variables to customize the instance - here is an example with FTP storage and FTP hosting:
+
+```bash
+STORAGE_CONNECTORS=ftp HOSTING_CONNECTORS=ftp,download npx silexlabs/silex-platform
+```
+
+More info:
+
+* [Docs](https://docs.silex.me/en/dev/run)
+* [Env vars are described below](#environment-variables)
+
+### Contributing
+
+To run the code locally:
 
 ```bash
 npm install
@@ -75,10 +99,20 @@ You can set the following environment variables to customize the instance:
 
 
 ## For Your Gitlab App 
+
+If you want to use Gitlab as a storage provider - i.e add `gitlab` to the `STORAGE_CONNECTORS` env var - you need to create a Gitlab app:
+
+In gitlab:
+
 - see https://docs.gitlab.com/ee/integration/oauth_provider.html#create-a-user-owned-application
 - Your redirect url should be : `https://[yourdomain]/api/connector/login/callback`
+- Check only the `api` scope
 
+Then set the following env vars when you start Silex platform:
+
+- `GITLAB_CLIENT_ID` with the `Application ID`
+- `GITLAB_CLIENT_SECRET` with the `Secret`
 
 ## Support
 
-[Please use the main Silex repository](https://github.com/silexlabs/Silex/) for docs and issues
+[Please use the main Silex repository](https://github.com/silexlabs/Silex/) for issues, [documentation](https://docs.silex.me/), and [community support](https://community.silex.me/).
