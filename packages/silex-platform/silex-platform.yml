@@ -3,20 +3,17 @@ services:
     '$$cap_appname':
         image: silexlabs/silex-platform:$$cap_version
         environment:
-          SILEX_URL: https://$$cap_appname.$$cap_root_domain
-          STORAGE_CONNECTORS: $$cap_storage_connector
-          HOSTING_CONNECTORS: $$cap_hosting_connector
-          GITLAB_DOMAIN: https://gitlab.com
-          GITLAB_CLIENT_ID: $$cap_gitlab_client_id
-          GITLAB_CLIENT_SECRET: $$cap_gitlab_client_secret
-          GITLAB2_DOMAIN: $$cap_gitlab2_domain
-          GITLAB2_CLIENT_ID: $$cap_gitlab2_client_id
-          GITLAB2_CLIENT_SECRET: $$cap_gitlab2_client_secret
-          GITLAB_SCOPE: 'api read_user'
-          GITLAB_TIMEOUT: 5000
-        volumes:
-            # - '$$cap_appname-data:/srv/data'
-            # - '$$cap_appname-cfg:/srv/cfg'
+            SILEX_URL: https://$$cap_appname.$$cap_root_domain
+            STORAGE_CONNECTORS: $$cap_storage_connector
+            HOSTING_CONNECTORS: $$cap_hosting_connector
+            GITLAB_DOMAIN: https://gitlab.com
+            GITLAB_CLIENT_ID: $$cap_gitlab_client_id
+            GITLAB_CLIENT_SECRET: $$cap_gitlab_client_secret
+            GITLAB2_DOMAIN: $$cap_gitlab2_domain
+            GITLAB2_CLIENT_ID: $$cap_gitlab2_client_id
+            GITLAB2_CLIENT_SECRET: $$cap_gitlab2_client_secret
+            GITLAB_SCOPE: 'api read_user'
+            GITLAB_TIMEOUT: 5000
         caproverExtra:
             containerHttpPort: '6805'
 caproverOneClickApp:
@@ -26,11 +23,6 @@ caproverOneClickApp:
           defaultValue: 'v1.0.162'
           description: Check out their Docker page for the valid tags https://hub.docker.com/r/silexlabs/silex-platform/tags
           validRegex: "/^([^\\s^\\/])+$/"
-        - id: '$$cap_tz'
-          label: Time Zone
-          defaultValue: Europe/Paris
-          description: Get yours from https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-          validRegex: '/.{1,}/'
         - id: '$$cap_storage_connector'
           label: STORAGE_CONNECTOR
           defaultValue: 'gitlab'
@@ -43,10 +35,10 @@ caproverOneClickApp:
           validRegex: '/^((gitlab|ftp|gitlab2|download)\,?)*$/'
         - id: '$$cap_gitlab_client_id'
           label: GITLAB_CLIENT_ID
-          description: Your client-id for your gitlab app
+          description: Your client-id for your gitlab app (see https://docs.gitlab.com/ee/integration/oauth_provider.html#create-a-user-owned-application)
         - id: '$$cap_gitlab_client_secret'
           label: GITLAB_CLIENT_SECRET
-          description: Your client-secret for your gitlab app
+          description: Your client-secret for your gitlab app (see https://docs.gitlab.com/ee/integration/oauth_provider.html#create-a-user-owned-application)
         - id: '$$cap_gitlab2_domain'
           label: GITLAB2_DOMAIN
           description: Domain for your other gitlab instance (e.g. https://framagit.org)
@@ -58,8 +50,19 @@ caproverOneClickApp:
           description: Your client-secret for your other gitlab instance app
     instructions:
         start: |-
-            Silex, is a free and open source website builder in the cloud. Create websites directly in the browser without writing code. And it is suitable for professional designers to produce great websites without constraints. Silex is also known as the HTML5 editor.
+            Silex, is a free and open source website builder in the cloud.
+            Create websites directly in the browser without writing code.
+            And it is suitable for professional designers to produce great websites without constraints.
+            Silex is also known as the HTML5 editor.
+
             More details: https://silex.me/
+            For environment variables definition, see https://docs.silex.me/en/dev/options
+
+            NB: 
+            You can selfhost your gitlab instance too so that you will have a full selfhosted web builder.
+            You probably want to use a CMS like Wordpress or others, you can also selfhost it.
+            See https://docs.silex.me/en/user/cms
+
         end: |-
             silex-platform has been successfully deployed!
             Your service is available at http://$$cap_appname.$$cap_root_domain
