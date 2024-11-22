@@ -37,7 +37,7 @@ Here are the main features of Silex website builder:
 
 ### Online Version
 
-The easiest way to start using Silex is by using the online version provided by [Silex Labs foundation](https://www.silexlabs.org). Simply visit [editor.silex.me](https://editor.silex.me) and start building your website right away.
+The easiest way to start using Silex is by using the online version provided by [Silex Labs foundation](https://www.silexlabs.org). Simply visit [v3.silex.me](https://v3.silex.me) and start building your website right away.
 
 ### Desktop App (beta)
 
