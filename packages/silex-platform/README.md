@@ -1,14 +1,48 @@
 ## Silex Platform by Silex Labs
 
-This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me).
-
 This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment.
 
 It has convenient environment variables and many plugins enabled by default, and it is ready to be deployed on CapRover.
 
-Check [the docs for how to run it with Docker, npx or nodejs](https://docs.silex.me/en/dev/run).
+Check [the docs for how to run it with Docker or nodejs](https://docs.silex.me/en/dev/run).
 
-## Features
+Note: there is no npm package for this repo, it is meant to be run as a standalone instance that you can configure with env vars and config files, not a CLI tool. Use `@silexlabs/silex` for the CLI tool and use the config files of this repo to get the same result.
+
+## Why this package?
+
+This package is a good example of how to customize Silex, and it is a good starting point to create your own instance of Silex.
+
+It is also the code behind
+
+* [Silex instance hosted for free by Silex Labs foundation](https://v3.silex.me)
+* [The legacy Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me)
+* [Silex one click app on CapRover](https://github.com/caprover/one-click-apps/blob/master/public/v4/apps/silex-platform.yml)
+
+### [Main Silex repository](https://github.com/silexlabs/Silex/) VS this Silex Platform repository
+
+| Feature | Main Silex repository | Silex Platform repository |
+|---------|-----------------------|---------------------------|
+| Customizable | Yes | Yes |
+| Docker image | Yes | Yes |
+| CapRover one click app | No | Yes |
+| Automatic deployment to CapRover | No | Yes |
+| Env vars to enable or disable cloud services | No | Yes |
+| Env vars to customize the instance | Yes ([doc](https://docs.silex.me/en/dev/options)) | Yes ([doc](#environment-variables)) |
+
+Plugins enabled by default in this repo, not in the main Silex repo:
+
+| Plugin | Main Silex repository | Silex Platform repository |
+|--------|-----------------------|---------------------------|
+| Silex CMS plugin | No | Yes |
+| Dashboard plugin for multi-site edition | No | Yes |
+| Onboarding plugin (send users a welcome email) | No | Yes |
+| FTP storage | No | Yes |
+| FTP hosting | No | Yes |
+| Download hosting | No | Yes |
+| Gitlab storage | No | Yes |
+| Gitlab hosting | No | Yes |
+
+### Features
 
 This code adds features to the editor specific to our instance (in `index.js` and `index.pug`):
 
@@ -17,7 +51,6 @@ This code adds features to the editor specific to our instance (in `index.js` an
 * [x] Onboarding: Send an email with [brevo the 1st time we see a user](https://brevo.co/) + use Silex notification system to guide users through the first steps
 * [x] Enable or disable cloud services and hosting providers with env vars
 * [x] [Docker image](https://hub.docker.com/r/silexlabs/silex-platform)
-* [x] [npm package](https://www.npmjs.com/package/@silexlabs/silex-platform)
 
 ## Run the code
 
@@ -40,23 +73,6 @@ More info:
 * [Docker Hub](https://hub.docker.com/r/silexlabs/silex-platform)
 * [Dockerfile](Dockerfile)
 * [What is storage and hosting](https://docs.silex.me/en/dev/connect)
-
-### With npx
-
-```bash
-npx silexlabs/silex-platform start
-```
-
-Add environment variables to customize the instance - here is an example with FTP storage and FTP hosting:
-
-```bash
-STORAGE_CONNECTORS=ftp HOSTING_CONNECTORS=ftp,download npx silexlabs/silex-platform start
-```
-
-More info:
-
-* [Docs](https://docs.silex.me/en/dev/run)
-* [Env vars are described below](#environment-variables)
 
 ## Contributing
 
