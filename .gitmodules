@@ -85,3 +85,4 @@
 [submodule "packages/silex-platform"]
 	path = packages/silex-platform
 	url = git@github.com:silexlabs/silex-platform.git
+	branch = main
