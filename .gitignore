@@ -9,6 +9,5 @@ node_modules
 .vscode
 .git
 old
-dist/
 silex/
 .env
