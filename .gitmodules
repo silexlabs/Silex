@@ -1,6 +1,6 @@
-[submodule "packages/editor.silex.me"]
-	path = packages/editor.silex.me
-	url = git@github.com:silexlabs/editor.silex.me.git
+[submodule "packages/silex-platform"]
+	path = packages/silex-platform
+	url = git@github.com:silexlabs/silex-platform.git
 	branch = main
 [submodule "packages/grapesjs-ui-suggest-classes"]
 	path = packages/grapesjs-ui-suggest-classes
