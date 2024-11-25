@@ -37,7 +37,7 @@ import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import filterStyles from '@silexlabs/grapesjs-filter-styles'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
-import fontsDialogPlugin, { cmdOpenFonts } from '@silexlabs/grapesjs-fonts'
+import fontsDialogPlugin from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
@@ -248,7 +248,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             name: 'Fonts',
             attributes: { title: `Fonts (${titleCase(defaultKms.kmOpenFonts.keys, '+')})` },
             command: () => {
-              editor.runCommand(cmdOpenFonts)
+              editor.runCommand('open-fonts')
             },
           }, {
             id: 'settings-dialog-btn',
@@ -312,7 +312,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         enableCount: false,
         enablePerformance: false,
       },
-      [filterStyles]: {
+      [filterStyles.toString()]: {
         appendBefore: '.gjs-sm-sectors',
       },
       [internalLinksPlugin.toString()]: {
