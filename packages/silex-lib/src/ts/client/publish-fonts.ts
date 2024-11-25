@@ -16,7 +16,7 @@
  */
 
 import { ClientSideFile, ClientSideFileType, ClientSideFileWithContent } from '../types'
-import { cmdGetHtml } from '@silexlabs/grapesjs-fonts'
+import { cmdGetHtml } from '@silexlabs/grapesjs-fonts/src/commands'
 
 /**
  * @fileoverview Make sure custom script blocks include script tags when published
