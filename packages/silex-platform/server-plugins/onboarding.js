@@ -92,7 +92,7 @@ function getCurrentDateForMySQL() {
 /**
  * @returns true if the user was updated, false if the user was created
  */
-async function saveUserToDatabase(user, type, lang) {
+async function saveUserToDatabase(user, type, lang, rgpdAllowFeedback, rgpdAllowNewsletter) {
   const headers = {
     'accept': 'application/json',
     'xc-token': process.env.NOCO_API_KEY,
@@ -113,6 +113,8 @@ async function saveUserToDatabase(user, type, lang) {
       first_name,
       updated,
       lang,
+      rgpdAllowFeedback,
+      rgpdAllowNewsletter,
       ...(type === 'HOSTING' && !existingUser.date_first_published && { date_first_published: updated }), // Conditional attribute
     };
 
@@ -140,6 +142,8 @@ async function saveUserToDatabase(user, type, lang) {
       first_name,
       updated,
       lang,
+      rgpdAllowFeedback,
+      rgpdAllowNewsletter,
       ...(type === 'HOSTING' && { date_first_published: updated }), // Conditional attribute
     };
 
@@ -173,6 +177,14 @@ module.exports = async function(config, options) {
     const editorRouter = express.Router()
     editorRouter.post(apiUrl, express.json(), async (request, response) => {
       try {
+        const { rgpdAllowFeedback, rgpdAllowNewsletter } = request.body
+        console.log('Onboarding request', {rgpdAllowFeedback, rgpdAllowNewsletter})
+        // Removed this check as we need to be able to update someone who now refuses RGPD
+        // if(!rgpdAllowFeedback && !rgpdAllowNewsletter) {
+        //   console.warn('User did not accept RGPD')
+        //   return response.json({success: false})
+        // }
+
         // Get all the connectors
         const connectors = config.getConnectors()
         // Find the first connected storage connector
@@ -181,7 +193,7 @@ module.exports = async function(config, options) {
           // Get the user from db
           const oldUser = await loadUserFromDatabase(user.email)
           // Store the user in db
-          await saveUserToDatabase(user, request.body.type, request.body.lang)
+          await saveUserToDatabase(user, request.body.type, request.body.lang, rgpdAllowFeedback, rgpdAllowNewsletter)
           // Return the connector info
           response.json({
             success: true,

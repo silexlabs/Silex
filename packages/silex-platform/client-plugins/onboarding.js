@@ -1,6 +1,6 @@
 const apiUrl = '/api/onboarding'
 
-async function hook(type, lang) {
+async function hook(type, lang, rgpdAllowFeedback, rgpdAllowNewsletter) {
   const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
@@ -10,6 +10,8 @@ async function hook(type, lang) {
     body: JSON.stringify({
       type,
       lang,
+      rgpdAllowFeedback,
+      rgpdAllowNewsletter,
     })
   })
   if(response.status < 400) {
@@ -37,12 +39,29 @@ function notify(editor, onboarding) {
 
 export default async (config) => {
   // After init
+  const { rgpdAllowFeedback, rgpdAllowNewsletter } = getRgpdValues()
   config.on('silex:grapesjs:end', async ({ editor }) => {
-    notify(editor, await hook('STORAGE', config.lang))
+    notify(editor, await hook('STORAGE', config.lang, rgpdAllowFeedback, rgpdAllowNewsletter))
     editor.on('silex:publish:end', async ({success}) => {
       if(success) {
-        notify(editor, await hook('HOSTING', config.lang))
+        notify(editor, await hook('HOSTING', config.lang, rgpdAllowFeedback, rgpdAllowNewsletter))
       }
     })
   })
+}
+
+function getRgpdValues() {
+  try {
+    const rgpdAllowFeedback = localStorage.getItem('feedback') ?? 'false'
+    const rgpdAllowNewsletter = localStorage.getItem('nl') ?? 'false'
+    return {
+      rgpdAllowFeedback: rgpdAllowFeedback === 'true',
+      rgpdAllowNewsletter: rgpdAllowNewsletter === 'true',
+    }
+  } catch(e) {
+    return {
+      rgpdAllowFeedback: false,
+      rgpdAllowNewsletter: false,
+    }
+  }
 }
