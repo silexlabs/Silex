@@ -48,7 +48,7 @@ This code adds features to the editor specific to our instance (in `index.js` an
 
 * [x] Multi-site with the Dashboard plugin
 * [x] Automatic deployment to [CapRover](https://caprover.com/) (see the captain-definition file and the file `.github/workflows/caprover.yml`)
-* [x] Onboarding: Send an email with [brevo the 1st time we see a user](https://brevo.co/) + use Silex notification system to guide users through the first steps
+* [x] Onboarding: Send an email with [brevo the 1st time we see a user](https://brevo.com/) + use Silex notification system to guide users through the first steps
 * [x] Enable or disable cloud services and hosting providers with env vars
 * [x] [Docker image](https://hub.docker.com/r/silexlabs/silex-platform)
 
