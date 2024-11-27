@@ -1,3 +1,6 @@
+# File for Caprover Github repo for including silex-platform as an one-click-app https://github.com/caprover/one-click-apps
+# 
+# Don't change/use it without knowing what you are doing !
 captainVersion: 4
 services:
     '$$cap_appname':
