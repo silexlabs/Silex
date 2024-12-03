@@ -1,35 +1,10 @@
-<!DOCTYPE html>
-<html lang="en" translate="no">
-  <head>
-    <title>Silex</title>
-    <meta name="description" content="This is a public instance of Silex website builder. Build websites in the browser">
-    <link rel="shortcut icon" href="assets/favicon.png">
-    <style>
-      body {
-        background-color: #444444;
-        font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      }
-      .silex-loader {
-        display: none;
-      }
-      
-    </style>
-  </head>
-  <body class="silex-loading">
-    <div class="silex-loader silex-dialog">
-      Loading...
-      
-    </div>
-    <link rel="stylesheet" type="text/css" href="css/admin.css">
-    <main class="silex-workspace">
-      <div class="silex-main silex-dialog-hide silex-ui-full" id="gjs"></div>
-    </main>
-    <script src="js/main.js"></script>
-    <script>
-      document.write('<script src="http://' + (location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1"></' + 'script>')
-      window.silex.start({
-        debug: true,
-      })
-    </script>
-  </body>
-</html>
+<!DOCTYPE html><html lang="en" translate="no"><head><title>Silex</title><meta name="description" content="This is a public instance of Silex website builder. Build websites in the browser"><link rel="shortcut icon" href="assets/favicon.png"><style>body {
+  background-color: #444444;
+  font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.silex-loader {
+  display: none;
+}
+</style></head><body class="silex-loading"><div class="silex-loader silex-dialog">Loading...
+</div><link rel="stylesheet" type="text/css" href="css/admin.css"><main class="silex-workspace"><div class="silex-main silex-dialog-hide silex-ui-full" id="gjs"></div></main><script src="js/main.js"></script><script>silex.start()
+// From here silex.config is available and Silex is getting started</script></body></html>
