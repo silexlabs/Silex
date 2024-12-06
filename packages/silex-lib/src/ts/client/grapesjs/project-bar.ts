@@ -44,7 +44,7 @@ export const projectBarPlugin = (editor, opts) => {
     id: containerPanelId,
     visible: false,
     // resize project panel button
-        buttons: [{
+      buttons: [{
       id: 'resizeBlocks',
       className: 'viewsOptionsProjectPanel__size-btn',
       command: 'resize-ProjectPanel',
