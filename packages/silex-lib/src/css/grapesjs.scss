@@ -86,6 +86,10 @@
   width: var(--viewsPanelWidth);
 }
 
+.gjs-pn-project-bar-container {
+  width: var(--viewsProjectPanelWidth);
+}
+
 .gjs-pn-options {
   right: var(--viewsPanelWidth);
 }

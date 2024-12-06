@@ -43,6 +43,22 @@ export const projectBarPlugin = (editor, opts) => {
   const containerPanel = editor.Panels.addPanel({
     id: containerPanelId,
     visible: false,
+    // resize project panel button
+        buttons: [{
+      id: 'resizeBlocks',
+      className: 'viewsOptionsProjectPanel__size-btn',
+      command: 'resize-ProjectPanel',
+      attributes: { title: 'Resize Project Panel' },
+    }],
+  })
+  // resize project panel command
+  editor.Commands.add('resize-ProjectPanel', {
+    run: (editor, sender) => {
+      document.documentElement.style.setProperty('--viewsProjectPanelWidth', '26%')
+    },
+    stop: (editor, sender) => {
+      document.documentElement.style.setProperty('--viewsProjectPanelWidth', '13%')
+    },
   })
   // create the project bar panel in grapesjs
   editor.Panels.addPanel({
