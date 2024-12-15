@@ -19,13 +19,14 @@ There is no issue on this repo, please use the individual project's issues
 | Name | Directory | Repo | Description |
 | ---- | --------- | ---- | ----------- |
 | Silex | `packages/Silex` | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
-| Silex Puter Plugin | `packages/silex-puter` | `git@github.com:silexlabs/silex-puter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
+| Silex Puter Plugin | `packages/silex-puter` | `git@github.com:silexlabs/silex-puter.git` | The **Silex Puter Plugin** brings Silex’s professional website-building capabilities to the Puter environment, letting users create, save, and publish static websites directly in Puter. This plugin enables seamless integration, making it easier than ever to use Silex within Puter for web design and content management. |
 | Silex plugins | `packages/silex-plugins` | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
 | Silex Plugin Starter | `packages/silex-plugin-starter` | `git@github.com:silexlabs/silex-plugin-starter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
+| Silex Platform by Silex Labs | `packages/silex-platform` | `git@github.com:silexlabs/silex-platform.git` | This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment. |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
 | node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
-| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` |  |
+| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` | |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | A grapesjs plugin to enable auto-complete of classes in the SelectorManager UI  |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
@@ -36,10 +37,9 @@ There is no issue on this repo, please use the individual project's issues
 | Grapesjs Filter Styles | `packages/grapesjs-filter-styles` | `git@github.com:silexlabs/grapesjs-filter-styles.git` | This plugin adds a search bar in the Style manager so that users can search for a CSS style |
 | Grapesjs Directus Storage | `packages/grapesjs-directus-storage` | `git@github.com:silexlabs/grapesjs-directus-storage.git` | Directus as a backend for GrapesJS |
 | GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
-| Grapesjs Advanced Selector | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | Links |
+| GrapesJS Advanced Selector Manager | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short,  |
 | Expression Input web component | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A web component to include in your JS/TS projects. Your users can create an expression which is a ordoned list of tokens. It feels like auto completion without typing text. The token can have options too. |
 | eleventy-plugin-concat | `packages/eleventy-plugin-concat` | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
-| Silex instances by Silex Labs | `packages/silex-platform` | `git@github.com:silexlabs/silex-platform.git` | This repo holds the code for the [public Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me) and [The v3 instance too](https://v3.silex.me). |
 
 
 > Auto generated submodules
@@ -103,21 +103,35 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-github.com/AlDanial/cloc v 2.00  T=1.00 s (295.0 files/s, 97205.0 lines/s)
+     100 files
+     200 files
+     300 files
+     400 files
+     500 files
+     600 files
+     650 text files.
+classified 296 files
+Duplicate file check 296 files (279 known unique)
+Unique:      100 files                                          
+Unique:      200 files                                          
+     292 unique files.                              
+Counting:  100
+Counting:  200
+     444 files ignored.
+
+github.com/AlDanial/cloc v 1.96  T=0.50 s (584.0 files/s, 383222.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     113            977           2337          63534
-TypeScript                     168           1965           5943          21273
-GraphQL                          3             63              6            667
-JSX                              1              0              2            256
-Dockerfile                       4             14              9             78
-Text                             2              7              0             39
-INI                              2              4              0             21
+JavaScript                     107           8670          20554         130738
+TypeScript                     175           2046           6038          22383
+GraphQL                          3             66              6            687
+JSX                              1              0              2            266
+Dockerfile                       3             12              9             73
+Text                             2              8              0             44
 liquid                           1              0              0              9
-Bourne Shell                     1              0              0              1
 -------------------------------------------------------------------------------
-SUM:                           295           3030           8297          85878
+SUM:                           292          10802          26609         154200
 -------------------------------------------------------------------------------
 
 ```
