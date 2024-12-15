@@ -14,10 +14,10 @@
   "author": "lexoyo",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@silexlabs/silex": "^3.0.0-alpha.181",
-    "@silexlabs/silex-cms": "^0.0.162",
-    "@silexlabs/silex-dashboard": "^1.0.79",
-    "dotenv": "^16.4.5"
+    "@silexlabs/silex": "^3.0.0-alpha.182",
+    "@silexlabs/silex-cms": "^0.0.163",
+    "@silexlabs/silex-dashboard": "^1.0.80",
+    "dotenv": "^16.4.7"
   },
   "repository": {
     "type": "git",
