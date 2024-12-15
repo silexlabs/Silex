@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
     "target": "es6",
     "lib": [
       "dom",
@@ -23,19 +25,25 @@
     "experimentalDecorators": true,
   },
   "buildOptions": {
+    "rootDir": "./src",
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]
     }
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src/**/*.ts"],
+  //"exclude": ["node_modules", "dist", "**/*.test.ts"]
   "exclude": [
     "./node_modules/**/*",
     "./dist/**/*",
     "./old/**/*",
-    "./__mocks__/**/*"
+    "./__mocks__/**/*",
+    "node_modules",
+    "dist",
+    "old",
+    "__mocks__",
+    "**/*.test.ts"
   ]
+
 }
