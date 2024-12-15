@@ -287,7 +287,7 @@ export class CustomStatesEditor extends LitElement {
     return state.expression.map(token => {
       try {
         return fromStored(token, dataTree, component.getId())
-      } catch (e) {
+      } catch {
         // FIXME: notify user
         console.error('Error while getting expression result type in getTokens', {expression: state.expression, component, dataTree, name})
         return {

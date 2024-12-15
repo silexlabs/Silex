@@ -74,7 +74,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
         return filter.output(prev, filter.options ?? {})
       }
       return null
-    } catch (e) {
+    } catch {
       // FIXME: notify user
       console.error('Error while getting filter result type', {token, prev, component, dataTree})
       return null
@@ -83,7 +83,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
   case 'property':
     try {
       return propertyToField(token, dataTree, component.getId())
-    } catch (e) {
+    } catch {
       // FIXME: notify user
       console.error('Error while getting property result type', {token, component, dataTree})
       return null
@@ -107,7 +107,7 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
         ...field,
         kind: token.forceKind ?? field.kind,
       } : null
-    } catch (e) {
+    } catch {
       // FIXME: notify user
       console.error('Error while getting expression result type in tokenToField', {expression, parent, dataTree, component, token, prev})
       return null
@@ -164,7 +164,7 @@ export function expressionToFields(expression: Expression, component: Component,
       }
       prev = field
       return field
-    } catch (e) {
+    } catch {
       // FIXME: notify user
       console.error('Error while getting expression result type in expressionToFields', {expression, component, dataTree, token, prev})
       return unknownField
@@ -248,7 +248,7 @@ function isJson(str: string) {
   if(str.length === 0) return false
   try {
     JSON.parse(str)
-  } catch (e) {
+  } catch {
     return false
   }
   return true

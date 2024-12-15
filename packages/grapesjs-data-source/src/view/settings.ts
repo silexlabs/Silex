@@ -474,7 +474,7 @@ class SettingsHeaders extends LitElement {
                 @change=${(e: Event) => {
     const target = e.target as HTMLInputElement
     if(!target.value) return
-    typeof this.headers[name] !== 'undefined' && delete this.headers[name]
+    if (typeof this.headers[name] !== 'undefined') delete this.headers[name]
     this.headers[target.value] = value
     this.dispatchEvent(new CustomEvent('change'))
   }}
@@ -498,7 +498,7 @@ class SettingsHeaders extends LitElement {
                 type="button"
                 class="ds-btn-prim"
                 @click=${() => {
-    typeof this.headers[name] !== 'undefined' && delete this.headers[name]
+    if (typeof this.headers[name] !== 'undefined') delete this.headers[name]
     this.dispatchEvent(new CustomEvent('change'))
   }}
                 .disabled=${this.readonly}

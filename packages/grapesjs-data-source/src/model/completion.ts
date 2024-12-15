@@ -72,7 +72,7 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
           } else {
             console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
           }
-        } catch (e) {
+        } catch {
           console.error('Error while getting loop data for component', parent, 'and state', loopDataState)
         }
       }
