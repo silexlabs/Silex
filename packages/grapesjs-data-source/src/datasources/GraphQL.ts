@@ -73,12 +73,14 @@ export interface GQLType {
  * This is a Backbone model used in the DataSourceManager collection
  */
 export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
+  id: string
   protected types: Type[] = []
   protected queryables: Field[] = []
   protected queryType: string = ''
   protected ready = false
   constructor(options: GraphQLOptions) {
     super(options)
+    this.id = options.id.toString()
     this.set('id', options.id)
     this.set('label', options.label)
     this.set('url', options.url)

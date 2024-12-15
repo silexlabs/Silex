@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "types": ["jest", "node"],
     "outDir": "./dist",
     "rootDir": "./src",
     "target": "es6",
@@ -33,8 +34,8 @@
     }
   },
   "include": ["src/**/*.ts"],
-  //"exclude": ["node_modules", "dist", "**/*.test.ts"]
   "exclude": [
+    "node_modules/@types/mocha",
     "./node_modules/**/*",
     "./dist/**/*",
     "./old/**/*",
@@ -45,5 +46,4 @@
     "__mocks__",
     "**/*.test.ts"
   ]
-
 }
