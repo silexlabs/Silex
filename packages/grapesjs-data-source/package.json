@@ -52,7 +52,7 @@
   "license": "AGPL-3.0-or-later",
   "dependencies": {
     "@apollo/client": "^3.12.3",
-    "@silexlabs/expression-input": "^0.0.24",
+    "@silexlabs/expression-input": "^0.0.25",
     "backbone": "^1.6.0",
     "dedent-js": "^1.0.1",
     "lit": "^3.2.1"
