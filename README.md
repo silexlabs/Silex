@@ -83,6 +83,8 @@ Useful commands
 * Start Silex: `npm start` (or use `npm run start:debug`)
 * Release a package (which is in packages/$PACKAGE_NAME) and bump version of a library and all its dependents: `scripts/release-version packages/$PACKAGE_NAME $VERSION`, then you probably want to `git push --follow-tags` the changed packages
 * Add a project: `git submodules add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`, then run `npm run doc`
+* Update `package-lock.json` for a particular package: `npm i --package-lock-only --workspaces false` in the package directory
+* Publish a new version of a package: `npm version --patch && git push --follow-tags` in the package directory
 
 ## Third party dependencies
 
