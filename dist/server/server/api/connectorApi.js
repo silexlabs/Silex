@@ -196,7 +196,7 @@ function getEndAuthHtml(message, error, connectorId, connectorType, options) {
         connectorType,
         options,
     };
-    const status = error ? "Error" : "Success";
+    const status = error ? 'Error' : 'Success';
     return `
     <!DOCTYPE html><html lang="en">
       <head>
