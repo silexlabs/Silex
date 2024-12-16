@@ -4320,7 +4320,7 @@ form.silex-form .silex-form__group.col2 {
 }
 
 .silex-squeeze-left .gjs-cv-canvas {
-  left: calc(13% + 35px);
+  left: calc(var(--viewsProjectPanelWidth) + 35px);
   width: auto;
   right: var(--viewsPanelWidth);
 }

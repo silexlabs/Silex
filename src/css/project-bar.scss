@@ -6,7 +6,7 @@
 //  width: auto;
 //}
 .silex-squeeze-left .gjs-cv-canvas {
-  left: calc(--viewsProjectPanelWidth + 35px);
+  left: calc(var(--viewsProjectPanelWidth) + 35px);
   width: auto;
   right: var(--viewsPanelWidth);
 }
