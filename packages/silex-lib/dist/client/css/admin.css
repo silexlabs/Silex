@@ -317,6 +317,7 @@ template {
   --darkerPrimaryColor: #292929;
   --lighterPrimaryColor: #575757;
   --viewsPanelWidth: 25%;
+  --viewsProjectPanelWidth: 13%;
 }
 
 /* stylelint-disable */
@@ -3962,6 +3963,12 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
   font-size: 18px;
   font-weight: normal;
 }
+.silex-workspace select, .silex-workspace input {
+  background-color: #292929;
+}
+.silex-workspace .gjs-color-warn, .silex-workspace .gjs-sm-sector .gjs-sm-field input, .silex-workspace .gjs-clm-tags .gjs-sm-field input, .silex-workspace .gjs-sm-sector .gjs-clm-field input, .silex-workspace .gjs-clm-tags .gjs-clm-field input, .silex-workspace .gjs-sm-sector .gjs-sm-field select, .silex-workspace .gjs-clm-tags .gjs-sm-field select, .silex-workspace .gjs-sm-sector .gjs-clm-field select, .silex-workspace .gjs-clm-tags .gjs-clm-field select {
+  color: #ddd;
+}
 
 .full-width {
   width: 100%;
@@ -4349,6 +4356,20 @@ form.silex-form .silex-form__group.col2 {
   background-position: center center;
   background-color: transparent;
   background-size: contain;
+}
+
+.viewsOptionsProjectPanel__size-btn::before {
+  content: "→";
+}
+
+.viewsOptionsProjectPanel__size-btn {
+  z-index: 5;
+  right: auto;
+  left: 0;
+}
+
+.gjs-block {
+  width: 84px;
 }
 
 .gjs-pn-project-bar-container {
@@ -4870,6 +4891,10 @@ form.silex-form .silex-form__group.col2 {
   width: var(--viewsPanelWidth);
 }
 
+.gjs-pn-project-bar-container {
+  width: var(--viewsProjectPanelWidth);
+}
+
 .gjs-pn-options {
   right: var(--viewsPanelWidth);
 }
@@ -5046,5 +5071,3 @@ form.silex-form .silex-form__group.col2 {
   background-position: center;
   background-repeat: no-repeat;
 }
-
-/*# sourceMappingURL=admin.css.map */
