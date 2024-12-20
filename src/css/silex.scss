@@ -93,10 +93,11 @@
       font-size: x-small;
     }
   }
-  .CodeMirror {
-    //min-height: 400px;
-    height: 320px;
-  }
+}
+
+.CodeMirror {
+  min-height: 320px;
+  height: auto;
 }
 
 button.silex-button,
