@@ -66,7 +66,7 @@
   height: 100vh;
   overflow: auto;
   form.silex-form {
-    //padding-bottom: 100px; // leave space for fixed footer
+    padding-bottom: 100px; // leave space for fixed footer
     textarea {
       min-height: 250px;
     }
@@ -78,7 +78,8 @@
     width: 98%;
   }
   footer {
-    //position: fixed;
+    position: fixed;
+    z-index: 10;
     bottom: 0;
     left: 0;
     width: 100%;

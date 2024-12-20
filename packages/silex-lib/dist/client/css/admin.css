@@ -3999,6 +3999,9 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
   height: 100vh;
   overflow: auto;
 }
+.settings-dialog > div form.silex-form {
+  padding-bottom: 100px;
+}
 .settings-dialog > div form.silex-form textarea {
   min-height: 250px;
 }
@@ -4009,6 +4012,8 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
   width: 98%;
 }
 .settings-dialog > div footer {
+  position: fixed;
+  z-index: 10;
   bottom: 0;
   left: 0;
   width: 100%;
