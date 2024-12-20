@@ -4023,8 +4023,10 @@ See http://bgrins.github.io/spectrum/themes/ for instructions.
   padding: 0 15px;
   font-size: x-small;
 }
-.settings-dialog > div .CodeMirror {
-  height: 320px;
+
+.CodeMirror {
+  min-height: 320px;
+  height: auto;
 }
 
 button.silex-button,
