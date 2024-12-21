@@ -43,22 +43,6 @@ export const projectBarPlugin = (editor, opts) => {
   const containerPanel = editor.Panels.addPanel({
     id: containerPanelId,
     visible: false,
-    // resize project panel button
-    buttons: [{
-      id: 'resizeBlocks',
-      className: 'viewsOptionsProjectPanel__size-btn',
-      command: 'resize-ProjectPanel',
-      attributes: { title: 'Resize Project Panel' },
-    }],
-  })
-  // resize project panel command
-  editor.Commands.add('resize-ProjectPanel', {
-    run: (editor, sender) => {
-      document.documentElement.style.setProperty('--viewsProjectPanelWidth', '26%')
-    },
-    stop: (editor, sender) => {
-      document.documentElement.style.setProperty('--viewsProjectPanelWidth', '13%')
-    },
   })
   // create the project bar panel in grapesjs
   editor.Panels.addPanel({
@@ -97,18 +81,26 @@ export function addButton(editor: Editor, panel: PanelObject) {
     el.classList.add('project-bar__panel', panel.attributes.containerClassName, 'gjs-hidden')
     // add header
     const title = panel.name ?? panel.attributes.title
+    let toggle=true
     if(title) {
       render(html`
         <header class="project-bar__panel-header">
           <h3 class="project-bar__panel-header-title">${ title }</h3>
           ${ panel.buttons?.map(button => {
     return html`
-              <div
-                class="project-bar__panel-header-button ${ button.className }"
-                @click=${e => editor.runCommand(button.command)}
-              ><span>${ button.text }</span></div>
-            `
-  }) }
+          <div
+            class="project-bar__panel-header-button"
+            @click=${function(e) {
+    if (button.command === 'resize-project-panel') {
+      toggle? editor.runCommand(button.command) : editor.stopCommand(button.command)
+      toggle = !toggle
+    } else {
+      editor.runCommand(button.command)
+    }
+  }}
+          ><span class="gjs-proj-pn-btn">${ button.text }</span></div>
+        `
+  })}
         </header>
       `, el)
     }

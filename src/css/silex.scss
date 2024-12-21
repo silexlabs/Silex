@@ -49,6 +49,13 @@
     }
 }
 
+.gjs-proj-pn-btn {
+  border-radius: 0 !important;
+  min-width: 30px;
+  background-color: transparent !important;
+  font-size: 18px;
+}
+
 .silex-hidden {
   /* do not really hide, because it breaks the code editor init in the site settings + for animation */
   visibility: hidden;

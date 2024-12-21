@@ -39,6 +39,7 @@ import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin from '@silexlabs/grapesjs-fonts'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
+import resizeProjectPanelPlugin, { cmdResizeProjectPanel } from './resize-project-panel'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
@@ -99,6 +100,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
   {name: 'grapesjs-style-border', value: borderPugin},
   {name: './resize-panel', value: resizePanelPlugin},
+  {name: './resize-project-panel', value: resizeProjectPanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
   {name: 'grapesjs-navbar', value:navbarPlugin}
@@ -211,6 +213,12 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             name: 'Blocks',
             attributes: { title: `Blocks (${titleCase(defaultKms.kmBlocks.keys, '+')})`, containerClassName: 'block-manager-container', },
             command: cmdToggleBlocks,
+            buttons: [{
+              id: 'resize-blocks-panel',
+              className: 'gjs-pn-size-btn',
+              command: cmdResizeProjectPanel,
+              text: '\u2192',
+            },]
           }, {
             id: 'symbols-btn',
             className: 'symbols-btn fa-regular fa-gem',
@@ -224,6 +232,12 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
                 command: cmdPromptAddSymbol,
                 text: '\u271A',
               },
+              {
+                id: 'resize-symbols-panel',
+                className: 'gjs-pn-size-btn',
+                command: cmdResizeProjectPanel,
+                text: '\u2192',
+              },
             ],
           }, {
             id: 'page-panel-btn',
@@ -231,17 +245,31 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             name: 'Pages',
             attributes: { title: `Pages (${titleCase(defaultKms.kmPages.keys, '+')})`, containerClassName: 'page-panel-container', },
             command: cmdTogglePages,
-            buttons: [{
-              className: 'gjs-pn-btn',
-              command: cmdAddPage,
-              text: '\u271A',
-            }],
+            buttons: [
+              {
+                className: 'gjs-pn-btn',
+                command: cmdAddPage,
+                text: '\u271A',
+              },
+              {
+                id: 'resize-page-panel',
+                className: 'gjs-pn-size-btn',
+                command: cmdResizeProjectPanel,
+                text: '\u2192',
+              },
+            ],
           }, {
             id: 'layer-manager-btn',
             className: 'layer-manager-btn fa-solid fa-layer-group',
             name: 'Layers',
             attributes: { title: `Layers (${titleCase(defaultKms.kmLayers.keys, '+')})`, containerClassName: 'layer-manager-container', },
             command: cmdToggleLayers,
+            buttons: [{
+              id: 'resize-layer-panel',
+              className: 'gjs-pn-size-btn',
+              command: cmdResizeProjectPanel,
+              text: '\u2192',
+            },]
           }, {
             id: 'font-dialog-btn',
             className: 'font-manager-btn fa-solid fa-font',

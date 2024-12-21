@@ -46,15 +46,6 @@
   }
 }
 
-// Resize options project panel button
-.viewsOptionsProjectPanel__size-btn::before {
-  content: '→';
-}
-.viewsOptionsProjectPanel__size-btn {
-  z-index: $z-views-options-buttons;
-  right: auto;
-  left: 0;
-}
 // For fixed block size after project panel resizing (instead of default value 45%)
 .gjs-block {
   width: 84px;
