@@ -101,6 +101,7 @@ const plugins = [
   {name: 'grapesjs-style-border', value: borderPugin},
   {name: './resize-panel', value: resizePanelPlugin},
   {name: './resize-project-panel', value: resizeProjectPanelPlugin},
+  {name: './resize-project-panel', value: resizeProjectPanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
   {name: 'grapesjs-navbar', value:navbarPlugin}
