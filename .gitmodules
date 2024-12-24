@@ -74,10 +74,6 @@
 	path = packages/grapesjs-advanced-selector
 	url = git@github.com:silexlabs/grapesjs-advanced-selector.git
 	branch = main
-[submodule "packages/libre-friends"]
-	path = packages/libre-friends
-	url = git@gitlab.com:silexlabs/libre-friends.git
-	branch = main
 [submodule "packages/silex-puter"]
 	path = packages/silex-puter
 	url = git@github.com:silexlabs/silex-puter.git
