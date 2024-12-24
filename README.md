@@ -26,7 +26,6 @@ There is no issue on this repo, please use the individual project's issues
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
 | node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
-| Libre Friends | `packages/libre-friends` | `git@gitlab.com:silexlabs/libre-friends.git` | |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | A grapesjs plugin to enable auto-complete of classes in the SelectorManager UI  |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
@@ -105,35 +104,23 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files
-     200 files
-     300 files
-     400 files
-     500 files
-     600 files
-     650 text files.
-classified 296 files
-Duplicate file check 296 files (279 known unique)
-Unique:      100 files                                          
-Unique:      200 files                                          
-     292 unique files.                              
-Counting:  100
-Counting:  200
-     444 files ignored.
+     100 files     200 files     300 files     400 files     500 files     600 files     646 text files.
+classified 296 filesDuplicate file check 296 files (279 known unique)Unique:      100 files                                          Unique:      200 files                                               292 unique files.                              
+Counting:  100Counting:  200     429 files ignored.
 
-github.com/AlDanial/cloc v 1.96  T=0.50 s (584.0 files/s, 383222.0 lines/s)
+github.com/AlDanial/cloc v 1.96  T=0.50 s (584.0 files/s, 197528.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     107           8670          20554         130738
-TypeScript                     175           2046           6038          22383
-GraphQL                          3             66              6            687
+JavaScript                     107            999           2384          63595
+TypeScript                     175           2057           6043          22495
+GraphQL                          3             66              6            696
 JSX                              1              0              2            266
 Dockerfile                       3             12              9             73
 Text                             2              8              0             44
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           292          10802          26609         154200
+SUM:                           292           3142           8444          87178
 -------------------------------------------------------------------------------
 
 ```
