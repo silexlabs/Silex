@@ -59,24 +59,26 @@ $ npm install # Will install dependencies in all submodules too
 $ npm start # Will run the Silex editor from packages/Silex
 ```
 
-Troubleshooting:
-```
-$ scripts/exec.js "git checkout {{branch}}" # checkout the default branch in all submodules
-$ scripts/exec.js "npm install" # install dependencies in all submodules
-$ cd packages/Silex && npm run build && cd ../.. # build the Silex editor
-```
-
 Then you can open your browser at [http://localhost:6800](http://localhost:6800) to see the Silex editor running locally.
 
 When you are ready to contribute to a specific library or libraries, you can do the following:
 
 * On github, fork the libraries you intend to contribute to, e.g. `silex-desktop`
 * In your local clone of this meta repo, update submodule URLs to point to your own forks of each library, e.g:
-```sh
-$ cd packages/silex-desktop
-$ git remote set-url origin git@github.com:<your-username>/silex-desktop.git'
-```
+  ```sh
+  $ cd packages/silex-desktop
+  $ git remote set-url origin git@github.com:<your-username>/silex-desktop.git'
+  ```
 * Sync Changes: Once your contributions are merged into the main library repositories, they will automatically sync with the meta repository when submodules are updated.
+
+Troubleshooting:
+
+If you find your repositories in a strange state, e.g repositories are on commits instead of the main branch, or if your `npm install` fails... You can do this:
+```
+$ scripts/exec.js "git checkout {{branch}}" # checkout the default branch in all submodules
+$ scripts/exec.js "npm install" # install dependencies in all submodules
+$ cd packages/Silex && npm run build && cd ../.. # build the Silex editor
+```
 
 Useful commands
 
