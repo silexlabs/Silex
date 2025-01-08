@@ -49,6 +49,10 @@
     }
 }
 
+.gjs-cv-canvas__frames {
+  height: 93%;
+}
+
 .silex-hidden {
   /* do not really hide, because it breaks the code editor init in the site settings + for animation */
   visibility: hidden;
