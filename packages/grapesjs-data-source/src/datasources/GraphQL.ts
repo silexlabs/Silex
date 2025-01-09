@@ -328,27 +328,38 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * Call the GraphQL endpoint
    */
   protected async call(query: string): Promise<unknown> {
+    // Retrieve the URL for the GraphQL endpoint
     const url = this.get('url')
-    if (!url) return this.triggerError('Missing GraphQL URL')
+    if (!url) return this.triggerError('Missing GraphQL URL') // Ensure the URL is provided
+
+    // Retrieve the headers for the GraphQL request
     const headers = this.get('headers')
-    if(!headers) return this.triggerError('Missing GraphQL headers')
+    if (!headers) return this.triggerError('Missing GraphQL headers') // Ensure headers are provided
+
+    // Ensure the Content-Type header is set to 'application/json', normalizing the case
+    const key = Object.keys(headers).find(name => name.toLowerCase() === 'content-type')
+    headers[key || 'Content-Type'] = headers[key || 'Content-Type'] || 'application/json'
+
+    // Retrieve the HTTP method (defaulting to 'POST' for GraphQL queries)
     const method = this.get('method') ?? 'POST'
-    // GraphQL Introspcetion
+
+    // Make the HTTP request to the GraphQL endpoint
     const response = await fetch(url, {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-      // Body when POST
+      headers,
+      // Include a body only for POST requests
       ...(method === 'POST' ? {
         body: JSON.stringify({ query }),
       } : {}),
     })
+
+    // Handle non-OK responses with detailed error logging
     if (!response?.ok) {
       console.error('GraphQL call failed', response?.status, response?.statusText, query)
       return this.triggerError(`GraphQL call failed with \`${response?.statusText}\` and status ${response?.status}`)
     }
+
+    // Return the parsed JSON response
     return response.json()
   }
 
