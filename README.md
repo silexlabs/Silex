@@ -16,7 +16,7 @@ Useful links
 * [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
 * [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)
 * [Forums in Github discussions](https://community.silex.me)
-* [Silex meta package with more source code](https://github.com/silexlabs/silex-meta)
+* [Silex meta package with more source code](https://github.com/silexlabs/Silex)
 
 Here are the main features of Silex website builder:
 
@@ -136,9 +136,21 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files     200 files     300 files     400 files     500 files     600 files     644 text files.
-classified 296 filesDuplicate file check 296 files (279 known unique)Unique:      100 files                                          Unique:      200 files                                               292 unique files.                              
-Counting:  100Counting:  200     427 files ignored.
+     100 files
+     200 files
+     300 files
+     400 files
+     500 files
+     600 files
+     644 text files.
+classified 296 files
+Duplicate file check 296 files (279 known unique)
+Unique:      100 files                                          
+Unique:      200 files                                          
+     292 unique files.                              
+Counting:  100
+Counting:  200
+     427 files ignored.
 
 github.com/AlDanial/cloc v 1.96  T=1.00 s (292.0 files/s, 191776.0 lines/s)
 -------------------------------------------------------------------------------
