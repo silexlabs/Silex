@@ -1,12 +1,44 @@
 ## Silex meta repo
 
-This is a meta repository for Silex website builder
+Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project.
 
-It includes all projects needed for Silex development as git submodules. This is the repo you need to contribute to Silex as many of the projects are dependencies of each other, so we can iterate in all at the same time and benefit from using [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) or [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces).
+Silex lets you create websites without coding, but it also has built-in editors for HTML, CSS, and JavaScript for when you need more control. It is used by freelancers and web studios to make real websites for real clients. Also Silex can generate templates or be integrated in a nodejs project, it has a plugin system and can integrate with headleass CMS and static site generators, it is part of the JSAMStack ecosystem since the v3.
 
-To execute a command in every package, use `scripts/exec.js ls` or `npm run exec -- ls`
+![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
-There is no issue on this repo, please use the individual project's issues
+Brought to you by [Alex Hoyau](https://lexoyo.me) and [Silex contributors](https://github.com/silexlabs/Silex/graphs/contributors).
+
+Silex is free/libre software, users are expected to help make Silex sustainable by being [part of the community](https://community.silex.me/), [contributing documentation](https://docs.silex.me/), [making a financial contribution](https://opencollective.com/silex), [report bugs](https://github.com/silexlabs/Silex/issues).
+
+Useful links
+
+* [Official website](https://www.silex.me/)
+* [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
+* [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)
+* [Forums in Github discussions](https://community.silex.me)
+* [Silex meta package with more source code](https://github.com/silexlabs/silex-meta)
+
+Here are the main features of Silex website builder:
+
+* Free and Open Source, open to contributions
+* Visual Editor: Silex offers a visual editor that allows users to create websites without needing to write code. It supports drag-and-drop functionality for easy website creation.
+* Online CSS Editor: Alongside the visual editor, Silex also provides an online CSS editor for more advanced customization.
+* Static HTML Websites: Silex is designed to create static HTML websites, which are fast, secure, and easy to host.
+* SEO Features: Silex includes SEO features to help improve the visibility of websites on search engines.
+* Editor UI: Silex offers features like fonts, visual CSS editor, publication...
+* Self-hosting Option: Users can choose to host Silex website builder on their own server, using docker, nodejs or helpers for [Caprover](https://caprover.com/), [Yunohost](https://yunohost.org/), [Elest.io](https://elest.io/)
+* Community Support: Being an open-source project, Silex has a community of developers who contribute to its development and provide support.
+* Silex v3 > Silex is based on [GrapesJs](https://grapesjs.com/)
+* Silex v2 > Sync with Dropbox and FTP: Users can sync their Silex projects with Dropbox and FTP, allowing for easy access and management of files.
+* Silex v2 > Templates: Silex comes with a growing number of templates (both free and paid) that users can use as a starting point for their websites.
+
+## About this repo
+
+This is a meta repository for Silex website builder.
+
+It includes all projects needed for Silex development as git submodules. This is the repo you need to contribute to Silex, many of the repositories are dependencies of each other so use this meta repo and benefit from using [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/) or [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces).
+
+To execute a command in every package, use `git submodule foreach 'command'` or `npm run exec -- 'command'` or `scripts/exec.js 'command'`.
 
 ## Included repositories in this meta repo
 
@@ -18,11 +50,11 @@ There is no issue on this repo, please use the individual project's issues
 
 | Name | Directory | Repo | Description |
 | ---- | --------- | ---- | ----------- |
-| Silex | `packages/Silex` | `git@github.com:silexlabs/Silex.git` | Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project. |
 | Silex Puter Plugin | `packages/silex-puter` | `git@github.com:silexlabs/silex-puter.git` | The **Silex Puter Plugin** brings Silex’s professional website-building capabilities to the Puter environment, letting users create, save, and publish static websites directly in Puter. This plugin enables seamless integration, making it easier than ever to use Silex within Puter for web design and content management. |
 | Silex plugins | `packages/silex-plugins` | `git@github.com:silexlabs/silex-plugins.git` | Environment agnostic (node.js, browser, commonjs, esnext...) open architecture (plugin system) inspired by 11ty.dev config |
 | Silex Plugin Starter | `packages/silex-plugin-starter` | `git@github.com:silexlabs/silex-plugin-starter.git` | A good place to start writing a Silex plugin. It supports server and/or client side plugins, in Javascript and TypeScript. Check [Silex developer docs if you need help](https://docs.silex.me/en/dev) or [join the discussions in the forum](https://community.silex.me/) |
 | Silex Platform by Silex Labs | `packages/silex-platform` | `git@github.com:silexlabs/silex-platform.git` | This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment. |
+| Silex core library | `packages/silex-lib` | `git@github.com:silexlabs/silex-lib.git` | This repository is the core library of Silex, it is a nodejs server which serves the Silex editor and the websites created with Silex. The core library is used in the online version of Silex, in the desktop app, and in the nodejs integration. It is available as a npx cli, as a docker image, and as a npm/nodejs library. |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
 | Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
 | node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
@@ -83,7 +115,7 @@ Useful commands
 
 * Start Silex: `npm start` (or use `npm run start:debug`)
 * Release a package (which is in packages/$PACKAGE_NAME) and bump version of a library and all its dependents: `scripts/release-version packages/$PACKAGE_NAME $VERSION`, then you probably want to `git push --follow-tags` the changed packages
-* Add a project: `git submodules add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`, then run `npm run doc`
+* Add a project: `git submodule add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`, then run `npm run doc`
 * Update `package-lock.json` for a particular package: `npm i --package-lock-only --workspaces false` in the package directory
 * Publish a new version of a package: `npm version --patch && git push --follow-tags` in the package directory
 
@@ -104,23 +136,23 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files     200 files     300 files     400 files     500 files     600 files     646 text files.
+     100 files     200 files     300 files     400 files     500 files     600 files     644 text files.
 classified 296 filesDuplicate file check 296 files (279 known unique)Unique:      100 files                                          Unique:      200 files                                               292 unique files.                              
-Counting:  100Counting:  200     429 files ignored.
+Counting:  100Counting:  200     427 files ignored.
 
-github.com/AlDanial/cloc v 1.96  T=0.50 s (584.0 files/s, 197528.0 lines/s)
+github.com/AlDanial/cloc v 1.96  T=1.00 s (292.0 files/s, 191776.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     107            999           2384          63595
-TypeScript                     175           2057           6043          22495
+JavaScript                     107           8670          20556         130753
+TypeScript                     175           2063           6049          22494
 GraphQL                          3             66              6            696
 JSX                              1              0              2            266
 Dockerfile                       3             12              9             73
 Text                             2              8              0             44
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           292           3142           8444          87178
+SUM:                           292          10819          26622         154335
 -------------------------------------------------------------------------------
 
 ```

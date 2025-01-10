@@ -10,10 +10,6 @@
 	path = packages/grapesjs-fonts
 	url = git@github.com:silexlabs/grapesjs-fonts.git
 	branch = main
-[submodule "packages/Silex"]
-	path = packages/Silex
-	url = git@github.com:silexlabs/Silex.git
-	branch = dev
 [submodule "packages/node_modules-path"]
 	path = packages/node_modules-path
 	url = git@github.com:lexoyo/node_modules-path.git
@@ -82,3 +78,6 @@
 	path = packages/silex-platform
 	url = git@github.com:silexlabs/silex-platform.git
 	branch = main
+[submodule "packages/silex-lib"]
+	path = packages/silex-lib
+	url = git@github.com:silexlabs/silex-lib.git
