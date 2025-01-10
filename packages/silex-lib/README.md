@@ -5,33 +5,9 @@ Brought to you by [Alex Hoyau](https://lexoyo.me) and [Silex contributors](https
 
 Help make Silex sustainable by being [part of the community](https://community.silex.me/), [contributing documentation](https://docs.silex.me/), [making a financial contribution](https://opencollective.com/silex), [report bugs](https://github.com/silexlabs/Silex/issues).
 
-## Silex
+## Silex core library
 
-Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project.
-
-Silex lets you create websites without coding, but it also has built-in editors for HTML, CSS, and JavaScript for when you need more control. It is used by freelancers and web studios to make real websites for real clients. Also Silex can generate templates or be integrated in a nodejs project, it has a plugin system and can integrate with headleass CMS and static site generators, it is part of the JSAMStack ecosystem since the v3.
-
-Useful links
-
-* [Official website](https://www.silex.me/)
-* [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
-* [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)
-* [Forums in Github discussions](https://community.silex.me)
-* [Silex meta package with more source code](https://github.com/silexlabs/silex-meta)
-
-Here are the main features of Silex website builder:
-
-* Free and Open Source, open to contributions
-* Visual Editor: Silex offers a visual editor that allows users to create websites without needing to write code. It supports drag-and-drop functionality for easy website creation.
-* Online CSS Editor: Alongside the visual editor, Silex also provides an online CSS editor for more advanced customization.
-* Static HTML Websites: Silex is designed to create static HTML websites, which are fast, secure, and easy to host.
-* SEO Features: Silex includes SEO features to help improve the visibility of websites on search engines.
-* Editor UI: Silex offers features like fonts, visual CSS editor, publication...
-* Self-hosting Option: Users can choose to host their Silex website builder on their own server.
-* Community Support: Being an open-source project, Silex has a community of developers who contribute to its development and provide support.
-* Silex v3 > Silex is based on [GrapesJs](https://grapesjs.com/)
-* Silex v2 > Sync with Dropbox and FTP: Users can sync their Silex projects with Dropbox and FTP, allowing for easy access and management of files.
-* Silex v2 > Templates: Silex comes with a growing number of templates (both free and paid) that users can use as a starting point for their websites.
+This repository is the core library of Silex, it is a nodejs server which serves the Silex editor and the websites created with Silex. The core library is used in the online version of Silex, in the desktop app, and in the nodejs integration. It is available as a npx cli, as a docker image, and as a npm/nodejs library.
 
 ## Getting Started
 
