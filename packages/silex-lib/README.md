@@ -5,6 +5,14 @@ Brought to you by [Alex Hoyau](https://lexoyo.me) and [Silex contributors](https
 
 Help make Silex sustainable by being [part of the community](https://community.silex.me/), [contributing documentation](https://docs.silex.me/), [making a financial contribution](https://opencollective.com/silex), [report bugs](https://github.com/silexlabs/Silex/issues).
 
+Useful links
+
+* [Official website](https://www.silex.me/)
+* [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
+* [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)
+* [Forums in Github discussions](https://community.silex.me)
+* [Silex meta package with more source code](https://github.com/silexlabs/Silex)
+
 ## Silex core library
 
 This repository is the core library of Silex, it is a nodejs server which serves the Silex editor and the websites created with Silex. The core library is used in the online version of Silex, in the desktop app, and in the nodejs integration. It is available as a npx cli, as a docker image, and as a npm/nodejs library.
@@ -85,7 +93,7 @@ Silex is free and open-source software licensed under the [GPL-3.0](LICENSE.md).
 
 ## Dependencies
 
-The upstream projects we use in Silex are all listed in [Silex meta package](https://github.com/silexlabs/silex-meta)
+The upstream projects we use in Silex are all listed in [Silex meta package](https://github.com/silexlabs/Silex)
 
 ## Github stars history
 
