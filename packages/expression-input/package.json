@@ -29,7 +29,8 @@
     "test:watch": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ wtr --watch",
     "test:prod": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ MODE=prod wtr",
     "test:prod:watch": "LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ MODE=prod wtr --watch",
-    "checksize": "rollup -c ; cat dist/expression-input.bundled.js | gzip -9 | wc -c ; rm dist/expression-input.bundled.js"
+    "checksize": "rollup -c ; cat dist/expression-input.bundled.js | gzip -9 | wc -c ; rm dist/expression-input.bundled.js",
+    "prepare": "husky"
   },
   "keywords": [
     "web-components",
@@ -45,7 +46,11 @@
   "devDependencies": {
     "@11ty/eleventy": "^3.0.0",
     "@11ty/eleventy-plugin-syntaxhighlight": "^5.0.0",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
     "@custom-elements-manifest/analyzer": "^0.10.4",
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.17.0",
     "@open-wc/testing": "^4.0.0",
     "@playwright/test": "^1.49.1",
     "@rollup/plugin-node-resolve": "^15.3.0",
@@ -59,6 +64,8 @@
     "@web/test-runner-playwright": "^0.11.0",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "eslint": "^9.17.0",
+    "globals": "^15.14.0",
+    "husky": "^9.1.7",
     "lit-analyzer": "^2.0.3",
     "prettier": "^3.4.2",
     "rimraf": "^6.0.1",
