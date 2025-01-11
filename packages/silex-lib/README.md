@@ -7,6 +7,8 @@ Help make Silex sustainable by being [part of the community](https://community.s
 
 Useful links
 
+* [npm package for this repo](https://www.npmjs.com/package/@silexlabs/silex)
+* [Docker image for this repo](https://hub.docker.com/r/silexlabs/silex)
 * [Official website](https://www.silex.me/)
 * [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
 * [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)

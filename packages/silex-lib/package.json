@@ -97,7 +97,6 @@
     "build:plugins:client": "tsc -p tsconfig-plugins-client.json",
     "lint": "eslint \"src/ts/**/*.ts\"",
     "lint:fix": "$npm_execpath run lint -- --fix",
-    "commitlint": "commitlint",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "test:watch": "$npm_execpath test -- --watch",
     "prepare": "husky"
