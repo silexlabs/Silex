@@ -36,7 +36,6 @@ export const cmdOpenSettings = 'open-settings'
 
 let headEditor = null
 export const settingsDialog = (editor, opts) => {
-  console.info('Silex version:', SILEX_VERSION)
   editor.Commands.add(cmdOpenSettings, {
     run: (_, sender, {page}) => {
       modal = editor.Modal.open({

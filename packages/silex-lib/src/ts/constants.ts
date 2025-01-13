@@ -61,3 +61,23 @@ try { SILEX_VERSION = SILEX_VERSION_ENV } catch (e) {
   // fallback to default value
   SILEX_VERSION = SILEX_VERSION || '3.0.0'
 }
+
+export const DEV_MESSAGE = `
+__________________________________________________________
+
+  Create static websites visually, with dynamic content,
+  in the free spirit of the web.
+  
+  ███████ ██ ██      ███████ ██   ██     ██    ██ ██████
+  ██      ██ ██      ██       ██ ██      ██    ██      ██
+  ███████ ██ ██      █████     ███       ██    ██  █████
+       ██ ██ ██      ██       ██ ██       ██  ██       ██
+  ███████ ██ ███████ ███████ ██   ██       ████   ██████ ${SILEX_VERSION.slice(1)}
+  
+  Users are expected to contribute:
+  
+  * Web designers: https://docs.silex.me/en/user/contribute
+  * Developers: https://docs.silex.me/en/dev/contribute
+  
+__________________________________________________________
+`

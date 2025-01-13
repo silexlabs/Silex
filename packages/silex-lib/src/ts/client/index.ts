@@ -21,6 +21,7 @@
  *
  */
 
+import { DEV_MESSAGE } from '../constants'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
@@ -38,6 +39,9 @@ export let config: ClientConfig
  * Start Silex, called from host HTML page with window.silex.start()
  */
 export async function start(options = {}): Promise<void> {
+  // Log Silex version for devs - it is also displayed in te settings
+  console.info(DEV_MESSAGE)
+  // Create the config object
   config = new ClientConfig()
   Object.assign(config, options)
 

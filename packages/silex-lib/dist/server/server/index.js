@@ -35,8 +35,12 @@ const api_1 = __importDefault(require("./api/api"));
 const config_1 = require("./config");
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = require("path");
+const constants_1 = require("../constants");
 __exportStar(require("./expose"), exports);
 async function silex() {
+    console.info(constants_1.DEV_MESSAGE);
+    console.info(`Node version: ${process.version}`);
+    console.info(`CWD: ${process.cwd()}`);
     const curDirEnv = dotenv_1.default.config();
     if (curDirEnv.error) {
         if (curDirEnv.error['code'] === 'ENOENT') {

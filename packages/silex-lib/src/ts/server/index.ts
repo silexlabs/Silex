@@ -20,12 +20,18 @@ import api from './api/api'
 import { ServerConfig } from './config'
 import dotenv from 'dotenv'
 import { join } from 'path'
+import { DEV_MESSAGE } from '../constants'
 
 // Expose API to calling app as function silex()
 export * from './expose'
 
 // Main app
 export default async function silex() {
+  // Log Silex version
+  console.info(DEV_MESSAGE)
+  console.info(`Node version: ${process.version}`)
+  console.info(`CWD: ${process.cwd()}`)
+
   // Load env vars from .env file if any
   const curDirEnv = dotenv.config()
   if (curDirEnv.error) {

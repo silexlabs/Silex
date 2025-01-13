@@ -1,8 +1,3 @@
-/**
- * @fileoverview
- * Defines the entry point of Silex client side application
- *
- */
 import { ClientConfig } from './config';
 export * from './expose';
 /**
