@@ -1,8 +1,14 @@
+[![Repository's starts](https://img.shields.io/github/stars/silexlabs/Silex?colorA=2c2837&colorB=c9cbff&style=for-the-badge&logo=starship)](https://github.com/silexlabs/Silex/stargazers)
+[![Issues](https://img.shields.io/github/issues-raw/silexlabs/Silex?colorA=2c2837&colorB=f2cdcd&style=for-the-badge&logo=starship)](https://github.com/silexlabs/Silex/issues)
+[![License](https://img.shields.io/github/license/silexlabs/Silex?colorA=2c2837&colorB=b5e8e0&style=for-the-badge&logo=starship)](https://github.com/silexlabs/Silex/blob/main/LICENSE)
+[![Latest commit](https://img.shields.io/github/last-commit/silexlabs/Silex/main?colorA=2c2837&colorB=ddb6f2&style=for-the-badge&logo=starship)](https://github.com/silexlabs/Silex/commits/main)
+
+
 ## Silex meta repo
 
 Silex is a no-code tool for building websites. It also lets you code when needed. It can be used online, offline or in a JAMStack project.
 
-Silex lets you create websites without coding, but it also has built-in editors for HTML, CSS, and JavaScript for when you need more control. It is used by freelancers and web studios to make real websites for real clients. Also Silex can generate templates or be integrated in a nodejs project, it has a plugin system and can integrate with headleass CMS and static site generators, it is part of the JSAMStack ecosystem since the v3.
+Silex lets you create websites without coding, but it also has built-in editors for HTML, CSS, and JavaScript for when you need more control. It is used by freelancers and web studios to make real websites for real clients. Also Silex can generate templates or be integrated in a nodejs ilproject, it has a plugin system and can integrate with headleass CMS and static site generators, it is part of the JSAMStack ecosystem since the v3.
 
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
