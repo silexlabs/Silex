@@ -139,7 +139,7 @@
     "grapesjs-style-border": "1.0.4",
     "grapesjs-style-filter": "^1.0.2",
     "html-minifier": "^4.0.0",
-    "lit-html": "3.1.4",
+    "lit-html": "3.2.1",
     "mkdirp": "3.0.1",
     "node_modules-path": "2.0.8",
     "node-fetch": "2.6.9",
