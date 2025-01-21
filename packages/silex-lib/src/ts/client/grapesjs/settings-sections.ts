@@ -6,12 +6,12 @@ import { WebsiteSettings } from '../../types'
 export const idCodeWrapper = 'settings-head-wrapper'
 
 // Is the model a site or a page?
-export function isSite(model) { return !!model.getHtml }
+export function isSite(model: any) { return !!model.getHtml }
 
 export interface SettingsSection {
   id: string
   label: string
-  render: (settings: WebsiteSettings, model) => TemplateResult
+  render: (settings: WebsiteSettings, model: Backbone.Model) => TemplateResult
 }
 
 /**

@@ -5,7 +5,7 @@ export declare function isSite(model: any): boolean;
 export interface SettingsSection {
     id: string;
     label: string;
-    render: (settings: WebsiteSettings, model: any) => TemplateResult;
+    render: (settings: WebsiteSettings, model: Backbone.Model) => TemplateResult;
 }
 /**
  * This is the settings dialog default sections
