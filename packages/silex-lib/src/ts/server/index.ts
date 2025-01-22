@@ -79,9 +79,7 @@ export default async function silex() {
   await silexApp.start(app)
 
   // All good, server is ready
-  console.info(`
-I'm ready, listening to port ${config.port}
-  `)
+  console.info(`\nSilex is ready, open http://localhost:${config.port} in your browser\n`)
   if (config.debug) {
     startLiverReload()
   }

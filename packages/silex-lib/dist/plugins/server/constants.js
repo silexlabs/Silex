@@ -59,18 +59,18 @@ __________________________________________________________
 
   Create static websites visually, with dynamic content,
   in the free spirit of the web.
-  
+
   ███████ ██ ██      ███████ ██   ██     ██    ██ ██████
   ██      ██ ██      ██       ██ ██      ██    ██      ██
   ███████ ██ ██      █████     ███       ██    ██  █████
        ██ ██ ██      ██       ██ ██       ██  ██       ██
   ███████ ██ ███████ ███████ ██   ██       ████   ██████ ${exports.SILEX_VERSION.slice(1)}
-  
+
   Users are expected to contribute:
-  
+
   * Web designers: https://docs.silex.me/en/user/contribute
   * Developers: https://docs.silex.me/en/dev/contribute
-  
+
 __________________________________________________________
 `;
 //# sourceMappingURL=constants.js.map
