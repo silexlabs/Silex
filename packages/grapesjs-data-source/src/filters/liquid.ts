@@ -892,6 +892,28 @@ export default function(editor: DataSourceEditor): Filter[] {
       output: type => type,
       apply: (str) => (str as string).charAt(0).toUpperCase() + (str as string).slice(1).toLowerCase(),
       options: {},
+    }, {
+      // Pick a random value from an array. Optionally, pick multiple values, default is 1 value.
+      // https://jekyllrb.com/docs/liquid/filters/
+      type: 'filter',
+      id: 'sample',
+      label: 'sample',
+      validate: (field: Field | null) => !!field && field.kind === 'list',
+      output: field => field,
+      apply: (arr, options) => {
+        const count = options.count as number ?? 1
+        return (arr as unknown[])
+          .sort(() => 0.5 - Math.random())
+          .slice(0, count)
+      },
+      options: {
+        count: 1,
+      },
+      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
+        <label>Count
+          <input type="number" name="count" placeholder="Count" .value=${options.count}/>
+        </label>
+      `,
     },
   ]
 }
