@@ -17,12 +17,13 @@
 
 import Backbone from 'backbone'
 import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from '../types'
-import { DataSourceEditor, DataSourceEditorOptions, getComponentDebug, NOTIFICATION_GROUP } from '..'
+import { DataSourceEditor, DataSourceEditorOptions } from '../types'
 import { DataTree } from './DataTree'
 import { Component, Page } from 'grapesjs'
 import { StoredState, onStateChange } from './state'
 import getLiquidFilters from '../filters/liquid'
 import getGenericFilters from '../filters/generic'
+import { getComponentDebug, NOTIFICATION_GROUP } from '../utils'
 
 /**
  * FIXME: Why sometimes the methods of the data source are in the attributes?

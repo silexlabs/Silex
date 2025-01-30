@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { DataSourceManager } from './model/DataSourceManager'
+import storage from './storage'
 import { DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
@@ -47,12 +47,15 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     },
   }
 
-  // Create the data sources from config
   const dataSources = options.dataSources
+    // Make sure the data sources from the config are readonly
+    .map(ds => ({ ...ds, readonly: true }))
+    // Create the data sources from config
     .map((ds: IDataSourceOptions) => createDataSource(ds))
   
   // Connect the data sources (async)
-  Promise.all(dataSources.map(ds => ds.connect()))
+  Promise.all(dataSources
+    .map(ds => ds.connect()))
     // .then(() => console.info('Data sources connected'))
     .catch(err => console.error('Error while connecting data sources', err))
 
@@ -61,6 +64,9 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
 
   // Register the UI for component properties
   view(editor, options.view)
+
+  // Save and load data sources
+  storage(editor)
 
   // Use grapesjs-notifications plugin for errors
   editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))

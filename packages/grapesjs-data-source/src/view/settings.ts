@@ -1,7 +1,7 @@
 import { createRef, Ref, ref } from 'lit/directives/ref.js'
 import {repeat} from 'lit/directives/repeat.js'
 import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSource, IDataSourceModel } from '../types'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSourceModel } from '../types'
 import { getDefaultOptions, getElementFromOption } from '../utils'
 import { css, html, LitElement, render } from 'lit'
 import { customElement, property } from 'lit/decorators.js'
@@ -61,26 +61,6 @@ const COMMON_STYLES = css`
 `
 
 export default (editor: DataSourceEditor, options: Partial<DataSourceEditorViewOptions> = {}) => {
-  // Save and load data sources
-  editor.on('storage:start:store', data => {
-    data.dataSources = editor.DataSourceManager
-      .getAll()
-      .filter(ds => ds.get('readonly') === false)
-  })
-  editor.on('storage:end:load', (data) => {
-    // Connect the data sources
-    const newDataSources: IDataSource[] = (data.dataSources || [] as GraphQLOptions[])
-      .map((ds: GraphQLOptions) => new GraphQL(ds))
-    newDataSources.forEach((ds: IDataSource) => ds.connect())
-    // Get all data sources
-    const dataSources = editor.DataSourceManager.getAll()
-      // Keep only data sources from the config
-      .filter(ds => ds.get('readonly') !== false)
-    // Reset the data sources to the original config
-    editor.DataSourceManager.reset(dataSources)
-    // Add the new data sources
-    editor.DataSourceManager.add(newDataSources)
-  })
   // Settings dialog
   if (options.settingsEl) {
     // Get the container element for the UI
