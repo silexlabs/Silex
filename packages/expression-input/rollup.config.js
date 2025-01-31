@@ -1,32 +1,29 @@
-/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
 import summary from 'rollup-plugin-summary'
-import {terser} from 'rollup-plugin-terser'
+import terser from '@rollup/plugin-terser'
 import resolve from '@rollup/plugin-node-resolve'
-import replace from '@rollup/plugin-replace'
 
 export default {
-  input: 'expression-input.js',
-  output: {
-    file: 'expression-input.bundled.js',
-    format: 'esm',
-  },
+  input: './dist/index.js', // Single entry point that imports all dependencies
+  output: [
+    {
+      file: './dist/bundle.iife.js', // IIFE for browsers
+      format: 'iife',
+      name: 'ExpressionInputBundle',
+      sourcemap: true,
+    },
+    {
+      file: './dist/bundle.esm.js', // ESM for frontend frameworks
+      format: 'esm',
+      sourcemap: true,
+    }
+  ],
   onwarn(warning) {
     if (warning.code !== 'THIS_IS_UNDEFINED') {
       console.error(`(!) ${warning.message}`)
     }
   },
   plugins: [
-    replace({'Reflect.decorate': 'undefined'}),
-    resolve(),
-    /**
-     * This minification setup serves the static site generation.
-     * For bundling and minification, check the README.md file.
-     */
+    resolve({ browser: true }),
     terser({
       ecma: 2017,
       module: true,
