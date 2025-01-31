@@ -8,6 +8,10 @@
 
 ## Overview
 
+> **Demo:** [Interactive CodePen](https://codepen.io/lexoyo/full/MYgxLvm)
+
+`<popin-form>` is a component that combines a pop-up overlay with a form container. It is designed to be a self-contained form that can be integrated into a parent form. It supports the following features:
+
 1. **Pop-up Overlay**: 
    - Appears above other content, can capture focus, and closes when users click outside or press <kbd>Escape</kbd>.
    - You can disable automatic closing by using `no-auto-close`.
@@ -212,6 +216,5 @@ The pop-up/form layout can be styled with CSS variables:
 That’s it! For more details on complementary components, see:
 
 - **[Expression Input docs](./expression-input.md)**  
-- **[Input Chain docs](./input-chain.md)**  
 
 Enjoy creating rich pop-up forms with `<popin-form>`!

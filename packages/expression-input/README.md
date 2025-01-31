@@ -8,10 +8,7 @@ This is part of a bigger project: [Silex no-code website builder](https://www.si
 1. **[Expression Input](./docs/expression-input.md)**  
    Build an expression from multiple selectable tokens or switch to a fixed value.
 
-2. **[Input Chain](./docs/input-chain.md)**  
-   Create a sequence of selectable steps (e.g., multiple `<select>` elements).
-
-3. **[Popin Form](./docs/popin-form.md)**  
+2. **[Popin Form](./docs/popin-form.md)**  
    A simple pop-up form overlay that can manage its own inputs and be integrated into a parent form.
 
 ## Installation
@@ -30,9 +27,6 @@ Or include it via a `<script>` tag:
 
 - **[Expression Input](./docs/expression-input.md)**  
   How to add `<expression-input>` to your project and build dynamic expressions.
-
-- **[Input Chain](./docs/input-chain.md)**  
-  How to use `<input-chain>` to create a chain of interdependent `<select>` elements.
 
 - **[Popin Form](./docs/popin-form.md)**  
   How to open a form in a pop-up overlay and manage form data inside it.

@@ -44,6 +44,8 @@ When fixed mode is active, the component hides the chain of `<select>` elements 
 </expression-input>
 ```
 
+Check the JS code in the [**Interactive Demo**](https://codepen.io/lexoyo/full/dPbrQzY) to see how to listen to the `change` event, get the resulting expression and update the selected values.
+
 ### Toggling Fixed/Expression
 
 - Include the `allow-fixed` attribute to show toggle buttons labeled **Fixed** / **Expression**.
@@ -95,6 +97,8 @@ Use it inside a `<form>` just like a standard input:
 | `fixed`        | `boolean`| Toggles whether the component is in “fixed value” mode.                                                                    |
 | `allow-fixed`  | `boolean`| Shows toggle tabs labeled **Fixed** / **Expression** to let users switch modes.                                            |
 | `placeholder`  | `string` | Placeholder text shown in expression mode if no `<select>` elements or they have no selected values.                       |
+| `for`           | `string`  | The `id` of a `<form>` to associate with (if not nested directly in the form).   |
+| `reactive`      | `boolean` | If set, emits a `change` event whenever a selection changes, without removing subsequent `<select>` elements automatically. |
 
 ---
 
@@ -158,13 +162,12 @@ Use it inside a `<form>` just like a standard input:
 ## Notes
 
 - If the component is in **fixed mode** (`fixed` attribute present), the `<expression-input>` will ignore the `<select>` elements in the default slot. Its `value` will be the content of the `<input>` or `<textarea>` in the `slot="fixed"`.
-- If you want to dynamically remove or add `<select>` elements in expression mode, consider pairing `<expression-input>` with the `[reactive]` approach from [`<input-chain>`](./input-chain.md), or handle it via external JS logic.
+- If you want to dynamically remove or add `<select>` elements in expression mode, consider pairing `<expression-input>` with the `[reactive]` approach, or handle it via external JS logic.
 
 ---
 
 That’s it! For more advanced usage, check out:
 
-- **[Input Chain docs](./input-chain.md)**  
 - **[Popin Form docs](./popin-form.md)**  
 
 Enjoy building expressions with `<expression-input>`!
