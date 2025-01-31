@@ -12,85 +12,137 @@
         font-family: sans-serif;
         background-color: #eee;
         margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
       }
+    
       .container {
-        max-width: 400px;
-        min-height: 100vh;
         box-sizing: border-box;
-        margin: 0 0 0 auto;
-        padding: 10px;
+        margin: 200px;
+        padding: 20px;
         background-color: #fff;
         border: 1px solid #ccc;
-        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+    
+      expression-input {
+        padding: 0;
+        display: block;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+    
+      select {
+        padding: 5px;
+        height: 100%;
+        background: #eaeaea;
+        border: 1px solid #9c9c9c;
+        border-radius: 2px;
+        margin-right: 5px;
+        text-align: center;
+        width: fit-content;
+        margin-top: 5px;
+      }
+    
+      expression-input::part(property-container) {
+        padding: 0;
       }
     </style>
+    <script>
+  window.addEventListener('load', () => {
+    // 1) Your hierarchical data
+    const tree = [
+      {
+        value: "Page",
+        tree: [
+          { value: "title" },
+          { value: "content" },
+        ],
+      },
+      {
+        value: "Blog",
+        tree: [
+          { value: "title" },
+          { value: "content" },
+          {
+            value: "Author",
+            tree: [
+              { value: "name" },
+              { value: "email" },
+              {
+                value: "Picture",
+                tree: [
+                  { value: "url" },
+                  { value: "size" },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    // We'll store the user's current path in this array
+    const exprPath = [];
+
+    // Grab the <expression-input> container
+    const exprInput = document.getElementById('expr');
+
+    /**
+         * Creates a <select> for a given level of the tree.
+         * @param {Array} levelTree - The array of possible tokens at this level.
+         * @param {number} levelIndex - Which level of depth we are in the expression.
+         */
+    function createSelect(levelTree, levelIndex) {
+      const sel = document.createElement('select');
+      // Start with a "+" placeholder option
+      sel.innerHTML = `
+        <option value="">+</option>
+        ${levelTree.map(t => `<option value="${t.value}">${t.value}</option>`).join('')}
+      `;
+
+      sel.addEventListener('change', () => {
+        // Update the chosen token in our exprPath
+        exprPath[levelIndex] = sel.value;
+        // Remove deeper selects, since we changed this level
+        const allSelects = exprInput.querySelectorAll('select');
+        for (let i = levelIndex + 1; i < allSelects.length; i++) {
+          exprInput.removeChild(allSelects[i]);
+          // also clear out deeper tokens from exprPath
+          exprPath[i] = undefined;
+        }
+
+        // Look up the chosen node to see if there's a subtree
+        const chosenNode = levelTree.find(n => n.value === sel.value);
+        if (chosenNode && chosenNode.tree) {
+          // Append the next <select> for the subtree
+          const nextSelect = createSelect(chosenNode.tree, levelIndex + 1);
+          exprInput.appendChild(nextSelect);
+        }
+
+        console.log('Current expression path:', exprPath.filter(Boolean));
+        // expression-input will also recalc its .value based on the selected <option> elements
+      });
+
+      return sel;
+    }
+
+    // 2) On load, create the very first <select> from the top-level tree
+    const firstSelect = createSelect(tree, 0);
+    // 3) Append it to the <expression-input>
+    exprInput.appendChild(firstSelect);
+
+  })
+    </script>
   </head>
   <body>
     <section class="container">
-      <expression-input
-        id="inputChain1"
-        name="inputChain1"
-        group-by-category
-        >
-        <span slot="label">Test label</span>
-        <span slot="fixed">
-          <input type="text" value="Fixed value" />
-        </span>
-        <select>
-          <option value="">+</option>
-          <option value="Blog Post" selected>Blog Post</option>
-          <option value="Page">Page</option>
-          <option value="Settings">Settings</option>
-        </select>
-      </expression-input>
-      <hr />
-      <expression-input
-        id="inputChain2"
-        name="inputChain2"
-        onchange="event => console.log('onchange', event)"
-        >
-        <select>
-          <option value="">+</option>
-          <option value="Blog Post" selected>Blog Post</option>
-          <option value="Page">Page</option>
-          <option value="Settings">Settings</option>
-          <option value="User">User</option>
-          <option value="Where">Where</option>
-          <option value="Upcase">Upcase</option>
-          <option value="Truncate">Truncate</option>
-          <option value="Current">Current</option>
-          <option value="Category">Category</option>
-          <option value="Tag">Tag</option>
-          <option value="Menu">Menu</option>
-          <option value="MenuItem">MenuItem</option>
-          <option value="Comment">Comment</option>
-          <option value="Asset">Asset</option>
-          <option value="Append">Append</option>
-          <option value="Prepend">Prepend</option>
-          <option value="Replace">Replace</option>
-          <option value="Split">Split</option>
-          <option value="Join">Join</option>
-          <option value="Sort">Sort</option>
-          <option value="Map">Map</option>
-        </select>
-        <select>
-          <option value="">+</option>
-          <option value="title">Title</option>
-          <option value="content">Content</option>
-          <option value="seo" selected>SEO</option>
-        </select>
-        <select>
-          <option value="">+</option>
-          <option value="title">Title</option>
-          <option value="content">Content</option>
-        </select>
+      <h1>&lt;expression-input&gt; Demo</h1>
+      <expression-input id="expr">
+        <span slot="label">An expression</span>
       </expression-input>
     </section>
-    <script>
-      const inputChain = document.querySelector('expression-input#inputChain2');
-      console.log(inputChain, inputChain.name, inputChain.options);
-      inputChain.addEventListener('change', event => console.log('addEventListener("change")', event.target.options.filter(o => o.selected).map(o => o.value)))
-    </script>
   </body>
 </html>
 

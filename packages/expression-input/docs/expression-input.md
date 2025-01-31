@@ -13,6 +13,8 @@ The `<expression-input>` component lets users build an expression from multiple 
 
 When fixed mode is active, the component hides the chain of `<select>` elements and shows the fixed input instead.
 
+> [**Interactive Demo**](https://codepen.io/lexoyo/full/dPbrQzY)
+
 ---
 
 ## Basic Usage
