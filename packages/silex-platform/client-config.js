@@ -17,15 +17,7 @@ export default async function (config) {
     // CMS Plugin
     config.addPlugin(SilexCms, {
         dataSources: [],
-        imagePlugin: false,
-        i18nPlugin: false,
-        fetchPlugin: false,
-        // enable11ty: false,
-        view: {
-            // disableStates: true,
-            // disableAttributes: false,
-            // disableProperties: true,
-        },
+        view: {},
     })
     return {}
 }
