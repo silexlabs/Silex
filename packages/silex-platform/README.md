@@ -1,4 +1,4 @@
-## Silex Platform by Silex Labs
+# Silex Platform by Silex Labs
 
 This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment.
 
@@ -6,19 +6,19 @@ It has convenient environment variables and many plugins enabled by default, and
 
 Check [the docs for how to run it with Docker or nodejs](https://docs.silex.me/en/dev/run).
 
-Note: there is no npm package for this repo, it is meant to be run as a standalone instance that you can configure with env vars and config files, not a CLI tool. Use `@silexlabs/silex` for the CLI tool and use the config files of this repo to get the same result.
+> **Note:** There is no npm package for this repo, it is meant to be run as a standalone instance that you can configure with env vars and config files, not a CLI tool. Use `@silexlabs/silex` for the CLI tool and use the config files of this repo to get the same result.
 
 ## Why this package?
 
 This package is a good example of how to customize Silex, and it is a good starting point to create your own instance of Silex.
 
-It is also the code behind
+This repo holds the code behind these Silex instances:
 
 * [Silex instance hosted for free by Silex Labs foundation](https://v3.silex.me)
 * [The legacy Silex instance hosted for free by Silex Labs foundation](https://editor.silex.me)
 * [Silex one click app on CapRover](https://github.com/caprover/one-click-apps/blob/master/public/v4/apps/silex-platform.yml)
 
-### [Main Silex repository](https://github.com/silexlabs/Silex/) VS this Silex Platform repository
+### [silex-lib repository](https://github.com/silexlabs/silex-lib/) VS this Silex Platform repository
 
 | Feature | Main Silex repository | Silex Platform repository |
 |---------|-----------------------|---------------------------|
@@ -29,7 +29,7 @@ It is also the code behind
 | Env vars to enable or disable cloud services | No | Yes |
 | Env vars to customize the instance | Yes ([doc](https://docs.silex.me/en/dev/options)) | Yes ([doc](#environment-variables)) |
 
-Plugins enabled by default in this repo, not in the main Silex repo:
+### Plugins enabled by default in this repo, not in the main Silex repo:
 
 | Plugin | Main Silex repository | Silex Platform repository |
 |--------|-----------------------|---------------------------|
@@ -42,7 +42,7 @@ Plugins enabled by default in this repo, not in the main Silex repo:
 | Gitlab storage | No | Yes |
 | Gitlab hosting | No | Yes |
 
-### Features
+## Features
 
 This code adds features to the editor specific to our instance (in `index.js` and `index.pug`):
 
@@ -113,7 +113,6 @@ You can set the following environment variables to customize the instance:
 | `BREVO_API_KEY` | The API key for the Brevo service (onboarding, optional) | string | - |
 | `BREVO_API_URL` | The API URL for the Brevo service (onboarding, optional) | string | - |
 | `BREVO_LIST_ID` | The list ID for the Brevo service (onboarding, optional) | string | - |
-
 
 ## For Your Gitlab App 
 
