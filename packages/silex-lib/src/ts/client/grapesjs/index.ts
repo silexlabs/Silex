@@ -32,7 +32,6 @@ import blocksBasicPlugin from 'grapesjs-blocks-basic'
 import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
-import navbarPlugin from 'grapesjs-navbar'
 import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import filterStyles from '@silexlabs/grapesjs-filter-styles'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
@@ -101,7 +100,6 @@ const plugins = [
   {name: './resize-panel', value: resizePanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
-  {name: 'grapesjs-navbar', value:navbarPlugin}
 ]
 // Check that all plugins are loaded correctly
 plugins
@@ -360,11 +358,6 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         longPressDuration: null,
         shortcut: 'shift+h',
       },
-      [navbarPlugin.toString()]:{
-        block:{
-          category: 'Components'
-        }
-      }
     },
   }
 }

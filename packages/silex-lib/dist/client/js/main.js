@@ -2692,18 +2692,6 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
 
 /***/ }),
 
-/***/ "../../node_modules/grapesjs-navbar/dist/index.js":
-/*!********************************************************!*\
-  !*** ../../node_modules/grapesjs-navbar/dist/index.js ***!
-  \********************************************************/
-/***/ (function(module) {
-
-/*! grapesjs-navbar - 1.0.2 */
-!function(n,t){ true?module.exports=t():0}('undefined'!=typeof globalThis?globalThis:'undefined'!=typeof window?window:this,(()=>(()=>{"use strict";var n={d:(t,e)=>{for(var a in e)n.o(e,a)&&!n.o(t,a)&&Object.defineProperty(t,a,{enumerable:!0,get:e[a]})},o:(n,t)=>Object.prototype.hasOwnProperty.call(n,t),r:n=>{'undefined'!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(n,Symbol.toStringTag,{value:'Module'}),Object.defineProperty(n,'__esModule',{value:!0})}},t={};n.r(t),n.d(t,{default:()=>i});var e=void 0&&(void 0).__assign||function(){return e=Object.assign||function(n){for(var t,e=1,a=arguments.length;e<a;e++)for(var o in t=arguments[e])Object.prototype.hasOwnProperty.call(t,o)&&(n[o]=t[o]);return n},e.apply(this,arguments)};const a=function(n,t){var e=n.Components,a=t.id,o=t.label,i=t.classPrefix,r="".concat(a,"-container"),l="".concat(a,"-nav-menu"),c="".concat(a,"-nav-menu-link"),s="".concat(a,"-burger-menu"),d="".concat(a,"-burger-menu-line");e.addType(a,{model:{defaults:{droppable:!1,name:o,attributes:{class:i},components:{type:r},styles:(t.style||"\n          .".concat(i," {\n            background-color: #222;\n            color: #ddd;\n            min-height: 50px;\n            width: 100%;\n          }\n\n          .").concat(i,"-container {\n            max-width: 950px;\n            margin: 0 auto;\n            width: 95%;\n          }\n\n          .").concat(i,"-items-c {\n            display: inline-block;\n            float: right;\n          }\n\n          .").concat(i,"-container::after {\n            content: \"\";\n            clear: both;\n            display: block;\n          }\n\n          .").concat(i,"-brand {\n            vertical-align: top;\n            display: inline-block;\n            padding: 5px;\n            min-height: 50px;\n            min-width: 50px;\n            color: inherit;\n            text-decoration: none;\n          }\n\n          .").concat(i,"-menu {\n            padding: 10px 0;\n            display: block;\n            float: right;\n            margin: 0;\n          }\n\n          .").concat(i,"-menu-link {\n            margin: 0;\n            color: inherit;\n            text-decoration: none;\n            display: inline-block;\n            padding: 10px 15px;\n          }\n\n          .").concat(i,"-burger {\n            margin: 10px 0;\n            width: 45px;\n            padding: 5px 10px;\n            display: none;\n            float: right;\n            cursor: pointer;\n          }\n\n          .").concat(i,"-burger-line {\n            padding: 1px;\n            background-color: white;\n            margin: 5px 0;\n          }\n\n          @media (max-width: 768px) {\n            .").concat(i,"-items-c {\n              display: none;\n              width: 100%;\n            }\n\n            .").concat(i,"-burger {\n              display: block;\n            }\n\n            .").concat(i,"-menu {\n              width: 100%;\n            }\n\n            .").concat(i,"-menu-link {\n              display: block;\n            }\n          }\n        "))+t.styleAdditional}}}),e.addType(r,{model:{defaults:{attributes:{class:"".concat(i,"-container"),'data-gjs':'navbar'},name:'Navbar Container',droppable:!1,draggable:!1,removable:!1,copyable:!1,highlightable:!1,components:[{type:'link',attributes:{class:"".concat(i,"-brand"),href:'/'}},{type:s},{attributes:{class:"".concat(i,"-items-c"),'data-gjs':'navbar-items'},components:{type:l}}]}}}),e.addType(l,{model:{defaults:{name:'Navbar Menu',tagName:'nav',attributes:{class:"".concat(i,"-menu")},components:[{type:c,components:'Home'},{type:c,components:'About'},{type:c,components:'Contact'}]}}}),e.addType(c,{extend:'link',model:{defaults:{name:'Menu link',draggable:"[data-gjs-type=\"".concat(l,"\"]"),attributes:{class:"".concat(i,"-menu-link")}}}}),e.addType(s,{model:{defaults:{name:'Burger',draggable:!1,droppable:!1,copyable:!1,removable:!1,script:function(){var n,t=this,e='gjs-collapse',a='max-height',o=0,i=function(){var n=document.createElement('void'),t={transition:'transitionend',OTransition:'oTransitionEnd',MozTransition:'transitionend',WebkitTransition:'webkitTransitionEnd'};for(var e in t)if(void 0!==n.style[e])return t[e]}(),r=function(n){o=1;var t=function(n){var t=window.getComputedStyle(n),e=t.display,o=parseInt(t[a]);if('none'!==e&&0!==o)return n.offsetHeight;n.style.height='auto',n.style.display='block',n.style.position='absolute',n.style.visibility='hidden';var i=n.offsetHeight;return n.style.height='',n.style.display='',n.style.position='',n.style.visibility='',i}(n),e=n.style;e.display='block',e.transition="".concat(a," 0.25s ease-in-out"),e.overflowY='hidden',''==e[a]&&(e[a]=0),0==parseInt(e[a])?(e[a]='0',setTimeout((function(){e[a]=t+'px'}),10)):e[a]='0'};e in t||t.addEventListener('click',(function(e){if(e.preventDefault(),!o){var l=t.closest("[data-gjs=navbar]"),c=null==l?void 0:l.querySelector("[data-gjs=navbar-items]");c&&r(c),n||(null==c||c.addEventListener(i,(function(){o=0;var n=c.style;0==parseInt(n[a])&&(n.display='',n[a]='')})),n=1)}})),t[e]=1},attributes:{class:"".concat(i,"-burger")},components:[{type:d},{type:d},{type:d}]}}}),e.addType(d,{model:{defaults:{name:'Burger Line',droppable:!1,draggable:!1,highlightable:!1,attributes:{class:"".concat(i,"-burger-line")}}}})};var o=void 0&&(void 0).__assign||function(){return o=Object.assign||function(n){for(var t,e=1,a=arguments.length;e<a;e++)for(var o in t=arguments[e])Object.prototype.hasOwnProperty.call(t,o)&&(n[o]=t[o]);return n},o.apply(this,arguments)};const i=function(n,t){void 0===t&&(t={});var i=o({id:'navbar',label:'Navbar',block:{},style:'',styleAdditional:'',classPrefix:'navbar'},t);!function(n,t){var a=t.block,o=t.label,i=t.id;a&&n.Blocks.add(i,e({media:"<svg viewBox=\"0 0 24 24\">\n        <path d=\"M22 9c0-.6-.5-1-1.25-1H3.25C2.5 8 2 8.4 2 9v6c0 .6.5 1 1.25 1h17.5c.75 0 1.25-.4 1.25-1V9Zm-1 6H3V9h18v6Z\"/><path d=\"M15 10h5v1h-5zM15 13h5v1h-5zM15 11.5h5v1h-5z\"/>\n      </svg>",label:o,category:'Extra',select:!0,content:{type:i}},a))}(n,i),a(n,i)};return t})()));
-//# sourceMappingURL=index.js.map
-
-/***/ }),
-
 /***/ "../../node_modules/grapesjs-plugin-forms/dist/index.js":
 /*!**************************************************************!*\
   !*** ../../node_modules/grapesjs-plugin-forms/dist/index.js ***!
@@ -16560,7 +16548,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getEditorConfig: () => (/* binding */ getEditorConfig),
 /* harmony export */   initEditor: () => (/* binding */ initEditor)
 /* harmony export */ });
-/* harmony import */ var grapesjs__WEBPACK_IMPORTED_MODULE_37__ = __webpack_require__(/*! grapesjs */ "../../node_modules/grapesjs/dist/grapes.mjs");
+/* harmony import */ var grapesjs__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! grapesjs */ "../../node_modules/grapesjs/dist/grapes.mjs");
 /* harmony import */ var _openImport__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./openImport */ "./src/ts/client/grapesjs/openImport.ts");
 /* harmony import */ var grapesjs_blocks_basic__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! grapesjs-blocks-basic */ "../../node_modules/grapesjs-blocks-basic/dist/index.js");
 /* harmony import */ var grapesjs_blocks_basic__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(grapesjs_blocks_basic__WEBPACK_IMPORTED_MODULE_1__);
@@ -16570,47 +16558,45 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var grapesjs_plugin_forms__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(grapesjs_plugin_forms__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var grapesjs_custom_code__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! grapesjs-custom-code */ "../../node_modules/grapesjs-custom-code/dist/index.js");
 /* harmony import */ var grapesjs_custom_code__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(grapesjs_custom_code__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var grapesjs_navbar__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! grapesjs-navbar */ "../../node_modules/grapesjs-navbar/dist/index.js");
-/* harmony import */ var grapesjs_navbar__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(grapesjs_navbar__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @silexlabs/grapesjs-ui-suggest-classes */ "../grapesjs-ui-suggest-classes/dist/index.js");
-/* harmony import */ var _silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_6__);
-/* harmony import */ var _silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @silexlabs/grapesjs-filter-styles */ "../grapesjs-filter-styles/dist/index.js");
-/* harmony import */ var _silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_7__);
-/* harmony import */ var _silexlabs_grapesjs_symbols__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @silexlabs/grapesjs-symbols */ "../grapesjs-symbols/dist/es6/index.js");
-/* harmony import */ var _silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @silexlabs/grapesjs-loading */ "../grapesjs-loading/dist/index.js");
-/* harmony import */ var _silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_9__);
-/* harmony import */ var _silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @silexlabs/grapesjs-fonts */ "../grapesjs-fonts/dist/index.js");
-/* harmony import */ var _silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_10___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_10__);
-/* harmony import */ var _symbolDialogs__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./symbolDialogs */ "./src/ts/client/grapesjs/symbolDialogs.ts");
-/* harmony import */ var _LoginDialog__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./LoginDialog */ "./src/ts/client/grapesjs/LoginDialog.ts");
-/* harmony import */ var _footer__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./footer */ "./src/ts/client/grapesjs/footer.ts");
-/* harmony import */ var _breadcrumbs__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./breadcrumbs */ "./src/ts/client/grapesjs/breadcrumbs.ts");
-/* harmony import */ var _img__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./img */ "./src/ts/client/grapesjs/img.ts");
-/* harmony import */ var _css_props__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./css-props */ "./src/ts/client/grapesjs/css-props.ts");
-/* harmony import */ var _silexlabs_grapesjs_storage_rate_limit__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @silexlabs/grapesjs-storage-rate-limit */ "../grapesjs-storage-rate-limit/src/index.js");
-/* harmony import */ var grapesjs_style_border__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! grapesjs-style-border */ "../../node_modules/grapesjs-style-border/dist/index.js");
-/* harmony import */ var grapesjs_style_border__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(grapesjs_style_border__WEBPACK_IMPORTED_MODULE_18__);
-/* harmony import */ var grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! grapesjs-style-bg */ "../../node_modules/grapesjs-style-bg/dist/index.js");
-/* harmony import */ var grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_19___default = /*#__PURE__*/__webpack_require__.n(grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_19__);
-/* harmony import */ var _resize_panel__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./resize-panel */ "./src/ts/client/grapesjs/resize-panel.ts");
-/* harmony import */ var _silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @silexlabs/grapesjs-notifications */ "../grapesjs-notifications/dist/index.js");
-/* harmony import */ var _silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_21__);
-/* harmony import */ var _silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @silexlabs/grapesjs-keymaps-dialog */ "../grapesjs-keymaps-dialog/dist/index.js");
-/* harmony import */ var _silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_22___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_22__);
-/* harmony import */ var _page_panel__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./page-panel */ "./src/ts/client/grapesjs/page-panel.ts");
-/* harmony import */ var _new_page_dialog__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./new-page-dialog */ "./src/ts/client/grapesjs/new-page-dialog.ts");
-/* harmony import */ var _project_bar__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./project-bar */ "./src/ts/client/grapesjs/project-bar.ts");
-/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./settings */ "./src/ts/client/grapesjs/settings.ts");
-/* harmony import */ var _blocks__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./blocks */ "./src/ts/client/grapesjs/blocks.ts");
-/* harmony import */ var _semantic__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./semantic */ "./src/ts/client/grapesjs/semantic.ts");
-/* harmony import */ var _rich_text__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./rich-text */ "./src/ts/client/grapesjs/rich-text.ts");
-/* harmony import */ var _internal_links__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./internal-links */ "./src/ts/client/grapesjs/internal-links.ts");
-/* harmony import */ var _keymaps__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./keymaps */ "./src/ts/client/grapesjs/keymaps.ts");
-/* harmony import */ var _PublicationManager__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./PublicationManager */ "./src/ts/client/grapesjs/PublicationManager.ts");
-/* harmony import */ var _view_buttons__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./view-buttons */ "./src/ts/client/grapesjs/view-buttons.ts");
-/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ./storage */ "./src/ts/client/grapesjs/storage.ts");
-/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ../../constants */ "./src/ts/constants.ts");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_36__ = __webpack_require__(/*! ../utils */ "./src/ts/client/utils.ts");
+/* harmony import */ var _silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @silexlabs/grapesjs-ui-suggest-classes */ "../grapesjs-ui-suggest-classes/dist/index.js");
+/* harmony import */ var _silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @silexlabs/grapesjs-filter-styles */ "../grapesjs-filter-styles/dist/index.js");
+/* harmony import */ var _silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _silexlabs_grapesjs_symbols__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @silexlabs/grapesjs-symbols */ "../grapesjs-symbols/dist/es6/index.js");
+/* harmony import */ var _silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @silexlabs/grapesjs-loading */ "../grapesjs-loading/dist/index.js");
+/* harmony import */ var _silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @silexlabs/grapesjs-fonts */ "../grapesjs-fonts/dist/index.js");
+/* harmony import */ var _silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var _symbolDialogs__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./symbolDialogs */ "./src/ts/client/grapesjs/symbolDialogs.ts");
+/* harmony import */ var _LoginDialog__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./LoginDialog */ "./src/ts/client/grapesjs/LoginDialog.ts");
+/* harmony import */ var _footer__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./footer */ "./src/ts/client/grapesjs/footer.ts");
+/* harmony import */ var _breadcrumbs__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./breadcrumbs */ "./src/ts/client/grapesjs/breadcrumbs.ts");
+/* harmony import */ var _img__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./img */ "./src/ts/client/grapesjs/img.ts");
+/* harmony import */ var _css_props__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./css-props */ "./src/ts/client/grapesjs/css-props.ts");
+/* harmony import */ var _silexlabs_grapesjs_storage_rate_limit__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @silexlabs/grapesjs-storage-rate-limit */ "../grapesjs-storage-rate-limit/src/index.js");
+/* harmony import */ var grapesjs_style_border__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! grapesjs-style-border */ "../../node_modules/grapesjs-style-border/dist/index.js");
+/* harmony import */ var grapesjs_style_border__WEBPACK_IMPORTED_MODULE_17___default = /*#__PURE__*/__webpack_require__.n(grapesjs_style_border__WEBPACK_IMPORTED_MODULE_17__);
+/* harmony import */ var grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! grapesjs-style-bg */ "../../node_modules/grapesjs-style-bg/dist/index.js");
+/* harmony import */ var grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_18___default = /*#__PURE__*/__webpack_require__.n(grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_18__);
+/* harmony import */ var _resize_panel__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./resize-panel */ "./src/ts/client/grapesjs/resize-panel.ts");
+/* harmony import */ var _silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @silexlabs/grapesjs-notifications */ "../grapesjs-notifications/dist/index.js");
+/* harmony import */ var _silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_20___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_20__);
+/* harmony import */ var _silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @silexlabs/grapesjs-keymaps-dialog */ "../grapesjs-keymaps-dialog/dist/index.js");
+/* harmony import */ var _silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_21___default = /*#__PURE__*/__webpack_require__.n(_silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_21__);
+/* harmony import */ var _page_panel__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! ./page-panel */ "./src/ts/client/grapesjs/page-panel.ts");
+/* harmony import */ var _new_page_dialog__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! ./new-page-dialog */ "./src/ts/client/grapesjs/new-page-dialog.ts");
+/* harmony import */ var _project_bar__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./project-bar */ "./src/ts/client/grapesjs/project-bar.ts");
+/* harmony import */ var _settings__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./settings */ "./src/ts/client/grapesjs/settings.ts");
+/* harmony import */ var _blocks__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./blocks */ "./src/ts/client/grapesjs/blocks.ts");
+/* harmony import */ var _semantic__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./semantic */ "./src/ts/client/grapesjs/semantic.ts");
+/* harmony import */ var _rich_text__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./rich-text */ "./src/ts/client/grapesjs/rich-text.ts");
+/* harmony import */ var _internal_links__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./internal-links */ "./src/ts/client/grapesjs/internal-links.ts");
+/* harmony import */ var _keymaps__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./keymaps */ "./src/ts/client/grapesjs/keymaps.ts");
+/* harmony import */ var _PublicationManager__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./PublicationManager */ "./src/ts/client/grapesjs/PublicationManager.ts");
+/* harmony import */ var _view_buttons__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./view-buttons */ "./src/ts/client/grapesjs/view-buttons.ts");
+/* harmony import */ var _storage__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! ./storage */ "./src/ts/client/grapesjs/storage.ts");
+/* harmony import */ var _constants__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! ../../constants */ "./src/ts/constants.ts");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_35__ = __webpack_require__(/*! ../utils */ "./src/ts/client/utils.ts");
 /*
  * Silex website builder, free/libre no-code tool for makers.
  * Copyright (c) 2023 lexoyo and Silex Labs foundation
@@ -16672,42 +16658,40 @@ const notificationContainer = document.createElement('div');
 
 
 
-
 const plugins = [
-    { name: './project-bar', value: _project_bar__WEBPACK_IMPORTED_MODULE_25__.projectBarPlugin }, // has to be before panels and dialogs
-    { name: 'grapesjs-style-bg', value: (grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_19___default()) },
-    { name: './settings', value: _settings__WEBPACK_IMPORTED_MODULE_26__.settingsDialog },
-    { name: '@silexlabs/grapesjs-fonts', value: (_silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_10___default()) },
-    { name: './new-page-dialog', value: _new_page_dialog__WEBPACK_IMPORTED_MODULE_24__.newPageDialog },
-    { name: './page-panel', value: _page_panel__WEBPACK_IMPORTED_MODULE_23__.pagePanelPlugin },
+    { name: './project-bar', value: _project_bar__WEBPACK_IMPORTED_MODULE_24__.projectBarPlugin }, // has to be before panels and dialogs
+    { name: 'grapesjs-style-bg', value: (grapesjs_style_bg__WEBPACK_IMPORTED_MODULE_18___default()) },
+    { name: './settings', value: _settings__WEBPACK_IMPORTED_MODULE_25__.settingsDialog },
+    { name: '@silexlabs/grapesjs-fonts', value: (_silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_9___default()) },
+    { name: './new-page-dialog', value: _new_page_dialog__WEBPACK_IMPORTED_MODULE_23__.newPageDialog },
+    { name: './page-panel', value: _page_panel__WEBPACK_IMPORTED_MODULE_22__.pagePanelPlugin },
     { name: 'grapesjs-blocks-basic', value: (grapesjs_blocks_basic__WEBPACK_IMPORTED_MODULE_1___default()) },
-    { name: './blocks', value: _blocks__WEBPACK_IMPORTED_MODULE_27__.blocksPlugin },
-    { name: './view-buttons', value: _view_buttons__WEBPACK_IMPORTED_MODULE_33__["default"] },
-    { name: './semantic', value: _semantic__WEBPACK_IMPORTED_MODULE_28__.semanticPlugin },
-    { name: './rich-text', value: _rich_text__WEBPACK_IMPORTED_MODULE_29__.richTextPlugin },
+    { name: './blocks', value: _blocks__WEBPACK_IMPORTED_MODULE_26__.blocksPlugin },
+    { name: './view-buttons', value: _view_buttons__WEBPACK_IMPORTED_MODULE_32__["default"] },
+    { name: './semantic', value: _semantic__WEBPACK_IMPORTED_MODULE_27__.semanticPlugin },
+    { name: './rich-text', value: _rich_text__WEBPACK_IMPORTED_MODULE_28__.richTextPlugin },
     { name: 'grapesjs-style-filter', value: (grapesjs_style_filter__WEBPACK_IMPORTED_MODULE_2___default()) },
     { name: 'grapesjs-plugin-forms', value: (grapesjs_plugin_forms__WEBPACK_IMPORTED_MODULE_3___default()) },
     { name: 'grapesjs-custom-code', value: (grapesjs_custom_code__WEBPACK_IMPORTED_MODULE_4___default()) },
-    { name: './internal-links', value: _internal_links__WEBPACK_IMPORTED_MODULE_30__.internalLinksPlugin },
-    { name: './keymaps', value: _keymaps__WEBPACK_IMPORTED_MODULE_31__.keymapsPlugin },
-    { name: '@silexlabs/grapesjs-ui-suggest-classes', value: (_silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_6___default()) },
-    { name: '@silexlabs/grapesjs-filter-styles', value: (_silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_7___default()) },
-    { name: './symbolDialogs', value: _symbolDialogs__WEBPACK_IMPORTED_MODULE_11__["default"] },
-    { name: '@silexlabs/grapesjs-symbols', value: _silexlabs_grapesjs_symbols__WEBPACK_IMPORTED_MODULE_8__["default"] },
-    { name: './PublicationManager', value: _PublicationManager__WEBPACK_IMPORTED_MODULE_32__["default"] },
-    { name: './storage', value: _storage__WEBPACK_IMPORTED_MODULE_34__.storagePlugin },
-    { name: './LoginDialog', value: _LoginDialog__WEBPACK_IMPORTED_MODULE_12__["default"] },
-    { name: '@silexlabs/grapesjs-loading', value: (_silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_9___default()) },
-    { name: './breadcrumbs', value: _breadcrumbs__WEBPACK_IMPORTED_MODULE_14__["default"] },
-    { name: './img', value: _img__WEBPACK_IMPORTED_MODULE_15__["default"] },
-    { name: './css-props', value: _css_props__WEBPACK_IMPORTED_MODULE_16__["default"] },
-    { name: './footer', value: _footer__WEBPACK_IMPORTED_MODULE_13__["default"] },
-    { name: '@silexlabs/grapesjs-storage-rate-limit', value: _silexlabs_grapesjs_storage_rate_limit__WEBPACK_IMPORTED_MODULE_17__["default"] },
-    { name: 'grapesjs-style-border', value: (grapesjs_style_border__WEBPACK_IMPORTED_MODULE_18___default()) },
-    { name: './resize-panel', value: _resize_panel__WEBPACK_IMPORTED_MODULE_20__["default"] },
-    { name: '@silexlabs/grapesjs-notifications', value: (_silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_21___default()) },
-    { name: '@silexlabs/grapesjs-keymaps-dialog', value: (_silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_22___default()) },
-    { name: 'grapesjs-navbar', value: (grapesjs_navbar__WEBPACK_IMPORTED_MODULE_5___default()) }
+    { name: './internal-links', value: _internal_links__WEBPACK_IMPORTED_MODULE_29__.internalLinksPlugin },
+    { name: './keymaps', value: _keymaps__WEBPACK_IMPORTED_MODULE_30__.keymapsPlugin },
+    { name: '@silexlabs/grapesjs-ui-suggest-classes', value: (_silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_5___default()) },
+    { name: '@silexlabs/grapesjs-filter-styles', value: (_silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_6___default()) },
+    { name: './symbolDialogs', value: _symbolDialogs__WEBPACK_IMPORTED_MODULE_10__["default"] },
+    { name: '@silexlabs/grapesjs-symbols', value: _silexlabs_grapesjs_symbols__WEBPACK_IMPORTED_MODULE_7__["default"] },
+    { name: './PublicationManager', value: _PublicationManager__WEBPACK_IMPORTED_MODULE_31__["default"] },
+    { name: './storage', value: _storage__WEBPACK_IMPORTED_MODULE_33__.storagePlugin },
+    { name: './LoginDialog', value: _LoginDialog__WEBPACK_IMPORTED_MODULE_11__["default"] },
+    { name: '@silexlabs/grapesjs-loading', value: (_silexlabs_grapesjs_loading__WEBPACK_IMPORTED_MODULE_8___default()) },
+    { name: './breadcrumbs', value: _breadcrumbs__WEBPACK_IMPORTED_MODULE_13__["default"] },
+    { name: './img', value: _img__WEBPACK_IMPORTED_MODULE_14__["default"] },
+    { name: './css-props', value: _css_props__WEBPACK_IMPORTED_MODULE_15__["default"] },
+    { name: './footer', value: _footer__WEBPACK_IMPORTED_MODULE_12__["default"] },
+    { name: '@silexlabs/grapesjs-storage-rate-limit', value: _silexlabs_grapesjs_storage_rate_limit__WEBPACK_IMPORTED_MODULE_16__["default"] },
+    { name: 'grapesjs-style-border', value: (grapesjs_style_border__WEBPACK_IMPORTED_MODULE_17___default()) },
+    { name: './resize-panel', value: _resize_panel__WEBPACK_IMPORTED_MODULE_19__["default"] },
+    { name: '@silexlabs/grapesjs-notifications', value: (_silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_20___default()) },
+    { name: '@silexlabs/grapesjs-keymaps-dialog', value: (_silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_21___default()) },
 ];
 // Check that all plugins are loaded correctly
 plugins
@@ -16747,7 +16731,7 @@ function getEditorConfig(config) {
             appendTo: '.block-manager-container',
         },
         assetManager: {
-            upload: `${rootUrl}${_constants__WEBPACK_IMPORTED_MODULE_35__.API_PATH}${_constants__WEBPACK_IMPORTED_MODULE_35__.API_WEBSITE_PATH}${_constants__WEBPACK_IMPORTED_MODULE_35__.API_WEBSITE_ASSETS_WRITE}/?websiteId=${websiteId}${storageId ? `&connectorId=${storageId}` : ''}`,
+            upload: `${rootUrl}${_constants__WEBPACK_IMPORTED_MODULE_34__.API_PATH}${_constants__WEBPACK_IMPORTED_MODULE_34__.API_WEBSITE_PATH}${_constants__WEBPACK_IMPORTED_MODULE_34__.API_WEBSITE_ASSETS_WRITE}/?websiteId=${websiteId}${storageId ? `&connectorId=${storageId}` : ''}`,
         },
         storageManager: {
             autoload: false,
@@ -16779,7 +16763,7 @@ function getEditorConfig(config) {
     `,
         richTextEditor: {
             // @ts-ignore
-            actions: ['bold', 'italic', 'underline', 'strikethrough', 'link', 'wrap', _rich_text__WEBPACK_IMPORTED_MODULE_29__.orderedList, _rich_text__WEBPACK_IMPORTED_MODULE_29__.unorderedList],
+            actions: ['bold', 'italic', 'underline', 'strikethrough', 'link', 'wrap', _rich_text__WEBPACK_IMPORTED_MODULE_28__.orderedList, _rich_text__WEBPACK_IMPORTED_MODULE_28__.unorderedList],
         },
         plugins: plugins.map(p => p.value),
         pluginsOpts: {
@@ -16788,7 +16772,7 @@ function getEditorConfig(config) {
                 category: catBasic,
                 //flexGrid: true,
             },
-            [_project_bar__WEBPACK_IMPORTED_MODULE_25__.projectBarPlugin.toString()]: {
+            [_project_bar__WEBPACK_IMPORTED_MODULE_24__.projectBarPlugin.toString()]: {
                 panels: [
                     {
                         id: 'dash',
@@ -16801,19 +16785,19 @@ function getEditorConfig(config) {
                         id: 'block-manager-btn',
                         className: 'block-manager-btn fa fa-fw fa-plus',
                         name: 'Blocks',
-                        attributes: { title: `Blocks (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmBlocks.keys, '+')})`, containerClassName: 'block-manager-container', },
+                        attributes: { title: `Blocks (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmBlocks.keys, '+')})`, containerClassName: 'block-manager-container', },
                         command: cmdToggleBlocks,
                     }, {
                         id: 'symbols-btn',
                         className: 'symbols-btn fa-regular fa-gem',
                         name: 'Symbols',
-                        attributes: { title: `Symbols (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmSymbols.keys, '+')})`, containerClassName: 'symbols-list-container', },
+                        attributes: { title: `Symbols (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmSymbols.keys, '+')})`, containerClassName: 'symbols-list-container', },
                         command: cmdToggleSymbols,
                         buttons: [
                             {
                                 id: 'symbol-create-button',
                                 className: 'gjs-pn-btn',
-                                command: _symbolDialogs__WEBPACK_IMPORTED_MODULE_11__.cmdPromptAddSymbol,
+                                command: _symbolDialogs__WEBPACK_IMPORTED_MODULE_10__.cmdPromptAddSymbol,
                                 text: '\u271A',
                             },
                         ],
@@ -16821,24 +16805,24 @@ function getEditorConfig(config) {
                         id: 'page-panel-btn',
                         className: 'page-panel-btn fa fa-fw fa-file',
                         name: 'Pages',
-                        attributes: { title: `Pages (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmPages.keys, '+')})`, containerClassName: 'page-panel-container', },
-                        command: _page_panel__WEBPACK_IMPORTED_MODULE_23__.cmdTogglePages,
+                        attributes: { title: `Pages (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmPages.keys, '+')})`, containerClassName: 'page-panel-container', },
+                        command: _page_panel__WEBPACK_IMPORTED_MODULE_22__.cmdTogglePages,
                         buttons: [{
                                 className: 'gjs-pn-btn',
-                                command: _page_panel__WEBPACK_IMPORTED_MODULE_23__.cmdAddPage,
+                                command: _page_panel__WEBPACK_IMPORTED_MODULE_22__.cmdAddPage,
                                 text: '\u271A',
                             }],
                     }, {
                         id: 'layer-manager-btn',
                         className: 'layer-manager-btn fa-solid fa-layer-group',
                         name: 'Layers',
-                        attributes: { title: `Layers (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmLayers.keys, '+')})`, containerClassName: 'layer-manager-container', },
+                        attributes: { title: `Layers (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmLayers.keys, '+')})`, containerClassName: 'layer-manager-container', },
                         command: cmdToggleLayers,
                     }, {
                         id: 'font-dialog-btn',
                         className: 'font-manager-btn fa-solid fa-font',
                         name: 'Fonts',
-                        attributes: { title: `Fonts (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmOpenFonts.keys, '+')})` },
+                        attributes: { title: `Fonts (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmOpenFonts.keys, '+')})` },
                         command: () => {
                             editor.runCommand('open-fonts');
                         },
@@ -16846,8 +16830,8 @@ function getEditorConfig(config) {
                         id: 'settings-dialog-btn',
                         className: 'page-panel-btn fa-solid fa-gears',
                         name: 'Settings',
-                        attributes: { title: `Settings (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmOpenSettings.keys, '+')})` },
-                        command: _settings__WEBPACK_IMPORTED_MODULE_26__.cmdOpenSettings,
+                        attributes: { title: `Settings (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmOpenSettings.keys, '+')})` },
+                        command: _settings__WEBPACK_IMPORTED_MODULE_25__.cmdOpenSettings,
                     }, {
                         id: 'spacer',
                         attributes: {},
@@ -16857,12 +16841,12 @@ function getEditorConfig(config) {
                         className: 'keymaps-btn fa-solid fa-keyboard',
                         name: 'Shortcuts',
                         attributes: { title: 'Keyboard Shortcuts (Shift+H)' },
-                        command: _silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_22__.cmdKeymapsDialog,
+                        command: _silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_21__.cmdKeymapsDialog,
                     }, {
                         id: 'notifications-btn',
                         className: 'notifications-btn fa-regular fa-bell',
                         name: 'Notifications',
-                        attributes: { title: `Notifications (${(0,_utils__WEBPACK_IMPORTED_MODULE_36__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_31__.defaultKms.kmNotifications.keys, '+')})`, containerClassName: 'notifications-container', },
+                        attributes: { title: `Notifications (${(0,_utils__WEBPACK_IMPORTED_MODULE_35__.titleCase)(_keymaps__WEBPACK_IMPORTED_MODULE_30__.defaultKms.kmNotifications.keys, '+')})`, containerClassName: 'notifications-container', },
                         command: cmdToggleNotifications,
                         buttons: [{
                                 className: 'gjs-pn-btn',
@@ -16887,31 +16871,31 @@ function getEditorConfig(config) {
                         id: 'logout-button',
                         className: 'page-panel-btn fa fa-fw fa-sign-out',
                         attributes: { title: 'Sign out' },
-                        command: _LoginDialog__WEBPACK_IMPORTED_MODULE_12__.cmdLogout,
+                        command: _LoginDialog__WEBPACK_IMPORTED_MODULE_11__.cmdLogout,
                     },
                 ],
             },
-            [_PublicationManager__WEBPACK_IMPORTED_MODULE_32__["default"].toString()]: {
+            [_PublicationManager__WEBPACK_IMPORTED_MODULE_31__["default"].toString()]: {
                 appendTo: 'options',
                 websiteId,
             },
-            [_page_panel__WEBPACK_IMPORTED_MODULE_23__.pagePanelPlugin.toString()]: {
-                cmdOpenNewPageDialog: _new_page_dialog__WEBPACK_IMPORTED_MODULE_24__.cmdOpenNewPageDialog,
-                cmdOpenSettings: _settings__WEBPACK_IMPORTED_MODULE_26__.cmdOpenSettings,
+            [_page_panel__WEBPACK_IMPORTED_MODULE_22__.pagePanelPlugin.toString()]: {
+                cmdOpenNewPageDialog: _new_page_dialog__WEBPACK_IMPORTED_MODULE_23__.cmdOpenNewPageDialog,
+                cmdOpenSettings: _settings__WEBPACK_IMPORTED_MODULE_25__.cmdOpenSettings,
                 appendTo: '.page-panel-container',
             },
-            [_silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_6___default().toString()]: {
+            [_silexlabs_grapesjs_ui_suggest_classes__WEBPACK_IMPORTED_MODULE_5___default().toString()]: {
                 enableCount: false,
                 enablePerformance: false,
             },
-            [_silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_7___default().toString()]: {
+            [_silexlabs_grapesjs_filter_styles__WEBPACK_IMPORTED_MODULE_6___default().toString()]: {
                 appendBefore: '.gjs-sm-sectors',
             },
-            [_internal_links__WEBPACK_IMPORTED_MODULE_30__.internalLinksPlugin.toString()]: {
+            [_internal_links__WEBPACK_IMPORTED_MODULE_29__.internalLinksPlugin.toString()]: {
                 // FIXME: warn the user about links in error
                 onError: (errors) => console.warn('Links errors:', errors),
             },
-            [_keymaps__WEBPACK_IMPORTED_MODULE_31__.keymapsPlugin.toString()]: {
+            [_keymaps__WEBPACK_IMPORTED_MODULE_30__.keymapsPlugin.toString()]: {
                 disableKeymaps: false,
             },
             [grapesjs_custom_code__WEBPACK_IMPORTED_MODULE_4___default().toString()]: {
@@ -16923,40 +16907,35 @@ function getEditorConfig(config) {
                     autoFormat: false,
                 },
             },
-            [_silexlabs_grapesjs_symbols__WEBPACK_IMPORTED_MODULE_8__["default"].toString()]: {
+            [_silexlabs_grapesjs_symbols__WEBPACK_IMPORTED_MODULE_7__["default"].toString()]: {
                 appendTo: '.symbols-list-container',
                 emptyText: 'No symbol yet.',
                 primaryColor: PRIMARY_COLOR,
                 secondaryColor: SECONDARY_COLOR,
                 highlightColor: TERTIARY_COLOR,
             },
-            [_silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_10___default().toString()]: {
+            [_silexlabs_grapesjs_fonts__WEBPACK_IMPORTED_MODULE_9___default().toString()]: {
                 api_key: config.fontsApiKey,
                 server_url: config.fontsServerUrl,
                 api_url: config.fontsApiUrl,
             },
-            [_LoginDialog__WEBPACK_IMPORTED_MODULE_12__["default"].toString()]: {
+            [_LoginDialog__WEBPACK_IMPORTED_MODULE_11__["default"].toString()]: {
                 id: websiteId,
             },
-            [_silexlabs_grapesjs_storage_rate_limit__WEBPACK_IMPORTED_MODULE_17__["default"].toString()]: {
+            [_silexlabs_grapesjs_storage_rate_limit__WEBPACK_IMPORTED_MODULE_16__["default"].toString()]: {
                 time: 5000,
             },
-            [_img__WEBPACK_IMPORTED_MODULE_15__["default"].toString()]: {
+            [_img__WEBPACK_IMPORTED_MODULE_14__["default"].toString()]: {
                 replacedElements: config.replacedElements,
             },
-            [_silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_21___default().toString()]: {
+            [_silexlabs_grapesjs_notifications__WEBPACK_IMPORTED_MODULE_20___default().toString()]: {
                 container: notificationContainer,
                 reverse: true,
             },
-            [_silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_22___default().toString()]: {
+            [_silexlabs_grapesjs_keymaps_dialog__WEBPACK_IMPORTED_MODULE_21___default().toString()]: {
                 longPressDuration: null,
                 shortcut: 'shift+h',
             },
-            [grapesjs_navbar__WEBPACK_IMPORTED_MODULE_5___default().toString()]: {
-                block: {
-                    category: 'Components'
-                }
-            }
         },
     };
 }
@@ -16971,7 +16950,7 @@ async function initEditor(config) {
     return new Promise((resolve, reject) => {
         try {
             /* @ts-ignore */
-            editor = grapesjs__WEBPACK_IMPORTED_MODULE_37__["default"].init(config);
+            editor = grapesjs__WEBPACK_IMPORTED_MODULE_36__["default"].init(config);
         }
         catch (e) {
             console.error('Error initializing GrapesJs with plugins:', plugins, e);
@@ -17031,7 +17010,7 @@ async function initEditor(config) {
             // Mark the button as dirty when there are notifications
             // TODO: move this in the notifications plugin options
             editor.on('notifications:changed', () => {
-                const notificationButton = editor.Panels.getPanel(_project_bar__WEBPACK_IMPORTED_MODULE_25__.PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn');
+                const notificationButton = editor.Panels.getPanel(_project_bar__WEBPACK_IMPORTED_MODULE_24__.PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn');
                 editor
                     .NotificationManager['length'] ? notificationButton?.classList.add('project-bar__dirty') : notificationButton?.classList.remove('project-bar__dirty');
             });
@@ -19561,7 +19540,7 @@ const API_WEBSITE_META_READ = '/meta';
 const API_WEBSITE_META_WRITE = '/meta';
 let SILEX_VERSION;
 try {
-    SILEX_VERSION = "3.0.1";
+    SILEX_VERSION = "3.0.2";
 }
 catch (e) {
     // fallback to default value
