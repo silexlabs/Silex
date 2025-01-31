@@ -31,10 +31,17 @@
         id="inputChain1"
         name="inputChain1"
         group-by-category
-        fixed=""
         >
         <span slot="label">Test label</span>
-        <input value="test value" />
+        <span slot="fixed">
+          <input type="text" value="Fixed value" />
+        </span>
+        <select>
+          <option value="">+</option>
+          <option value="Blog Post" selected>Blog Post</option>
+          <option value="Page">Page</option>
+          <option value="Settings">Settings</option>
+        </select>
       </expression-input>
       <hr />
       <expression-input
