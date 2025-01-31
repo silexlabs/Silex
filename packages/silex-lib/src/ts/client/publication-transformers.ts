@@ -188,7 +188,7 @@ function doTransformPermalink(editor: Editor, cssValue: string): string {
     // Transform URLs
     const newUrl = transformPermalink(editor, cleanUrl, ClientSideFileType.ASSET, Initiator.CSS)
     // Return the new URL with url keyword
-    return `url(${newUrl})`
+    return `url("${newUrl}")`
   })
 }
 
