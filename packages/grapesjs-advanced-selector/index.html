@@ -1,7 +1,6 @@
 <html>
 <head>
   <title>Advanced Selector</title>
-  <link rel="stylesheet" type="text/css" href="./advanced-selector.css">
   <script src="./index.js"></script>
   <link href="http://127.0.0.1:8081/dist/css/grapes.min.css" rel="stylesheet">
   <script src="http://127.0.0.1:8081/dist/grapes.min.js"></script>
@@ -16,6 +15,15 @@
   </style>
 </head>
 <body>
+  <simple-selector></simple-selector>
+  <script type="module">
+    const simple = document.querySelector('simple-selector')
+    simple.relatedSuggestions = [{"active":true,"type":"tag","value":"div"},{"active":true,"type":"class","value":"container"},{"active":true,"type":"class","value":"child"}]
+    simple.selector = {"type":"attribute","value":"data-foo","operator":"=","attributeValue":"bar"}
+    simple.selector = {}
+    //simple.selector = { type: 'tag', value: 'div' }
+  </script>
+  <!--
   <div id="gjs"></div>
   <script>
     // Wait for the plugin to be injected by the dev server
@@ -40,5 +48,6 @@
       }, 1000);
     }, 100);
   </script>
+  -->
 </body>
 </html>
