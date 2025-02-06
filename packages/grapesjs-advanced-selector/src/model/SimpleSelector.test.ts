@@ -1,7 +1,23 @@
-import { AttributeSelector, ClassSelector, CustomTagSelector, IdSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector, UniversalSelector } from "../model/SimpleSelector"
-import { isSameSelector, toString, getDisplayType, getFilterFromSelector, validate, suggest } from "./SimpleSelectorUtils"
+import {
+  AttributeSelector,
+  ClassSelector,
+  CustomTagSelector,
+  IdSelector,
+  SimpleSelector,
+  SimpleSelectorType,
+  TAGS,
+  TagSelector,
+  UniversalSelector,
+  isSameSelector,
+  toString,
+  getDisplayType,
+  getFilterFromSelector,
+  validate,
+  suggest,
+  getCreationSuggestions
+} from "./SimpleSelector"
 
-describe('SimpleSelectorUtils', () => {
+describe('SimpleSelector', () => {
   test('isSameSelector should return true for same selectors', () => {
     const selectorA: SimpleSelector = { type: SimpleSelectorType.CLASS, value: 'test' } as ClassSelector
     const selectorB: SimpleSelector = { type: SimpleSelectorType.CLASS, value: 'test' } as ClassSelector
@@ -48,7 +64,7 @@ describe('SimpleSelectorUtils', () => {
     expect(getFilterFromSelector({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe(`[data-test]`)
   })
 
-  test('validate should return false for invalid value', () => {
+  test('validate should return false for invalid value, and the fixed value otherwise', () => {
     expect(validate('1invalid')).toBe(false)
     expect(validate('')).toBe('')
     expect(validate(' ')).toBe(false) // starting with space
@@ -62,12 +78,25 @@ describe('SimpleSelectorUtils', () => {
     expect(validate('div')).toBe('div')
     expect(validate('a')).toBe('a')
     expect(validate('A')).toBe('a')
+    expect(validate('.')).toBe(false)
+    expect(validate('.valid')).toBe('.valid')
+    expect(validate('.almost -valid')).toBe('.almost--valid')
+    expect(validate('#')).toBe(false)
+    expect(validate('#valid')).toBe('#valid')
+    expect(validate('#almost -valid')).toBe('#almost--valid')
+    expect(validate('[')).toBe(false)
+    expect(validate('[placeholder]')).toBe('[placeholder]')
+    expect(validate('[test')).toBe(false)
+    expect(validate('[test]')).toBe(false)
+    expect(validate('[data-')).toBe(false)
+    expect(validate('[data-test]')).toBe('[data-test]')
+    expect(validate('[data-test')).toBe('[data-test]')
   })
 
   test('suggest should return creation suggestions for empty filter', () => {
-    const suggestions = suggest('', [])
-    expect(suggestions.length).toBeGreaterThan(0)
-    expect(suggestions[0].createText).toBe('Start typing "." for classes')
+    expect(suggest('', []).length).toBeGreaterThan(0)
+    expect(suggest('', [])[0].createText).toBe('Start typing "." for classes')
+    expect(suggest('*', [])).toHaveLength(0)
   })
 
   test('suggest should return filtered suggestions', () => {
@@ -75,5 +104,16 @@ describe('SimpleSelectorUtils', () => {
     const suggestions = suggest('test', [selector])
     expect(suggestions.length).toBe(1)
     expect(suggestions[0].type).toBe(SimpleSelectorType.CLASS)
+  })
+
+  test('addCreationSuggestions', () => {
+    const active = true
+    expect(getCreationSuggestions('.test')).toEqual([{ createText: 'Select class .test', type: SimpleSelectorType.CLASS, value: 'test', active }])
+    expect(getCreationSuggestions('#test')).toEqual([]) // The IDs exist so they will be suggested
+    expect(getCreationSuggestions('div')).toEqual([]) // The tag exists so it will be suggested
+    expect(getCreationSuggestions('[data-test')).toEqual([{ createText: 'Select custom attribute [data-test]', type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active }])
+    expect(getCreationSuggestions('[data-test]')).toEqual([{ createText: 'Select custom attribute [data-test]', type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active }])
+    expect(getCreationSuggestions('[data-test="value"]')).toEqual([]) // Should we support this?
+    expect(getCreationSuggestions('*')).toEqual([{ createText: 'Select *', type: SimpleSelectorType.UNIVERSAL, active }])
   })
 })

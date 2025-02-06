@@ -1,8 +1,7 @@
 import { css, html } from 'lit'
 import { property } from 'lit/decorators.js'
-import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion } from '../model/SimpleSelector'
+import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, isSameSelector, getFilterFromSelector, suggest, validate, getCreationSuggestions } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
-import { toString, getDisplayType, isSameSelector, getFilterFromSelector, suggest, validate } from '../utils/SimpleSelectorUtils'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { classMap } from 'lit/directives/class-map.js'
 
@@ -67,11 +66,9 @@ export default class SimpleSelectorComponent extends StylableElement {
   }
 
   static override styles = css`
-    :focus {
-      outline: 2px solid red !important;
-    }
-    :focus-visible {
-      border: 2px solid blue !important;
+    *:focus, *:focus-visible {
+      outline: revert !important;
+      box-shadow: revert !important;
     }
     :invalid {
       border: 2px solid red;
@@ -137,7 +134,9 @@ export default class SimpleSelectorComponent extends StylableElement {
     const newSelector = { ...selector }
     delete newSelector.createText
     // Reactive: this.selector = newSelector
-    if (!selector.createText) {
+    if (selector.keepEditing) {
+      this.filterInputRef.value!.focus()
+    } else {
       this.editing = false
     }
     this.dispatchEvent(new CustomEvent('change', { detail: newSelector }))
@@ -159,9 +158,8 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Render methods
   private renderMain() {
-    const suggestions = suggest(this.filter, this.suggestions)
+    const suggestions = getCreationSuggestions(this.filter).concat(suggest(this.filter, this.suggestions))
     const valid = validate(this.filter)
-    const filter = valid || this.filter
     return html`
       <main
         class="gjs-selector-name"
@@ -183,7 +181,7 @@ export default class SimpleSelectorComponent extends StylableElement {
           ${ref(this.filterInputRef)}
           type="text"
           autocomplete="off"
-          .value=${this.editing ? filter : toString(this.selector!)}
+          .value=${this.editing ? this.filter : toString(this.selector!)}
           .disabled=${!this.editing}
           class=${classMap({
     'gjs-input': true,
