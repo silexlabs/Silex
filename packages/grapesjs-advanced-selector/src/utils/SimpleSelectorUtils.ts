@@ -5,92 +5,92 @@ const MAX_SUGGEST_RELATED = 5
 export function isSameSelector(a: SimpleSelector, b: SimpleSelector): boolean {
   if (a.type !== b.type) return false
   switch (a.type) {
-    case SimpleSelectorType.TAG:
-    case SimpleSelectorType.CUSTOM_TAG:
-    case SimpleSelectorType.CLASS:
-    case SimpleSelectorType.ID: {
-      const typedA = a as AttributeSelector
-      const typedB = b as AttributeSelector
-      return typedA.value === typedB.value
-    }
-    case SimpleSelectorType.ATTRIBUTE: {
-      const typedA = a as AttributeSelector
-      const typedB = b as AttributeSelector
-      return typedA.attributeValue === typedB.attributeValue && typedA.operator === typedB.operator && typedA.value === typedB.value
-    }
-    case SimpleSelectorType.UNIVERSAL: {
-      return true
-    }
-    default:
-      return false
+  case SimpleSelectorType.TAG:
+  case SimpleSelectorType.CUSTOM_TAG:
+  case SimpleSelectorType.CLASS:
+  case SimpleSelectorType.ID: {
+    const typedA = a as AttributeSelector
+    const typedB = b as AttributeSelector
+    return typedA.value === typedB.value
+  }
+  case SimpleSelectorType.ATTRIBUTE: {
+    const typedA = a as AttributeSelector
+    const typedB = b as AttributeSelector
+    return typedA.attributeValue === typedB.attributeValue && typedA.operator === typedB.operator && typedA.value === typedB.value
+  }
+  case SimpleSelectorType.UNIVERSAL: {
+    return true
+  }
+  default:
+    return false
   }
 }
 
 export function toString(selector: SimpleSelector): string {
   switch (selector.type) {
-    case SimpleSelectorType.ATTRIBUTE: {
-      const typed = selector as AttributeSelector
-      return `[${typed.value}${typed.operator ? `${typed.operator}"${typed.attributeValue ?? ''}"` : ''}]`
-    }
-    case SimpleSelectorType.CLASS: {
-      const typed = selector as AttributeSelector
-      return `.${typed.value}`
-    }
-    case SimpleSelectorType.ID: {
-      const typed = selector as AttributeSelector
-      return `#${typed.value}`
-    }
-    case SimpleSelectorType.TAG: {
-      const typed = selector as AttributeSelector
-      return typed.value
-    }
-    case SimpleSelectorType.CUSTOM_TAG: {
-      const typed = selector as AttributeSelector
-      return typed.value
-    }
-    case SimpleSelectorType.UNIVERSAL: {
-      return '*'
-    }
-    default:
-      return '?'
+  case SimpleSelectorType.ATTRIBUTE: {
+    const typed = selector as AttributeSelector
+    return `[${typed.value}${typed.operator ? `${typed.operator}"${typed.attributeValue ?? ''}"` : ''}]`
+  }
+  case SimpleSelectorType.CLASS: {
+    const typed = selector as AttributeSelector
+    return `.${typed.value}`
+  }
+  case SimpleSelectorType.ID: {
+    const typed = selector as AttributeSelector
+    return `#${typed.value}`
+  }
+  case SimpleSelectorType.TAG: {
+    const typed = selector as AttributeSelector
+    return typed.value
+  }
+  case SimpleSelectorType.CUSTOM_TAG: {
+    const typed = selector as AttributeSelector
+    return typed.value
+  }
+  case SimpleSelectorType.UNIVERSAL: {
+    return '*'
+  }
+  default:
+    return '?'
   }
 }
 
 export function getDisplayType(selector: SimpleSelector): string {
   switch (selector.type) {
-    case SimpleSelectorType.ATTRIBUTE:
-      return '[ ]'
-    case SimpleSelectorType.CLASS:
-      return '.'
-    case SimpleSelectorType.ID:
-      return '#'
-    case SimpleSelectorType.TAG:
-      return ''
-    case SimpleSelectorType.UNIVERSAL:
-      return '*'
-    case SimpleSelectorType.CUSTOM_TAG:
-      return '⚛'
-    default:
-      return '?'
+  case SimpleSelectorType.ATTRIBUTE:
+    return '[ ]'
+  case SimpleSelectorType.CLASS:
+    return '.'
+  case SimpleSelectorType.ID:
+    return '#'
+  case SimpleSelectorType.TAG:
+    return ''
+  case SimpleSelectorType.UNIVERSAL:
+    return '*'
+  case SimpleSelectorType.CUSTOM_TAG:
+    return '⚛'
+  default:
+    return '?'
   }
 }
 
 export function getFilterFromSelector(selector: SimpleSelector): string {
   switch (selector.type) {
-    case SimpleSelectorType.CLASS: 
-      return `.${(selector as ClassSelector).value}`
-    case SimpleSelectorType.ID:
-      return `#${(selector as IdSelector).value}`  
-    case SimpleSelectorType.TAG:
-      return (selector as TagSelector).value
-    case SimpleSelectorType.ATTRIBUTE:
-      return `[${(selector as AttributeSelector).value}]`
-    case SimpleSelectorType.UNIVERSAL:
-      return '*'
-    case SimpleSelectorType.CUSTOM_TAG:
-      return (selector as AttributeSelector).value
-    default:
-      return ''
+  case SimpleSelectorType.CLASS: 
+    return `.${(selector as ClassSelector).value}`
+  case SimpleSelectorType.ID:
+    return `#${(selector as IdSelector).value}`  
+  case SimpleSelectorType.TAG:
+    return (selector as TagSelector).value
+  case SimpleSelectorType.ATTRIBUTE:
+    return `[${(selector as AttributeSelector).value}]`
+  case SimpleSelectorType.UNIVERSAL:
+    return '*'
+  case SimpleSelectorType.CUSTOM_TAG:
+    return (selector as AttributeSelector).value
+  default:
+    return ''
   }
 }
 
@@ -105,8 +105,8 @@ export function validate(_value: string): string | false {
   // Escape special characters for the regular expression
   const escapedOperators = SELECTOR_OPERATORS.map(op => `\\${op}`).join('|')
   const value = _value
-   .toLowerCase()
-   .replace(new RegExp(escapedOperators, 'g'), '-')
+    .toLowerCase()
+    .replace(new RegExp(escapedOperators, 'g'), '-')
   // No starting with number or -
   if (value.match(/^[0-9-]/)) return false
   if (value.startsWith('-')) return false
