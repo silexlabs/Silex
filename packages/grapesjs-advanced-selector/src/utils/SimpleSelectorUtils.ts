@@ -1,4 +1,4 @@
-import { AttributeSelector, SELECTOR_OPERATORS, SimpleSelector, SimpleSelectorType, SimpleSelectorWithCreateText, TAGS } from "../model/SimpleSelector";
+import { AttributeSelector, SELECTOR_OPERATORS, SimpleSelector, SimpleSelectorType, SimpleSelectorSuggestion, TAGS, ClassSelector, IdSelector, TagSelector, TAG } from "../model/SimpleSelector"
 
 const MAX_SUGGEST_RELATED = 5
 
@@ -27,7 +27,6 @@ export function isSameSelector(a: SimpleSelector, b: SimpleSelector): boolean {
 }
 
 export function toString(selector: SimpleSelector): string {
-  console.log('toString', selector.type)
   switch (selector.type) {
     case SimpleSelectorType.ATTRIBUTE: {
       const typed = selector as AttributeSelector
@@ -42,6 +41,10 @@ export function toString(selector: SimpleSelector): string {
       return `#${typed.value}`
     }
     case SimpleSelectorType.TAG: {
+      const typed = selector as AttributeSelector
+      return typed.value
+    }
+    case SimpleSelectorType.CUSTOM_TAG: {
       const typed = selector as AttributeSelector
       return typed.value
     }
@@ -62,11 +65,11 @@ export function getDisplayType(selector: SimpleSelector): string {
     case SimpleSelectorType.ID:
       return '#'
     case SimpleSelectorType.TAG:
-      return 'TAG'
+      return ''
     case SimpleSelectorType.UNIVERSAL:
       return '*'
     case SimpleSelectorType.CUSTOM_TAG:
-      return 'TAG'
+      return '⚛'
     default:
       return '?'
   }
@@ -75,13 +78,17 @@ export function getDisplayType(selector: SimpleSelector): string {
 export function getFilterFromSelector(selector: SimpleSelector): string {
   switch (selector.type) {
     case SimpleSelectorType.CLASS: 
+      return `.${(selector as ClassSelector).value}`
     case SimpleSelectorType.ID:
+      return `#${(selector as IdSelector).value}`  
     case SimpleSelectorType.TAG:
+      return (selector as TagSelector).value
     case SimpleSelectorType.ATTRIBUTE:
-      const typed = selector as AttributeSelector
-      return typed.value
+      return `[${(selector as AttributeSelector).value}]`
     case SimpleSelectorType.UNIVERSAL:
       return '*'
+    case SimpleSelectorType.CUSTOM_TAG:
+      return (selector as AttributeSelector).value
     default:
       return ''
   }
@@ -95,18 +102,27 @@ export function validate(_value: string): string | false {
   // Special cases
   if (_value === '') return _value
   if (_value === '*') return _value
-  // Replace operators with "-"
-  const value = SELECTOR_OPERATORS.reduce((acc, operator) => acc.replace(operator, '-'), _value)
+  // Escape special characters for the regular expression
+  const escapedOperators = SELECTOR_OPERATORS.map(op => `\\${op}`).join('|')
+  const value = _value
+   .toLowerCase()
+   .replace(new RegExp(escapedOperators, 'g'), '-')
   // No starting with number or -
   if (value.match(/^[0-9-]/)) return false
   if (value.startsWith('-')) return false
-  // By default be a class
-  //if (!SELECTOR_PREFIXES.includes(value[0])) return `.${value}`
-  return value
+  // Custom attributes should start with data-
+  if (value.match(/^data-./)) return value
+  // Custom tags should contain a -
+  if(value.match(/^[a-z-]*[a-z]$/) && value.includes('-')) return value
+  // Tags should be from the TAGS list
+  if (value.match(/^[a-z]*$/) && TAGS.includes(value as TAG)) return value
+  return false
 }
 
-export function suggest(filter: string, related: SimpleSelector[]): SimpleSelectorWithCreateText[] {
-  console.log('suggest', filter, filter.length)
+/**
+ * Get a list of suggestions, filtered and with creation suggestions
+ */
+export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSelectorSuggestion[] {
   if (filter === '') {
     // Suggest to start typing `.`, `#`, `[`, `*`, or a tag name
     return [
@@ -116,20 +132,23 @@ export function suggest(filter: string, related: SimpleSelector[]): SimpleSelect
       { createText: `Start typing a tag name (e.g., "${TAGS[0]}")`, type: SimpleSelectorType.TAG, value: TAGS[0], active: true, },
       { createText: 'Start typing a custom tag name', type: SimpleSelectorType.CUSTOM_TAG, value: '', active: true, },
       { createText: 'Start typing "*" for universal selector', type: SimpleSelectorType.UNIVERSAL, active: true, },
-    ] as SimpleSelectorWithCreateText[]
+    ] as SimpleSelectorSuggestion[]
   }
-  const typeCount = new Map<SimpleSelectorType, number>();
-  return related
-    // Filter out the current filter
-    .filter(selector => toString(selector).includes(filter))
+  if (filter === '*') {
+    // Suggest to start typing a tag name
+    return [{ type: SimpleSelectorType.UNIVERSAL, active: true, }]
+  }
+  // Limit the number of suggestions by type of selector
+  const typeCount = new Map<SimpleSelectorType, number>()
+  return suggestions
     // Limit the number of suggestions by type of selector
     .reduce((acc, selector) => {
-      const type = selector.type;
-      const count = typeCount.get(type) || 0;
+      const type = selector.type
+      const count = typeCount.get(type) || 0
       if (count < MAX_SUGGEST_RELATED) {
-        acc.push(selector);
-        typeCount.set(type, count + 1);
+        acc.push(selector)
+        typeCount.set(type, count + 1)
       }
-      return acc;
-    }, [] as SimpleSelector[]);
+      return acc
+    }, [] as SimpleSelector[])
 }

@@ -39,7 +39,7 @@ export interface SimpleSelector {
   active: boolean
 }
 
-export interface SimpleSelectorWithCreateText extends SimpleSelector {
+export interface SimpleSelectorSuggestion extends SimpleSelector {
   createText?: string
 }
 

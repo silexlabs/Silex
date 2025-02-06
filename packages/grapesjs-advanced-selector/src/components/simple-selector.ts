@@ -1,6 +1,6 @@
 import { css, html } from 'lit'
 import { property } from 'lit/decorators.js'
-import { AttributeSelector, SimpleSelector, SimpleSelectorWithCreateText } from '../model/SimpleSelector'
+import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
 import { toString, getDisplayType, isSameSelector, getFilterFromSelector, suggest, validate } from '../utils/SimpleSelectorUtils'
 import { createRef, ref } from 'lit/directives/ref.js'
@@ -31,20 +31,11 @@ export default class SimpleSelectorComponent extends StylableElement {
   private _selector: SimpleSelector | undefined
 
   /**
-   * A list of all the available selectors to choose from
+   * A list of all the classes, IDs, tags, custom tags, attributes, custom attributes
+   * that are available in the document, applicable to the current selection
    */
   @property({ type: Object, attribute: true, reflect: false })
-  public get suggestions(): SimpleSelector[] {
-    return this._suggestions
-  }
-  public set suggestions(value: SimpleSelector[] | string) {
-    try {
-      this._suggestions = typeof value === 'string' ? JSON.parse(value) : value
-    } catch (error) {
-      console.error('Error parsing value for relatedSuggestions', { value, error })
-    }
-  }
-  private _suggestions: SimpleSelector[] = []
+  private suggestions: SimpleSelector[] = []
 
   /**
    * Whether the selector is editable
@@ -142,12 +133,14 @@ export default class SimpleSelectorComponent extends StylableElement {
     requestAnimationFrame(() => this.filterInputRef.value!.focus())
   }
 
-  private select(selector: SimpleSelectorWithCreateText) {
+  private select(selector: SimpleSelectorSuggestion) {
     // Remove the createText property
     const newSelector = { ...selector }
     delete newSelector.createText
     // Reactive: this.selector = newSelector
-    this.editing = false
+    if (!selector.createText) {
+      this.editing = false
+    }
     this.dispatchEvent(new CustomEvent('change', { detail: newSelector }))
   }
 
@@ -155,7 +148,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     if (!this.editing) return
     if(!this.selector) throw new Error(ERROR_NO_SELECTOR)
     this.editing = false
-    this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+    this.dispatchEvent(new CustomEvent('cancel', { detail: this.selector }))
   }
 
   // /////////////////
@@ -223,7 +216,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     `
   }
 
-  private renderSuggestionList(suggestions: SimpleSelectorWithCreateText[]) {
+  private renderSuggestionList(suggestions: SimpleSelectorSuggestion[]) {
     return html`
       <aside class="asm-simple-selector__suggestions-list">
         <ul
