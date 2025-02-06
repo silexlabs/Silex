@@ -1,14 +1,12 @@
 import { css, html } from 'lit'
 import { property } from 'lit/decorators.js'
-import { ATTRIBUTES, AttributeSelector, SimpleSelector, SimpleSelectorType, TAGS } from '../model/SimpleSelector'
+import { AttributeSelector, SimpleSelector, SimpleSelectorWithCreateText } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
-import { simpleSelectorToString, getDisplayName, getDisplayType, isSameSelector, getFilterFromSelector } from '../utils/SimpleSelectorUtils'
+import { toString, getDisplayType, isSameSelector, getFilterFromSelector, suggest, validate } from '../utils/SimpleSelectorUtils'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { classMap } from 'lit/directives/class-map.js'
 
 const ERROR_NO_SELECTOR = 'No selector provided to the component'
-const MAX_SUGGEST_ATTR = 5
-const MAX_SUGGEST_RELATED = 5
 
 export default class SimpleSelectorComponent extends StylableElement {
 
@@ -28,7 +26,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     } catch (error) {
       console.error('Error parsing value for selector', { value, error })
     }
-    // this.requestUpdate()
+    this.requestUpdate()
   }
   private _selector: SimpleSelector | undefined
 
@@ -36,17 +34,17 @@ export default class SimpleSelectorComponent extends StylableElement {
    * A list of all the available selectors to choose from
    */
   @property({ type: Object, attribute: true, reflect: false })
-  public get relatedSuggestions(): SimpleSelector[] {
-    return this._relatedSuggestions
+  public get suggestions(): SimpleSelector[] {
+    return this._suggestions
   }
-  public set relatedSuggestions(value: SimpleSelector[] | string) {
+  public set suggestions(value: SimpleSelector[] | string) {
     try {
-      this._relatedSuggestions = typeof value === 'string' ? JSON.parse(value) : value
+      this._suggestions = typeof value === 'string' ? JSON.parse(value) : value
     } catch (error) {
       console.error('Error parsing value for relatedSuggestions', { value, error })
     }
   }
-  private _relatedSuggestions: SimpleSelector[] = []
+  private _suggestions: SimpleSelector[] = []
 
   /**
    * Whether the selector is editable
@@ -59,9 +57,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     this._editing = value
     if (value) {
       this.filter = getFilterFromSelector(this.selector!)
-      this.filterInputRef.value!.value = this.filter
     } else {
-      this.filterInputRef.value!.value = getDisplayName(this.selector!)
     }
   }
   private _editing = false
@@ -71,12 +67,13 @@ export default class SimpleSelectorComponent extends StylableElement {
 
   private filterInputRef = createRef<HTMLInputElement>()
   private filter = ''
+  private attributeOptionsAttrValueRef = createRef<HTMLInputElement>()
 
   // /////////////////
   // Element overrides
   override get title() {
     if (!this.selector) throw new Error(ERROR_NO_SELECTOR)
-    return simpleSelectorToString(this.selector)
+    return toString(this.selector)
   }
 
   static override styles = css`
@@ -85,6 +82,10 @@ export default class SimpleSelectorComponent extends StylableElement {
     }
     :focus-visible {
       border: 2px solid blue !important;
+    }
+    :invalid {
+      border: 2px solid red;
+      background: #fdd;
     }
     ul:not(:focus-within) li:first-of-type,
     li:focus,
@@ -122,10 +123,11 @@ export default class SimpleSelectorComponent extends StylableElement {
         type="checkbox"
         autocomplete="off"
         .checked=${this.selector.active}
-        @change=${(event: Event) => {
-          if (!this.selector) return
-          this.selector.active = (event.target as HTMLInputElement).checked
-          this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+        @change=${() => {
+          // Handled by the parent
+          // if (!this.selector) return
+          // this.selector.active = (event.target as HTMLInputElement).checked
+          // this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
         }}
       />
     </footer>
@@ -140,16 +142,13 @@ export default class SimpleSelectorComponent extends StylableElement {
     requestAnimationFrame(() => this.filterInputRef.value!.focus())
   }
 
-  private selectSuggestionRelated(newSelector: SimpleSelector) {
+  private select(selector: SimpleSelectorWithCreateText) {
+    // Remove the createText property
+    const newSelector = { ...selector }
+    delete newSelector.createText
     // Reactive: this.selector = newSelector
     this.editing = false
     this.dispatchEvent(new CustomEvent('change', { detail: newSelector }))
-  }
-
-  private selectSuggestion(type: SimpleSelectorType, value?: string) {
-    // Reactive: this.selector = { type, value, active: true }
-    this.editing = false
-    this.dispatchEvent(new CustomEvent('change', { detail: { value: value || this.filter, type } }))
   }
 
   private cancelEdit() {
@@ -159,13 +158,18 @@ export default class SimpleSelectorComponent extends StylableElement {
     this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
   }
 
-  private selectFirstSuggestion() {
-    this.shadowRoot!.querySelector('aside li')?.dispatchEvent(new Event('click', { bubbles: true }))
+  // /////////////////
+  // Lifecycle methods
+  override updated(changedProperties: Map<string | number | symbol, unknown>) {
+    super.updated(changedProperties)
+    this.filterInputRef.value?.setCustomValidity(validate(this.filter) ? '' : 'Invalid selector')
   }
-
   // /////////////////
   // Render methods
   private renderMain() {
+    const suggestions = suggest(this.filter, this.suggestions)
+    const valid = validate(this.filter)
+    const filter = valid || this.filter
     return html`
       <main
         class="gjs-selector-name"
@@ -181,20 +185,13 @@ export default class SimpleSelectorComponent extends StylableElement {
             return
           }
           this.cancelEdit()
-          //if (this.filter.length) {
-          //  // Same as pressing enter
-          //  this.confirmCreate(SimpleSelectorType.CLASS)
-          //} else {
-          //  // Same as escape
-          //  this.cancelEdit()
-          //}
         }}
         >
         <input
           ${ref(this.filterInputRef)}
           type="text"
           autocomplete="off"
-          .value=${getDisplayName(this.selector!)}
+          .value=${this.editing ? filter : toString(this.selector!)}
           .disabled=${!this.editing}
           class=${classMap({
             'gjs-input': true,
@@ -203,7 +200,6 @@ export default class SimpleSelectorComponent extends StylableElement {
           @keydown=${(event: KeyboardEvent) => {
             if (!this.selector) return
             if (!this.editing) return
-            this.filter = this.filterInputRef.value!.value
             if (event.key === 'ArrowDown') {
               const li = this.shadowRoot!.querySelector('aside li') as HTMLElement
               li && li.focus()
@@ -212,45 +208,29 @@ export default class SimpleSelectorComponent extends StylableElement {
               this.cancelEdit()
               event.stopPropagation()
             } else if (event.key === 'Enter') {
-              this.selectFirstSuggestion()
+              this.select(suggestions[0])
               event.stopPropagation()
-            } else {
-              this.requestUpdate()
             }
           }}
+          @keyup=${() => {
+            this.filter = this.filterInputRef.value!.value
+            this.requestUpdate()
+          }}
+          .valid=${!!valid}
         />
-        ${this.editing ? this.renderSuggestions() : this.renderOptionsEditor()}
+        ${this.editing ? this.renderSuggestionList(suggestions) : this.renderOptionsEditor()}
       </main>
     `
   }
-  private renderSuggestions() {
+
+  private renderSuggestionList(suggestions: SimpleSelectorWithCreateText[]) {
     return html`
       <aside class="asm-simple-selector__suggestions-list">
         <ul
-          @click=${(event: Event) => {
-            const target = (event.target as HTMLElement).closest('li') as HTMLElement
-            const attr = target.getAttribute('data-idx')
-            if (!attr) throw new Error('No data-idx attribute, wrong target')
-            const idx = parseInt(attr)
-            const newSelector = this.relatedSuggestions[idx]
-            if (newSelector) {
-              this.selectSuggestionRelated(newSelector)
-            } else {
-              switch (target.getAttribute('data-type')) {
-                case 'class': this.selectSuggestion(SimpleSelectorType.CLASS, this.filter); break
-                case 'attribute': this.selectSuggestion(SimpleSelectorType.ATTRIBUTE, target.getAttribute('data-value') || this.filter); break
-                case 'universal': this.selectSuggestion(SimpleSelectorType.UNIVERSAL); break
-                case 'custom-tag': this.selectSuggestion(SimpleSelectorType.CUSTOM_TAG, this.filter); break
-              }
-            }
-          }}
           @keydown=${(event: KeyboardEvent) => {
             if (!this.selector) return
             if (!this.editing) return
             const target = event.target as HTMLElement
-            const attr = target.getAttribute('data-idx')
-            if (!attr) throw new Error('No data-idx attribute, wrong target')
-            const idx = parseInt(attr)
             if (event.key === 'ArrowDown') {
               const next = target.nextElementSibling as HTMLElement
               if (next) {
@@ -268,93 +248,20 @@ export default class SimpleSelectorComponent extends StylableElement {
             } else if (event.key === 'Escape') {
               this.cancelEdit()
               event.stopPropagation()
-            } else if (event.key === 'Enter') {
-              const newSelector = this.relatedSuggestions[idx]
-              if (newSelector) {
-                this.selectSuggestionRelated(newSelector)
-              } else {
-                this.selectSuggestion(target.getAttribute('data-type') as SimpleSelectorType, target.getAttribute('data-value')!)
-              }
-              event.stopPropagation()
             }
           }}
         >
-        ${ this.renderCreateSelector() }
-        ${ this.renderClasses() }
+        ${ suggestions
+          .map((sel) => html`
+            <li
+              @click=${() => this.select(sel)}
+              @keydown=${(event: KeyboardEvent) => event.key === 'Enter' && this.select(sel)}
+              ?data-selected=${isSameSelector(this.selector!, sel)}
+              tabindex="0"
+            >${sel.createText ?? toString(sel)}</option>
+            </li>
+        `)}
       </aside>
-    `
-  }
-
-  private renderClasses() {
-    return this.relatedSuggestions
-      .map((sel, idx) => idx < MAX_SUGGEST_RELATED && simpleSelectorToString(sel).includes(this.filter) ? html`
-        <li
-          data-idx="${idx}"
-          ?data-selected=${isSameSelector(this.selector!, sel)}
-          tabindex="0"
-        >${simpleSelectorToString(sel)}</option>
-        </li>
-      ` : ''
-    )
-  }
-
-  private renderCreateSelector() {
-    const enableCreateClass = this.filter.length > 0
-      && !TAGS.includes(this.filter as any)
-    const enableCreateAttribute = this.filter.length > 0 && (
-      this.filter.startsWith('data-'.substring(0, this.filter.length))
-      || this.filter.startsWith('aria-'.substring(0, this.filter.length))
-      || ATTRIBUTES.some(attr => attr.includes(this.filter))
-    )
-    const enableCreateCustomTag = this.filter.split('-').filter(Boolean).length > 1
-
-    return html`
-    ${enableCreateClass ? html`
-      <li
-        data-idx="-1"
-        data-type="class"
-        tabindex="0"
-        >
-        Create <pre>.${this.filter}</pre> class
-      </li>
-    ` : '' }
-    ${enableCreateAttribute ? html`
-      <li
-        data-idx="-1"
-        data-type="attribute"
-        tabindex="0"
-        >
-        Select <pre>[${this.filter}]</pre> attribute
-      </li>
-    ` : '' }
-    ${ATTRIBUTES
-      .filter((attr, idx) => idx < MAX_SUGGEST_ATTR && attr.includes(this.filter))
-      .map(attr => html`
-      <li
-        data-idx="-1"
-        data-type="attribute"
-        data-value="${attr}"
-        tabindex="0"
-        >
-        Select <pre>[${attr}]</pre> attribute
-      </li>
-    `)}
-    ${enableCreateCustomTag ? html`
-      <li
-        data-idx="-1"
-        data-type="custom-tag"
-        tabindex="0"
-        >
-        Create <pre>${this.filter}</pre> custom tag
-      </li>
-    ` : '' }
-    <li
-      data-idx="-1"
-      data-type="universal"
-      tabindex="0"
-      >
-      Select <pre>*</pre> universal selector
-    </li>
     `
   }
 
@@ -373,11 +280,13 @@ export default class SimpleSelectorComponent extends StylableElement {
           <select
             id="operator"
             @change=${(event: Event) => {
-              const value = (event.target as HTMLSelectElement).value as '=' | '~=' | '|=' | '^=' | '$=' | '*='
-              attributeSelector.operator = value
+              const operator = (event.target as HTMLSelectElement).value as '=' | '~=' | '|=' | '^=' | '$=' | '*='
+              attributeSelector.operator = operator
+              attributeSelector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
               this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
             }}
           >
+            <option value="">Select operator</option>
             <option value="=" .selected=${attributeSelector.operator === '='}>=</option>
             <option value="~=" .selected=${attributeSelector.operator === '~='}>~=</option>
             <option value="|=" .selected=${attributeSelector.operator === '|='}>|=</option>
@@ -385,17 +294,20 @@ export default class SimpleSelectorComponent extends StylableElement {
             <option value="$=" .selected=${attributeSelector.operator === '$='}>$=</option>
             <option value="*=" .selected=${attributeSelector.operator === '*='}>*=</option>
           </select>
-          <label for="value">Value</label>
-          <input
-            id="value"
-            type="text"
-            autocomplete="off"
-            .value=${attributeSelector.attributeValue}
-            @change=${(event: Event) => {
-              attributeSelector.attributeValue = (event.target as HTMLInputElement).value
-              this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
-            }}
-          />
+          ${attributeSelector.operator ? html`
+            <label for="value">Value</label>
+            <input
+              id="value"
+              type="text"
+              ${ref(this.attributeOptionsAttrValueRef)}
+              autocomplete="off"
+              .value=${attributeSelector.attributeValue ?? ''}
+              @keyup=${(event: MouseEvent) => {
+                attributeSelector.attributeValue = (event.target as HTMLInputElement).value
+                this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+              }}
+            />
+          ` : ''}
         </aside>
         `
       default:

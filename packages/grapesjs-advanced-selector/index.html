@@ -18,10 +18,25 @@
   <simple-selector></simple-selector>
   <script type="module">
     const simple = document.querySelector('simple-selector')
-    simple.relatedSuggestions = [{"active":true,"type":"tag","value":"div"},{"active":true,"type":"class","value":"container"},{"active":true,"type":"class","value":"child"}]
-    simple.selector = {"type":"attribute","value":"data-foo","operator":"=","attributeValue":"bar"}
+    simple.suggestions = [
+      // Classes (example: the tailwind classes)
+      { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' }, { type: 'class', value: 'hover:bg-red-500' }, { type: 'class', value: 'hover:bg-blue-500' }, { type: 'class', value: 'hover:bg-green-500' }, { type: 'class', value: 'hover:text-red-500' }, { type: 'class', value: 'hover:text-blue-500' }, { type: 'class', value: 'hover:text-green-500' }, { type: 'class', value: 'hover:p-4' }, { type: 'class', value: 'hover:m-4' }, { type: 'class', value: 'hover:border' }, { type: 'class', value: 'hover:border-red-500' }, { type: 'class', value: 'hover:border-blue-500' }, { type: 'class', value: 'hover:border-green-500' }, { type: 'class', value: 'hover:rounded' }, { type: 'class', value: 'hover:rounded-lg' }, { type: 'class', value: 'hover:rounded-full' }, { type: 'class', value: 'hover:shadow' }, { type: 'class', value: 'hover:shadow' }, { type: 'class', value: 'hover:shadow-md' }, { type: 'class', value: 'hover:shadow-lg' },
+      // Attributes
+      { 'type': 'attribute', 'value': 'id' }, { 'type': 'attribute', 'value': 'name' }, { 'type': 'attribute', 'value': 'placeholder' }, { 'type': 'attribute', 'value': 'href' }, { 'type': 'attribute', 'value': 'src' }, { 'type': 'attribute', 'value': 'alt' }, { 'type': 'attribute', 'value': 'title' }, { 'type': 'attribute', 'value': 'style' }, { 'type': 'attribute', 'value': 'data-foo' }, { 'type': 'attribute', 'value': 'data-bar' },
+      // Tags
+      { type: 'tag', value: 'div' }, { type: 'tag', value: 'span' }, { type: 'tag', value: 'p' }, { type: 'tag', value: 'h1' }, { type: 'tag', value: 'h2' }, { type: 'tag', value: 'h3' }, { type: 'tag', value: 'h4' }, { type: 'tag', value: 'h5' }, { type: 'tag', value: 'h6' }, { type: 'tag', value: 'img' }, { type: 'tag', value: 'a' }, { type: 'tag', value: 'ul' }, { type: 'tag', value: 'ol' }, { type: 'tag', value: 'li' }, { type: 'tag', value: 'table' }, { type: 'tag', value: 'tr' }, { type: 'tag', value: 'th' }, { type: 'tag', value: 'td' }, { type: 'tag', value: 'form' }, { type: 'tag', value: 'input' }, { type: 'tag', value: 'button' }, { type: 'tag', value: 'select' }, { type: 'tag', value: 'option' }, { type: 'tag', value: 'textarea' }, { type: 'tag', value: 'section', }, { type: 'tag', value: 'header', }, { type: 'tag', value: 'footer', }, { type: 'tag', value: 'nav', }, { type: 'tag', value: 'aside', }, { type: 'tag', value: 'article', }, { type: 'tag', value: 'main', }, { type: 'tag', value: 'figure', }, { type: 'tag', value: 'figcaption', }, { type: 'tag', value: 'blockquote', }, { type: 'tag', value: 'cite', }, { type: 'tag', value: 'pre', }, { type: 'tag', value: 'code', }, { type: 'tag', value: 'em', }, { type: 'tag', value: 'strong', }, { type: 'tag', value: 'small', }, { type: 'tag', value: 'mark', }, { type: 'tag', value: 'del', }, { type: 'tag', value: 'ins', }, { type: 'tag', value: 'sub', }, { type: 'tag', value: 'sup', }, { type: 'tag', value: 'abbr', }, { type: 'tag', value: 'address', }, { type: 'tag', value: 'time', }, { type: 'tag', value: 'hr', }, { type: 'tag', value: 'br', }, { type: 'tag', value: 'wbr', }, { type: 'tag', value: 'div', }, { type: 'tag', value: 'span', }, { type: 'tag', value: 'p', }, { type: 'tag', value: 'h1', }, { type: 'tag', value: 'h2', }, { type: 'tag', value: 'h3', }, { type: 'tag', value: 'h4', }, { type: 'tag', value: 'h5', }, { type: 'tag', value: 'h6', }, { type: 'tag', value: 'img', }, { type: 'tag', value: 'a', }, { type: 'tag', value: 'ul', }, { type: 'tag', value: 'ol', }, { type: 'tag', value: 'li', }, { type: 'tag', value: 'table', },
+      // Custom tags
+      { type: 'tag', value: 'my-custom-tag' }, { type: 'tag', value: 'my-other-custom-tag' }, { type: 'tag', value: 'my-third-custom-tag' },
+      // Ids
+      { type: 'id', value: 'my-id' }, { type: 'id', value: 'my-other-id' }, { type: 'id', value: 'my-third-id' },
+    ]
     simple.selector = {}
+    // simple.selector = {"type":"attribute","value":"data-foo","operator":"=","attributeValue":"bar"}
     //simple.selector = { type: 'tag', value: 'div' }
+
+    simple.onchange = (event) => {
+      simple.selector = event.detail
+    }
   </script>
   <!--
   <div id="gjs"></div>
