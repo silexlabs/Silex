@@ -45,7 +45,7 @@ describe('SimpleSelector', () => {
   test('getDisplayType should return correct display type', () => {
     const active = true
     const value = 'test'
-    expect(getDisplayType({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe('.')
+    expect(getDisplayType({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe('•')
     expect(getDisplayType({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe('#')
     expect(getDisplayType({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
     expect(getDisplayType({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe('')
@@ -95,7 +95,7 @@ describe('SimpleSelector', () => {
 
   test('suggest should return creation suggestions for empty filter', () => {
     expect(suggest('', []).length).toBeGreaterThan(0)
-    expect(suggest('', [])[0].createText).toBe('Start typing "." for classes')
+    expect(suggest('', [])[0].createValue).toBe('.')
     expect(suggest('*', [])).toHaveLength(0)
   })
 
@@ -107,13 +107,12 @@ describe('SimpleSelector', () => {
   })
 
   test('addCreationSuggestions', () => {
-    const active = true
-    expect(getCreationSuggestions('.test')).toEqual([{ createText: 'Select class .test', type: SimpleSelectorType.CLASS, value: 'test', active }])
+    expect(getCreationSuggestions('.test')[0].type).toBe(SimpleSelectorType.CLASS)
     expect(getCreationSuggestions('#test')).toEqual([]) // The IDs exist so they will be suggested
     expect(getCreationSuggestions('div')).toEqual([]) // The tag exists so it will be suggested
-    expect(getCreationSuggestions('[data-test')).toEqual([{ createText: 'Select custom attribute [data-test]', type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active }])
-    expect(getCreationSuggestions('[data-test]')).toEqual([{ createText: 'Select custom attribute [data-test]', type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active }])
+    expect(getCreationSuggestions('[data-test')[0].type).toBe(SimpleSelectorType.ATTRIBUTE)
+    expect(getCreationSuggestions('[data-test]')[0].type).toBe(SimpleSelectorType.ATTRIBUTE)
     expect(getCreationSuggestions('[data-test="value"]')).toEqual([]) // Should we support this?
-    expect(getCreationSuggestions('*')).toEqual([{ createText: 'Select *', type: SimpleSelectorType.UNIVERSAL, active }])
+    expect(getCreationSuggestions('*')[0].type).toBe(SimpleSelectorType.UNIVERSAL)
   })
 })

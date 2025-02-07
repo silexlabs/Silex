@@ -34,6 +34,7 @@ export interface SimpleSelector {
 
 export interface SimpleSelectorSuggestion extends SimpleSelector {
   createText?: string
+  createValue?: string
   keepEditing?: boolean
 }
 
@@ -77,7 +78,13 @@ export const SELECTOR_PREFIXES = ['.', '#', '[', '*']
 export const TAGS: TAG[] = [ 'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'slot', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr' ]
 export const SELECTOR_OPERATORS = [' ', '>', '+', '~']
 
-const MAX_SUGGEST_RELATED = 5
+const CLASS_SYMBOL = '•'
+const ID_SYMBOL = '#'
+const ATTRIBUTE_SYMBOL = '[ ]'
+const UNIVERSAL_SYMBOL = '*'
+const CUSTOM_TAG_SYMBOL = '⚛'
+const TAG_SYMBOL = ''
+const UNKNOWN_SYMBOL = ''
 
 // //////////////
 // Functions
@@ -106,6 +113,15 @@ export function isSameSelector(a: SimpleSelector, b: SimpleSelector): boolean {
   }
 }
 
+export function toStrings(selector: SimpleSelector): [string, string] {
+  const str = toString(selector)
+  if(selector.type === SimpleSelectorType.ATTRIBUTE) {
+    const attributeSelector = selector as AttributeSelector
+    return [`[${attributeSelector.value}`, `]`]
+  }
+  return [str, '']
+}
+
 export function toString(selector: SimpleSelector): string {
   switch (selector.type) {
   case SimpleSelectorType.ATTRIBUTE: {
@@ -113,24 +129,20 @@ export function toString(selector: SimpleSelector): string {
     return `[${typed.value}${typed.operator ? `${typed.operator}"${typed.attributeValue ?? ''}"` : ''}]`
   }
   case SimpleSelectorType.CLASS: {
-    const typed = selector as AttributeSelector
+    const typed = selector as ClassSelector
     return `.${typed.value}`
   }
   case SimpleSelectorType.ID: {
-    const typed = selector as AttributeSelector
+    const typed = selector as IdSelector
     return `#${typed.value}`
   }
-  case SimpleSelectorType.TAG: {
-    const typed = selector as AttributeSelector
-    return typed.value
-  }
+  case SimpleSelectorType.TAG:
   case SimpleSelectorType.CUSTOM_TAG: {
-    const typed = selector as AttributeSelector
+    const typed = selector as TagSelector | CustomTagSelector
     return typed.value
   }
-  case SimpleSelectorType.UNIVERSAL: {
+  case SimpleSelectorType.UNIVERSAL:
     return '*'
-  }
   default:
     return '?'
   }
@@ -139,19 +151,19 @@ export function toString(selector: SimpleSelector): string {
 export function getDisplayType(selector: SimpleSelector): string {
   switch (selector.type) {
   case SimpleSelectorType.ATTRIBUTE:
-    return '[ ]'
+    return ATTRIBUTE_SYMBOL
   case SimpleSelectorType.CLASS:
-    return '.'
+    return CLASS_SYMBOL
   case SimpleSelectorType.ID:
-    return '#'
+    return ID_SYMBOL
   case SimpleSelectorType.TAG:
-    return ''
+    return TAG_SYMBOL
   case SimpleSelectorType.UNIVERSAL:
-    return '*'
+    return UNIVERSAL_SYMBOL
   case SimpleSelectorType.CUSTOM_TAG:
-    return '⚛'
+    return CUSTOM_TAG_SYMBOL
   default:
-    return '?'
+    return UNKNOWN_SYMBOL
   }
 }
 
@@ -213,12 +225,13 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
   if (filter === '') {
     // Suggest to start typing `.`, `#`, `[`, `*`, or a tag name
     return [
-      { keepEditing: true, createText: 'Start typing "." for classes', type: SimpleSelectorType.CLASS, value: '', active: true, },
-      { keepEditing: true, createText: 'Start typing "#" for IDs', type: SimpleSelectorType.ID, value: '', active: true, },
-      { keepEditing: true, createText: 'Start typing "[" for attributes', type: SimpleSelectorType.ATTRIBUTE, value: '', active: true, },
-      { keepEditing: true, createText: `Start typing a tag name (e.g., "${TAGS[0]}")`, type: SimpleSelectorType.TAG, value: TAGS[0], active: true, },
-      { keepEditing: true, createText: 'Start typing a custom tag name', type: SimpleSelectorType.CUSTOM_TAG, value: '', active: true, },
-      { createText: 'Type "*" for universal selector', type: SimpleSelectorType.UNIVERSAL, active: true, },
+      { keepEditing: true, createText: `Select a class: ${CLASS_SYMBOL}`, type: SimpleSelectorType.CLASS, value: '', createValue: '.', active: true, },
+      { keepEditing: true, createText: `Select a an ID: ${ ID_SYMBOL}`, type: SimpleSelectorType.ID, value: '', createValue: '#', active: true, },
+      { keepEditing: true, createText: `Select an attribute: ${ ATTRIBUTE_SYMBOL }`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[', active: true, },
+      { keepEditing: true, createText: `Select a tag: DIV`, type: SimpleSelectorType.TAG, value: '', createValue: '', active: true, },
+      { keepEditing: true, createText: `Select a custom attribute: [ data-* ]`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[data-', active: true, },
+      { keepEditing: true, createText: 'Select a a custom tag: my-component', type: SimpleSelectorType.CUSTOM_TAG, value: '', createValue: 'data-', active: true, },
+      { createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, createValue: '*', active: true, },
     ] as SimpleSelectorSuggestion[]
   }
   if (filter === '*') {
@@ -227,23 +240,13 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
   }
 
   // Limit the number of suggestions by type of selector
-  const typeCount = new Map<SimpleSelectorType, number>()
+  //const typeCount = new Map<SimpleSelectorType, number>()
   return suggestions
     // Filter by the filter
     .filter(selector => {
       const value = getFilterFromSelector(selector)
       return value.toLowerCase().includes(filter.toLowerCase())
     })
-    // Limit the number of suggestions by type of selector
-    .reduce((acc, selector) => {
-      const type = selector.type
-      const count = typeCount.get(type) || 0
-      if (count < MAX_SUGGEST_RELATED) {
-        acc.push(selector)
-        typeCount.set(type, count + 1)
-      }
-      return acc
-    }, [] as SimpleSelector[])
 }
 
 export function getCreationSuggestions(filter: string): SimpleSelectorSuggestion[] {
@@ -253,7 +256,7 @@ export function getCreationSuggestions(filter: string): SimpleSelectorSuggestion
   const validated = validate(filter)
   if (validated) {
     if (filter === '*') {
-      creationSuggestions.push({ createText: 'Select *', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
+      creationSuggestions.push({ createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
     } else if (filter.startsWith('.')) {
       creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: filter.slice(1), active, } as ClassSelector)
     } else if (filter.startsWith('[data-')) {

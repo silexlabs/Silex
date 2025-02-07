@@ -1,9 +1,9 @@
-import { css, html } from 'lit'
+import { css, html, TemplateResult } from 'lit'
 import { property } from 'lit/decorators.js'
-import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, isSameSelector, getFilterFromSelector, suggest, validate, getCreationSuggestions } from '../model/SimpleSelector'
+import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getFilterFromSelector, suggest, validate, getCreationSuggestions, SimpleSelectorType, toStrings } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
-import { classMap } from 'lit/directives/class-map.js'
+import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
 
 const ERROR_NO_SELECTOR = 'No selector provided to the component'
 
@@ -74,50 +74,68 @@ export default class SimpleSelectorComponent extends StylableElement {
       border: 2px solid red;
       background: #fdd;
     }
-    ul:not(:focus-within) li:first-of-type,
-    li:focus,
-    li[data-selected] {
-      background: #eee;
-      list-style-type: disc;
+    section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
     }
-    .asm-simple-selector__filter-input--readonly {
-      border: none;
-      background: none;
-      pointer-events: none;
+    section:not(:has(.asm-simple-selector__active:checked)) {
+      opacity: 0.5;
+    }
+    .asm-simple-selector__filter {
+      min-width: 200px;
+    }
+    .asm-simple-selector__active {
+      display: none;
+    }
+    .asm-simple-selector__like-text {
+      ${ INVISIBLE_INPUT }
+    }
+    .asm-simple-selector__options-select {
+      ${ INVISIBLE_SELECT }
+    }
+    .asm-simple-selector__name {
+      min-width: 200px;
+      display: inline-block;
+      cursor: pointer;
     }
   `
 
-  // /////////////////
-  // LitElement overrides
   override dispatchEvent(event: Event): boolean {
     console.info('[SimpleSelectorComponent] Dispatching ', event.type, (event as CustomEvent).detail)
     return super.dispatchEvent(event)
   }
-  override render() {
+  override render(): TemplateResult {
     if(!this.selector) return html`<div>Initializing</div>`
     return html`
-    <header>${getDisplayType(this.selector)}</header>
-    ${ this.renderMain() }
-    <footer>
-      <button
-        class="gjs-btn-prim"
-        @click=${() => this.edit()}
-        >Edit</button>
-      <button
-        class="gjs-btn-prim"
-        @click=${() => this.dispatchEvent(new CustomEvent('delete', { detail: this.selector }))}>Delete</button>
-      <input
-        type="checkbox"
-        autocomplete="off"
-        .checked=${this.selector.active}
-        @change=${() => {
-    // Handled by the parent
-    // if (!this.selector) return
-    // this.selector.active = (event.target as HTMLInputElement).checked
-    // this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
-  }}
-      />
-    </footer>
+    <section>
+      <header>${getDisplayType(this.selector)}</header>
+      ${ this.renderMain() }
+      <footer>
+      <!--
+        <button
+          class="gjs-btn-prim"
+          @click=${() => this.edit()}
+          >Edit</button>
+      -->
+        <button
+          class="gjs-btn-prim"
+          @click=${() => this.dispatchEvent(new CustomEvent('delete', { detail: this.selector }))}
+        >
+          &#10006;
+        </button>
+        <input
+          type="checkbox"
+          autocomplete="off"
+          class="asm-simple-selector__active"
+          .checked=${this.selector.active}
+        />
+      </footer>
+    </section>
     `
   }
 
@@ -134,7 +152,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     const newSelector = { ...selector }
     delete newSelector.createText
     // Reactive: this.selector = newSelector
-    if (selector.keepEditing) {
+    if (!selector || selector.keepEditing) {
       this.filterInputRef.value!.focus()
     } else {
       this.editing = false
@@ -153,22 +171,40 @@ export default class SimpleSelectorComponent extends StylableElement {
   // Lifecycle methods
   override updated(changedProperties: Map<string | number | symbol, unknown>) {
     super.updated(changedProperties)
-    this.filterInputRef.value?.setCustomValidity(validate(this.filter) ? '' : 'Invalid selector')
+    this.filterInputRef.value?.setCustomValidity(validate(this.filter) === false ? 'Invalid selector' : '')
   }
+
   // /////////////////
   // Render methods
   private renderMain() {
     const suggestions = getCreationSuggestions(this.filter).concat(suggest(this.filter, this.suggestions))
     const valid = validate(this.filter)
     return html`
+      ${ this.renderLayout(html`
+        ${ this.editing ? this.renderFilterInput({
+    suggestions,
+    valid: !!valid
+  }) : ''
+}
+      ${ this.editing && this.selector?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
+      ${ !this.editing ? this.renderSelector(html`
+      ${this.selector?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
+  `) : '' }
+        ${this.editing ? this.renderSuggestionList(suggestions) : '' }
+      `)}
+    `
+  }
+
+  private renderLayout(content: TemplateResult) {
+    return html`
       <main
         class="gjs-selector-name"
         @dblclick=${() => this.edit()}
         @click=${() => {
-          this.selector!.active = !this.selector!.active
-          this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+        this.selector!.active = !this.selector!.active
+        this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
   }}
-        @focusout=${(event: MouseEvent) => {
+        @focusout=${(event: FocusEvent) => {
     const newFocus = event.relatedTarget as HTMLElement
     if (this.renderRoot.querySelector('main')!.contains(newFocus)) {
       // Focus is still inside the component
@@ -176,82 +212,77 @@ export default class SimpleSelectorComponent extends StylableElement {
     }
     this.cancelEdit()
   }}
-        >
-        <input
-          ${ref(this.filterInputRef)}
-          type="text"
-          autocomplete="off"
-          .value=${this.editing ? this.filter : toString(this.selector!)}
-          .disabled=${!this.editing}
-          class=${classMap({
-    'gjs-input': true,
-    'asm-simple-selector__filter-input--readonly': !this.editing,
-  })}
-          @keydown=${(event: KeyboardEvent) => {
+      >
+        ${content}
+      </main>
+    `
+  }
+
+  private renderSelector(content: TemplateResult) {
+    const [pre, post] = toStrings(this.selector!)
+    return html`
+      <span
+        class="gjs-selector-name asm-simple-selector__name"
+      >
+        ${this.selector ? html`
+          ${pre}
+          ${content}
+          ${post}
+        ` : 'No selector'}
+      </span>
+    `
+  }
+
+  private renderFilterInput({ suggestions, valid }: {suggestions: SimpleSelectorSuggestion[], valid: boolean}) {
+    return html`
+      <input
+        ${ref(this.filterInputRef)}
+        list="suggestions"
+        is="resize-input"
+        type="text"
+        autocomplete="off"
+        .value=${this.editing ? this.filter : toString(this.selector!)}
+        .disabled=${!this.editing}
+        class="asm-simple-selector__like-text asm-simple-selector__filter"
+        @keydown=${(event: KeyboardEvent) => {
     if (!this.selector) return
-    if (!this.editing) return
-    if (event.key === 'ArrowDown') {
-      const li = this.shadowRoot!.querySelector('aside li') as HTMLElement
-      if (li) li.focus()
-      event.stopPropagation()
-    } else if (event.key === 'Escape') {
+    if (event.key === 'Escape') {
       this.cancelEdit()
       event.stopPropagation()
     } else if (event.key === 'Enter') {
-      this.select(suggestions[0])
+      if (valid) this.select(suggestions[0])
       event.stopPropagation()
     }
   }}
-          @keyup=${() => {
+        @keyup=${() => {
     this.filter = this.filterInputRef.value!.value
     this.requestUpdate()
   }}
-          .valid=${!!valid}
-        />
-        ${this.editing ? this.renderSuggestionList(suggestions) : this.renderOptionsEditor()}
-      </main>
+    @click=${(event: MouseEvent) => {
+    event.stopPropagation()
+  }}
+        .valid=${valid}
+      />
     `
   }
 
   private renderSuggestionList(suggestions: SimpleSelectorSuggestion[]) {
     return html`
-      <aside class="asm-simple-selector__suggestions-list">
-        <ul
-          @keydown=${(event: KeyboardEvent) => {
-    if (!this.selector) return
-    if (!this.editing) return
-    const target = event.target as HTMLElement
-    if (event.key === 'ArrowDown') {
-      const next = target.nextElementSibling as HTMLElement
-      if (next) {
-        next.focus()
-      }
-      event.stopPropagation()
-    } else if (event.key === 'ArrowUp') {
-      const prev = target.previousElementSibling as HTMLElement
-      if (prev) {
-        prev.focus()
-      } else {
-                this.filterInputRef.value!.focus()
-      }
-      event.stopPropagation()
-    } else if (event.key === 'Escape') {
-      this.cancelEdit()
-      event.stopPropagation()
-    }
-  }}
-        >
+      <datalist
+        id="suggestions"
+      >
         ${ suggestions
+    .sort((a, b) => {
+      if (a.createValue ?? toString(a) === this.filter) return -1
+      if (b.createValue ?? toString(b) === this.filter) return 1
+      return 0
+    })
     .map((sel) => html`
-            <li
-              @click=${() => this.select(sel)}
-              @keydown=${(event: KeyboardEvent) => event.key === 'Enter' && this.select(sel)}
-              ?data-selected=${isSameSelector(this.selector!, sel)}
-              tabindex="0"
+            <option
+              value=${sel.createValue ?? toString(sel)}
             >${sel.createText ?? toString(sel)}</option>
-            </li>
         `)}
-      </aside>
+      </datalist>
     `
   }
 
@@ -260,50 +291,50 @@ export default class SimpleSelectorComponent extends StylableElement {
    * Only the attribute selectors have options: `operator` and `value2`
    */
   private renderOptionsEditor() {
-    if (!this.selector) return
-    const attributeSelector = this.selector as AttributeSelector
-    switch (this.selector?.type) {
-    case 'attribute':
-      return html`
-        <aside>
-          <label for="operator">Operator</label>
+    if (this.selector?.type !== SimpleSelectorType.ATTRIBUTE) throw new Error('Invalid selector type, only attribute selectors have options')
+    const selector = this.selector as AttributeSelector
+    return html`
           <select
+            class="asm-simple-selector__options-select"
             id="operator"
+            @click=${ (event: MouseEvent) => {
+    // Avoid check/uncheck the "active" checkbox
+    event.stopPropagation()
+  }}
             @change=${(event: Event) => {
     const operator = (event.target as HTMLSelectElement).value as '=' | '~=' | '|=' | '^=' | '$=' | '*='
-    attributeSelector.operator = operator
-    attributeSelector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
+    selector.operator = operator
+    selector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
     this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
   }}
           >
-            <option value="">Select operator</option>
-            <option value="=" .selected=${attributeSelector.operator === '='}>=</option>
-            <option value="~=" .selected=${attributeSelector.operator === '~='}>~=</option>
-            <option value="|=" .selected=${attributeSelector.operator === '|='}>|=</option>
-            <option value="^=" .selected=${attributeSelector.operator === '^='}>^=</option>
-            <option value="$=" .selected=${attributeSelector.operator === '$='}>$=</option>
-            <option value="*=" .selected=${attributeSelector.operator === '*='}>*=</option>
+            <option value=""></option>
+            <option value="=" .selected=${selector.operator === '='}>=</option>
+            <option value="~=" .selected=${selector.operator === '~='}>~=</option>
+            <option value="|=" .selected=${selector.operator === '|='}>|=</option>
+            <option value="^=" .selected=${selector.operator === '^='}>^=</option>
+            <option value="$=" .selected=${selector.operator === '$='}>$=</option>
+            <option value="*=" .selected=${selector.operator === '*='}>*=</option>
           </select>
-          ${attributeSelector.operator ? html`
-            <label for="value">Value</label>
+          ${selector.operator ? html`
             <input
-              id="value"
+              is="resize-input"
               type="text"
               ${ref(this.attributeOptionsAttrValueRef)}
               autocomplete="off"
-              .value=${attributeSelector.attributeValue ?? ''}
+              class="asm-simple-selector__like-text"
+              .value=${selector.attributeValue ?? ''}
+          @click=${ (event: MouseEvent) => {
+    // Avoid check/uncheck the "active" checkbox
+    event.stopPropagation()
+  }}
               @keyup=${(event: MouseEvent) => {
-    attributeSelector.attributeValue = (event.target as HTMLInputElement).value
+    selector.attributeValue = (event.target as HTMLInputElement).value
     this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
   }}
             />
           ` : ''}
-        </aside>
         `
-    default:
-      return html`
-        `
-    }
   }
 }
 
