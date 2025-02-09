@@ -24,6 +24,7 @@ export default class PseudoClassComponent extends StylableElement {
   static override styles = css`
     select {
       ${ INVISIBLE_SELECT }
+      border-bottom: 1px dashed;
     }
     input {
       ${ INVISIBLE_INPUT }
@@ -60,6 +61,7 @@ export default class PseudoClassComponent extends StylableElement {
   private renderList(): TemplateResult {
     return html`
       <select
+        class="asm-pseudo__select"
         @change=${ (e: Event) => {
     const p = PSEUDO_CLASSES[(e.target as HTMLSelectElement).selectedIndex - 1]
     this.select(p)

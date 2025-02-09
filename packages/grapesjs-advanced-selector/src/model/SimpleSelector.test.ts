@@ -11,10 +11,11 @@ import {
   isSameSelector,
   toString,
   getDisplayType,
-  getFilterFromSelector,
+  getDisplayName,
   validate,
   suggest,
-  getCreationSuggestions
+  getCreationSuggestions,
+  getEditableName
 } from "./SimpleSelector"
 
 describe('SimpleSelector', () => {
@@ -53,15 +54,40 @@ describe('SimpleSelector', () => {
     expect(getDisplayType({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe('[ ]')
   })
 
-  test('getFilterFromSelector should return correct filter', () => {
+  test('getDisplayName should return correct string', () => {
     const active = true
     const value = 'test'
-    expect(getFilterFromSelector({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe(`.${value}`)
-    expect(getFilterFromSelector({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe(`#${value}`)
-    expect(getFilterFromSelector({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
-    expect(getFilterFromSelector({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe(TAGS[0])
-    expect(getFilterFromSelector({ type: SimpleSelectorType.CUSTOM_TAG, value: 'the-component', active } as CustomTagSelector)).toBe('the-component')
-    expect(getFilterFromSelector({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe(`[data-test]`)
+    expect(getDisplayName({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe(value)
+    expect(getDisplayName({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe(value)
+    expect(getDisplayName({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
+    expect(getDisplayName({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe(TAGS[0])
+    expect(getDisplayName({ type: SimpleSelectorType.CUSTOM_TAG, value: 'the-component', active } as CustomTagSelector)).toBe('the-component')
+    expect(getDisplayName({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe(`data-test`)
+    expect(getDisplayName({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', operator: '=', attributeValue: 'test', active } as AttributeSelector)).toBe(`data-test`)
+  })
+
+  test('getEditableName should return the correct selector string', () => {
+    const active = true
+    const value = 'test'
+    expect(getEditableName({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe(`.${value}`)
+    expect(getEditableName({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe(`#${value}`)
+    expect(getEditableName({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
+    expect(getEditableName({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe(TAGS[0])
+    expect(getEditableName({ type: SimpleSelectorType.CUSTOM_TAG, value: 'the-component', active } as CustomTagSelector)).toBe('the-component')
+    expect(getEditableName({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe(`[data-test]`)
+    expect(getEditableName({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', operator: '=', attributeValue: 'test', active } as AttributeSelector)).toBe(`[data-test]`)
+  })
+
+  test('toString should return the full selector string', () => {
+    const active = true
+    const value = 'test'
+    expect(toString({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe(`.${value}`)
+    expect(toString({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe(`#${value}`)
+    expect(toString({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
+    expect(toString({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe(TAGS[0])
+    expect(toString({ type: SimpleSelectorType.CUSTOM_TAG, value: 'the-component', active } as CustomTagSelector)).toBe('the-component')
+    expect(toString({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe(`[data-test]`)
+    expect(toString({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', operator: '=', attributeValue: 'test', active } as AttributeSelector)).toBe(`[data-test="test"]`)
   })
 
   test('validate should return false for invalid value, and the fixed value otherwise', () => {
