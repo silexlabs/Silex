@@ -9,11 +9,28 @@
       margin: 0;
       height: 100%;
     }
+    hr {
+      margin: 100px 0;
+      border: 0;
+      border-top: 1px solid #ccc;
+    }
     :root {
       --gjs-left-width: 50%;
     }
     simple-selector {
       display: inline-block;
+    }
+    .gjs-pn-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: var(--gjs-left-width);
+      height: 100%;
+      overflow: auto;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-right: 1px solid #ccc;
+      padding: 20px;
     }
   </style>
 </head>
@@ -23,8 +40,8 @@
     <simple-selector></simple-selector>
     <script type="module">
       document.querySelectorAll('simple-selector')
-      .forEach(simple => {
-        simple.suggestions = [
+      .forEach(selector => {
+        selector.suggestions = [
           // Classes (example: the tailwind classes)
           { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' },
           // Attributes
@@ -39,10 +56,10 @@
         const active = true
         const selectors = [{}, {"type":"attribute","value":"data-foo","operator":"=","attributeValue":"bar", active}, { type: 'tag', value: 'div', active }, { type: 'class', value: 'bg-red-500', active }, { type: 'attribute', value: 'data-foo', active }, { type: 'id', value: 'my-id', active }]
         const idx = Math.floor(Math.random() * selectors.length)
-        simple.selector = selectors[idx]
+        selector.value = selectors[idx]
 
-        simple.onchange = (event) => {
-          simple.selector = event.detail
+        selector.onchange = (event) => {
+          selector.value = event.detail
         }
       })
     </script>
@@ -52,6 +69,42 @@
 
     <pseudo-class
     ></pseudo-class>
+
+
+
+    <hr>
+
+    <compound-selector></compound-selector>
+    <script>
+      const pseudoClass = document.querySelector('pseudo-class')
+      const cs = document.querySelector('compound-selector')
+      pseudoClass.onchange = () => {
+        console.log('Pseudo class changed', pseudoClass.value)
+        cs.value.pseudoClass = pseudoClass.value
+      }
+      cs.value = {
+        selectors: [
+          { type: 'tag', value: 'div', active: true },
+          { type: 'class', value: 'bg-red-500', active: true },
+          { type: 'class', value: 'bg-blue-500', active: true },
+          //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+          //{ type: 'id', value: 'my-id', active: true },
+        ],
+      }
+      cs.suggestions = [
+        // Classes (example: the tailwind classes)
+        { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' },
+        // Attributes
+        { 'type': 'attribute', 'value': 'name' }, { 'type': 'attribute', 'value': 'placeholder' }, { 'type': 'attribute', 'value': 'href' }, { 'type': 'attribute', 'value': 'src' }, { 'type': 'attribute', 'value': 'alt' }, { 'type': 'attribute', 'value': 'title' }, { 'type': 'attribute', 'value': 'style' },
+        // Ids
+        { type: 'id', value: 'my-id' },
+      ]
+      cs.onchange = (event) => {
+        console.log('Compound selector changed', event.detail)
+      }
+
+    </script>
+
   </div>
 
   <!-- --

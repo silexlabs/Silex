@@ -50,7 +50,7 @@ export interface PseudoClass {
 // Constants
 
 export const PSEUDO_CLASSES: PseudoClass[] = [
-  { type: PseudoClassType.HOVER, hasParam: false, displayName: 'hover', sentencePre: 'On mouse', sentencePost: ' the element' },
+  { type: PseudoClassType.HOVER, hasParam: false, displayName: 'hover', sentencePre: 'On mouse', sentencePost: '' },
   { type: PseudoClassType.ACTIVE, hasParam: false, displayName: 'active', sentencePre: 'When', sentencePost: '' },
   { type: PseudoClassType.FOCUS, hasParam: false, displayName: 'focus', sentencePre: 'When it has the', sentencePost: '' },
   { type: PseudoClassType.FOCUS_WITHIN, hasParam: false, displayName: 'focus is within', sentencePre: 'When the', sentencePost: '' },

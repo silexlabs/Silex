@@ -15,18 +15,18 @@ export default class SimpleSelectorComponent extends StylableElement {
    * The selector to display
    */
   @property({ type: Object, attribute: true, reflect: true })
-  public get selector(): SimpleSelector | undefined {
-    return this._selector
+  public get value(): SimpleSelector | undefined {
+    return this._value
   }
-  public set selector(value: SimpleSelector | string | undefined) {
+  public set value(sel: SimpleSelector | string | undefined) {
     try {
-      this._selector = typeof value === 'string' ? JSON.parse(value) : value
+      this._value = typeof sel === 'string' ? JSON.parse(sel) : sel
     } catch (error) {
-      console.error('Error parsing value for selector', { value, error })
+      console.error('Error parsing value for selector', { sel, error })
     }
     this.requestUpdate()
   }
-  private _selector: SimpleSelector | undefined
+  private _value: SimpleSelector | undefined
 
   /**
    * A list of all the classes, IDs, tags, custom tags, attributes, custom attributes
@@ -42,8 +42,8 @@ export default class SimpleSelectorComponent extends StylableElement {
   public get editing(): boolean {
     return this._editing
   }
-  public set editing(value: boolean) {
-    this._editing = value
+  public set editing(isEditing: boolean) {
+    this._editing = isEditing
   }
   private _editing = false
 
@@ -57,6 +57,9 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+    :host {
+      margin: 0.15rem;
+    }
     *:focus, *:focus-visible {
       outline: revert !important;
       box-shadow: revert !important;
@@ -122,24 +125,24 @@ export default class SimpleSelectorComponent extends StylableElement {
     return super.dispatchEvent(event)
   }
   override render(): TemplateResult {
-    if(!this.selector) return html`<div>Initializing</div>`
+    if(!this.value) return html`<div>Initializing</div>`
     return html`
     <section
       @dblclick=${() => this.edit()}
       @click=${() => {
-        this.selector!.active = !this.selector!.active
-        this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+        this.value!.active = !this.value!.active
+        this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
     >
       <header>
-        ${!this.editing ? getDisplayType(this.selector) : ''}
+        ${!this.editing ? getDisplayType(this.value) : ''}
       </header>
       ${ this.renderMain() }
       <footer>
         <button
           class="gjs-btn-prim asm-simple-selector__delete-button"
           @click=${(event: MouseEvent) => {
-    this.dispatchEvent(new CustomEvent('delete', { detail: this.selector }))
+    this.dispatchEvent(new CustomEvent('delete', { detail: this.value }))
     // Avoid check/uncheck the "active" checkbox
     event.stopPropagation()
   }}
@@ -150,7 +153,7 @@ export default class SimpleSelectorComponent extends StylableElement {
           type="checkbox"
           autocomplete="off"
           class="asm-simple-selector__active"
-          .checked=${this.selector.active}
+          .checked=${this.value.active}
         />
       </footer>
     </section>
@@ -160,7 +163,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Methods
   private edit() {
-    if(!this.selector) throw new Error(ERROR_NO_SELECTOR)
+    if(!this.value) throw new Error(ERROR_NO_SELECTOR)
     this.editing = true
     requestAnimationFrame(() => this.selectorInputRef.value!.focus())
   }
@@ -180,16 +183,16 @@ export default class SimpleSelectorComponent extends StylableElement {
 
   private cancelEdit() {
     if (!this.editing) return
-    if(!this.selector) throw new Error(ERROR_NO_SELECTOR)
+    if(!this.value) throw new Error(ERROR_NO_SELECTOR)
     this.editing = false
-    this.dispatchEvent(new CustomEvent('cancel', { detail: this.selector }))
+    this.dispatchEvent(new CustomEvent('cancel', { detail: this.value }))
   }
 
   // /////////////////
   // Lifecycle methods
   override updated(changedProperties: Map<string | number | symbol, unknown>) {
     super.updated(changedProperties)
-    if (this.selector) {
+    if (this.value) {
       const selectorString = this.selectorInputRef.value?.value || ''
       this.selectorInputRef.value?.setCustomValidity(validate(selectorString) === false ? 'Invalid selector' : '')
     }
@@ -208,9 +211,9 @@ export default class SimpleSelectorComponent extends StylableElement {
     valid: valid !== false, // Can be false or a string
   }) : ''
 }
-      ${ this.editing && this.selector?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
+      ${ this.editing && this.value?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
       ${ !this.editing ? this.renderSelector(html`
-      ${this.selector?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
+      ${this.value?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
   `) : '' }
         ${this.editing ? this.renderSuggestionList(suggestions, selectorString) : '' }
       `)}
@@ -251,8 +254,8 @@ export default class SimpleSelectorComponent extends StylableElement {
       <span
         class="gjs-selector-name asm-simple-selector__name"
       >
-        ${this.selector ? html`
-          ${ getDisplayName(this.selector!) }
+        ${this.value ? html`
+          ${ getDisplayName(this.value!) }
           ${content}
         ` : 'No selector'}
       </span>
@@ -267,11 +270,11 @@ export default class SimpleSelectorComponent extends StylableElement {
         is="resize-input"
         type="text"
         autocomplete="off"
-        .value=${getEditableName(this.selector!)}
+        .value=${getEditableName(this.value!)}
         .disabled=${!this.editing}
         class="asm-simple-selector__like-text asm-simple-selector__selector"
         @keydown=${(event: KeyboardEvent) => {
-    if (!this.selector) return
+    if (!this.value) return
     if (event.key === 'Escape') {
       this.cancelEdit()
       event.stopPropagation()
@@ -316,8 +319,8 @@ export default class SimpleSelectorComponent extends StylableElement {
    * Only the attribute selectors have options: `operator` and `value2`
    */
   private renderOptionsEditor(): TemplateResult {
-    if (this.selector?.type !== SimpleSelectorType.ATTRIBUTE) throw new Error('Invalid selector type, only attribute selectors have options')
-    const selector = this.selector as AttributeSelector
+    if (this.value?.type !== SimpleSelectorType.ATTRIBUTE) throw new Error('Invalid selector type, only attribute selectors have options')
+    const selector = this.value as AttributeSelector
     return html`
           <select
             class="asm-simple-selector__options-select"
@@ -330,7 +333,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     const operator = (event.target as HTMLSelectElement).value as '=' | '~=' | '|=' | '^=' | '$=' | '*='
     selector.operator = operator
     selector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
-    this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
           >
             <option value="">...</option>
@@ -356,7 +359,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   }}
               @keyup=${(event: MouseEvent) => {
     selector.attributeValue = (event.target as HTMLInputElement).value
-    this.dispatchEvent(new CustomEvent('change', { detail: this.selector }))
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
             />
             &nbsp;"

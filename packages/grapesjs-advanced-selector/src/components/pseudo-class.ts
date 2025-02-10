@@ -13,7 +13,7 @@ export default class PseudoClassComponent extends StylableElement {
    * Selected pseudo class
    */
   @property({ type: Object, reflect: true })
-    pseudoClass?: PseudoClass
+    value?: PseudoClass
 
   // /////////////////
   // Properties
@@ -22,6 +22,10 @@ export default class PseudoClassComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+    :host {
+      display: block;
+      text-align: left;
+    }
     select {
       ${ INVISIBLE_SELECT }
       border-bottom: 1px dashed;
@@ -33,23 +37,23 @@ export default class PseudoClassComponent extends StylableElement {
   `
 
   override render(): TemplateResult {
-    if (!this.pseudoClass) {
+    if (!this.value) {
       return html`
         Add a ${ this.renderList() }
       `
     }
     return html`
-      ${ this.pseudoClass.sentencePre }
+      ${ this.value.sentencePre }
       ${ this.renderList() }
-      ${ this.pseudoClass.sentencePost }
+      ${ this.value.sentencePost }
       ${ this.renderParam() }
     `
   }
   // /////////////////
   // Methods
   private select(pseudoClass: PseudoClass) {
-    this.pseudoClass = pseudoClass
-    this.dispatchEvent(new CustomEvent('change', { bubbles: true }))
+    this.value = pseudoClass
+    this.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: pseudoClass }))
     requestAnimationFrame(() => this.paramRef.value?.focus())
   }
 
@@ -68,11 +72,11 @@ export default class PseudoClassComponent extends StylableElement {
   }}
       >
         <option
-          .selected=${ !this.pseudoClass }
+          .selected=${ !this.value }
         >pseudo class</option>
         ${ PSEUDO_CLASSES.map(p => html`
           <option
-            .selected=${ this.pseudoClass?.type === p.type }
+            .selected=${ this.value?.type === p.type }
           >${ p.displayName }</option>
         `) }
       </select>
@@ -80,7 +84,7 @@ export default class PseudoClassComponent extends StylableElement {
   }
 
   private renderParam(): TemplateResult {
-    if (!this.pseudoClass?.hasParam) {
+    if (!this.value?.hasParam) {
       return html``
     }
     return html`
@@ -90,11 +94,11 @@ export default class PseudoClassComponent extends StylableElement {
         ${ ref(this.paramRef) }
         type="text"
         autocomplete="off"
-        .value=${ this.pseudoClass.param ?? '' }
+        .value=${ this.value.param ?? '' }
         placeholder=""
         @input=${ (e: Event) => {
     this.select({
-      ...this.pseudoClass!,
+      ...this.value!,
       param: (e.target as HTMLInputElement).value,
     })
   }}

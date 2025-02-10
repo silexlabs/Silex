@@ -16,6 +16,7 @@ export enum SimpleSelectorType {
   ID = 'id',
   ATTRIBUTE = 'attribute',
   UNIVERSAL = 'universal',
+  UNKNOWN = 'unknown',
 }
 
 /**
@@ -83,8 +84,8 @@ const ID_SYMBOL = '#'
 const ATTRIBUTE_SYMBOL = '[ ]'
 const UNIVERSAL_SYMBOL = '*'
 const CUSTOM_TAG_SYMBOL = '⚛'
-const TAG_SYMBOL = ''
-const UNKNOWN_SYMBOL = ''
+const TAG_SYMBOL = '⚛'
+const UNKNOWN_SYMBOL = '?'
 
 // //////////////
 // Functions
@@ -216,18 +217,20 @@ export function validate(_value: string): string | false {
 /**
  * Get a list of suggestions, filtered and with creation suggestions
  */
-export function suggest(selector: string, suggestions: SimpleSelector[]): SimpleSelectorSuggestion[] {
-  if (selector === '') {
+export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSelectorSuggestion[] {
+  if (filter === '') {
     const active = true
     return [
-      { keepEditing: true, createText: `. for class`, type: SimpleSelectorType.CLASS, value: '', createValue: '.', active, },
-      { keepEditing: true, createText: `# for ID`, type: SimpleSelectorType.ID, value: '', createValue: '#', active, },
-      { keepEditing: true, createText: `[ attribute`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[', active, },
-      { keepEditing: true, createText: `[data- custom attr`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[data-', active, },
-      { createText: '*: all', type: SimpleSelectorType.UNIVERSAL, createValue: '*', active, },
+      { keepEditing: true, createText: `Select a class: ${CLASS_SYMBOL}`, type: SimpleSelectorType.CLASS, value: '', createValue: '.', active, },
+      { keepEditing: true, createText: `Select a an ID: ${ ID_SYMBOL}`, type: SimpleSelectorType.ID, value: '', createValue: '#', active, },
+      { keepEditing: true, createText: `Select an attribute: ${ ATTRIBUTE_SYMBOL }`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[', active, },
+      { keepEditing: true, createText: `Select a tag: `, type: SimpleSelectorType.TAG, value: '', createValue: '', active, },
+      { keepEditing: true, createText: `Select a custom attribute: [ data-* ]`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[data-', active, },
+      { keepEditing: true, createText: 'Select a a custom tag: my-component', type: SimpleSelectorType.CUSTOM_TAG, value: '', createValue: 'data-', active, },
+      { createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, createValue: '*', active, },
     ] as SimpleSelectorSuggestion[]
   }
-  if (selector === '*') {
+  if (filter === '*') {
     // The universal selector will be suggested in the creation suggestions (getCreationSuggestions)
     return []
   }
@@ -235,29 +238,29 @@ export function suggest(selector: string, suggestions: SimpleSelector[]): Simple
   // Limit the number of suggestions by type of selector
   //const typeCount = new Map<SimpleSelectorType, number>()
   return suggestions
-    // Filter by the selector
-    .filter(sel => {
-      const value = getEditableName(sel)
-      return value.toLowerCase().includes(selector.toLowerCase())
+    // Filter by the filter
+    .filter(selector => {
+      const value = getEditableName(selector)
+      return value.toLowerCase().includes(filter.toLowerCase())
     })
 }
 
-export function getCreationSuggestions(selector: string): SimpleSelectorSuggestion[] {
+export function getCreationSuggestions(filter: string): SimpleSelectorSuggestion[] {
   // Creation suggestions
   const creationSuggestions = [] as SimpleSelectorSuggestion[]
-  const validated = validate(selector)
+  const validated = validate(filter)
   if (validated) {
     const active = true
-    if (selector === '*') {
+    if (filter === '*') {
       creationSuggestions.push({ createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
-    } else if (selector.startsWith('.')) {
-      creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: selector.slice(1), active, } as ClassSelector)
-    } else if (selector.startsWith('[data-')) {
-      creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: selector.replace('[', '').replace(']', ''), active, } as AttributeSelector)
-    } else if (selector.startsWith('[')) {
-      creationSuggestions.push({ createText: `Select attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: selector.replace('[', '').replace(']', ''), active, } as AttributeSelector)
-    } else if (selector.match(/^[a-z-]*-[a-z]*$/)) {
-      creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: selector, active, } as CustomTagSelector)
+    } else if (filter.startsWith('.')) {
+      creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: filter.slice(1), active, } as ClassSelector)
+    } else if (filter.startsWith('[data-')) {
+      creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: filter.replace('[', '').replace(']', ''), active, } as AttributeSelector)
+    } else if (filter.startsWith('[')) {
+      creationSuggestions.push({ createText: `Select attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: filter.replace('[', '').replace(']', ''), active, } as AttributeSelector)
+    } else if (filter.match(/^[a-z-]*-[a-z]*$/)) {
+      creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: filter, active, } as CustomTagSelector)
     }
   }
   return creationSuggestions

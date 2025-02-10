@@ -49,7 +49,7 @@ describe('SimpleSelector', () => {
     expect(getDisplayType({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe('•')
     expect(getDisplayType({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe('#')
     expect(getDisplayType({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
-    expect(getDisplayType({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe('')
+    expect(getDisplayType({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe('⚛')
     expect(getDisplayType({ type: SimpleSelectorType.CUSTOM_TAG, value: 'the-component', active } as CustomTagSelector)).toBe('⚛')
     expect(getDisplayType({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe('[ ]')
   })
