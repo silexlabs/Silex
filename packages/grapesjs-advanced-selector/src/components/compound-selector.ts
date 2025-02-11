@@ -1,6 +1,6 @@
 import { property } from "lit/decorators.js"
 import StylableElement from "../StylableElement"
-import { CompoundSelector } from "../model/CompoundSelector"
+import { CompoundSelector, toString } from "../model/CompoundSelector"
 import { SimpleSelector, SimpleSelectorType } from "../model/SimpleSelector"
 import { css, html, TemplateResult } from "lit"
 import SimpleSelectorComponent from "./simple-selector"
@@ -55,6 +55,9 @@ export default class CompoundSelectorComponent extends StylableElement {
     }
   `
 
+  override toString(): string {
+    return toString(this.value!)
+  }
   override dispatchEvent(event: Event): boolean {
     console.info('[CompoundSelectorComponent] Dispatching ', event.type, (event as CustomEvent).detail, this.value)
     return super.dispatchEvent(event)

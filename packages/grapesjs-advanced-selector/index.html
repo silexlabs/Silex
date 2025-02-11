@@ -20,11 +20,22 @@
     simple-selector {
       display: inline-block;
     }
+    #pre {
+      text-align: left;
+      pre {
+        display: inline;
+        background-color: #f9f9f9;
+        padding: 0 5px;
+        border-radius: 3px;
+        margin: 0;
+      }
+    }
     .gjs-pn-panel {
       position: fixed;
       top: 0;
       left: 0;
-      width: var(--gjs-left-width);
+      width: 100%;
+      max-width: 350px;
       height: 100%;
       overflow: auto;
       padding: 10px;
@@ -75,12 +86,18 @@
     <hr>
 
     <compound-selector></compound-selector>
+    <p id="pre"></p>
     <script>
       const pseudoClass = document.querySelector('pseudo-class')
       const cs = document.querySelector('compound-selector')
+      const pre = document.querySelector('#pre')
+      function updatePre() {
+        pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
+      }
       pseudoClass.onchange = () => {
         console.log('Pseudo class changed', pseudoClass.value)
         cs.value.pseudoClass = pseudoClass.value
+        updatePre()
       }
       cs.value = {
         selectors: [
@@ -101,8 +118,9 @@
       ]
       cs.onchange = (event) => {
         console.log('Compound selector changed', event.detail)
+        updatePre()
       }
-
+      updatePre()
     </script>
 
   </div>
