@@ -28,11 +28,29 @@ export default class PseudoClassComponent extends StylableElement {
     }
     select {
       ${ INVISIBLE_SELECT }
+      text-align: center;
       border-bottom: 1px dashed;
     }
     input {
       ${ INVISIBLE_INPUT }
       text-align: center;
+    }
+    .asm-pseudo__help {
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+      text-decoration: none;
+      border-radius: 50%;
+      padding: 0.25rem;
+      color: var(--gjs-secondary-color, #333);
+      border: 1px solid var(--gjs-secondary-color, #333);
+      background-color: var(--gjs-primary-color, #fff);
+      /* make the link a circle */
+      display: inline-block;
+      width: .5rem;
+      height: .5rem;
+      text-align: center;
+      line-height: .7rem;
+      font-size: .7rem;
     }
   `
 
@@ -80,6 +98,14 @@ export default class PseudoClassComponent extends StylableElement {
           >${ p.displayName }</option>
         `) }
       </select>
+      ${ this.value?.helpLink ? html`
+        <a
+          class="asm-pseudo__help"
+          href=${ this.value?.helpLink }
+          target="_blank"
+        >?</a>
+      `: html`` }
+
     `
   }
 

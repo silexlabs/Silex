@@ -79,21 +79,23 @@ export default class SimpleSelectorComponent extends StylableElement {
       cursor: pointer;
     }
     header {
-      width: 10px;
+      width: 12px;
       text-wrap: nowrap;
-      transition: all .2s ease;
+      transition: all .2s ease-out;
       overflow: hidden;
     }
+    section:focus-within header,
     section:hover header {
       width: 0;
     }
     footer {
       width: 0;
-      transition: all .2s ease;
+      transition: all .2s ease-out;
       overflow: hidden;
     }
+    section:focus-within footer,
     section:hover footer {
-      width: 10px;
+      width: 12px;
     }
     select {
       text-align: center;
@@ -103,8 +105,8 @@ export default class SimpleSelectorComponent extends StylableElement {
     }
     .asm-simple-selector__delete-button {
       padding: 0;
-    }
-    .asm-simple-selector__selector {
+      line-height: 1;
+      margin: 1px;
     }
     .asm-simple-selector__active {
       display: none;
@@ -117,9 +119,13 @@ export default class SimpleSelectorComponent extends StylableElement {
     }
     .asm-simple-selector__name {
       display: inline-block;
+      text-wrap: wrap;
     }
   `
 
+  override focus() {
+    this.selectorInputRef.value?.focus()
+  }
   override dispatchEvent(event: Event): boolean {
     console.info('[SimpleSelectorComponent] Dispatching ', event.type, (event as CustomEvent).detail)
     return super.dispatchEvent(event)
@@ -128,6 +134,13 @@ export default class SimpleSelectorComponent extends StylableElement {
     if(!this.value) return html`<div>Initializing</div>`
     return html`
     <section
+      tabindex="0"
+      @keydown=${(event: KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+        this.value!.active = !this.value!.active
+        this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    }
+  }}
       @dblclick=${() => this.edit()}
       @click=${() => {
         this.value!.active = !this.value!.active
@@ -141,13 +154,18 @@ export default class SimpleSelectorComponent extends StylableElement {
       <footer>
         <button
           class="gjs-btn-prim asm-simple-selector__delete-button"
+          @keydown=${(event: KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.stopPropagation()
+    }
+  }}
           @click=${(event: MouseEvent) => {
     this.dispatchEvent(new CustomEvent('delete', { detail: this.value }))
     // Avoid check/uncheck the "active" checkbox
     event.stopPropagation()
   }}
         >
-          &#10006;
+          &times;
         </button>
         <input
           type="checkbox"

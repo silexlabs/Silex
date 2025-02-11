@@ -103,6 +103,7 @@ export default class CompoundSelectorComponent extends StylableElement {
     requestAnimationFrame(() => {
       const selector = this.shadowRoot!.querySelectorAll('simple-selector')[this.value!.selectors.length - 1] as SimpleSelectorComponent
       selector.editing = true
+      requestAnimationFrame(() => selector.focus())
     })
   }
   private deleteSelector(idx: number) {
