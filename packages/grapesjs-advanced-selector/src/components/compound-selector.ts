@@ -4,6 +4,7 @@ import { CompoundSelector, toString } from "../model/CompoundSelector"
 import { SimpleSelector, SimpleSelectorType } from "../model/SimpleSelector"
 import { css, html, TemplateResult } from "lit"
 import SimpleSelectorComponent from "./simple-selector"
+import { PSEUDO_CLASSES } from "../model/PseudoClass"
 
 
 export default class CompoundSelectorComponent extends StylableElement {
@@ -82,7 +83,11 @@ export default class CompoundSelectorComponent extends StylableElement {
             >+</button>
         </div>
         <div>
-          <pseudo-class .value=${ this.value?.pseudoClass } @change=${ this.changePseudoClass }></pseudo-class>
+          <inline-select
+            .value=${ this.value?.pseudoClass }
+            .options=${ PSEUDO_CLASSES }
+            @change=${ this.changePseudoClass }
+          ></inline-select>
         <div>
       </section>
     `

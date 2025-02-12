@@ -1,19 +1,34 @@
 import { property } from 'lit/decorators.js'
 import StylableElement from '../StylableElement'
 import { css, html, TemplateResult } from 'lit'
-import { PSEUDO_CLASSES, PseudoClass } from '../model/PseudoClass'
+import { PseudoClass } from '../model/PseudoClass'
+import { Operator } from '../model/Operator'
 import { createRef, ref } from 'lit/directives/ref.js'
 import './resize-input'
 import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
 
-export default class PseudoClassComponent extends StylableElement {
+type Option = PseudoClass | Operator
+
+export default class InlineSelectComponent extends StylableElement {
   // /////////////////
   // Attributes
   /**
-   * Selected pseudo class
+   * Selected option
    */
   @property({ type: Object, reflect: true })
-    value?: PseudoClass
+    value?: Option
+  
+  /**
+   * List of options
+   */
+  @property({ type: Array, reflect: true })
+    options: Option[] = []
+
+  /**
+   * Placeholder displayed when no option is selected
+   */
+  @property({ type: String, reflect: true })
+    placeholder = 'Select an option'
 
   // /////////////////
   // Properties
@@ -35,7 +50,7 @@ export default class PseudoClassComponent extends StylableElement {
       ${ INVISIBLE_INPUT }
       text-align: center;
     }
-    .asm-pseudo__help {
+    .asm-inline-select__help {
       font-size: 0.8rem;
       margin-left: 0.5rem;
       text-decoration: none;
@@ -63,15 +78,15 @@ export default class PseudoClassComponent extends StylableElement {
     return html`
       ${ this.value.sentencePre }
       ${ this.renderList() }
-      ${ this.value.sentencePost }
+      ${ this.value.sentencePost ?? '' }
       ${ this.renderParam() }
     `
   }
   // /////////////////
   // Methods
-  private select(pseudoClass: PseudoClass) {
-    this.value = pseudoClass
-    this.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: pseudoClass }))
+  private select(option: Option) {
+    this.value = option
+    this.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: option }))
     requestAnimationFrame(() => this.paramRef.value?.focus())
   }
 
@@ -83,16 +98,16 @@ export default class PseudoClassComponent extends StylableElement {
   private renderList(): TemplateResult {
     return html`
       <select
-        class="asm-pseudo__select"
+        class="asm-inline-select__select"
         @change=${ (e: Event) => {
-    const p = PSEUDO_CLASSES[(e.target as HTMLSelectElement).selectedIndex - 1]
+    const p = this.options[(e.target as HTMLSelectElement).selectedIndex - 1]
     this.select(p)
   }}
       >
         <option
           .selected=${ !this.value }
-        >pseudo class</option>
-        ${ PSEUDO_CLASSES.map(p => html`
+        >${ this.placeholder }</option>
+        ${ this.options.map(p => html`
           <option
             .selected=${ this.value?.type === p.type }
           >${ p.type }</option>
@@ -100,7 +115,7 @@ export default class PseudoClassComponent extends StylableElement {
       </select>
       ${ this.value?.helpLink ? html`
         <a
-          class="asm-pseudo__help"
+          class="asm-inline-select__help"
           href=${ this.value?.helpLink }
           target="_blank"
         >?</a>
@@ -120,19 +135,19 @@ export default class PseudoClassComponent extends StylableElement {
         ${ ref(this.paramRef) }
         type="text"
         autocomplete="off"
-        .value=${ this.value.param ?? '' }
+        .value=${ (this.value as PseudoClass).param } // It may not be a pseudo class, in which case param will be undefined
         placeholder=""
         @input=${ (e: Event) => {
     this.select({
       ...this.value!,
       param: (e.target as HTMLInputElement).value,
-    })
+    } as Option)
   }}
       /> )
     `
   }
 }
 
-if (!customElements.get('pseudo-class')) {
-  customElements.define('pseudo-class', PseudoClassComponent)
+if (!customElements.get('inline-select')) {
+  customElements.define('inline-select', InlineSelectComponent)
 }

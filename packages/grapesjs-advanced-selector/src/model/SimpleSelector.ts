@@ -221,13 +221,9 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
   if (filter === '') {
     const active = true
     return [
-      { keepEditing: true, createText: `Select a class: ${CLASS_SYMBOL}`, type: SimpleSelectorType.CLASS, value: '', createValue: '.', active, },
-      { keepEditing: true, createText: `Select a an ID: ${ ID_SYMBOL}`, type: SimpleSelectorType.ID, value: '', createValue: '#', active, },
-      { keepEditing: true, createText: `Select an attribute: ${ ATTRIBUTE_SYMBOL }`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[', active, },
-      { keepEditing: true, createText: `Select a tag: `, type: SimpleSelectorType.TAG, value: '', createValue: '', active, },
-      { keepEditing: true, createText: `Select a custom attribute: [ data-* ]`, type: SimpleSelectorType.ATTRIBUTE, value: '', createValue: '[data-', active, },
-      { keepEditing: true, createText: 'Select a a custom tag: my-component', type: SimpleSelectorType.CUSTOM_TAG, value: '', createValue: 'data-', active, },
-      { createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, createValue: '*', active, },
+      { keepEditing: true, createText: `.`, type: SimpleSelectorType.CLASS, createValue: '.', active, },
+      { keepEditing: true, createText: `#`, type: SimpleSelectorType.ID, createValue: '#', active, },
+      { keepEditing: true, createText: `[ ]`, type: SimpleSelectorType.ATTRIBUTE, createValue: '[', active, },
     ] as SimpleSelectorSuggestion[]
   }
   if (filter === '*') {

@@ -114,9 +114,9 @@
     <hr>
 
 
-    <pseudo-class
-    ></pseudo-class>
-
+    <inline-select
+      id="pseudo-class"
+    ></inline-select>
 
 
     <hr>
@@ -124,14 +124,20 @@
     <compound-selector></compound-selector>
     <p id="pre"></p>
     <script>
-      const pseudoClass = document.querySelector('pseudo-class')
+      const pseudoClass = document.querySelector('#pseudo-class')
       const cs = document.querySelector('compound-selector')
       const pre = document.querySelector('#pre')
       function updatePre() {
         pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
       }
+      pseudoClass.options = [
+        { hasParam: false, type: 'hover', sentencePre: 'On mouse', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:hover' },
+        { hasParam: false, type: 'active', sentencePre: 'When', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:active' },
+        { hasParam: false, type: 'focus', sentencePre: 'When it has the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus' },
+        { hasParam: false, type: 'focus-within', sentencePre: 'When the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-within' },
+        { hasParam: false, type: 'focus-visible', sentencePre: 'When the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible' },
+      ]
       pseudoClass.onchange = () => {
-        console.log('Pseudo class changed', pseudoClass.value)
         cs.value.pseudoClass = pseudoClass.value
         updatePre()
       }
