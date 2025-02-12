@@ -10,9 +10,12 @@
       height: 100%;
     }
     hr {
-      margin: 100px 0;
+      margin: 50px 0;
       border: 0;
       border-top: 1px solid #ccc;
+    }
+    h3 {
+      text-align: left;
     }
     :root {
       --gjs-left-width: 50%;
@@ -20,7 +23,7 @@
     simple-selector {
       display: inline-block;
     }
-    #pre {
+    .selection {
       text-align: left;
       pre {
         display: inline;
@@ -34,7 +37,7 @@
     .gjs-pn-panel {
       position: fixed;
       top: 0;
-      left: 0;
+      right: 0;
       width: 100%;
       max-width: 350px;
       height: 100%;
@@ -83,6 +86,102 @@
 </head>
 <body>
   <div class="gjs-pn-panel gjs-editor" style="background-color: rgba(250, 235, 215, 0.767); z-index: 999;">
+
+
+    <h3>Complex Selector test</h3>
+    <complex-selector></complex-selector>
+    <p id="pre2" class="selection"></p>
+    <script type="module">
+      (function() {
+        console.log('Complex selector')
+        const cs = document.querySelector('complex-selector')
+        const pre = document.querySelector('#pre2')
+        function updatePre() {
+          pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
+        }
+        cs.value = {
+          mainSelector: {
+            selectors: [],
+          },
+          operator: null,
+          relatedSelector: {
+            selectors: [],
+          },
+        }
+        //cs.value = {
+        //  mainSelector: {
+        //    selectors: [
+        //      { type: 'tag', value: 'div', active: true },
+        //      { type: 'class', value: 'bg-red-500', active: true },
+        //      //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+        //      //{ type: 'id', value: 'my-id', active: true },
+        //    ],
+        //    pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        //  },
+        //  operator: {
+        //    type: ' ',
+        //    hasParam: false,
+        //    sentencePre: 'When it is inside (',
+        //    sentencePost: ')',
+        //  },
+        //  relatedSelector: {
+        //    selectors: [
+        //      { type: 'tag', value: 'p', active: true },
+        //      //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+        //      //{ type: 'id', value: 'my-id', active: true },
+        //    ],
+        //    pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        //  }
+        //}
+        cs.onchange = (event) => {
+          console.log('Complex selector changed', event.detail)
+          updatePre()
+        }
+        updatePre()
+      })()
+    </script>
+
+    <hr>
+    <h3>Compound Selector test</h3>
+    <compound-selector></compound-selector>
+    <p id="pre" class="selection"></p>
+
+    <script type="module">
+      (function() {
+        const cs = document.querySelector('compound-selector')
+        const pre = document.querySelector('#pre')
+        function updatePre() {
+          pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
+        }
+        cs.value = {
+          selectors: [
+            { type: 'tag', value: 'div', active: true },
+            { type: 'class', value: 'bg-red-500', active: true },
+            { type: 'class', value: 'bg-blue-500', active: true },
+            //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+            //{ type: 'id', value: 'my-id', active: true },
+          ],
+          pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        }
+        cs.suggestions = [
+          // Classes (example: the tailwind classes)
+          { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' },
+          // Attributes
+          { 'type': 'attribute', 'value': 'name' }, { 'type': 'attribute', 'value': 'placeholder' }, { 'type': 'attribute', 'value': 'href' }, { 'type': 'attribute', 'value': 'src' }, { 'type': 'attribute', 'value': 'alt' }, { 'type': 'attribute', 'value': 'title' }, { 'type': 'attribute', 'value': 'style' },
+          // Ids
+          { type: 'id', value: 'my-id' },
+        ]
+        cs.onchange = (event) => {
+          console.log('Compound selector changed', event.detail)
+          updatePre()
+        }
+        updatePre()
+      })()
+    </script>
+
+
+    <hr>
+    <h3>Simple Selector test</h3>
     <simple-selector></simple-selector>
     <simple-selector></simple-selector>
     <script type="module">
@@ -112,24 +211,12 @@
     </script>
 
     <hr>
-
-
+    <h3>Pseudo Class test</h3>
     <inline-select
       id="pseudo-class"
     ></inline-select>
-
-
-    <hr>
-
-    <compound-selector></compound-selector>
-    <p id="pre"></p>
     <script>
       const pseudoClass = document.querySelector('#pseudo-class')
-      const cs = document.querySelector('compound-selector')
-      const pre = document.querySelector('#pre')
-      function updatePre() {
-        pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
-      }
       pseudoClass.options = [
         { hasParam: false, type: 'hover', sentencePre: 'On mouse', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:hover' },
         { hasParam: false, type: 'active', sentencePre: 'When', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:active' },
@@ -138,32 +225,10 @@
         { hasParam: false, type: 'focus-visible', sentencePre: 'When the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible' },
       ]
       pseudoClass.onchange = () => {
-        cs.value.pseudoClass = pseudoClass.value
-        updatePre()
+        console.log('Pseudo class changed', pseudoClass.value)
       }
-      cs.value = {
-        selectors: [
-          { type: 'tag', value: 'div', active: true },
-          { type: 'class', value: 'bg-red-500', active: true },
-          { type: 'class', value: 'bg-blue-500', active: true },
-          //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
-          //{ type: 'id', value: 'my-id', active: true },
-        ],
-      }
-      cs.suggestions = [
-        // Classes (example: the tailwind classes)
-        { type: 'class', value: 'bg-red-500' }, { type: 'class', value: 'bg-blue-500' }, { type: 'class', value: 'bg-green-500' }, { type: 'class', value: 'text-red-500' }, { type: 'class', value: 'text-blue-500' }, { type: 'class', value: 'text-green-500' }, { type: 'class', value: 'p-4' }, { type: 'class', value: 'm-4' }, { type: 'class', value: 'border' }, { type: 'class', value: 'border-red-500' }, { type: 'class', value: 'border-blue-500' }, { type: 'class', value: 'border-green-500' }, { type: 'class', value: 'rounded' }, { type: 'class', value: 'rounded-lg' }, { type: 'class', value: 'rounded-full' }, { type: 'class', value: 'shadow' }, { type: 'class', value: 'shadow-md' }, { type: 'class', value: 'shadow-lg' },
-        // Attributes
-        { 'type': 'attribute', 'value': 'name' }, { 'type': 'attribute', 'value': 'placeholder' }, { 'type': 'attribute', 'value': 'href' }, { 'type': 'attribute', 'value': 'src' }, { 'type': 'attribute', 'value': 'alt' }, { 'type': 'attribute', 'value': 'title' }, { 'type': 'attribute', 'value': 'style' },
-        // Ids
-        { type: 'id', value: 'my-id' },
-      ]
-      cs.onchange = (event) => {
-        console.log('Compound selector changed', event.detail)
-        updatePre()
-      }
-      updatePre()
     </script>
+
 
   </div>
 

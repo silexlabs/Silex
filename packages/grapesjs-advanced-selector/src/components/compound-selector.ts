@@ -14,7 +14,7 @@ export default class CompoundSelectorComponent extends StylableElement {
   /**
    * The selector to display
    */
-  @property({ type: Object, attribute: true, reflect: true })
+  @property({ type: Object, attribute: true, reflect: false })
   public get value(): CompoundSelector | undefined {
     return this._value
   }
@@ -33,7 +33,10 @@ export default class CompoundSelectorComponent extends StylableElement {
    * that are available in the document, applicable to the current selection
    */
   @property({ type: Object, attribute: true, reflect: false })
-  private suggestions: SimpleSelector[] = []
+  public suggestions: SimpleSelector[] = []
+
+  @property({ type: Boolean, attribute: 'disable-pseudo-class' })
+  public disablePseudoClass: boolean = false
 
   // /////////////////
   // Properties
@@ -45,7 +48,6 @@ export default class CompoundSelectorComponent extends StylableElement {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 1rem;
     }
     .asm-compound__add {
       background-color: transparent;
@@ -78,17 +80,21 @@ export default class CompoundSelectorComponent extends StylableElement {
             ></simple-selector>
           `) }
           <button
+            title="Add a new selector"
             class="gjs-fonts gjs-f-button asm-compound__add"
             @click=${ this.addSelector }
             >+</button>
         </div>
-        <div>
-          <inline-select
-            .value=${ this.value?.pseudoClass }
-            .options=${ PSEUDO_CLASSES }
-            @change=${ this.changePseudoClass }
-          ></inline-select>
-        <div>
+        ${ this.disablePseudoClass ? '' : html`
+          <div>
+            <inline-select
+              .value=${ this.value?.pseudoClass }
+              .options=${ PSEUDO_CLASSES }
+              @change=${ this.changePseudoClass }
+              placeholder="pseudo class"
+            ></inline-select>
+          <div>
+        `}
       </section>
     `
   }

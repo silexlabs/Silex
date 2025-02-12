@@ -40,6 +40,7 @@ export default class InlineSelectComponent extends StylableElement {
     :host {
       display: block;
       text-align: left;
+      padding: 0.25rem;
     }
     select {
       ${ INVISIBLE_SELECT }
@@ -56,9 +57,8 @@ export default class InlineSelectComponent extends StylableElement {
       text-decoration: none;
       border-radius: 50%;
       padding: 0.25rem;
-      color: var(--gjs-secondary-color, #333);
-      border: 1px solid var(--gjs-secondary-color, #333);
-      background-color: var(--gjs-primary-color, #fff);
+      color: var(--gjs-primary-color, #333);
+      border: 1px solid var(--gjs-primary-color, #333);
       /* make the link a circle */
       display: inline-block;
       width: .5rem;
@@ -66,6 +66,9 @@ export default class InlineSelectComponent extends StylableElement {
       text-align: center;
       line-height: .7rem;
       font-size: .7rem;
+      &:hover {
+        background-color: var(--gjs-secondary-color, #fff);
+      }
     }
   `
 
@@ -115,6 +118,7 @@ export default class InlineSelectComponent extends StylableElement {
       </select>
       ${ this.value?.helpLink ? html`
         <a
+          title="Help"
           class="asm-inline-select__help"
           href=${ this.value?.helpLink }
           target="_blank"
