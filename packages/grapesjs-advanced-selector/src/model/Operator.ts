@@ -103,7 +103,8 @@ export function toString(op: Operator, sel?: CompoundSelector): string {
   case OperatorType.GENERAL_SIBLING:
     return ` ${ op.type } ${ sel ? compoundToString(sel) : '' }`
   case OperatorType.DESCENDANT:
-    return ` ${ sel?.selectors.map(s => s.type).join('') }`
+    // special case, limit to 1 space, not 2, before the selector
+    return ` ${ sel ? compoundToString(sel) : '' }`
   default:
     throw new Error(`Unknown operator type: ${ op.type }`)
   }

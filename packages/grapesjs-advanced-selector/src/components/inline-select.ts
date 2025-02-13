@@ -40,7 +40,7 @@ export default class InlineSelectComponent extends StylableElement {
     :host {
       display: block;
       text-align: left;
-      padding: 0.25rem;
+      padding: 0.25rem 0;
     }
     select {
       ${ INVISIBLE_SELECT }

@@ -90,49 +90,50 @@
 
     <h3>Complex Selector test</h3>
     <complex-selector></complex-selector>
-    <p id="pre2" class="selection"></p>
+    <current-selector-display></current-selector-display>
     <script type="module">
       (function() {
-        console.log('Complex selector')
         const cs = document.querySelector('complex-selector')
-        const pre = document.querySelector('#pre2')
+        const currentSelectorDisplay = document.querySelector('current-selector-display')
         function updatePre() {
-          pre.innerHTML = `Selected: <pre>${cs.toString()}</pre>`
+          currentSelectorDisplay.value = cs.value
         }
+        // cs.value = {
+        //   mainSelector: {
+        //     selectors: [],
+        //   },
+        //   operator: null,
+        //   relatedSelector: {
+        //     selectors: [],
+        //   },
+        // }
         cs.value = {
           mainSelector: {
-            selectors: [],
+            selectors: [
+              { type: 'tag', value: 'div', active: true },
+              { type: 'class', value: 'bg-red-500', active: true },
+              //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+              //{ type: 'id', value: 'my-id', active: true },
+            ],
+            pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
           },
-          operator: null,
+          operator: {
+            type: ' ',
+            hasParam: false,
+            sentencePre: 'When it is inside (',
+            sentencePost: ')',
+            helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
+            isCombinator: true,
+          },
           relatedSelector: {
-            selectors: [],
-          },
+            selectors: [
+              { type: 'tag', value: 'p', active: true },
+              //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+              //{ type: 'id', value: 'my-id', active: true },
+            ],
+            pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+          }
         }
-        //cs.value = {
-        //  mainSelector: {
-        //    selectors: [
-        //      { type: 'tag', value: 'div', active: true },
-        //      { type: 'class', value: 'bg-red-500', active: true },
-        //      //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
-        //      //{ type: 'id', value: 'my-id', active: true },
-        //    ],
-        //    pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
-        //  },
-        //  operator: {
-        //    type: ' ',
-        //    hasParam: false,
-        //    sentencePre: 'When it is inside (',
-        //    sentencePost: ')',
-        //  },
-        //  relatedSelector: {
-        //    selectors: [
-        //      { type: 'tag', value: 'p', active: true },
-        //      //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
-        //      //{ type: 'id', value: 'my-id', active: true },
-        //    ],
-        //    pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
-        //  }
-        //}
         cs.onchange = (event) => {
           console.log('Complex selector changed', event.detail)
           updatePre()

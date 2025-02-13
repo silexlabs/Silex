@@ -74,13 +74,17 @@ export default class ComplexSelectorComponent extends StylableElement {
         placeholder="Relation"
         @change=${ (event: CustomEvent) => {
     const target = event.target as InlineSelectComponent
-    if ((target.value as Operator).isCombinator === false) {
+    if ((target.value as Operator)?.isCombinator === false) {
       // Make sure we don't have a pseudo class as a param of a pseudo class
       delete this.value?.relatedSelector?.pseudoClass
     }
     this.value = {
       ...this.value!,
       operator: target.value as Operator,
+    }
+    if (!target.value) {
+      delete this.value?.relatedSelector
+      delete this.value?.operator
     }
     event.stopPropagation()
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
@@ -108,18 +112,8 @@ export default class ComplexSelectorComponent extends StylableElement {
   override toString(): string {
     return toString(this.value!)
   }
-
-  // /////////////////
-  // Methods
-
-  // /////////////////
-  // Lifecycle Hooks
-
-  // /////////////////
-  // Render methods
 }
 
 if (!customElements.get('complex-selector')) {
   customElements.define('complex-selector', ComplexSelectorComponent)
 }
-

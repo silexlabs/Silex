@@ -2,7 +2,6 @@ const MIN_WIDTH = 5
 
 export default class ResizeInputComponent extends HTMLInputElement {
   constructor() {
-    console.log('ResizeInputComponent')
     super()
     this.addEventListener('input', () => this.adjustWidth())
     this.adjustWidth()

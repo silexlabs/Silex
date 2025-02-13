@@ -58,7 +58,8 @@ export default class SimpleSelectorComponent extends StylableElement {
   // Element overrides
   static override styles = css`
     :host {
-      margin: 0.15rem;
+      margin-right: 0.3rem;
+      margin-bottom: 0.3rem;
     }
     *:focus, *:focus-visible {
       outline: revert !important;
@@ -125,10 +126,6 @@ export default class SimpleSelectorComponent extends StylableElement {
 
   override focus() {
     this.selectorInputRef.value?.focus()
-  }
-  override dispatchEvent(event: Event): boolean {
-    console.info('[SimpleSelectorComponent] Dispatching ', event.type, (event as CustomEvent).detail)
-    return super.dispatchEvent(event)
   }
   override render(): TemplateResult {
     if(!this.value) return html`<div>Initializing</div>`

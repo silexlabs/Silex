@@ -61,10 +61,6 @@ export default class CompoundSelectorComponent extends StylableElement {
   override toString(): string {
     return toString(this.value!)
   }
-  override dispatchEvent(event: Event): boolean {
-    console.info('[CompoundSelectorComponent] Dispatching ', event.type, (event as CustomEvent).detail, this.value)
-    return super.dispatchEvent(event)
-  }
   override render(): TemplateResult {
     return html`
       <section>
@@ -76,7 +72,7 @@ export default class CompoundSelectorComponent extends StylableElement {
               .value=${ selector }
               .suggestions=${ this.suggestions }
               @change=${ (event: CustomEvent<SimpleSelector>) => this.changeSelector(event, idx) }
-              @delete=${ () => this.deleteSelector(idx) }
+              @delete=${ (event: CustomEvent) => this.deleteSelector(event, idx) }
             ></simple-selector>
           `) }
           <button
@@ -104,27 +100,38 @@ export default class CompoundSelectorComponent extends StylableElement {
   private changeSelector(event: CustomEvent<SimpleSelector>, idx: number) {
     this.value?.selectors.splice(idx, 1, event.detail)
     this.dispatchEvent(new CustomEvent('change'))
+    event.stopPropagation()
     this.requestUpdate()
   }
-  private addSelector() {
-    this.value?.selectors.push({ type: SimpleSelectorType.UNKNOWN, active: true })
+  private addSelector(event: MouseEvent) {
+    this.value = this.value ?? { selectors: [] }
+    this.value.selectors.push({ type: SimpleSelectorType.UNKNOWN, active: true })
     this.dispatchEvent(new CustomEvent('change'))
+    event.stopPropagation()
     this.requestUpdate()
     // Make the last selector editable
+    requestAnimationFrame(() => this.focusLastSelector())
+  }
+  private focusLastSelector() {
+    if (!this.value) {
+      return
+    }
+    const selector = this.shadowRoot!.querySelectorAll('simple-selector')[this.value!.selectors.length - 1] as SimpleSelectorComponent
+    selector.editing = true
     requestAnimationFrame(() => {
-      const selector = this.shadowRoot!.querySelectorAll('simple-selector')[this.value!.selectors.length - 1] as SimpleSelectorComponent
-      selector.editing = true
-      requestAnimationFrame(() => selector.focus())
+      selector.focus()
     })
   }
-  private deleteSelector(idx: number) {
+  private deleteSelector(event: CustomEvent, idx: number) {
     this.value?.selectors.splice(idx, 1)
     this.dispatchEvent(new CustomEvent('change'))
+    event.stopPropagation()
     this.requestUpdate()
   }
   private changePseudoClass(event: CustomEvent) {
     this.value = { ...this.value!, pseudoClass: event.detail }
     this.dispatchEvent(new CustomEvent('change'))
+    event.stopPropagation()
   }
 }
 

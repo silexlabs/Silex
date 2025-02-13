@@ -3,6 +3,7 @@
  * A Simple selector is made of a list of simple selectors, e.g `div`, `.class`, `#id`, `[attr=^value]`
  */
 
+
 // //////////////
 // Types
 
@@ -260,4 +261,22 @@ export function getCreationSuggestions(filter: string): SimpleSelectorSuggestion
     }
   }
   return creationSuggestions
+}
+
+export function specificity(selector: SimpleSelector): number {
+  if (!selector.active) return 0
+  switch (selector.type) {
+  case SimpleSelectorType.TAG:
+    return 1
+  case SimpleSelectorType.CLASS:
+  case SimpleSelectorType.ID:
+  case SimpleSelectorType.CUSTOM_TAG:
+    return 10
+  case SimpleSelectorType.ATTRIBUTE:
+    return 10
+  case SimpleSelectorType.UNIVERSAL:
+    return 0
+  default:
+    return 0
+  }
 }
