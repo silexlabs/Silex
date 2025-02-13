@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-symbols",
-  "version": "1.0.43",
+  "version": "1.1.0",
   "description": "Symbols for GrapesJS",
   "browser": "dist/bundle.iife.js",
   "main": "dist/es5/index.js",
