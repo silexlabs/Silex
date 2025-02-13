@@ -2,8 +2,9 @@
   "name": "@silexlabs/grapesjs-symbols",
   "version": "1.0.43",
   "description": "Symbols for GrapesJS",
+  "browser": "dist/bundle.iife.js",
   "main": "dist/es5/index.js",
-  "module": "dist/es6/index.js",
+  "module": "dist/bundle.esm.js",
   "types": "dist/es6/index.d.ts",
   "files": [
     "dist",
@@ -18,7 +19,8 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json",
+    "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json && $npm_execpath run bundle",
+    "bundle": "rollup -c",
     "prepublishOnly": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "$npm_execpath run lint -- --fix",
@@ -32,6 +34,10 @@
     "grapesjs-plugin"
   ],
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup": "^4.32.1",
+    "rollup-plugin-summary": "^3.0.0",
     "@types/backbone": "^1.4.22",
     "@types/jest": "^29.5.2",
     "@typescript-eslint/eslint-plugin": "^5.60.0",
