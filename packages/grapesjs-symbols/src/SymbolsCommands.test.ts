@@ -45,7 +45,7 @@ test('Command symbols:add', () => {
         attributes: { title: 'here' }
       },
     ],
-    style: { "background-color": 'blue', "padding": "20px"},
+    style: { 'background-color': 'blue', 'padding': '20px'},
   }])
   expect(() => addSymbol(editor, sender, {label, icon, component})).not.toThrow()
   expect(editor.Symbols).toHaveLength(1)

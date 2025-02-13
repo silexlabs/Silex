@@ -167,7 +167,7 @@ export function setCaret(el: HTMLElement, { path, pos }: { path: number[], pos: 
  * @private
  */
 function allParentInstances(c: Component, includeSelf: boolean): Component[] {
-  let result = []
+  const result = []
   let ptr: Component | undefined = includeSelf ? c : c.parent()
   while(ptr) {
     if(hasSymbolId(ptr)) result.push(ptr)

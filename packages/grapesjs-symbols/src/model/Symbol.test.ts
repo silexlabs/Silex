@@ -120,7 +120,7 @@ test('Test getAll method', () => {
 
 describe('Test applyAttributes method', () => {
   test('update attributes of instances', () => {
-    let { s1, comp1, comp2, child11, child21, child12, child22 } = getTestSymbols()
+    const { s1, comp1, comp2, child11, child21, child12, child22 } = getTestSymbols()
     const changed = { test: 'test' }
     comp1.getChangedProps = () => changed
     comp1._previousAttributes = comp1.attributes
@@ -130,7 +130,7 @@ describe('Test applyAttributes method', () => {
     expect(s1.get('model').get('test')).toBe(comp1.get('test'))
   })
   test('update attributes of comp1 children', () => {
-    let { s1, comp1, comp2, child11, child21, child12, child22 } = getTestSymbols()
+    const { s1, comp1, comp2, child11, child21, child12, child22 } = getTestSymbols()
     const changed = { test: 'test' }
     child11.getChangedProps = () => changed
     child11._previousAttributes = child11.attributes
@@ -148,7 +148,7 @@ describe('Test applyAttributes method', () => {
 })
 
 test('Test create instance', () => {
-  let { s1, comp1, comp2, child11, child21, child12, child22, child111 } = getTestSymbols()
+  const { s1, comp1, comp2, child11, child21, child12, child22, child111 } = getTestSymbols()
 
   const comp1Clone = s1.createInstance()
 
