@@ -49,12 +49,11 @@ export default class CompoundSelectorComponent extends StylableElement {
       gap: 0.5rem;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 0.5rem;
+      margin-bottom: 1rem;
       /* material design card style */
       padding: 0.5rem;
       background-color: var(--gjs-secondary-color, white);
       border-radius: 0.5rem;
-      box-shadow: 0px 1px 3px rgba(0,0,0,0.12), 0px 1px 2px rgba(0,0,0,0.24);
     }
     button.asm-compound__add {
       background-color: transparent;

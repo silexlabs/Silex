@@ -58,7 +58,7 @@ export interface PseudoClass {
   param?: string
   sentencePre: string
   sentencePost?: string
-  helpLink: string
+  helpLink?: string
 }
 
 // ////////////

@@ -280,3 +280,29 @@ export function specificity(selector: SimpleSelector): number {
     return 0
   }
 }
+
+/**
+ * Returns a sorting priority for selectors based on CSS specificity rules.
+ */
+export function getSelectorPriority(selector: SimpleSelector): number {
+  switch (selector.type) {
+  case SimpleSelectorType.TAG:
+  case SimpleSelectorType.CUSTOM_TAG:
+    return 1 // Tags come first
+
+  case SimpleSelectorType.ID:
+    return 2 // IDs come second
+
+  case SimpleSelectorType.CLASS:
+    return 3 // Classes come next
+
+  case SimpleSelectorType.ATTRIBUTE:
+    return 4 // Attributes should come after classes
+
+  case SimpleSelectorType.UNIVERSAL:
+    return 5 // Universal selector has the lowest specificity
+
+  default:
+    return 6
+  }
+}

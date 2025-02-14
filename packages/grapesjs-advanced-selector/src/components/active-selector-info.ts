@@ -79,7 +79,12 @@ export class CurrentSelectorDisplay extends StylableElement {
 
   private updateSelector() {
     if (this.value) {
-      animateTextChange(this.selectorRef.value!, toString(this.value))
+      try {
+        animateTextChange(this.selectorRef.value!, toString(this.value))
+      } catch (error: any) {
+        console.error('Error updating selector', { error })
+        animateTextChange(this.selectorRef.value!, error.toString())
+      }
     } else {
       animateTextChange(this.selectorRef.value!, '')
     }
