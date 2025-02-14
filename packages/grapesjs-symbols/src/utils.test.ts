@@ -1,9 +1,10 @@
+import { expect, test } from '@jest/globals'
 import { find, closestInstance } from './utils'
 import { getTestSymbols } from './test-utils'
 import { Component } from 'grapesjs'
 
 test('Test find', () =>{
-  const { comp1, child11, child111, s1 } = getTestSymbols()
+  const { comp1, child11, child111 } = getTestSymbols()
   // all children have symbolChildId set
   expect(find(comp1, 'not-an-id')).toBeNull()
   // unknown symbolChildId

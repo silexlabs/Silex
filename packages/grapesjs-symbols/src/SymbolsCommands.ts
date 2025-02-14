@@ -13,7 +13,7 @@ export const cmdUnlink = 'symbols:unlink'
 export const cmdCreate = 'symbols:create'
 
 // Same signature as a grapesjs plugin
-export default function(editor: SymbolEditor, options: any = {}) {
+export default function(editor: SymbolEditor) {
   editor.Commands.add(cmdAdd, addSymbol)
   editor.Commands.add(cmdRemove, removeSymbol)
   editor.Commands.add(cmdUnlink, unlinkSymbolInstance)
@@ -48,7 +48,7 @@ export function displayError(editor: Editor, title: string, message: string) {
  */
 export function addSymbol(
   editor: SymbolEditor,
-  sender: any,
+  _: any,
   {label, icon, component = editor.getSelected()}: {label: string, icon: string, component: Component | undefined},
 ) {
   if(component && label && icon) {
@@ -71,7 +71,7 @@ export function addSymbol(
  */
 export function removeSymbol(
   editor: SymbolEditor,
-  sender: any,
+  _: any,
   {symbolId}: {symbolId: string},
 ) {
   if(symbolId) {
@@ -84,7 +84,7 @@ export function removeSymbol(
       // notify the editor that a change occured
       setDirty(editor)
       // Notify the plugins
-      instances.forEach(c => editor.trigger(SymbolEvents.UNLINK, { symbol: s, component: c }))
+      instances.forEach((c: Component) => editor.trigger(SymbolEvents.UNLINK, { symbol: s, component: c }))
       editor.trigger(SymbolEvents.REMOVE, { symbol: s })
       // return the symbol to the caller
       return s
@@ -98,7 +98,7 @@ export function removeSymbol(
 
 export function unlinkSymbolInstance(
   editor: SymbolEditor,
-  sender: any, { component }: { component: Component },
+  _: any, { component }: { component: Component },
 ) {
   if(component) {
     const s = editor.Symbols.get(getSymbolId(component))
@@ -121,7 +121,7 @@ export function unlinkSymbolInstance(
  */
 export function createSymbolInstance(
   editor: SymbolEditor,
-  sender: any,
+  _: any,
   { symbol, pos, target }: { symbol: Symbol, pos: any, target: HTMLElement },
 ): Component | null {
   pos = pos || {}

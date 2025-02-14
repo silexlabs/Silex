@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+  },
+  "exclude": [
+    //"node_modules", // Useless apparently
+    "dist",
+  ]
+}

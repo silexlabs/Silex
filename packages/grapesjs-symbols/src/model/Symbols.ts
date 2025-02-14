@@ -1,4 +1,4 @@
-import Backbone, { ViewOptions } from 'backbone'
+import Backbone from 'backbone'
 
 import { allowDrop, closestInstance, wait } from '../utils'
 import Symbol, { getSymbolId } from './Symbol'
@@ -23,12 +23,12 @@ export class Symbols extends Backbone.Collection<Symbol>  {
     this.editor.UndoManager.add(this)
   }
 
-  disableUndo(disable) {
+  disableUndo(disable: boolean) {
     if(disable) this.editor.UndoManager.stop()
     else this.editor.UndoManager.start()
   }
 
-  async preventUndo(cbk) {
+  async preventUndo(cbk: () => void) {
     this.editor.UndoManager.stop()
     await cbk()
     this.editor.UndoManager.start()
@@ -69,7 +69,7 @@ export class Symbols extends Backbone.Collection<Symbol>  {
   /**
    * Prevent drop on a symbol into itself or things similar
    */
-  onDrag({target, parent}) {
+  onDrag({target, parent}: {target: Component, parent: Component}) {
     if(parent?.get('droppable') && !allowDrop({target, parent})) {
       // Prevent drop
       parent.set('droppable', false)

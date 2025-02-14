@@ -32,12 +32,12 @@ export default (editor: SymbolEditor, opts: Partial<SymbolOptions> = {}) => {
   // keep track of symbols and changes
   editor.Symbols = new Symbols([], { options, editor })
 
-  editor.on('load', (...args) => {
+  editor.on('load', () => {
     // Display symbols
     new SymbolsView({ ...options, editor, model: editor.Symbols, } as any as SymbolsViewOptions)
 
     // Commands to create/delete symbols
-    initCommands(editor, options)
+    initCommands(editor)
 
     // Add traits like a plugin
     initTraits(editor, options)

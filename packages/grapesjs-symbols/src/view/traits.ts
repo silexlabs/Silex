@@ -64,7 +64,7 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
   // Create a new trait type
   editor.TraitManager.addType('symbol-trait', {
     noLabel: true,
-    createInput({ trait }) {
+    createInput() {
       // Create a new element container and add some content
       const el = document.createElement('div')
       // update the UI when a new symbol is selected or created/deleted etc

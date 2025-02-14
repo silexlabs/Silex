@@ -51,7 +51,7 @@ export function confirmDialog({
             float: left;
             margin-right: 10px;
           ">
-            <input type="checkbox" id="remember" @click=${({ target: rememberCheckbox }) => remember = rememberCheckbox.value}>
+            <input type="checkbox" id="remember" @click=${({ target: rememberCheckbox }: MouseEvent) => remember = (rememberCheckbox as HTMLInputElement)?.value}>
             <i class="gjs-chk-icon"></i>
           </label>
           <label for="remember">Don't ask me again</label>
@@ -107,7 +107,7 @@ export default class extends Backbone.View {
     this.render()
 
   }
-  render() {
+  override render() {
     const symbols = this.model as any as Symbols
     const selected = this.options.editor.getSelected()
     render(html`
@@ -147,7 +147,7 @@ export default class extends Backbone.View {
             "
             title="" draggable="true"
             symbol-id=${s.cid}>
-            <div title="Unlink all instances and delete Symbol" class="symbols__remove" @click=${(event: Event) => this.onRemove(event)}>
+            <div title="Unlink all instances and delete Symbol" class="symbols__remove" @click=${(event: MouseEvent) => this.onRemove(event)}>
               <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
             </div>
             <div class="gjs-block-label">
@@ -173,7 +173,7 @@ export default class extends Backbone.View {
     if(symbolId) {
       const symbol = this.options.editor.Symbols.get(symbolId)
       if(symbol) {
-        const c = this.options.editor.runCommand('symbols:create', { symbol, pos: this.lastPos, target: this.lastTarget })
+        this.options.editor.runCommand('symbols:create', { symbol, pos: this.lastPos, target: this.lastTarget })
       } else {
         console.error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
       }
@@ -181,7 +181,7 @@ export default class extends Backbone.View {
       // not a symbol creation
     }
   }
-  onRemove({ target: deleteButton }) {
+  onRemove({ target: deleteButton }: MouseEvent) {
     // Warn the user
     confirmDialog({
       editor: this.options.editor,
@@ -201,7 +201,7 @@ export default class extends Backbone.View {
     const symbolId = closestHtml((target), 'symbol-id')
       ?.getAttribute('symbol-id')
     if(symbolId) {
-      const c = this.options.editor.runCommand('symbols:remove', { symbolId })
+      this.options.editor.runCommand('symbols:remove', { symbolId })
     } else {
       console.error('not a symbol', symbolId)
     }

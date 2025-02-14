@@ -1,6 +1,6 @@
 import Backbone from 'backbone'
 
-import { jest } from '@jest/globals'
+import { expect, jest } from '@jest/globals'
 
 // Mock module lit-html
 // This is needed because lit-html fails to load in jest (Must use import to load ES Module: node_modules/lit-html/lit-html.js)
@@ -25,7 +25,7 @@ import { getTestSymbols } from './test-utils'
 import { Symbols } from './model/Symbols'
 
 test('Command symbols:add', () => {
-  const { editor, s1, s2 } = getTestSymbols()
+  const { editor } = getTestSymbols()
   editor.Symbols = new Backbone.Collection() as Symbols
   const sender = {}, label = 'label', icon = 'icon'
   expect(() => addSymbol(editor, sender, {label, icon, component: undefined})).toThrow('Can not create the symbol: missing required param')
@@ -71,7 +71,7 @@ test('Command symbols:remove', () => {
 test('Command symbols:unlink', () => {
   const { editor, s1, s2, comp1 } = getTestSymbols()
   editor.Symbols = new Backbone.Collection([s1, s2]) as Symbols
-  const sender = {}, symbolId = 'symbolId'
+  const sender = {}
   expect(() => unlinkSymbolInstance(editor, sender, {} as any)).toThrow('missing param component')
   const component = comp1.clone()
   expect(() => unlinkSymbolInstance(editor, sender, {component})).not.toThrow()
@@ -83,7 +83,7 @@ test('Command symbols:create', () => {
   const sender = {},
     component = comp1,
     pos = {},
-    target = { getAttribute: jest.fn((name) => comp1.getId()) } as any as HTMLElement
+    target = { getAttribute: jest.fn(() => comp1.getId()) } as any as HTMLElement
   expect(() => createSymbolInstance(editor, sender, {} as any)).toThrow('missing param symbol')
   expect(() => createSymbolInstance(editor, sender, {symbol: s1, pos, target})).not.toThrow()
   // Add a symbol to the target

@@ -1,13 +1,15 @@
+import { expect, test } from '@jest/globals'
 import Backbone from 'backbone'
 import { getTestSymbols } from '../test-utils'
 import { Symbols } from './Symbols'
+import { jest } from '@jest/globals'
 
 const UndoManager = {
   add: jest.fn(),
 }
 describe('Make sure everything has the correct data type and default values', () => {
   // mock editor
-  let editor, options
+  let editor: any, options: any
   beforeEach(() => {
     editor = {
       UndoManager,
@@ -30,8 +32,7 @@ describe('Make sure everything has the correct data type and default values', ()
 
   test('Initialize symbols with default values', () => {
     const { s1, s2 } = getTestSymbols()
-    const symbols = new Symbols([s1], { options, editor})
-    const s2Inst = symbols.add(s2)
+    const symbols = new Symbols([s1, s2], { options, editor})
     expect(symbols).toHaveLength(2)
     expect(symbols.get(s2.cid)).not.toBeUndefined()
     expect(symbols.get(s2.cid).get('label')).not.toBeUndefined()
@@ -41,8 +42,8 @@ describe('Make sure everything has the correct data type and default values', ()
 })
 
 describe('Test event listeners which maintain the components list up to date', () => {
-  let s1, s2, comp1
-  let editor, options
+  let s1: any, s2
+  let editor: any, options
   beforeEach(() => {
     // mock editor
     editor = {
@@ -54,7 +55,6 @@ describe('Test event listeners which maintain the components list up to date', (
     const symbols = getTestSymbols()
     s1 = symbols.s1
     s2 = symbols.s2
-    comp1 = symbols.comp1
     editor.Symbols = new Symbols([s1, s2], { options, editor})
   })
 

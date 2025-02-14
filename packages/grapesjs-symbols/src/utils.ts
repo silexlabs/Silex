@@ -192,7 +192,7 @@ function allChildrenInstances(c: Component, includeSelf: boolean): Component[] {
 /**
  * Find if a parent is also a child of the symbol
  */
-export function allowDrop({target, parent}): boolean {
+export function allowDrop({target, parent}: { target: Component, parent: Component }): boolean {
   const allParents = allParentInstances(parent, true)
   const allChildren = allChildrenInstances(target, false)
   return !allParents.find(p => allChildren.find(c => getSymbolId(c) === getSymbolId(p)))

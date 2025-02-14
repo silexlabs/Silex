@@ -5,13 +5,13 @@ import { SymbolEditor, Symbols } from './Symbols'
 import { find, all, children, getCaret, setCaret, closestInstance } from '../utils'
 import { uniqueId } from 'underscore'
 
-type SymbolAttributes = {
-  id: string,
-  model: Component,
-  label?: string,
-  icon?: string,
-  instances?: Map<string, Component>,
-}
+// type SymbolAttributes = {
+//   id: string,
+//   model: Component,
+//   label?: string,
+//   icon?: string,
+//   instances?: Map<string, Component>,
+// }
 
 export const SYMBOL_ID_ATTRIBUTE = 'symbolId'
 export const SYMBOL_CHILD_ID_ATTRIBUTE = 'symbolChildId'
@@ -47,7 +47,7 @@ class Symbol extends Backbone.Model {
    * - `attributes.model` may initially be a Component (creation of a Symbol) or JSON data (loaded symbol from storage). It is always converted to a Component in `initialize`
    *
    */
-  initialize() {
+  override initialize() {
     // Check required attributes
     if(!this.has('model')) throw new Error('Could not create Symbol: model is required')
 
@@ -80,7 +80,7 @@ class Symbol extends Backbone.Model {
    * @return {Object}
    * @private
    */
-  toJSON(opts = {}) {
+  override toJSON(opts = {}) {
     const obj = Backbone.Model.prototype.toJSON.call(this, opts)
     delete obj.instances
     return obj
@@ -444,7 +444,11 @@ export function createSymbol(editor: SymbolEditor, c: Component, attributes: Com
             otherChild?.set(SYMBOL_CHILD_ID_ATTRIBUTE, child.get(SYMBOL_CHILD_ID_ATTRIBUTE))
             // Add the new instance to the symbol
             if(child === c) {
-              s.addInstance(otherChild)
+              if(otherChild) {
+                s.addInstance(otherChild)
+              } else {
+                console.error('Could not find child', child.get(SYMBOL_CHILD_ID_ATTRIBUTE))
+              }
             }
           })
       })
