@@ -1,39 +1,30 @@
-import summary from 'rollup-plugin-summary'
-import terser from '@rollup/plugin-terser'
-import resolve from '@rollup/plugin-node-resolve'
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import typescript from '@rollup/plugin-typescript';
 
 export default {
-  input: 'dist/es5/index.js', // Single entry point that imports all dependencies
-  output: [
-    {
-      file: './dist/bundle.iife.js', // IIFE for browsers
-      format: 'iife',
-      name: 'ExpressionInputBundle',
-      sourcemap: true,
-    },
-    {
-      file: './dist/bundle.esm.js', // ESM for frontend frameworks
-      format: 'esm',
-      sourcemap: true,
-    }
-  ],
-  onwarn(warning) {
-    if (warning.code !== 'THIS_IS_UNDEFINED') {
-      console.error(`(!) ${warning.message}`)
+  input: 'src/index.ts',
+  output: {
+    file: 'dist/bundle.iife.js',
+    format: 'iife',
+    name: 'GrapesJSSymbols',
+    globals: {
+      backbone: 'Backbone',
+      jquery: '$',
+      'lit-html': 'litHtml'
     }
   },
+  external: ['backbone', 'jquery', 'lit-html'],
   plugins: [
-    resolve({ browser: true }),
-    terser({
-      ecma: 2017,
-      module: true,
-      warnings: true,
-      mangle: {
-        properties: {
-          regex: /^__/,
-        },
-      },
+    resolve({
+      browser: true,
+      preferBuiltins: false
     }),
-    summary(),
+    commonjs({
+      transformMixedEsModules: true,
+      include: 'node_modules/**'
+    }),
+    typescript()
   ],
-}
+  context: 'window'
+};
