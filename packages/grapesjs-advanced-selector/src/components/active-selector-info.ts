@@ -1,4 +1,4 @@
-import { html, css } from 'lit'
+import { html, css, TemplateResult } from 'lit'
 import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
 import { ComplexSelector, specificity, toString } from '../model/ComplexSelector'
@@ -50,9 +50,9 @@ export class CurrentSelectorDisplay extends StylableElement {
     }
   `
 
-  override render() {
+  override render(): TemplateResult {
     if (!this.value) {
-      return html`<p>No selector selected</p>`
+      return html``
     }
     requestAnimationFrame(() => {
       this.updateSpecificity()

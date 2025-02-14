@@ -57,10 +57,6 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-    :host {
-      margin-right: 0.3rem;
-      margin-bottom: 0.3rem;
-    }
     *:focus, *:focus-visible {
       outline: revert !important;
       box-shadow: revert !important;
@@ -121,6 +117,10 @@ export default class SimpleSelectorComponent extends StylableElement {
     .asm-simple-selector__name {
       display: inline-block;
       text-wrap: wrap;
+      line-height: 1.25rem;
+    }
+    .asm-simple-selector__selector {
+      cursor: text;
     }
   `
 
@@ -176,28 +176,36 @@ export default class SimpleSelectorComponent extends StylableElement {
     `
   }
 
+  override dispatchEvent(event: Event): boolean {
+    console.info('[SIMPLE] Dispatching event', event)
+    return super.dispatchEvent(event)
+  }
+
   // /////////////////
   // Methods
   private edit() {
     if(!this.value) throw new Error(ERROR_NO_SELECTOR)
     this.editing = true
-    requestAnimationFrame(() => this.selectorInputRef.value!.focus())
+    requestAnimationFrame(() => this.focus())
   }
 
   private select(selector: SimpleSelectorSuggestion) {
     // Remove the createText property
     const newSelector = { ...selector }
     delete newSelector.createText
+    delete newSelector.createValue
     // Reactive: this.selector = newSelector
     if (!selector || selector.keepEditing) {
-      this.selectorInputRef.value!.focus()
+      requestAnimationFrame(() => this.focus())
     } else {
       this.editing = false
+      this.attributeOptionsAttrValueRef.value?.blur()
     }
     this.dispatchEvent(new CustomEvent('change', { detail: newSelector }))
   }
 
   private cancelEdit() {
+    this.attributeOptionsAttrValueRef.value?.blur()
     if (!this.editing) return
     if(!this.value) throw new Error(ERROR_NO_SELECTOR)
     this.editing = false
@@ -232,32 +240,36 @@ export default class SimpleSelectorComponent extends StylableElement {
       ${this.value?.type === SimpleSelectorType.ATTRIBUTE ? this.renderOptionsEditor() : html``}
   `) : '' }
         ${this.editing ? this.renderSuggestionList(suggestions, selectorString) : '' }
-      `)}
+      `, { valid: valid !== false, suggestions }) }
     `
   }
 
-  private renderLayout(content: TemplateResult): TemplateResult {
+  private renderLayout(content: TemplateResult, { valid, suggestions }: {suggestions: SimpleSelectorSuggestion[], valid: boolean}): TemplateResult {
     return html`
       <main
         class="gjs-selector-name"
         tabindex="0"
         ${ ref(this.mainRef) }
-        @keyup=${(event: KeyboardEvent) => {
+        @keydown=${(event: KeyboardEvent) => {
     if (
       !this.editing
             && event.target === this.mainRef.value
             && event.key === 'Enter'
     ) {
       this.edit()
+      event.stopPropagation()
     }
   }}
         @focusout=${(event: FocusEvent) => {
+    if(!this.editing) return
     const newFocus = event.relatedTarget as HTMLElement
     if (this.renderRoot.querySelector('main')!.contains(newFocus)) {
       // Focus is still inside the component
       return
     }
-    this.cancelEdit()
+    if (valid) this.select(suggestions[0])
+    else requestAnimationFrame(() => this.focus())
+    event.stopPropagation()
   }}
       >
         ${content}
@@ -351,6 +363,11 @@ export default class SimpleSelectorComponent extends StylableElement {
     selector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
+              @keydown=${(event: KeyboardEvent) => {
+    if (event.key === ' ') {
+      event.stopPropagation()
+    }
+  }}
           >
             <option value="">...</option>
             <option value="=" .selected=${selector.operator === '='}>=</option>
@@ -373,9 +390,20 @@ export default class SimpleSelectorComponent extends StylableElement {
     // Avoid check/uncheck the "active" checkbox
     event.stopPropagation()
   }}
-              @keyup=${(event: MouseEvent) => {
+              @keydown=${(event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      selector.attributeValue = (event.target as HTMLInputElement).value
+      this.select(this.value!)
+      event.stopPropagation()
+    } else if (event.key === 'Escape') {
+      ;(event.target as HTMLInputElement).value = selector.attributeValue ?? ''
+      this.cancelEdit()
+      event.stopPropagation()
+    }
+  }}
+    @focusout=${(event: FocusEvent) => {
     selector.attributeValue = (event.target as HTMLInputElement).value
-    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    this.select(this.value!)
   }}
             />
             &nbsp;"

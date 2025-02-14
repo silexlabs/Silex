@@ -53,6 +53,11 @@ export default class ComplexSelectorComponent extends StylableElement {
   static override styles = css`
   `
 
+  override dispatchEvent(event: Event): boolean {
+    console.info('[COMPLEX] Dispatching event', event)
+    return super.dispatchEvent(event)
+  }
+
   override render(): TemplateResult {
     return html`
       <compound-selector

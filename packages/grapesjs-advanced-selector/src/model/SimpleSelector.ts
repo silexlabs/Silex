@@ -119,20 +119,20 @@ export function toString(selector: SimpleSelector): string {
   switch (selector.type) {
   case SimpleSelectorType.ATTRIBUTE: {
     const typed = selector as AttributeSelector
-    return `[${typed.value}${typed.operator ? `${typed.operator}"${typed.attributeValue ?? ''}"` : ''}]`
+    return `[${typed.value || ''}${typed.operator ? `${typed.operator}"${typed.attributeValue ?? ''}"` : ''}]`
   }
   case SimpleSelectorType.CLASS: {
     const typed = selector as ClassSelector
-    return `.${typed.value}`
+    return `.${typed.value || ''}`
   }
   case SimpleSelectorType.ID: {
     const typed = selector as IdSelector
-    return `#${typed.value}`
+    return `#${typed.value || ''}`
   }
   case SimpleSelectorType.TAG:
   case SimpleSelectorType.CUSTOM_TAG: {
     const typed = selector as TagSelector | CustomTagSelector
-    return typed.value
+    return typed.value || ''
   }
   case SimpleSelectorType.UNIVERSAL:
     return '*'
@@ -178,7 +178,7 @@ export function getDisplayName(selector: SimpleSelector): string {
 export function getEditableName(selector: SimpleSelector): string {
   if (selector.type === SimpleSelectorType.ATTRIBUTE) {
     const typed = selector as AttributeSelector
-    return `[${typed.value}]`
+    return `[${typed.value || ''}]`
   }
   return toString(selector)
 }

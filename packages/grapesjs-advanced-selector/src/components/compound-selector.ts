@@ -46,17 +46,32 @@ export default class CompoundSelectorComponent extends StylableElement {
   static override styles = css`
     .asm-compound__selectors {
       display: flex;
+      gap: 0.5rem;
       align-items: center;
       flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+      /* material design card style */
+      padding: 0.5rem;
+      background-color: var(--gjs-secondary-color, white);
+      border-radius: 0.5rem;
+      box-shadow: 0px 1px 3px rgba(0,0,0,0.12), 0px 1px 2px rgba(0,0,0,0.24);
     }
-    .asm-compound__add {
+    button.asm-compound__add {
       background-color: transparent;
       border: none;
       font-size: 1.5rem;
       margin: 0 0.5rem;
       cursor: pointer;
+      /* text inside button vertical align */
+      line-height: 1.5rem;
+      padding: 0px 0px 0.15rem;
     }
   `
+
+  override dispatchEvent(event: Event): boolean {
+    console.info('[COMPOUND] Dispatching event', event)
+    return super.dispatchEvent(event)
+  }
 
   override toString(): string {
     return toString(this.value!)
@@ -98,15 +113,17 @@ export default class CompoundSelectorComponent extends StylableElement {
   // /////////////////
   // Methods
   private changeSelector(event: CustomEvent<SimpleSelector>, idx: number) {
-    this.value?.selectors.splice(idx, 1, event.detail)
-    this.dispatchEvent(new CustomEvent('change'))
+    this.value = {
+      ...this.value!,
+      selectors: this.value!.selectors.map((selector, i) => i === idx ? event.detail : selector)
+    }
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
     this.requestUpdate()
   }
   private addSelector(event: MouseEvent) {
     this.value = this.value ?? { selectors: [] }
     this.value.selectors.push({ type: SimpleSelectorType.UNKNOWN, active: true })
-    this.dispatchEvent(new CustomEvent('change'))
     event.stopPropagation()
     this.requestUpdate()
     // Make the last selector editable
@@ -124,13 +141,13 @@ export default class CompoundSelectorComponent extends StylableElement {
   }
   private deleteSelector(event: CustomEvent, idx: number) {
     this.value?.selectors.splice(idx, 1)
-    this.dispatchEvent(new CustomEvent('change'))
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
     this.requestUpdate()
   }
   private changePseudoClass(event: CustomEvent) {
     this.value = { ...this.value!, pseudoClass: event.detail }
-    this.dispatchEvent(new CustomEvent('change'))
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
   }
 }

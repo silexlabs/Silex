@@ -16,5 +16,4 @@ export const INVISIBLE_INPUT = css`
   background: none;
   text-align: center;
   font-family: inherit;
-  cursor: pointer;
 `

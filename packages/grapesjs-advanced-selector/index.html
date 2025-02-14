@@ -50,7 +50,7 @@
     :root {
       --gjs-main-color: #444;
       --gjs-primary-color: #444;
-      --gjs-secondary-color: #ddd;
+      --gjs-secondary-color: #dddddd73;
       --gjs-tertiary-color: #804f7b;
       --gjs-quaternary-color: #d278c9;
       --gjs-font-color: #ddd;
@@ -88,7 +88,7 @@
   <div class="gjs-pn-panel gjs-editor" style="background-color: rgba(250, 235, 215, 0.767); z-index: 999;">
 
 
-    <h3>Complex Selector test</h3>
+    <!-- <h3>Complex Selector test</h3> -->
     <complex-selector></complex-selector>
     <current-selector-display></current-selector-display>
     <script type="module">
@@ -98,49 +98,51 @@
         function updatePre() {
           currentSelectorDisplay.value = cs.value
         }
-        // cs.value = {
-        //   mainSelector: {
-        //     selectors: [],
-        //   },
-        //   operator: null,
-        //   relatedSelector: {
-        //     selectors: [],
-        //   },
-        // }
         cs.value = {
           mainSelector: {
-            selectors: [
-              { type: 'tag', value: 'div', active: true },
-              { type: 'class', value: 'bg-red-500', active: true },
-              //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
-              //{ type: 'id', value: 'my-id', active: true },
-            ],
-            pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+            selectors: [],
           },
-          operator: {
-            type: ' ',
-            hasParam: false,
-            sentencePre: 'When it is inside (',
-            sentencePost: ')',
-            helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
-            isCombinator: true,
-          },
+          operator: null,
           relatedSelector: {
-            selectors: [
-              { type: 'tag', value: 'p', active: true },
-              //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
-              //{ type: 'id', value: 'my-id', active: true },
-            ],
-            pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
-          }
+            selectors: [],
+          },
         }
+        // cs.value = {
+        //   mainSelector: {
+        //     selectors: [
+        //       { type: 'tag', value: 'div', active: true },
+        //       { type: 'class', value: 'bg-red-500', active: true },
+        //       //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+        //       //{ type: 'id', value: 'my-id', active: true },
+        //     ],
+        //     pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        //   },
+        //   operator: {
+        //     type: ' ',
+        //     hasParam: false,
+        //     sentencePre: 'When it is inside (',
+        //     sentencePost: ')',
+        //     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
+        //     isCombinator: true,
+        //   },
+        //   relatedSelector: {
+        //     selectors: [
+        //       { type: 'tag', value: 'p', active: true },
+        //       //{ type: 'attribute', value: 'data-foo', operator: '=', attributeValue: 'bar', active: true },
+        //       //{ type: 'id', value: 'my-id', active: true },
+        //     ],
+        //     pseudoClass: { type: 'hover', active: true, hasParam: false, sentencePre: 'On mouse' },
+        //   }
+        // }
         cs.onchange = (event) => {
-          console.log('Complex selector changed', event.detail)
+          console.info('Complex selector changed', event.detail)
           updatePre()
         }
         updatePre()
       })()
     </script>
+
+    <!-- --
 
     <hr>
     <h3>Compound Selector test</h3>
@@ -173,7 +175,7 @@
           { type: 'id', value: 'my-id' },
         ]
         cs.onchange = (event) => {
-          console.log('Compound selector changed', event.detail)
+          console.info('Compound selector changed', event.detail)
           updatePre()
         }
         updatePre()
@@ -226,7 +228,7 @@
         { hasParam: false, type: 'focus-visible', sentencePre: 'When the', sentencePost: '', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible' },
       ]
       pseudoClass.onchange = () => {
-        console.log('Pseudo class changed', pseudoClass.value)
+        console.info('Pseudo class changed', pseudoClass.value)
       }
     </script>
 
