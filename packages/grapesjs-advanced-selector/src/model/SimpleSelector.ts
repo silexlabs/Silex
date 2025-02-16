@@ -222,9 +222,9 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
   if (filter === '') {
     const active = true
     return [
-      { keepEditing: true, createText: `.`, type: SimpleSelectorType.CLASS, createValue: '.', active, },
-      { keepEditing: true, createText: `#`, type: SimpleSelectorType.ID, createValue: '#', active, },
-      { keepEditing: true, createText: `[ ]`, type: SimpleSelectorType.ATTRIBUTE, createValue: '[', active, },
+      { keepEditing: true, createText: '.', type: SimpleSelectorType.CLASS, createValue: '.', active, },
+      { keepEditing: true, createText: '#', type: SimpleSelectorType.ID, createValue: '#', active, },
+      { keepEditing: true, createText: '[ ]', type: SimpleSelectorType.ATTRIBUTE, createValue: '[', active, },
     ] as SimpleSelectorSuggestion[]
   }
   if (filter === '*') {

@@ -1,5 +1,5 @@
-import { CompoundSelector, toString as compoundToString, specificity as compoundSpecificity } from "./CompoundSelector"
-import { Operator, toString as operatorToString } from "./Operator"
+import { CompoundSelector, toString as compoundToString, specificity as compoundSpecificity } from './CompoundSelector'
+import { Operator, toString as operatorToString } from './Operator'
 
 export interface ComplexSelector {
   mainSelector: CompoundSelector

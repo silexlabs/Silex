@@ -37,28 +37,46 @@ export default class InlineSelectComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: initial !important;
+      box-shadow: revert !important;
+      border: 1px solid !important;
+    }
+    button:hover, a:hover {
+      transform: translateY(1px);
+      color: var(--gjs-primary-color, #333);
+    }
     :host {
       display: block;
       text-align: left;
       padding: 0.25rem 0;
+      margin: 0.25rem 0;
+    }
+    section {
+      display: flex;
+      justify-content: space-between;
     }
     select {
       ${ INVISIBLE_SELECT }
       text-align: center;
       border-bottom: 1px dashed;
     }
+    aside {
+      flex: 0 0 auto;
+    }
     input {
       ${ INVISIBLE_INPUT }
       text-align: center;
     }
-    .asm-inline-select__help {
+    .asm-inline-select__btn {
       font-size: 0.8rem;
-      margin-left: 0.5rem;
       text-decoration: none;
       border-radius: 50%;
       padding: 0.25rem;
       color: var(--gjs-primary-color, #333);
-      border: 1px solid var(--gjs-primary-color, #333);
       /* make the link a circle */
       display: inline-block;
       width: .5rem;
@@ -75,19 +93,26 @@ export default class InlineSelectComponent extends StylableElement {
   override render(): TemplateResult {
     if (!this.value) {
       return html`
-        Add a ${ this.renderList() }
+        ${ this.renderList() }
       `
     }
     return html`
-      ${ this.value.sentencePre }
-      ${ this.renderList() }
-      ${ this.value.sentencePost ?? '' }
-      ${ this.renderParam() }
+      <section>
+        <main>
+          ${ this.value.sentencePre }
+          ${ this.renderList() }
+          ${ this.value.sentencePost ?? '' }
+          ${ this.renderParam() }
+        </main>
+        <aside>
+          ${ this.renderButtons() }
+        </aside>
+      </section>
     `
   }
   // /////////////////
   // Methods
-  private select(option: Option) {
+  private select(option?: Option) {
     this.value = option
     this.dispatchEvent(new CustomEvent('change', { bubbles: true, composed: true, detail: option }))
     requestAnimationFrame(() => this.paramRef.value?.focus())
@@ -113,18 +138,29 @@ export default class InlineSelectComponent extends StylableElement {
         ${ this.options.map(p => html`
           <option
             .selected=${ this.value?.type === p.type }
-          >${ p.type }</option>
+          >${ p.displayName ?? p.type }</option>
         `) }
       </select>
+    `
+  }
+  private renderButtons(): TemplateResult {
+    return html`
       ${ this.value?.helpLink ? html`
         <a
           title="Help"
-          class="asm-inline-select__help"
+          class="asm-inline-select__btn"
           href=${ this.value?.helpLink }
           target="_blank"
-        >?</a>
-      `: html`` }
-
+        >?</a>`: html`` 
+}<a
+        href="#"
+        title="Clear"
+        class="asm-inline-select__btn"
+        @click=${ (event: MouseEvent) => {
+    this.select() 
+    event.preventDefault()
+  }}
+      >\u2715</a>
     `
   }
 
@@ -139,7 +175,7 @@ export default class InlineSelectComponent extends StylableElement {
         ${ ref(this.paramRef) }
         type="text"
         autocomplete="off"
-        .value=${ (this.value as PseudoClass).param } // It may not be a pseudo class, in which case param will be undefined
+        .value=${ (this.value as PseudoClass).param ?? '' } // It may not be a pseudo class, in which case param will be undefined
         placeholder=""
         @input=${ (e: Event) => {
     this.select({

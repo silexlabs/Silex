@@ -1,4 +1,4 @@
-import { css } from "lit"
+import { css } from 'lit'
 
 export const INVISIBLE_SELECT = css`
   background: none;

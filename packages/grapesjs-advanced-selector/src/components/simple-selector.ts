@@ -57,9 +57,13 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-    *:focus, *:focus-visible {
-      outline: revert !important;
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: initial !important;
       box-shadow: revert !important;
+      border: 1px solid !important;
     }
     :invalid {
       border: 2px solid red !important;
@@ -247,7 +251,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   private renderLayout(content: TemplateResult, { valid, suggestions }: {suggestions: SimpleSelectorSuggestion[], valid: boolean}): TemplateResult {
     return html`
       <main
-        class="gjs-selector-name"
+        class=""
         tabindex="0"
         ${ ref(this.mainRef) }
         @keydown=${(event: KeyboardEvent) => {
@@ -280,7 +284,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   private renderSelector(content: TemplateResult): TemplateResult {
     return html`
       <span
-        class="gjs-selector-name asm-simple-selector__name"
+        class="asm-simple-selector__name"
       >
         ${this.value ? html`
           ${ getDisplayName(this.value!) }

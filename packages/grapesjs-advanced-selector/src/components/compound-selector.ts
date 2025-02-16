@@ -1,10 +1,10 @@
-import { property } from "lit/decorators.js"
-import StylableElement from "../StylableElement"
-import { CompoundSelector, toString } from "../model/CompoundSelector"
-import { SimpleSelector, SimpleSelectorType } from "../model/SimpleSelector"
-import { css, html, TemplateResult } from "lit"
-import SimpleSelectorComponent from "./simple-selector"
-import { PSEUDO_CLASSES } from "../model/PseudoClass"
+import { property } from 'lit/decorators.js'
+import StylableElement from '../StylableElement'
+import { CompoundSelector, toString } from '../model/CompoundSelector'
+import { SimpleSelector, SimpleSelectorType } from '../model/SimpleSelector'
+import { css, html, TemplateResult } from 'lit'
+import SimpleSelectorComponent from './simple-selector'
+import { PSEUDO_CLASSES } from '../model/PseudoClass'
 
 
 export default class CompoundSelectorComponent extends StylableElement {
@@ -44,26 +44,39 @@ export default class CompoundSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: initial !important;
+      box-shadow: revert !important;
+      border: 1px solid !important;
+    }
+    button:hover, a:hover {
+      transform: translateY(1px);
+      color: var(--gjs-primary-color, #333);
+    }
     .asm-compound__selectors {
       display: flex;
       gap: 0.5rem;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 1rem;
+      margin: 0.5rem 0;
       /* material design card style */
       padding: 0.5rem;
       background-color: var(--gjs-secondary-color, white);
       border-radius: 0.5rem;
     }
     button.asm-compound__add {
-      background-color: transparent;
-      border: none;
       font-size: 1.5rem;
       margin: 0 0.5rem;
-      cursor: pointer;
       /* text inside button vertical align */
       line-height: 1.5rem;
       padding: 0px 0px 0.15rem;
+    }
+    button.asm__add-inline {
+      padding: 0 0.5rem;
+      font-size: 0.8rem;
     }
   `
 
@@ -91,19 +104,26 @@ export default class CompoundSelectorComponent extends StylableElement {
           `) }
           <button
             title="Add a new selector"
-            class="gjs-fonts gjs-f-button asm-compound__add"
+            class="gjs-btn-prim asm-compound__add"
             @click=${ this.addSelector }
             >+</button>
         </div>
         ${ this.disablePseudoClass ? '' : html`
-          <div>
-            <inline-select
-              .value=${ this.value?.pseudoClass }
-              .options=${ PSEUDO_CLASSES }
-              @change=${ this.changePseudoClass }
-              placeholder="pseudo class"
-            ></inline-select>
-          <div>
+          ${ this.value?.pseudoClass ? html`
+            <div>
+              <inline-select
+                .value=${ this.value?.pseudoClass }
+                .options=${ PSEUDO_CLASSES }
+                @change=${ this.changePseudoClass }
+                placeholder=""
+              ></inline-select>
+            <div>
+          ` : html`
+            <button
+              class="gjs-btn-prim asm__add-inline"
+              @click=${ this.addPseudoClass }
+              >\u2192 Pseudo Class</button>
+          ` }
         `}
       </section>
     `
@@ -143,6 +163,11 @@ export default class CompoundSelectorComponent extends StylableElement {
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
     this.requestUpdate()
+  }
+  private addPseudoClass(event: MouseEvent) {
+    this.value = { ...this.value!, pseudoClass: PSEUDO_CLASSES[0] }
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    event.stopPropagation()
   }
   private changePseudoClass(event: CustomEvent) {
     this.value = { ...this.value!, pseudoClass: event.detail }

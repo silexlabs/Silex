@@ -1,6 +1,6 @@
-import { PseudoClass } from "./PseudoClass"
-import { SimpleSelector, toString as toStringSimpleSelector, specificity as simpleSelectorSpecificity, getSelectorPriority } from "./SimpleSelector"
-import { toString as toStringPseudoClass } from "./PseudoClass"
+import { PseudoClass } from './PseudoClass'
+import { SimpleSelector, toString as toStringSimpleSelector, specificity as simpleSelectorSpecificity, getSelectorPriority } from './SimpleSelector'
+import { toString as toStringPseudoClass } from './PseudoClass'
 
 export type CompoundSelector = {
   selectors: SimpleSelector[]

@@ -21,16 +21,29 @@ export class CurrentSelectorDisplay extends StylableElement {
     }
   }
   private _value: ComplexSelector | undefined
+
+  @property({ type: String, attribute: true, reflect: false })
+    placeholder = 'Select an option'
+
   private specificity = 0
   private selectorRef = createRef<HTMLDivElement>()
   private specificityRef = createRef<HTMLDivElement>()
 
   static override styles = css`
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: initial !important;
+      box-shadow: revert !important;
+      border: 1px solid !important;
+    }
     :host {
-      font-size: xx-small;
+      font-size: 0.8rem;
+      padding: 0.5rem 0;
     }
     .selection {
-      text-align: left;
+      text-align: center;
       margin-top: 1rem;
       border-top: 1px solid var(--gjs-primary-color, #333);
       padding: .5rem 0;
@@ -61,7 +74,6 @@ export class CurrentSelectorDisplay extends StylableElement {
     return html`
       <section id="pre" class="selection">
         <ul><li>
-          <span class="label">Currently Styling:</span>
           <pre
             class="value"
             ${ref(this.selectorRef)}
@@ -80,13 +92,13 @@ export class CurrentSelectorDisplay extends StylableElement {
   private updateSelector() {
     if (this.value) {
       try {
-        animateTextChange(this.selectorRef.value!, toString(this.value))
+        animateTextChange(this.selectorRef.value!, toString(this.value) || this.placeholder)
       } catch (error: any) {
         console.error('Error updating selector', { error })
         animateTextChange(this.selectorRef.value!, error.toString())
       }
     } else {
-      animateTextChange(this.selectorRef.value!, '')
+      animateTextChange(this.selectorRef.value!, this.placeholder)
     }
   }
 

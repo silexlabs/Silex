@@ -1,4 +1,4 @@
-import { CompoundSelector, toString as compoundToString } from "./CompoundSelector"
+import { CompoundSelector, toString as compoundToString } from './CompoundSelector'
 
 /**
  * @fileoverview An Operator is either a combinator or a relational pseudo-class
@@ -22,72 +22,73 @@ export interface Operator {
   sentencePost?: string
   helpLink: string
   isCombinator: boolean
+  displayName?: string
 }
 
 export const OPERATORS = [
   { 
-    type: OperatorType.HAS, 
+    type: OperatorType.DESCENDANT, 
     hasParam: false, 
-    sentencePre: 'When it contains (', 
-    sentencePost: ')',
-    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:has',
-    isCombinator: false,
-  },
-  { 
-    type: OperatorType.NOT, 
-    hasParam: false, 
-    sentencePre: 'When it does not match (', 
-    sentencePost: ')',
-    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:not',
-    isCombinator: false,
-  },
-  { 
-    type: OperatorType.IS, 
-    hasParam: false, 
-    sentencePre: 'When it matches any of (', 
-    sentencePost: ')',
-    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:is',
-    isCombinator: false,
-  },
-  { 
-    type: OperatorType.WHERE, 
-    hasParam: false, 
-    sentencePre: 'When it loosely matches (', 
-    sentencePost: ')',
-    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:where',
-    isCombinator: false,
+    sentencePre: 'When it is', 
+    displayName: 'inside of',
+    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
+    isCombinator: true,
   },
   { 
     type: OperatorType.CHILD, 
     hasParam: false, 
-    sentencePre: 'When it is a direct child of (', 
-    sentencePost: ')',
+    sentencePre: 'When it is a', 
+    displayName: 'direct child of',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator',
-    isCombinator: true,
-  },
-  { 
-    type: OperatorType.DESCENDANT, 
-    hasParam: false, 
-    sentencePre: 'When it is inside (', 
-    sentencePost: ')',
-    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
     isCombinator: true,
   },
   { 
     type: OperatorType.ADJACENT, 
     hasParam: false, 
-    sentencePre: 'When it immediately follows (', 
-    sentencePost: ')',
+    sentencePre: 'When it is',
+    displayName: 'adjacent to',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Adjacent_sibling_combinator',
     isCombinator: true,
   },
   { 
     type: OperatorType.GENERAL_SIBLING, 
     hasParam: false, 
-    sentencePre: 'When it follows (', 
-    sentencePost: ')',
+    sentencePre: 'When it is',
+    displayName: 'after',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/General_sibling_combinator',
     isCombinator: true,
+  },
+  { 
+    type: OperatorType.HAS, 
+    hasParam: false, 
+    sentencePre: 'When it', 
+    displayName: 'contains',
+    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:has',
+    isCombinator: false,
+  },
+  { 
+    type: OperatorType.NOT, 
+    hasParam: false, 
+    sentencePre: 'When it', 
+    displayName: 'does not match',
+    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:not',
+    isCombinator: false,
+  },
+  { 
+    type: OperatorType.IS, 
+    hasParam: false, 
+    sentencePre: 'When it', 
+    displayName: 'matches',
+    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:is',
+    isCombinator: false,
+  },
+  { 
+    type: OperatorType.WHERE, 
+    hasParam: false, 
+    sentencePre: 'When it', 
+    displayName: 'matches (no specificity)',
+    helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:where',
+    isCombinator: false,
   }
 ]
 

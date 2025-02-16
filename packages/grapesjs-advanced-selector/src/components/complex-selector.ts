@@ -51,6 +51,27 @@ export default class ComplexSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
+    select:focus-visible,
+    input:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+      outline: initial !important;
+      box-shadow: revert !important;
+      border: 1px solid !important;
+    }
+    button:hover, a:hover {
+      transform: translateY(1px);
+      color: var(--gjs-primary-color, #333);
+    }
+    :host {
+      display: block;
+      text-align: left;
+      padding: 0.5rem 0;
+    }
+    button.asm__add-inline {
+      padding: 0 0.5rem;
+      font-size: 0.8rem;
+    }
   `
 
   override dispatchEvent(event: Event): boolean {
@@ -73,11 +94,33 @@ export default class ComplexSelectorComponent extends StylableElement {
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
       ></compound-selector>
-      <inline-select
-        .value=${ this.value?.operator }
-        .options=${ OPERATORS }
-        placeholder="Relation"
-        @change=${ (event: CustomEvent) => {
+      ${ this.value?.operator ? html`
+        <inline-select
+          .value=${ this.value?.operator }
+          .options=${ OPERATORS }
+          placeholder=""
+          @change=${ this.changeOperator }
+        ></inline-select>
+      ` : html`
+        <button
+          class="gjs-btn-prim asm__add-inline"
+          @click=${ this.addOperator }
+        >\u2192 Relation</button>
+      `}
+      ${ this.value?.operator ? html`
+        <compound-selector
+          .value=${ this.value?.relatedSelector }
+          .suggestions=${ this.relations }
+          ?disable-pseudo-class=${ this.value?.operator.isCombinator === false }
+          @change=${ this.changeRelatedSelector }
+        ></compound-selector>
+      ` : ''}
+    `
+  }
+
+  // /////////////////
+  // Methods
+  private changeOperator(event: CustomEvent<Operator>) {
     const target = event.target as InlineSelectComponent
     if ((target.value as Operator)?.isCombinator === false) {
       // Make sure we don't have a pseudo class as a param of a pseudo class
@@ -93,14 +136,21 @@ export default class ComplexSelectorComponent extends StylableElement {
     }
     event.stopPropagation()
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
-  }}
-      ></inline-select>
-      ${ this.value?.operator ? html`
-        <compound-selector
-          .value=${ this.value?.relatedSelector }
-          .suggestions=${ this.relations }
-          ?disable-pseudo-class=${ this.value?.operator.isCombinator === false }
-          @change=${ (event: CustomEvent) => {
+  }
+
+  private addOperator() {
+    this.requestUpdate()
+    this.value = {
+      ...this.value!,
+      operator: OPERATORS[0],
+      relatedSelector: {
+        selectors: [],
+      },
+    } as ComplexSelector
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+  }
+
+  private changeRelatedSelector(event: CustomEvent<CompoundSelector>) {
     const target = event.target as CompoundSelectorComponent
     this.value = {
       ...this.value!,
@@ -108,10 +158,6 @@ export default class ComplexSelectorComponent extends StylableElement {
     }
     event.stopPropagation()
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
-  }}
-        ></compound-selector>
-      ` : ''}
-    `
   }
 
   override toString(): string {

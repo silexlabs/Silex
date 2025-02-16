@@ -10,6 +10,7 @@ export default tseslint.config(
     rules: {
       'indent': ['error', 2],
       'semi': ['error', 'never'],
+      'quotes': ['error', 'single'],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['error'],

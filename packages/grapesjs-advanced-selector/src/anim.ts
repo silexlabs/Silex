@@ -1,16 +1,16 @@
 export function animateTextChange(element: HTMLElement, newText: string, speed: number = 10): void {
   if (!element) {
-    console.error(`Element not found.`, { element })
+    console.error('Element not found.', { element })
     return
   }
 
-  const oldText = element.textContent || ""
+  const oldText = element.textContent || ''
   const maxLength = Math.max(oldText.length, newText.length)
-  let newHTML = ""
+  let newHTML = ''
 
   for (let i = 0; i < maxLength; i++) {
-    const oldChar = oldText[i] || ""
-    const newChar = newText[i] || ""
+    const oldChar = oldText[i] || ''
+    const newChar = newText[i] || ''
 
     if (oldChar === newChar) {
       // Keep unchanged characters visible
@@ -25,9 +25,9 @@ export function animateTextChange(element: HTMLElement, newText: string, speed: 
 
   // Trigger animation
   setTimeout(() => {
-    element.querySelectorAll("span").forEach((span, i) => {
-      if (span.style.opacity === "0") {
-        setTimeout(() => (span.style.opacity = "1"), i * speed * 0.5)
+    element.querySelectorAll('span').forEach((span, i) => {
+      if (span.style.opacity === '0') {
+        setTimeout(() => (span.style.opacity = '1'), i * speed * 0.5)
       }
     })
   }, speed)

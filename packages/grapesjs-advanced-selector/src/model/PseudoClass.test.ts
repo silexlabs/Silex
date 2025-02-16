@@ -1,4 +1,4 @@
-import { PSEUDO_CLASSES, toString } from "./PseudoClass"
+import { PSEUDO_CLASSES, toString } from './PseudoClass'
 
 describe('PseudoClass', () => {
   test('toString should return correct string representation', () => {
