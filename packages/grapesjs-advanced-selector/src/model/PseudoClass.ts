@@ -55,7 +55,7 @@ export enum PseudoClassType {
 export interface PseudoClass {
   type: PseudoClassType
   hasParam: boolean
-  param?: string
+  param?: string | null
   sentencePre: string
   sentencePost?: string
   helpLink?: string

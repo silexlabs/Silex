@@ -9,6 +9,7 @@
       margin: 0;
       height: 100%;
     }
+    /*
     hr {
       margin: 50px 0;
       border: 0;
@@ -82,13 +83,15 @@
       --gjs-canvas-top: 40px;
       --gjs-flex-item-gap: 5px;
     }
+      */
   </style>
 </head>
 <body>
+<!-- --
   <div class="gjs-pn-panel gjs-editor" style="background-color: rgba(250, 235, 215, 0.767); z-index: 999;">
 
 
-    <!-- <h3>Complex Selector test</h3> -->
+    <h3>Complex Selector test</h3>
     <complex-selector></complex-selector>
     <current-selector-display></current-selector-display>
     <script type="module">
@@ -235,7 +238,8 @@
 
   </div>
 
-  <!-- --
+<!-- -->
+<!-- -->
   <div id="gjs"></div>
   <script>
     // Wait for the plugin to be injected by the dev server
@@ -248,6 +252,7 @@
           custom: true, // This should not be needed, check index.js
           escapeName: (name) => `${name}`,
         },
+        plugins: ['@silexlabs/grapesjs-advanced-selector'],
       });
       editor.on('load', () => {
         editor.addComponents('<div class="container"><p class="child">This is a child</p></div>')

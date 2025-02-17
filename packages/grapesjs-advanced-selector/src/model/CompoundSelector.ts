@@ -4,7 +4,7 @@ import { toString as toStringPseudoClass } from './PseudoClass'
 
 export type CompoundSelector = {
   selectors: SimpleSelector[]
-  pseudoClass?: PseudoClass
+  pseudoClass?: PseudoClass | null
 }
 
 /**
