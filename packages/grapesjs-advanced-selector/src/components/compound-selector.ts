@@ -1,12 +1,19 @@
 import { property } from 'lit/decorators.js'
 import StylableElement from '../StylableElement'
 import { CompoundSelector, toString } from '../model/CompoundSelector'
-import { SimpleSelector, SimpleSelectorType } from '../model/SimpleSelector'
+import { isSameSelector, SimpleSelector, SimpleSelectorType } from '../model/SimpleSelector'
 import { css, html, TemplateResult } from 'lit'
 import SimpleSelectorComponent from './simple-selector'
 import { PSEUDO_CLASSES } from '../model/PseudoClass'
 
-
+/**
+ * A component to display and edit a compound selector
+ * A compound selector is a list of simple selectors and a pseudo class
+ * @emits change
+ * @emits rename (when a simple selector in the selector is renamed)
+ * @emits delete
+ * @emits add
+ */
 export default class CompoundSelectorComponent extends StylableElement {
 
   // /////////////////
@@ -53,30 +60,24 @@ export default class CompoundSelectorComponent extends StylableElement {
       border: 1px solid !important;
     }
     button:hover, a:hover {
-      transform: translateY(1px);
-      color: var(--gjs-primary-color, #333);
+      transform: translateX(1px);
+      font-weight: bold;
     }
     .asm-compound__selectors {
       display: flex;
       gap: 0.5rem;
       align-items: center;
       flex-wrap: wrap;
-      margin: 0.5rem 0;
       /* material design card style */
       padding: 0.5rem;
-      background-color: var(--gjs-secondary-color, white);
-      border-radius: 0.5rem;
+      background-color: var(--gjs-main-dark-color);
     }
-    button.asm-compound__add {
-      font-size: 1.5rem;
-      margin: 0 0.5rem;
-      /* text inside button vertical align */
-      line-height: 1.5rem;
-      padding: 0px 0px 0.15rem;
+    .asm-compound__add {
+      color: var(--gjs-secondary-color, #b9a5a6);
     }
-    button.asm__add-inline {
-      padding: 0 0.5rem;
+    .asm__add-inline {
       font-size: 0.8rem;
+      background: transparent;
     }
   `
 
@@ -103,10 +104,13 @@ export default class CompoundSelectorComponent extends StylableElement {
             ></simple-selector>
           `) }
           <button
+            id="gjs-clm-add-tag"
+            class="gjs-clm-tags-btn gjs-clm-tags-btn__add asm-compound__add"
             title="Add a new selector"
-            class="gjs-btn-prim asm-compound__add"
             @click=${ this.addSelector }
-            >+</button>
+            >
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
+          </button>
         </div>
         ${ this.disablePseudoClass ? '' : html`
           ${ this.value?.pseudoClass ? html`
@@ -132,11 +136,18 @@ export default class CompoundSelectorComponent extends StylableElement {
   // /////////////////
   // Methods
   private changeSelector(event: CustomEvent<SimpleSelector>, idx: number) {
+    const oldValue: SimpleSelector = this.value!.selectors[idx]
     this.value = {
       ...this.value!,
       selectors: this.value!.selectors.map((selector, i) => i === idx ? event.detail : selector)
     }
-    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    if(!isSameSelector(oldValue, event.detail)) {
+      this.dispatchEvent(new CustomEvent('rename', { detail: {
+        oldValue,
+        value: event.detail,
+      } }))
+      this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    }
     event.stopPropagation()
     this.requestUpdate()
   }

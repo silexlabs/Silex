@@ -79,6 +79,15 @@ export const ATTRIBUTE_OPERATORS = ['=', '~=', '|=', '^=', '$=', '*=']
 export const SELECTOR_PREFIXES = ['.', '#', '[', '*']
 export const TAGS: TAG[] = [ 'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'slot', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr' ]
 export const ESCAPE_CHARS = [' ']
+export const COLOR_FOR_TYPE = {
+  [SimpleSelectorType.TAG]: 'var(--gjs-color-blue, #d4d4f4)',
+  [SimpleSelectorType.CUSTOM_TAG]: 'var(--gjs-color-blue, #d4d4f4)',
+  [SimpleSelectorType.CLASS]: 'var(--gjs-color-green, #d4f4d4)',
+  [SimpleSelectorType.ID]: 'var(--gjs-color-red, #f4d4d4)',
+  [SimpleSelectorType.ATTRIBUTE]: 'var(--gjs-color-yellow, #f4f4d4)',
+  [SimpleSelectorType.UNIVERSAL]: 'var(--gjs-color-purple, #f4d4f4)',
+  [SimpleSelectorType.UNKNOWN]: 'var(--asm-unknown-color, #333)',
+}
 
 const CLASS_SYMBOL = '•'
 const ID_SYMBOL = '#'
@@ -91,6 +100,10 @@ const UNKNOWN_SYMBOL = '?'
 // //////////////
 // Functions
 
+/**
+ * Compare two simple selectors to see if they are the same
+ * The `active` attribute is ignored
+ */
 export function isSameSelector(a: SimpleSelector, b: SimpleSelector): boolean {
   if (a.type !== b.type) return false
   switch (a.type) {
@@ -105,7 +118,9 @@ export function isSameSelector(a: SimpleSelector, b: SimpleSelector): boolean {
   case SimpleSelectorType.ATTRIBUTE: {
     const typedA = a as AttributeSelector
     const typedB = b as AttributeSelector
-    return typedA.attributeValue === typedB.attributeValue && typedA.operator === typedB.operator && typedA.value === typedB.value
+    if(typedA.operator !== typedB.operator) return false
+    if(typedA.operator && typedA.attributeValue !== typedB.attributeValue) return false
+    return typedA.value === typedB.value
   }
   case SimpleSelectorType.UNIVERSAL: {
     return true
@@ -231,6 +246,14 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
     // The universal selector will be suggested in the creation suggestions (getCreationSuggestions)
     return []
   }
+
+  // Make sure suggestions is an array of SimpleSelector
+  // Or throw
+  suggestions.forEach((suggestion) => {
+    if (!suggestion.type) {
+      throw new Error('Invalid suggestion')
+    }
+  })
 
   // Limit the number of suggestions by type of selector
   //const typeCount = new Map<SimpleSelectorType, number>()

@@ -9,6 +9,12 @@ import InlineSelectComponent from './inline-select'
 import CompoundSelectorComponent from './compound-selector'
 import { CompoundSelector } from '../model/CompoundSelector'
 
+/**
+ * A component to display and edit a complex selector
+ * A complex selector is a main selector, an operator, and a related selector
+ * @emits change
+ * @emits rename (when a simple selector in the main compound selector is renamed)
+ */
 export default class ComplexSelectorComponent extends StylableElement {
   // /////////////////
   // Attributes
@@ -34,7 +40,7 @@ export default class ComplexSelectorComponent extends StylableElement {
    * that are available in the document, applicable to the current selection
    */
   @property({ type: Object, attribute: true, reflect: false })
-  private suggestions: SimpleSelector[] = []
+  public suggestions: SimpleSelector[] = []
 
 
   /**
@@ -42,7 +48,7 @@ export default class ComplexSelectorComponent extends StylableElement {
    * that are available to the related selector
    */
   @property({ type: Object, attribute: true, reflect: false })
-  private relations: SimpleSelector[] = []
+  public relations: SimpleSelector[] = []
 
 
   // /////////////////
@@ -60,8 +66,8 @@ export default class ComplexSelectorComponent extends StylableElement {
       border: 1px solid !important;
     }
     button:hover, a:hover {
-      transform: translateY(1px);
-      color: var(--gjs-primary-color, #333);
+      transform: translateX(1px);
+      font-weight: bold;
     }
     :host {
       display: block;
@@ -69,8 +75,8 @@ export default class ComplexSelectorComponent extends StylableElement {
       padding: 0.5rem 0;
     }
     button.asm__add-inline {
-      padding: 0 0.5rem;
       font-size: 0.8rem;
+      background: transparent;
     }
   `
 
@@ -93,6 +99,7 @@ export default class ComplexSelectorComponent extends StylableElement {
     event.stopPropagation()
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
+        @rename=${ (event: CustomEvent) => this.dispatchEvent(new CustomEvent('rename', { detail: event.detail })) }
       ></compound-selector>
       ${ this.value?.operator ? html`
         <inline-select

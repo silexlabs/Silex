@@ -30,6 +30,11 @@ describe('SimpleSelector', () => {
     expect(isSameSelector(selectorRef, { type: SimpleSelectorType.CLASS, value: 'test2' } as ClassSelector)).toBe(false)
     expect(isSameSelector(selectorRef, { type: SimpleSelectorType.ID, value: 'test' } as IdSelector)).toBe(false)
     expect(isSameSelector(selectorRef, { type: SimpleSelectorType.UNIVERSAL } as UniversalSelector)).toBe(false)
+    expect(isSameSelector({ type: SimpleSelectorType.ATTRIBUTE, value: 'test', operator: undefined, attributeValue: 'test2' } as AttributeSelector, { type: SimpleSelectorType.ATTRIBUTE, value: 'test' } as AttributeSelector)).toBe(true)
+    expect(isSameSelector({ type: SimpleSelectorType.ATTRIBUTE, value: 'test', operator: '=', attributeValue: 'test2' } as AttributeSelector, { type: SimpleSelectorType.ATTRIBUTE, value: 'test' } as AttributeSelector)).toBe(false)
+    // Active is irrelevant
+    expect(isSameSelector({ type: SimpleSelectorType.CLASS, value: 'test', active: true } as ClassSelector, { type: SimpleSelectorType.CLASS, value: 'test' } as ClassSelector)).toBe(true)
+    expect(isSameSelector({ type: SimpleSelectorType.CLASS, value: 'test', active: true } as ClassSelector, { type: SimpleSelectorType.CLASS, value: 'test', active: false } as ClassSelector)).toBe(true)
   })
 
   test('toString should return correct string representation', () => {

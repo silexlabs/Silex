@@ -86,7 +86,7 @@ export const OPERATORS = [
     type: OperatorType.WHERE, 
     hasParam: false, 
     sentencePre: 'When it', 
-    displayName: 'matches (no specificity)',
+    displayName: 'matches (no spec)',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:where',
     isCombinator: false,
   }
@@ -109,4 +109,12 @@ export function toString(op: Operator, sel?: CompoundSelector): string {
   default:
     throw new Error(`Unknown operator type: ${ op.type }`)
   }
+}
+
+export function fromString(operatorStr: string): Operator {
+  const operator = OPERATORS.find(op => operatorStr.includes(op.type))
+  if (!operator) {
+    throw new Error(`Operator not found: ${ operatorStr }`)
+  }
+  return { ...operator }
 }

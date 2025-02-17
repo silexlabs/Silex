@@ -49,11 +49,18 @@ export default class InlineSelectComponent extends StylableElement {
       transform: translateY(1px);
       color: var(--gjs-primary-color, #333);
     }
+    input, select, button, inline-select {
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--gjs-secondary-color, #333);
+      margin: 0;
+      padding: 0;
+    }
     :host {
       display: block;
       text-align: left;
-      padding: 0.25rem 0;
-      margin: 0.25rem 0;
+      padding: 0 0.5rem;
+      margin: 0.5rem 0;
     }
     section {
       display: flex;
@@ -75,8 +82,7 @@ export default class InlineSelectComponent extends StylableElement {
       font-size: 0.8rem;
       text-decoration: none;
       border-radius: 50%;
-      padding: 0.25rem;
-      color: var(--gjs-primary-color, #333);
+      color: var(--gjs-secondary-color, #333);
       /* make the link a circle */
       display: inline-block;
       width: .5rem;
@@ -84,9 +90,13 @@ export default class InlineSelectComponent extends StylableElement {
       text-align: center;
       line-height: .7rem;
       font-size: .7rem;
+      padding: 4px;
       &:hover {
         background-color: var(--gjs-secondary-color, #fff);
       }
+    }
+    .unbreakable {
+      white-space: nowrap;
     }
   `
 
@@ -100,9 +110,11 @@ export default class InlineSelectComponent extends StylableElement {
       <section>
         <main>
           ${ this.value.sentencePre }
-          ${ this.renderList() }
-          ${ this.value.sentencePost ?? '' }
-          ${ this.renderParam() }
+          <span class="unbreakable">
+            ${ this.renderList() }
+            ${ this.value.sentencePost ?? '' }
+            ${ this.renderParam() }
+          </span>
         </main>
         <aside>
           ${ this.renderButtons() }

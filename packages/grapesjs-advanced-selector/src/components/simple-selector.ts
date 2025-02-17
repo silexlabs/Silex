@@ -1,6 +1,7 @@
 import { css, html, TemplateResult } from 'lit'
 import { property } from 'lit/decorators.js'
-import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName } from '../model/SimpleSelector'
+import { styleMap } from 'lit/directives/style-map.js'
+import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName, COLOR_FOR_TYPE } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
@@ -33,7 +34,7 @@ export default class SimpleSelectorComponent extends StylableElement {
    * that are available in the document, applicable to the current selection
    */
   @property({ type: Object, attribute: true, reflect: false })
-  private suggestions: SimpleSelector[] = []
+  public suggestions: SimpleSelector[] = []
 
   /**
    * Whether the selector is editable
@@ -63,27 +64,27 @@ export default class SimpleSelectorComponent extends StylableElement {
     a:focus-visible {
       outline: initial !important;
       box-shadow: revert !important;
-      border: 1px solid !important;
-    }
-    :invalid {
-      border: 2px solid red !important;
-      background: #fdd !important;
     }
     section {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
+      gap: 0.25rem;
+      padding: 0.10rem;
       border-radius: 0.2rem;
       cursor: pointer;
+      background: var(--gjs-main-light-color, #f9f9f9);
+    }
+    section:has(:invalid) {
+      background: rgba(255, 0, 0, 0.1) !important;
     }
     header {
       width: 12px;
       text-wrap: nowrap;
       transition: all .2s ease-out;
       overflow: hidden;
+      text-align: center;
+      line-height: 1;
     }
     section:focus-within header,
     section:hover header {
@@ -101,27 +102,41 @@ export default class SimpleSelectorComponent extends StylableElement {
     select {
       text-align: center;
     }
-    section:not(:has(.asm-simple-selector__active:checked)) {
+    section:not(:has(.asm-simple-selector__active:checked)):not(:has(.asm-simple-selector__selector)) {
       opacity: 0.5;
+    }
+    input, select, button {
+      font-family: inherit;
+      font-size: inherit;
+      color: var(--gjs-secondary-color, #333);
     }
     .asm-simple-selector__delete-button {
       padding: 0;
       line-height: 1;
       margin: 1px;
+      background: transparent;
+    }
+    .asm-simple-selector__delete-button:hover {
+      color: var(--gjs-color-warn, #f00);
+      transform: scale(1.2) translateY(-1px);
     }
     .asm-simple-selector__active {
       display: none;
     }
     .asm-simple-selector__like-text {
       ${ INVISIBLE_INPUT }
+      padding: .25rem;
     }
     .asm-simple-selector__options-select {
       ${ INVISIBLE_SELECT }
     }
     .asm-simple-selector__name {
-      display: inline-block;
+      display: inline-flex;
       text-wrap: wrap;
-      line-height: 1.25rem;
+      justify-content: center;
+      align-items: center;
+      min-height: 20px;
+      line-height: 1;
     }
     .asm-simple-selector__selector {
       cursor: text;
@@ -232,6 +247,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     const selectorString = this.selectorInputRef.value?.value || ''
     const valid = validate(selectorString)
     const suggestions = getCreationSuggestions(selectorString).concat(suggest(selectorString, this.suggestions))
+    console.log('Suggestions', suggestions, this.suggestions)
     return html`
       ${ this.renderLayout(html`
         ${ this.editing ? this.renderSelectorInput({
@@ -251,7 +267,9 @@ export default class SimpleSelectorComponent extends StylableElement {
   private renderLayout(content: TemplateResult, { valid, suggestions }: {suggestions: SimpleSelectorSuggestion[], valid: boolean}): TemplateResult {
     return html`
       <main
-        class=""
+        style=${styleMap({
+    color: COLOR_FOR_TYPE[this.value!.type],
+  })}
         tabindex="0"
         ${ ref(this.mainRef) }
         @keydown=${(event: KeyboardEvent) => {

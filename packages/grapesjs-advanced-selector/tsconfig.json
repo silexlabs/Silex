@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
     "skipLibCheck": true, // For grapesjs in headless mode
     "esModuleInterop": true, // For grapesjs in headless mode
     "target": "es2019",

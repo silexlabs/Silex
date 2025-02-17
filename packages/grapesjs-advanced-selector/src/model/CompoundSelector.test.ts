@@ -1,4 +1,4 @@
-import { CompoundSelector, toString, specificity } from './CompoundSelector'
+import { CompoundSelector, toString, specificity, fromString } from './CompoundSelector'
 import { SimpleSelectorType, SimpleSelector, TagSelector, IdSelector, ClassSelector, AttributeSelector, UniversalSelector } from './SimpleSelector'
 import { PseudoClass } from './PseudoClass'
 
@@ -42,11 +42,11 @@ jest.mock('./SimpleSelector', () => ({
 }))
 
 jest.mock('./PseudoClass', () => ({
-  toString: (pseudoClass: PseudoClass) => `:${pseudoClass.type}`
+  toString: (pseudoClass: PseudoClass) => `:${pseudoClass.type}`,
+  PSEUDO_CLASSES: jest.requireActual('./PseudoClass').PSEUDO_CLASSES,
 }))
 
 describe('CompoundSelector', () => {
-  
   test('toString - builds correct selector string', () => {
     expect(toString({
       selectors: [
@@ -140,5 +140,79 @@ describe('CompoundSelector', () => {
         classSelector,
       ]
     })).toBe(10) // Only the active class contributes
+  })
+})
+
+describe('parseSelectorString', () => {
+  test('parses a tag selector', () => {
+    const result = fromString('div')
+    expect(result.selectors).toEqual([{ type: SimpleSelectorType.TAG, value: 'div', active: true }])
+  })
+
+  test('parses an ID selector', () => {
+    const result = fromString('#main')
+    expect(result.selectors).toEqual([{ type: SimpleSelectorType.ID, value: 'main', active: true }])
+  })
+
+  test('parses a class selector', () => {
+    const result = fromString('.container')
+    expect(result.selectors).toEqual([{ type: SimpleSelectorType.CLASS, value: 'container', active: true }])
+  })
+
+  test('parses a universal selector', () => {
+    const result = fromString('*')
+    expect(result.selectors).toEqual([{ type: SimpleSelectorType.UNIVERSAL, active: true }])
+  })
+
+  test('parses an attribute selector', () => {
+    const result = fromString('[data-role=button]')
+    expect(result.selectors).toEqual([
+      { type: SimpleSelectorType.ATTRIBUTE, value: 'data-role', operator: '=', attributeValue: 'button', active: true },
+    ])
+  })
+
+  test('parses an attribute selector with quotes', () => {
+    const result = fromString('[data-id="123"]')
+    expect(result.selectors).toEqual([
+      { type: SimpleSelectorType.ATTRIBUTE, value: 'data-id', operator: '=', attributeValue: '123', active: true },
+    ])
+  })
+
+  test('parses a tag with a class', () => {
+    const result = fromString('button.primary')
+    expect(result.selectors).toEqual([
+      { type: SimpleSelectorType.TAG, value: 'button', active: true },
+      { type: SimpleSelectorType.CLASS, value: 'primary', active: true },
+    ])
+  })
+
+  test('parses a tag with an ID', () => {
+    const result = fromString('nav#main-menu')
+    expect(result.selectors).toEqual([
+      { type: SimpleSelectorType.TAG, value: 'nav', active: true },
+      { type: SimpleSelectorType.ID, value: 'main-menu', active: true },
+    ])
+  })
+
+  test('parses a selector with a pseudo-class', () => {
+    const result = fromString('a:hover')
+    expect(result.selectors).toEqual([{ type: SimpleSelectorType.TAG, value: 'a', active: true }])
+    expect(result.pseudoClass?.type).toBe('hover')
+  })
+
+  test('parses a selector with multiple classes and a pseudo-class', () => {
+    const result = fromString('.button.large:focus')
+    expect(result.selectors).toEqual([
+      { type: SimpleSelectorType.CLASS, value: 'button', active: true },
+      { type: SimpleSelectorType.CLASS, value: 'large', active: true },
+    ])
+    expect(result.pseudoClass?.type).toBe('focus')
+  })
+
+  test('parses a selector with a pseudo-class with params', () => {
+    const result = fromString(':nth-child(2)')
+    expect(result.selectors).toEqual([])
+    expect(result.pseudoClass?.type).toBe('nth-child')
+    expect(result.pseudoClass?.param).toBe('2')
   })
 })

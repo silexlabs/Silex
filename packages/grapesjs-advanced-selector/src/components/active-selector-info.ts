@@ -39,17 +39,17 @@ export class CurrentSelectorDisplay extends StylableElement {
       border: 1px solid !important;
     }
     :host {
-      font-size: 0.8rem;
+      font-size: 0.65rem;
       padding: 0.5rem 0;
     }
     .selection {
       text-align: center;
-      margin-top: 1rem;
       border-top: 1px solid var(--gjs-primary-color, #333);
+      background-color: var(--gjs-main-dark-color, #222);
       padding: .5rem 0;
       .value {
         display: inline;
-        background-color: #f9f9f9;
+        background-color: var(--gjs-primary-color, #333)
         padding: 0 5px;
         border-radius: 3px;
         margin: 0;
@@ -59,6 +59,10 @@ export class CurrentSelectorDisplay extends StylableElement {
         list-style-type: none;
         padding: 0;
         margin: 0;
+        & > li {
+          display: inline;
+          margin: 0 0.5rem;
+        }
       }
     }
   `
@@ -73,18 +77,15 @@ export class CurrentSelectorDisplay extends StylableElement {
     })
     return html`
       <section id="pre" class="selection">
-        <ul><li>
-          <pre
-            class="value"
-            ${ref(this.selectorRef)}
-          ></pre>
-        </li><li>
-          <span class="label">Specificity:</span>
-          <span
-            class="value"
-            ${ref(this.specificityRef)}
-          ></span>
-        </li></ul>
+        <pre
+          class="value"
+          title="Currently styling for this selector"
+          ${ref(this.selectorRef)}
+        ></pre>
+        <span
+          title="Specificity"
+          ${ref(this.specificityRef)}
+        ></span>
       </section>
     `
   }
@@ -108,7 +109,7 @@ export class CurrentSelectorDisplay extends StylableElement {
     } else {
       this.specificity = 0
     }
-    animateTextChange(this.specificityRef.value!, this.specificity.toString())
+    this.specificityRef.value!.innerHTML = `(${ this.specificity.toString() })`
   }
 }
 
