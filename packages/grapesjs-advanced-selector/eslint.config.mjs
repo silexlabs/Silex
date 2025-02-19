@@ -11,7 +11,7 @@ export default tseslint.config(
       'indent': ['error', 2],
       'semi': ['error', 'never'],
       'quotes': ['error', 'single'],
-      'no-unused-vars': 'off',
+      'no-case-declarations': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': ['error'],
       'object-curly-spacing': ['error', 'always'] // Add this line

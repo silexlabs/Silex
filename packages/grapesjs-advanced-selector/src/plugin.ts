@@ -1,8 +1,8 @@
 import { Component, CssRule, Editor } from 'grapesjs'
 import { html, render } from 'lit'
-import { editStyle, getComponentSelector, getSelectors, renameSelector, setComponentSelector } from './model/GrapesJs'
+import { editStyle, getComponentSelector, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector } from './model/GrapesJs'
 import { ComplexSelector, EMPTY_SELECTOR, same, toString } from './model/ComplexSelector'
-import { IdSelector, SimpleSelectorType, TAGS } from './model/SimpleSelector'
+import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
 
 ////////////////
 // Types
@@ -68,8 +68,8 @@ function updateUi(editor: Editor, selected: CssRule[]) {
     render(html`
       <complex-selector
         .value=${selector}
-        .suggestions=${TAGS.map((tag) => ({ value: tag, type: SimpleSelectorType.TAG, active: true }))}
-        .relations=${TAGS.map((tag) => ({ value: tag, type: SimpleSelectorType.TAG, active: true }))}
+        .suggestions=${getSuggestionsMain(editor, components, selector)}
+        .relations=${getSuggestionsRelated(editor, components, selector)}
         @change=${(event: CustomEvent) => chagedSelector(event.detail as ComplexSelector, editor, components)}
         @rename=${(event: CustomEvent) => renameSelector(editor, event.detail.oldValue, event.detail.value) }
       ></complex-selector>
