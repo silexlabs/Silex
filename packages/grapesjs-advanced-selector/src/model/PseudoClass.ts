@@ -119,3 +119,27 @@ export function toString(pseudoClass: PseudoClass): string {
     return `:${pseudoClass.type}`
   }
 }
+
+/**
+ * @example fromString(':hover') // { type: 'hover', hasParam: false, sentencePre: 'On mouse', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:hover' }
+ * @example fromString(':nth-child(2n+1) // { type: 'nth-child', hasParam: true, param: '2n+1', sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:nth-child' }
+ */
+export function fromString(pseudoClassStr: string): PseudoClass {
+  const pseudoMatch = pseudoClassStr.match(/:([-\w]+)(\([^)]*\))?/)
+  if (!pseudoMatch) {
+    throw new Error(`Invalid pseudo-class: ${pseudoClassStr}`)
+  }
+  const type = pseudoMatch[1] as PseudoClassType
+  const param = pseudoMatch[2] ? pseudoMatch[2].slice(1, -1) : null
+  const pseudoClass = PSEUDO_CLASSES.find(pc => pc.type === type)
+  if (!pseudoClass) {
+    throw new Error(`Pseudo-class not found: ${type}`)
+  }
+  if (param) {
+    return {
+      ...pseudoClass,
+      param
+    }
+  }
+  return pseudoClass
+}

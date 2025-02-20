@@ -23,9 +23,10 @@ export interface Operator {
   helpLink: string
   isCombinator: boolean
   displayName?: string
+  stringRepresentation: string
 }
 
-export const OPERATORS = [
+export const OPERATORS: Operator[] = [
   { 
     type: OperatorType.DESCENDANT, 
     hasParam: false, 
@@ -33,6 +34,7 @@ export const OPERATORS = [
     displayName: 'inside of',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Descendant_combinator',
     isCombinator: true,
+    stringRepresentation: ' ',
   },
   { 
     type: OperatorType.CHILD, 
@@ -41,6 +43,7 @@ export const OPERATORS = [
     displayName: 'direct child of',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Child_combinator',
     isCombinator: true,
+    stringRepresentation: ' > ',
   },
   { 
     type: OperatorType.ADJACENT, 
@@ -49,6 +52,7 @@ export const OPERATORS = [
     displayName: 'adjacent to',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/Adjacent_sibling_combinator',
     isCombinator: true,
+    stringRepresentation: ' + ',
   },
   { 
     type: OperatorType.GENERAL_SIBLING, 
@@ -57,6 +61,7 @@ export const OPERATORS = [
     displayName: 'after',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/General_sibling_combinator',
     isCombinator: true,
+    stringRepresentation: ' ~ ',
   },
   { 
     type: OperatorType.HAS, 
@@ -65,6 +70,7 @@ export const OPERATORS = [
     displayName: 'contains',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:has',
     isCombinator: false,
+    stringRepresentation: ':has',
   },
   { 
     type: OperatorType.NOT, 
@@ -73,6 +79,7 @@ export const OPERATORS = [
     displayName: 'does not match',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:not',
     isCombinator: false,
+    stringRepresentation: ':not',
   },
   { 
     type: OperatorType.IS, 
@@ -81,6 +88,7 @@ export const OPERATORS = [
     displayName: 'matches',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:is',
     isCombinator: false,
+    stringRepresentation: ':is',
   },
   { 
     type: OperatorType.WHERE, 
@@ -89,30 +97,31 @@ export const OPERATORS = [
     displayName: 'matches (no spec)',
     helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:where',
     isCombinator: false,
+    stringRepresentation: ':where',
   }
 ]
 
 export function toString(op: Operator, sel?: CompoundSelector): string {
+  const compound = sel ? compoundToString(sel) : ''
+  if (!compound) return ''
   switch (op.type) {
   case OperatorType.HAS:
   case OperatorType.NOT:
   case OperatorType.IS:
   case OperatorType.WHERE:
-    return `:${ op.type }(${ sel ? compoundToString(sel) : '' })`
+    return `${ op.stringRepresentation }(${ compound })`
   case OperatorType.CHILD:
   case OperatorType.ADJACENT:
   case OperatorType.GENERAL_SIBLING:
-    return ` ${ op.type } ${ sel ? compoundToString(sel) : '' }`
   case OperatorType.DESCENDANT:
-    // special case, limit to 1 space, not 2, before the selector
-    return ` ${ sel ? compoundToString(sel) : '' }`
+    return `${ op.stringRepresentation }${ compound }`
   default:
     throw new Error(`Unknown operator type: ${ op.type }`)
   }
 }
 
 export function fromString(operatorStr: string): Operator {
-  const operator = OPERATORS.find(op => operatorStr.includes(op.type))
+  const operator = OPERATORS.find(op => operatorStr === op.stringRepresentation)
   if (!operator) {
     throw new Error(`Operator not found: ${ operatorStr }`)
   }

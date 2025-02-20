@@ -1,7 +1,7 @@
 import { css, html, TemplateResult } from 'lit'
 import { property } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName, COLOR_FOR_TYPE } from '../model/SimpleSelector'
+import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName, COLOR_FOR_TYPE, AttributeOperatorType } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
@@ -379,7 +379,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     event.stopPropagation()
   }}
             @change=${(event: Event) => {
-    const operator = (event.target as HTMLSelectElement).value as '=' | '~=' | '|=' | '^=' | '$=' | '*='
+    const operator = (event.target as HTMLSelectElement).value as AttributeOperatorType
     selector.operator = operator
     selector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))

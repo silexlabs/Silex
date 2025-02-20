@@ -75,8 +75,7 @@ function updateUi(editor: Editor, selected: CssRule[]) {
       <current-selector-display
         .value=${getSelector(components)}
         .selectors=${getSelectors(editor)}
-        .selectedId=${components[0]?.getId()}
-        @change=${(event: CustomEvent) => chagedSelectorKeep(event.detail as ComplexSelector, editor, components)}
+        @change=${(event: CustomEvent) => mergeSelector(event.detail as ComplexSelector, editor, components)}
       ></current-selector-display>
     `, container)
   } else {
@@ -86,6 +85,9 @@ function updateUi(editor: Editor, selected: CssRule[]) {
   }
 }
 
+/**
+ * Make sure that the selector always contains the ID of the component
+ */
 function getSelector(components: Component[]): ComplexSelector | null {
   if(components.length === 0) return null
   const selectors: ComplexSelector[] = components
@@ -103,10 +105,23 @@ function getSelector(components: Component[]): ComplexSelector | null {
     active: true,
   }
   const newSelector = merge(selector, { mainSelector: { selectors: [idSelectorOff] } })
-  if(toString(newSelector) === '') {
-    return activateSelectors(newSelector, { mainSelector: { selectors: [idSelectorOn] } })
+  // // Deactivate the ID selector
+  // newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
+  //   if (selector.type === SimpleSelectorType.ID) {
+  //     return idSelectorOff
+  //   }
+  //   return selector
+  // })
+  // Activate the ID if it needs to be activated
+  if (!toString(newSelector)) {
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
+      if (selector.type === SimpleSelectorType.ID) {
+        return idSelectorOn
+      }
+      return selector
+    })
   }
-  return activateSelectors(newSelector, { mainSelector: { selectors: [idSelectorOff] } })
+  return newSelector
 }
 
 function chagedSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
@@ -117,7 +132,7 @@ function chagedSelector(selector: ComplexSelector, editor: Editor, components: C
 }
 
 // Keep inactive and put the active as inactive
-function chagedSelectorKeep(selector: ComplexSelector, editor: Editor, components: Component[]) {
+function mergeSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
   components.forEach((component) => {
     const oldSelector = getComponentSelector(component) || EMPTY_SELECTOR
     const newSelector = merge(oldSelector, selector)

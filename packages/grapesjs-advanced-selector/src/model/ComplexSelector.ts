@@ -14,14 +14,16 @@ export const EMPTY_SELECTOR = {
 } as ComplexSelector
 
 export function toString(cs: ComplexSelector): string {
-  if (cs.operator?.isCombinator === false) {
-    return `${ compoundToString(cs.mainSelector) }${ operatorToString(cs.operator, cs.relatedSelector)}`
-  } else if (cs.operator?.isCombinator === true) {
-    return `${ cs.relatedSelector ? compoundToString(cs.relatedSelector) : '' }${ operatorToString(cs.operator, cs.mainSelector)}`
-  } else {
-    // No operator
+  const operatorAndRelated = cs.operator ? operatorToString(cs.operator, cs.relatedSelector) : ''
+  if (!operatorAndRelated) {
+    // No operator or related active selector
     return compoundToString(cs.mainSelector)
+  } else if (cs.operator?.isCombinator === true) {
+    // Combinator operator
+    return `${cs.relatedSelector ? compoundToString(cs.relatedSelector) : ''}${operatorToString(cs.operator, cs.mainSelector)}`
   }
+  // Non combinator operator
+  return `${compoundToString(cs.mainSelector)}${operatorToString(cs.operator!, cs.relatedSelector)}`
 }
 
 export function specificity(cs: ComplexSelector): number {
@@ -41,17 +43,42 @@ export function specificity(cs: ComplexSelector): number {
 /**
  * Parses a CSS selector string and converts it into a ComplexSelector model
  * @example fromString('div > .class') // { mainSelector: { selectors: [{ type: 'tag', value: 'div' }] }, operator: { isCombinator: true, value: '>' }, relatedSelector: { selectors: [{ type: 'class', value: 'class' }] } }
+ * @example fromString('.main:has(.related)') // { mainSelector: { selectors: [{ type: 'class', value: 'main' }] }, operator: { isCombinator: false, value: ':has' }, relatedSelector: { selectors: [{ type: 'class', value: 'related' }] } }
  */
 export function fromString(selector: string): ComplexSelector {
-  const parts = selector.split(/([>+~ ])/)
-  const mainSelector = parts.shift()
-  const operator = parts.shift()
-  const relatedSelector = parts.join('')
+  const operatorMatch = selector.match(/:(\w+)\((.+)\)$/)
+  if (operatorMatch) {
+    const [, operator, relatedSelector] = operatorMatch
+    const mainSelector = selector.replace(operatorMatch[0], '')
+    return {
+      mainSelector: mainSelector ? compoundFromString(mainSelector) : { selectors: [] },
+      operator: operatorFromString(`:${operator}`),
+      relatedSelector: compoundFromString(relatedSelector),
+    }
+  }
 
+  const parts = selector
+    // Trim the space between >, +, ~ and the selector
+    .replace(/ ([>+~]) /, '$1')
+    .split(/([>+~ ])/)
+
+  // Extract the related selector and operator
+  const relatedSelector = parts.shift()
+  const timedOperator = parts.shift()
+
+  // put back the space if it was a space
+  const operator = !timedOperator || timedOperator === ' ' ? timedOperator : ` ${ timedOperator } `
+
+  if (operator && relatedSelector) {
+    const mainSelector = parts.join('')
+    return {
+      mainSelector: mainSelector ? compoundFromString(mainSelector) : { selectors: [] },
+      operator: operatorFromString(operator),
+      relatedSelector: compoundFromString(relatedSelector),
+    }
+  }
   return {
-    mainSelector: mainSelector ? compoundFromString(mainSelector) : { selectors: [] },
-    operator: operator ? operatorFromString(operator) : undefined,
-    relatedSelector: relatedSelector ? compoundFromString(relatedSelector) : undefined,
+    mainSelector: relatedSelector ? compoundFromString(relatedSelector) : { selectors: [] },
   }
 }
 
@@ -79,15 +106,17 @@ export function activateSelectors(cs: ComplexSelector, other: ComplexSelector): 
   return {
     mainSelector: {
       selectors: updateActivation(cs.mainSelector.selectors, other.mainSelector.selectors),
-      pseudoClass: cs.mainSelector.pseudoClass, // Garde les pseudo-classes inchangées
+      pseudoClass: cs.mainSelector.pseudoClass, // Keep pseudo-class unchanged
     },
-    relatedSelector: cs.relatedSelector && other.relatedSelector
+    relatedSelector: cs.relatedSelector
       ? {
-        selectors: updateActivation(cs.relatedSelector.selectors, other.relatedSelector.selectors),
-        pseudoClass: cs.relatedSelector.pseudoClass, // Garde les pseudo-classes inchangées
+        selectors: other.relatedSelector
+          ? updateActivation(cs.relatedSelector.selectors, other.relatedSelector.selectors)
+          : cs.relatedSelector.selectors.map(selector => ({ ...selector, active: false })), // Deactivate all if `other` has no relatedSelector
+        pseudoClass: cs.relatedSelector.pseudoClass, // Keep pseudo-class unchanged
       }
-      : cs.relatedSelector, // Si `relatedSelector` est null, ne change rien
-    operator: cs.operator, // L'opérateur reste inchangé
+      : undefined, // Keep `relatedSelector` as undefined if it doesn't exist
+    operator: cs.operator, // Keep the operator unchanged
   }
 }
 
@@ -95,8 +124,8 @@ export function activateSelectors(cs: ComplexSelector, other: ComplexSelector): 
  * Make sure all ComplexSelectors have the same mainSelector, operator, and relatedSelector
  */
 export function same(all: ComplexSelector[]): ComplexSelector | false {
-  if(all.length === 0) return false
-  if(all.length === 1) return all[0]
+  if (all.length === 0) return false
+  if (all.length === 1) return all[0]
   const [cs1, ...others] = all
   for (const cs2 of others) {
     if (cs1.mainSelector !== cs2.mainSelector) {

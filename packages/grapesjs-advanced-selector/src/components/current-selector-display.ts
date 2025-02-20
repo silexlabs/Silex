@@ -1,10 +1,8 @@
 import { html, css, TemplateResult } from 'lit'
 import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
-import { ComplexSelector, specificity, toString } from '../model/ComplexSelector'
+import { ComplexSelector, same, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
-import { animateTextChange } from '../anim'
-import { IdSelector, SimpleSelectorType } from '../model/SimpleSelector'
 
 export class CurrentSelectorDisplay extends StylableElement {
   /**
@@ -17,6 +15,7 @@ export class CurrentSelectorDisplay extends StylableElement {
   public set value(value: ComplexSelector | string | undefined) {
     try {
       this._value = typeof value === 'string' ? JSON.parse(value) : value
+      this.specificity = specificity(this._value!)
     } catch (error) {
       console.error('Error parsing value for selector', { value, error })
     }
@@ -29,12 +28,8 @@ export class CurrentSelectorDisplay extends StylableElement {
   @property({ type: Array, attribute: true, reflect: false })
   public selectors: ComplexSelector[] = []
 
-  @property({ type: Object, attribute: true, reflect: false })
-  public selectedId = ''
-
   private specificity = 0
-  private selectorRef = createRef<HTMLDivElement>()
-  private specificityRef = createRef<HTMLDivElement>()
+  private selectRef = createRef<HTMLSelectElement>()
 
   static override styles = css`
     select:focus-visible,
@@ -55,10 +50,14 @@ export class CurrentSelectorDisplay extends StylableElement {
       background-color: var(--gjs-main-dark-color, #222);
       padding: .5rem 0;
       .value {
-        display: inline;
-        background-color: var(--gjs-primary-color, #333)
+        background-color: transparent;
+        border: none;
+        color: var(--gjs-font-color-active, #f8f8f8);
+        color: var(--gjs-color-highlight, #71b7f1);
+        font-size: inherit;
+        font-family: monospace;
+        text-align: right;
         padding: 0 5px;
-        border-radius: 3px;
         margin: 0;
         text-wrap: wrap;
       }
@@ -78,78 +77,44 @@ export class CurrentSelectorDisplay extends StylableElement {
     if (!this.value) {
       return html``
     }
-    requestAnimationFrame(() => {
-      this.updateSpecificity()
-      this.updateSelector()
-    })
+    const selectors = [
+      this.value,
+      ...this.selectors
+        .filter((sel) => !same([sel, this.value!]))
+        .sort((a, b) => specificity(b) - specificity(a))
+    ]
+    const selectorsStrings = selectors.map(toString)
+    //const uniqueStrings = new Set(selectorsStrings)
+    // Workaround: the selected option do not update when the value changes after user selects an option
+    requestAnimationFrame(() => this.selectRef.value ? this.selectRef.value!.selectedIndex = 0 : '')
     return html`
       <section id="pre" class="selection">
-        <pre
-          class="value"
-          title="Currently styling for this selector"
-          ${ref(this.selectorRef)}
-        ></pre>
         <select
+          ${ ref(this.selectRef) }
+          class="value"
           @change=${(event: Event) => {
     event.stopPropagation()
     const target = event.target as HTMLSelectElement
-    if (!target.value) {
-      this.changeSelector({
-        mainSelector: { selectors: [{
-          type: SimpleSelectorType.ID,
-          value: this.selectedId,
-          active: true,
-        } as IdSelector] },
-      })
-    } else {
-      const sel = this.selectors[parseInt(target.value)]
-      this.changeSelector(sel)
-    }
+    const sel = selectors[parseInt(target.value)]
+    this.changeSelector(sel)
   }}
         >
-          <option
-            value=""
-            ?selected=${!this.value}
-          >
-            ${ this.selectedId ? `#${ this.selectedId }` : this.placeholder }
-          </option>
-          ${this.selectors
-    .map((sel, idx) => html`
+          ${selectorsStrings
+    .map((selectorString, idx) => {
+      return html`
           <option
             value=${idx}
-            ?selected=${toString(sel) === toString(this.value!)}
+            ?selected=${idx === 0}
           >
-            ${ toString(sel) }
-          </option>`) }
+            ${ selectorString }
+          </option>`
+    })}
         </select>
         <span
           title="Specificity"
-          ${ref(this.specificityRef)}
-        ></span>
+        >( ${ this.specificity } )</span>
       </section>
     `
-  }
-
-  private updateSelector() {
-    if (this.value) {
-      try {
-        animateTextChange(this.selectorRef.value!, toString(this.value) || this.placeholder)
-      } catch (error: any) {
-        console.error('Error updating selector', { error })
-        animateTextChange(this.selectorRef.value!, error.toString())
-      }
-    } else {
-      animateTextChange(this.selectorRef.value!, this.placeholder)
-    }
-  }
-
-  updateSpecificity() {
-    if (this.value) {
-      this.specificity = specificity(this.value)
-    } else {
-      this.specificity = 0
-    }
-    this.specificityRef.value!.innerHTML = `(${ this.specificity.toString() })`
   }
 
   private changeSelector(sel: ComplexSelector) {

@@ -55,10 +55,18 @@ export interface ClassSelector extends SimpleSelector {
   value: string
 }
 
+export enum AttributeOperatorType {
+  EQUALS = '=',
+  INCLUDES = '~=',
+  DASH_MATCH = '|=',
+  PREFIX_MATCH = '^=',
+  SUFFIX_MATCH = '$=',
+  SUBSTRING_MATCH = '*=',
+}
 export interface AttributeSelector extends SimpleSelector {
   type: SimpleSelectorType.ATTRIBUTE
   value: string
-  operator?: '=' | '~=' | '|=' | '^=' | '$=' | '*='
+  operator?: AttributeOperatorType
   attributeValue?: string
 }
 

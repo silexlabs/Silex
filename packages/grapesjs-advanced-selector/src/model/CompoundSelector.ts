@@ -1,5 +1,5 @@
 import { PSEUDO_CLASSES, PseudoClass } from './PseudoClass'
-import { SimpleSelector, toString as toStringSimpleSelector, specificity as simpleSelectorSpecificity, getSelectorPriority, SimpleSelectorType, IdSelector, ClassSelector, AttributeSelector, UniversalSelector, TagSelector } from './SimpleSelector'
+import { SimpleSelector, toString as toStringSimpleSelector, specificity as simpleSelectorSpecificity, getSelectorPriority, SimpleSelectorType, IdSelector, ClassSelector, AttributeSelector, UniversalSelector, TagSelector, AttributeOperatorType } from './SimpleSelector'
 import { toString as toStringPseudoClass } from './PseudoClass'
 
 export type CompoundSelector = {
@@ -45,7 +45,7 @@ export function fromString(selectorStr: string): CompoundSelector {
   }
 
   const selectors: SimpleSelector[] = []
-  let pseudoClass: PseudoClass | undefined
+  let pseudoClass: PseudoClass | undefined = undefined
 
   matches.forEach(match => {
     if (match.startsWith('#')) {
@@ -55,13 +55,16 @@ export function fromString(selectorStr: string): CompoundSelector {
     } else if (match.startsWith('[')) {
       const attrMatch = match.match(/^\[([a-zA-Z][-a-zA-Z0-9]*)\s*([~|^$*]?=)?\s*"?([^"\]]*)"?\]$/)
       if (attrMatch) {
-        selectors.push({
+        const attr = {
           type: SimpleSelectorType.ATTRIBUTE,
           value: attrMatch[1], // Attribute name
-          operator: attrMatch[2] || undefined, // Optional operator
-          attributeValue: attrMatch[3] || '', // Optional value
+          attributeValue: attrMatch[3] || '',
           active: true,
-        } as AttributeSelector)
+        } as AttributeSelector
+        if (attrMatch[2]) {
+          attr.operator = attrMatch[2] as AttributeOperatorType
+        }
+        selectors.push(attr)
       }
     } else if (match === '*') {
       selectors.push({ type: SimpleSelectorType.UNIVERSAL, active: true } as UniversalSelector)
@@ -87,7 +90,8 @@ export function fromString(selectorStr: string): CompoundSelector {
     }
   })
 
-  return { selectors, pseudoClass }
+  if (pseudoClass) return { selectors, pseudoClass }
+  return { selectors }
 }
 
 /**
@@ -113,7 +117,10 @@ export function merge(cs1: CompoundSelector, cs2: CompoundSelector): CompoundSel
  */
 export function updateActivation(targetSelectors: SimpleSelector[], referenceSelectors: SimpleSelector[]): SimpleSelector[] {
   return targetSelectors.map(sel => {
+    // Find the same selector in `referenceSelectors`
     const matchingRef = referenceSelectors.find(ref => ref.type === sel.type && (ref as any).value === (sel as any).value)
-    return matchingRef ? { ...sel, active: matchingRef.active } : sel
+
+    // Activate if present in `other`, otherwise deactivate it
+    return { ...sel, active: matchingRef ? matchingRef.active : false }
   })
 }
