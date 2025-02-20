@@ -4,6 +4,7 @@ import { property } from 'lit/decorators.js'
 import { ComplexSelector, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { animateTextChange } from '../anim'
+import { IdSelector, SimpleSelectorType } from '../model/SimpleSelector'
 
 export class CurrentSelectorDisplay extends StylableElement {
   /**
@@ -23,7 +24,13 @@ export class CurrentSelectorDisplay extends StylableElement {
   private _value: ComplexSelector | undefined
 
   @property({ type: String, attribute: true, reflect: false })
-    placeholder = 'Select an option'
+  public placeholder = 'Select an option'
+
+  @property({ type: Array, attribute: true, reflect: false })
+  public selectors: ComplexSelector[] = []
+
+  @property({ type: Object, attribute: true, reflect: false })
+  public selectedId = ''
 
   private specificity = 0
   private selectorRef = createRef<HTMLDivElement>()
@@ -82,6 +89,39 @@ export class CurrentSelectorDisplay extends StylableElement {
           title="Currently styling for this selector"
           ${ref(this.selectorRef)}
         ></pre>
+        <select
+          @change=${(event: Event) => {
+    event.stopPropagation()
+    const target = event.target as HTMLSelectElement
+    if (!target.value) {
+      this.changeSelector({
+        mainSelector: { selectors: [{
+          type: SimpleSelectorType.ID,
+          value: this.selectedId,
+          active: true,
+        } as IdSelector] },
+      })
+    } else {
+      const sel = this.selectors[parseInt(target.value)]
+      this.changeSelector(sel)
+    }
+  }}
+        >
+          <option
+            value=""
+            ?selected=${!this.value}
+          >
+            ${ this.selectedId ? `#${ this.selectedId }` : this.placeholder }
+          </option>
+          ${this.selectors
+    .map((sel, idx) => html`
+          <option
+            value=${idx}
+            ?selected=${toString(sel) === toString(this.value!)}
+          >
+            ${ toString(sel) }
+          </option>`) }
+        </select>
         <span
           title="Specificity"
           ${ref(this.specificityRef)}
@@ -110,6 +150,11 @@ export class CurrentSelectorDisplay extends StylableElement {
       this.specificity = 0
     }
     this.specificityRef.value!.innerHTML = `(${ this.specificity.toString() })`
+  }
+
+  private changeSelector(sel: ComplexSelector) {
+    this.value = sel
+    this.dispatchEvent(new CustomEvent('change', { detail: sel }))
   }
 }
 

@@ -1,7 +1,7 @@
 import { Component, CssRule, Editor } from 'grapesjs'
 import { html, render } from 'lit'
 import { editStyle, getComponentSelector, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector } from './model/GrapesJs'
-import { ComplexSelector, EMPTY_SELECTOR, same, toString } from './model/ComplexSelector'
+import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
 import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
 
 ////////////////
@@ -56,15 +56,13 @@ export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?
 }
 
 function updateUi(editor: Editor, selected: CssRule[]) {
-  console.log('TODO', selected)
+  console.log('TODO handle all styles?', selected)
   //const selectors = getSelectors(editor)
   //const selector = selectors[0]
   const components: Component[] = editor.getSelectedAll()
-  const selectors: ComplexSelector[] = components
-    .map((component) => getComponentSelector(component) || EMPTY_SELECTOR)
-  const selector: ComplexSelector | false = same(selectors)
+  const selector = getSelector(components)
   if(selector) {
-    requestAnimationFrame(() => editStyle(editor, toString(getSelector(components))))
+    requestAnimationFrame(() => editStyle(editor, toString(selector)))
     render(html`
       <complex-selector
         .value=${selector}
@@ -76,16 +74,10 @@ function updateUi(editor: Editor, selected: CssRule[]) {
 
       <current-selector-display
         .value=${getSelector(components)}
+        .selectors=${getSelectors(editor)}
+        .selectedId=${components[0]?.getId()}
+        @change=${(event: CustomEvent) => chagedSelectorKeep(event.detail as ComplexSelector, editor, components)}
       ></current-selector-display>
-      <p>
-        OTHER SELECTORS: <ul>
-        ${selected.map((rule) => html`<li>${ (rule.selectorsToString ? rule.getAtRule() + rule.selectorsToString() : JSON.stringify(rule.attributes))}</li>`)}
-        </ul>
-        <hr>
-        OTHER SELECTORS: <ul>
-          ${getSelectors(editor).map((selector) => html`<li>${ toString(selector) }</li>`) }
-        </ul>
-      </p>
     `, container)
   } else {
     render(html`
@@ -94,32 +86,43 @@ function updateUi(editor: Editor, selected: CssRule[]) {
   }
 }
 
-function getSelector(components: Component[]): ComplexSelector {
-  if(components.length === 0) return EMPTY_SELECTOR
-  const selector = getComponentSelector(components[0]) || EMPTY_SELECTOR
-  if(selector.mainSelector.selectors.length === 0) {
-    return {
-      ...selector,
-      mainSelector: {
-        ...selector.mainSelector,
-        selectors: [
-          {
-            type: SimpleSelectorType.ID,
-            value: components[0].getId(),
-            active: true,
-          } as IdSelector,
-        ],
-      },
-    }
+function getSelector(components: Component[]): ComplexSelector | null {
+  if(components.length === 0) return null
+  const selectors: ComplexSelector[] = components
+    .map((component) => getComponentSelector(component) || EMPTY_SELECTOR)
+  const selector = same(selectors)
+  if(!selector) return null
+  const idSelectorOff: IdSelector = {
+    type: SimpleSelectorType.ID,
+    value: components[0].getId(),
+    active: false,
   }
-  return {
-    ...selector,
+  const idSelectorOn: IdSelector = {
+    type: SimpleSelectorType.ID,
+    value: components[0].getId(),
+    active: true,
   }
+  const newSelector = merge(selector, { mainSelector: { selectors: [idSelectorOff] } })
+  if(toString(newSelector) === '') {
+    return activateSelectors(newSelector, { mainSelector: { selectors: [idSelectorOn] } })
+  }
+  return activateSelectors(newSelector, { mainSelector: { selectors: [idSelectorOff] } })
 }
 
 function chagedSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
   components.forEach((component) => {
     setComponentSelector(component, selector)
+  })
+  editStyle(editor, toString(selector))
+}
+
+// Keep inactive and put the active as inactive
+function chagedSelectorKeep(selector: ComplexSelector, editor: Editor, components: Component[]) {
+  components.forEach((component) => {
+    const oldSelector = getComponentSelector(component) || EMPTY_SELECTOR
+    const newSelector = merge(oldSelector, selector)
+    const activated = activateSelectors(newSelector, selector)
+    setComponentSelector(component, activated)
   })
   editStyle(editor, toString(selector))
 }

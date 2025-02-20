@@ -34,7 +34,7 @@ export function specificity(compound: CompoundSelector) {
 
 /**
  * Parses a CSS selector string and converts it into a CompoundSelector model.
- * Supports tag, class, ID, attribute, universal, and pseudo-class selectors.
+ * @example fromString('div.class') // { selectors: [{ type: 'tag', value: 'div' }, { type: 'class', value: 'class' }] }
  */
 export function fromString(selectorStr: string): CompoundSelector {
   const regex = /(#[-\w]+)|(\.[-\w]+)|(\*)|([a-zA-Z][-a-zA-Z0-9]*)|(\[([a-zA-Z][-a-zA-Z0-9]*)\s*([~|^$*]?=)?\s*"?([^"\]]*)"?\])|(:[-\w]+(\([^)]*\))?)/g
@@ -88,4 +88,32 @@ export function fromString(selectorStr: string): CompoundSelector {
   })
 
   return { selectors, pseudoClass }
+}
+
+/**
+ * Merge two CompoundSelectors into one
+ */
+export function merge(cs1: CompoundSelector, cs2: CompoundSelector): CompoundSelector {
+  const mergedSelectors = [...cs1.selectors]
+
+  cs2.selectors.forEach(sel => {
+    if (!mergedSelectors.some(existingSel => existingSel.type === sel.type && (existingSel as any).value === (sel as any).value)) {
+      mergedSelectors.push(sel)
+    }
+  })
+
+  return {
+    selectors: mergedSelectors,
+    pseudoClass: cs1.pseudoClass || cs2.pseudoClass || null, // Prend le pseudo-classe de cs1 en priorité
+  }
+}
+
+/**
+ * Activate or deactivate the selectors of `targetSelectors` based on `referenceSelectors`
+ */
+export function updateActivation(targetSelectors: SimpleSelector[], referenceSelectors: SimpleSelector[]): SimpleSelector[] {
+  return targetSelectors.map(sel => {
+    const matchingRef = referenceSelectors.find(ref => ref.type === sel.type && (ref as any).value === (sel as any).value)
+    return matchingRef ? { ...sel, active: matchingRef.active } : sel
+  })
 }

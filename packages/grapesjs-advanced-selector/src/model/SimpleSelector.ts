@@ -80,13 +80,13 @@ export const SELECTOR_PREFIXES = ['.', '#', '[', '*']
 export const TAGS: TAG[] = [ 'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'slot', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr' ]
 export const ESCAPE_CHARS = [' ']
 export const COLOR_FOR_TYPE = {
-  [SimpleSelectorType.TAG]: 'var(--gjs-color-blue, #d4d4f4)',
-  [SimpleSelectorType.CUSTOM_TAG]: 'var(--gjs-color-blue, #d4d4f4)',
-  [SimpleSelectorType.CLASS]: 'var(--gjs-color-green, #d4f4d4)',
-  [SimpleSelectorType.ID]: 'var(--gjs-color-red, #f4d4d4)',
-  [SimpleSelectorType.ATTRIBUTE]: 'var(--gjs-color-yellow, #f4f4d4)',
-  [SimpleSelectorType.UNIVERSAL]: 'var(--gjs-color-purple, #f4d4f4)',
-  [SimpleSelectorType.UNKNOWN]: 'var(--asm-unknown-color, #333)',
+  [SimpleSelectorType.TAG]: 'var(--gjs-color-blue, #3b97e3)',
+  [SimpleSelectorType.CUSTOM_TAG]: 'var(--gjs-color-blue, #3b97e3)',
+  [SimpleSelectorType.CLASS]: 'var(--gjs-color-green, #62c462)',
+  [SimpleSelectorType.ID]: 'var(--gjs-color-yellow, #ffca6f)',
+  [SimpleSelectorType.ATTRIBUTE]: 'var(--gjs-color-yellow, #ffca6f)',
+  [SimpleSelectorType.UNIVERSAL]: 'var(--gjs-color-red, #dd3636)',
+  [SimpleSelectorType.UNKNOWN]: 'var(--gjs-color-red, #dd3636)',
 }
 
 const CLASS_SYMBOL = '•'
@@ -102,10 +102,10 @@ const UNKNOWN_SYMBOL = '?'
 
 /**
  * Compare two simple selectors to see if they are the same
- * The `active` attribute is ignored
  */
-export function isSameSelector(a: SimpleSelector, b: SimpleSelector): boolean {
+export function isSameSelector(a: SimpleSelector, b: SimpleSelector, ignoreActive = true): boolean {
   if (a.type !== b.type) return false
+  if (!ignoreActive && a.active !== b.active) return false
   switch (a.type) {
   case SimpleSelectorType.TAG:
   case SimpleSelectorType.CUSTOM_TAG:
@@ -286,20 +286,22 @@ export function getCreationSuggestions(filter: string): SimpleSelectorSuggestion
   return creationSuggestions
 }
 
-export function specificity(selector: SimpleSelector): number {
-  if (!selector.active) return 0
+export function specificity(selector: SimpleSelector, ignoreActive = false): number {
+  if (!ignoreActive && !selector.active) return 0
+
   switch (selector.type) {
   case SimpleSelectorType.TAG:
     return 1
   case SimpleSelectorType.CLASS:
-  case SimpleSelectorType.ID:
+  case SimpleSelectorType.ATTRIBUTE:
   case SimpleSelectorType.CUSTOM_TAG:
     return 10
-  case SimpleSelectorType.ATTRIBUTE:
-    return 10
+  case SimpleSelectorType.ID:
+    return 100
   case SimpleSelectorType.UNIVERSAL:
     return 0
   default:
+    console.warn(`Unknown selector type: ${selector.type}`)
     return 0
   }
 }

@@ -153,14 +153,14 @@ export default class SimpleSelectorComponent extends StylableElement {
       tabindex="0"
       @keydown=${(event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
-        this.value!.active = !this.value!.active
-        this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+      this.value = { ...this.value!, active: !this.value!.active }
+      this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     }
   }}
       @dblclick=${() => this.edit()}
       @click=${() => {
-        this.value!.active = !this.value!.active
-        this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    this.value = { ...this.value!, active: !this.value!.active }
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
     >
       <header>
@@ -247,7 +247,6 @@ export default class SimpleSelectorComponent extends StylableElement {
     const selectorString = this.selectorInputRef.value?.value || ''
     const valid = validate(selectorString)
     const suggestions = getCreationSuggestions(selectorString).concat(suggest(selectorString, this.suggestions))
-    console.log('Suggestions', suggestions, this.suggestions)
     return html`
       ${ this.renderLayout(html`
         ${ this.editing ? this.renderSelectorInput({

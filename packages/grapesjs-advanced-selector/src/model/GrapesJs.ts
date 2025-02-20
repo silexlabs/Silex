@@ -41,7 +41,6 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
     .map((rule: CssRule) => rule.getSelectorsString())
     .filter((selectorString: string) => {
       try {
-        if(component?.view?.el.matches(selectorString)) console.log('MATCH', selectorString)
         return component?.view?.el.matches(selectorString)
       } catch(e) {
         // TODO: cleanup??
@@ -266,7 +265,6 @@ export function getComponentSelector(component: Component): ComplexSelector {
  * - Any classes that are in the current website (will be added to the component if selected) but no classes that are already in the component
  */
 export function getSuggestionsMain(editor: Editor, components: Component[], selector: ComplexSelector): SimpleSelector[] {
-  console.log('getSuggestionsMain', { editor, components, selector })
   const suggestions: SimpleSelector[] = []
   
   // Add the component tag name and ID

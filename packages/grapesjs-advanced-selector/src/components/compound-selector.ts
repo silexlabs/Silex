@@ -1,7 +1,7 @@
 import { property } from 'lit/decorators.js'
 import StylableElement from '../StylableElement'
 import { CompoundSelector, toString } from '../model/CompoundSelector'
-import { isSameSelector, SimpleSelector, SimpleSelectorType } from '../model/SimpleSelector'
+import { isSameSelector, SimpleSelector, SimpleSelectorType, specificity } from '../model/SimpleSelector'
 import { css, html, TemplateResult } from 'lit'
 import SimpleSelectorComponent from './simple-selector'
 import { PSEUDO_CLASSES } from '../model/PseudoClass'
@@ -95,7 +95,9 @@ export default class CompoundSelectorComponent extends StylableElement {
         <div
           class="asm-compound__selectors"
         >
-          ${ this.value?.selectors.map((selector, idx) => html`
+          ${ this.value?.selectors
+    .sort((a, b) => specificity(b, true) - specificity(a, true))
+    .map((selector, idx) => html`
             <simple-selector
               .value=${ selector }
               .suggestions=${ this.suggestions }
@@ -141,7 +143,7 @@ export default class CompoundSelectorComponent extends StylableElement {
       ...this.value!,
       selectors: this.value!.selectors.map((selector, i) => i === idx ? event.detail : selector)
     }
-    if(!isSameSelector(oldValue, event.detail)) {
+    if(!isSameSelector(oldValue, event.detail, false)) {
       this.dispatchEvent(new CustomEvent('rename', { detail: {
         oldValue,
         value: event.detail,
