@@ -1,6 +1,6 @@
 import { Component, CssRule, Editor, Selector } from 'grapesjs'
 import { ComplexSelector, EMPTY_SELECTOR, fromString } from '../model/ComplexSelector'
-import { ClassSelector, IdSelector, isSameSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
+import { AttributeOperatorType, AttributeSelector, ClassSelector, IdSelector, isSameSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { OperatorType } from './Operator'
 import { CompoundSelector } from './CompoundSelector'
 
@@ -267,23 +267,41 @@ export function getComponentSelector(component: Component): ComplexSelector {
 export function getSuggestionsMain(editor: Editor, components: Component[], selector: ComplexSelector): SimpleSelector[] {
   const suggestions: SimpleSelector[] = []
   
-  // Add the component tag name and ID
-  addTagNamesAndIds(components[0], suggestions, selector.mainSelector)
+  components.forEach(component => {
+    // Add the component tag name and ID
+    addTagNames(component, suggestions, selector.mainSelector)
 
-  // Add the website classes
-  const classes = components[0].getClasses()
-  editor.CssComposer.getAll().forEach((rule) => {
-    rule.getSelectors().forEach((sel: Selector) => {
+    // Add the website classes
+    const classes = component.getClasses()
+    editor.CssComposer.getAll().forEach((rule) => {
+      rule.getSelectors().forEach((sel: Selector) => {
+        const s = {
+          type: SimpleSelectorType.CLASS,
+          value: sel.get('name'),
+          active: true,
+        } as ClassSelector
+        if (sel.get('type') === 1 &&
+          !sel.get('private') &&
+          !classes.includes(sel.get('name')) &&
+          canIadd(s, selector.mainSelector, suggestions)
+        ) {
+          suggestions.push(s)
+        }
+      })
+    })
+    // Add attributes
+    const attributes = component.getAttributes({ noStyle: true, noClass: true })
+    Object.keys(attributes).forEach((attr) => {
       const s = {
-        type: SimpleSelectorType.CLASS,
-        value: sel.get('name'),
+        type: SimpleSelectorType.ATTRIBUTE,
+        value: attr,
         active: true,
-      } as ClassSelector
-      if(sel.get('type') === 1 &&
-        !sel.get('private') &&
-        !classes.includes(sel.get('name')) &&
-        !canIadd(s, selector.mainSelector, suggestions)
-      ) {
+      } as AttributeSelector
+      if (attributes[attr]) {
+        s.operator = AttributeOperatorType.EQUALS
+        s.attributeValue = attributes[attr]
+      }
+      if (canIadd(s, selector.mainSelector, suggestions)) {
         suggestions.push(s)
       }
     })
@@ -298,60 +316,52 @@ export function getSuggestionsMain(editor: Editor, components: Component[], sele
  * - Same for IDs, tag names
  */
 export function getSuggestionsRelated(editor: Editor, components: Component[], selector: ComplexSelector): SimpleSelector[] {
-  if(!selector.operator) {
+  if (!selector.operator) {
     return []
   }
   const suggestions: SimpleSelector[] = []
-  switch(selector.operator?.type) {
+  switch (selector.operator?.type) {
   case OperatorType.HAS:
-    // Add the children classes, tag names, and IDs
+    // Add the children classes, tag names, and IDs inside the selected components
     components
       .forEach((component) => {
-        component
-          .components()
-          .forEach((child) => {
-            const children = getChildren(child)
-            suggestions.push(...getSuggestions(children, selector.relatedSelector || { selectors: [] }))
-          })
+        suggestions.push(...getSuggestions(getChildren(component), selector.relatedSelector || { selectors: [] }))
       })
     break
   case OperatorType.NOT:
-    if (components.length === 1) {
-      suggestions.push(...TAGS.map((tag) => ({
-        type: SimpleSelectorType.TAG,
-        value: tag,
-        active: true,
-      } as TagSelector)))
-      // TODO: add all IDs of the website ?
-    } else {
-      console.warn('Suggestions: multiple components selected, do not add tag names and IDs', components)
-    }
-    const classes = components[0].getClasses()
-    editor.CssComposer.getAll().forEach((rule) => {
-      rule.getSelectors().forEach((sel: Selector) => {
-        if(sel.get('private')) {
-          return
-        }
+    suggestions.push(...TAGS.map((tag) => ({
+      type: SimpleSelectorType.TAG,
+      value: tag,
+      active: true,
+    } as TagSelector)))
+    components.forEach((component) => {
+      const classes = component.getClasses()
 
-        if(sel.get('type') === 1 && !classes.includes(sel.get('name'))) {
-          const classSelector = {
-            type: SimpleSelectorType.CLASS,
-            value: sel.get('name'),
-            active: true,
-          } as ClassSelector
-          if(canIadd(classSelector, selector.relatedSelector!, suggestions)) {
-            suggestions.push(classSelector)
+      editor.CssComposer.getAll().forEach((rule) => {
+        rule.getSelectors().forEach((sel: Selector) => {
+          if (sel.get('private')) {
+            return
           }
-        } else if(sel.get('type') === 2) {
-          const idSelector = {
-            type: SimpleSelectorType.ID,
-            value: sel.get('name'),
-            active: true,
-          } as IdSelector
-          if(canIadd(idSelector, selector.relatedSelector!, suggestions)) {
-            suggestions.push(idSelector)
+          if (sel.get('type') === 1 && !classes.includes(sel.get('name'))) {
+            const classSelector = {
+              type: SimpleSelectorType.CLASS,
+              value: sel.get('name'),
+              active: true,
+            } as ClassSelector
+            if (canIadd(classSelector, selector.relatedSelector!, suggestions)) {
+              suggestions.push(classSelector)
+            }
+          } else if (sel.get('type') === 2) {
+            const idSelector = {
+              type: SimpleSelectorType.ID,
+              value: sel.get('name'),
+              active: true,
+            } as IdSelector
+            if (canIadd(idSelector, selector.relatedSelector!, suggestions)) {
+              suggestions.push(idSelector)
+            }
           }
-        }
+        })
       })
     })
     break
@@ -360,49 +370,32 @@ export function getSuggestionsRelated(editor: Editor, components: Component[], s
     suggestions.push(...getSuggestions(components, selector.relatedSelector || { selectors: [] }))
     break
   case OperatorType.CHILD:
-    // Add the parent tag names, IDs, and classes
-    const children: Component[] = components.flatMap((child: Component) =>  {
-      const components = child.parent()?.components()
-      return Array.from(components || [])
+    components.forEach((component) => {
+      const parent = component.parent()
+      if (parent) {
+        // Add the parent tag names, IDs, and classes
+        suggestions.push(...getSuggestions([parent], selector.relatedSelector || { selectors: [] }))
+      }
     })
-    suggestions.push(...getSuggestions(children, selector.relatedSelector || { selectors: [] }))
     break
   case OperatorType.DESCENDANT:
-    const childrenAll: Component[] = components.flatMap((child: Component) =>  {
-      return getChildren(child)
+    components.forEach((component) => {
+      suggestions.push(...getSuggestions(getParents(component), selector.relatedSelector || { selectors: [] }))
     })
-    suggestions.push(...getSuggestions(childrenAll, selector.relatedSelector || { selectors: [] }))
-    break
-  case OperatorType.GENERAL_SIBLING:
-    // All siblings after each component and each component
-    const siblings: Component[] = components
-      .flatMap((component) => {
-        let passedMe = false
-        return Array.from(component.parent()?.components() || [])
-          .filter((c) => {
-            if(!!c && c !== component) passedMe = true
-            return passedMe
-          }
-          )
-      })
-    suggestions.push(...getSuggestions(siblings, selector.relatedSelector || { selectors: [] }))
     break
   case OperatorType.ADJACENT:
-    // Only the first sibling after each component
+    // Only the sibling immediately before each component
     const siblingsAdjacent: Component[] = components
-      .flatMap((component) => {
-        let passedMe = false
-        const nextSibling = Array.from(component.parent()?.components() || [])
-          .find((c) => {
-            if(!!c && c === component) {
-              passedMe = true
-              return false
-            }
-            return passedMe
-          })
-        return [component].concat(nextSibling || [])
-      })
+      .map((comp) => getSiblingsBefore(comp)[0])
+      .filter((c): c is Component => !!c)
     suggestions.push(...getSuggestions(siblingsAdjacent, selector.relatedSelector || { selectors: [] }))
+    break
+  case OperatorType.GENERAL_SIBLING:
+    // All siblings before each component
+    const siblingsGeneral: Component[] = components
+      .flatMap(getSiblingsBefore)
+      .filter((c): c is Component => !!c)
+    suggestions.push(...getSuggestions(siblingsGeneral, selector.relatedSelector || { selectors: [] }))
     break
   default:
     console.error('Unhandled operator', selector.operator)
@@ -411,39 +404,43 @@ export function getSuggestionsRelated(editor: Editor, components: Component[], s
   return suggestions
 }
 
+/**
+ * Add classes, tag names to the suggestions
+ */
 function getSuggestions(components: Component[], selector: CompoundSelector): SimpleSelector[] {
   const suggestions: SimpleSelector[] = []
-  if (components.length === 1) {
-    addTagNamesAndIds(components[0], suggestions, selector)
-  } else {
-    console.warn('Suggestions: multiple components selected, do not add tag names and IDs', components)
-  }
+
+  // Tag names
+  components.forEach((component) => {
+    addTagNames(component, suggestions, selector)
+  })
+
   // Classes
   components
-    .map((c) => c.getClasses())
-    .forEach((c: string) => {
+    .flatMap((comp) => comp.getClasses())
+    .forEach((cl: string) => {
       // Only classes not in the suggestions yet
-      if (suggestions.some((s) => s.type === SimpleSelectorType.CLASS && (s as ClassSelector).value === c)) {
+      if (suggestions.some((s) => s.type === SimpleSelectorType.CLASS && (s as ClassSelector).value === cl)) {
         return
       }
       // Only classes not in the related selector yet
-      if (selector.selectors.some((s) => s.type === SimpleSelectorType.CLASS && (s as ClassSelector).value === c)) {
+      if (selector.selectors.some((s) => s.active && s.type === SimpleSelectorType.CLASS && (s as ClassSelector).value === cl)) {
         return
       }
       // Add the class
       suggestions.push({
         type: SimpleSelectorType.CLASS,
-        value: c,
+        value: cl,
         active: true,
       } as ClassSelector)
     })
   return suggestions
 }
 
-// Add the component tag name and ID
-function addTagNamesAndIds(component: Component, suggestions: SimpleSelector[], selector: CompoundSelector) {
+// Add the component tag name
+function addTagNames(component: Component, suggestions: SimpleSelector[], selector: CompoundSelector) {
   // Tag names
-  const tagName = component.get('tagName')
+  const tagName = component.tagName
   const tagSelector = {
     type: SimpleSelectorType.TAG,
     value: tagName,
@@ -452,16 +449,16 @@ function addTagNamesAndIds(component: Component, suggestions: SimpleSelector[], 
   if (canIadd(tagSelector, selector, suggestions)) {
     suggestions.push(tagSelector as TagSelector)
   }
-  // IDs
-  const id = component.getId()
-  const idSelector = {
-    type: SimpleSelectorType.ID,
-    value: id,
-    active: true,
-  }
-  if (canIadd(idSelector, selector, suggestions)) {
-    suggestions.push(idSelector as IdSelector)
-  }
+  // // IDs
+  // const id = component.getId()
+  // const idSelector = {
+  //   type: SimpleSelectorType.ID,
+  //   value: id,
+  //   active: true,
+  // }
+  // if (canIadd(idSelector, selector, suggestions)) {
+  //   suggestions.push(idSelector as IdSelector)
+  // }
 }
 
 // function sameType(gjs: Selector, sel: SimpleSelector): boolean {
@@ -484,10 +481,33 @@ function canIadd(sel: SimpleSelector, selector: CompoundSelector, suggestions: S
 }
 
 function getChildren(component: Component): Component[] {
-  return [component].concat(
-    component
-      .components()
-      .map((child) => getChildren(child))
-      .flat()
-  )
+  const children: Component[] = []
+  component.components().forEach((child) => {
+    children.push(child)
+    children.push(...getChildren(child))
+  })
+  return children
+}
+
+function getParents(component: Component): Component[] {
+  const parents: Component[] = []
+  let parent = component.parent()
+  while(parent) {
+    parents.push(parent)
+    parent = parent.parent()
+  }
+  return parents
+}
+
+function getSiblingsBefore(component: Component): Component[] {
+  const prev = [] as Component[]
+  const found = component.parent()?.components()
+    .some((c) => {
+      if (!!c && c === component) {
+        return true
+      }
+      prev.push(c)
+      return false
+    })
+  return found ? prev || [] : []
 }
