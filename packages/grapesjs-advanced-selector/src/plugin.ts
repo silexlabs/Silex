@@ -1,6 +1,6 @@
 import { Component, CssRule, Editor } from 'grapesjs'
 import { html, render } from 'lit'
-import { editStyle, getComponentSelector, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector } from './model/GrapesJs'
+import { editStyle, getComponentSelector, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
 import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
 

@@ -1,5 +1,5 @@
 import { Component, CssRule, Editor, Selector } from 'grapesjs'
-import { ComplexSelector, EMPTY_SELECTOR, fromString } from '../model/ComplexSelector'
+import { ComplexSelector, EMPTY_SELECTOR, fromString } from './ComplexSelector'
 import { AttributeOperatorType, AttributeSelector, ClassSelector, IdSelector, isSameSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { OperatorType } from './Operator'
 import { CompoundSelector } from './CompoundSelector'
@@ -10,7 +10,7 @@ import { CompoundSelector } from './CompoundSelector'
  * Group actions in 1 undo/redo step
  */
 function groupActions(editor: Editor, actions: () => void) {
-  console.log('groupActions', editor)
+  console.log('todo: handle UndoManager', editor.UndoManager.state)
   //editor.UndoManager.start()
   try {
     actions()
@@ -28,29 +28,24 @@ function groupActions(editor: Editor, actions: () => void) {
  * Get all selectors that match the selected component
  */
 export function getSelectors(editor: Editor): ComplexSelector[] {
-  //const selectors = editor.CssComposer.getAll()
-  //console.log({selectors})
-  // FIXME: Handle multi-selection
-  const component = editor.getSelectedAll()[0]
-  console.groupCollapsed('selectors')
-  const result = editor.CssComposer.getRules()
-    .filter((rule: CssRule) => {
-      console.log(rule.getSelectorsString(), rule.getAtRule(), rule)
-      return true
-    })
-    .map((rule: CssRule) => rule.getSelectorsString())
-    .filter((selectorString: string) => {
-      try {
-        return component?.view?.el.matches(selectorString)
-      } catch(e) {
-        // TODO: cleanup??
-        console.error('Error matching selector', selectorString, e, 'TODO: cleanup?')
-        return false
-      }
-    })
-    .map((selectorString: string) => fromString(selectorString))
-  console.groupEnd()
-  return result
+  return editor.getSelectedAll().flatMap((component: Component) => {
+    return editor
+      .CssComposer
+      .getRules()
+      .reduce<ComplexSelector[]>((acc, rule: CssRule) => {
+        const selectorString = rule.getSelectorsString()
+
+        try {
+          if (component.view?.el.matches(selectorString)) {
+            acc.push(fromString(selectorString))
+          }
+        } catch (e) {
+          console.error('Error matching selector', selectorString, e)
+        }
+
+        return acc
+      }, [])
+  })
 }
 
 /**
@@ -108,11 +103,11 @@ export function renameSelector(editor:Editor, oldSelector: SimpleSelector, newSe
     const components = editor.getSelectedAll()
     switch (oldSelector.type) {
     case SimpleSelectorType.ID:
+      const id = (newSelector as IdSelector).value
       if (components.length !== 1) {
-        console.error('Cannot rename ID selector for multiple components', { oldSelector, newSelector })
-        throw new Error('Cannot rename ID selector for multiple components')
+        console.error('Cannot rename ID selector for multiple components', { oldSelector, newSelector }, 'Only one component will ave the ID', id)
       }
-      components[0].setId((newSelector as IdSelector).value)
+      components[0].setId(id)
       break
     case SimpleSelectorType.CLASS:
       renameCssClass(editor, (oldSelector as ClassSelector).value, (newSelector as ClassSelector).value)
@@ -133,67 +128,30 @@ function renameCssClass(editor: Editor, oldClassName: string, newClassName: stri
   }
 
   const sm = editor.SelectorManager
-
-  // Check if oldClassName exists
   const oldSelector = sm.get(oldClassName)
   if (!oldSelector) {
     console.warn(`Class "${oldClassName}" not found.`)
     return
   }
 
-  // No, overwrite the existing class
-  // // Check if newClassName already exists
-  // const existingNewSelector = sm.get(newClassName);
-  // if (existingNewSelector) {
-  //   console.warn(`Class "${newClassName}" already exists.`);
-  //   const confirmed = confirm(`Class "${newClassName}" already exists. Do you want to replace it with the new class?`);
-  //   if (!confirmed) {
-  //     return;
-  //   }
-  // }
-
-  // Rename the class in all the components of the site
-  // Get all the components which match .oldClassName
-  editor.Pages
-    .getAll()
-    .forEach((page) => {
-      page
-        .getMainComponent()
-        .find(`.${oldClassName}`)
-        .forEach((component) => {
-          const selector = getComponentSelector(component)
-          const newSelector = {
-            ...selector,
-            mainSelector: {
-              ...selector.mainSelector,
-              selectors: selector.mainSelector.selectors.map((simpleSelector) => {
-                if (simpleSelector.type === SimpleSelectorType.CLASS && (simpleSelector as ClassSelector).value === oldClassName) {
-                  return {
-                    ...simpleSelector,
-                    value: newClassName,
-                  }
-                }
-                return simpleSelector
-              }),
-            },
-            relatedSelectors: {
-              ...selector.relatedSelector || {},
-              selectors: selector.relatedSelector?.selectors.map((relatedSelector) => {
-                if (relatedSelector.type === SimpleSelectorType.CLASS && (relatedSelector as ClassSelector).value === oldClassName) {
-                  return {
-                    ...relatedSelector,
-                    value: newClassName,
-                  }
-                }
-                return relatedSelector
-              }),
-            }
-          }
-          setComponentSelector(component, newSelector)
-        })
+  editor.Pages.getAll().forEach(page => {
+    page.getMainComponent().find(`.${oldClassName}`).forEach(component => {
+      const selector = getComponentSelector(component)
+      const updatedSelector = {
+        ...selector,
+        mainSelector: {
+          ...selector.mainSelector,
+          selectors: selector.mainSelector.selectors.map(sel =>
+            sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
+              ? { ...sel, value: newClassName }
+              : sel
+          ),
+        },
+      }
+      setComponentSelector(component, updatedSelector)
     })
+  })
 
-  // Rename the class
   oldSelector.set('name', newClassName)
 }
 
@@ -481,18 +439,19 @@ function canIadd(sel: SimpleSelector, selector: CompoundSelector, suggestions: S
 }
 
 function getChildren(component: Component): Component[] {
-  const children: Component[] = []
-  component.components().forEach((child) => {
-    children.push(child)
-    children.push(...getChildren(child))
-  })
-  return children
+  return component
+    .components()
+    .reduce((acc, child) => [
+      ...acc,
+      child,
+      ...getChildren(child)
+    ], [] as Component[])
 }
 
 function getParents(component: Component): Component[] {
-  const parents: Component[] = []
+  const parents = []
   let parent = component.parent()
-  while(parent) {
+  while (parent) {
     parents.push(parent)
     parent = parent.parent()
   }
@@ -500,14 +459,8 @@ function getParents(component: Component): Component[] {
 }
 
 function getSiblingsBefore(component: Component): Component[] {
-  const prev = [] as Component[]
-  const found = component.parent()?.components()
-    .some((c) => {
-      if (!!c && c === component) {
-        return true
-      }
-      prev.push(c)
-      return false
-    })
-  return found ? prev || [] : []
+  return component
+    .parent()
+    ?.components()
+    .filter(c => c !== component) ?? []
 }

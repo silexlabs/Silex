@@ -1,7 +1,7 @@
 import { CssRule, Editor, Selector } from 'grapesjs'
 import { Component } from 'grapesjs'
-import { getSuggestionsMain, getSuggestionsRelated } from './GrapesJs'
-import { ClassSelector, IdSelector, SimpleSelectorType, TAGS } from './SimpleSelector'
+import { getSuggestionsMain, getSuggestionsRelated } from './GrapesJsSelectors'
+import { ClassSelector, IdSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { Operator, OperatorType } from './Operator'
 
 describe('getSuggestionsMain', () => {
@@ -741,6 +741,63 @@ describe('getSuggestionsRelated', () => {
       { type: SimpleSelectorType.CLASS, value: 'parent', active: true },
       { type: SimpleSelectorType.CLASS, value: 'grandparent', active: true },
     ])
+  })
+  test('`:is()` pseudo-class on the body', () => {
+    // Mock GrapesJS Editor
+    const mockEditor = {
+      CssComposer: {
+        getAll: jest.fn().mockReturnValue([
+          {
+            at: jest.fn().mockReturnValue({ remove: jest.fn() }), // Mock existing CSS rule
+            getSelectors: jest.fn().mockReturnValue([
+              {
+                get: jest.fn((attr) => {
+                  switch (attr) {
+                  case 'selectors':
+                    return [{ type: SimpleSelectorType.TAG, value: 'body', active: true }]
+                  case 'private':
+                    return false
+                  case 'type':
+                    return 1
+                  case 'name':
+                    return 'sibling1'
+                  default:
+                    throw new Error(`Unknown attribute: ${attr}`)
+                  }
+                }),
+              } as Partial<Selector>,
+            ]), // Mock existing CSS rule
+          } as Partial<CssRule>,
+        ]),
+      },
+    } as unknown as Editor
+
+    // Mock Selected Component (button)
+    const mockSelectedComponent = {
+      getId: () => '',
+      getClasses: () => ['a-class'],
+      get tagName() {
+        return 'body'
+      },
+    } as unknown as Component
+
+    const selectedComponents = [mockSelectedComponent]
+
+    const suggestions = getSuggestionsRelated(mockEditor, selectedComponents, {
+      mainSelector: { selectors: [{ type: SimpleSelectorType.TAG, value: 'body', active: true } as TagSelector] },
+      operator: { type: OperatorType.IS, isCombinator: false } as Operator,
+      relatedSelector: { selectors: [] },
+    })
+
+    expect(suggestions).toEqual([{
+      type: SimpleSelectorType.TAG,
+      value: 'body',
+      active: true,
+    }, {
+      type: SimpleSelectorType.CLASS,
+      value: 'a-class',
+      active: true,
+    }])
   })
 
 })

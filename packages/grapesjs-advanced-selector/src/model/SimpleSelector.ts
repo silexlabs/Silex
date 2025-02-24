@@ -242,14 +242,6 @@ export function validate(_value: string): string | false {
  * Get a list of suggestions, filtered and with creation suggestions
  */
 export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSelectorSuggestion[] {
-  if (filter === '') {
-    const active = true
-    return [
-      { keepEditing: true, createText: '.', type: SimpleSelectorType.CLASS, createValue: '.', active, },
-      { keepEditing: true, createText: '#', type: SimpleSelectorType.ID, createValue: '#', active, },
-      { keepEditing: true, createText: '[ ]', type: SimpleSelectorType.ATTRIBUTE, createValue: '[', active, },
-    ] as SimpleSelectorSuggestion[]
-  }
   if (filter === '*') {
     // The universal selector will be suggested in the creation suggestions (getCreationSuggestions)
     return []
