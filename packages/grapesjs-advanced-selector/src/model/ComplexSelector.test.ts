@@ -280,7 +280,7 @@ describe('activateSelectors', () => {
 
 describe('fromString', () => {
   test('parses a simple ID selector', () => {
-    expect(fromString(`#${id}`)).toEqual({
+    expect(fromString(`#${id}`, '')).toEqual({
       mainSelector: {
         selectors: [
           { type: SimpleSelectorType.ID, value: id, active: true } as IdSelector
@@ -290,7 +290,7 @@ describe('fromString', () => {
   })
 
   test('parses a simple ID selector with a related class', () => {
-    expect(fromString(`.test #${id}`)).toEqual({
+    expect(fromString(`.test #${id}`, '')).toEqual({
       mainSelector: {
         selectors: [
           { type: SimpleSelectorType.ID, value: id, active: true } as IdSelector
@@ -306,7 +306,7 @@ describe('fromString', () => {
   })
 
   test('parses a simple ID selector with a related class and a "has" operator', () => {
-    expect(fromString(`#${id}:has(.child)`)).toEqual({
+    expect(fromString(`#${id}:has(.child)`, '')).toEqual({
       mainSelector: {
         selectors: [
           { type: SimpleSelectorType.ID, value: id, active: true } as IdSelector
@@ -322,8 +322,8 @@ describe('fromString', () => {
   })
 
   test('parses a simple ID selector with a related class and a child operator', () => {
-    expect(fromString(`#${id}.test > .child`).operator?.stringRepresentation).toEqual(' > ')
-    expect(fromString(`#${id}.test > .child`)).toEqual({
+    expect(fromString(`#${id}.test > .child`, '').operator?.stringRepresentation).toEqual(' > ')
+    expect(fromString(`#${id}.test > .child`, '')).toEqual({
       mainSelector: {
         selectors: [
           { type: SimpleSelectorType.CLASS, value: 'child', active: true } as ClassSelector

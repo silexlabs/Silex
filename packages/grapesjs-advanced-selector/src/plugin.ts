@@ -1,4 +1,4 @@
-import { Component, CssRule, Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
 import { editStyle, getComponentSelector, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
@@ -48,17 +48,14 @@ export function initListeners(editor: Editor) {
 export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?: CustomSelectorEventProps) {
   if (props && props.container) {
     props.container.appendChild(container)
-    editor.on('selector:custom', ({ selected }: {selected: CssRule[]}) => updateUi(editor, selected))
+    editor.on('selector:custom', (/*{ selected }: {selected: CssRule[]}*/) => updateUi(editor))
   } else {
     // Keep listening
     editor.once('selector:custom', (props) => initASM(editor, options, props))
   }
 }
 
-function updateUi(editor: Editor, selected: CssRule[]) {
-  console.log('TODO handle all styles?', selected)
-  //const selectors = getSelectors(editor)
-  //const selector = selectors[0]
+function updateUi(editor: Editor) {
   const components: Component[] = editor.getSelectedAll()
   const selector = getSelector(components)
   if(selector) {
@@ -137,7 +134,18 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
     const oldSelector = getComponentSelector(component) || EMPTY_SELECTOR
     const newSelector = merge(oldSelector, selector)
     const activated = activateSelectors(newSelector, selector)
+    activated.atRule = selector.atRule // We merged but want to keep the atRule
     setComponentSelector(component, activated)
   })
+  // Select the device if the selector contains the device
+  if(selector.atRule) {
+    const device = editor.DeviceManager.getAll().find(device => {
+      const width = device.get('width')
+      return !!width && selector.atRule!.includes(width)
+    })?.get('id')
+    if(device) editor.DeviceManager.select(device)
+  } else {
+    editor.DeviceManager.select(editor.DeviceManager.getAll().first())
+  }
   editStyle(editor, toString(selector))
 }

@@ -6,8 +6,6 @@ import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
 
-const ERROR_NO_SELECTOR = 'No selector provided to the component'
-
 export default class SimpleSelectorComponent extends StylableElement {
 
   // /////////////////
@@ -203,7 +201,6 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Methods
   private edit() {
-    if(!this.value) throw new Error(ERROR_NO_SELECTOR)
     this.editing = true
     requestAnimationFrame(() => this.focus())
   }
@@ -226,9 +223,12 @@ export default class SimpleSelectorComponent extends StylableElement {
   private cancelEdit() {
     this.attributeOptionsAttrValueRef.value?.blur()
     if (!this.editing) return
-    if(!this.value) throw new Error(ERROR_NO_SELECTOR)
     this.editing = false
-    this.dispatchEvent(new CustomEvent('cancel', { detail: this.value }))
+    if(this.value?.type === SimpleSelectorType.UNKNOWN) {
+      this.dispatchEvent(new CustomEvent('delete', { detail: this.value }))
+    } else {
+      this.dispatchEvent(new CustomEvent('cancel', { detail: this.value }))
+    }
   }
 
   // /////////////////

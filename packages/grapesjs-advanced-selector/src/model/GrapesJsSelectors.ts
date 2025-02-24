@@ -33,11 +33,22 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
       .CssComposer
       .getRules()
       .reduce<ComplexSelector[]>((acc, rule: CssRule) => {
+        // Check if the rule has a style applied
+        if (Object.keys(rule.getStyle()).length === 0) {
+          // No style, this is just a selector
+          return acc
+        }
+        // Check if the component matches the selector
         const selectorString = rule.getSelectorsString()
+        if(!selectorString) {
+          // Empty selector, this must be being edited
+          console.warn('Empty selector for rule', rule)
+          return acc
+        }
 
         try {
           if (component.view?.el.matches(selectorString)) {
-            acc.push(fromString(selectorString))
+            acc.push(fromString(selectorString, rule.getAtRule()))
           }
         } catch (e) {
           console.error('Error matching selector', selectorString, e)
@@ -61,6 +72,7 @@ export function editStyle(editor: Editor, selector: string) {
 
   // Get or create the CSS rule for the given selector
   //const style = editor.getSelected()?.getStyle()
+
   const opts = {
     atRuleType: currentWidth ? 'media' : '',
     atRuleParams: currentWidth ? `(max-width: ${currentWidth})` : '',
@@ -392,6 +404,7 @@ function getSuggestions(components: Component[], selector: CompoundSelector): Si
         active: true,
       } as ClassSelector)
     })
+
   return suggestions
 }
 

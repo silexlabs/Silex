@@ -15,7 +15,6 @@ export class CurrentSelectorDisplay extends StylableElement {
   public set value(value: ComplexSelector | string | undefined) {
     try {
       this._value = typeof value === 'string' ? JSON.parse(value) : value
-      this.specificity = specificity(this._value!)
     } catch (error) {
       console.error('Error parsing value for selector', { value, error })
     }
@@ -28,7 +27,6 @@ export class CurrentSelectorDisplay extends StylableElement {
   @property({ type: Array, attribute: true, reflect: false })
   public selectors: ComplexSelector[] = []
 
-  private specificity = 0
   private selectRef = createRef<HTMLSelectElement>()
 
   static override styles = css`
@@ -56,10 +54,11 @@ export class CurrentSelectorDisplay extends StylableElement {
         color: var(--gjs-color-highlight, #71b7f1);
         font-size: inherit;
         font-family: monospace;
-        text-align: right;
+        text-align: center;
         padding: 0 5px;
         margin: 0;
         text-wrap: wrap;
+        width: 100%;
       }
       ul {
         list-style-type: none;
@@ -83,7 +82,18 @@ export class CurrentSelectorDisplay extends StylableElement {
         .filter((sel) => !same([sel, this.value!]))
         .sort((a, b) => specificity(b) - specificity(a))
     ]
-    const selectorsStrings = selectors.map(toString)
+    const selectorsStrings = selectors.map(s => ({
+      string: toString(s),
+      specificity: specificity(s),
+      atRule: s.atRule,
+    }))
+      .map(({ string, atRule }) => {
+        return html`
+          ${atRule ? atRule.replace(/@media \(max-width: (.+)\)/, '@$1') : ''}
+          ${string}
+        `
+        //( ${specificity} )
+      })
     //const uniqueStrings = new Set(selectorsStrings)
     // Workaround: the selected option do not update when the value changes after user selects an option
     requestAnimationFrame(() => this.selectRef.value ? this.selectRef.value!.selectedIndex = 0 : '')
@@ -110,9 +120,6 @@ export class CurrentSelectorDisplay extends StylableElement {
           </option>`
     })}
         </select>
-        <span
-          title="Specificity"
-        >( ${ this.specificity } )</span>
       </section>
     `
   }

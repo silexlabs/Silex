@@ -783,21 +783,20 @@ describe('getSuggestionsRelated', () => {
 
     const selectedComponents = [mockSelectedComponent]
 
-    const suggestions = getSuggestionsRelated(mockEditor, selectedComponents, {
+    expect(getSuggestionsRelated(mockEditor, selectedComponents, {
       mainSelector: { selectors: [{ type: SimpleSelectorType.TAG, value: 'body', active: true } as TagSelector] },
       operator: { type: OperatorType.IS, isCombinator: false } as Operator,
       relatedSelector: { selectors: [] },
-    })
-
-    expect(suggestions).toEqual([{
-      type: SimpleSelectorType.TAG,
-      value: 'body',
-      active: true,
-    }, {
-      type: SimpleSelectorType.CLASS,
-      value: 'a-class',
-      active: true,
-    }])
+    }))
+      .toEqual([{
+        type: SimpleSelectorType.TAG,
+        value: 'body',
+        active: true,
+      }, {
+        type: SimpleSelectorType.CLASS,
+        value: 'a-class',
+        active: true,
+      }])
   })
 
 })

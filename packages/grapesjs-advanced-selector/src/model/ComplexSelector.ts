@@ -5,6 +5,7 @@ export interface ComplexSelector {
   mainSelector: CompoundSelector
   operator?: Operator
   relatedSelector?: CompoundSelector
+  atRule?: string
 }
 
 export const EMPTY_SELECTOR = {
@@ -45,7 +46,8 @@ export function specificity(cs: ComplexSelector): number {
  * @example fromString('div > .class') // { mainSelector: { selectors: [{ type: 'tag', value: 'div' }] }, operator: { isCombinator: true, value: '>' }, relatedSelector: { selectors: [{ type: 'class', value: 'class' }] } }
  * @example fromString('.main:has(.related)') // { mainSelector: { selectors: [{ type: 'class', value: 'main' }] }, operator: { isCombinator: false, value: ':has' }, relatedSelector: { selectors: [{ type: 'class', value: 'related' }] } }
  */
-export function fromString(selector: string): ComplexSelector {
+export function fromString(selector: string, atRule: string): ComplexSelector {
+  const atRuleObj = atRule ? { atRule } : {} // Omit atRule if it's empty
   const operatorMatch = selector.match(/:(\w+)\((.+)\)$/)
   if (operatorMatch) {
     const [, operator, relatedSelector] = operatorMatch
@@ -54,6 +56,7 @@ export function fromString(selector: string): ComplexSelector {
       mainSelector: mainSelector ? compoundFromString(mainSelector) : { selectors: [] },
       operator: operatorFromString(`:${operator}`),
       relatedSelector: compoundFromString(relatedSelector),
+      ...atRuleObj,
     }
   }
 
@@ -75,10 +78,12 @@ export function fromString(selector: string): ComplexSelector {
       mainSelector: mainSelector ? compoundFromString(mainSelector) : { selectors: [] },
       operator: operatorFromString(operator),
       relatedSelector: compoundFromString(relatedSelector),
+      ...atRuleObj,
     }
   }
   return {
     mainSelector: relatedSelector ? compoundFromString(relatedSelector) : { selectors: [] },
+    ...atRuleObj,
   }
 }
 
@@ -94,6 +99,7 @@ export function merge(cs1: ComplexSelector, cs2: ComplexSelector): ComplexSelect
       ? mergeCompoundSelectors(cs1.relatedSelector, cs2.relatedSelector)
       : cs1.relatedSelector || cs2.relatedSelector, // Prend celui qui existe si l'autre est null
     operator: cs1.operator || cs2.operator, // Garde l'opérateur de cs1 si existant, sinon celui de cs2
+    atRule: cs1.atRule || cs2.atRule,
   }
 }
 
@@ -117,6 +123,7 @@ export function activateSelectors(cs: ComplexSelector, other: ComplexSelector): 
       }
       : undefined, // Keep `relatedSelector` as undefined if it doesn't exist
     operator: cs.operator, // Keep the operator unchanged
+    atRule: cs.atRule,
   }
 }
 
@@ -128,20 +135,16 @@ export function same(all: ComplexSelector[]): ComplexSelector | false {
   if (all.length === 1) return all[0]
   const [cs1, ...others] = all
   for (const cs2 of others) {
-    if (cs1.mainSelector !== cs2.mainSelector) {
-      return false
-    }
-    if (cs1.operator !== cs2.operator) {
-      return false
-    }
-    if (cs1.relatedSelector !== cs2.relatedSelector) {
-      return false
-    }
+    if (cs1.atRule !== cs2.atRule) return false
+    if (cs1.mainSelector !== cs2.mainSelector) return false
+    if (cs1.operator !== cs2.operator) return false
+    if (cs1.relatedSelector !== cs2.relatedSelector) return false
   }
 
   return {
     mainSelector: cs1.mainSelector,
     operator: cs1.operator,
     relatedSelector: cs1.relatedSelector,
+    atRule: cs1.atRule,
   }
 }
