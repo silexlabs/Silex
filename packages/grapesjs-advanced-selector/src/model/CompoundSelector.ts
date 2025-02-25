@@ -108,7 +108,7 @@ export function merge(cs1: CompoundSelector, cs2: CompoundSelector): CompoundSel
 
   return {
     selectors: mergedSelectors,
-    pseudoClass: cs1.pseudoClass || cs2.pseudoClass || null, // Prend le pseudo-classe de cs1 en priorité
+    pseudoClass: cs1.pseudoClass || cs2.pseudoClass || null,
   }
 }
 

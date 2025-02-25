@@ -135,6 +135,7 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
     const newSelector = merge(oldSelector, selector)
     const activated = activateSelectors(newSelector, selector)
     activated.atRule = selector.atRule // We merged but want to keep the atRule
+    activated.mainSelector.pseudoClass = selector.mainSelector.pseudoClass // We merged but want to keep the pseudoClass
     setComponentSelector(component, activated)
   })
   // Select the device if the selector contains the device

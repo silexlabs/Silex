@@ -46,8 +46,7 @@ export class CurrentSelectorDisplay extends StylableElement {
       text-align: center;
       border-top: 1px solid var(--gjs-primary-color, #333);
       background-color: var(--gjs-main-dark-color, #222);
-      padding: .5rem 0;
-      .value {
+      select.value {
         background-color: transparent;
         border: none;
         color: var(--gjs-font-color-active, #f8f8f8);
@@ -55,10 +54,13 @@ export class CurrentSelectorDisplay extends StylableElement {
         font-size: inherit;
         font-family: monospace;
         text-align: center;
-        padding: 0 5px;
+        padding: .5rem;
         margin: 0;
         text-wrap: wrap;
         width: 100%;
+        cursor: pointer;
+        background-color: var(--gjs-main-dark-color, #333);
+        color: var(--gjs-secondary-color);
       }
       ul {
         list-style-type: none;
@@ -87,10 +89,11 @@ export class CurrentSelectorDisplay extends StylableElement {
       specificity: specificity(s),
       atRule: s.atRule,
     }))
-      .map(({ string, atRule }) => {
+      .map(({ string, atRule, specificity }) => {
         return html`
           ${atRule ? atRule.replace(/@media \(max-width: (.+)\)/, '@$1') : ''}
           ${string}
+          ( ${specificity} )
         `
         //( ${specificity} )
       })

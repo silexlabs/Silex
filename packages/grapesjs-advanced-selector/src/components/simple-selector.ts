@@ -71,7 +71,7 @@ export default class SimpleSelectorComponent extends StylableElement {
       padding: 0.10rem;
       border-radius: 0.2rem;
       cursor: pointer;
-      background: var(--gjs-main-light-color, #f9f9f9);
+      background-color: var(--gjs-main-light-color, #f9f9f9);
     }
     section:has(:invalid) {
       background: rgba(255, 0, 0, 0.1) !important;
