@@ -109,7 +109,7 @@ export default class InlineSelectComponent extends StylableElement {
     return html`
       <section>
         <main>
-          ${ this.value.sentencePre }
+          ${ this.t(this.value.sentencePre) }
           <span class="unbreakable">
             ${ this.renderList() }
             ${ this.value.sentencePost ?? '' }
@@ -150,7 +150,7 @@ export default class InlineSelectComponent extends StylableElement {
         ${ this.options.map(p => html`
           <option
             .selected=${ this.value?.type === p.type }
-          >${ p.displayName ?? p.type }</option>
+          >${ this.t(p.displayName ?? p.type) }</option>
         `) }
       </select>
     `
@@ -159,14 +159,14 @@ export default class InlineSelectComponent extends StylableElement {
     return html`
       ${ this.value?.helpLink ? html`
         <a
-          title="Help"
+          .title=${ this.t('Help') }
           class="asm-inline-select__btn"
           href=${ this.value?.helpLink }
           target="_blank"
         >?</a>`: html`` 
 }<a
         href="#"
-        title="Clear"
+        .title=${ this.t('Clear style') }
         class="asm-inline-select__btn"
         @click=${ (event: MouseEvent) => {
     this.select() 

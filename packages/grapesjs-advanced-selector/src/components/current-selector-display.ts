@@ -28,6 +28,9 @@ export class CurrentSelectorDisplay extends StylableElement {
   @property({ type: Array, attribute: true, reflect: false })
   public selectors: ComplexSelector[] = []
 
+  @property({ type: String, attribute: true, reflect: false })
+  public helpLink = ''
+
   public specificity = 0
   private selectRef = createRef<HTMLSelectElement>()
 
@@ -148,39 +151,49 @@ export class CurrentSelectorDisplay extends StylableElement {
         <sidebar>
           <ul>
             <li
-              title="Specificity"
+              .title=${ this.t('Specificity') }
               class="specificity"
               >
               ${this.specificity}
             </li>
             <li>
               <button
-                title="Edit selector"
+                .title=${ this.t('Edit selector') }
                 @click=${() => {
-    const newSelector = prompt('Edit selector', toString(this.value!))
+    const newSelector = prompt(this.t('Edit selector'), toString(this.value!))
     this.changeSelector(newSelector ? fromString(newSelector, this.value!.atRule ?? '') : this.value!)
   }}
               >✏️</button>
             </li>
             <li>
               <button
-                title="Copy style"
+                .title=${ this.t('Copy style') }
                 @click=${() => this.dispatchEvent(new CustomEvent('copy'))}
               >📋</button>
             </li>
             <li>
               <button
-                title="Paste style"
+                .title=${ this.t('Paste style') }
                 @click=${() => this.dispatchEvent(new CustomEvent('paste'))}
               >📥</button>
             </li>
             <li>
               <button
-                title="Clear style for this selector"
+                .title=${ this.t('Clear style for this selector') }
                 @click=${() => {
     this.clearStyle()
   }}
               >️🧹</button>
+            </li>
+            ${ this.helpLink ? html`
+            <li>
+              <a
+                .title=${ this.t('Help') }
+                .href=${ this.helpLink }
+                target="_blank"
+              >\u2753</a>
+            </li>
+            ` : ''}
           </ul>
         </sidebar>
       </section>

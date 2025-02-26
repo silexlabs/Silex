@@ -7,8 +7,11 @@ import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
 ////////////////
 // Types
 export type AdvancedSelectorOptions = {
-  classSelector: {
-    label: string
+  i18n: {
+    [key: string]: string
+  }
+  helpLinks: {
+    actionBar: string
   }
 }
 
@@ -48,20 +51,21 @@ export function initListeners(editor: Editor) {
 export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?: CustomSelectorEventProps) {
   if (props && props.container) {
     props.container.appendChild(container)
-    editor.on('selector:custom', (/*{ selected }: {selected: CssRule[]}*/) => updateUi(editor))
+    editor.on('selector:custom', (/*{ selected }: {selected: CssRule[]}*/) => updateUi(editor, options))
   } else {
     // Keep listening
     editor.once('selector:custom', (props) => initASM(editor, options, props))
   }
 }
 
-function updateUi(editor: Editor) {
+function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
   const components: Component[] = editor.getSelectedAll()
   const selector = getSelector(components)
   if(selector) {
     requestAnimationFrame(() => editStyle(editor, toString(selector)))
     render(html`
       <complex-selector
+        .t=${(key: string) => getTranslation(editor, key)}
         .value=${selector}
         .suggestions=${getSuggestionsMain(editor, components, selector)}
         .relations=${getSuggestionsRelated(editor, components, selector)}
@@ -70,8 +74,10 @@ function updateUi(editor: Editor) {
       ></complex-selector>
 
       <current-selector-display
+        .t=${(key: string) => getTranslation(editor, key)}
         .value=${getSelector(components)}
         .selectors=${getSelectors(editor)}
+        .helpLink=${options.helpLinks.actionBar}
         @change=${(event: CustomEvent) => mergeSelector(event.detail as ComplexSelector, editor, components)}
         @delete=${() => deleteSelector(editor)}
         @copy=${() => copyStyle(editor)}
@@ -83,6 +89,14 @@ function updateUi(editor: Editor) {
       <p>Select a component to edit its selector</p>
     `, container)
   }
+}
+
+function getTranslation(editor: Editor, key: string): string {
+  const translated = editor?.I18n?.t(key)
+  if (!translated) {
+    console.warn(`Translation for key "${key}" not found`)
+  }
+  return translated || key
 }
 
 /**

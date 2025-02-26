@@ -171,7 +171,7 @@ export default class SimpleSelectorComponent extends StylableElement {
       ${ this.renderMain() }
       <footer>
         <button
-          title="Delete selector"
+          .title=${ this.t('Delete') }
           class="gjs-btn-prim asm-simple-selector__delete-button"
           @keydown=${(event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {

@@ -99,6 +99,7 @@ export default class CompoundSelectorComponent extends StylableElement {
     .sort((a, b) => specificity(b, true) - specificity(a, true))
     .map((selector, idx) => html`
             <simple-selector
+              .t=${ this.t }
               .value=${ selector }
               .suggestions=${ this.suggestions }
               @change=${ (event: CustomEvent<SimpleSelector>) => this.changeSelector(event, idx) }
@@ -108,7 +109,7 @@ export default class CompoundSelectorComponent extends StylableElement {
           <button
             id="gjs-clm-add-tag"
             class="gjs-clm-tags-btn gjs-clm-tags-btn__add asm-compound__add"
-            title="Add a new selector"
+            .title=${ this.t('Add a new selector') }
             @click=${ this.addSelector }
             >
             <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>
@@ -128,7 +129,7 @@ export default class CompoundSelectorComponent extends StylableElement {
             <button
               class="gjs-btn-prim asm__add-inline"
               @click=${ this.addPseudoClass }
-              >\u2192 Pseudo Class</button>
+              >\u2192 ${ this.t('Pseudo Class') }</button>
           ` }
         `}
       </section>

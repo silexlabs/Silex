@@ -90,7 +90,9 @@ Customize the plugin’s behavior by passing options:
 
 | Option      | Description                            | Default          |
 |-------------|----------------------------------------|------------------|
-| `option1`   | Description for option1                | `default value`  |
+| `i18n`      | Internationalization object see the files in `src/i18n` | The content of `src/i18n/en.ts` |
+| `helpLinks` | Links to help resources                | `{}`             |
+| `helpLinks.actionBar` | Link to help resources for the action bar | `https://docs.silex.me/en/user/selectors` |
 
 ---
 

@@ -88,6 +88,7 @@ export default class ComplexSelectorComponent extends StylableElement {
   override render(): TemplateResult {
     return html`
       <compound-selector
+        .t=${ this.t }
         .value=${ this.value?.mainSelector }
         .suggestions=${ this.suggestions }
         @change=${ (event: CustomEvent) => {
@@ -112,10 +113,11 @@ export default class ComplexSelectorComponent extends StylableElement {
         <button
           class="gjs-btn-prim asm__add-inline"
           @click=${ this.addOperator }
-        >\u2192 Relation</button>
+        >\u2192 ${ this.t('Relation') }</button>
       `}
       ${ this.value?.operator ? html`
         <compound-selector
+          .t=${ this.t }
           .value=${ this.value?.relatedSelector }
           .suggestions=${ this.relations }
           ?disable-pseudo-class=${ this.value?.operator.isCombinator === false }
