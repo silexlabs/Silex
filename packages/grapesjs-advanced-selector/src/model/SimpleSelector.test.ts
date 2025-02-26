@@ -126,6 +126,9 @@ describe('SimpleSelector', () => {
     expect(validate('[data-')).toBe(false)
     expect(validate('[data-test]')).toBe('[data-test]')
     expect(validate('[data-test')).toBe('[data-test]')
+    expect(validate('[href="#')).toBe('[href="#"]')
+    expect(validate('[href="#')).toBe('[href="#"]')
+    expect(validate('[href="#"]')).toBe('[href="#"]')
   })
 
   test('suggest should return creation suggestions for empty filter or *', () => {
@@ -152,7 +155,8 @@ describe('SimpleSelector', () => {
     const suggestAttr = getCreationSuggestions('[data-test="test value"]')
     expect(suggestAttr).toHaveLength(1)
     expect((suggestAttr[0] as AttributeSelector).type).toBe(SimpleSelectorType.ATTRIBUTE)
-    expect((suggestAttr[0] as AttributeSelector).value).toEqual('data-test="test value"')
+    expect((suggestAttr[0] as AttributeSelector).value).toEqual('data-test')
+    expect((suggestAttr[0] as AttributeSelector).attributeValue).toEqual('test value')
 
     expect(getCreationSuggestions('test')).toHaveLength(0)
     expect(getCreationSuggestions('.test')).toHaveLength(1)

@@ -224,6 +224,13 @@ export function validate(_value: string): string | false {
   if (value.startsWith('-')) return false
   // Attributes should be from the ATTRIBUTES list
   if (value.match(/^\[[a-z-]*\]?$/) && ATTRIBUTES.includes(value.replace('[', '').replace(']', ''))) return value.replace(']', '') + ']'
+  // Attribute with a value
+  const attrWithVal = _value // Keep the original value, not escaped because the attr value could contain spaces
+    .match(/^\[([\w-]+)\s*=\s*"([^"]*)"?\]?$/)
+  if (attrWithVal) {
+    const [, name, val] = attrWithVal
+    if(ATTRIBUTES.includes(name)) return `[${name}="${val}"]`
+  }
   // Custom attributes should start with data-
   if (value.match(/^\[data-[_a-zA-Z]+[_a-zA-Z0-9-]*\]?$/)) return value.replace(']', '') + ']'
   // Custom tags should contain a -
@@ -276,10 +283,15 @@ export function getCreationSuggestions(validated: string | false): SimpleSelecto
       creationSuggestions.push({ createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
     } else if (validated.startsWith('.')) {
       creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: validated.slice(1), active, } as ClassSelector)
-    } else if (validated.startsWith('[data-')) {
-      creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: validated.replace('[', '').replace(']', ''), active, } as AttributeSelector)
     } else if (validated.startsWith('[')) {
-      creationSuggestions.push({ createText: `Select attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: validated.replace('[', '').replace(']', ''), active, } as AttributeSelector)
+      const [name, val] = validated
+        .substring(1, validated.length - 1) // Remove the brackets []
+        .split('=') // Split the name and value
+      if(val) {
+        creationSuggestions.push({ createText: `Select custom attribute ${ name } with value ${ val }`, type: SimpleSelectorType.ATTRIBUTE, value: name, operator: '=', attributeValue: val.replace(/"/g, ''), active, } as AttributeSelector)
+      } else {
+        creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: name, active, } as AttributeSelector)
+      }
     } else if (validated.match(/^[a-z-]*-[a-z]*$/)) {
       creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: validated, active, } as CustomTagSelector)
     }
