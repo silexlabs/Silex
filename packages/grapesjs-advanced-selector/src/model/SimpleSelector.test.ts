@@ -100,10 +100,14 @@ describe('SimpleSelector', () => {
     expect(validate('')).toBe('')
     expect(validate(' ')).toBe(false) // starting with space
     expect(validate('-')).toBe(false)
+    expect(validate('*')).toBe('*')
+    expect(validate('the')).toBe('.the')
     expect(validate('the-')).toBe(false)
     expect(validate('the-component')).toBe('the-component')
     expect(validate('almost -valid')).toBe('almost--valid') // custom tag not starting with data-
-    expect(validate('invalid')).toBe(false) // tag not in the tag list
+    expect(validate('9invalid')).toBe(false)
+    expect(validate('invalid ')).toBe(false)
+    expect(validate('inva lid')).toBe('inva-lid')
     expect(validate('data-')).toBe(false)
     expect(validate('data-test')).toBe('data-test')
     expect(validate('div')).toBe('div')
@@ -141,9 +145,20 @@ describe('SimpleSelector', () => {
     expect(getCreationSuggestions('.test')[0].type).toBe(SimpleSelectorType.CLASS)
     expect(getCreationSuggestions('#test')).toEqual([]) // The IDs exist so they will be suggested
     expect(getCreationSuggestions('div')).toEqual([]) // The tag exists so it will be suggested
-    expect(getCreationSuggestions('[data-test')[0].type).toBe(SimpleSelectorType.ATTRIBUTE)
     expect(getCreationSuggestions('[data-test]')[0].type).toBe(SimpleSelectorType.ATTRIBUTE)
-    expect(getCreationSuggestions('[data-test="value"]')).toEqual([]) // Should we support this?
+    expect(getCreationSuggestions('[data-test]')[0].type).toBe(SimpleSelectorType.ATTRIBUTE)
     expect(getCreationSuggestions('*')[0].type).toBe(SimpleSelectorType.UNIVERSAL)
+
+    const suggestAttr = getCreationSuggestions('[data-test="test value"]')
+    expect(suggestAttr).toHaveLength(1)
+    expect((suggestAttr[0] as AttributeSelector).type).toBe(SimpleSelectorType.ATTRIBUTE)
+    expect((suggestAttr[0] as AttributeSelector).value).toEqual('data-test="test value"')
+
+    expect(getCreationSuggestions('test')).toHaveLength(0)
+    expect(getCreationSuggestions('.test')).toHaveLength(1)
+    expect(getCreationSuggestions('.test')[0].type).toBe(SimpleSelectorType.CLASS)
+    expect((getCreationSuggestions('.test')[0] as ClassSelector).value).toBe('test')
+
+    expect(getCreationSuggestions(false)).toHaveLength(0)
   })
 })

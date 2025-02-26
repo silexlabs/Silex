@@ -246,7 +246,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   private renderMain(): TemplateResult {
     const selectorString = this.selectorInputRef.value?.value || ''
     const valid = validate(selectorString)
-    const suggestions = getCreationSuggestions(selectorString).concat(suggest(selectorString, this.suggestions))
+    const suggestions = getCreationSuggestions(valid).concat(suggest(selectorString, this.suggestions))
     return html`
       ${ this.renderLayout(html`
         ${ this.editing ? this.renderSelectorInput({

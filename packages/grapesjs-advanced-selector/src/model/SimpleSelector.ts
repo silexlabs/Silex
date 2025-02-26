@@ -234,6 +234,8 @@ export function validate(_value: string): string | false {
   if (value.match(/^\.-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/)) return value
   // IDs should start with # then a letter
   if (value.match(/^#-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/)) return value
+  // Check if it is a valid css class when adding a dot at the beginning
+  if (value.match(/^-?[_a-zA-Z]+[_a-zA-Z0-9-]*[_a-zA-Z0-9]$/)) return '.' + value
   // Not a valid selector and not fixable
   return false
 }
@@ -265,22 +267,21 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
     })
 }
 
-export function getCreationSuggestions(filter: string): SimpleSelectorSuggestion[] {
+export function getCreationSuggestions(validated: string | false): SimpleSelectorSuggestion[] {
   // Creation suggestions
   const creationSuggestions = [] as SimpleSelectorSuggestion[]
-  const validated = validate(filter)
   if (validated) {
     const active = true
-    if (filter === '*') {
+    if (validated === '*') {
       creationSuggestions.push({ createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
-    } else if (filter.startsWith('.')) {
-      creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: filter.slice(1), active, } as ClassSelector)
-    } else if (filter.startsWith('[data-')) {
-      creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: filter.replace('[', '').replace(']', ''), active, } as AttributeSelector)
-    } else if (filter.startsWith('[')) {
-      creationSuggestions.push({ createText: `Select attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: filter.replace('[', '').replace(']', ''), active, } as AttributeSelector)
-    } else if (filter.match(/^[a-z-]*-[a-z]*$/)) {
-      creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: filter, active, } as CustomTagSelector)
+    } else if (validated.startsWith('.')) {
+      creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: validated.slice(1), active, } as ClassSelector)
+    } else if (validated.startsWith('[data-')) {
+      creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: validated.replace('[', '').replace(']', ''), active, } as AttributeSelector)
+    } else if (validated.startsWith('[')) {
+      creationSuggestions.push({ createText: `Select attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: validated.replace('[', '').replace(']', ''), active, } as AttributeSelector)
+    } else if (validated.match(/^[a-z-]*-[a-z]*$/)) {
+      creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: validated, active, } as CustomTagSelector)
     }
   }
   return creationSuggestions
