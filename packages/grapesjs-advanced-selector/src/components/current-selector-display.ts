@@ -1,7 +1,7 @@
 import { html, css, TemplateResult } from 'lit'
 import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
-import { ComplexSelector, same, specificity, toString } from '../model/ComplexSelector'
+import { ComplexSelector, fromString, same, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
 
 export class CurrentSelectorDisplay extends StylableElement {
@@ -15,6 +15,7 @@ export class CurrentSelectorDisplay extends StylableElement {
   public set value(value: ComplexSelector | string | undefined) {
     try {
       this._value = typeof value === 'string' ? JSON.parse(value) : value
+      this.specificity = specificity(this._value!)
     } catch (error) {
       console.error('Error parsing value for selector', { value, error })
     }
@@ -27,6 +28,7 @@ export class CurrentSelectorDisplay extends StylableElement {
   @property({ type: Array, attribute: true, reflect: false })
   public selectors: ComplexSelector[] = []
 
+  public specificity = 0
   private selectRef = createRef<HTMLSelectElement>()
 
   static override styles = css`
@@ -43,7 +45,7 @@ export class CurrentSelectorDisplay extends StylableElement {
       padding: 0.5rem 0;
     }
     .selection {
-      text-align: center;
+      display: flex;
       border-top: 1px solid var(--gjs-primary-color, #333);
       background-color: var(--gjs-main-dark-color, #222);
       select.value {
@@ -56,6 +58,7 @@ export class CurrentSelectorDisplay extends StylableElement {
         text-align: center;
         padding: .5rem;
         margin: 0;
+        text-align: center;
         text-wrap: wrap;
         width: 100%;
         cursor: pointer;
@@ -68,7 +71,29 @@ export class CurrentSelectorDisplay extends StylableElement {
         margin: 0;
         & > li {
           display: inline;
-          margin: 0 0.5rem;
+          margin: 0 0.25rem;
+        }
+      }
+      sidebar {
+        ul {
+          display: flex;
+          align-items: center;
+          height: 100%;
+        }
+        button {
+          background-color: transparent;
+          border: none;
+          color: var(--gjs-font-color-active, #f8f8f8);
+          cursor: pointer;
+          padding: 0;
+          margin: 0;
+        }
+        button:hover {
+          color: var(--gjs-color-highlight, #71b7f1);
+        }
+        .specificity {
+          font-size: small;
+          padding-top: 2px;
         }
       }
     }
@@ -86,16 +111,13 @@ export class CurrentSelectorDisplay extends StylableElement {
     ]
     const selectorsStrings = selectors.map(s => ({
       string: toString(s),
-      specificity: specificity(s),
       atRule: s.atRule,
     }))
-      .map(({ string, atRule, specificity }) => {
+      .map(({ string, atRule }) => {
         return html`
           ${atRule ? atRule.replace(/@media \(max-width: (.+)\)/, '@$1') : ''}
           ${string}
-          ( ${specificity} )
         `
-        //( ${specificity} )
       })
     //const uniqueStrings = new Set(selectorsStrings)
     // Workaround: the selected option do not update when the value changes after user selects an option
@@ -123,6 +145,44 @@ export class CurrentSelectorDisplay extends StylableElement {
           </option>`
     })}
         </select>
+        <sidebar>
+          <ul>
+            <li
+              title="Specificity"
+              class="specificity"
+              >
+              ${this.specificity}
+            </li>
+            <li>
+              <button
+                title="Edit selector"
+                @click=${() => {
+    const newSelector = prompt('Edit selector', toString(this.value!))
+    this.changeSelector(newSelector ? fromString(newSelector, this.value!.atRule ?? '') : this.value!)
+  }}
+              >✏️</button>
+            </li>
+            <li>
+              <button
+                title="Copy style"
+                @click=${() => this.dispatchEvent(new CustomEvent('copy'))}
+              >📋</button>
+            </li>
+            <li>
+              <button
+                title="Paste style"
+                @click=${() => this.dispatchEvent(new CustomEvent('paste'))}
+              >📥</button>
+            </li>
+            <li>
+              <button
+                title="Clear style for this selector"
+                @click=${() => {
+    this.clearStyle()
+  }}
+              >️🧹</button>
+          </ul>
+        </sidebar>
       </section>
     `
   }
@@ -130,6 +190,10 @@ export class CurrentSelectorDisplay extends StylableElement {
   private changeSelector(sel: ComplexSelector) {
     this.value = sel
     this.dispatchEvent(new CustomEvent('change', { detail: sel }))
+  }
+
+  private clearStyle() {
+    this.dispatchEvent(new CustomEvent('delete', { detail: this.value }))
   }
 }
 

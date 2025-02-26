@@ -98,6 +98,34 @@ export function editStyle(editor: Editor, selector: string) {
   //editor.select(selectedComponent);
 }
 
+/**
+ * Remove the style (rules) for the current selector (edited selector)
+ */
+export function clearStyle(editor: Editor) {
+  // Remove the selected rule from the CSS Composer
+  const rule = editor.StyleManager.getSelected()
+  if (!rule) {
+    console.warn('No rule selected')
+    return
+  }
+  editor.CssComposer.remove(rule as CssRule)
+  // Reset the style in the Style Manager
+  editor
+    .StyleManager
+    .getSelected()
+    ?.setStyle({})
+}
+
+export function getSelectedStyle(editor: Editor): any {
+  return editor.StyleManager.getSelected()
+    ?.getStyle()
+}
+
+export function setSelectedStyle(editor: Editor, style: any) {
+  editor.StyleManager.getSelected()
+    ?.setStyle(style)
+}
+
 export function renameSelector(editor:Editor, oldSelector: SimpleSelector, newSelector: SimpleSelector) {
   console.log('renameSelector', oldSelector, newSelector, isSameSelector(oldSelector, newSelector))
   groupActions(editor, () => {

@@ -1,6 +1,6 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
-import { editStyle, getComponentSelector, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector } from './model/GrapesJsSelectors'
+import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
 import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
 
@@ -73,6 +73,9 @@ function updateUi(editor: Editor) {
         .value=${getSelector(components)}
         .selectors=${getSelectors(editor)}
         @change=${(event: CustomEvent) => mergeSelector(event.detail as ComplexSelector, editor, components)}
+        @delete=${() => deleteSelector(editor)}
+        @copy=${() => copyStyle(editor)}
+        @paste=${() => pasteStyle(editor)}
       ></current-selector-display>
     `, container)
   } else {
@@ -149,4 +152,20 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
     editor.DeviceManager.select(editor.DeviceManager.getAll().first())
   }
   editStyle(editor, toString(selector))
+}
+
+function deleteSelector(editor: Editor) {
+  clearStyle(editor)
+}
+
+function copyStyle(editor: Editor) {
+  localStorage?.setItem('asm:clipboard', JSON.stringify(getSelectedStyle(editor)))
+}
+
+function pasteStyle(editor: Editor) {
+  const clipboard = localStorage?.getItem('asm:clipboard')
+  if(clipboard) {
+    const style = JSON.parse(clipboard)
+    setSelectedStyle(editor, style)
+  }
 }

@@ -113,11 +113,15 @@ export default class SimpleSelectorComponent extends StylableElement {
       line-height: 1;
       margin: 1px;
       background: transparent;
+      color: var(--gjs-color-warn, #f00);
+      font-size: 1.1rem;
     }
+    /*
     .asm-simple-selector__delete-button:hover {
       color: var(--gjs-color-warn, #f00);
-      transform: scale(1.2) translateY(-1px);
+      transform: scale(2) translateY(-1px);
     }
+    */
     .asm-simple-selector__active {
       display: none;
     }
