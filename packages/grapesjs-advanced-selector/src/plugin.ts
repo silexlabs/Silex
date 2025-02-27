@@ -85,8 +85,8 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
         .value=${getSelector(components)}
         .selectors=${getSelectors(editor)}
         .helpLink=${options.helpLinks.actionBar}
-        .error=${errors}
-        .warning=${warnings}
+        .error=${getTranslation(editor, errors || '')}
+        .warning=${getTranslation(editor, warnings || '')}
         @change=${(event: CustomEvent) => mergeSelector(event.detail as ComplexSelector, editor, components)}
         @delete=${() => deleteSelector(editor)}
         @copy=${() => copyStyle(editor)}

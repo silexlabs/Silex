@@ -68,4 +68,6 @@ export default {
   'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus': 'https://developer.mozilla.org/en-US/docs/Web/CSS/:focus',
   'https://developer.mozilla.org/en-US/docs/Web/CSS/:active': 'https://developer.mozilla.org/en-US/docs/Web/CSS/:active',
   'https://developer.mozilla.org/en-US/docs/Web/CSS/:hover': 'https://developer.mozilla.org/en-US/docs/Web/CSS/:hover',
+  'Current selector does not match the selected components': 'Current selector does not match the selected components',
+  'Current selector does not match all the selected components': 'Current selector does not match all the selected components',
 }
