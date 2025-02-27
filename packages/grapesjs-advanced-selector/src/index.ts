@@ -38,5 +38,5 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
   }
 
   initASM(editor, options)
-  initListeners(editor)
+  initListeners(editor, options)
 }

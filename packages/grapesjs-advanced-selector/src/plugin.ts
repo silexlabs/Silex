@@ -26,28 +26,31 @@ container.id = 'asm-container'
 
 ////////////////
 // Plugin functions
-export function initListeners(editor: Editor) {
+export function initListeners(editor: Editor, options: AdvancedSelectorOptions) {
+  console.log('Start listening to events', options)
   editor.Commands.add('i18n:info', () => {
     console.log('i18n', getUntranslatedKeys())
   })
-  return
-  //editor.on('component:selected', (component: Component) => {
-  //  updateUi(editor, [component])
-  //})
-  // When a class changes
-  editor.on('selector', (...args) => {
-    console.log('============> component:classes', args)
-  })
-  editor.on('component:update:classes', (...args) => {
-    console.log('============', ...args)
-    // console.log("========== Component class list updated:", component, component.getC);
-    // // Get the class that changed
-    // const changedClass = component
-    //   .getClasses()
-    //   .filter((cls) => component.previous('classes') !== component.get(cls))[0];
-    // const classNames = component.getClasses()
-    // console.log("============ Updated class names:", classNames);
-  })
+  // editor.on('component:selected', () => {
+  //   console.log('============> component:selected')
+  //   requestAnimationFrame(() => updateUi(editor, options))
+  // })
+  // // When a class changes
+  // editor.on('selector', (...args) => {
+  //   console.log('============> component:classes', args)
+  //   requestAnimationFrame(() => updateUi(editor, options))
+  // })
+  // editor.on('component:update:classes', (...args) => {
+  //   console.log('============ component:update:classes', args)
+  //   requestAnimationFrame(() => updateUi(editor, options)) // Delay to avoid flicker of warning
+  //   // console.log("========== Component class list updated:", component, component.getC);
+  //   // // Get the class that changed
+  //   // const changedClass = component
+  //   //   .getClasses()
+  //   //   .filter((cls) => component.previous('classes') !== component.get(cls))[0];
+  //   // const classNames = component.getClasses()
+  //   // console.log("============ Updated class names:", classNames);
+  // })
 
 }
 
