@@ -22,41 +22,56 @@ function groupActions(editor: Editor, actions: () => void) {
   //editor.UndoManager.stop()
 }
 
+const untranslatedKeys = new Set<string>()
+export function getTranslation(editor: Editor, key: string): string {
+  const translated = editor?.I18n?.t(key)
+  if (!translated) {
+    untranslatedKeys.add(key)
+    console.log('Untranslated key, call editor.runCommand("i18n:info") to see all untranslated keys')
+  }
+  return translated || key
+}
+
+export function getUntranslatedKeys(): string[] {
+  return Array.from(untranslatedKeys)
+}
+
 ////////////////
 // Stye Manager functions
 /**
  * Get all selectors that match the selected component
  */
 export function getSelectors(editor: Editor): ComplexSelector[] {
-  return editor.getSelectedAll().flatMap((component: Component) => {
-    return editor
-      .CssComposer
-      .getRules()
-      .reduce<ComplexSelector[]>((acc, rule: CssRule) => {
-        // Check if the rule has a style applied
-        if (Object.keys(rule.getStyle()).length === 0) {
-          // No style, this is just a selector
-          return acc
-        }
-        // Check if the component matches the selector
-        const selectorString = rule.getSelectorsString()
-        if(!selectorString) {
-          // Empty selector, this must be being edited
-          console.warn('Empty selector for rule', rule)
-          return acc
-        }
-
-        try {
-          if (component.view?.el.matches(selectorString)) {
-            acc.push(fromString(selectorString, rule.getAtRule()))
+  return editor.getSelectedAll()
+    .flatMap((component: Component) => {
+      return editor
+        .CssComposer
+        .getRules()
+        .reduce<ComplexSelector[]>((acc, rule: CssRule) => {
+          // Check if the rule has a style applied
+          if (Object.keys(rule.getStyle()).length === 0) {
+            // No style, this is just a selector
+            return acc
           }
-        } catch (e) {
-          console.error('Error matching selector', selectorString, e)
-        }
+          // Check if the component matches the selector
+          const selectorString = rule.getSelectorsString()
+          if (!selectorString) {
+            // Empty selector, this must be being edited
+            console.warn('Empty selector for rule', rule)
+            return acc
+          }
 
-        return acc
-      }, [])
-  })
+          try {
+            if (component.view?.el.matches(selectorString)) {
+              acc.push(fromString(selectorString, rule.getAtRule()))
+            }
+          } catch (e) {
+            console.error('Error matching selector', selectorString, e)
+          }
+
+          return acc
+        }, [])
+    })
 }
 
 /**
@@ -96,6 +111,30 @@ export function editStyle(editor: Editor, selector: string) {
 
   // Ensure the component is still selected for the Style Manager to work
   //editor.select(selectedComponent);
+}
+
+/**
+ * Check if all the selected components are selected by the provided selector
+ */
+export function matchSelectorAll(selector: string, components: Component[]): boolean {
+  try {
+    return components.some((component) => component.view?.el.matches(selector))
+  } catch (e) {
+    console.log('Error matching selector', selector, e)
+    return false
+  }
+}
+
+/**
+ * Check if some of the selected components are selected by the provided selector
+ */
+export function matchSelectorSome(selector: string, components: Component[]): boolean {
+  try {
+    return components.every((component) => component.view?.el.matches(selector))
+  } catch (e) {
+    console.log('Error matching selector', selector, e)
+    return false
+  }
 }
 
 /**

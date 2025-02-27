@@ -104,6 +104,7 @@ export default class ComplexSelectorComponent extends StylableElement {
       ></compound-selector>
       ${ this.value?.operator ? html`
         <inline-select
+          .t=${ this.t }
           .value=${ this.value?.operator }
           .options=${ OPERATORS }
           placeholder=""

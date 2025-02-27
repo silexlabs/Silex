@@ -119,6 +119,7 @@ export default class CompoundSelectorComponent extends StylableElement {
           ${ this.value?.pseudoClass ? html`
             <div>
               <inline-select
+                .t=${ this.t }
                 .value=${ this.value?.pseudoClass }
                 .options=${ PSEUDO_CLASSES }
                 @change=${ this.changePseudoClass }

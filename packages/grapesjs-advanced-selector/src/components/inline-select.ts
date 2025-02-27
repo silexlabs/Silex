@@ -161,12 +161,12 @@ export default class InlineSelectComponent extends StylableElement {
         <a
           .title=${ this.t('Help') }
           class="asm-inline-select__btn"
-          href=${ this.value?.helpLink }
+          href=${ this.t(this.value.helpLink) }
           target="_blank"
         >?</a>`: html`` 
 }<a
         href="#"
-        .title=${ this.t('Clear style') }
+        .title=${ this.t('Remove') }
         class="asm-inline-select__btn"
         @click=${ (event: MouseEvent) => {
     this.select() 

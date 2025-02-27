@@ -31,6 +31,13 @@ export class CurrentSelectorDisplay extends StylableElement {
   @property({ type: String, attribute: true, reflect: false })
   public helpLink = ''
 
+  @property({ type: String, attribute: true, reflect: false })
+  public error = ''
+
+  @property({ type: String, attribute: true, reflect: false })
+  public warning = ''
+
+
   public specificity = 0
   private selectRef = createRef<HTMLSelectElement>()
 
@@ -85,11 +92,14 @@ export class CurrentSelectorDisplay extends StylableElement {
         }
         button {
           background-color: transparent;
-          border: none;
           color: var(--gjs-font-color-active, #f8f8f8);
           cursor: pointer;
           padding: 0;
           margin: 0;
+          border: 1px solid transparent;
+          &:hover {
+            border-color: var(--gjs-secondary-color, #fff);
+          }
         }
         button:hover {
           color: var(--gjs-color-highlight, #71b7f1);
@@ -97,8 +107,34 @@ export class CurrentSelectorDisplay extends StylableElement {
         .specificity {
           font-size: small;
           padding-top: 2px;
+          cursor: default;
         }
       }
+    }
+    .asm-display__help {
+      text-decoration: none;
+      border-radius: 50%;
+      color: var(--gjs-secondary-color, #333);
+      display: inline-block;
+      width: 0.5rem;
+      height: 0.5rem;
+      text-align: center;
+      line-height: 0.7rem;
+      font-size: 0.7rem;
+      padding: 4px;
+      &:hover {
+        background-color: var(--gjs-secondary-color, #fff);
+        color: var(--gjs-main-dark-color, #333);
+      }
+    }
+
+    .asm-display__error {
+      color: var(--gjs-warning-color, #f90);
+      margin: 0;
+    }
+    .asm-display__warning {
+      color: var(--gjs-warning-color, #f90);
+      margin: 0;
     }
   `
 
@@ -126,7 +162,15 @@ export class CurrentSelectorDisplay extends StylableElement {
     // Workaround: the selected option do not update when the value changes after user selects an option
     requestAnimationFrame(() => this.selectRef.value ? this.selectRef.value!.selectedIndex = 0 : '')
     return html`
-      <section id="pre" class="selection">
+      <footer>
+        ${ this.error ? html`
+          <p class="asm-display__error">\u26A0 ${ this.error }</p>
+        ` : ''}
+        ${ this.warning ? html`
+          <p class="asm-display__warning">\u26A0 ${ this.warning }</p>
+        ` : ''}
+      </footer>
+      <main id="pre" class="selection">
         <select
           ${ ref(this.selectRef) }
           class="value"
@@ -188,15 +232,16 @@ export class CurrentSelectorDisplay extends StylableElement {
             ${ this.helpLink ? html`
             <li>
               <a
+                class="asm-display__help"
                 .title=${ this.t('Help') }
                 .href=${ this.helpLink }
                 target="_blank"
-              >\u2753</a>
+              >?</a>
             </li>
             ` : ''}
           </ul>
         </sidebar>
-      </section>
+      </main>
     `
   }
 

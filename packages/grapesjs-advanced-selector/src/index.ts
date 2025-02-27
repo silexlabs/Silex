@@ -9,7 +9,7 @@ import './components/current-selector-display.ts'
 import { AdvancedSelectorOptions, initASM, initListeners } from './plugin'
 import { Editor } from 'grapesjs'
 import en from './i18n/en'
-import fr from './i18n/fr.js'
+import fr from './i18n/fr'
 export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => {
   // Defaults
   const options = {

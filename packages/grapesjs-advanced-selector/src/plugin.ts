@@ -1,6 +1,6 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
-import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
+import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
 import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
 
@@ -27,6 +27,9 @@ container.id = 'asm-container'
 ////////////////
 // Plugin functions
 export function initListeners(editor: Editor) {
+  editor.Commands.add('i18n:info', () => {
+    console.log('i18n', getUntranslatedKeys())
+  })
   return
   //editor.on('component:selected', (component: Component) => {
   //  updateUi(editor, [component])
@@ -62,6 +65,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
   const components: Component[] = editor.getSelectedAll()
   const selector = getSelector(components)
   if(selector) {
+    const [errors, warnings] = getErrorsAndWarnings(selector, components)
     requestAnimationFrame(() => editStyle(editor, toString(selector)))
     render(html`
       <complex-selector
@@ -78,6 +82,8 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
         .value=${getSelector(components)}
         .selectors=${getSelectors(editor)}
         .helpLink=${options.helpLinks.actionBar}
+        .error=${errors}
+        .warning=${warnings}
         @change=${(event: CustomEvent) => mergeSelector(event.detail as ComplexSelector, editor, components)}
         @delete=${() => deleteSelector(editor)}
         @copy=${() => copyStyle(editor)}
@@ -89,14 +95,6 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
       <p>Select a component to edit its selector</p>
     `, container)
   }
-}
-
-function getTranslation(editor: Editor, key: string): string {
-  const translated = editor?.I18n?.t(key)
-  if (!translated) {
-    console.warn(`Translation for key "${key}" not found`)
-  }
-  return translated || key
 }
 
 /**
@@ -182,4 +180,13 @@ function pasteStyle(editor: Editor) {
     const style = JSON.parse(clipboard)
     setSelectedStyle(editor, style)
   }
+}
+
+function getErrorsAndWarnings(selector: ComplexSelector, components: Component[]): [string | null, string | null] {
+  if (!matchSelectorAll(toString(selector), components)) {
+    return ['Current selector does not match the selected components', null]
+  } else if (!matchSelectorSome(toString(selector), components)) {
+    return [null, 'Current selector does not match all the selected components']
+  }
+  return [null, null]
 }
