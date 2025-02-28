@@ -15,19 +15,19 @@ export default class InlineSelectComponent extends StylableElement {
   /**
    * Selected option
    */
-  @property({ type: Object, reflect: true })
+  @property({ type: Object, reflect: false })
     value?: Option
   
   /**
    * List of options
    */
-  @property({ type: Array, reflect: true })
+  @property({ type: Array, reflect: false })
     options: Option[] = []
 
   /**
    * Placeholder displayed when no option is selected
    */
-  @property({ type: String, reflect: true })
+  @property({ type: String, reflect: false })
     placeholder = 'Select an option'
 
   // /////////////////

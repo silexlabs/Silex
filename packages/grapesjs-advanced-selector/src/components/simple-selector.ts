@@ -13,7 +13,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   /**
    * The selector to display
    */
-  @property({ type: Object, attribute: true, reflect: true })
+  @property({ type: Object, attribute: true, reflect: false })
   public get value(): SimpleSelector | undefined {
     return this._value
   }
@@ -37,7 +37,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   /**
    * Whether the selector is editable
    */
-  @property({ type: Boolean, attribute: true, reflect: true, state: true })
+  @property({ type: Boolean, attribute: true, reflect: false, state: true })
   public get editing(): boolean {
     return this._editing
   }
@@ -139,6 +139,7 @@ export default class SimpleSelectorComponent extends StylableElement {
       align-items: center;
       min-height: 20px;
       line-height: 1;
+      user-select: none;
     }
     .asm-simple-selector__selector {
       cursor: text;

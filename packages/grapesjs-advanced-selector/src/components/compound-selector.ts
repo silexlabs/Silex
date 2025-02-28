@@ -102,7 +102,7 @@ export default class CompoundSelectorComponent extends StylableElement {
               .t=${ this.t }
               .value=${ selector }
               .suggestions=${ this.suggestions }
-              ?readonly=${ selector.type in [SimpleSelectorType.TAG, SimpleSelectorType.ID, SimpleSelectorType.CLASS] }
+              ?readonly=${ ![SimpleSelectorType.CLASS, SimpleSelectorType.UNKNOWN].includes(selector.type) }
               @change=${ (event: CustomEvent<SimpleSelector>) => this.changeSelector(event, idx) }
               @delete=${ (event: CustomEvent) => this.deleteSelector(event, idx) }
             ></simple-selector>
