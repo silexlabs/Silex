@@ -6,22 +6,6 @@ import { CompoundSelector } from './CompoundSelector'
 
 ////////////////
 // GrapeJs functions
-/**
- * Group actions in 1 undo/redo step
- */
-function groupActions(editor: Editor, actions: () => void) {
-  console.log('todo: handle UndoManager', editor.UndoManager.state)
-  //editor.UndoManager.start()
-  try {
-    actions()
-  } catch(e) {
-    console.error('Error in groupActions', e)
-  } finally {
-    // editor.UndoManager.forceSave()
-  }
-  //editor.UndoManager.stop()
-}
-
 const untranslatedKeys = new Set<string>()
 export function getTranslation(editor: Editor, key: string): string {
   const translated = editor?.I18n?.t(key)
@@ -81,38 +65,17 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
  */
 export function editStyle(editor: Editor, selector: string) {
   const currentWidth = editor.DeviceManager.getSelected()?.get('width')
-  console.log('currentWidth', currentWidth)
-
-  // Add the class (or use tag selector if it's a tag like `.title`)
-  //const _class = selectedComponent.setClass(selector)
-  //console.log({_class})
-
-  // Get or create the CSS rule for the given selector
-  //const style = editor.getSelected()?.getStyle()
 
   const opts = {
     atRuleType: currentWidth ? 'media' : '',
     atRuleParams: currentWidth ? `(max-width: ${currentWidth})` : '',
   }
   const old = editor.CssComposer.getRule(selector, opts)
-  const addStyles = true// JSON.stringify(style) === '{}'
-  // const rule = editor.CssComposer.setRule(selector, style)
   const rule = editor.CssComposer.setRule(selector, old?.getStyle(), {
     addStyles: !!old?.getStyle(),
     ...opts,
   })
-  // const rule = addStyles ? editor.CssComposer.setRule(selector, style, { addStyles: true }) : editor.CssComposer.setRule(selector, style)
   editor.StyleManager.select(rule)
-  console.log('EDIT STYLE', selector, { rule, old, addStyles })
-
-  //// Apply some default styles (optional)
-  //rule.setStyle({
-  //  'color': 'blue',
-  //  'font-size': '18px',
-  //});
-
-  // Ensure the component is still selected for the Style Manager to work
-  //editor.select(selectedComponent);
 }
 
 /**
@@ -121,8 +84,7 @@ export function editStyle(editor: Editor, selector: string) {
 export function matchSelectorAll(selector: string, components: Component[]): boolean {
   try {
     return components.some((component) => component.view?.el.matches(selector))
-  } catch (e) {
-    console.log('Error matching selector', selector, e)
+  } catch {  
     return false
   }
 }
@@ -133,8 +95,7 @@ export function matchSelectorAll(selector: string, components: Component[]): boo
 export function matchSelectorSome(selector: string, components: Component[]): boolean {
   try {
     return components.every((component) => component.view?.el.matches(selector))
-  } catch (e) {
-    console.log('Error matching selector', selector, e)
+  } catch {
     return false
   }
 }
@@ -167,39 +128,39 @@ export function setSelectedStyle(editor: Editor, style: any) {
     ?.setStyle(style)
 }
 
-export function renameSelector(editor:Editor, oldSelector: SimpleSelector, newSelector: SimpleSelector) {
-  console.log('renameSelector', oldSelector, newSelector, isSameSelector(oldSelector, newSelector))
-  groupActions(editor, () => {
-    // Rename the selector in the Style manager
-    if (oldSelector.type !== newSelector.type) {
-      // Cannot rename to a different type
-      console.warn('Cannot rename to a different types', oldSelector, newSelector)
-      return
-    }
-    if (isSameSelector(oldSelector, newSelector)) {
-      // No change
-      console.warn('No change', oldSelector, newSelector)
-      return
-    }
-    const components = editor.getSelectedAll()
-    switch (oldSelector.type) {
-    case SimpleSelectorType.ID:
-      const id = (newSelector as IdSelector).value
-      if (components.length !== 1) {
-        console.error('Cannot rename ID selector for multiple components', { oldSelector, newSelector }, 'Only one component will ave the ID', id)
-      }
-      components[0].setId(id)
-      break
-    case SimpleSelectorType.CLASS:
-      renameCssClass(editor, (oldSelector as ClassSelector).value, (newSelector as ClassSelector).value)
-      break
-    case SimpleSelectorType.TAG:
-      components.forEach((component) => component.set('tagName', (newSelector as ClassSelector).value))
-      break
-    default:
-      console.error('Cannot rename selector: Unknown Type', { oldSelector, newSelector })
-    }
-  })
+export function renameSelector(editor: Editor, oldSelector: SimpleSelector, newSelector: SimpleSelector) {
+  // Rename the selector in the Style manager
+  if (oldSelector.type !== newSelector.type) {
+    // Cannot rename to a different type
+    console.warn('Cannot rename to a different types', oldSelector, newSelector)
+    return
+  }
+  if (isSameSelector(oldSelector, newSelector)) {
+    // No change
+    console.warn('No change', oldSelector, newSelector)
+    return
+  }
+  switch (oldSelector.type) {
+  case SimpleSelectorType.ID:
+    // Will never reach here as a different ID is not allowed (readonly + no suggestion)
+    // const id = (newSelector as IdSelector).value
+    // const components = editor.getSelectedAll()
+    // if (components.length !== 1) {
+    //   console.error('Cannot rename ID selector for multiple components', { oldSelector, newSelector }, 'Only one component will ave the ID', id)
+    // }
+    // components[0].setId(id)
+    throw new Error('Cannot rename ID selector')
+  case SimpleSelectorType.CLASS:
+    renameCssClass(editor, (oldSelector as ClassSelector).value, (newSelector as ClassSelector).value)
+    break
+  case SimpleSelectorType.TAG:
+    // Readonly
+    // const components = editor.getSelectedAll()
+    // components.forEach((component) => component.set('tagName', (newSelector as ClassSelector).value))
+    throw new Error('Cannot rename ID selector')
+  default:
+    console.error('Cannot rename selector: Unknown Type', { oldSelector, newSelector })
+  }
 }
 
 function renameCssClass(editor: Editor, oldClassName: string, newClassName: string) {
@@ -215,25 +176,31 @@ function renameCssClass(editor: Editor, oldClassName: string, newClassName: stri
     return
   }
 
-  editor.Pages.getAll().forEach(page => {
-    page.getMainComponent().find(`.${oldClassName}`).forEach(component => {
-      const selector = getComponentSelector(component)
-      const updatedSelector = {
-        ...selector,
-        mainSelector: {
-          ...selector.mainSelector,
-          selectors: selector.mainSelector.selectors.map(sel =>
-            sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
-              ? { ...sel, value: newClassName }
-              : sel
-          ),
-        },
-      }
-      setComponentSelector(component, updatedSelector)
-    })
-  })
+  // TODO: handle the related selectors
+  const toUpdate = editor.Pages.getAll()
+    .flatMap(page => page.getMainComponent().find(`.${oldClassName}`))
 
+  // This has to be before we update components
+  // Otherwise it messes up the undo
   oldSelector.set('name', newClassName)
+
+  // Rename the class in the components
+  // TODO: handle the related selectors
+  toUpdate.forEach(component => {
+    const selector = getComponentSelector(component)
+    const updatedSelector = {
+      ...selector,
+      mainSelector: {
+        ...selector.mainSelector,
+        selectors: selector.mainSelector.selectors.map(sel =>
+          sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
+            ? { ...sel, value: newClassName }
+            : sel
+        ),
+      },
+    }
+    setComponentSelector(component, updatedSelector)
+  })
 }
 
 ////////////////

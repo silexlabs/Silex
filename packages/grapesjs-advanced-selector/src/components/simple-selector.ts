@@ -205,6 +205,10 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Methods
   private edit() {
+    if (this.hasAttribute('readonly')) {
+      console.warn('Cannot edit a readonly selector')
+      return
+    }
     this.editing = true
     requestAnimationFrame(() => this.focus())
   }
