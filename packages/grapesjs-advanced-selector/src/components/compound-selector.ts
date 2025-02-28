@@ -142,9 +142,13 @@ export default class CompoundSelectorComponent extends StylableElement {
   // Methods
   private changeSelector(event: CustomEvent<SimpleSelector>, idx: number) {
     const oldValue: SimpleSelector = this.value!.selectors[idx]
+    const onlyId = event.detail.type === SimpleSelectorType.ID && event.detail.active
     this.value = {
       ...this.value!,
-      selectors: this.value!.selectors.map((selector, i) => i === idx ? event.detail : selector)
+      selectors: this.value!.selectors
+        // Replace the old value with the new one
+        .map((selector, i) => i === idx ? event.detail : selector)
+        .map(selector => onlyId && selector.type !== SimpleSelectorType.ID ? { ...selector, active: false } : selector),
     }
     if(!isSameSelector(oldValue, event.detail, false)) {
       this.dispatchEvent(new CustomEvent('rename', { detail: {

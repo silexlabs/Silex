@@ -51,7 +51,6 @@ export function initListeners(editor: Editor, options: AdvancedSelectorOptions) 
   //   // const classNames = component.getClasses()
   //   // console.log("============ Updated class names:", classNames);
   // })
-
 }
 
 export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?: CustomSelectorEventProps) {
@@ -120,13 +119,18 @@ function getSelector(components: Component[]): ComplexSelector | null {
     active: true,
   }
   const newSelector = merge(selector, { mainSelector: { selectors: [idSelectorOff] } })
-  // // Deactivate the ID selector
-  // newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
-  //   if (selector.type === SimpleSelectorType.ID) {
-  //     return idSelectorOff
-  //   }
-  //   return selector
-  // })
+  // Deactivate the ID selector
+  if(newSelector.mainSelector.selectors
+    .filter((selector) => selector.type !== SimpleSelectorType.ID && selector.active)
+    .length > 0
+  ) {
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
+      if (selector.type === SimpleSelectorType.ID) {
+        return idSelectorOff
+      }
+      return selector
+    })
+  }
   // Activate the ID if it needs to be activated
   if (!toString(newSelector)) {
     newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
@@ -146,7 +150,11 @@ function chagedSelector(selector: ComplexSelector, editor: Editor, components: C
   editStyle(editor, toString(selector))
 }
 
-// Keep inactive and put the active as inactive
+/**
+ * Merge the selector with the current selector of the components
+ * If a simple selector is missing, just deactivate it
+ * Handles the atRule and pseudoClass
+ */
 function mergeSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
   components.forEach((component) => {
     const oldSelector = getComponentSelector(component) || EMPTY_SELECTOR

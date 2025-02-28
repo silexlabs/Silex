@@ -192,11 +192,18 @@ function renameCssClass(editor: Editor, oldClassName: string, newClassName: stri
       ...selector,
       mainSelector: {
         ...selector.mainSelector,
-        selectors: selector.mainSelector.selectors.map(sel =>
-          sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
-            ? { ...sel, value: newClassName }
-            : sel
-        ),
+        selectors: selector.mainSelector.selectors
+        // // Remove the new class to avoid duplicates
+        // // Somehow the new class is already in the selector, why?
+        // .filter(sel => sel.type !== SimpleSelectorType.CLASS || (sel as ClassSelector).value !== newClassName)
+        // .map(sel =>
+        //   sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
+        //     ? { ...sel, value: newClassName }
+        //     : sel
+        // ),
+        // Remove the old class
+        // Somehow the new class is already in the selector, why?
+          .filter(sel => sel.type !== SimpleSelectorType.CLASS || (sel as ClassSelector).value !== oldClassName)
       },
     }
     setComponentSelector(component, updatedSelector)
