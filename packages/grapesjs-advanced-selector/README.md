@@ -2,14 +2,16 @@
 
 An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short, 
 
+> This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+> The Advanced Selector Manager comes pre-installed in Silex v3, [give it a try here](https://v3.silex.me/)
+
 Before: GrapesJs default Selector Manager
 
 ![GrapesJs default Selector Manager](https://github.com/user-attachments/assets/dcd85a63-78f4-4bb9-bde3-06009b02ae68)
 
-After: GrapesJs Advanced Selector Manager
+After:
 
--screenshot to come soon-
-
+[GrapesJs Advanced Selector Manager](https://github.com/silexlabs/grapesjs-advanced-selector)
 
 ### Links
 
