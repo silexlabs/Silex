@@ -37,16 +37,23 @@ Features
 <div id="gjs"></div>
 ```
 
+When loaded in an HTML page with the above code, the plugin will be available as `GrapesJSSymbols` in the global scope
+
+When loaded as a module, the plugin will be available as a standard import: `import GrapesJSSymbols from '@silexlabs/grapesjs-symbols'`
+
 ### JS
 ```js
+import grapesjs from 'grapesjs' // unless you load it from a CDN, then omit this line
+import GrapesJSSymbols from '@silexlabs/grapesjs-symbols' // unless you load it from a CDN, then omit this line
+
 const editor = grapesjs.init({
 	container: '#gjs',
   height: '100%',
   fromElement: true,
   storageManager: false,
-  plugins: ['@silexlabs/grapesjs-symbols'],
+  plugins: [GrapesJSSymbols],
   pluginsOpts: {
-    '@silexlabs/grapesjs-symbols': {
+    [GrapesJSSymbols]: {
       appendTo: '.gjs-pn-views-container',
     },
   },
@@ -162,7 +169,7 @@ Notes
 ## Download
 
 * CDN
-  * `https://unpkg.com/@silexlabs/grapesjs-symbols`
+  * `https://unpkg.com/@silexlabs/grapesjs-symbols` (will make the plugin available to the global scope as `GrapesJSSymbols`)
 * NPM
   * `npm i @silexlabs/grapesjs-symbols`
 * GIT
