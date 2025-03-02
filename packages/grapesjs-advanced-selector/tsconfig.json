@@ -30,7 +30,7 @@
         "strict": true
       }
     ],
-    "types": ["mocha", "jest"]
+    "types": ["jest"]
   },
   "include": ["src/**/*.ts", "src/model.test.js"],
   "exclude": []
