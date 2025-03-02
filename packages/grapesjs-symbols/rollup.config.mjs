@@ -8,11 +8,10 @@ export default {
     format: 'iife',
     name: 'GrapesJSSymbols',
     globals: {
-      backbone: 'Backbone',
-      'lit-html': 'litHtml'
+      backbone: 'Backbone'
     }
   },
-  external: ['backbone', 'lit-html'],
+  external: ['backbone'],
   plugins: [
     resolve({
       browser: true,
