@@ -13,7 +13,7 @@ After: GrapesJs Advanced Selector Manager
 
 ### Links
 
-- [DEMO](##) (TODO: **Provide a live demo**)
+- [DEMO](https://codepen.io/lexoyo/full/EaxZrmz)
 - [Discussion on GrapesJS Forum](https://github.com/GrapesJS/grapesjs/discussions/5262)
 - [Feature Request in Silex Project](https://github.com/silexlabs/Silex/issues/1496)
 
