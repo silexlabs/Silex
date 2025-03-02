@@ -111,11 +111,6 @@ export function clearStyle(editor: Editor) {
     return
   }
   editor.CssComposer.remove(rule as CssRule)
-  // Reset the style in the Style Manager
-  editor
-    .StyleManager
-    .getSelected()
-    ?.setStyle({})
 }
 
 export function getSelectedStyle(editor: Editor): any {

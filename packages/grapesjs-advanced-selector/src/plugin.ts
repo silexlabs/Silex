@@ -27,9 +27,11 @@ container.id = 'asm-container'
 ////////////////
 // Plugin functions
 export function initListeners(editor: Editor, options: AdvancedSelectorOptions) {
-  console.log('Start listening to events', options)
   editor.Commands.add('i18n:info', () => {
     console.log('i18n', getUntranslatedKeys())
+  })
+  editor.on('undo redo', () => {
+    requestAnimationFrame(() => updateUi(editor, options))
   })
   // editor.on('component:selected', () => {
   //   console.log('============> component:selected')
@@ -87,7 +89,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
         .error=${getTranslation(editor, errors || '')}
         .warning=${getTranslation(editor, warnings || '')}
         @change=${(event: CustomEvent) => mergeSelector(event.detail as ComplexSelector, editor, components)}
-        @delete=${() => deleteSelector(editor)}
+        @delete=${() => deleteSelector(editor, selector)}
         @copy=${() => copyStyle(editor)}
         @paste=${() => pasteStyle(editor)}
       ></current-selector-display>
@@ -177,8 +179,9 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
   editStyle(editor, toString(selector))
 }
 
-function deleteSelector(editor: Editor) {
+function deleteSelector(editor: Editor, selector: ComplexSelector) {
   clearStyle(editor)
+  editStyle(editor, toString(selector))
 }
 
 function copyStyle(editor: Editor) {
