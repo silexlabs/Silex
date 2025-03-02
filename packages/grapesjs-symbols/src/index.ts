@@ -1,21 +1,9 @@
 import Storage from './storage'
 import { Symbols, SymbolEditor } from './model/Symbols'
 import SymbolsView, { SymbolsViewOptions } from './view/SymbolsView'
-import initCommands, * as cmd from './SymbolsCommands'
+import initCommands from './SymbolsCommands'
 import initTraits from './view/traits'
-
-export const cmdAddSymbol = cmd.cmdAdd
-export const cmdRemoveSymbol = cmd.cmdRemove
-export const cmdUnlinkSymbol = cmd.cmdUnlink
-export const cmdCreateSymbol = cmd.cmdCreate
-
-export interface SymbolOptions {
-  appendTo?: string
-  emptyText?: string
-  primaryColor?: string
-  secondaryColor?: string
-  highlightColor?: string
-}
+import { SymbolOptions } from './model/Symbol'
 
 export default (editor: SymbolEditor, opts: Partial<SymbolOptions> = {}) => {
   const options: SymbolOptions = { ...{

@@ -1,11 +1,10 @@
 import { html, render } from 'lit-html'
 import { SymbolEvents } from '../events'
 import { SymbolEditor } from '../model/Symbols'
-import { SYMBOL_SYNC_ATTRIBUTE, getSymbolId } from '../model/Symbol'
+import { SYMBOL_SYNC_ATTRIBUTE, SymbolOptions, getSymbolId } from '../model/Symbol'
 import { Component } from 'grapesjs'
 import { cmdUnlink } from '../SymbolsCommands'
 import { confirmDialog } from './SymbolsView'
-import { SymbolOptions } from '..'
 
 // Same signature as a grapesjs plugin
 export default function (editor: SymbolEditor, options: SymbolOptions) {

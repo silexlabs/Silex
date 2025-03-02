@@ -1,20 +1,18 @@
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import typescript from '@rollup/plugin-typescript';
 
 export default {
-  input: 'src/index.ts',
+  input: 'dist/es6/index.js',
   output: {
     file: 'dist/bundle.iife.js',
     format: 'iife',
     name: 'GrapesJSSymbols',
     globals: {
       backbone: 'Backbone',
-      jquery: '$',
       'lit-html': 'litHtml'
     }
   },
-  external: ['backbone', 'jquery', 'lit-html'],
+  external: ['backbone', 'lit-html'],
   plugins: [
     resolve({
       browser: true,
@@ -24,7 +22,6 @@ export default {
       transformMixedEsModules: true,
       include: 'node_modules/**'
     }),
-    typescript()
   ],
   context: 'window'
 };

@@ -17,6 +17,14 @@ export const SYMBOL_ID_ATTRIBUTE = 'symbolId'
 export const SYMBOL_CHILD_ID_ATTRIBUTE = 'symbolChildId'
 export const SYMBOL_SYNC_ATTRIBUTE = 'symbolSync'
 
+export interface SymbolOptions {
+  appendTo?: string
+  emptyText?: string
+  primaryColor?: string
+  secondaryColor?: string
+  highlightColor?: string
+}
+
 /**
  * A Symbol class holds the data about a symbol: label, icon
  * The `model` attribute is a grapesjs Component used to create new instances
