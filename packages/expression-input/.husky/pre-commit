@@ -1,4 +1,2 @@
-#npm test
 npm run build
-npm run bundle
 npm run lint
