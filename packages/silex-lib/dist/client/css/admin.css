@@ -5009,6 +5009,28 @@ form.silex-form .silex-form__group.col2 {
   content: "\f3a5";
 }
 
+.gjs-sm-sector .gjs-sm-sector-label {
+  margin-right: 0.3em;
+}
+
+.gjs-sm-sector .gjs-sm-sector-title::before,
+.gjs-sm-sector .gjs-sm-sector-title::after {
+  content: "•";
+  display: none;
+  margin-left: 0.1em;
+  order: 5;
+}
+
+.gjs-sm-sector:has(.gjs-sm-label.gjs-four-color) .gjs-sm-sector-title::before {
+  display: block;
+  color: var(--gjs-quaternary-color);
+}
+
+.gjs-sm-sector:has(.gjs-sm-label.gjs-color-warn) .gjs-sm-sector-title::after {
+  display: block;
+  color: var(--gjs-color-warn);
+}
+
 /* ubuntu-cyrillic-ext-400-normal */
 @font-face {
   font-family: "Ubuntu";
