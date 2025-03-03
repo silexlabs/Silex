@@ -244,10 +244,99 @@
 
 <!-- -->
 <!-- -->
-  <div id="gjs"></div>
+  <div id="gjs">
+    <div class="container" id="main-container" data-role="section">
+      <p class="child highlight" id="text-element">This is a child</p>
+      <p class="child" data-state="active">Another child with data attribute</p>
+      <button class="btn primary" id="main-button" data-action="submit">Click Me</button>
+      <a href="#" class="link special" id="styled-link">A Styled Link</a>
+      <input type="text" class="input-field" placeholder="Type here..." />
+      <ul class="list">
+        <li class="item">Item 1</li>
+        <li class="item" data-selected="true">Item 2 (selected)</li>
+        <li class="item">Item 3</li>
+      </ul>
+    </div>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f8f8;
+      }
+  
+      .container {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: 40px auto;
+      }
+  
+      .title {
+        font-size: 24px;
+        color: #333;
+        text-align: center;
+        margin-bottom: 15px;
+      }
+  
+      .child {
+        font-size: 16px;
+        color: #666;
+      }
+  
+      .highlight {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+  
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #3498db;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: background 0.3s;
+      }
+  
+      .btn:hover {
+        background: #2980b9;
+      }
+  
+      .link {
+        color: #e67e22;
+        text-decoration: none;
+      }
+  
+      .input-field {
+        display: block;
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+  
+      .list {
+        padding: 0;
+        list-style: none;
+      }
+  
+      .item {
+        background: #ecf0f1;
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 4px;
+      }
+  
+      .item[data-selected="true"] {
+        background: #2ecc71;
+        color: white;
+      }
+    </style>
+  </div>
   <script>
-    // Wait for the plugin to be injected by the dev server
-    setTimeout(() => {
       const editor = grapesjs.init({
         container: '#gjs',
         height: '100%',
@@ -258,15 +347,6 @@
         },
         plugins: ['@silexlabs/grapesjs-advanced-selector'],
       });
-      editor.on('load', () => {
-        editor.addComponents('<div class="container"><p class="child">This is a child</p></div>')
-      })
-      window.editor = editor;
-      setTimeout(() => {
-        var comp = editor.Components.getComponents().models.find(c => c.cid === 'c518')
-        editor.select(comp)
-      }, 1000);
-    }, 100);
   </script>
   <!-- -->
 </body>
