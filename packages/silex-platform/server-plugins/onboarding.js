@@ -53,7 +53,9 @@ const nocoApiKey = process.env.NOCO_API_KEY
 async function loadUserFromDatabase(email) {
   try {
     const limit = 1
-    const url = `${ nocoUrl }/api/v2/tables/${ nocoTableName }/records?where=${ encodeURI(`where=(email,eq,${ email })`) }&limit=${ limit }`
+    const where = `where=(email,eq,${encodeURIComponent(email)})`
+    const url = `${nocoUrl}/api/v2/tables/${nocoTableName}/records?${where}&limit=${limit}`
+
     const response = await fetch(url, {
       "headers": {
         "xc-token": `${ nocoApiKey }`,
