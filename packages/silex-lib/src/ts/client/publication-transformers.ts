@@ -198,7 +198,18 @@ function doTransformPermalink(editor: Editor, cssValue: string): string {
 export function transformBgImage(editor: Editor, style: StyleProps): StyleProps {
   const cssValue = style['background-image']
   if (cssValue) {
-    const newCssValue = typeof cssValue === 'string' ? doTransformPermalink(editor, cssValue) : cssValue.map(value => doTransformPermalink(editor, value))
+    let newCssValue
+    if (Array.isArray(cssValue)) {
+      newCssValue = cssValue
+        .map(value => doTransformPermalink(editor, value))
+        .join(', ')
+    } else if (typeof cssValue === 'string') {
+      newCssValue = doTransformPermalink(editor, cssValue)
+    } else if (newCssValue === cssValue) {
+      // No change
+      return style
+    }
+    // Set the new value
     return {
       ...style,
       'background-image': newCssValue,

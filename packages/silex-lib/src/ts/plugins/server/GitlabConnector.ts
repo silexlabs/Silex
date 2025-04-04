@@ -22,6 +22,7 @@ import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, Website
 import fetch from 'node-fetch'
 import crypto, { createHash } from 'crypto'
 import { join } from 'path'
+import { Agent } from 'https'
 
 /**
  * Gitlab connector
@@ -247,6 +248,7 @@ export default class GitlabConnector implements StorageConnector {
     // Call the API
     const url = `${this.options.domain}/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${this.getSessionToken(session).token?.access_token}`
     const response = await fetch(url, {
+      agent: this.getAgent(),
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -305,10 +307,12 @@ export default class GitlabConnector implements StorageConnector {
     let response
     try {
       response = await fetch(url, body && method !== 'GET' ? {
+        agent: this.getAgent(),
         method,
         headers,
         body: body ? JSON.stringify(body) : undefined
       } : {
+        agent: this.getAgent(),
         method,
         headers,
       })
@@ -332,6 +336,7 @@ export default class GitlabConnector implements StorageConnector {
           client_secret: this.options.clientSecret,
         }
         const response = await fetch(this.options.domain + '/oauth/token', {
+          agent: this.getAgent(),
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -397,6 +402,16 @@ export default class GitlabConnector implements StorageConnector {
   private getRedirect() {
     const params = `connectorId=${this.connectorId}&type=${this.connectorType}`
     return `${this.config.url}${API_PATH}${API_CONNECTOR_PATH}${API_CONNECTOR_LOGIN_CALLBACK}?${params}`
+  }
+
+  // Force IPv4 when running locally
+  private getAgent(): Agent | undefined {
+    if (this.config.url.startsWith('http://localhost')) {
+      return new Agent({
+        family: 4,
+      })
+    }
+    return undefined
   }
 
   /**
@@ -471,6 +486,7 @@ export default class GitlabConnector implements StorageConnector {
     }
 
     const response = await fetch(this.options.domain + '/oauth/token', {
+      agent: this.getAgent(),
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -489,8 +505,8 @@ export default class GitlabConnector implements StorageConnector {
 
     // Store the token in the session
     this.setSessionToken(session, {
-      token,
       ...this.getSessionToken(session),
+      token,
     })
 
     // We need to get the user ID for listWebsites

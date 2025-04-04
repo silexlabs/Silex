@@ -59,6 +59,14 @@ module.exports = async function(config, options) {
           }, {
             route: '/js/',
             path: nodeModules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/',
+          }, {
+            // why is this needed when running locally?
+            route: '/css/',
+            path: 'node_modules/@fortawesome/fontawesome-free/css/',
+          }, {
+            // why is this needed when running locally?
+            route: '/webfonts/',
+            path: 'node_modules/@fortawesome/fontawesome-free/webfonts/',
           }] : []),
       },
     })

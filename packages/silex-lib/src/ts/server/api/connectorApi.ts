@@ -49,17 +49,24 @@ export default function(config: ServerConfig) {
  * Method to validate HTTP status codes
  * Returns a suitable error code if it is not valid
  */
-function validateStatus(status: number, _default = 500): number {
+function validateStatus(status: number | string, _default = 500): number {
   if(!status) {
     console.warn(`Status code is undefined, returning default ${_default}`)
     return _default
   }
-  // Make sure it is a string
-  status = parseInt(status.toString())
+  switch (status) {
+  case 'ETIMEDOUT':
+  case 'ECONNREFUSED':
+  case 'ECONNRESET':
+    console.warn(`Connection error ${status}, returning default ${_default}`)
+    return _default
+  }
+  // Make sure it is a number
+  const statusNum = parseInt(status.toString())
   // Check the status code
-  if (status >= 100 && status < 600) return status
+  if (statusNum >= 100 && statusNum < 600) return statusNum
   // Invalid status code
-  console.warn(`Invalid status code ${status}, returning default ${_default}}`)
+  console.warn(`Invalid status code ${statusNum} (${status.toString()}, ${status}), returning default ${_default}`)
   return _default
 }
 
@@ -241,7 +248,7 @@ async function routeLogin(req: Request, res: Response) {
 async function routeLoginSuccess(req: Request, res: Response) {
   try {
     const query = req.query as ApiConnectorLoginCbkQuery
-    if(query.error) throw new Error(query.error)
+    if (query.error) throw new Error(query.error)
 
     const body = req.body as ApiConnectorLoginCbkBody
     const session = requiredParam(req['session'], 'Session object')
@@ -265,9 +272,10 @@ async function routeLoginSuccess(req: Request, res: Response) {
     // End the auth flow
     res.send(getEndAuthHtml('Logged in', false, connectorId, type, connector.getOptions(body)))
   } catch (error) {
+    console.error('Error in the login callback', error, error?.code, error?.httpStatusCode)
     res
       .status(validateStatus(error?.code ?? error?.httpStatusCode, 500))
-      .send(getEndAuthHtml(error.message, true, req.query.connectorId as ConnectorId, req.query.type as ConnectorType))
+      .send(getEndAuthHtml(`${error?.message} ${error?.code ?? error?.httpStatusCode}`, true, req.query.connectorId as ConnectorId, req.query.type as ConnectorType))
   }
 }
 
