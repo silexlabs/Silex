@@ -33,7 +33,7 @@ export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId:
     url.pathname = `${baseUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}${url.pathname}`
     // Add the GET params
     url.searchParams.set('websiteId', websiteId)
-    url.searchParams.set('connectorId', storageId)
+    url.searchParams.set('connectorId', storageId || '')
     // Back to a relative URL, keep the path but not the origin
     return `${decodeURIComponent(url.pathname)}${url.search}`
     //const encodedPath = '/' + url.toString() // add a leading slash
@@ -128,78 +128,6 @@ export function removeTempDataFromAssetUrl(assets: Asset[]): Asset[] {
       ...asset,
       src: displayedToStored(asset.src),
     } : asset
-  })
-}
-
-/**
- * Reucrsive function to update the asset URL in the components
- */
-function addTempDataToComponents(component: Component, websiteId: WebsiteId, storageId: ConnectorId): Component {
-  // Update the asset URL in the component
-  const newComponent = component.attributes?.src ? {
-    ...component,
-    attributes: {
-      ...component.attributes,
-      src: storedToDisplayed(component.attributes.src, websiteId, storageId),
-    },
-  } : component
-  // Update the asset URL in the children
-  if (newComponent.components) {
-    newComponent.components = newComponent.components.map((childComponent: Component) => {
-      return addTempDataToComponents(childComponent, websiteId, storageId)
-    })
-  }
-  return newComponent
-}
-
-/**
- * Reucrsive function to update the asset URL in the components
- */
-function removeTempDataFromComponents(component: Component): Component {
-  // Update the asset URL in the component
-  const newComponent = component.attributes?.src ? {
-    ...component,
-    attributes: {
-      ...component.attributes,
-      src: displayedToStored(component.attributes.src),
-    },
-  } : component
-  // Update the asset URL in the children
-  if (newComponent.components) {
-    newComponent.components = newComponent.components.map((childComponent: Component) => {
-      return removeTempDataFromComponents(childComponent)
-    })
-  }
-  return newComponent
-}
-
-/**
- * Add temp data to pages
- */
-export function addTempDataToPages(pages: Page[], websiteId: WebsiteId, storageId: ConnectorId): Page[] {
-  return pages.map((page: Page) => {
-    return {
-      ...page,
-      frames: page.frames.map(frame => ({
-        ...frame,
-        component: addTempDataToComponents(frame.component, websiteId, storageId),
-      }))
-    }
-  })
-}
-
-/**
- * Remove temp data from asset URL in the components
- */
-export function removeTempDataFromPages(pages: Page[]): Page[] {
-  return pages.map((page: Page) => {
-    return {
-      ...page,
-      frames: page.frames.map(frame => ({
-        ...frame,
-        component: removeTempDataFromComponents(frame.component),
-      }))
-    }
   })
 }
 

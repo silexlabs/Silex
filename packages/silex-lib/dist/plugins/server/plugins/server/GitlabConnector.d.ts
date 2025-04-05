@@ -98,6 +98,7 @@ export default class GitlabConnector implements StorageConnector {
     private generateCodeVerifier;
     private generateCodeChallenge;
     private getRedirect;
+    private getAgent;
     /**
      * Get the OAuth URL to redirect the user to
      * The URL should look like

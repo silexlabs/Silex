@@ -21,11 +21,13 @@
  *
  */
 
+import { Component, ComponentView } from 'grapesjs'
 import { DEV_MESSAGE } from '../constants'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
 import { cmdPauseAutoSave } from './grapesjs/storage'
+import { displayedToStored, storedToDisplayed } from './assetUrl'
 
 // Expose API to calling app as window.silex
 export * from './expose'
@@ -82,6 +84,42 @@ export async function start(options = {}): Promise<void> {
 
   // Add default plugins
   await config.addDefaultPlugins()
+
+  const domc = editor.DomComponents
+  const imgType = domc.getType('image')
+  domc.addType('image', {
+    ...imgType,
+    view: {
+      ...imgType.view,
+      onRender() {
+        const view = this as ComponentView
+        imgType.view.onRender && imgType.view.onRender.call(this) // call original
+        const el = view.el
+        const elImg = view.el as HTMLImageElement
+        const src = this.model.getAttributes().src
+        if (src && !src.startsWith('http')) {
+          elImg.src = storedToDisplayed(src, config.websiteId, config.storageId)
+        }
+      },
+    },
+    model: {
+      ...imgType.model,
+      init() {
+        const model = this as Component
+        imgType.model.init && imgType.model.init.call(this) // call original
+        // Handle changes by the AssetManager
+        model.on('change', () => {
+          if(model.get('src')) {
+            const newSrc = displayedToStored(model.get('src'))
+            if(newSrc !== model.get('src')) {
+              model.set('src', newSrc)
+              model.view.render()
+            }
+          }
+        })
+      },
+    },
+  })
 
   // Load the site
   try {

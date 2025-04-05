@@ -18,11 +18,18 @@
 import { ConnectorId, WebsiteId, WebsiteData, ConnectorUser, ConnectorType, ApiError } from '../../types'
 import { websiteLoad, websiteSave } from '../api'
 import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } from './LoginDialog'
-import { addTempDataToPages, addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromPages, removeTempDataFromStyles } from '../assetUrl'
-import { PublicationStatus } from './PublicationManager'
+import { addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromStyles } from '../assetUrl'
+import { PublicationStatus, PublishableEditor } from './PublicationManager'
 import { ClientEvent } from '../events'
+import { ProjectData } from 'grapesjs'
 
 export const cmdPauseAutoSave = 'pause-auto-save'
+
+// Wait for the next frame to avoid blocking the main thread
+function nextFrame(): Promise<void> {
+  const fn = window.requestIdleCallback ?? window.requestAnimationFrame
+  return new Promise(resolve => fn(() => resolve()))
+}
 
 // Mechanism to keep only the last save during publication
 let lastPendingSaving: WebsiteData = null
@@ -31,7 +38,7 @@ let lastPendingSaving: WebsiteData = null
 // Note: there is already such a mechanism in grapesjs but it fails when the save is delayed by the publication
 let isSaving = false
 
-export const storagePlugin = (editor) => {
+export const storagePlugin = (editor: PublishableEditor) => {
   // Add useful commands
   editor.Commands.add(cmdPauseAutoSave, {
     run: () => {
@@ -46,25 +53,24 @@ export const storagePlugin = (editor) => {
   })
   // Add the storage connector
   editor.Storage.add('connector', {
-    async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<WebsiteData> {
+    async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<ProjectData> {
       try {
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if (!user) throw new ApiError('Not logged in', 401)
         const data = await websiteLoad({ websiteId: options.id, connectorId: user.storage.connectorId }) as WebsiteData
         if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
-        if (data.pages) data.pages = addTempDataToPages(data.pages, options.id, user.storage.connectorId)
         if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
-        return data
-
+        //setTimeout(() => progressiveLoadPages(editor, data))
+        await progressiveLoadPages(editor, data)
+        return {}
       } catch (err) {
         editor.UndoManager.clear()
         if (err.httpStatusCode === 401) {
           editor.once(eventLoggedIn, async () => {
             try {
               editor.runCommand(cmdPauseAutoSave)
-              const data = await editor.Storage.load(options)
+              await editor.Storage.load(options)
               editor.once('canvas:frame:load', () => editor.stopCommand(cmdPauseAutoSave))
-              editor.loadProjectData(data)
             } catch (err) {
               console.error('connectorPlugin load error', err)
               throw err
@@ -94,7 +100,7 @@ export const storagePlugin = (editor) => {
     },
 
     async doStore(data, options) {
-      if (editor.PublicationManager?.status === PublicationStatus.STATUS_PENDING) {
+      if (editor.PublicationManager.status === PublicationStatus.STATUS_PENDING) {
         // Publication is pending, save is delayed
         return new Promise((resolve) => {
           editor.once(ClientEvent.PUBLISH_END, () => {
@@ -115,7 +121,6 @@ export const storagePlugin = (editor) => {
             const user = await getCurrentUser(editor)
             if (user) {
               data.assets = removeTempDataFromAssetUrl(data.assets)
-              data.pages = removeTempDataFromPages(data.pages)
               data.styles = removeTempDataFromStyles(data.styles)
               await websiteSave({ websiteId: options.id, connectorId: user.storage.connectorId, data })
               isSaving = false
@@ -123,7 +128,7 @@ export const storagePlugin = (editor) => {
               // Not logged in save is delayed
               editor.once(eventLoggedIn, () => {
                 isSaving = false
-                return editor.Storage.store()
+                return editor.Storage.store(data, options)
               })
               editor.Commands.run(cmdLogin)
             }
@@ -184,4 +189,25 @@ export const storagePlugin = (editor) => {
       })
     }
   }
+}
+
+async function progressiveLoadPages(editor: PublishableEditor, data: ProjectData) {
+  editor.Pages.getAll().forEach(page => editor.Pages.remove(page))
+  let i = 0
+  for (const page of data.pages) {
+    document.querySelector('.silex-loader').innerHTML = `Loading page ${++i} / ${data.pages.length}`
+    await nextFrame()
+    const newPage = editor.Pages.add({
+      ...page,
+    })
+  }
+
+  // Charger les styles, assets, etc. après les pages
+  document.querySelector('.silex-loader').innerHTML = 'Loading styles and assets'
+  if (data.styles) editor.setStyle(data.styles)
+  if (data.assets) editor.AssetManager.add(data.assets)
+
+  // Sélectionner la première page
+  const firstPage = editor.Pages.getAll()[0]
+  if (firstPage) editor.Pages.select(firstPage)
 }

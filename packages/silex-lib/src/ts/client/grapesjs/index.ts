@@ -162,23 +162,6 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
     },
 
     cssIcons: './css/all.min.css',
-    canvasCss: `
-      :root {
-        --primaryColor: ${PRIMARY_COLOR};
-        --secondaryColor: ${SECONDARY_COLOR};
-        --tertiaryColor: ${TERTIARY_COLOR};
-        --quaternaryColor: ${QUATERNARY_COLOR};
-        --darkerPrimaryColor: ${DARKER_PRIMARY_COLOR};
-        --lighterPrimaryColor: ${LIGHTER_PRIMARY_COLOR};
-      }
-      .gjs-frame-selected {
-        box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.5) !important; // Change to red border
-      }
-      .gjs-selected {
-        outline: 2px solid var(--tertiaryColor) !important;
-        outline-offset: -2px;
-      }
-    `,
 
     richTextEditor: {
       // @ts-ignore

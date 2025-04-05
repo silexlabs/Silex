@@ -1,4 +1,4 @@
-import { Asset, ClientSideFileType, ConnectorId, Page, Style, WebsiteId } from '../types';
+import { Asset, ClientSideFileType, ConnectorId, Style, WebsiteId } from '../types';
 /**
  * Function to convert a path from it stored version to the displayed version
  * Stored version is like `/assets/image.webp`
@@ -33,14 +33,6 @@ export declare function addTempDataToAssetUrl(assets: Asset[], websiteId: Websit
  * Remove the API path and the connectorId and websiteId like so: `/assets/image.webp`
  */
 export declare function removeTempDataFromAssetUrl(assets: Asset[]): Asset[];
-/**
- * Add temp data to pages
- */
-export declare function addTempDataToPages(pages: Page[], websiteId: WebsiteId, storageId: ConnectorId): Page[];
-/**
- * Remove temp data from asset URL in the components
- */
-export declare function removeTempDataFromPages(pages: Page[]): Page[];
 /**
  * Add data to stylesheets
  *   e.g. linear-gradient(to right, #1fb101 0%, #df1313 67%, rgba(234, 97, 97, 255) 78%, white 100%), url('/assets/qIg7JPRc.webp'), linear-gradient(#0ca311 0%, #0ca311 100%)

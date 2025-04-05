@@ -67,6 +67,7 @@ export declare class PublicationManager {
      */
     startPublication(): Promise<void>;
     getHtmlFiles(siteSettings: WebsiteSettings, preventDefault: any): Promise<WebsiteFile[]>;
+    getHtmlFilesYield(siteSettings: WebsiteSettings, preventDefault: any): AsyncGenerator<WebsiteFile | undefined>;
     trackProgress(): Promise<void>;
     private setPublicationTransformers;
     private resetPublicationTransformers;

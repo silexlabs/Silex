@@ -23,8 +23,8 @@ import { getUser, logout, publicationStatus, publish } from '../api'
 import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
-import { displayedToStored } from '../assetUrl'
 import { hashString } from '../utils'
+import { displayedToStored } from '../assetUrl'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -263,10 +263,6 @@ export class PublicationManager {
     // Create the data to send to the server
     const data: PublicationData = {
       ...projectData,
-      assets: projectData.assets.map(asset => ({
-        ...asset,
-        src: displayedToStored(asset.src),
-      })),
       settings: siteSettings,
       publication: this.settings,
       files,
@@ -346,14 +342,27 @@ export class PublicationManager {
   }
 
   async getHtmlFiles(siteSettings: WebsiteSettings, preventDefault): Promise<WebsiteFile[]> {
-    return Promise.all(this.editor.Pages.getAll().map(async page => {
-      // Clone the settings because plugins can change them
-      siteSettings = { ...siteSettings }
-      const pageSettings = { ...page.get('settings') as WebsiteSettings }
-      // Utility function to get a setting from the page or the site settings
-      function getSetting(name) {
-        return (pageSettings || {})[name] || (siteSettings || [])[name] || ''
+    const files: WebsiteFile[] = []
+    const generator = this.getHtmlFilesYield(siteSettings, preventDefault)
+
+    for await (const file of generator) {
+      if (file) {
+        files.push(file)
       }
+    }
+
+    return files
+  }
+
+  async *getHtmlFilesYield(siteSettings: WebsiteSettings, preventDefault): AsyncGenerator<WebsiteFile | undefined> {
+    for (const page of this.editor.Pages.getAll()) {
+      // Clone the settings because plugins can change them
+      const clonedSiteSettings = { ...siteSettings }
+      const pageSettings = { ...page.get('settings') as WebsiteSettings }
+
+      // Utility function to get a setting from the page or the site settings
+      const getSetting = (name: string) =>
+        (pageSettings || {})[name] || (clonedSiteSettings || [])[name] || ''
 
       // Get the content from GrapesJS
       const body = page.getMainComponent()
@@ -361,37 +370,47 @@ export class PublicationManager {
       console.time(`getHtml ${page.getId()} ${page.get('name')}`)
       const htmlContent = this.editor.getHtml({ component: body })
       console.timeEnd(`getHtml ${page.getId()} ${page.get('name')}`)
+      yield undefined // Yield control to avoid blocking the main thread
 
       // Transform the file paths
       const slug = getPageSlug(page.get('name'))
       const cssInitialPath = `/css/${slug}-${await hashString(cssContent)}.css`
       const htmlInitialPath = `/${slug}.html`
       const cssPermalink = transformPermalink(this.editor, cssInitialPath, ClientSideFileType.CSS, Initiator.HTML)
+      yield undefined // Yield control to avoid blocking the main thread
       const cssPath = transformPath(this.editor, cssInitialPath, ClientSideFileType.CSS)
+      yield undefined // Yield control to avoid blocking the main thread
       const htmlPath = transformPath(this.editor, htmlInitialPath, ClientSideFileType.HTML)
+      yield undefined // Yield control to avoid blocking the main thread
 
       // Let plugins transform the data
-      this.editor.trigger(ClientEvent.PUBLISH_PAGE, { page, siteSettings, pageSettings, preventDefault, publicationManager: this })
+      this.editor.trigger(ClientEvent.PUBLISH_PAGE, {
+        page,
+        siteSettings: clonedSiteSettings,
+        pageSettings,
+        preventDefault,
+        publicationManager: this,
+      })
 
       // Useful data for HTML result
       const title = getSetting('title')
       const favicon = getSetting('favicon')
+
       // Return the HTML file
-      return {
+      yield {
         html: `<!DOCTYPE html>
 <html lang="${getSetting('lang')}">
 <head>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="${cssPermalink}" />
-${siteSettings?.head || ''}
+${clonedSiteSettings?.head || ''}
 ${pageSettings?.head || ''}
-${ title ? `<title>${ title }</title>` : '' }
-${ favicon ? `<link rel="icon" href="${favicon}" />` : '' }
+${title ? `<title>${title}</title>` : ''}
+${favicon ? `<link rel="icon" href="${favicon}" />` : ''}
 ${['description', 'og:title', 'og:description', 'og:image']
-    .filter(prop => !!getSetting(prop))
-    .map(prop => `<meta name="${prop}" property="${prop}" content="${getSetting(prop)}"/>`)
-    .join('\n')
-}
+    .filter((prop) => !!getSetting(prop))
+    .map((prop) => `<meta name="${prop}" property="${prop}" content="${getSetting(prop)}"/>`)
+    .join('\n')}
 </head>
 ${htmlContent}
 </html>`,
@@ -399,7 +418,7 @@ ${htmlContent}
         cssPath,
         htmlPath,
       }
-    }))
+    }
   }
 
   async trackProgress() {

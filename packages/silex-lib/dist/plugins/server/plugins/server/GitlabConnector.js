@@ -48,6 +48,7 @@ const types_1 = require("../../types");
 const node_fetch_1 = __importDefault(require("node-fetch"));
 const crypto_1 = __importStar(require("crypto"));
 const path_1 = require("path");
+const https_1 = require("https");
 const svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    xmlns:svg="http://www.w3.org/2000/svg"
@@ -173,6 +174,7 @@ class GitlabConnector {
         // Call the API
         const url = `${this.options.domain}/api/v4/projects/${websiteId}/repository/files/${safePath}?ref=${this.options.branch}&access_token=${this.getSessionToken(session).token?.access_token}`;
         const response = await (0, node_fetch_1.default)(url, {
+            agent: this.getAgent(),
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -229,10 +231,12 @@ class GitlabConnector {
         let response;
         try {
             response = await (0, node_fetch_1.default)(url, body && method !== 'GET' ? {
+                agent: this.getAgent(),
                 method,
                 headers,
                 body: body ? JSON.stringify(body) : undefined
             } : {
+                agent: this.getAgent(),
                 method,
                 headers,
             });
@@ -258,6 +262,7 @@ class GitlabConnector {
                     client_secret: this.options.clientSecret,
                 };
                 const response = await (0, node_fetch_1.default)(this.options.domain + '/oauth/token', {
+                    agent: this.getAgent(),
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -324,6 +329,15 @@ class GitlabConnector {
         const params = `connectorId=${this.connectorId}&type=${this.connectorType}`;
         return `${this.config.url}${constants_1.API_PATH}${constants_1.API_CONNECTOR_PATH}${constants_1.API_CONNECTOR_LOGIN_CALLBACK}?${params}`;
     }
+    // Force IPv4 when running locally
+    getAgent() {
+        if (this.config.url.startsWith('http://localhost')) {
+            return new https_1.Agent({
+                family: 4,
+            });
+        }
+        return undefined;
+    }
     /**
      * Get the OAuth URL to redirect the user to
      * The URL should look like
@@ -386,6 +400,7 @@ class GitlabConnector {
             throw new types_1.ApiError('Missing code challenge', 401);
         }
         const response = await (0, node_fetch_1.default)(this.options.domain + '/oauth/token', {
+            agent: this.getAgent(),
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -402,8 +417,8 @@ class GitlabConnector {
         const token = await response.json();
         // Store the token in the session
         this.setSessionToken(session, {
-            token,
             ...this.getSessionToken(session),
+            token,
         });
         // We need to get the user ID for listWebsites
         const user = await this.callApi(session, 'api/v4/user');
