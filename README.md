@@ -95,7 +95,7 @@ $ git clone git@github.com:<your github handle>/Silex.git --recurse-submodules -
 $ cd Silex
 $ nvm install # [optional] Get the node version from .nvmrc
 $ npm install # Will install dependencies in all submodules too
-$ npm start # Will run the Silex editor from packages/Silex
+$ npm start # Will run the Silex editor from packages/silex-lib
 ```
 
 Then you can open your browser at [http://localhost:6800](http://localhost:6800) to see the Silex editor running locally.
