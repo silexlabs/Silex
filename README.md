@@ -83,14 +83,16 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 
 ## Instruction
 
-To contribute to Silex you need to fork this repo then clone locally this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (you can replace `npm` with `yarn`):
+To contribute to Silex you need to fork this repo then clone locally (mini 2CPU and 4GoRAM) this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (you can replace `npm` with `yarn`):
 
 * On github, fork this repo
+* Be sure of your ssh key for gitlab and github configured (we use both for repos)
+* Don't forget to verify if nodejs, nvm and npm are installed on your server
 * Then clone and setup the project:
 
 ```
-$ git clone git@github.com:<your github handle>/silex-meta.git --recurse-submodules -j8
-$ cd silex-meta
+$ git clone git@github.com:<your github handle>/Silex.git --recurse-submodules -j8
+$ cd Silex
 $ nvm install # [optional] Get the node version from .nvmrc
 $ npm install # Will install dependencies in all submodules too
 $ npm start # Will run the Silex editor from packages/Silex
