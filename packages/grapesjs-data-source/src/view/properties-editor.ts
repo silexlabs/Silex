@@ -229,8 +229,6 @@ export class PropertiesEditor extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'properties-editor': PropertiesEditor
-  }
+if(!window.customElements.get('properties-editor')) {
+  window.customElements.define('properties-editor', PropertiesEditor)
 }

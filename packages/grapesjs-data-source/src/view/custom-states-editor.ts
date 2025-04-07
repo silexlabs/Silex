@@ -362,8 +362,6 @@ export class CustomStatesEditor extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'custom-states-editor': CustomStatesEditor
-  }
+if(!customElements.get('custom-states-editor')) {
+  customElements.define('custom-states-editor', CustomStatesEditor)
 }

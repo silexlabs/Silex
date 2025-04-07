@@ -492,8 +492,6 @@ export class StateEditor extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'state-editor': StateEditor
-  }
+if(!window.customElements.get('state-editor')) {
+  window.customElements.define('state-editor', StateEditor)
 }

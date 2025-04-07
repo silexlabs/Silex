@@ -196,11 +196,105 @@ export class DataTree {
   }
 
   /**
-   * Evaluate an expression to a value
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getValue(context: Context, expression: ComponentExpression): unknown {
-    throw new Error('Not implemented')
+   * Evaluate an expression to a value   * @param expression The expression to evaluate
+   * @returns The evaluated value
+   * @example
+   * var component = editor
+   * .getSelected()
+   * var expression = component
+   * .attributes.privateStates[0]
+   * .expression
+   * var queries = editor.DataSourceManager.getPageQuery(editor.Pages.getSelected())
+   * editor.DataSourceManager.getAll()[0]
+   * .call(queries.countries)
+   * .then(data => {
+   *   const value = editor.DataSourceManager.dataTree.getValue({ expression, component }, [], data);
+   *   console.log({value})
+   * })
+  */
+  getValue(
+    { expression, component }: ComponentExpression,
+    prevValues: unknown[],
+    queryResult: Record<DataSourceId, unknown>
+  ): unknown {
+    console.log('getValue called with:', { expression, component, prevValues, queryResult })
+  
+    if (expression.length === 0) {
+      console.log('Expression is empty, returning null.')
+      return null
+    }
+  
+    const [token, ...rest] = expression
+    console.log('Processing token:', token)
+  
+    switch (token.type) {
+    case 'state': {
+      console.log('Token type is state.')
+      const resolvedExpression = this.resolveState(token, component)
+      if (!resolvedExpression) {
+        throw new Error(`Unable to resolve state: ${JSON.stringify(token)}`)
+      }
+      console.log('Resolved state to expression:', resolvedExpression)
+      return this.getValue({ expression: resolvedExpression, component }, prevValues, queryResult)
+    }
+  
+    case 'property': {
+      console.log('Token type is property.')
+      if (!token.dataSourceId) {
+        throw new Error(`Data source ID is missing for token: ${JSON.stringify(token)}`)
+      }
+  
+      const dataSourceResult = queryResult[token.dataSourceId]
+      if (!dataSourceResult) {
+        throw new Error(`No query result found for data source ID: ${token.dataSourceId}`)
+      }
+  
+      let value = null
+      if(Array.isArray(dataSourceResult)) {
+        value = dataSourceResult.map(item => item[token.fieldId])
+        value = value[0] // FIXME: we need some kind of index
+      } else {
+        value = (dataSourceResult as Record<string, unknown>)[token.fieldId]
+      }
+
+      console.log('Resolved property value:', value)
+  
+      if (rest.length === 0) {
+        return value
+      }
+  
+      return this.getValue({ expression: rest, component }, prevValues, value as Record<DataSourceId, unknown>)
+    }
+  
+    case 'filter': {
+      console.log('Token type is filter.')
+      const options = Object.entries(token.options).reduce((acc, [key, value]) => {
+        acc[key] = this.getValue({ expression: toExpression(value) || [], component }, prevValues, queryResult)
+        return acc
+      }, {} as Record<string, unknown>)
+  
+      console.log('Resolved filter options:', options)
+  
+      const filter = this.filters.find(f => f.id === token.id)
+      if (!filter) {
+        throw new Error(`Filter not found: ${token.id}`)
+      }
+  
+      console.log('Found filter:', filter)
+  
+      const input = this.getValue({ expression: rest, component }, prevValues, queryResult)
+      console.log('Resolved input for filter:', input)
+  
+      const result = filter.apply(input, options)
+      console.log('Filter applied, result:', result)
+  
+      return result
+    }
+  
+    default:
+      console.error('Unsupported token type:', token)
+      throw new Error(`Unsupported token type: ${token}`)
+    }
   }
 
   /**

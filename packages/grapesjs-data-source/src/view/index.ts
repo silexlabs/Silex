@@ -26,6 +26,7 @@ import settings from './settings'
 import '@silexlabs/expression-input/dist/popin-form.js'
 import './properties-editor'
 import './custom-states-editor'
+import canvas from './canvas'
 
 export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOptions> = {}) => {
   if (opts.el) {
@@ -147,6 +148,7 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOpti
         })
         wrapper.style.display = button.active ? 'block' : 'none'
       }
+      canvas(editor)
     })
   } else {
     console.warn('Dynamic data UI not enabled, please set the el option to enable it')

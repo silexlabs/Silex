@@ -448,12 +448,8 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     }
   }
 
-  //async getData(query: Query): Promise<any[]> {
-  //  const result = await this.call(`
-  //      query {
-  //        ${this.buildQuery(query)}
-  //      }
-  //    `) as any
-  //  return result.data.Query[query.name]
-  //}
+  async fetchValues(query: string): Promise<unknown[]> {
+    const result = await this.call(query) as any
+    return result.data
+  }
 }

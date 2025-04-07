@@ -19,7 +19,15 @@
     <script src="./index.js"></script>
 
     <div id='basic-actions' class="panel__basic-actions" style="z-index: 9; left: 120px;"></div>
-    <div id="gjs"></div>
+    <div id="gjs">
+      <div>
+        <h1>About this demo</h1>
+        <p>For this test I configured the plugin with a demo country API:
+          https://studio.apollographql.com/public/countries/variant/current/home</p>
+        <p><strong>Select a component and check it's settings on the right</strong></p>
+        <p>This plugin lets you set "states" on components with the data coming from the API</p>
+      </div>
+    </div>
     <script>
       function createSettingsContainer() {
         const el = document.createElement('div')
@@ -95,12 +103,7 @@
         //  },
         //});
         // Add a test component
-        editor.addComponents(`<div>
-          <h1>About this demo</h1>
-          <p>For this test I configured the plugin with a demo country API: https://studio.apollographql.com/public/countries/variant/current/home</p>
-          <p><strong>Select a component and check it's settings on the right</strong></p>
-          <p>This plugin lets you set "states" on components with the data coming from the API</p>
-        </div>`);
+        //editor.addComponents(``);
       });
     </script>
   </body>

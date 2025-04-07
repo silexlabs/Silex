@@ -227,4 +227,49 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
         return acc
       }, {} as Record<DataSourceId, string>)
   }
+
+  async getPageValues(page: Page): Promise<Record<DataSourceId, unknown>> {
+    const queries = this.getPageQuery(page)
+    console.log('Generated queries:', queries)
+
+    try {
+      const results = await Promise.all(
+        Object.entries(queries).map(async ([dataSourceId, query]) => {
+          const ds = this.models.find(ds => ds.id === dataSourceId)
+          if (!ds) {
+            console.error(`Data source ${dataSourceId} not found`)
+            return null
+          }
+          try {
+            const value = await ds.fetchValues(query)
+            console.log(`Fetched values for data source ${dataSourceId}:`, value)
+            return { dataSourceId, value }
+          } catch (err) {
+            console.error(`Error fetching values for data source ${dataSourceId}:`, err)
+            this.editor.runCommand('notifications:add', {
+              type: 'error',
+              group: NOTIFICATION_GROUP,
+              message: `Error fetching values for data source ${dataSourceId}: ${err}`,
+            })
+            return null
+          }
+        })
+      )
+
+      return results
+        .filter(result => result !== null)
+        .reduce((acc, { dataSourceId, value }) => {
+          acc[dataSourceId] = value
+          return acc
+        }, {} as Record<DataSourceId, unknown>)
+    } catch (err) {
+      console.error('Error while fetching values:', err)
+      this.editor.runCommand('notifications:add', {
+        type: 'error',
+        group: NOTIFICATION_GROUP,
+        message: `Error while fetching values: ${err}`,
+      })
+      return {}
+    }
+  }
 }

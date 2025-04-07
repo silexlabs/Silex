@@ -81,7 +81,7 @@ export interface IDataSource {
   getQuery(trees: Tree[]): string
 
   // Access data
-  //fetchValues(query: Query): Promise<unknown[]>
+  fetchValues(query: string): Promise<unknown[]>
 }
 export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
