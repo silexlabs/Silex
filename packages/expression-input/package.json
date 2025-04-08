@@ -2,8 +2,14 @@
   "name": "@silexlabs/expression-input",
   "version": "0.0.27",
   "description": "A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.",
-  "main": "dist/bundle.iife.js",
-  "module": "dist/bundle.esm.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.js",
   "type": "module",
   "scripts": {
     "build": "tsc && $npm_execpath run bundle",
