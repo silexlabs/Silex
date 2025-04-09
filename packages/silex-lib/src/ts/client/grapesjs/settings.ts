@@ -77,9 +77,6 @@ export const settingsDialog = (editor, opts) => {
     const model = editor.getModel()
     model.set('settings', data.settings || {})
     model.set('name', data.name)
-    editor.once('canvas:frame:load', () => {
-      updateDom(editor)
-    })
   })
   // Normal way to apply the head content to the DOM
   // fix #1559 Custom <head> code must be reapplied

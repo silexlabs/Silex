@@ -207,6 +207,13 @@ async function progressiveLoadPages(editor: PublishableEditor, data: ProjectData
   if (data.styles) editor.setStyle(data.styles)
   if (data.assets) editor.AssetManager.add(data.assets)
 
+  await nextFrame()
+  setTimeout(() => {
+    // FIXME: Why is this setTimeout needed?
+    editor.trigger('storage:end:load', data)
+    editor.trigger('canvas:frame:load', editor)
+  })
+
   // Sélectionner la première page
   const firstPage = editor.Pages.getAll()[0]
   if (firstPage) editor.Pages.select(firstPage)
