@@ -83,6 +83,7 @@
     "start:preview": "http-server silex/hosting -o",
     "prepublishOnly": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "preversion": "$npm_execpath run prepublishOnly",
+    "prepack": "$npm_execpath run prepublishOnly",
     "build": "run-s build:css:release build:html build:client:release build:server:release build:plugins:client build:plugins:server",
     "webpack": "webpack --config webpack.config.js",
     "build:css:release": "sass --load-path ../../node_modules --load-path node_modules --no-source-map src/css/index.scss dist/client/css/admin.css",
@@ -99,7 +100,8 @@
     "lint:fix": "$npm_execpath run lint -- --fix",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "test:watch": "$npm_execpath test -- --watch",
-    "prepare": "husky"
+    "prepare": "husky install && npm run build"
+
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.0.13",
