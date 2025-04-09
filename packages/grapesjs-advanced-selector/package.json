@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-advanced-selector",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A GrapesJS plugin for managing advanced CSS selectors with a visual interface",
   "keywords": [
     "grapesjs",
