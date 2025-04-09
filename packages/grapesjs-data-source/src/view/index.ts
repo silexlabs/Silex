@@ -23,7 +23,7 @@ import { CustomStatesEditor } from './custom-states-editor'
 
 import settings from './settings'
 
-import '@silexlabs/expression-input/dist/popin-form.js'
+import '@silexlabs/expression-input'
 import './properties-editor'
 import './custom-states-editor'
 

@@ -49,12 +49,12 @@
     "typescript-eslint": "^8.18.0"
   },
   "peerDependencies": {
-    "grapesjs": "^0.21.10"
+    "grapesjs": ">=0.19.0 <0.23.0"
   },
-  "license": "AGPL-3.0-or-later",
+  "license": "AGPL-3.0",
   "dependencies": {
     "@apollo/client": "^3.12.3",
-    "@silexlabs/expression-input": "^0.0.25",
+    "@silexlabs/expression-input": "^0.0.28",
     "backbone": "^1.6.0",
     "dedent-js": "^1.0.1",
     "lit": "^3.2.1"
