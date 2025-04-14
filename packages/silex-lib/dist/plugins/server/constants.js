@@ -16,12 +16,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEV_MESSAGE = exports.SILEX_VERSION = exports.API_WEBSITE_META_WRITE = exports.API_WEBSITE_META_READ = exports.API_WEBSITE_ASSETS_WRITE = exports.API_WEBSITE_ASSET_READ = exports.API_WEBSITE_LIST = exports.API_WEBSITE_DUPLICATE = exports.API_WEBSITE_DELETE = exports.API_WEBSITE_CREATE = exports.API_WEBSITE_WRITE = exports.API_WEBSITE_READ = exports.API_WEBSITE_PATH = exports.API_PUBLICATION_STATUS = exports.API_PUBLICATION_PUBLISH = exports.API_PUBLICATION_PATH = exports.API_CONNECTOR_LOGIN_CALLBACK = exports.API_CONNECTOR_SETTINGS = exports.API_CONNECTOR_LOGIN = exports.API_CONNECTOR_LOGOUT = exports.API_CONNECTOR_LIST = exports.API_CONNECTOR_USER = exports.API_CONNECTOR_PATH = exports.API_PATH = exports.CLIENT_CONFIG_FILE_NAME = exports.DEFAULT_LANGUAGE = exports.DEFAULT_WEBSITE_ID = exports.WEBSITE_META_DATA_FILE = exports.WEBSITE_DATA_FILE = void 0;
+exports.DEV_MESSAGE = exports.SILEX_VERSION = exports.API_WEBSITE_META_WRITE = exports.API_WEBSITE_META_READ = exports.API_WEBSITE_ASSETS_WRITE = exports.API_WEBSITE_ASSET_READ = exports.API_WEBSITE_LIST = exports.API_WEBSITE_DUPLICATE = exports.API_WEBSITE_DELETE = exports.API_WEBSITE_CREATE = exports.API_WEBSITE_WRITE = exports.API_WEBSITE_READ = exports.API_WEBSITE_PATH = exports.API_PUBLICATION_STATUS = exports.API_PUBLICATION_PUBLISH = exports.API_PUBLICATION_PATH = exports.API_CONNECTOR_LOGIN_CALLBACK = exports.API_CONNECTOR_SETTINGS = exports.API_CONNECTOR_LOGIN = exports.API_CONNECTOR_LOGOUT = exports.API_CONNECTOR_LIST = exports.API_CONNECTOR_USER = exports.API_CONNECTOR_PATH = exports.API_PATH = exports.CLIENT_CONFIG_FILE_NAME = exports.DEFAULT_LANGUAGE = exports.DEFAULT_WEBSITE_ID = exports.WEBSITE_PAGES_FOLDER = exports.WEBSITE_META_DATA_FILE = exports.WEBSITE_DATA_FILE = void 0;
 /**
  * @fileoverview define constants for Silex client and server
  */
 exports.WEBSITE_DATA_FILE = 'website.json';
 exports.WEBSITE_META_DATA_FILE = 'meta.json';
+exports.WEBSITE_PAGES_FOLDER = 'src';
 exports.DEFAULT_WEBSITE_ID = 'default';
 exports.DEFAULT_LANGUAGE = 'en';
 exports.CLIENT_CONFIG_FILE_NAME = 'silex.js';

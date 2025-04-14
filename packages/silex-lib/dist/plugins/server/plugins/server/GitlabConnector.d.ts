@@ -95,6 +95,8 @@ export default class GitlabConnector implements StorageConnector {
      * Call the Gitlab API with the user's token and handle errors
      */
     callApi(session: GitlabSession, path: string, method?: 'POST' | 'GET' | 'PUT' | 'DELETE', body?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null, params?: any): Promise<any>;
+    private projectPathCache;
+    downloadRawFile(session: GitlabSession, projectId: string, filePath: string): Promise<Buffer>;
     private generateCodeVerifier;
     private generateCodeChallenge;
     private getRedirect;
@@ -122,8 +124,21 @@ export default class GitlabConnector implements StorageConnector {
     logout(session: GitlabSession): Promise<void>;
     getUser(session: GitlabSession): Promise<ConnectorUser>;
     listWebsites(session: GitlabSession): Promise<WebsiteMeta[]>;
+    /**
+     * Read the website data
+     * The website data file is named `website.json` and the pages are named `page-{id}.json`
+     * The pages are stored in the `src` folder by default
+     */
     readWebsite(session: GitlabSession, websiteId: string): Promise<WebsiteData>;
+    /**
+     * Create a new website, i.e. a new Gitlab repository with an empty website data file
+     */
     createWebsite(session: GitlabSession, websiteMeta: WebsiteMetaFileContent): Promise<WebsiteId>;
+    /**
+     * Update the website data
+     * Split the website data into 1 file per page + 1 file for the website data itself
+     * Use gitlab batch API to create/update the files
+     */
     updateWebsite(session: GitlabSession, websiteId: WebsiteId, websiteData: WebsiteData): Promise<void>;
     deleteWebsite(session: GitlabSession, websiteId: WebsiteId): Promise<void>;
     duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void>;

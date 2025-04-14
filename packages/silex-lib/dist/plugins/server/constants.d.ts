@@ -3,6 +3,7 @@
  */
 export declare const WEBSITE_DATA_FILE = "website.json";
 export declare const WEBSITE_META_DATA_FILE = "meta.json";
+export declare const WEBSITE_PAGES_FOLDER = "src";
 export declare const DEFAULT_WEBSITE_ID = "default";
 export declare const DEFAULT_LANGUAGE = "en";
 export declare const CLIENT_CONFIG_FILE_NAME = "silex.js";
