@@ -61,8 +61,14 @@ export const storagePlugin = (editor: PublishableEditor) => {
         if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
         if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
         //setTimeout(() => progressiveLoadPages(editor, data))
-        await progressiveLoadPages(editor, data)
-        return {}
+        if (!data.pages) {
+          // This happens when the website was just created
+          // Let grapesjs create the pages in the frontend
+          return data
+        } else {
+          await progressiveLoadPages(editor, data)
+          return {}
+        }
       } catch (err) {
         editor.UndoManager.clear()
         if (err.httpStatusCode === 401) {

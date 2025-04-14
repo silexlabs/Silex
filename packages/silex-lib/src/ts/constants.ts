@@ -21,6 +21,7 @@
 
 export const WEBSITE_DATA_FILE = 'website.json'
 export const WEBSITE_META_DATA_FILE = 'meta.json'
+export const WEBSITE_PAGES_FOLDER = 'src'
 
 export const DEFAULT_WEBSITE_ID = 'default'
 export const DEFAULT_LANGUAGE = 'en'
