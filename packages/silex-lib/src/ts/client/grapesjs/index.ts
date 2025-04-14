@@ -65,6 +65,7 @@ import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
 import { ClientConfig } from '../config'
 import { titleCase } from '../utils'
+import uploadProgress from './upload-progress'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -100,6 +101,7 @@ const plugins = [
   {name: './resize-panel', value: resizePanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
+  {name: './upload-progress', value: uploadProgress},
 ]
 // Check that all plugins are loaded correctly
 plugins
