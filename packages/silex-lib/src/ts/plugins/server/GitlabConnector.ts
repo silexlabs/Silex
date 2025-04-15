@@ -32,6 +32,7 @@ import { getPageSlug } from '../../page'
  */
 
 const MAX_BATCH_UPLOAD_SIZE = 100
+const MAX_BODY_SIZE_KB = 8 * 1000 * 1024 // 8MB (note that 10 MB PNG → becomes ~13.3 MB → ❌ often too big for Gitlab)
 
 export interface GitlabOptions {
   clientId: string
@@ -282,7 +283,8 @@ export default class GitlabConnector implements StorageConnector {
     let response
     const body = requestBody ? JSON.stringify(requestBody) : undefined
     try {
-      if(body && Buffer.byteLength(body) > 1024 * 100) {
+      if(body && Buffer.byteLength(body) > MAX_BODY_SIZE_KB * 1024) {
+        // TODO: warn the end user
         console.warn('Gitlab API warning - body too big', Buffer.byteLength(body), 'bytes', { url, method, params })
       }
       response = await fetch(url, requestBody && method !== 'GET' ? {
@@ -369,48 +371,14 @@ export default class GitlabConnector implements StorageConnector {
     return json
   }
 
-  // Cache for projects path
-  private projectPathCache = new Map<string, string>()
-
   async downloadRawFile(session: GitlabSession, projectId: string, filePath: string): Promise<Buffer> {
     const token = this.getSessionToken(session).token?.access_token
     const domain = this.options.domain
     const branch = this.options.branch
 
-    // Get the project path with namespace
-    let pathWithNamespace = this.projectPathCache.get(projectId)
-    if (!pathWithNamespace) {
-      const metaUrl = `${domain}/api/v4/projects/${projectId}`
-      const metaRes = await fetch(metaUrl, {
-        agent: this.getAgent(),
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      const metaText = await metaRes.text()
-      if (!metaRes.ok) {
-        console.error('GitLab raw error (meta)', metaRes.status, metaRes.statusText, { metaUrl, metaText })
-        throw new ApiError(`GitLab raw error (meta): ${metaRes.statusText}`, metaRes.status)
-      }
-
-      try {
-        const meta = JSON.parse(metaText)
-        pathWithNamespace = meta.path_with_namespace
-      } catch (e) {
-        throw new ApiError('GitLab raw error (meta): could not parse project info', 500)
-      }
-
-      // Limit cache size, remove least recently used
-      this.projectPathCache.set(projectId, pathWithNamespace!)
-      if (this.projectPathCache.size > 500) {
-        this.projectPathCache.delete(this.projectPathCache.keys().next().value)
-      }
-    }
-
     // Construct the raw URL
     // GET /projects/:id/repository/files/:file_path/raw
-    const rawUrl = `${domain}/api/v4/projects/${encodeURIComponent(pathWithNamespace!)}/repository/files/${encodeURIComponent(filePath)}/raw?ref=${branch}&access_token=${token}`
+    const rawUrl = `${domain}/api/v4/projects/${projectId}/repository/files/${encodeURIComponent(filePath)}/raw?ref=${branch}&access_token=${token}`
     const fileRes = await fetch(rawUrl, {
       agent: this.getAgent(),
     })
@@ -871,7 +839,7 @@ export default class GitlabConnector implements StorageConnector {
 
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex]
-      status && await status({ message: `Uploading batch ${chunkIndex + 1}/${chunks.length}`, status: JobStatus.IN_PROGRESS })
+      status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Downloading assets`, status: JobStatus.IN_PROGRESS })
 
       // Create the actions for the batch
       const actions = await Promise.all(
@@ -888,6 +856,7 @@ export default class GitlabConnector implements StorageConnector {
         })
       ) as GitlabAction[]
 
+      status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Uploading assets`, status: JobStatus.IN_PROGRESS })
       try {
         await this.callApi(session, `api/v4/projects/${websiteId}/repository/commits`, 'POST', {
           branch: 'main',
