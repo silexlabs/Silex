@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { html, render, TemplateResult } from 'lit-html'
+import { html, nothing, render, TemplateResult } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 //import { map } from 'lit-html/directives/map.js'
 import { cmdPublicationLogin, cmdPublicationLogout, cmdPublicationStart, PublicationStatus, PublishableEditor } from './PublicationManager'
@@ -154,7 +154,7 @@ export class PublicationUi {
     try {
       if(this.isOpen && (!status || !this.settings)) throw new Error('PublicationUi: open but no status or settings')
       render(html`
-      ${!this.isOpen ? '' : this.settings.connector ? await this.renderOpenDialog(job, status) : await this.renderLoginDialog(status)}
+      ${!this.isOpen ? nothing : this.settings.connector ? await this.renderOpenDialog(job, status) : await this.renderLoginDialog(status)}
     `, this.el)
       if (this.isOpen) {
         this.el.classList.remove('silex-dialog-hide')
@@ -171,7 +171,7 @@ export class PublicationUi {
     return html`
     <header>
       <span>${unsafeHTML(svgConnector)} Connected to <span class="connector">${this.settings.connector.displayName}</span></span>
-      ${this.settings.connector.disableLogout ? '' : html`
+      ${this.settings.connector.disableLogout ? nothing : html`
       <button
         class="silex-button silex-button--secondary"
         id="publish-button--secondary"
@@ -183,41 +183,38 @@ export class PublicationUi {
       ${this.userContent || html`
         ${this.isPending(status) ? html`
           <p>Publication in progress...</p>
-        ` : ''}
+        ` : nothing}
         ${this.isReady(status) ? html`
           <p>Click on the button below to publish your website.</p>
-          ${this.settings.options && Object.entries(this.settings.options).length && html`<p>Publication options: <ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul></p>`}
-        ` : ''}
+          ${this.settings.options && Object.entries(this.settings.options).length > 0 ? html`<p>Publication options:</p><ul>${ Object.entries(this.settings.options).map(([key, value]) => html`<li>${key}: ${value}</li>`) }</ul>` : nothing}
+        ` : nothing}
         ${this.isSuccess(status) ? html`
           <h3 class="status">Publication success ${unsafeHTML(svgSuccess)}</h3>
-          ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : ''}
-        ` : ''}
+          ${this.settings.options?.websiteUrl ? html`<p><a href="${this.settings.options.websiteUrl}" target="_blank">Click here to view the published website</a></p>` : nothing}
+        ` : nothing}
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <h3 class="status">Publication error ${unsafeHTML(svgError)}</h3>
           <details open>
             <summary>Details</summary>
             ${unsafeHTML(this.errorMessage)}
           </details>
-        ` : ''}
+        ` : nothing}
         ${job?.message ? html`
           <details open>
             <summary>Details</summary>
             ${unsafeHTML(job.message)}
           </details>
-        ` : ''}
+        ` : nothing}
         ${this.isPending(status) ? html`
-          <progress
-            value=""
-            style="width: 100%;"
-          ></progress>
-        ` : ''}
-        ${job?.logs?.length && job.logs[0].length ? html`
+          <progress></progress>
+        ` : nothing}
+        ${job?.logs?.length > 0 && job.logs[0].length > 0 ? html`
           <details>
             <summary>Logs</summary>
             <div class="logs">${unsafeHTML(cleanupLogEntry(job.logs))}</div>
           </details>
-        ` : ''}
-        ${job?.errors?.length && job.errors[0].length ? html`
+        ` : nothing}
+        ${job?.errors?.length > 0 && job.errors[0].length > 0 ? html`
           <details>
             <summary>Errors</summary>
             <pre style="
@@ -227,8 +224,8 @@ export class PublicationUi {
             >${unsafeHTML(cleanupLogEntry(job.errors))}
             </pre>
           </details>
-        ` : ''}
-        ${this.isPending(status) || this.isLoggedOut(status) ? '' : html`
+        ` : nothing}
+        ${this.isPending(status) || this.isLoggedOut(status) ? nothing : html`
           <button
             class="silex-button silex-button--primary"
             id="publish-button--primary"
@@ -244,7 +241,7 @@ export class PublicationUi {
           id="publish-button--primary"
           @click=${() => this.editor.Commands.run(cmdPublicationLogin, this.settings.connector)}
         >Connect</button>
-      `: ''}
+      `: nothing}
       <a href="https://docs.silex.me/en/user/publish" target="_blank">Help</a>
       <button
         class="silex-button silex-button--secondary"
@@ -273,8 +270,8 @@ export class PublicationUi {
         <p>You need to select a hosting connector to publish your website.</p>
         ${this.isError(status) || this.isLoggedOut(status) ? html`
           <p>Login error</p>
-          <div>${unsafeHTML(this.errorMessage)}</div>
-        ` : ''}
+          <div>${this.errorMessage ? unsafeHTML(this.errorMessage) : nothing}</div>
+        ` : nothing}
         <div class="buttons">
           ${hostingConnectors.map(connector => html`
           <button

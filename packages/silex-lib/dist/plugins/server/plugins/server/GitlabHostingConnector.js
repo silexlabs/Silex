@@ -68,14 +68,20 @@ class GitlabHostingConnector extends GitlabConnector_1.default {
           - if: '$CI_PIPELINE_SOURCE == "trigger"'
     `;
         try {
+            job.message = `Checking if ${pathYml} needs to be created or updated...`;
+            job.logs[0].push(job.message);
             const originalCi = await this.readFile(session, websiteId, pathYml);
             if (originalCi.toString().startsWith(SILEX_OVERWRITE_NOTICE)) {
+                job.message = `Updating ${pathYml}...`;
+                job.logs[0].push(job.message);
                 await this.updateFile(session, websiteId, pathYml, contentYml);
             }
         }
         catch (e) {
             // If the file .gitlab-ci.yml does not exist, create it, otherwise do nothing (do not overwriting existing one)
             if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
+                job.message = `Creating ${pathYml}...`;
+                job.logs[0].push(job.message);
                 await this.createFile(session, websiteId, pathYml, contentYml);
             }
             else {

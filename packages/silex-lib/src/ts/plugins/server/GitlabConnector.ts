@@ -31,6 +31,8 @@ import { getPageSlug } from '../../page'
  * @see https://docs.gitlab.com/ee/api/oauth2.html
  */
 
+const MAX_BATCH_UPLOAD_SIZE = 100
+
 export interface GitlabOptions {
   clientId: string
   clientSecret: string
@@ -265,7 +267,7 @@ export default class GitlabConnector implements StorageConnector {
   /**
    * Call the Gitlab API with the user's token and handle errors
    */
-  async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', body: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null = null, params: any = {}): Promise<any> {
+  async callApi(session: GitlabSession, path: string, method: 'POST' | 'GET' | 'PUT' | 'DELETE' = 'GET', requestBody: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null = null, params: any = {}): Promise<any> {
     const token = this.getSessionToken(session).token
     const tokenParam = token ? `access_token=${token.access_token}&` : ''
     const paramsStr = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent((v as any).toString())}`).join('&')
@@ -273,17 +275,21 @@ export default class GitlabConnector implements StorageConnector {
     const headers = {
       'Content-Type': 'application/json',
     }
-    if (method === 'GET' && body) {
-      console.error('Gitlab API error (4) - GET request with body', { url, method, body, params })
+    if (method === 'GET' && requestBody) {
+      console.error('Gitlab API error (4) - GET request with body', { url, method, body: requestBody, params })
     }
     // With or without body
     let response
+    const body = requestBody ? JSON.stringify(requestBody) : undefined
     try {
-      response = await fetch(url, body && method !== 'GET' ? {
+      if(body && Buffer.byteLength(body) > 1024 * 100) {
+        console.warn('Gitlab API warning - body too big', Buffer.byteLength(body), 'bytes', { url, method, params })
+      }
+      response = await fetch(url, requestBody && method !== 'GET' ? {
         agent: this.getAgent(),
         method,
         headers,
-        body: body ? JSON.stringify(body) : undefined
+        body,
       } : {
         agent: this.getAgent(),
         method,
@@ -298,11 +304,12 @@ export default class GitlabConnector implements StorageConnector {
       try {
         return await response.text()
       } catch (e) {
-        console.error('Gitlab API error (6) - could not parse response', response.status, response.statusText, { url, method, body, params }, e)
+        console.error('Gitlab API error (6) - could not parse response', response.status, response.statusText, { url, method, body: requestBody, params }, e)
         throw new ApiError(`Gitlab API error (6): response body not available. ${e.message}`, 500)
       }
     }()
     if (!response.ok) {
+      console.error('Gitlab API error (7) - response not ok', response.status, response.statusText, { url, method, body: requestBody, params, text: text })
       if (text.includes('A file with this name doesn\'t exist')) {
         throw new ApiError('Gitlab API error (5): Not Found', 404)
       } else if (response.status === 401 && this.getSessionToken(session).token?.refresh_token) {
@@ -342,7 +349,7 @@ export default class GitlabConnector implements StorageConnector {
         }
       } else {
         const message = response.statusText
-        console.error('Gitlab API error (1)', response.status, response.statusText, { url, method, body, params, text: text, message })
+        console.error('Gitlab API error (1)', response.status, response.statusText, { url, method, body: requestBody, params, text: text, message })
         throw new ApiError(`Gitlab API error (1): ${message} (${text})`, response.status)
       }
     }
@@ -355,7 +362,7 @@ export default class GitlabConnector implements StorageConnector {
         throw e
       } else {
         // Useless error linked to the fact that the response is not JSON
-        console.error('Gitlab API error (3) - could not parse response', response.status, response.statusText, { url, method, body, params, text: text })
+        console.error('Gitlab API error (3) - could not parse response', response.status, response.statusText, { url, method, body: requestBody, params, text: text })
         return text
       }
     }
@@ -380,14 +387,12 @@ export default class GitlabConnector implements StorageConnector {
           'Authorization': `Bearer ${token}`,
         },
       })
-      console.log('metaRes', metaRes.status, metaRes.statusText, { metaUrl })
 
       const metaText = await metaRes.text()
       if (!metaRes.ok) {
         console.error('GitLab raw error (meta)', metaRes.status, metaRes.statusText, { metaUrl, metaText })
         throw new ApiError(`GitLab raw error (meta): ${metaRes.statusText}`, metaRes.status)
       }
-      console.log('metaText', metaText)
 
       try {
         const meta = JSON.parse(metaText)
@@ -395,7 +400,6 @@ export default class GitlabConnector implements StorageConnector {
       } catch (e) {
         throw new ApiError('GitLab raw error (meta): could not parse project info', 500)
       }
-      console.log('pathWithNamespace', pathWithNamespace)
 
       // Limit cache size, remove least recently used
       this.projectPathCache.set(projectId, pathWithNamespace!)
@@ -410,7 +414,6 @@ export default class GitlabConnector implements StorageConnector {
     const fileRes = await fetch(rawUrl, {
       agent: this.getAgent(),
     })
-    console.log('fileRes', fileRes.status, fileRes.statusText, { rawUrl, token })
 
     const contentType = fileRes.headers.get('content-type')
     if (contentType?.includes('text/html')) {
@@ -426,12 +429,9 @@ export default class GitlabConnector implements StorageConnector {
       console.error('GitLab raw error (1)', fileRes.status, fileRes.statusText, { rawUrl, errText })
       throw new ApiError(`GitLab raw error (1): ${fileRes.statusText} (${errText})`, fileRes.status)
     }
-    console.log('fileRes ok', fileRes.status, fileRes.statusText)
 
     try {
-      console.log('fileRes buffer', fileRes.headers.get('content-type'), fileRes.headers.get('content-length'))
       const buffer = await fileRes.buffer()
-      console.log('fileRes buffer', buffer.length)
       return buffer
     } catch (e) {
       console.error('GitLab raw error (3): could not read buffer', e)
@@ -843,27 +843,65 @@ export default class GitlabConnector implements StorageConnector {
     }
   }
 
-  async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback | undefined): Promise<void> {
-    status && await status({ message: 'in progress...', status: JobStatus.IN_PROGRESS })
-    // For each file
-    for (const file of files) {
-      // Convert to base64
-      const content = (await contentToBuffer(file.content)).toString('base64')
-      const path = this.getAssetPath(file.path)
+  async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback): Promise<void> {
+    status && await status({ message: `Preparing ${files.length} files`, status: JobStatus.IN_PROGRESS })
+
+    // List all the files in the repo
+    const existingPaths = new Set<string>()
+    let page = 1
+    let keepGoing = true
+    while (keepGoing) {
+      const tree = await this.callApi(session, `api/v4/projects/${websiteId}/repository/tree`, 'GET', null, {
+        recursive: true,
+        per_page: 100,
+        page,
+      })
+      for (const f of tree) {
+        if (f.type === 'blob') existingPaths.add(f.path)
+      }
+      keepGoing = tree.length === 100
+      page++
+    }
+
+    // Split the files into chunks to avoid the number of files limit
+    const chunks: ConnectorFile[][] = []
+    for (let i = 0; i < files.length; i += MAX_BATCH_UPLOAD_SIZE) {
+      chunks.push(files.slice(i, i + MAX_BATCH_UPLOAD_SIZE))
+    }
+
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+      const chunk = chunks[chunkIndex]
+      status && await status({ message: `Uploading batch ${chunkIndex + 1}/${chunks.length}`, status: JobStatus.IN_PROGRESS })
+
+      // Create the actions for the batch
+      const actions = await Promise.all(
+        chunk.map(async (file) => {
+          const content = (await contentToBuffer(file.content)).toString('base64')
+          const file_path = this.getAssetPath(file.path, false)
+          const actionType = existingPaths.has(file_path) ? 'update' : 'create'
+          return {
+            action: actionType,
+            file_path,
+            content,
+            encoding: 'base64',
+          }
+        })
+      ) as GitlabAction[]
 
       try {
-        await this.updateFile(session, websiteId, path, content, true)
+        await this.callApi(session, `api/v4/projects/${websiteId}/repository/commits`, 'POST', {
+          branch: 'main',
+          commit_message: `Batch update assets (${chunkIndex + 1}/${chunks.length})`,
+          actions,
+        })
       } catch (e) {
-        // If the file does not exist, create it
-        if (e.statusCode === 404 || e.httpStatusCode === 404 || e.message.endsWith('A file with this name doesn\'t exist')) {
-          await this.createFile(session, websiteId, path, content, true)
-        } else {
-          status && await status({ message: 'Error', status: JobStatus.ERROR })
-          throw e
-        }
+        console.error(`Batch ${chunkIndex + 1} failed`, e)
+        status && await status({ message: `Error in batch ${chunkIndex + 1}`, status: JobStatus.ERROR })
+        throw e
       }
     }
-    status && await status({ message: 'Successfull', status: JobStatus.SUCCESS })
+
+    status && await status({ message: 'All files uploaded successfully', status: JobStatus.SUCCESS })
   }
 
   async readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent> {

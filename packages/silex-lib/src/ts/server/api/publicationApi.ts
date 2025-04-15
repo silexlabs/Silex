@@ -127,12 +127,12 @@ export default function (config: ServerConfig): Router {
         const fileWithContent = file as ClientSideFileWithContent
         const fileWithSrc = file as ClientSideFileWithSrc
         if(!fileWithContent.content && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)
-        const src = fileWithSrc.src
+        const content = fileWithContent.content ?? await storage.readAsset(session, websiteId, fileWithSrc.src)
         return {
           // Destination
           path: file.permalink ?? file.path,
           // Content
-          content: fileWithContent.content ?? await storage.readAsset(session, websiteId, fileWithSrc.src),
+          content,
         }
       }))
 

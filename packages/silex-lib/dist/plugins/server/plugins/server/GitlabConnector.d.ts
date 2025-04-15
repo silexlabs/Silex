@@ -1,11 +1,6 @@
 import { ServerConfig } from '../../server/config';
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector } from '../../server/connectors/connectors';
 import { ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent } from '../../types';
-/**
- * Gitlab connector
- * @fileoverview Gitlab connector for Silex, connect to the user's Gitlab account to store websites
- * @see https://docs.gitlab.com/ee/api/oauth2.html
- */
 export interface GitlabOptions {
     clientId: string;
     clientSecret: string;
@@ -94,7 +89,7 @@ export default class GitlabConnector implements StorageConnector {
     /**
      * Call the Gitlab API with the user's token and handle errors
      */
-    callApi(session: GitlabSession, path: string, method?: 'POST' | 'GET' | 'PUT' | 'DELETE', body?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null, params?: any): Promise<any>;
+    callApi(session: GitlabSession, path: string, method?: 'POST' | 'GET' | 'PUT' | 'DELETE', requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null, params?: any): Promise<any>;
     private projectPathCache;
     downloadRawFile(session: GitlabSession, projectId: string, filePath: string): Promise<Buffer>;
     private generateCodeVerifier;
@@ -144,7 +139,7 @@ export default class GitlabConnector implements StorageConnector {
     duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void>;
     getWebsiteMeta(session: GitlabSession, websiteId: WebsiteId): Promise<WebsiteMeta>;
     setWebsiteMeta(session: GitlabSession, websiteId: WebsiteId, websiteMeta: WebsiteMetaFileContent): Promise<void>;
-    writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback | undefined): Promise<void>;
+    writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback): Promise<void>;
     readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent>;
     deleteAssets(session: GitlabSession, websiteId: string, fileNames: string[]): Promise<void>;
 }

@@ -79,10 +79,10 @@ function default_1(config) {
                 const fileWithSrc = file;
                 if (!fileWithContent.content && !fileWithSrc.src)
                     throw new PublicationError('Missing content or src in file', 400);
-                const src = fileWithSrc.src;
+                const content = fileWithContent.content ?? await storage.readAsset(session, websiteId, fileWithSrc.src);
                 return {
                     path: file.permalink ?? file.path,
-                    content: fileWithContent.content ?? await storage.readAsset(session, websiteId, fileWithSrc.src),
+                    content,
                 };
             }));
             res.json({
