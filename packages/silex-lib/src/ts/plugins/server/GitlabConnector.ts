@@ -839,7 +839,11 @@ export default class GitlabConnector implements StorageConnector {
 
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex]
-      status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Downloading assets`, status: JobStatus.IN_PROGRESS })
+      if (chunk.length > 1) {
+        status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Downloading ${chunk.length} files`, status: JobStatus.IN_PROGRESS })
+      } else {
+        status && await status({ message: `Downloading ${files.length} file`, status: JobStatus.IN_PROGRESS })
+      }
 
       // Create the actions for the batch
       const actions = await Promise.all(
@@ -856,7 +860,11 @@ export default class GitlabConnector implements StorageConnector {
         })
       ) as GitlabAction[]
 
-      status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Uploading assets`, status: JobStatus.IN_PROGRESS })
+      if (chunk.length > 1) {
+        status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Uploading ${chunk.length} files`, status: JobStatus.IN_PROGRESS })
+      } else {
+        status && await status({ message: `Uploading ${files.length} file`, status: JobStatus.IN_PROGRESS })
+      }
       try {
         await this.callApi(session, `api/v4/projects/${websiteId}/repository/commits`, 'POST', {
           branch: 'main',
@@ -870,7 +878,7 @@ export default class GitlabConnector implements StorageConnector {
       }
     }
 
-    status && await status({ message: 'All files uploaded successfully', status: JobStatus.SUCCESS })
+    status && await status({ message: `All ${files.length} files uploaded`, status: JobStatus.SUCCESS })
   }
 
   async readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent> {
