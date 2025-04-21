@@ -839,7 +839,7 @@ export default class GitlabConnector implements StorageConnector {
 
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex]
-      if (chunk.length > 1) {
+      if (chunks.length > 1) {
         status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Downloading ${chunk.length} files`, status: JobStatus.IN_PROGRESS })
       } else {
         status && await status({ message: `Downloading ${files.length} file`, status: JobStatus.IN_PROGRESS })
@@ -860,7 +860,7 @@ export default class GitlabConnector implements StorageConnector {
         })
       ) as GitlabAction[]
 
-      if (chunk.length > 1) {
+      if (chunks.length > 1) {
         status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Uploading ${chunk.length} files`, status: JobStatus.IN_PROGRESS })
       } else {
         status && await status({ message: `Uploading ${files.length} file`, status: JobStatus.IN_PROGRESS })
