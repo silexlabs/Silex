@@ -103,13 +103,13 @@ describe('SimpleSelector', () => {
     expect(validate('*')).toBe('*')
     expect(validate('the')).toBe('.the')
     expect(validate('the-')).toBe(false)
-    expect(validate('the-component')).toBe('the-component')
-    expect(validate('almost -valid')).toBe('almost--valid') // custom tag not starting with data-
+    expect(validate('the-component')).toBe('.the-component')
+    expect(validate('almost -valid')).toBe('.almost--valid')
     expect(validate('9invalid')).toBe(false)
     expect(validate('invalid ')).toBe(false)
-    expect(validate('inva lid')).toBe('inva-lid')
+    expect(validate('inva lid')).toBe('.inva-lid')
     expect(validate('data-')).toBe(false)
-    expect(validate('data-test')).toBe('data-test')
+    expect(validate('data-test')).toBe('.data-test')
     expect(validate('div')).toBe('div')
     expect(validate('a')).toBe('a')
     expect(validate('A')).toBe('a')
@@ -129,6 +129,12 @@ describe('SimpleSelector', () => {
     expect(validate('[href="#')).toBe('[href="#"]')
     expect(validate('[href="#')).toBe('[href="#"]')
     expect(validate('[href="#"]')).toBe('[href="#"]')
+
+    // define a custom tag
+    const customTag = 'the-component'
+    expect(validate(customTag)).toBe(`.${customTag}`) // Not a custom element yet
+    window.customElements.define(customTag, class extends HTMLElement {})
+    expect(validate(customTag)).toBe(customTag) // Now it is a custom element
   })
 
   test('suggest should return creation suggestions for empty filter or *', () => {

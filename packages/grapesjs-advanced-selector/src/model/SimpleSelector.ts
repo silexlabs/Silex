@@ -232,9 +232,9 @@ export function validate(_value: string): string | false {
     if(ATTRIBUTES.includes(name)) return `[${name}="${val}"]`
   }
   // Custom attributes should start with data-
-  if (value.match(/^\[data-[_a-zA-Z]+[_a-zA-Z0-9-]*\]?$/)) return value.replace(']', '') + ']'
-  // Custom tags should contain a -
-  if(value.match(/^[a-z-]*[a-z]$/) && value.includes('-')) return value
+  if (value.match(/^\[data-[_a-zA-Z]+[_a-zA-Z0-9]*\]?$/)) return value.replace(']', '') + ']'
+  // Custom tags should contain a - and be defined as web components
+  if(value.match(/^[a-z-]*[a-z]$/) && value.includes('-') && window.customElements.get(value)) return value
   // Tags should be from the TAGS list
   if (value.match(/^[a-z]*$/) && TAGS.includes(value as TAG)) return value
   // Classes should start with . then a letter
