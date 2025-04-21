@@ -46,6 +46,9 @@ export interface DataSourceEditorOptions {
   dataSources: IDataSourceOptions[],
   view: DataSourceEditorViewOptions,
   filters: Filter[] | string,
+  commands: {
+    refresh: string,
+  },
 }
 
 // Queries
@@ -87,6 +90,7 @@ export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
 export const DATA_SOURCE_CHANGED = 'data-source:changed'
 export const COMPONENT_STATE_CHANGED = 'component:state:changed'
+export const COMMAND_REFRESH = 'data-source:refresh'
 
 // For use by the DataSourceManager class which is a Backbone collection
 export interface IDataSourceModel extends Backbone.Model, IDataSource {}

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, DataSourceEditorViewOptions, getElementFromOption, Properties } from '..'
+import { DataSourceEditor, DataSourceEditorOptions, DataSourceEditorViewOptions, getElementFromOption, Properties } from '..'
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
@@ -27,15 +27,15 @@ import '@silexlabs/expression-input'
 import './properties-editor'
 import './custom-states-editor'
 
-export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorViewOptions> = {}) => {
-  if (opts.el) {
+export default (editor: DataSourceEditor, opts: DataSourceEditorOptions) => {
+  if (opts.view.el) {
     const options: DataSourceEditorViewOptions = {
       styles: PROPERTY_STYLES,
       defaultFixed: false,
       disableStates: false,
       disableAttributes: false,
       disableProperties: false,
-      ...opts,
+      ...opts.view,
     }
 
     // create a wrapper for our UI

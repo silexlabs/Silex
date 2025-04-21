@@ -41,6 +41,7 @@ export function getDataSourceClass(ds: IDataSource | { attributes: IDataSource }
 /**
  * GrapesJs plugin to manage data sources
  */
+// @ts-expect-error FIXME: TS2344: Type 'IDataSourceModel' does not satisfy the constraint 'Model<any, ModelSetOptions, any>'.
 export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
   protected dataTree: DataTree
   get filters() {
@@ -50,7 +51,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     this.dataTree.filters = this.filters
   }
 
-  constructor(models: IDataSourceModel[], protected editor: DataSourceEditor,  protected options: DataSourceEditorOptions) {
+  constructor(models: IDataSource[], protected editor: DataSourceEditor,  protected options: DataSourceEditorOptions) {
     super(models, options)
 
     // Make sure the operations are undoable
@@ -93,7 +94,8 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
 
     // Update the data tree when the data sources change
     this.on('add update remove change', () => this.modelChanged())
-    this.on(DATA_SOURCE_READY, () => this.modelReady())
+    this.on(DATA_SOURCE_READY, (ds: IDataSource) => this.modelReady(ds))
+    this.on(DATA_SOURCE_CHANGED, (e: CustomEvent) => this.modelChanged(e))
 
     // Start listening to data sources
     this.modelChanged()
@@ -159,9 +161,9 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
   /**
    * Listen to data source changes
    */
-  modelReady(e?: CustomEvent) {
+  modelReady(ds: IDataSource) {
     // Forward the event
-    this.editor.trigger(DATA_SOURCE_READY, e?.detail)
+    this.editor.trigger(DATA_SOURCE_READY, ds)
   }
 
   getDataTree() {

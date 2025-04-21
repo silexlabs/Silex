@@ -121,7 +121,7 @@ export declare class DataSourceManager extends Backbone.Collection<IDataSourceMo
 	protected dataTree: DataTree;
 	get filters(): Filter[];
 	set filters(filters: Filter[]);
-	constructor(models: IDataSourceModel[], editor: DataSourceEditor, options: DataSourceEditorOptions);
+	constructor(models: IDataSource[], editor: DataSourceEditor, options: DataSourceEditorOptions);
 	/**
 	 * Get all data sources
 	 */
@@ -148,7 +148,7 @@ export declare class DataSourceManager extends Backbone.Collection<IDataSourceMo
 	/**
 	 * Listen to data source changes
 	 */
-	modelReady(e?: CustomEvent): void;
+	modelReady(ds: IDataSource): void;
 	getDataTree(): DataTree;
 	getPageQuery(page: Page): Record<DataSourceId, string>;
 }
@@ -176,6 +176,9 @@ export interface DataSourceEditorOptions {
 	dataSources: IDataSourceOptions[];
 	view: DataSourceEditorViewOptions;
 	filters: Filter[] | string;
+	commands: {
+		refresh: string;
+	};
 }
 export type PageId = string;
 export interface Query {
@@ -202,6 +205,7 @@ export declare const DATA_SOURCE_READY = "data-source:ready";
 export declare const DATA_SOURCE_ERROR = "data-source:error";
 export declare const DATA_SOURCE_CHANGED = "data-source:changed";
 export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
+export declare const COMMAND_REFRESH = "data-source:refresh";
 export interface IDataSourceModel extends Backbone.Model, IDataSource {
 }
 export type DataSourceType = "graphql";
@@ -566,16 +570,23 @@ export declare function optionsFormKeySelector(editor: DataSourceEditor, field: 
  */
 export declare function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined, optionNameForError: string): HTMLElement;
 export declare function getDefaultOptions(postFix?: string): GraphQLOptions;
-export declare function createDataSource(opts?: Partial<GraphQLOptions>, postFix?: string): IDataSourceModel;
+export declare function createDataSource(opts?: Partial<GraphQLOptions>, postFix?: string): IDataSource;
 /**
  * Editor for a state of the selected element's properties
  *
  * Usage:
  *
  * ```
- * <properties-editor disabled>
- *   <style> / * Custom styles * / </style>
- * </properties-editor>
+ * <state-editor
+ *  name="state"
+ *  disabled
+ *  hide-loop-data
+ *  parent-name="parent"
+ *  no-filters
+ *  root-type="root"
+ *  default-fixed
+ *  dismiss-current-component-states
+ *  ></state-editor>
  * ```
  *
  */

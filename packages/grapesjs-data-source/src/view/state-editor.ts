@@ -36,9 +36,16 @@ import { fromStored, getExpressionResultType } from '../model/token'
  * Usage:
  * 
  * ```
- * <properties-editor disabled>
- *   <style> / * Custom styles * / </style>
- * </properties-editor>
+ * <state-editor
+ *  name="state"
+ *  disabled
+ *  hide-loop-data
+ *  parent-name="parent"
+ *  no-filters
+ *  root-type="root"
+ *  default-fixed
+ *  dismiss-current-component-states
+ *  ></state-editor>
  * ```
  * 
  */
@@ -125,7 +132,7 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(DATA_SOURCE_CHANGED, this.renderBinded)
+    this.editor?.on(DATA_SOURCE_CHANGED, () => this.renderBinded())
   }
 
   override disconnectedCallback() {

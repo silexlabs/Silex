@@ -424,7 +424,7 @@ class SettingsHeaders extends LitElement {
           @click=${() => {
     // Default name and value
     let name = 'Authorization'
-    let value = 'Bearera XXXXXX'
+    let value = 'Bearer XXXXXX'
     // Make sure the header name is unique
     // Add a number if the header already exists
     let i = 0
