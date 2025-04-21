@@ -68,7 +68,6 @@ export default class InlineSelectComponent extends StylableElement {
     }
     select {
       ${ INVISIBLE_SELECT }
-      text-align: center;
       border-bottom: 1px dashed;
     }
     aside {
