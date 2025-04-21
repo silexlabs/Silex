@@ -41,7 +41,6 @@ export function getDataSourceClass(ds: IDataSource | { attributes: IDataSource }
 /**
  * GrapesJs plugin to manage data sources
  */
-// @ts-expect-error FIXME: TS2344: Type 'IDataSourceModel' does not satisfy the constraint 'Model<any, ModelSetOptions, any>'.
 export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
   protected dataTree: DataTree
   get filters() {
