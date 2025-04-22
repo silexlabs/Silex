@@ -15,7 +15,7 @@ export interface NotificationOptions {
 		success: string;
 	};
 }
-export interface NotificationModel extends Backbone.Model<NotificationOptions> {
+declare class NotificationModel extends Backbone.Model<any, Backbone.ModelSetOptions, any> {
 }
 declare class Notification {
 	protected editor: NotificationEditor;

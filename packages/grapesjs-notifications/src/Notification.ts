@@ -1,6 +1,7 @@
 import { Component, Page } from 'grapesjs'
 import { NotificationEditor } from './NotificationManager'
 import { NOTIFICATION_ADD } from './commands'
+import Backbone from 'backbone'
 
 export interface NotificationOptions {
   message: string
@@ -16,7 +17,7 @@ export interface NotificationOptions {
   }
 }
 
-export interface NotificationModel extends Backbone.Model<NotificationOptions> {}
+export class NotificationModel extends Backbone.Model<any, Backbone.ModelSetOptions, any> {}
 
 export class Notification {
   componentId: string | null = null
