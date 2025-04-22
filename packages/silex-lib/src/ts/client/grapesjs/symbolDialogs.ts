@@ -15,10 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// import { cmdAddSymbol } from '@silexlabs/grapesjs-symbols'
-
-const cmdAddSymbol = 'symbols:add'
-
 export const cmdPromptAddSymbol = 'symbol-prompt-add'
 
 export default (editor, opts) => {
@@ -33,7 +29,7 @@ export default (editor, opts) => {
     run: (_, sender) => {
       const label = prompt('Label', getNext('Symbol '))
       const icon = 'fa-gem'
-      editor.runCommand(cmdAddSymbol, { label, icon })
+      editor.runCommand('symbols:add', { label, icon })
     }
   })
 }
