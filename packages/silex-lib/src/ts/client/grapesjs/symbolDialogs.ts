@@ -15,7 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { cmdAddSymbol } from '@silexlabs/grapesjs-symbols'
+// import { cmdAddSymbol } from '@silexlabs/grapesjs-symbols'
+
+const cmdAddSymbol = 'symbols:add'
 
 export const cmdPromptAddSymbol = 'symbol-prompt-add'
 

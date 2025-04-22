@@ -32,11 +32,11 @@ import blocksBasicPlugin from 'grapesjs-blocks-basic'
 import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
 import codePlugin from 'grapesjs-custom-code'
-import uiSuggestClasses from '@silexlabs/grapesjs-ui-suggest-classes'
 import filterStyles from '@silexlabs/grapesjs-filter-styles'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin from '@silexlabs/grapesjs-fonts'
+import selectorPlugin from '@silexlabs/grapesjs-advanced-selector'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
@@ -48,7 +48,7 @@ import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
 import notificationsPlugin, { NotificationEditor } from '@silexlabs/grapesjs-notifications'
-import keymapsDialogPlugin, { cmdKeymapsDialog, defaultOptions as keymapsDialogOpts } from '@silexlabs/grapesjs-keymaps-dialog'
+import keymapsDialogPlugin, { cmdKeymapsDialog } from '@silexlabs/grapesjs-keymaps-dialog'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -72,6 +72,7 @@ const plugins = [
   {name: 'grapesjs-style-bg', value: backgroundPlugin},
   {name: './settings', value: settingsDialog},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
+  {name: '@silexlabs/grapesjs-advanced-selector', value: selectorPlugin},
   {name: './new-page-dialog', value: newPageDialog},
   {name: './page-panel', value: pagePanelPlugin},
   {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
@@ -84,7 +85,6 @@ const plugins = [
   {name: 'grapesjs-custom-code', value: codePlugin},
   {name: './internal-links', value: internalLinksPlugin},
   {name: './keymaps', value: keymapsPlugin},
-  {name: '@silexlabs/grapesjs-ui-suggest-classes', value: uiSuggestClasses},
   {name: '@silexlabs/grapesjs-filter-styles', value: filterStyles},
   {name: './symbolDialogs', value: symbolDialogsPlugin},
   {name: '@silexlabs/grapesjs-symbols', value: symbolsPlugin},
@@ -170,6 +170,10 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       actions: ['bold', 'italic', 'underline', 'strikethrough', 'link', 'wrap', orderedList, unorderedList],
     },
 
+    selectorManager: {
+      custom: true, // This should not be needed, check index.js
+      escapeName: (name) => `${name}`,
+    },
 
     plugins: plugins.map(p => p.value),
 
@@ -290,10 +294,6 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         cmdOpenNewPageDialog,
         cmdOpenSettings,
         appendTo: '.page-panel-container',
-      },
-      [uiSuggestClasses.toString()]: {
-        enableCount: false,
-        enablePerformance: false,
       },
       [filterStyles.toString()]: {
         appendBefore: '.gjs-sm-sectors',
@@ -417,9 +417,6 @@ export async function initEditor(config: EditorConfig) {
 
       // Use the style filter plugin
       editor.StyleManager.addProperty('extra', { extend: 'filter' })
-
-      // Add a class to the Style Manager's sticky top section
-      editor.SelectorManager.selectorTags.el.parentElement.classList.add('top-style-section')
 
       // Add the notifications container
       document.body.querySelector('.notifications-container')?.appendChild(notificationContainer)
