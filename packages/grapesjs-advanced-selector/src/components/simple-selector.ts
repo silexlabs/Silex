@@ -4,7 +4,7 @@ import { styleMap } from 'lit/directives/style-map.js'
 import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName, COLOR_FOR_TYPE, AttributeOperatorType } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
-import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
+import { customizeInput, customizeSelect, FOCUS_VISIBLE } from '../styles'
 
 export default class SimpleSelectorComponent extends StylableElement {
 
@@ -31,7 +31,7 @@ export default class SimpleSelectorComponent extends StylableElement {
    * A list of all the classes, IDs, tags, custom tags, attributes, custom attributes
    * that are available in the document, applicable to the current selection
    */
-  @property({ type: Object, attribute: true, reflect: false })
+  @property({ type: Array, attribute: true, reflect: false })
   public suggestions: SimpleSelector[] = []
 
   /**
@@ -46,6 +46,9 @@ export default class SimpleSelectorComponent extends StylableElement {
   }
   private _editing = false
 
+  @property({ type: Boolean, attribute: true, reflect: false })
+    readonly = false
+
   // /////////////////
   // Properties
 
@@ -56,13 +59,8 @@ export default class SimpleSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-    select:focus-visible,
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible {
-      outline: initial !important;
-      box-shadow: revert !important;
-    }
+  :host {
+    ${ FOCUS_VISIBLE }
     section {
       display: flex;
       justify-content: space-between;
@@ -125,13 +123,11 @@ export default class SimpleSelectorComponent extends StylableElement {
     .asm-simple-selector__active {
       display: none;
     }
+    ${ customizeInput('.asm-simple-selector__like-text') }
     .asm-simple-selector__like-text {
-      ${ INVISIBLE_INPUT }
       padding: .25rem;
     }
-    .asm-simple-selector__options-select {
-      ${ INVISIBLE_SELECT }
-    }
+    ${ customizeSelect('.asm-simple-selector__options-select') }
     .asm-simple-selector__name {
       display: inline-flex;
       text-wrap: wrap;
@@ -144,6 +140,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     .asm-simple-selector__selector {
       cursor: text;
     }
+  }
   `
 
   override focus() {
@@ -320,18 +317,19 @@ export default class SimpleSelectorComponent extends StylableElement {
     `
   }
 
-  private renderSelectorInput({ suggestions, valid }: {suggestions: SimpleSelectorSuggestion[], valid: boolean}) {
+  private renderSelectorInput({ suggestions, valid }: { suggestions: SimpleSelectorSuggestion[], valid: boolean }) {
     return html`
-      <input
-        ${ref(this.selectorInputRef)}
-        list="suggestions"
-        is="resize-input"
-        type="text"
-        autocomplete="off"
-        .value=${getEditableName(this.value!)}
-        .disabled=${!this.editing}
-        class="asm-simple-selector__like-text asm-simple-selector__selector"
-        @keydown=${(event: KeyboardEvent) => {
+    <input
+      ${ref(this.selectorInputRef)}
+      list="suggestions"
+      is="resize-input"
+      type="text"
+      autocomplete="off"
+      .value=${getEditableName(this.value!)}
+      .disabled=${!this.editing}
+      class="asm-simple-selector__like-text asm-simple-selector__selector"
+      aria-invalid=${!valid}
+      @keydown=${(event: KeyboardEvent) => {
     if (!this.value) return
     if (event.key === 'Escape') {
       this.cancelEdit()
@@ -341,15 +339,17 @@ export default class SimpleSelectorComponent extends StylableElement {
       event.stopPropagation()
     }
   }}
-        @keyup=${() => {
+      @keyup=${() => {
+    const input = this.selectorInputRef.value
+    if (input) {
+      input.setCustomValidity(valid ? '' : 'Invalid selector')
+      input.reportValidity()
+    }
     this.requestUpdate()
   }}
-    @click=${(event: MouseEvent) => {
-    event.stopPropagation()
-  }}
-        .valid=${valid}
-      />
-    `
+      @click=${(event: MouseEvent) => event.stopPropagation()}
+    />
+  `
   }
 
   private renderSuggestionList(suggestions: SimpleSelectorSuggestion[], selectorString: string): TemplateResult {

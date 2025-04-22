@@ -8,6 +8,7 @@ import { Operator, OPERATORS } from '../model/Operator'
 import InlineSelectComponent from './inline-select'
 import CompoundSelectorComponent from './compound-selector'
 import { CompoundSelector } from '../model/CompoundSelector'
+import { FOCUS_VISIBLE } from '../styles'
 
 /**
  * A component to display and edit a complex selector
@@ -39,7 +40,7 @@ export default class ComplexSelectorComponent extends StylableElement {
    * A list of all the classes, IDs, tags, custom tags, attributes, custom attributes
    * that are available in the document, applicable to the current selection
    */
-  @property({ type: Object, attribute: true, reflect: false })
+  @property({ type: Array, attribute: true, reflect: false })
   public suggestions: SimpleSelector[] = []
 
 
@@ -47,7 +48,7 @@ export default class ComplexSelectorComponent extends StylableElement {
    * A list of all the classes, IDs, tags, custom tags, attributes, custom attributes
    * that are available to the related selector
    */
-  @property({ type: Object, attribute: true, reflect: false })
+  @property({ type: Array, attribute: true, reflect: false })
   public relations: SimpleSelector[] = []
 
 
@@ -57,27 +58,22 @@ export default class ComplexSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-    select:focus-visible,
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible {
-      outline: initial !important;
-      box-shadow: revert !important;
-      border: 1px solid !important;
+  :host {
+    ${ FOCUS_VISIBLE }
+    & {
+      display: block;
+      text-align: left;
+      padding: 0.5rem 0;
     }
     button:hover, a:hover {
       transform: translateX(1px);
       font-weight: bold;
     }
-    :host {
-      display: block;
-      text-align: left;
-      padding: 0.5rem 0;
-    }
     button.asm__add-inline {
       font-size: 0.8rem;
       background: transparent;
     }
+  }
   `
 
   override dispatchEvent(event: Event): boolean {

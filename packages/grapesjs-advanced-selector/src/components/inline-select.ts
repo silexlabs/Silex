@@ -5,7 +5,7 @@ import { PseudoClass } from '../model/PseudoClass'
 import { Operator } from '../model/Operator'
 import { createRef, ref } from 'lit/directives/ref.js'
 import './resize-input'
-import { INVISIBLE_INPUT, INVISIBLE_SELECT } from '../styles'
+import { customizeInput, customizeSelect, FOCUS_VISIBLE } from '../styles'
 
 type Option = PseudoClass | Operator
 
@@ -37,14 +37,8 @@ export default class InlineSelectComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-    select:focus-visible,
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible {
-      outline: initial !important;
-      box-shadow: revert !important;
-      border: 1px solid !important;
-    }
+  :host {
+    ${ FOCUS_VISIBLE }
     button:hover, a:hover {
       transform: translateY(1px);
       color: var(--gjs-primary-color, #333);
@@ -66,15 +60,15 @@ export default class InlineSelectComponent extends StylableElement {
       display: flex;
       justify-content: space-between;
     }
+    ${ customizeSelect('select') }
     select {
-      ${ INVISIBLE_SELECT }
       border-bottom: 1px dashed;
     }
     aside {
       flex: 0 0 auto;
     }
+    ${ customizeInput('input') }
     input {
-      ${ INVISIBLE_INPUT }
       text-align: center;
     }
     .asm-inline-select__btn {
@@ -97,6 +91,7 @@ export default class InlineSelectComponent extends StylableElement {
     .unbreakable {
       white-space: nowrap;
     }
+  }
   `
 
   override render(): TemplateResult {
@@ -186,7 +181,7 @@ export default class InlineSelectComponent extends StylableElement {
         ${ ref(this.paramRef) }
         type="text"
         autocomplete="off"
-        .value=${ (this.value as PseudoClass).param ?? '' } // It may not be a pseudo class, in which case param will be undefined
+        .value=${ (this.value as PseudoClass).param ?? '' /* It may not be a pseudo class, in which case param will be undefined */}
         placeholder=""
         @input=${ (e: Event) => {
     this.select({

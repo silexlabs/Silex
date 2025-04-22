@@ -3,6 +3,7 @@ import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
 import { ComplexSelector, fromString, same, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
+import { FOCUS_VISIBLE, customizeSelect } from '../styles'
 
 export class CurrentSelectorDisplay extends StylableElement {
   /**
@@ -42,14 +43,8 @@ export class CurrentSelectorDisplay extends StylableElement {
   private selectRef = createRef<HTMLSelectElement>()
 
   static override styles = css`
-    select:focus-visible,
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible {
-      outline: initial !important;
-      box-shadow: revert !important;
-      border: 1px solid !important;
-    }
+  :host {
+    ${ FOCUS_VISIBLE }
     :host {
       font-size: 0.65rem;
       padding: 0.5rem 0;
@@ -58,8 +53,8 @@ export class CurrentSelectorDisplay extends StylableElement {
       display: flex;
       border-top: 1px solid var(--gjs-primary-color, #333);
       background-color: var(--gjs-main-dark-color, #222);
+      ${ customizeSelect('select.value') }
       select.value {
-        background-color: transparent;
         border: none;
         color: var(--gjs-font-color-active, #f8f8f8);
         color: var(--gjs-color-highlight, #71b7f1);
@@ -84,7 +79,7 @@ export class CurrentSelectorDisplay extends StylableElement {
           margin: 0 0.25rem;
         }
       }
-      sidebar {
+      aside {
         ul {
           display: flex;
           align-items: center;
@@ -97,12 +92,12 @@ export class CurrentSelectorDisplay extends StylableElement {
           padding: 0;
           margin: 0;
           border: 1px solid transparent;
+          opacity: 0.8;
           &:hover {
-            border-color: var(--gjs-secondary-color, #fff);
+            transform: translateY(-1px);
+            opacity: 1;
+            background-color: var(--gjs-primary-color, #444);
           }
-        }
-        button:hover {
-          color: var(--gjs-color-highlight, #71b7f1);
         }
         .specificity {
           font-size: small;
@@ -136,6 +131,7 @@ export class CurrentSelectorDisplay extends StylableElement {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
     }
+  }
   `
 
   override render(): TemplateResult {
@@ -192,7 +188,7 @@ export class CurrentSelectorDisplay extends StylableElement {
           </option>`
     })}
         </select>
-        <sidebar>
+        <aside>
           <ul>
             <li
               .title=${ this.t('Specificity') }
@@ -240,7 +236,7 @@ export class CurrentSelectorDisplay extends StylableElement {
             </li>
             ` : ''}
           </ul>
-        </sidebar>
+        </aside>
       </main>
     `
   }

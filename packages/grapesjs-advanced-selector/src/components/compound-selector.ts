@@ -5,6 +5,8 @@ import { isSameSelector, SimpleSelector, SimpleSelectorType, specificity } from 
 import { css, html, TemplateResult } from 'lit'
 import SimpleSelectorComponent from './simple-selector'
 import { PSEUDO_CLASSES } from '../model/PseudoClass'
+import { FOCUS_VISIBLE } from '../styles'
+import './inline-select'
 
 /**
  * A component to display and edit a compound selector
@@ -39,7 +41,7 @@ export default class CompoundSelectorComponent extends StylableElement {
    * A list of all the classes, IDs, tags, custom tags, attributes, custom attributes
    * that are available in the document, applicable to the current selection
    */
-  @property({ type: Object, attribute: true, reflect: false })
+  @property({ type: Array, attribute: true, reflect: false })
   public suggestions: SimpleSelector[] = []
 
   @property({ type: Boolean, attribute: 'disable-pseudo-class' })
@@ -51,14 +53,8 @@ export default class CompoundSelectorComponent extends StylableElement {
   // /////////////////
   // Element overrides
   static override styles = css`
-    select:focus-visible,
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible {
-      outline: initial !important;
-      box-shadow: revert !important;
-      border: 1px solid !important;
-    }
+  :host {
+    ${ FOCUS_VISIBLE }
     button:hover, a:hover {
       transform: translateX(1px);
       font-weight: bold;
@@ -79,6 +75,7 @@ export default class CompoundSelectorComponent extends StylableElement {
       font-size: 0.8rem;
       background: transparent;
     }
+  }
   `
 
   override dispatchEvent(event: Event): boolean {
@@ -126,7 +123,7 @@ export default class CompoundSelectorComponent extends StylableElement {
                 @change=${ this.changePseudoClass }
                 placeholder=""
               ></inline-select>
-            <div>
+            </div>
           ` : html`
             <button
               class="gjs-btn-prim asm__add-inline"
