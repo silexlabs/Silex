@@ -14,10 +14,6 @@
 	path = packages/node_modules-path
 	url = git@github.com:lexoyo/node_modules-path.git
 	branch = main
-[submodule "packages/grapesjs-directus-storage"]
-	path = packages/grapesjs-directus-storage
-	url = git@github.com:silexlabs/grapesjs-directus-storage.git
-	branch = main
 [submodule "packages/grapesjs-loading"]
 	path = packages/grapesjs-loading
 	url = git@github.com:silexlabs/grapesjs-loading.git
