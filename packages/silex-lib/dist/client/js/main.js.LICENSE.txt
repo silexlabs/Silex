@@ -21,7 +21,7 @@
 
 /*! @silexlabs/grapesjs-filter-styles - 0.0.3 */
 
-/*! @silexlabs/grapesjs-loading - 1.0.7 */
+/*! @silexlabs/grapesjs-loading - 1.0.9 */
 
 /*! grapesjs-style-border - 1.0.4 */
 
