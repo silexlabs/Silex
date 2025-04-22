@@ -45,7 +45,7 @@ export class CurrentSelectorDisplay extends StylableElement {
   static override styles = css`
   :host {
     ${ FOCUS_VISIBLE }
-    :host {
+    & {
       font-size: 0.65rem;
       padding: 0.5rem 0;
     }

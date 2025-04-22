@@ -5,6 +5,7 @@ import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, 
 import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customizeInput, customizeSelect, FOCUS_VISIBLE } from '../styles'
+import './resize-input'
 
 export default class SimpleSelectorComponent extends StylableElement {
 

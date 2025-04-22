@@ -9,6 +9,8 @@ import InlineSelectComponent from './inline-select'
 import CompoundSelectorComponent from './compound-selector'
 import { CompoundSelector } from '../model/CompoundSelector'
 import { FOCUS_VISIBLE } from '../styles'
+import './inline-select'
+import './compound-selector'
 
 /**
  * A component to display and edit a complex selector

@@ -7,6 +7,7 @@ import SimpleSelectorComponent from './simple-selector'
 import { PSEUDO_CLASSES } from '../model/PseudoClass'
 import { FOCUS_VISIBLE } from '../styles'
 import './inline-select'
+import './simple-selector'
 
 /**
  * A component to display and edit a compound selector

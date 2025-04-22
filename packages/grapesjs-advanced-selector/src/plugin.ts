@@ -3,6 +3,8 @@ import { html, render } from 'lit'
 import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
 import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
+import './components/complex-selector'
+import './components/current-selector-display'
 
 ////////////////
 // Types
@@ -83,7 +85,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
 
       <current-selector-display
         .t=${(key: string) => getTranslation(editor, key)}
-        .value=${getSelector(components)}
+        .value=${getSelector(components) || undefined}
         .selectors=${getSelectors(editor)}
         .helpLink=${options.helpLinks.actionBar}
         .error=${getTranslation(editor, errors || '')}

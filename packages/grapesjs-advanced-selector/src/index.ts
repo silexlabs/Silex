@@ -1,15 +1,12 @@
-// Web components
-import './components/simple-selector.ts'
-import './components/inline-select.ts'
-import './components/compound-selector.ts'
-import './components/complex-selector.ts'
-import './components/current-selector-display.ts'
-
 // GrapesJs Plugin
 import { AdvancedSelectorOptions, initASM, initListeners } from './plugin'
 import { Editor } from 'grapesjs'
 import en from './i18n/en'
 import fr from './i18n/fr'
+
+// For devtools debugging
+export const name = '@silexlabs/grapesjs-advanced-selector'
+
 export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => {
   // Defaults
   const options = {

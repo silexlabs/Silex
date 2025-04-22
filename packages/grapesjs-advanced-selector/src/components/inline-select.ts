@@ -4,8 +4,8 @@ import { css, html, TemplateResult } from 'lit'
 import { PseudoClass } from '../model/PseudoClass'
 import { Operator } from '../model/Operator'
 import { createRef, ref } from 'lit/directives/ref.js'
-import './resize-input'
 import { customizeInput, customizeSelect, FOCUS_VISIBLE } from '../styles'
+import './resize-input'
 
 type Option = PseudoClass | Operator
 
@@ -39,6 +39,12 @@ export default class InlineSelectComponent extends StylableElement {
   static override styles = css`
   :host {
     ${ FOCUS_VISIBLE }
+    & {
+      display: block;
+      text-align: left;
+      padding: 0 0.5rem;
+      margin: 0.5rem 0;
+    }
     button:hover, a:hover {
       transform: translateY(1px);
       color: var(--gjs-primary-color, #333);
@@ -49,12 +55,6 @@ export default class InlineSelectComponent extends StylableElement {
       color: var(--gjs-secondary-color, #333);
       margin: 0;
       padding: 0;
-    }
-    :host {
-      display: block;
-      text-align: left;
-      padding: 0 0.5rem;
-      margin: 0.5rem 0;
     }
     section {
       display: flex;
