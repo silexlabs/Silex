@@ -1,4 +1,5 @@
 import Backbone from 'backbone';
+import { Model, ModelSetOptions } from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
 import { LitElement, TemplateResult } from 'lit';
 
@@ -206,7 +207,7 @@ export declare const DATA_SOURCE_ERROR = "data-source:error";
 export declare const DATA_SOURCE_CHANGED = "data-source:changed";
 export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
 export declare const COMMAND_REFRESH = "data-source:refresh";
-export interface IDataSourceModel extends Backbone.Model, IDataSource {
+export interface IDataSourceModel extends Model<any, ModelSetOptions, any>, IDataSource {
 }
 export type DataSourceType = "graphql";
 export interface IDataSourceOptions extends Backbone.ModelSetOptions {
