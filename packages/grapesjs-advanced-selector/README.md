@@ -11,7 +11,13 @@ Before: GrapesJs default Selector Manager
 
 After:
 
-[GrapesJs Advanced Selector Manager](https://github.com/silexlabs/grapesjs-advanced-selector)
+[GrapesJs Advanced Selector Manager](https://github.com/user-attachments/assets/14417ce8-004c-4657-a5a0-26d1969d06be)
+
+With `body h1.btn` selected:
+
+![Advanced Selector Manager with complex selector](https://github.com/user-attachments/assets/8628cdf5-d19e-4838-9584-b94a20b12434)
+
+
 
 ### Links
 
