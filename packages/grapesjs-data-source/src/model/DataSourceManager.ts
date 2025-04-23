@@ -47,7 +47,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     return this.dataTree.filters
   }
   set filters(filters: Filter[]) {
-    this.dataTree.filters = this.filters
+    this.dataTree.filters = filters
   }
 
   constructor(models: IDataSource[], protected editor: DataSourceEditor,  protected options: DataSourceEditorOptions) {
