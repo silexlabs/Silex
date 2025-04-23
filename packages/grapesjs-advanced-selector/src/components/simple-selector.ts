@@ -99,9 +99,6 @@ export default class SimpleSelectorComponent extends StylableElement {
     select {
       text-align: center;
     }
-    section:not(:has(.asm-simple-selector__active:checked)):not(:has(.asm-simple-selector__selector)) {
-      opacity: 0.5;
-    }
     input, select, button {
       font-family: inherit;
       font-size: inherit;
@@ -141,6 +138,10 @@ export default class SimpleSelectorComponent extends StylableElement {
     .asm-simple-selector__selector {
       cursor: text;
     }
+  }
+  /* FIXME: this should be inside :host but it breaks opactity when visible */
+  section:not(:has(.asm-simple-selector__active:checked)):not(:has(.asm-simple-selector__selector)) {
+    opacity: 0.5;
   }
   `
 
