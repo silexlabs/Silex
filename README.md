@@ -72,7 +72,6 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 | GrapesJS Keymap Dialog | `packages/grapesjs-keymaps-dialog` | `git@github.com:silexlabs/grapesjs-keymaps-dialog.git` | This GrapesJS plugin implements a floating UI showing the available keymaps for the editor. |
 | Grapesjs Fonts | `packages/grapesjs-fonts` | `git@github.com:silexlabs/grapesjs-fonts.git` | Custom Fonts plugin for grapesjs |
 | Grapesjs Filter Styles | `packages/grapesjs-filter-styles` | `git@github.com:silexlabs/grapesjs-filter-styles.git` | This plugin adds a search bar in the Style manager so that users can search for a CSS style |
-| Grapesjs Directus Storage | `packages/grapesjs-directus-storage` | `git@github.com:silexlabs/grapesjs-directus-storage.git` | Directus as a backend for GrapesJS |
 | GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
 | GrapesJS Advanced Selector Manager | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short,  |
 | Expression & Popin Form Components | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A set of reusable web components to manage expressions (chains of tokens) and form overlays.   |
@@ -144,16 +143,16 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files     928 text files.
-classified 404 filesDuplicate file check 404 files (295 known unique)Unique:      100 files                                          Unique:      200 files                                               307 unique files.                              
-Counting:  100Counting:  200Counting:  300     791 files ignored.
+     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files     918 text files.
+classified 407 filesDuplicate file check 407 files (296 known unique)Unique:      100 files                                          Unique:      200 files                                               310 unique files.                              
+Counting:  100Counting:  200Counting:  300     777 files ignored.
 
-github.com/AlDanial/cloc v 1.96  T=0.50 s (614.0 files/s, 204622.0 lines/s)
+github.com/AlDanial/cloc v 1.96  T=1.00 s (310.0 files/s, 102190.0 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     101            992           2600          62835
-TypeScript                     194           2448           6424          25838
+JavaScript                     104            975           2565          62699
+TypeScript                     194           2452           6429          25896
 GraphQL                          3             66              6            696
 JSX                              1              0              2            266
 Dockerfile                       3             12              9             73
@@ -161,7 +160,7 @@ Bourne Shell                     3              8              1             24
 liquid                           1              0              0              9
 Text                             1              0              0              2
 -------------------------------------------------------------------------------
-SUM:                           307           3526           9042          89743
+SUM:                           310           3513           9012          89665
 -------------------------------------------------------------------------------
 
 ```
