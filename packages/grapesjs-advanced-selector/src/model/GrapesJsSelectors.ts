@@ -224,7 +224,7 @@ export function setComponentSelector(component: Component, selector: ComplexSele
       classes.push((simpleSelector as ClassSelector).value)
       break
     default:
-      console.info('Unhandled selector type', simpleSelector)
+      console.warn('Unhandled selector type', simpleSelector)
     }
   })
   // FIXME: Add back the protected classes

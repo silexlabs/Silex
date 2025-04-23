@@ -196,10 +196,10 @@ export default class SimpleSelectorComponent extends StylableElement {
     `
   }
 
-  override dispatchEvent(event: Event): boolean {
-    console.info('[SIMPLE] Dispatching event', event)
-    return super.dispatchEvent(event)
-  }
+  // override dispatchEvent(event: Event): boolean {
+  //   console.info('[SIMPLE] Dispatching event', event)
+  //   return super.dispatchEvent(event)
+  // }
 
   // /////////////////
   // Methods

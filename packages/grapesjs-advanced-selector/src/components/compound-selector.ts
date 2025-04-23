@@ -79,10 +79,10 @@ export default class CompoundSelectorComponent extends StylableElement {
   }
   `
 
-  override dispatchEvent(event: Event): boolean {
-    console.info('[COMPOUND] Dispatching event', event)
-    return super.dispatchEvent(event)
-  }
+  // override dispatchEvent(event: Event): boolean {
+  //   console.info('[COMPOUND] Dispatching event', event)
+  //   return super.dispatchEvent(event)
+  // }
 
   override toString(): string {
     return toString(this.value!)
