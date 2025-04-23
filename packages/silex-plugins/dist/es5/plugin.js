@@ -70,17 +70,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadPlugins = void 0;
+exports.loadPlugins = loadPlugins;
 /**
  *
  * @param config The initial config object
  * @param plugins The plugins to load
  * @returns Merged results objects
  */
-function loadPlugins(config, plugins, options, baseUrl) {
-    if (baseUrl === void 0) { baseUrl = null; }
-    return __awaiter(this, void 0, void 0, function () {
+function loadPlugins(config_1, plugins_1, options_1) {
+    return __awaiter(this, arguments, void 0, function (config, plugins, options, baseUrl) {
         var _this = this;
+        if (baseUrl === void 0) { baseUrl = null; }
         return __generator(this, function (_a) {
             return [2 /*return*/, Promise.all(plugins
                     // Load plugins
@@ -123,16 +123,15 @@ function loadPlugins(config, plugins, options, baseUrl) {
         });
     });
 }
-exports.loadPlugins = loadPlugins;
 /**
  * Load a plugin
  * @param location The path, absolute, relative or online
  * @returns The result of the plugin default function
  */
 function loadPlugin(location, baseUrl) {
-    var _a;
     return __awaiter(this, void 0, void 0, function () {
         var path, imported, result;
+        var _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:

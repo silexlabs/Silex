@@ -55,13 +55,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Config = void 0;
+exports.default = default_1;
 var plugin_1 = require("./plugin");
 var events_1 = __importDefault(require("events"));
 function default_1(baseUrl) {
     if (baseUrl === void 0) { baseUrl = null; }
     return new Config(baseUrl);
 }
-exports.default = default_1;
 var Config = /** @class */ (function (_super) {
     __extends(Config, _super);
     function Config(baseUrl) {

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { Plugin } from './plugin';
 import EventEmitter from 'events';
 export default function (baseUrl?: string): Config;
