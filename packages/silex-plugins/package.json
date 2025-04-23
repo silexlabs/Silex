@@ -36,8 +36,8 @@
     "@babel/preset-typescript": "^7.23.2",
     "@typescript-eslint/eslint-plugin": "^6.9.1",
     "@typescript-eslint/parser": "^6.9.1",
+    "component-emitter": "^2.0.0",
     "eslint": "^8.52.0",
-    "events": "^3.3.0",
     "jest": "^29.7.0",
     "typescript": "^5.2.2"
   }

@@ -50,7 +50,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import { loadPlugins, } from './plugin';
-import EventEmitter from 'events';
+import EventEmitter from 'component-emitter';
 export default function (baseUrl) {
     if (baseUrl === void 0) { baseUrl = null; }
     return new Config(baseUrl);

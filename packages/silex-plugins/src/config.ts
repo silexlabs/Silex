@@ -1,5 +1,5 @@
 import { Plugin, loadPlugins, } from './plugin'
-import EventEmitter from 'events'
+import EventEmitter from 'component-emitter'
 
 export default function( baseUrl: string = null) {
   return new Config(baseUrl)
