@@ -75,7 +75,7 @@ export declare class InputChain extends LitElement {
     /**
      * Render the component
      */
-    render(): import("lit-html").TemplateResult<1>;
+    render(): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     disconnectedCallback(): void;
     /**

@@ -70,7 +70,7 @@ export declare class PopinForm extends PopinOverlay {
     set form(newForm: HTMLFormElement | null);
     get form(): HTMLFormElement | null;
     get value(): Record<string, unknown>;
-    render(): import("lit-html").TemplateResult<1>;
+    render(): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     disconnectedCallback(): void;
     /**

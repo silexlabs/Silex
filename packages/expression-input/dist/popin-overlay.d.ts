@@ -32,7 +32,7 @@ export declare class PopinOverlay extends LitElement {
     private resized_;
     private blured_;
     private keydown_;
-    render(): import("lit-html").TemplateResult<1>;
+    render(): import("lit").TemplateResult<1>;
     connectedCallback(): void;
     disconnectedCallback(): void;
     private getActiveElementRecursive;
