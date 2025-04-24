@@ -90,7 +90,6 @@ export default class GitlabConnector implements StorageConnector {
      * Call the Gitlab API with the user's token and handle errors
      */
     callApi(session: GitlabSession, path: string, method?: 'POST' | 'GET' | 'PUT' | 'DELETE', requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null, params?: any): Promise<any>;
-    private projectPathCache;
     downloadRawFile(session: GitlabSession, projectId: string, filePath: string): Promise<Buffer>;
     private generateCodeVerifier;
     private generateCodeChallenge;
