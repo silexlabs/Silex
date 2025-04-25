@@ -100,6 +100,8 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
       git commit -m "chore: update internal dependencies in $pkg_dir"
       git push
     fi
+  else
+    echo "  ✅ No internal dependencies to update."
   fi
 
   # Décision de bump de version
@@ -139,7 +141,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     PACKAGE_NAME=$(jq -r .name package.json)
     echo ""
     echo "🛑 Waiting for $PACKAGE_NAME@$NEW_VERSION to appear on npm"
-    echo "🔗 https://www.npmjs.com/package/$PACKAGE_NAME/v/$NEW_VERSION"
+    echo "🔗 https://www.npmjs.com/package/$PACKAGE_NAME/"
     read -p "⏸️  Press enter to continue when it's available..."
   fi
 
