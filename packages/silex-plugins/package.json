@@ -31,12 +31,14 @@
     "url": "https://github.com/silexlabs/silex-plugins/issues"
   },
   "homepage": "https://github.com/silexlabs/silex-plugins#readme",
+  "dependencies": {
+    "component-emitter": "^2.0.0"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-typescript": "^7.27.0",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
-    "component-emitter": "^2.0.0",
     "eslint": "^9.25.1",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
