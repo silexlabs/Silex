@@ -11,7 +11,7 @@
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
-    "lint": "eslint src"
+    "lint": "eslint src/**/*"
   },
   "keywords": [
     "grapesjs",
@@ -19,6 +19,9 @@
     "silex"
   ],
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.25.0",
+    "eslint": "^9.25.0",
     "grapesjs-cli": "^4.1.1"
   },
   "license": "AGPL-3.0-or-later"
