@@ -30,6 +30,8 @@
   ],
   "devDependencies": {
     "cloc": "^2.0.0-cloc",
+    "dependency-graph": "^1.0.0",
+    "glob": "^11.0.2",
     "js-ini": "^1.6.0"
   }
 }
