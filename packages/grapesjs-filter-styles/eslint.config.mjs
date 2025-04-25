@@ -1,6 +1,4 @@
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -15,20 +13,15 @@ const compat = new FlatCompat({
 });
 
 export default [
-    ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
+    ...compat.extends("eslint:recommended"),
     {
-        plugins: {
-            "@typescript-eslint": typescriptEslint,
-        },
-
         languageOptions: {
             globals: {
                 ...globals.browser,
                 ...globals.node,
             },
 
-            parser: tsParser,
-            ecmaVersion: 5,
+            ecmaVersion: 2020,
             sourceType: "module",
         },
 
