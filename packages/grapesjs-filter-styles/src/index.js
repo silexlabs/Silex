@@ -43,7 +43,7 @@ export default (editor, opts = {}) => {
         >X</button>
       <input id="${id}" type="text" class="gjs-field gjs-sm-properties gjs-two-color" placeholder="${options.placeholder}" />
     `
-    const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`);
+    const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`)
     const appendBefore = typeof options.appendBefore === 'string' ? document.querySelector(options.appendBefore) : options.appendBefore
     const appendTo = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : options.appendTo
     const wrapper = appendBefore ? appendBefore.parentElement : appendTo ?? tags.parentElement.parentElement
@@ -202,7 +202,7 @@ function refresh(editor, input, wrapper) {
       .forEach(sector => {
         showSector(sector, false)
         sector.getProperties()
-        .forEach(property => showProperty(property, false))
+          .forEach(property => showProperty(property, false))
       })
     // Show the one we are searching for
     properties.forEach(item => {
