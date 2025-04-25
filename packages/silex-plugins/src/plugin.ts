@@ -50,7 +50,7 @@ async function loadPlugin<T>(location: string, baseUrl: string): Promise<T> {
 function getLocation(urlOrPath: string, baseUrl: string = null): string {
   try {
     return new URL(urlOrPath, baseUrl).toString()
-  } catch(e) {
+  } catch {
     return urlOrPath
   }
 }
