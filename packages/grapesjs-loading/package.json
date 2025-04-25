@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-loading",
-  "version": "1.0.11-0",
+  "version": "1.0.11-1",
   "description": "Grapesjs Loading",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
