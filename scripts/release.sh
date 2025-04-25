@@ -26,15 +26,40 @@ echo "🔍 Mode: $([[ $RELEASE == true ]] && echo "RELEASE" || echo "PRERELEASE"
 echo "🔍 Dry run: $([[ $DRY_RUN == true ]] && echo "YES" || echo "NO")"
 echo ""
 
+# Vérifie que tous les packages sont clean avant toute opération
+echo "🔎 Validating working directory status for all packages..."
+
+DIRTY_PACKAGES=()
+for dir in packages/*; do
+  [ -e "$dir/.git" ] || continue
+  if [ -n "$(cd "$dir" && git status --porcelain)" ]; then
+    DIRTY_PACKAGES+=("$dir")
+  fi
+done
+
+if [ ${#DIRTY_PACKAGES[@]} -gt 0 ]; then
+  echo "❌ Some packages have uncommitted changes:"
+  for p in "${DIRTY_PACKAGES[@]}"; do
+    echo "   - $p"
+  done
+  echo ""
+  echo "🛑 Please commit or stash these changes before running the release."
+  exit 1
+fi
+
+echo "✅ All packages clean"
+echo ""
+
 ERRORS=()
 SKIPPED=()
 UPDATED=()
 
-# noms de tous les packages internes
+# Liste des noms internes (scopés ou non)
 INTERNAL_PACKAGE_NAMES=($(find packages -mindepth 1 -maxdepth 1 -type d -exec jq -r .name {}/package.json \;))
 
-# parcours des packages dans l’ordre de dépendances
-PACKAGE_PATHS=($(./scripts/sort-internal-deps.js))
+# Ordre réel des packages retourné proprement
+PACKAGE_PATHS=($(./scripts/sort-internal-deps.js | grep '^-' | sed 's/^- //' | xargs -n1))
+
 for pkg_dir in "${PACKAGE_PATHS[@]}"; do
   dir="packages/$pkg_dir"
   [ -f "$dir/package.json" ] || continue
@@ -49,7 +74,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     HAS_NEW_COMMITS=false
   fi
 
-  #### Détection des dépendances internes à mettre à jour
+  # Détection des dépendances internes à mettre à jour
   OUTDATED=$(npx -y npm-check-updates --dep prod,dev,peer || true)
   INTERNAL_LINES=()
   INTERNAL_UPGRADE_LIST=()
@@ -77,7 +102,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     fi
   fi
 
-  #### Détermination du besoin de bump de version
+  # Décision de bump de version
   SHOULD_BUMP=false
   if $RELEASE && [[ "$CURRENT_VERSION" == *-* ]]; then
     SHOULD_BUMP=true
@@ -93,7 +118,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     continue
   fi
 
-  #### Bump de version
+  # Bump version
   if $RELEASE; then
     CMD="npm version minor -m 'chore: release %s'"
   else
@@ -110,7 +135,12 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     NEW_VERSION=$(jq -r .version package.json)
     git push
     git push --tags
-    read -p "🛑 Please confirm when $(jq -r .name package.json)@$NEW_VERSION is available on npm (press enter to continue)"
+
+    PACKAGE_NAME=$(jq -r .name package.json)
+    echo ""
+    echo "🛑 Waiting for $PACKAGE_NAME@$NEW_VERSION to appear on npm"
+    echo "🔗 https://www.npmjs.com/package/$PACKAGE_NAME/v/$NEW_VERSION"
+    read -p "⏸️  Press enter to continue when it's available..."
   fi
 
   UPDATED+=("$pkg_dir|$CURRENT_VERSION → $NEW_VERSION")
@@ -118,7 +148,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
   echo ""
 done
 
-#### Résumé
+# Résumé final
 echo "✅ Script completed."
 echo ""
 
