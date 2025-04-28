@@ -51,6 +51,7 @@
   },
   "peerDependencies": {
     "backbone": "*",
+    "jquery": "*",
     "grapesjs": ">=0.19.0 <0.23.0",
     "lit-html": "*"
   },
