@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/expression-input",
-  "version": "0.0.29-1",
+  "version": "0.0.29-2",
   "description": "A web component to include in your JS/TS projects. Your users can create an expression or a ordoned list with your data tree.",
   "exports": {
     ".": {
