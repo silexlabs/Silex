@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# release.sh
+# Sript to release packages in the Silex monorepo based on npm workspaces and git submodules.
+# This script automates the process of updating internal dependencies, bumping versions, and pushing changes to the repository.
+# Usage:
+#   ./scripts/release.sh [--release] [--dry-run]
+# Options:
+#   --release: Perform a release (default is prerelease)
+#   --dry-run: Simulate the release process without making any changes
+#   --help: Show this help message
+
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -12,6 +22,21 @@ for arg in "$@"; do
   case "$arg" in
     --release) RELEASE=true ;;
     --dry-run) DRY_RUN=true ;;
+    --h|--help)
+      echo "Usage: $0 [--release] [--dry-run]"
+      echo "Options:"
+      echo "  --release: Perform a release (default is prerelease)"
+      echo "  --dry-run: Simulate the release process without making any changes"
+      exit 0
+      ;;
+    *)
+      echo "Unknown argument: $arg"
+      echo "Usage: $0 [--release] [--dry-run]"
+      echo "Options:"
+      echo "  --release: Perform a release (default is prerelease)"
+      echo "  --dry-run: Simulate the release process without making any changes"
+      exit 1
+      ;;
   esac
 done
 
@@ -94,7 +119,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     else
       echo "  🔧 Updating internal deps..."
       npx -y npm-check-updates --dep prod,dev,peer --upgrade "${INTERNAL_UPGRADE_LIST[@]}"
-      npm install
+      # npm install # Useless and can generate conflicts
       npm install --package-lock-only --workspaces false
       git add package.json package-lock.json
       git commit -m "chore: update internal dependencies in $pkg_dir"

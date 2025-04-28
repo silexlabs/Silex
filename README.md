@@ -82,6 +82,9 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 
 ## Instruction
 
+> For the initial setup, please use yarn instead of npm, as it handles workspaces better. You can use npm after the initial setup.
+> For the versionning process, please use npm instead of yarn, as it has not been migrated to yarn yet.
+
 To contribute to Silex you need to fork this repo then clone locally (mini 2CPU and 4GoRAM) this repo with its submodules, make sure you use the required nodejs version (nvm) and install its dependencies (you can replace `npm` with `yarn`):
 
 * On github, fork this repo
@@ -143,9 +146,25 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files     918 text files.
-classified 407 filesDuplicate file check 407 files (296 known unique)Unique:      100 files                                          Unique:      200 files                                               310 unique files.                              
-Counting:  100Counting:  200Counting:  300     777 files ignored.
+     100 files
+     200 files
+     300 files
+     400 files
+     500 files
+     600 files
+     700 files
+     800 files
+     900 files
+     918 text files.
+classified 407 files
+Duplicate file check 407 files (296 known unique)
+Unique:      100 files                                          
+Unique:      200 files                                          
+     310 unique files.                              
+Counting:  100
+Counting:  200
+Counting:  300
+     777 files ignored.
 
 github.com/AlDanial/cloc v 1.96  T=1.00 s (310.0 files/s, 102190.0 lines/s)
 -------------------------------------------------------------------------------
