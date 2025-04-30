@@ -100,7 +100,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
   fi
 
   # Détection des dépendances internes à mettre à jour
-  OUTDATED=$(npx -y npm-check-updates --dep prod,dev,peer || true)
+  OUTDATED=$(npx -y npm-check-updates --dep prod,dev,peer --target=greatest || true)
   INTERNAL_LINES=()
   INTERNAL_UPGRADE_LIST=()
 
@@ -118,7 +118,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
       echo "  🧪 (dry-run) Would update internal deps: ${INTERNAL_UPGRADE_LIST[*]}"
     else
       echo "  🔧 Updating internal deps..."
-      npx -y npm-check-updates --dep prod,dev,peer --upgrade "${INTERNAL_UPGRADE_LIST[@]}"
+      npx -y npm-check-updates --dep prod,dev,peer --target=greatest --upgrade "${INTERNAL_UPGRADE_LIST[@]}"
       # npm install # Useless and can generate conflicts
       npm install --package-lock-only --workspaces false
       git add package.json package-lock.json
@@ -168,6 +168,10 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     echo "🛑 Waiting for $PACKAGE_NAME@$NEW_VERSION to appear on npm"
     echo "🔗 https://www.npmjs.com/package/$PACKAGE_NAME/"
     read -p "⏸️  Press enter to continue when it's available..."
+    # wait for the package to be available on npm
+    echo "⏳ Waiting 30s"
+    sleep 30
+    npm cache clean --force # Clean cache to avoid issues when updating just after publishing
   fi
 
   UPDATED+=("$pkg_dir|$CURRENT_VERSION → $NEW_VERSION")

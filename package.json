@@ -25,17 +25,21 @@
     "release:dry": "scripts/release.sh --dry-run",
     "release:pre": "scripts/release.sh",
     "release:minor": "scripts/release.sh --release",
+    "test": "scripts/check-internal-deps.js",
     "count": "cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html",
     "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && $npm_execpath run count | scripts/insert-in-readme.js count --code",
-    "exec": "scripts/exec.js"
+    "exec": "scripts/exec.js",
+    "prepare": "husky"
   },
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
+    "@octokit/rest": "^21.1.1",
     "cloc": "^2.0.0-cloc",
     "dependency-graph": "^1.0.0",
     "glob": "^11.0.2",
-    "js-ini": "^1.6.0"
+    "js-ini": "^1.6.0",
+    "npm-check-updates": "^18.0.1"
   }
 }
