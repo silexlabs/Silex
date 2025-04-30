@@ -16,6 +16,8 @@
     "comment": "This mess to build the declarations separately is because of the error in the dts-bundle-generator: Error: Something went wrong - value cannot be null"
   },
   "keywords": [
+    "silex",
+    "grapesjs-plugin",
     "grapesjs",
     "plugin"
   ],
