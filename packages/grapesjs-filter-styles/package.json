@@ -14,6 +14,8 @@
     "lint": "eslint src/**/*"
   },
   "keywords": [
+    "silex",
+    "grapesjs-plugin",
     "grapesjs",
     "plugin",
     "silex"
