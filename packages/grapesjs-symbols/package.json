@@ -35,6 +35,7 @@
     "prepare": "husky"
   },
   "keywords": [
+    "silex",
     "grapesjs",
     "plugin",
     "grapesjs-plugin"
