@@ -22,6 +22,7 @@
     "node-html-parser": "^6.1.5"
   },
   "keywords": [
+    "silex",
     "eleventy",
     "plugin",
     "elventy-plugin",
