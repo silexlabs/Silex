@@ -23,6 +23,7 @@
     "prepare": "husky"
   },
   "keywords": [
+    "silex",
     "grapesjs",
     "grapesjs-plugin",
     "plugin",
@@ -58,7 +59,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@silexlabs/expression-input": "^0.0.29-4",
+    "@silexlabs/expression-input": "0.0.29-5",
     "dedent-js": "^1.0.1"
   }
 }
