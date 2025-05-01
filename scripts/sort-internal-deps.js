@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
-const { DepGraph } = require('dependency-graph');
+import fs from 'fs';
+import path from 'path';
+import { DepGraph } from 'dependency-graph';
+import glob from 'glob';
 
 // Ce script est utilisé pour trier les dépendances internes des packages dans le monorepo.
 // Il génère un graphe de dépendances et effectue un tri topologique pour afficher l'ordre des packages.

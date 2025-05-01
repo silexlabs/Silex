@@ -1,8 +1,11 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
 
-const baseDir = path.join(__dirname, '..', 'packages');
+import fs from 'fs';
+import path from 'path';
+
+const currentScript = process.argv[1];
+const scriptDir = path.dirname(currentScript);
+const baseDir = path.join(scriptDir, '..', 'packages');
 const packages = fs.readdirSync(baseDir);
 
 // Étape 1 : lecture des versions et dépendances
