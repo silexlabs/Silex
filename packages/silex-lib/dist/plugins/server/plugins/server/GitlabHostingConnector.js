@@ -161,11 +161,19 @@ class GitlabHostingConnector extends GitlabConnector_1.default {
     }
     /* Get and return Url Gitlab Pages */
     async getUrl(session, websiteId) {
-        const response = await this.callApi(session, `api/v4/projects/${websiteId}/pages`, 'GET');
+        const response = await this.callApi({
+            session,
+            path: `api/v4/projects/${websiteId}/pages`,
+            method: 'GET'
+        });
         return response.url;
     }
     async getAdminUrl(session, websiteId) {
-        const projectInfo = await this.callApi(session, `api/v4/projects/${websiteId}`, 'GET');
+        const projectInfo = await this.callApi({
+            session,
+            path: `api/v4/projects/${websiteId}`,
+            method: 'GET'
+        });
         return projectInfo.web_url;
     }
     async getPageUrl(session, websiteId, projectUrl) {
@@ -175,7 +183,11 @@ class GitlabHostingConnector extends GitlabConnector_1.default {
     async getGitlabJobLogsUrl(session, websiteId, job, { startJob, jobSuccess, jobError }, projectUrl, tag) {
         const t0 = Date.now();
         do {
-            const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET');
+            const jobs = await this.callApi({
+                session,
+                path: `api/v4/projects/${websiteId}/jobs`,
+                method: 'GET'
+            });
             if (!jobs.length)
                 return null;
             if (jobs[0].ref === tag) {
@@ -196,10 +208,15 @@ class GitlabHostingConnector extends GitlabConnector_1.default {
         try {
             job.message = `Creating new tag ${newTag}...`;
             job.logs[0].push(job.message);
-            await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'POST', {
-                tag_name: newTag,
-                ref: 'main',
-                message: 'Publication from Silex',
+            await this.callApi({
+                session,
+                path: `api/v4/projects/${projectId}/repository/tags`,
+                method: 'POST',
+                requestBody: {
+                    tag_name: newTag,
+                    ref: 'main',
+                    message: 'Publication from Silex',
+                }
             });
         }
         catch (error) {

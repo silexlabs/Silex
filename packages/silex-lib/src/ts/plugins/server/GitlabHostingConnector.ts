@@ -166,12 +166,20 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
   /* Get and return Url Gitlab Pages */
   async getUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
-    const response = await this.callApi(session, `api/v4/projects/${websiteId}/pages`, 'GET')
+    const response = await this.callApi({
+      session,
+      path: `api/v4/projects/${websiteId}/pages`,
+      method: 'GET'
+    })
     return response.url
   }
 
   async getAdminUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
-    const projectInfo = await this.callApi(session, `api/v4/projects/${websiteId}`, 'GET')
+    const projectInfo = await this.callApi({
+      session,
+      path: `api/v4/projects/${websiteId}`,
+      method: 'GET'
+    })
     return projectInfo.web_url
   }
 
@@ -183,7 +191,11 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
   async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string | null> {
     const t0 = Date.now()
     do {
-      const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+      const jobs = await this.callApi({
+        session,
+        path: `api/v4/projects/${websiteId}/jobs`,
+        method: 'GET'
+      })
       if (!jobs.length) return null
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(waitTimeOut)
@@ -203,10 +215,15 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     try {
       job.message = `Creating new tag ${newTag}...`
       job.logs[0].push(job.message)
-      await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'POST', {
-        tag_name: newTag,
-        ref: 'main',
-        message: 'Publication from Silex',
+      await this.callApi({
+        session,
+        path: `api/v4/projects/${projectId}/repository/tags`,
+        method: 'POST',
+        requestBody: {
+          tag_name: newTag,
+          ref: 'main',
+          message: 'Publication from Silex',
+        }
       })
     } catch (error) {
       console.error('Error during creating new tag:', error.message)
