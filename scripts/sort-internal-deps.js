@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { DepGraph } from 'dependency-graph';
-import glob from 'glob';
+import * as glob from 'glob';
 
 // Ce script est utilisé pour trier les dépendances internes des packages dans le monorepo.
 // Il génère un graphe de dépendances et effectue un tri topologique pour afficher l'ordre des packages.
@@ -53,8 +53,10 @@ if (nonPositionalArgs.length > 0) {
 }
 
 // Étape 1 : trouver tous les packages internes valides
-const basePath = path.resolve(__dirname, '../packages');
-const packagePaths = glob.sync(`${basePath}/**/package.json`, {
+const currentScript = process.argv[1];
+const scriptDir = path.dirname(currentScript);
+const packagesDir = path.join(scriptDir, '..', 'packages');
+const packagePaths = glob.sync(`${packagesDir}/**/package.json`, {
   ignore: '**/node_modules/**',
 });
 
