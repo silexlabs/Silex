@@ -3004,15 +3004,15 @@
     "@silexlabs/expression-input" "0.0.29-6"
     dedent-js "^1.0.1"
 
-"@silexlabs/grapesjs-filter-styles@^1.0.1-6", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
+"@silexlabs/grapesjs-filter-styles@1.0.1-6", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
   version "1.0.1-6"
   resolved "file:packages/grapesjs-filter-styles"
 
-"@silexlabs/grapesjs-fonts@^1.0.22-1", "@silexlabs/grapesjs-fonts@file:/home/lexoyo/_/Silex/packages/grapesjs-fonts":
+"@silexlabs/grapesjs-fonts@1.0.22-1", "@silexlabs/grapesjs-fonts@file:/home/lexoyo/_/Silex/packages/grapesjs-fonts":
   version "1.0.22-1"
   resolved "file:packages/grapesjs-fonts"
 
-"@silexlabs/grapesjs-keymaps-dialog@^1.0.17-2", "@silexlabs/grapesjs-keymaps-dialog@file:/home/lexoyo/_/Silex/packages/grapesjs-keymaps-dialog":
+"@silexlabs/grapesjs-keymaps-dialog@1.0.17-2", "@silexlabs/grapesjs-keymaps-dialog@file:/home/lexoyo/_/Silex/packages/grapesjs-keymaps-dialog":
   version "1.0.17-2"
   resolved "file:packages/grapesjs-keymaps-dialog"
   dependencies:
@@ -3022,11 +3022,11 @@
   version "1.0.11-2"
   resolved "file:packages/grapesjs-loading"
 
-"@silexlabs/grapesjs-notifications@^0.0.10-0", "@silexlabs/grapesjs-notifications@file:/home/lexoyo/_/Silex/packages/grapesjs-notifications":
+"@silexlabs/grapesjs-notifications@0.0.10-0", "@silexlabs/grapesjs-notifications@file:/home/lexoyo/_/Silex/packages/grapesjs-notifications":
   version "0.0.10-0"
   resolved "file:packages/grapesjs-notifications"
 
-"@silexlabs/grapesjs-storage-rate-limit@^1.0.9-0", "@silexlabs/grapesjs-storage-rate-limit@file:/home/lexoyo/_/Silex/packages/grapesjs-storage-rate-limit":
+"@silexlabs/grapesjs-storage-rate-limit@1.0.9-0", "@silexlabs/grapesjs-storage-rate-limit@file:/home/lexoyo/_/Silex/packages/grapesjs-storage-rate-limit":
   version "1.0.9-0"
   resolved "file:packages/grapesjs-storage-rate-limit"
 
@@ -3091,7 +3091,7 @@
     "@silexlabs/silex" "3.0.10-5"
     lit-html "^3.2.1"
 
-"@silexlabs/silex@^3.0.10-5", "@silexlabs/silex@3.0.10-5", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
+"@silexlabs/silex@3.0.10-5", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
   version "3.0.10-5"
   resolved "file:packages/silex-lib"
   dependencies:
@@ -8332,10 +8332,10 @@ dot-prop@^4.1.0:
   dependencies:
     is-obj "^1.0.0"
 
-dotenv@^16.4.5, dotenv@^16.4.7:
-  version "16.4.7"
-  resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.4.7.tgz"
-  integrity sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==
+dotenv@^16.4.5, dotenv@^16.4.7, dotenv@^16.5.0:
+  version "16.5.0"
+  resolved "https://registry.npmjs.org/dotenv/-/dotenv-16.5.0.tgz"
+  integrity sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==
 
 downshift@^6.1.12:
   version "6.1.12"
