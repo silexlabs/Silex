@@ -40,20 +40,12 @@ for arg in "$@"; do
   esac
 done
 
-if [[ "${RELEASE:-}" == "true" || "${RELEASE:-}" == "1" ]]; then
-  RELEASE=true
-fi
-if [[ "${DRY_RUN:-}" == "true" || "${DRY_RUN:-}" == "1" ]]; then
-  DRY_RUN=true
-fi
-
 echo "🔍 Mode: $([[ $RELEASE == true ]] && echo "RELEASE" || echo "PRERELEASE")"
 echo "🔍 Dry run: $([[ $DRY_RUN == true ]] && echo "YES" || echo "NO")"
 echo ""
 
-# Vérifie que tous les packages sont clean avant toute opération
+# Check for dirty packages
 echo "🔎 Validating working directory status for all packages..."
-
 DIRTY_PACKAGES=()
 for dir in packages/*; do
   [ -e "$dir/.git" ] || continue
@@ -79,10 +71,7 @@ ERRORS=()
 SKIPPED=()
 UPDATED=()
 
-# Liste des noms internes (scopés ou non)
 INTERNAL_PACKAGE_NAMES=($(find packages -mindepth 1 -maxdepth 1 -type d -exec jq -r .name {}/package.json \;))
-
-# Ordre réel des packages retourné proprement
 PACKAGE_PATHS=($(./scripts/sort-internal-deps.js | grep '^-' | sed 's/^- //' | xargs -n1))
 
 for pkg_dir in "${PACKAGE_PATHS[@]}"; do
@@ -94,12 +83,13 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
 
   CURRENT_VERSION=$(jq -r .version package.json)
   LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-  HAS_NEW_COMMITS=true
-  if [ -n "$LAST_TAG" ] && [ -z "$(git rev-list "$LAST_TAG"..HEAD)" ]; then
-    HAS_NEW_COMMITS=false
+
+  HAS_NEW_COMMITS=false
+  if [ -n "$LAST_TAG" ] && [ -n "$(git rev-list "$LAST_TAG"..HEAD)" ]; then
+    HAS_NEW_COMMITS=true
   fi
 
-  # Détection des dépendances internes à mettre à jour
+  # Update internal deps
   OUTDATED=$(npx -y npm-check-updates --dep prod,dev,peer --target=greatest || true)
   INTERNAL_LINES=()
   INTERNAL_UPGRADE_LIST=()
@@ -113,13 +103,14 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     fi
   done <<< "$OUTDATED"
 
+  UPDATED_INTERNAL_DEPS=false
   if [[ ${#INTERNAL_UPGRADE_LIST[@]} -gt 0 ]]; then
+    UPDATED_INTERNAL_DEPS=true
     if $DRY_RUN; then
       echo "  🧪 (dry-run) Would update internal deps: ${INTERNAL_UPGRADE_LIST[*]}"
     else
       echo "  🔧 Updating internal deps..."
       npx -y npm-check-updates --dep prod,dev,peer --target=greatest --upgrade "${INTERNAL_UPGRADE_LIST[@]}"
-      # npm install # Useless and can generate conflicts
       npm install --package-lock-only --workspaces false
       git add package.json package-lock.json
       git commit -m "chore: update internal dependencies in $pkg_dir"
@@ -129,7 +120,13 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     echo "  ✅ No internal dependencies to update."
   fi
 
-  # Décision de bump de version
+  # Re-check for new commits after dependency update
+  HAS_NEW_COMMITS=false
+  if [ -n "$LAST_TAG" ] && [ -n "$(git rev-list "$LAST_TAG"..HEAD)" ]; then
+    HAS_NEW_COMMITS=true
+  fi
+
+  # Determine if version bump needed
   SHOULD_BUMP=false
   if $RELEASE && [[ "$CURRENT_VERSION" == *-* ]]; then
     SHOULD_BUMP=true
@@ -145,7 +142,6 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     continue
   fi
 
-  # Bump version
   if $RELEASE; then
     CMD="npm version minor -m 'chore: release %s'"
   else
@@ -168,10 +164,9 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     echo "🛑 Waiting for $PACKAGE_NAME@$NEW_VERSION to appear on npm"
     echo "🔗 https://www.npmjs.com/package/$PACKAGE_NAME/"
     read -p "⏸️  Press enter to continue when it's available..."
-    # wait for the package to be available on npm
-    echo "⏳ Waiting 30s"
-    sleep 30
-    npm cache clean --force # Clean cache to avoid issues when updating just after publishing
+    echo "⏳ Waiting 10s"
+    sleep 10
+    npm cache clean --force
   fi
 
   UPDATED+=("$pkg_dir|$CURRENT_VERSION → $NEW_VERSION")
@@ -179,7 +174,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
   echo ""
 done
 
-# Résumé final
+# Résumé
 echo "✅ Script completed."
 echo ""
 
