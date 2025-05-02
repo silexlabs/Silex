@@ -147,13 +147,18 @@ export default class GitlabConnector implements StorageConnector {
     duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void>;
     getWebsiteMeta(session: GitlabSession, websiteId: WebsiteId): Promise<WebsiteMeta>;
     setWebsiteMeta(session: GitlabSession, websiteId: WebsiteId, websiteMeta: WebsiteMetaFileContent): Promise<void>;
-    writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback): Promise<void>;
+    writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback, removeUnlisted?: boolean): Promise<void>;
     readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent>;
     deleteAssets(session: GitlabSession, websiteId: string, fileNames: string[]): Promise<void>;
     /**
      * List all the files in a folder
      * The result is a map of file paths to their SHA
      */
-    private ls;
+    protected ls({ session, websiteId, recursive, path, }: {
+        session: GitlabSession;
+        websiteId: string;
+        recursive?: boolean;
+        path?: string;
+    }): Promise<Map<string, string>>;
 }
 export {};

@@ -35,6 +35,7 @@ import { fork } from 'child_process'
 
 const MAX_BATCH_UPLOAD_SIZE = 100
 const MAX_BODY_SIZE_KB = 8 * 1000 * 1024 // 8MB (note that 10 MB PNG → becomes ~13.3 MB → ❌ often too big for Gitlab)
+const WEBSITE_DATA_FILE_FORMAT_VERSION = '1.0.0'
 
 export interface GitlabOptions {
   clientId: string
@@ -126,6 +127,7 @@ interface GitlabPage {
 }
 
 interface GitlabWebsiteData {
+  fileFormatVersion: string
   pages: GitlabPage[]
 }
 
@@ -650,9 +652,15 @@ export default class GitlabConnector implements StorageConnector {
    */
   async readWebsite(session: GitlabSession, websiteId: string): Promise<WebsiteData> {
     const websiteDataBuf = await this.downloadRawFile(session, websiteId, WEBSITE_DATA_FILE)
-    const websiteData = JSON.parse(websiteDataBuf.toString('utf8')) as GitlabWebsiteData | WebsiteData
+    const websiteDataOb = JSON.parse(websiteDataBuf.toString('utf8')) as GitlabWebsiteData & WebsiteData
+    const { fileFormatVersion, ...websiteData } = websiteDataOb
 
-    // If the website pages are not in the main file, we need to read them
+    // Check the file format version
+    if (fileFormatVersion !== WEBSITE_DATA_FILE_FORMAT_VERSION) {
+      // This should be handled by a migration mechanism
+      console.warn('Gitlab connector: website data file format version mismatch', fileFormatVersion, '!=', WEBSITE_DATA_FILE_FORMAT_VERSION)
+    }
+
     // This happens when the website was just created
     // Let grapesjs create the pages in the frontend
     if (!websiteData.pages) {
@@ -663,7 +671,7 @@ export default class GitlabConnector implements StorageConnector {
     const pages = await Promise.all(websiteData.pages.map(async (page: GitlabPage | Page) => {
       if ((page as GitlabPage).isFile) {
         const name = getPageSlug(page.name)
-        const fileName = (`${(getPageSlug(page.name))}-${page.id}`)
+        const fileName = (`${name}-${page.id}`)
         const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
         const pageContent = await this.downloadRawFile(session, websiteId, filePath)
         const res = JSON.parse(pageContent.toString('utf8')) as Page
@@ -749,9 +757,24 @@ export default class GitlabConnector implements StorageConnector {
     })
 
     // **
+    // Delete pages that are not in the new website data
+    for (const filePath of existingFiles.keys()) {
+      const pageName = filePath.replace(/.*\//, '').replace(/\.json$/, '')
+      const pageId = pageName.split('-').pop()
+      const page = websiteData.pages.find((p: Page) => p.id === pageId)
+      if (!page) {
+        batchActions.push({
+          action: 'delete',
+          file_path: filePath,
+        })
+      }
+    }
+
+    // **
     // Add the main website data file
     const websiteDataWithGitlabPages = {
       ...websiteData,
+      fileFormatVersion: WEBSITE_DATA_FILE_FORMAT_VERSION,
       pages,
     } as GitlabWebsiteData
 
@@ -905,19 +928,21 @@ export default class GitlabConnector implements StorageConnector {
     }
   }
 
-  async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback): Promise<void> {
+  async writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback, removeUnlisted = false): Promise<void> {
     status && await status({ message: `Preparing ${files.length} files`, status: JobStatus.IN_PROGRESS })
 
     // List all the files in assets folder
     const existingFiles = await this.ls({
       session,
       websiteId,
-      recursive: false,
+      recursive: true,
       path: this.options.assetsFolder,
     })
 
     // Create the actions for the batch
     const filesToUpload = [] as GitlabAction[]
+    const filesToKeep = new Set(files.map(file => this.getAssetPath(file.path, false)))
+
     for (const file of files) {
       const filePath = this.getAssetPath(file.path, false)
       const content = (await contentToBuffer(file.content)).toString('base64')
@@ -942,6 +967,17 @@ export default class GitlabConnector implements StorageConnector {
       }
     }
 
+    // Optionally remove unlisted files
+    if (removeUnlisted) {
+      for (const [existingFilePath] of existingFiles) {
+        if (!filesToKeep.has(existingFilePath)) {
+          filesToUpload.push({
+            action: 'delete',
+            file_path: existingFilePath,
+          })
+        }
+      }
+    }
 
     // Split the files into chunks to avoid the number of files limit
     const chunks: GitlabAction[][] = []
@@ -960,15 +996,9 @@ export default class GitlabConnector implements StorageConnector {
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex]
       if (chunks.length > 1) {
-        status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Downloading ${chunk.length} files`, status: JobStatus.IN_PROGRESS })
-      } else {
-        status && await status({ message: `Downloading ${files.length} file`, status: JobStatus.IN_PROGRESS })
-      }
-
-      if (chunks.length > 1) {
         status && await status({ message: `Batch ${chunkIndex + 1}/${chunks.length}: Uploading ${chunk.length} files`, status: JobStatus.IN_PROGRESS })
       } else {
-        status && await status({ message: `Uploading ${files.length} file`, status: JobStatus.IN_PROGRESS })
+        status && await status({ message: `Uploading ${files.length} file(s)`, status: JobStatus.IN_PROGRESS })
       }
       try {
         await this.callApi({
@@ -1044,7 +1074,7 @@ export default class GitlabConnector implements StorageConnector {
    * List all the files in a folder
    * The result is a map of file paths to their SHA
    */
-  private async ls({
+  protected async ls({
     session,
     websiteId,
     recursive = false,
