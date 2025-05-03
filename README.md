@@ -12,7 +12,7 @@ Silex lets you create websites without coding, but it also has built-in editors 
 
 ![Silex UI](https://github.com/silexlabs/www.silex.me/raw/gh-pages/assets/silex-ui.gif)
 
-Brought to you by [Alex Hoyau](https://lexoyo.me) and [Silex contributors](https://github.com/silexlabs/Silex/graphs/contributors).
+Brought to you by [Alex Hoyau](https://lexoyo.me) and [Silex contributors](https://github.com/silexlabs/silex-lib/graphs/contributors).
 
 Silex is free/libre software, users are expected to help make Silex sustainable by being [part of the community](https://community.silex.me/), [contributing documentation](https://docs.silex.me/), [making a financial contribution](https://opencollective.com/silex), [report bugs](https://github.com/silexlabs/Silex/issues).
 
