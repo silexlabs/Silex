@@ -48,7 +48,7 @@ import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
 import notificationsPlugin, { NotificationEditor } from '@silexlabs/grapesjs-notifications'
-import keymapsDialogPlugin, { cmdKeymapsDialog, defaultOptions as keymapsDialogOpts } from '@silexlabs/grapesjs-keymaps-dialog'
+import keymapsDialogPlugin, { cmdKeymapsDialog } from '@silexlabs/grapesjs-keymaps-dialog'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -62,7 +62,7 @@ import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
-import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH } from '../../constants'
+import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH, SILEX_VERSION } from '../../constants'
 import { ClientConfig } from '../config'
 import { titleCase } from '../utils'
 import uploadProgress from './upload-progress'
@@ -163,7 +163,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       },
     },
 
-    cssIcons: './css/all.min.css',
+    cssIcons: `./css/all.min.css?${SILEX_VERSION}`,
 
     richTextEditor: {
       // @ts-ignore
