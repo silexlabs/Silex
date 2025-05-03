@@ -4212,27 +4212,28 @@ form.silex-form .silex-form__group.col2 {
 .silex-loader .silex-loader__text {
   min-width: 0;
   transition: min-width 0.3s ease;
+  position: relative;
 }
 .silex-loader .silex-loader__text progress.silex-loader__progress {
   opacity: 0;
   width: 0;
   height: 0;
   position: absolute;
-  background-color: #ddd;
+  background-color: #333333;
   border-radius: 0.125rem;
   transform: translateY(-5px);
   transition: all 0.3s 0.3s ease;
 }
 .silex-loader .silex-loader__text progress.silex-loader__progress::-webkit-progress-bar {
-  background-color: #333333;
-  border-radius: 0.125rem;
-}
-.silex-loader .silex-loader__text progress.silex-loader__progress::-webkit-progress-value {
   background-color: #ddd;
   border-radius: 0.125rem;
 }
-.silex-loader .silex-loader__text progress.silex-loader__progress::-moz-progress-bar {
+.silex-loader .silex-loader__text progress.silex-loader__progress::-webkit-progress-value {
   background-color: #333333;
+  border-radius: 0.125rem;
+}
+.silex-loader .silex-loader__text progress.silex-loader__progress::-moz-progress-bar {
+  background-color: #ddd;
   border-radius: 0.125rem;
 }
 .silex-loader.silex-loader--active .silex-loader__text {
@@ -4241,7 +4242,7 @@ form.silex-form .silex-form__group.col2 {
 .silex-loader.silex-loader--active .silex-loader__text .silex-loader__progress {
   opacity: 1;
   transform: translateY(10px);
-  width: 200px;
+  width: 100%;
   height: 0.25rem;
 }
 

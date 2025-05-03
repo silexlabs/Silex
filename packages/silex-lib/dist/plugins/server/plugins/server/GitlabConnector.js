@@ -520,10 +520,30 @@ class GitlabConnector {
             this.logout(session);
             throw new types_1.ApiError('Missing Gitlab user ID. User not logged in?', 401);
         }
-        const projects = await this.callApi({
-            session,
-            path: `api/v4/users/${userId}/projects`
-        });
+        // Handle multiple pages
+        let page = 1;
+        let totalPages = 1;
+        const projects = [];
+        do {
+            const responseHeaders = {};
+            const pageProjects = await this.callApi({
+                session,
+                path: `api/v4/users/${userId}/projects`,
+                params: {
+                    simple: true,
+                    per_page: 100,
+                    page,
+                },
+                responseHeaders,
+            });
+            projects.push(...pageProjects);
+            page++;
+            // Get the total number of pages from the response headers
+            const total = responseHeaders['x-total-pages'];
+            if (total) {
+                totalPages = parseInt(total, 10);
+            }
+        } while (page <= totalPages);
         return projects
             .filter(p => p.name.startsWith(this.options.repoPrefix))
             .map(p => ({
