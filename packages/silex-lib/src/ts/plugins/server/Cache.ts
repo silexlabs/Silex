@@ -23,7 +23,7 @@ export function noCache (req, res, next) {
 }
 
 export function withCache(req, res, next) {
-  if (req.url.endsWith('.html') || req.url.endsWith('/')) {
+  if (req.path.endsWith('.html') || req.path.endsWith('/')) {
     noCache(req, res, next)
   } else {
     res.header('Cache-Control', 'public,max-age=86400,immutable') // 24h
