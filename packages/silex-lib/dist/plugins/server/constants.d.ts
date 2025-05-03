@@ -1,12 +1,10 @@
-/**
- * @fileoverview define constants for Silex client and server
- */
+export declare let SILEX_VERSION: any;
 export declare const WEBSITE_DATA_FILE = "website.json";
 export declare const WEBSITE_META_DATA_FILE = "meta.json";
 export declare const WEBSITE_PAGES_FOLDER = "src";
 export declare const DEFAULT_WEBSITE_ID = "default";
 export declare const DEFAULT_LANGUAGE = "en";
-export declare const CLIENT_CONFIG_FILE_NAME = "silex.js";
+export declare const CLIENT_CONFIG_FILE_NAME: string;
 export declare const API_PATH = "/api";
 export declare const API_CONNECTOR_PATH = "/connector";
 export declare const API_CONNECTOR_USER = "/user";
@@ -29,5 +27,4 @@ export declare const API_WEBSITE_ASSET_READ = "/assets";
 export declare const API_WEBSITE_ASSETS_WRITE = "/assets";
 export declare const API_WEBSITE_META_READ = "/meta";
 export declare const API_WEBSITE_META_WRITE = "/meta";
-export declare let SILEX_VERSION: any;
 export declare const DEV_MESSAGE: string;

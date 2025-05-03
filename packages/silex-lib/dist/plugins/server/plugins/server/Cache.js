@@ -25,7 +25,7 @@ function noCache(req, res, next) {
     next();
 }
 function withCache(req, res, next) {
-    if (req.url.endsWith('.html') || req.url.endsWith('/')) {
+    if (req.path.endsWith('.html') || req.path.endsWith('/')) {
         noCache(req, res, next);
     }
     else {
