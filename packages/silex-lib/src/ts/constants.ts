@@ -19,23 +19,13 @@
  * @fileoverview define constants for Silex client and server
  */
 
-// Env vars (build time)
-// Get env vars from webpack
-// @see webpack.config.js
-declare const SILEX_VERSION_ENV: string
-export let SILEX_VERSION
-try { SILEX_VERSION = SILEX_VERSION_ENV } catch (e) {
-  // fallback to default value
-  SILEX_VERSION = SILEX_VERSION || '3.0.0'
-}
-
 export const WEBSITE_DATA_FILE = 'website.json'
 export const WEBSITE_META_DATA_FILE = 'meta.json'
 export const WEBSITE_PAGES_FOLDER = 'src'
 
 export const DEFAULT_WEBSITE_ID = 'default'
 export const DEFAULT_LANGUAGE = 'en'
-export const CLIENT_CONFIG_FILE_NAME = `silex.js?${SILEX_VERSION}`
+export const CLIENT_CONFIG_FILE_NAME = 'silex.js'
 
 export const API_PATH = '/api'
 
@@ -62,6 +52,16 @@ export const API_WEBSITE_ASSET_READ = '/assets'
 export const API_WEBSITE_ASSETS_WRITE = '/assets'
 export const API_WEBSITE_META_READ = '/meta'
 export const API_WEBSITE_META_WRITE = '/meta'
+
+// Env vars (build time)
+// Get env vars from webpack
+// @see webpack.config.js
+declare const SILEX_VERSION_ENV: string
+export let SILEX_VERSION
+try { SILEX_VERSION = SILEX_VERSION_ENV } catch (e) {
+  // fallback to default value
+  SILEX_VERSION = SILEX_VERSION || '3.0.0'
+}
 
 export const DEV_MESSAGE = `
 __________________________________________________________
