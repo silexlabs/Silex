@@ -99,8 +99,9 @@ $ nvm install # [optional] Get the node version from .nvmrc
 $ npm install # Will install dependencies in all submodules too
 $ npm start # Will run the Silex editor from packages/silex-lib
 ```
+If needed, add your .env file in <your-install-dir>/Silex/ [Server side options documentation](https://docs.silex.me/en/dev/options#server-side-options) and your server-side config file .<name>.silex.js in <your-install-dir>/Silex/packages/silex-lib/ [Server side configuration documentation](https://docs.silex.me/en/dev/connect#configuring-silex-with-existing-connectors) 
 
-Then you can open your browser at [http://localhost:6800](http://localhost:6800) to see the Silex editor running locally.
+Then you can open your browser at [http://localhost:6805](http://localhost:6805) to see the Silex editor running locally.
 
 When you are ready to contribute to a specific library or libraries, you can do the following:
 
