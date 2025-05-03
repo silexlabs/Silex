@@ -14,8 +14,8 @@
   "author": "lexoyo",
   "license": "AGPL-3.0-or-later",
   "dependencies": {
-    "@silexlabs/silex": "3.2.0",
-    "@silexlabs/silex-cms": "0.2.0",
+    "@silexlabs/silex": "3.2.1-0",
+    "@silexlabs/silex-cms": "0.2.1-0",
     "@silexlabs/silex-dashboard": "1.1.0",
     "dotenv": "^16.4.7"
   },
