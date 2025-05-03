@@ -15,14 +15,15 @@ html(lang="en", translate="no")
           font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
         .silex-loader {
-          display: none;
+          opacity: 0;
+          transition: opacity 0.25s 0.25s ease-in-out;
         }
 
     block head-end
 
   body.silex-loading
     .silex-loader.silex-dialog.
-      Loading...
+      Loading
 
     block includes
       include ./templates/includes.pug
