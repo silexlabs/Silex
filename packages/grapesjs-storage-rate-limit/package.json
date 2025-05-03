@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-storage-rate-limit",
-  "version": "1.0.9-0",
+  "version": "1.1.0",
   "description": "GrapesJs plugin to make sure the user does not save the website more often than desired",
   "type": "module",
   "main": "dist/index.js",
