@@ -3038,8 +3038,8 @@
   version "1.0.24-1"
   resolved "file:packages/grapesjs-ui-suggest-classes"
 
-"@silexlabs/silex-cms@0.1.9-1", "@silexlabs/silex-cms@file:/home/lexoyo/_/Silex/packages/silex-cms":
-  version "0.1.9-1"
+"@silexlabs/silex-cms@0.1.9-3", "@silexlabs/silex-cms@file:/home/lexoyo/_/Silex/packages/silex-cms":
+  version "0.1.9-3"
   resolved "file:packages/silex-cms"
   dependencies:
     "@humanwhocodes/retry" "^0.4.1"
@@ -3056,8 +3056,8 @@
     tslib "^2.8.1"
     typescript "^5.7.3"
 
-"@silexlabs/silex-dashboard@1.0.95-2", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
-  version "1.0.95-2"
+"@silexlabs/silex-dashboard@1.0.95-4", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
+  version "1.0.95-4"
   resolved "file:packages/silex-dashboard"
   dependencies:
     locale "^0.1.0"
@@ -3066,16 +3066,16 @@
     vue "^3.5.13"
 
 "@silexlabs/silex-platform@file:/home/lexoyo/_/Silex/packages/silex-platform":
-  version "1.0.172-4"
+  version "1.0.172-6"
   resolved "file:packages/silex-platform"
   dependencies:
-    "@silexlabs/silex" "3.0.10-5"
-    "@silexlabs/silex-cms" "0.1.9-1"
-    "@silexlabs/silex-dashboard" "1.0.95-2"
+    "@silexlabs/silex" "3.0.10-6"
+    "@silexlabs/silex-cms" "0.1.9-2"
+    "@silexlabs/silex-dashboard" "1.0.95-3"
     dotenv "^16.4.7"
 
 "@silexlabs/silex-plugin-starter@file:/home/lexoyo/_/Silex/packages/silex-plugin-starter":
-  version "0.0.1-4"
+  version "0.0.1-6"
   resolved "file:packages/silex-plugin-starter"
 
 "@silexlabs/silex-plugins@1.0.12-3", "@silexlabs/silex-plugins@file:/home/lexoyo/_/Silex/packages/silex-plugins":
@@ -3085,24 +3085,24 @@
     component-emitter "^2.0.0"
 
 "@silexlabs/silex-puter@file:/home/lexoyo/_/Silex/packages/silex-puter":
-  version "0.0.9-1"
+  version "0.0.9-3"
   resolved "file:packages/silex-puter"
   dependencies:
-    "@silexlabs/silex" "3.0.10-5"
+    "@silexlabs/silex" "3.0.10-7"
     lit-html "^3.2.1"
 
-"@silexlabs/silex@3.0.10-5", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
-  version "3.0.10-5"
+"@silexlabs/silex@3.0.10-7", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
+  version "3.0.10-7"
   resolved "file:packages/silex-lib"
   dependencies:
     "@fontsource/ubuntu" "^5.0.13"
     "@fortawesome/fontawesome-free" "6.6.0"
-    "@silexlabs/grapesjs-filter-styles" "^1.0.1-6"
-    "@silexlabs/grapesjs-fonts" "^1.0.22-1"
-    "@silexlabs/grapesjs-keymaps-dialog" "^1.0.17-2"
+    "@silexlabs/grapesjs-filter-styles" "1.0.1-6"
+    "@silexlabs/grapesjs-fonts" "1.0.22-1"
+    "@silexlabs/grapesjs-keymaps-dialog" "1.0.17-2"
     "@silexlabs/grapesjs-loading" "1.0.11-2"
-    "@silexlabs/grapesjs-notifications" "^0.0.10-0"
-    "@silexlabs/grapesjs-storage-rate-limit" "^1.0.9-0"
+    "@silexlabs/grapesjs-notifications" "0.0.10-0"
+    "@silexlabs/grapesjs-storage-rate-limit" "1.0.9-0"
     "@silexlabs/grapesjs-symbols" "1.1.7-2"
     "@silexlabs/grapesjs-ui-suggest-classes" "1.0.24-1"
     "@silexlabs/silex-plugins" "1.0.12-3"
