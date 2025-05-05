@@ -95,7 +95,6 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     // publishing all files for website
     // Do not await for the result, return the job and continue the publication in the background
     //this .startPublicationJob(session, websiteId, files, job, () => this.endPublicationJob(session, websiteId, job))
-    console.log('Publishing files to gitlab:', files.map(file => file.path))
     this.writeAssets(session, websiteId, files, async ({status, message}) => {
       // Update the job status
       if(status === JobStatus.SUCCESS) {

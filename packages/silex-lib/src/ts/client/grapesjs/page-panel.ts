@@ -94,7 +94,6 @@ function removePageWithConfirm(editor, page) {
     <footer>
       <button
         ${ref((el: HTMLButtonElement) => {
-    console.log('focus', el)
     setTimeout(() => el.focus())
   })}
         @click=${() => {
