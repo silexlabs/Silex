@@ -19,7 +19,7 @@
  * Date: 2023-08-28T13:37Z
  */
 
-/*! @silexlabs/grapesjs-filter-styles - 0.0.3 */
+/*! @silexlabs/grapesjs-filter-styles - 1.0.0 */
 
 /*! @silexlabs/grapesjs-loading - 1.0.9 */
 

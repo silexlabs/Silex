@@ -1,1 +1,3 @@
-link(rel='stylesheet', type='text/css', href='css/admin.css')
+- var cacheBuster = Math.floor(Math.random() * 1000000); // Random number for cache busting, different for each build
+
+link(rel='stylesheet', type='text/css', href='css/admin.css?' + cacheBuster)

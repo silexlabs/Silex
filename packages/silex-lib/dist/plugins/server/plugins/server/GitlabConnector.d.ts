@@ -33,6 +33,7 @@ interface GitlabAction {
     file_path?: string;
     content?: string;
     commit_id?: string;
+    encoding?: 'base64' | 'text';
 }
 interface GitlabWriteFile {
     branch: string;
@@ -70,6 +71,7 @@ interface GitlabFetchCommits {
     ref_name: string;
     since: string;
 }
+export declare function computeGitBlobSha(content: string, binary: boolean): string;
 export default class GitlabConnector implements StorageConnector {
     private config;
     connectorId: string;
@@ -89,7 +91,14 @@ export default class GitlabConnector implements StorageConnector {
     /**
      * Call the Gitlab API with the user's token and handle errors
      */
-    callApi(session: GitlabSession, path: string, method?: 'POST' | 'GET' | 'PUT' | 'DELETE', requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null, params?: any): Promise<any>;
+    callApi({ session, path, method, requestBody, params, responseHeaders, }: {
+        session: GitlabSession;
+        path: string;
+        method?: 'POST' | 'GET' | 'PUT' | 'DELETE';
+        requestBody?: GitlabWriteFile | GitlabGetToken | GitlabWebsiteName | GitlabCreateBranch | GitlabGetTags | GitlabCreateTag | GitlabFetchCommits | null;
+        params?: any;
+        responseHeaders?: any;
+    }): Promise<any>;
     downloadRawFile(session: GitlabSession, projectId: string, filePath: string): Promise<Buffer>;
     private generateCodeVerifier;
     private generateCodeChallenge;
@@ -138,8 +147,18 @@ export default class GitlabConnector implements StorageConnector {
     duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void>;
     getWebsiteMeta(session: GitlabSession, websiteId: WebsiteId): Promise<WebsiteMeta>;
     setWebsiteMeta(session: GitlabSession, websiteId: WebsiteId, websiteMeta: WebsiteMetaFileContent): Promise<void>;
-    writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback): Promise<void>;
+    writeAssets(session: GitlabSession, websiteId: string, files: ConnectorFile[], status?: StatusCallback, removeUnlisted?: boolean): Promise<void>;
     readAsset(session: GitlabSession, websiteId: string, fileName: string): Promise<ConnectorFileContent>;
     deleteAssets(session: GitlabSession, websiteId: string, fileNames: string[]): Promise<void>;
+    /**
+     * List all the files in a folder
+     * The result is a map of file paths to their SHA
+     */
+    protected ls({ session, websiteId, recursive, path, }: {
+        session: GitlabSession;
+        websiteId: string;
+        recursive?: boolean;
+        path?: string;
+    }): Promise<Map<string, string>>;
 }
 export {};

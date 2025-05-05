@@ -1,3 +1,4 @@
+- var cacheBuster = Math.floor(Math.random() * 1000000); // Random number for cache busting, different for each build
 doctype html
 html(lang="en", translate="no")
   head
@@ -6,7 +7,7 @@ html(lang="en", translate="no")
     block head
       title='Silex'
       meta(name='description', content='This is a public instance of Silex website builder. Build websites in the browser')
-      link(rel="shortcut icon", href="assets/favicon.png")
+      link(rel="shortcut icon", href="assets/favicon.png?" + cacheBuster)
 
     block loading
       style.
@@ -15,14 +16,15 @@ html(lang="en", translate="no")
           font-family: "Ubuntu", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
         .silex-loader {
-          display: none;
+          opacity: 0;
+          transition: opacity 0.25s 0.25s ease-in-out;
         }
 
     block head-end
 
   body.silex-loading
     .silex-loader.silex-dialog.
-      Loading...
+      Loading
 
     block includes
       include ./templates/includes.pug
@@ -31,7 +33,7 @@ html(lang="en", translate="no")
       include ./templates/workspace.pug
 
     block body-end
-      script(src='js/main.js')
+      script(src='js/main.js?' + cacheBuster)
 
     block silex-start
       script.

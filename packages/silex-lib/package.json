@@ -1,7 +1,7 @@
 {
   "name": "@silexlabs/silex",
   "description": "Free and easy website builder for everyone.",
-  "version": "3.0.9",
+  "version": "3.2.1-1",
   "version:backwardcompat": "3.0.0",
   "author": {
     "name": "Alex Hoyau",
@@ -22,7 +22,7 @@
     "README.md",
     "LICENSE"
   ],
-  "license": "AGPL-3.0-or-later",
+  "license": "AGPL-3.0",
   "engines": {
     "node": ">=18"
   },
@@ -106,14 +106,15 @@
     "@fontsource/ubuntu": "^5.0.13",
     "@fortawesome/fontawesome-free": "6.6.0",
     "@silexlabs/grapesjs-advanced-selector": "^1.0.5",
-    "@silexlabs/grapesjs-filter-styles": "^1.0.0",
-    "@silexlabs/grapesjs-fonts": "^1.0.21",
-    "@silexlabs/grapesjs-keymaps-dialog": "^1.0.16",
-    "@silexlabs/grapesjs-loading": "1.0.9",
-    "@silexlabs/grapesjs-notifications": "^0.0.9",
-    "@silexlabs/grapesjs-storage-rate-limit": "^1.0.8",
-    "@silexlabs/grapesjs-symbols": "1.1.6",
-    "@silexlabs/silex-plugins": "1.0.10",
+    "@silexlabs/grapesjs-filter-styles": "1.1.0",
+    "@silexlabs/grapesjs-fonts": "1.1.0",
+    "@silexlabs/grapesjs-keymaps-dialog": "1.1.0",
+    "@silexlabs/grapesjs-loading": "1.1.0",
+    "@silexlabs/grapesjs-notifications": "0.1.0",
+    "@silexlabs/grapesjs-storage-rate-limit": "1.1.0",
+    "@silexlabs/grapesjs-symbols": "1.2.0",
+    "@silexlabs/grapesjs-ui-suggest-classes": "1.1.0",
+    "@silexlabs/silex-plugins": "1.1.0",
     "@types/archiver": "^6.0.2",
     "adm-zip": "0.5.14",
     "archiver": "^7.0.1",
@@ -141,7 +142,7 @@
     "html-minifier": "^4.0.0",
     "lit-html": "3.2.1",
     "mkdirp": "3.0.1",
-    "node_modules-path": "2.0.8",
+    "node_modules-path": "2.1.0",
     "node-fetch": "2.6.9",
     "normalize.css": "8.0.1",
     "npm-run-all": "^4.1.5",
@@ -152,15 +153,18 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.25.1",
     "@types/express": "4.17.21",
     "@types/jest": "^29.5.12",
     "@types/node": "22.1.0",
-    "@typescript-eslint/eslint-plugin": "6.10.0",
-    "@typescript-eslint/parser": "6.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.0",
+    "@typescript-eslint/parser": "^8.31.0",
     "css-loader": "7.1.2",
     "dedent": "^1.5.3",
-    "eslint": "8.53.0",
+    "eslint": "^8.31.0",
     "file-loader": "6.2.0",
+    "globals": "^16.0.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
     "jest": "29.7.0",
@@ -178,7 +182,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/silexlabs/Silex.git"
+    "url": "https://github.com/silexlabs/silex-lib.git"
   },
   "keywords": [
     "page builder",
@@ -212,7 +216,6 @@
     "HTML",
     "Javascript",
     "WYSIWYG",
-    "github",
     "silex",
     "jekyll"
   ]

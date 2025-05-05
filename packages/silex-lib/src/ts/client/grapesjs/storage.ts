@@ -22,8 +22,28 @@ import { addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl,
 import { PublicationStatus, PublishableEditor } from './PublicationManager'
 import { ClientEvent } from '../events'
 import { ProjectData } from 'grapesjs'
+import { html, render, TemplateResult } from 'lit-html'
+import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 
 export const cmdPauseAutoSave = 'pause-auto-save'
+
+const loader = document.querySelector('.silex-loader') as HTMLDivElement
+if (loader) {
+  loader.innerHTML = ''
+  render(getLoaderHtml('Loading', 0, 0), loader)
+  setTimeout(() => loader.classList.add('silex-loader--active'))
+}
+
+function getLoaderHtml(text: string, current: number, total: number): TemplateResult {
+  return html`
+    <div class="silex-loader__text">
+      <div>${ unsafeHTML(text) }</div>
+      <progress
+        class="silex-loader__progress"
+        max="${total}" value="${current}"></progress>
+    </div>
+  `
+}
 
 // Wait for the next frame to avoid blocking the main thread
 function nextFrame(): Promise<void> {
@@ -199,9 +219,11 @@ export const storagePlugin = (editor: PublishableEditor) => {
 
 async function progressiveLoadPages(editor: PublishableEditor, data: ProjectData) {
   editor.Pages.getAll().forEach(page => editor.Pages.remove(page))
+  const max = data.pages.length + 1
   let i = 0
   for (const page of data.pages) {
-    document.querySelector('.silex-loader').innerHTML = `Loading page ${++i} / ${data.pages.length}`
+    loader && render(getLoaderHtml(`Loading page <strong>${++i}</strong> / ${data.pages.length}`, i, max), loader)
+    //await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 1000))
     await nextFrame()
     const newPage = editor.Pages.add({
       ...page,
@@ -209,7 +231,7 @@ async function progressiveLoadPages(editor: PublishableEditor, data: ProjectData
   }
 
   // Charger les styles, assets, etc. après les pages
-  document.querySelector('.silex-loader').innerHTML = 'Loading styles and assets'
+  loader && render(getLoaderHtml('Loading styles and assets', data.pages.length + 1, max), loader)
   if (data.styles) editor.setStyle(data.styles)
   if (data.assets) editor.AssetManager.add(data.assets)
 

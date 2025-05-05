@@ -77,6 +77,10 @@ export default (editor: Editor, opts) => {
         /* @ts-ignore */
         { value: '', name: '' },                    
         /* @ts-ignore */
+        { value: 'inherit', name: 'inherit' },
+        /* @ts-ignore */
+        { value: 'initial', name: 'initial' },
+        /* @ts-ignore */
         { value: 'static', name: 'static' },
         /* @ts-ignore */
         { value: 'relative', name: 'relative' },
@@ -84,6 +88,10 @@ export default (editor: Editor, opts) => {
         { value: 'absolute', name: 'absolute' },
         /* @ts-ignore */
         { value: 'fixed', name: 'fixed' },
+        /* @ts-ignore */
+        { value: 'sticky', name: 'sticky' },
+        /* @ts-ignore */
+        { value: 'unset', name: 'unset' },
       ],
       info: '',
     })

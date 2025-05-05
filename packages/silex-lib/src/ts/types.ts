@@ -339,4 +339,6 @@ export interface JobData {
 export interface PublicationJobData extends JobData {
   logs: string[][]
   errors: string[][]
+  startTime?: number
+  endTime?: number
 }

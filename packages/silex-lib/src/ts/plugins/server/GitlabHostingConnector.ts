@@ -94,6 +94,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
     // publishing all files for website
     // Do not await for the result, return the job and continue the publication in the background
+    //this .startPublicationJob(session, websiteId, files, job, () => this.endPublicationJob(session, websiteId, job))
     this.writeAssets(session, websiteId, files, async ({status, message}) => {
       // Update the job status
       if(status === JobStatus.SUCCESS) {
@@ -155,7 +156,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
         job.message = message
         job.logs[0].push(message)
       }
-    })
+    }, true)
       .catch(e => {
         console.error('Error uploading files to gitlab:', e.message)
         jobError(job.jobId, `Failed to upload files: ${e.message}`)
@@ -164,14 +165,61 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     return job
   }
 
+  // async startPublicationJob(session: GitlabSession, websiteId: WebsiteId, files: ConnectorFile[], job: PublicationJobData, endJob: () => void) {
+  //   job.message = `Preparing ${files.length} files...`
+  //   job.logs[0].push(job.message)
+  //   job.status = JobStatus.IN_PROGRESS
+  //   job.startTime = Date.now()
+
+  //   // List all the files in assets folder
+  //   const existingFiles = await this.ls({
+  //     session,
+  //     websiteId,
+  //     recursive: false,
+  //     path: this.options.assetsFolder,
+  //   })
+
+  //   // Create the actions for the batch
+  //   const filesToUpload = [] as GitlabAction[]
+  //   for (const file of files) {
+  //     const filePath = this.getAssetPath(file.path, false)
+  //     const content = (await contentToBuffer(file.content)).toString('base64')
+  //     const existingSha = existingFiles.get(filePath)
+  //     const newSha = computeGitBlobSha(content, true)
+  //     if (existingSha) {
+  //       if (existingSha !== newSha) {
+  //         filesToUpload.push({
+  //           action: 'update',
+  //           file_path: filePath,
+  //           content,
+  //           encoding: 'base64',
+  //         })
+  //       } // else: skip unchanged file
+  //     } else {
+  //       filesToUpload.push({
+  //         action: 'create',
+  //         file_path: filePath,
+  //         content,
+  //         encoding: 'base64',
+  //       })
+  //     }
+
   /* Get and return Url Gitlab Pages */
   async getUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
-    const response = await this.callApi(session, `api/v4/projects/${websiteId}/pages`, 'GET')
+    const response = await this.callApi({
+      session,
+      path: `api/v4/projects/${websiteId}/pages`,
+      method: 'GET'
+    })
     return response.url
   }
 
   async getAdminUrl(session: GitlabSession, websiteId: WebsiteId): Promise<string> {
-    const projectInfo = await this.callApi(session, `api/v4/projects/${websiteId}`, 'GET')
+    const projectInfo = await this.callApi({
+      session,
+      path: `api/v4/projects/${websiteId}`,
+      method: 'GET'
+    })
     return projectInfo.web_url
   }
 
@@ -183,7 +231,11 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
   async getGitlabJobLogsUrl(session: GitlabSession, websiteId: WebsiteId, job: PublicationJobData, { startJob, jobSuccess, jobError }: JobManager, projectUrl: string, tag): Promise<string | null> {
     const t0 = Date.now()
     do {
-      const jobs = await this.callApi(session, `api/v4/projects/${websiteId}/jobs`, 'GET')
+      const jobs = await this.callApi({
+        session,
+        path: `api/v4/projects/${websiteId}/jobs`,
+        method: 'GET'
+      })
       if (!jobs.length) return null
       if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
       await setTimeout(waitTimeOut)
@@ -203,10 +255,15 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     try {
       job.message = `Creating new tag ${newTag}...`
       job.logs[0].push(job.message)
-      await this.callApi(session, `api/v4/projects/${projectId}/repository/tags`, 'POST', {
-        tag_name: newTag,
-        ref: 'main',
-        message: 'Publication from Silex',
+      await this.callApi({
+        session,
+        path: `api/v4/projects/${projectId}/repository/tags`,
+        method: 'POST',
+        requestBody: {
+          tag_name: newTag,
+          ref: 'main',
+          message: 'Publication from Silex',
+        }
       })
     } catch (error) {
       console.error('Error during creating new tag:', error.message)

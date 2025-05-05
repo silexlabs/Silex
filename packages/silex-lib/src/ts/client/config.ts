@@ -17,7 +17,7 @@
 
 import { Config } from '@silexlabs/silex-plugins'
 import { getEditor, getEditorConfig } from './grapesjs'
-import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID } from '../constants'
+import { CLIENT_CONFIG_FILE_NAME, DEFAULT_LANGUAGE, DEFAULT_WEBSITE_ID, SILEX_VERSION } from '../constants'
 import { ConnectorId, WebsiteId } from '../types'
 import { Editor, EditorConfig, Page } from 'grapesjs'
 import { PublicationTransformer, publicationTransformerDefault, validatePublicationTransformer } from './publication-transformers'
@@ -101,7 +101,7 @@ export class ClientConfig extends Config {
    * Client config url
    * This is the url of the config file which is a plugin
    */
-  clientConfigUrl = `${this.rootUrl}/${CLIENT_CONFIG_FILE_NAME}`
+  clientConfigUrl = `${this.rootUrl}/${CLIENT_CONFIG_FILE_NAME}?${ SILEX_VERSION }`
 
   /**
    * Google fonts API key, see this doc to get an API key: https://developers.google.com/fonts/docs/developer_api#APIKey

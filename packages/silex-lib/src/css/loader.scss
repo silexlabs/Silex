@@ -9,4 +9,45 @@
   align-items: center;
   background-color: variables.$primaryColor;
   z-index: variables.$z-loader;
+  opacity: 1;
+  font-size: 1.25rem;
+  letter-spacing: 0.025em;
+  .silex-loader__text {
+    min-width: 0;
+    transition: min-width 0.3s ease;
+    position: relative;
+    progress.silex-loader__progress {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+      background-color: variables.$primaryColor;
+      border-radius: 0.125rem;
+      transform: translateY(-5px);
+      transition: all 0.3s 0.3s ease;
+      &::-webkit-progress-bar {
+        background-color: variables.$secondaryColor;
+        border-radius: 0.125rem;
+      }
+      &::-webkit-progress-value {
+        background-color: variables.$primaryColor;
+        border-radius: 0.125rem;
+      }
+      &::-moz-progress-bar {
+        background-color: variables.$secondaryColor;
+        border-radius: 0.125rem;
+      }
+    }
+  }
+  &.silex-loader--active {
+    .silex-loader__text {
+      min-width: 250px;
+      .silex-loader__progress {
+        opacity: 1;
+        transform: translateY(10px);
+        width: 100%;
+        height: 0.25rem;
+      }
+    }
+  }
 }

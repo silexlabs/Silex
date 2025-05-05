@@ -1,3 +1,5 @@
+npm install --package-lock-only --workspaces false
 npm run build
-npm run lint
+npm run lint:fix
+git update-index --again
 npm test

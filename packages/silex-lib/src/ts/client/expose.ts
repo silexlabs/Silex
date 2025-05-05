@@ -24,7 +24,3 @@ export * as api from './api'
 export * as events from './events'
 export * as page from '../page'
 export * as types from '../types'
-
-console.info(`
-Silex client loaded
-`)
