@@ -2977,69 +2977,69 @@
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
 "@silexlabs/eleventy-plugin-concat@file:/home/lexoyo/_/Silex/packages/eleventy-plugin-concat":
-  version "1.0.13-0"
+  version "1.1.0"
   resolved "file:packages/eleventy-plugin-concat"
   dependencies:
     node-fetch "^2.6.9"
     node-html-parser "^6.1.5"
 
-"@silexlabs/expression-input@0.0.29-6", "@silexlabs/expression-input@file:/home/lexoyo/_/Silex/packages/expression-input":
-  version "0.0.29-6"
+"@silexlabs/expression-input@0.1.0", "@silexlabs/expression-input@file:/home/lexoyo/_/Silex/packages/expression-input":
+  version "0.1.0"
   resolved "file:packages/expression-input"
   dependencies:
     lit "^3.2.1"
 
 "@silexlabs/grapesjs-advanced-selector@file:/home/lexoyo/_/Silex/packages/grapesjs-advanced-selector":
-  version "1.0.8-3"
+  version "1.1.0"
   resolved "file:packages/grapesjs-advanced-selector"
   dependencies:
-    "@silexlabs/expression-input" "0.0.29-6"
+    "@silexlabs/expression-input" "0.1.0"
     specificity "^1.0.0"
 
-"@silexlabs/grapesjs-data-source@0.0.131-1", "@silexlabs/grapesjs-data-source@file:/home/lexoyo/_/Silex/packages/grapesjs-data-source":
-  version "0.0.131-1"
+"@silexlabs/grapesjs-data-source@0.1.0", "@silexlabs/grapesjs-data-source@file:/home/lexoyo/_/Silex/packages/grapesjs-data-source":
+  version "0.1.0"
   resolved "file:packages/grapesjs-data-source"
   dependencies:
     "@apollo/client" "^3.13.8"
-    "@silexlabs/expression-input" "0.0.29-6"
+    "@silexlabs/expression-input" "0.1.0"
     dedent-js "^1.0.1"
 
-"@silexlabs/grapesjs-filter-styles@1.0.1-6", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
-  version "1.0.1-6"
+"@silexlabs/grapesjs-filter-styles@1.1.0", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
+  version "1.1.0"
   resolved "file:packages/grapesjs-filter-styles"
 
-"@silexlabs/grapesjs-fonts@1.0.22-1", "@silexlabs/grapesjs-fonts@file:/home/lexoyo/_/Silex/packages/grapesjs-fonts":
-  version "1.0.22-1"
+"@silexlabs/grapesjs-fonts@1.1.0", "@silexlabs/grapesjs-fonts@file:/home/lexoyo/_/Silex/packages/grapesjs-fonts":
+  version "1.1.0"
   resolved "file:packages/grapesjs-fonts"
 
-"@silexlabs/grapesjs-keymaps-dialog@1.0.17-2", "@silexlabs/grapesjs-keymaps-dialog@file:/home/lexoyo/_/Silex/packages/grapesjs-keymaps-dialog":
-  version "1.0.17-2"
+"@silexlabs/grapesjs-keymaps-dialog@1.1.0", "@silexlabs/grapesjs-keymaps-dialog@file:/home/lexoyo/_/Silex/packages/grapesjs-keymaps-dialog":
+  version "1.1.0"
   resolved "file:packages/grapesjs-keymaps-dialog"
   dependencies:
     dts-bundle-generator "^9.5.1"
 
-"@silexlabs/grapesjs-loading@1.0.11-2", "@silexlabs/grapesjs-loading@file:/home/lexoyo/_/Silex/packages/grapesjs-loading":
-  version "1.0.11-2"
+"@silexlabs/grapesjs-loading@1.1.0", "@silexlabs/grapesjs-loading@file:/home/lexoyo/_/Silex/packages/grapesjs-loading":
+  version "1.1.0"
   resolved "file:packages/grapesjs-loading"
 
-"@silexlabs/grapesjs-notifications@0.0.10-0", "@silexlabs/grapesjs-notifications@file:/home/lexoyo/_/Silex/packages/grapesjs-notifications":
-  version "0.0.10-0"
+"@silexlabs/grapesjs-notifications@0.1.0", "@silexlabs/grapesjs-notifications@file:/home/lexoyo/_/Silex/packages/grapesjs-notifications":
+  version "0.1.0"
   resolved "file:packages/grapesjs-notifications"
 
-"@silexlabs/grapesjs-storage-rate-limit@1.0.9-0", "@silexlabs/grapesjs-storage-rate-limit@file:/home/lexoyo/_/Silex/packages/grapesjs-storage-rate-limit":
-  version "1.0.9-0"
+"@silexlabs/grapesjs-storage-rate-limit@1.1.0", "@silexlabs/grapesjs-storage-rate-limit@file:/home/lexoyo/_/Silex/packages/grapesjs-storage-rate-limit":
+  version "1.1.0"
   resolved "file:packages/grapesjs-storage-rate-limit"
 
-"@silexlabs/grapesjs-symbols@1.1.7-2", "@silexlabs/grapesjs-symbols@file:/home/lexoyo/_/Silex/packages/grapesjs-symbols":
-  version "1.1.7-2"
+"@silexlabs/grapesjs-symbols@1.2.0", "@silexlabs/grapesjs-symbols@file:/home/lexoyo/_/Silex/packages/grapesjs-symbols":
+  version "1.2.0"
   resolved "file:packages/grapesjs-symbols"
 
-"@silexlabs/grapesjs-ui-suggest-classes@1.0.24-1", "@silexlabs/grapesjs-ui-suggest-classes@file:/home/lexoyo/_/Silex/packages/grapesjs-ui-suggest-classes":
-  version "1.0.24-1"
+"@silexlabs/grapesjs-ui-suggest-classes@1.1.0", "@silexlabs/grapesjs-ui-suggest-classes@file:/home/lexoyo/_/Silex/packages/grapesjs-ui-suggest-classes":
+  version "1.1.0"
   resolved "file:packages/grapesjs-ui-suggest-classes"
 
-"@silexlabs/silex-cms@0.1.9-3", "@silexlabs/silex-cms@file:/home/lexoyo/_/Silex/packages/silex-cms":
-  version "0.1.9-3"
+"@silexlabs/silex-cms@0.2.1-1", "@silexlabs/silex-cms@file:/home/lexoyo/_/Silex/packages/silex-cms":
+  version "0.2.1-1"
   resolved "file:packages/silex-cms"
   dependencies:
     "@humanwhocodes/retry" "^0.4.1"
@@ -3048,7 +3048,7 @@
     "@rollup/plugin-json" "^6.1.0"
     "@rollup/plugin-node-resolve" "^16.0.0"
     "@rollup/plugin-typescript" "^12.1.2"
-    "@silexlabs/grapesjs-data-source" "0.0.131-1"
+    "@silexlabs/grapesjs-data-source" "0.1.0"
     dedent "^1.5.3"
     deepmerge "^4.3.1"
     rollup "^4.32.1"
@@ -3056,56 +3056,56 @@
     tslib "^2.8.1"
     typescript "^5.7.3"
 
-"@silexlabs/silex-dashboard@1.0.95-4", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
-  version "1.0.95-4"
+"@silexlabs/silex-dashboard@1.1.1-1", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
+  version "1.1.1-1"
   resolved "file:packages/silex-dashboard"
   dependencies:
     locale "^0.1.0"
-    node_modules-path "^2.0.9-2"
+    node_modules-path "^2.1.0"
     serve-static "^2.2.0"
     vue "^3.5.13"
 
 "@silexlabs/silex-platform@file:/home/lexoyo/_/Silex/packages/silex-platform":
-  version "1.0.172-6"
+  version "1.1.1-1"
   resolved "file:packages/silex-platform"
   dependencies:
-    "@silexlabs/silex" "3.0.10-6"
-    "@silexlabs/silex-cms" "0.1.9-2"
-    "@silexlabs/silex-dashboard" "1.0.95-3"
+    "@silexlabs/silex" "3.2.1-0"
+    "@silexlabs/silex-cms" "0.2.1-0"
+    "@silexlabs/silex-dashboard" "1.1.0"
     dotenv "^16.4.7"
 
 "@silexlabs/silex-plugin-starter@file:/home/lexoyo/_/Silex/packages/silex-plugin-starter":
-  version "0.0.1-6"
+  version "0.2.1-1"
   resolved "file:packages/silex-plugin-starter"
 
-"@silexlabs/silex-plugins@1.0.12-3", "@silexlabs/silex-plugins@file:/home/lexoyo/_/Silex/packages/silex-plugins":
-  version "1.0.12-3"
+"@silexlabs/silex-plugins@1.1.0", "@silexlabs/silex-plugins@file:/home/lexoyo/_/Silex/packages/silex-plugins":
+  version "1.1.0"
   resolved "file:packages/silex-plugins"
   dependencies:
     component-emitter "^2.0.0"
 
 "@silexlabs/silex-puter@file:/home/lexoyo/_/Silex/packages/silex-puter":
-  version "0.0.9-3"
+  version "0.2.1-1"
   resolved "file:packages/silex-puter"
   dependencies:
-    "@silexlabs/silex" "3.0.10-7"
+    "@silexlabs/silex" "3.2.1-1"
     lit-html "^3.2.1"
 
-"@silexlabs/silex@3.0.10-7", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
-  version "3.0.10-7"
+"@silexlabs/silex@3.2.1-1", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
+  version "3.2.1-1"
   resolved "file:packages/silex-lib"
   dependencies:
     "@fontsource/ubuntu" "^5.0.13"
     "@fortawesome/fontawesome-free" "6.6.0"
-    "@silexlabs/grapesjs-filter-styles" "1.0.1-6"
-    "@silexlabs/grapesjs-fonts" "1.0.22-1"
-    "@silexlabs/grapesjs-keymaps-dialog" "1.0.17-2"
-    "@silexlabs/grapesjs-loading" "1.0.11-2"
-    "@silexlabs/grapesjs-notifications" "0.0.10-0"
-    "@silexlabs/grapesjs-storage-rate-limit" "1.0.9-0"
-    "@silexlabs/grapesjs-symbols" "1.1.7-2"
-    "@silexlabs/grapesjs-ui-suggest-classes" "1.0.24-1"
-    "@silexlabs/silex-plugins" "1.0.12-3"
+    "@silexlabs/grapesjs-filter-styles" "1.1.0"
+    "@silexlabs/grapesjs-fonts" "1.1.0"
+    "@silexlabs/grapesjs-keymaps-dialog" "1.1.0"
+    "@silexlabs/grapesjs-loading" "1.1.0"
+    "@silexlabs/grapesjs-notifications" "0.1.0"
+    "@silexlabs/grapesjs-storage-rate-limit" "1.1.0"
+    "@silexlabs/grapesjs-symbols" "1.2.0"
+    "@silexlabs/grapesjs-ui-suggest-classes" "1.1.0"
+    "@silexlabs/silex-plugins" "1.1.0"
     "@types/archiver" "^6.0.2"
     adm-zip "0.5.14"
     archiver "^7.0.1"
@@ -3133,7 +3133,7 @@
     html-minifier "^4.0.0"
     lit-html "3.2.1"
     mkdirp "3.0.1"
-    node_modules-path "2.0.9-2"
+    node_modules-path "2.1.0"
     node-fetch "2.6.9"
     normalize.css "8.0.1"
     npm-run-all "^4.1.5"
@@ -4210,7 +4210,29 @@
     natural-compare "^1.4.0"
     ts-api-utils "^2.0.1"
 
-"@typescript-eslint/parser@^8.0.0 || ^8.0.0-alpha.0", "@typescript-eslint/parser@^8.22.0", "@typescript-eslint/parser@^8.30.1", "@typescript-eslint/parser@^8.31.0", "@typescript-eslint/parser@8.31.0":
+"@typescript-eslint/parser@^6.0.0 || ^6.0.0-alpha":
+  version "6.21.0"
+  resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-6.21.0.tgz"
+  integrity sha512-tbsV1jPne5CkFQCgPBcDOt30ItF7aJoZL997JSF7MhGQqOeT3svWRYxiqlfA5RUdlHN6Fi+EI9bxqbdyAUZjYQ==
+  dependencies:
+    "@typescript-eslint/scope-manager" "6.21.0"
+    "@typescript-eslint/types" "6.21.0"
+    "@typescript-eslint/typescript-estree" "6.21.0"
+    "@typescript-eslint/visitor-keys" "6.21.0"
+    debug "^4.3.4"
+
+"@typescript-eslint/parser@^8.0.0 || ^8.0.0-alpha.0", "@typescript-eslint/parser@^8.22.0", "@typescript-eslint/parser@^8.31.0", "@typescript-eslint/parser@^8.31.1":
+  version "8.31.1"
+  resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-8.31.1.tgz"
+  integrity sha512-oU/OtYVydhXnumd0BobL9rkJg7wFJ9bFFPmSmB/bf/XWN85hlViji59ko6bSKBXyseT9V8l+CN1nwmlbiN0G7Q==
+  dependencies:
+    "@typescript-eslint/scope-manager" "8.31.1"
+    "@typescript-eslint/types" "8.31.1"
+    "@typescript-eslint/typescript-estree" "8.31.1"
+    "@typescript-eslint/visitor-keys" "8.31.1"
+    debug "^4.3.4"
+
+"@typescript-eslint/parser@^8.30.1", "@typescript-eslint/parser@8.31.0":
   version "8.31.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-8.31.0.tgz"
   integrity sha512-67kYYShjBR0jNI5vsf/c3WG4u+zDnCTHTPqVMQguffaWWFs7artgwKmfwdifl+r6XyM5LYLas/dInj2T0SgJyw==
@@ -4229,6 +4251,14 @@
     "@typescript-eslint/types" "6.10.0"
     "@typescript-eslint/visitor-keys" "6.10.0"
 
+"@typescript-eslint/scope-manager@6.21.0":
+  version "6.21.0"
+  resolved "https://registry.npmjs.org/@typescript-eslint/scope-manager/-/scope-manager-6.21.0.tgz"
+  integrity sha512-OwLUIWZJry80O99zvqXVEioyniJMa+d2GrqpUTqi5/v5D5rOrppJVBPa0yKCblcigC0/aYAzxxqQ1B+DS2RYsg==
+  dependencies:
+    "@typescript-eslint/types" "6.21.0"
+    "@typescript-eslint/visitor-keys" "6.21.0"
+
 "@typescript-eslint/scope-manager@8.31.0":
   version "8.31.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/scope-manager/-/scope-manager-8.31.0.tgz"
@@ -4236,6 +4266,14 @@
   dependencies:
     "@typescript-eslint/types" "8.31.0"
     "@typescript-eslint/visitor-keys" "8.31.0"
+
+"@typescript-eslint/scope-manager@8.31.1":
+  version "8.31.1"
+  resolved "https://registry.npmjs.org/@typescript-eslint/scope-manager/-/scope-manager-8.31.1.tgz"
+  integrity sha512-BMNLOElPxrtNQMIsFHE+3P0Yf1z0dJqV9zLdDxN/xLlWMlXK/ApEsVEKzpizg9oal8bAT5Sc7+ocal7AC1HCVw==
+  dependencies:
+    "@typescript-eslint/types" "8.31.1"
+    "@typescript-eslint/visitor-keys" "8.31.1"
 
 "@typescript-eslint/type-utils@6.10.0":
   version "6.10.0"
@@ -4262,10 +4300,20 @@
   resolved "https://registry.npmjs.org/@typescript-eslint/types/-/types-6.10.0.tgz"
   integrity sha512-36Fq1PWh9dusgo3vH7qmQAj5/AZqARky1Wi6WpINxB6SkQdY5vQoT2/7rW7uBIsPDcvvGCLi4r10p0OJ7ITAeg==
 
+"@typescript-eslint/types@6.21.0":
+  version "6.21.0"
+  resolved "https://registry.npmjs.org/@typescript-eslint/types/-/types-6.21.0.tgz"
+  integrity sha512-1kFmZ1rOm5epu9NZEZm1kckCDGj5UJEf7P1kliH4LKu/RkwpsfqqGmY2OOcUs18lSlQBKLDYBOGxRVtrMN5lpg==
+
 "@typescript-eslint/types@8.31.0":
   version "8.31.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/types/-/types-8.31.0.tgz"
   integrity sha512-Ch8oSjVyYyJxPQk8pMiP2FFGYatqXQfQIaMp+TpuuLlDachRWpUAeEu1u9B/v/8LToehUIWyiKcA/w5hUFRKuQ==
+
+"@typescript-eslint/types@8.31.1":
+  version "8.31.1"
+  resolved "https://registry.npmjs.org/@typescript-eslint/types/-/types-8.31.1.tgz"
+  integrity sha512-SfepaEFUDQYRoA70DD9GtytljBePSj17qPxFHA/h3eg6lPTqGJ5mWOtbXCk1YrVU1cTJRd14nhaXWFu0l2troQ==
 
 "@typescript-eslint/typescript-estree@6.10.0":
   version "6.10.0"
@@ -4280,6 +4328,20 @@
     semver "^7.5.4"
     ts-api-utils "^1.0.1"
 
+"@typescript-eslint/typescript-estree@6.21.0":
+  version "6.21.0"
+  resolved "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-6.21.0.tgz"
+  integrity sha512-6npJTkZcO+y2/kr+z0hc4HwNfrrP4kNYh57ek7yCNlrBjWQ1Y0OS7jiZTkgumrvkX5HkEKXFZkkdFNkaW2wmUQ==
+  dependencies:
+    "@typescript-eslint/types" "6.21.0"
+    "@typescript-eslint/visitor-keys" "6.21.0"
+    debug "^4.3.4"
+    globby "^11.1.0"
+    is-glob "^4.0.3"
+    minimatch "9.0.3"
+    semver "^7.5.4"
+    ts-api-utils "^1.0.1"
+
 "@typescript-eslint/typescript-estree@8.31.0":
   version "8.31.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-8.31.0.tgz"
@@ -4287,6 +4349,20 @@
   dependencies:
     "@typescript-eslint/types" "8.31.0"
     "@typescript-eslint/visitor-keys" "8.31.0"
+    debug "^4.3.4"
+    fast-glob "^3.3.2"
+    is-glob "^4.0.3"
+    minimatch "^9.0.4"
+    semver "^7.6.0"
+    ts-api-utils "^2.0.1"
+
+"@typescript-eslint/typescript-estree@8.31.1":
+  version "8.31.1"
+  resolved "https://registry.npmjs.org/@typescript-eslint/typescript-estree/-/typescript-estree-8.31.1.tgz"
+  integrity sha512-kaA0ueLe2v7KunYOyWYtlf/QhhZb7+qh4Yw6Ni5kgukMIG+iP773tjgBiLWIXYumWCwEq3nLW+TUywEp8uEeag==
+  dependencies:
+    "@typescript-eslint/types" "8.31.1"
+    "@typescript-eslint/visitor-keys" "8.31.1"
     debug "^4.3.4"
     fast-glob "^3.3.2"
     is-glob "^4.0.3"
@@ -4325,12 +4401,28 @@
     "@typescript-eslint/types" "6.10.0"
     eslint-visitor-keys "^3.4.1"
 
+"@typescript-eslint/visitor-keys@6.21.0":
+  version "6.21.0"
+  resolved "https://registry.npmjs.org/@typescript-eslint/visitor-keys/-/visitor-keys-6.21.0.tgz"
+  integrity sha512-JJtkDduxLi9bivAB+cYOVMtbkqdPOhZ+ZI5LC47MIRrDV4Yn2o+ZnW10Nkmr28xRpSpdJ6Sm42Hjf2+REYXm0A==
+  dependencies:
+    "@typescript-eslint/types" "6.21.0"
+    eslint-visitor-keys "^3.4.1"
+
 "@typescript-eslint/visitor-keys@8.31.0":
   version "8.31.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/visitor-keys/-/visitor-keys-8.31.0.tgz"
   integrity sha512-QcGHmlRHWOl93o64ZUMNewCdwKGU6WItOU52H0djgNmn1EOrhVudrDzXz4OycCRSCPwFCDrE2iIt5vmuUdHxuQ==
   dependencies:
     "@typescript-eslint/types" "8.31.0"
+    eslint-visitor-keys "^4.2.0"
+
+"@typescript-eslint/visitor-keys@8.31.1":
+  version "8.31.1"
+  resolved "https://registry.npmjs.org/@typescript-eslint/visitor-keys/-/visitor-keys-8.31.1.tgz"
+  integrity sha512-I+/rgqOVBn6f0o7NDTmAPWWC6NuqhV174lfYvAm9fUaWeiefLdux9/YI3/nLugEn9L8fcSi0XmpKi/r5u0nmpw==
+  dependencies:
+    "@typescript-eslint/types" "8.31.1"
     eslint-visitor-keys "^4.2.0"
 
 "@udecode/cn@^33.0.0":
@@ -13958,6 +14050,13 @@ minimatch@^9.0.5:
   dependencies:
     brace-expansion "^2.0.1"
 
+minimatch@9.0.3:
+  version "9.0.3"
+  resolved "https://registry.npmjs.org/minimatch/-/minimatch-9.0.3.tgz"
+  integrity sha512-RHiac9mvaRw0x3AYRgDC1CxAP7HTcNrrECeA8YYJeWnpo+2Q5CegtZjaotWTWxDG3UeGA1coE05iH1mPjT/2mg==
+  dependencies:
+    brace-expansion "^2.0.1"
+
 minimist@^1.1.0, minimist@^1.2.0, minimist@^1.2.3, minimist@^1.2.5, minimist@^1.2.6, minimist@^1.2.8:
   version "1.2.8"
   resolved "https://registry.npmjs.org/minimist/-/minimist-1.2.8.tgz"
@@ -14224,8 +14323,8 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-node_modules-path@^2.0.9-2, node_modules-path@2.0.9-2, "node_modules-path@file:/home/lexoyo/_/Silex/packages/node_modules-path":
-  version "2.0.9-2"
+node_modules-path@^2.1.0, node_modules-path@2.1.0, "node_modules-path@file:/home/lexoyo/_/Silex/packages/node_modules-path":
+  version "2.1.0"
   resolved "file:packages/node_modules-path"
 
 node-abi@^3.3.0:
