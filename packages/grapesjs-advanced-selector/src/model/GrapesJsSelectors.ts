@@ -38,7 +38,12 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
             // No style, this is just a selector
             return acc
           }
-          rule.unset('state')
+          // Check if the rule has a state
+          if (rule.get('state')) {
+            console.warn('Rule has a state', rule)
+            // FIXME: was this useful? Why remove the state?
+            // rule.unset('state')
+          }
           // Check if the component matches the selector
           const selectorString = rule.getSelectorsString()
           if (!selectorString) {

@@ -34,6 +34,7 @@ export default {
   'When it has the': 'Lorsqu\'il a',
   'When the': 'Lorsqu\'il a',
   'When it is the': 'Lorsqu\'il est le',
+  'Style the': 'Style le',
   'When it is within': 'Lorsqu\'il est dans le',
   'When URL matches': 'Lorsque l\'URL est sa',
   'When it matches': 'Lorsqu\'il a',

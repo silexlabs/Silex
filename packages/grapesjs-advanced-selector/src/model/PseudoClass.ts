@@ -31,6 +31,10 @@ export enum PseudoClassType {
   ROOT = 'root',
   SCOPE = 'scope',
   TARGET = 'target',
+  BEFORE = 'before',
+  AFTER = 'after',
+  FIRST_LINE = 'first-line',
+  FIRST_LETTER = 'first-letter',
 
   // Form states
   ENABLED = 'enabled',
@@ -95,6 +99,10 @@ export const PSEUDO_CLASSES: PseudoClass[] = [
   { type: PseudoClassType.ROOT, hasParam: false, sentencePre: 'When it is the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:root' },
   { type: PseudoClassType.SCOPE, hasParam: false, sentencePre: 'When it is within', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:scope' },
   { type: PseudoClassType.TARGET, hasParam: false, sentencePre: 'When URL matches', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:target' },
+  { type: PseudoClassType.BEFORE, hasParam: false, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::before' },
+  { type: PseudoClassType.AFTER, hasParam: false, sentencePre: 'Style the', sentencePost: 'pseudo-element', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::after' },
+  { type: PseudoClassType.FIRST_LINE, hasParam: false, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-line' },
+  { type: PseudoClassType.FIRST_LETTER, hasParam: false, sentencePre: 'Style the', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/::first-letter' },
 
   // Form states
   { type: PseudoClassType.ENABLED, hasParam: false, sentencePre: 'When it is', helpLink: 'https://developer.mozilla.org/en-US/docs/Web/CSS/:enabled' },

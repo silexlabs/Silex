@@ -13,6 +13,7 @@ export default {
   'When it is': 'When it is',
   'When it is a': 'When it is a',
   'When it': 'When it',
+  'Style the': 'Style the',
   'inside of': 'inside of',
   'direct child of': 'direct child of ( > )',
   'adjacent to': 'adjacent to ( + )',

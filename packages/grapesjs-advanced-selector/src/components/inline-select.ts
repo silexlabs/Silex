@@ -144,7 +144,7 @@ export default class InlineSelectComponent extends StylableElement {
         ${ this.options.map(p => html`
           <option
             .selected=${ this.value?.type === p.type }
-          >${ this.t(p.displayName ?? p.type) }</option>
+          >${ p.displayName ? this.t(p.displayName) : p.type }</option>
         `) }
       </select>
     `
