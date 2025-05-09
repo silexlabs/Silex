@@ -23,9 +23,9 @@ import { Editor } from 'grapesjs'
 
 export default (editor: Editor, opts) => {
   editor.on('load', () => {
-  /***************/  
+  /***************/
   /* General     */
-  /***************/  
+  /***************/
     editor.StyleManager.removeProperty('general', 'display')
     editor.StyleManager.addProperty('general', {
       name: 'Display',
@@ -33,18 +33,17 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'block', name: 'block' },
-        /* @ts-ignore */
-        { value: 'inline', name: 'inline' },
-        /* @ts-ignore */
-        { value: 'inline-block', name: 'inline-block' },
-        /* @ts-ignore */
-        { value: 'flex', name: 'flex' },
-        /* @ts-ignore */
-        { value: 'none', name: 'none' }, 
+        { id: '', value: '', name: '' },
+        { id: 'block', value: 'block', name: 'block' },
+        { id: 'inline', value: 'inline', name: 'inline' },
+        { id: 'inline-block', value: 'inline-block', name: 'inline-block' },
+        { id: 'flex', value: 'flex', name: 'flex' },
+        { id: 'grid', value: 'grid', name: 'grid' },
+        { id: 'inline-flex', value: 'inline-flex', name: 'inline-flex' },
+        { id: 'none', value: 'none', name: 'none' },
+        { id: 'inherit', value: 'inherit', name: 'inherit' },
+        { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: '',
     })
@@ -54,14 +53,13 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'visible', name: 'visible' },
-        /* @ts-ignore */
-        { value: 'hidden', name: 'hidden' },
-        /* @ts-ignore */
-        { value: 'collapse', name: 'collapse' },
+        { id: '', value: '', name: '' },
+        { id: 'visible', value: 'visible', name: 'visible' },
+        { id: 'hidden', value: 'hidden', name: 'hidden' },
+        { id: 'collapse', value: 'collapse', name: 'collapse' },
+        { id: 'inherit', value: 'inherit', name: 'inherit' },
+        { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: 'The visibility CSS property shows or hides an element without changing the layout of a document. The property can also hide rows or columns in a <table>.',
     })
@@ -74,24 +72,15 @@ export default (editor: Editor, opts) => {
       defaults: '',
       full: true,
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'inherit', name: 'inherit' },
-        /* @ts-ignore */
-        { value: 'initial', name: 'initial' },
-        /* @ts-ignore */
-        { value: 'static', name: 'static' },
-        /* @ts-ignore */
-        { value: 'relative', name: 'relative' },
-        /* @ts-ignore */
-        { value: 'absolute', name: 'absolute' },
-        /* @ts-ignore */
-        { value: 'fixed', name: 'fixed' },
-        /* @ts-ignore */
-        { value: 'sticky', name: 'sticky' },
-        /* @ts-ignore */
-        { value: 'unset', name: 'unset' },
+        { id: '', value: '', name: '' },
+        { id: 'inherit', value: 'inherit', name: 'inherit' },
+        { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'static', value: 'static', name: 'static' },
+        { id: 'relative', value: 'relative', name: 'relative' },
+        { id: 'absolute', value: 'absolute', name: 'absolute' },
+        { id: 'fixed', value: 'fixed', name: 'fixed' },
+        { id: 'sticky', value: 'sticky', name: 'sticky' },
+        { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: '',
     })
@@ -204,38 +193,34 @@ export default (editor: Editor, opts) => {
         type: 'select',
         defaults: '',
         options: [
-          /* @ts-ignore */
-          { value: '', name: '' },          
-          /* @ts-ignore */
-          { value: 'auto', name: 'auto' },
-          /* @ts-ignore */
-          { value: 'hidden', name: 'hidden' },
-          /* @ts-ignore */
-          { value: 'visible', name: 'visible' },
-          /* @ts-ignore */
-          { value: 'scroll', name: 'scroll' },
+          { id: '', value: '', name: '' },
+          { id: 'auto', value: 'auto', name: 'auto' },
+          { id: 'hidden', value: 'hidden', name: 'hidden' },
+          { id: 'visible', value: 'visible', name: 'visible' },
+          { id: 'scroll', value: 'scroll', name: 'scroll' },
+          { id: 'inherit', value: 'inherit', name: 'inherit' },
+          { id: 'initial', value: 'initial', name: 'initial' },
+          { id: 'unset', value: 'unset', name: 'unset' },
         ],
       }, {
         name: 'Overflow Y',
         type: 'select',
         defaults: '',
         options: [
-          /* @ts-ignore */
-          { value: '', name: '' },  
-          /* @ts-ignore */
-          { value: 'auto', name: 'auto' },
-          /* @ts-ignore */
-          { value: 'hidden', name: 'hidden' },
-          /* @ts-ignore */
-          { value: 'visible', name: 'visible' },
-          /* @ts-ignore */
-          { value: 'scroll', name: 'scroll' },
+          { id: '', value: '', name: '' },
+          { id: 'auto', value: 'auto', name: 'auto' },
+          { id: 'hidden', value: 'hidden', name: 'hidden' },
+          { id: 'visible', value: 'visible', name: 'visible' },
+          { id: 'scroll', value: 'scroll', name: 'scroll' },
+          { id: 'inherit', value: 'inherit', name: 'inherit' },
+          { id: 'initial', value: 'initial', name: 'initial' },
+          { id: 'unset', value: 'unset', name: 'unset' },
         ],
       }],
       info: 'The overflow CSS property sets what to do when an element\'s content is too big to fit in its block formatting context. It is a shorthand for overflow-x and overflow-y.',
     }, { at: 6 })
     editor.StyleManager.removeProperty('dimension', 'margin')
-    editor.StyleManager.addProperty('dimension', {  
+    editor.StyleManager.addProperty('dimension', {
       name: 'Margin',
       property: 'margin',
       type: 'composite',
@@ -273,7 +258,7 @@ export default (editor: Editor, opts) => {
       }],
     }, { at: 7 })
     editor.StyleManager.removeProperty('dimension', 'padding')
-    editor.StyleManager.addProperty('dimension', {  
+    editor.StyleManager.addProperty('dimension', {
       name: 'Padding',
       property: 'padding',
       type: 'composite',
@@ -313,7 +298,7 @@ export default (editor: Editor, opts) => {
         units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }],
     }, { at: 8 })
-    /***************/  
+    /***************/
     /* Typography  */
     /***************/
     editor.StyleManager.removeProperty('typography', 'font-size')
@@ -333,25 +318,15 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'auto'],
       options: [
-        /* @ts-ignore */
         { id: '', label: '' },
-        /* @ts-ignore */
         { id: '100', label: 'Thin' },
-        /* @ts-ignore */
         { id: '200', label: 'Extra-Light' },
-        /* @ts-ignore */
         { id: '300', label: 'Light' },
-        /* @ts-ignore */
         { id: '400', label: 'Normal' },
-        /* @ts-ignore */
         { id: '500', label: 'Medium' },
-        /* @ts-ignore */
         { id: '600', label: 'Semi-Bold' },
-        /* @ts-ignore */
         { id: '700', label: 'Bold' },
-        /* @ts-ignore */
         { id: '800', label: 'Extra-Bold' },
-        /* @ts-ignore */
         { id: '900', label: 'Ultra-Bold' }
       ]
     }, { at: 2 })
@@ -388,34 +363,27 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { id: '', label: '' },                    
-        /* @ts-ignore */
+        { id: '', label: '' },
         { id: 'left', label: 'left' },
-        /* @ts-ignore */
         { id: 'center', label: 'center' },
-        /* @ts-ignore */
         { id: 'right', label: 'right' },
-        /* @ts-ignore */
         { id: 'justified', label: 'justified' },
+        { id: 'inherit', label: 'inherit' },
+        { id: 'initial', label: 'initial' },
+        { id: 'unset', label: 'unset' },
       ],
-    }, { at: 6 })    
+    }, { at: 6 })
     editor.StyleManager.addProperty('typography', {
       name: 'Word break',
       property: 'word-break',
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'normal', name: 'normal' },
-        /* @ts-ignore */
-        { value: 'break-all', name: 'break-all' },
-        /* @ts-ignore */
-        { value: 'keep-all', name: 'keep-all' },
-        /* @ts-ignore */
-        { value: 'break-word', name: 'break-word' },
+        { id: '', value: '', name: '' },
+        { id: 'normal', value: 'normal', name: 'normal' },
+        { id: 'break-all', value: 'break-all', name: 'break-all' },
+        { id: 'keep-all', value: 'keep-all', name: 'keep-all' },
+        { id: 'break-word', value: 'break-word', name: 'break-word' },
       ],
       info: 'The word-break CSS property sets whether line breaks appear wherever the text would otherwise overflow its content box.',
     }, { at: 7 })
@@ -425,12 +393,9 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'normal', name: 'normal' },
-        /* @ts-ignore */
-        { value: 'break-word', name: 'break-word' },
+        { id: '', value: '', name: '' },
+        { id: 'normal', value: 'normal', name: 'normal' },
+        { id: 'break-word', value: 'break-word', name: 'break-word' },
       ],
       info: 'The word-wrap CSS property sets whether the line may be broken within a word in order to prevent overflow when an otherwise unbreakable string is too long to fit in its containing box.',
     }, { at: 8 })
@@ -440,20 +405,13 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'normal', name: 'normal' },
-        /* @ts-ignore */
-        { value: 'nowrap', name: 'nowrap' },
-        /* @ts-ignore */
-        { value: 'pre', name: 'pre' },
-        /* @ts-ignore */
-        { value: 'pre-wrap', name: 'pre-wrap' },
-        /* @ts-ignore */
-        { value: 'pre-line', name: 'pre-line' },
-        /* @ts-ignore */
-        { value: 'break-spaces', name: 'break-spaces' },
+        { id: '', value: '', name: '' },
+        { id: 'normal', value: 'normal', name: 'normal' },
+        { id: 'nowrap', value: 'nowrap', name: 'nowrap' },
+        { id: 'pre', value: 'pre', name: 'pre' },
+        { id: 'pre-wrap', value: 'pre-wrap', name: 'pre-wrap' },
+        { id: 'pre-line', value: 'pre-line', name: 'pre-line' },
+        { id: 'break-spaces', value: 'break-spaces', name: 'break-spaces' },
       ],
       info: 'The white-space CSS property sets how white space inside an element is handled.',
     }, { at: 9 })
@@ -468,18 +426,12 @@ export default (editor: Editor, opts) => {
         defaults: '',
         fixedValues: ['auto', 'inherit', 'initial', 'revert', 'unset'],
         options: [
-          /* @ts-ignore */
-          { value: '', name: '' },                  
-          /* @ts-ignore */
-          { value: 'none', name: 'none' },
-          /* @ts-ignore */
-          { value: 'underline', name: 'underline' },
-          /* @ts-ignore */
-          { value: 'overline', name: 'overline' },
-          /* @ts-ignore */
-          { value: 'line-through', name: 'line-through' },
-          /* @ts-ignore */
-          { value: 'blink', name: 'blink' },
+          { id: '', value: '', name: '' },
+          { id: 'none', value: 'none', name: 'none' },
+          { id: 'underline', value: 'underline', name: 'underline' },
+          { id: 'overline', value: 'overline', name: 'overline' },
+          { id: 'line-through', value: 'line-through', name: 'line-through' },
+          { id: 'blink', value: 'blink', name: 'blink' },
         ],
         info: 'The text-decoration CSS property sets the appearance of decorative lines on text.',
       }, {
@@ -488,18 +440,12 @@ export default (editor: Editor, opts) => {
         type: 'select',
         defaults: '',
         options: [
-          /* @ts-ignore */
-          { value: '', name: '' },              
-          /* @ts-ignore */
-          { value: 'solid', name: 'solid' },
-          /* @ts-ignore */
-          { value: 'double', name: 'double' },
-          /* @ts-ignore */
-          { value: 'dotted', name: 'dotted' },
-          /* @ts-ignore */
-          { value: 'dashed', name: 'dashed' },
-          /* @ts-ignore */
-          { value: 'wavy', name: 'wavy' },
+          { id: '', value: '', name: '' },
+          { id: 'solid', value: 'solid', name: 'solid' },
+          { id: 'double', value: 'double', name: 'double' },
+          { id: 'dotted', value: 'dotted', name: 'dotted' },
+          { id: 'dashed', value: 'dashed', name: 'dashed' },
+          { id: 'wavy', value: 'wavy', name: 'wavy' },
         ],
         info: 'The text-decoration-style CSS property sets the style of the lines specified by text-decoration-line. The style applies to all lines, there is no way to define different styles for each of the lines.',
       }, {
@@ -525,16 +471,11 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },            
-        /* @ts-ignore */
-        { value: 'none', name: 'none' },
-        /* @ts-ignore */
-        { value: 'capitalize', name: 'capitalize' },
-        /* @ts-ignore */
-        { value: 'uppercase', name: 'uppercase' },
-        /* @ts-ignore */
-        { value: 'lowercase', name: 'lowercase' },
+        { id: '', value: '', name: '' },
+        { id: 'none', value: 'none', name: 'none' },
+        { id: 'capitalize', value: 'capitalize', name: 'capitalize' },
+        { id: 'uppercase', value: 'uppercase', name: 'uppercase' },
+        { id: 'lowercase', value: 'lowercase', name: 'lowercase' },
       ],
       info: 'The text-transform CSS property sets how to capitalize an element\'s text. It can be used to make text appear in all-uppercase or all-lowercase, or with each word capitalized.',
     }, { at: 11 })
@@ -544,18 +485,18 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },                    
-        /* @ts-ignore */
-        { value: 'clip', name: 'clip' },
-        /* @ts-ignore */
-        { value: 'ellipsis', name: 'ellipsis' },
+        { id: '', value: '', name: '' },
+        { id: 'clip', value: 'clip', name: 'clip' },
+        { id: 'ellipsis', value: 'ellipsis', name: 'ellipsis' },
+        { id: 'inherit', value: 'inherit', name: 'inherit' },
+        { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: 'The text-overflow CSS property sets how hidden overflow content is signaled to users. It can be clipped, display an ellipsis (\'…\', U+2026 HORIZONTAL ELLIPSIS) or a Web author-defined string. It covers the two long-hand properties text-overflow-clip and text-overflow-string.',
     }, { at: 12 })
-    /***************/  
+    /***************/
     /* Decorations */
-    /***************/    
+    /***************/
     editor.StyleManager.removeProperty('decorations', 'background-color')
     editor.StyleManager.addProperty('decorations', {
       name: 'Background color',
@@ -565,7 +506,7 @@ export default (editor: Editor, opts) => {
       full: true,
     }, { at: 0 })
     editor.StyleManager.removeProperty('decorations', 'border-radius')
-    editor.StyleManager.addProperty('decorations', {  
+    editor.StyleManager.addProperty('decorations', {
       name: 'Border radius',
       property: 'border-radius',
       type: 'composite',
@@ -621,28 +562,17 @@ export default (editor: Editor, opts) => {
         type: 'select',
         defaults: '',
         options: [
-          /* @ts-ignore */
-          { value: '', name: '' },          
-          /* @ts-ignore */
-          { value: 'none', name: 'none' },
-          /* @ts-ignore */
-          { value: 'hidden', name: 'hidden' },
-          /* @ts-ignore */
-          { value: 'dotted', name: 'dotted' },
-          /* @ts-ignore */
-          { value: 'dashed', name: 'dashed' },
-          /* @ts-ignore */
-          { value: 'solid', name: 'solid' },
-          /* @ts-ignore */
-          { value: 'double', name: 'double' },
-          /* @ts-ignore */
-          { value: 'groove', name: 'groove' },
-          /* @ts-ignore */
-          { value: 'ridge', name: 'ridge' },
-          /* @ts-ignore */
-          { value: 'inset', name: 'inset' },
-          /* @ts-ignore */
-          { value: 'outset', name: 'outset' },
+          { id: '', value: '', name: '' },
+          { id: 'none', value: 'none', name: 'none' },
+          { id: 'hidden', value: 'hidden', name: 'hidden' },
+          { id: 'dotted', value: 'dotted', name: 'dotted' },
+          { id: 'dashed', value: 'dashed', name: 'dashed' },
+          { id: 'solid', value: 'solid', name: 'solid' },
+          { id: 'double', value: 'double', name: 'double' },
+          { id: 'groove', value: 'groove', name: 'groove' },
+          { id: 'ridge', value: 'ridge', name: 'ridge' },
+          { id: 'inset', value: 'inset', name: 'inset' },
+          { id: 'outset', value: 'outset', name: 'outset' },
         ],
         info: 'The outline-style CSS property sets the style of an element\'s outline. An outline is a line that is drawn around an element, outside the border.',
       }, {
@@ -653,9 +583,9 @@ export default (editor: Editor, opts) => {
         info: 'The outline-color CSS property sets the color of an element\'s outline.',
       }],
     }, { at: 8 })
-    /***************/    
+    /***************/
     /* Extra       */
-    /***************/  
+    /***************/
     editor.StyleManager.addProperty('extra', {
       name: 'Z index',
       property: 'z-index',
@@ -674,28 +604,20 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },
-        /* @ts-ignore */
-        { value: 'auto', name: 'auto' },
-        /* @ts-ignore */
-        { value: 'none', name: 'none' },
-        /* @ts-ignore */
-        { value: 'visiblePainted', name: 'visiblePainted' },
-        /* @ts-ignore */
-        { value: 'visibleFill', name: 'visibleFill' },
-        /* @ts-ignore */
-        { value: 'visibleStroke', name: 'visibleStroke' },
-        /* @ts-ignore */
-        { value: 'visible', name: 'visible' },
-        /* @ts-ignore */
-        { value: 'painted', name: 'painted' },
-        /* @ts-ignore */
-        { value: 'fill', name: 'fill' },
-        /* @ts-ignore */
-        { value: 'stroke', name: 'stroke' },
-        /* @ts-ignore */
-        { value: 'all', name: 'all' },
+        { id: '', value: '', name: '' },
+        { id: 'auto', value: 'auto', name: 'auto' },
+        { id: 'none', value: 'none', name: 'none' },
+        { id: 'visiblePainted', value: 'visiblePainted', name: 'visiblePainted' },
+        { id: 'visibleFill', value: 'visibleFill', name: 'visibleFill' },
+        { id: 'visibleStroke', value: 'visibleStroke', name: 'visibleStroke' },
+        { id: 'visible', value: 'visible', name: 'visible' },
+        { id: 'painted', value: 'painted', name: 'painted' },
+        { id: 'fill', value: 'fill', name: 'fill' },
+        { id: 'stroke', value: 'stroke', name: 'stroke' },
+        { id: 'all', value: 'all', name: 'all' },
+        { id: 'inherit', value: 'inherit', name: 'inherit' },
+        { id: 'initial', value: 'initial', name: 'initial' },
+        { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: 'The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.',
     }, { at: 2 })
@@ -705,80 +627,43 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'auto', name: 'auto' },
-        /* @ts-ignore */
-        { value: 'default', name: 'default' },
-        /* @ts-ignore */
-        { value: 'none', name: 'none' },
-        /* @ts-ignore */
-        { value: 'context-menu', name: 'context-menu' },
-        /* @ts-ignore */
-        { value: 'help', name: 'help' },
-        /* @ts-ignore */
-        { value: 'pointer', name: 'pointer' },
-        /* @ts-ignore */
-        { value: 'progress', name: 'progress' },
-        /* @ts-ignore */
-        { value: 'wait', name: 'wait' },
-        /* @ts-ignore */
-        { value: 'cell', name: 'cell' },
-        /* @ts-ignore */
-        { value: 'crosshair', name: 'crosshair' },
-        /* @ts-ignore */
-        { value: 'text', name: 'text' },
-        /* @ts-ignore */
-        { value: 'vertical-text', name: 'vertical-text' },
-        /* @ts-ignore */
-        { value: 'alias', name: 'alias' },
-        /* @ts-ignore */
-        { value: 'copy', name: 'copy' },
-        /* @ts-ignore */
-        { value: 'move', name: 'move' },
-        /* @ts-ignore */
-        { value: 'no-drop', name: 'no-drop' },
-        /* @ts-ignore */
-        { value: 'not-allowed', name: 'not-allowed' },
-        /* @ts-ignore */
-        { value: 'grab', name: 'grab' },
-        /* @ts-ignore */
-        { value: 'grabbing', name: 'grabbing' },
-        /* @ts-ignore */
-        { value: 'all-scroll', name: 'all-scroll' },
-        /* @ts-ignore */
-        { value: 'col-resize', name: 'col-resize' },
-        /* @ts-ignore */
-        { value: 'row-resize', name: 'row-resize' },
-        /* @ts-ignore */
-        { value: 'n-resize', name: 'n-resize' },
-        /* @ts-ignore */
-        { value: 'e-resize', name: 'e-resize' },
-        /* @ts-ignore */
-        { value: 's-resize', name: 's-resize' },
-        /* @ts-ignore */
-        { value: 'w-resize', name: 'w-resize' },
-        /* @ts-ignore */
-        { value: 'ne-resize', name: 'ne-resize' },
-        /* @ts-ignore */
-        { value: 'nw-resize', name: 'nw-resize' },
-        /* @ts-ignore */
-        { value: 'se-resize', name: 'se-resize' },
-        /* @ts-ignore */
-        { value: 'sw-resize', name: 'sw-resize' },
-        /* @ts-ignore */
-        { value: 'ew-resize', name: 'ew-resize' },
-        /* @ts-ignore */
-        { value: 'ns-resize', name: 'ns-resize' },
-        /* @ts-ignore */
-        { value: 'nesw-resize', name: 'nesw-resize' },
-        /* @ts-ignore */
-        { value: 'nwse-resize', name: 'nwse-resize' },
-        /* @ts-ignore */
-        { value: 'zoom-in', name: 'zoom-in' },
-        /* @ts-ignore */
-        { value: 'zoom-out', name: 'zoom-out' },
+        { id: '', value: '', name: '' },
+        { id: 'auto', value: 'auto', name: 'auto' },
+        { id: 'default', value: 'default', name: 'default' },
+        { id: 'none', value: 'none', name: 'none' },
+        { id: 'context-menu', value: 'context-menu', name: 'context-menu' },
+        { id: 'help', value: 'help', name: 'help' },
+        { id: 'pointer', value: 'pointer', name: 'pointer' },
+        { id: 'progress', value: 'progress', name: 'progress' },
+        { id: 'wait', value: 'wait', name: 'wait' },
+        { id: 'cell', value: 'cell', name: 'cell' },
+        { id: 'crosshair', value: 'crosshair', name: 'crosshair' },
+        { id: 'text', value: 'text', name: 'text' },
+        { id: 'vertical-text', value: 'vertical-text', name: 'vertical-text' },
+        { id: 'alias', value: 'alias', name: 'alias' },
+        { id: 'copy', value: 'copy', name: 'copy' },
+        { id: 'move', value: 'move', name: 'move' },
+        { id: 'no-drop', value: 'no-drop', name: 'no-drop' },
+        { id: 'not-allowed', value: 'not-allowed', name: 'not-allowed' },
+        { id: 'grab', value: 'grab', name: 'grab' },
+        { id: 'grabbing', value: 'grabbing', name: 'grabbing' },
+        { id: 'all-scroll', value: 'all-scroll', name: 'all-scroll' },
+        { id: 'col-resize', value: 'col-resize', name: 'col-resize' },
+        { id: 'row-resize', value: 'row-resize', name: 'row-resize' },
+        { id: 'n-resize', value: 'n-resize', name: 'n-resize' },
+        { id: 'e-resize', value: 'e-resize', name: 'e-resize' },
+        { id: 's-resize', value: 's-resize', name: 's-resize' },
+        { id: 'w-resize', value: 'w-resize', name: 'w-resize' },
+        { id: 'ne-resize', value: 'ne-resize', name: 'ne-resize' },
+        { id: 'nw-resize', value: 'nw-resize', name: 'nw-resize' },
+        { id: 'se-resize', value: 'se-resize', name: 'se-resize' },
+        { id: 'sw-resize', value: 'sw-resize', name: 'sw-resize' },
+        { id: 'ew-resize', value: 'ew-resize', name: 'ew-resize' },
+        { id: 'ns-resize', value: 'ns-resize', name: 'ns-resize' },
+        { id: 'nesw-resize', value: 'nesw-resize', name: 'nesw-resize' },
+        { id: 'nwse-resize', value: 'nwse-resize', name: 'nwse-resize' },
+        { id: 'zoom-in', value: 'zoom-in', name: 'zoom-in' },
+        { id: 'zoom-out', value: 'zoom-out', name: 'zoom-out' },
       ],
       info: 'The cursor CSS property sets the type of mouse cursor, if any, to show when the mouse pointer is over an element.',
     }, { at: 3 })
@@ -828,30 +713,18 @@ export default (editor: Editor, opts) => {
         type: 'select',
         defaults: '',
         options: [
-          /* @ts-ignore */
-          { value: '', name: '' },          
-          /* @ts-ignore */
-          { value: 'none', name: 'none' },
-          /* @ts-ignore */
-          { value: 'hidden', name: 'hidden' },
-          /* @ts-ignore */
-          { value: 'dotted', name: 'dotted' },
-          /* @ts-ignore */
-          { value: 'dashed', name: 'dashed' },
-          /* @ts-ignore */
-          { value: 'solid', name: 'solid' },
-          /* @ts-ignore */
-          { value: 'double', name: 'double' },
-          /* @ts-ignore */
-          { value: 'groove', name: 'groove' },
-          /* @ts-ignore */
-          { value: 'ridge', name: 'ridge' },
-          /* @ts-ignore */
-          { value: 'inset', name: 'inset' },
-          /* @ts-ignore */
-          { value: 'outset', name: 'outset' },
-          /* @ts-ignore */
-          { value: 'inherit', name: 'inherit' },
+          { id: '', value: '', name: '' },
+          { id: 'none', value: 'none', name: 'none' },
+          { id: 'hidden', value: 'hidden', name: 'hidden' },
+          { id: 'dotted', value: 'dotted', name: 'dotted' },
+          { id: 'dashed', value: 'dashed', name: 'dashed' },
+          { id: 'solid', value: 'solid', name: 'solid' },
+          { id: 'double', value: 'double', name: 'double' },
+          { id: 'groove', value: 'groove', name: 'groove' },
+          { id: 'ridge', value: 'ridge', name: 'ridge' },
+          { id: 'inset', value: 'inset', name: 'inset' },
+          { id: 'outset', value: 'outset', name: 'outset' },
+          { id: 'inherit', value: 'inherit', name: 'inherit' },
         ],
         info: 'The column-rule-style CSS property sets the style of the line drawn between columns in a multi-column layout.',
       }, {
@@ -868,12 +741,9 @@ export default (editor: Editor, opts) => {
       type: 'select',
       defaults: '',
       options: [
-        /* @ts-ignore */
-        { value: '', name: '' },        
-        /* @ts-ignore */
-        { value: 'none', name: 'none' },
-        /* @ts-ignore */
-        { value: 'all', name: 'all' },
+        { id: '', value: '', name: '' },
+        { id: 'none', value: 'none', name: 'none' },
+        { id: 'all', value: 'all', name: 'all' },
       ],
       info: 'The column-span CSS property makes it possible for an element to span across all columns when its value is set to all.',
     }, { at: 8 })
