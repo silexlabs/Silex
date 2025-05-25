@@ -10,6 +10,7 @@
     "sitemapgen": "./cli.js"
   },
   "scripts": {
+    "lint": "eslint src/**/*.js",
     "test": "node test/sitemapgen.js"
   },
   "keywords": [
@@ -23,7 +24,12 @@
   "author": "Silex Labs",
   "license": "MIT",
   "dependencies": {
-    "commander": "^14.0.0",
     "jsdom": "^24.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "commander": "^14.0.0",
+    "eslint": "^9.27.0",
+    "globals": "^16.1.0"
   }
 }
