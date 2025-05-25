@@ -2,8 +2,9 @@
 
 Generate a`sitemap.xml` from a static site generator (SSG) output directory.
 
-> This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
-> The Advanced Selector Manager comes pre-installed in Silex v3, [give it a try here](https://v3.silex.me/)
+> This code is useful on its own but it is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
+>
+> It comes pre-installed in Silex v3, [give it a try here](https://v3.silex.me/)
 
 ## Installation
 
