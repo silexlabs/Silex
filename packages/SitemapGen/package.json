@@ -1,0 +1,29 @@
+{
+  "name": "@silexlabs/sitemapgen",
+  "version": "1.0.0",
+  "description": "Generate a sitemap.xml from a static site generator (SSG) output directory",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "sitemapgen": "./cli.js"
+  },
+  "scripts": {
+    "test": "node test/sitemapgen.js"
+  },
+  "keywords": [
+    "sitemap",
+    "html",
+    "i18n",
+    "cli",
+    "eleventy",
+    "static-site"
+  ],
+  "author": "Silex Labs",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^14.0.0",
+    "jsdom": "^24.0.0"
+  }
+}
