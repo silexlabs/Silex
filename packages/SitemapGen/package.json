@@ -13,16 +13,34 @@
     "lint": "eslint src/**/*.js",
     "test": "node test/sitemapgen.js"
   },
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "keywords": [
     "sitemap",
     "html",
     "i18n",
     "cli",
     "eleventy",
-    "static-site"
+    "static-site",
+    "silexlabs",
+    "silex",
+    "ssg",
+    "11ty",
+    "webdev",
+    "foss"
   ],
-  "author": "Silex Labs",
-  "license": "MIT",
+  "author": {
+    "name": "Silex Labs",
+    "url": "https://silexlabs.org"
+  },
+  "contributors": [
+    {
+      "name": "Alex Hoyau",
+      "url": "https://lexoyo.me"
+    }
+  ],
+  "license": "GPL-3.0-only",
   "dependencies": {
     "jsdom": "^24.0.0"
   },
@@ -31,5 +49,13 @@
     "commander": "^14.0.0",
     "eslint": "^9.27.0",
     "globals": "^16.1.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:silexlabs/SitemapGen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/silexlabs/SitemapGen/issues"
+  },
+  "homepage": "https://github.com/silexlabs/SitemapGen#readme"
 }
