@@ -47,13 +47,14 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
             @click=${() => unlink(component)}>Unlink</button>
           <div class="gjs-radio-items">
             <label class="gjs-radio-item">
-              <input type="radio" name="sync" value="on" @click=${() => setSync(el, component, true)} ?checked=${sync}/>
+              <input type="radio" name="sync" value="on" @click=${() => setSync(el, component, true)} ?checked=${sync} />
               <span class="gjs-radio-item-label" style="color: ${sync ? options.highlightColor : options.primaryColor}">ON</span>
             </label>
             <label class="gjs-radio-item">
-              <input type="radio" name="sync" value="off" @click=${() => setSync(el, component, false)} ?checked=${!sync}/>
+              <input type="radio" name="sync" value="off" @click=${() => setSync(el, component, false)} ?checked=${!sync} />
               <span class="gjs-radio-item-label" style="color: ${sync ? options.primaryColor : options.highlightColor}">OFF</span>
             </label>
+          </div>
         </div>
       </fieldset>`, el)
     } else {
