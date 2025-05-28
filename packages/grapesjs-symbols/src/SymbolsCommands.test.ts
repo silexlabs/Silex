@@ -1,94 +1,147 @@
-import Backbone from 'backbone'
-
-import { expect, jest } from '@jest/globals'
-
-// Mock module lit-html
-// This is needed because lit-html fails to load in jest (Must use import to load ES Module: node_modules/lit-html/lit-html.js)
-jest.mock('lit-html', () => {
-  const render = jest.fn()
-  const html = jest.fn()
-  return { render, html }
-})
-jest.mock('lit-html/directives/unsafe-html.js', () => {
-  return {
-    unsafeHTML: jest.fn(),
-  }
-})
-
-import { addSymbol } from './SymbolsCommands'
+import { jest } from '@jest/globals'
 import {
-  createSymbolInstance,
-  removeSymbol,
-  unlinkSymbolInstance
+  _addSymbol,
+  _removeSymbol,
+  _unlinkSymbolInstance,
+  _createSymbolInstance,
+  displayError
 } from './SymbolsCommands'
-import { getTestSymbols } from './test-utils'
-import { Symbols } from './model/Symbols'
 
-test('Command symbols:add', () => {
-  const { editor } = getTestSymbols()
-  editor.Symbols = new Backbone.Collection() as Symbols
-  const sender = {}, label = 'label', icon = 'icon'
-  expect(() => addSymbol(editor, sender, {label, icon, component: undefined})).toThrow('Can not create the symbol: missing required param')
-  expect(editor.Symbols).toHaveLength(0)
-  const [component] = editor.addComponents([{
-    tagName: 'div',
-    components: [
-      {
-        tagName: 'h1',
-        content: 'Content text',
-        style: { color: 'red'},
-        attributes: { title: 'here' }
-      },{
-        tagName: 'p',
-        content: 'Content text',
-        style: { color: 'red'},
-        attributes: { title: 'here' }
+jest.mock('./utils', () => ({
+  allowDrop: jest.fn(() => true),
+  createSymbol: jest.fn((_, comp) => ({ instances: [comp, { id: 'inst2' }] })),
+  deleteSymbol: jest.fn(),
+  unbindSymbolInstance: jest.fn()
+}))
+jest.mock('lit-html', () => ({
+  html: (...args: any[]) => args,
+  render: jest.fn(),
+}))
+jest.mock('lit-html/directives/unsafe-html.js', () => ({
+  unsafeHTML: (x: any) => x,
+}))
+
+describe('SymbolsCommands', () => {
+  let editor: any
+  let component: any
+  let symbol: any
+
+  beforeEach(() => {
+    component = {
+      setName: jest.fn(),
+      set: jest.fn(),
+      getName: jest.fn(() => 'compName'),
+      getId: jest.fn(() => 'compId'),
+      append: jest.fn((inst, _) => [inst]),
+    }
+    symbol = {
+      getId: jest.fn(() => 'symbolId'),
+      append: jest.fn((inst, _) => [inst]),
+    }
+    editor = {
+      getSelected: jest.fn(() => component),
+      Components: {
+        getSymbols: jest.fn(() => [symbol]),
+        allById: jest.fn(() => ({ parentId: symbol })),
       },
-    ],
-    style: { 'background-color': 'blue', 'padding': '20px'},
-  }])
-  expect(() => addSymbol(editor, sender, {label, icon, component})).not.toThrow()
-  expect(editor.Symbols).toHaveLength(1)
-  const model = editor.Symbols.models[0].get('model')
-  expect(model.attributes.symbolId).not.toBeUndefined()
-  expect(model.components().models[0].attributes.symbolChildId).not.toBeUndefined()
-  expect(component.attributes.symbolId).not.toBeUndefined()
-  expect(component.components().models[0].attributes.symbolChildId).not.toBeUndefined()
-})
+      Modal: {
+        open: jest.fn(),
+        close: jest.fn(),
+      },
+      select: jest.fn(),
+    }
+  })
 
-test('Command symbols:remove', () => {
-  const { editor, s1, s2 } = getTestSymbols()
-  editor.Symbols = new Backbone.Collection() as Symbols
-  const sender = {}, symbolId = 'symbolId'
-  expect(() => removeSymbol(editor, sender, {} as any)).toThrow('missing param symbolId')
-  expect(() => removeSymbol(editor, sender, {symbolId})).toThrow('symbol not found')
-  editor.Symbols = new Backbone.Collection([s1, s2]) as Symbols
-  expect(editor.Symbols).toHaveLength(2)
-  expect(() => removeSymbol(editor, sender, {symbolId: s1.id as string})).not.toThrow()
-  expect(editor.Symbols).toHaveLength(1)
-})
+  describe('_addSymbol', () => {
+    it('creates a symbol with label and icon', () => {
+      const result = _addSymbol(editor, null, { component, label: 'lbl', icon: 'ico' })
+      expect(component.setName).toHaveBeenCalledWith('lbl')
+      expect(component.set).toHaveBeenCalledWith('icon', 'ico')
+      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+    })
 
-test('Command symbols:unlink', () => {
-  const { editor, s1, s2, comp1 } = getTestSymbols()
-  editor.Symbols = new Backbone.Collection([s1, s2]) as Symbols
-  const sender = {}
-  expect(() => unlinkSymbolInstance(editor, sender, {} as any)).toThrow('missing param component')
-  const component = comp1.clone()
-  expect(() => unlinkSymbolInstance(editor, sender, {component})).not.toThrow()
-  expect(component.get('symbolId')).toBeUndefined()
-})
+    it('uses selected component if no component provided', () => {
+      editor.getSelected.mockReturnValue(component)
+      const result = _addSymbol(editor, null, { label: 'lbl', icon: 'ico' })
+      expect(component.setName).toHaveBeenCalledWith('lbl')
+      expect(component.set).toHaveBeenCalledWith('icon', 'ico')
+      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+    })
 
-test('Command symbols:create', () => {
-  const { s1, comp1, s2, editor } = getTestSymbols()
-  const sender = {},
-    component = comp1,
-    pos = {},
-    target = { getAttribute: jest.fn(() => comp1.getId()) } as any as HTMLElement
-  expect(() => createSymbolInstance(editor, sender, {} as any)).toThrow('missing param symbol')
-  expect(() => createSymbolInstance(editor, sender, {symbol: s1, pos, target})).not.toThrow()
-  // Add a symbol to the target
-  expect(createSymbolInstance(editor, sender, {symbol: s2, pos, target})?.get('symbolId')).toBe(s2.id)
-  // Try to add a symbol to a target that already has the symbol (S1)
-  expect(createSymbolInstance(editor, sender, {symbol: s1, pos, target})?.get('symbolId')).toBeUndefined()
-  expect(component.attributes.symbolId).not.toBeUndefined()
+    it('usees selected component and its name if no label provided', () => {
+      editor.getSelected.mockReturnValue(component)
+      const result = _addSymbol(editor, null, {})
+      expect(component.setName).toHaveBeenCalledWith('compName')
+      expect(result).toEqual({ instances: [component, { id: 'inst2' }] })
+    })
+
+    it('throws if missing component', () => {
+      editor.getSelected.mockReturnValue(null)
+      expect(() => _addSymbol(editor, null, { component: undefined })).toThrow()
+    })
+  })
+
+  describe('_removeSymbol', () => {
+    it('removes symbol by id', async () => {
+      symbol.getId.mockReturnValue('symbolId')
+      expect(() => _removeSymbol(editor, null, { symbolId: 'symbolId' })).not.toThrow()
+      // deleteSymbol is called by the command
+      const { deleteSymbol } = await import('./utils')
+      expect(deleteSymbol).toHaveBeenCalledWith(editor, symbol)
+    })
+
+    it('throws if missing symbolId', () => {
+      expect(() => _removeSymbol(editor, null, { symbolId: '' })).toThrow()
+    })
+
+    it('throws if symbol not found', () => {
+      editor.Components.getSymbols.mockReturnValue([])
+      expect(() => _removeSymbol(editor, null, { symbolId: 'notfound' })).toThrow()
+    })
+  })
+
+  describe('_unlinkSymbolInstance', () => {
+    it('calls unbindSymbolInstance', async () => {
+      const { unbindSymbolInstance } = await import('./utils')
+      expect(() => _unlinkSymbolInstance(editor, null, { component })).not.toThrow()
+      expect(unbindSymbolInstance).toHaveBeenCalledWith(editor, component)
+    })
+
+    it('throws if missing component', () => {
+      expect(() => _unlinkSymbolInstance(editor, null, { component: null as any })).toThrow()
+    })
+  })
+
+  describe('_createSymbolInstance', () => {
+    beforeEach(() => {
+      // allowDrop returns true by default
+      editor.Components.allById.mockReturnValue({ parentId: symbol })
+    })
+
+    it('creates a symbol instance and appends it', () => {
+      const pos = { placement: 'after', index: 0 }
+      const result = _createSymbolInstance(editor, null, { symbol, pos, target: symbol })
+      expect(result).toEqual({ id: 'inst2' })
+    })
+
+    it('throws if missing params', () => {
+      expect(() => _createSymbolInstance(editor, null, { symbol: null as any, pos: {}, target: symbol })).toThrow()
+      expect(() => _createSymbolInstance(editor, null, { symbol, pos: null, target: symbol })).toThrow()
+      expect(() => _createSymbolInstance(editor, null, { symbol, pos: {}, target: null as any })).toThrow()
+    })
+
+    it('throws if parent not found', () => {
+      editor.Components.allById.mockReturnValue({})
+      expect(() => _createSymbolInstance(editor, null, { symbol, pos: {}, target: { getAttribute: () => 'parentId' } as any as HTMLElement })).toThrow()
+    })
+  })
+
+  describe('displayError', () => {
+    it('opens modal with error', () => {
+      const content = document.createElement('div')
+      document.body.appendChild(content)
+      displayError(editor, 'Title', 'Message')
+      expect(editor.Modal.open).toHaveBeenCalled()
+    })
+  })
 })

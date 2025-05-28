@@ -2,10 +2,7 @@ import { Editor, Component } from 'grapesjs'
 import { html, render } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 
-import Symbol, { createSymbol, getSymbolId } from './model/Symbol'
-import { allowDrop, setDirty } from './utils'
-import { SymbolEditor } from './model/Symbols'
-import { SymbolEvents } from './events'
+import { allowDrop, createSymbol, deleteSymbol, unbindSymbolInstance } from './utils'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
@@ -13,11 +10,11 @@ export const cmdUnlink = 'symbols:unlink'
 export const cmdCreate = 'symbols:create'
 
 // Same signature as a grapesjs plugin
-export default function(editor: SymbolEditor) {
-  editor.Commands.add(cmdAdd, addSymbol)
-  editor.Commands.add(cmdRemove, removeSymbol)
-  editor.Commands.add(cmdUnlink, unlinkSymbolInstance)
-  editor.Commands.add(cmdCreate, createSymbolInstance)
+export default function(editor: Editor) {
+  editor.Commands.add(cmdAdd, _addSymbol)
+  editor.Commands.add(cmdRemove, _removeSymbol)
+  editor.Commands.add(cmdUnlink, _unlinkSymbolInstance)
+  editor.Commands.add(cmdCreate, _createSymbolInstance)
 }
 
 // Symbol management functions
@@ -46,108 +43,94 @@ export function displayError(editor: Editor, title: string, message: string) {
  * @param options.component - the component which will become the first instance of the symbol
  * @returns {Symbol}
  */
-export function addSymbol(
-  editor: SymbolEditor,
+export function _addSymbol(
+  editor: Editor,
   _: any,
-  {label, icon, component = editor.getSelected()}: {label: string, icon: string, component: Component | undefined},
+  { component = editor.getSelected(), label = component?.getName(), icon }: {component?: Component, label?: string, icon?: string} ,
 ) {
-  if(component && label && icon) {
-    // add the symbol
-    const s = editor.Symbols.add(createSymbol(editor, component, { label, icon }))
-    setDirty(editor)
-    // Notify plugins
-    editor.trigger(SymbolEvents.CREATE, { symbol: s })
-    // return the symbol to the caller
-    return s
-  } else {
-    console.error('Can not create the symbol: missing required param', {label, icon, component})
+  if(!component || !label) {
     throw new Error('Can not create the symbol: missing required param')
   }
+  // Give the component a name
+  component.setName(label)
+  if(icon) component.set('icon', icon)
+  // add the symbol
+  const s = createSymbol(editor, component)
+  // return the symbol to the caller
+  return s
 }
 
 /**
  * Delete a symbol
  * @param {symbolId: string} - object containing the symbolId
  */
-export function removeSymbol(
-  editor: SymbolEditor,
+export function _removeSymbol(
+  editor: Editor,
   _: any,
   {symbolId}: {symbolId: string},
 ) {
-  if(symbolId) {
-    if(editor.Symbols.has(symbolId)) {
-      // remove the symbol
-      const s = editor.Symbols.remove(symbolId)
-      const instances = s.get('instances')
-      // Unlink all instances
-      s.unlinkAll()
-      // notify the editor that a change occured
-      setDirty(editor)
-      // Notify the plugins
-      instances.forEach((c: Component) => editor.trigger(SymbolEvents.UNLINK, { symbol: s, component: c }))
-      editor.trigger(SymbolEvents.REMOVE, { symbol: s })
-      // return the symbol to the caller
-      return s
-    } else {
-      throw new Error('Could not remove symbol: symbol not found')
-    }
-  } else {
-    throw new Error('Could not remove symbol: missing param symbolId')
+  if (!symbolId) {
+    throw new Error('Can not delete symbol: missing param symbolId')
   }
+  const symbol = editor.Components.getSymbols()
+    .find(symbol => symbol.getId() === symbolId)
+  if (!symbol) {
+    throw new Error('Can not delete symbol: symbol not found')
+  }
+  deleteSymbol(editor, symbol)
 }
 
-export function unlinkSymbolInstance(
-  editor: SymbolEditor,
+export function _unlinkSymbolInstance(
+  editor: Editor,
   _: any, { component }: { component: Component },
 ) {
-  if(component) {
-    const s = editor.Symbols.get(getSymbolId(component))
-    if(s) {
-      s.unlink(component)
-      // notify the editor that a change occured
-      setDirty(editor)
-      // Notify the plugins
-      editor.trigger(SymbolEvents.UNLINK, { symbol: s, component })
-    } else {
-      console.warn('Can not unlink component', component, 'Symbol not found')
-    }
-  } else {
+  if(!component) {
     throw new Error('Can not unlink the component: missing param component')
   }
+  unbindSymbolInstance(editor, component)
 }
 
 /**
  * @param {{index, indexEl, method}} pos Where to insert the component, as [defined by the Sorter](https://github.com/artf/grapesjs/blob/0842df7c2423300f772e9e6cdc88c6ae8141c732/src/utils/Sorter.js#L871)
  */
-export function createSymbolInstance(
-  editor: SymbolEditor,
+export function _createSymbolInstance(
+  editor: Editor,
   _: any,
-  { symbol, pos, target }: { symbol: Symbol, pos: any, target: HTMLElement },
+  { symbol, pos, target }: { symbol: Component, pos: any, target: HTMLElement | Component },
 ): Component | null {
+  if (!symbol || !pos || !target) {
+    throw new Error('Can not create the symbol: missing param symbol or pos or target')
+  }
   pos = pos || {}
   if (symbol && pos && target) {
-    const parentId = target ? target.getAttribute('id') : undefined
-    if (!parentId) throw new Error('Can not create the symbol: missing param id')
-    const parent = target ? editor.Components.allById()[parentId!] : undefined
+    const isHtmlElement = target instanceof HTMLElement
+    const isComponent = !isHtmlElement
+    const parentId = isComponent ? undefined : target.getAttribute('id')
+    if(!parentId && !isComponent) {
+      throw new Error('Can not create the symbol: missing parentId or target component')
+    }
+    const parent = isComponent ? target : editor.Components.allById()[parentId!]
     // Check that it is a valid parent
     if (parent) {
-      if(!allowDrop({target: symbol.get('model'), parent})) {
-        // Cancel and notify the user
-        displayError(editor, 'Error: can not create the symbol', '<p>One of the parent is in the symbol.</p><p>Please remove the parent from the symbol and try again.</p>')
-        return null
-      } else {
+      if(allowDrop(editor, parent)) {
         // create the new component
-        const [c] = parent ? parent.append([symbol.createInstance()], { at: pos.index }) : []
+        const symbolInfo = createSymbol(editor, symbol)
+        if (!symbolInfo) throw new Error('Can not create the symbol: symbol creation failed')
+        const { instances } = symbolInfo
+        // Last one is the added one
+        const instance = instances[instances.length - 1]
+        const [c] = pos.placement === 'after' ? parent.append(instance) :
+          parent.append(instance, { at: pos.index })
         // Select the new component
         // Break unit tests? editor.select(c, { scroll: true })
-        // Notify plugins
-        editor.trigger(SymbolEvents.LINK, { symbol, component: c })
-        editor.trigger(SymbolEvents.CREATE_INSTANCE, { symbol, component: c })
         return c
+      } else {
+        // Cancel and notify the user
+        displayError(editor, 'Error: can not create the symbol', '<p>One of the parent is in the symbol.</p><p>Please remove the parent from the symbol and try again.</p>')
+        throw new Error('Can not create the symbol: one of the parent is in the symbol')
       }
     } else {
-      console.error('Can not create the symbol: parent not found')
-      return null
+      throw new Error('Can not create the symbol: parent not found')
     }
   } else {
     throw new Error('Can not create the symbol: missing param symbol or pos or target')

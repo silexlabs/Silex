@@ -1,8 +1,8 @@
 import { render, html } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 import Backbone, { ViewOptions } from 'backbone'
-import { Symbols, SymbolEditor } from '../model/Symbols'
-import { Position } from 'grapesjs'
+import { Editor } from 'grapesjs'
+import { allowDrop, createSymbol, deleteSymbol, getSymbol, getSymbols } from '../utils'
 
 function closestHtml(child: HTMLElement, attr: string) {
   let ptr: HTMLElement | null = child
@@ -21,7 +21,7 @@ export function confirmDialog({
   cbk,
   lsKey,
 }: {
-  editor: SymbolEditor,
+  editor: Editor,
   content: string,
   title: string,
   primaryLabel: string,
@@ -76,27 +76,29 @@ export function confirmDialog({
 }
 
 export interface SymbolsViewOptions extends ViewOptions {
-  editor: SymbolEditor,
+  editor: Editor,
   appendTo: string,
   highlightColor: string,
   emptyText: string,
 }
 
 export default class extends Backbone.View {
-  protected lastPos: Position | null = null
+  protected lastPos: any | null = null
   protected lastTarget: HTMLElement | null = null
-  //initialize(model, { editor, options }) {
-  // FIXME: why is editor in options?
   constructor(protected options: SymbolsViewOptions) {
     super(options)
     // listen to redraw UI
-    if(!options.model) throw new Error('Could not create Symbol: model is required')
-    options.model!.on('add update remove', () => this.render())
     options.editor.on('component:selected', () => this.render())
     // listen to drag event in order to have access to the drop target
-    options.editor.on('sorter:drag', event => {
+    options.editor.on('sorter:drag', (event: any) => {
+      console.log('sorter:drag', event)
       this.lastPos = event.pos
       this.lastTarget = event.target
+    })
+    // Listen to events on `symbol`
+    options.editor.on('symbol', () => {
+      // Redraw the UI
+      this.render()
     })
     // list wrapper
     this.el = document.createElement('div')
@@ -108,7 +110,13 @@ export default class extends Backbone.View {
 
   }
   override render() {
-    const symbols = this.model as any as Symbols
+    const symbols = getSymbols(this.options.editor)
+    symbols.forEach(symbolInfo => {
+      if (!symbolInfo.main) {
+        console.warn('Symbol has no main component:', symbolInfo)
+        return
+      }
+    })
     const selected = this.options.editor.getSelected()
     render(html`
     <style>
@@ -139,21 +147,23 @@ export default class extends Backbone.View {
       ${
   // keep the same structure as the layers panel
   symbols
-    .map(s => html`
+    .filter(s => s.main)
+    .map(symbolData => html`
           <div
             class="gjs-block gjs-one-bg gjs-four-color-h symbols__symbol
-              ${!!selected && s.get('instances')!.has(selected.cid!) ? 'symbols__symbol-selected' : ''}
-              fa ${s.attributes.icon}
+              ${!!selected && symbolData.instances.includes(selected) ? 'symbols__symbol-selected' : ''}
+              ${symbolData.main!.get('icon') || 'fa fa-diamond'}
             "
             title="" draggable="true"
-            symbol-id=${s.cid}>
+            data-symbol-id=${symbolData.main!.getId()}
+            >
             <div title="Unlink all instances and delete Symbol" class="symbols__remove" @click=${(event: MouseEvent) => this.onRemove(event)}>
               <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
             </div>
             <div class="gjs-block-label">
-              ${s.attributes.label}
+              ${symbolData.main!.getName()}
               <div class="symbols__num">
-                ${s.get('instances')!.size} instances
+                ${symbolData.instances.length} instances
               </div>
             </div>
           </div>
@@ -169,17 +179,46 @@ export default class extends Backbone.View {
   }
 
   onDrop(event: Event) {
-    const symbolId = (event.target! as HTMLElement).getAttribute('symbol-id')
+    const symbolId = (event.target! as HTMLElement).dataset.symbolId
     if(symbolId) {
-      const symbol = this.options.editor.Symbols.get(symbolId)
-      if(symbol) {
-        this.options.editor.runCommand('symbols:create', { symbol, pos: this.lastPos, target: this.lastTarget })
+      const symbolInfo = getSymbol(this.options.editor, this.options.editor.Components.getById(symbolId))
+      if(symbolInfo) {
+        const parentId = this.lastTarget?.id
+        if (!parentId) throw new Error('Can not create the symbol: missing param id')
+        const parent = this.lastTarget ? this.options.editor.Components.getById(parentId) : null
+        if (parent) {
+          // Make sure we have a target and position
+          this.lastTarget = this.lastTarget || this.options.editor.Canvas.getBody()
+          this.lastPos = this.lastPos || { placement: 'after', index: 0 }
+          // Get the parent component from the HTML element
+          const parentId = this.lastTarget.getAttribute('id')
+          if (!parentId) throw new Error('Can not create the symbol: missing param id')
+          const parent = this.options.editor.Components.allById()[parentId]
+          // Check if we can drop the symbol there
+          if (allowDrop(this.options.editor, parent)) {
+            // create the new component
+            const {instances} = createSymbol(this.options.editor, symbolInfo.main!)!
+            // Last one is the added one
+            const instance = instances[instances.length - 1]
+            const [c] = this.lastPos.placement === 'after' ? parent.append(instance) :
+              parent.append(instance, { at: this.lastPos.index })
+            // Select the new component
+            // Break unit tests? editor.select(c, { scroll: true })
+            return c
+          } else {
+            throw new Error('Can not create the symbol: one of the parent is in the symbol')
+          }
+        } else {
+          throw new Error('Can not create the symbol: parent not found')
+        }
+
       } else {
-        console.error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
+        throw new Error(`Could not create an instance of symbol ${symbolId}: symbol not found`)
       }
     } else {
       // not a symbol creation
     }
+    return null
   }
   onRemove({ target: deleteButton }: MouseEvent) {
     // Warn the user
@@ -198,12 +237,16 @@ export default class extends Backbone.View {
     })
   }
   onRemoveConfirm(target: HTMLElement) {
-    const symbolId = closestHtml((target), 'symbol-id')
-      ?.getAttribute('symbol-id')
-    if(symbolId) {
-      this.options.editor.runCommand('symbols:remove', { symbolId })
-    } else {
-      console.error('not a symbol', symbolId)
+    const symbolId = closestHtml((target), 'data-symbol-id')
+      ?.dataset.symbolId
+    if (!symbolId) {
+      throw new Error('Can not delete symbol: missing param symbolId')
     }
+    const symbol = this.options.editor.Components.getSymbols()
+      .find(symbol => symbol.getId() === symbolId)
+    if (!symbol) {
+      throw new Error('Can not delete symbol: symbol not found')
+    }
+    deleteSymbol(this.options.editor, symbol)
   }
 }

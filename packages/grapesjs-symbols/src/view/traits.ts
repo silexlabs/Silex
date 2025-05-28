@@ -1,18 +1,14 @@
 import { html, render } from 'lit-html'
 import { SymbolEvents } from '../events'
-import { SymbolEditor } from '../model/Symbols'
-import { SYMBOL_SYNC_ATTRIBUTE, SymbolOptions, getSymbolId } from '../model/Symbol'
-import { Component } from 'grapesjs'
-import { cmdUnlink } from '../SymbolsCommands'
+import { Component, Editor } from 'grapesjs'
 import { confirmDialog } from './SymbolsView'
+import { getSymbol, unbindSymbolInstance } from '../utils'
+import { SymbolOptions } from '..'
 
 // Same signature as a grapesjs plugin
-export default function (editor: SymbolEditor, options: SymbolOptions) {
-  function setSync(el: HTMLElement, component: Component, sync: boolean) {
-    component.set(SYMBOL_SYNC_ATTRIBUTE, sync)
-    updateUi(el, component)
-  }
+export default function (editor: Editor, options: SymbolOptions) {
   function unlink(component: Component) {
+    // FIXME: Handle the case when the component is the main symbol
     confirmDialog({
       editor,
       title: 'Unlink from symbol',
@@ -22,21 +18,20 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
       `,
       primaryLabel: 'Unlink',
       cbk: () => {
-        editor.runCommand(cmdUnlink, { component })
+        unbindSymbolInstance(editor, component)
       },
       lsKey: 'unlink-symbol',
     })
   }
   function updateUi(el: HTMLElement, component?: Component) {
-    const symbolId = component && getSymbolId(component)
-    if(symbolId) {
-      const sync = component.get(SYMBOL_SYNC_ATTRIBUTE) !== false
+    const symbolInfo = component && getSymbol(editor, component)
+    if(symbolInfo) {
       el.style.display = 'initial'
       render(html`<fieldset class="gjs-trt-trait__wrp gjs-trt-trait__wrp-title" style="
         border-color: ${options.primaryColor};
         padding: 10px;
       ">
-        <legend class="fa fa-ban on fa-diamond"> <em>${ editor.Symbols.get(symbolId)?.get('label') }</em></legend>
+        <legend class="fa fa-ban on fa-diamond">&nbsp;<em>${ symbolInfo.main?.getName() ?? 'symbol' }</em></legend>
         <div class="gjs-field">
           <button
             class="gjs-btn-prim gjs-btn--full"
@@ -45,16 +40,6 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
               border: 1px solid ${options.primaryColor};
             "
             @click=${() => unlink(component)}>Unlink</button>
-          <div class="gjs-radio-items">
-            <label class="gjs-radio-item">
-              <input type="radio" name="sync" value="on" @click=${() => setSync(el, component, true)} ?checked=${sync} />
-              <span class="gjs-radio-item-label" style="color: ${sync ? options.highlightColor : options.primaryColor}">ON</span>
-            </label>
-            <label class="gjs-radio-item">
-              <input type="radio" name="sync" value="off" @click=${() => setSync(el, component, false)} ?checked=${!sync} />
-              <span class="gjs-radio-item-label" style="color: ${sync ? options.primaryColor : options.highlightColor}">OFF</span>
-            </label>
-          </div>
         </div>
       </fieldset>`, el)
     } else {
@@ -84,32 +69,33 @@ export default function (editor: SymbolEditor, options: SymbolOptions) {
     },
   })
   // Add trait to symbols when the user selects one
-  editor.on('component:selected', component => {
-    const symbolId = component && getSymbolId(component)
+  editor.on('component:selected symbol', () => {
+    const component = editor.getSelected() as Component
+    const symbolId = component && getSymbol(editor, component)?.main?.getId()
     if(symbolId) {
-      component.addTrait({
+      component.addTrait([{
         type: 'symbol-trait',
         name: 'Symbol',
-      })
+      }])
     }
   })
-  //// Add the new trait to all component types
-  //editor.DomComponents.getTypes().forEach(type => {
-  //  editor.DomComponents.addType(type.id, {
-  //    //isComponent: el => isComponent(el),
-  //    model: {
-  //      defaults: {
-  //        traits: [
-  //          // Keep the type original traits
-  //          ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
-  //          // Add the new trait
-  //          {
-  //            type: 'symbol-trait',
-  //            name: 'Symbol',
-  //          }
-  //        ]
-  //      }
-  //    }
-  //  })
-  //})
+  // Add the new trait to all component types
+  editor.DomComponents.getTypes().forEach(type => {
+    editor.DomComponents.addType(type.id, {
+      //isComponent: el => isComponent(el),
+      model: {
+        defaults: {
+          traits: [
+            // Keep the type original traits
+            ...editor.DomComponents.getType(type.id)!.model.prototype.defaults.traits,
+            // Add the new trait
+            {
+              type: 'symbol-trait',
+              name: 'Symbol',
+            }
+          ]
+        }
+      }
+    })
+  })
 }

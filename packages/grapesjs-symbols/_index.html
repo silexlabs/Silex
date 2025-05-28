@@ -67,8 +67,7 @@
               label: 'Create symbol',
               command(editor) {
                 var label = prompt('Label', 'Symbol ' + ++idx)
-                var icon = prompt('Icon', 'fa-list')
-                editor.runCommand('symbols:add', { label, icon })
+                editor.runCommand('symbols:add', { label })
               },
             },
             {

@@ -2,15 +2,19 @@
 
 # Symbols plugin for GrapesJS
 
-This plugin adds feature to GrapesJS editor, for users to be able to reuse elements in a website and accross pages
+This plugin enables users to create symbols, which are reusable elements, in a page and accross pages
 
 > This code is part of a bigger project: [Silex v3](https://www.silex.me/) which aims to be a free/libre alternative to webflow
+
+A symbol can be created from an element, and then instances of this symbol can be created. When one instance is modified, all other instances are updated as well.
+This is useful for creating reusable components like headers, footers, or any other element that needs to be consistent across a website.
+
+This plugin is a UI for the [GrapesJS Symbols module](https://grapesjs.com/docs/guides/Symbols.html)
 
 Links
 
 * [DEMO on Codepen](https://codepen.io/lexoyo/full/xxJGEwo)
 * [Npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-symbols)
-* [Discussion about this plugins and Symbols, bug report etc](https://github.com/artf/grapesjs/discussions/4317)
 * [Discussion about ongoing developments](https://github.com/silexlabs/grapesjs-symbols/issues/1)
 
 ![illustration: 2 symbols on 1 page](https://github.com/silexlabs/grapesjs-symbols/assets/715377/98bb9843-7fa6-4c75-b009-d03d3bca3d99)
@@ -22,7 +26,7 @@ Features
 * Sync instances: when one instance is modified, update all other instances
 * Temporary pause sync
 * Unlink an instance so that is stops syncing
-* Symbol have a name and an icon
+* Symbol have a name and an optional icon
 * View symbol icon for all instances in the layer manager
 * Optional list of symbols which support draging symbols to the stage
 * Support for symbols in symbols
@@ -86,9 +90,9 @@ editor.on('load', () => {
     el: '.panel__basic-actions',
     buttons: [
       {
-        id: 'alert-button',
+        id: 'create-button',
         className: 'btn-alert-button',
-        label: 'Create symbol pink',
+        label: 'Create symbol from selected component',
         command(editor) {
           var label = prompt('Label', 'Symbol ' + ++idx)
           var icon = prompt('Icon', 'fa-list')
