@@ -15,7 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from 'grapesjs'
+import { Component, ComponentView, Editor } from 'grapesjs'
+import { displayedToStored, storedToDisplayed } from '../assetUrl'
 
 /**
  * @fileoverview This plugin adds CSS properties object-fit and object-position to the image component.
@@ -25,13 +26,17 @@ export default (editor: Editor, opts) => {
   opts = {
     // Default options
     labelSrc: 'Image URL',
-    placeholderSrc: 'https://example.com/image.jpg',
+    placeholderSrc: '/assets/placeholder.png',
     // These default values will never be used,
     // as there is default values in config
     replacedElements: ['img'],
     // Override with provided config
     ...opts,
   }
+
+  const domc = editor.DomComponents
+  const imgType = domc.getType('image')
+
   // Add src trait in the properties
   editor.TraitManager.addType('src', {
     events: {
@@ -131,17 +136,51 @@ export default (editor: Editor, opts) => {
     // It shows up when the selection is an image
     editor.on('component:selected', (model) => {
       if (model && opts.replacedElements.includes(model.get('tagName')?.toLowerCase())) {
-        // Not necessary, grapesjs does it automatically
-        // sector.set('visible', true);
         showSector = true
+        sector.set('visible', true)
       } else {
         showSector = false
         sector.set('visible', false)
       }
     })
-    // Watch automatic changes and revert them if needed
-    sector.on('change:visible', (model, open) => {
+    // Watch changes made by grapesjs and revert them if needed
+    sector.on('change:visible', () => {
       if(sector.get('visible') !== showSector) sector.set('visible', showSector)
     })
+    // Add a new image type that handles the storage URL vs displayed URL
+    domc.addType('image', {
+      ...imgType,
+      view: {
+        ...imgType.view,
+        onRender() {
+          const view = this as ComponentView
+          imgType.view.onRender && imgType.view.onRender.call(this) // call original
+          const el = view.el
+          const elImg = view.el as HTMLImageElement
+          const src = this.model.getAttributes().src
+          if (src && !src.startsWith('http')) {
+            elImg.src = storedToDisplayed(src, opts.websiteId, opts.storageId)
+          }
+        },
+      },
+      model: {
+        ...imgType.model,
+        init() {
+          const model = this as Component
+          imgType.model.init && imgType.model.init.call(this) // call original
+          // Handle changes by the AssetManager
+          model.on('change', () => {
+            if (model.get('src')) {
+              const newSrc = displayedToStored(model.get('src'))
+              if (newSrc !== model.get('src')) {
+                model.set('src', newSrc)
+                model.view.render()
+              }
+            }
+          })
+        },
+      },
+    })
+
   })
 }

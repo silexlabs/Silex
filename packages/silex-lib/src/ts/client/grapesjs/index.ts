@@ -42,6 +42,7 @@ import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
 import breadcrumbsPlugin from './breadcrumbs'
 import imgPlugin from './img'
+import liPlugin from './li'
 import cssPropsPlugin from './css-props'
 import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPugin from 'grapesjs-style-border'
@@ -94,6 +95,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-loading', value: loadingPlugin},
   {name: './breadcrumbs', value: breadcrumbsPlugin},
   {name: './img', value: imgPlugin},
+  {name: './li', value: liPlugin},
   {name: './css-props', value: cssPropsPlugin},
   {name: './footer', value: footerPlugin},
   {name: '@silexlabs/grapesjs-storage-rate-limit', value: rateLimitPlugin},
@@ -334,6 +336,8 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       },
       [imgPlugin.toString()]: {
         replacedElements: config.replacedElements,
+        websiteId,
+        storageId,
       },
       [notificationsPlugin.toString()]: {
         container: notificationContainer,

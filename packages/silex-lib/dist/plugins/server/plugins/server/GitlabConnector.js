@@ -545,7 +545,7 @@ class GitlabConnector {
             }
         } while (page <= totalPages);
         return projects
-            .filter(p => p.name.startsWith(this.options.repoPrefix))
+            .filter(p => p.name.startsWith(this.options.repoPrefix) && !p.name.includes('-deleted-'))
             .map(p => ({
             websiteId: p.id,
             name: p.name.replace(this.options.repoPrefix, ''),
@@ -698,73 +698,9 @@ class GitlabConnector {
         await this.callApi({
             session,
             path: `api/v4/projects/${websiteId}`,
-            method: 'DELETE'
+            method: 'DELETE',
         });
-        //// Load the meta repo data
-        //const file = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'GET', null, {
-        //  ref: this.options.branch,
-        //})
-        //const metaRepo = JSON.parse(Buffer.from(file.content, 'base64').toString('utf8')) as MetaRepoFileContent
-        //const data = metaRepo.websites[websiteId]
-        //if(!data) throw new ApiError(`Website ${websiteId} not found`, 404)
-        //// Update or create the website meta data
-        //delete metaRepo.websites[websiteId]
-        //// Save the meta repo data
-        //const project = await this.callApi(session, `api/v4/projects/${this.getMetaRepoPath(session)}/repository/files/${this.options.metaRepoFile}`, 'PUT', {
-        //  branch: this.options.branch,
-        //  commit_message: `Delete meta data of ${data.meta.name} (${websiteId}) from Silex`,
-        //  content: JSON.stringify(metaRepo),
-        //})
     }
-    // async duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void> {
-    //   // Get the repo meta data
-    //   const meta = await this.getWebsiteMeta(session, websiteId)
-    //   // List all the repository files
-    //   const files = await this.ls({
-    //     session,
-    //     websiteId,
-    //     recursive: true,
-    //   })
-    //   // Create a new repo
-    //   const newId = await this.createWebsite(session, {
-    //     ...meta,
-    //     name: meta.name + ' Copy ' + new Date().toISOString().replace(/T.*/, '') + ' ' + Math.random().toString(36).substring(2, 4),
-    //   })
-    //   // Upload all files
-    //   const actions: GitlabAction[] = []
-    //   for (const file of files.keys()) {
-    //     const content = await this.readFile(session, websiteId, file)
-    //     // From buffer to string
-    //     const contentStr = content.toString('base64')
-    //     const path = encodeURIComponent(file)
-    //     switch (file) {
-    //     case WEBSITE_DATA_FILE:
-    //       actions.push({
-    //         action: 'update',
-    //         file_path: path,
-    //         content: contentStr,
-    //       })
-    //       break
-    //     default:
-    //       actions.push({
-    //         action: 'create',
-    //         file_path: path,
-    //         content: contentStr,
-    //       })
-    //     }
-    //   }
-    //   // Perform a batch commit
-    //   return this.callApi({
-    //     session,
-    //     path: `api/v4/projects/${newId}/repository/commits`,
-    //     method: 'POST',
-    //     requestBody: {
-    //       branch: this.options.branch,
-    //       commit_message: 'Update website data from Silex',
-    //       actions,
-    //     },
-    //   })
-    // }
     // Fork the repo
     async duplicateWebsite(session, websiteId) {
         const meta = await this.getWebsiteMeta(session, websiteId);

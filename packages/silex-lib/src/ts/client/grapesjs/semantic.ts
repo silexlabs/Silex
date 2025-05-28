@@ -21,94 +21,168 @@ import {map} from 'lit-html/directives/map.js'
 // constants
 const pluginName = 'semantic'
 
-const tags = [
-  'DIV',
-  'P',
-  'H1',
-  'H2',
-  'H3',
-  'H4',
-  'H5',
-  'H6',
-  'SPAN',
-  'MAIN',
-  'ASIDE',
-  'SECTION',
-  'ADDRESS',
-  'ARTICLE',
-  'BUTTON',
-  'NAV',
-  'HEADER',
-  'FOOTER',
-  'DETAILS',
-  'SUMMARY',
-  'PRE',
-  'BLOCKQUOTE',
+// Group tags by category
+const tagCategories = [
+  {
+    label: 'Containers',
+    tags: ['DIV', 'SPAN', 'P'],
+  },
+  {
+    label: 'Headings',
+    tags: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'],
+  },
+  {
+    label: 'Main document structure',
+    tags: ['MAIN', 'SECTION', 'ARTICLE', 'NAV', 'ASIDE', 'HEADER', 'FOOTER'],
+  },
+  {
+    label: 'Content grouping',
+    tags: ['ADDRESS', 'BLOCKQUOTE', 'PRE'],
+  },
+  {
+    label: 'Interactive/form',
+    tags: ['BUTTON', 'LABEL', 'DETAILS', 'SUMMARY'],
+  },
 ]
+
+// Flatten all tags for lookup
+const tags = tagCategories.flatMap(cat => cat.tags)
 
 // plugin code
 export const semanticPlugin = (editor, opts) => {
-  // Add the new trait to all component types
-  editor.DomComponents.getTypes().map(type => {
+  // Helper to merge extra traits into a type's default traits
+  function withExtraTraits(type, extraTraits) {
+    const origTraits = editor.DomComponents.getType(type.id).model.prototype.defaults.traits
+    return [
+      ...origTraits,
+      ...extraTraits,
+    ]
+  }
+
+  // Traits to add to all components
+  const extraTraits = [
+    {
+      label: 'Tag name',
+      type: 'tag-name',
+      name: 'tag-name',
+    },
+    {
+      label: 'For',
+      name: 'for',
+      type: 'for-trait',
+      placeholder: 'ID of input',
+    }
+  ]
+
+  // Add the extra traits to all component types
+  editor.DomComponents.getTypes().forEach(type => {
     editor.DomComponents.addType(type.id, {
       model: {
         defaults: {
-          traits: [
-            // Keep the type original traits
-            ...editor.DomComponents.getType(type.id).model.prototype.defaults.traits,
-            // Add the new trait
-            {
-              label: 'Tag name',
-              type: 'tag-name',
-              name: 'tag-name',
-            },
-          ]
+          traits: withExtraTraits(type, extraTraits),
         }
       }
     })
   })
 
-  function doRender(el: HTMLElement, tagName: string) {
-    const tagsWithCurrent = tags.includes(tagName.toUpperCase()) ? tags : tags.concat(tagName.toUpperCase())
-    render(html`
-      <label for="semantic__select" class="gjs-one-bg silex-label">Type</label>
-      <select id="semantic__select" @change=${event => doRender(el, event.target.value)}>
-        ${map<string>(tagsWithCurrent, tag => html`
-          <option value="${tag}" ?selected=${tagName.toUpperCase() === tag}>${tag}</option>
-        `)}
-      </select>
-    `, el)
+  // Shared render function for select and for-trait
+  function renderTrait(el: HTMLElement, opts: {
+    tagName?: string,
+    forAttr?: string,
+    type: 'tag' | 'for'
+  }) {
+    const tagName = (opts.tagName || '').toUpperCase()
+    if (opts.type === 'tag') {
+      // Render tag select
+      let categoriesWithCurrent = tagCategories.map(cat => ({
+        ...cat,
+        tags: cat.tags.slice(),
+      }))
+      if (tagName && !tags.includes(tagName)) {
+        categoriesWithCurrent = [
+          ...categoriesWithCurrent,
+          { label: 'Other', tags: [tagName] }
+        ]
+      }
+      render(html`
+        <select @change=${event => renderTrait(el, { tagName: event.target.value, type: 'tag' })}>
+          ${map(categoriesWithCurrent, cat => html`
+            <optgroup label="${cat.label}">
+              ${map(cat.tags, tag => html`
+                <option value="${tag}" ?selected=${tagName === tag}>${tag}</option>
+              `)}
+            </optgroup>
+          `)}
+        </select>
+      `, el)
+    } else if (opts.type === 'for') {
+      // Render "for" input, hide if not LABEL
+      const wrapper = el.closest('.gjs-trt-trait__wrp-for') as HTMLElement
+      if (tagName !== 'LABEL') {
+        if(wrapper) wrapper.style.display = 'none'
+        render(html``, el)
+      } else {
+        if(wrapper) wrapper.style.display = 'initial'
+        render(html`
+          <input type="text" placeholder="ID of input" value="${opts.forAttr || ''}"
+            @input=${event => renderTrait(el, { forAttr: (event.target as HTMLInputElement).value, tagName, type: 'for' })}
+          >
+        `, el)
+      }
+    }
   }
+
   function doRenderCurrent(el: HTMLElement) {
-    doRender(el, editor.getSelected()?.get('tagName') || '')
+    renderTrait(el, { tagName: editor.getSelected()?.get('tagName') || '', type: 'tag' })
+  }
+  function doRenderCurrentFor(el: HTMLElement) {
+    const selected = editor.getSelected()
+    renderTrait(el, {
+      tagName: selected?.get('tagName') || '',
+      forAttr: selected?.getAttributes().for || '',
+      type: 'for'
+    })
   }
 
   // Add semantic traits
   // inspired by https://github.com/olivmonnier/grapesjs-plugin-header/blob/master/src/components.js
   editor.TraitManager.addType('tag-name', {
-    createInput({ trait }) {
-      // Create a new element container and add some content
+    createInput({ trait, component }) {
       const el = document.createElement('div')
-      // update the UI when a page is added/renamed/removed
       editor.on('page', () => doRenderCurrent(el))
       doRenderCurrent(el)
-      // this will be the element passed to onEvent and onUpdate
       return el
     },
-    // Update the component based on UI changes
-    // `elInput` is the result HTMLElement you get from `createInput`
     onEvent({ elInput, component, event }) {
-      const value = elInput.querySelector('#semantic__select').value
-      if(component.get('tagName').toUpperCase() === value.toUpperCase()){
-        // Already done
-      } else {
+      const value = (event.target as HTMLSelectElement).value
+      if(component.get('tagName').toUpperCase() !== value.toUpperCase()){
         component.set('tagName', value)
       }
     },
-    // Update UI on the component change
     onUpdate({ elInput, component }) {
       const tagName = component.get('tagName')
-      doRender(elInput, tagName)
+      renderTrait(elInput, { tagName, type: 'tag' })
+    },
+  })
+
+  editor.TraitManager.addType('for-trait', {
+    createInput({ trait, component }) {
+      const el = document.createElement('div')
+      editor.on('page', () => doRenderCurrentFor(el))
+      editor.on('component:update', () => doRenderCurrentFor(el))
+      doRenderCurrentFor(el)
+      return el
+    },
+    onEvent({ elInput, component, event }) {
+      const value = (event.target as HTMLInputElement).value
+      if(component.getAttributes().for !== value){
+        component.setAttributes({ for: value })
+      }
+    },
+    onUpdate({ elInput, component }) {
+      const forAttr = component.getAttributes().for || ''
+      const tagName = component.get('tagName') || ''
+      renderTrait(elInput, { forAttr, tagName, type: 'for' })
     },
   })
 }

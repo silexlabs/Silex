@@ -157,6 +157,7 @@ export default function loginDialogPlugin(editor, opts) {
             render(html`
               <main>
                 <p>Login failed with error: ${message}</p>
+              </main>
               <footer>
                 <button type="button" class="gjs-btn-prim" @click=${() => openDialog()}>Retry</button>
                 ${ connectorId ? html`<button class="silex-button" @click=${async () => {
