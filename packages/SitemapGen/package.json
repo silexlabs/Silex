@@ -7,7 +7,7 @@
     ".": "./src/index.js"
   },
   "bin": {
-    "sitemapgen": "./cli.js"
+    "sitemapgen": "./src/cli.js"
   },
   "scripts": {
     "lint": "eslint src/**/*.js",
