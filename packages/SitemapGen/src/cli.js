@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { generateSitemap } from './src/index.js';
+import { generateSitemap } from './index.js';
 import { program } from 'commander';
 import path from 'path';
 
