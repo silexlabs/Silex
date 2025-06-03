@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/sitemapgen",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Generate a sitemap.xml from a static site generator (SSG) output directory",
   "type": "module",
   "exports": {
