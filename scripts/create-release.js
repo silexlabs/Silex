@@ -13,7 +13,7 @@
  */
 
 import { Octokit } from "@octokit/rest";
-import fs from "fs";
+import { readFileSync, readdirSync } from "fs";
 import path from "path";
 import { execSync } from "child_process";
 import dotenv from "dotenv";
@@ -38,7 +38,7 @@ const repoName = "Silex";
 const APP_PACKAGES = ["silex-platform", "silex-puter", "silex-desktop"];
 
 // Get meta version
-const version = JSON.parse(fs.readFileSync("packages/silex-lib/package.json", "utf-8")).version;
+const version = JSON.parse(readFileSync("packages/silex-lib/package.json", "utf-8")).version;
 const tag = `v${version}`;
 
 // Find base SHA in meta repo
@@ -69,9 +69,9 @@ if (overrideMetaSha) {
 }
 
 // List submodules
-const packageDirs = fs.readdirSync("packages").filter((name) => {
+const packageDirs = readdirSync("packages").filter((name) => {
   const fullPath = path.join("packages", name);
-  return fs.existsSync(path.join(fullPath, ".git"));
+  return existsSync(path.join(fullPath, ".git"));
 });
 
 // Group packages

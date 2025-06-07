@@ -77,3 +77,6 @@
 [submodule "packages/silex-lib"]
 	path = packages/silex-lib
 	url = git@github.com:silexlabs/silex-lib.git
+[submodule "packages/SitemapGen"]
+	path = packages/SitemapGen
+	url = git@github.com:silexlabs/SitemapGen.git
