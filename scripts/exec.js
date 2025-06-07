@@ -3,8 +3,8 @@
 // It supports replacing `{{branch}}` with the branch name
 // In most cases you will want to use `npm run exec` instead of running this script directly
 // Or `git submodule foreach --recursive 'echo "Running command in $name"'`
-const fs = require('fs');
-const { spawnSync } = require('child_process');
+import { readFileSync } from 'fs';
+import { spawnSync } from 'child_process';
 
 // Get the command from the command-line arguments
 const command = process.argv[2];
@@ -16,7 +16,7 @@ if (!command) {
 }
 
 // Get repos paths and branch from .gitmodules
-const gitmodules = fs.readFileSync('.gitmodules', 'utf8');
+const gitmodules = readFileSync('.gitmodules', 'utf8');
 const repos = gitmodules.match(/\[submodule "(.*)"\]/g).map(repo => repo.match(/\[submodule "(.*)"\]/)[1]);
 const branches = gitmodules.match(/branch = (.*)/g).map(branch => branch.match(/branch = (.*)/)[1]);
 

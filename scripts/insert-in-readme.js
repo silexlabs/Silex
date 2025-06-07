@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs/promises')
+import { readFile, writeFile } from 'fs/promises';
 
 async function main(content, key, code) {
   console.log(content)
   // Read README.md
-  const readme = await fs.readFile('README.md', 'utf-8')
+  const readme = await readFile('README.md', 'utf-8')
   const keyText = `> Auto generated ${key}`
   // Replace content between keys
   const lines = readme.split('\n')
@@ -22,7 +22,7 @@ ${content}
     lines.splice(keyIndexStart + 1, keyIndexEnd - keyIndexStart - 1, content)
   }
   // Write README.md
-  await fs.writeFile('README.md', lines.join('\n'))
+  await writeFile('README.md', lines.join('\n'))
 }
 
 // Read piped content

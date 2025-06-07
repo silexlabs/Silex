@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
+import { readdirSync, readFileSync, existsSync } from 'fs';
 import path from 'path';
 
 const currentScript = process.argv[1];
 const scriptDir = path.dirname(currentScript);
 const packagesDir = path.join(scriptDir, '..', 'packages');
-const packages = fs.readdirSync(packagesDir);
+const packages = readdirSync(packagesDir);
 
 // Étape 1 : lecture des versions et dépendances
 const versions = {};
@@ -14,7 +14,7 @@ const graph = {};
 
 for (const pkg of packages) {
   const pkgPath = path.join(packagesDir, pkg, 'package.json');
-  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'));
   const name = pkgJson.name;
   const deps = {
     ...pkgJson.dependencies,
@@ -34,8 +34,8 @@ for (const [pkgName, deps] of Object.entries(graph)) {
   // Trouver le dossier correspondant au nom du package
   const matchingDir = packages.find((dir) => {
     const fullPath = path.join(packagesDir, dir, 'package.json');
-    if (!fs.existsSync(fullPath)) return false;
-    const json = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+    if (!existsSync(fullPath)) return false;
+    const json = JSON.parse(readFileSync(fullPath, 'utf8'));
     return json.name === pkgName;
   });
 
@@ -46,7 +46,7 @@ for (const [pkgName, deps] of Object.entries(graph)) {
   }
 
   const pkgPath = path.join(packagesDir, matchingDir, 'package.json');
-  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'));
 
   const allDeps = {
     ...pkgJson.dependencies,

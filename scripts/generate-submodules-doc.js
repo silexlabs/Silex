@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-const fs = require('fs/promises')
-const ini = require('js-ini')
+import { access, readFile } from 'fs/promises';
+import ini from 'js-ini';
 
 async function exists(path) {
   try {
-    await fs.access(path)
+    await access(path)
     return true
   } catch(e) {
     return false
@@ -14,7 +14,7 @@ async function exists(path) {
 
 async function main() {
   try {
-    const data = await fs.readFile('.gitmodules', 'utf-8')
+    const data = await readFile('.gitmodules', 'utf-8')
     const parsedData = ini.parse(data)
     const array = Object.keys(parsedData)
     .sort((a, b) => b.localeCompare(a))
@@ -30,7 +30,7 @@ async function main() {
 | ---- | --------- | ---- | ----------- |
 `
     let readmeCount = 0
-    for(project of array) {
+    for(const project of array) {
       let title = project.name
       let description = ''
       try {
@@ -40,7 +40,7 @@ async function main() {
           await exists(`${project.path}/README`) ? `${project.path}/README` : null
 
         if (readmeFile) {
-          const readme = await fs.readFile(readmeFile, 'utf-8')
+          const readme = await readFile(readmeFile, 'utf-8')
           readmeCount++
           const lines = readme.split('\n')
           const titleIndex = lines.findIndex((line) => line.match(/^(#+)/))

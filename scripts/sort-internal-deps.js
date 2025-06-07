@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
+import { readFileSync } from 'fs';
 import path from 'path';
 import { DepGraph } from 'dependency-graph';
 import * as glob from 'glob';
@@ -63,7 +63,7 @@ const packagePaths = glob.sync(`${packagesDir}/**/package.json`, {
 const internalPackages = {};
 
 for (const pkgPath of packagePaths) {
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
   const isInternal = pkgPath.match(/\/packages\//) && pkgPath.match(/\/packages\/[^/]+\/package.json$/);
   if (pkg.name && isInternal) {
     internalPackages[pkg.name] = pkgPath;
@@ -76,7 +76,7 @@ const graph = new DepGraph();
 Object.keys(internalPackages).forEach(pkgName => graph.addNode(pkgName));
 
 for (const [pkgName, pkgPath] of Object.entries(internalPackages)) {
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
   const deps = {
     ...pkg.dependencies,
     ...pkg.devDependencies,
