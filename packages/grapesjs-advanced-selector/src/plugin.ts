@@ -60,7 +60,7 @@ export function initListeners(editor: Editor, options: AdvancedSelectorOptions) 
 export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?: CustomSelectorEventProps) {
   if (props && props.container) {
     props.container.appendChild(container)
-    editor.on('selector:custom', (/*{ selected }: {selected: CssRule[]}*/) => updateUi(editor, options))
+    editor.on('selector:custom component:update', (/*{ selected }: {selected: CssRule[]}*/) => updateUi(editor, options))
   } else {
     // Keep listening
     editor.once('selector:custom', (props) => initASM(editor, options, props))
