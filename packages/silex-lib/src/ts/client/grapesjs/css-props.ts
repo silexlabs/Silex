@@ -298,6 +298,63 @@ export default (editor: Editor, opts) => {
         units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       }],
     }, { at: 8 })
+
+    editor.StyleManager.addProperty('extra', {
+      name: 'Scroll Snap Type',
+      property: 'scroll-snap-type',
+      type: 'composite',
+      properties: [{
+        name: 'Direction',
+        property: 'scroll-snap-type-direction',
+        type: 'select',
+        defaults: '',
+        options: [
+          { id: '', value: '', name: '' },
+          { id: 'none', value: 'none', name: 'none' },
+          { id: 'x', value: 'x', name: 'x' },
+          { id: 'y', value: 'y', name: 'y' },
+          { id: 'block', value: 'block', name: 'block' },
+          { id: 'inline', value: 'inline', name: 'inline' },
+          { id: 'both', value: 'both', name: 'both' },
+        ],
+      }, {
+        name: 'Mode',
+        property: 'scroll-snap-type-mode',
+        type: 'select',
+        defaults: '',
+        options: [
+          { id: '', value: '', name: '' },
+          { id: 'proximity', value: 'proximity', name: 'proximity' },
+          { id: 'mandatory', value: 'mandatory', name: 'mandatory' },
+        ],
+      }],
+      info: 'The scroll-snap-type CSS property sets the direction and mode of enforced snap points on the scroll container.',
+    }, { at: 9 })
+
+    editor.StyleManager.addProperty('extra', {
+      name: 'Scroll Padding',
+      property: 'scroll-padding',
+      type: 'integer',
+      defaults: '',
+      units: ['px', 'em', 'rem', '%'],
+      info: 'The scroll-padding CSS property defines offsets for the optimal snap position when scrolling is loaded by the browser.',
+    }, { at: 10 })
+
+    editor.StyleManager.addProperty('extra', {
+      name: 'Scroll Snap Align',
+      property: 'scroll-snap-align',
+      type: 'select',
+      defaults: '',
+      options: [
+        { id: '', value: '', name: '' },
+        { id: 'none', value: 'none', name: 'none' },
+        { id: 'start', value: 'start', name: 'start' },
+        { id: 'end', value: 'end', name: 'end' },
+        { id: 'center', value: 'center', name: 'center' },
+      ],
+      info: 'The scroll-snap-align property specifies how strictly the snap points are enforced on the element in the container.',
+    }, { at: 11 })
+
     /***************/
     /* Typography  */
     /***************/
