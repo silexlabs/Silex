@@ -80,3 +80,6 @@
 [submodule "packages/SitemapGen"]
 	path = packages/SitemapGen
 	url = git@github.com:silexlabs/SitemapGen.git
+[submodule "packages/silex-desktop"]
+	path = packages/silex-desktop
+	url = git@github.com:silexlabs/silex-desktop.git
