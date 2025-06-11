@@ -91,7 +91,6 @@ export default class extends Backbone.View {
     options.editor.on('component:selected', () => this.render())
     // listen to drag event in order to have access to the drop target
     options.editor.on('sorter:drag', (event: any) => {
-      console.log('sorter:drag', event)
       this.lastPos = event.pos
       this.lastTarget = event.target
     })

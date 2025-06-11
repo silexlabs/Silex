@@ -19,7 +19,6 @@ export default (editor: Editor, opts: Partial<SymbolOptions> = {}) => {
     secondaryColor: '#463a3c',
     highlightColor: '#d97aa6',
   },  ...opts }
-  console.log('Symbols plugin options', options)
 
   editor.on('load', () => {
     // Display symbols
