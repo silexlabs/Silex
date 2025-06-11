@@ -1,5 +1,5 @@
 import { Component, CssRule, Editor, Selector } from 'grapesjs'
-import { ComplexSelector, EMPTY_SELECTOR, fromString } from './ComplexSelector'
+import { ComplexSelector, fromString } from './ComplexSelector'
 import { AttributeOperatorType, AttributeSelector, ClassSelector, IdSelector, isSameSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { OperatorType } from './Operator'
 import { CompoundSelector } from './CompoundSelector'
@@ -8,6 +8,7 @@ import { CompoundSelector } from './CompoundSelector'
 // GrapeJs functions
 const untranslatedKeys = new Set<string>()
 export function getTranslation(editor: Editor, key: string): string {
+  if(!key) return ''
   const translated = editor?.I18n?.t(key)
   if (!translated) {
     untranslatedKeys.add(key)
@@ -89,7 +90,7 @@ export function editStyle(editor: Editor, selector: string) {
 export function matchSelectorAll(selector: string, components: Component[]): boolean {
   try {
     return components.some((component) => component.view?.el.matches(selector))
-  } catch {  
+  } catch {
     return false
   }
 }
@@ -237,32 +238,13 @@ export function setComponentSelector(component: Component, selector: ComplexSele
 }
 
 export function getComponentSelector(component: Component): ComplexSelector {
-  const selector = component.get('selector') ?? EMPTY_SELECTOR
-  // *****
-  // return selector
   // FIXME: Backward compatibility should be handled in the app
   const oldClasses: string[] = component.getClasses()
-  const classesMissingInSelector: string[] = oldClasses
-    .filter((oldClass) => !selector.mainSelector.selectors.some((simpleSelector: ClassSelector) => simpleSelector.type === 'class' && simpleSelector.value === oldClass))
-  const classesMissingInComponent: ClassSelector[] = selector.mainSelector.selectors
-    .filter((simpleSelector: ClassSelector) => simpleSelector.type === 'class' && !oldClasses.includes(simpleSelector.value))
-  if (classesMissingInComponent.length > 0) {
-    component.addClass(classesMissingInComponent.map((simpleSelector) => simpleSelector.value))
-  }
-  if(classesMissingInSelector.length > 0) {
-    const newSelector = {
-      ...selector,
-      mainSelector: {
-        ...selector.mainSelector,
-        selectors: [
-          ...selector.mainSelector.selectors,
-          ...classesMissingInSelector
-            .map((value) => ({ type: SimpleSelectorType.CLASS, value, active: false, })),
-        ],
-      },
-    }
-    setComponentSelector(component, newSelector)
-    return newSelector
+  const selector = component.get('selector') ?? {
+    mainSelector: {
+      selectors: oldClasses
+        .map(className => ({ type: SimpleSelectorType.CLASS, value: className, active: true })),
+    },
   }
   return {
     ...selector,
@@ -279,7 +261,7 @@ export function getComponentSelector(component: Component): ComplexSelector {
  */
 export function getSuggestionsMain(editor: Editor, components: Component[], selector: ComplexSelector): SimpleSelector[] {
   const suggestions: SimpleSelector[] = []
-  
+
   components.forEach(component => {
     // Add the component tag name and ID
     addTagNames(component, suggestions, selector.mainSelector)
@@ -478,7 +460,7 @@ function addTagNames(component: Component, suggestions: SimpleSelector[], select
 // function sameType(gjs: Selector, sel: SimpleSelector): boolean {
 //   return (gjs.get('type') === 1 && sel.type === SimpleSelectorType.CLASS) || (gjs.get('type') === 2 && sel.type === SimpleSelectorType.ID)
 // }
-// 
+//
 // function sameValue(gjs: Selector, sel: SimpleSelector): boolean {
 //   if(sel.type !== SimpleSelectorType.CLASS && sel.type !== SimpleSelectorType.ID) return false // Only classes and IDs are supported by grapesjs
 //   return (gjs.get('name') === (sel as ClassSelector | IdSelector).value)

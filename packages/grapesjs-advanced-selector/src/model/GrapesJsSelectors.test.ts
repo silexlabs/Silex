@@ -1,8 +1,44 @@
 import { CssRule, Editor, Selector } from 'grapesjs'
 import { Component } from 'grapesjs'
-import { getSuggestionsMain, getSuggestionsRelated } from './GrapesJsSelectors'
+import { getSuggestionsMain, getSuggestionsRelated, getComponentSelector } from './GrapesJsSelectors'
 import { ClassSelector, IdSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { Operator, OperatorType } from './Operator'
+
+describe('getComponentSelector', () => {
+  test('Component with selector', () => {
+    const mockComponent = {
+      get: jest.fn().mockReturnValue({
+        mainSelector: {
+          selectors: [
+            { type: SimpleSelectorType.CLASS, value: 'existing-class', active: true },
+          ],
+        },
+      }),
+      getClasses: jest.fn().mockReturnValue(['other-class']),
+      setClass: jest.fn(),
+      addClass: jest.fn(),
+      set: jest.fn(),
+    } as unknown as Component
+
+    const result = getComponentSelector(mockComponent)
+    expect(result.mainSelector.selectors).toContainEqual({ type: SimpleSelectorType.CLASS, value: 'existing-class', active: true })
+    expect(mockComponent.setClass).not.toHaveBeenCalled()
+    expect(mockComponent.addClass).not.toHaveBeenCalled()
+  })
+  test('component without selector should return the classes (getClasses)', () => {
+    const mockComponent = {
+      get: jest.fn().mockReturnValue(undefined),
+      getClasses: jest.fn().mockReturnValue(['class-one', 'class-two']),
+    } as unknown as Component
+
+    const result = getComponentSelector(mockComponent)
+    expect(result.mainSelector?.selectors).toBeDefined()
+    expect(result.mainSelector.selectors).toHaveLength(2)
+    expect(result.mainSelector.selectors).toContainEqual({ type: SimpleSelectorType.CLASS, value: 'class-one', active: true })
+    expect(result.mainSelector.selectors).toContainEqual({ type: SimpleSelectorType.CLASS, value: 'class-two', active: true })
+    expect(mockComponent.getClasses).toHaveBeenCalled()
+  })
+})
 
 describe('getSuggestionsMain', () => {
   test('Élément avec ID et classe', () => {
@@ -733,7 +769,7 @@ describe('getSuggestionsRelated', () => {
       mainSelector: { selectors: [{ type: SimpleSelectorType.CLASS, value: 'target', active: true } as ClassSelector] },
       operator: { type: OperatorType.DESCENDANT, isCombinator: true } as Operator,
       relatedSelector: { selectors: [] },
-    }) 
+    })
 
     expect(suggestions).toEqual([
       { type: SimpleSelectorType.TAG, value: 'article', active: true },
