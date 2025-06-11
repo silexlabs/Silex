@@ -15,21 +15,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Component, Editor } from 'grapesjs'
+
 export const cmdPromptAddSymbol = 'symbol-prompt-add'
 
-export default (editor, opts) => {
-  function getNext(prefix) {
+export default (editor: Editor) => {
+  function getNext(prefix: string) {
     let idx = 1
-    while(editor.Symbols.find(s => s.get('label') === prefix + idx)) {
+    while(
+      editor.Components.getSymbols()
+        .find((symbol: Component) => symbol.get('custom-name') === prefix + idx)
+    ) {
       idx++
     }
     return prefix + idx
   }
   editor.Commands.add(cmdPromptAddSymbol, {
-    run: (_, sender) => {
+    run: (_) => {
       const label = prompt('Label', getNext('Symbol '))
-      const icon = 'fa-gem'
-      editor.runCommand('symbols:add', { label, icon })
+      editor.runCommand('symbols:add', { label })
     }
   })
 }
