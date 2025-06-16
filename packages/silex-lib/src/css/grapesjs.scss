@@ -220,3 +220,8 @@
     display: block;
     color: var(--gjs-color-warn);
 }
+
+// FIXME: Workaround, why is this needed?
+.gjs-field .gjs-sel-arrow {
+  z-index: 999;
+}
