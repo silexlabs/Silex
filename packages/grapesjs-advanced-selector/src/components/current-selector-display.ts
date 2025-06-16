@@ -51,24 +51,22 @@ export class CurrentSelectorDisplay extends StylableElement {
     }
     .selection {
       display: flex;
-      border-top: 1px solid var(--gjs-primary-color, #333);
-      background-color: var(--gjs-main-dark-color, #222);
+      border: 1px solid var(--gjs-primary-color, #333);
       ${ customizeSelect('select.value') }
       select.value {
-        border: none;
-        color: var(--gjs-font-color-active, #f8f8f8);
-        color: var(--gjs-color-highlight, #71b7f1);
+        appearance: auto;
+        border: 1px solid var(--gjs-light-border, #333);
         font-size: inherit;
         font-family: monospace;
         text-align: center;
-        padding: .5rem;
-        margin: 0;
+        margin: .25rem 0;
+        padding: .25rem 0;
         text-align: center;
         text-wrap: wrap;
         width: 100%;
         cursor: pointer;
-        background-color: var(--gjs-main-dark-color, #333);
-        color: var(--gjs-secondary-color);
+        background: inherit;
+        color: inherit;
       }
       ul {
         list-style-type: none;
@@ -119,7 +117,7 @@ export class CurrentSelectorDisplay extends StylableElement {
       padding: 4px;
       &:hover {
         background-color: var(--gjs-secondary-color, #fff);
-        color: var(--gjs-main-dark-color, #333);
+        color: var(--gjs-main-color, #333);
       }
     }
 
