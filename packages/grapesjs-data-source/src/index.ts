@@ -15,9 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import commands from './commands'
 import { DataSourceManager } from './model/DataSourceManager'
 import storage from './storage'
-import { DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
+import { COMMAND_REFRESH, DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
 
@@ -32,6 +33,7 @@ export * from './model/completion'
 export * from './types'
 export * from './utils'
 export * from './view/state-editor'
+export * from './commands'
 
 /**
  * GrapeJs plugin entry point
@@ -44,6 +46,10 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     view: {
       el: '.gjs-pn-panel.gjs-pn-views-container',
       ...opts?.view,
+    },
+    commands: {
+      refresh: COMMAND_REFRESH,
+      ...opts?.commands,
     },
   }
 
@@ -63,14 +69,16 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
   editor.DataSourceManager = new DataSourceManager(dataSources, editor, options)
 
   // Register the UI for component properties
-  view(editor, options.view)
+  view(editor, options)
 
   // Save and load data sources
   storage(editor)
 
+  // Register the commands
+  commands(editor, options)
+
   // Use grapesjs-notifications plugin for errors
   editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))
-  //editor.on(DATA_SOURCE_READY, (ds: IDataSource) => editor.runCommand('notifications:add', { type: 'success', message: `Data source ready: ${ds.id}`, group: NOTIFICATION_GROUP }))
 }
 
 /**

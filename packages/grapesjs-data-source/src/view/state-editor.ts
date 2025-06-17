@@ -23,9 +23,8 @@ import { DATA_SOURCE_CHANGED, DataSourceEditor, Filter, Property, Token } from '
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
-import { ExpressionInput } from '@silexlabs/expression-input'
+import { ExpressionInput, PopinForm } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
-import { PopinForm } from '@silexlabs/expression-input/dist/popin-form'
 
 import '@silexlabs/expression-input'
 import { getCompletion } from '../model/completion'
@@ -37,9 +36,16 @@ import { fromStored, getExpressionResultType } from '../model/token'
  * Usage:
  * 
  * ```
- * <properties-editor disabled>
- *   <style> / * Custom styles * / </style>
- * </properties-editor>
+ * <state-editor
+ *  name="state"
+ *  disabled
+ *  hide-loop-data
+ *  parent-name="parent"
+ *  no-filters
+ *  root-type="root"
+ *  default-fixed
+ *  dismiss-current-component-states
+ *  ></state-editor>
  * ```
  * 
  */
@@ -126,7 +132,7 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(DATA_SOURCE_CHANGED, this.renderBinded)
+    this.editor?.on(DATA_SOURCE_CHANGED, () => this.renderBinded())
   }
 
   override disconnectedCallback() {

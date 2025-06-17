@@ -1,4 +1,4 @@
-import { DataSourceType, Expression, Field, FieldKind, IDataSourceModel, Options, Token, TypeId } from './types'
+import { Expression, Field, FieldKind, IDataSource, IDataSourceModel, Options, Token, TypeId } from './types'
 import { DataSourceEditor } from '.'
 import { getParentByPersistentId, getStateDisplayName } from './model/state'
 import { TemplateResult, html } from 'lit'
@@ -333,7 +333,7 @@ export function getDefaultOptions(postFix = Math.random().toString(36).slice(2, 
   }
 }
 
-export function createDataSource(opts: Partial<GraphQLOptions> = {}, postFix?: string): IDataSourceModel {
+export function createDataSource(opts: Partial<GraphQLOptions> = {}, postFix?: string): IDataSource {
   const options = {
     ...getDefaultOptions(postFix),
     ...opts,

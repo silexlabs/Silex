@@ -16,7 +16,7 @@
  */
 
 import Backbone from 'backbone'
-import { DATA_SOURCE_ERROR, DATA_SOURCE_READY, Field, FieldKind, IDataSource, IDataSourceOptions, Tree, Type, TypeId, builtinTypeIds, builtinTypes } from '../types'
+import { IDataSourceOptions, Type, Field, Tree, TypeId, IDataSource, DATA_SOURCE_ERROR, builtinTypeIds, builtinTypes, FieldKind, DATA_SOURCE_READY, DATA_SOURCE_CHANGED } from '../types'
 import graphqlIntrospectionQuery from './graphql-introspection-query'
 import dedent from 'dedent-js'
 import { FIXED_TOKEN_ID } from '../utils'
@@ -78,6 +78,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
   protected queryables: Field[] = []
   protected queryType: string = ''
   protected ready = false
+
   constructor(options: GraphQLOptions) {
     super(options)
     this.id = options.id.toString()
@@ -88,6 +89,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     this.set('queryable', options.queryable)
     this.set('readonly', options.readonly)
   }
+
   /**
    * @throws Error
    */
@@ -293,8 +295,12 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       this.types = types
       this.queryables = fields
       this.queryType = queryType
+      if (this.ready) {
+        this.trigger(DATA_SOURCE_CHANGED, this)
+      } else {
+        this.trigger(DATA_SOURCE_READY, this)
+      }
       this.ready = true
-      this.trigger(DATA_SOURCE_READY, this)
     } catch (e) {
       return this.triggerError(`GraphQL connection failed: ${(e as Error).message}`)
     }
