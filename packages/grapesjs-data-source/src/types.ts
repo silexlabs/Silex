@@ -92,6 +92,9 @@ export const DATA_SOURCE_ERROR = 'data-source:error'
 export const DATA_SOURCE_CHANGED = 'data-source:changed'
 export const COMPONENT_STATE_CHANGED = 'component:state:changed'
 export const COMMAND_REFRESH = 'data-source:refresh'
+export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
+export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
+export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'
 
 // For use by the DataSourceManager class which is a Backbone collection
 export interface IDataSourceModel extends Model<any, ModelSetOptions, any>, IDataSource {}
@@ -263,4 +266,9 @@ export enum Properties {
   condition = 'condition',
   condition2 = 'condition2',
   __data = '__data',
+}
+
+export interface ComponentExpression {
+  expression: Expression
+  component: Component
 }

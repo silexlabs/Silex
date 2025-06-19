@@ -19,10 +19,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs, { Editor, Component } from 'grapesjs'
+import grapesjs, { Component } from 'grapesjs'
 import { DataTree } from './DataTree'
 import { Type, Filter, Property, Expression, Tree } from '../types'
-import { DataSourceEditor } from '..'
+import { Context, DataSourceEditor } from '..'
 import { getStates } from './state'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
@@ -41,7 +41,7 @@ jest.mock('lit', () => ({
   render: jest.fn(),
 }))
 
-let editor: Editor
+let editor: DataSourceEditor
 let firstComponent: Component
 beforeEach(async () => {
   jest.resetAllMocks()
@@ -49,24 +49,25 @@ beforeEach(async () => {
   editor = grapesjs.init({
     container: document.createElement('div'),
     components: '<div></div>',
-  })
+  }) as DataSourceEditor
   firstComponent = editor.getComponents().first()
 })
 
 test('DataTree instanciation', () => {
   expect(DataTree).toBeDefined()
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTree(editor, {filters: [], dataSources: []})
   expect(dataTree).toBeDefined()
 })
 
 test('Find type from  id', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
 
   // Type not found
@@ -83,7 +84,7 @@ test('Find type from  id', () => {
 })
 
 test('Expressions to tree', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTree(editor, {filters: [], dataSources: []})
   const expression: Expression = [{
     type: 'property',
     propType: 'field',
@@ -115,7 +116,7 @@ test('merge trees', () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   const tree1: Tree = {
     token: {
       type: 'property',
@@ -216,7 +217,7 @@ test('merge trees with multiple possible types', () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   const tree1: Tree = {
     token: {
       type: 'property',
@@ -380,13 +381,14 @@ test('get tree with filters', async () => {
     kind: 'scalar',
     dataSourceId: testDataSourceId,
   }]
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
   // Make sure it treats them all as relative
   dataTree.isRelative = () => true
@@ -467,18 +469,19 @@ test('Merge trees with empty and no options', async () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
 
   expect(async () => dataTree.mergeTrees(trees[0], trees[1]))
     .not.toThrow()
-  
+
   // The 2 trees are the same
   // The 2nd tree has empty options which should be ignored
   expect(dataTree.mergeTrees(trees[0], trees[1]))
@@ -491,7 +494,7 @@ test('Get query with errors in options', async () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   expect(() => dataTree.mergeTrees({
     'token': {
       'dataSourceId': 'testDataSourceId',
@@ -557,7 +560,7 @@ test('Get query from multiple expressions', async () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   const tree = dataTree.mergeTrees({
     'token': {
       'dataSourceId': 'testDataSourceId',
@@ -959,7 +962,7 @@ test('Get query from multiple expressions', async () => {
 //})
 
 test('isRelative', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
@@ -988,6 +991,7 @@ test('isRelative', () => {
     }] as Type[]),
     getQueryables: () => ([]),
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
   expect(dataTree.isRelative({
     type: 'property',
@@ -1039,13 +1043,14 @@ test('get tree with options', () => {
     }],
   }] as Type[]))
 
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: fn,
     getQueryables: () => [],
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
 
   // Simple expression with relative child expression
@@ -1108,7 +1113,7 @@ test('get tree with options', () => {
 })
 
 test('get types map', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor, {
     filters: [],
     dataSources: [{
       id: testDataSourceId,
@@ -1117,6 +1122,7 @@ test('get types map', () => {
       getTypes: () => simpleTypes,
       getQueryables: () => simpleTypes[0].fields,
       getQuery: () => '',
+      fetchValues: jest.fn(),
     }],
   })
   const types = dataTree.getAllTypes()
@@ -1125,63 +1131,72 @@ test('get types map', () => {
   expect(types[0].id).toBe('testTypeId')
 })
 
-// TODO: Value tests
-// const simpleExpression: Context = [
-//   {
-//     type: 'property',
-//     propType: 'type',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }, {
-//     type: 'property',
-//     propType: 'field',
-//     fieldId: 'testFieldId',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }
-// ]
-// test('get value with simple context', () => {
-//   const dataTree = new DataTree({
-//     filters: [],
-//     dataSources: [{
-//       id: DataSourceId,
-//       connect: async () => { },
-//       getTypes: () => simpleTypes,
-//     }],
-//   })
-// 
-//   // Empty value
-//   expect(dataTree.getValue(simpleExpression, [])).toBeNull()
-// 
-//   // 1 level value
-//   const value = dataTree.getValue(simpleExpression, [{
-//     type: 'property',
-//     propType: 'type',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }])
-//   expect(value).not.toBeNull()
-//   // TODO: test value
-// 
-//   // 2 levels value
-//   const value2 = dataTree.getValue(simpleExpression, [{
-//     type: 'property',
-//     propType: 'type',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }, {
-//     type: 'property',
-//     propType: 'field',
-//     fieldId: 'testFieldId',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }])
-//   expect(value2).not.toBeNull()
-//   // TODO: test value
-// })
+// Value tests
+const simpleExpression: Context = [
+  {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'testFieldId1',
+    label: 'field label 1',
+    kind: 'object',
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId2',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    label: 'field label 2',
+    kind: 'scalar',
+  }
+]
+test('get value with simple context', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [],
+    dataSources: [{
+      id: testDataSourceId,
+      connect: async () => { },
+      isConnected: () => true,
+      getTypes: () => simpleTypes,
+      getQueryables: () => simpleTypes[0].fields,
+      getQuery: () => '',
+      fetchValues: jest.fn(),
+    }],
+  })
+
+  // Empty value
+  expect(dataTree.getValue(simpleExpression, [])).toBeNull()
+
+  // 1 level value
+  const value = dataTree.getValue(simpleExpression, [{
+    type: 'property',
+    propType: 'type',
+    typeId: 'testTypeId',
+    dataSourceId: testDataSourceId,
+  }])
+  expect(value).not.toBeNull()
+  // TODO: test value
+
+  // 2 levels value
+  const value2 = dataTree.getValue(simpleExpression, [{
+    type: 'property',
+    propType: 'type',
+    typeId: 'testTypeId',
+    dataSourceId: testDataSourceId,
+  }, {
+    type: 'property',
+    propType: 'field',
+    fieldId: 'testFieldId',
+    typeId: 'testTypeId',
+    dataSourceId: testDataSourceId,
+  }])
+  expect(value2).not.toBeNull()
+  // TODO: test value
+})
 
 test('Get experessions used by a component', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor, {
     filters: simpleFilters,
     dataSources: [{
       id: testDataSourceId,
@@ -1190,6 +1205,7 @@ test('Get experessions used by a component', () => {
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',
+      fetchValues: jest.fn(),
     }],
   })
   const component = editor.getComponents().first()
@@ -1212,7 +1228,7 @@ test('Get experessions used by a component and its children', () => {
   class DataTreeTest extends DataTree {
     getComponentExpressions = jest.fn(() => [])
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+  const dataTree = new DataTreeTest(editor, {
     filters: [],
     dataSources: [],
   })
@@ -1224,7 +1240,7 @@ test('Get experessions used by a page', () => {
   class DataTreeTest extends DataTree {
     getComponentExpressionsRecursive = jest.fn(() => [])
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+  const dataTree = new DataTreeTest(editor, {
     filters: [],
     dataSources: [],
   })
@@ -1236,7 +1252,7 @@ test('Get experessions used by all pages', () => {
   class DataTreeTest extends DataTree {
     getPageExpressions = jest.fn(() => [])
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+  const dataTree = new DataTreeTest(editor, {
     filters: [],
     dataSources: [],
   })

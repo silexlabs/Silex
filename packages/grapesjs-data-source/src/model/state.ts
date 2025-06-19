@@ -16,8 +16,7 @@
  */
 
 import { Component } from 'grapesjs'
-import { Expression, StateId, State } from '../types'
-import { DataSourceEditor } from '..'
+import { Expression, StateId, State, DataSourceEditor } from '../types'
 
 /**
  * @fileoverview This file contains the model for components states
@@ -87,7 +86,7 @@ export function getComponentByPersistentId(id: PersistantId, editor: DataSourceE
 }
 
 /**
- * Find a component by its persistant ID in 
+ * Find a component by its persistant ID in
  */
 export function getChildByPersistantId(id: PersistantId, parent: Component): Component | null {
   if(getPersistantId(parent) === id) return parent

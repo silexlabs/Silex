@@ -18,7 +18,7 @@
 import {LitElement, TemplateResult, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import { PROPERTY_STYLES } from './defaultStyles'
-import { DATA_SOURCE_CHANGED, DataSourceEditor, Filter, Property, Token } from '..'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DataSourceEditor, Filter, Property, Token } from '../types'
 
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
@@ -32,9 +32,9 @@ import { fromStored, getExpressionResultType } from '../model/token'
 
 /**
  * Editor for a state of the selected element's properties
- * 
+ *
  * Usage:
- * 
+ *
  * ```
  * <state-editor
  *  name="state"
@@ -47,7 +47,7 @@ import { fromStored, getExpressionResultType } from '../model/token'
  *  dismiss-current-component-states
  *  ></state-editor>
  * ```
- * 
+ *
  */
 
 @customElement('state-editor')
@@ -132,7 +132,7 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(DATA_SOURCE_CHANGED, () => this.renderBinded())
+    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, () => this.renderBinded())
   }
 
   override disconnectedCallback() {
@@ -239,6 +239,7 @@ export class StateEditor extends LitElement {
 
   private redrawing = false
   private expressionInputRef = createRef<ExpressionInput>()
+  private resultRef = createRef<HTMLElement>()
   private popinsRef: Ref<PopinForm>[] = []
 
   override render() {
@@ -278,6 +279,14 @@ export class StateEditor extends LitElement {
 
     // Fixed text
     const text = fixed ? (_currentValue![0] as Property)?.options?.value || '' : ''
+
+    let value = '' as unknown
+    try {
+      value = dataTree.getValue(_currentValue || [], selected)
+      console.log('===========', { value, _currentValue, selected })
+    } catch(e) {
+      console.log('==??????', e)
+    }
 
     // Build the expression input
     const result = html`
@@ -394,6 +403,9 @@ export class StateEditor extends LitElement {
           </select>
       ` : ''}
       </expression-input>
+      <span
+        ${ref(this.resultRef)}
+      >${value}</span>
     `
     this.redrawing = false
     return result

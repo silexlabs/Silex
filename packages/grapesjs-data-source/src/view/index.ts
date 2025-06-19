@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditor, DataSourceEditorOptions, DataSourceEditorViewOptions, getElementFromOption, Properties } from '..'
+import { DataSourceEditor, DataSourceEditorOptions, DataSourceEditorViewOptions, Properties } from '../types'
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
@@ -27,6 +27,7 @@ import '@silexlabs/expression-input'
 import './properties-editor'
 import './custom-states-editor'
 import canvas from './canvas'
+import { getElementFromOption } from '../utils'
 
 export default (editor: DataSourceEditor, opts: DataSourceEditorOptions) => {
   if (opts.view.el) {

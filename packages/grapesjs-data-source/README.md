@@ -1,6 +1,6 @@
 # GrapesJs Data Source plugin
 
-This GrapesJS plugin integrates various APIs into the editor. 
+This GrapesJS plugin integrates various APIs into the editor.
 
 It makes a new [expressions UI](#expressions-ui) available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
 
@@ -128,7 +128,19 @@ To get the data tree, use the method `getDataTree()`, then use its methods to ge
 ```js
 const dataSourceManager = editor.DataSourceManager
 const dataTree = dataSourceManager.getDataTree()
-const pageQuery = dataTree.getPageQuery(page)
+const result = dataTree.getValue(
+  [{
+    type: "property",
+    fieldId: "fixed",
+    options: { value: 'test' },
+  }, {
+    type: "filter",
+    id: "upcase",
+    apply: input => input.toUpperCase()
+  }],
+  editor.getSelected() // This is never used as the expression only refers to hard coded values, no state in the expression
+)
+console.log('will write "TEST":', result)
 ```
 
 ## Available commands

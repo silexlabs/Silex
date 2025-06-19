@@ -16,15 +16,10 @@
  */
 
 import { Component, Page } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
+import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
 import { getState, getParentByPersistentId, getStates } from './state'
 import { fromStored, getOptionObject } from './token'
-import { getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
-
-interface ComponentExpression {
-  expression: Expression
-  component: Component
-}
+import { FIXED_TOKEN_ID, getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
 
 /**
  * Options of the data tree
@@ -87,6 +82,8 @@ export const STANDARD_TYPES: Type[] = [
 
 export class DataTree {
   public dataSources: IDataSource[] = []
+  // The data returned by all APIs
+  public queryResult: Record<DataSourceId, unknown> = {}
   public filters: Filter[] = []
 
   /**
@@ -196,101 +193,75 @@ export class DataTree {
   }
 
   /**
-   * Evaluate an expression to a value   * @param expression The expression to evaluate
-   * @returns The evaluated value
-   * @example
-   * var component = editor
-   * .getSelected()
-   * var expression = component
-   * .attributes.privateStates[0]
-   * .expression
-   * var queries = editor.DataSourceManager.getPageQuery(editor.Pages.getSelected())
-   * editor.DataSourceManager.getAll()[0]
-   * .call(queries.countries)
-   * .then(data => {
-   *   const value = editor.DataSourceManager.dataTree.getValue({ expression, component }, [], data);
-   *   console.log({value})
-   * })
+   * Evaluate an expression to a value
   */
   getValue(
-    { expression, component }: ComponentExpression,
-    prevValues: unknown[],
-    queryResult: Record<DataSourceId, unknown>
+    expression: Expression,
+    component: Component,
+    prevValues: unknown = null,
   ): unknown {
-    console.log('getValue called with:', { expression, component, prevValues, queryResult })
-  
     if (expression.length === 0) {
-      console.log('Expression is empty, returning null.')
-      return null
+      return prevValues
     }
-  
+
     const [token, ...rest] = expression
-    console.log('Processing token:', token)
-  
+
     switch (token.type) {
     case 'state': {
-      console.log('Token type is state.')
       const resolvedExpression = this.resolveState(token, component)
       if (!resolvedExpression) {
         throw new Error(`Unable to resolve state: ${JSON.stringify(token)}`)
       }
-      console.log('Resolved state to expression:', resolvedExpression)
-      return this.getValue({ expression: resolvedExpression, component }, prevValues, queryResult)
+      return this.getValue(resolvedExpression, component, prevValues)
     }
-  
+
     case 'property': {
-      console.log('Token type is property.')
+      if (token.fieldId === FIXED_TOKEN_ID) {
+        return token.options?.value
+      }
+
       if (!token.dataSourceId) {
         throw new Error(`Data source ID is missing for token: ${JSON.stringify(token)}`)
       }
-  
-      const dataSourceResult = queryResult[token.dataSourceId]
-      if (!dataSourceResult) {
+
+      const prevObj = prevValues ? prevValues : this.queryResult[token.dataSourceId]
+      if (!prevObj) {
         throw new Error(`No query result found for data source ID: ${token.dataSourceId}`)
       }
-  
+
       let value = null
-      if(Array.isArray(dataSourceResult)) {
-        value = dataSourceResult.map(item => item[token.fieldId])
+      if(Array.isArray(prevObj)) {
+        value = prevObj.map(item => item[token.fieldId])
         value = value[0] // FIXME: we need some kind of index
       } else {
-        value = (dataSourceResult as Record<string, unknown>)[token.fieldId]
+        value = (prevObj as Record<string, unknown>)[token.fieldId]
       }
 
-      console.log('Resolved property value:', value)
-  
-      if (rest.length === 0) {
-        return value
-      }
-  
-      return this.getValue({ expression: rest, component }, prevValues, value as Record<DataSourceId, unknown>)
+      return this.getValue(rest, component, value)
     }
-  
     case 'filter': {
-      console.log('Token type is filter.')
       const options = Object.entries(token.options).reduce((acc, [key, value]) => {
-        acc[key] = this.getValue({ expression: toExpression(value) || [], component }, prevValues, queryResult)
+        acc[key] = this.getValue(toExpression(value) || [], component, null)
         return acc
       }, {} as Record<string, unknown>)
-  
-      console.log('Resolved filter options:', options)
-  
+
       const filter = this.filters.find(f => f.id === token.id)
       if (!filter) {
         throw new Error(`Filter not found: ${token.id}`)
       }
-  
-      console.log('Found filter:', filter)
-  
-      const input = this.getValue({ expression: rest, component }, prevValues, queryResult)
-      console.log('Resolved input for filter:', input)
-  
-      const result = filter.apply(input, options)
-      console.log('Filter applied, result:', result)
-  
-      return result
+
+      let result
+      try {
+        result = filter.apply(prevValues, options)
+      } catch(e) {
+        console.warn('Error in the filter', filter, 'Error:', e)
+        // Mimic behavior of liquid
+        return this.getValue(rest, component, prevValues)
+      }
+
+      return this.getValue(rest, component, result)
     }
-  
+
     default:
       console.error('Unsupported token type:', token)
       throw new Error(`Unsupported token type: ${token}`)

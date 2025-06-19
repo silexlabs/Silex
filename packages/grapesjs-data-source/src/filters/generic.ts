@@ -17,36 +17,35 @@
 
 
 import { html } from 'lit'
-import { DataSourceEditor } from '..'
-import { Filter } from '../types'
+import { DataSourceEditor, Filter } from '../types'
 
 export default function(editor: DataSourceEditor): Filter[] {
   return []
-  // TODO: implement as filter
-  return [
-    {
-      type: 'filter',
-      id: 'as',
-      label: 'as',
-      validate: field => !!field && field?.kind !== 'list',
-      output: (field, options) => field && options.type ? {
-        ...field,
-        typeIds: [options.type as string],
-      } : null,
-      apply: value => value,
-      options: {
-        type: 'String',
-      },
-      optionsForm: (selected, field, options) => html`
-        <label for="type">
-          <p>Type</p>
-          <small>The type to cast to</small>
-        </label>
-        <select class="form-control" id="type" name="type">
-          <option value="">Select a type</option>
-          ${editor.DataSourceManager.getDataTree().allTypes.map(type => html`<option value="${type.id}" .selected=${type.id === options.type}>${type.label}</option>`)}
-        </select>
-      `,
-    },
-  ]
+  //// TODO: implement this as a filter:
+  //return [
+  //  {
+  //    type: 'filter',
+  //    id: 'as',
+  //    label: 'as',
+  //    validate: field => !!field && field?.kind !== 'list',
+  //    output: (field, options) => field && options.type ? {
+  //      ...field,
+  //      typeIds: [options.type as string],
+  //    } : null,
+  //    apply: value => value,
+  //    options: {
+  //      type: 'String',
+  //    },
+  //    optionsForm: (selected, field, options) => html`
+  //      <label for="type">
+  //        <p>Type</p>
+  //        <small>The type to cast to</small>
+  //      </label>
+  //      <select class="form-control" id="type" name="type">
+  //        <option value="">Select a type</option>
+  //        ${editor.DataSourceManager.getDataTree().allTypes.map(type => html`<option value="${type.id}" .selected=${type.id === options.type}>${type.label}</option>`)}
+  //      </select>
+  //    `,
+  //  },
+  //]
 }

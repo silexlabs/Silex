@@ -16,7 +16,7 @@
  */
 
 import Backbone from 'backbone'
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from '../types'
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_CANCEL, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_DATA_LOAD_START, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceId, Filter, IDataSource, IDataSourceModel, Property, StoredToken } from '../types'
 import { DataSourceEditor, DataSourceEditorOptions } from '../types'
 import { DataTree } from './DataTree'
 import { Component, Page } from 'grapesjs'
@@ -100,7 +100,13 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     this.modelChanged()
 
     // Relay state changes to the editor
-    onStateChange((state: StoredState | null, component: Component) => this.editor.trigger(COMPONENT_STATE_CHANGED, { state, component }))
+    onStateChange((state: StoredState | null, component: Component) => {
+      this.updateData()
+      this.editor.trigger(COMPONENT_STATE_CHANGED, { state, component })
+    })
+
+    // Update data on page change
+    editor.on('canvas:frame:load', () => this.updateData())
   }
 
   /**
@@ -138,6 +144,9 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
    * Listen to data source changes
    */
   modelChanged(e?: CustomEvent) {
+    // Update current page data, keep going in the background
+    this.updateData()
+    // Synchronize the data tree with the current data sources
     this.dataTree.dataSources = this.models.map(ds => getDataSourceClass(ds)) as IDataSourceModel[]
     // Remove all listeners
     this.models.forEach((dataSource: IDataSourceModel) => {
@@ -161,6 +170,8 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
    * Listen to data source changes
    */
   modelReady(ds: IDataSource) {
+    // Update current page data, keep going in the background
+    this.updateData()
     // Forward the event
     this.editor.trigger(DATA_SOURCE_READY, ds)
   }
@@ -229,13 +240,30 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       }, {} as Record<DataSourceId, string>)
   }
 
-  async getPageValues(page: Page): Promise<Record<DataSourceId, unknown>> {
+  private currentUpdatePid = 0
+  async updateData() {
+    this.editor.trigger(DATA_SOURCE_DATA_LOAD_START)
+    const page = this.editor.Pages.getSelected()
+    if (!page) return
+    this.currentUpdatePid++
+    const data = await this.getPageData(page)
+    if (data !== 'interrupted') {
+      this.dataTree.queryResult = data
+      this.editor.trigger(DATA_SOURCE_DATA_LOAD_END, data)
+    } else {
+      console.warn(`Data update process for PID ${this.currentUpdatePid} was interrupted.`)
+      this.editor.trigger(DATA_SOURCE_DATA_LOAD_CANCEL, data)
+    }
+  }
+
+  async getPageData(page: Page): Promise<Record<DataSourceId, unknown> | 'interrupted'> {
+    const myPid = this.currentUpdatePid
     const queries = this.getPageQuery(page)
-    console.log('Generated queries:', queries)
 
     try {
       const results = await Promise.all(
         Object.entries(queries).map(async ([dataSourceId, query]) => {
+          if (myPid !== this.currentUpdatePid) return
           const ds = this.models.find(ds => ds.id === dataSourceId)
           if (!ds) {
             console.error(`Data source ${dataSourceId} not found`)
@@ -243,7 +271,6 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
           }
           try {
             const value = await ds.fetchValues(query)
-            console.log(`Fetched values for data source ${dataSourceId}:`, value)
             return { dataSourceId, value }
           } catch (err) {
             console.error(`Error fetching values for data source ${dataSourceId}:`, err)
@@ -257,9 +284,12 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
         })
       )
 
+      if (myPid !== this.currentUpdatePid) return 'interrupted'
+
       return results
         .filter(result => result !== null)
-        .reduce((acc, { dataSourceId, value }) => {
+        .reduce((acc, result) => {
+          const { dataSourceId, value } = result!
           acc[dataSourceId] = value
           return acc
         }, {} as Record<DataSourceId, unknown>)
