@@ -31,15 +31,15 @@ import { getFixedToken } from '../utils'
 
 /**
  * Editor for selected element's properties
- * 
+ *
  * Usage:
- * 
+ *
  * ```
  * <properties-editor disabled>
  *   <style> / * Custom styles * / </style>
  * </properties-editor>
  * ```
- * 
+ *
  */
 
 @customElement('properties-editor')
@@ -110,7 +110,7 @@ export class PropertiesEditor extends LitElement {
         <details class="ds-states__help">
           <summary>Help</summary>
           Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
-          <a target="_blank" href="https://docs.silex.me/en/user/cms#properties">Learn more about element properties</a>
+          <a target="_blank" href="https://docs.silex.me/en/user/cms-concepts#properties">Learn more about element properties</a>
         </details>
         <main>
           ${[
@@ -179,6 +179,7 @@ export class PropertiesEditor extends LitElement {
         name=${name}
         default-fixed=${this.defaultFixed}
         ?hide-loop-data=${hideLoopData}
+        ?show-preview-index-ui=${name === Properties.__data}
         ${ref(el => {
     // Get the stateEditor ref
     if (el) {
@@ -218,10 +219,20 @@ export class PropertiesEditor extends LitElement {
   onChange(component: Component, name: Properties, publicState: boolean) {
     const {stateEditor} = this.inputs[name]!
     if(this.redrawing) return
-    setState(component, name, {
-      expression: stateEditor.data,
-    }, publicState)
+    if (name === Properties.__data) {
+      setState(component, name, {
+        expression: stateEditor.data.slice(0, -1).concat({
+          ...stateEditor.data[stateEditor.data.length - 1],
+          previewIndex: 0,
+        } as unknown as Token),
+      }, publicState)
+    } else {
+      setState(component, name, {
+        expression: stateEditor.data,
+      }, publicState)
+    }
   }
+
   getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []

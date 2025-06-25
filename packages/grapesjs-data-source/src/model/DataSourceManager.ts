@@ -22,7 +22,7 @@ import { DataTree } from './DataTree'
 import { Component, Page } from 'grapesjs'
 import { StoredState, onStateChange } from './state'
 import getLiquidFilters from '../filters/liquid'
-import getGenericFilters from '../filters/generic'
+// import getGenericFilters from '../filters/generic'
 import { getComponentDebug, NOTIFICATION_GROUP } from '../utils'
 
 /**
@@ -61,7 +61,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       // Include preset from filters/
       if (typeof options.filters === 'string') {
         return [
-          ...getGenericFilters(editor),
+          // ...getGenericFilters(editor),
           ...getLiquidFilters(editor),
         ]
       } else {
@@ -71,7 +71,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
             if (typeof filter === 'string') {
               switch (filter) {
               case 'liquid': return getLiquidFilters(editor)
-              case 'generic': return getGenericFilters(editor)
+              // case 'generic': return getGenericFilters(editor)
               default: throw new Error(`Unknown filters ${filter}`)
               }
             } else {
@@ -218,7 +218,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
             // So this is a property
             const first = e[0] as Property
             // Keep only the expressions for the current data source
-            return first.dataSourceId === ds.id
+            return first?.dataSourceId === ds.id
           })
         const trees = this.dataTree.toTrees(dsExpressions, ds.id)
         if(trees.length === 0) {

@@ -214,129 +214,166 @@ export const PROPERTY_STYLES = `
     border-radius: 2px;
     margin-right: 5px;
   }
-  .ds-section details {
-    margin: 2px;
-    padding: 10px;
-    padding-top: 0;
-    background-color: transparent;
-    border-radius: 2px;
-    color: var(--ds-secondary);
-    text-align: left;
-  }
-  .ds-section details[open] {
-    background-color: var(--ds-tertiary);
-  }
-  .ds-section details summary {
-    color: var(--ds-secondary);
-    cursor: pointer;
-    padding: 10px 0;
-  }
-  .ds-section details a {
-    color: var(--ds-link-color);
-  }
-  .ds-section details .ds-states__help-link {
-    display: block;
-  }
-  .ds-section .gjs-traits-label {
-    background-color: var(--ds-tertiary);
-  }
-  .ds-section main {
-    display: flex;
-    flex-direction: column;
-  }
-  .ds-slot-fixed {
-    width: 100%;
-  }
-  .ds-section select {
-    width: 150px;
-    flex: 0;
-    margin: 5px;
-    padding: 5px;
-    background-color: var(--ds-tertiary);
-    border-radius: 2px;
-    color: var(--ds-secondary);
-    border: 1px solid rgba(0,0,0,.15);
-    cursor: pointer;
-    font-size: medium;
-  }
-  .ds-section input.ds-expression-input__fixed {
-    color: var(--ds-secondary);
-    padding: 10px;
-    border: none;
-    background-color: transparent;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .ds-section .ds-expression-input__add {
-    max-width: 40px;
-    text-align: center;
-    font-size: large;
-    padding-right: 9px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    text-indent: 1px;
-    text-overflow: '';
-  }
-  .ds-section .ds-expression-input__add option {
-    font-size: medium;
-  }
-  .ds-section .ds-expression-input__options-button {
-    background-color: transparent;
-    border: none;
-    color: var(--ds-secondary);
-    cursor: pointer;
-    padding: 0;
-    margin: 10px;
-    margin-left: 0;
-  }
-  .ds-section label.ds-label {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    color: var(--ds-secondary);
-  }
-  .ds-section label.ds-label--disabled {
-    justify-content: space-between;
-  }
-  .ds-section label.ds-label--disabled .ds-label__message {
-    opacity: .5;
+  .ds-section {
+    &:last-child {
+      margin-bottom: 100px;
+    }
+    details {
+      margin: 2px;
+      padding: 10px;
+      padding-top: 0;
+      background-color: transparent;
+      border-radius: 2px;
+      color: var(--ds-secondary);
+      text-align: left;
+    }
+    details[open] {
+      background-color: var(--ds-tertiary);
+    }
+    details summary {
+      color: var(--ds-secondary);
+      cursor: pointer;
+      padding: 10px 0;
+    }
+    details a {
+      color: var(--ds-link-color);
+    }
+    details .ds-states__help-link {
+      display: block;
+    }
+    .gjs-traits-label {
+      background-color: var(--ds-tertiary);
+    }
+    main {
+      display: flex;
+      flex-direction: column;
+    }
+    .ds-slot-fixed {
+      width: 100%;
+    }
+    select {
+      width: 150px;
+      flex: 0;
+      margin: 5px;
+      padding: 5px;
+      background-color: var(--ds-tertiary);
+      border-radius: 2px;
+      color: var(--ds-secondary);
+      border: 1px solid rgba(0,0,0,.15);
+      cursor: pointer;
+      font-size: medium;
+    }
+    input.ds-expression-input__fixed {
+      color: var(--ds-secondary);
+      padding: 10px;
+      border: none;
+      background-color: transparent;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .ds-expression-input__add {
+      max-width: 40px;
+      text-align: center;
+      font-size: large;
+      padding-right: 9px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      text-indent: 1px;
+      text-overflow: '';
+    }
+    .ds-expression-input__add option {
+      font-size: medium;
+    }
+    .ds-expression-input__options-button {
+      background-color: transparent;
+      border: none;
+      color: var(--ds-secondary);
+      cursor: pointer;
+      padding: 0;
+      margin: 10px;
+      margin-left: 0;
+    }
+    label.ds-label {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      color: var(--ds-secondary);
+    }
+    label.ds-label--disabled {
+      justify-content: space-between;
+    }
+    label.ds-label--disabled .ds-label__message {
+      opacity: .5;
+    }
+    select.ds-visibility__condition-operator {
+      margin: 10px;
+    }
   }
   /* States CSS Styles */
   .ds-states {
     display: flex;
     flex-direction: column;
   }
-  .ds-states__buttons {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    margin: 0 5px;
-  }
-  .ds-states__button {
-    cursor: pointer;
-    border: 1px solid var(--ds-button-border);
-    border-radius: 2px;
-    padding: 5px;
-    background: var(--ds-button-bg);
-    color: var(--ds-button-color);
-    flex: 1;
-    margin: 5px;
-    max-width: 40px;
-  }
-  .ds-states__button--disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-  .ds-states__remove-button {
-    margin-left: 1em;
-  }
-  .ds-states__sep {
-    width: 100%;
-    border: none;
-    height: 1px;
-    background: var(--ds-button-bg);
-  }
-  .ds-section select.ds-visibility__condition-operator {
-    margin: 10px;
+    .ds-states__buttons {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      margin: 0 5px;
+    }
+    .ds-states__button {
+      cursor: pointer;
+      border: 1px solid var(--ds-button-border);
+      border-radius: 2px;
+      padding: 5px;
+      background: var(--ds-button-bg);
+      color: var(--ds-button-color);
+      flex: 1;
+      margin: 5px;
+      max-width: 40px;
+    }
+    .ds-states__button--disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .ds-states__remove-button {
+      margin-left: 1em;
+    }
+    .ds-states__sep {
+      width: 100%;
+      border: none;
+      height: 1px;
+      background: var(--ds-button-bg);
+    }
+  /* real data */
+  .ds-real-data {
+    code {
+      overflow-x: hidden;
+      text-wrap: nowrap;
+      display: block;
+      padding: 0 10px;
+      text-overflow: ellipsis;
+      margin-top: -5px;
+      margin-bottom: 10px;
+      text-align: right;
+    }
+    .ds-real-data__preview-index {
+      display: flex;
+      input {
+        margin: 10px;
+      }
+      input[type="range"] {
+        flex-grow: 1;
+      }
+      input[type="number"] {
+        color: white;
+        background-color: var(--ds-lowlight);
+        border-radius: 2px;
+        box-sizing: border-box;
+        margin: 10px;
+        border: none;
+        padding: 5px;
+        padding-left: 10px;
+      }
+    }
   }
 `

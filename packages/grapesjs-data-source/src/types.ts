@@ -85,7 +85,7 @@ export interface IDataSource {
   getQuery(trees: Tree[]): string
 
   // Access data
-  fetchValues(query: string): Promise<unknown[]>
+  fetchValues(query: string): Promise<unknown>
 }
 export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
@@ -141,6 +141,7 @@ export interface Field {
   kind: FieldKind
   dataSourceId?: DataSourceId
   arguments?: FieldArgument[]
+  previewIndex?: number
 }
 
 // **
@@ -173,6 +174,7 @@ export interface StoredProperty extends BaseProperty {
   label: string
   kind: FieldKind
   options?: PropertyOptions
+  previewIndex?: number
 }
 export interface Property extends StoredProperty {
   optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null
@@ -191,6 +193,7 @@ export interface StoredFilter {
   options: Options
   quotedOptions?: string[]
   optionsKeys?: string[] // Optional, used to set a specific order
+  previewIndex?: number
 }
 export interface Filter extends StoredFilter {
   optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null
@@ -206,6 +209,7 @@ export type StateId = string
 export interface State {
   type: 'state'
   storedStateId: StateId // Id of the state stored in the component
+  previewIndex?: number
   label: string
   componentId: string
   exposed: boolean

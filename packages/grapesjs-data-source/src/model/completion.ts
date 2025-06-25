@@ -31,6 +31,7 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
         .map((stateId: StateId): State => ({
           type: 'state',
           storedStateId: stateId,
+          previewIndex: 8888,
           label: getState(parent, stateId, true)?.label || stateId,
           componentId: getOrCreatePersistantId(parent),
           exposed: true,
@@ -48,6 +49,7 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
                 type: 'state',
                 storedStateId: '__data',
                 componentId: getOrCreatePersistantId(parent),
+                previewIndex: loopDataField.previewIndex,
                 exposed: false,
                 forceKind: 'object', // FIXME: this may be a scalar
                 label: `Loop data (${loopDataField.label})`,
@@ -148,7 +150,7 @@ export function getCompletion(options: { component: Component, expression: Expre
       // To token
       .flatMap(
         (fieldOfField: Field): Token[] => {
-          // const t: Type | null = this.findType(field.typeIds, field.dataSourceId) 
+          // const t: Type | null = this.findType(field.typeIds, field.dataSourceId)
           // if(!t) throw new Error(`Type ${field.typeIds} not found`)
           return fieldOfField.typeIds.map((typeId: TypeId) => ({
             ...fieldToToken(fieldOfField),

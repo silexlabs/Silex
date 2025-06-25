@@ -4,7 +4,7 @@ import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
 import { DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditor, DataSourceEditorViewOptions, IDataSourceModel } from '../types'
 import { getDefaultOptions, getElementFromOption } from '../utils'
 import { css, html, LitElement, render } from 'lit'
-import { customElement, property } from 'lit/decorators.js'
+import { property } from 'lit/decorators.js'
 
 const COMMON_STYLES = css`
     :host {
@@ -186,7 +186,7 @@ if(!customElements.get('ds-settings')) {
   customElements.define('ds-settings', SettingsDataSources)
 }
 
- 
+
 class SettingsDataSource extends LitElement {
   @property({ type: Object })
     dataSource: IDataSourceModel | null

@@ -140,6 +140,7 @@ export function propertyToField(property: Property, dataTree: DataTree, componen
     kind: property.kind,
     dataSourceId: property.dataSourceId,
     arguments: args,
+    previewIndex: property.previewIndex,
   }
 }
 

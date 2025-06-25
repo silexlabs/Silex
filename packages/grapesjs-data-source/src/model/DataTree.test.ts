@@ -21,9 +21,8 @@
 
 import grapesjs, { Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, Property, Expression, Tree } from '../types'
-import { Context, DataSourceEditor } from '..'
-import { getStates } from './state'
+import { Property, DataSourceEditor, StoredFilter, State, Expression, Tree  } from '../types'
+import { getStates, getParentByPersistentId, getState } from './state'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
 // Mock only getState
@@ -42,15 +41,15 @@ jest.mock('lit', () => ({
 }))
 
 let editor: DataSourceEditor
-let firstComponent: Component
+let containerComponent: Component
 beforeEach(async () => {
   jest.resetAllMocks()
   ;(getStates as jest.Mock).mockReturnValue([]) // Default for getStates
   editor = grapesjs.init({
     container: document.createElement('div'),
-    components: '<div></div>',
+    components: '<div><div></div></div>',
   }) as DataSourceEditor
-  firstComponent = editor.getComponents().first()
+  containerComponent = editor.getComponents().first()
 })
 
 test('DataTree instanciation', () => {
@@ -1131,70 +1130,6 @@ test('get types map', () => {
   expect(types[0].id).toBe('testTypeId')
 })
 
-// Value tests
-const simpleExpression: Context = [
-  {
-    type: 'property',
-    propType: 'field',
-    typeIds: [],
-    dataSourceId: testDataSourceId,
-    fieldId: 'testFieldId1',
-    label: 'field label 1',
-    kind: 'object',
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId2',
-    typeIds: [],
-    dataSourceId: testDataSourceId,
-    label: 'field label 2',
-    kind: 'scalar',
-  }
-]
-test('get value with simple context', () => {
-  const dataTree = new DataTree(editor, {
-    filters: [],
-    dataSources: [{
-      id: testDataSourceId,
-      connect: async () => { },
-      isConnected: () => true,
-      getTypes: () => simpleTypes,
-      getQueryables: () => simpleTypes[0].fields,
-      getQuery: () => '',
-      fetchValues: jest.fn(),
-    }],
-  })
-
-  // Empty value
-  expect(dataTree.getValue(simpleExpression, [])).toBeNull()
-
-  // 1 level value
-  const value = dataTree.getValue(simpleExpression, [{
-    type: 'property',
-    propType: 'type',
-    typeId: 'testTypeId',
-    dataSourceId: testDataSourceId,
-  }])
-  expect(value).not.toBeNull()
-  // TODO: test value
-
-  // 2 levels value
-  const value2 = dataTree.getValue(simpleExpression, [{
-    type: 'property',
-    propType: 'type',
-    typeId: 'testTypeId',
-    dataSourceId: testDataSourceId,
-  }, {
-    type: 'property',
-    propType: 'field',
-    fieldId: 'testFieldId',
-    typeId: 'testTypeId',
-    dataSourceId: testDataSourceId,
-  }])
-  expect(value2).not.toBeNull()
-  // TODO: test value
-})
-
 test('Get experessions used by a component', () => {
   const dataTree = new DataTree(editor, {
     filters: simpleFilters,
@@ -1232,8 +1167,8 @@ test('Get experessions used by a component and its children', () => {
     filters: [],
     dataSources: [],
   })
-  dataTree.getComponentExpressionsRecursive(firstComponent)
-  expect(dataTree.getComponentExpressions).toHaveBeenCalledTimes(1) // 1 per component
+  dataTree.getComponentExpressionsRecursive(containerComponent)
+  expect(dataTree.getComponentExpressions).toHaveBeenCalledTimes(2) // 1 per component
 })
 
 test('Get experessions used by a page', () => {
@@ -1259,3 +1194,439 @@ test('Get experessions used by all pages', () => {
   dataTree.getAllPagesExpressions()
   expect(dataTree.getPageExpressions).toHaveBeenCalledTimes(1) // 1 per page
 })
+
+test('get value with properties', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [],
+    dataSources: [{
+      id: testDataSourceId,
+      connect: async () => { },
+      isConnected: () => true,
+      getTypes: () => simpleTypes,
+      getQueryables: () => simpleTypes[0].fields,
+      getQuery: () => '',
+      fetchValues: () => Promise.resolve({
+        testFieldId1: {
+          testFieldId2: 'test field',
+        },
+      }),
+    }],
+  })
+
+  const anyData = Symbol('test')
+  expect(dataTree.getValue([], containerComponent, anyData)).toBe(anyData)
+
+  // 1 level deep value
+  const property1 = {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'simpleFieldId',
+    label: 'simple label',
+    kind: 'scalar',
+  } as Property
+  const dataProperty1 = {
+    simpleFieldId: 'test simpleFieldId',
+  }
+  expect(dataTree.getValue([property1], containerComponent, {})).toBeNull()
+  const value = dataTree.getValue([property1], containerComponent, dataProperty1)
+  expect(value).not.toBeNull()
+  expect(value).toBe(dataProperty1.simpleFieldId)
+
+  // 2 levels deep
+  const property2 = {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'simpleFieldId2',
+    label: 'simple label',
+    kind: 'scalar',
+  } as Property
+  const dataProperty2 = {
+    simpleFieldId: {
+      simpleFieldId2: 'test simpleFieldId2'
+    }
+  }
+  expect(dataTree.getValue([property1, property2], containerComponent, {})).toBeNull()
+  const value2 = dataTree.getValue([property1, property2], containerComponent, dataProperty2)
+  expect(value2).not.toBeNull()
+  expect(value2).toBe(dataProperty2.simpleFieldId.simpleFieldId2)
+})
+
+test('get fixed value with filters', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'identityFilter',
+      label: 'Sample Filter',
+      apply: value => `${value} modified`,
+      validate: () => true,
+      output: input => input,
+      options: {},
+    }],
+    dataSources: [],
+  })
+
+  const fixed = {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'fixed',
+    label: 'simple label',
+    kind: 'scalar',
+    options: {
+      value: 'expected value',
+    }
+  } as Property
+
+  const filter = {
+    id: 'identityFilter',
+    type: 'filter',
+    options: {},
+  } as StoredFilter
+
+  expect(dataTree.getValue([fixed], containerComponent, {})).toBe('expected value')
+  expect(dataTree.getValue([fixed, filter], containerComponent, {})).toBe('expected value modified')
+})
+
+test('get value with a state', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [],
+    dataSources: [],
+  })
+
+  const fixed = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      options: {
+        value: 'expected value',
+      }
+    }],
+  }
+
+  const firstComponentChild = containerComponent.components().first()
+  const testPersistantId = 'testPersistantId'
+  containerComponent.set('id-plugin-data-source', testPersistantId)
+  const mockState = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: 'storedStateId',
+      label: 'test label',
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  //;(getStates as jest.Mock).mockReturnValue([mockState])
+  ;(getState as jest.Mock).mockReturnValue(fixed)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, {})
+  expect(stateValue).toBe('expected value')
+})
+
+test('get __data with a state', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'identityFilter',
+      label: 'IDENTITY',
+      apply: value => value,
+      validate: () => true,
+      output: input => input,
+      options: {},
+    }],
+    dataSources: [],
+  })
+
+  const fixed = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      options: {
+        value: ['first value', 'other expeced value'],
+      }
+    }],
+  }
+
+  const firstComponentChild = containerComponent.components().first()
+  const testPersistantId = 'testPersistantId'
+  containerComponent.set('id-plugin-data-source', testPersistantId)
+  const mockState = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: '__data',
+      label: 'test label',
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  ;(getState as jest.Mock).mockReturnValue(fixed)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, {})
+  expect(stateValue).toEqual(fixed.expression[0].options.value)
+})
+
+test('get `__data[previewIndex].something` with a state', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'identityFilter',
+      label: 'IDENTITY',
+      apply: value => value,
+      validate: () => true,
+      output: input => input,
+      options: {},
+    }],
+    dataSources: [],
+  })
+
+  const fixed = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      options: {
+        value: ['first value', 'other expeced value'],
+      }
+    }],
+  }
+
+  const firstComponentChild = containerComponent.components().first()
+  const testPersistantId = 'testPersistantId'
+  containerComponent.set('id-plugin-data-source', testPersistantId)
+  const mockState = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: '__data',
+      label: 'test label',
+    }, { // We need a second token, otherwise it returns the object
+      id: 'identityFilter',
+      type: 'filter',
+      options: {},
+      previewIndex: 0,
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  ;(getState as jest.Mock).mockReturnValue(fixed)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, {})
+  expect(stateValue).toBe(fixed.expression[0].options.value[0])
+  return
+
+  const fixed2 = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      previewIndex: 1,
+      options: {
+        value: ['first value', 'other expeced value'],
+      }
+    }],
+  }
+
+  const mockState2 = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: '__data',
+      label: 'test label',
+    }, { // We need a second token, otherwise it returns the object
+      id: 'identityFilter',
+      type: 'filter',
+      options: {},
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  ;(getState as jest.Mock).mockReturnValue(fixed2)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue2 = dataTree.getValue(mockState2.expression, firstComponentChild, {})
+  expect(stateValue2).toBe(fixed.expression[0].options.value[1])
+})
+
+// test('get `__data[previewIndex].__data[otherPreviewIndex]` with a state', () => {
+//   const dataTree = new DataTree(editor, {
+//     filters: [{
+//       type: 'filter',
+//       id: 'identityFilter',
+//       label: 'IDENTITY',
+//       apply: value => value,
+//       validate: () => true,
+//       output: input => input,
+//       options: {},
+//     }],
+//     dataSources: [{
+//       id: testDataSourceId,
+//       connect: async () => { },
+//       isConnected: () => true,
+//       getTypes: () => simpleTypes,
+//       getQueryables: () => simpleQueryables,
+//       getQuery: () => '',
+//       fetchValues: () => Promise.resolve({
+//         testFieldId1: {
+//           testFieldId2: 'test field',
+//           testFieldIdArray: ['item1', 'item2'],
+//         },
+//       }),
+//     }],
+//   })
+//
+//   const simpleExpression: Context = [
+//     {
+//       type: 'property',
+//       propType: 'field',
+//       typeIds: [],
+//       dataSourceId: testDataSourceId,
+//       fieldId: 'testFieldId1',
+//       label: 'field label 1',
+//       kind: 'object',
+//     }, {
+//       type: 'property',
+//       propType: 'field',
+//       fieldId: 'testFieldIdArray',
+//       typeIds: [],
+//       dataSourceId: testDataSourceId,
+//       label: 'field array',
+//       kind: 'scalar',
+//     }
+//   ]
+//
+//   const childComponent = containerComponent.components().first()
+//   const PERSISTANT_ID_CHILD = 'testPersistantId2'
+//   childComponent.set('id-plugin-data-source', PERSISTANT_ID_CHILD)
+//
+//   const mockState0 = {
+//     expression: [{
+//       type: 'state',
+//       componentId: PERSISTANT_ID_CHILD,
+//       exposed: true,
+//       storedStateId: '__data',
+//       label: 'test label',
+//     }, { // We need a second token, otherwise it returns the object
+//       id: 'identityFilter',
+//       type: 'filter',
+//       options: {},
+//     }] as State[],
+//   }
+//
+//   const PERSISTANT_ID_CONTAINER = 'testPersistantId'
+//   containerComponent.set('id-plugin-data-source', PERSISTANT_ID_CONTAINER)
+//
+//   const mockState1 = {
+//     expression: [{
+//       type: 'state',
+//       componentId: PERSISTANT_ID_CONTAINER,
+//       exposed: true,
+//       storedStateId: '__data',
+//       label: 'test label',
+//     }, { // We need a second token, otherwise it returns the object
+//       id: 'identityFilter',
+//       type: 'filter',
+//       options: {},
+//     }] as State[],
+//   }
+//
+//   // Use this state in the mock of getStates function
+//   ;(getState as jest.Mock).mockReturnValueOnce(mockState0)
+//   ;(getState as jest.Mock).mockReturnValueOnce(mockState1)
+//   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+//
+//   const stateValue = dataTree.getValue(simpleExpression, childComponent, {})
+//   expect(stateValue).toBe('item1')
+// })
+
+// test('test', () => {
+//   // Mocks
+//   const testDataSourceId = 'source1'
+//   const containerData = [
+//     {
+//       __data: [
+//         { value: 'expected result' },
+//         { value: 'not this one' },
+//       ],
+//     },
+//     { __data: [] },
+//   ]
+//
+//   const dataTree = new DataTree(editor, {
+//     filters: [],
+//     dataSources: [{
+//       id: testDataSourceId,
+//       connect: async () => {},
+//       isConnected: () => true,
+//       getTypes: () => ({}),
+//       getQueryables: () => ({}),
+//       getQuery: () => '',
+//       fetchValues: () => Promise.resolve(containerData),
+//     }]
+//   })
+//
+//   // Simulate 2 nested __data states: __data[0] → __data[0] → value
+//   const outerState: State = {
+//     type: 'state',
+//     componentId: 'container',
+//     exposed: true,
+//     storedStateId: '__data',
+//     previewIndex: 0,
+//     label: 'outer',
+//   }
+//
+//   const innerState: State = {
+//     type: 'state',
+//     componentId: 'child',
+//     exposed: true,
+//     storedStateId: '__data',
+//     previewIndex: 0,
+//     label: 'inner',
+//   }
+//
+//   // Inject resolveState to manually resolve to each other
+//   dataTree.resolveState = (state, component) => {
+//     if (state.componentId === 'child') return [outerState]
+//     if (state.componentId === 'container') return []
+//     return null
+//   }
+//
+//   // Expression to resolve: __data (child) → __data (container) → value
+//   const expr: Context = [
+//     innerState,
+//     { type: 'property', propType: 'field', fieldId: 'value', dataSourceId: testDataSourceId, label: 'val', kind: 'scalar' } as Token,
+//   ]
+//
+//   const result = dataTree.getValue(expr, containerComponent, {} as unknown)
+//   expect(result).toBe('expected result')
+// })

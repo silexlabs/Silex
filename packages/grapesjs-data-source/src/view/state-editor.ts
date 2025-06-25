@@ -17,11 +17,10 @@
 
 import {LitElement, TemplateResult, html} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
-import { PROPERTY_STYLES } from './defaultStyles'
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DataSourceEditor, Filter, Property, Token } from '../types'
-
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
+import { PROPERTY_STYLES } from './defaultStyles'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DataSourceEditor, Filter, Property, State, StoredProperty, Token } from '../types'
 import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
 import { ExpressionInput, PopinForm } from '@silexlabs/expression-input'
 import { Component } from 'grapesjs'
@@ -29,6 +28,9 @@ import { Component } from 'grapesjs'
 import '@silexlabs/expression-input'
 import { getCompletion } from '../model/completion'
 import { fromStored, getExpressionResultType } from '../model/token'
+import { StoredState, StoredStateWithId } from '../model/state'
+
+const PREVIEW_INDEX_CHANGED = 'PREVIEW_INDEX_CHANGED'
 
 /**
  * Editor for a state of the selected element's properties
@@ -61,6 +63,11 @@ export class StateEditor extends LitElement {
   @property({type: Boolean, attribute: 'hide-loop-data'})
     hideLoopData = false
 
+  /**
+   * If true, will show a UI to edit previewIndex of __data
+   */
+  @property({type: Boolean, attribute: 'show-preview-index-ui'})
+    showPreviewIndexUi = false
   /**
    * used in the expressions found in filters options
    * This will be used to filter states which are not defined yet
@@ -115,6 +122,11 @@ export class StateEditor extends LitElement {
     for = ''
 
   /**
+   * The previewIndex for the loop data
+   */
+  @property({ type: Number }) previewIndex = 0
+
+  /**
    * Binded listeners
    */
   private onFormdata_ = this.onFormdata.bind(this)
@@ -132,13 +144,13 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, () => this.renderBinded())
+    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED}`, () => this.renderBinded())
   }
 
   override disconnectedCallback() {
     this.form = null
     super.disconnectedCallback()
-    this.editor?.off(DATA_SOURCE_CHANGED, this.renderBinded)
+    this.editor?.off(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED}`, this.renderBinded)
   }
 
   /**
@@ -239,7 +251,6 @@ export class StateEditor extends LitElement {
 
   private redrawing = false
   private expressionInputRef = createRef<ExpressionInput>()
-  private resultRef = createRef<HTMLElement>()
   private popinsRef: Ref<PopinForm>[] = []
 
   override render() {
@@ -280,13 +291,16 @@ export class StateEditor extends LitElement {
     // Fixed text
     const text = fixed ? (_currentValue![0] as Property)?.options?.value || '' : ''
 
-    let value = '' as unknown
+    let currentData = '' as unknown
     try {
-      value = dataTree.getValue(_currentValue || [], selected)
-      console.log('===========', { value, _currentValue, selected })
+      const realData = dataTree.getValue(_currentValue || [], selected)
+      currentData = realData
     } catch(e) {
-      console.log('==??????', e)
+      console.error('Current data could not be retrieved:', e)
     }
+    if (typeof currentData === 'undefined' || currentData === null) currentData = ''
+    const currentDataArrayLength = Array.isArray(currentData) ? (currentData as Array<unknown>).length : 0
+    const previewIndex = (_currentValue[_currentValue.length - 1] as State)?.previewIndex
 
     // Build the expression input
     const result = html`
@@ -403,12 +417,43 @@ export class StateEditor extends LitElement {
           </select>
       ` : ''}
       </expression-input>
-      <span
-        ${ref(this.resultRef)}
-      >${value}</span>
-    `
+      <div class="ds-real-data">
+        <code class="ds-real-data__display">
+          ${Array.isArray(currentData) ? html`${currentData.length} objects with ${Object.keys(currentData[0] || {}).filter(k => k !== '__typename').join(', ')}` : currentData}
+        </code>
+        ${this.showPreviewIndexUi && (currentDataArrayLength > 0 && typeof previewIndex !== 'undefined') ? html`
+        <div class="ds-real-data__preview-index">
+          <input
+            type="range"
+            step="1"
+            min="0"
+            .max=${currentDataArrayLength - 1}
+            .value=${this.previewIndex}
+            @input=${(event: InputEvent) => this.onChangePreview(parseInt((event.target as HTMLInputElement).value))}
+          >
+          <input
+            type="number"
+            step="1"
+            min="0"
+            .max=${currentDataArrayLength - 1}
+            .value=${this.previewIndex}
+            @input=${(event: InputEvent) => this.onChangePreview(parseInt((event.target as HTMLInputElement).value))}
+          >
+          ` : ''}
+        </div>
+        `
     this.redrawing = false
     return result
+  }
+
+  private onChangePreview(index: number) {
+    const state = this._selected?.attributes.privateStates.find((s: StoredStateWithId) => s.id === '__data') as StoredState
+    if(state?.expression.length > 0) {
+      const token = state.expression[state.expression.length - 1] as StoredProperty
+      token.previewIndex = index
+    }
+    this.previewIndex = index
+    this.editor?.trigger(PREVIEW_INDEX_CHANGED)
   }
 
   private onChangeValue(event: Event) {

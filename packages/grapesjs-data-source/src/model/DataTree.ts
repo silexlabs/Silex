@@ -17,7 +17,7 @@
 
 import { Component, Page } from 'grapesjs'
 import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
-import { getState, getParentByPersistentId, getStates } from './state'
+import { getState, getParentByPersistentId, getStates, getPersistantId } from './state'
 import { fromStored, getOptionObject } from './token'
 import { FIXED_TOKEN_ID, getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
 
@@ -208,34 +208,45 @@ export class DataTree {
 
     switch (token.type) {
     case 'state': {
-      const resolvedExpression = this.resolveState(token, component)
+      const state = token as State
+      const resolvedExpression = this.resolveState(state, component)
       if (!resolvedExpression) {
-        throw new Error(`Unable to resolve state: ${JSON.stringify(token)}`)
+        throw new Error(`Unable to resolve state: ${JSON.stringify(state)}`)
       }
-      return this.getValue(resolvedExpression, component, prevValues)
+      // if(state.storedStateId === '__data' && rest.length > 0) {
+      //   const stateValue = this.getValue(resolvedExpression, component, prevValues)
+      //   if (!Array.isArray(stateValue)) {
+      //     console.error('__data is being accessed with non-array data', {prevValues, state, resolvedExpression})
+      //     throw new Error('__data with non-array data')
+      //   }
+      //   const { previewIndex } = resolvedExpression.slice(-1)[0] as State
+      //   return this.getValue(rest, component, stateValue[previewIndex || 0])
+      // }
+      return this.getValue(resolvedExpression.concat(...rest), component, prevValues)
     }
 
     case 'property': {
+      // Handle the case of a "fixed" property (hard coded string set by the user)
       if (token.fieldId === FIXED_TOKEN_ID) {
-        return token.options?.value
+        return this.getValue(rest, component, token.options?.value)
       }
 
-      if (!token.dataSourceId) {
-        throw new Error(`Data source ID is missing for token: ${JSON.stringify(token)}`)
-      }
-
-      const prevObj = prevValues ? prevValues : this.queryResult[token.dataSourceId]
-      if (!prevObj) {
-        throw new Error(`No query result found for data source ID: ${token.dataSourceId}`)
-      }
-
-      let value = null
-      if(Array.isArray(prevObj)) {
-        value = prevObj.map(item => item[token.fieldId])
-        value = value[0] // FIXME: we need some kind of index
+      // Handle the case where the property refers to the first level of the data source
+      // Or it can be a key in the previewly computed data
+      let prevObj
+      if (typeof prevValues === 'undefined' || prevValues === null) {
+        if (!token.dataSourceId) {
+          throw new Error(`Data source ID is missing for token: ${JSON.stringify(token)}`)
+        }
+        prevObj = this.queryResult[token.dataSourceId]
       } else {
-        value = (prevObj as Record<string, unknown>)[token.fieldId]
+        prevObj = prevValues
       }
+
+      // Now get the next value
+      let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
+
+      value = this.handlePreviewIndex(value, token)
 
       return this.getValue(rest, component, value)
     }
@@ -250,22 +261,34 @@ export class DataTree {
         throw new Error(`Filter not found: ${token.id}`)
       }
 
-      let result
+      let value
       try {
-        result = filter.apply(prevValues, options)
+        value = filter.apply(prevValues, options)
       } catch(e) {
         console.warn('Error in the filter', filter, 'Error:', e)
         // Mimic behavior of liquid
         return this.getValue(rest, component, prevValues)
       }
 
-      return this.getValue(rest, component, result)
+      value = this.handlePreviewIndex(value, token)
+
+      return this.getValue(rest, component, value)
     }
 
     default:
       console.error('Unsupported token type:', token)
       throw new Error(`Unsupported token type: ${token}`)
     }
+  }
+
+  /**
+   * Handle preview index for a given value and token
+   */
+  handlePreviewIndex(value: unknown, token: StoredToken): unknown {
+    if (!Array.isArray(value) || typeof token.previewIndex === 'undefined' /* && rest.length > 0 */) {
+      return value
+    }
+    return value[token.previewIndex] ?? null
   }
 
   /**
@@ -503,13 +526,13 @@ export class DataTree {
   resolveState(state: State, component: Component): Expression | null {
     const parent = getParentByPersistentId(state.componentId, component)
     if (!parent) {
-      console.warn('Component not found for state', state)
+      console.error('Component not found for state', state, component.get('id-plugin-data-source'), component.parent()?.get('id-plugin-data-source'), getPersistantId(component.parent()!))
       return null
     }
     // Get the expression of the state
     const storedState = getState(parent, state.storedStateId, state.exposed)
     if (!storedState?.expression) {
-      console.warn('State is not defined on component', parent, state)
+      console.warn('State is not defined on component', parent.getId(), state, storedState)
       return null
     }
     return storedState.expression
