@@ -117,12 +117,19 @@
 #gjs-clm-tags-field.gjs-field {
   margin: 0;
 }
+.gjs-field.gjs-field-integer {
+  width: 100%;
+}
 .gjs-clm-tags {
   padding-top: 7px;
   padding-bottom: 0;
 }
 #gjs-clm-up {
   margin-top: 0;
+}
+.gjs-sm-icon[title]:not([title=""])::after {
+  content: "?";
+  margin-left: 0.5em;
 }
 
 /*
