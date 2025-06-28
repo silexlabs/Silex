@@ -227,8 +227,8 @@ export default (editor: Editor, opts) => {
       defaults: '',
       options: [
         { id: '', value: '', name: '' },
-        { id: 'auto', value: 'auto', name: 'Auto' },
-        { id: 'smooth', value: 'smooth', name: 'Smooth' }
+        { id: 'auto', value: 'auto', name: 'auto' },
+        { id: 'smooth', value: 'smooth', name: 'smooth' }
       ],
       info: 'Sets smooth or auto scroll behavior.',
     }, { at: 7 })
@@ -711,6 +711,15 @@ export default (editor: Editor, opts) => {
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
     }, { at: 6 })
     editor.StyleManager.addProperty('extra', {
+      name: 'Row Gap',
+      property: 'row-gap',
+      type: 'integer',
+      units: ['px', '%', 'em'],
+      info: 'The row-gap CSS property sets the size of the gap (gutter) between an element\'s rows.',
+      default: '',
+      fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
+    }, { at: 7 })
+    editor.StyleManager.addProperty('extra', {
       name: 'Column rule',
       property: 'column-rule',
       type: 'composite',
@@ -749,7 +758,7 @@ export default (editor: Editor, opts) => {
         defaults: '',
         info: 'The column-rule-color CSS property sets the color of the line drawn between columns in a multi-column layout.',
       }],
-    }, { at: 7 })
+    }, { at: 8 })
     editor.StyleManager.addProperty('extra', {
       name: 'Column span',
       property: 'column-span',
@@ -761,7 +770,7 @@ export default (editor: Editor, opts) => {
         { id: 'all', value: 'all', name: 'all' },
       ],
       info: 'The column-span CSS property makes it possible for an element to span across all columns when its value is set to all.',
-    }, { at: 8 })
+    }, { at: 9 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Snap Type',
       property: 'scroll-snap-type',
@@ -792,7 +801,7 @@ export default (editor: Editor, opts) => {
         ],
       }],
       info: 'The scroll-snap-type CSS property sets the direction and mode of enforced snap points on the scroll container.',
-    }, { at: 9 })
+    }, { at: 10 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Padding',
       property: 'scroll-padding',
@@ -800,7 +809,7 @@ export default (editor: Editor, opts) => {
       defaults: '',
       units: ['px', 'em', 'rem', '%'],
       info: 'Defines offsets for scroll snapping.',
-    }, { at: 10 })
+    }, { at: 11 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Snap Align',
       property: 'scroll-snap-align',
@@ -814,7 +823,7 @@ export default (editor: Editor, opts) => {
         { id: 'center', value: 'center', name: 'center' },
       ],
       info: 'Aligns elements to scroll snaps.',
-    }, { at: 10 })
+    }, { at: 11 })
 
     function refreshContentProp() {
       const state = editor.SelectorManager.getState()
