@@ -1214,7 +1214,7 @@ test('get value with properties', () => {
   })
 
   const anyData = Symbol('test')
-  expect(dataTree.getValue([], containerComponent, anyData)).toBe(anyData)
+  expect(dataTree.getValue([], containerComponent, false, anyData)).toBe(anyData)
 
   // 1 level deep value
   const property1 = {
@@ -1229,8 +1229,8 @@ test('get value with properties', () => {
   const dataProperty1 = {
     simpleFieldId: 'test simpleFieldId',
   }
-  expect(dataTree.getValue([property1], containerComponent, {})).toBeNull()
-  const value = dataTree.getValue([property1], containerComponent, dataProperty1)
+  expect(dataTree.getValue([property1], containerComponent, false, {})).toBeNull()
+  const value = dataTree.getValue([property1], containerComponent, false, dataProperty1)
   expect(value).not.toBeNull()
   expect(value).toBe(dataProperty1.simpleFieldId)
 
@@ -1249,8 +1249,8 @@ test('get value with properties', () => {
       simpleFieldId2: 'test simpleFieldId2'
     }
   }
-  expect(dataTree.getValue([property1, property2], containerComponent, {})).toBeNull()
-  const value2 = dataTree.getValue([property1, property2], containerComponent, dataProperty2)
+  expect(dataTree.getValue([property1, property2], containerComponent, false, {})).toBeNull()
+  const value2 = dataTree.getValue([property1, property2], containerComponent, false, dataProperty2)
   expect(value2).not.toBeNull()
   expect(value2).toBe(dataProperty2.simpleFieldId.simpleFieldId2)
 })
@@ -1288,8 +1288,8 @@ test('get fixed value with filters', () => {
     options: {},
   } as StoredFilter
 
-  expect(dataTree.getValue([fixed], containerComponent, {})).toBe('expected value')
-  expect(dataTree.getValue([fixed, filter], containerComponent, {})).toBe('expected value modified')
+  expect(dataTree.getValue([fixed], containerComponent, false, {})).toBe('expected value')
+  expect(dataTree.getValue([fixed, filter], containerComponent, false, {})).toBe('expected value modified')
 })
 
 test('get value with a state', () => {
@@ -1331,7 +1331,7 @@ test('get value with a state', () => {
   ;(getState as jest.Mock).mockReturnValue(fixed)
   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
 
-  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, {})
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, false, {})
   expect(stateValue).toBe('expected value')
 })
 
@@ -1381,7 +1381,7 @@ test('get __data with a state', () => {
   ;(getState as jest.Mock).mockReturnValue(fixed)
   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
 
-  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, {})
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, true, {})
   expect(stateValue).toEqual(fixed.expression[0].options.value)
 })
 
@@ -1436,7 +1436,7 @@ test('get `__data[previewIndex].something` with a state', () => {
   ;(getState as jest.Mock).mockReturnValue(fixed)
   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
 
-  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, {})
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, true, {})
   expect(stateValue).toBe(fixed.expression[0].options.value[0])
   return
 
@@ -1474,7 +1474,7 @@ test('get `__data[previewIndex].something` with a state', () => {
   ;(getState as jest.Mock).mockReturnValue(fixed2)
   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
 
-  const stateValue2 = dataTree.getValue(mockState2.expression, firstComponentChild, {})
+  const stateValue2 = dataTree.getValue(mockState2.expression, firstComponentChild, true, {})
   expect(stateValue2).toBe(fixed.expression[0].options.value[1])
 })
 
@@ -1565,7 +1565,7 @@ test('get `__data[previewIndex].something` with a state', () => {
 //   ;(getState as jest.Mock).mockReturnValueOnce(mockState1)
 //   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
 //
-//   const stateValue = dataTree.getValue(simpleExpression, childComponent, {})
+//   const stateValue = dataTree.getValue(simpleExpression, childComponent, false, {})
 //   expect(stateValue).toBe('item1')
 // })
 

@@ -95,6 +95,11 @@ export class StateEditor extends LitElement {
   }
   set selected(value: Component | null) {
     this._selected = value
+    // Update selected preview index
+    const token = this._data.slice(-1)[0]
+    if(token) {
+      this.previewIndex = token.previewIndex || 0
+    }
     this.requestUpdate()
   }
 
@@ -144,7 +149,7 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED}`, () => this.renderBinded())
+    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED}`, this.renderBinded)
   }
 
   override disconnectedCallback() {
@@ -293,7 +298,7 @@ export class StateEditor extends LitElement {
 
     let currentData = '' as unknown
     try {
-      const realData = dataTree.getValue(_currentValue || [], selected)
+      const realData = dataTree.getValue(_currentValue || [], selected, !this.showPreviewIndexUi)
       currentData = realData
     } catch(e) {
       console.error('Current data could not be retrieved:', e)
@@ -301,7 +306,12 @@ export class StateEditor extends LitElement {
     if (typeof currentData === 'undefined' || currentData === null) currentData = ''
     const currentDataArrayLength = Array.isArray(currentData) ? (currentData as Array<unknown>).length : 0
     const previewIndex = (_currentValue[_currentValue.length - 1] as State)?.previewIndex
-
+    // Update selected preview index
+    if(this.previewIndex !== previewIndex) {
+      this.previewIndex = previewIndex || 0
+    }
+    const rangeInputRef = createRef<HTMLInputElement>()
+    const numberInputRef = createRef<HTMLInputElement>()
     // Build the expression input
     const result = html`
       <expression-input
@@ -424,22 +434,32 @@ export class StateEditor extends LitElement {
         ${this.showPreviewIndexUi && (currentDataArrayLength > 0 && typeof previewIndex !== 'undefined') ? html`
         <div class="ds-real-data__preview-index">
           <input
+            ${ref(rangeInputRef)}
             type="range"
             step="1"
             min="0"
             .max=${currentDataArrayLength - 1}
             .value=${this.previewIndex}
-            @input=${(event: InputEvent) => this.onChangePreview(parseInt((event.target as HTMLInputElement).value))}
+            @input=${(event: InputEvent) => {
+    const value = (event.target as HTMLInputElement).value
+    this.onChangePreview(parseInt(value))
+    if (numberInputRef.value) numberInputRef.value.value = value
+  }}
           >
           <input
-            type="number"
+              ${ref(numberInputRef)}
+              type="number"
             step="1"
             min="0"
             .max=${currentDataArrayLength - 1}
             .value=${this.previewIndex}
-            @input=${(event: InputEvent) => this.onChangePreview(parseInt((event.target as HTMLInputElement).value))}
-          >
-          ` : ''}
+            @input=${(event: InputEvent) => {
+    const value = (event.target as HTMLInputElement).value
+    this.onChangePreview(parseInt(value))
+    if (rangeInputRef.value) rangeInputRef.value.value =  value
+  }}
+            >
+            ` : ''}
         </div>
         `
     this.redrawing = false
@@ -452,7 +472,6 @@ export class StateEditor extends LitElement {
       const token = state.expression[state.expression.length - 1] as StoredProperty
       token.previewIndex = index
     }
-    this.previewIndex = index
     this.editor?.trigger(PREVIEW_INDEX_CHANGED)
   }
 
@@ -475,6 +494,7 @@ export class StateEditor extends LitElement {
     } else {
       // Event coming from the options
     }
+    // Stop default behavior of inputs
     event.preventDefault()
     event.stopImmediatePropagation()
     event.stopPropagation()

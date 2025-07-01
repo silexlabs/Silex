@@ -198,6 +198,7 @@ export class DataTree {
   getValue(
     expression: Expression,
     component: Component,
+    resolvePreviewIndex = true,
     prevValues: unknown = null,
   ): unknown {
     if (expression.length === 0) {
@@ -222,13 +223,13 @@ export class DataTree {
       //   const { previewIndex } = resolvedExpression.slice(-1)[0] as State
       //   return this.getValue(rest, component, stateValue[previewIndex || 0])
       // }
-      return this.getValue(resolvedExpression.concat(...rest), component, prevValues)
+      return this.getValue(resolvedExpression.concat(...rest), component, resolvePreviewIndex, prevValues)
     }
 
     case 'property': {
       // Handle the case of a "fixed" property (hard coded string set by the user)
       if (token.fieldId === FIXED_TOKEN_ID) {
-        return this.getValue(rest, component, token.options?.value)
+        return this.getValue(rest, component, resolvePreviewIndex, token.options?.value)
       }
 
       // Handle the case where the property refers to the first level of the data source
@@ -246,13 +247,13 @@ export class DataTree {
       // Now get the next value
       let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
 
-      value = this.handlePreviewIndex(value, token)
+      value = resolvePreviewIndex || rest.length > 0 ? this.handlePreviewIndex(value, token) : value
 
-      return this.getValue(rest, component, value)
+      return this.getValue(rest, component, resolvePreviewIndex, value)
     }
     case 'filter': {
       const options = Object.entries(token.options).reduce((acc, [key, value]) => {
-        acc[key] = this.getValue(toExpression(value) || [], component, null)
+        acc[key] = this.getValue(toExpression(value) || [], component, resolvePreviewIndex, null)
         return acc
       }, {} as Record<string, unknown>)
 
@@ -267,12 +268,12 @@ export class DataTree {
       } catch(e) {
         console.warn('Error in the filter', filter, 'Error:', e)
         // Mimic behavior of liquid
-        return this.getValue(rest, component, prevValues)
+        return this.getValue(rest, component, resolvePreviewIndex, prevValues)
       }
 
-      value = this.handlePreviewIndex(value, token)
+      value = resolvePreviewIndex || rest.length > 0 ? this.handlePreviewIndex(value, token) : value
 
-      return this.getValue(rest, component, value)
+      return this.getValue(rest, component, resolvePreviewIndex, value)
     }
 
     default:
