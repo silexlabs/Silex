@@ -56,6 +56,8 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
           try {
             if (component.view?.el.matches(selectorString)) {
               acc.push(fromString(_rule.getSelectorsString(), _rule.getAtRule()))
+            } else if (component.tagName.toLowerCase() === 'body' && (selectorString.toLowerCase().startsWith('body') || selectorString.toLowerCase().startsWith('html'))) {
+              acc.push(fromString(selectorString, _rule.getAtRule()))
             }
           } catch (e) {
             console.error('Error matching selector', selectorString, e)
@@ -443,7 +445,18 @@ function addTagNames(component: Component, suggestions: SimpleSelector[], select
     active: true,
   }
   if (canIadd(tagSelector, selector, suggestions)) {
-    suggestions.push(tagSelector as TagSelector)
+    suggestions.push(tagSelector)
+  }
+  // Special case of the HTML container
+  if(tagName === 'body') {
+    const htmlSelector = {
+      type: SimpleSelectorType.TAG,
+      value: 'html',
+      active: true,
+    }
+    if (canIadd(htmlSelector, selector, suggestions)) {
+      suggestions.push(htmlSelector)
+    }
   }
   // // IDs
   // const id = component.getId()

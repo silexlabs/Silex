@@ -1,10 +1,113 @@
 import { CssRule, Editor, Selector } from 'grapesjs'
 import { Component } from 'grapesjs'
-import { getSuggestionsMain, getSuggestionsRelated, getComponentSelector } from './GrapesJsSelectors'
+import { getSuggestionsMain, getSuggestionsRelated, getComponentSelector, getSelectors } from './GrapesJsSelectors'
 import { ClassSelector, IdSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { Operator, OperatorType } from './Operator'
 
-describe('getComponentSelector', () => {
+describe('getSelectors', () => {
+  let editorMock: Editor
+  let componentMock: Component
+
+  test('should return html and body when component tag is body', () => {
+    componentMock = {
+      tagName: 'BODY',
+      view: {
+        el: {
+          matches: jest.fn(() => false),
+        }
+      }
+    } as unknown as Component
+    editorMock = {
+      getSelectedAll: jest.fn(() => [componentMock]),
+      CssComposer: {
+        getRules: jest.fn(() => [
+          {
+            getSelectorsString: jest.fn(() => 'html.test-class'),
+            getStyle: jest.fn(() => ({ background: 'red' })),
+            getAtRule: jest.fn(),
+            get: jest.fn(),
+            clone: function() { return this },
+          },
+          {
+            getSelectorsString: jest.fn(() => 'BODY[data-attr]'),
+            getStyle: jest.fn(() => ({ background: 'red' })),
+            getAtRule: jest.fn(),
+            get: jest.fn(),
+            clone: function() { return this },
+          },
+        ])
+      }
+    } as unknown as Editor
+
+    const selectors = getSelectors(editorMock)
+    expect(selectors).toContainEqual({
+      mainSelector: {
+        selectors: [
+          { active: true, type: 'tag', value: 'html' },
+          { active: true, type: 'class', value: 'test-class' }
+        ]
+      }
+    })
+    expect(selectors).toContainEqual({
+      mainSelector: {
+        selectors: [
+          { active: true, type: 'tag', value: 'BODY' },
+          { active: true, attributeValue: '', type: 'attribute', value: 'data-attr' }
+        ]
+      }
+    })
+  })
+
+  // test('should return complex selectors for matching rules', () => {
+  //   componentMock = {
+  //     view: {
+  //       el: {
+  //         matches: jest.fn(),
+  //         tagName: 'DIV',
+  //       }
+  //     }
+  //   } as unknown as Component
+  //   const ruleMock = {
+  //     clone: jest.fn().mockReturnThis(),
+  //     getStyle: jest.fn().mockReturnValue({ color: 'red' }),
+  //     get: jest.fn(),
+  //     getSelectorsString: jest.fn().mockReturnValue('div.red')
+  //   }
+  //   componentMock.view.el.matches.mockReturnValue(true)
+
+  //   editorMock.getSelectedAll.mockReturnValue([componentMock])
+  //   editorMock.CssComposer.getRules.mockReturnValue([ruleMock])
+
+  //   const selectors = getSelectors(editorMock)
+  //   expect(selectors).toHaveLength(1)
+  //   expect(selectors[0]).toEqual(expect.objectContaining({ type: 'CLASS', value: 'red', active: true }))
+  // })
+
+  // test('should log warning on rule with state', () => {
+  //   componentMock = {
+  //     view: {
+  //       el: {
+  //         matches: jest.fn(),
+  //         tagName: 'DIV',
+  //       }
+  //     }
+  //   } as unknown as Component
+  //   const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => { })
+  //   const ruleMock = {
+  //     clone: jest.fn().mockReturnThis(),
+  //     getStyle: jest.fn().mockReturnValue({ color: 'red' }),
+  //     get: jest.fn().mockReturnValue('state'),
+  //     getSelectorsString: jest.fn().mockReturnValue('div.state')
+  //   }
+  //   componentMock.view.el.matches.mockReturnValue(true)
+
+  //   editorMock.getSelectedAll.mockReturnValue([componentMock])
+  //   editorMock.CssComposer.getRules.mockReturnValue([ruleMock])
+
+  //   getSelectors(editorMock)
+  //   expect(warnSpy).toHaveBeenCalledWith('Rule has a state', expect.any(Object))
+  //   warnSpy.mockRestore()
+  // })
   test('Component with selector', () => {
     const mockComponent = {
       get: jest.fn().mockReturnValue({
@@ -41,7 +144,7 @@ describe('getComponentSelector', () => {
 })
 
 describe('getSuggestionsMain', () => {
-  test('Élément avec ID et classe', () => {
+  test('Element with ID and class', () => {
     // Mock GrapesJS Editor
     const mockEditor = {
       CssComposer: {
@@ -76,7 +179,7 @@ describe('getSuggestionsMain', () => {
     ])
   })
 
-  test('Élément sans classe ni ID', () => {
+  test('Element without class or ID', () => {
     // Mock GrapesJS Editor
     const mockEditor = {
       CssComposer: {
@@ -276,6 +379,36 @@ describe('getSuggestionsMain', () => {
     expect(suggestions).toEqual([
       { type: SimpleSelectorType.TAG, value: 'my-component', active: true },
       { type: SimpleSelectorType.ATTRIBUTE, value: 'data-theme', operator: '=', attributeValue: 'dark', active: true },
+    ])
+  })
+
+  test('Suggest `body` tag', () => {
+    // Mock GrapesJS Editor
+    const mockEditor = {
+      CssComposer: {
+        getAll: jest.fn().mockReturnValue([]),
+      },
+    } as unknown as Editor
+
+    // Mock Selected Component with body tag
+    const mockSelectedComponent = {
+      getId: () => '',
+      getClasses: () => [],
+      getAttributes: () => [],
+      get tagName() {
+        return 'body'
+      },
+    } as unknown as Component
+
+    const selectedComponents = [mockSelectedComponent]
+
+    const suggestions = getSuggestionsMain(mockEditor, selectedComponents, {
+      mainSelector: { selectors: [] },
+    })
+
+    expect(suggestions).toEqual([
+      { type: SimpleSelectorType.TAG, value: 'body', active: true },
+      { type: SimpleSelectorType.TAG, value: 'html', active: true },
     ])
   })
 })
@@ -778,7 +911,7 @@ describe('getSuggestionsRelated', () => {
       { type: SimpleSelectorType.CLASS, value: 'grandparent', active: true },
     ])
   })
-  test('`:is()` pseudo-class on the body', () => {
+  test('`:is()` pseudo-class on a div', () => {
     // Mock GrapesJS Editor
     const mockEditor = {
       CssComposer: {
@@ -813,20 +946,20 @@ describe('getSuggestionsRelated', () => {
       getId: () => '',
       getClasses: () => ['a-class'],
       get tagName() {
-        return 'body'
+        return 'div'
       },
     } as unknown as Component
 
     const selectedComponents = [mockSelectedComponent]
 
     expect(getSuggestionsRelated(mockEditor, selectedComponents, {
-      mainSelector: { selectors: [{ type: SimpleSelectorType.TAG, value: 'body', active: true } as TagSelector] },
+      mainSelector: { selectors: [{ type: SimpleSelectorType.TAG, value: 'div', active: true } as TagSelector] },
       operator: { type: OperatorType.IS, isCombinator: false } as Operator,
       relatedSelector: { selectors: [] },
     }))
       .toEqual([{
         type: SimpleSelectorType.TAG,
-        value: 'body',
+        value: 'div',
         active: true,
       }, {
         type: SimpleSelectorType.CLASS,
@@ -834,5 +967,45 @@ describe('getSuggestionsRelated', () => {
         active: true,
       }])
   })
+  test('Suggest `html` tag when `body` is suggested', () => {
+    // Mock GrapesJS Editor
+    const mockEditor = {
+      CssComposer: {
+        getAll: jest.fn().mockReturnValue([]),
+      },
+    } as unknown as Editor
 
+    // Mock Selected Component with body tag
+    const mockParentComponent = {
+      getId: () => '',
+      getClasses: () => [],
+      getAttributes: () => [],
+      parent: () => undefined,
+      get tagName() {
+        return 'body'
+      },
+    } as unknown as Component
+    const mockSelectedComponent = {
+      getId: () => '',
+      getClasses: () => [],
+      getAttributes: () => [],
+      parent: () => mockParentComponent,
+      get tagName() {
+        return 'div'
+      },
+    } as unknown as Component
+
+    const selectedComponents = [mockSelectedComponent]
+
+    const suggestions = getSuggestionsRelated(mockEditor, selectedComponents, {
+      mainSelector: { selectors: [] },
+      operator: { type: OperatorType.DESCENDANT, isCombinator: true } as Operator,
+      relatedSelector: { selectors: [] },
+    })
+
+    expect(suggestions).toEqual([
+      { type: SimpleSelectorType.TAG, value: 'body', active: true },
+      { type: SimpleSelectorType.TAG, value: 'html', active: true },
+    ])
+  })
 })

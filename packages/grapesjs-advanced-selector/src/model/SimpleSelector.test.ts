@@ -129,6 +129,9 @@ describe('SimpleSelector', () => {
     expect(validate('[href="#')).toBe('[href="#"]')
     expect(validate('[href="#')).toBe('[href="#"]')
     expect(validate('[href="#"]')).toBe('[href="#"]')
+    expect(validate('body')).toBe('body')
+    expect(validate('html')).toBe('html')
+    expect(validate('div')).toBe('div')
 
     // define a custom tag
     const customTag = 'the-component'
@@ -150,7 +153,7 @@ describe('SimpleSelector', () => {
     expect(suggestions[0].type).toBe(SimpleSelectorType.CLASS)
   })
 
-  test('addCreationSuggestions', () => {
+  test('getCreationSuggestions', () => {
     expect(getCreationSuggestions('.test')[0].type).toBe(SimpleSelectorType.CLASS)
     expect(getCreationSuggestions('#test')).toEqual([]) // The IDs exist so they will be suggested
     expect(getCreationSuggestions('div')).toEqual([]) // The tag exists so it will be suggested
