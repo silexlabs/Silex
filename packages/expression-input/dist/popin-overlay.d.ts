@@ -42,9 +42,4 @@ export declare class PopinOverlay extends LitElement {
     attributeChangedCallback(name: string, _old: string | null, value: string | null): void;
     protected ensureElementInView(): void;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'popin-overlay': PopinOverlay;
-    }
-}
 //# sourceMappingURL=popin-overlay.d.ts.map

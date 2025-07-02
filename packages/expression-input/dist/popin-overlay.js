@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { popinStyles } from './styles.js';
 /**
  * This PopinOverlay component is a simple dialog that can be used to display any html on top of your UI
@@ -33,7 +33,7 @@ import { popinStyles } from './styles.js';
  * @cssprop {Color} --popin-color - The text color of the dialog
  *
  */
-let PopinOverlay = class PopinOverlay extends LitElement {
+export class PopinOverlay extends LitElement {
     constructor() {
         super(...arguments);
         this.hidden = false;
@@ -140,7 +140,7 @@ let PopinOverlay = class PopinOverlay extends LitElement {
             this.style.top = `${-offsetY}px`;
         }
     }
-};
+}
 PopinOverlay.styles = popinStyles;
 __decorate([
     property()
@@ -148,8 +148,7 @@ __decorate([
 __decorate([
     property({ type: Boolean, attribute: 'no-auto-close' })
 ], PopinOverlay.prototype, "noAutoClose", void 0);
-PopinOverlay = __decorate([
-    customElement('popin-overlay')
-], PopinOverlay);
-export { PopinOverlay };
+if (!window.customElements.get('popin-overlay')) {
+    window.customElements.define('popin-overlay', PopinOverlay);
+}
 //# sourceMappingURL=popin-overlay.js.map

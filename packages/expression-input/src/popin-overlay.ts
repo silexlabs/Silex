@@ -1,5 +1,5 @@
 import {LitElement, html} from 'lit'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import {popinStyles} from './styles.js'
 
 /**
@@ -29,7 +29,6 @@ import {popinStyles} from './styles.js'
  *
  */
 
-@customElement('popin-overlay')
 export class PopinOverlay extends LitElement {
   static override styles = popinStyles
 
@@ -163,8 +162,6 @@ export class PopinOverlay extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'popin-overlay': PopinOverlay
-  }
+if (!window.customElements.get('popin-overlay')) {
+  window.customElements.define('popin-overlay', PopinOverlay)
 }

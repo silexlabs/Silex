@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { PopinOverlay } from './popin-overlay.js';
 /**
  * This component extends the `<popin-overlay>` component and the native `<form>` tag
@@ -60,7 +60,7 @@ import { PopinOverlay } from './popin-overlay.js';
  * @cssprop {Margin} --popin-button-hover-margin--secondary - The margin of the secondary button when hovered
  *
  */
-let PopinForm = class PopinForm extends PopinOverlay {
+export class PopinForm extends PopinOverlay {
     constructor() {
         super(...arguments);
         /**
@@ -173,15 +173,14 @@ let PopinForm = class PopinForm extends PopinOverlay {
             event.stopImmediatePropagation();
         }
     }
-};
+}
 __decorate([
     property({ type: String, attribute: 'for' })
 ], PopinForm.prototype, "for", void 0);
 __decorate([
     property({ type: String })
 ], PopinForm.prototype, "name", void 0);
-PopinForm = __decorate([
-    customElement('popin-form')
-], PopinForm);
-export { PopinForm };
+if (!window.customElements.get('popin-form')) {
+    window.customElements.define('popin-form', PopinForm);
+}
 //# sourceMappingURL=popin-form.js.map

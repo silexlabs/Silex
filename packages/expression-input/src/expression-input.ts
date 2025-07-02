@@ -1,6 +1,6 @@
 import {html} from 'lit'
 import {classMap} from 'lit/directives/class-map.js'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import {InputChain} from './input-chain.js'
 
 /**
@@ -28,7 +28,6 @@ import {InputChain} from './input-chain.js'
  * - [x] dirty-icon
  */
 
-@customElement('expression-input')
 export class ExpressionInput extends InputChain {
   /**
    * Read only property dirty
@@ -170,8 +169,6 @@ export class ExpressionInput extends InputChain {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'expression-input': ExpressionInput
-  }
+if (!window.customElements.get('expression-input')) {
+  window.customElements.define('expression-input', ExpressionInput)
 }

@@ -53,9 +53,4 @@ export declare class ExpressionInput extends InputChain {
     reset(): void;
     getFixedInput(): HTMLInputElement | null;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'expression-input': ExpressionInput;
-    }
-}
 //# sourceMappingURL=expression-input.d.ts.map

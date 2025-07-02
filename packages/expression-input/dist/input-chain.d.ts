@@ -89,9 +89,4 @@ export declare class InputChain extends LitElement {
      */
     protected changeAt(idx: number, reset?: boolean): void;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'input-chain': InputChain;
-    }
-}
 //# sourceMappingURL=input-chain.d.ts.map

@@ -6,7 +6,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import { html } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { InputChain } from './input-chain.js';
 /**
  * @element expression-input
@@ -32,7 +32,7 @@ import { InputChain } from './input-chain.js';
  * - [x] label
  * - [x] dirty-icon
  */
-let ExpressionInput = class ExpressionInput extends InputChain {
+export class ExpressionInput extends InputChain {
     constructor() {
         super(...arguments);
         /**
@@ -164,7 +164,7 @@ let ExpressionInput = class ExpressionInput extends InputChain {
     getFixedInput() {
         return this.querySelector('input, textarea');
     }
-};
+}
 __decorate([
     property({ type: Boolean, attribute: 'allow-fixed' })
 ], ExpressionInput.prototype, "allowFixed", void 0);
@@ -174,8 +174,7 @@ __decorate([
 __decorate([
     property()
 ], ExpressionInput.prototype, "placeholder", void 0);
-ExpressionInput = __decorate([
-    customElement('expression-input')
-], ExpressionInput);
-export { ExpressionInput };
+if (!window.customElements.get('expression-input')) {
+    window.customElements.define('expression-input', ExpressionInput);
+}
 //# sourceMappingURL=expression-input.js.map

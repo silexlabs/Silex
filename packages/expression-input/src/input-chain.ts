@@ -1,5 +1,5 @@
 import {LitElement, html} from 'lit'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import {inputChainStyles} from './styles.js'
 
 /**
@@ -37,7 +37,6 @@ import {inputChainStyles} from './styles.js'
  *
  */
 
-@customElement('input-chain')
 export class InputChain extends LitElement {
   static override styles = inputChainStyles
   SELECT_QUERY = ':scope > select, :scope > custom-select'
@@ -212,8 +211,6 @@ export class InputChain extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'input-chain': InputChain
-  }
+if (!window.customElements.get('input-chain')) {
+  window.customElements.define('input-chain', InputChain)
 }

@@ -5,7 +5,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { inputChainStyles } from './styles.js';
 /**
  * @element input-chain
@@ -41,7 +41,7 @@ import { inputChainStyles } from './styles.js';
  * - [x] default: contains the select elements
  *
  */
-let InputChain = class InputChain extends LitElement {
+export class InputChain extends LitElement {
     get selectTagName() {
         return this._selectTagName;
     }
@@ -188,7 +188,7 @@ let InputChain = class InputChain extends LitElement {
         }
         this.redrawing = false;
     }
-};
+}
 InputChain.styles = inputChainStyles;
 __decorate([
     property({ type: String, attribute: 'for' })
@@ -208,8 +208,7 @@ __decorate([
 __decorate([
     property({ type: Array })
 ], InputChain.prototype, "options", null);
-InputChain = __decorate([
-    customElement('input-chain')
-], InputChain);
-export { InputChain };
+if (!window.customElements.get('input-chain')) {
+    window.customElements.define('input-chain', InputChain);
+}
 //# sourceMappingURL=input-chain.js.map

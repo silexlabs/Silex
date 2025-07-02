@@ -86,9 +86,4 @@ export declare class PopinForm extends PopinOverlay {
     private submit;
     private change;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'popin-form': PopinForm;
-    }
-}
 //# sourceMappingURL=popin-form.d.ts.map

@@ -1,5 +1,5 @@
 import {html} from 'lit'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import {PopinOverlay} from './popin-overlay.js'
 
 /**
@@ -56,7 +56,6 @@ import {PopinOverlay} from './popin-overlay.js'
  *
  */
 
-@customElement('popin-form')
 export class PopinForm extends PopinOverlay {
   /**
    * Form id
@@ -185,8 +184,6 @@ export class PopinForm extends PopinOverlay {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'popin-form': PopinForm
-  }
+if (!window.customElements.get('popin-form')) {
+  window.customElements.define('popin-form', PopinForm)
 }
