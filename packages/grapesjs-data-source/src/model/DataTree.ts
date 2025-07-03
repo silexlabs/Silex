@@ -119,21 +119,18 @@ export class DataTree {
       this._allTypes = this.getAllTypes()
       this._queryables = this.getAllQueryables()
     })
-    this._allTypes = this.getAllTypes()
-    this._queryables = this.getAllQueryables()
   }
 
   /**
    * Get type from typeId and dataSourceId
    */
   getTypes(dataSourceId?: DataSourceId): Type[] {
-    const types = this.dataSources
-      // Get the data source
+    // Get the data source
+    const ds = this.dataSources
       .find((dataSource: IDataSource) => dataSource.id === dataSourceId)
-      // Get its types
-      ?.getTypes()
-    if(!types) throw new Error(`Data source not found ${dataSourceId}`)
-    return types
+    if(!ds) throw new Error(`Data source not found ${dataSourceId}`)
+    if(!ds.isConnected()) throw new Error(`Data source ${dataSourceId} is not ready (not connected)`)
+    return ds.getTypes()
   }
 
   /**
@@ -177,6 +174,7 @@ export class DataTree {
    */
   getAllTypes(): Type[] {
     return this.dataSources
+      .filter((dataSource: IDataSource) => dataSource.isConnected())
       .flatMap((dataSource: IDataSource) => {
         return dataSource.getTypes()
       })
@@ -187,6 +185,7 @@ export class DataTree {
    */
   getAllQueryables(): Field[] {
     return this.dataSources
+      .filter((dataSource: IDataSource) => dataSource.isConnected())
       .flatMap((dataSource: IDataSource) => {
         return dataSource.getQueryables()
       })

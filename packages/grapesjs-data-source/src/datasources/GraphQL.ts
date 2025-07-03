@@ -298,9 +298,9 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       if (this.ready) {
         this.trigger(DATA_SOURCE_CHANGED, this)
       } else {
+        this.ready = true
         this.trigger(DATA_SOURCE_READY, this)
       }
-      this.ready = true
     } catch (e) {
       return this.triggerError(`GraphQL connection failed: ${(e as Error).message}`)
     }
@@ -319,6 +319,15 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * This has to be implemented as it is a DataSource method
    */
   getTypes(): Type[] {
+    if (!this.ready) {
+      console.error('DataSource is not ready. Attempted to get types before ready status was achieved.')
+      throw new Error('DataSource is not ready. Ensure it is connected and ready before querying.')
+    }
+
+    if (this.types.length === 0) {
+      console.error('No types available. It seems the data source may not be connected or the schema is incomplete.', this.ready)
+      throw new Error('No types found. The data source may not be connected or there might be an issue with the schema.')
+    }
     return this.types
   }
 

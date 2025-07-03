@@ -21,7 +21,7 @@
 
 import grapesjs, { Component } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Property, DataSourceEditor, StoredFilter, State, Expression, Tree  } from '../types'
+import { Property, DataSourceEditor, StoredFilter, State, Expression, Tree, Field, Token, Type, Filter  } from '../types'
 import { getStates, getParentByPersistentId, getState } from './state'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
@@ -68,6 +68,9 @@ test('Find type from  id', () => {
     getQuery: () => '',
     fetchValues: jest.fn(),
   }]})
+
+  // Trigger the event to populate allTypes
+  editor.trigger('data-source:ready')
 
   // Type not found
   expect(() => dataTree.getType('unknown type', null, null)).toThrow()
@@ -1568,6 +1571,212 @@ test('get `__data[previewIndex].something` with a state', () => {
 //   const stateValue = dataTree.getValue(simpleExpression, childComponent, false, {})
 //   expect(stateValue).toBe('item1')
 // })
+
+test('get value from GraphQL inline fragments (flatData.modules.item)', () => {
+  const testDataSourceId = 'squidex'
+
+  // Mock data similar to the example.graphql.json structure
+  const mockData = {
+    queryPageContents: [{
+      flatData: {
+        modules: [
+          {
+            __typename: 'PageDataModulesChildDto',
+            item: {
+              __typename: 'HeroWordSliderComponent',
+              type: 'hero-word-slider',
+              before: 'If you are looking for:',
+              words: [
+                { __typename: 'HeroWordSliderDataWordsChildDto', word: '100% free website builder' },
+                { __typename: 'HeroWordSliderDataWordsChildDto', word: 'no-code solution' }
+              ],
+              after: 'You are in the right place!',
+              cTAUrl: 'https://example.com',
+              cTALabel: 'Start now!'
+            }
+          },
+          {
+            __typename: 'PageDataModulesChildDto',
+            item: {
+              __typename: 'SimpleHeroComponent',
+              type: 'simple-hero',
+              text: '<h1>Welcome</h1>',
+              cTAUrl: 'https://example.com/welcome',
+              cTALabel: 'Get started'
+            }
+          }
+        ]
+      }
+    }]
+  }
+
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      validate: () => true,
+      output: (field: Field | null) => field,
+      apply: (arr: unknown) => Array.isArray(arr) ? arr[0] : arr,
+      options: {},
+    }],
+    dataSources: [{
+      id: testDataSourceId,
+      connect: async () => {},
+      isConnected: () => true,
+      getTypes: () => ([]),
+      getQueryables: () => ([]),
+      getQuery: () => '',
+      fetchValues: () => Promise.resolve(mockData),
+    }]
+  })
+
+  // Set the query result to simulate fetched data
+  dataTree.queryResult[testDataSourceId] = mockData
+
+  // Test accessing the first item's before text
+  const beforeExpression = [
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'queryPageContents',
+      label: 'queryPageContents',
+      typeIds: ['Page'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'flatData',
+      label: 'flatData',
+      typeIds: ['PageFlatDataDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'modules',
+      label: 'modules',
+      typeIds: ['PageDataModulesChildDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'item',
+      label: 'item',
+      typeIds: ['HeroWordSliderComponent'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'before',
+      label: 'before',
+      typeIds: ['String'],
+      dataSourceId: testDataSourceId,
+      kind: 'scalar'
+    }
+  ] as Token[]
+
+  const result = dataTree.getValue(beforeExpression, containerComponent, false)
+  expect(result).toBe('If you are looking for:')
+
+  // Test accessing words array
+  const wordsExpression = [
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'queryPageContents',
+      label: 'queryPageContents',
+      typeIds: ['Page'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'flatData',
+      label: 'flatData',
+      typeIds: ['PageFlatDataDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'modules',
+      label: 'modules',
+      typeIds: ['PageDataModulesChildDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'item',
+      label: 'item',
+      typeIds: ['HeroWordSliderComponent'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'words',
+      label: 'words',
+      typeIds: ['HeroWordSliderDataWordsChildDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'word',
+      label: 'word',
+      typeIds: ['String'],
+      dataSourceId: testDataSourceId,
+      kind: 'scalar'
+    }
+  ] as Token[]
+
+  const wordsResult = dataTree.getValue(wordsExpression, containerComponent, false)
+  expect(wordsResult).toBe('100% free website builder')
+})
 
 // test('test', () => {
 //   // Mocks

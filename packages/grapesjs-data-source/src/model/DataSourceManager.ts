@@ -104,9 +104,6 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
       this.updateData()
       this.editor.trigger(COMPONENT_STATE_CHANGED, { state, component })
     })
-
-    // Update data on page change
-    editor.on('canvas:frame:load', () => this.updateData())
   }
 
   /**
@@ -129,7 +126,7 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
    */
   protected dataSourceReadyBinded = this.dataSourceReady.bind(this)
   dataSourceReady(ds: IDataSource) {
-    this.editor.trigger(DATA_SOURCE_READY, ds)
+    this.trigger(DATA_SOURCE_READY, ds)
   }
 
   /**
@@ -184,6 +181,12 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
     const expressions = this.dataTree.getPageExpressions(page)
     return this.models
       .map(ds => {
+        if (!ds.isConnected()) {
+          return {
+            dataSourceId: ds.id.toString(),
+            query: '',
+          }
+        }
         const dsExpressions = expressions
           // Resolve all states
           .map((componentExpression) => ({
@@ -267,6 +270,10 @@ export class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
           const ds = this.models.find(ds => ds.id === dataSourceId)
           if (!ds) {
             console.error(`Data source ${dataSourceId} not found`)
+            return null
+          }
+          if (!ds.isConnected()) {
+            console.warn(`Data source ${dataSourceId} is not connected.`)
             return null
           }
           try {

@@ -17,7 +17,7 @@
 
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import { StoredState, getState, getStateIds, removeState, setState } from '../model/state'
 import { DataSourceEditor, Token  } from '../types'
 
@@ -37,9 +37,8 @@ interface Item {
 
 /**
  * Editor for selected element's states
- * 
+ *
  */
-@customElement('custom-states-editor')
 export class CustomStatesEditor extends LitElement {
   @property({type: Boolean})
     disabled = false
@@ -336,14 +335,14 @@ export class CustomStatesEditor extends LitElement {
       this.setState(component, item.name, item.state)
     })
   }
-  
+
   /**
    * Create a new custom state
    */
   createCustomState(component: Component): Item | null {
     const label = cleanStateName(prompt(this.createPrompt, this.defaultName))
     if (!label) return null
-    
+
     if(this.reservedNames.includes(label)) {
       alert(`The name ${label} is reserved, please choose another name`)
       return null

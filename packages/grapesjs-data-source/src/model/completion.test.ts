@@ -166,8 +166,10 @@ test('get context with data source queryable values', () => {
         dataSourceId: testDataSourceId,
       }],
       getQuery: () => '',
+      fetchValues: async () => ({})
     }],
   })
+  ;(editor as DataSourceEditor).trigger('data-source:ready')
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
   expect(context).toHaveLength(2) // 1 Queryable + 1 Fixed value
@@ -185,8 +187,10 @@ test('get completion with simple context', () => {
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',
+      fetchValues: async () => ({})
     }],
   })
+  ;(editor as DataSourceEditor).trigger('data-source:ready')
   const component = editor.getComponents().first()
 
   // Empty value
@@ -196,7 +200,7 @@ test('get completion with simple context', () => {
     expression: [],
     dataTree,
   })
-  expect(completion1).toHaveLength(2) 
+  expect(completion1).toHaveLength(2)
   expect(completion1.map(asStored)).toEqual([
     ...simpleQueryableTokens,
     fixedToken,
@@ -255,8 +259,10 @@ test('get completion with filters', () => {
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',
+      fetchValues: async () => ({})
     }],
   })
+  ;(editor as DataSourceEditor).trigger('data-source:ready')
   const component = editor.getComponents().first()
 
   // Empty value

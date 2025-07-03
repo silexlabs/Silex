@@ -17,7 +17,7 @@
 
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
@@ -42,7 +42,6 @@ import { getFixedToken } from '../utils'
  *
  */
 
-@customElement('properties-editor')
 export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
     disabled = false

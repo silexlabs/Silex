@@ -16,7 +16,7 @@
  */
 
 import {LitElement, TemplateResult, html} from 'lit'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import { PROPERTY_STYLES } from './defaultStyles'
@@ -52,7 +52,6 @@ const PREVIEW_INDEX_CHANGED = 'PREVIEW_INDEX_CHANGED'
  *
  */
 
-@customElement('state-editor')
 export class StateEditor extends LitElement {
   @property({type: Boolean})
     disabled = false
@@ -135,7 +134,7 @@ export class StateEditor extends LitElement {
    * Binded listeners
    */
   private onFormdata_ = this.onFormdata.bind(this)
-  private renderBinded = this.requestUpdate.bind(this)
+  private renderBinded = () => this.requestUpdate()
 
   override connectedCallback() {
     super.connectedCallback()
@@ -149,13 +148,13 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED}`, this.renderBinded)
+    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
   }
 
   override disconnectedCallback() {
     this.form = null
     super.disconnectedCallback()
-    this.editor?.off(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED}`, this.renderBinded)
+    this.editor?.off(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
   }
 
   /**
