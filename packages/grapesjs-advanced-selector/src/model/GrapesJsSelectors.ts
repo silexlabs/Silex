@@ -72,7 +72,7 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
  * Function to edit or add style based on the selector
  */
 export function editStyle(editor: Editor, selector: string) {
-  const currentWidth = editor.DeviceManager.getSelected()?.get('width')
+  const currentWidth = editor.DeviceManager.getSelected()?.get('widthMedia')
 
   const opts = {
     atRuleType: currentWidth ? 'media' : '',
