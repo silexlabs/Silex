@@ -17,16 +17,9 @@
 
 import { Component, Editor } from 'grapesjs'
 import { TemplateResult } from 'lit'
-import { DataSourceManager } from './model/DataSourceManager'
+import { DataSourceManagerState } from './model/dataSourceManager'
 import { Button } from 'grapesjs'
-import { Model, ModelSetOptions } from 'backbone'
 
-/**
- * Add the DataSourceManager to the GrapesJs editor
- */
-export interface DataSourceEditor extends Editor {
-  DataSourceManager: DataSourceManager
-}
 
 export interface DataSourceEditorViewOptions {
   el?: HTMLElement | string | undefined | (() => HTMLElement)
@@ -67,13 +60,21 @@ export interface Tree {
 }
 
 // Data sources must implement this interface
-export type DataSourceId = string | number // Matches the Backbone.Model.id type
+export type DataSourceId = string | number
 export interface IDataSource {
   // For reference in expressions
   id: DataSourceId
+  
+  // Basic properties
+  label: string
+  url: string
+  type: DataSourceType
+  method?: string
+  headers?: Record<string, string>
 
   // Hide from users settings
   hidden?: boolean
+  readonly?: boolean
 
   // Initialization
   connect(): Promise<void>
@@ -86,6 +87,11 @@ export interface IDataSource {
 
   // Access data
   fetchValues(query: string): Promise<unknown>
+  
+  // Event handling for compatibility with existing code
+  on?(event: any, callback?: any, context?: any): any
+  off?(event?: any, callback?: any, context?: any): any
+  trigger?(event: any, ...args: unknown[]): any
 }
 export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
@@ -96,13 +102,13 @@ export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
 export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
 export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'
 
-// For use by the DataSourceManager class which is a Backbone collection
-export interface IDataSourceModel extends Model<any, ModelSetOptions, any>, IDataSource {}
+// Alias for backward compatibility
+export type IDataSourceModel = IDataSource
 
 export type DataSourceType = 'graphql'
 
 // Options of a data source
-export interface IDataSourceOptions extends Backbone.ModelSetOptions {
+export interface IDataSourceOptions {
   id: DataSourceId
   label: string
   type: DataSourceType

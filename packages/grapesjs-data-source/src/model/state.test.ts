@@ -3,7 +3,7 @@
  */
 import grapesjs from 'grapesjs'
 import { getChildByPersistantId, getComponentByPersistentId, getParentByPersistentId, getPersistantId, getStateIds, setState } from './state'
-import { DataSourceEditor } from '../types'
+import { Editor } from 'grapesjs'
 
 test('getChildByPersistantId', () => {
   const editor = grapesjs.init({
@@ -30,8 +30,8 @@ test('getChildByPersistantId', () => {
   expect(getPersistantId(child3)).toBe('test-id-child3')
   expect(getParentByPersistentId('test-id-parent', child3)).toBe(parent)
   expect(getChildByPersistantId('test-id-child3', parent)).toBe(child3)
-  expect(getComponentByPersistentId('test-id-child3', editor as DataSourceEditor)).toBe(child3)
-  expect(getComponentByPersistentId('test-id-parent', editor as DataSourceEditor)).toBe(parent)
+  expect(getComponentByPersistentId('test-id-child3', editor as Editor)).toBe(child3)
+  expect(getComponentByPersistentId('test-id-parent', editor as Editor)).toBe(parent)
 })
 test('getStateIds', () => {
   const editor = grapesjs.init({

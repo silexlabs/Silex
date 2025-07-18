@@ -6,7 +6,6 @@ import grapesjs, { Component, Editor } from 'grapesjs'
 import { Expression } from '../types'
 import { getExpressionResultType } from './token'
 import { simpleQueryables, simpleTypes, testDataSourceId } from '../test-data'
-import { DataSourceEditor } from '../types'
 import { DataTree } from './DataTree'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
@@ -27,7 +26,7 @@ beforeEach(async () => {
 })
 
 test('get type with simple context', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor as Editor, {
     filters: [],
     dataSources: [{
       id: testDataSourceId,

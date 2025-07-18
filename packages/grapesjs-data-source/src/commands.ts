@@ -1,14 +1,13 @@
-import { DataSourceEditor, DataSourceEditorOptions } from "./types";
+import { DataSourceEditorOptions } from "./types"
+import { getAllDataSources, refreshDataSources } from "./model/dataSourceManager"
+import { Editor } from "grapesjs"
 
 // GrapesJS plugin to add commands to the editor
-export default (editor: DataSourceEditor, opts: DataSourceEditorOptions) => {
+export default (editor: Editor, opts: DataSourceEditorOptions) => {
+  // Refresh all data sources
   editor.Commands.add(opts.commands.refresh, {
     run() {
-      editor.DataSourceManager.getAll()
-        .forEach((ds) => {
-          console.info('Refreshing data source', ds.id);
-          ds.connect()
-        });
+      refreshDataSources()
     },
-  });
+  })
 }

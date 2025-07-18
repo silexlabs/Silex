@@ -19,15 +19,15 @@ import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
 import {property} from 'lit/decorators.js'
 import { StoredState, getState, getStateIds, removeState, setState } from '../model/state'
-import { DataSourceEditor, Token  } from '../types'
+import { Token  } from '../types'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
-import { cleanStateName } from '../utils'
+import { cleanStateName, getDataTreeFromUtils } from '../utils'
 
 interface Item {
   name: string
@@ -80,10 +80,10 @@ export class CustomStatesEditor extends LitElement {
     helpLink = ''
 
   private _reservedNames: string[] = []
-  private editor: DataSourceEditor | null = null
+  private editor: Editor | null = null
   private redrawing = false
 
-  setEditor(editor: DataSourceEditor) {
+  setEditor(editor: Editor) {
     if (this.editor) {
       console.warn('property-editor setEditor already set')
       return
@@ -260,7 +260,7 @@ export class CustomStatesEditor extends LitElement {
         ${ref(el => {
     if (el) {
       const stateEditor = el as StateEditor
-      stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name)
+      stateEditor.data = this.getTokens(getDataTreeFromUtils(this.editor!), selected, name)
     }
   })}
         @change=${() => this.onChange(selected, name, label)}

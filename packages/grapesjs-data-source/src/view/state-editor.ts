@@ -20,10 +20,10 @@ import {property} from 'lit/decorators.js'
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import { PROPERTY_STYLES } from './defaultStyles'
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DataSourceEditor, Filter, Property, State, StoredProperty, Token } from '../types'
-import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, Filter, Property, State, StoredProperty, Token } from '../types'
+import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue, getDataTreeFromUtils } from '../utils'
 import { ExpressionInput, PopinForm } from '@silexlabs/expression-input'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 
 import '@silexlabs/expression-input'
 import { getCompletion } from '../model/completion'
@@ -148,13 +148,13 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
+    this.editor?.on(`${DATA_SOURCE_CHANGED} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
   }
 
   override disconnectedCallback() {
     this.form = null
     super.disconnectedCallback()
-    this.editor?.off(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
+    this.editor?.off(`${DATA_SOURCE_CHANGED} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
   }
 
   /**
@@ -243,12 +243,12 @@ export class StateEditor extends LitElement {
     if (this.editor) this.requestUpdate()
   }
 
-  private _editor: DataSourceEditor | null = null
+  private _editor: Editor | null = null
   @property({type: Object})
-  get editor(): DataSourceEditor | null {
+  get editor(): Editor | null {
     return this._editor
   }
-  set editor(value: DataSourceEditor | null) {
+  set editor(value: Editor | null) {
     this._editor = value
     this.requestUpdate()
   }
@@ -268,7 +268,7 @@ export class StateEditor extends LitElement {
     }
 
     const selected = this.selected
-    const dataTree = this.editor.DataSourceManager.getDataTree()
+    const dataTree = getDataTreeFromUtils(this.editor)
     // FIXME: fromStored every time we render is not efficient, it is supposed to have been done before
     const _currentValue = this._data.map(token => fromStored(token, dataTree, selected.getId()))
 
@@ -546,7 +546,7 @@ export class StateEditor extends LitElement {
 
   private getOptions(component: Component, tokens: Token[], idx: number): TemplateResult | '' {
     if(!this.editor) throw new Error('editor is required')
-    const dataTree = this.editor.DataSourceManager.getDataTree()
+    const dataTree = getDataTreeFromUtils(this.editor)
     const token = tokens[idx]
     const beforeToken = tokens.slice(0, idx)
     const fields = beforeToken

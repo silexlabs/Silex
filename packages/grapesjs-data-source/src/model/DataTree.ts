@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Page } from 'grapesjs'
-import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
+import { Component, Page, Editor } from 'grapesjs'
+import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
 import { getState, getParentByPersistentId, getStates, getPersistantId } from './state'
 import { fromStored, getOptionObject } from './token'
 import { FIXED_TOKEN_ID, getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
@@ -103,7 +103,7 @@ export class DataTree {
     return this._queryables
   }
 
-  constructor(protected editor: DataSourceEditor, protected options: {dataSources: IDataSource[], filters: Filter[]}) {
+  constructor(protected editor: Editor, protected options: {dataSources: IDataSource[], filters: Filter[]}) {
     this.dataSources = options.dataSources
     this.filters = options.filters
 
@@ -327,18 +327,21 @@ export class DataTree {
    * Get all expressions used by a component
    */
   getComponentExpressions(component: Component): ComponentExpression[] {
+    const publicStates = getStates(component, true)
+    const privateStates = getStates(component, false)
+
     return ([] as ComponentExpression[])
       // Visible states (custom / user defined)
       .concat(
         // For each state
-        getStates(component, true)
+        publicStates
           // Add the component
           .map(({expression}) => ({expression, component}))
       )
       // Hidden states (loop / internals)
       .concat(
         // For each state
-        getStates(component, false)
+        privateStates
           // Add the component
           .map(({expression}) => ({expression, component}))
       )

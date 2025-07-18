@@ -21,13 +21,13 @@ import {property} from 'lit/decorators.js'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
-import { BinariOperator, DataSourceEditor, Properties, Token, UnariOperator } from '../types'
+import { BinariOperator, Properties, Token, UnariOperator } from '../types'
 import { getState, setState } from '../model/state'
 import { DataTree } from '../model/DataTree'
-import { getFixedToken } from '../utils'
+import { getFixedToken, getDataTreeFromUtils } from '../utils'
 
 /**
  * Editor for selected element's properties
@@ -56,10 +56,10 @@ export class PropertiesEditor extends LitElement {
     __data: undefined,
   }
 
-  private editor: DataSourceEditor | null = null
+  private editor: Editor | null = null
   private redrawing = false
 
-  setEditor(editor: DataSourceEditor) {
+  setEditor(editor: Editor) {
     if (this.editor) {
       console.warn('property-editor setEditor already set')
       return
@@ -197,7 +197,7 @@ export class PropertiesEditor extends LitElement {
       const stateEditorFinally = this.inputs[name]!.stateEditor
       this.redrawing = true
       try {
-        stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+        stateEditorFinally.data = this.getTokens(getDataTreeFromUtils(this.editor!), selected, name, publicState)
       } catch (e) {
         console.error('Error setting data', e)
         stateEditorFinally.data = [getFixedToken(`Error setting data: ${e}`)]

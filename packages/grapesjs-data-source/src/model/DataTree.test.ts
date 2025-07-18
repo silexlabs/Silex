@@ -19,9 +19,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs, { Component } from 'grapesjs'
+import grapesjs, { Component, Editor } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Property, DataSourceEditor, StoredFilter, State, Expression, Tree, Field, Token, Type, Filter  } from '../types'
+import { Property, StoredFilter, State, Expression, Tree, Field, Token, Type, Filter  } from '../types'
 import { getStates, getParentByPersistentId, getState } from './state'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
@@ -40,7 +40,7 @@ jest.mock('lit', () => ({
   render: jest.fn(),
 }))
 
-let editor: DataSourceEditor
+let editor: Editor
 let containerComponent: Component
 beforeEach(async () => {
   jest.resetAllMocks()
@@ -48,7 +48,7 @@ beforeEach(async () => {
   editor = grapesjs.init({
     container: document.createElement('div'),
     components: '<div><div></div></div>',
-  }) as DataSourceEditor
+  }) as Editor
   containerComponent = editor.getComponents().first()
 })
 

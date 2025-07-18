@@ -1,5 +1,4 @@
-import { ComponentView } from 'grapesjs'
-import { DataSourceEditor } from '../types'
+import { ComponentView, Editor } from 'grapesjs'
 
 function updateView(type: string, view: ComponentView) {
   const el = view.el
@@ -24,7 +23,9 @@ function updateView(type: string, view: ComponentView) {
     el.appendChild(wrapper)
   }
 }
-export default (editor: DataSourceEditor) => {
+export default (editor: Editor) => {
+  console.warn('Not implemented: preview data source data on the canvas')
+  return
   const domc = editor.DomComponents
     ;['container', 'text', 'image'].forEach((type) => {
     const typeObj = domc.getType(type)

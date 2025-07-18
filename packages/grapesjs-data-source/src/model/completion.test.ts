@@ -6,7 +6,7 @@ import grapesjs, { Component, Editor } from 'grapesjs'
 import { DataTree } from './DataTree'
 import { getCompletion, getContext } from './completion'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId } from '../test-data'
-import { DataSourceEditor, Filter, Property, State, Token } from '../types'
+import { Filter, Property, State, Token } from '../types'
 import { getOrCreatePersistantId, getStateIds } from './state'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
@@ -69,7 +69,7 @@ test('get empty context', () => {
     components: '<div></div>',
   })
   const component = editor.getComponents().first()
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTree(editor as Editor, {filters: [], dataSources: []})
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
   expect(context).toHaveLength(1) // 1 Fixed value
@@ -77,7 +77,7 @@ test('get empty context', () => {
 
 test('get context with filters', () => {
   const component = editor.getComponents().first()
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor as Editor, {
     dataSources: [],
     filters: simpleFilters,
   })
@@ -100,7 +100,7 @@ test('get context with parent compontent states', () => {
     else return []
   })
   ;(getOrCreatePersistantId as jest.Mock).mockReturnValue('testPersistentId')
-  const dataTree = new DataTree(editor as DataSourceEditor, { filters: [], dataSources: [] })
+  const dataTree = new DataTree(editor as Editor, { filters: [], dataSources: [] })
   const context = getContext(child, dataTree)
   expect(context).toBeDefined()
   expect(context).toHaveLength(2) // 1 State + 1 Fixed value
@@ -121,7 +121,7 @@ test('get context with available states only', () => {
     else if(c === child) return ['childStateId0', 'childStateId1', 'childStateId2']
     else return []
   })
-  const dataTree = new DataTree(editor as DataSourceEditor, { filters: [], dataSources: [] })
+  const dataTree = new DataTree(editor as Editor, { filters: [], dataSources: [] })
   // Case of an attribute, all states are available
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
@@ -139,7 +139,7 @@ test('get context with available states only', () => {
 
 test('get context with data source queryable values', () => {
   const component = editor.getComponents().first()
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor as Editor, {
     filters: [],
     dataSources: [{
       id: testDataSourceId,
@@ -169,7 +169,7 @@ test('get context with data source queryable values', () => {
       fetchValues: async () => ({})
     }],
   })
-  ;(editor as DataSourceEditor).trigger('data-source:ready')
+  ;(editor as Editor).trigger('data-source:ready')
   const context = getContext(component, dataTree)
   expect(context).toBeDefined()
   expect(context).toHaveLength(2) // 1 Queryable + 1 Fixed value
@@ -178,7 +178,7 @@ test('get context with data source queryable values', () => {
 })
 
 test('get completion with simple context', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor as Editor, {
     filters: [],
     dataSources: [{
       id: testDataSourceId,
@@ -190,7 +190,7 @@ test('get completion with simple context', () => {
       fetchValues: async () => ({})
     }],
   })
-  ;(editor as DataSourceEditor).trigger('data-source:ready')
+  ;(editor as Editor).trigger('data-source:ready')
   const component = editor.getComponents().first()
 
   // Empty value
@@ -250,7 +250,7 @@ test('get completion with simple context', () => {
 })
 
 test('get completion with filters', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor as Editor, {
     filters: simpleFilters,
     dataSources: [{
       id: testDataSourceId,
@@ -262,7 +262,7 @@ test('get completion with filters', () => {
       fetchValues: async () => ({})
     }],
   })
-  ;(editor as DataSourceEditor).trigger('data-source:ready')
+  ;(editor as Editor).trigger('data-source:ready')
   const component = editor.getComponents().first()
 
   // Empty value
