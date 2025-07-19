@@ -88,7 +88,7 @@ export interface IDataSource {
   // Access data
   fetchValues(query: string): Promise<unknown>
   
-  // Event handling for compatibility with existing code
+  // Event handling
   on?(event: any, callback?: any, context?: any): any
   off?(event?: any, callback?: any, context?: any): any
   trigger?(event: any, ...args: unknown[]): any
@@ -102,8 +102,6 @@ export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
 export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
 export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'
 
-// Alias for backward compatibility
-export type IDataSourceModel = IDataSource
 
 export type DataSourceType = 'graphql'
 

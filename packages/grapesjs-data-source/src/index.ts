@@ -26,15 +26,11 @@ import { Editor } from 'grapesjs'
 /**
  * Export the public API
  */
-export * from './model/state'
-export * from './model/DataTree'
-export * from './model/dataSourceManager'
-export * from './model/token'
-export * from './model/completion'
+// Main public API - this is what apps should use
+export * from './api'
+
+// Types and interfaces that apps need
 export * from './types'
-export * from './utils'
-export * from './view/state-editor'
-export * from './commands'
 
 /**
  * GrapeJs plugin entry point

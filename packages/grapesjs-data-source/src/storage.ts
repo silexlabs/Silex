@@ -1,14 +1,15 @@
 import GraphQL, { GraphQLOptions } from "./datasources/GraphQL"
 import { IDataSource } from "./types"
-import { getAllDataSources, addDataSource, resetDataSources, refreshDataSources, getDataTree, getPageQuery } from "./model/dataSourceManager"
+import { resetDataSources, refreshDataSources } from "./model/dataSourceManager"
+import { getAllDataSources, addDataSource } from "./model/dataSourceRegistry"
 import { Editor } from "grapesjs"
 
 export default (editor: Editor) => {
   // Save and load data sources
   editor.on('storage:start:store', (data: any) => {
     data.dataSources = getAllDataSources()
-      .filter(ds => typeof ds.readonly === 'undefined' || ds.readonly === false)
-      .map(ds => ({
+      .filter((ds: IDataSource) => typeof ds.readonly === 'undefined' || ds.readonly === false)
+      .map((ds: IDataSource) => ({
         id: ds.id,
         label: ds.label,
         url: ds.url,
@@ -30,13 +31,16 @@ export default (editor: Editor) => {
     // Get all data sources
     const dataSources = getAllDataSources()
       // Keep only data sources from the config
-      .filter(ds => ds.readonly === true)
+      .filter((ds: IDataSource) => ds.readonly === true)
 
     // Reset the data sources to the original config
     resetDataSources(dataSources)
 
     // Add the new data sources
-    await Promise.all(newDataSources.map(ds => addDataSource(ds)))
+    await Promise.all(newDataSources.map(ds => {
+      addDataSource(ds)
+      return ds.connect()
+    }))
     refreshDataSources()
   })
 }

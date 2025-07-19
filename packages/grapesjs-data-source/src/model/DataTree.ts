@@ -82,8 +82,8 @@ export const STANDARD_TYPES: Type[] = [
 
 export class DataTree {
   public dataSources: IDataSource[] = []
-  // The data returned by all APIs
-  public queryResult: Record<DataSourceId, unknown> = {}
+  // Preview data returned by all APIs (for canvas preview only)
+  public previewData: Record<DataSourceId, unknown> = {}
   public filters: Filter[] = []
 
   /**
@@ -238,7 +238,7 @@ export class DataTree {
         if (!token.dataSourceId) {
           throw new Error(`Data source ID is missing for token: ${JSON.stringify(token)}`)
         }
-        prevObj = this.queryResult[token.dataSourceId]
+        prevObj = this.previewData[token.dataSourceId]
       } else {
         prevObj = prevValues
       }

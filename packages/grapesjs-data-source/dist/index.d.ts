@@ -1,164 +1,6 @@
-import Backbone from 'backbone';
-import { Model, ModelSetOptions } from 'backbone';
 import { Button, Component, Editor, Page } from 'grapesjs';
-import { LitElement, TemplateResult } from 'lit';
+import { TemplateResult } from 'lit';
 
-export interface ComponentExpression {
-	expression: Expression;
-	component: Component;
-}
-/**
- * Options of the data tree
- * They can be set on the instance too
- */
-export interface DataTreeOptions {
-	filters: Partial<Filter>[] | string;
-	dataSources: IDataSource[];
-}
-export declare const STANDARD_TYPES: Type[];
-export declare class DataTree {
-	protected editor: DataSourceEditor;
-	protected options: {
-		dataSources: IDataSource[];
-		filters: Filter[];
-	};
-	dataSources: IDataSource[];
-	filters: Filter[];
-	/**
-	 * All types from all data sources
-	 * Read only, updated when data sources are updated
-	 */
-	protected _allTypes: Type[];
-	get allTypes(): Type[];
-	/**
-	 * All queryable fields from all data sources
-	 */
-	protected _queryables: Field[];
-	get queryables(): Field[];
-	constructor(editor: DataSourceEditor, options: {
-		dataSources: IDataSource[];
-		filters: Filter[];
-	});
-	/**
-	 * Get type from typeId and dataSourceId
-	 */
-	getTypes(dataSourceId?: DataSourceId): Type[];
-	/**
-	 * Get type from typeId and dataSourceId
-	 * @throws Error if type is not found
-	 * @param componentId is used for error messages
-	 */
-	getType(typeId: TypeId, dataSourceId: DataSourceId | null, componentId: string | null): Type;
-	/**
-	 * Get all types from all data sources
-	 */
-	getAllTypes(): Type[];
-	/**
-	 * Get all queryable fields from all data sources
-	 */
-	getAllQueryables(): Field[];
-	/**
-	 * Evaluate an expression to a value
-	 */
-	getValue(context: Context, expression: ComponentExpression): unknown;
-	/**
-	 * Get all expressions used in all pages
-	 */
-	getAllPagesExpressions(): {
-		page: Page;
-		expressions: ComponentExpression[];
-	}[];
-	/**
-	 * Get all expressions used in a page
-	 * This will be used to fetch data for the page
-	 */
-	getPageExpressions(page: Page): ComponentExpression[];
-	/**
-	 * Get all expressions used by a component and its children
-	 */
-	getComponentExpressionsRecursive(component: Component): ComponentExpression[];
-	/**
-	 * Get all expressions used by a component
-	 */
-	getComponentExpressions(component: Component): ComponentExpression[];
-	/**
-	 * Build a tree of expressions
-	 */
-	getTrees({ expression, component }: ComponentExpression, dataSourceId: DataSourceId): Tree[];
-	/**
-	 * Check if a property is relative to a type
-	 * A type is "relative" if parent has a type which has a field of type tree.token
-	 * FIXME: need a better way to check if a property is relative, e.g. have a "relative" flag on the property, set depending on <state-editor root-type
-	 */
-	isRelative(parent: Property, child: Property, dataSourceId: DataSourceId): boolean;
-	/**
-	 * From expressions to a tree
-	 */
-	toTrees(expressions: ComponentExpression[], dataSourceId: DataSourceId): Tree[];
-	/**
-	 * Recursively merge two trees
-	 */
-	protected mergeTrees(tree1: Tree, tree2: Tree): Tree;
-	/**
-	 * Get all expressions used by a component
-	 * Resolves all states token as expressions recursively
-	 * Resulting expressions contain properties and filters only, no states anymore
-	 */
-	resolveState(state: State, component: Component): Expression | null;
-}
-/**
- * FIXME: Why sometimes the methods of the data source are in the attributes?
- * @return ds if it has the getTypes method or ds.attributes if it has the getTypes method
- */
-export declare function getDataSourceClass(ds: IDataSource | {
-	attributes: IDataSource;
-}): IDataSource;
-/**
- * GrapesJs plugin to manage data sources
- */
-export declare class DataSourceManager extends Backbone.Collection<IDataSourceModel> {
-	protected editor: DataSourceEditor;
-	protected options: DataSourceEditorOptions;
-	protected dataTree: DataTree;
-	get filters(): Filter[];
-	set filters(filters: Filter[]);
-	constructor(models: IDataSource[], editor: DataSourceEditor, options: DataSourceEditorOptions);
-	/**
-	 * Get all data sources
-	 */
-	getAll(): IDataSourceModel[];
-	/**
-	 * Forward events from data sources to the editor
-	 */
-	protected dataChangedBinded: (e?: CustomEvent) => void;
-	dataChanged(e?: CustomEvent): void;
-	/**
-	 * Forward events from data sources to the editor
-	 */
-	protected dataSourceReadyBinded: (ds: IDataSource) => void;
-	dataSourceReady(ds: IDataSource): void;
-	/**
-	 * Forward events from data sources to the editor
-	 */
-	protected dataSourceErrorBinded: (message: string, ds: IDataSource) => void;
-	dataSourceError(message: string, ds: IDataSource): void;
-	/**
-	 * Listen to data source changes
-	 */
-	modelChanged(e?: CustomEvent): void;
-	/**
-	 * Listen to data source changes
-	 */
-	modelReady(ds: IDataSource): void;
-	getDataTree(): DataTree;
-	getPageQuery(page: Page): Record<DataSourceId, string>;
-}
-/**
- * Add the DataSourceManager to the GrapesJs editor
- */
-export interface DataSourceEditor extends Editor {
-	DataSourceManager: DataSourceManager;
-}
 export interface DataSourceEditorViewOptions {
 	el?: HTMLElement | string | undefined | (() => HTMLElement);
 	settingsEl?: HTMLElement | string | (() => HTMLElement);
@@ -195,22 +37,33 @@ export interface Tree {
 export type DataSourceId = string | number;
 export interface IDataSource {
 	id: DataSourceId;
+	label: string;
+	url: string;
+	type: DataSourceType;
+	method?: string;
+	headers?: Record<string, string>;
 	hidden?: boolean;
+	readonly?: boolean;
 	connect(): Promise<void>;
 	isConnected(): boolean;
 	getTypes(): Type[];
 	getQueryables(): Field[];
 	getQuery(trees: Tree[]): string;
+	fetchValues(query: string): Promise<unknown>;
+	on?(event: any, callback?: any, context?: any): any;
+	off?(event?: any, callback?: any, context?: any): any;
+	trigger?(event: any, ...args: unknown[]): any;
 }
 export declare const DATA_SOURCE_READY = "data-source:ready";
 export declare const DATA_SOURCE_ERROR = "data-source:error";
 export declare const DATA_SOURCE_CHANGED = "data-source:changed";
 export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
 export declare const COMMAND_REFRESH = "data-source:refresh";
-export interface IDataSourceModel extends Model<any, ModelSetOptions, any>, IDataSource {
-}
+export declare const DATA_SOURCE_DATA_LOAD_START = "data-source:data-load:start";
+export declare const DATA_SOURCE_DATA_LOAD_END = "data-source:data-load:end";
+export declare const DATA_SOURCE_DATA_LOAD_CANCEL = "data-source:data-load:cancel";
 export type DataSourceType = "graphql";
-export interface IDataSourceOptions extends Backbone.ModelSetOptions {
+export interface IDataSourceOptions {
 	id: DataSourceId;
 	label: string;
 	type: DataSourceType;
@@ -239,6 +92,7 @@ export interface Field {
 	kind: FieldKind;
 	dataSourceId?: DataSourceId;
 	arguments?: FieldArgument[];
+	previewIndex?: number;
 }
 /**
  * A token can be a property or a filter
@@ -265,6 +119,7 @@ export interface StoredProperty extends BaseProperty {
 	label: string;
 	kind: FieldKind;
 	options?: PropertyOptions;
+	previewIndex?: number;
 }
 export interface Property extends StoredProperty {
 	optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null;
@@ -282,6 +137,7 @@ export interface StoredFilter {
 	options: Options;
 	quotedOptions?: string[];
 	optionsKeys?: string[];
+	previewIndex?: number;
 }
 export interface Filter extends StoredFilter {
 	optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null;
@@ -296,6 +152,7 @@ export type StateId = string;
 export interface State {
 	type: "state";
 	storedStateId: StateId;
+	previewIndex?: number;
 	label: string;
 	componentId: string;
 	exposed: boolean;
@@ -340,10 +197,10 @@ export declare enum Properties {
 	condition2 = "condition2",
 	__data = "__data"
 }
-/**
- * Override the prefix of state names
- */
-export declare const COMPONENT_NAME_PREFIX = "nameForDataSource";
+export interface ComponentExpression {
+	expression: Expression;
+	component: Component;
+}
 /**
  * Types
  */
@@ -352,136 +209,7 @@ export interface StoredState {
 	hidden?: boolean;
 	expression: Expression;
 }
-export interface StoredStateWithId extends StoredState {
-	id: StateId;
-}
 export type PersistantId = string;
-/**
- * Get the persistant ID of a component
- */
-export declare function getPersistantId(component: Component): PersistantId | null;
-/**
- * Get the persistant ID of a component and create it if it does not exist
- */
-export declare function getOrCreatePersistantId(component: Component): PersistantId;
-/**
- * Find a component by its persistant ID in the current page
- */
-export declare function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null;
-/**
- * Find a component by its persistant ID in
- */
-export declare function getChildByPersistantId(id: PersistantId, parent: Component): Component | null;
-/**
- * Find a component by its persistant ID in the current page
- */
-export declare function getParentByPersistentId(id: PersistantId, component: Component | undefined): Component | null;
-/**
- * Get the display name of a state
- */
-export declare function getStateDisplayName(child: Component, state: State): string;
-export declare function onStateChange(callback: (state: StoredState | null, component: Component) => void): () => void;
-/**
- * List all exported states
- */
-export declare function getStateIds(component: Component, exported?: boolean, before?: StateId): StateId[];
-/**
- * List all exported states
- */
-export declare function getStates(component: Component, exported?: boolean): StoredState[];
-/**
- * Get the name of a state variable
- * Useful to generate code
- */
-export declare function getStateVariableName(componentId: string, stateId: StateId): string;
-/**
- * Get a state
- */
-export declare function getState(component: Component, id: StateId, exported?: boolean): StoredState | null;
-/**
- * Set a state
- * The state will be updated or created at the end of the list
- * Note: index is not used in this project anymore (maybe in apps using this plugins)
- */
-export declare function setState(component: Component, id: StateId, state: StoredState, exported?: boolean, index?: number): void;
-/**
- * Remove a state
- */
-export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
-/**
- * Add missing methonds to the filter
- * When filters are stored they lose their methods
- * @throws Error if the filter is not found
- */
-export declare function getFilterFromToken(token: Filter, filters: Filter[]): Filter;
-/**
- * Get the token from its stored form
- * @throws Error if the token type is not found
- */
-export declare function fromStored<T extends Token = Token>(token: StoredToken, dataTree: DataTree, componentId: string | null): T;
-/**
- * Get the type corresponding to a token
- */
-export declare function tokenToField(token: Token, prev: Field | null, component: Component, dataTree: DataTree): Field | null;
-/**
- * Get the type corresponding to a property
- * @throws Error if the type is not found
- */
-export declare function propertyToField(property: Property, dataTree: DataTree, componentId: string | null): Field;
-/**
- * Evaluate the types of each token in an expression
- */
-export declare function expressionToFields(expression: Expression, component: Component, dataTree: DataTree): Field[];
-/**
- * Evaluate an expression to a type
- * This is used to validate expressions and for autocompletion
- * @throws Error if the token type is not found
- */
-export declare function getExpressionResultType(expression: Expression, component: Component, dataTree: DataTree): Field | null;
-/**
- * Get the options of a token
- */
-export declare function getTokenOptions(field: Field): {
-	optionsForm: (selected: Component, input: Field | null, options: Options) => TemplateResult;
-	options: Options;
-} | null;
-/**
- * Get the options of a token or a field
- */
-export declare function optionsToOptionsForm(arr: {
-	name: string;
-	value: unknown;
-}[]): (selected: Component, input: Field | null, options: Options) => TemplateResult;
-/**
- * Utility function to shallow compare two objects
- * Used to compare options of tree items
- */
-export declare function getOptionObject(option1: PropertyOptions | undefined, option2: PropertyOptions | undefined): {
-	error: boolean;
-	result: PropertyOptions | undefined;
-};
-export declare function buildArgs(options: PropertyOptions | undefined): string;
-/**
- * Get the context of a component
- * This includes all parents states, data sources queryable values, values provided in the options
- */
-export declare function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId, hideLoopData?: boolean): Context;
-/**
- * Create a property token from a field
- */
-export declare function fieldToToken(field: Field): Property;
-/**
- * Auto complete an expression
- * @returns a list of possible tokens to add to the expression
- */
-export declare function getCompletion(options: {
-	component: Component;
-	expression: Expression;
-	dataTree: DataTree;
-	rootType?: TypeId;
-	currentStateId?: StateId;
-	hideLoopData?: boolean;
-}): Context;
 /**
  * @fileoverview GraphQL DataSource implementation
  */
@@ -500,159 +228,182 @@ export interface GraphQLQueryOptions {
  */
 export interface GraphQLOptions extends GraphQLQueryOptions, IDataSourceOptions {
 	serverToServer?: GraphQLQueryOptions;
+	hidden?: boolean;
 }
-export declare const NOTIFICATION_GROUP = "Data source";
 /**
- * Get the display name of a field
+ * Generate GraphQL query for a single page
+ * Used by both preview and production (11ty site generation)
+ *
+ * @param page - The GrapesJS page to generate query for
+ * @param editor - The GrapesJS editor instance
+ * @returns Record of data source ID to GraphQL query string
  */
-export declare function cleanStateName(name: string | null): string | undefined;
-export declare function getComponentDebug(component: Component): string;
+export declare function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, string>;
 /**
- * Concatenate strings to get a desired length string as result
- * Exported for tests
+ * Generate queries for multiple pages
+ * Useful for batch operations like static site generation
+ *
+ * @param pages - Array of GrapesJS pages
+ * @param editor - The GrapesJS editor instance
+ * @returns Record of page ID to data source queries
  */
-export declare function concatWithLength(desiredNumChars: number, ...strings: string[]): string;
+export declare function buildPageQueries(pages: Page[], editor: Editor): Record<string, Record<DataSourceId, string>>;
 /**
- * Get the label for a token
- * This is mostly about formatting a string for the dropdowns
+ * Get all data sources
+ * @returns Array of all registered data sources
  */
-export declare function getTokenDisplayName(component: Component, token: Token): string;
+export declare function getAllDataSources(): IDataSource[];
 /**
- * Group tokens by type
- * This is used to create the groups in dropdowns
+ * Get a specific data source by ID
+ * @param id - The data source ID
+ * @returns The data source or undefined if not found
  */
-export declare function groupByType(editor: DataSourceEditor, component: Component, completion: Token[], expression: Expression): Record<string, Token[]>;
+export declare function getDataSource(id: DataSourceId): IDataSource | undefined;
 /**
- * Create a "fixed" token
- * It is a hard coded content with which you can start an expression
+ * Add a new data source
+ * @param dataSource - The data source to add
  */
-export declare const FIXED_TOKEN_ID = "fixed";
-export declare function getFixedToken(value: string): Token;
+export declare function addDataSource(dataSource: IDataSource): void;
 /**
- * Convert a token to a string
- * This is used to store the token in the component
+ * Remove a data source
+ * @param dataSource - The data source to remove
  */
-export declare function toValue(token: Token): string;
+export declare function removeDataSource(dataSource: IDataSource): void;
 /**
- * Convert a token to an option's tag value (json string)
+ * Refresh preview data from all data sources
+ * Triggers data loading for the current page
  */
-export declare function toId(token: Token): string;
+export declare function refreshDataSources(): void;
 /**
- * Revert an option's tag value to a token
- * @throws Error if the token type is not found
+ * Load preview data for the current page
+ * @returns Promise that resolves when data is loaded
  */
-export declare function fromString(editor: DataSourceEditor, id: string, componentId: string | null): Token;
+export declare function loadPreviewData(): Promise<void>;
 /**
- * Check if a json is an expression, i.e. an array of tokens
+ * Get current preview data
+ * @returns Record of data source ID to preview data
  */
-export declare function isExpression(json: unknown): boolean;
+export declare function getPreviewData(): Record<DataSourceId, unknown>;
 /**
- * Convert a json to an expression
+ * Clear all preview data
+ */
+export declare function clearPreviewData(): void;
+/**
+ * Evaluate an expression with current preview data
+ * @param expression - The expression to evaluate
+ * @param component - The component context
+ * @returns The evaluated result
+ */
+export declare function getValue(expression: Expression, component: Component): unknown;
+/**
+ * Get all expressions used by components on a page
+ * @param page - The page to analyze
+ * @returns Array of component expressions
+ */
+export declare function getPageExpressions(page: Page): ComponentExpression[];
+/**
+ * Get auto-completion options for expressions
+ * @param options - Completion options including component, expression, etc.
+ * @returns Context with available tokens for completion
+ */
+export declare function getCompletion(options: {
+	component: Component;
+	expression: Expression;
+	rootType?: TypeId;
+	currentStateId?: StateId;
+	hideLoopData?: boolean;
+}): Context;
+/**
+ * Convert a stored token to its full form with methods and properties
+ * @param token - The stored token to convert
+ * @param componentId - The component ID for context (can be null)
+ * @returns The full token with all properties and methods
+ */
+export declare function fromStored<T extends Token = Token>(token: StoredToken, componentId: string | null): T;
+/**
+ * Get the result type of an expression
+ * @param expression - The expression to analyze
+ * @param component - The component context
+ * @returns The field describing the result type, or null if invalid
+ */
+export declare function getExpressionResultType(expression: Expression, component: Component): Field | null;
+/**
+ * Get the persistent ID of a component
+ * @param component - The component to get ID for
+ * @returns The persistent ID or null if not set
+ */
+export declare function getPersistantId(component: Component): PersistantId | null;
+/**
+ * Get or create the persistent ID of a component
+ * @param component - The component to get/create ID for
+ * @returns The persistent ID
+ */
+export declare function getOrCreatePersistantId(component: Component): PersistantId;
+/**
+ * Get a state from a component
+ * @param component - The component to get state from
+ * @param id - The state ID
+ * @param exported - Whether to get exported (public) or private state
+ * @returns The state or null if not found
+ */
+export declare function getState(component: Component, id: StateId, exported?: boolean): StoredState | null;
+/**
+ * Get all state IDs from a component
+ * @param component - The component to get state IDs from
+ * @param exported - Whether to get exported (public) or private state IDs
+ * @param before - Optional state ID to get IDs before
+ * @returns Array of state IDs
+ */
+export declare function getStateIds(component: Component, exported?: boolean, before?: StateId): StateId[];
+/**
+ * Set a state on a component
+ * @param component - The component to set state on
+ * @param id - The state ID
+ * @param state - The state to set
+ * @param exported - Whether to set as exported (public) or private state
+ * @param index - Optional index to insert at
+ */
+export declare function setState(component: Component, id: StateId, state: StoredState, exported?: boolean, index?: number): void;
+/**
+ * Remove a state from a component
+ * @param component - The component to remove state from
+ * @param id - The state ID to remove
+ * @param exported - Whether to remove from exported (public) or private states
+ */
+export declare function removeState(component: Component, id: StateId, exported?: boolean): void;
+/**
+ * Get the variable name for a state
+ * @param componentId - The component ID
+ * @param stateId - The state ID
+ * @returns The variable name
+ */
+export declare function getStateVariableName(componentId: string, stateId: StateId): string;
+/**
+ * Convert JSON or string to an Expression object
+ * @param json - The JSON or string to convert
+ * @returns The Expression object or null if invalid
  */
 export declare function toExpression(json: unknown | string): Expression | null;
 /**
- * Apply a kind to a field
+ * Create a data source instance
+ * @param options - The data source configuration
+ * @returns The created data source
  */
-export declare function convertKind(field: Field | null, from: FieldKind, to: FieldKind): Field | null;
+export declare function createDataSource(opts?: Partial<GraphQLOptions>): IDataSource;
+export declare function getLiquidFilters(editor: Editor): Filter[];
 /**
- * Get the type of a field, as provided by the data source
- * @throws Error if the field has a token with an unknown type
+ * Notification group name for data source notifications
  */
-export declare function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined, componentId: string | null): Field | null;
+export declare const NOTIFICATION_GROUP = "Data source";
 /**
- * Generate a form to edit the options of a token
- * @throws Error if the field has a token with an unknown type
+ * Component name prefix for data source components
  */
-export declare function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult;
+export declare const COMPONENT_NAME_PREFIX = "nameForDataSource";
 /**
- * Get a container element from an option
- * @throws Error if the option is not a string or an HTMLElement or a function
- * @throws Error if the element is not found
+ * Fixed token ID for hard-coded values
  */
-export declare function getElementFromOption(option: HTMLElement | string | (() => HTMLElement) | undefined, optionNameForError: string): HTMLElement;
-export declare function getDefaultOptions(postFix?: string): GraphQLOptions;
-export declare function createDataSource(opts?: Partial<GraphQLOptions>, postFix?: string): IDataSource;
-/**
- * Editor for a state of the selected element's properties
- *
- * Usage:
- *
- * ```
- * <state-editor
- *  name="state"
- *  disabled
- *  hide-loop-data
- *  parent-name="parent"
- *  no-filters
- *  root-type="root"
- *  default-fixed
- *  dismiss-current-component-states
- *  ></state-editor>
- * ```
- *
- */
-export declare class StateEditor extends LitElement {
-	disabled: boolean;
-	name: string;
-	hideLoopData: boolean;
-	/**
-	 * used in the expressions found in filters options
-	 * This will be used to filter states which are not defined yet
-	 */
-	parentName: string;
-	noFilters: boolean;
-	rootType: string;
-	defaultFixed: boolean;
-	dismissCurrentComponentStates: boolean;
-	private _selected;
-	get selected(): Component | null;
-	set selected(value: Component | null);
-	/**
-	 * Value string for for submissions
-	 */
-	get value(): string;
-	set value(newValue: string);
-	/**
-	 * Form id
-	 * This is the same API as input elements
-	 */
-	for: string;
-	/**
-	 * Binded listeners
-	 */
-	private onFormdata_;
-	private renderBinded;
-	connectedCallback(): void;
-	disconnectedCallback(): void;
-	/**
-	 * Handle formdata event to add the current value to the form
-	 */
-	private onFormdata;
-	/**
-	 * Form setter
-	 * Handle formdata event to add the current value to the form
-	 */
-	protected _form: HTMLFormElement | null;
-	set form(newForm: HTMLFormElement | null);
-	get form(): HTMLFormElement | null;
-	/**
-	 * Structured data
-	 */
-	private _data;
-	get data(): Token[];
-	set data(value: Token[] | string);
-	private _editor;
-	get editor(): DataSourceEditor | null;
-	set editor(value: DataSourceEditor | null);
-	private redrawing;
-	private expressionInputRef;
-	private popinsRef;
-	render(): TemplateResult<1>;
-	private onChangeValue;
-	private onChangeOptions;
-	private getOptions;
-}
-declare const _default: (editor: DataSourceEditor, opts?: Partial<DataSourceEditorOptions>) => void;
+export declare const FIXED_TOKEN_ID = "fixed";
+declare const _default: (editor: Editor, opts?: Partial<DataSourceEditorOptions>) => void;
 /**
  * Version of the plugin
  * This is replaced by the build script

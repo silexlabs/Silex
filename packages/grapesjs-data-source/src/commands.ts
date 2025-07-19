@@ -1,5 +1,6 @@
 import { DataSourceEditorOptions } from "./types"
-import { getAllDataSources, refreshDataSources } from "./model/dataSourceManager"
+import { refreshDataSources } from "./model/dataSourceManager"
+import { getAllDataSources } from "./model/dataSourceRegistry"
 import { Editor } from "grapesjs"
 
 // GrapesJS plugin to add commands to the editor

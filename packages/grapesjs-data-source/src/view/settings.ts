@@ -1,9 +1,9 @@
 import { createRef, Ref, ref } from 'lit/directives/ref.js'
 import {repeat} from 'lit/directives/repeat.js'
 import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditorViewOptions, IDataSourceModel } from '../types'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditorViewOptions, IDataSource } from '../types'
 import { getDefaultOptions, getElementFromOption } from '../utils'
-import { getAllDataSources, addDataSource, removeDataSource } from '../model/dataSourceManager'
+import { getAllDataSources, addDataSource, removeDataSource } from '../model/dataSourceRegistry'
 import { css, html, LitElement, render } from 'lit'
 import { property } from 'lit/decorators.js'
 import { Editor } from 'grapesjs'
@@ -86,7 +86,7 @@ function renderSettings(editor: Editor, dsSettings: Ref, settingsEl: HTMLElement
       ${ref(dsSettings)}
       .dataSources=${[]}
       @change=${(e: CustomEvent) => {
-    const ds = e.detail as IDataSourceModel
+    const ds = e.detail as IDataSource
     // Handle data source changes - this may need to be reimplemented
     // depending on how the data source update logic should work
     console.log('Data source changed:', ds)
@@ -102,7 +102,7 @@ function renderSettings(editor: Editor, dsSettings: Ref, settingsEl: HTMLElement
     addDataSource(newDS)
   }}
       @delete=${(e: CustomEvent) => {
-    const ds = e.detail as IDataSourceModel
+    const ds = e.detail as IDataSource
     removeDataSource(ds)
   }}
       ></ds-settings>
@@ -115,7 +115,7 @@ function renderSettings(editor: Editor, dsSettings: Ref, settingsEl: HTMLElement
 class SettingsDataSources extends LitElement {
 
   @property({ type: Array })
-    dataSources: IDataSourceModel[]
+    dataSources: IDataSource[]
 
   constructor() {
     super()
@@ -156,7 +156,7 @@ class SettingsDataSources extends LitElement {
   }}>\u2795</button>
     -->
       <hr class="ds-separator">
-      ${repeat(this.dataSources.filter(ds => !ds.hidden), (ds: IDataSourceModel) => ds.id, (ds: IDataSourceModel) => html`
+      ${repeat(this.dataSources.filter(ds => !ds.hidden), (ds: IDataSource) => ds.id, (ds: IDataSource) => html`
         <ds-settings__data-source
           ${ref(dsDataSource)}
           .dataSource=${ds}
@@ -189,7 +189,7 @@ if(!customElements.get('ds-settings')) {
 
 class SettingsDataSource extends LitElement {
   @property({ type: Object })
-    dataSource: IDataSourceModel | null
+    dataSource: IDataSource | null
   errorMessage: string = ''
   connected: boolean = false
 

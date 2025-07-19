@@ -1631,8 +1631,8 @@ test('get value from GraphQL inline fragments (flatData.modules.item)', () => {
     }]
   })
 
-  // Set the query result to simulate fetched data
-  dataTree.queryResult[testDataSourceId] = mockData
+  // Set the preview data to simulate fetched data
+  dataTree.previewData[testDataSourceId] = mockData
 
   // Test accessing the first item's before text
   const beforeExpression = [

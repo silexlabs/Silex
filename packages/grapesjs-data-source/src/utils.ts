@@ -1,11 +1,12 @@
-import { Expression, Field, FieldKind, IDataSource, IDataSourceModel, Options, Token, TypeId } from './types'
+import { Expression, Field, FieldKind, IDataSource, Options, Token, TypeId } from './types'
 import { Editor } from 'grapesjs'
 import { getParentByPersistentId, getStateDisplayName } from './model/state'
 import { TemplateResult, html } from 'lit'
 import { Component } from 'grapesjs'
 import { fromStored, getExpressionResultType } from './model/token'
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
-import { getDataTree as getGlobalDataTree, getDataSource } from './model/dataSourceManager'
+import { getDataTree as getGlobalDataTree } from './model/dataSourceManager'
+import { getDataSource } from './model/dataSourceRegistry'
 
 export const NOTIFICATION_GROUP = 'Data source'
 

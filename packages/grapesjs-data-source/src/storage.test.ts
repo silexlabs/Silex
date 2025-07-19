@@ -3,7 +3,8 @@
  */
 import { Editor } from 'grapesjs'
 import storage from './storage'
-import { getAllDataSources, addDataSource, resetDataSources } from './model/dataSourceManager'
+import { resetDataSources, refreshDataSources } from './model/dataSourceManager'
+import { getAllDataSources, addDataSource } from './model/dataSourceRegistry'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
@@ -13,10 +14,14 @@ jest.mock('lit', () => ({
 
 // Mock the dataSourceManager to avoid complex initialization
 jest.mock('./model/dataSourceManager', () => ({
-  getAllDataSources: jest.fn(),
-  addDataSource: jest.fn(),
   resetDataSources: jest.fn(),
   refreshDataSources: jest.fn()
+}))
+
+// Mock the dataSourceRegistry 
+jest.mock('./model/dataSourceRegistry', () => ({
+  getAllDataSources: jest.fn(),
+  addDataSource: jest.fn(),
 }))
 
 const config1 = { readonly: true, id: 'config1', label: 'Config 1', url: 'http://config1.com', type: 'graphql' as const } // from the config
