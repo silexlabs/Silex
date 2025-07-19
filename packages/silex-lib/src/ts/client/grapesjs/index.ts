@@ -143,6 +143,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
     showDevices: true,
 
     //pageManager: {},
+    telemetry: false,
 
     layerManager: {
       appendTo: '.layer-manager-container',
