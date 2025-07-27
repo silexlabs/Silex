@@ -174,9 +174,9 @@ export function clearPreviewData(): void {
  * @param component - The component context
  * @returns The evaluated result
  */
-export function getValue(expression: Expression, component: Component): unknown {
+export function getValue(expression: Expression, component: Component, resolvePreviewIndex = true): unknown {
   const dataTree = getDataTreeInternal()
-  return dataTree.getValue(expression, component)
+  return dataTree.getValue(expression, component, resolvePreviewIndex)
 }
 
 /**

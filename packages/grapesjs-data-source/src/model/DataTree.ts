@@ -197,7 +197,7 @@ export class DataTree {
   getValue(
     expression: Expression,
     component: Component,
-    resolvePreviewIndex = true,
+    resolvePreviewIndex = true, // False only for loop
     prevValues: unknown = null,
   ): unknown {
     if (expression.length === 0) {
@@ -213,15 +213,13 @@ export class DataTree {
       if (!resolvedExpression) {
         throw new Error(`Unable to resolve state: ${JSON.stringify(state)}`)
       }
-      // if(state.storedStateId === '__data' && rest.length > 0) {
-      //   const stateValue = this.getValue(resolvedExpression, component, prevValues)
-      //   if (!Array.isArray(stateValue)) {
-      //     console.error('__data is being accessed with non-array data', {prevValues, state, resolvedExpression})
-      //     throw new Error('__data with non-array data')
-      //   }
-      //   const { previewIndex } = resolvedExpression.slice(-1)[0] as State
-      //   return this.getValue(rest, component, stateValue[previewIndex || 0])
-      // }
+
+      // Special handling for items state - always wrap result in array when resolvePreviewIndex is true
+      const previewIndex = resolvedExpression[resolvedExpression.length - 1].previewIndex
+      if (state.storedStateId === 'items' && typeof previewIndex !== 'undefined') {
+        // @ts-ignore
+        resolvedExpression[0].isItems = true
+      }
       return this.getValue(resolvedExpression.concat(...rest), component, resolvePreviewIndex, prevValues)
     }
 
@@ -246,8 +244,14 @@ export class DataTree {
       // Now get the next value
       let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
 
-      value = resolvePreviewIndex || rest.length > 0 ? this.handlePreviewIndex(value, token) : value
-
+      // value = rest.length > 0 ? typeof token.previewIndex === 'undefined' ? this.handlePreviewIndex(value, token, component) : [this.handlePreviewIndex(value, token, component)] : value
+      value = rest.length > 0 ? this.handlePreviewIndex(value, token, component) : value
+      // @ts-ignore
+      if (token.isItems && typeof token.previewIndex !== 'undefined') {
+        if(rest.length > 0) {
+          value = [value]
+        }
+      }
       return this.getValue(rest, component, resolvePreviewIndex, value)
     }
     case 'filter': {
@@ -263,20 +267,20 @@ export class DataTree {
 
       let value
       try {
+        // value = filter.apply([prevValues], options)
         value = filter.apply(prevValues, options)
       } catch(e) {
-        console.warn('Error in the filter', filter, 'Error:', e)
+        console.error('Filter error, return next value', e)
         // Mimic behavior of liquid
         return this.getValue(rest, component, resolvePreviewIndex, prevValues)
       }
 
-      value = resolvePreviewIndex || rest.length > 0 ? this.handlePreviewIndex(value, token) : value
+      value = resolvePreviewIndex || rest.length > 0 ? this.handlePreviewIndex(value, token, component) : value
 
       return this.getValue(rest, component, resolvePreviewIndex, value)
     }
 
     default:
-      console.error('Unsupported token type:', token)
       throw new Error(`Unsupported token type: ${token}`)
     }
   }
@@ -284,11 +288,19 @@ export class DataTree {
   /**
    * Handle preview index for a given value and token
    */
-  handlePreviewIndex(value: unknown, token: StoredToken): unknown {
-    if (!Array.isArray(value) || typeof token.previewIndex === 'undefined' /* && rest.length > 0 */) {
+  handlePreviewIndex(value: unknown, token: StoredToken, component?: Component): unknown {
+    console.log('handlePreviewIndex', {value, token})
+    if (typeof token.previewIndex === 'undefined') {
+      console.log('No preview index defined, returning value as-is')
       return value
     }
-    return value[token.previewIndex] ?? null
+
+    if(Array.isArray(value)) {
+      console.log(`Extracting item at index ${token.previewIndex} from array of length ${value.length}`)
+      return value[token.previewIndex]
+    }
+    console.log('Value is not an array, returning as-is')
+    return value
   }
 
   /**

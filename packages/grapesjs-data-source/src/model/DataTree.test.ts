@@ -1839,3 +1839,181 @@ test('get value from GraphQL inline fragments (flatData.modules.item)', () => {
 //   const result = dataTree.getValue(expr, containerComponent, {} as unknown)
 //   expect(result).toBe('expected result')
 // })
+
+test('items state should wrap result in array for collection pages', () => {
+  const dataTree = new DataTree(editor, {filters: simpleFilters, dataSources: []})
+
+  // Mock state resolution to return property tokens
+  dataTree.resolveState = jest.fn().mockReturnValue([
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'countries',
+      dataSourceId: 'ds-1',
+      kind: 'list'
+    }
+  ])
+
+  // Mock preview data
+  dataTree.previewData = {
+    'ds-1': {
+      countries: [
+        { id: 1, name: 'Afghanistan', code: 'AF' },
+        { id: 2, name: 'Albania', code: 'AL' },
+        { id: 3, name: 'Algeria', code: 'DZ' }
+      ]
+    }
+  }
+
+  // Mock items state expression
+  const itemsStateExpression = [{
+    type: 'state',
+    storedStateId: 'items',
+    previewIndex: 1,
+    componentId: 'body-id',
+    exposed: true,
+    label: 'pagination.items'
+  }] as Expression
+
+  // Create body component
+  const bodyComponent = containerComponent
+  bodyComponent.set('tagName', 'body')
+
+  // Test items state - should wrap in array
+  const result = dataTree.getValue(itemsStateExpression, bodyComponent, true)
+  expect(result).toEqual([
+    { id: 1, name: 'Afghanistan', code: 'AF' },
+    { id: 2, name: 'Albania', code: 'AL' },
+    { id: 3, name: 'Algeria', code: 'DZ' }
+  ])
+})
+
+describe('getValue function - previewIndex + filter bug', () => {
+  test('should handle previewIndex with filter correctly - reproduces bug', () => {
+    // Create the first filter that returns the first element of an array
+    const firstFilter: Filter = {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      validate: (field) => !!field && field.kind === 'list',
+      output: (field) => field, // Simplified output function
+      apply: (arr) => Array.isArray(arr) ? arr[0] : arr,
+      options: {}
+    }
+
+    // Set up the data tree with the filter
+    const dataTree = new DataTree(editor, {
+      filters: [firstFilter],
+      dataSources: []
+    })
+
+    // Mock preview data - the structure should match what the property token expects
+    // Since fieldId is 'continents', it should be directly available in the data source
+    dataTree.previewData = {
+      'ds-1': {
+        continents: [
+          { __typename: 'Continent', name: 'Africa' },
+          { __typename: 'Continent', name: 'Antarctica' },
+          { __typename: 'Continent', name: 'Asia' },
+          { __typename: 'Continent', name: 'Europe' },
+          { __typename: 'Continent', name: 'North America' },
+          { __typename: 'Continent', name: 'Oceania' },
+          { __typename: 'Continent', name: 'South America' }
+        ]
+      }
+    }
+
+    // Create the problematic expression
+    const expression: Expression = [
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'continents',
+        dataSourceId: 'ds-1',
+        kind: 'list',
+        label: 'continents',
+        typeIds: ['Continent'],
+        previewIndex: 2, // Should select Asia (index 2)
+        options: { filter: '{}' }
+      },
+      {
+        type: 'filter',
+        id: 'first',
+        label: 'first',
+        options: {}
+      },
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'name',
+        dataSourceId: 'ds-1',
+        kind: 'scalar',
+        label: 'name',
+        typeIds: ['String'],
+        options: {}
+      }
+    ]
+
+    const component = containerComponent
+    const result = dataTree.getValue(expression, component, true, null)
+
+    // This test should FAIL initially because of the bug
+    // The expected result should be 'Asia' (continent at index 2)
+    // But due to the bug, it returns null because:
+    // 1. Step 1 gets continents[2] = Asia continent object
+    // 2. Step 2 applies 'first' filter to single object -> undefined/null
+    // 3. Step 3 tries to get 'name' from null -> null
+    console.log('🧪 Test result:', result)
+    expect(result).toBe('Asia') // This should FAIL initially
+  })
+
+  test('should handle previewIndex without filter correctly - control test', () => {
+    const dataTree = new DataTree(editor, {
+      filters: [],
+      dataSources: []
+    })
+
+    // Mock preview data
+    dataTree.previewData = {
+      'ds-1': {
+        continents: [
+          { name: 'Africa' },
+          { name: 'Antarctica' },
+          { name: 'Asia' },
+          { name: 'Europe' }
+        ]
+      }
+    }
+
+    // Expression without filter (should work correctly)
+    const expression: Expression = [
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'continents',
+        dataSourceId: 'ds-1',
+        kind: 'list',
+        label: 'continents',
+        typeIds: ['Continent'],
+        previewIndex: 2, // Should select Asia (index 2)
+        options: {}
+      },
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'name',
+        dataSourceId: 'ds-1',
+        kind: 'scalar',
+        label: 'name',
+        typeIds: ['String'],
+        options: {}
+      }
+    ]
+
+    const component = containerComponent
+    const result = dataTree.getValue(expression, component, true, null)
+
+    // This should work correctly
+    expect(result).toBe('Asia')
+  })
+})
