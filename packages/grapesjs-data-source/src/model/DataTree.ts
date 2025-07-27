@@ -217,7 +217,7 @@ export class DataTree {
       // Special handling for items state - always wrap result in array when resolvePreviewIndex is true
       const previewIndex = resolvedExpression[resolvedExpression.length - 1].previewIndex
       if (state.storedStateId === 'items' && typeof previewIndex !== 'undefined') {
-        // @ts-ignore
+        // @ts-expect-error - Adding runtime property for items state handling
         resolvedExpression[0].isItems = true
       }
       return this.getValue(resolvedExpression.concat(...rest), component, resolvePreviewIndex, prevValues)
@@ -244,9 +244,16 @@ export class DataTree {
       // Now get the next value
       let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
 
-      // value = rest.length > 0 ? typeof token.previewIndex === 'undefined' ? this.handlePreviewIndex(value, token, component) : [this.handlePreviewIndex(value, token, component)] : value
-      value = rest.length > 0 ? this.handlePreviewIndex(value, token, component) : value
-      // @ts-ignore
+      // Always handle preview index if resolvePreviewIndex is true
+      if (resolvePreviewIndex) {
+        value = this.handlePreviewIndex(value, token)
+      }
+      
+      // For non-final tokens, always handle preview index regardless of resolvePreviewIndex
+      if (rest.length > 0 && !resolvePreviewIndex) {
+        value = this.handlePreviewIndex(value, token)
+      }
+      // @ts-expect-error - Runtime property check for items handling
       if (token.isItems && typeof token.previewIndex !== 'undefined') {
         if(rest.length > 0) {
           value = [value]
@@ -275,7 +282,10 @@ export class DataTree {
         return this.getValue(rest, component, resolvePreviewIndex, prevValues)
       }
 
-      value = resolvePreviewIndex || rest.length > 0 ? this.handlePreviewIndex(value, token, component) : value
+      // Always handle preview index if resolvePreviewIndex is true, or if there are more tokens
+      if (resolvePreviewIndex || rest.length > 0) {
+        value = this.handlePreviewIndex(value, token)
+      }
 
       return this.getValue(rest, component, resolvePreviewIndex, value)
     }
@@ -288,18 +298,14 @@ export class DataTree {
   /**
    * Handle preview index for a given value and token
    */
-  handlePreviewIndex(value: unknown, token: StoredToken, component?: Component): unknown {
-    console.log('handlePreviewIndex', {value, token})
+  handlePreviewIndex(value: unknown, token: StoredToken): unknown {
     if (typeof token.previewIndex === 'undefined') {
-      console.log('No preview index defined, returning value as-is')
       return value
     }
 
     if(Array.isArray(value)) {
-      console.log(`Extracting item at index ${token.previewIndex} from array of length ${value.length}`)
       return value[token.previewIndex]
     }
-    console.log('Value is not an array, returning as-is')
     return value
   }
 
