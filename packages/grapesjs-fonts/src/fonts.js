@@ -132,7 +132,7 @@ export const fontsDialogPlugin = (editor, opts) => {
     // When the page changes, update the dom
     editor.on('page', () => {
         // FIXME: remove this timeout which is a workaround for issues with fonts loading after page change
-        setTimeout(() => refresh(editor, opts), 1000)
+        setTimeout(() => refresh(editor, opts), 50)
     })
 }
 
