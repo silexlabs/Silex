@@ -1,8 +1,7 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
 import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
-import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, same, toString } from './model/ComplexSelector'
-import { IdSelector, SimpleSelectorType } from './model/SimpleSelector'
+import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, getSelector } from './model/ComplexSelector'
 import './components/complex-selector'
 import './components/current-selector-display'
 
@@ -101,50 +100,6 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
       <p>Select a component to edit its selector</p>
     `, container)
   }
-}
-
-/**
- * Make sure that the selector always contains the ID of the component
- */
-function getSelector(components: Component[]): ComplexSelector | null {
-  if(components.length === 0) return null
-  const selectors: ComplexSelector[] = components
-    .map((component) => getComponentSelector(component) || EMPTY_SELECTOR)
-  const selector = same(selectors)
-  if(!selector) return null
-  const idSelectorOff: IdSelector = {
-    type: SimpleSelectorType.ID,
-    value: components[0].getId(),
-    active: false,
-  }
-  const idSelectorOn: IdSelector = {
-    type: SimpleSelectorType.ID,
-    value: components[0].getId(),
-    active: true,
-  }
-  const newSelector = merge(selector, { mainSelector: { selectors: [idSelectorOff] } })
-  // Deactivate the ID selector
-  if(newSelector.mainSelector.selectors
-    .filter((selector) => selector.type !== SimpleSelectorType.ID && selector.active)
-    .length > 0
-  ) {
-    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
-      if (selector.type === SimpleSelectorType.ID) {
-        return idSelectorOff
-      }
-      return selector
-    })
-  }
-  // Activate the ID if it needs to be activated
-  if (!toString(newSelector)) {
-    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
-      if (selector.type === SimpleSelectorType.ID) {
-        return idSelectorOn
-      }
-      return selector
-    })
-  }
-  return newSelector
 }
 
 function chagedSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {

@@ -1,7 +1,8 @@
-import { activateSelectors, ComplexSelector, fromString, toString } from './ComplexSelector'
+import { activateSelectors, ComplexSelector, fromString, toString, getSelector } from './ComplexSelector'
 import { OPERATORS, OperatorType } from './Operator'
 import { PseudoClassType } from './PseudoClass'
 import { ClassSelector, IdSelector, SimpleSelectorType, TagSelector } from './SimpleSelector'
+import { Component } from 'grapesjs'
 
 const id = 'TEST_ID'
 
@@ -337,5 +338,43 @@ describe('fromString', () => {
         ]
       },
     })
+  })
+})
+
+describe('getSelector function', () => {
+  test('should update ID in the selector when the component ID has changed', () => {
+    // Mock a component that has changed its ID
+    const mockComponent = {
+      getId: jest.fn(() => 'newId'), // Component now has new ID
+      tagName: 'div',
+      getClasses: jest.fn(() => ['test-class']),
+      get: jest.fn(() => ({
+        // This represents the old selector stored in the component
+        mainSelector: {
+          selectors: [
+            { type: SimpleSelectorType.ID, value: 'oldId', active: true },
+            { type: SimpleSelectorType.CLASS, value: 'test-class', active: true }
+          ]
+        }
+      }))
+    } as unknown as Component
+
+    // Call the getSelector function
+    const result = getSelector([mockComponent])
+
+    // The result should have the component's current ID, not the stored old ID
+    expect(result).not.toBeNull()
+    if (result) {
+      const idSelectors = result.mainSelector.selectors.filter(
+        (s: any) => s.type === SimpleSelectorType.ID
+      ) as IdSelector[]
+
+      // Should have exactly one ID selector
+      expect(idSelectors).toHaveLength(1)
+
+      // Should use component's current ID, not the stored old ID
+      expect(idSelectors[0].value).toBe('newId')
+      expect(idSelectors[0].value).not.toBe('oldId')
+    }
   })
 })

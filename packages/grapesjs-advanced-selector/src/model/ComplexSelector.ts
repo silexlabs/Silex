@@ -1,5 +1,8 @@
+import { Component } from 'grapesjs'
 import { CompoundSelector, toString as compoundToString, fromString as compoundFromString, specificity as compoundSpecificity, merge as mergeCompoundSelectors, updateActivation } from './CompoundSelector'
 import { Operator, toString as operatorToString, fromString as operatorFromString } from './Operator'
+import { IdSelector, SimpleSelectorType } from './SimpleSelector'
+import { getComponentSelector } from './GrapesJsSelectors'
 
 export interface ComplexSelector {
   mainSelector: CompoundSelector
@@ -147,4 +150,54 @@ export function same(all: ComplexSelector[]): ComplexSelector | false {
     relatedSelector: cs1.relatedSelector,
     atRule: cs1.atRule,
   }
+}
+
+/**
+ * Make sure that the selector always contains the ID of the component
+ */
+export function getSelector(components: Component[]): ComplexSelector | null {
+  if(components.length === 0) return null
+  const selectors: ComplexSelector[] = components
+    .map((component) => getComponentSelector(component) || EMPTY_SELECTOR)
+  const selector = same(selectors)
+  if(!selector) return null
+  const idSelectorOff: IdSelector = {
+    type: SimpleSelectorType.ID,
+    value: components[0].getId(),
+    active: false,
+  }
+  const idSelectorOn: IdSelector = {
+    type: SimpleSelectorType.ID,
+    value: components[0].getId(),
+    active: true,
+  }
+  // Handle the case when the component ID has changed
+  const selectorWithRenamedId = { ...selector }
+  selectorWithRenamedId.mainSelector.selectors = selector.mainSelector.selectors
+    .filter(s => s.type !== SimpleSelectorType.ID || (s as IdSelector).value === components[0].getId())
+
+  // Create the new selector
+  const newSelector = merge(selectorWithRenamedId, { mainSelector: { selectors: [idSelectorOff] } })
+  // Deactivate the ID selector
+  if(newSelector.mainSelector.selectors
+    .filter((selector) => selector.type !== SimpleSelectorType.ID && selector.active)
+    .length > 0
+  ) {
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
+      if (selector.type === SimpleSelectorType.ID) {
+        return idSelectorOff
+      }
+      return selector
+    })
+  }
+  // Activate the ID if it needs to be activated
+  if (!toString(newSelector)) {
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
+      if (selector.type === SimpleSelectorType.ID) {
+        return idSelectorOn
+      }
+      return selector
+    })
+  }
+  return newSelector
 }
