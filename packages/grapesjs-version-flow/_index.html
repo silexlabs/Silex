@@ -1,0 +1,433 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>@silexlabs/grapesjs-version-flow</title>
+    <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/grapesjs"></script>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+      }
+
+      .test-panel {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        background: white;
+        border: 2px solid #007cba;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 10000;
+        max-width: 300px;
+      }
+
+      .test-panel h3 {
+        margin: 0 0 15px 0;
+        color: #007cba;
+        font-size: 16px;
+      }
+
+      .test-panel button {
+        display: block;
+        width: 100%;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: #007cba;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .test-panel button:hover {
+        background: #005a87;
+      }
+
+      .test-panel button.secondary {
+        background: #6c757d;
+      }
+
+      .test-panel button.secondary:hover {
+        background: #545b62;
+      }
+
+      .test-panel .info {
+        font-size: 12px;
+        color: #666;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+      }
+
+      .test-panel .status {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 3px;
+        margin-top: 5px;
+        display: inline-block;
+      }
+
+      .status.outdated { background: #fff3cd; color: #856404; }
+      .status.current { background: #d4edda; color: #155724; }
+    </style>
+  </head>
+  <body>
+    <!-- Test Panel UI -->
+    <div class="test-panel">
+      <h3>🧪 Version Flow Testing</h3>
+
+      <button onclick="simulateFirstRun()">Simulate First Run</button>
+      <button onclick="simulateOutdated('1.0.0')">Simulate v1.0.0</button>
+      <button onclick="simulateOutdated('1.5.0')">Simulate v1.5.0</button>
+      <button onclick="simulateOutdated('2.0.0')">Simulate v2.0.0</button>
+      <button onclick="simulateOutdated('2.1.0')">Simulate v2.1.0 Latest</button>
+
+      <div class="info">
+        <div>Current Version: <strong>2.1.0</strong></div>
+        <div>Saved Version: <span id="savedVersion">-</span></div>
+        <div class="status" id="versionStatus">Loading...</div>
+      </div>
+    </div>
+
+    <div id="gjs" style="height:0px; overflow:hidden">
+      <div style="margin:100px 100px 25px; padding:25px; font:caption">
+        <h2>GrapesJS Version Flow Plugin Demo</h2>
+        <p>Use the test panel in the top-right to simulate different version scenarios and see the upgrade flow in action.</p>
+        <p>The plugin will automatically detect outdated projects and guide users through upgrades.</p>
+      </div>
+    </div>
+
+
+    <script type="text/javascript">
+      // Wait for the plugin to be injected by the dev server
+      setTimeout(() => {
+        window.editor = grapesjs.init({
+          height: '100%',
+          container: '#gjs',
+          showOffsets: true,
+          fromElement: true,
+          noticeOnUnload: false,
+          storageManager: {
+            type: 'local',
+            autosave: false,
+            storeComponents: true,
+            storeStyles: true,
+            storeHtml: true,
+            storeCss: true,
+            id: 'gjsProject'
+          },
+          plugins: ['@silexlabs/grapesjs-version-flow'],
+          pluginsOpts: {
+            '@silexlabs/grapesjs-version-flow': {
+              builderVersion: '2.1.0',
+              continueOnError: true, // Continue upgrades even if some fail
+              onFirstRun: () => {
+                alert('🎉 First run detected - showing welcome experience');
+              },
+              versions: [
+                {
+                  builderVersion: '1.0.0',
+                  upgrade: async (ctx) => {
+                    // Simulate upgrade work
+                    await new Promise(resolve => setTimeout(resolve, 400));
+
+                    // Basic structure upgrade
+                    return 'Updated project structure for v1.0.0 compatibility';
+                  },
+                  whatsNew: async (ctx) => {
+                    // Create backdrop overlay
+                    const backdrop = document.createElement('div');
+                    backdrop.style.cssText = `
+                      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9998;
+                      background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px);
+                      transition: opacity 0.3s ease-in-out; opacity: 0;
+                    `;
+                    document.body.appendChild(backdrop);
+
+                    // Fade in backdrop
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    backdrop.style.opacity = '1';
+
+                    // Subtle onboarding - highlight a UI element
+                    const panel = document.querySelector('.gjs-pn-panel');
+                    if (panel) {
+                      panel.style.boxShadow = '0 0 20px #007cba';
+                      panel.style.transition = 'box-shadow 0.5s';
+                      panel.style.position = 'relative';
+                      panel.style.zIndex = '9999';
+
+                      // Wait for the highlight animation to complete
+                      await new Promise(resolve => setTimeout(resolve, 500));
+
+                      panel.style.boxShadow = '';
+                      panel.style.zIndex = '';
+                    }
+
+                    // Fade out and remove backdrop
+                    backdrop.style.opacity = '0';
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    backdrop.remove();
+
+                    console.log('🎯 Onboarding: Project structure updated to v1.0.0');
+                  }
+                },
+                {
+                  builderVersion: '1.5.0',
+                  upgrade: async (ctx) => {
+                    // Simulate some upgrade work
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Convert old flex classes to new grid system
+                    const components = ctx.getComponents();
+                    // ... do actual upgrade work ...
+
+                    // Return simple log message
+                    return 'Updated 5 components from flex to new grid system';
+                  },
+                },
+                {
+                  builderVersion: '2.0.0',
+                  upgrade: async (ctx) => {
+                    // Simulate upgrade work
+                    await new Promise(resolve => setTimeout(resolve, 800));
+
+                    throw new Error('Failed to migrate some legacy components');
+
+                    // Update component architecture
+                    const components = ctx.getComponents();
+                    // ... do actual upgrade work ...
+
+                    return `Migrated ${components.length} components to new architecture`;
+                  },
+                  whatsNew: async (ctx) => {
+                    // Create backdrop overlay
+                    const backdrop = document.createElement('div');
+                    backdrop.style.cssText = `
+                      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9998;
+                      background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px);
+                      transition: opacity 0.3s ease-in-out; opacity: 0;
+                    `;
+                    document.body.appendChild(backdrop);
+
+                    // Fade in backdrop
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    backdrop.style.opacity = '1';
+
+                    // Add a discrete badge
+                    const badge = document.createElement('div');
+                    badge.innerHTML = '🎉 v2.0 Components Enhanced!';
+                    badge.style.cssText = `
+                      position: fixed; bottom: 20px; left: 20px; z-index: 9999;
+                      background: linear-gradient(45deg, #667eea, #764ba2); color: white;
+                      padding: 8px 12px; border-radius: 20px; font-size: 12px;
+                      box-shadow: 0 2px 8px rgba(0,0,0,0.15); opacity: 0;
+                      transition: opacity 0.3s ease-in-out;
+                    `;
+                    document.body.appendChild(badge);
+
+                    // Wait a bit then fade in
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    badge.style.opacity = '1';
+
+                    // Wait for display duration
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    // Fade out badge first
+                    badge.style.opacity = '0';
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    badge.remove();
+
+                    // Fade out and remove backdrop
+                    backdrop.style.opacity = '0';
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    backdrop.remove();
+
+                    console.log('🎯 Onboarding: v2.0.0 component library features showcased');
+                  }
+                },
+                {
+                  builderVersion: '2.1.0',
+                  upgrade: async (ctx) => {
+                    // Simulate upgrade work
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    return 'Applied modern theme and updated color palette';
+                  },
+                  whatsNew: async (ctx) => {
+                    // Create backdrop overlay
+                    const backdrop = document.createElement('div');
+                    backdrop.style.cssText = `
+                      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9998;
+                      background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px);
+                      transition: opacity 0.3s ease-in-out; opacity: 0;
+                    `;
+                    document.body.appendChild(backdrop);
+
+                    // Fade in backdrop
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    backdrop.style.opacity = '1';
+
+                    // Subtle onboarding - create a floating theme preview
+                    const themePreview = document.createElement('div');
+                    themePreview.innerHTML = `
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
+                        <span>🎨 Theme system unlocked!</span>
+                      </div>
+                    `;
+                    themePreview.style.cssText = `
+                      position: fixed; top: 50%; right: -300px; z-index: 9999;
+                      background: white; color: #333; padding: 16px 20px;
+                      border-radius: 8px; font-size: 14px; border: 2px solid #f0f0f0;
+                      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                      transition: right 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                    `;
+                    document.body.appendChild(themePreview);
+
+                    // Wait a bit then slide in
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    themePreview.style.right = '20px';
+
+                    // Wait for slide in animation to complete
+                    await new Promise(resolve => setTimeout(resolve, 400));
+
+                    // Wait for display duration
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+
+                    // Slide out
+                    themePreview.style.right = '-300px';
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                    themePreview.remove();
+
+                    // Fade out and remove backdrop
+                    backdrop.style.opacity = '0';
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    backdrop.remove();
+
+                    console.log('🎯 Onboarding: v2.1.0 theming system introduced');
+                  }
+                }
+              ]
+            }
+          }
+        });
+
+
+        // Setup event logging
+        setupEventLogging();
+
+        updateVersionStatus();
+      }, 100);
+
+      // Test Functions
+      function simulateOutdated(version) {
+        console.log(`🧪 Simulating outdated project with version ${version}`);
+
+        // Create project data that includes the old version
+        const projectData = {
+          dataSources: [],
+          assets: [],
+          styles: [{
+            selectors: ['.demo'],
+            style: { color: 'red' }
+          }],
+          pages: [{
+            id: 'page1',
+            frames: [{
+              component: {
+                type: 'wrapper',
+                components: [{
+                  type: 'text',
+                  content: 'Demo content'
+                }]
+              }
+            }]
+          }],
+          symbols: [],
+          builderVersion: version
+        };
+
+        // Store the complete project data
+        localStorage.setItem('gjsProject', JSON.stringify(projectData));
+
+        // Force editor to load this data
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      }
+
+      function simulateFirstRun() {
+        // Clear all GrapesJS localStorage data
+        localStorage.removeItem('gjsProject');
+        console.log('🗑️ Cleared saved version data');
+        setTimeout(() => {
+          // Trigger whatsNew for latest version
+          const latestVersion = '2.1.0';
+          console.log(`🎉 Simulating first run - showing what's new for ${latestVersion}`);
+          window.location.reload()
+        }, 500);
+      }
+
+      function getSavedVersion() {
+        try {
+          const projectData = localStorage.getItem('gjsProject');
+          if (projectData) {
+            const data = JSON.parse(projectData);
+            return data.builderVersion;
+          }
+          return null;
+        } catch {
+          return null;
+        }
+      }
+
+      function updateVersionStatus() {
+        const savedVersion = getSavedVersion();
+        const currentVersion = '2.1.0';
+
+        document.getElementById('savedVersion').textContent = savedVersion || 'None';
+
+        const statusEl = document.getElementById('versionStatus');
+        if (!savedVersion) {
+          statusEl.textContent = 'First Run';
+          statusEl.className = 'status current';
+        } else if (savedVersion !== currentVersion) {
+          statusEl.textContent = 'Outdated';
+          statusEl.className = 'status outdated';
+        } else {
+          statusEl.textContent = 'Up to Date';
+          statusEl.className = 'status current';
+        }
+      }
+
+      function setupEventLogging() {
+        if (!window.editor) return;
+
+        const events = [
+          'version:outdated',
+          'version:upgrade:start',
+          'version:versionUpgrade:start',
+          'version:versionUpgrade:end',
+          'version:upgrade:end',
+          'version:upgrade:error'
+        ];
+
+        events.forEach(event => {
+          window.editor.on(event, (data) => {
+            console.log(`🔔 Event: ${event}`, data);
+          });
+        });
+
+        console.log('📡 Event listeners setup for:', events);
+      }
+
+      // Update status on page load
+      document.addEventListener('DOMContentLoaded', updateVersionStatus);
+    </script>
+  </body>
+</html>

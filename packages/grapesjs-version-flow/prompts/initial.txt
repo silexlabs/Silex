@@ -1,0 +1,116 @@
+You’re a senior engineer building a GrapesJS plugin named **@silexlabs/grapesjs-version-flow**
+
+# Product goal
+
+Detect when a project was saved with an older **application** version (the app that embeds GrapesJS), guide the user through sequential upgrades to the current app version, and present progress, logs, and “What’s new” in a **modal**
+
+# Core behavior
+
+* Persist the current app `builderVersion` into project data on every save
+* On editor load, read `builderVersion` from project data with current provided `builderVersion` using simple semantic ordering
+* If `builderVersion` is missing: treat as first-run, no forced upgrades, but allow “What’s new” if available
+* If `builderVersion` from website data is lower than the current `builderVersion`: mark as outdated, open the modal, and run upgrades **in order** until the project matches `builderVersion`
+* After each successful step, overwrite the persisted builderVersion with that step’s target builderVersion and display logs or errors
+* After upgrade provide user actions “See what’s new” or "skip" and a "save website now" checkbox
+* when "See what's new" is clicked, runs all pending `whatsNew` functions sequentially
+* Don't store the changes in the UndoRedo stack, don't save the website before the user closes the dialog with the "save now" checkbox checked
+
+# Public configuration surface (inputs)
+
+```
+options.builderVersion: string                       // current app version
+options.versions: Array<VersionStep>          // ordered by ascending target version
+options.compareFn?: (a, b) -> -1 | 0 | 1      // optional override for version compare
+options.continueOnError?: boolean             // default false
+options.styles?: { classPrefix?: string, injectCSS?: string }  // optional styling
+options.i18n?: { [locale: string]: Messages } // optional message overrides per locale
+```
+
+`VersionStep` contract
+
+```
+builderVersion: string                                // target version this step upgrades to
+upgrade(ctx) -> Promise<Log[] | void> | void   // executes changes, may return log entries, may throw
+whatsNew?(ctx) -> Promise<void> | void         // optional, showcased via the modal button, will be run sequencially
+```
+
+`Log` entry contract
+
+```
+{ level: 'info' | 'warn' | 'error', message: string }
+```
+
+# Persistence rules
+
+* The plugin alone is responsible for persisting the version into project data under a stable key: `builderVersion`
+* Reading and writing this key must not require user configuration
+
+# Modal UI spec
+
+States
+
+* Detected outdated: show `savedVersion → version`, primary action “Upgrade now”
+* Upgrading: show current step target version, spinner/progress text, live log area
+* Completed successfully: show summary with final version and collapsible logs
+* Error: highlight the failed step, show error log, present “Retry from failed step” and “View logs”
+* First-run with no saved version: show informational state; if any pending step exposes `whatsNew`, show “See what’s new”
+* Show a "close" button to skip what's new, finish the process
+* Show a "save website now" checkbox
+
+Styling and UI
+
+* use grapesjs plugins best practices
+* If `options.injectCSS` is provided, inject it once and scope it by the prefix
+* Use grapesjs Modal
+
+Accessibility
+
+* Modal has an accessible title, role, and focus management
+* Log area is readable by screen readers and preserves order of events
+
+# Events (outputs)
+
+Emit these lifecycle events with the described payloads
+
+```
+version:outdated { savedVersion: string|null, currentVersion: string }
+version:upgrade:start    { pending: string[] }                    // list of target versions
+version:versionUpgrade:start        { toVersion: string }
+version:versionUpgrade:end          { toVersion: string, log: Log[] }        // empty array if none
+version:upgrade:end     { upgradedTo: string }                   // only if no failures
+version:upgrade:error     { toVersion: string, error: any }        // include a serializable message
+```
+
+# Error handling policy
+
+* Default behavior: stop at the first failing step, keep the project marked as outdated, surface the error in the modal and logs
+* If `continueOnError` is true: attempt subsequent steps, still mark the project as outdated if any step failed
+* All failures must generate at least one `error` level log entry with a human-readable message
+
+# Version selection algorithm
+
+* Determine pending steps as every `VersionStep` where `savedVersion < step.version <= options.version`
+* Execute in ascending order
+* After each success, persist `builderVersion = step.version` immediately
+
+# Internationalization
+
+* use grapejs i18n way
+* Provide default messages for at least `en` and `fr`
+
+# Acceptance criteria
+
+* When a project with `builderVersion = '1.2.0'` loads and `options.builderVersion = '1.4.0'` with steps `1.3.0` and `1.4.0`, both steps run in order, logs appear, and final persisted builderVersion equals `1.4.0`
+* When `upgrade` for `1.3.0` throws, the modal shows the error, emits upgrade error event, persists the last successful version only, and stops unless `continueOnError` is true
+* With `continueOnError = true`, if `1.3.0` fails and `1.4.0` succeeds, the project remains marked outdated and the modal reflects mixed results
+* If no `savedVersion` exists, all upgrades run automatically, and the version is stored in the website data for next time, so it behave like version is very old
+* “See what’s new” executes all pending `whatsNew` functions sequentially
+* All events fire with the documented payloads at the correct times
+* Styling is done with grapesjs styles when possible
+
+# Deliverables
+
+* Source code implementing the above behavior
+* Automated tests that exercise happy paths, error paths, version ordering, persistence, i18n, events, and modal states
+* Example project demonstrating a project behind by multiple versions with visible logs and the “See what’s new” flow
+* Documentation explaining options, events, i18n keys, and styling knobs, with no prescriptions about GrapesJS internals or the build stack
