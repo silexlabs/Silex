@@ -72,8 +72,8 @@ export default (editor: Editor) => {
     ],
     shouldShow: comp => {
       const parent = comp.parent()
-      const display = parent?.getStyle()['display'] as string || ''
-      return display.includes('flex')
+      const computedDisplay = parent?.view?.el && getComputedStyle(parent.view.el)['display'] as string || ''
+      return computedDisplay === 'flex' || computedDisplay === 'inline-flex'
     }
   }]
 
