@@ -172,7 +172,7 @@ export function getSelector(components: Component[]): ComplexSelector | null {
     active: true,
   }
   // Handle the case when the component ID has changed
-  const selectorWithRenamedId = { ...selector }
+  const selectorWithRenamedId = JSON.parse(JSON.stringify(selector))
   selectorWithRenamedId.mainSelector.selectors = selector.mainSelector.selectors
     .filter(s => s.type !== SimpleSelectorType.ID || (s as IdSelector).value === components[0].getId())
 

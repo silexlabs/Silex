@@ -196,17 +196,13 @@ function renameCssClass(editor: Editor, oldClassName: string, newClassName: stri
       mainSelector: {
         ...selector.mainSelector,
         selectors: selector.mainSelector.selectors
-        // // Remove the new class to avoid duplicates
-        // // Somehow the new class is already in the selector, why?
-        // .filter(sel => sel.type !== SimpleSelectorType.CLASS || (sel as ClassSelector).value !== newClassName)
-        // .map(sel =>
-        //   sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
-        //     ? { ...sel, value: newClassName }
-        //     : sel
-        // ),
-        // Remove the old class
-        // Somehow the new class is already in the selector, why?
-          .filter(sel => sel.type !== SimpleSelectorType.CLASS || (sel as ClassSelector).value !== oldClassName)
+          // Remove the new class to avoid duplicates
+          .filter(sel => sel.type !== SimpleSelectorType.CLASS || (sel as ClassSelector).value !== newClassName)
+          .map(sel =>
+            sel.type === SimpleSelectorType.CLASS && (sel as ClassSelector).value === oldClassName
+              ? { ...sel, value: newClassName }
+              : sel
+          ),
       },
     }
     setComponentSelector(component, updatedSelector)
@@ -224,7 +220,7 @@ export function setComponentSelector(component: Component, selector: ComplexSele
   })
   const classes: string[] = []
   selector.mainSelector.selectors.forEach((simpleSelector) => {
-    switch(simpleSelector.type) {
+    switch (simpleSelector.type) {
     case 'id':
       component.setId((simpleSelector as IdSelector).value)
       break
@@ -236,7 +232,12 @@ export function setComponentSelector(component: Component, selector: ComplexSele
     }
   })
   // FIXME: Add back the protected classes
-  component.setClass(classes)
+  // Add the missing classes
+  const toAdd = component.getClasses()
+    .filter((existing: string) => !classes.includes(existing))
+  if (toAdd.length > 0) {
+    component.setClass(toAdd)
+  }
 }
 
 export function getComponentSelector(component: Component): ComplexSelector {

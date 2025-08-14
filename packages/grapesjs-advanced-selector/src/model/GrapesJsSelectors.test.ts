@@ -1,6 +1,6 @@
 import { CssRule, Editor, Selector } from 'grapesjs'
 import { Component } from 'grapesjs'
-import { getSuggestionsMain, getSuggestionsRelated, getComponentSelector, getSelectors } from './GrapesJsSelectors'
+import { getSuggestionsMain, getSuggestionsRelated, getComponentSelector, getSelectors, renameSelector } from './GrapesJsSelectors'
 import { ClassSelector, IdSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { Operator, OperatorType } from './Operator'
 
@@ -1007,5 +1007,71 @@ describe('getSuggestionsRelated', () => {
       { type: SimpleSelectorType.TAG, value: 'body', active: true },
       { type: SimpleSelectorType.TAG, value: 'html', active: true },
     ])
+  })
+})
+
+describe('CSS Class Renaming Issue', () => {
+  test('renameSelector should only affect selected components, not all components with the same class', () => {
+    // Mock components that both have the same class
+    const selectedComponent = {
+      getId: () => 'selected-comp',
+      getClasses: () => ['shared-class'],
+      get: () => ({
+        mainSelector: {
+          selectors: [
+            { type: SimpleSelectorType.CLASS, value: 'shared-class', active: true }
+          ]
+        }
+      }),
+      set: jest.fn(),
+      setClass: jest.fn()
+    } as unknown as Component
+
+    const otherComponent = {
+      getId: () => 'other-comp',
+      getClasses: () => ['shared-class'],
+      get: () => ({
+        mainSelector: {
+          selectors: [
+            { type: SimpleSelectorType.CLASS, value: 'shared-class', active: true }
+          ]
+        }
+      }),
+      set: jest.fn(),
+      setClass: jest.fn()
+    } as unknown as Component
+
+    // Mock editor that finds both components when searching for the class
+    const mockEditor = {
+      getSelectedAll: jest.fn(() => [selectedComponent]), // Only selectedComponent is selected
+      SelectorManager: {
+        get: jest.fn(() => null), // Return null for new class name to trigger creation
+        add: jest.fn(() => ({ name: 'new-class-name', type: 1 })) // Mock adding new selector
+      },
+      Pages: {
+        getAll: jest.fn(() => [{
+          getMainComponent: jest.fn(() => ({
+            find: jest.fn(() => [selectedComponent, otherComponent]) // Both components found by class selector
+          }))
+        }])
+      }
+    } as unknown as Editor
+
+    const oldSelector: ClassSelector = {
+      type: SimpleSelectorType.CLASS,
+      value: 'shared-class',
+      active: true
+    }
+    const newSelector: ClassSelector = {
+      type: SimpleSelectorType.CLASS,
+      value: 'new-class-name',
+      active: true
+    }
+
+    // Call renameSelector
+    renameSelector(mockEditor, oldSelector, newSelector)
+
+    // Verify that otherComponent was NOT affected (setClass should not be called)
+    expect(otherComponent.setClass).not.toHaveBeenCalled()
   })
 })
