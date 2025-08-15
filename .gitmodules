@@ -77,9 +77,20 @@
 [submodule "packages/silex-lib"]
 	path = packages/silex-lib
 	url = git@github.com:silexlabs/silex-lib.git
+	branch = main
 [submodule "packages/SitemapGen"]
 	path = packages/SitemapGen
 	url = git@github.com:silexlabs/SitemapGen.git
+	branch = main
 [submodule "packages/silex-desktop"]
 	path = packages/silex-desktop
 	url = git@github.com:silexlabs/silex-desktop.git
+	branch = main
+[submodule "packages/grapesjs-ai-copilot"]
+	path = packages/grapesjs-ai-copilot
+	url = git@github.com:silexlabs/grapesjs-ai-copilot.git
+	branch = main
+[submodule "packages/grapesjs-version-flow"]
+	path = packages/grapesjs-version-flow
+	url = git@github.com:silexlabs/grapesjs-version-flow.git
+	branch = main

@@ -43,5 +43,8 @@
     "glob": "^11.0.2",
     "js-ini": "^1.6.0",
     "npm-check-updates": "^18.0.1"
+  },
+  "dependencies": {
+    "grapesjs-cli": "^4.1.3"
   }
 }
