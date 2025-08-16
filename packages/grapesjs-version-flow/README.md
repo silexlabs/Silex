@@ -7,7 +7,7 @@ Detects when a project was saved with an older version of your app, upgrades it 
 > This code is part of a bigger project: [Silex v3](https://www.silex.me)
 > This has been vibe coded entirely by @lexoyo, check the `prompts/` folder
 
-[Version Flow Demo](#TODO) // TODO
+[Version Flow Demo](https://codepen.io/lexoyo/full/JoYMqZJ)
 
 ## 🚀 Features
 
