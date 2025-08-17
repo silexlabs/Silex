@@ -69,22 +69,21 @@ describe('Version Storage Integration', () => {
 
   describe('Storage Event Hooks', () => {
     it('should register storage event listeners', () => {
-      expect(mockEditor.on).toHaveBeenCalledWith('storage:start:load', expect.any(Function));
+      expect(mockEditor.on).toHaveBeenCalledWith('storage:load', expect.any(Function));
       expect(mockEditor.on).toHaveBeenCalledWith('storage:start:store', expect.any(Function));
     });
 
     it('should extract version from stored data on load', () => {
-      // Simulate stored project with version
-      const storedData = {
+      // Simulate loaded data with version
+      const loadedData = {
         'gjs-html': '<div>Test</div>',
         'gjs-css': '.test { color: red; }',
         builderVersion: '1.5.0'
       };
-      localStorage.setItem('gjsProject', JSON.stringify(storedData));
 
-      // Trigger the storage:start:load event
-      const loadCallback = mockEditor.on.mock.calls.find(call => call[0] === 'storage:start:load')[1];
-      loadCallback();
+      // Trigger the storage:load event
+      const loadCallback = mockEditor.on.mock.calls.find(call => call[0] === 'storage:load')[1];
+      loadCallback(loadedData);
 
       expect(versionManager.getSavedVersion()).toBe('1.5.0');
     });
@@ -103,23 +102,19 @@ describe('Version Storage Integration', () => {
     });
 
     it('should handle missing stored data gracefully', () => {
-      // Ensure localStorage is empty
-      expect(localStorage.getItem('gjsProject')).toBeNull();
-      
-      const loadCallback = mockEditor.on.mock.calls.find(call => call[0] === 'storage:start:load')[1];
-      loadCallback();
+      // Trigger load with null data
+      const loadCallback = mockEditor.on.mock.calls.find(call => call[0] === 'storage:load')[1];
+      loadCallback(null);
 
       expect(versionManager.getSavedVersion()).toBeNull();
     });
 
     it('should handle corrupted stored data gracefully', () => {
-      // Store invalid JSON
-      localStorage.setItem('gjsProject', 'invalid json{');
-
-      const loadCallback = mockEditor.on.mock.calls.find(call => call[0] === 'storage:start:load')[1];
+      // Trigger load with invalid data
+      const loadCallback = mockEditor.on.mock.calls.find(call => call[0] === 'storage:load')[1];
       
       // Should not throw an error
-      expect(() => loadCallback()).not.toThrow();
+      expect(() => loadCallback({})).not.toThrow();
       expect(versionManager.getSavedVersion()).toBeNull();
     });
   });

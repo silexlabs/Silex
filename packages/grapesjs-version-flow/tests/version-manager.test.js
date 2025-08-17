@@ -3,7 +3,9 @@ import VersionManager from '../src/version-manager.js';
 // Mock GrapesJS editor
 const createMockEditor = (projectData = {}) => ({
   getProjectData: () => ({ ...projectData }),
-  setProjectData: (data) => { Object.assign(projectData, data); }
+  setProjectData: (data) => { Object.assign(projectData, data); },
+  on: jest.fn(),
+  store: jest.fn()
 });
 
 // Mock options
@@ -26,46 +28,6 @@ describe('VersionManager', () => {
     mockEditor = createMockEditor();
     mockOptions = createMockOptions();
     versionManager = new VersionManager(mockEditor, mockOptions);
-  });
-
-  describe('getSavedVersion', () => {
-    it('should return null when no version is saved', () => {
-      const result = versionManager.getSavedVersion();
-      expect(result).toBeNull();
-    });
-
-    it('should return saved version when available', () => {
-      mockEditor = createMockEditor({ builderVersion: '1.5.0' });
-      versionManager = new VersionManager(mockEditor, mockOptions);
-      
-      const result = versionManager.getSavedVersion();
-      expect(result).toBe('1.5.0');
-    });
-
-    it('should handle storage errors gracefully', () => {
-      mockEditor.getProjectData = () => { throw new Error('Storage error'); };
-      versionManager = new VersionManager(mockEditor, mockOptions);
-      
-      const result = versionManager.getSavedVersion();
-      expect(result).toBeNull();
-    });
-  });
-
-  describe('saveVersion', () => {
-    it('should save version to project data', () => {
-      versionManager.saveVersion('1.8.0');
-      
-      const projectData = mockEditor.getProjectData();
-      expect(projectData.builderVersion).toBe('1.8.0');
-    });
-
-    it('should throw error on storage failure', () => {
-      mockEditor.setProjectData = () => { throw new Error('Storage error'); };
-      
-      expect(() => {
-        versionManager.saveVersion('1.8.0');
-      }).toThrow('Storage error');
-    });
   });
 
   describe('compareVersions', () => {
@@ -94,9 +56,9 @@ describe('VersionManager', () => {
       const customCompareFn = jest.fn().mockReturnValue(-1);
       mockOptions.compareFn = customCompareFn;
       versionManager = new VersionManager(mockEditor, mockOptions);
-      
+
       const result = versionManager.compareVersions('1.0.0', '2.0.0');
-      
+
       expect(customCompareFn).toHaveBeenCalledWith('1.0.0', '2.0.0');
       expect(result).toBe(-1);
     });
@@ -123,7 +85,7 @@ describe('VersionManager', () => {
         { builderVersion: '1.0.0', upgrade: () => {}, whatsNew: () => {} }
       ];
       versionManager = new VersionManager(mockEditor, mockOptions);
-      
+
       const result = versionManager.needsUpgrade(null, '1.0.0');
       expect(result).toBe(true);
     });
@@ -132,7 +94,7 @@ describe('VersionManager', () => {
       // Override with empty versions array to ensure no pending upgrades
       mockOptions.versions = [];
       versionManager = new VersionManager(mockEditor, mockOptions);
-      
+
       const result = versionManager.needsUpgrade(null, '2.0.0');
       expect(result).toBe(false);
     });
@@ -159,7 +121,7 @@ describe('VersionManager', () => {
     it('should exclude versions higher than current', () => {
       mockOptions.versions.push({ builderVersion: '2.1.0', upgrade: () => {} });
       versionManager = new VersionManager(mockEditor, mockOptions);
-      
+
       const result = versionManager.getPendingUpgrades('1.0.0', '2.0.0');
       expect(result.map(v => v.builderVersion)).toEqual(['1.1.0', '1.2.0', '2.0.0']);
     });

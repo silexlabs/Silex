@@ -101,7 +101,7 @@ export default class UpgradeEngine {
       });
 
       return {
-        success: true, // Always true since we continue on error
+        success: this.failedSteps.length === 0, // Success only if no steps failed
         logs: this.allLogs,
         upgradedTo: lastSuccessfulVersion,
         failedSteps: this.failedSteps

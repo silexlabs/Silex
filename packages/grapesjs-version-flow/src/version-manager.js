@@ -10,27 +10,17 @@ export default class VersionManager {
   setupStorageHooks() {
     // Hook into storage events to automatically manage version persistence
     // Only set up hooks if editor has event system (not in all test mocks)
-    console.log('[grapesjs-version-flow] Setting up proper storage event hooks');
 
     // Use the correct GrapesJS storage events to modify data being stored
     this.editor.on('storage:start:store', (data) => {
-      console.log('[grapesjs-version-flow] storage:start:store - data to store:', data);
-
       data[this.versionKey] = this.options.builderVersion;
-      console.log('[grapesjs-version-flow] Added version to store data:', this.options.builderVersion, {data});
     });
 
     // Use the correct GrapesJS storage events to extract version from loaded data
     this.editor.on('storage:load', (data, res) => {
-      console.log('[grapesjs-version-flow] storage:load - loaded data:', data);
-      console.log('[grapesjs-version-flow] storage:load - response:', res);
-
       // Extract version from loaded data
       if (data && data[this.versionKey]) {
         this.savedVersion = data[this.versionKey];
-        console.log('[grapesjs-version-flow] Found saved version in loaded data:', this.savedVersion);
-      } else {
-        console.log('[grapesjs-version-flow] No version found in loaded data');
       }
     });
   }

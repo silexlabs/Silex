@@ -7,8 +7,6 @@ import EventSystem from './event-system';
 import StyleManager from './style-manager';
 
 export default (editor, opts = {}) => {
-  console.log('🚀 [grapesjs-version-flow] Plugin initializing with opts:', opts);
-  console.log('🚀 [grapesjs-version-flow] Editor object:', editor);
   
   const options = {
     builderVersion: '',
@@ -24,7 +22,6 @@ export default (editor, opts = {}) => {
     ...opts
   };
   
-  console.log('🚀 [grapesjs-version-flow] Final options:', options);
 
   // Validate required options
   if (!options.builderVersion) {

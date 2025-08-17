@@ -55,6 +55,8 @@ global.Image = function() {
   this.height = 0;
 };
 
+// Canvas is now mocked via moduleNameMapper in jest config
+
 // Suppress canvas-related console warnings
 const originalConsoleWarn = console.warn;
 console.warn = (...args) => {
