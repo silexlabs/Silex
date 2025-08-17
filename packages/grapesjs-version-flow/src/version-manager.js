@@ -55,7 +55,8 @@ export default class VersionManager {
 
   needsUpgrade(savedVersion, currentVersion) {
     if (!savedVersion) {
-      return this.getPendingUpgrades(savedVersion, currentVersion).length > 0 || this.hasWhatsNewSteps();
+      // First run: always run upgrades if there are any versions defined
+      return this.getPendingUpgrades(savedVersion, currentVersion).length > 0;
     }
     return this.compareVersions(savedVersion, currentVersion) < 0;
   }

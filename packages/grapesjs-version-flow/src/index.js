@@ -7,13 +7,12 @@ import EventSystem from './event-system';
 import StyleManager from './style-manager';
 
 export default (editor, opts = {}) => {
-  
+
   const options = {
     builderVersion: '',
     versions: [],
     compareFn: null,
     continueOnError: true,
-    onFirstRun: null,
     styles: {
       classPrefix: 'gjs-version-flow',
       injectCSS: null
@@ -21,7 +20,7 @@ export default (editor, opts = {}) => {
     i18n: {},
     ...opts
   };
-  
+
 
   // Validate required options
   if (!options.builderVersion) {
@@ -65,14 +64,8 @@ export default (editor, opts = {}) => {
     setTimeout(() => {
       const savedVersion = versionManager.getSavedVersion();
       const currentVersion = options.builderVersion;
-      
-      if (!savedVersion) {
-        // First run - no version saved, call onFirstRun callback if provided
-        if (options.onFirstRun && typeof options.onFirstRun === 'function') {
-          options.onFirstRun();
-        }
-      } else if (versionManager.needsUpgrade(savedVersion, currentVersion)) {
-        // Version mismatch - trigger upgrade flow
+      // Check if we need to run upgrades even on first run
+      if (versionManager.needsUpgrade(savedVersion, currentVersion)) {
         eventSystem.emit('version:outdated', {
           savedVersion,
           currentVersion

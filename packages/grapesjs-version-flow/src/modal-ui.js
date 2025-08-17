@@ -129,7 +129,7 @@ export default class ModalUI {
     return `
       <div class="${this.getClassName('modal-content')}">
         <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.outdated.message').replace('{savedVersion}', savedVersion).replace('{currentVersion}', currentVersion)}</p>
+          <p>${this.editor.I18n.t('modal.outdated.message', { savedVersion, currentVersion })}</p>
           <div class="${this.getClassName('version-info')}">
             ${savedVersion || 'Unknown'} → ${currentVersion}
           </div>
@@ -149,7 +149,7 @@ export default class ModalUI {
           <div class="${this.getClassName('progress')}">
             <div class="${this.getClassName('progress-text')}">
               <span class="${this.getClassName('spinner')}"></span>
-              ${this.editor.I18n.t('modal.upgrading.current').replace('{version}', currentVersion)}
+              ${this.editor.I18n.t('modal.upgrading.current', { version: currentVersion })}
             </div>
           </div>
           <div class="${this.getClassName('logs')}" id="${this.getClassName('logs-container')}">
@@ -166,7 +166,7 @@ export default class ModalUI {
     return `
       <div class="${this.getClassName('modal-content')}">
         <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.completed.message').replace('{version}', finalVersion)}</p>
+          <p>${this.editor.I18n.t('modal.completed.message', { params: { version: finalVersion }})}</p>
           <div class="${this.getClassName('logs')}" id="${this.getClassName('logs-container')}">
             ${this.renderLogs()}
           </div>
@@ -194,7 +194,7 @@ export default class ModalUI {
     return `
       <div class="${this.getClassName('modal-content')}">
         <div class="${this.getClassName('modal-body')}">
-          <p>${this.editor.I18n.t('modal.error.message').replace('{version}', failedVersion)}</p>
+          <p>${this.editor.I18n.t('modal.error.message', { version: failedVersion })}</p>
           <div class="${this.getClassName('version-info')}">
             Error: ${error.message}
           </div>
