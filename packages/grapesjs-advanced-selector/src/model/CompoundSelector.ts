@@ -10,18 +10,17 @@ export type CompoundSelector = {
 /**
  * Get the full CSS selector string from a CompoundSelector
  */
-export function toString(cs: CompoundSelector): string {
+export function toString(cs: CompoundSelector, ignorePseudoClass: boolean = false): string {
   // The universal selector can only be used alone
   if (cs.selectors.length > 1 && cs.selectors.some(s => s.type === 'universal')) {
     throw new Error('The universal selector can only be used alone')
   }
-  return `${ cs.selectors
+  const selectorStr = cs.selectors
     .filter(s => s.active)
-    .sort((a, b) => getSelectorPriority(a) - getSelectorPriority(b)) // Sort based on priority
+    .sort((a, b) => getSelectorPriority(a) - getSelectorPriority(b))
     .map(toStringSimpleSelector).join('')
-  }${
-    cs.pseudoClass ? toStringPseudoClass(cs.pseudoClass) : ''
-  }`
+  const pseudoStr = (!ignorePseudoClass && cs.pseudoClass) ? toStringPseudoClass(cs.pseudoClass) : ''
+  return `${selectorStr}${pseudoStr}`
 }
 
 export function specificity(compound: CompoundSelector) {

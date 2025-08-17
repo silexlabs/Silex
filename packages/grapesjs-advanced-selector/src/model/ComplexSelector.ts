@@ -17,17 +17,17 @@ export const EMPTY_SELECTOR = {
   },
 } as ComplexSelector
 
-export function toString(cs: ComplexSelector): string {
+export function toString(cs: ComplexSelector, ignorePseudoClass: boolean = false): string {
   const operatorAndRelated = cs.operator ? operatorToString(cs.operator, cs.relatedSelector) : ''
   if (!operatorAndRelated) {
     // No operator or related active selector
-    return compoundToString(cs.mainSelector)
+    return compoundToString(cs.mainSelector, ignorePseudoClass)
   } else if (cs.operator?.isCombinator === true) {
     // Combinator operator
-    return `${cs.relatedSelector ? compoundToString(cs.relatedSelector) : ''}${operatorToString(cs.operator, cs.mainSelector)}`
+    return `${cs.relatedSelector ? compoundToString(cs.relatedSelector, ignorePseudoClass) : ''}${operatorToString(cs.operator, cs.mainSelector)}`
   }
   // Non combinator operator
-  return `${compoundToString(cs.mainSelector)}${operatorToString(cs.operator!, cs.relatedSelector)}`
+  return `${compoundToString(cs.mainSelector, ignorePseudoClass)}${operatorToString(cs.operator!, cs.relatedSelector)}`
 }
 
 export function specificity(cs: ComplexSelector): number {
