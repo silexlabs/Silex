@@ -1,6 +1,6 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
-import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
+import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, removeClass, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, getSelector } from './model/ComplexSelector'
 import './components/complex-selector'
 import './components/current-selector-display'
@@ -80,6 +80,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
         .relations=${getSuggestionsRelated(editor, components, selector)}
         @change=${(event: CustomEvent) => chagedSelector(event.detail as ComplexSelector, editor, components)}
         @rename=${(event: CustomEvent) => renameSelector(editor, event.detail.oldValue, event.detail.value) }
+        @removeClass=${(event: CustomEvent) => removeClass(editor, event.detail) }
       ></complex-selector>
 
       <current-selector-display
@@ -136,6 +137,11 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
   editStyle(editor, toString(selector))
 }
 
+/**
+ * Deletes the current selector's style from the editor.
+ * Clears the style associated with the selector and updates the editor UI.
+ * This does not remove the selector itself, but resets its styling.
+ */
 function deleteSelector(editor: Editor, selector: ComplexSelector) {
   clearStyle(editor)
   editStyle(editor, toString(selector))

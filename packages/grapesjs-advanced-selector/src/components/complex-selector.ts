@@ -2,7 +2,7 @@ import { property } from 'lit/decorators.js'
 import StylableElement from '../StylableElement'
 import { css, html, TemplateResult } from 'lit'
 import './resize-input'
-import { SimpleSelector } from '../model/SimpleSelector'
+import { SimpleSelector, SimpleSelectorType } from '../model/SimpleSelector'
 import { ComplexSelector, toString } from '../model/ComplexSelector'
 import { Operator, OPERATORS } from '../model/Operator'
 import InlineSelectComponent from './inline-select'
@@ -89,6 +89,14 @@ export default class ComplexSelectorComponent extends StylableElement {
         .t=${ this.t }
         .value=${ this.value?.mainSelector }
         .suggestions=${ this.suggestions }
+        @delete=${ (event: CustomEvent) => {
+    const selector: SimpleSelector | undefined = event.detail
+    if (selector?.type === SimpleSelectorType.CLASS) {
+      // Forward the event when it's a class
+      // so that the plugin can remove it from the component
+      this.dispatchEvent(new CustomEvent('removeClass', { detail: event.detail }))
+    }
+  }}
         @change=${ (event: CustomEvent) => {
     const target = event.target as CompoundSelectorComponent
     this.value = {

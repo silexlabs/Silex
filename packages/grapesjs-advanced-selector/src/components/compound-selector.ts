@@ -177,7 +177,8 @@ export default class CompoundSelectorComponent extends StylableElement {
     })
   }
   private deleteSelector(event: CustomEvent, idx: number) {
-    this.value?.selectors.splice(idx, 1)
+    const removed: SimpleSelector | undefined = this.value?.selectors.splice(idx, 1)[0]
+    this.dispatchEvent(new CustomEvent('delete', { detail: removed }))
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
     this.requestUpdate()

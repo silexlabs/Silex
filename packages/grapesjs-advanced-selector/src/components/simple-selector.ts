@@ -56,6 +56,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   private selectorInputRef = createRef<HTMLInputElement>()
   private attributeOptionsAttrValueRef = createRef<HTMLInputElement>()
   private mainRef = createRef<HTMLElement>()
+  private datalistSelectionInProgress = false
 
   // /////////////////
   // Element overrides
@@ -291,6 +292,10 @@ export default class SimpleSelectorComponent extends StylableElement {
   }}
         @focusout=${(event: FocusEvent) => {
     if(!this.editing) return
+    if(this.datalistSelectionInProgress) {
+      // Don't interfere with datalist selection
+      return
+    }
     const newFocus = event.relatedTarget as HTMLElement
     if (this.renderRoot.querySelector('main')!.contains(newFocus)) {
       // Focus is still inside the component
@@ -350,6 +355,27 @@ export default class SimpleSelectorComponent extends StylableElement {
     this.requestUpdate()
   }}
       @click=${(event: MouseEvent) => event.stopPropagation()}
+      @input=${(event: InputEvent) => {
+    const inputValue = (event.target as HTMLInputElement).value
+
+    // Detect datalist selection by checking:
+    // 1. Input type is insertion (indicates auto-completion)
+    // 2. Value matches a complete suggestion exactly
+    // 3. Value is not empty/whitespace only
+    const isInsertion = event.inputType === 'insertReplacementText' || event.inputType === 'insertCompositionText'
+    const matchingSuggestion = suggestions.find(s =>
+      (s.createValue ?? toString(s)) === inputValue
+    )
+
+    if (isInsertion && matchingSuggestion && inputValue.trim() !== '') {
+      this.datalistSelectionInProgress = true
+      // Small delay to allow browser to finish processing the datalist selection
+      setTimeout(() => {
+        this.select(matchingSuggestion)
+        this.datalistSelectionInProgress = false
+      }, 50)
+    }
+  }}
     />
   `
   }

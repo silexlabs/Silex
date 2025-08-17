@@ -166,6 +166,36 @@ export function renameSelector(editor: Editor, oldSelector: SimpleSelector, newS
   }
 }
 
+/**
+ * Removes the specified CSS class from all selected components in the editor.
+ * Similar to renameSelector, but instead of renaming, it deletes the class from the components.
+ */
+export function removeClass(editor: Editor, selector: SimpleSelector) {
+  if (selector.type !== SimpleSelectorType.CLASS) {
+    return
+  }
+  const className = (selector as ClassSelector).value
+  if (!className) {
+    console.warn('Invalid class name provided.')
+    return
+  }
+
+  // Get all selected components
+  const components = editor.getSelectedAll()
+  components.forEach(component => {
+    // Remove the class from the component
+    const classes = component.getClasses()
+    const newClasses = classes.filter((cls: string) => cls !== className)
+    component.setClass(newClasses)
+  })
+}
+
+/**
+ * Renames a CSS class in the style manager and updates all components using that class.
+ * - Updates the selector name in the SelectorManager.
+ * - Finds all components with the old class name and replaces it with the new class name.
+ * - Handles undo logic by updating the selector before modifying components.
+ */
 function renameCssClass(editor: Editor, oldClassName: string, newClassName: string) {
   if (!oldClassName || !newClassName || oldClassName === newClassName) {
     console.warn('Invalid class names or same names provided.')
@@ -212,7 +242,7 @@ function renameCssClass(editor: Editor, oldClassName: string, newClassName: stri
 ////////////////
 // Component functions
 /**
- * Store a selector in a component's attributes
+ * Stores a selector in a component's attributes.
  */
 export function setComponentSelector(component: Component, selector: ComplexSelector) {
   component.set('selector', {
@@ -233,10 +263,15 @@ export function setComponentSelector(component: Component, selector: ComplexSele
   })
   // FIXME: Add back the protected classes
   // Add the missing classes
-  const toAdd = component.getClasses()
-    .filter((existing: string) => !classes.includes(existing))
+  const existing = component.getClasses()
+  const toAdd = existing
+    .filter((c: string) => !classes.includes(c))
+    .concat(
+      classes
+        .filter((c: string) => !existing.includes(c))
+    )
   if (toAdd.length > 0) {
-    component.setClass(toAdd)
+    component.setClass(component.getClasses().concat(toAdd))
   }
 }
 
