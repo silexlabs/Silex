@@ -160,9 +160,9 @@ function pasteStyle(editor: Editor) {
 }
 
 function getErrorsAndWarnings(selector: ComplexSelector, components: Component[]): [string | null, string | null] {
-  if (!matchSelectorAll(toString(selector), components)) {
+  if (!matchSelectorAll(toString(selector, true), components)) {
     return ['Current selector does not match the selected components', null]
-  } else if (!matchSelectorSome(toString(selector), components)) {
+  } else if (!matchSelectorSome(toString(selector, true), components)) {
     return [null, 'Current selector does not match all the selected components']
   }
   return [null, null]
