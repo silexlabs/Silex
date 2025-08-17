@@ -473,8 +473,8 @@ function getSuggestions(components: Component[], selector: CompoundSelector): Si
 
 // Add the component tag name
 function addTagNames(component: Component, suggestions: SimpleSelector[], selector: CompoundSelector) {
-  // Tag names
-  const tagName = component.tagName
+  // Tag names - normalize to lowercase for CSS consistency
+  const tagName = component.tagName.toLowerCase()
   const tagSelector = {
     type: SimpleSelectorType.TAG,
     value: tagName,
