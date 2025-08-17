@@ -16,6 +16,7 @@
  */
 
 import { Editor } from 'grapesjs'
+import { registerSector } from './sectors'
 
 /**
  * @fileoverview Adds various css properties
@@ -120,15 +121,36 @@ export default (editor: Editor, opts) => {
       units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
       info: '',
     })
-    const contentProp = editor.StyleManager.addProperty('general', {
+    registerSector(editor, {
+      id: 'content',
       name: 'Content',
-      property: 'content',
-      type: 'text',
-      defaults: '',
-      info: 'Generates content for an element.',
-      full: true,
-      visible: false,
-    }, { at: 0 })
+      props: [{
+        name: 'Content',
+        property: 'content',
+        type: 'text',
+        defaults: '',
+        info: 'Generates content for an element.',
+        full: true,
+        visible: false,
+      }],
+      shouldShow: async () => {
+        return new Promise<boolean>((resolve, reject) => {
+          requestAnimationFrame(() => {
+            try {
+              const state = editor.StyleManager
+                .getSelected()
+                .get('state')
+              if (['before', 'after'].includes(state)) {
+                return resolve(true)
+              }
+              return resolve(false)
+            } catch(e) {
+              reject(e)
+            }
+          })
+        })
+      },
+    }, 0)
     /***************/
     /* Dimension   */
     /***************/
@@ -825,16 +847,6 @@ export default (editor: Editor, opts) => {
       info: 'Aligns elements to scroll snaps.',
     }, { at: 11 })
 
-    function refreshContentProp() {
-      const state = editor.SelectorManager.getState()
-      if (['before', 'after'].includes(state)) {
-        contentProp.set('visible', true)
-      } else {
-        contentProp.set('visible', false)
-      }
-    }
-    editor.on('selector:state component:selected component:styleUpdate style:sector:update', (state, opts) => setTimeout(() => refreshContentProp()))
-    editor.StyleManager.getSector('general').on('change', () => refreshContentProp())
     editor.SelectorManager.states.add({name: 'before', label: 'Before'})
     editor.SelectorManager.states.add({name: 'after', label: 'After'})
     editor.SelectorManager.states.add({name: 'active', label: 'Active'})

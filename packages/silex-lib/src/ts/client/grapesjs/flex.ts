@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { Editor } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { SectorConfig, registerSector } from './sectors'
 
 /**
@@ -22,62 +22,63 @@ import { SectorConfig, registerSector } from './sectors'
  *
  */
 
-export default (editor: Editor) => {
-  const sectorConfigs: SectorConfig[] = [{
-    name: 'Flex Item',
-    props: [
-      {
-        id: 'order',
-        name: 'Order',
-        property: 'order',
-        type: 'integer',
-        defaults: 0,
-      },
-      {
-        id: 'flex-grow',
-        name: 'Flex Grow',
-        property: 'flex-grow',
-        type: 'integer',
-        defaults: 0,
-      },
-      {
-        id: 'flex-shrink',
-        name: 'Flex Shrink',
-        property: 'flex-shrink',
-        type: 'integer',
-        defaults: 1,
-      },
-      {
-        id: 'flex-basis',
-        name: 'Flex Basis',
-        property: 'flex-basis',
-        type: 'text',
-        defaults: 'auto',
-      },
-      {
-        id: 'align-self',
-        name: 'Align Self',
-        property: 'align-self',
-        type: 'select',
-        options: [
-          { id: '', label: '' },
-          { id: 'auto', label: 'auto' },
-          { id: 'flex-start', label: 'flex-start' },
-          { id: 'flex-end', label: 'flex-end' },
-          { id: 'center', label: 'center' },
-          { id: 'baseline', label: 'baseline' },
-          { id: 'stretch', label: 'stretch' },
-        ],
-      },
-    ],
-    shouldShow: comp => {
-      const parent = comp.parent()
-      const computedDisplay = parent?.view?.el && getComputedStyle(parent.view.el)['display'] as string || ''
-      return computedDisplay === 'flex' || computedDisplay === 'inline-flex'
-    }
-  }]
+const FLEX_PROPS = [
+  'flex-direction',
+  'flex-wrap',
+  'justify-content',
+  'align-items',
+  'align-content',
+  'row-gap',
+  'column-gap',
+]
 
+const FLEX_ITEM_PROPS = [
+  'flex-grow',
+  'flex-shrink',
+  'flex-basis',
+  'order',
+  'align-self',
+]
+
+export default (editor: Editor) => {
   editor.on('load', () => {
-    sectorConfigs.forEach(sectorConfig => registerSector(editor, sectorConfig, 2))
+    const sector = editor.StyleManager.getSector('flex')
+    // Add missing sectors
+    // FIXME: this makes grapesjs bug, all other props disappear
+    // FLEX_PROPS
+    //   .concat(FLEX_ITEM_PROPS)
+    //   .forEach(id => {
+    //     if (!sector.getProperty(id)) {
+    //       editor.StyleManager.addProperty('flex', {
+    //         id,
+    //       })
+    //     }
+    //   })
+    // Update the visibility
+    // This is a workaround grapesjs behavior: https://github.com/GrapesJS/grapesjs/issues/3123
+    sector.on('change:visible', () => applyVisibility())
+    editor.on('component:selected', comp => applyVisibility(comp))
+    function applyVisibility(comp: Component = editor.getSelected()) {
+      requestAnimationFrame(() => {
+        const computedDisplay = comp?.view?.el && getComputedStyle(comp.view.el)['display'] as string || ''
+        const isFlex = computedDisplay === 'flex' || computedDisplay === 'inline-flex'
+        const parent = comp.parent()
+        const parentComputedDisplay = parent?.view?.el && getComputedStyle(parent.view.el)['display'] as string || ''
+        const parentIsFlex = parentComputedDisplay === 'flex' || parentComputedDisplay === 'inline-flex'
+        if (parentIsFlex || isFlex) {
+          sector.set('visible', true)
+        }
+        if (parentIsFlex && isFlex) {
+          sector.getProperties()
+            .forEach(p => p.set('visible', true))
+        } else if (isFlex) {
+          sector.getProperties()
+            .forEach(p => p.set('visible', FLEX_PROPS.includes(p.getId())))
+        } else if (parentIsFlex) {
+          sector.getProperties()
+            .forEach(p => p.set('visible', FLEX_ITEM_PROPS.includes(p.getId())))
+        }
+      })
+    }
   })
 }

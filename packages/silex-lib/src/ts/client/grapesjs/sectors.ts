@@ -22,16 +22,17 @@ import { Component, Editor } from 'grapesjs'
  */
 
 export type SectorConfig = {
+  id: string
   name: string
   props: any[]
-  shouldShow: (comp: Component) => boolean
+  shouldShow: (comp: Component) => boolean | Promise<boolean>
 }
 
 export function registerSector(editor: Editor, config: SectorConfig, at?: number) {
   const sm = editor.StyleManager
-  let sector = sm.getSector(config.name)
+  let sector = sm.getSector(config.id)
   if (!sector) {
-    sector = sm.addSector(config.name, { name: config.name, open: false, visible: false }, { at })
+    sector = sm.addSector(config.id, { name: config.name, open: false, visible: false }, { at })
   }
 
   // Add props if not already present
@@ -42,18 +43,15 @@ export function registerSector(editor: Editor, config: SectorConfig, at?: number
     }
   })
 
-  // Keep sector in sync with internal visibility state
-  sector.on('change:visible', () => {
-    const shouldBeVisible = sector.get('visible')
-    if (shouldBeVisible !== config.shouldShow(editor.getSelected() as Component)) {
-      sector.set('visible', !shouldBeVisible)
-    }
-  })
-
-  editor.on('component:selected', comp => {
-    const shouldShow = config.shouldShow(comp)
+  async function applyVisibility(comp: Component = editor.getSelected()) {
+    const shouldShow = await config.shouldShow(comp)
     if (sector.get('visible') !== shouldShow) {
       sector.set('visible', shouldShow)
+      // sector.getProperties()
+      //   .forEach(p => p.set('visible', shouldShow))
     }
-  })
+  }
+
+  sector.on('change:visible', () => applyVisibility())
+  editor.on('component:selected', comp => applyVisibility(comp))
 }

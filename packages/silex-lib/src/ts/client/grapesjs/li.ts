@@ -25,6 +25,7 @@ import { SectorConfig, registerSector } from './sectors'
 export default (editor: Editor) => {
   const sectorConfigs: SectorConfig[] = [
     {
+      id: 'list',
       name: 'List',
       props: [
         {
