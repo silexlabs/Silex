@@ -58,7 +58,9 @@ export default (editor: Editor) => {
     // This is a workaround grapesjs behavior: https://github.com/GrapesJS/grapesjs/issues/3123
     sector.on('change:visible', () => applyVisibility())
     editor.on('component:selected', comp => applyVisibility(comp))
+    editor.on('style:property:update', () => applyVisibility()) // Useful for instantly display the flex sector when selecting display: inline-flex;
     function applyVisibility(comp: Component = editor.getSelected()) {
+      if(!comp) return // No selection yet
       requestAnimationFrame(() => {
         const computedDisplay = comp?.view?.el && getComputedStyle(comp.view.el)['display'] as string || ''
         const isFlex = computedDisplay === 'flex' || computedDisplay === 'inline-flex'
