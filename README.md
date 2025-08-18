@@ -18,6 +18,7 @@ Silex is free/libre software, users are expected to help make Silex sustainable 
 
 Useful links
 
+* [User docs](https://docs.silex.me/en/user/selectors)
 * [Official website](https://www.silex.me/)
 * [Road map (please help defining tasks and prioritising)](https://roadmap.silex.me)
 * [Bug report in Github issues](https://github.com/silexlabs/Silex/issues)
@@ -49,7 +50,7 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 ## Included repositories in this meta repo
 
 > Leave the line bellow as it is used in the doc script to insert content in the readme
-> 
+>
 > Auto generated submodules
 
 # Silex packages
@@ -103,7 +104,7 @@ $ nvm install # [optional] Get the node version from .nvmrc
 $ npm install # Will install dependencies in all submodules too
 $ npm start # Will run the Silex editor from packages/silex-lib
 ```
-If needed, add your .env file in <your-install-dir>/Silex/ [Server side options documentation](https://docs.silex.me/en/dev/options#server-side-options) and your server-side config file .<name>.silex.js in <your-install-dir>/Silex/packages/silex-lib/ [Server side configuration documentation](https://docs.silex.me/en/dev/connect#configuring-silex-with-existing-connectors) 
+If needed, add your .env file in <your-install-dir>/Silex/ [Server side options documentation](https://docs.silex.me/en/dev/options#server-side-options) and your server-side config file .<name>.silex.js in <your-install-dir>/Silex/packages/silex-lib/ [Server side configuration documentation](https://docs.silex.me/en/dev/connect#configuring-silex-with-existing-connectors)
 
 Then you can open your browser at [http://localhost:6805](http://localhost:6805) to see the Silex editor running locally.
 
@@ -151,9 +152,29 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files    1000 files    1100 files    1200 files    1265 text files.
-classified 441 filesDuplicate file check 441 files (334 known unique)Unique:      100 files                                          Unique:      200 files                                          Unique:      300 files                                               346 unique files.                              
-Counting:  100Counting:  200Counting:  300    1096 files ignored.
+     100 files
+     200 files
+     300 files
+     400 files
+     500 files
+     600 files
+     700 files
+     800 files
+     900 files
+    1000 files
+    1100 files
+    1200 files
+    1265 text files.
+classified 441 files
+Duplicate file check 441 files (334 known unique)
+Unique:      100 files
+Unique:      200 files
+Unique:      300 files
+     346 unique files.
+Counting:  100
+Counting:  200
+Counting:  300
+    1096 files ignored.
 
 github.com/AlDanial/cloc v 1.96  T=1.00 s (346.0 files/s, 108523.0 lines/s)
 -------------------------------------------------------------------------------
@@ -204,9 +225,9 @@ SUM:                           804          33177          17745         181865
 [Cloc's report](https://github.com/AlDanial/cloc) in feb 2023:
 
 ```
-$ cloc packages                                                                      
+$ cloc packages
      515 text files.
-     345 unique files.                                          
+     345 unique files.
      697 files ignored.
 
 github.com/AlDanial/cloc v 1.92  T=1.00 s (345.0 files/s, 212776.0 lines/s)
