@@ -91,7 +91,16 @@ export function editStyle(editor: Editor, selector: string) {
  */
 export function matchSelectorAll(selector: string, components: Component[]): boolean {
   try {
-    return components.some((component) => component.view?.el.matches(selector))
+    return components.some((component) => {
+      // Special case for body component in GrapesJS editor
+      // In GrapesJS, the body element is rendered as a div in the editor
+      if (component.tagName?.toLowerCase() === 'body' && 
+          (selector.toLowerCase().startsWith('body') || 
+           selector.toLowerCase().startsWith('html'))) {
+        return true
+      }
+      return component.view?.el.matches(selector)
+    })
   } catch {
     return false
   }
@@ -102,7 +111,16 @@ export function matchSelectorAll(selector: string, components: Component[]): boo
  */
 export function matchSelectorSome(selector: string, components: Component[]): boolean {
   try {
-    return components.every((component) => component.view?.el.matches(selector))
+    return components.every((component) => {
+      // Special case for body component in GrapesJS editor
+      // In GrapesJS, the body element is rendered as a div in the editor
+      if (component.tagName?.toLowerCase() === 'body' && 
+          (selector.toLowerCase().startsWith('body') || 
+           selector.toLowerCase().startsWith('html'))) {
+        return true
+      }
+      return component.view?.el.matches(selector)
+    })
   } catch {
     return false
   }
