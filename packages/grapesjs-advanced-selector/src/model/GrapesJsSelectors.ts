@@ -25,6 +25,7 @@ export function getUntranslatedKeys(): string[] {
 // Stye Manager functions
 /**
  * Get all selectors that match the selected component
+ * Don't take pseudo class into account
  */
 export function getSelectors(editor: Editor): ComplexSelector[] {
   return editor.getSelectedAll()
@@ -34,16 +35,15 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
         .getRules()
         .reduce<ComplexSelector[]>((acc, _rule: CssRule) => {
           const rule = _rule.clone()
+
           // Check if the rule has a style applied
           if (Object.keys(rule.getStyle()).length === 0) {
             // No style, this is just a selector
             return acc
           }
-          // Check if the rule has a state
+          // Remove the pseudo class
           if (rule.get('state')) {
-            console.warn('Rule has a state', rule)
-            // FIXME: was this useful? Why remove the state?
-            // rule.unset('state')
+            rule.unset('state')
           }
           // Check if the component matches the selector
           const selectorString = rule.getSelectorsString()
