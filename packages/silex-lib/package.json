@@ -100,7 +100,7 @@
     "lint:fix": "$npm_execpath run lint -- --fix",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "test:watch": "$npm_execpath test -- --watch",
-    "prepare": "husky install && npm run build"
+    "prepare": "husky && $npm_execpath run build"
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.0.13",
