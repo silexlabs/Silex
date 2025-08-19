@@ -17,7 +17,7 @@ function processComponentInLoopContext(component: Component, index: number, data
       // This is a nested loop component - handle it specially
       // Store and modify previewIndex values for this component
       const privateStates = component.get('privateStates') || []
-      privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+      privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
         if (state.expression && state.expression.length > 0) {
           state.expression.forEach((token: StoredToken & {previewIndex?: number}, tokenIdx: number) => {
             // Store original value for later restoration
@@ -74,7 +74,7 @@ function processComponentInLoopContext(component: Component, index: number, data
     const privateStates = component.get('privateStates') || []
     
     // Store and modify previewIndex values for this component
-    privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+    privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
       if (state.expression && state.expression.length > 0) {
         state.expression.forEach((token: StoredToken & {previewIndex?: number}, tokenIdx: number) => {
           // Store original value for later restoration
@@ -111,13 +111,13 @@ function processComponentInLoopContext(component: Component, index: number, data
     }
     
     // Process attribute states with the updated previewIndex
-    privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+    privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
       if (state.id && state.id !== Properties.innerHTML && state.id !== Properties.__data && state.expression) {
         try {
           const tokens = state.expression.map((token: StoredToken) => fromStored(token, dataTree, component.getId()))
           const evaluatedValue = dataTree.getValue(tokens, component, true)
           if (evaluatedValue !== null && evaluatedValue !== undefined) {
-            clonedEl.setAttribute(state.id, String(evaluatedValue))
+            clonedEl.setAttribute(state.label || state.id, String(evaluatedValue))
           }
         } catch (e) {
           console.warn(`Error evaluating attribute ${state.id} in loop context:`, e)
@@ -160,7 +160,7 @@ export function createLoopElementForIndex(component: Component, index: number, d
     const privateStates = component.get('privateStates') || []
     
     // Store and modify previewIndex values for this loop iteration
-    privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+    privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
       if (state.expression && state.expression.length > 0) {
         state.expression.forEach((token: StoredToken & {previewIndex?: number}, tokenIdx: number) => {
           // Store original value for later restoration
@@ -215,13 +215,13 @@ export function createLoopElementForIndex(component: Component, index: number, d
     }
     
     // Process attribute states with the updated previewIndex
-    privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+    privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
       if (state.id && state.id !== Properties.innerHTML && state.id !== Properties.__data && state.expression) {
         try {
           const tokens = state.expression.map((token: StoredToken) => fromStored(token, dataTree, component.getId()))
           const evaluatedValue = dataTree.getValue(tokens, component, true)
           if (evaluatedValue !== null && evaluatedValue !== undefined) {
-            loopEl.setAttribute(state.id, String(evaluatedValue))
+            loopEl.setAttribute(state.label || state.id, String(evaluatedValue))
           }
         } catch (e) {
           console.warn(`Error evaluating attribute ${state.id} in loop context:`, e)
@@ -301,13 +301,13 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
     
     // Handle attribute states (non-loop case)
     const privateStates = component.get('privateStates') || []
-    privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+    privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
       if (state.id && state.id !== Properties.innerHTML && state.id !== Properties.__data && state.expression) {
         try {
           const tokens = state.expression.map((token: StoredToken) => fromStored(token, dataTree, component.getId()))
           const evaluatedValue = dataTree.getValue(tokens, component, true)
           if (evaluatedValue !== null && evaluatedValue !== undefined) {
-            el.setAttribute(state.id, String(evaluatedValue))
+            el.setAttribute(state.label || state.id, String(evaluatedValue))
           }
         } catch (e) {
           console.warn(`Error evaluating attribute ${state.id}:`, e)
