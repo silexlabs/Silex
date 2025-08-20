@@ -70,8 +70,13 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
   case 'filter': {
     try {
       const filter = getFilterFromToken(token, dataTree.filters)
-      if (filter.validate(prev)) {
-        return filter.output(prev, filter.options ?? {})
+      try {
+        if (filter.validate(prev)) {
+          return filter.output(prev, filter.options ?? {})
+        }
+      } catch (e) {
+        console.warn('Filter validate error:', e, {token, prev})
+        return null
       }
       return null
     } catch {

@@ -84,7 +84,14 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
   }
   // Get filters which accept no input
   const filters: Filter[] = dataTree.filters
-    .filter(filter => filter.validate(null))
+    .filter(filter => {
+      try {
+        return filter.validate(null)
+      } catch (e) {
+        console.warn('Filter validate error:', e, {filter})
+        return false
+      }
+    })
   // Add a fixed value
   const fixedValue = getFixedToken('')
   // Return the context
@@ -162,6 +169,13 @@ export function getCompletion(options: { component: Component, expression: Expre
     .concat(
       dataTree.filters
         // Match input type
-        .filter(filter => filter.validate(field))
+        .filter(filter => {
+          try {
+            return filter.validate(field)
+          } catch (e) {
+            console.warn('Filter validate error:', e, {filter, field})
+            return false
+          }
+        })
     )
 }
