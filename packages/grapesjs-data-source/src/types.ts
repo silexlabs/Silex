@@ -40,9 +40,7 @@ export interface DataSourceEditorOptions {
   dataSources: IDataSourceOptions[],
   view: DataSourceEditorViewOptions,
   filters: Filter[] | string,
-  commands: {
-    refresh: string,
-  },
+  previewActive: boolean,
 }
 
 // Queries
@@ -98,6 +96,9 @@ export const DATA_SOURCE_ERROR = 'data-source:error'
 export const DATA_SOURCE_CHANGED = 'data-source:changed'
 export const COMPONENT_STATE_CHANGED = 'component:state:changed'
 export const COMMAND_REFRESH = 'data-source:refresh'
+export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
+export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
+export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
 export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
 export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
 export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'

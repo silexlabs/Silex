@@ -636,7 +636,7 @@ export default function(editor: Editor): Filter[] {
       label: 'default',
       validate: (field: Field | null) => !!field && field.kind === 'scalar',
       output: field => field,
-      apply: (value, options) => value ?? options.value,
+      apply: (value, options) => value || options.value,
       options: {
         value: '',
       },
@@ -900,13 +900,14 @@ export default function(editor: Editor): Filter[] {
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
       apply: (arr, options) => {
-        const count = options.count as number ?? 1
+        const count = parseInt(options.count as string || '1')
+        console.log({count, options})
         return (arr as unknown[])
           .sort(() => 0.5 - Math.random())
           .slice(0, count)
       },
       options: {
-        count: 1,
+        count: '1',
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Count

@@ -18,7 +18,7 @@
 import commands from './commands'
 import { initializeDataSourceManager, refreshDataSources } from './model/dataSourceManager'
 import storage from './storage'
-import { COMMAND_REFRESH, DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
+import { COMMAND_REFRESH, COMMAND_PREVIEW_ACTIVATE, COMMAND_PREVIEW_DEACTIVATE, COMMAND_PREVIEW_REFRESH, DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
 import { Editor } from 'grapesjs'
@@ -39,14 +39,11 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   const options: DataSourceEditorOptions = {
     dataSources: [],
     filters: [],
+    previewActive: true, // Default to preview active
     ...opts,
     view: {
       el: '.gjs-pn-panel.gjs-pn-views-container',
       ...opts?.view,
-    },
-    commands: {
-      refresh: COMMAND_REFRESH,
-      ...opts?.commands,
     },
   }
 

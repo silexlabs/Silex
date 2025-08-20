@@ -4,6 +4,7 @@ import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken
 import { getDataTreeFromUtils } from '../utils'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
+import { getPreviewActive } from '../commands'
 
 function evaluateVisibilityCondition(component: Component, dataTree: DataTree, loopIndex?: number): boolean {
   const conditionState = getState(component, Properties.condition, false)
@@ -419,7 +420,7 @@ export function createLoopElementForIndex(component: Component, index: number, d
       // If no innerHTML expression, process the original content and child components
       const originalEl = component.view?.el
       if (originalEl) {
-        const originalContent = originalEl.getAttribute('data-original-content') || originalEl.innerHTML
+        const originalContent = originalEl.innerHTML
         
         // Process child components recursively
         const childComponents = component.components()
@@ -509,7 +510,6 @@ export function createLoopElementForIndex(component: Component, index: number, d
 }
 
 
-
 export function updateView(type: string, view: ComponentView, editor: Editor) {
   const el = view.el
   const component = view.model
@@ -517,6 +517,11 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
   
   try {
     const dataTree = getDataTreeFromUtils(editor)
+    
+    // Check if preview is active - if not, let GrapesJS native rendering handle display
+    if (!getPreviewActive()) {
+      return
+    }
     
     // Check for __data state (loop data) first
     const dataState = getState(component, Properties.__data, false)
@@ -540,13 +545,6 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
         const loopData = dataTree.getValue(tokens, component, false) // Don't resolve preview index to get full array
         
         if (Array.isArray(loopData) && loopData.length > 0) {
-          // Store original element state if not already stored
-          if (!el.hasAttribute('data-original-content')) {
-            el.setAttribute('data-original-content', el.innerHTML)
-          }
-          if (!el.hasAttribute('data-original-display')) {
-            el.setAttribute('data-original-display', el.style.display || '')
-          }
           
           // Keep the original element visible as the first instance (index 0)
           // and create duplicates for the remaining items (index 1+)
