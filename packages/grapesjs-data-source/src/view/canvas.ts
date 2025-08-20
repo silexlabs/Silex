@@ -143,11 +143,9 @@ function processComponentInLoopContext(component: Component, index: number, data
         if (Array.isArray(loopData) && loopData.length > 0) {
           // Create a container for all nested loop items
           const nestedLoopContainer = document.createElement('div')
-          // Copy attributes from original element but don't copy content
+          // Copy attributes from original element including classes
           Array.from(originalEl.attributes).forEach(attr => {
-            if (attr.name !== 'class') { // Don't copy classes to avoid conflicts
-              nestedLoopContainer.setAttribute(attr.name, attr.value)
-            }
+            nestedLoopContainer.setAttribute(attr.name, attr.value)
           })
           
           // Create elements for each nested loop item
@@ -166,8 +164,13 @@ function processComponentInLoopContext(component: Component, index: number, data
     }
     
     // Not a nested loop - process normally
-    // Clone the original element
+    // Clone the original element with attributes
     const clonedEl = originalEl.cloneNode(false) as HTMLElement
+    
+    // Copy all attributes including classes from the original element
+    Array.from(originalEl.attributes).forEach(attr => {
+      clonedEl.setAttribute(attr.name, attr.value)
+    })
     
     // Set the previewIndex on this component's stored states before evaluation
     const privateStates = component.get('privateStates') || []
