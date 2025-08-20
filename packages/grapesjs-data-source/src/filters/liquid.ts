@@ -873,7 +873,7 @@ export default function(editor: Editor): Filter[] {
       label: 'downcase',
       validate: (field: Field | null) => isString(field),
       output: type => type,
-      apply: (str) => (str as string).toLowerCase(),
+      apply: (str) => str ? (str as string).toLowerCase() : '',
       options: {},
     }, {
       type: 'filter',
@@ -881,7 +881,7 @@ export default function(editor: Editor): Filter[] {
       label: 'upcase',
       validate: (field: Field | null) => isString(field),
       output: type => type,
-      apply: (str) => (str as string).toUpperCase(),
+      apply: (str) => str ? (str as string).toUpperCase() : '',
       options: {},
     }, {
       type: 'filter',

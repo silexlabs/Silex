@@ -1,14 +1,113 @@
 import { ComponentView, Editor, Component } from 'grapesjs'
 import { getState } from '../model/state'
-import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken } from '../types'
+import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken, BinariOperator, UnariOperator } from '../types'
 import { getDataTreeFromUtils } from '../utils'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
+
+function evaluateVisibilityCondition(component: Component, dataTree: DataTree, loopIndex?: number): boolean {
+  const conditionState = getState(component, Properties.condition, false)
+  const condition2State = getState(component, Properties.condition2, false)
+  const conditionOperator = component.get('conditionOperator')
+
+  // If no condition is set, component is visible
+  if (!conditionState || !conditionState.expression || conditionState.expression.length === 0) {
+    return true
+  }
+
+  try {
+    // For loop context, we need to temporarily set previewIndex on condition tokens
+    const modifiedConditionStates: {component: Component, stateId: string, tokenIdx: number, originalValue: number | undefined}[] = []
+    
+    if (typeof loopIndex === 'number') {
+      // Temporarily modify condition expression tokens for loop evaluation
+      const privateStates = component.get('privateStates') || []
+      privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
+        if (state.id === Properties.condition || state.id === Properties.condition2) {
+          if (state.expression && state.expression.length > 0) {
+            state.expression.forEach((token: StoredToken & {previewIndex?: number}, tokenIdx: number) => {
+              // Store original value
+              modifiedConditionStates.push({
+                component,
+                stateId: state.id,
+                tokenIdx,
+                originalValue: token.previewIndex
+              })
+              
+              // Set loop index for evaluation
+              if (token.type === 'state' && token.storedStateId === '__data') {
+                token.previewIndex = loopIndex
+              } else if (token.type === 'property' || token.type === 'filter') {
+                token.previewIndex = loopIndex
+              }
+            })
+          }
+        }
+      })
+    }
+    
+    // Evaluate condition1
+    const condition1Tokens = conditionState.expression.map(token => fromStored(token, dataTree, component.getId()))
+    const condition1Value = dataTree.getValue(condition1Tokens, component, true)
+    
+    console.log('🔍 Evaluating visibility condition for component', component.getId(), 'at loop index', loopIndex, '- condition1 value:', condition1Value)
+
+    // For unary operators, only condition1 is needed
+    if (!conditionOperator || Object.values(UnariOperator).includes(conditionOperator)) {
+      switch (conditionOperator) {
+      case UnariOperator.TRUTHY:
+        return !!condition1Value
+      case UnariOperator.FALSY:
+        return !condition1Value
+      case UnariOperator.EMPTY_ARR:
+        return Array.isArray(condition1Value) && condition1Value.length === 0
+      case UnariOperator.NOT_EMPTY_ARR:
+        return Array.isArray(condition1Value) && condition1Value.length > 0
+      default:
+        return !!condition1Value // Default to truthy check
+      }
+    }
+
+    // For binary operators, we need condition2
+    if (!condition2State || !condition2State.expression || condition2State.expression.length === 0) {
+      return true // If condition2 is not set, show component
+    }
+
+    const condition2Tokens = condition2State.expression.map(token => fromStored(token, dataTree, component.getId()))
+    const condition2Value = dataTree.getValue(condition2Tokens, component, true)
+
+    // Apply binary operator
+    switch (conditionOperator) {
+    case BinariOperator.EQUAL:
+      return condition1Value == condition2Value
+    case BinariOperator.NOT_EQUAL:
+      return condition1Value != condition2Value
+    case BinariOperator.GREATER_THAN:
+      return Number(condition1Value) > Number(condition2Value)
+    case BinariOperator.LESS_THAN:
+      return Number(condition1Value) < Number(condition2Value)
+    case BinariOperator.GREATER_THAN_OR_EQUAL:
+      return Number(condition1Value) >= Number(condition2Value)
+    case BinariOperator.LESS_THAN_OR_EQUAL:
+      return Number(condition1Value) <= Number(condition2Value)
+    default:
+      return true
+    }
+  } catch (e) {
+    console.warn('Error evaluating visibility condition:', e)
+    return true // Show component if condition evaluation fails
+  }
+}
 
 function processComponentInLoopContext(component: Component, index: number, dataTree: DataTree, allModifiedStates: {component: Component, stateId: string, tokenIdx: number, originalValue: number | undefined}[]): HTMLElement | null {
   try {
     const originalEl = component.view?.el
     if (!originalEl) return null
+    
+    // Check visibility condition
+    if (!evaluateVisibilityCondition(component, dataTree)) {
+      return null // Component should be hidden
+    }
     
     // Check if this component has its own __data state (nested loop)
     const dataState = getState(component, Properties.__data, false)
@@ -253,6 +352,17 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
   
   try {
     const dataTree = getDataTreeFromUtils(editor)
+    
+    // Check visibility condition
+    if (!evaluateVisibilityCondition(component, dataTree)) {
+      el.style.display = 'none'
+      return
+    } else {
+      // Ensure element is visible if condition passes
+      if (el.style.display === 'none') {
+        el.style.display = ''
+      }
+    }
     
     // Check for __data state (loop data)
     const dataState = getState(component, Properties.__data, false)
