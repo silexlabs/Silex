@@ -226,12 +226,36 @@ function processComponentInLoopContext(component: Component, index: number, data
     // Recursively process child components
     const childComponents = component.components()
     if (childComponents && childComponents.length > 0) {
+      // Check if any child components have dynamic states that need loop processing
+      let hasProcessedChildren = false
       childComponents.forEach((childComponent: Component) => {
-        const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates)
-        if (processedChild) {
-          clonedEl.appendChild(processedChild)
+        const childPrivateStates = childComponent.get('privateStates') || []
+        const hasLoopStates = childPrivateStates.some((state: {id: string, expression: StoredToken[]}) => 
+          state.expression && state.expression.length > 0
+        )
+        
+        if (hasLoopStates) {
+          // Process child with loop context
+          const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates)
+          if (processedChild) {
+            clonedEl.appendChild(processedChild)
+            hasProcessedChildren = true
+          }
+        } else {
+          // Child has no dynamic states, just clone its original element
+          const childEl = childComponent.view?.el
+          if (childEl) {
+            const clonedChildEl = childEl.cloneNode(true) as HTMLElement
+            clonedEl.appendChild(clonedChildEl)
+            hasProcessedChildren = true
+          }
         }
       })
+      
+      // If no children were processed, preserve original content
+      if (!hasProcessedChildren) {
+        clonedEl.innerHTML = originalEl.innerHTML
+      }
     } else {
       // If no child components and no innerHTML state, preserve original content
       clonedEl.innerHTML = originalEl.innerHTML
@@ -312,12 +336,35 @@ export function createLoopElementForIndex(component: Component, index: number, d
         // Process child components recursively
         const childComponents = component.components()
         if (childComponents && childComponents.length > 0) {
+          let hasProcessedChildren = false
           childComponents.forEach((childComponent: Component) => {
-            const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates)
-            if (processedChild) {
-              loopEl.appendChild(processedChild)
+            const childPrivateStates = childComponent.get('privateStates') || []
+            const hasLoopStates = childPrivateStates.some((state: {id: string, expression: StoredToken[]}) => 
+              state.expression && state.expression.length > 0
+            )
+            
+            if (hasLoopStates) {
+              // Process child with loop context
+              const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates)
+              if (processedChild) {
+                loopEl.appendChild(processedChild)
+                hasProcessedChildren = true
+              }
+            } else {
+              // Child has no dynamic states, just clone its original element
+              const childEl = childComponent.view?.el
+              if (childEl) {
+                const clonedChildEl = childEl.cloneNode(true) as HTMLElement
+                loopEl.appendChild(clonedChildEl)
+                hasProcessedChildren = true
+              }
             }
           })
+          
+          // If no children were processed, use original content
+          if (!hasProcessedChildren) {
+            loopEl.innerHTML = originalContent
+          }
         } else {
           // If no child components, just use the original content
           loopEl.innerHTML = originalContent

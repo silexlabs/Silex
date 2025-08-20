@@ -689,6 +689,111 @@ describe('Canvas Loop Functionality', () => {
       expect(element4).not.toBeNull()
       expect(element4?.innerHTML).toBe('simple-hero')
     })
+
+    test('should preserve child component content when children have no dynamic states', async () => {
+      const canvas = await import('./canvas')
+      const { createLoopElementForIndex } = canvas
+
+      // Setup test data for loop
+      dataTree.previewData = {
+        [testDataSourceId]: {
+          pages: [
+            { title: 'Page 1' },
+            { title: 'Page 2' },
+            { title: 'Page 3' }
+          ]
+        }
+      }
+
+      // Create child components that have no dynamic states (static text)
+      const childComponent1 = {
+        getId: () => 'child1',
+        get: jest.fn().mockReturnValue([]), // No privateStates
+        components: () => [],
+        view: {
+          el: (() => {
+            const el = document.createElement('p')
+            el.innerHTML = 'TEST'
+            el.id = 'child1'
+            return el
+          })()
+        }
+      }
+
+      const childComponent2 = {
+        getId: () => 'child2', 
+        get: jest.fn().mockReturnValue([]), // No privateStates
+        components: () => [],
+        view: {
+          el: (() => {
+            const el = document.createElement('p')
+            el.innerHTML = 'TEST'
+            el.id = 'child2'
+            return el
+          })()
+        }
+      }
+
+      // Setup parent component with loop data and static children
+      const mockPrivateStates = [
+        {
+          id: Properties.__data,
+          expression: [{
+            type: 'property',
+            fieldId: 'pages',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }]
+        }
+      ]
+
+      jest.spyOn(component, 'get').mockImplementation((key) => {
+        if (key === 'privateStates') return mockPrivateStates
+        return undefined
+      })
+
+      jest.spyOn(component, 'components').mockReturnValue([childComponent1, childComponent2])
+
+      // Mock getState
+      ;(getState as jest.Mock).mockImplementation((comp, property) => {
+        if (property === Properties.__data) {
+          return mockPrivateStates[0]
+        }
+        return null
+      })
+
+      // Mock fromStored
+      ;(fromStored as jest.Mock).mockImplementation((token: StoredToken) => ({
+        ...token,
+        label: 'test',
+        typeIds: ['string'],
+        kind: 'scalar',
+      }))
+
+      // Mock getValue
+      jest.spyOn(dataTree, 'getValue').mockImplementation((expression: Expression, comp?: Component, resolvePreview?: boolean) => {
+        if (resolvePreview === false) {
+          // Return full array for loop processing
+          return dataTree.previewData[testDataSourceId].pages
+        }
+        return null
+      })
+
+      // Test creating a loop element
+      const element = createLoopElementForIndex(component, 0, dataTree)
+
+      expect(element).not.toBeNull()
+      expect(element?.classList.contains('ds-loop-item')).toBe(true)
+      expect(element?.getAttribute('data-loop-index')).toBe('0')
+      
+      // Should have two child p elements with preserved content
+      const children = element?.children
+      expect(children?.length).toBe(2)
+      expect(children?.[0].tagName).toBe('P')
+      expect(children?.[0].innerHTML).toBe('TEST')
+      expect(children?.[1].tagName).toBe('P') 
+      expect(children?.[1].innerHTML).toBe('TEST')
+    })
   })
 
   describe('Error Handling', () => {
