@@ -99,7 +99,7 @@ function evaluateVisibilityCondition(component: Component, dataTree: DataTree, l
   }
 }
 
-function processComponentInLoopContext(component: Component, index: number, dataTree: DataTree, allModifiedStates: {component: Component, stateId: string, tokenIdx: number, originalValue: number | undefined}[]): HTMLElement | null {
+function processComponentInLoopContext(component: Component, index: number, dataTree: DataTree, allModifiedStates: {component: Component, stateId: string, tokenIdx: number, originalValue: number | undefined}[], editor?: Editor): HTMLElement | null {
   try {
     const originalEl = component.view?.el
     if (!originalEl) return null
@@ -146,7 +146,7 @@ function processComponentInLoopContext(component: Component, index: number, data
           
           // Create elements for each nested loop item
           loopData.forEach((item, nestedIndex) => {
-            const nestedLoopElement = createLoopElementForIndex(component, nestedIndex, dataTree)
+            const nestedLoopElement = createLoopElementForIndex(component, nestedIndex, dataTree, editor)
             if (nestedLoopElement) {
               nestedLoopContainer.appendChild(nestedLoopElement)
             }
@@ -200,6 +200,23 @@ function processComponentInLoopContext(component: Component, index: number, data
         const evaluatedValue = dataTree.getValue(tokens, component, true)
         if (evaluatedValue !== null && evaluatedValue !== undefined) {
           clonedEl.innerHTML = String(evaluatedValue)
+          
+          // Add click handler to select the original component for dynamic content
+          if (editor) {
+            clonedEl.addEventListener('click', (e) => {
+              console.log('🎯 Dynamic element clicked in processComponentInLoopContext!', {
+                clonedElement: clonedEl,
+                originalComponent: component,
+                componentId: component.getId?.() || component.id
+              })
+              e.stopPropagation()
+              if (editor.select && typeof editor.select === 'function') {
+                console.log('Selecting dynamic component:', component)
+                editor.select(component)
+              }
+            })
+          }
+          
           // Return early - don't process children if innerHTML was set directly
           return clonedEl
         }
@@ -236,7 +253,7 @@ function processComponentInLoopContext(component: Component, index: number, data
         
         if (hasLoopStates) {
           // Process child with loop context
-          const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates)
+          const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates, editor)
           if (processedChild) {
             clonedEl.appendChild(processedChild)
             hasProcessedChildren = true
@@ -246,6 +263,23 @@ function processComponentInLoopContext(component: Component, index: number, data
           const childEl = childComponent.view?.el
           if (childEl) {
             const clonedChildEl = childEl.cloneNode(true) as HTMLElement
+            
+            // Add click handler to select the original child component
+            if (editor) {
+              clonedChildEl.addEventListener('click', (e) => {
+                console.log('🎯 Child element clicked in processComponentInLoopContext!', {
+                  clonedElement: clonedChildEl,
+                  originalChildComponent: childComponent,
+                  childComponentId: childComponent.getId?.() || childComponent.id
+                })
+                e.stopPropagation()
+                if (editor.select && typeof editor.select === 'function') {
+                  console.log('Selecting child component:', childComponent)
+                  editor.select(childComponent)
+                }
+              })
+            }
+            
             clonedEl.appendChild(clonedChildEl)
             hasProcessedChildren = true
           }
@@ -268,12 +302,49 @@ function processComponentInLoopContext(component: Component, index: number, data
   }
 }
 
-export function createLoopElementForIndex(component: Component, index: number, dataTree: DataTree): HTMLElement | null {
+export function createLoopElementForIndex(component: Component, index: number, dataTree: DataTree, editor?: Editor): HTMLElement | null {
   try {
-    // Create the loop item wrapper
-    const loopEl = document.createElement('div')
-    loopEl.classList.add('ds-loop-item')
+    // Clone the original element directly instead of creating a wrapper
+    const originalEl = component.view?.el
+    if (!originalEl) return null
+    
+    const loopEl = originalEl.cloneNode(false) as HTMLElement
+    
+    // Copy all attributes from original element
+    Array.from(originalEl.attributes).forEach(attr => {
+      loopEl.setAttribute(attr.name, attr.value)
+    })
+    
+    // Ensure the cloned element is visible (don't inherit display: none from original)
+    loopEl.style.display = ''
+    
+    // Modify the ID to make it unique for this loop instance
+    if (loopEl.id) {
+      loopEl.id = `${loopEl.id}-${index}`
+    }
+    
+    // Add loop-specific attributes
     loopEl.setAttribute('data-loop-index', index.toString())
+    loopEl.setAttribute('data-loop-original-id', originalEl.id || '')
+    
+    // Add click handler to the container itself to select the original component
+    if (editor) {
+      loopEl.addEventListener('click', (e) => {
+        console.log('🎯 Loop container clicked!', {
+          clonedElement: loopEl,
+          originalComponent: component,
+          componentId: component.getId?.() || component.id,
+          loopIndex: index
+        })
+        e.stopPropagation()
+        if (editor.select && typeof editor.select === 'function') {
+          console.log('Selecting original component from container click:', component)
+          editor.select(component)
+        }
+      })
+    }
+    
+    // Note: Click handlers are also added to individual child elements
     
     // Track all modified states for restoration
     const allModifiedStates: {component: Component, stateId: string, tokenIdx: number, originalValue: number | undefined}[] = []
@@ -323,6 +394,23 @@ export function createLoopElementForIndex(component: Component, index: number, d
         const evaluatedValue = dataTree.getValue(tokens, component, true)
         if (evaluatedValue !== null && evaluatedValue !== undefined) {
           loopEl.innerHTML = String(evaluatedValue)
+          
+          // Add click handler to select the original component for dynamic content
+          if (editor) {
+            loopEl.addEventListener('click', (e) => {
+              console.log('🎯 Dynamic element clicked in createLoopElementForIndex!', {
+                clonedElement: loopEl,
+                originalComponent: component,
+                componentId: component.getId?.() || component.id,
+                loopIndex: index
+              })
+              e.stopPropagation()
+              if (editor.select && typeof editor.select === 'function') {
+                console.log('Selecting dynamic component:', component)
+                editor.select(component)
+              }
+            })
+          }
         }
       } catch (e) {
         console.warn('Error evaluating innerHTML in loop context:', e)
@@ -345,7 +433,7 @@ export function createLoopElementForIndex(component: Component, index: number, d
             
             if (hasLoopStates) {
               // Process child with loop context
-              const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates)
+              const processedChild = processComponentInLoopContext(childComponent, index, dataTree, allModifiedStates, editor)
               if (processedChild) {
                 loopEl.appendChild(processedChild)
                 hasProcessedChildren = true
@@ -355,6 +443,23 @@ export function createLoopElementForIndex(component: Component, index: number, d
               const childEl = childComponent.view?.el
               if (childEl) {
                 const clonedChildEl = childEl.cloneNode(true) as HTMLElement
+                
+                // Add click handler to select the original child component
+                if (editor) {
+                  clonedChildEl.addEventListener('click', (e) => {
+                    console.log('🎯 Child element clicked in createLoopElementForIndex!', {
+                      clonedElement: clonedChildEl,
+                      originalChildComponent: childComponent,
+                      childComponentId: childComponent.getId?.() || childComponent.id
+                    })
+                    e.stopPropagation()
+                    if (editor.select && typeof editor.select === 'function') {
+                      console.log('Selecting child component:', childComponent)
+                      editor.select(childComponent)
+                    }
+                  })
+                }
+                
                 loopEl.appendChild(clonedChildEl)
                 hasProcessedChildren = true
               }
@@ -408,6 +513,7 @@ export function createLoopElementForIndex(component: Component, index: number, d
 export function updateView(type: string, view: ComponentView, editor: Editor) {
   const el = view.el
   const component = view.model
+  let modifiedStates: {stateId: string, tokenIdx: number, originalValue: number | undefined}[] = []
   
   try {
     const dataTree = getDataTreeFromUtils(editor)
@@ -434,22 +540,74 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
         const loopData = dataTree.getValue(tokens, component, false) // Don't resolve preview index to get full array
         
         if (Array.isArray(loopData) && loopData.length > 0) {
-          // Store original content if not already stored
+          // Store original element state if not already stored
           if (!el.hasAttribute('data-original-content')) {
             el.setAttribute('data-original-content', el.innerHTML)
           }
+          if (!el.hasAttribute('data-original-display')) {
+            el.setAttribute('data-original-display', el.style.display || '')
+          }
           
-          // Clear all content and replace with loop items
-          el.innerHTML = ''
+          // Keep the original element visible as the first instance (index 0)
+          // and create duplicates for the remaining items (index 1+)
+          const parentElement = el.parentElement
+          if (parentElement) {
+            // Remove any existing loop elements first
+            const existingLoops = parentElement.querySelectorAll(`[data-loop-original-id="${el.id}"]`)
+            existingLoops.forEach(loopEl => loopEl.remove())
+            
+            // Create loop elements for indices 1 and above (skip index 0 since original element handles it)
+            loopData.slice(1).forEach((item, arrayIndex) => {
+              const loopIndex = arrayIndex + 1 // Adjust index since we sliced from 1
+              const loopElement = createLoopElementForIndex(component, loopIndex, dataTree, editor)
+              if (loopElement) {
+                // Insert after the original element
+                el.insertAdjacentElement('afterend', loopElement)
+              }
+            })
+          }
           
-          // Create elements for each loop item
-          loopData.forEach((item, index) => {
-            const loopElement = createLoopElementForIndex(component, index, dataTree)
-            if (loopElement) {
-              el.appendChild(loopElement)
+          // Process the original element for index 0 by temporarily setting previewIndex
+          const privateStates = component.get('privateStates') || []
+          modifiedStates = []
+          
+          // Set previewIndex to 0 for all relevant tokens
+          privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
+            if (state.expression && state.expression.length > 0) {
+              state.expression.forEach((token: StoredToken & {previewIndex?: number}, tokenIdx: number) => {
+                modifiedStates.push({
+                  stateId: state.id,
+                  tokenIdx,
+                  originalValue: token.previewIndex
+                })
+                
+                if (token.type === 'state' && token.storedStateId === '__data') {
+                  token.previewIndex = 0
+                } else if (token.type === 'property' || token.type === 'filter') {
+                  token.previewIndex = 0
+                }
+              })
             }
           })
-          return // Don't process other expressions if this is a loop
+          
+          // Don't return early - continue processing other expressions for index 0
+        } else {
+          // No loop data - restore original element if it was previously hidden
+          if (el.hasAttribute('data-original-display')) {
+            el.style.display = el.getAttribute('data-original-display') || ''
+            el.removeAttribute('data-original-display')
+          }
+          if (el.hasAttribute('data-original-content')) {
+            el.innerHTML = el.getAttribute('data-original-content') || ''
+            el.removeAttribute('data-original-content')
+          }
+          
+          // Remove any existing loop elements
+          const parentElement = el.parentElement
+          if (parentElement) {
+            const existingLoops = parentElement.querySelectorAll(`[data-loop-original-id="${el.id}"]`)
+            existingLoops.forEach(loopEl => loopEl.remove())
+          }
         }
       } catch (e) {
         console.warn('Error evaluating __data state for loop:', e)
@@ -485,6 +643,17 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
         }
       }
     })
+    
+    // Restore modified states if we processed a loop
+    if (modifiedStates.length > 0) {
+      modifiedStates.forEach(({stateId, tokenIdx, originalValue}) => {
+        const privateStates = component.get('privateStates') || []
+        const state = privateStates.find((s: {id: string}) => s.id === stateId)
+        if (state && state.expression && state.expression[tokenIdx]) {
+          (state.expression[tokenIdx] as StoredToken & {previewIndex?: number}).previewIndex = originalValue
+        }
+      })
+    }
     
   } catch (e) {
     console.warn('Error updating canvas view:', e)

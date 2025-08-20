@@ -277,8 +277,15 @@ export class DataTree {
         // value = filter.apply([prevValues], options)
         value = filter.apply(prevValues, options)
       } catch(e) {
-        console.error('Filter error, return next value', e)
-        // Mimic behavior of liquid
+        console.warn(`Filter "${filter.id}" error:`, e, {
+          filter: filter.id,
+          prevValues,
+          options,
+          valueType: typeof prevValues,
+          isArray: Array.isArray(prevValues),
+          isNull: prevValues === null
+        })
+        // Mimic behavior of liquid - return the input value unchanged
         return this.getValue(rest, component, resolvePreviewIndex, prevValues)
       }
 

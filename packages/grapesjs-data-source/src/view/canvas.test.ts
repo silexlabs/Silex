@@ -190,7 +190,6 @@ describe('Canvas Loop Functionality', () => {
 
       expect(element).not.toBeNull()
       expect(element?.tagName).toBe('DIV')
-      expect(element?.classList.contains('ds-loop-item')).toBe(true)
       expect(element?.getAttribute('data-loop-index')).toBe('2')
       expect(element?.innerHTML).toBe('Item 3') // Should show the correct item for index 2
 
@@ -526,7 +525,6 @@ describe('Canvas Loop Functionality', () => {
       const result = createLoopElementForIndex(outerComponent, 0, dataTree)
 
       expect(result).not.toBeNull()
-      expect(result?.classList.contains('ds-loop-item')).toBe(true)
       expect(result?.getAttribute('data-loop-index')).toBe('0')
 
       // The result should contain the nested loop structure
@@ -783,7 +781,6 @@ describe('Canvas Loop Functionality', () => {
       const element = createLoopElementForIndex(component, 0, dataTree)
 
       expect(element).not.toBeNull()
-      expect(element?.classList.contains('ds-loop-item')).toBe(true)
       expect(element?.getAttribute('data-loop-index')).toBe('0')
       
       // Should have two child p elements with preserved content
@@ -793,6 +790,82 @@ describe('Canvas Loop Functionality', () => {
       expect(children?.[0].innerHTML).toBe('TEST')
       expect(children?.[1].tagName).toBe('P') 
       expect(children?.[1].innerHTML).toBe('TEST')
+    })
+
+    test('should add click handlers to loop elements that select the original component', async () => {
+      const canvas = await import('./canvas')
+      const { createLoopElementForIndex } = canvas
+
+      // Setup test data
+      dataTree.previewData = {
+        [testDataSourceId]: {
+          items: [
+            { name: 'Item 1' },
+            { name: 'Item 2' }
+          ]
+        }
+      }
+
+      // Mock editor with select method
+      const mockSelect = jest.fn()
+      const mockEditor = {
+        select: mockSelect
+      }
+
+      // Setup component
+      const mockPrivateStates = [
+        {
+          id: Properties.innerHTML,
+          expression: [{
+            type: 'property',
+            fieldId: 'name',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }]
+        }
+      ]
+
+      jest.spyOn(component, 'get').mockImplementation((key) => {
+        if (key === 'privateStates') return mockPrivateStates
+        return undefined
+      })
+
+      // Mock getState
+      ;(getState as jest.Mock).mockImplementation((comp, property) => {
+        if (property === Properties.innerHTML) {
+          return mockPrivateStates[0]
+        }
+        return null
+      })
+
+      // Mock fromStored and getValue
+      ;(fromStored as jest.Mock).mockImplementation((token: StoredToken) => ({
+        ...token,
+        label: 'test',
+        typeIds: ['string'],
+        kind: 'scalar',
+      }))
+
+      jest.spyOn(dataTree, 'getValue').mockImplementation(() => 'Item 2')
+
+      // Create a loop element for index 1
+      const element = createLoopElementForIndex(component, 1, dataTree, mockEditor as Editor)
+
+      expect(element).not.toBeNull()
+      expect(element?.getAttribute('data-loop-index')).toBe('1')
+      
+      // Verify element was created correctly
+      expect(element?.innerHTML).toBe('Item 2')
+
+      // Simulate a click event
+      const clickEvent = new Event('click', { bubbles: true })
+      const stopPropagationSpy = jest.spyOn(clickEvent, 'stopPropagation')
+      
+      element?.dispatchEvent(clickEvent)
+
+      // Verify the editor.select was called with the original component
+      expect(stopPropagationSpy).toHaveBeenCalled()
+      expect(mockSelect).toHaveBeenCalledWith(component)
     })
   })
 
