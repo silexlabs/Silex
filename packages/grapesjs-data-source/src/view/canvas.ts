@@ -104,10 +104,6 @@ function processComponentInLoopContext(component: Component, index: number, data
     const originalEl = component.view?.el
     if (!originalEl) return null
     
-    // Check visibility condition
-    if (!evaluateVisibilityCondition(component, dataTree)) {
-      return null // Component should be hidden
-    }
     
     // Check if this component has its own __data state (nested loop)
     const dataState = getState(component, Properties.__data, false)
@@ -282,6 +278,19 @@ export function createLoopElementForIndex(component: Component, index: number, d
       }
     })
     
+    // Check visibility condition for this loop index after setting previewIndex
+    if (!evaluateVisibilityCondition(component, dataTree, index)) {
+      // Restore all modified previewIndex values before returning
+      allModifiedStates.forEach(({component, stateId, tokenIdx, originalValue}) => {
+        const privateStates = component.get('privateStates') || []
+        const state = privateStates.find((s: {id: string}) => s.id === stateId)
+        if (state && state.expression && state.expression[tokenIdx]) {
+          (state.expression[tokenIdx] as StoredToken & {previewIndex?: number}).previewIndex = originalValue
+        }
+      })
+      return null // Component should be hidden for this loop index
+    }
+    
     // Process innerHTML with the updated previewIndex
     const innerHTMLState = getState(component, Properties.innerHTML, false)
     if (innerHTMLState && innerHTMLState.expression && innerHTMLState.expression.length > 0) {
@@ -356,19 +365,21 @@ export function updateView(type: string, view: ComponentView, editor: Editor) {
   try {
     const dataTree = getDataTreeFromUtils(editor)
     
-    // Check visibility condition
-    if (!evaluateVisibilityCondition(component, dataTree)) {
-      el.style.display = 'none'
-      return
-    } else {
-      // Ensure element is visible if condition passes
-      if (el.style.display === 'none') {
-        el.style.display = ''
+    // Check for __data state (loop data) first
+    const dataState = getState(component, Properties.__data, false)
+    
+    // For non-loop components, check visibility condition
+    if (!dataState || !dataState.expression || dataState.expression.length === 0) {
+      if (!evaluateVisibilityCondition(component, dataTree)) {
+        el.style.display = 'none'
+        return
+      } else {
+        // Ensure element is visible if condition passes
+        if (el.style.display === 'none') {
+          el.style.display = ''
+        }
       }
     }
-    
-    // Check for __data state (loop data)
-    const dataState = getState(component, Properties.__data, false)
     
     if (dataState && dataState.expression && dataState.expression.length > 0) {
       try {

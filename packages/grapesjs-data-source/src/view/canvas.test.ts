@@ -535,6 +535,162 @@ describe('Canvas Loop Functionality', () => {
     })
   })
 
+  describe('Visibility Conditions in Loops', () => {
+    test('should evaluate visibility conditions correctly for loop components', async () => {
+      const canvas = await import('./canvas')
+      const { createLoopElementForIndex } = canvas
+
+      // Setup test data that matches the real scenario
+      dataTree.previewData = {
+        [testDataSourceId]: {
+          modules: [
+            { item: { type: 'simple-hero' } },
+            { item: { type: 'other-type' } },
+            { item: { type: 'simple-hero' } },
+            { item: null },
+            { item: { type: 'simple-hero' } }
+          ]
+        }
+      }
+
+      // Setup component with both loop data and visibility condition
+      const mockPrivateStates = [
+        {
+          id: Properties.__data,
+          expression: [{
+            type: 'property',
+            fieldId: 'modules',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }]
+        },
+        {
+          id: Properties.innerHTML,
+          expression: [{
+            type: 'state',
+            storedStateId: '__data',
+            componentId: 'test-component',
+            previewIndex: 0
+          }, {
+            type: 'property',
+            fieldId: 'item',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }, {
+            type: 'property',
+            fieldId: 'type',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }]
+        },
+        {
+          id: Properties.condition,
+          expression: [{
+            type: 'state',
+            storedStateId: '__data',
+            componentId: 'test-component',
+            previewIndex: 0
+          }, {
+            type: 'property',
+            fieldId: 'item',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }, {
+            type: 'property',
+            fieldId: 'type',
+            dataSourceId: testDataSourceId,
+            previewIndex: 0
+          }]
+        },
+        {
+          id: Properties.condition2,
+          expression: [{
+            type: 'property',
+            propType: 'field',
+            fieldId: 'fixed',
+            kind: 'scalar',
+            typeIds: ['String'],
+            options: { value: 'simple-hero' }
+          }]
+        }
+      ]
+
+      jest.spyOn(component, 'get').mockImplementation((key) => {
+        if (key === 'privateStates') return mockPrivateStates
+        if (key === 'conditionOperator') return '=='
+        return undefined
+      })
+
+      // Mock getState
+      ;(getState as jest.Mock).mockImplementation((comp, property) => {
+        const state = mockPrivateStates.find(s => s.id === property)
+        return state || null
+      })
+
+      // Mock fromStored
+      ;(fromStored as jest.Mock).mockImplementation((token: StoredToken) => ({
+        ...token,
+        label: 'test',
+        typeIds: ['string'],
+        kind: token.kind || 'scalar',
+      }))
+
+      // Mock getValue to return different values based on the expression and previewIndex
+      jest.spyOn(dataTree, 'getValue').mockImplementation((expression: Expression, comp?: Component, resolvePreview?: boolean) => {
+        const lastToken = expression[expression.length - 1] as StoredToken & {fieldId?: string, previewIndex?: number, options?: {value?: string}}
+        
+        // Handle fixed value (condition2)
+        if (lastToken?.options?.value) {
+          return lastToken.options.value
+        }
+        
+        // Handle dynamic values based on previewIndex
+        const previewIndex = lastToken?.previewIndex || 0
+        const moduleData = dataTree.previewData[testDataSourceId].modules[previewIndex]
+        
+        if (lastToken?.fieldId === 'type') {
+          return moduleData?.item?.type || null
+        }
+        
+        if (lastToken?.fieldId === 'modules') {
+          if (resolvePreview === false) {
+            // Return full array for loop processing
+            return dataTree.previewData[testDataSourceId].modules
+          } else {
+            // Return specific item
+            return moduleData
+          }
+        }
+        
+        return null
+      })
+
+      // Test creating elements at different loop indices
+      // Index 0: modules[0].item.type = 'simple-hero', should match condition
+      const element0 = createLoopElementForIndex(component, 0, dataTree)
+      expect(element0).not.toBeNull()
+      expect(element0?.innerHTML).toBe('simple-hero')
+
+      // Index 1: modules[1].item.type = 'other-type', should not match condition
+      const element1 = createLoopElementForIndex(component, 1, dataTree)
+      expect(element1).toBeNull() // Should be null due to visibility condition
+
+      // Index 2: modules[2].item.type = 'simple-hero', should match condition
+      const element2 = createLoopElementForIndex(component, 2, dataTree)
+      expect(element2).not.toBeNull()
+      expect(element2?.innerHTML).toBe('simple-hero')
+
+      // Index 3: modules[3].item = null, should not match condition
+      const element3 = createLoopElementForIndex(component, 3, dataTree)
+      expect(element3).toBeNull() // Should be null due to visibility condition
+
+      // Index 4: modules[4].item.type = 'simple-hero', should match condition
+      const element4 = createLoopElementForIndex(component, 4, dataTree)
+      expect(element4).not.toBeNull()
+      expect(element4?.innerHTML).toBe('simple-hero')
+    })
+  })
+
   describe('Error Handling', () => {
     test('should handle malformed expressions gracefully', () => {
       expect(true).toBe(true) // Placeholder
