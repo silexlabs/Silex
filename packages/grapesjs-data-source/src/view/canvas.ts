@@ -1,36 +1,16 @@
-import { ComponentView, Editor, Component } from 'grapesjs'
-import { getState } from '../model/state'
+import { Editor, Component } from 'grapesjs'
+import { getState, StoredState } from '../model/state'
 import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken, BinariOperator, UnariOperator } from '../types'
-import { getDataTreeFromUtils } from '../utils'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
-import { getPreviewActive } from '../commands'
+import { getDataTreeFromUtils } from '../utils'
 
-// Pure function to check if a component has a specific state
-export function hasState(component: Component, stateId: string): boolean {
-  const state = getState(component, stateId, false)
-  return !!(state && state.expression && state.expression.length > 0)
-}
-
-// Pure function to get loop data from a component
-export function getLoopData(component: Component, dataTree: DataTree): any[] | null {
-  if (!hasState(component, Properties.__data)) {
-    return null
-  }
-
-  try {
-    const dataState = getState(component, Properties.__data, false)!
-    const tokens = dataState.expression.map(token => fromStored(token, dataTree, component.getId?.() || null))
-    const result = dataTree.getValue(tokens, component, false) // Get full array
-    return Array.isArray(result) ? result : null
-  } catch (e) {
-    console.warn('Error getting loop data:', e)
-    return null
-  }
+function getPrivateState(component: Component, stateId: string): StoredState | null {
+  return getState(component, stateId, false)
 }
 
 // Pure function to evaluate a single condition
-export function evaluateCondition(expression: StoredToken[], dataTree: DataTree, component: Component): any {
+function evaluateCondition(expression: StoredToken[], component: Component, dataTree: DataTree): unknown | null {
   try {
     const tokens = expression.map(token => fromStored(token, dataTree, component.getId?.() || null))
     return dataTree.getValue(tokens, component, true)
@@ -40,84 +20,18 @@ export function evaluateCondition(expression: StoredToken[], dataTree: DataTree,
   }
 }
 
-// Pure function to check visibility based on conditions
-export function isComponentVisible(component: Component, dataTree: DataTree): boolean {
-  const conditionState = getState(component, Properties.condition, false)
-  const condition2State = getState(component, Properties.condition2, false)
-  const conditionOperator = component.get ? component.get('conditionOperator') : undefined
-
-  // If no condition is set, component is visible
-  if (!conditionState || !conditionState.expression || conditionState.expression.length === 0) {
-    return true
-  }
-
-  try {
-    const condition1Value = evaluateCondition(conditionState.expression, dataTree, component)
-
-    // For unary operators, only condition1 is needed
-    if (!conditionOperator || Object.values(UnariOperator).includes(conditionOperator)) {
-      switch (conditionOperator) {
-      case UnariOperator.TRUTHY:
-        return !!condition1Value
-      case UnariOperator.FALSY:
-        return !condition1Value
-      case UnariOperator.EMPTY_ARR:
-        return Array.isArray(condition1Value) && condition1Value.length === 0
-      case UnariOperator.NOT_EMPTY_ARR:
-        return Array.isArray(condition1Value) && condition1Value.length > 0
-      default:
-        return !!condition1Value
-      }
-    }
-
-    // For binary operators, we need condition2
-    if (!condition2State || !condition2State.expression || condition2State.expression.length === 0) {
-      return true
-    }
-
-    const condition2Value = evaluateCondition(condition2State.expression, dataTree, component)
-
-    // Apply binary operator
-    switch (conditionOperator) {
-    case BinariOperator.EQUAL:
-      // Handle null/undefined values properly for equality checks
-      if (condition1Value === null || condition1Value === undefined || condition1Value === '') {
-        return false
-      }
-      return condition1Value == condition2Value
-    case BinariOperator.NOT_EQUAL:
-      return condition1Value != condition2Value
-    case BinariOperator.GREATER_THAN:
-      return Number(condition1Value) > Number(condition2Value)
-    case BinariOperator.LESS_THAN:
-      return Number(condition1Value) < Number(condition2Value)
-    case BinariOperator.GREATER_THAN_OR_EQUAL:
-      return Number(condition1Value) >= Number(condition2Value)
-    case BinariOperator.LESS_THAN_OR_EQUAL:
-      return Number(condition1Value) <= Number(condition2Value)
-    default:
-      return true
-    }
-  } catch (e) {
-    console.warn('Error evaluating visibility condition:', e)
-    return true
-  }
-}
-
 // Pure function to render innerHTML for a component at a specific loop index
-export function renderInnerHTML(component: Component, dataTree: DataTree, loopIndex?: number): string | null {
-  if (!hasState(component, Properties.innerHTML)) {
+function renderInnerHTML(component: Component, dataTree: DataTree, loopIndex?: number): string | null {
+  const innerHTML = getPrivateState(component, Properties.innerHTML)
+  if (innerHTML === null) {
     return null
   }
-
   try {
     // Set preview index for loop context
     if (typeof loopIndex === 'number') {
       setPreviewIndex(component, loopIndex)
     }
-
-    const innerHTMLState = getState(component, Properties.innerHTML, false)!
-    const value = evaluateCondition(innerHTMLState.expression, dataTree, component)
+    const value = evaluateCondition(innerHTML.expression, component, dataTree)
     return value !== null && value !== undefined ? String(value) : null
   } catch (e) {
     console.warn('Error rendering innerHTML:', e)
@@ -126,7 +40,7 @@ export function renderInnerHTML(component: Component, dataTree: DataTree, loopIn
 }
 
 // Pure function to set preview index on all tokens in a component
-export function setPreviewIndex(component: Component, index: number): void {
+function setPreviewIndex(component: Component, index: number): void {
   const privateStates = component.get('privateStates') || []
   privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
     if (state.expression && state.expression.length > 0) {
@@ -141,58 +55,16 @@ export function setPreviewIndex(component: Component, index: number): void {
   })
 }
 
-// Pure function to create a clone of an element with loop-specific attributes
-export function createLoopElement(originalEl: HTMLElement, index: number): HTMLElement {
-  const loopEl = originalEl.cloneNode(false) as HTMLElement
-
-  // Copy all attributes from original element
-  Array.from(originalEl.attributes).forEach(attr => {
-    loopEl.setAttribute(attr.name, attr.value)
-  })
-
-  // Make ID unique for this loop instance
-  if (loopEl.id) {
-    loopEl.id = `${loopEl.id}-${index}`
-  }
-
-  // Add loop-specific attributes
-  loopEl.setAttribute('data-loop-index', index.toString())
-  loopEl.setAttribute('data-loop-original-id', originalEl.id || '')
-
-  return loopEl
-}
-
-// Main pure function to generate HTML from a component tree
-export function generateHtml(
-  root: Component,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any,
-  select?: (component: Component) => void
-): HTMLElement[] {
-  // Check if component has loop data
-  const loopData = getLoopDataPure(root, getValue)
-
-  if (loopData && loopData.length > 0) {
-    // Generate multiple elements for loop component
-    return generateLoopElements(root, loopData, getValue, select)
-  } else {
-    // Generate single element for regular component
-    const element = generateSingleElement(root, getValue, select)
-    return element ? [element] : []
-  }
-}
-
-// Pure function to get loop data using getValue
-function getLoopDataPure(
+function renderLoopData(
   component: Component,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any
-): any[] | null {
-  if (!hasState(component, Properties.__data)) {
-    return null
-  }
-
+  dataTree: DataTree,
+): unknown[] | null {
   try {
-    const dataState = getState(component, Properties.__data, false)!
-    const result = getValue(dataState.expression, component, false) // Get full array
+    const dataState = getPrivateState(component, Properties.__data)!
+    if (dataState === null) {
+      return null
+    }
+    const result = dataTree.getValue(dataState.expression, component, false) // Get full array
     return Array.isArray(result) ? result : null
   } catch (e) {
     console.warn('Error getting loop data:', e)
@@ -200,258 +72,65 @@ function getLoopDataPure(
   }
 }
 
-// Generate multiple elements for a loop component
-function generateLoopElements(
+// Export for tests
+export function isComponentVisible(
   component: Component,
-  loopData: any[],
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any,
-  select?: (component: Component) => void
-): HTMLElement[] {
-  const elements: HTMLElement[] = []
-
-  for (let i = 0; i < loopData.length; i++) {
-    // Set preview index for this iteration
-    setPreviewIndex(component, i)
-
-    // Check visibility condition
-    if (!isComponentVisiblePure(component, getValue)) {
-      continue
-    }
-
-    // Generate element for this loop iteration
-    const element = generateElementForLoopIndex(component, i, getValue, select)
-    if (element) {
-      elements.push(element)
-    }
-  }
-
-  return elements
-}
-
-// Generate a single element for a regular component
-function generateSingleElement(
-  component: Component,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any,
-  select?: (component: Component) => void
-): HTMLElement | null {
-  // Check visibility condition
-  if (!isComponentVisiblePure(component, getValue)) {
-    return null
-  }
-
-  const originalEl = component.view?.el
-  if (!originalEl) return null
-
-  // Create base element
-  const element = originalEl.cloneNode(false) as HTMLElement
-
-  // Copy all attributes from original element
-  Array.from(originalEl.attributes).forEach(attr => {
-    element.setAttribute(attr.name, attr.value)
-  })
-
-  // Render innerHTML if available
-  const innerHTML = renderInnerHTMLPure(component, getValue)
-  if (innerHTML !== null) {
-    element.innerHTML = innerHTML
-  } else {
-    // Process child components
-    const hasVisibleChildren = processChildrenPure(component, element, getValue, select)
-    // If no visible children, the container should be hidden
-    if (!hasVisibleChildren) {
-      return null
-    }
-  }
-
-  // Process dynamic attributes
-  processAttributesPure(component, element, getValue)
-
-  // Add selection event listener if provided
-  if (select) {
-    element.addEventListener('click', (e) => {
-      e.stopPropagation()
-      select(component)
-    })
-  }
-
-  return element
-}
-
-// Generate element for a specific loop index
-function generateElementForLoopIndex(
-  component: Component,
-  index: number,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any,
-  select?: (component: Component) => void
-): HTMLElement | null {
-  const originalEl = component.view?.el
-  if (!originalEl) return null
-
-  // Create loop element with loop-specific attributes
-  const element = createLoopElement(originalEl, index)
-
-  // Render innerHTML if available
-  const innerHTML = renderInnerHTMLPure(component, getValue)
-  if (innerHTML !== null) {
-    element.innerHTML = innerHTML
-  } else {
-    // Process child components
-    const hasVisibleChildren = processChildrenPure(component, element, getValue, select)
-    // If no visible children, the container should be hidden
-    if (!hasVisibleChildren) {
-      return null
-    }
-  }
-
-  // Process dynamic attributes
-  processAttributesPure(component, element, getValue)
-
-  // Add selection event listener if provided
-  if (select) {
-    element.addEventListener('click', (e) => {
-      e.stopPropagation()
-      select(component)
-    })
-  }
-
-  return element
-}
-
-// Pure function to check visibility using getValue
-function isComponentVisiblePure(
-  component: Component,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any
+  dataTree: DataTree,
 ): boolean {
-  const conditionState = getState(component, Properties.condition, false)
-  const condition2State = getState(component, Properties.condition2, false)
-  const conditionOperator = component.get ? component.get('conditionOperator') : undefined
+  const condition1State = getPrivateState(component, Properties.condition)
+  const condition2State = getPrivateState(component, Properties.condition2)
+  const conditionOperator = component.get('conditionOperator')
 
   // If no condition is set, component is visible
-  if (!conditionState || !conditionState.expression || conditionState.expression.length === 0) {
+  if (!condition1State || !condition1State?.expression || condition1State?.expression.length === 0) {
     return true
   }
 
-  try {
-    const condition1Value = getValue(conditionState.expression, component, true)
+  const condition1Value = dataTree.getValue(condition1State.expression, component, true)
 
-    // For unary operators, only condition1 is needed
-    if (!conditionOperator || Object.values(UnariOperator).includes(conditionOperator)) {
-      switch (conditionOperator) {
-      case UnariOperator.TRUTHY:
-        return !!condition1Value
-      case UnariOperator.FALSY:
-        return !condition1Value
-      case UnariOperator.EMPTY_ARR:
-        return Array.isArray(condition1Value) && condition1Value.length === 0
-      case UnariOperator.NOT_EMPTY_ARR:
-        return Array.isArray(condition1Value) && condition1Value.length > 0
-      default:
-        return !!condition1Value
-      }
-    }
-
-    // For binary operators, we need condition2
-    if (!condition2State || !condition2State.expression || condition2State.expression.length === 0) {
-      return true
-    }
-
-    const condition2Value = getValue(condition2State.expression, component, true)
-
-    // Apply binary operator
-    switch (conditionOperator) {
-    case BinariOperator.EQUAL:
-      // Handle null/undefined values properly for equality checks
-      if (condition1Value === null || condition1Value === undefined || condition1Value === '') {
-        return false
-      }
-      return condition1Value == condition2Value
-    case BinariOperator.NOT_EQUAL:
-      return condition1Value != condition2Value
-    case BinariOperator.GREATER_THAN:
-      return Number(condition1Value) > Number(condition2Value)
-    case BinariOperator.LESS_THAN:
-      return Number(condition1Value) < Number(condition2Value)
-    case BinariOperator.GREATER_THAN_OR_EQUAL:
-      return Number(condition1Value) >= Number(condition2Value)
-    case BinariOperator.LESS_THAN_OR_EQUAL:
-      return Number(condition1Value) <= Number(condition2Value)
+  // For unary operators, only condition1 is needed
+  switch (conditionOperator) {
+    case UnariOperator.TRUTHY:
+    return !!condition1Value
+    case UnariOperator.FALSY:
+    return !condition1Value
+    case UnariOperator.EMPTY_ARR:
+    return Array.isArray(condition1Value) && condition1Value.length === 0
+    case UnariOperator.NOT_EMPTY_ARR:
+    return Array.isArray(condition1Value) && condition1Value.length > 0
     default:
-      return true
-    }
-  } catch (e) {
-    console.warn('Error evaluating visibility condition:', e)
-    return true
+  }
+
+  // For binary operators, we need condition2
+  if (!condition2State || !condition2State.expression || condition2State.expression.length === 0) {
+    return false
+  }
+
+  const condition2Value = dataTree.getValue(condition2State.expression, component, true)
+
+  // Apply binary operator
+  switch (conditionOperator) {
+    case BinariOperator.EQUAL:
+    return condition1Value == condition2Value
+    case BinariOperator.NOT_EQUAL:
+    return condition1Value !== condition2Value
+    case BinariOperator.GREATER_THAN:
+    return Number(condition1Value) > Number(condition2Value)
+    case BinariOperator.LESS_THAN:
+    return Number(condition1Value) < Number(condition2Value)
+    case BinariOperator.GREATER_THAN_OR_EQUAL:
+    return Number(condition1Value) >= Number(condition2Value)
+    case BinariOperator.LESS_THAN_OR_EQUAL:
+    return Number(condition1Value) <= Number(condition2Value)
+    default:
+    throw new Error(`Unknown operator ${conditionOperator}`)
   }
 }
 
-// Pure function to render innerHTML using getValue
-function renderInnerHTMLPure(
-  component: Component,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any
-): string | null {
-  if (!hasState(component, Properties.innerHTML)) {
-    return null
-  }
-
-  try {
-    const innerHTMLState = getState(component, Properties.innerHTML, false)!
-    const value = getValue(innerHTMLState.expression, component, true)
-    return value !== null && value !== undefined ? String(value) : null
-  } catch (e) {
-    console.warn('Error rendering innerHTML:', e)
-    return null
-  }
-}
-
-// Pure function to process child components
-function processChildrenPure(
-  component: Component,
-  element: HTMLElement,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any,
-  select?: (component: Component) => void
-): boolean {
-  const childComponents = component.components()
-  if (!childComponents || childComponents.length === 0) {
-    // No children, preserve original content
-    element.innerHTML = component.view?.el?.innerHTML || ''
-    return true // Has content
-  }
-
-  let hasVisibleChildren = false
-
-  childComponents.forEach((childComponent: Component) => {
-    if (hasAnyState(childComponent)) {
-      // Child has dynamic states - process it recursively
-      const childElements = generateHtml(childComponent, getValue, select)
-      if (childElements.length > 0) {
-        childElements.forEach(childEl => element.appendChild(childEl))
-        hasVisibleChildren = true
-      }
-    } else {
-      // Child has no dynamic states - just clone it
-      const childEl = childComponent.view?.el
-      if (childEl) {
-        const clonedChild = childEl.cloneNode(true) as HTMLElement
-        if (select) {
-          clonedChild.addEventListener('click', (e) => {
-            e.stopPropagation()
-            select(childComponent)
-          })
-        }
-        element.appendChild(clonedChild)
-        hasVisibleChildren = true
-      }
-    }
-  })
-
-  return hasVisibleChildren
-}
-
-// Pure function to process attributes using getValue
-function processAttributesPure(
+function renderAttributes(
   component: Component,
   element: HTMLElement,
-  getValue: (expression: StoredToken[], component: Component, resolvePreview: boolean) => any
+  dataTree: DataTree,
 ): void {
   const privateStates = component.get('privateStates') || []
   privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
@@ -463,7 +142,7 @@ function processAttributesPure(
         state.id !== Properties.condition2 &&
         state.expression) {
       try {
-        const value = getValue(state.expression, component, true)
+        const value = dataTree.getValue(state.expression, component, true)
         if (value !== null && value !== undefined) {
           element.setAttribute(state.label || state.id, String(value))
         }
@@ -474,199 +153,138 @@ function processAttributesPure(
   })
 }
 
+// // Helper to extend a component instance
+// function extendComponent(comp: Component, onRender: (c: Component) => void) {
+//   // Extend view
+//   if (comp.view) {
+//     const origOnRender = comp.view.onRender?.bind(comp.view)
+//     comp.view.onRender = function (opts: ClbObj) {
+//       if (origOnRender) origOnRender(opts)
+//       onRender(comp)
+//     }
+//   }
+// }
+//
+// /**
+//  * Applies extended model/view logic to all existing components in the editor.
+//  * @param editor The GrapesJS editor instance
+//  */
+// function extendAllComponents(editor: Editor, onRender: (c: Component) => void, parents: Components = editor.getComponents()) {
+//   parents.forEach((comp) => {
+//     extendComponent(comp, onRender)
+//     extendAllComponents(editor, onRender, comp.components())
+//   })
+// }
+//
 
-// Helper function to check if component has any dynamic states
-function hasAnyState(component: Component): boolean {
-  const privateStates = component.get('privateStates') || []
-  return privateStates.some((state: {expression: StoredToken[]}) =>
-    state.expression && state.expression.length > 0
-  )
+function renderContent(comp: Component, dataTree: DataTree, deep: number) {
+  const innerHtml = renderInnerHTML(comp, dataTree)
+  if (innerHtml === null) {
+    comp.view!.render()
+    comp.components()
+      .forEach(c => onRender(c, dataTree, deep+1))
+  } else {
+    comp.view!.el.innerHTML = innerHtml!
+  }
 }
 
-
-// Main update function - now uses generateHtml for pure HTML generation
-export function updateView(type: string, view: ComponentView, editor: Editor): void {
-  if (!getPreviewActive()) {
+// exported for unit tests only
+export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
+  const view = comp.view
+  if (!view) {
     return
   }
-
   const el = view.el
-  const component = view.model
+  const __data = renderLoopData(comp, dataTree)
+  if (__data) {
+    if (__data.length === 0) {
+      // el.remove()
+      el.setAttribute('data-hidden', '')
+      el.style.display = 'none'
+    } else {
+      // Render each loop iteration
+      // Render first iteration in the original element
+      setPreviewIndex(comp, 0)
+      const visibleParent = isComponentVisible(comp, dataTree)
+      if(visibleParent) {
+        comp.components().forEach(c => onRender(c, dataTree, deep+1))
+      } else {
+        // el.setAttribute('data-hidden', '')
+        // el.style.display = 'none'
+        el.remove()
+      }
 
-  try {
-    const dataTree = getDataTreeFromUtils(editor)
+      // For subsequent iterations: clone first, then render into original, then clone again
+      for (let idx = 1; idx < __data.length; idx++) {
+        // Clone the current state (with previous iteration's content)
+        const clone = el.cloneNode(true) as HTMLElement
+        el.insertAdjacentElement('afterend', clone)
 
-    // Create getValue function that resolves expressions using dataTree
-    const getValue = (expression: StoredToken[], comp: Component, resolvePreview: boolean) => {
-      const tokens = expression.map(token => fromStored(token, dataTree, comp.getId?.() || null))
-      return dataTree.getValue(tokens, comp, resolvePreview)
-    }
-
-    // Create select function for editor integration
-    const select = (comp: Component) => {
-      if (editor.select) {
-        editor.select(comp)
+        // Set preview index for the next iteration and render into original element
+        setPreviewIndex(comp, idx)
+        const visible = isComponentVisible(comp, dataTree)
+        if (visible) {
+          renderContent(comp, dataTree, deep)
+        } else {
+          // el.setAttribute('data-hidden', '')
+          // el.style.display = 'none'
+          // el.innerHTML = 'xxxx'
+          el.remove()
+        }
       }
     }
-
-    // Generate HTML elements using pure function
-    const generatedElements = generateHtml(component, getValue, select)
-
-    // Apply generated HTML to DOM
-    applyGeneratedHtmlToDOM(component, el, generatedElements, editor)
-
-  } catch (e) {
-    console.warn('Error updating canvas view:', e)
-  }
-}
-
-
-// Helper function to clone DOM structure while preserving event listeners
-function cloneElementWithEventListeners(sourceElement: HTMLElement, targetElement: HTMLElement): void {
-  // Copy all attributes
-  Array.from(targetElement.attributes).forEach(attr => {
-    targetElement.removeAttribute(attr.name)
-  })
-  Array.from(sourceElement.attributes).forEach(attr => {
-    targetElement.setAttribute(attr.name, attr.value)
-  })
-  
-  // Clear target content
-  targetElement.innerHTML = ''
-  
-  // Clone each child node recursively
-  Array.from(sourceElement.childNodes).forEach(child => {
-    if (child.nodeType === Node.ELEMENT_NODE) {
-      const childElement = child as HTMLElement
-      const clonedChild = document.createElement(childElement.tagName)
-      
-      // Recursively clone the child
-      cloneElementWithEventListeners(childElement, clonedChild)
-      
-      // Clone event listeners by checking if the source child has a click handler
-      // We can detect this by checking if the element has event listeners (in a real scenario)
-      // For our case, we'll copy the click behavior by re-triggering the original element's events
-      clonedChild.addEventListener('click', (e) => {
-        e.stopPropagation()
-        // Trigger click on the original element to preserve the original behavior
-        childElement.click()
-      })
-      
-      targetElement.appendChild(clonedChild)
-    } else {
-      // Text nodes and other non-element nodes
-      targetElement.appendChild(child.cloneNode(true))
-    }
-  })
-  
-  // Copy the click behavior from source to target
-  targetElement.addEventListener('click', (e) => {
-    e.stopPropagation()
-    // Trigger the click on the source element to preserve original behavior
-    sourceElement.click()
-  })
-}
-
-// Helper function to apply generated HTML elements to the DOM
-function applyGeneratedHtmlToDOM(component: Component, originalEl: HTMLElement, generatedElements: HTMLElement[], editor: Editor): void {
-  if (generatedElements.length === 0) {
-    // Component is not visible, hide it
-    return
-  }
-
-  if (generatedElements.length === 1) {
-    // Single element - update the original element while preserving event listeners
-    const newEl = generatedElements[0]
-
-    // Copy all attributes from generated element to original
-    Array.from(originalEl.attributes).forEach(attr => {
-      originalEl.removeAttribute(attr.name)
-    })
-    Array.from(newEl.attributes).forEach(attr => {
-      originalEl.setAttribute(attr.name, attr.value)
-    })
-
-    // Clone the structure and event listeners from generated element to original
-    cloneElementWithEventListeners(newEl, originalEl)
-    originalEl.style.display = ''
-
   } else {
-    // Multiple elements (loop) - update original with first, add others after
-    const parentElement = originalEl.parentElement
-    if (!parentElement) return
-
-    // Remove existing loop elements
-    const existingLoops = parentElement.querySelectorAll(`[data-loop-original-id="${originalEl.id}"]`)
-    existingLoops.forEach(loopEl => loopEl.remove())
-
-    // Update original element with first generated element
-    const firstEl = generatedElements[0]
-    Array.from(originalEl.attributes).forEach(attr => {
-      originalEl.removeAttribute(attr.name)
-    })
-    Array.from(firstEl.attributes).forEach(attr => {
-      originalEl.setAttribute(attr.name, attr.value)
-    })
-    // Clone the structure and event listeners from first element to original
-    cloneElementWithEventListeners(firstEl, originalEl)
-    originalEl.style.display = ''
-
-    // Add remaining elements after the original
-    for (let i = 1; i < generatedElements.length; i++) {
-      originalEl.insertAdjacentElement('afterend', generatedElements[i])
+    if(isComponentVisible(comp, dataTree)) {
+      renderContent(comp, dataTree, deep)
+    } else {
+      el.remove()
     }
   }
 }
-
-
 
 // GrapesJS plugin setup
 export default (editor: Editor) => {
-  const domc = editor.DomComponents
+  const dataTree = getDataTreeFromUtils()
 
   // Listen for data source changes
-  editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, () => {
-    const wrapper = editor.getWrapper()
-    if (wrapper) {
-      updateAllViews(wrapper, editor)
-    }
+  editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} component style:change storage:after:load`, () => {
+    console.log('Data changed, need to refresh the canvas')
+    editor.Canvas.refresh()
   })
 
-  // Extend component types
-  ;['container', 'text', 'image', 'default'].forEach((type) => {
-    const typeObj = domc.getType(type)
-    if (typeObj) {
-      domc.addType(type, {
-        ...typeObj,
-        view: {
-          ...typeObj?.view,
-          onRender() {
-            const view = this as ComponentView
-            if (typeObj?.view?.onRender) typeObj.view.onRender.call(this)
-            updateView(type, view, editor)
-          },
-        },
-        model: {
-          ...typeObj?.model,
-          init() {
-            if (typeObj?.model?.init) typeObj.model.init.call(this)
-            this.on('change:privateStates change:publicStates', () => {
-              if (this.view) {
-                updateView(type, this.view, editor)
-              }
-            })
-          },
-        },
-      })
+  editor.on('canvas:refresh', () => {
+    try {
+      onRender(editor.getWrapper()!, dataTree)
+    } catch(e) {
+      console.error('Error rendering the preview', e)
     }
   })
-}
+  // requestAnimationFrame(() => {
+  //   renderCanvas(editor)
+  // })
 
-function updateAllViews(component: Component, editor: Editor) {
-  if (component.view) {
-    updateView(component.get('type') || 'default', component.view, editor)
-  }
-  component.components().forEach((child: Component) => {
-    updateAllViews(child, editor)
-  })
+  // const domc = editor.DomComponents
+  // // Extend component types
+  // ;['container', 'text', 'image', 'default'].forEach((type) => {
+  //   const typeObj = domc.getType(type)
+  //   if (typeObj) {
+  //     domc.addType(type, {
+  //       ...typeObj,
+  //       view: {
+  //         ...typeObj?.view,
+  //         onRender() {
+  //           const view = this as ComponentView
+  //           const comp: Component = view.model
+  //           if (typeObj?.view?.onRender) typeObj.view.onRender.call(this)
+  //           onRender(comp)
+  //         },
+  //       },
+  //     })
+  //   }
+  // })
+  // extendAllComponents(editor, onRender)
+  // editor.on('component:add', (comp: Component) => {
+  //   extendComponent(comp, onRender)
+  // })
+  // renderCanvas(editor)
 }
