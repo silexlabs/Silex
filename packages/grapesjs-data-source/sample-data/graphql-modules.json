@@ -1,0 +1,191 @@
+{
+  "data": {
+    "__typename": "ApplicationQueries",
+    "queryPageContents": [
+      {
+        "__typename": "Page",
+        "flatData": {
+          "__typename": "PageFlatDataDto",
+          "label": "Home",
+          "modules": [
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SimpleHeroComponent",
+                "type": "simple-hero"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SectionSquaresComponent",
+                "type": "section-squares"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SectionSquaresComponent",
+                "type": "section-squares"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            }
+          ]
+        }
+      },
+      {
+        "__typename": "Page",
+        "flatData": {
+          "__typename": "PageFlatDataDto",
+          "label": "Help and support",
+          "modules": [
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SimpleHeroComponent",
+                "type": "simple-hero"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SectionSquaresComponent",
+                "type": "section-squares"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {}
+            },
+            {
+              "__typename": "PageDataModulesChildDto",
+              "item": {
+                "__typename": "SpecialHeadingComponent",
+                "type": "special-heading"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "extensions": {
+    "tracing": {
+      "version": 1,
+      "startTime": "2025-08-21T00:55:20.1733794Z",
+      "endTime": "2025-08-21T00:55:20.1887985Z",
+      "duration": 15419100,
+      "parsing": {
+        "startOffset": 500,
+        "duration": 28100
+      },
+      "validation": {
+        "startOffset": 29300,
+        "duration": 467900
+      },
+      "execution": {
+        "resolvers": []
+      }
+    }
+  }
+}

@@ -1,10 +1,10 @@
 # GrapesJs Data Source plugin
 
-This GrapesJS plugin integrates various APIs into the editor.
+This GrapesJS plugin integrates various APIs into the editor, providing powerful data-driven website building capabilities.
 
 It makes a new [expressions UI](#expressions-ui) available to the user so that she can manage custom states on components, linking them to data from a CMS or a data base or an API.
 
-The plugin also has data management feature needed to manage components states, expressions made of tokens, build a query from the component states.
+The plugin also has data management features needed to manage component states, expressions made of tokens, build queries from component states, and render dynamic content on the canvas.
 
 Finally there is a [settings dialog](#settings-dialog) to manage the data sources and save them with the website.
 
@@ -14,21 +14,27 @@ Finally there is a [settings dialog](#settings-dialog) to manage the data source
 
 Discussions, bug reports in [Silex community forums](https://community.silex.me/) or [GitHub issues](https://github.com/silexlabs/grapesjs-data-source/issues)
 
-Features
+## Features
 
-* [x] Import data from data source (GraphQL APIs) in the editor
-* [x] Configure data sources from config
-* [x] Dialog to configure data sources from the editor
-* [x] Edit component attributes, and dynamic properties (loop, visibility, innerHTML)
-* [x] Use states and liquid filters in expressions
-* [x] Generate GraphQL query from component states
-* [x] Save data sources with the website data
-* [x] Compatible with [GrapesJS notifications plugin](https://github.com/silexlabs/grapesjs-notifications)
-* [x] Events and API to manage the data, the completion of exrpessions, and the GraphQL query
-* [x] Web component to display the expressions and edit them
-* [ ] Preview real data on the canvas
-* [ ] Add more liquid filters
-* [ ] Add more data sources (REST, Open API)
+* ✅ **Import data from data source** (GraphQL APIs) in the editor
+* ✅ **Configure data sources** from config and runtime
+* ✅ **Data source management dialog** to add, edit, and test data sources
+* ✅ **Dynamic component properties** - Edit attributes, innerHTML, visibility conditions, and loops
+* ✅ **State management** - Create reusable states and expressions
+* ✅ **Liquid filters** - Transform data with built-in and custom filters
+* ✅ **GraphQL query generation** - Automatically generate optimized queries from component states
+* ✅ **Data persistence** - Save data sources with website data
+* ✅ **Real-time canvas preview** - See live data on the canvas with loop rendering and conditional visibility
+* ✅ **Loop rendering** - Duplicate components for each item in arrays with proper indexing
+* ✅ **Visibility conditions** - Show/hide components based on data conditions with binary and unary operators
+* ✅ **Interactive canvas** - Click on loop instances to select and edit original template components
+* ✅ **Preview controls** - Commands to activate/deactivate/refresh data preview on canvas
+* ✅ **Nested loops** - Support for loops within loops with proper context management
+* ✅ **Compatible** with [GrapesJS notifications plugin](https://github.com/silexlabs/grapesjs-notifications)
+* ✅ **Comprehensive API** - Events and functions to manage data, expressions, and queries
+* ✅ **Expression editor** - Web component for building and editing expressions
+* 🔄 **Add more liquid filters** (ongoing)
+* 🔄 **Add more data sources** (REST, Open API) (planned)
 
 ## Supported CMS and APIs
 
@@ -158,6 +164,47 @@ const result = getValue(
 console.log('will write "TEST":', result)
 ```
 
+### Canvas Preview Functionality
+
+The plugin provides powerful canvas preview capabilities that show live data directly on the design canvas:
+
+#### Loop Rendering
+Components with `__data` states automatically render multiple instances based on array data:
+
+```js
+// Component with __data state pointing to an array will duplicate for each item
+// Original component shows data for index 0
+// Additional instances are created for indices 1, 2, 3...
+```
+
+#### Visibility Conditions  
+Components with condition states are shown/hidden based on data evaluation:
+
+```js
+// Binary operators: ==, !=, >, <, >=, <=
+// Unary operators: truthy, falsy, empty array, not empty array
+// Components that don't match conditions are removed from DOM (not just hidden)
+```
+
+#### Interactive Canvas
+Click on duplicated loop instances to select and edit the original template component. The plugin maintains the connection between preview instances and their source templates.
+
+#### Preview Controls
+Control canvas preview state programmatically:
+
+```js
+// Start with preview disabled in plugin options
+editor.plugins.add('@silexlabs/grapesjs-data-source', {
+  previewActive: false,
+  // ... other options
+})
+
+// Or control at runtime
+editor.runCommand('data-source:preview:activate')   // Show live data
+editor.runCommand('data-source:preview:deactivate') // Show templates  
+editor.runCommand('data-source:preview:refresh')    // Refresh data
+```
+
 ## API Reference
 
 The plugin provides a clean, simple API that hides internal complexity. All main functions are available through the public API in `src/api.ts`.
@@ -235,13 +282,27 @@ const completion = getCompletion({ component, expression })
 
 ## Available commands
 
-The plugin adds a command to refresh the data sources. This command is used to update the data in the editor when the data sources are changed.
+The plugin adds several commands for managing data sources and preview functionality:
 
+### Data Source Management
 ```js
+// Refresh data sources (fetch fresh data)
 editor.runCommand('data-source:refresh')
 ```
 
-Your app can provide different command names, see the options below.
+### Preview Controls
+```js
+// Activate data preview on canvas (show live data)
+editor.runCommand('data-source:preview:activate')
+
+// Deactivate data preview (show original template)
+editor.runCommand('data-source:preview:deactivate')
+
+// Refresh preview data (re-fetch and update canvas)
+editor.runCommand('data-source:preview:refresh')
+```
+
+These commands allow you to control whether the canvas shows live data from your data sources or the original template content. When preview is active, components with loop data will duplicate for each item, and visibility conditions will be evaluated in real-time.
 
 ## Available events
 
@@ -426,6 +487,7 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
 |-|-|-
 | `dataSources` | List of data sources, see config examples and the plugin code for docs ([data source options](./src/index.ts) and [GraphQL data source options](./src/datasources/GraphQL.ts)) | `[]` |
 | `filters` | The string 'liquidjs' for LiquidJs filters or a list of filters (JS objects like the ones in `src/filters/liquid.ts`) | `[]` |
+| `previewActive` | Whether data preview should be active by default on canvas | `true` |
 | `view` | Options for the UIs included with this plugin | N/A |
 | `view.el` | UI element to attach [the expressions UI](#expressions-ui) | `.gjs-pn-panel.gjs-pn-views-container` |
 | `view.button` | Optional GrapesJs button or a function which returns a button. This button will show/hide [the expressions UI](#expressions-ui), it's just a helper to save you from doing it yourself. | `undefined` which means no button |
@@ -433,8 +495,17 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
 | `view.styles` | CSS styles which are applied to the UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 | `view.optionsStyles` | CSS styles which are applied to each "expression selector" UI (inserted in a style tag) | See the file `src/view/defaultStyles.ts` |
 | `view.defaultFixed` | If true, the UI shows fixed by default or if false it shows expression by default | `false` |
-| `commands` | List of GrapesJs commands added to the editor. You can use this to change the names of the commands. | N/A |
-| `commands.refresh` | Name of the command to refresh the data sources | `data-source:refresh` |
+
+### Canvas Preview Features
+
+The plugin now includes comprehensive canvas preview functionality:
+
+- **Loop Rendering**: Components with `__data` states automatically duplicate for each array item
+- **Visibility Conditions**: Components with condition states show/hide based on data evaluation  
+- **Interactive Elements**: Click on duplicated loop instances to select and edit the original template
+- **Preview Controls**: Use commands to toggle preview mode on/off
+- **Nested Loops**: Full support for loops within loops with proper context isolation
+- **Real-time Updates**: Canvas updates automatically when data sources change
 
 ## Download
 
