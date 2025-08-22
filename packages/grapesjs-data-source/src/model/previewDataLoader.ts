@@ -29,6 +29,7 @@ interface PreviewDataLoaderState {
   editor: Editor
   dataTree: DataTree
   currentUpdatePid: number
+  lastQueries: Record<DataSourceId, string>
 }
 
 // Global loader instance
@@ -41,7 +42,8 @@ export function initializePreviewDataLoader(editor: Editor, dataTree: DataTree):
   globalLoader = {
     editor,
     dataTree,
-    currentUpdatePid: 0
+    currentUpdatePid: 0,
+    lastQueries: {}
   }
 }
 
@@ -56,14 +58,52 @@ function getLoader(): PreviewDataLoaderState {
 }
 
 /**
- * Load preview data for the current page
+ * Compare two query objects to see if they are equal
  */
-export async function loadPreviewData(): Promise<void> {
+function areQueriesEqual(queries1: Record<DataSourceId, string>, queries2: Record<DataSourceId, string>): boolean {
+  const keys1 = Object.keys(queries1).sort()
+  const keys2 = Object.keys(queries2).sort()
+  
+  // Check if they have the same number of keys
+  if (keys1.length !== keys2.length) {
+    return false
+  }
+  
+  // Check if all keys are the same
+  if (!keys1.every(key => keys2.includes(key))) {
+    return false
+  }
+  
+  // Check if all values are the same
+  return keys1.every(key => queries1[key] === queries2[key])
+}
+
+/**
+ * Load preview data for the current page
+ * @param forceRefresh - If true, bypass query comparison and force refresh
+ */
+export async function loadPreviewData(forceRefresh: boolean = false): Promise<void> {
   const loader = getLoader()
   loader.editor.trigger(DATA_SOURCE_DATA_LOAD_START)
   
   const page = loader.editor.Pages.getSelected()
   if (!page) return
+  
+  // Get current queries
+  const currentQueries = getPageQuery(page, loader.editor, loader.dataTree)
+  
+  // Compare with last queries to see if we need to refresh
+  const queriesChanged = !areQueriesEqual(loader.lastQueries, currentQueries)
+  
+  if (!forceRefresh && !queriesChanged) {
+    // Queries haven't changed, no need to refresh data sources
+    // But still trigger load end to maintain expected event flow
+    loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, loader.dataTree.previewData)
+    return
+  }
+  
+  // Update last queries
+  loader.lastQueries = { ...currentQueries }
   
   loader.currentUpdatePid++
   const data = await fetchPagePreviewData(page)

@@ -106,7 +106,7 @@ export function initializeDataSourceManager(
     },
     dataSourceReadyBinded: (ds: IDataSource) => {
       editor.trigger(DATA_SOURCE_READY, ds)
-      loadPreviewData() // load the preview data for the current page
+      loadPreviewData(true) // force refresh when data source becomes ready
     },
     dataSourceErrorBinded: (message: string, ds: IDataSource) => {
       editor.trigger(DATA_SOURCE_ERROR, message, ds)
@@ -158,14 +158,14 @@ export async function addDataSource(dataSource: IDataSource): Promise<void> {
 export function removeDataSource(dataSource: IDataSource): void {
   registryRemoveDataSource(dataSource)
   setupEventListeners()
-  loadPreviewData()
+  loadPreviewData(true) // force refresh when data source is removed
 }
 
 /**
  * Refresh all data sources data
  */
 export function refreshDataSources(): void {
-  loadPreviewData()
+  loadPreviewData(true) // force refresh when explicitly requested
 }
 
 /**

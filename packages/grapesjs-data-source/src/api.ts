@@ -142,10 +142,11 @@ export function refreshDataSources(): void {
 
 /**
  * Load preview data for the current page
+ * @param forceRefresh - If true, bypass query comparison and force refresh
  * @returns Promise that resolves when data is loaded
  */
-export function loadPreviewData(): Promise<void> {
-  return loadPreviewDataInternal()
+export function loadPreviewData(forceRefresh: boolean = false): Promise<void> {
+  return loadPreviewDataInternal(forceRefresh)
 }
 
 /**
