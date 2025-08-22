@@ -249,42 +249,6 @@ export default (editor: Editor) => {
   // Listen for data source changes
   editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} component style:change storage:after:load`, () => {
     console.log('Data changed, need to refresh the canvas')
-    editor.Canvas.refresh()
+    onRender(editor.getWrapper()!, dataTree)
   })
-
-  editor.on('canvas:refresh', () => {
-    try {
-      onRender(editor.getWrapper()!, dataTree)
-    } catch(e) {
-      console.error('Error rendering the preview', e)
-    }
-  })
-  // requestAnimationFrame(() => {
-  //   renderCanvas(editor)
-  // })
-
-  // const domc = editor.DomComponents
-  // // Extend component types
-  // ;['container', 'text', 'image', 'default'].forEach((type) => {
-  //   const typeObj = domc.getType(type)
-  //   if (typeObj) {
-  //     domc.addType(type, {
-  //       ...typeObj,
-  //       view: {
-  //         ...typeObj?.view,
-  //         onRender() {
-  //           const view = this as ComponentView
-  //           const comp: Component = view.model
-  //           if (typeObj?.view?.onRender) typeObj.view.onRender.call(this)
-  //           onRender(comp)
-  //         },
-  //       },
-  //     })
-  //   }
-  // })
-  // extendAllComponents(editor, onRender)
-  // editor.on('component:add', (comp: Component) => {
-  //   extendComponent(comp, onRender)
-  // })
-  // renderCanvas(editor)
 }
