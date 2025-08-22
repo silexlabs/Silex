@@ -2,10 +2,7 @@
 * @jest-environment jsdom
 */
 
-import { Component } from 'grapesjs'
 import { onRender, isComponentVisible } from './canvas'
-import fs from 'fs'
-import path from 'path'
 import { DataTree } from '../model/DataTree'
 import { BinariOperator, Expression, UnariOperator } from '../types'
 

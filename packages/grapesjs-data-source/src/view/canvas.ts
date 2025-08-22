@@ -90,15 +90,15 @@ export function isComponentVisible(
 
   // For unary operators, only condition1 is needed
   switch (conditionOperator) {
-    case UnariOperator.TRUTHY:
+  case UnariOperator.TRUTHY:
     return !!condition1Value
-    case UnariOperator.FALSY:
+  case UnariOperator.FALSY:
     return !condition1Value
-    case UnariOperator.EMPTY_ARR:
+  case UnariOperator.EMPTY_ARR:
     return Array.isArray(condition1Value) && condition1Value.length === 0
-    case UnariOperator.NOT_EMPTY_ARR:
+  case UnariOperator.NOT_EMPTY_ARR:
     return Array.isArray(condition1Value) && condition1Value.length > 0
-    default:
+  default:
   }
 
   // For binary operators, we need condition2
@@ -110,26 +110,25 @@ export function isComponentVisible(
 
   // Apply binary operator
   switch (conditionOperator) {
-    case BinariOperator.EQUAL:
+  case BinariOperator.EQUAL:
     return condition1Value == condition2Value
-    case BinariOperator.NOT_EQUAL:
+  case BinariOperator.NOT_EQUAL:
     return condition1Value !== condition2Value
-    case BinariOperator.GREATER_THAN:
+  case BinariOperator.GREATER_THAN:
     return Number(condition1Value) > Number(condition2Value)
-    case BinariOperator.LESS_THAN:
+  case BinariOperator.LESS_THAN:
     return Number(condition1Value) < Number(condition2Value)
-    case BinariOperator.GREATER_THAN_OR_EQUAL:
+  case BinariOperator.GREATER_THAN_OR_EQUAL:
     return Number(condition1Value) >= Number(condition2Value)
-    case BinariOperator.LESS_THAN_OR_EQUAL:
+  case BinariOperator.LESS_THAN_OR_EQUAL:
     return Number(condition1Value) <= Number(condition2Value)
-    default:
+  default:
     throw new Error(`Unknown operator ${conditionOperator}`)
   }
 }
 
 function renderAttributes(
   component: Component,
-  element: HTMLElement,
   dataTree: DataTree,
 ): void {
   const privateStates = component.get('privateStates') || []
@@ -144,7 +143,7 @@ function renderAttributes(
       try {
         const value = dataTree.getValue(state.expression, component, true)
         if (value !== null && value !== undefined) {
-          element.setAttribute(state.label || state.id, String(value))
+          component.view?.el.setAttribute(state.label || state.id, String(value))
         }
       } catch (e) {
         console.warn(`Error evaluating attribute ${state.id}:`, e)
@@ -198,19 +197,15 @@ export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
   const __data = renderLoopData(comp, dataTree)
   if (__data) {
     if (__data.length === 0) {
-      // el.remove()
-      el.setAttribute('data-hidden', '')
-      el.style.display = 'none'
+      el.remove()
     } else {
       // Render each loop iteration
       // Render first iteration in the original element
       setPreviewIndex(comp, 0)
-      const visibleParent = isComponentVisible(comp, dataTree)
-      if(visibleParent) {
+      if(isComponentVisible(comp, dataTree)) {
         comp.components().forEach(c => onRender(c, dataTree, deep+1))
+        renderAttributes(comp, dataTree)
       } else {
-        // el.setAttribute('data-hidden', '')
-        // el.style.display = 'none'
         el.remove()
       }
 
@@ -222,9 +217,9 @@ export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
 
         // Set preview index for the next iteration and render into original element
         setPreviewIndex(comp, idx)
-        const visible = isComponentVisible(comp, dataTree)
-        if (visible) {
+        if (isComponentVisible(comp, dataTree)) {
           renderContent(comp, dataTree, deep)
+          renderAttributes(comp, dataTree)
         } else {
           // el.setAttribute('data-hidden', '')
           // el.style.display = 'none'
@@ -236,6 +231,7 @@ export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
   } else {
     if(isComponentVisible(comp, dataTree)) {
       renderContent(comp, dataTree, deep)
+      renderAttributes(comp, dataTree)
     } else {
       el.remove()
     }
