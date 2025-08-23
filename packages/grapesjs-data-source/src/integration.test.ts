@@ -11,6 +11,9 @@ import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
 import { getDataTreeFromUtils } from './utils'
+import exp from 'constants'
+
+const TESTS_PATH = '/integration-tests'
 
 // tests/setupJest.ts (setupFilesAfterEnv dans Jest)
 Object.defineProperty(HTMLIFrameElement.prototype, 'contentWindow', {
@@ -228,36 +231,12 @@ function normalizeHtml(html: string): string {
     .trim()
 }
 
-// HTML comparison with readable diff
-function compareHtml(actual: string, expected: string): { match: boolean; diff?: string, normalizedActual: string, normalizedExpected: string, } {
-  const normalizedActual = normalizeHtml(actual)
-  const normalizedExpected = normalizeHtml(expected)
-
-  if (normalizedActual === normalizedExpected) {
-    return { match: true }
-  }
-
-  return {
-    match: false,
-    normalizedActual,
-    normalizedExpected,
-    diff: `
-Expected HTML:
-${normalizedExpected}
-
-Actual HTML:
-${normalizedActual}
-    `
-  }
-}
-
-
 // Get all test case directories
 function getTestCaseDirectories(): string[] {
-  const sampleDataPath = path.join(__dirname, '..', 'sample-data')
+  const sampleDataPath = path.join(__dirname, '..', TESTS_PATH)
 
   if (!fs.existsSync(sampleDataPath)) {
-    return []
+    throw new Error(`Sample data not found, ${sampleDataPath} doesn't exist`)
   }
 
   return fs.readdirSync(sampleDataPath, { withFileTypes: true })
@@ -274,7 +253,7 @@ function getTestCaseDirectories(): string[] {
 
 // Load test case data
 function loadTestCase(testCaseName: string) {
-  const testCasePath = path.join(__dirname, '..', 'sample-data', testCaseName)
+  const testCasePath = path.join(__dirname, '..', TESTS_PATH, testCaseName)
 
   const graphqlTypes = JSON.parse(
     fs.readFileSync(path.join(testCasePath, 'graphql-types.json'), 'utf8')
@@ -288,96 +267,98 @@ function loadTestCase(testCaseName: string) {
     fs.readFileSync(path.join(testCasePath, 'website.json'), 'utf8')
   )
 
-  const expectedHtml = fs.readFileSync(
+  const expectedHtml = normalizeHtml(fs.readFileSync(
     path.join(testCasePath, 'preview.html'), 'utf8'
-  )
+  ))
 
   return { graphqlTypes, graphqlResponse, website, expectedHtml }
 }
 
-test('returns correct types and fields for countries-lists', () => {
-  // Load mock types from sample-data
-  const { graphqlTypes, graphqlResponse } = loadTestCase('countries-lists')
+const testCaseDirectories = getTestCaseDirectories()
 
-  const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
+if (testCaseDirectories?.length === 0) {
+  throw new Error(`No test cases found in ${TESTS_PATH}. Create test case directories with graphql-response.json, website.json, and preview.html files.`)
+}
 
-  const types = mockDataSource.getTypes()
-  expect(Array.isArray(types)).toBe(true)
-  expect(types.length).toBeGreaterThan(0)
+describe('Integration tests validation', () => {
+  testCaseDirectories.forEach(testCaseName => {
+    test(`Validate the data found for ${testCaseName}`, () => {
+      console.log(`\n--- Validating test case: ${testCaseName} ---`)
+      const { graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
 
-  // Check that at least one type has fields
-  const hasFields = types.some(type => Array.isArray(type.fields) && type.fields.length > 0)
-  expect(hasFields).toBe(true)
+      const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
 
-  // Check a known type and field
-  const continentType = types.find(type => type.id === 'Continent')
-  expect(continentType).toBeDefined()
-  expect(continentType?.fields.some(f => f.id === 'name')).toBe(true)
-  expect(continentType?.fields.some(f => f.id === 'countries')).toBe(true)
-  expect(types.find(type => !!type.fields.some(f => f.typeIds.includes('String')))).toBeTruthy()
+      const types = mockDataSource.getTypes()
+      expect(Array.isArray(types)).toBe(true)
+      expect(types.length).toBeGreaterThan(0)
+
+      const hasFields = types.some(type => Array.isArray(type.fields) && type.fields.length > 0)
+      expect(hasFields).toBe(true)
+
+      const continentType = types.find(type => type.id === 'Continent')
+      expect(continentType).toBeDefined()
+      expect(continentType?.fields.some(f => f.id === 'name')).toBe(true)
+      expect(continentType?.fields.some(f => f.id === 'countries')).toBe(true)
+      expect(types.find(type => !!type.fields.some(f => f.typeIds.includes('String')))).toBeTruthy()
+
+      expect(Array.isArray(graphqlResponse.data?.continents)).toBe(true)
+
+      expect(website.pages).toHaveLength(1)
+
+      expect(expectedHtml).toMatch(/^<div .*data-gjs-type="wrapper".*>/)
+    })
+  })
 })
 
-describe('Integration Tests', () => {
+describe('Integration tests', () => {
 
-  test('generated preview on the canvas', (done) => {
-    const testCaseDirectories = getTestCaseDirectories()
+  testCaseDirectories.forEach(testCaseName => {
+    test(`Generated preview for ${ testCaseName }`, (done) => {
 
-    if (testCaseDirectories.length === 0) {
-      console.warn('No test cases found in sample-data/. Create test case directories with graphql-response.json, website.json, and preview.html files.')
-      done()
-      return
-    }
+      // Load test data
+      const { graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
 
-    console.log(`Found ${testCaseDirectories.length} test case(s): ${testCaseDirectories.join(', ')}`)
+      const container = document.createElement('div')
+      document.body.appendChild(container)
 
-    // Test only the first case for now to fix the issues
-    const testCaseName = testCaseDirectories[0]
-    console.log(`\n--- Running test case: ${testCaseName} ---`)
+      // Create GrapesJS editor WITHOUT headless to get real DOM elements
+      const editor = grapesjs.init({
+        container,
+        headless: false,
+        plugins: [plugin],
+        pluginsOpts: {
+          [plugin.toString()]: {
+            view: {el : null},
+          },
+        }
+      })
 
-    // Load test data
-    const { graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
+      editor.on('load', () => {
+        const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
+        expect(mockDataSource.getTypes().flatMap(t => t.fields).find(t => t.typeIds.includes('String'))).toBeTruthy()
+        addDataSource(mockDataSource)
+        editor.loadProjectData(website)
+        const dataTree = getDataTreeFromUtils()
+        dataTree.previewData = {
+          'countries': graphqlResponse.data,
+        }
+        editor.once(PREVIEW_RENDER_END, () => {
+          done()
 
-    const container = document.createElement('div')
-    document.body.appendChild(container)
+          const pages = editor.Pages.getAll();
+          expect(pages).toHaveLength(1)
+          const wrapper = editor.getWrapper()
+          expect(wrapper).toBeTruthy()
+          expect(wrapper?.view).toBeTruthy()
+          expect(wrapper?.view?.el).toBeTruthy()
 
-    // Create GrapesJS editor WITHOUT headless to get real DOM elements
-    const editor = grapesjs.init({
-      container,
-      headless: false,
-      plugins: [plugin],
-      pluginsOpts: {
-        [plugin.toString()]: {
-          view: {el : null},
-        },
-      }
-    })
+          const actualHtml = normalizeHtml(editor.getWrapper()?.view?.el.outerHTML || '')
 
-    editor.on('load', () => {
-      const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
-      expect(mockDataSource.getTypes().flatMap(t => t.fields).find(t => t.typeIds.includes('String'))).toBeTruthy()
-      addDataSource(mockDataSource)
-      editor.loadProjectData(website)
-      const dataTree = getDataTreeFromUtils()
-      dataTree.previewData = {
-        'countries': graphqlResponse.data,
-      }
-      editor.once(PREVIEW_RENDER_END, () => {
-        done()
+          expect(actualHtml).toBe(expectedHtml)
 
-        const pages = editor.Pages.getAll();
-        expect(pages).toHaveLength(1)
-        const wrapper = editor.getWrapper()
-        expect(wrapper).toBeTruthy()
-        expect(wrapper?.view).toBeTruthy()
-        expect(wrapper?.view?.el).toBeTruthy()
-
-        const actualHtml = editor.getWrapper()?.view?.el.outerHTML
-
-        const comparison = compareHtml(actualHtml!, expectedHtml)
-        expect(comparison.normalizedExpected).toBe(comparison.normalizedActual)
-
-        editor.destroy()
-        container.remove()
+          editor.destroy()
+          container.remove()
+        })
       })
     })
   })
