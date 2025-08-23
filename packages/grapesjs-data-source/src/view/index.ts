@@ -150,9 +150,9 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
         })
         wrapper.style.display = button.active ? 'block' : 'none'
       }
-      canvas(editor)
     })
   } else {
     console.warn('Dynamic data UI not enabled, please set the el option to enable it')
   }
+  canvas(editor)
 }

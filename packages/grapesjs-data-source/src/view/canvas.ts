@@ -1,6 +1,6 @@
 import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
-import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken, BinariOperator, UnariOperator } from '../types'
+import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken, BinariOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR } from '../types'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
 import { getDataTreeFromUtils } from '../utils'
@@ -203,7 +203,7 @@ export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
       // Render first iteration in the original element
       setPreviewIndex(comp, 0)
       if(isComponentVisible(comp, dataTree)) {
-        comp.components().forEach(c => onRender(c, dataTree, deep+1))
+        renderContent(comp, dataTree, deep)
         renderAttributes(comp, dataTree)
       } else {
         el.remove()
@@ -238,13 +238,21 @@ export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
   }
 }
 
-// GrapesJS plugin setup
 export default (editor: Editor) => {
   const dataTree = getDataTreeFromUtils()
 
   // Listen for data source changes
   editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} component style:change storage:after:load`, () => {
-    console.log('Data changed, need to refresh the canvas')
-    onRender(editor.getWrapper()!, dataTree)
+    try {
+      editor.trigger(PREVIEW_RENDER_START)
+      onRender(editor.getWrapper()!, dataTree)
+
+      requestAnimationFrame(() => {
+        editor.trigger(PREVIEW_RENDER_END)
+      })
+    } catch (err) {
+      editor.trigger(PREVIEW_RENDER_ERROR, err)
+      console.error('Error during preview render:', err)
+    }
   })
 }

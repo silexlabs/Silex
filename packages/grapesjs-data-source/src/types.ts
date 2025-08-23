@@ -62,7 +62,7 @@ export type DataSourceId = string | number
 export interface IDataSource {
   // For reference in expressions
   id: DataSourceId
-  
+
   // Basic properties
   label: string
   url: string
@@ -85,7 +85,7 @@ export interface IDataSource {
 
   // Access data
   fetchValues(query: string): Promise<unknown>
-  
+
   // Event handling
   on?(event: any, callback?: any, context?: any): any
   off?(event?: any, callback?: any, context?: any): any
@@ -95,14 +95,18 @@ export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
 export const DATA_SOURCE_CHANGED = 'data-source:changed'
 export const COMPONENT_STATE_CHANGED = 'component:state:changed'
-export const COMMAND_REFRESH = 'data-source:refresh'
-export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
-export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
-export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
 export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
 export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
 export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'
 
+export const PREVIEW_RENDER_START = 'data-source:start:preview'
+export const PREVIEW_RENDER_END = 'data-source:start:end'
+export const PREVIEW_RENDER_ERROR = 'data-source:start:error'
+
+export const COMMAND_REFRESH = 'data-source:refresh'
+export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
+export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
+export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
 
 export type DataSourceType = 'graphql'
 
