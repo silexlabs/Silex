@@ -11,7 +11,16 @@ import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
 import { getDataTreeFromUtils } from './utils'
-import exp from 'constants'
+import { compare } from 'dom-compare';
+
+// ////
+// Use require instead of import so the TextEncoder/TextDecoder polyfill is set before jsdom loads (avoids hoisting).
+/* @ts-expect-error Workaround jest+jsdom bug */
+import { TextEncoder, TextDecoder } from 'util';
+(global as any).TextEncoder = TextEncoder;
+(global as any).TextDecoder = TextDecoder;
+const { JSDOM } = require('jsdom');
+// ////
 
 const TESTS_PATH = '/integration-tests'
 
@@ -274,6 +283,25 @@ function loadTestCase(testCaseName: string) {
   return { graphqlTypes, graphqlResponse, website, expectedHtml }
 }
 
+function toEqualDom(received: string, expected: string) {
+  const domA = new JSDOM(received).window.document.body
+  const domB = new JSDOM(expected).window.document.body
+
+  const result = compare(domA, domB)
+
+  if (result.getResult()) {
+    return { pass: true, message: 'DOMs are equal' }
+  }
+  const differences = result.getDifferences()
+    .map(d => `- ${d.message}`)
+    .join('\n')
+
+  return {
+    pass: false,
+    message: `DOMs differ:\n${differences}`,
+  }
+}
+
 const testCaseDirectories = getTestCaseDirectories()
 
 if (testCaseDirectories?.length === 0) {
@@ -352,9 +380,12 @@ describe('Integration tests', () => {
           expect(wrapper?.view).toBeTruthy()
           expect(wrapper?.view?.el).toBeTruthy()
 
-          const actualHtml = normalizeHtml(editor.getWrapper()?.view?.el.outerHTML || '')
-
-          expect(actualHtml).toBe(expectedHtml)
+          const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
+          const compared = toEqualDom(actualHtml, expectedHtml)
+          if (!compared.pass) {
+            console.error(compared.message)
+          }
+          expect(compared.pass).toBe(true)
 
           editor.destroy()
           container.remove()
