@@ -11,7 +11,8 @@ import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
 import { getDataTreeFromUtils } from './utils'
-import { compare } from 'dom-compare';
+import { compare, GroupingReporter } from 'dom-compare';
+import { diff as jestDiff } from 'jest-diff';
 
 // ////
 // Use require instead of import so the TextEncoder/TextDecoder polyfill is set before jsdom loads (avoids hoisting).
@@ -283,23 +284,101 @@ function loadTestCase(testCaseName: string) {
   return { graphqlTypes, graphqlResponse, website, expectedHtml }
 }
 
-function toEqualDom(received: string, expected: string) {
-  const domA = new JSDOM(received).window.document.body
-  const domB = new JSDOM(expected).window.document.body
+/** --- tiny helpers (no extra deps) --- */
+function parseBody(html: string): HTMLElement {
+  // Prefer the jsdom test env DOMParser if available; fallback to JSDOM
+  if (typeof DOMParser !== 'undefined') {
+    return new DOMParser().parseFromString(html, 'text/html').body as unknown as HTMLElement;
+  }
+  return new JSDOM(html).window.document.body as unknown as HTMLElement;
+}
 
-  const result = compare(domA, domB)
+// Normalize: trim text nodes, collapse spaces, sort class names
+function normalizeDom(root: HTMLElement) {
+  const walker = root.ownerDocument!.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
+  const toNormalize: Node[] = [];
+  while (walker.nextNode()) toNormalize.push(walker.currentNode);
+
+  for (const node of toNormalize) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      node.nodeValue = (node.nodeValue || '').replace(/\s+/g, ' ').trim();
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as Element;
+      // sort class names (ignore order-only diffs)
+      if (el.hasAttribute('class')) {
+        const cls = el.getAttribute('class')!;
+        const sorted = cls.split(/\s+/).filter(Boolean).sort().join(' ');
+        el.setAttribute('class', sorted);
+      }
+      // normalize attribute whitespace (e.g., title, data-*)
+      for (const attr of Array.from(el.attributes)) {
+        el.setAttribute(attr.name, attr.value.replace(/\s+/g, ' ').trim());
+      }
+    }
+  }
+}
+
+// very small prettifier - just adds newlines between tags/text runs for better diffs
+function pretty(html: string): string {
+  return html
+    .replace(/>\s+</g, '><')
+    .replace(/</g, '\n<')
+    .replace(/\n+/g, '\n')
+    .trim();
+}
+
+function summarizeGrouped(result: ReturnType<typeof compare>) {
+  const grouped = GroupingReporter.getDifferences(result) as Record<string, { message: string }[]>;
+  const lines: string[] = [];
+  const PATH_LIMIT = 8;
+  const MSG_LIMIT = 4;
+  const paths = Object.keys(grouped);
+  for (let i = 0; i < Math.min(paths.length, PATH_LIMIT); i++) {
+    const path = paths[i];
+    const msgs = grouped[path];
+    lines.push(`• ${path}`);
+    for (let j = 0; j < Math.min(msgs.length, MSG_LIMIT); j++) {
+      lines.push(`  - ${msgs[j].message}`);
+    }
+    if (msgs.length > MSG_LIMIT) lines.push(`  - …and ${msgs.length - MSG_LIMIT} more at this node`);
+  }
+  if (paths.length > PATH_LIMIT) lines.push(`…and ${paths.length - PATH_LIMIT} more nodes differ`);
+  return lines.join('\n');
+}
+
+/** --- drop-in API-compatible function --- */
+export function toEqualDom(received: string, expected: string) {
+  const a = parseBody(received).cloneNode(true) as HTMLElement;
+  const b = parseBody(expected).cloneNode(true) as HTMLElement;
+
+  normalizeDom(a);
+  normalizeDom(b);
+
+  const result = compare(a, b, {
+    stripSpaces: true,
+    collapseSpaces: true,
+    normalizeWhitespace: true,
+  } as any);
 
   if (result.getResult()) {
-    return { pass: true, message: 'DOMs are equal' }
+    return { pass: true, message: 'DOMs are equal' };
   }
-  const differences = result.getDifferences()
-    .map(d => `- ${d.message}`)
-    .join('\n')
 
-  return {
-    pass: false,
-    message: `DOMs differ:\n${differences}`,
-  }
+  // grouped summary (clear, low-noise)
+  const groupedSummary = summarizeGrouped(result);
+
+  // compact unified diff of prettified HTML (helps spot exact spot)
+  const unified = jestDiff(pretty(b.innerHTML), pretty(a.innerHTML), {
+    expand: false,
+    contextLines: 1,
+  }) || '';
+
+  const message =
+    `DOMs differ:\n` +
+    `${groupedSummary}\n\n` +
+    `Unified diff (prettified body HTML):\n${unified}`;
+
+  return { pass: false, message };
 }
 
 const testCaseDirectories = getTestCaseDirectories()
@@ -311,7 +390,6 @@ if (testCaseDirectories?.length === 0) {
 describe('Integration tests validation', () => {
   testCaseDirectories.forEach(testCaseName => {
     test(`Validate the data found for ${testCaseName}`, () => {
-      console.log(`\n--- Validating test case: ${testCaseName} ---`)
       const { graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
 
       const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
@@ -383,7 +461,11 @@ describe('Integration tests', () => {
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
           const compared = toEqualDom(actualHtml, expectedHtml)
           if (!compared.pass) {
-            console.error(compared.message)
+            console.error(`
+              ${compared.message}
+              expected html: ${expectedHtml.substring(0, 500)}
+              actual html: ${actualHtml.substring(0, 500)}
+            `)
           }
           expect(compared.pass).toBe(true)
 

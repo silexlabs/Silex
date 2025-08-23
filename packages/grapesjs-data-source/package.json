@@ -20,7 +20,8 @@
     "lint": "eslint src/**/*",
     "test": "node --experimental-vm-modules `node_modules jest`/.bin/jest --runInBand --no-cache",
     "test:watch": "npm test -- --watch",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:integration:tests": "tidy -m -i -wrap 0 --show-body-only yes integration-tests/**/*.html && find integration-tests -type f -name '*.json' -print0 | xargs -0 -n1 sh -c 'jq . \"$1\" | sponge \"$1\"' sh"
   },
   "keywords": [
     "silex",

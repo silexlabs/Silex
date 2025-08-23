@@ -19,9 +19,7 @@ export interface DataSourceEditorOptions {
 	dataSources: IDataSourceOptions[];
 	view: DataSourceEditorViewOptions;
 	filters: Filter[] | string;
-	commands: {
-		refresh: string;
-	};
+	previewActive: boolean;
 }
 export type PageId = string;
 export interface Query {
@@ -59,6 +57,9 @@ export declare const DATA_SOURCE_ERROR = "data-source:error";
 export declare const DATA_SOURCE_CHANGED = "data-source:changed";
 export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
 export declare const COMMAND_REFRESH = "data-source:refresh";
+export declare const COMMAND_PREVIEW_ACTIVATE = "data-source:preview:activate";
+export declare const COMMAND_PREVIEW_DEACTIVATE = "data-source:preview:deactivate";
+export declare const COMMAND_PREVIEW_REFRESH = "data-source:preview:refresh";
 export declare const DATA_SOURCE_DATA_LOAD_START = "data-source:data-load:start";
 export declare const DATA_SOURCE_DATA_LOAD_END = "data-source:data-load:end";
 export declare const DATA_SOURCE_DATA_LOAD_CANCEL = "data-source:data-load:cancel";
@@ -276,9 +277,10 @@ export declare function removeDataSource(dataSource: IDataSource): void;
 export declare function refreshDataSources(): void;
 /**
  * Load preview data for the current page
+ * @param forceRefresh - If true, bypass query comparison and force refresh
  * @returns Promise that resolves when data is loaded
  */
-export declare function loadPreviewData(): Promise<void>;
+export declare function loadPreviewData(forceRefresh?: boolean): Promise<void>;
 /**
  * Get current preview data
  * @returns Record of data source ID to preview data
@@ -294,7 +296,7 @@ export declare function clearPreviewData(): void;
  * @param component - The component context
  * @returns The evaluated result
  */
-export declare function getValue(expression: Expression, component: Component): unknown;
+export declare function getValue(expression: Expression, component: Component, resolvePreviewIndex?: boolean): unknown;
 /**
  * Get all expressions used by components on a page
  * @param page - The page to analyze
