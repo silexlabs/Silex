@@ -181,14 +181,14 @@ function renderContent(comp: Component, dataTree: DataTree, deep: number) {
   if (innerHtml === null) {
     comp.view!.render()
     comp.components()
-      .forEach(c => onRender(c, dataTree, deep+1))
+      .forEach(c => renderPreview(c, dataTree, deep+1))
   } else {
     comp.view!.el.innerHTML = innerHtml!
   }
 }
 
 // exported for unit tests only
-export function onRender(comp: Component, dataTree: DataTree, deep = 0) {
+export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
   const view = comp.view
   if (!view) {
     return
@@ -242,10 +242,17 @@ export default (editor: Editor) => {
   const dataTree = getDataTreeFromUtils()
 
   // Listen for data source changes
-  editor.on(`${DATA_SOURCE_CHANGED} ${DATA_SOURCE_DATA_LOAD_END} component style:change storage:after:load`, () => {
+  editor.on(`${DATA_SOURCE_CHANGED}
+    ${DATA_SOURCE_DATA_LOAD_END}
+    component
+    style:change
+    storage:after:load
+  `, () => {
+    // component:add
+    // component:remove
     try {
       editor.trigger(PREVIEW_RENDER_START)
-      onRender(editor.getWrapper()!, dataTree)
+      renderPreview(editor.getWrapper()!, dataTree)
 
       requestAnimationFrame(() => {
         editor.trigger(PREVIEW_RENDER_END)

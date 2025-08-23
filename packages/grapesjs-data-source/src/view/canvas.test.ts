@@ -2,7 +2,7 @@
 * @jest-environment jsdom
 */
 
-import { onRender, isComponentVisible } from './canvas'
+import { renderPreview, isComponentVisible } from './canvas'
 import { DataTree } from '../model/DataTree'
 import { BinariOperator, Expression, UnariOperator } from '../types'
 
@@ -400,7 +400,7 @@ describe('onRender tests', () => {
     }
 
     // Render
-    onRender(mockComponent, dataTree)
+    renderPreview(mockComponent, dataTree)
 
     // Check that innerHTML was set correctly
     expect(mockComponent.view.el.innerHTML).toBe('Hello World!')
@@ -421,7 +421,7 @@ describe('onRender tests', () => {
     } as unknown
 
     // Render
-    onRender(mockComponent, dataTree)
+    renderPreview(mockComponent, dataTree)
 
     // Should call render since no innerHTML is provided
     expect(mockComponent.view.render).toHaveBeenCalled()
@@ -477,7 +477,7 @@ describe('onRender tests', () => {
     }
 
     // Render
-    onRender(mockComponent, dataTree)
+    renderPreview(mockComponent, dataTree)
 
     // Check that additional elements were created (original + 2 clones = 3 total)
     const allElements = containerEl.querySelectorAll('#parent')
@@ -556,7 +556,7 @@ describe('onRender tests', () => {
     }
 
     // Render
-    onRender(mockComponent, dataTree)
+    renderPreview(mockComponent, dataTree)
 
     // Check that element was removed from DOM
     expect(containerEl.children.length).toBe(0)
@@ -615,7 +615,7 @@ describe('onRender tests', () => {
     }
 
     // Render parent (should recursively render child)
-    onRender(parentComponent, dataTree)
+    renderPreview(parentComponent, dataTree)
 
     // Check that child's innerHTML was set
     expect(childEl.innerHTML).toBe('Child Content')
@@ -686,7 +686,7 @@ describe('onRender tests', () => {
     // Don't override getValue - use the real implementation
 
     // Render
-    onRender(mockComponent, dataTree)
+    renderPreview(mockComponent, dataTree)
 
     // Verify loop structure:
     // Should have 3 elements total: original + 2 clones
