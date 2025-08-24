@@ -98,6 +98,10 @@ export function isComponentVisible(
     return Array.isArray(condition1Value) && condition1Value.length === 0
   case UnariOperator.NOT_EMPTY_ARR:
     return Array.isArray(condition1Value) && condition1Value.length > 0
+  case undefined:
+  case null:
+    // If no operator is specified but condition1 exists, default to TRUTHY behavior
+    return !!condition1Value
   default:
   }
 
@@ -178,6 +182,7 @@ function renderAttributes(
 
 function renderContent(comp: Component, dataTree: DataTree, deep: number) {
   const innerHtml = renderInnerHTML(comp, dataTree)
+  
   if (innerHtml === null) {
     comp.view!.render()
     comp.components()

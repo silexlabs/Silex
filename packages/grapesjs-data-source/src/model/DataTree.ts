@@ -248,7 +248,7 @@ export class DataTree {
       if (resolvePreviewIndex) {
         value = this.handlePreviewIndex(value, token)
       }
-      
+
       // For non-final tokens, always handle preview index regardless of resolvePreviewIndex
       if (rest.length > 0 && !resolvePreviewIndex) {
         value = this.handlePreviewIndex(value, token)
@@ -286,7 +286,8 @@ export class DataTree {
           isNull: prevValues === null
         })
         // Mimic behavior of liquid - return the input value unchanged
-        return this.getValue(rest, component, resolvePreviewIndex, prevValues)
+        return null
+        // return this.getValue(rest, component, resolvePreviewIndex, prevValues)
       }
 
       // Always handle preview index if resolvePreviewIndex is true, or if there are more tokens

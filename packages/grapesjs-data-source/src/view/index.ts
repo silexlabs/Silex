@@ -37,7 +37,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
     disableStates: false,
     disableAttributes: false,
     disableProperties: false,
-    previewDebounceDelay: 0,
+    previewDebounceDelay: 100,
     previewRefreshEvents: `
       ${DATA_SOURCE_CHANGED}
       ${DATA_SOURCE_DATA_LOAD_END}

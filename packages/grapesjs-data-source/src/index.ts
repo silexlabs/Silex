@@ -18,7 +18,7 @@
 import commands from './commands'
 import { initializeDataSourceManager, refreshDataSources } from './model/dataSourceManager'
 import storage from './storage'
-import { COMMAND_REFRESH, COMMAND_PREVIEW_ACTIVATE, COMMAND_PREVIEW_DEACTIVATE, COMMAND_PREVIEW_REFRESH, DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
+import { DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
 import { Editor } from 'grapesjs'
