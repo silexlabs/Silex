@@ -11,17 +11,17 @@ import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
 import { getDataTreeFromUtils } from './utils'
-import { compare, GroupingReporter } from 'dom-compare';
-import { diff as jestDiff } from 'jest-diff';
+import { compare, GroupingReporter } from 'dom-compare'
+import { diff as jestDiff } from 'jest-diff'
 
 // ////
 // Use require instead of import so the TextEncoder/TextDecoder polyfill is set before jsdom loads (avoids hoisting).
 /* @ts-expect-error Workaround jest+jsdom bug */
-import { TextEncoder, TextDecoder } from 'util';
+import { TextEncoder, TextDecoder } from 'util'
 import { doRender } from './view/canvas'
-(global as any).TextEncoder = TextEncoder;
-(global as any).TextDecoder = TextDecoder;
-const { JSDOM } = require('jsdom');
+;(global as any).TextEncoder = TextEncoder
+;(global as any).TextDecoder = TextDecoder
+const { JSDOM } = require('jsdom')
 // ////
 
 const TESTS_PATH = '/integration-tests'
@@ -143,14 +143,17 @@ class MockDataSource implements IDataSource {
       { id: 'Boolean', label: 'Boolean', fields: [], dataSourceId: this.id },
       { id: 'Float', label: 'Float', fields: [], dataSourceId: this.id },
     ]
-    const query = this.mockTypes.data.__schema.types
-      .find((type: GQLType) => type.name === this.queryType)
-    const customTypes = query
-      ? query.fields.map((field: GQLField) => {
-        const typeId = field.type.name || field.type.ofType?.name || 'Unknown'
-        const fullType = this.mockTypes.data.__schema.types.find((t: GQLType) => t.name === typeId)
-        const fields = fullType && fullType.fields
-          ? fullType.fields.map((f: GQLField) => ({
+
+    // Include ALL types from the schema, not just query fields
+    const allTypes = this.mockTypes.data.__schema.types
+      .filter((type: GQLType) =>
+        type.name &&
+        !type.name.startsWith('__') && // Skip introspection types
+        type.kind === 'OBJECT' // Only include object types for now
+      )
+      .map((type: GQLType) => {
+        const fields = type.fields
+          ? type.fields.map((f: GQLField) => ({
             id: f.name,
             label: f.name,
             typeIds: [f.type.name || f.type.ofType?.name || 'Unknown'],
@@ -159,14 +162,14 @@ class MockDataSource implements IDataSource {
           }))
           : []
         return {
-          id: typeId,
-          label: field.name,
+          id: type.name,
+          label: type.name,
           fields,
           dataSourceId: this.id,
         }
       })
-      : []
-    return [...builtinTypes, ...customTypes]
+
+    return [...builtinTypes, ...allTypes]
   }
   // getTypes(): Type[] {
   //   return [{
@@ -282,38 +285,40 @@ function loadTestCase(testCaseName: string) {
     path.join(testCasePath, 'preview.html'), 'utf8'
   ))
 
-  return { graphqlTypes, graphqlResponse, website, expectedHtml }
+  const dataSourceId = (website.dataSources[0] || {}).id || 'countries'
+
+  return { dataSourceId, graphqlTypes, graphqlResponse, website, expectedHtml }
 }
 
 /** --- tiny helpers (no extra deps) --- */
 function parseBody(html: string): HTMLElement {
   // Prefer the jsdom test env DOMParser if available; fallback to JSDOM
   if (typeof DOMParser !== 'undefined') {
-    return new DOMParser().parseFromString(html, 'text/html').body as unknown as HTMLElement;
+    return new DOMParser().parseFromString(html, 'text/html').body as unknown as HTMLElement
   }
-  return new JSDOM(html).window.document.body as unknown as HTMLElement;
+  return new JSDOM(html).window.document.body as unknown as HTMLElement
 }
 
 // Normalize: trim text nodes, collapse spaces, sort class names
 function normalizeDom(root: HTMLElement) {
-  const walker = root.ownerDocument!.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT);
-  const toNormalize: Node[] = [];
-  while (walker.nextNode()) toNormalize.push(walker.currentNode);
+  const walker = root.ownerDocument!.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
+  const toNormalize: Node[] = []
+  while (walker.nextNode()) toNormalize.push(walker.currentNode)
 
   for (const node of toNormalize) {
     if (node.nodeType === Node.TEXT_NODE) {
-      node.nodeValue = (node.nodeValue || '').replace(/\s+/g, ' ').trim();
+      node.nodeValue = (node.nodeValue || '').replace(/\s+/g, ' ').trim()
     } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as Element;
+      const el = node as Element
       // sort class names (ignore order-only diffs)
       if (el.hasAttribute('class')) {
-        const cls = el.getAttribute('class')!;
-        const sorted = cls.split(/\s+/).filter(Boolean).sort().join(' ');
-        el.setAttribute('class', sorted);
+        const cls = el.getAttribute('class')!
+        const sorted = cls.split(/\s+/).filter(Boolean).sort().join(' ')
+        el.setAttribute('class', sorted)
       }
       // normalize attribute whitespace (e.g., title, data-*)
       for (const attr of Array.from(el.attributes)) {
-        el.setAttribute(attr.name, attr.value.replace(/\s+/g, ' ').trim());
+        el.setAttribute(attr.name, attr.value.replace(/\s+/g, ' ').trim())
       }
     }
   }
@@ -325,61 +330,64 @@ function pretty(html: string): string {
     .replace(/>\s+</g, '><')
     .replace(/</g, '\n<')
     .replace(/\n+/g, '\n')
-    .trim();
+    .trim()
 }
 
 function summarizeGrouped(result: ReturnType<typeof compare>) {
-  const grouped = GroupingReporter.getDifferences(result) as Record<string, { message: string }[]>;
-  const lines: string[] = [];
-  const PATH_LIMIT = 8;
-  const MSG_LIMIT = 4;
-  const paths = Object.keys(grouped);
+  const grouped = GroupingReporter.getDifferences(result) as Record<string, { message: string }[]>
+  const lines: string[] = []
+  const PATH_LIMIT = 8
+  const MSG_LIMIT = 4
+  const paths = Object.keys(grouped)
   for (let i = 0; i < Math.min(paths.length, PATH_LIMIT); i++) {
-    const path = paths[i];
-    const msgs = grouped[path];
-    lines.push(`• ${path}`);
+    const path = paths[i]
+    const msgs = grouped[path]
+    lines.push(`• ${path}`)
     for (let j = 0; j < Math.min(msgs.length, MSG_LIMIT); j++) {
-      lines.push(`  - ${msgs[j].message}`);
+      lines.push(`  - ${msgs[j].message}`)
     }
-    if (msgs.length > MSG_LIMIT) lines.push(`  - …and ${msgs.length - MSG_LIMIT} more at this node`);
+    if (msgs.length > MSG_LIMIT) lines.push(`  - …and ${msgs.length - MSG_LIMIT} more at this node`)
   }
-  if (paths.length > PATH_LIMIT) lines.push(`…and ${paths.length - PATH_LIMIT} more nodes differ`);
-  return lines.join('\n');
+  if (paths.length > PATH_LIMIT) lines.push(`…and ${paths.length - PATH_LIMIT} more nodes differ`)
+  return lines.join('\n')
 }
 
 /** --- drop-in API-compatible function --- */
-export function toEqualDom(received: string, expected: string) {
-  const a = parseBody(received).cloneNode(true) as HTMLElement;
-  const b = parseBody(expected).cloneNode(true) as HTMLElement;
+export function toEqualDom(received: string, expected: string, testCaseName: string) {
+  const a = parseBody(received).cloneNode(true) as HTMLElement
+  const b = parseBody(expected).cloneNode(true) as HTMLElement
 
-  normalizeDom(a);
-  normalizeDom(b);
+  normalizeDom(a)
+  normalizeDom(b)
 
   const result = compare(a, b, {
     stripSpaces: true,
     collapseSpaces: true,
     normalizeWhitespace: true,
-  } as any);
+  } as any)
 
   if (result.getResult()) {
-    return { pass: true, message: 'DOMs are equal' };
+    return { pass: true, message: 'DOMs are equal' }
   }
 
   // grouped summary (clear, low-noise)
-  const groupedSummary = summarizeGrouped(result);
+  const groupedSummary = summarizeGrouped(result)
 
   // compact unified diff of prettified HTML (helps spot exact spot)
   const unified = jestDiff(pretty(b.innerHTML), pretty(a.innerHTML), {
     expand: false,
     contextLines: 1,
-  }) || '';
+  }) || ''
 
-  const message =
-    `DOMs differ:\n` +
-    `${groupedSummary}\n\n` +
-    `Unified diff (prettified body HTML):\n${unified}`;
+  const message = `
+[${testCaseName}] DOMs differ:
+${groupedSummary}
 
-  return { pass: false, message };
+[${testCaseName}] Unified diff (prettified body HTML):
+${unified}
+`
+
+  return { pass: false, message }
 }
 
 const testCaseDirectories = getTestCaseDirectories()
@@ -391,13 +399,22 @@ if (testCaseDirectories?.length === 0) {
 describe('Integration tests validation', () => {
   testCaseDirectories.forEach(testCaseName => {
     test(`Validate the data found for ${testCaseName}`, () => {
-      const { graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
+      const { dataSourceId, graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
 
-      const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
+      expect(Array.isArray(graphqlResponse.data?.continents)).toBe(true)
+
+      expect(website.pages).toHaveLength(1)
+      expect(website.dataSources).toBeDefined()
+      expect(website.dataSources.length <= 1).toBe(true)
+
+      expect(expectedHtml).toMatch(/^<div .*data-gjs-type="wrapper".*>/)
+
+      const mockDataSource = new MockDataSource(dataSourceId, graphqlTypes, graphqlResponse)
 
       const types = mockDataSource.getTypes()
       expect(Array.isArray(types)).toBe(true)
       expect(types.length).toBeGreaterThan(0)
+      expect(types.flatMap(t => t.fields).find(t => t.typeIds.includes('String'))).toBeTruthy()
 
       const hasFields = types.some(type => Array.isArray(type.fields) && type.fields.length > 0)
       expect(hasFields).toBe(true)
@@ -407,12 +424,6 @@ describe('Integration tests validation', () => {
       expect(continentType?.fields.some(f => f.id === 'name')).toBe(true)
       expect(continentType?.fields.some(f => f.id === 'countries')).toBe(true)
       expect(types.find(type => !!type.fields.some(f => f.typeIds.includes('String')))).toBeTruthy()
-
-      expect(Array.isArray(graphqlResponse.data?.continents)).toBe(true)
-
-      expect(website.pages).toHaveLength(1)
-
-      expect(expectedHtml).toMatch(/^<div .*data-gjs-type="wrapper".*>/)
     })
   })
 })
@@ -423,7 +434,7 @@ describe('Integration tests', () => {
     test(`Generated preview for ${ testCaseName }`, (done) => {
 
       // Load test data
-      const { graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
+      const { dataSourceId, graphqlTypes, graphqlResponse, website, expectedHtml } = loadTestCase(testCaseName)
 
       const container = document.createElement('div')
       document.body.appendChild(container)
@@ -437,7 +448,7 @@ describe('Integration tests', () => {
           [plugin.toString()]: {
             view: {
               el : null,
-              refreshEvents: '', // we call doRender directly
+              previewRefreshEvents: '', // we call doRender directly
             },
             filters: 'liquid',
           },
@@ -445,18 +456,19 @@ describe('Integration tests', () => {
       })
 
       editor.on('load', () => {
-        const mockDataSource = new MockDataSource('countries', graphqlTypes, graphqlResponse)
-        expect(mockDataSource.getTypes().flatMap(t => t.fields).find(t => t.typeIds.includes('String'))).toBeTruthy()
+        // Use the correct data source ID for each test case
+        const mockDataSource = new MockDataSource(dataSourceId, graphqlTypes, graphqlResponse)
         addDataSource(mockDataSource)
         editor.loadProjectData(website)
         const dataTree = getDataTreeFromUtils()
         dataTree.previewData = {
-          'countries': graphqlResponse.data,
+          [dataSourceId]: graphqlResponse.data,
         }
+        // Wait longer to account for debounced rendering
         setTimeout(() => {
           doRender(editor, dataTree)
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
-          const compared = toEqualDom(actualHtml, expectedHtml)
+          const compared = toEqualDom(actualHtml, expectedHtml, testCaseName)
           if (!compared.pass) {
             console.error(`
               ${compared.message}

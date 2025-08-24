@@ -86,7 +86,18 @@ export function isComponentVisible(
     return true
   }
 
-  const condition1Value = dataTree.getValue(condition1State.expression, component, true)
+  let condition1Value: unknown
+  try {
+    condition1Value = dataTree.getValue(condition1State.expression, component, true)
+  } catch (e) {
+    console.warn('Error evaluating condition1:', e)
+    // If condition evaluation fails but no operator is set, default to visible
+    if (conditionOperator === undefined || conditionOperator === null) {
+      return true
+    }
+    // For explicit operators, treat failed evaluation as falsy
+    condition1Value = null
+  }
 
   // For unary operators, only condition1 is needed
   switch (conditionOperator) {
@@ -110,7 +121,14 @@ export function isComponentVisible(
     return false
   }
 
-  const condition2Value = dataTree.getValue(condition2State.expression, component, true)
+  let condition2Value: unknown
+  try {
+    condition2Value = dataTree.getValue(condition2State.expression, component, true)
+  } catch (e) {
+    console.warn('Error evaluating condition2:', e)
+    // If condition2 evaluation fails, treat as falsy
+    condition2Value = null
+  }
 
   // Apply binary operator
   switch (conditionOperator) {
@@ -182,7 +200,7 @@ function renderAttributes(
 
 function renderContent(comp: Component, dataTree: DataTree, deep: number) {
   const innerHtml = renderInnerHTML(comp, dataTree)
-  
+
   if (innerHtml === null) {
     comp.view!.render()
     comp.components()
@@ -200,6 +218,7 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
   }
   const el = view.el
   const __data = renderLoopData(comp, dataTree)
+
   if (__data) {
     if (__data.length === 0) {
       el.remove()
