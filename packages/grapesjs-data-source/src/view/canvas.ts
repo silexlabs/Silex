@@ -223,6 +223,8 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
     if (__data.length === 0) {
       el.remove()
     } else {
+      // Workaround: for some reason loops are rendered revers
+      __data.reverse()
       // Render each loop iteration
       // Render first iteration in the original element
       setPreviewIndex(comp, 0)

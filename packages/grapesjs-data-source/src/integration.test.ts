@@ -468,6 +468,14 @@ describe('Integration tests', () => {
         setTimeout(() => {
           doRender(editor, dataTree)
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
+          const previewHtmlDir = process.env.PREVIEW_HTML_OUT_DIR
+          if (previewHtmlDir) {
+            fs.writeFileSync(
+              path.join(previewHtmlDir, testCaseName + '.html'),
+              actualHtml,
+              'utf8',
+            )
+          }
           const compared = toEqualDom(actualHtml, expectedHtml, testCaseName)
           if (!compared.pass) {
             console.error(`
