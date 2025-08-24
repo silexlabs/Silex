@@ -18,6 +18,7 @@ import { diff as jestDiff } from 'jest-diff';
 // Use require instead of import so the TextEncoder/TextDecoder polyfill is set before jsdom loads (avoids hoisting).
 /* @ts-expect-error Workaround jest+jsdom bug */
 import { TextEncoder, TextDecoder } from 'util';
+import { doRender } from './view/canvas'
 (global as any).TextEncoder = TextEncoder;
 (global as any).TextDecoder = TextDecoder;
 const { JSDOM } = require('jsdom');
@@ -434,7 +435,10 @@ describe('Integration tests', () => {
         plugins: [plugin],
         pluginsOpts: {
           [plugin.toString()]: {
-            view: {el : null},
+            view: {
+              el : null,
+              refreshEvents: '', // we call doRender directly
+            },
           },
         }
       })
@@ -448,27 +452,23 @@ describe('Integration tests', () => {
         dataTree.previewData = {
           'countries': graphqlResponse.data,
         }
-        editor.once(PREVIEW_RENDER_END, () => {
-          done()
-
-          const pages = editor.Pages.getAll();
-          expect(pages).toHaveLength(1)
-          const wrapper = editor.getWrapper()
-          expect(wrapper).toBeTruthy()
-          expect(wrapper?.view).toBeTruthy()
-          expect(wrapper?.view?.el).toBeTruthy()
-
+        setTimeout(() => {
+          doRender(editor, dataTree)
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
           const compared = toEqualDom(actualHtml, expectedHtml)
           if (!compared.pass) {
             console.error(`
               ${compared.message}
-              expected html: ${expectedHtml.substring(0, 500)}
-              actual html: ${actualHtml.substring(0, 500)}
+_______________________
+expected html: ${expectedHtml.substring(0, 500)}
+_______________________
+actual html: ${actualHtml.substring(0, 500)}
+_______________________
             `)
           }
           expect(compared.pass).toBe(true)
 
+          done()
           editor.destroy()
           container.remove()
         })

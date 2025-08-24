@@ -1,6 +1,6 @@
 import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
-import { Properties, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, StoredToken, BinariOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR } from '../types'
+import { Properties, StoredToken, BinariOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
 import { getDataTreeFromUtils } from '../utils'
@@ -238,28 +238,37 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
   }
 }
 
-export default (editor: Editor) => {
+export function doRender(editor: Editor, dataTree: DataTree) {
+  if(!editor.getWrapper()?.view?.el) {
+    return
+  }
+  try {
+    editor.trigger(PREVIEW_RENDER_START)
+    renderPreview(editor.getWrapper()!, dataTree)
+
+    requestAnimationFrame(() => {
+      editor.trigger(PREVIEW_RENDER_END)
+    })
+  } catch (err) {
+    editor.trigger(PREVIEW_RENDER_ERROR, err)
+    console.error('Error during preview render:', err)
+  }
+}
+
+let renderTimeoutId: NodeJS.Timeout | null = null
+let debounceDelay = 500
+function debouncedRender(editor: Editor, dataTree: DataTree) {
+  if (renderTimeoutId) clearTimeout(renderTimeoutId)
+  renderTimeoutId = setTimeout(() => {
+    doRender(editor, dataTree)
+    renderTimeoutId = null
+  }, debounceDelay)
+}
+
+export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   const dataTree = getDataTreeFromUtils()
-
-  // Listen for data source changes
-  editor.on(`${DATA_SOURCE_CHANGED}
-    ${DATA_SOURCE_DATA_LOAD_END}
-    component
-    style:change
-    storage:after:load
-  `, () => {
-    // component:add
-    // component:remove
-    try {
-      editor.trigger(PREVIEW_RENDER_START)
-      renderPreview(editor.getWrapper()!, dataTree)
-
-      requestAnimationFrame(() => {
-        editor.trigger(PREVIEW_RENDER_END)
-      })
-    } catch (err) {
-      editor.trigger(PREVIEW_RENDER_ERROR, err)
-      console.error('Error during preview render:', err)
-    }
-  })
+  editor.on(opts.previewRefreshEvents!, () => debouncedRender(editor, dataTree))// : doRender(editor, dataTree))
+  setTimeout(() => {
+    debounceDelay = opts.previewDebounceDelay!
+  }, 1000)
 }

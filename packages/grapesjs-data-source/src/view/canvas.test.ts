@@ -363,7 +363,7 @@ describe('isComponentVisible tests', () => {
 
 })
 
-describe('onRender tests', () => {
+describe('setPreviewIndex tests', () => {
 
   test('should set innerHTML for text component with data', () => {
     // Create text component with innerHTML state

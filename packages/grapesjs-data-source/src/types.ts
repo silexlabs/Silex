@@ -15,9 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Editor } from 'grapesjs'
+import { Component } from 'grapesjs'
 import { TemplateResult } from 'lit'
-import { DataSourceManagerState } from './model/dataSourceManager'
 import { Button } from 'grapesjs'
 
 
@@ -31,6 +30,8 @@ export interface DataSourceEditorViewOptions {
   disableStates?: boolean
   disableAttributes?: boolean
   disableProperties?: boolean
+  previewDebounceDelay?: number,
+  previewRefreshEvents?: string, // used in tests
 }
 
 /**

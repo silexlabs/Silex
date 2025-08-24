@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DataSourceEditorOptions, DataSourceEditorViewOptions, Properties } from '../types'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DataSourceEditorOptions, DataSourceEditorViewOptions, Properties } from '../types'
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
@@ -31,16 +31,26 @@ import canvas from './canvas'
 import { getElementFromOption } from '../utils'
 
 export default (editor: Editor, opts: DataSourceEditorOptions) => {
-  if (opts.view.el) {
-    const options: DataSourceEditorViewOptions = {
-      styles: PROPERTY_STYLES,
-      defaultFixed: false,
-      disableStates: false,
-      disableAttributes: false,
-      disableProperties: false,
-      ...opts.view,
-    }
+  const options: DataSourceEditorViewOptions = {
+    styles: PROPERTY_STYLES,
+    defaultFixed: false,
+    disableStates: false,
+    disableAttributes: false,
+    disableProperties: false,
+    previewDebounceDelay: 0,
+    previewRefreshEvents: `
+      ${DATA_SOURCE_CHANGED}
+      ${DATA_SOURCE_DATA_LOAD_END}
+      style:change
+      storage:after:load
+      component
+      component:add
+      component:remove
+    `,
+    ...opts.view,
+  }
 
+  if (opts.view.el) {
     // create a wrapper for our UI
     const wrapper = document.createElement('section')
     wrapper.classList.add('gjs-one-bg', 'ds-wrapper')
@@ -154,5 +164,5 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   } else {
     console.warn('Dynamic data UI not enabled, please set the el option to enable it')
   }
-  canvas(editor)
+  canvas(editor, options)
 }
