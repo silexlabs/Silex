@@ -439,6 +439,7 @@ describe('Integration tests', () => {
               el : null,
               refreshEvents: '', // we call doRender directly
             },
+            filters: 'liquid',
           },
         }
       })
