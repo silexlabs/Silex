@@ -11,6 +11,8 @@ export interface DataSourceEditorViewOptions {
 	disableStates?: boolean;
 	disableAttributes?: boolean;
 	disableProperties?: boolean;
+	previewDebounceDelay?: number;
+	previewRefreshEvents?: string;
 }
 /**
  * Options for the DataSourceEditor plugin
@@ -56,13 +58,16 @@ export declare const DATA_SOURCE_READY = "data-source:ready";
 export declare const DATA_SOURCE_ERROR = "data-source:error";
 export declare const DATA_SOURCE_CHANGED = "data-source:changed";
 export declare const COMPONENT_STATE_CHANGED = "component:state:changed";
+export declare const DATA_SOURCE_DATA_LOAD_START = "data-source:data-load:start";
+export declare const DATA_SOURCE_DATA_LOAD_END = "data-source:data-load:end";
+export declare const DATA_SOURCE_DATA_LOAD_CANCEL = "data-source:data-load:cancel";
+export declare const PREVIEW_RENDER_START = "data-source:start:preview";
+export declare const PREVIEW_RENDER_END = "data-source:start:end";
+export declare const PREVIEW_RENDER_ERROR = "data-source:start:error";
 export declare const COMMAND_REFRESH = "data-source:refresh";
 export declare const COMMAND_PREVIEW_ACTIVATE = "data-source:preview:activate";
 export declare const COMMAND_PREVIEW_DEACTIVATE = "data-source:preview:deactivate";
 export declare const COMMAND_PREVIEW_REFRESH = "data-source:preview:refresh";
-export declare const DATA_SOURCE_DATA_LOAD_START = "data-source:data-load:start";
-export declare const DATA_SOURCE_DATA_LOAD_END = "data-source:data-load:end";
-export declare const DATA_SOURCE_DATA_LOAD_CANCEL = "data-source:data-load:cancel";
 export type DataSourceType = "graphql";
 export interface IDataSourceOptions {
 	id: DataSourceId;

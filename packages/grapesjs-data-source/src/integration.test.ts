@@ -6,7 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import grapesjs from 'grapesjs'
 import plugin from './index'
-import { PREVIEW_RENDER_END, Type, Field, DataSourceType } from './types'
+import { Type, Field, DataSourceType } from './types'
 import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
@@ -19,7 +19,8 @@ import { diff as jestDiff } from 'jest-diff'
 /* @ts-expect-error Workaround jest+jsdom bug */
 import { TextEncoder, TextDecoder } from 'util'
 import { doRender } from './view/canvas'
-;(global as any).TextEncoder = TextEncoder
+;import { act } from 'react'
+(global as any).TextEncoder = TextEncoder
 ;(global as any).TextDecoder = TextDecoder
 const { JSDOM } = require('jsdom')
 // ////
@@ -381,10 +382,10 @@ export function toEqualDom(received: string, expected: string, testCaseName: str
 
   const message = `
 [${testCaseName}] DOMs differ:
-${groupedSummary}
+${groupedSummary.substring(0, 5000)}
 
 [${testCaseName}] Unified diff (prettified body HTML):
-${unified}
+${unified.substring(0, 5000)}
 `
 
   return { pass: false, message }
@@ -466,20 +467,38 @@ describe('Integration tests', () => {
         }
         // Wait longer to account for debounced rendering
         setTimeout(() => {
+          const beforePreview = editor.getWrapper()?.view?.el.outerHTML || ''
           doRender(editor, dataTree)
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
           const previewHtmlDir = process.env.PREVIEW_HTML_OUT_DIR
           if (previewHtmlDir) {
+            console.log(`Writting test resuslt to ${path.join(previewHtmlDir, testCaseName + '.html')}`)
             fs.writeFileSync(
               path.join(previewHtmlDir, testCaseName + '.html'),
               actualHtml,
               'utf8',
             )
           }
-          const compared = toEqualDom(actualHtml, expectedHtml, testCaseName)
-          if (!compared.pass) {
-            console.error(`
-              ${compared.message}
+          done()
+          const comparedWithoutPreview = toEqualDom(actualHtml, beforePreview, testCaseName)
+          if (comparedWithoutPreview.pass) {
+            console.warn(`
+              THE PREVIEW HAS NOT BEEN RENDERED
+              ${comparedWithoutPreview.message}
+_______________________
+before preview: ${beforePreview.substring(0, 1500)}
+_______________________
+actual html: ${actualHtml.substring(0, 1500)}
+_______________________
+            `)
+          }
+          expect(comparedWithoutPreview.pass).toBe(false)
+          const comparedWithPreview = toEqualDom(actualHtml, expectedHtml, testCaseName)
+          if (!comparedWithPreview.pass) {
+            console.warn(`
+              ${comparedWithPreview.message}
+_______________________
+before preview: ${beforePreview.substring(0, 500)}
 _______________________
 expected html: ${expectedHtml.substring(0, 500)}
 _______________________
@@ -487,12 +506,11 @@ actual html: ${actualHtml.substring(0, 500)}
 _______________________
             `)
           }
-          expect(compared.pass).toBe(true)
+          expect(comparedWithPreview.pass).toBe(true)
 
-          done()
           editor.destroy()
           container.remove()
-        })
+        }, 100)
       })
     })
   })

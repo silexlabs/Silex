@@ -223,8 +223,9 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
     if (__data.length === 0) {
       el.remove()
     } else {
-      // Workaround: for some reason loops are rendered revers
-      __data.reverse()
+      // Workaround: for some reason loops are rendered reversed
+      // Create a copy first, then reverse it to avoid mutating the original data
+      const loop = [...__data].reverse()
       // Render each loop iteration
       // Render first iteration in the original element
       setPreviewIndex(comp, 0)
@@ -236,7 +237,7 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
       }
 
       // For subsequent iterations: clone first, then render into original, then clone again
-      for (let idx = 1; idx < __data.length; idx++) {
+      for (let idx = 1; idx < loop.length; idx++) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
         el.insertAdjacentElement('afterend', clone)
@@ -293,6 +294,7 @@ function debouncedRender(editor: Editor, dataTree: DataTree) {
 
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   const dataTree = getDataTreeFromUtils()
+  console.log(`Render preview on events: "${opts.previewRefreshEvents}"`)
   editor.on(opts.previewRefreshEvents!, () => debouncedRender(editor, dataTree))// : doRender(editor, dataTree))
   setTimeout(() => {
     debounceDelay = opts.previewDebounceDelay!
