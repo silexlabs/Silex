@@ -92,6 +92,8 @@ export interface IDataSource {
   off?(event?: any, callback?: any, context?: any): any
   trigger?(event: any, ...args: unknown[]): any
 }
+export const FIXED_TOKEN_ID = 'fixed'
+
 export const DATA_SOURCE_READY = 'data-source:ready'
 export const DATA_SOURCE_ERROR = 'data-source:error'
 export const DATA_SOURCE_CHANGED = 'data-source:changed'

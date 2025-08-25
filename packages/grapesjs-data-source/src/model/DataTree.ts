@@ -16,10 +16,10 @@
  */
 
 import { Component, Page, Editor } from 'grapesjs'
-import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
+import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, FIXED_TOKEN_ID, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
 import { getState, getParentByPersistentId, getStates, getPersistantId } from './state'
 import { fromStored, getOptionObject } from './token'
-import { FIXED_TOKEN_ID, getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
+import { getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
 
 /**
  * Options of the data tree

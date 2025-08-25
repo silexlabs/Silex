@@ -55,8 +55,7 @@ import {
   type PersistantId,
   type StoredState
 } from './model/state'
-import { NOTIFICATION_GROUP as NOTIFICATION_GROUP_INTERNAL, FIXED_TOKEN_ID as FIXED_TOKEN_ID_INTERNAL, toExpression as toExpressionInternal, createDataSource as createDataSourceInternal } from './utils'
-import { COMMAND_REFRESH, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR } from './types'
+import { NOTIFICATION_GROUP as NOTIFICATION_GROUP_INTERNAL, toExpression as toExpressionInternal, createDataSource as createDataSourceInternal } from './utils'
 import { GraphQLOptions } from './datasources/GraphQL'
 import { getCompletion as getCompletionInternal } from './model/completion'
 import getLiquidFiltersInternal from './filters/liquid'
@@ -345,22 +344,8 @@ export const NOTIFICATION_GROUP = NOTIFICATION_GROUP_INTERNAL
  */
 export const COMPONENT_NAME_PREFIX = COMPONENT_NAME_PREFIX_INTERNAL
 
-/**
- * Command name for refreshing data sources
- */
-export { COMMAND_REFRESH }
+// ===============================
+// Types
+// ===============================
 
-/**
- * Event name for data source changes
- */
-export { DATA_SOURCE_CHANGED }
-
-/**
- * Event name for data source errors
- */
-export { DATA_SOURCE_ERROR }
-
-/**
- * Fixed token ID for hard-coded values
- */
-export const FIXED_TOKEN_ID = FIXED_TOKEN_ID_INTERNAL
+export * from './types'

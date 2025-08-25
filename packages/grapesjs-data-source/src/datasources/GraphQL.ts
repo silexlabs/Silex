@@ -18,7 +18,7 @@
 import { IDataSourceOptions, Type, Field, Tree, TypeId, IDataSource, DATA_SOURCE_ERROR, builtinTypeIds, builtinTypes, FieldKind, DATA_SOURCE_READY, DATA_SOURCE_CHANGED } from '../types'
 import graphqlIntrospectionQuery from './graphql-introspection-query'
 import dedent from 'dedent-js'
-import { FIXED_TOKEN_ID } from '../utils'
+import { FIXED_TOKEN_ID } from '../types'
 import { buildArgs } from '../model/token'
 
 /**

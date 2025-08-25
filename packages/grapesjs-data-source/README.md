@@ -177,7 +177,7 @@ Components with `__data` states automatically render multiple instances based on
 // Additional instances are created for indices 1, 2, 3...
 ```
 
-#### Visibility Conditions  
+#### Visibility Conditions
 Components with condition states are shown/hidden based on data evaluation:
 
 ```js
@@ -201,17 +201,52 @@ editor.plugins.add('@silexlabs/grapesjs-data-source', {
 
 // Or control at runtime
 editor.runCommand('data-source:preview:activate')   // Show live data
-editor.runCommand('data-source:preview:deactivate') // Show templates  
+editor.runCommand('data-source:preview:deactivate') // Show templates
 editor.runCommand('data-source:preview:refresh')    // Refresh data
 ```
 
 ## API Reference
 
-The plugin provides a clean, simple API that hides internal complexity. All main functions are available through the public API in `src/api.ts`.
+### Available Events
 
-The plugin exports several functions for managing data sources and working with expressions:
+These event names are exposed in the API and can be used to listen for changes and rendering lifecycle:
+
+export const DATA_SOURCE_READY = 'data-source:ready'
+export const DATA_SOURCE_ERROR = 'data-source:error'
+export const DATA_SOURCE_CHANGED = 'data-source:changed'
+export const COMPONENT_STATE_CHANGED = 'component:state:changed'
+export const DATA_SOURCE_DATA_LOAD_START = 'data-source:data-load:start'
+export const DATA_SOURCE_DATA_LOAD_END = 'data-source:data-load:end'
+export const DATA_SOURCE_DATA_LOAD_CANCEL= 'data-source:data-load:cancel'
+
+export const PREVIEW_RENDER_START = 'data-source:start:preview'
+export const PREVIEW_RENDER_END = 'data-source:start:end'
+export const PREVIEW_RENDER_ERROR = 'data-source:start:error'
+
+These constants are exported by the API of the plugin, e.g.
+```ts
+import { PREVIEW_RENDER_END } from '@silexlabs/grapess-data-source'
+editor.on(PREVIEW_RENDER_END, () => console.log('render success!'))
+```
+
+### Available Commands
+
+These command names are exposed in the API and can be used to control data source and preview behavior:
+
+export const COMMAND_REFRESH = 'data-source:refresh'
+export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
+export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
+export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
+
+These constants are exported by the API of the plugin, e.g.
+
+```ts
+import { COMMAND_REFRESH } from '@silexlabs/grapess-data-source'
+editor.runCommand(COMMAND_REFRESH) // or editor.runCommand('data-source:refresh')
+```
 
 ### Data Source Management
+
 ```js
 import {
   getAllDataSources,
@@ -501,7 +536,7 @@ Supabase (I had a CORS problem, let's discuss this in an issue if you want to gi
 The plugin now includes comprehensive canvas preview functionality:
 
 - **Loop Rendering**: Components with `__data` states automatically duplicate for each array item
-- **Visibility Conditions**: Components with condition states show/hide based on data evaluation  
+- **Visibility Conditions**: Components with condition states show/hide based on data evaluation
 - **Interactive Elements**: Click on duplicated loop instances to select and edit the original template
 - **Preview Controls**: Use commands to toggle preview mode on/off
 - **Nested Loops**: Full support for loops within loops with proper context isolation

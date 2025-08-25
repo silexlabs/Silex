@@ -7,6 +7,7 @@ import { fromStored, getExpressionResultType } from './model/token'
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
 import { getDataTree as getGlobalDataTree } from './model/dataSourceManager'
 import { getDataSource } from './model/dataSourceRegistry'
+import { FIXED_TOKEN_ID } from './types'
 
 export const NOTIFICATION_GROUP = 'Data source'
 
@@ -146,7 +147,6 @@ export function groupByType(editor: Editor, component: Component, completion: To
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression
  */
-export const FIXED_TOKEN_ID = 'fixed'
 export function getFixedToken(value: string): Token {
   return {
     type: 'property',
