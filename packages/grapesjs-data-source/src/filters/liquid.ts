@@ -382,7 +382,7 @@ export default function(editor: Editor): Filter[] {
       label: 'reverse',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
-      apply: (arr) => (arr as unknown[]).reverse(),
+      apply: (arr) => [...(arr as unknown[])].reverse(),
       options: {},
     }, {
       type: 'filter',

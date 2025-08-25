@@ -162,7 +162,7 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       }
     })
   } else {
-    console.warn('Dynamic data UI not enabled, please set the el option to enable it')
+    console.info('Dynamic data UI not enabled, please set the el option to enable it')
   }
   canvas(editor, options)
 }

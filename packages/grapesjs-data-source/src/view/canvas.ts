@@ -55,17 +55,35 @@ function setPreviewIndex(component: Component, index: number): void {
   })
 }
 
+function getPreviewIndex(component: Component): number | undefined {
+  const privateStates = component.get('privateStates') || []
+  for (const state of privateStates) {
+    if (state.expression && state.expression.length > 0) {
+      for (const token of state.expression) {
+        if (
+          (token.type === 'state' && token.storedStateId === '__data') ||
+          token.type === 'property' ||
+          token.type === 'filter'
+        ) {
+          return token.previewIndex
+        }
+      }
+    }
+  }
+  return undefined
+}
+
 function renderLoopData(
   component: Component,
   dataTree: DataTree,
 ): unknown[] | null {
   try {
-    const dataState = getPrivateState(component, Properties.__data)!
-    if (dataState === null) {
+    const __data = getPrivateState(component, Properties.__data)!
+    if (__data === null) {
       return null
     }
-    const result = dataTree.getValue(dataState.expression, component, false) // Get full array
-    return Array.isArray(result) ? result : null
+    const result = dataTree.getValue(__data.expression, component, false) // Get full array
+    return Array.isArray(result) ? JSON.parse(JSON.stringify(result)) : null
   } catch (e) {
     console.warn('Error getting loop data:', e)
     return null
@@ -220,15 +238,20 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
   const __data = renderLoopData(comp, dataTree)
 
   if (__data) {
+    // console.log(`🔄 Loop data for ${comp.getId()}:`, __data.map((item: unknown, idx: number) =>
+    //   `${idx}: ${item.name || item.code || JSON.stringify(item).substring(0, 50)}`
+    // ))
     if (__data.length === 0) {
       el.remove()
     } else {
-      // Workaround: for some reason loops are rendered reversed
-      // Create a copy first, then reverse it to avoid mutating the original data
-      const loop = [...__data].reverse()
+      const initialPreviewIndex = getPreviewIndex(comp) || 0
+
       // Render each loop iteration
       // Render first iteration in the original element
-      setPreviewIndex(comp, 0)
+      // FIXME: as a workaround we need to loop reverse on the __data array, I have no idea why
+      const fromIdx = __data.length - 1
+      const toIdx = 0
+      setPreviewIndex(comp, fromIdx)
       if(isComponentVisible(comp, dataTree)) {
         renderContent(comp, dataTree, deep)
         renderAttributes(comp, dataTree)
@@ -237,9 +260,10 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
       }
 
       // For subsequent iterations: clone first, then render into original, then clone again
-      for (let idx = 1; idx < loop.length; idx++) {
+      for (let idx = fromIdx - 1; idx >= toIdx; idx--) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
+
         el.insertAdjacentElement('afterend', clone)
 
         // Set preview index for the next iteration and render into original element
@@ -254,6 +278,7 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
           el.remove()
         }
       }
+      setPreviewIndex(comp, initialPreviewIndex)
     }
   } else {
     if(isComponentVisible(comp, dataTree)) {
@@ -284,9 +309,10 @@ export function doRender(editor: Editor, dataTree: DataTree) {
 
 let renderTimeoutId: NodeJS.Timeout | null = null
 let debounceDelay = 500
-function debouncedRender(editor: Editor, dataTree: DataTree) {
+function debouncedRender(editor: Editor, dataTree: DataTree, eventName: string) {
   if (renderTimeoutId) clearTimeout(renderTimeoutId)
   renderTimeoutId = setTimeout(() => {
+    console.info('Refresh preview started because of event', eventName)
     doRender(editor, dataTree)
     renderTimeoutId = null
   }, debounceDelay)
@@ -295,7 +321,12 @@ function debouncedRender(editor: Editor, dataTree: DataTree) {
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   const dataTree = getDataTreeFromUtils()
   console.log(`Render preview on events: "${opts.previewRefreshEvents}"`)
-  editor.on(opts.previewRefreshEvents!, () => debouncedRender(editor, dataTree))// : doRender(editor, dataTree))
+  const events = opts.previewRefreshEvents!.split(' ')
+  for(const eventName of events) {
+    editor.on(eventName, () => {
+      debouncedRender(editor, dataTree, eventName)
+    })
+  }
   setTimeout(() => {
     debounceDelay = opts.previewDebounceDelay!
   }, 1000)

@@ -449,7 +449,7 @@ describe('Integration tests', () => {
           [plugin.toString()]: {
             view: {
               el : null,
-              previewRefreshEvents: '', // we call doRender directly
+              previewRefreshEvents: '', // let me call doRender directly
             },
             filters: 'liquid',
           },
@@ -457,22 +457,21 @@ describe('Integration tests', () => {
       })
 
       editor.on('load', () => {
-        // Use the correct data source ID for each test case
+        const dataTree = getDataTreeFromUtils()
         const mockDataSource = new MockDataSource(dataSourceId, graphqlTypes, graphqlResponse)
         addDataSource(mockDataSource)
         editor.loadProjectData(website)
-        const dataTree = getDataTreeFromUtils()
-        dataTree.previewData = {
-          [dataSourceId]: graphqlResponse.data,
-        }
         // Wait longer to account for debounced rendering
         setTimeout(() => {
+          dataTree.previewData = {
+            [dataSourceId]: graphqlResponse.data,
+          }
           const beforePreview = editor.getWrapper()?.view?.el.outerHTML || ''
           doRender(editor, dataTree)
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
           const previewHtmlDir = process.env.PREVIEW_HTML_OUT_DIR
           if (previewHtmlDir) {
-            console.log(`Writting test resuslt to ${path.join(previewHtmlDir, testCaseName + '.html')}`)
+            console.info(`Writting test resuslt to ${path.join(previewHtmlDir, testCaseName + '.html')}`)
             fs.writeFileSync(
               path.join(previewHtmlDir, testCaseName + '.html'),
               actualHtml,
@@ -480,23 +479,10 @@ describe('Integration tests', () => {
             )
           }
           done()
-          const comparedWithoutPreview = toEqualDom(actualHtml, beforePreview, testCaseName)
-          if (comparedWithoutPreview.pass) {
+          const compared = toEqualDom(actualHtml, expectedHtml, testCaseName)
+          if (!compared.pass) {
             console.warn(`
-              THE PREVIEW HAS NOT BEEN RENDERED
-              ${comparedWithoutPreview.message}
-_______________________
-before preview: ${beforePreview.substring(0, 1500)}
-_______________________
-actual html: ${actualHtml.substring(0, 1500)}
-_______________________
-            `)
-          }
-          expect(comparedWithoutPreview.pass).toBe(false)
-          const comparedWithPreview = toEqualDom(actualHtml, expectedHtml, testCaseName)
-          if (!comparedWithPreview.pass) {
-            console.warn(`
-              ${comparedWithPreview.message}
+              ${compared.message}
 _______________________
 before preview: ${beforePreview.substring(0, 500)}
 _______________________
@@ -506,7 +492,7 @@ actual html: ${actualHtml.substring(0, 500)}
 _______________________
             `)
           }
-          expect(comparedWithPreview.pass).toBe(true)
+          expect(compared.pass).toBe(true)
 
           editor.destroy()
           container.remove()

@@ -83,8 +83,22 @@ export const STANDARD_TYPES: Type[] = [
 export class DataTree {
   public dataSources: IDataSource[] = []
   // Preview data returned by all APIs (for canvas preview only)
-  public previewData: Record<DataSourceId, unknown> = {}
+  private _previewData: Record<DataSourceId, unknown> = {}
   public filters: Filter[] = []
+
+  // Add getter/setter with logging to track when previewData is modified
+  get previewData(): Record<DataSourceId, unknown> {
+    return this._previewData
+  }
+
+  set previewData(value: Record<DataSourceId, unknown>) {
+    // console.log('🔧 DataTree.previewData SET:', {
+    //   old: Object.keys(this._previewData),
+    //   new: Object.keys(value || {}),
+    //   stack: new Error().stack?.split('\n')[1]?.trim()
+    // })
+    this._previewData = value
+  }
 
   /**
    * All types from all data sources
@@ -204,7 +218,12 @@ export class DataTree {
       return prevValues
     }
 
-    const [token, ...rest] = expression
+    // Always create defensive copies of tokens to prevent mutations from affecting original data
+    // When resolvePreviewIndex is false (for loop data), also clear any existing preview indices
+    const cleanExpression = expression.map(token => {
+      return { ...token }
+    })
+    const [token, ...rest] = cleanExpression
 
     switch (token.type) {
     case 'state': {
@@ -312,7 +331,8 @@ export class DataTree {
     }
 
     if(Array.isArray(value)) {
-      return value[token.previewIndex]
+      const result = value[token.previewIndex]
+      return result
     }
     return value
   }
