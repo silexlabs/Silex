@@ -2,16 +2,17 @@
 
 .page-panel-container {
   .pages__wrapper {
-    height: inherit;
+    display: contents !important;
+    height: fit-content;
   }
   .pages {
-    height: 100%;
     display: flex;
     flex-direction: column;
     .pages__main {
       flex: 1; // take the available space in height
       border: 1px solid $darkerPrimaryColor;
       background-color: $primaryColor;
+      min-height: 20vh;
     }
     .pages__page {
       display: flex;
