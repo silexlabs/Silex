@@ -35,6 +35,6 @@ export function customizeInput(sel: string) {
 // For accesibility and keyboard navigation
 export const FOCUS_VISIBLE = css`
   :focus-visible {
-    outline: 2px solid var(--gjs-secondary-color, #ddd);
+    outline: 1px solid var(--gjs-tertiary-color, #ddd);
   }
 `

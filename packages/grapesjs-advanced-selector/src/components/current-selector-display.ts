@@ -3,7 +3,7 @@ import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
 import { ComplexSelector, fromString, same, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
-import { FOCUS_VISIBLE, customizeSelect } from '../styles'
+import { customizeSelect, FOCUS_VISIBLE } from '../styles'
 
 export class CurrentSelectorDisplay extends StylableElement {
   /**
@@ -59,13 +59,13 @@ export class CurrentSelectorDisplay extends StylableElement {
         font-size: inherit;
         font-family: monospace;
         text-align: center;
-        margin: .25rem 0;
-        padding: .25rem 0;
+        margin: .25rem;
+        padding: .15rem 0;
         text-align: center;
         text-wrap: wrap;
         width: 100%;
         cursor: pointer;
-        background: inherit;
+        background: var(--gjs-primary-color);
         color: inherit;
       }
       ul {
