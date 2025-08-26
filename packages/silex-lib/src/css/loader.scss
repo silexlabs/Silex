@@ -22,20 +22,23 @@
       height: 0;
       position: absolute;
       background-color: variables.$primaryColor;
+      outline: 1px solid grey;
+      border: none;
       border-radius: 0.125rem;
       transform: translateY(-5px);
       transition: all 0.3s 0.3s ease;
+      /* CHROME */
       &::-webkit-progress-bar {
-        background-color: variables.$secondaryColor;
-        border-radius: 0.125rem;
+        background-color: variables.$primaryColor; // dark background (track)
       }
+
       &::-webkit-progress-value {
-        background-color: variables.$primaryColor;
-        border-radius: 0.125rem;
+        background-color: variables.$secondaryColor; // light foreground (filled)
       }
+
+      /* FIREFOX */
       &::-moz-progress-bar {
-        background-color: variables.$secondaryColor;
-        border-radius: 0.125rem;
+        background-color: variables.$secondaryColor; // light foreground (filled)
       }
     }
   }
