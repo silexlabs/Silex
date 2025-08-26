@@ -15,7 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 import { Component, Editor } from 'grapesjs'
-import { SectorConfig, registerSector } from './sectors'
 
 /**
  * @fileoverview This plugin adds CSS properties for the UL, OL and LI elements
@@ -54,14 +53,16 @@ export default (editor: Editor) => {
     //       })
     //     }
     //   })
-    // Update the visibility
-    // This is a workaround grapesjs behavior: https://github.com/GrapesJS/grapesjs/issues/3123
-    sector.on('change:visible', () => applyVisibility())
+    // Listen to the events that should trigger a visibility check
     editor.on('component:selected', comp => applyVisibility(comp))
-    editor.on('style:property:update', () => applyVisibility()) // Useful for instantly display the flex sector when selecting display: inline-flex;
+    // `change:visible` is a workaround grapesjs behavior: https://github.com/GrapesJS/grapesjs/issues/3123
+    editor.on('change:visible', applyVisibility)
+    // `style:property:update` is useful for instantly display the flex sector when selecting display: inline-flex;
+    editor.on('style:property:update', () => applyVisibility())
     function applyVisibility(comp: Component = editor.getSelected()) {
-      if(!comp) return // No selection yet
+      editor.off('change:visible', applyVisibility) // Avoid infinite loop
       requestAnimationFrame(() => {
+        if(!comp) return // No selection yet
         const computedDisplay = comp?.view?.el && getComputedStyle(comp.view.el)['display'] as string || ''
         const isFlex = computedDisplay === 'flex' || computedDisplay === 'inline-flex'
         const parent = comp.parent()
@@ -80,6 +81,7 @@ export default (editor: Editor) => {
           sector.getProperties()
             .forEach(p => p.set('visible', FLEX_ITEM_PROPS.includes(p.getId())))
         }
+        editor.on('change:visible', applyVisibility)
       })
     }
   })

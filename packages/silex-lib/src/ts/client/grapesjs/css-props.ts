@@ -128,13 +128,14 @@ export default (editor: Editor, opts) => {
         name: 'Content',
         property: 'content',
         type: 'text',
-        defaults: '',
+        defaults: '"Content in double quotes"',
         info: 'Generates content for an element.',
         full: true,
         visible: false,
       }],
       shouldShow: async () => {
         return new Promise<boolean>((resolve, reject) => {
+
           requestAnimationFrame(() => {
             try {
               const state = editor.StyleManager

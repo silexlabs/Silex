@@ -46,12 +46,14 @@ export function registerSector(editor: Editor, config: SectorConfig, at?: number
   async function applyVisibility(comp: Component = editor.getSelected()) {
     const shouldShow = await config.shouldShow(comp)
     if (sector.get('visible') !== shouldShow) {
+      sector.off('change:visible', applyVisibility)
       sector.set('visible', shouldShow)
+      sector.on('change:visible', applyVisibility)
       // sector.getProperties()
       //   .forEach(p => p.set('visible', shouldShow))
     }
   }
 
-  sector.on('change:visible', () => applyVisibility())
+  sector.on('change:visible', applyVisibility)
   editor.on('component:selected', comp => applyVisibility(comp))
 }

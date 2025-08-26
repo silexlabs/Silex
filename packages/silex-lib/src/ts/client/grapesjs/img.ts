@@ -144,9 +144,15 @@ export default (editor: Editor, opts) => {
       }
     })
     // Watch changes made by grapesjs and revert them if needed
-    sector.on('change:visible', () => {
-      if(sector.get('visible') !== showSector) sector.set('visible', showSector)
-    })
+    function doubleCheck() {
+      if(sector.get('visible') !== showSector){
+        sector.off('change:visible', doubleCheck)
+        sector.set('visible', showSector)
+        sector.on('change:visible', doubleCheck)
+      }
+    }
+    sector.on('change:visible', doubleCheck)
+
     // Add a new image type that handles the storage URL vs displayed URL
     domc.addType('image', {
       ...imgType,
