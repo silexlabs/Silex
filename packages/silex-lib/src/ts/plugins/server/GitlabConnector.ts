@@ -327,16 +327,30 @@ export default class GitlabConnector implements StorageConnector {
       'Content-Type': 'application/json',
     }
     if (method === 'GET' && requestBody) {
-      console.error('Gitlab API error (4) - GET request with body', { url, method, body: requestBody, params })
+      console.error('[GitlabConnector] Invalid GET request: GET requests should not have a body', { url, method, body: requestBody, params })
     }
     // With or without body
     let response
     const body = requestBody ? JSON.stringify(requestBody) : undefined
     try {
-      if(body && Buffer.byteLength(body) > MAX_BODY_SIZE_KB * 1024) {
-        // TODO: warn the end user
-        console.warn('Gitlab API warning - body too big', Buffer.byteLength(body), 'bytes', { url, method, params })
+      if (body && Buffer.byteLength(body) > MAX_BODY_SIZE_KB * 1024) {
+        console.warn('[GitlabConnector] Request body size exceeds Gitlab API limit', {
+          size: Buffer.byteLength(body),
+          maxAllowed: MAX_BODY_SIZE_KB * 1024,
+          url,
+          method,
+          params,
+          session,
+        })
       }
+      console.info('[GitlabConnector] Sending request to Gitlab API', {
+        url,
+        method,
+        headers,
+        body,
+        params,
+        session,
+      })
       response = await fetch(url, requestBody && method !== 'GET' ? {
         agent: this.getAgent(),
         method,
@@ -348,8 +362,16 @@ export default class GitlabConnector implements StorageConnector {
         headers,
       })
     } catch (e) {
-      console.error('Gitlab API error (0)', e)
-      throw new ApiError(`Gitlab API error (0): ${e.message} ${e.text} ${e.code} ${e.name} ${e.type}`, 500)
+      console.error('[GitlabConnector] Failed to reach Gitlab API endpoint', {
+        error: e,
+        url,
+        method,
+        body: requestBody,
+        params,
+        session,
+        stack: e?.stack || new Error().stack,
+      })
+      throw new ApiError(`Could not reach Gitlab API: ${e.message || e}`, 500)
     }
     // Pass the response headers to the caller
     response.headers.forEach((value, name) => responseHeaders[name] = value)
@@ -358,14 +380,30 @@ export default class GitlabConnector implements StorageConnector {
       try {
         return await response.text()
       } catch (e) {
-        console.error('Gitlab API error (6) - could not parse response', response.status, response.statusText, { url, method, body: requestBody, params }, e)
-        throw new ApiError(`Gitlab API error (6): response body not available. ${e.message}`, 500)
+        console.error('[GitlabConnector] Failed to read response body from Gitlab API', {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          method,
+          body: requestBody,
+          params,
+          error: e
+        })
+        throw new ApiError(`Gitlab API: Could not read response body (${e.message})`, 500)
       }
     }()
     if (!response.ok) {
-      console.error('Gitlab API error (7) - response not ok', response.status, response.statusText, { url, method, body: requestBody, params, text: text })
+      console.error('[GitlabConnector] Gitlab API responded with error status', {
+        status: response.status,
+        statusText: response.statusText,
+        url,
+        method,
+        body: requestBody,
+        params,
+        responseText: text
+      })
       if (text.includes('A file with this name doesn\'t exist')) {
-        throw new ApiError('Gitlab API error (5): Not Found', 404)
+        throw new ApiError('Gitlab API: File not found', 404)
       } else if (response.status === 401 && this.getSessionToken(session).token?.refresh_token) {
         // Refresh the token
         const token = this.getSessionToken(session).token
@@ -401,17 +439,28 @@ export default class GitlabConnector implements StorageConnector {
           })
         } else {
           const message = typeof refreshJson?.message === 'object' ? Object.entries(refreshJson.message).map(entry => entry.join(' ')).join(' ') : refreshJson?.message ?? refreshJson?.error ?? response.statusText
-          console.error('Gitlab API error (2) - could not refresh token', response.status, response.statusText, { message }, 'refresh_token:', token?.refresh_token)
-          // Workaround for when the token is invalid
-          // It happens often which is not normal (refresh token should last 6 months)
+          console.error('[GitlabConnector] Failed to refresh Gitlab OAuth token', {
+            status: response.status,
+            statusText: response.statusText,
+            message,
+            refresh_token: token?.refresh_token
+          })
           this.logout(session)
-          // Notify the user
-          throw new ApiError(`Gitlab API error (2): ${message}`, response.status)
+          throw new ApiError(`Gitlab API: Could not refresh token (${message})`, response.status)
         }
       } else {
         const message = response.statusText
-        console.error('Gitlab API error (1)', response.status, response.statusText, { url, method, body: requestBody, params, text: text, message })
-        throw new ApiError(`Gitlab API error (1): ${message} (${text})`, response.status)
+        console.error('[GitlabConnector] Unhandled Gitlab API error response', {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          method,
+          body: requestBody,
+          params,
+          responseText: text,
+          message
+        })
+        throw new ApiError(`Gitlab API error: ${message} (${text})`, response.status)
       }
     }
     let json: { message: string, error: string } | any
@@ -419,11 +468,20 @@ export default class GitlabConnector implements StorageConnector {
       json = JSON.parse(text)
     } catch (e) {
       if (!response.ok) {
-        // A real error
         throw e
       } else {
-        // Useless error linked to the fact that the response is not JSON
-        console.error('Gitlab API error (3) - could not parse response', response.status, response.statusText, { url, method, body: requestBody, params, text: text })
+        console.error('[GitlabConnector] Response from Gitlab API is not valid JSON', {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          method,
+          body: requestBody,
+          params,
+          responseText: text,
+          error: e,
+          session,
+          stack: e?.stack || new Error().stack,
+        })
         return text
       }
     }
@@ -451,18 +509,30 @@ export default class GitlabConnector implements StorageConnector {
     if (!fileRes.ok) {
       const errText = await fileRes.text()
       if (errText.includes('not found') || fileRes.status === 404) {
-        throw new ApiError('GitLab raw error (5): Not Found', 404)
+        console.error('[GitlabConnector] GitLab raw file not found', {
+          status: fileRes.status,
+          statusText: fileRes.statusText,
+          url: rawUrl,
+          responseText: errText
+        })
+        throw new ApiError(`GitLab raw file not found: filePath="${filePath}" (status ${fileRes.status})`, 404)
       }
-      console.error('GitLab raw error (1)', fileRes.status, fileRes.statusText, { rawUrl, errText })
-      throw new ApiError(`GitLab raw error (1): ${fileRes.statusText} (${errText})`, fileRes.status)
+      console.error('[GitlabConnector] Failed to fetch raw file from GitLab', {
+        filePath,
+        url: rawUrl,
+        status: fileRes.status,
+        statusText: fileRes.statusText,
+        responseText: errText
+      })
+      throw new ApiError(`Failed to fetch raw file from GitLab: filePath="${filePath}" - ${fileRes.statusText} (${errText})`, fileRes.status)
     }
 
     try {
       const buffer = await fileRes.buffer()
       return buffer
     } catch (e) {
-      console.error('GitLab raw error (3): could not read buffer', e)
-      throw new ApiError('GitLab raw error (3): failed to read binary content', 500)
+      console.error('[GitlabConnector] Error reading binary content from GitLab raw file', e)
+      throw new ApiError('Failed to read binary content from GitLab raw file', 500)
     }
   }
 
