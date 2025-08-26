@@ -21,7 +21,7 @@ import { cmdLogin, eventLoggedIn, eventLoggedOut, getCurrentUser, updateUser } f
 import { addTempDataToAssetUrl, addTempDataToStyles, removeTempDataFromAssetUrl, removeTempDataFromStyles } from '../assetUrl'
 import { PublicationStatus, PublishableEditor } from './PublicationManager'
 import { ClientEvent } from '../events'
-import { ProjectData } from 'grapesjs'
+import { Page, PageProperties, ProjectData } from 'grapesjs'
 import { html, render, TemplateResult } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 
@@ -80,13 +80,26 @@ export const storagePlugin = (editor: PublishableEditor) => {
         const data = await websiteLoad({ websiteId: options.id, connectorId: user.storage.connectorId }) as WebsiteData
         if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
         if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
-        //setTimeout(() => progressiveLoadPages(editor, data))
         if (!data.pages) {
           // This happens when the website was just created
           // Let grapesjs create the pages in the frontend
           return data
         } else {
-          await progressiveLoadPages(editor, data)
+          const { pages, ...rest } = data
+          // Load any additional project data, e.g. symbols, but not the ones we progressive load
+          loader && render(getLoaderHtml('Loading styles, assets and symbols', 0, pages.length + 1), loader)
+          if (Object.keys(rest).length > 0) {
+            editor.loadProjectData(rest)
+          }
+          // Load the rest of the data
+          await progressiveLoadPages(editor, pages)
+          await nextFrame()
+          // Select the first page
+          const firstPage = editor.Pages.getAll()[0]
+          if (firstPage) editor.Pages.select(firstPage)
+          await nextFrame()
+          editor.trigger('storage:end:load', data)
+          editor.trigger('canvas:frame:load', editor)
           return {}
         }
       } catch (err) {
@@ -217,32 +230,15 @@ export const storagePlugin = (editor: PublishableEditor) => {
   }
 }
 
-async function progressiveLoadPages(editor: PublishableEditor, data: ProjectData) {
+async function progressiveLoadPages(editor: PublishableEditor, pages: Page[]) {
   editor.Pages.getAll().forEach(page => editor.Pages.remove(page))
-  const max = data.pages.length + 1
-  let i = 0
-  for (const page of data.pages) {
-    loader && render(getLoaderHtml(`Loading page <strong>${++i}</strong> / ${data.pages.length}`, i, max), loader)
+  let i = 1
+  for (const page of pages) {
+    loader && render(getLoaderHtml(`Loading page <strong>${++i}</strong> / ${pages.length}`, i, pages.length + 1), loader)
     //await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 1000))
     await nextFrame()
     const newPage = editor.Pages.add({
       ...page,
-    })
+    } as PageProperties)
   }
-
-  // Charger les styles, assets, etc. après les pages
-  loader && render(getLoaderHtml('Loading styles and assets', data.pages.length + 1, max), loader)
-  if (data.styles) editor.setStyle(data.styles)
-  if (data.assets) editor.AssetManager.add(data.assets)
-
-  await nextFrame()
-  setTimeout(() => {
-    // FIXME: Why is this setTimeout needed?
-    editor.trigger('storage:end:load', data)
-    editor.trigger('canvas:frame:load', editor)
-  })
-
-  // Sélectionner la première page
-  const firstPage = editor.Pages.getAll()[0]
-  if (firstPage) editor.Pages.select(firstPage)
 }

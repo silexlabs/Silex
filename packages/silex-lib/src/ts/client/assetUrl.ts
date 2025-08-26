@@ -1,5 +1,5 @@
 import { API_PATH, API_WEBSITE_ASSET_READ, API_WEBSITE_PATH } from '../constants'
-import { Asset, ClientSideFileType, Component, ConnectorId, Page, Style, WebsiteId } from '../types'
+import { Asset, ClientSideFileType, ConnectorId, Style, WebsiteId } from '../types'
 
 /**
  * @fileoverview Helpers to manage assets URL

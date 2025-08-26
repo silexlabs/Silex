@@ -18,7 +18,7 @@
 import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, WEBSITE_PAGES_FOLDER } from '../../constants'
 import { ServerConfig } from '../../server/config'
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '../../server/connectors/connectors'
-import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus, Page } from '../../types'
+import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus } from '../../types'
 import fetch from 'node-fetch'
 import crypto, { createHash } from 'crypto'
 import { join } from 'path'
@@ -26,6 +26,7 @@ import { Agent } from 'https'
 import { getPageSlug } from '../../page'
 import e from 'express'
 import { fork } from 'child_process'
+import { Page } from 'grapesjs'
 
 /**
  * Gitlab connector
@@ -330,7 +331,7 @@ export default class GitlabConnector implements StorageConnector {
       console.error('[GitlabConnector] Invalid GET request: GET requests should not have a body', { url, method, body: requestBody, params })
     }
     // With or without body
-    let response
+    let response: Response
     const body = requestBody ? JSON.stringify(requestBody) : undefined
     try {
       if (body && Buffer.byteLength(body) > MAX_BODY_SIZE_KB * 1024) {
@@ -471,7 +472,6 @@ export default class GitlabConnector implements StorageConnector {
         throw e
       } else {
         console.error('[GitlabConnector] Response from Gitlab API is not valid JSON', {
-          status: response.status,
           statusText: response.statusText,
           url,
           method,
@@ -761,8 +761,9 @@ export default class GitlabConnector implements StorageConnector {
     // Load each page in parallel
     const pages = await Promise.all(websiteData.pages.map(async (page: GitlabPage | Page) => {
       if ((page as GitlabPage).isFile) {
-        const name = getPageSlug(page.name)
-        const fileName = (`${name}-${page.id}`)
+        const name = (page as any).get ? (page as Page).getName() : (page as GitlabPage).name
+        const slug = getPageSlug(name)
+        const fileName = (`${slug}-${page.id}`)
         const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
         const pageContent = await this.downloadRawFile(session, websiteId, filePath)
         const res = JSON.parse(pageContent.toString('utf8')) as Page
@@ -817,7 +818,7 @@ export default class GitlabConnector implements StorageConnector {
     // **
     // Create the pages for batch upload
     const pages = websiteData.pages.map((page: Page) => {
-      const fileName = encodeURIComponent(`${getPageSlug(page.name)}-${page.id}`)
+      const fileName = encodeURIComponent(`${getPageSlug(page.get('name'))}-${page.id}`)
       const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
       const content = JSON.stringify(page)
       const newSha = computeGitBlobSha(content, false)
@@ -841,7 +842,7 @@ export default class GitlabConnector implements StorageConnector {
       }
 
       return {
-        name: page.name,
+        name: page.get('name'),
         id: page.id,
         isFile: true,
       }

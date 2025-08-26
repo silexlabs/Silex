@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { Page } from 'grapesjs'
+
 /**
  * @fileoverview define types for Silex client and server
  */
@@ -97,26 +99,6 @@ export const defaultWebsiteData: WebsiteData = {
   //publication: {},
 } as WebsiteData
 
-
-// **
-// Grapesjs types
-// From grapesjs, not imported because it breaks the build on the server side
-export interface Component {
-  type: string,
-  content?: string,
-  attributes: { [key: string]: string },
-  components: Component[],
-}
-
-export interface Page {
-  id: string,
-  name: string,
-  slug: string,
-  settings: WebsiteSettings, // TODO: why is this here? It is used in the publication manager
-  frames: {
-    component: Component,
-  }[]
-}
 
 export interface WebsiteData {
   pages: Page[],

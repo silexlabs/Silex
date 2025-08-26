@@ -79,7 +79,7 @@
     "dev": "run-p watch start:debug",
     "watch": "npm-watch",
     "start": "node dist/server/server/",
-    "start:debug": "cross-env SILEX_FS_ROOT=`pwd`/silex SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
+    "start:debug": "cross-env SILEX_DEBUG=true nodemon --watch dist/server dist/server/server/",
     "start:preview": "http-server silex/hosting -o",
     "prepublishOnly": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
     "preversion": "$npm_execpath run prepublishOnly",
