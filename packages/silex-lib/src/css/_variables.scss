@@ -27,9 +27,13 @@ $fontFamily: 'Ubuntu', sans-serif;
 
 :root {
   --primaryColor: #{$primaryColor};
+  --gjs-primary-color: #{$primaryColor} !important;
   --secondaryColor: #{$secondaryColor};
+  --gjs-secondary-color: #{$secondaryColor} !important;
   --tertiaryColor: #{$tertiaryColor};
+  --gjs-tertiary-color: #{$tertiaryColor} !important;
   --quaternaryColor: #{$quaternaryColor};
+  --gjs-quaternary-color: #{$quaternaryColor} !important;
   --darkerPrimaryColor: #{$darkerPrimaryColor};
   --lighterPrimaryColor: #{$lighterPrimaryColor};
   --viewsPanelWidth: #{$viewsPanelWidth};
