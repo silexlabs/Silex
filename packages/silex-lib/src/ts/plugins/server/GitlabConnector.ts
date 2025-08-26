@@ -221,6 +221,10 @@ function sanitizeGitlabPath(name: string): string {
     .toLowerCase()
 }
 
+function getPageName(page: Page | GitlabPage) {
+  return (page as any).getName ? (page as Page).getName() : (page as GitlabPage).name
+}
+
 export default class GitlabConnector implements StorageConnector {
   connectorId = 'gitlab'
   connectorType = ConnectorType.STORAGE
@@ -344,14 +348,6 @@ export default class GitlabConnector implements StorageConnector {
           session,
         })
       }
-      console.info('[GitlabConnector] Sending request to Gitlab API', {
-        url,
-        method,
-        headers,
-        body,
-        params,
-        session,
-      })
       response = await fetch(url, requestBody && method !== 'GET' ? {
         agent: this.getAgent(),
         method,
@@ -761,7 +757,7 @@ export default class GitlabConnector implements StorageConnector {
     // Load each page in parallel
     const pages = await Promise.all(websiteData.pages.map(async (page: GitlabPage | Page) => {
       if ((page as GitlabPage).isFile) {
-        const name = (page as any).get ? (page as Page).getName() : (page as GitlabPage).name
+        const name = getPageName(page)
         const slug = getPageSlug(name)
         const fileName = (`${slug}-${page.id}`)
         const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
@@ -818,7 +814,8 @@ export default class GitlabConnector implements StorageConnector {
     // **
     // Create the pages for batch upload
     const pages = websiteData.pages.map((page: Page) => {
-      const fileName = encodeURIComponent(`${getPageSlug(page.get('name'))}-${page.id}`)
+      /* @ts-ignore */
+      const fileName = encodeURIComponent(`${getPageSlug(getPageName(page))}-${page.id}`)
       const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
       const content = JSON.stringify(page)
       const newSha = computeGitBlobSha(content, false)
@@ -842,7 +839,7 @@ export default class GitlabConnector implements StorageConnector {
       }
 
       return {
-        name: page.get('name'),
+        name: getPageName(page),
         id: page.id,
         isFile: true,
       }

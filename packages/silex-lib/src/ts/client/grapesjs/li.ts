@@ -68,7 +68,7 @@ export default (editor: Editor) => {
           defaults: '',
         },
       ],
-      shouldShow: comp => ['ul', 'ol', 'li'].includes(comp.get('tagName')?.toLowerCase() || ''),
+      shouldShow: comp => comp && ['ul', 'ol', 'li'].includes(comp.get('tagName')?.toLowerCase() || ''),
     },
   ]
 

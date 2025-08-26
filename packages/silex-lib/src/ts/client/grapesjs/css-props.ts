@@ -139,8 +139,8 @@ export default (editor: Editor, opts) => {
             try {
               const state = editor.StyleManager
                 .getSelected()
-                .get('state')
-              if (['before', 'after'].includes(state)) {
+                ?.get('state')
+              if (state && ['before', 'after'].includes(state)) {
                 return resolve(true)
               }
               return resolve(false)
