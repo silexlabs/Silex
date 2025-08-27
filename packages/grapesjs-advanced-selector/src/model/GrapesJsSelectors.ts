@@ -341,9 +341,12 @@ export function getSuggestionsMain(editor: Editor, components: Component[], sele
         }
       })
     })
-    // Add attributes
+    // Add attributes (excluding 'id' since it should use ID selector instead)
     const attributes = component.getAttributes({ noStyle: true, noClass: true })
     Object.keys(attributes).forEach((attr) => {
+      // Skip 'id' attribute - it should use ID selector instead of attribute selector
+      if (attr === 'id') return
+
       const s = {
         type: SimpleSelectorType.ATTRIBUTE,
         value: attr,

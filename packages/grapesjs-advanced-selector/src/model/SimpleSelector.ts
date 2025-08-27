@@ -185,7 +185,7 @@ export function getDisplayType(selector: SimpleSelector): string {
 
 export function getDisplayName(selector: SimpleSelector): string {
   switch (selector.type) {
-  case SimpleSelectorType.CLASS: 
+  case SimpleSelectorType.CLASS:
   case SimpleSelectorType.ID:
   case SimpleSelectorType.TAG:
   case SimpleSelectorType.ATTRIBUTE:
@@ -274,7 +274,7 @@ export function suggest(filter: string, suggestions: SimpleSelector[]): SimpleSe
     })
 }
 
-export function getCreationSuggestions(validated: string | false): SimpleSelectorSuggestion[] {
+export function getCreationSuggestions(validated: string | false, originalInput?: string): SimpleSelectorSuggestion[] {
   // Creation suggestions
   const creationSuggestions = [] as SimpleSelectorSuggestion[]
   if (validated) {
@@ -294,6 +294,35 @@ export function getCreationSuggestions(validated: string | false): SimpleSelecto
       }
     } else if (validated.match(/^[a-z-]*-[a-z]*$/)) {
       creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: validated, active, } as CustomTagSelector)
+    }
+  } else if (originalInput && originalInput.startsWith('[')) {
+    // Handle incomplete attribute selectors like "[check" -> suggest "[checked]"
+    const active = true
+    const partialAttr = originalInput.substring(1).toLowerCase() // Remove [ and lowercase for matching
+
+    // Find matching attributes from ATTRIBUTES list
+    ATTRIBUTES.forEach(attr => {
+      if (attr.toLowerCase().startsWith(partialAttr)) {
+        creationSuggestions.push({
+          createText: `Select attribute [${attr}]`,
+          createValue: `[${attr}]`,
+          type: SimpleSelectorType.ATTRIBUTE,
+          value: attr,
+          active,
+        } as SimpleSelectorSuggestion & AttributeSelector)
+      }
+    })
+
+    // Find matching data attributes (data-*)
+    if (partialAttr.startsWith('data-') && partialAttr.length > 5) {
+      const dataAttrName = partialAttr
+      creationSuggestions.push({
+        createText: `Select data attribute [${dataAttrName}]`,
+        createValue: `[${dataAttrName}]`,
+        type: SimpleSelectorType.ATTRIBUTE,
+        value: dataAttrName,
+        active,
+      } as SimpleSelectorSuggestion & AttributeSelector)
     }
   }
   return creationSuggestions

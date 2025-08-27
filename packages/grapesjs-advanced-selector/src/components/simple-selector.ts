@@ -255,7 +255,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   private renderMain(): TemplateResult {
     const selectorString = this.selectorInputRef.value?.value || ''
     const valid = validate(selectorString)
-    const suggestions = getCreationSuggestions(valid).concat(suggest(selectorString, this.suggestions))
+    const suggestions = getCreationSuggestions(valid, selectorString).concat(suggest(selectorString, this.suggestions))
     return html`
       ${ this.renderLayout(html`
         ${ this.editing ? this.renderSelectorInput({
@@ -417,8 +417,12 @@ export default class SimpleSelectorComponent extends StylableElement {
   }}
             @change=${(event: Event) => {
     const operator = (event.target as HTMLSelectElement).value as AttributeOperatorType
-    selector.operator = operator
-    selector.attributeValue = operator ? this.attributeOptionsAttrValueRef.value?.value : ''
+    // Create a new selector object to trigger Lit's reactivity
+    this.value = {
+      ...selector,
+      operator,
+      attributeValue: operator ? this.attributeOptionsAttrValueRef.value?.value || '' : ''
+    } as AttributeSelector
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
               @keydown=${(event: KeyboardEvent) => {
@@ -450,7 +454,11 @@ export default class SimpleSelectorComponent extends StylableElement {
   }}
               @keydown=${(event: KeyboardEvent) => {
     if (event.key === 'Enter') {
-      selector.attributeValue = (event.target as HTMLInputElement).value
+      // Create a new selector object to trigger Lit's reactivity
+      this.value = {
+        ...selector,
+        attributeValue: (event.target as HTMLInputElement).value
+      } as AttributeSelector
       this.select(this.value!)
       event.stopPropagation()
     } else if (event.key === 'Escape') {
@@ -460,8 +468,20 @@ export default class SimpleSelectorComponent extends StylableElement {
     }
   }}
     @focusout=${(event: FocusEvent) => {
-    selector.attributeValue = (event.target as HTMLInputElement).value
+    // Create a new selector object to trigger Lit's reactivity
+    this.value = {
+      ...selector,
+      attributeValue: (event.target as HTMLInputElement).value
+    } as AttributeSelector
     this.select(this.value!)
+  }}
+              @input=${(event: InputEvent) => {
+    // Create a new selector object to trigger Lit's reactivity
+    this.value = {
+      ...selector,
+      attributeValue: (event.target as HTMLInputElement).value
+    } as AttributeSelector
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }}
             />
             &nbsp;"

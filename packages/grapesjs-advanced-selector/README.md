@@ -1,6 +1,6 @@
 # GrapesJS Advanced Selector Manager
 
-An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short, 
+An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short,
 
 > This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 > The Advanced Selector Manager comes pre-installed in Silex v3, [give it a try here](https://v3.silex.me/)
@@ -61,7 +61,7 @@ npm i @silexlabs/grapesjs-advanced-selector
 
 ### GIT
 ```bash
-git clone https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git
+git clone https://github.com/silexlabs/grapesjs-advanced-selector.git
 ```
 
 ---
@@ -130,7 +130,7 @@ To contribute, follow these steps:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/silexlabs/@silexlabs/grapesjs-advanced-selector.git
+   git clone https://github.com/silexlabs/grapesjs-advanced-selector.git
    cd @silexlabs/grapesjs-advanced-selector
    ```
 
