@@ -12,7 +12,7 @@ export function getTranslation(editor: Editor, key: string): string {
   const translated = editor?.I18n?.t(key)
   if (!translated) {
     untranslatedKeys.add(key)
-    console.log('Untranslated key, call editor.runCommand("i18n:info") to see all untranslated keys')
+    console.info(`Untranslated key "${ key }", call editor.runCommand("i18n:info") to see all untranslated keys`)
   }
   return translated || key
 }
@@ -43,13 +43,14 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
           }
           // Remove the pseudo class
           if (rule.get('state')) {
-            rule.unset('state')
+            // rule.unset('state') // => Avoid this as it triggers a hole lot of events and creates an infinite loop
+            delete rule.attributes.state
           }
           // Check if the component matches the selector
           const selectorString = rule.getSelectorsString()
           if (!selectorString) {
             // Empty selector, this must be being edited
-            console.warn('Empty selector for rule', rule)
+            console.warn('Empty selector for rule', rule.get('state'), { rule })
             return acc
           }
 
@@ -94,8 +95,8 @@ export function matchSelectorAll(selector: string, components: Component[]): boo
     return components.some((component) => {
       // Special case for body component in GrapesJS editor
       // In GrapesJS, the body element is rendered as a div in the editor
-      if (component.tagName?.toLowerCase() === 'body' && 
-          (selector.toLowerCase().startsWith('body') || 
+      if (component.tagName?.toLowerCase() === 'body' &&
+          (selector.toLowerCase().startsWith('body') ||
            selector.toLowerCase().startsWith('html'))) {
         return true
       }
@@ -114,8 +115,8 @@ export function matchSelectorSome(selector: string, components: Component[]): bo
     return components.every((component) => {
       // Special case for body component in GrapesJS editor
       // In GrapesJS, the body element is rendered as a div in the editor
-      if (component.tagName?.toLowerCase() === 'body' && 
-          (selector.toLowerCase().startsWith('body') || 
+      if (component.tagName?.toLowerCase() === 'body' &&
+          (selector.toLowerCase().startsWith('body') ||
            selector.toLowerCase().startsWith('html'))) {
         return true
       }
