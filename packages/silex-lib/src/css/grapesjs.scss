@@ -214,9 +214,9 @@
 }
 .gjs-sm-sector .gjs-sm-sector-title::before,
 .gjs-sm-sector .gjs-sm-sector-title::after {
-    content: '•';
+    content: 'o';
     display: none;
-    margin-left: 0.1em;
+    margin-left: 0.4em;
     order: 5;
 }
 .gjs-sm-sector:has(.gjs-sm-label.gjs-four-color) .gjs-sm-sector-title::before {
