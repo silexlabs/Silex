@@ -23,7 +23,7 @@ html(lang="en", translate="no")
     block head-end
 
   body.silex-loading
-    .silex-loader.silex-dialog.
+    .silex-loader.silex-dialog(role="status", aria-live="polite", aria-busy="true").
       Loading
 
     block includes

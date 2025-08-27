@@ -97,6 +97,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
           // Select the first page
           const firstPage = editor.Pages.getAll()[0]
           if (firstPage) editor.Pages.select(firstPage)
+          loader && render(getLoaderHtml('Starting', 1, 1), loader)
           await nextFrame()
           editor.trigger('storage:end:load', data)
           editor.trigger('canvas:frame:load', editor)
@@ -232,9 +233,9 @@ export const storagePlugin = (editor: PublishableEditor) => {
 
 async function progressiveLoadPages(editor: PublishableEditor, pages: Page[]) {
   editor.Pages.getAll().forEach(page => editor.Pages.remove(page))
-  let i = 1
+  let i = 0
   for (const page of pages) {
-    loader && render(getLoaderHtml(`Loading page <strong>${++i}</strong> / ${pages.length}`, i, pages.length + 1), loader)
+    loader && render(getLoaderHtml(`Loading page <strong>${++i}</strong> / ${pages.length + 1}`, i, pages.length + 1), loader)
     //await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 1000))
     await nextFrame()
     const newPage = editor.Pages.add({
