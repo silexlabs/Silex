@@ -330,7 +330,7 @@ export function getHtml(fonts, attr = '') {
 
     // Google fonts v1
     // https://developers.google.com/fonts/docs/getting_started#a_quick_example
-    const preconnect = `<link href="${ fontServer }" rel="preconnect" ${attr}><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin ${attr}>`
+    const preconnect = fonts.length ? `<link href="${ fontServer }" rel="preconnect" ${attr}><link href="https://fonts.gstatic.com" rel="preconnect" crossorigin ${attr}>` : ''
     const links = fonts
         .map(f => {
             const prefix = f.variants.length ? ':' : ''
