@@ -33,6 +33,11 @@
   border-right-color: $secondaryColor;
 }
 
+// Hide tooltip info buttons for border properties that interfere with the visual squares
+.gjs-radio-item-label:after {
+  display: none !important;
+}
+
 // grapesjs-notifications
 .gjs-editor .gjs-notification {
   max-height: initial;
