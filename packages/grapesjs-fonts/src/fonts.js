@@ -130,7 +130,10 @@ export const fontsDialogPlugin = (editor, opts) => {
     // update the head and the ui when the frame is loaded
     editor.on('canvas:frame:load', () => refresh(editor, opts))
     // When the page changes, update the dom
-    editor.on('page', () => refresh(editor, opts))
+    editor.on('page', () => {
+        // FIXME: remove this timeout which is a workaround for issues with fonts loading after page change
+        setTimeout(() => refresh(editor, opts), 50)
+    })
 }
 
 function match(hay, s) {
