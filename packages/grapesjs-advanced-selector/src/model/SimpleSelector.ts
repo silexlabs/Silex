@@ -280,20 +280,20 @@ export function getCreationSuggestions(validated: string | false, originalInput?
   if (validated) {
     const active = true
     if (validated === '*') {
-      creationSuggestions.push({ createText: 'Select everything: *', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
+      creationSuggestions.push({ createText: '*', type: SimpleSelectorType.UNIVERSAL, active, } as UniversalSelector)
     } else if (validated.startsWith('.')) {
-      creationSuggestions.push({ createText: `Select class ${ validated }`, type: SimpleSelectorType.CLASS, value: validated.slice(1), active, } as ClassSelector)
+      creationSuggestions.push({ createText: validated, type: SimpleSelectorType.CLASS, value: validated.slice(1), active, } as ClassSelector)
     } else if (validated.startsWith('[')) {
       const [name, val] = validated
         .substring(1, validated.length - 1) // Remove the brackets []
         .split('=') // Split the name and value
       if(val) {
-        creationSuggestions.push({ createText: `Select custom attribute ${ name } with value ${ val }`, type: SimpleSelectorType.ATTRIBUTE, value: name, operator: '=', attributeValue: val.replace(/"/g, ''), active, } as AttributeSelector)
+        creationSuggestions.push({ createText: `[${name}="${val}"]`, type: SimpleSelectorType.ATTRIBUTE, value: name, operator: '=', attributeValue: val.replace(/"/g, ''), active, } as AttributeSelector)
       } else {
-        creationSuggestions.push({ createText: `Select custom attribute ${ validated }`, type: SimpleSelectorType.ATTRIBUTE, value: name, active, } as AttributeSelector)
+        creationSuggestions.push({ createText: validated, type: SimpleSelectorType.ATTRIBUTE, value: name, active, } as AttributeSelector)
       }
     } else if (validated.match(/^[a-z-]*-[a-z]*$/)) {
-      creationSuggestions.push({ createText: `Select custom tag ${ validated }`, type: SimpleSelectorType.CUSTOM_TAG, value: validated, active, } as CustomTagSelector)
+      creationSuggestions.push({ createText: validated, type: SimpleSelectorType.CUSTOM_TAG, value: validated, active, } as CustomTagSelector)
     }
   } else if (originalInput && originalInput.startsWith('[')) {
     // Handle incomplete attribute selectors like "[check" -> suggest "[checked]"
@@ -304,7 +304,7 @@ export function getCreationSuggestions(validated: string | false, originalInput?
     ATTRIBUTES.forEach(attr => {
       if (attr.toLowerCase().startsWith(partialAttr)) {
         creationSuggestions.push({
-          createText: `Select attribute [${attr}]`,
+          createText: `[${attr}]`,
           createValue: `[${attr}]`,
           type: SimpleSelectorType.ATTRIBUTE,
           value: attr,
@@ -317,7 +317,7 @@ export function getCreationSuggestions(validated: string | false, originalInput?
     if (partialAttr.startsWith('data-') && partialAttr.length > 5) {
       const dataAttrName = partialAttr
       creationSuggestions.push({
-        createText: `Select data attribute [${dataAttrName}]`,
+        createText: `[${dataAttrName}]`,
         createValue: `[${dataAttrName}]`,
         type: SimpleSelectorType.ATTRIBUTE,
         value: dataAttrName,

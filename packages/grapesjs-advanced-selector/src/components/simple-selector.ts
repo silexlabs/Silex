@@ -138,6 +138,39 @@ export default class SimpleSelectorComponent extends StylableElement {
     }
     .asm-simple-selector__selector {
       cursor: text;
+      min-width: 200px;
+    }
+
+    /* Try to style datalist options - browser support varies */
+    datalist {
+      position: absolute;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--gjs-border-color, #ddd);
+      border-radius: 4px;
+      background: var(--gjs-main-bg-color, white);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Some browsers support styling datalist options */
+    datalist option {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--gjs-border-light-color, #eee);
+      background: var(--gjs-main-bg-color, white);
+      color: var(--gjs-main-color, #333);
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 250px;
+    }
+
+    datalist option:hover {
+      background: var(--gjs-main-light-color, #f9f9f9);
+    }
+
+    datalist option:last-child {
+      border-bottom: none;
     }
   }
   /* FIXME: this should be inside :host but it breaks opactity when visible */

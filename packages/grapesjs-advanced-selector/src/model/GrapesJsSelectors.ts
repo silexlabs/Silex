@@ -490,6 +490,38 @@ function getSuggestions(components: Component[], selector: CompoundSelector): Si
       } as ClassSelector)
     })
 
+  // Attributes
+  components.forEach(component => {
+    // Check if getAttributes method exists (for compatibility with mock components in tests)
+    if (typeof component.getAttributes === 'function') {
+      const attributes = component.getAttributes({ noStyle: true, noClass: true })
+      Object.keys(attributes).forEach((attr) => {
+        // Skip 'id' attribute - it should use ID selector instead of attribute selector
+        if (attr === 'id') return
+        
+        // Only attributes not in the suggestions yet
+        if (suggestions.some((s) => s.type === SimpleSelectorType.ATTRIBUTE && (s as AttributeSelector).value === attr)) {
+          return
+        }
+        // Only attributes not in the related selector yet
+        if (selector.selectors.some((s) => s.active && s.type === SimpleSelectorType.ATTRIBUTE && (s as AttributeSelector).value === attr)) {
+          return
+        }
+        
+        const s = {
+          type: SimpleSelectorType.ATTRIBUTE,
+          value: attr,
+          active: true,
+        } as AttributeSelector
+        if (attributes[attr]) {
+          s.operator = AttributeOperatorType.EQUALS
+          s.attributeValue = attributes[attr]
+        }
+        suggestions.push(s)
+      })
+    }
+  })
+
   return suggestions
 }
 
