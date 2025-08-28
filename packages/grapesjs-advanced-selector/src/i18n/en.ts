@@ -6,6 +6,7 @@ export default {
   'Paste style': 'Paste style',
   'Clear style for this selector': 'Clear style for this selector',
   'Help': 'Help',
+  'Troubleshooting guide': 'Troubleshooting guide',
   'Relation': 'Relation',
   'Add a new selector': 'Add a new selector',
   'Pseudo Class': 'Pseudo Class',

@@ -6,6 +6,7 @@ export default {
   'Paste style': 'Coller le style',
   'Clear style for this selector': 'Effacer le style pour ce sélecteur',
   'Help': 'Aide',
+  'Troubleshooting guide': 'Guide de dépannage',
   'Relation': 'Relation',
   'Add a new selector': 'Ajouter un nouveau sélecteur',
   'Pseudo Class': 'Pseudo-classe',

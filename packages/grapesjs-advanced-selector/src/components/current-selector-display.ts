@@ -124,10 +124,44 @@ export class CurrentSelectorDisplay extends StylableElement {
     .asm-display__error {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
+      a {
+        text-decoration: none;
+        border-radius: 50%;
+        color: var(--gjs-secondary-color, #333);
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        text-align: center;
+        line-height: 0.7rem;
+        font-size: 0.7rem;
+        padding: 4px;
+        margin-left: 0.5rem;
+        &:hover {
+          background-color: var(--gjs-secondary-color, #fff);
+          color: var(--gjs-main-color, #333);
+        }
+      }
     }
     .asm-display__warning {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
+      a {
+        text-decoration: none;
+        border-radius: 50%;
+        color: var(--gjs-secondary-color, #333);
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        text-align: center;
+        line-height: 0.7rem;
+        font-size: 0.7rem;
+        padding: 4px;
+        margin-left: 0.5rem;
+        &:hover {
+          background-color: var(--gjs-secondary-color, #fff);
+          color: var(--gjs-main-color, #333);
+        }
+      }
     }
   }
   `
@@ -158,10 +192,10 @@ export class CurrentSelectorDisplay extends StylableElement {
     return html`
       <footer>
         ${ this.error ? html`
-          <p class="asm-display__error">\u26A0 ${ this.error }</p>
+          <p class="asm-display__error">\u26A0 ${ this.error } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
         ` : ''}
         ${ this.warning ? html`
-          <p class="asm-display__warning">\u26A0 ${ this.warning }</p>
+          <p class="asm-display__warning">\u26A0 ${ this.warning } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
         ` : ''}
       </footer>
       <main id="pre" class="selection">
