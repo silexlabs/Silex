@@ -1,10 +1,10 @@
-function applyStyle(el, style) {
+function applyStyle(el: HTMLElement, style: Record<string, any>) {
   Object.keys(style).forEach(key => {
-    el.style[key] = style[key]
+    (el.style as any)[key] = style[key]
   })
 }
 
-export default (editor, options = {}) => {
+export default (editor: any, options: any = {}) => {
   const defaultOpts = {
     appendTo: document.body,
     start: true,
@@ -33,8 +33,10 @@ export default (editor, options = {}) => {
   const loadingEl = document.createElement('div')
   editor.on('load', () => {
     const container = typeof opts.appendTo === 'string' ? document.querySelector(opts.appendTo) : opts.appendTo
-    if(opts.start) container.insertBefore(loadingEl, container.firstChild)
-    else container.appendChild(loadingEl)
+    if (container) {
+      if(opts.start) container.insertBefore(loadingEl, container.firstChild)
+      else container.appendChild(loadingEl)
+    }
   })
 
   // Style
