@@ -105,3 +105,28 @@ It can be done from a plugin or your app which creates the config object
     })
   }
   ```
+
+## Development
+
+To contribute to this project:
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/silexlabs/silex-plugins.git
+   cd silex-plugins
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Build the Project**:
+   ```bash
+   npm run build
+   ```
+
+4. **Run Tests**:
+   ```bash
+   npm test
+   ```
