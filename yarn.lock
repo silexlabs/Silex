@@ -3328,7 +3328,7 @@
     specificity "^1.0.0"
 
 "@silexlabs/grapesjs-ai-copilot@file:/home/lexoyo/_/Silex/packages/grapesjs-ai-copilot":
-  version "0.0.32-0"
+  version "0.0.33"
   resolved "file:packages/grapesjs-ai-copilot"
   dependencies:
     "@anthropic-ai/sdk" "^0.58.0"
@@ -3358,7 +3358,7 @@
   resolved "file:packages/grapesjs-data-source"
   dependencies:
     "@apollo/client" "^3.13.8"
-    "@silexlabs/expression-input" "0.1.1-0"
+    "@silexlabs/expression-input" "0.1.0"
     dedent-js "^1.0.1"
 
 "@silexlabs/grapesjs-filter-styles@1.1.0", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
@@ -3438,7 +3438,7 @@
     "@rollup/plugin-json" "^6.1.0"
     "@rollup/plugin-node-resolve" "^16.0.0"
     "@rollup/plugin-typescript" "^12.1.2"
-    "@silexlabs/grapesjs-data-source" "0.1.1-1"
+    "@silexlabs/grapesjs-data-source" "0.1.1-0"
     dedent "^1.5.3"
     deepmerge "^4.3.1"
     rollup "^4.32.1"

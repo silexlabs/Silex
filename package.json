@@ -22,6 +22,7 @@
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "scripts": {
     "preinstall": "if ! echo \"$npm_execpath\" | grep -q \"yarn\"; then echo '🚫 Please use yarn install, not npm install! Now before you do yarn install, you need delete all node_modules and packages/**/node_modules directories.'; exit 1; fi",
+    "postinstall": "scripts/build-packages.js",
     "start": "node packages/silex-lib/",
     "release:dry": "scripts/release.sh --dry-run",
     "release:pre": "scripts/release.sh",
