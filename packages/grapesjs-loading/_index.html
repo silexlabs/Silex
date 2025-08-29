@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Symbols for GrapesJS</title>
+    <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/grapesjs"></script>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+      }
+      .gjs-editor-cont { height: 100% !important; }
+
+    </style>
+  </head>
+  <body>
+
+    <div id="gjs">
+    </div>
+
+    <script type="text/javascript">
+    window.onload = () => {
+      window.editor = grapesjs.init({
+        container: '#gjs',
+        storageManager: {
+          type: 'remote',
+          autosave: false,
+          autoload: false, // pour contrôler manuellement
+          stepsBeforeSave: 1,
+          options: {
+            remote: {
+              urlStore: 'https://httpbin.org/post',
+              urlLoad: 'https://httpbin.org/get', // ou autre endpoint mock
+              headers: { 'Content-Type': 'application/json' },
+              onStore: data => data, // optionnel, simple echo
+              onLoad: result => result // si besoin de transformer
+            }
+          },
+          contentTypeJson: true,
+          storeComponents: true,
+          storeStyles: true,
+          storeHtml: false,
+          storeCss: false
+        },
+        autosave: false,
+        noticeOnUnload: false,
+        plugins: [
+          '@silexlabs/grapesjs-loading',
+        ],
+        pluginsOpts: {
+        },
+        pageManager: {
+          pages: [{
+            id: 'page-1',
+            name: 'Page 1',
+          },
+          {
+            id: 'page-2',
+            name: 'Page 2',
+          },
+          ],
+        },
+      })
+
+      var idx = 0
+      editor.addComponents([`
+        <div class="main" style="padding: 20px; background: lightblue;">
+          <h1 class="title">Click the "💾" save button in the top bar</h1>
+          <p class="content">You will see a loading bar triggered by the plugin</p>
+          <p style="font-size: 24px;">↑</p>
+        </div>
+        `])
+      editor.Panels.addButton('options', {
+        id: 'save-btn',
+        className: 'fa fa-save',
+        command: 'save-project',
+        attributes: { title: 'Save' }
+      })
+
+      editor.Commands.add('save-project', {
+        run(editor) {
+          editor.store()
+        }
+      })
+    }
+    </script>
+  </body>
+</html>
