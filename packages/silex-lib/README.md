@@ -4,6 +4,7 @@ This repository is the core library of Silex, it is a nodejs server which serves
 
 Useful links
 
+* [Documentation for developers](https://docs.silex.me/en/dev/run)
 * [npm package for this repo](https://www.npmjs.com/package/@silexlabs/silex)
 * [Docker image for this repo](https://hub.docker.com/r/silexlabs/silex)
 * [Official website](https://www.silex.me/)
@@ -71,7 +72,7 @@ You can configure Silex using environment variables and command-line options. Al
 Check the example config files - which are the same as plugins in Silex, in the [`examples/`](./examples/) folder. To test these configs, start Silex locally like this:
 
 ```sh
-$ npx silex --client-config=./examples/client-config-transformers.js --server-config=`pwd`/examples/server-config-plugins.js 
+$ npx silex --client-config=./examples/client-config-transformers.js --server-config=`pwd`/examples/server-config-plugins.js
 ```
 
 Or like this:
@@ -79,6 +80,31 @@ Or like this:
 ```sh
 $ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_SERVER_CONFIG=`pwd`/examples/server-config-plugins.js npm run start:debug
 ```
+
+## Development
+
+To contribute to this project:
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/silexlabs/silex-lib.git
+   cd silex-lib
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Build the Project**:
+   ```bash
+   npm run build
+   ```
+
+4. **Start Development Server**:
+   ```bash
+   npm run start:debug
+   ```
 
 ## Contributing
 
@@ -95,4 +121,3 @@ The upstream projects we use in Silex are all listed in [Silex meta package](htt
 ## Github stars history
 
 [![Star History Chart](https://api.star-history.com/svg?repos=silexlabs/Silex&type=Timeline)](https://star-history.com/#silexlabs/Silex&Timeline)
-
