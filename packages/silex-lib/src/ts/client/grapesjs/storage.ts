@@ -62,10 +62,11 @@ export const storagePlugin = (editor: PublishableEditor) => {
   // Add useful commands
   editor.Commands.add(cmdPauseAutoSave, {
     run: () => {
-      if(!editor.StorageManager.isAutosave()) throw new Error('Autosave is not enabled')
+      if(!editor.StorageManager.isAutosave()) console.warn('Autosave is not enabled')
       editor.StorageManager.setAutosave(false)
     },
     stop: () => {
+      if(editor.StorageManager.isAutosave()) console.warn('Autosave is already enabled')
       editor.editor.set('changesCount', 0)
       editor.UndoManager.clear()
       editor.StorageManager.setAutosave(true)
@@ -129,7 +130,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
       return await this.addToQueue(myData, options)
     },
 
-    async addToQueue(data: WebsiteData, options) {
+    async addToQueue(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
       // Handle concurrent saving
       if (lastPendingSaving && lastPendingSaving !== data) {
         // Cancel previous saving
@@ -139,7 +140,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
       return this.doStore(lastPendingSaving, options)
     },
 
-    async doStore(data, options) {
+    async doStore(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
       if (editor.PublicationManager.status === PublicationStatus.STATUS_PENDING) {
         // Publication is pending, save is delayed
         return new Promise((resolve) => {

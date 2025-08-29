@@ -21,6 +21,7 @@
  *
  */
 
+import { Editor } from 'grapesjs'
 import { DEV_MESSAGE } from '../constants'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
@@ -86,8 +87,8 @@ export async function start(options = {}): Promise<void> {
   // Load the site
   try {
     editor.runCommand(cmdPauseAutoSave)
+    editor.once('canvas:frame:load storage:after:load', () => editor.stopCommand(cmdPauseAutoSave))
     await editor.load(null)
-    editor.once('canvas:frame:load', () => editor.stopCommand(cmdPauseAutoSave))
   } catch(e) {
     if(e.httpStatusCode === 401) {
       // Unauthorized, will try to login
@@ -103,7 +104,7 @@ export async function start(options = {}): Promise<void> {
   }
 }
 
-function loaded(editor) {
+function loaded(editor: Editor) {
   document.querySelector('.silex-loader').classList.add('silex-dialog-hide')
   document.querySelector('#gjs').classList.remove('silex-dialog-hide')
   config.emit(ClientEvent.STARTUP_END, { editor, config })
