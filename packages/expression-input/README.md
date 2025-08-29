@@ -31,4 +31,29 @@ Or include it via a `<script>` tag:
 - **[Popin Form](./docs/popin-form.md)**  
   How to open a form in a pop-up overlay and manage form data inside it.
 
-Each `.md` file contains instructions, examples, attributes, and events for its respective component.  
+Each `.md` file contains instructions, examples, attributes, and events for its respective component.
+
+## Development
+
+To contribute to this project:
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/silexlabs/expression-input.git
+   cd expression-input
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Build the Project**:
+   ```bash
+   npm run build
+   ```
+
+4. **Start Development Server**:
+   ```bash
+   npm run serve
+   ```
