@@ -2,7 +2,8 @@
 
 Shows a loading bar while the site is loaded or saved. By default it looks like the classic loading bar on top of the page, e.g. on github.com.
 
-> This demo is not useful as it uses localstorage as storage and this is instant so the loading bar is not visible => todo: make it better
+![Loading demo](./grapesjs-loading.gif)
+
 [DEMO](https://codepen.io/lexoyo/full/GRYZBRN)
 > This code is part of a bigger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 
@@ -43,8 +44,12 @@ body, html {
 ## Options
 
 | Option | Description | Default |
-|-|-|-
-| `option1` | Description option | `default value` |
+|-|-|-|
+| `appendTo` | Element to append the loading bar to | `document.body` |
+| `start` | Whether to insert at the beginning of container | `true` |
+| `style` | CSS styles for the loading bar | `{ padding: '4px', backgroundColor: 'white', opacity: 0.6, ... }` |
+| `visibleStyle` | Styles when loading bar is visible | `{ visibility: 'visible', width: '100%' }` |
+| `hiddenStyle` | Styles when loading bar is hidden | `{ visibility: 'hidden', width: '0%' }` |
 
 
 
@@ -65,7 +70,7 @@ Directly in the browser
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet"/>
 <script src="https://unpkg.com/grapesjs"></script>
-<script src="path/to/@silexlabs/grapesjs-loading.min.js"></script>
+<script src="https://unpkg.com/@silexlabs/grapesjs-loading"></script>
 
 <div id="gjs"></div>
 
@@ -75,7 +80,7 @@ Directly in the browser
       // ...
       plugins: ['@silexlabs/grapesjs-loading'],
       pluginsOpts: {
-        'grapesjs-loading': { /* options */ }
+        '@silexlabs/grapesjs-loading': { /* options */ }
       }
   });
 </script>
