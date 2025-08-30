@@ -1,3 +1,4 @@
+import { NotificationOptions } from "./Notification"
 import { NotificationEditor, NotificationManagerOptions } from "./NotificationManager"
 
 export const NOTIFICATION_ADD = 'notifications:add'

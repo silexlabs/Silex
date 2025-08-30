@@ -69,9 +69,9 @@ API:
   * `componentId`: `string`
 * `editor.Notifications` methods:
   * `add(notification)`
-  * `remove(notification)` 
+  * `remove(notification)`
   * `clear()`
-* Commands: `editor.runCommand('notifications:add', notification)`
+* Commands: `editor.runCommand('notifications:add', notification)` (check the NotificationOptions to know what to put in `notification`)
   * `notifications:add` - Add a notification
   * `notifications:remove` - Remove a notification
   * `notifications:clear` - Clear all notifications
@@ -80,6 +80,32 @@ API:
   * `notifications:added` - When a notification is added
   * `notifications:removed` - When a notification is removed
   * `notifications:cleared` - When all notifications are cleared
+
+Here is what a notification is:
+
+```ts
+export interface NotificationOptions {
+  message: string
+  group?: string
+  timeout?: number
+  componentId?: string
+  type: 'info' | 'warning' | 'error' | 'success'
+  icons: {
+    info: string
+    warning: string
+    error: string
+    success: string
+  }
+}
+```
+
+Advanced usage:
+
+```ts
+import { NotificationEditor } from '@silexlabs/grapesjs-notifications'
+const nm = (editor as NotificationEditor).NotificationManager
+console.log(nm.getAll().length, 'notifications in the stack')
+```
 
 ## Options
 

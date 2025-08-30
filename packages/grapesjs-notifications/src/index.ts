@@ -3,6 +3,8 @@ import en from './locale/en'
 import { NOTIFICATION_CHANGED, NotificationEditor, NotificationManager, NotificationManagerOptions } from './NotificationManager'
 import view from './view'
 
+export type { NotificationEditor, NotificationManagerOptions, NotificationManager } from './NotificationManager'
+
 /**
  * Create a container if needed, make it sticky and append it to the body
  * If container exists do nothing
@@ -24,8 +26,8 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
     storeKey: undefined,
     maxNotifications: 50,
     reverse: false,
-  },  ...opts }  
-  
+  },  ...opts }
+
   // Load i18n files
   editor.I18n && editor.I18n.addMessages({
       en,
@@ -37,10 +39,10 @@ export default (editor: NotificationEditor, opts: Partial<NotificationManagerOpt
 
   // Register the Notification Manager
   editor.NotificationManager = new NotificationManager(storage?.getAll() || [], editor, options as any)
-  
+
   // Add commands
   commands(editor)
-  
+
   editor.on(NOTIFICATION_CHANGED, () => {
     // Update the storage when the notifications change
     storage?.save(editor.NotificationManager.getAll())
