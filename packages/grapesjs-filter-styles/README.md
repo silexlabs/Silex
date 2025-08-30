@@ -120,18 +120,17 @@ Install dependencies
 $ npm i
 ```
 
-Start the dev server
-
-```sh
-$ npm start
-```
-
-Build the source
+Build the project
 
 ```sh
 $ npm run build
 ```
 
+Start the dev server
+
+```sh
+$ npm start
+```
 
 
 ## License
