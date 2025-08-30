@@ -120,19 +120,29 @@ export const fontsDialogPlugin = (editor, opts) => {
     editor.on('storage:start:store', (data) => {
         data.fonts = editor.getModel().get('fonts')
     })
+    
+    // helper to register debounced font refreshes
+    let debouncedRefreshTimeout
+    const debouncedRefresh = () => {
+        clearTimeout(debouncedRefreshTimeout)
+        debouncedRefreshTimeout = setTimeout(() => refresh(editor, opts), 50)
+    }
+    
     // add fonts to the website on load
     editor.on('storage:end:load', (data) => {
         const fonts = data.fonts || []
         editor.getModel().set('fonts', fonts)
         // FIXME: remove this timeout which is a workaround for issues in Silex storage providers
-        setTimeout(() => refresh(editor, opts), 1000)
+        debouncedRefresh()
     })
     // update the head and the ui when the frame is loaded
-    editor.on('canvas:frame:load', () => refresh(editor, opts))
+    editor.on('canvas:frame:load', () => {
+        debouncedRefresh()
+    })
     // When the page changes, update the dom
     editor.on('page', () => {
         // FIXME: remove this timeout which is a workaround for issues with fonts loading after page change
-        setTimeout(() => refresh(editor, opts), 50)
+        debouncedRefresh()
     })
 }
 
