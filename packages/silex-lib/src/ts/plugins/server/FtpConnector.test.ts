@@ -2,6 +2,7 @@ import { ServerConfig } from '../../server/config'
 import { expect, jest, beforeEach, afterEach, it, describe } from '@jest/globals'
 import { ConnectorType, WebsiteData, WebsiteId } from '../../types'
 import { Readable } from 'stream'
+import { WEBSITE_DATA_FILE } from '../../constants'
 
 const mocks = {
   access: jest.fn(),
@@ -64,7 +65,7 @@ describe('FtpConnector website', () => {
     await connector.updateWebsite(dummySession, dummyId, dummyWebsite)
     expect(mocks.uploadFrom).toHaveBeenCalledTimes(1)
     expect(mocks.uploadFrom.mock.calls[0][0]).toBeInstanceOf(Readable)
-    expect(mocks.uploadFrom.mock.calls[0][1]).toBe(`${storageRootPath}/${dummyId}/website.json`)
+    expect(mocks.uploadFrom.mock.calls[0][1]).toBe(`${storageRootPath}/${dummyId}/${WEBSITE_DATA_FILE}`)
   })
 })
 

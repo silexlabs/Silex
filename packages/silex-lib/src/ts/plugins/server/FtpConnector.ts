@@ -19,7 +19,7 @@ import { Client } from 'basic-ftp'
 import { Readable } from 'stream'
 import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToReadable, contentToString, toConnectorData, toConnectorEnum} from '../../server/connectors/connectors'
 import { requiredParam } from '../../server/utils/validation'
-import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE } from '../../constants'
+import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, WEBSITE_PAGES_FOLDER } from '../../constants'
 import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, defaultWebsiteData, WebsiteData, ConnectorOptions } from '../../types'
 import { ServerConfig } from '../../server/config'
 import { join } from 'path'
@@ -28,6 +28,7 @@ import { v4 as uuid } from 'uuid'
 import { JobManager } from '../../server/jobs'
 import { mkdtemp, rm, rmdir } from 'fs/promises'
 import { createReadStream } from 'fs'
+import { stringify, split, merge } from '../../server/utils/websiteDataSerialization'
 
 /**
  * @fileoverview FTP connector for Silex
@@ -399,7 +400,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     const websiteId = requiredParam<WebsiteId>(id, 'website id')
     const path = join(this.rootPath(session), websiteId, WEBSITE_META_DATA_FILE)
     const ftp = await this.getClient(this.sessionData(session))
-    await this.write(ftp, path, JSON.stringify(data))
+    await this.write(ftp, path, stringify(data))
     this.closeClient(ftp)
   }
 
@@ -442,10 +443,10 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     await this.mkdir(ftp, assetsPath)
     // create website data file
     const websiteDataPath = join(this.rootPath(session), id, WEBSITE_DATA_FILE)
-    await this.write(ftp, websiteDataPath, JSON.stringify(defaultWebsiteData))
+    await this.write(ftp, websiteDataPath, stringify(defaultWebsiteData))
     // create website meta data file
     const websiteMetaDataPath = join(this.rootPath(session), id, WEBSITE_META_DATA_FILE)
-    await this.write(ftp, websiteMetaDataPath, JSON.stringify({}))
+    await this.write(ftp, websiteMetaDataPath, stringify({}))
     // Clean up
     this.closeClient(ftp)
     // All good
@@ -469,16 +470,67 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
     const websiteDataPath = join(storageRootPath, websiteId, WEBSITE_DATA_FILE)
-    const data = await this.read(ftp, websiteDataPath)
-    this.closeClient(ftp)
-    return data
+
+    try {
+      const websiteDataStream = await this.read(ftp, websiteDataPath)
+      const websiteDataContent = await contentToString(websiteDataStream)
+
+      // Check if this is the new split format by trying to parse
+      const parsedData = JSON.parse(websiteDataContent)
+      if (parsedData.fileFormatVersion === '1.0.0') {
+        // Use the merge function to reconstruct website data
+        const pageLoader = async (pagePath: string): Promise<string> => {
+          const fullPath = join(storageRootPath, websiteId, pagePath)
+          const pageStream = await this.read(ftp, fullPath)
+          return await contentToString(pageStream)
+        }
+
+        const result = await merge(websiteDataContent, pageLoader)
+        this.closeClient(ftp)
+        return result
+      } else {
+        // Legacy format, return as is
+        this.closeClient(ftp)
+        return parsedData
+      }
+    } catch (error) {
+      this.closeClient(ftp)
+      throw error
+    }
   }
 
   async updateWebsite(session: FtpSession, websiteId: string, data: WebsiteData): Promise<void> {
     const storageRootPath = this.rootPath(session)
     const ftp = await this.getClient(this.sessionData(session))
-    const websiteDataPath = join(storageRootPath, websiteId, WEBSITE_DATA_FILE)
-    await this.write(ftp, websiteDataPath, JSON.stringify(data))
+
+    // Use the split function to create separate files for pages
+    const filesToWrite = split(data)
+
+    // **
+    // Delete pages that are not in the new website data
+    const pagesPath = join(storageRootPath, websiteId, WEBSITE_PAGES_FOLDER)
+    try {
+      const existingPageFiles = await this.readdir(ftp, pagesPath)
+      const newPageFiles = new Set(
+        filesToWrite
+          .filter(f => f.path.startsWith(WEBSITE_PAGES_FOLDER))
+          .map(f => f.path.replace(`${WEBSITE_PAGES_FOLDER}/`, ''))
+      )
+      
+      for (const existingFile of existingPageFiles) {
+        if (existingFile.name.endsWith('.json') && !newPageFiles.has(existingFile.name)) {
+          await this.unlink(ftp, join(pagesPath, existingFile.name))
+        }
+      }
+    } catch (error) {
+      // Ignore error if pages directory doesn't exist yet
+    }
+
+    for (const file of filesToWrite) {
+      const filePath = join(storageRootPath, websiteId, file.path)
+      await this.write(ftp, filePath, file.content)
+    }
+
     this.closeClient(ftp)
   }
 

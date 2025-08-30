@@ -27,6 +27,7 @@ import { getPageSlug } from '../../page'
 import e from 'express'
 import { fork } from 'child_process'
 import { Page } from 'grapesjs'
+import { stringify, split, merge } from '../../server/utils/websiteDataSerialization'
 
 /**
  * Gitlab connector
@@ -121,16 +122,6 @@ interface GitlabFetchCommits {
   since: string
 }
 
-interface GitlabPage {
-  id: string
-  name: string
-  isFile: true
-}
-
-interface GitlabWebsiteData {
-  fileFormatVersion: string
-  pages: GitlabPage[]
-}
 
 // interface MetaRepoFileContent {
 //   websites: {
@@ -221,9 +212,6 @@ function sanitizeGitlabPath(name: string): string {
     .toLowerCase()
 }
 
-function getPageName(page: Page | GitlabPage) {
-  return (page as any).getName ? (page as Page).getName() : (page as GitlabPage).name
-}
 
 export default class GitlabConnector implements StorageConnector {
   connectorId = 'gitlab'
@@ -739,40 +727,15 @@ export default class GitlabConnector implements StorageConnector {
    */
   async readWebsite(session: GitlabSession, websiteId: string): Promise<WebsiteData> {
     const websiteDataBuf = await this.downloadRawFile(session, websiteId, WEBSITE_DATA_FILE)
-    const websiteDataOb = JSON.parse(websiteDataBuf.toString('utf8')) as GitlabWebsiteData & WebsiteData
-    const { fileFormatVersion, ...websiteData } = websiteDataOb
+    const websiteDataContent = websiteDataBuf.toString('utf8')
 
-    // Check the file format version
-    if (fileFormatVersion !== WEBSITE_DATA_FILE_FORMAT_VERSION) {
-      // This should be handled by a migration mechanism
-      console.warn('Gitlab connector: website data file format version mismatch', fileFormatVersion, '!=', WEBSITE_DATA_FILE_FORMAT_VERSION)
+    // Use the common merge function to reconstruct website data
+    const pageLoader = async (pagePath: string): Promise<string> => {
+      const pageBuffer = await this.downloadRawFile(session, websiteId, pagePath)
+      return pageBuffer.toString('utf8')
     }
 
-    // This happens when the website was just created
-    // Let grapesjs create the pages in the frontend
-    if (!websiteData.pages) {
-      return websiteData as WebsiteData
-    }
-
-    // Load each page in parallel
-    const pages = await Promise.all(websiteData.pages.map(async (page: GitlabPage | Page) => {
-      if ((page as GitlabPage).isFile) {
-        const name = getPageName(page)
-        const slug = getPageSlug(name)
-        const fileName = (`${slug}-${page.id}`)
-        const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
-        const pageContent = await this.downloadRawFile(session, websiteId, filePath)
-        const res = JSON.parse(pageContent.toString('utf8')) as Page
-        return res
-      }
-      return page as Page
-    }))
-
-    // Read each page file if needed
-    return {
-      ...websiteData,
-      pages,
-    } as WebsiteData
+    return await merge(websiteDataContent, pageLoader)
   }
 
   /**
@@ -787,7 +750,7 @@ export default class GitlabConnector implements StorageConnector {
         name: this.options.repoPrefix + websiteMeta.name,
       }
     }) as any
-    await this.createFile(session, project.id, WEBSITE_DATA_FILE, JSON.stringify({} as WebsiteData))
+    await this.createFile(session, project.id, WEBSITE_DATA_FILE, stringify({} as WebsiteData))
     //await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
     //await this.updateWebsite(session, project.id, {} as WebsiteData)
     //await this.setWebsiteMeta(session, project.id, websiteMeta)
@@ -812,17 +775,19 @@ export default class GitlabConnector implements StorageConnector {
     })
 
     // **
-    // Create the pages for batch upload
-    const pages = websiteData.pages.map((page: Page) => {
-      /* @ts-ignore */
-      const fileName = encodeURIComponent(`${getPageSlug(getPageName(page))}-${page.id}`)
-      const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}.json`
-      const content = JSON.stringify(page)
+    // Use the common split function to create files
+    const filesToWrite = split(websiteData)
+
+    // **
+    // Process each file to create/update
+    for (const file of filesToWrite) {
+      const filePath = file.path
+      const content = file.content
       const newSha = computeGitBlobSha(content, false)
 
-      const existingSha = existingFiles.get(filePath)
+      const existingSha = existingFiles.get(filePath) || (filePath === WEBSITE_DATA_FILE ? 'always-update' : undefined)
 
-      if (existingSha) {
+      if (existingSha && existingSha !== 'always-update') {
         if (existingSha !== newSha) {
           batchActions.push({
             action: 'update',
@@ -832,47 +797,24 @@ export default class GitlabConnector implements StorageConnector {
         } // else: skip unchanged file
       } else {
         batchActions.push({
-          action: 'create',
+          action: file.path === WEBSITE_DATA_FILE ? 'update' : 'create',
           file_path: filePath,
           content,
         })
       }
-
-      return {
-        name: getPageName(page),
-        id: page.id,
-        isFile: true,
-      }
-    })
+    }
 
     // **
     // Delete pages that are not in the new website data
+    const newPageFiles = new Set(filesToWrite.filter(f => f.path.startsWith(WEBSITE_PAGES_FOLDER)).map(f => f.path))
     for (const filePath of existingFiles.keys()) {
-      const pageName = filePath.replace(/.*\//, '').replace(/\.json$/, '')
-      const pageId = pageName.split('-').pop()
-      const page = websiteData.pages.find((p: Page) => p.id === pageId)
-      if (!page) {
+      if (!newPageFiles.has(filePath)) {
         batchActions.push({
           action: 'delete',
           file_path: filePath,
         })
       }
     }
-
-    // **
-    // Add the main website data file
-    const websiteDataWithGitlabPages = {
-      ...websiteData,
-      fileFormatVersion: WEBSITE_DATA_FILE_FORMAT_VERSION,
-      pages,
-    } as GitlabWebsiteData
-
-    const websiteJsonContent = JSON.stringify(websiteDataWithGitlabPages)
-    batchActions.push({
-      action: 'update',
-      file_path: WEBSITE_DATA_FILE,
-      content: websiteJsonContent,
-    })
 
     // **
     // Perform a batch commit

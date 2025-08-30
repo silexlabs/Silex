@@ -3,6 +3,7 @@ import { ServerConfig } from '../config'
 import { FsStorage } from './FsStorage'
 import { readFileSync, rmdirSync, statSync } from 'fs'
 import { join } from 'path'
+import { WEBSITE_DATA_FILE } from '../../constants'
 
 const storageRootPath = '/tmp/silex-tests'
 const assetsFolder = 'assets'
@@ -45,7 +46,10 @@ describe('FsStorage website', () => {
     })
     const id = await connector.createWebsite(dummySession, { name: 'dummy name', connectorUserSettings: {} })
     expect(id).toBeDefined()
-    expect(() => statSync(join(storageRootPath, id, 'website.json'))).not.toThrow()
-    expect(readFileSync(join(storageRootPath, id, 'website.json'), 'utf8')).toBe(JSON.stringify({}))
+    expect(() => statSync(join(storageRootPath, id, WEBSITE_DATA_FILE))).not.toThrow()
+    const content = readFileSync(join(storageRootPath, id, WEBSITE_DATA_FILE), 'utf8')
+    const parsed = JSON.parse(content)
+    expect(parsed).toHaveProperty('fileFormatVersion', '1.0.0')
+    expect(parsed).toHaveProperty('pages', [])
   })
 })
