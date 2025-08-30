@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "description": "This GrapesJs plugin is designed to enhance the user experience within the editor by providing a robust notification system. This plugin captures and displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/silexlabs/grapesjs-notifications.git"
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "grapesjs-cli build --patch=false"
+    "build": "grapesjs-cli build --patch=false --dts skip"
   },
   "devDependencies": {
     "grapesjs-cli": "^4.1.3"
