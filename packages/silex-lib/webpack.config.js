@@ -47,5 +47,9 @@ module.exports = {
     new webpack.DefinePlugin({
       SILEX_VERSION_ENV: JSON.stringify(require("./package.json").version),
     }),
+    new webpack.IgnorePlugin({
+      resourceRegExp: /^jquery$/,
+      contextRegExp: /backbone/
+    })
   ]
 };
