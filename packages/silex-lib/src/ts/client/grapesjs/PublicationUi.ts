@@ -129,7 +129,6 @@ export class PublicationUi {
     // Create the dialog element
     const el = document.createElement('div')
     el.id = 'publish-dialog'
-    console.log('=========')
     el.className = 'silex-dialog-inline silex-dialog gjs-two-color silex-dialog-hide'
     document.body.append(el)
     // Let the other buttons be added, we want to be last

@@ -49,7 +49,7 @@ import rateLimitPlugin from '@silexlabs/grapesjs-storage-rate-limit'
 import borderPugin from 'grapesjs-style-border'
 import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
-import notificationsPlugin, { NotificationEditor } from '@silexlabs/grapesjs-notifications'
+import notificationsPlugin, { NOTIFICATION_CHANGED } from '@silexlabs/grapesjs-notifications'
 import keymapsDialogPlugin, { cmdKeymapsDialog } from '@silexlabs/grapesjs-keymaps-dialog'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
@@ -428,16 +428,14 @@ export async function initEditor(config: EditorConfig) {
       // Add the notifications container
       document.body.querySelector('.notifications-container')?.appendChild(notificationContainer)
       // Mark the button as dirty when there are notifications
-      // TODO: move this in the notifications plugin options
-      editor.on(
-        'notifications:changed',
-        () => {
-          const notificationButton = editor.Panels.getPanel(PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn')
-          ;(editor as NotificationEditor).NotificationManager.getAll().length
-            ? notificationButton?.classList.add('project-bar__dirty')
-            : notificationButton?.classList.remove('project-bar__dirty')
-        }
-      )
+      let notificationCount = 0
+      editor.on(NOTIFICATION_CHANGED, (notifications) => {
+        const notificationButton = editor.Panels.getPanel(PROJECT_BAR_PANEL_ID).view?.el.querySelector('.notifications-btn')
+        notificationCount = Array.isArray(notifications) ? notifications.length : 0
+        notificationCount > 0
+          ? notificationButton?.classList.add('project-bar__dirty')
+          : notificationButton?.classList.remove('project-bar__dirty')
+      })
 
       // GrapesJs editor is ready
       resolve(editor)
