@@ -8,7 +8,6 @@
     "url": "git+https://github.com/silexlabs/grapesjs-keymaps-dialog.git"
   },
   "scripts": {
-    "prepublish": "$npm_execpath run build",
     "start": "grapesjs-cli serve --patch=false",
     "build:without-declaration": "grapesjs-cli build --patch=false --dts skip",
     "build:declarations": "tsc --declaration --emitDeclarationOnly --outDir dist",
