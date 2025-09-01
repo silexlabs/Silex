@@ -1,6 +1,5 @@
 import { render, html } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
-import Backbone, { ViewOptions } from 'backbone'
 import { Editor } from 'grapesjs'
 import { allowDrop, createSymbol, deleteSymbol, getSymbol, getSymbols } from '../utils'
 
@@ -75,18 +74,19 @@ export function confirmDialog({
   }
 }
 
-export interface SymbolsViewOptions extends ViewOptions {
+export interface SymbolsViewOptions {
   editor: Editor,
   appendTo: string,
   highlightColor: string,
   emptyText: string,
 }
 
-export default class extends Backbone.View {
+export default class SymbolsView {
   protected lastPos: any | null = null
   protected lastTarget: HTMLElement | null = null
+  protected el: HTMLElement
+
   constructor(protected options: SymbolsViewOptions) {
-    super(options)
     // listen to redraw UI
     options.editor.on('component:selected', () => this.render())
     // listen to drag event in order to have access to the drop target
@@ -108,7 +108,7 @@ export default class extends Backbone.View {
     this.render()
 
   }
-  override render() {
+  render() {
     const symbols = getSymbols(this.options.editor)
     symbols.forEach(symbolInfo => {
       if (!symbolInfo.main) {
