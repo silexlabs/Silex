@@ -26,7 +26,6 @@
     "start": "grapesjs-cli serve",
     "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json && $npm_execpath run bundle",
     "bundle": "rollup -c",
-    "prepublishOnly": "$npm_execpath run build && $npm_execpath run test && $npm_execpath run lint",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "$npm_execpath run lint -- --fix",
     "test": "jest",
