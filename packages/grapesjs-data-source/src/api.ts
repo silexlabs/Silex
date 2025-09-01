@@ -23,7 +23,7 @@
  */
 
 import { Page, Editor, Component } from 'grapesjs'
-import { DataSourceId, IDataSource, Expression, StateId, StoredToken, Token, Field, Context, TypeId } from './types'
+import { DataSourceId, IDataSource, Expression, StateId, StoredToken, Token, Field, Context, TypeId, Filter } from './types'
 
 // Internal imports
 import { getPageQuery as getPageQueryInternal, buildPageQueries as buildPageQueriesInternal } from './model/queryBuilder'
@@ -222,6 +222,25 @@ export function fromStored<T extends Token = Token>(token: StoredToken, componen
 export function getExpressionResultType(expression: Expression, component: Component): Field | null {
   const dataTree = getDataTreeInternal()
   return getExpressionResultTypeInternal(expression, component, dataTree)
+}
+
+export function addFilters(filters: Filter | Filter[]) {
+  const dataTree = getDataTreeInternal()
+  dataTree.filters = dataTree.filters.concat(filters)
+}
+
+/**
+ * Remove filters from the data tree.
+ * Accepts a single Filter or an array of Filters.
+ * Removes by reference.
+ */
+export function removeFilters(filters: Filter | Filter[]) {
+  const dataTree = getDataTreeInternal()
+  if (Array.isArray(filters)) {
+    dataTree.filters = dataTree.filters.filter(f => !filters.includes(f))
+  } else {
+    dataTree.filters = dataTree.filters.filter(f => f !== filters)
+  }
 }
 
 // ===============================

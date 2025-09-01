@@ -258,6 +258,7 @@ export class StateEditor extends LitElement {
   private popinsRef: Ref<PopinForm>[] = []
 
   override render() {
+    this.noFilters = false
     this.redrawing = true
     super.render()
     if(!this.name) throw new Error('name is required on state-editor')
