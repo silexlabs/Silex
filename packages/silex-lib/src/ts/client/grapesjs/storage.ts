@@ -86,13 +86,13 @@ export const storagePlugin = (editor: PublishableEditor) => {
           // Let grapesjs create the pages in the frontend
           return data
         } else {
+          editor.runCommand(cmdPauseAutoSave)
           const { pages, ...rest } = data
           // Load any additional project data, e.g. symbols, but not the ones we progressive load
           loader && render(getLoaderHtml('Loading styles, assets and symbols', 0, pages.length + 1), loader)
-          if (Object.keys(rest).length > 0) {
-            editor.loadProjectData(rest)
-          }
-          // Load the rest of the data
+          // Add to the project, everything but pages
+          editor.loadProjectData(rest)
+          // Add the pages to the project
           await progressiveLoadPages(editor, pages)
           await nextFrame()
           // Select the first page
@@ -100,18 +100,15 @@ export const storagePlugin = (editor: PublishableEditor) => {
           if (firstPage) editor.Pages.select(firstPage)
           loader && render(getLoaderHtml('Starting', 1, 1), loader)
           await nextFrame()
-          editor.trigger('storage:end:load', data)
-          editor.trigger('canvas:frame:load', editor)
-          return {}
+          editor.once('canvas:frame:load', () => editor.stopCommand(cmdPauseAutoSave))
+          return data
         }
       } catch (err) {
         editor.UndoManager.clear()
         if (err.httpStatusCode === 401) {
           editor.once(eventLoggedIn, async () => {
             try {
-              editor.runCommand(cmdPauseAutoSave)
               await editor.Storage.load(options)
-              editor.once('canvas:frame:load', () => editor.stopCommand(cmdPauseAutoSave))
             } catch (err) {
               console.error('connectorPlugin load error', err)
               throw err

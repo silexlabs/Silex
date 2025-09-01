@@ -86,8 +86,6 @@ export async function start(options = {}): Promise<void> {
 
   // Load the site
   try {
-    editor.runCommand(cmdPauseAutoSave)
-    editor.once('canvas:frame:load storage:after:load', () => editor.stopCommand(cmdPauseAutoSave))
     await editor.load(null)
   } catch(e) {
     if(e.httpStatusCode === 401) {
