@@ -1,11 +1,6 @@
-import Backbone from "backbone"
 import { Editor } from "grapesjs"
-import { Notification, NotificationModel } from "./Notification"
+import { Notification, NotificationOptions } from "./Notification"
 import { StyleInfo } from "lit/directives/style-map"
-
-export interface NotificationEditor extends Editor {
-  NotificationManager: NotificationManager
-}
 
 // Events
 export const NOTIFICATION_CHANGED = 'notifications:changed'
@@ -14,12 +9,13 @@ export const NOTIFICATION_REMOVED = 'notifications:removed'
 export const NOTIFICATION_CLEARED = 'notifications:cleared'
 
 export interface NotificationManagerOptions {
-  style: Readonly<StyleInfo>
+  style?: Readonly<StyleInfo>
   container: HTMLElement
   maxNotifications?: number
   reverse?: boolean
   timeout?: number
   storeKey?: string
+  i18n?: any
   icons?: {
     info?: string
     warning?: string
@@ -31,48 +27,56 @@ export interface NotificationManagerOptions {
 /**
  * GrapesJs plugin to manage notifications
  */
-export class NotificationManager extends Backbone.Collection<NotificationModel> {
-  constructor(models: Notification[], protected editor: NotificationEditor,  protected options: NotificationManagerOptions) {
-    super(models, options)
+export class NotificationManager {
+  private notifications: Notification[] = []
 
-    // Make sure the symbol CRUD operations are undoable
-    this.editor.UndoManager.add(this)
-
-    // Relay events from model to the editor
-    this.on('all', () => this.modelChanged())
-    this.on('reset', () => this.editor.trigger(NOTIFICATION_CLEARED))
-    this.on('add', (model: Notification) => this.editor.trigger(NOTIFICATION_ADDED, model))
-    this.on('remove', (model: Notification) => this.editor.trigger(NOTIFICATION_REMOVED, model))
-
-    // Init with the current models
-    this.modelInit()
+  constructor(initialNotifications: any[], protected editor: Editor, protected options: NotificationManagerOptions) {
+    // Convert initial data to notification objects
+    this.notifications = initialNotifications.map(data => {
+      if (typeof data === 'object' && data.message) {
+        const removeCallback = (notification: Notification) => this.remove(notification)
+        return new Notification(this.editor, data, removeCallback)
+      }
+      return data
+    }).filter(Boolean)
   }
 
   /**
-   * Get all models
+   * Get all notifications
    */
   getAll(): Notification[] {
-    return this.models.map((model: NotificationModel) => new Notification(this.editor, model))
+    return [...this.notifications]
   }
 
   /**
-   * Listen to model changes
+   * Add a notification
    */
-  modelChanged(e?: CustomEvent) {
-    this.editor.trigger(NOTIFICATION_CHANGED, e?.detail)
+  add(options: NotificationOptions): void {
+    const removeCallback = (notification: Notification) => this.remove(notification)
+    const notification = new Notification(this.editor, options, removeCallback)
+    this.notifications.push(notification)
+    this.editor.trigger(NOTIFICATION_ADDED, notification)
+    this.editor.trigger(NOTIFICATION_CHANGED, this.getAll())
   }
 
   /**
-   * Listen to model individual changes
+   * Remove a notification
    */
-  modelInit() {
-    // Remove all listeners
-    this.models.forEach((model: NotificationModel) => {
-      console.warn('TODO: Remove listeners')
-    })
-    // Add listeners on all models
-    this.models.forEach((model: NotificationModel) => {
-      console.warn('TODO: Add listeners')
-    })
+  remove(notification: Notification | any): void {
+    const index = this.notifications.findIndex(n => n === notification || n.model === notification)
+    if (index > -1) {
+      const removed = this.notifications.splice(index, 1)[0]
+      this.editor.trigger(NOTIFICATION_REMOVED, removed)
+      this.editor.trigger(NOTIFICATION_CHANGED, this.getAll())
+    }
+  }
+
+  /**
+   * Clear all notifications
+   */
+  reset(): void {
+    this.notifications = []
+    this.editor.trigger(NOTIFICATION_CLEARED)
+    this.editor.trigger(NOTIFICATION_CHANGED, this.getAll())
   }
 }

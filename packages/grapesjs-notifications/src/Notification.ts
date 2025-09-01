@@ -1,7 +1,4 @@
-import { Component, Page } from 'grapesjs'
-import { NotificationEditor } from './NotificationManager'
-import { NOTIFICATION_ADD } from './commands'
-import Backbone from 'backbone'
+import { Component, Page, Editor } from 'grapesjs'
 
 export interface NotificationOptions {
   message: string
@@ -17,25 +14,27 @@ export interface NotificationOptions {
   }
 }
 
-export class NotificationModel extends Backbone.Model<any, Backbone.ModelSetOptions, any> {}
-
 export class Notification {
   componentId: string | null = null
   group: string | null = null
   timeoutRef
   message: string
   type: 'info' | 'warning' | 'error' | 'success'
-  protected options: NotificationOptions
+  options: NotificationOptions
+  public model: any // For compatibility
+  private removeCallback?: (notification: Notification) => void
 
-  constructor(protected editor: NotificationEditor, protected model: NotificationModel) {
-    this.options = this.getDefaultOptions(model.attributes)
+  constructor(protected editor: Editor, options: NotificationOptions | any, removeCallback?: (notification: Notification) => void) {
+    this.options = this.getDefaultOptions(options)
+    this.removeCallback = removeCallback
     if (this.options.timeout) {
       this.timeoutRef = setTimeout(() => this.remove(), this.options.timeout)
     }
     this.message = this.options.message!
     this.type = this.options.type!
-    this.componentId = model.attributes.componentId || null
-    this.group = model.attributes.group || null
+    this.componentId = options.componentId || null
+    this.group = options.group || null
+    this.model = { attributes: options } // For compatibility with existing code
   }
 
   select() {
@@ -50,7 +49,7 @@ export class Notification {
         this.editor.Canvas.scrollTo(component)
       } else {
         console.error(`Component with ID ${this.options.componentId} not found`)
-        this.editor.runCommand(NOTIFICATION_ADD, {
+        this.editor.runCommand('notifications:add', {
           message: `Component with ID ${this.options.componentId} not found`,
           type: 'error',
         })
@@ -59,7 +58,14 @@ export class Notification {
   }
 
   remove() {
-    this.editor.NotificationManager.remove(this.model)
+    if (this.removeCallback) {
+      this.removeCallback(this)
+    } else {
+      // Fallback to command if no callback provided
+      this.editor.runCommand('notifications:remove', {
+        notification: this
+      })
+    }
     this.timeoutRef && clearTimeout(this.timeoutRef)
   }
 
@@ -86,7 +92,7 @@ export class Notification {
    * Get all components in the editor
    * This is a heavy operation
    */
-  private getAllComponents(editor: NotificationEditor) {
+  private getAllComponents(editor: Editor) {
     return editor.Pages.getAll().map(page => this.getAllComponentInPage(page)).flat()
   }
 

@@ -1,5 +1,4 @@
 import { Notification } from './Notification'
-import { NotificationEditor, NotificationManagerOptions } from './NotificationManager'
 
 /**
  * @fileoverview Storage class
@@ -7,14 +6,21 @@ import { NotificationEditor, NotificationManagerOptions } from './NotificationMa
  */
 
 export class Storage {
-  constructor(protected editor: NotificationEditor, protected options: NotificationManagerOptions) {}
-  getAll(): Notification[] {
-    if(!this.options.storeKey) return []
-    return JSON.parse(localStorage.getItem(this.options.storeKey) || '[]')
-      .map((data: any) => new Notification(this.editor, data))
+  constructor(private storeKey?: string) {}
+  
+  getAll(): any[] {
+    if(!this.storeKey) return []
+    return JSON.parse(localStorage.getItem(this.storeKey) || '[]')
   }
+  
   save(data: Notification[]) {
-    if(!this.options.storeKey) return
-    localStorage.setItem(this.options.storeKey, JSON.stringify(data))
+    if(!this.storeKey) return
+    localStorage.setItem(this.storeKey, JSON.stringify(data.map(n => ({
+      message: n.message,
+      type: n.type,
+      componentId: n.componentId,
+      group: n.group,
+      timeout: n.options?.timeout
+    }))))
   }
 }

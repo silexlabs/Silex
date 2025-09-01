@@ -1,10 +1,11 @@
 import { html, render as litRender, TemplateResult } from 'lit'
 import { classMap } from 'lit-html/directives/class-map.js'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
+import { Editor } from 'grapesjs'
 import { Notification } from './Notification'
-import { NotificationEditor, NotificationManagerOptions } from './NotificationManager'
+import { NotificationManagerOptions } from './NotificationManager'
 
-export default function(editor: NotificationEditor, container: HTMLElement, notifs: Notification[], options: NotificationManagerOptions): void {
+export default function(editor: Editor, container: HTMLElement, notifs: Notification[], options: NotificationManagerOptions): void {
   const notifications = [...notifs]
 
   // Reverse if options.reverse is true
@@ -75,7 +76,7 @@ function organizeNotifications(notifications: Notification[]): (Notification | s
   return organized
 }
 
-function renderGroup(editor: NotificationEditor, options: NotificationManagerOptions, groupName: string, groupedNotifications: Notification[]): TemplateResult {
+function renderGroup(editor: Editor, options: NotificationManagerOptions, groupName: string, groupedNotifications: Notification[]): TemplateResult {
   return html`
     <li class="gjs-sm gjs-one-bg gjs-two-color gjs-notification__group">
     <details class="gjs-sm gjs-one-bg gjs-two-color">
@@ -99,7 +100,7 @@ function renderGroup(editor: NotificationEditor, options: NotificationManagerOpt
   `
 }
 
-function renderNotification(editor: NotificationEditor, notification: Notification): TemplateResult {
+function renderNotification(editor: Editor, notification: Notification): TemplateResult {
   return html`
     <li class=${classMap({
       'gjs-sm': true,

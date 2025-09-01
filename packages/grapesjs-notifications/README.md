@@ -28,6 +28,8 @@ Features
 * [x] Group notifications
 * [x] Support pages
 
+## Usage
+
 ### HTML
 ```html
 <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
@@ -46,6 +48,17 @@ const editor = grapesjs.init({
   storageManager: false,
   plugins: ['@silexlabs/grapesjs-notifications'],
 });
+
+// Add notifications using commands
+editor.runCommand('notifications:add', {
+  type: 'info',
+  message: 'Hello world!',
+})
+
+// Listen to events
+editor.on('notifications:changed', (notifications) => {
+  console.log('Notifications have changed', notifications)
+})
 ```
 
 ### CSS
@@ -60,28 +73,71 @@ body, html {
 
 Plugin name: `@silexlabs/grapesjs-notifications`
 
-API:
+## API
 
-* Notification object:
-  * `type`: `error`, `warning`, `success`, `info`
-  * `message`: `string`
-  * `timeout`: `number` (ms)
-  * `componentId`: `string`
-* `editor.Notifications` methods:
-  * `add(notification)`
-  * `remove(notification)`
-  * `clear()`
-* Commands: `editor.runCommand('notifications:add', notification)` (check the NotificationOptions to know what to put in `notification`)
-  * `notifications:add` - Add a notification
-  * `notifications:remove` - Remove a notification
-  * `notifications:clear` - Clear all notifications
-* Events:
-  * `notifications:changed` - When any change to the notifications occurs
-  * `notifications:added` - When a notification is added
-  * `notifications:removed` - When a notification is removed
-  * `notifications:cleared` - When all notifications are cleared
+### Commands
 
-Here is what a notification is:
+```js
+// Add a notification
+editor.runCommand('notifications:add', {
+  type: 'error' | 'warning' | 'success' | 'info',
+  message: 'string',
+  timeout: 5000, // optional timeout in ms
+  componentId: 'comp-123', // optional component to select
+  group: 'validation' // optional group name
+})
+
+// Remove a notification
+editor.runCommand('notifications:remove', notification)
+
+// Clear all notifications
+editor.runCommand('notifications:clear')
+```
+
+### Events
+
+Listen to notification events:
+
+```js
+editor.on('notifications:changed', (notifications) => {
+  // Triggered when any notification change occurs
+  // notifications parameter contains all current notifications
+})
+
+editor.on('notifications:added', (notification) => {
+  // Triggered when a notification is added
+})
+
+editor.on('notifications:removed', (notification) => {
+  // Triggered when a notification is removed
+})
+
+editor.on('notifications:cleared', () => {
+  // Triggered when all notifications are cleared
+})
+```
+
+### Constants
+
+```js
+import {
+  NOTIFICATION_ADD,
+  NOTIFICATION_REMOVE,
+  NOTIFICATION_CLEAR,
+  NOTIFICATION_CHANGED,
+  NOTIFICATION_ADDED,
+  NOTIFICATION_REMOVED,
+  NOTIFICATION_CLEARED
+} from '@silexlabs/grapesjs-notifications'
+
+// Use with commands
+editor.runCommand(NOTIFICATION_ADD, { /* ... */ })
+
+// Use with events
+editor.on(NOTIFICATION_CHANGED, () => { /* ... */ })
+```
+
+### NotificationOptions Interface
 
 ```ts
 export interface NotificationOptions {
@@ -90,21 +146,13 @@ export interface NotificationOptions {
   timeout?: number
   componentId?: string
   type: 'info' | 'warning' | 'error' | 'success'
-  icons: {
-    info: string
-    warning: string
-    error: string
-    success: string
+  icons?: {
+    info?: string
+    warning?: string
+    error?: string
+    success?: string
   }
 }
-```
-
-Advanced usage:
-
-```ts
-import { NotificationEditor } from '@silexlabs/grapesjs-notifications'
-const nm = (editor as NotificationEditor).NotificationManager
-console.log(nm.getAll().length, 'notifications in the stack')
 ```
 
 ## Options
@@ -118,6 +166,7 @@ console.log(nm.getAll().length, 'notifications in the stack')
 | `i18n` | Internationalization | `object` | Check the values in locale/en.js |
 | `maxNotifications` | Maximum number of notifications to display | `number` | 50 |
 | `reverse` | Reverse the order of the notifications | `boolean` | `false` |
+| `style` | Optional styles to add to the component | `string` | `''` |
 
 ## Styling
 

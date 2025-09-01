@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
+    "test-build-no-grapes": "rm -rf dist && tsc",
     "build": "grapesjs-cli build --patch=false --dts skip"
   },
   "devDependencies": {
