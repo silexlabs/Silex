@@ -17,6 +17,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
+    "src",
     "README.md",
     "LICENSE"
   ],
@@ -32,7 +33,7 @@
     "test:watch": "jest --watchAll",
     "prepare": "husky"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "contributors": [
     "Alex Hoyau (https://github.com/lexoyo)"
   ],
