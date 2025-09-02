@@ -3,6 +3,12 @@
   "version": "1.1.1-0",
   "description": "Grapesjs Filter Styles",
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-filter-styles.git"
