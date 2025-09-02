@@ -11,6 +11,12 @@
   "types": "./dist/index.d.ts",
   "module": "./dist/index.js",
   "type": "module",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc && $npm_execpath run bundle",
     "build:watch": "tsc --watch",
@@ -38,7 +44,7 @@
     "lit"
   ],
   "author": "Alex Hoyau (https://github.com/lexoyo)",
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/silexlabs/expression-input.git"
