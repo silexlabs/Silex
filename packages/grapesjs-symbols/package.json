@@ -13,7 +13,9 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
@@ -60,7 +62,7 @@
     "rollup-plugin-summary": "^3.0.0",
     "ts-jest": "^29.1.0"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "peerDependencies": {
     "backbone": "*",
     "grapesjs": ">=0.19.0 <0.23.0",
