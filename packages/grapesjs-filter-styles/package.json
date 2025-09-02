@@ -7,7 +7,10 @@
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-filter-styles.git"
   },
-  "author": "lexoyo",
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
