@@ -33,6 +33,10 @@
     "test:watch": "jest --watchAll",
     "prepare": "husky"
   },
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "license": "AGPL-3.0",
   "contributors": [
     "Alex Hoyau (https://github.com/lexoyo)"
