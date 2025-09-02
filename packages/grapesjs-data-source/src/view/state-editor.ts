@@ -32,9 +32,9 @@ import { fromStored, getExpressionResultType } from '../model/token'
 
 /**
  * Editor for a state of the selected element's properties
- * 
+ *
  * Usage:
- * 
+ *
  * ```
  * <state-editor
  *  name="state"
@@ -47,7 +47,7 @@ import { fromStored, getExpressionResultType } from '../model/token'
  *  dismiss-current-component-states
  *  ></state-editor>
  * ```
- * 
+ *
  */
 
 @customElement('state-editor')
@@ -184,8 +184,8 @@ export class StateEditor extends LitElement {
     } else {
       const ids = input.value
       return ids
-        .filter(id => !!id)
-        .map(id => {
+        .filter((id: string) => !!id)
+        .map((id: string) => {
           try {
             return fromString(this.editor!, id, this.selected!.getId())
           } catch(e) {
@@ -204,7 +204,7 @@ export class StateEditor extends LitElement {
         })
         // Here the data is missing options as data comes from completion
         // Add the options
-        .map((token, idx) => {
+        .map((token: Token, idx: number) => {
           const popin = this.popinsRef[idx]?.value
           switch(token.type) {
           case 'property':
@@ -432,8 +432,8 @@ export class StateEditor extends LitElement {
     const tokensStrings = input.value
     // Get tokens as objects
     const tokens = tokensStrings
-      .filter(id => !!id)
-      .map(id => {
+      .filter((id: string) => !!id)
+      .map((id: string) => {
         try {
           return fromString(this.editor!, id, component.getId())
         } catch(e) {
@@ -453,7 +453,7 @@ export class StateEditor extends LitElement {
       })
     // Get the selected options
     const options = input.options
-      .filter(o => o.selected)
+      .filter((o: HTMLOptionElement) => o.selected)
     // Update the options of the token
     ;(tokens[idx] as Property | Filter).options = popin.value
     // Update the dom
