@@ -37,6 +37,10 @@ export default [
             "linebreak-style": ["error", "unix"],
             quotes: ["error", "single"],
             semi: ["error", "never"],
+            "@typescript-eslint/no-unused-expressions": ["error", {
+                allowShortCircuit: true,
+                allowTernary: true
+            }],
         },
     },
 ];
