@@ -33,5 +33,9 @@
     "grapesjs": ">=0.19.0 <0.23.0",
     "lit-html": "*"
   },
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "license": "GPL-3.0"
 }
