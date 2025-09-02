@@ -25,10 +25,14 @@
   },
   "keywords": [
     "silex",
+    "silex-plugin",
     "open-architecture",
     "plugin"
   ],
-  "author": "lexoyo",
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/silexlabs/silex-plugins/issues"
