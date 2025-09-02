@@ -9,7 +9,10 @@
     "test": "mocha ./tests/*.test.js",
     "test:watch": "mocha --watch ./tests/*.test.js"
   },
-  "author": "lexoyo",
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "license": "GPL-3.0",
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
