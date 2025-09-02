@@ -7,7 +7,9 @@
   "types": "dist/es6/index.d.ts",
   "files": [
     "dist",
-    "src"
+    "src",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "preversion": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
@@ -27,7 +29,7 @@
     "plugin"
   ],
   "author": "lexoyo",
-  "license": "GPL-3.0-or-later",
+  "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/silexlabs/silex-plugins/issues"
   },
