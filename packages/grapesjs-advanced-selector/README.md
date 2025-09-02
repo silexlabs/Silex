@@ -155,4 +155,4 @@ To contribute, follow these steps:
 
 ## License
 
-MIT License
+AGPL-3.0
