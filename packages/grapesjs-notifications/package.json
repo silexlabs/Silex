@@ -4,6 +4,12 @@
   "description": "This GrapesJs plugin is designed to enhance the user experience within the editor by providing a robust notification system. This plugin captures and displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/silexlabs/grapesjs-notifications.git"
@@ -24,7 +30,7 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "license": "MIT",
+  "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/silexlabs/Silex/issues"
   },
