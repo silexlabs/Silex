@@ -26,6 +26,12 @@
   },
   "homepage": "https://github.com/silexlabs/grapesjs-version-flow#readme",
   "main": "dist/index.js",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "grapesjs-cli serve",
     "build": "grapesjs-cli build --patch=false",
