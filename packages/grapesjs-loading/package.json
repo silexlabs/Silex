@@ -10,6 +10,12 @@
     "require": "./dist/index.js",
     "types": "./dist/index.d.ts"
   },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/silexlabs/grapesjs-loading.git"
