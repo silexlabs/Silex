@@ -43,7 +43,10 @@
     "typescript",
     "lit"
   ],
-  "author": "Alex Hoyau (https://github.com/lexoyo)",
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
