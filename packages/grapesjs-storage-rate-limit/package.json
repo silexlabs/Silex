@@ -21,7 +21,10 @@
     "grapesjs-plugin",
     "silex-website-builder"
   ],
-  "author": "lexoyo",
+  "author": {
+    "name": "Alex Hoyau",
+    "url": "https://lexoyo.me/"
+  },
   "license": "AGPL-3.0-or-later",
   "bugs": {
     "url": "https://github.com/silexlabs/grapesjs-storage-rate-limit/issues"
