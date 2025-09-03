@@ -3,6 +3,8 @@
   "version": "0.1.1-4",
   "description": "Grapesjs Data Source",
   "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/",
   "files": [
     "dist",
     "src",
