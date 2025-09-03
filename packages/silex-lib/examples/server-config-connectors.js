@@ -86,13 +86,13 @@ module.exports = async function (config, options) {
     }),
   ])
 
-  config.addPlugin(StaticPlugin, {
-    routes: [{
-        route: '/js/silex-cms/',
-        path: node_modules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/dist',
-      },
-    ],
-  })
+  // CMS is now built into silex-lib - no separate route needed
+  // config.addPlugin(StaticPlugin, {
+  //   routes: [{
+  //     route: '/js/silex-cms/',
+  //     path: node_modules('@silexlabs/silex-cms') + '/@silexlabs/silex-cms/dist',
+  //   }],
+  // })
   return {}
 }
 

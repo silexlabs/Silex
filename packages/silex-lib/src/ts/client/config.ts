@@ -29,6 +29,7 @@ import { addSection, removeSection } from './grapesjs/settings'
 // Plugins
 import publishCustomCodeBlock from './publish-custom-code-block'
 import publishFonts from './publish-fonts'
+import { EleventyPluginOptions } from './grapesjs/cms'
 
 /**
  * @fileoverview Silex client side config
@@ -119,6 +120,28 @@ export class ClientConfig extends Config {
   fontsApiUrl = 'https://www.googleapis.com'
 
   /**
+   * CMS configuration options
+   * @default Default CMS configuration with enabled: true
+   */
+  cmsConfig: Partial<EleventyPluginOptions> & { enabled?: boolean } = {
+    enabled: true,
+    enable11ty: true,
+    cacheBuster: false,
+    dataSources: [],
+    dir: {
+      input: '',
+      silex: '_silex',
+      html: '',
+      assets: 'assets',
+      css: 'css',
+    },
+    urls: {
+      css: '/css',
+      assets: '/assets',
+    },
+  }
+
+  /**
    * Init GrapesJS config which depend on the config file properties
    */
   initGrapesConfig() {
@@ -179,6 +202,7 @@ export class ClientConfig extends Config {
    * Add a section to the settings dialog
    */
   addSettings(section: SettingsSection, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number = 'last') {
+    console.warn('addSettings API is deprecated, use the command instead:')
     addSection(section, siteOrPage, position)
   }
 

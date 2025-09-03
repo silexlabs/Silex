@@ -22,9 +22,10 @@ import {defaultSections, idCodeWrapper, isSite, SettingsSection} from './setting
  * @fileoverview This file contains the settings dialog. The config API lets plugins add sections to the settings dialog.
  */
 
-import { WebsiteSettings } from '../../types'
+import { WebsiteData, WebsiteSettings } from '../../types'
 import { ClientEvent } from '../events'
 import { SILEX_VERSION } from '../../constants'
+import { Button, Editor } from 'grapesjs'
 
 const sectionsSite = [...defaultSections]
 const sectionsPage = [...defaultSections]
@@ -33,11 +34,19 @@ const el = document.createElement('div')
 let modal
 
 export const cmdOpenSettings = 'open-settings'
+export const cmdAddSection = 'settings:add-section'
+export const cmdRemoveSection = 'settings:remove-section'
+
+export interface AddSectionOption {
+  section: SettingsSection,
+  siteOrPage: 'site' | 'page',
+  position: 'first' | 'last' | number
+}
 
 let headEditor = null
 export const settingsDialog = (editor, opts) => {
   editor.Commands.add(cmdOpenSettings, {
-    run: (_, sender, {page}) => {
+    run: (_: Editor, sender: Button, {page, sectionId}) => {
       modal = editor.Modal.open({
         title: page ? 'Page settings' : 'Site Settings',
         content: '',
@@ -47,7 +56,7 @@ export const settingsDialog = (editor, opts) => {
           sender?.set && sender.set('active', 0) // Deactivate the button to make it ready to be clicked again, only in case of a grapesjs button (not in the pages panel)
           editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
         })
-      displaySettings(editor, opts, page)
+      displaySettings(editor, opts, page, sectionId)
       modal.setContent(el)
       const form = el.querySelector('form')
       form.onsubmit = event => {
@@ -68,9 +77,17 @@ export const settingsDialog = (editor, opts) => {
       editor.trigger(ClientEvent.SETTINGS_CLOSE)
     },
   })
+  // Register the addSection function as a GrapesJS command
+  editor.Commands.add(cmdAddSection, (_editor: Editor, _sender: Button, options: AddSectionOption) => {
+    addSection(options.section, options.siteOrPage, options.position)
+  })
+  editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption) => {
+    removeSection(options.section, options.siteOrPage)
+  })
   // add settings to the website
-  editor.on('storage:start:store', (data) => {
+  editor.on('storage:start:store', (data: WebsiteData) => {
     data.settings = editor.getModel().get('settings')
+    /* @ts-ignore FIXME: this should not be there? or is it used on the server side in the sotrage providers? */
     data.name = editor.getModel().get('name')
   })
   editor.on('storage:end:load', (data) => {
@@ -138,7 +155,7 @@ function showSection(item: SettingsSection) {
   headEditor.refresh()
 }
 
-export function addSection(section, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number) {
+export function addSection(section: SettingsSection, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number) {
   const sections = siteOrPage === 'site' ? sectionsSite : sectionsPage
   if (position === 'first') {
     sections.unshift(section)
@@ -160,14 +177,15 @@ export function removeSection(id, siteOrPage: 'site' | 'page') {
 
 
 let currentSection
-function displaySettings(editor, config, model = editor.getModel()) {
+function displaySettings(editor, config, model = editor.getModel(), sectionId?: string) {
   // Update the model with the current settings
   const settings = model.get('settings') || {} as WebsiteSettings
   model.set('settings', settings)
   // Get the current sections for page or site
   const menuItemsCurrent = isSite(model) ? sectionsSite : sectionsPage
   // Init the current section selection
-  currentSection = currentSection || menuItemsCurrent[0]
+  const targetSection = !!sectionId && menuItemsCurrent.find(section => section.id === sectionId)
+  currentSection = targetSection || currentSection || menuItemsCurrent[0]
   const sections: TemplateResult[] = menuItemsCurrent.map(item => {
     try {
       return item.render(settings, model)
@@ -279,4 +297,3 @@ function updateDom(editor) {
     // No document??
   }
 }
-

@@ -68,6 +68,7 @@ import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH, SILEX_VERSION } f
 import { ClientConfig } from '../config'
 import { titleCase } from '../utils'
 import uploadProgress from './upload-progress'
+import cmsPlugin from './cms'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -136,6 +137,17 @@ const catComponents = 'Components'
 
 export function getEditorConfig(config: ClientConfig): EditorConfig {
   const { websiteId, storageId, rootUrl } = config
+  
+  // Create dynamic plugins array with conditional CMS plugin
+  const dynamicPlugins = [...plugins]
+  const dynamicPluginsOpts: any = {}
+  
+  // Add CMS plugin if enabled
+  if (config.cmsConfig?.enabled !== false) {
+    dynamicPlugins.push({name: './cms', value: cmsPlugin})
+    dynamicPluginsOpts[cmsPlugin.toString()] = config.cmsConfig
+  }
+  
   return {
     container: '#gjs',
     height: '100%',
@@ -180,9 +192,10 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       escapeName: (name) => `${name}`,
     },
 
-    plugins: plugins.map(p => p.value),
+    plugins: dynamicPlugins.map(p => p.value),
 
     pluginsOpts: {
+      ...dynamicPluginsOpts,
       [blocksBasicPlugin.toString()]: {
         blocks: ['text', 'image', 'video', 'map'],
         category: catBasic,

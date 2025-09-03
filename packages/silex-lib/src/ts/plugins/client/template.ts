@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-throw new Error('This file is obsolete, templates have been replaced by Silex CMS plugin: https://github.com/silexlabs/silex-cms/')
+throw new Error('This file is obsolete, templates have been replaced by the built-in Silex CMS feature')
 
 // Silex serves /clients
 // @ts-ignore
