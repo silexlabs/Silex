@@ -50,10 +50,6 @@
 	path = packages/expression-input
 	url = git@github.com:silexlabs/expression-input.git
 	branch = main
-[submodule "packages/silex-cms"]
-	path = packages/silex-cms
-	url = git@github.com:silexlabs/silex-cms.git
-	branch = main
 [submodule "packages/grapesjs-notifications"]
 	path = packages/grapesjs-notifications
 	url = git@github.com:silexlabs/grapesjs-notifications.git
