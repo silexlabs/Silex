@@ -24,7 +24,7 @@ import { StateEditor } from './state-editor'
 import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
-import { BinariOperator, Properties, Token, UnariOperator } from '../types'
+import { BinaryOperator, Properties, Token, UnariOperator } from '../types'
 import { getState, setState } from '../model/state'
 import { DataTree } from '../model/DataTree'
 import { getFixedToken, getDataTreeFromUtils } from '../utils'
@@ -137,13 +137,13 @@ export class PropertiesEditor extends LitElement {
           >
           </div>
           ${ Object.values<string>(UnariOperator)
-    .concat(Object.values(BinariOperator))
+    .concat(Object.values(BinaryOperator))
     .map(operator => html`
                 <option value="${operator}" .selected=${selected.get('conditionOperator') === operator} >${operator}</option>
               `)
 }
           </select>
-          ${ this.renderStateEditor(selected, '', Properties.condition2, false, false, selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator'))) }
+          ${ this.renderStateEditor(selected, '', Properties.condition2, false, false, selected.has('conditionOperator') && Object.values(BinaryOperator).includes(selected.get('conditionOperator'))) }
         </main>
       </section>
       <section class="ds-section">

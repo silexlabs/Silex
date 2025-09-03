@@ -264,7 +264,7 @@ export enum UnariOperator {
 /**
  * Operators for condition in visibility property
  */
-export enum BinariOperator {
+export enum BinaryOperator {
   EQUAL = '==',
   NOT_EQUAL = '!=',
   GREATER_THAN = '>',

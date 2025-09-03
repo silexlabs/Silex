@@ -4,7 +4,8 @@
 
 import { renderPreview, isComponentVisible } from './canvas'
 import { DataTree } from '../model/DataTree'
-import { BinariOperator, Expression, UnariOperator } from '../types'
+import { BinaryOperator, Expression, IDataSource, UnariOperator } from '../types'
+import { Editor } from 'grapesjs'
 
 // FIXME: Workaround to avoid import of lit-html which breakes unit tests
 jest.mock('lit', () => ({
@@ -155,8 +156,8 @@ jest.mock('lit', () => ({
 //   } as unknown
 // }
 
-let mockEditor: unknown
-let mockDataSource: unknown
+let mockEditor: Editor
+let mockDataSource: IDataSource
 let dataTree: DataTree
 
 beforeEach(() => {
@@ -164,7 +165,7 @@ beforeEach(() => {
   mockEditor = {
     on: jest.fn(),
     runCommand: jest.fn(),
-  }
+  } as unknown as Editor
 
   mockDataSource = {
     id: 'ds-1',
@@ -196,7 +197,7 @@ beforeEach(() => {
     getQueryables: jest.fn().mockReturnValue([]),
     getQuery: jest.fn().mockReturnValue(''),
     fetchValues: jest.fn().mockResolvedValue({}),
-  }
+  } as unknown as IDataSource
 
   dataTree = new DataTree(mockEditor, {
     dataSources: [mockDataSource],
@@ -211,7 +212,7 @@ describe('isComponentVisible tests', () => {
 
   const baseComponent = {
     get: jest.fn(),
-  } as unknown
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -292,7 +293,7 @@ describe('isComponentVisible tests', () => {
         { id: 'condition', expression: [{}] },
         { id: 'condition2', expression: [{}] }
       ]
-      if (key === 'conditionOperator') return BinariOperator.EQUAL
+      if (key === 'conditionOperator') return BinaryOperator.EQUAL
       return undefined
     })
     mockDataTree.getValue
@@ -307,7 +308,7 @@ describe('isComponentVisible tests', () => {
         { id: 'condition', expression: [{}] },
         { id: 'condition2', expression: [{}] }
       ]
-      if (key === 'conditionOperator') return BinariOperator.EQUAL
+      if (key === 'conditionOperator') return BinaryOperator.EQUAL
       return undefined
     })
     mockDataTree.getValue
@@ -322,7 +323,7 @@ describe('isComponentVisible tests', () => {
         { id: 'condition', expression: [{}] },
         { id: 'condition2', expression: [{}] }
       ]
-      if (key === 'conditionOperator') return BinariOperator.NOT_EQUAL
+      if (key === 'conditionOperator') return BinaryOperator.NOT_EQUAL
       return undefined
     })
     mockDataTree.getValue
@@ -337,7 +338,7 @@ describe('isComponentVisible tests', () => {
         { id: 'condition', expression: [{}] },
         { id: 'condition2', expression: [{}] }
       ]
-      if (key === 'conditionOperator') return BinariOperator.GREATER_THAN
+      if (key === 'conditionOperator') return BinaryOperator.GREATER_THAN
       return undefined
     })
     mockDataTree.getValue
@@ -352,7 +353,7 @@ describe('isComponentVisible tests', () => {
         { id: 'condition', expression: [{}] },
         { id: 'condition2', expression: [{}] }
       ]
-      if (key === 'conditionOperator') return BinariOperator.LESS_THAN
+      if (key === 'conditionOperator') return BinaryOperator.LESS_THAN
       return undefined
     })
     mockDataTree.getValue

@@ -1,6 +1,6 @@
 import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
-import { Properties, StoredToken, BinariOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
+import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
 import { getDataTreeFromUtils } from '../utils'
@@ -150,17 +150,17 @@ export function isComponentVisible(
 
   // Apply binary operator
   switch (conditionOperator) {
-  case BinariOperator.EQUAL:
+  case BinaryOperator.EQUAL:
     return condition1Value == condition2Value
-  case BinariOperator.NOT_EQUAL:
+  case BinaryOperator.NOT_EQUAL:
     return condition1Value !== condition2Value
-  case BinariOperator.GREATER_THAN:
+  case BinaryOperator.GREATER_THAN:
     return Number(condition1Value) > Number(condition2Value)
-  case BinariOperator.LESS_THAN:
+  case BinaryOperator.LESS_THAN:
     return Number(condition1Value) < Number(condition2Value)
-  case BinariOperator.GREATER_THAN_OR_EQUAL:
+  case BinaryOperator.GREATER_THAN_OR_EQUAL:
     return Number(condition1Value) >= Number(condition2Value)
-  case BinariOperator.LESS_THAN_OR_EQUAL:
+  case BinaryOperator.LESS_THAN_OR_EQUAL:
     return Number(condition1Value) <= Number(condition2Value)
   default:
     throw new Error(`Unknown operator ${conditionOperator}`)
