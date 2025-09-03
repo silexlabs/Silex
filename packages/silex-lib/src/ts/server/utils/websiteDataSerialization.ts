@@ -49,7 +49,7 @@ function sortKeys(key: string, value: any): any {
  */
 export function split(websiteData: WebsiteData): Array<{path: string, content: string}> {
   const files: Array<{path: string, content: string}> = []
-  
+
   // Use custom pages folder if specified, otherwise use default
   const pagesFolder = websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
 
@@ -75,6 +75,7 @@ export function split(websiteData: WebsiteData): Array<{path: string, content: s
   // Create main website data file without pages content
   const websiteDataWithoutPages = {
     ...websiteData,
+    pagesFolder,
     pages,
   }
 
@@ -95,7 +96,7 @@ export async function merge(
   pageLoader: (pagePath: string) => Promise<string>
 ): Promise<WebsiteData> {
   const websiteData = JSON.parse(websiteDataContent) as any
-  
+
   // Use custom pages folder if specified, otherwise use default
   const pagesFolder = websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
 

@@ -106,6 +106,7 @@ export interface WebsiteData {
   styles: Style[],
   //name: string,
   settings: WebsiteSettings,
+  pagesFolder: string,
   fonts: Font[],
   symbols: symbol[],
   publication: PublicationSettings,

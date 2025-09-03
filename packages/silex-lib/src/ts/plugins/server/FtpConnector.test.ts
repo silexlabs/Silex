@@ -35,6 +35,7 @@ const dummySession = {
 const dummyId: WebsiteId = 'dummy id'
 const dummyWebsite: WebsiteData = {
   pages: [],
+  pagesFolder: 'pages/',
   assets: [],
   styles: [],
   settings: {},

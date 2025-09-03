@@ -27,7 +27,7 @@ import { getPageSlug } from '../../page'
 import e from 'express'
 import { fork } from 'child_process'
 import { Page } from 'grapesjs'
-import { stringify, split, merge } from '../../server/utils/websiteDataSerialization'
+import { stringify, split, merge, getPagesFolder } from '../../server/utils/websiteDataSerialization'
 
 /**
  * Gitlab connector
@@ -767,10 +767,13 @@ export default class GitlabConnector implements StorageConnector {
 
     // **
     // List existing files in the pages folder
+    // Get the pages folder path from website data
+    const pagesFolder = getPagesFolder(websiteData)
+
     const existingFiles = await this.ls({
       session,
       websiteId,
-      path: WEBSITE_PAGES_FOLDER,
+      path: pagesFolder,
       recursive: false,
     })
 
@@ -806,7 +809,7 @@ export default class GitlabConnector implements StorageConnector {
 
     // **
     // Delete pages that are not in the new website data
-    const newPageFiles = new Set(filesToWrite.filter(f => f.path.startsWith(WEBSITE_PAGES_FOLDER)).map(f => f.path))
+    const newPageFiles = new Set(filesToWrite.filter(f => f.path.startsWith(pagesFolder)).map(f => f.path))
     for (const filePath of existingFiles.keys()) {
       if (!newPageFiles.has(filePath)) {
         batchActions.push({
