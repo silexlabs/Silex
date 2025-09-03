@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { jest } from '@jest/globals'
 import { Editor } from 'grapesjs'
 import storage from './storage'
 import { resetDataSources, refreshDataSources } from './model/dataSourceManager'

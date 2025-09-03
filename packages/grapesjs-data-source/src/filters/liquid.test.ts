@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { jest } from '@jest/globals'
 import { testFields } from '../test-data'
 import { isDate, isString } from './liquid'
 

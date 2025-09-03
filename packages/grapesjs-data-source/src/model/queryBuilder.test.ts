@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { jest } from '@jest/globals'
 import grapesjs, { Editor, Page } from 'grapesjs'
 import { DataTree } from './DataTree'
 import { getPageQuery, buildPageQueries } from './queryBuilder'

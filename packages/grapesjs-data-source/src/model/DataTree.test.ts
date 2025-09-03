@@ -19,6 +19,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import { jest } from '@jest/globals'
 import grapesjs, { Component, Editor } from 'grapesjs'
 import { DataTree } from './DataTree'
 import { Property, StoredFilter, State, Expression, Tree, Field, Token, Type, Filter  } from '../types'

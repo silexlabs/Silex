@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 import GraphQL, { GQLField, GQLType, GQLKind, GraphQLOptions, GQLOfType } from './GraphQL'
 import { directusTestSchema, simpleSchema, strapiSchema} from '../../__mocks__/graphql-mocks'
 import { Field, Tree, Type } from '../types'

@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+import { jest } from '@jest/globals'
 import grapesjs, { Component, Editor } from 'grapesjs'
 import { Expression } from '../types'
 import { getExpressionResultType } from './token'

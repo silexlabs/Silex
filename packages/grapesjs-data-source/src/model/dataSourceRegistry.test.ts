@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import { jest } from '@jest/globals'
 import grapesjs, { Editor } from 'grapesjs'
 import { 
   initializeDataSourceRegistry,

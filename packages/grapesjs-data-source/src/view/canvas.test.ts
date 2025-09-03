@@ -2,6 +2,7 @@
 * @jest-environment jsdom
 */
 
+import { jest } from '@jest/globals'
 import { renderPreview, isComponentVisible } from './canvas'
 import { DataTree } from '../model/DataTree'
 import { BinaryOperator, Expression, IDataSource, UnariOperator } from '../types'

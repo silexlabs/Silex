@@ -1,20 +1,20 @@
+import { jest } from '@jest/globals'
 import { DataSourceId, Field, Filter, Token, Type } from './types'
 
 export async function importDataSource(datas?: unknown[]) {
   if (datas?.length) {
-    global.fetch = jest.fn()
+    global.fetch = jest.fn() as jest.MockedFunction<typeof fetch>
     datas?.forEach(data => {
-      global.fetch = (global.fetch as jest.Mock)
+      (global.fetch as jest.MockedFunction<typeof fetch>)
         .mockImplementationOnce(() => {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve(data),
-          })
+          } as Response)
         })
     })
   }
-  // @ts-expect-error Why default.default?
-  return (await import('./datasources/GraphQL')).default.default // Why default.default?
+  return (await import('./datasources/GraphQL')).default
 }
 
 export const testDataSourceId: DataSourceId = 'testDataSourceId'
