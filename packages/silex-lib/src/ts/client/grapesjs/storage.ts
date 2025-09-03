@@ -87,11 +87,12 @@ export const storagePlugin = (editor: PublishableEditor) => {
           return data
         } else {
           editor.runCommand(cmdPauseAutoSave)
-          const { pages, ...rest } = data
+          const { pages, pagesFolder, ...rest } = data
           // Load any additional project data, e.g. symbols, but not the ones we progressive load
           loader && render(getLoaderHtml('Loading styles, assets and symbols', 0, pages.length + 1), loader)
           // Add to the project, everything but pages
           editor.loadProjectData(rest)
+          editor.getModel().set('pagesFolder', pagesFolder)
           // Add the pages to the project
           await progressiveLoadPages(editor, pages)
           await nextFrame()
@@ -160,6 +161,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
             if (user) {
               data.assets = removeTempDataFromAssetUrl(data.assets)
               data.styles = removeTempDataFromStyles(data.styles)
+              data.pagesFolder = editor.getModel().get('pagesFolder')
               await websiteSave({ websiteId: options.id, connectorId: user.storage.connectorId, data })
               isSaving = false
             } else {
