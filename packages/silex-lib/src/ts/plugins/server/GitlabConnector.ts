@@ -766,16 +766,24 @@ export default class GitlabConnector implements StorageConnector {
     const batchActions: GitlabAction[] = []
 
     // **
-    // List existing files in the pages folder
-    // Get the pages folder path from website data
-    const pagesFolder = getPagesFolder(websiteData)
+    // Handle the legacy sites that have no pagesFolder
+    // We want them to use "pages/" by default despite their files being in "src/" for now
+    const isLegacySite = !websiteData.pagesFolder
 
+    // **
+    // List existing files in the OLD pages folder (to detect files to delete)
     const existingFiles = await this.ls({
       session,
       websiteId,
-      path: pagesFolder,
+      path: getPagesFolder(websiteData),
       recursive: false,
     })
+
+    // **
+    // Force pagesFolder to 'pages' for writing if not defined
+    if (isLegacySite) {
+      websiteData.pagesFolder = 'pages'
+    }
 
     // **
     // Use the common split function to create files
@@ -809,9 +817,9 @@ export default class GitlabConnector implements StorageConnector {
 
     // **
     // Delete pages that are not in the new website data
-    const newPageFiles = new Set(filesToWrite.filter(f => f.path.startsWith(pagesFolder)).map(f => f.path))
+    const pathsToWrite = filesToWrite.map(f => f.path)
     for (const filePath of existingFiles.keys()) {
-      if (!newPageFiles.has(filePath)) {
+      if (!pathsToWrite.includes(filePath)) {
         batchActions.push({
           action: 'delete',
           file_path: filePath,
