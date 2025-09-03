@@ -65,7 +65,6 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 | Silex core library | `packages/silex-lib` | `git@github.com:silexlabs/silex-lib.git` | This repository is the core library of Silex, it is a nodejs server which serves the Silex editor and the websites created with Silex. The core library is used in the online version of Silex, in the desktop app, and in the nodejs integration. It is available as a npx cli, as a docker image, and as a npm/nodejs library. |
 | Silex desktop (v2) | `packages/silex-desktop` | `git@github.com:silexlabs/silex-desktop.git` | This is the official [Silex](https://www.silex.me) desktop version, an installable application for Windows, MacOS and linux. |
 | Silex Dashboard | `packages/silex-dashboard` | `git@github.com:silexlabs/silex-dashboard.git` | Here is the source code of Silex dashboard. It is a [Silex](https://www.silex.me) plugin which can be installed to manage websites you will then edit in Silex. |
-| Silex CMS | `packages/silex-cms` | `git@github.com:silexlabs/silex-cms.git` | This is a Silex plugin to make Eleventy layouts visually with integration of any GraphQL API, allowing for a streamlined, code-free development process |
 | node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
 | @silexlabs/grapesjs-version-flow | `packages/grapesjs-version-flow` | `git@github.com:silexlabs/grapesjs-version-flow.git` | A GrapesJS plugin for managing version upgrades and migrations with sequential upgrade flow and modal UI |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | A grapesjs plugin to enable auto-complete of classes in the SelectorManager UI  |
@@ -76,9 +75,9 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 | GrapesJS Keymap Dialog | `packages/grapesjs-keymaps-dialog` | `git@github.com:silexlabs/grapesjs-keymaps-dialog.git` | This GrapesJS plugin implements a floating UI showing the available keymaps for the editor. |
 | Grapesjs Fonts | `packages/grapesjs-fonts` | `git@github.com:silexlabs/grapesjs-fonts.git` | Custom Fonts plugin for grapesjs |
 | Grapesjs Filter Styles | `packages/grapesjs-filter-styles` | `git@github.com:silexlabs/grapesjs-filter-styles.git` | This plugin adds a search bar in the Style manager so that users can search for a CSS style |
-| GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor.  |
+| GrapesJs Data Source plugin | `packages/grapesjs-data-source` | `git@github.com:silexlabs/grapesjs-data-source.git` | This GrapesJS plugin integrates various APIs into the editor, providing powerful data-driven website building capabilities. |
 | GrapesJS AI Copilot | `packages/grapesjs-ai-copilot` | `git@github.com:silexlabs/grapesjs-ai-copilot.git` | ![AI Copilot Banner](https://img.shields.io/badge/AI-Copilot-blue?style=for-the-badge) |
-| GrapesJS Advanced Selector Manager | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short,  |
+| GrapesJS Advanced Selector Manager | `packages/grapesjs-advanced-selector` | `git@github.com:silexlabs/grapesjs-advanced-selector.git` | An advanced selector management plugin for GrapesJS, designed for cases where the default Selector Manager falls short |
 | Expression & Popin Form Components | `packages/expression-input` | `git@github.com:silexlabs/expression-input.git` | A set of reusable web components to manage expressions (chains of tokens) and form overlays.   |
 | eleventy-plugin-concat | `packages/eleventy-plugin-concat` | `git@github.com:silexlabs/eleventy-plugin-concat.git` | Eleventy plugin to bundle your scripts and styles |
 
@@ -152,44 +151,24 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files
-     200 files
-     300 files
-     400 files
-     500 files
-     600 files
-     700 files
-     800 files
-     900 files
-    1000 files
-    1100 files
-    1200 files
-    1265 text files.
-classified 441 files
-Duplicate file check 441 files (334 known unique)
-Unique:      100 files
-Unique:      200 files
-Unique:      300 files
-     346 unique files.
-Counting:  100
-Counting:  200
-Counting:  300
-    1096 files ignored.
+     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files     966 text files.
+classified 426 filesDuplicate file check 426 files (336 known unique)Unique:      100 files                                          Unique:      200 files                                          Unique:      300 files                                               347 unique files.                              
+Counting:  100Counting:  200Counting:  300     791 files ignored.
 
-github.com/AlDanial/cloc v 1.96  T=1.00 s (346.0 files/s, 108523.0 lines/s)
+github.com/AlDanial/cloc v 1.96  T=0.45 s (779.0 files/s, 254674.9 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     136           1822           2782          67135
-TypeScript                     196           2494           6160          26485
+JavaScript                     130           1792           2765          67519
+TypeScript                     204           3009           7110          29620
 GraphQL                          4            115              6           1002
 JSX                              1              0              2            266
 Text                             2             32              0             86
-Dockerfile                       3             12              9             73
+Dockerfile                       2             10              7             67
 Bourne Shell                     3              8              1             24
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           346           4483           8960          95080
+SUM:                           347           4966           9891          98593
 -------------------------------------------------------------------------------
 
 ```
