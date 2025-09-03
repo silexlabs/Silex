@@ -4,7 +4,11 @@
   "description": "Grapesjs Data Source",
   "main": "dist/index.js",
   "module": "dist/index.js",
-  "types": "dist/",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/cjs/index.js"
+  },
   "files": [
     "dist",
     "src",
@@ -17,7 +21,7 @@
   },
   "scripts": {
     "start": "$npm_execpath run serve & grapesjs-cli serve",
-    "build": "grapesjs-cli build --patch=false",
+    "build": "grapesjs-cli build --patch=false && tsc -p tsconfig.cjs.json",
     "serve": "$npm_execpath run serve:mocks & $npm_execpath run serve:grapesjs",
     "serve:mocks": "http-serve ./__mocks__/ -p 3000 --cors",
     "serve:grapesjs": "http-serve `node_modules grapesjs`/grapesjs/dist -p 3001 --cors",
