@@ -27,7 +27,7 @@ import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, WEBSITE_
 import { Readable } from 'stream'
 import { v4 as uuid } from 'uuid'
 import { fileURLToPath } from 'url'
-import { stringify, split, merge } from '../utils/websiteDataSerialization'
+import { stringify, split, merge, getPagesFolder } from '../utils/websiteDataSerialization'
 
 // Variables needed for jest tests
 if(!globalThis.__dirname) {
@@ -190,19 +190,14 @@ export class FsStorage implements StorageConnector<FsSession> {
 
     // Check if this is the new split format
     const parsedData = JSON.parse(websiteDataContent)
-    if (parsedData.fileFormatVersion === '1.0.0') {
-      // Use the merge function to reconstruct website data
-      const pageLoader = async (pagePath: string): Promise<string> => {
-        const fullPath = join(this.options.path, id, pagePath)
-        const pageContent = await fs.readFile(fullPath)
-        return pageContent.toString()
-      }
-
-      return await merge(websiteDataContent, pageLoader)
-    } else {
-      // Legacy format, return as is
-      return parsedData
+    // Use the merge function to reconstruct website data
+    const pageLoader = async (pagePath: string): Promise<string> => {
+      const fullPath = join(this.options.path, id, pagePath)
+      const pageContent = await fs.readFile(fullPath)
+      return pageContent.toString()
     }
+
+    return await merge(websiteDataContent, pageLoader)
   }
 
   async updateWebsite(session: FsSession, websiteId: WebsiteId, data: WebsiteData): Promise<void> {
@@ -212,26 +207,29 @@ export class FsStorage implements StorageConnector<FsSession> {
     // Use the split function to create separate files for pages
     const filesToWrite = split(data)
 
+    // Get the pages folder path from website data
+    const pagesFolder = getPagesFolder(data)
+
     // Ensure the website directory exists
     await fs.mkdir(websitePath, { recursive: true })
 
     // Ensure the pages directory exists if we have page files
-    const hasPageFiles = filesToWrite.some(f => f.path.startsWith(WEBSITE_PAGES_FOLDER))
+    const hasPageFiles = filesToWrite.some(f => f.path.startsWith(pagesFolder))
     if (hasPageFiles) {
-      await fs.mkdir(join(websitePath, WEBSITE_PAGES_FOLDER), { recursive: true })
+      await fs.mkdir(join(websitePath, pagesFolder), { recursive: true })
     }
 
     // **
     // Delete pages that are not in the new website data
-    const pagesPath = join(websitePath, WEBSITE_PAGES_FOLDER)
+    const pagesPath = join(websitePath, pagesFolder)
     try {
       const existingPageFiles = await fs.readdir(pagesPath)
       const newPageFiles = new Set(
         filesToWrite
-          .filter(f => f.path.startsWith(WEBSITE_PAGES_FOLDER))
-          .map(f => f.path.replace(`${WEBSITE_PAGES_FOLDER}/`, ''))
+          .filter(f => f.path.startsWith(pagesFolder))
+          .map(f => f.path.replace(`${pagesFolder}/`, ''))
       )
-      
+
       for (const existingFile of existingPageFiles) {
         if (existingFile.endsWith('.json') && !newPageFiles.has(existingFile)) {
           await fs.unlink(join(pagesPath, existingFile))

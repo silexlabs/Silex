@@ -49,13 +49,16 @@ function sortKeys(key: string, value: any): any {
  */
 export function split(websiteData: WebsiteData): Array<{path: string, content: string}> {
   const files: Array<{path: string, content: string}> = []
+  
+  // Use custom pages folder if specified, otherwise use default
+  const pagesFolder = websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
 
   // Split pages into separate files
   const pages = websiteData.pages?.map((page: Page) => {
     const pageName = getPageName(page)
     const slug = getPageSlug(pageName)
     const fileName = `${slug}-${page.id}.json`
-    const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}`
+    const filePath = `${pagesFolder}/${fileName}`
 
     files.push({
       path: filePath,
@@ -72,7 +75,6 @@ export function split(websiteData: WebsiteData): Array<{path: string, content: s
   // Create main website data file without pages content
   const websiteDataWithoutPages = {
     ...websiteData,
-    fileFormatVersion: '1.0.0',
     pages,
   }
 
@@ -92,13 +94,10 @@ export async function merge(
   websiteDataContent: string,
   pageLoader: (pagePath: string) => Promise<string>
 ): Promise<WebsiteData> {
-  const websiteDataOb = JSON.parse(websiteDataContent) as any
-  const { fileFormatVersion, ...websiteData } = websiteDataOb
-
-  // Check file format version
-  if (fileFormatVersion && fileFormatVersion !== '1.0.0') {
-    console.warn('Website data file format version mismatch', fileFormatVersion, '!=', '1.0.0')
-  }
+  const websiteData = JSON.parse(websiteDataContent) as any
+  
+  // Use custom pages folder if specified, otherwise use default
+  const pagesFolder = websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
 
   // Handle legacy format (no split pages) or empty pages
   if (!websiteData.pages || websiteData.pages.length === 0) {
@@ -116,7 +115,7 @@ export async function merge(
       const pageName = pageRef.name
       const slug = getPageSlug(pageName)
       const fileName = `${slug}-${pageRef.id}.json`
-      const filePath = `${WEBSITE_PAGES_FOLDER}/${fileName}`
+      const filePath = `${pagesFolder}/${fileName}`
 
       try {
         const pageContent = await pageLoader(filePath)
@@ -133,6 +132,13 @@ export async function merge(
     ...websiteData,
     pages,
   } as WebsiteData
+}
+
+/**
+ * Get the pages folder path for a website, using custom path or default
+ */
+export function getPagesFolder(websiteData: WebsiteData): string {
+  return websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
 }
 
 /**

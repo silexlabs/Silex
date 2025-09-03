@@ -28,7 +28,7 @@ import { v4 as uuid } from 'uuid'
 import { JobManager } from '../../server/jobs'
 import { mkdtemp, rm, rmdir } from 'fs/promises'
 import { createReadStream } from 'fs'
-import { stringify, split, merge } from '../../server/utils/websiteDataSerialization'
+import { stringify, split, merge, getPagesFolder } from '../../server/utils/websiteDataSerialization'
 
 /**
  * @fileoverview FTP connector for Silex
@@ -477,22 +477,16 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
 
       // Check if this is the new split format by trying to parse
       const parsedData = JSON.parse(websiteDataContent)
-      if (parsedData.fileFormatVersion === '1.0.0') {
-        // Use the merge function to reconstruct website data
-        const pageLoader = async (pagePath: string): Promise<string> => {
-          const fullPath = join(storageRootPath, websiteId, pagePath)
-          const pageStream = await this.read(ftp, fullPath)
-          return await contentToString(pageStream)
-        }
-
-        const result = await merge(websiteDataContent, pageLoader)
-        this.closeClient(ftp)
-        return result
-      } else {
-        // Legacy format, return as is
-        this.closeClient(ftp)
-        return parsedData
+      // Use the merge function to reconstruct website data
+      const pageLoader = async (pagePath: string): Promise<string> => {
+        const fullPath = join(storageRootPath, websiteId, pagePath)
+        const pageStream = await this.read(ftp, fullPath)
+        return await contentToString(pageStream)
       }
+
+      const result = await merge(websiteDataContent, pageLoader)
+      this.closeClient(ftp)
+      return result
     } catch (error) {
       this.closeClient(ftp)
       throw error
@@ -506,17 +500,20 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     // Use the split function to create separate files for pages
     const filesToWrite = split(data)
 
+    // Get the pages folder path from website data
+    const pagesFolder = getPagesFolder(data)
+
     // **
     // Delete pages that are not in the new website data
-    const pagesPath = join(storageRootPath, websiteId, WEBSITE_PAGES_FOLDER)
+    const pagesPath = join(storageRootPath, websiteId, pagesFolder)
     try {
       const existingPageFiles = await this.readdir(ftp, pagesPath)
       const newPageFiles = new Set(
         filesToWrite
-          .filter(f => f.path.startsWith(WEBSITE_PAGES_FOLDER))
-          .map(f => f.path.replace(`${WEBSITE_PAGES_FOLDER}/`, ''))
+          .filter(f => f.path.startsWith(pagesFolder))
+          .map(f => f.path.replace(`${pagesFolder}/`, ''))
       )
-      
+
       for (const existingFile of existingPageFiles) {
         if (existingFile.name.endsWith('.json') && !newPageFiles.has(existingFile.name)) {
           await this.unlink(ftp, join(pagesPath, existingFile.name))
