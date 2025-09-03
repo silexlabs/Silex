@@ -1,4 +1,3 @@
-import SilexCms from './js/silex-cms/client.js'
 import onboarding from './js/client-plugins/onboarding.js'
 
 // This file is loaded by Silex when the user opens the editor
@@ -14,10 +13,8 @@ export default async function (config) {
             return type === 'html' && path.endsWith('/index.html') ? path.replace(/index\.html$/, '') : path
         },
     })
-    // CMS Plugin
-    config.addPlugin(SilexCms, {
-        dataSources: [],
-        view: {},
-    })
+    // CMS is now built into silex-lib and enabled by default
+    // To configure CMS options, use: config.cmsConfig = { ... }
+    // To disable CMS, use: config.cmsConfig = { enabled: false }
     return {}
 }
