@@ -31,6 +31,7 @@ const notificationContainer = document.createElement('div')
 import blocksBasicPlugin from 'grapesjs-blocks-basic'
 import styleFilterPlugin from 'grapesjs-style-filter'
 import formPlugin from 'grapesjs-plugin-forms'
+import tailwindPlugin from 'grapesjs-tailwind'
 import codePlugin from 'grapesjs-custom-code'
 import filterStyles from '@silexlabs/grapesjs-filter-styles'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
@@ -70,6 +71,8 @@ import { ClientConfig } from '../config'
 import { titleCase } from '../utils'
 import uploadProgress from './upload-progress'
 import cmsPlugin from './cms'
+import { ClientEvent } from '../events'
+import { ClientSideFileWithContent, PublicationData } from '../../types'
 
 const plugins = [
   {name: './project-bar', value: projectBarPlugin}, // has to be before panels and dialogs
@@ -86,6 +89,7 @@ const plugins = [
   {name: './rich-text', value: richTextPlugin},
   {name: 'grapesjs-style-filter', value: styleFilterPlugin},
   {name: 'grapesjs-plugin-forms', value: formPlugin},
+  {name: 'grapesjs-tailwind', value: tailwindPlugin},
   {name: 'grapesjs-custom-code', value: codePlugin},
   {name: './internal-links', value: internalLinksPlugin},
   {name: './keymaps', value: keymapsPlugin},
@@ -264,6 +268,11 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
             attributes: { title: `Settings (${titleCase(defaultKms.kmOpenSettings.keys, '+')})` },
             command: cmdOpenSettings,
           }, {
+            id: 'tailwind-theme',
+            className: 'fa-solid fa-brush',
+            attributes: { title: 'Tailwind color theme' },
+            command: 'open-update-theme'
+          }, {
             id: 'spacer',
             attributes: {},
             className: 'project-bar-spacer',
@@ -324,6 +333,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
       },
       [keymapsPlugin.toString()]: {
         disableKeymaps: false,
+      },
+      [tailwindPlugin.toString()]: {
+        tailwindPlayCdn: `${config.rootUrl}/tailwind-3.4.17.js`,
       },
       [codePlugin.toString()]: {
         blockLabel: 'HTML',
@@ -396,10 +408,17 @@ export async function initEditor(config: EditorConfig) {
 
     editor.Commands.add('gjs-open-import-webpage', openImport(editor, {
       modalImportLabel: '',
-      modalImportContent: 'Paste a web page HTML code here.',
+      modalImportContent: 'Paste a web page HTML code here. This is an experiment, it might destroy the existing website.',
       modalImportButton: 'Import',
       modalImportTitle: 'Import from website',
     }))
+
+    // Add tailwind css to the published site
+    editor.on(ClientEvent.PUBLISH_DATA, ({ data }: { data: PublicationData }) => {
+      editor.runCommand('get-tailwindCss', {
+        callback: (css: string) => (data.files.find(f => f.type === 'css') as ClientSideFileWithContent).content += css,
+      })
+    })
 
     // Detect loading errors
     // Display a useful notification
