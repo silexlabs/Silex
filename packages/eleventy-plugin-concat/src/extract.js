@@ -7,14 +7,19 @@ module.exports = async function (node, attribute, options, sep = '') {
     node
       .map(async script => {
         if(script.hasAttribute(attribute)) {
-          const src = script.getAttribute(attribute)
-          if(isExternal(src, options)) {
-            const response = await fetch(src)
-            return response.text()
-          } else {
-            const localPath = getLocalPath(src, options)
-            const content = await readFile(localPath)
-            return content.toString()
+          try {
+            const src = script.getAttribute(attribute)
+            if(isExternal(src, options)) {
+              const response = await fetch(src)
+              return response.text()
+            } else {
+              const localPath = getLocalPath(src, options)
+              const content = await readFile(localPath)
+              return content.toString()
+            }
+          } catch(e) {
+            console.log(`[eleventy-plugin-concat] Fail to load content from file for this tag: ${script.outerHTML }`)
+            throw new Error(`[eleventy-plugin-concat] Fail to load content from file for this tag: ${script.outerHTML }. Full error: ${ e.toString() }`)
           }
         } else {
           return script.innerText
