@@ -1,44 +1,87 @@
 import { removeState, setState, toExpression } from '@silexlabs/grapesjs-data-source'
-import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { html, TemplateResult } from 'lit-html'
 import { Page, Editor, Component } from 'grapesjs'
 import { WebsiteSettings } from '../../../types'
 import { ClientEvent } from '../../events'
 import { cmdAddSection } from '../settings'
+import { createRef, ref } from 'lit-html/directives/ref.js'
 
 /**
  * Main function to add the settings to the page
  */
 export default function(editor: Editor, opts: EleventyPluginOptions): void {
-  if(!opts.enable11ty) return // Do not add the settings if 11ty is disabled
-  editor.on(ClientEvent.SETTINGS_SAVE_START, (page: Page) => updateBodyStates(editor, page))
+  if (!opts.enable11ty) return // Do not add the settings if 11ty is disabled
+
+  editor.on(ClientEvent.SETTINGS_SAVE_START, handleSettingsSaveStart(editor))
+  editor.on(ClientEvent.SETTINGS_CLOSE, handleSettingsClose(editor))
+
   editor.runCommand(cmdAddSection, {
     section: {
       id: CMS_SETTINGS_SECTION_ID,
       label: 'CMS',
-      render: (settings: WebsiteSettings, page: Backbone.Model) => render(settings, editor, page as Page), // FIXME: make sure Page is a Backbone.Model
+      render: (settings: WebsiteSettings, page: Backbone.Model) => {
+        currentPage = page as Page
+        return renderSettingsSection(settings, editor, currentPage)
+      },
     },
     siteOrPage: 'page',
-    position: 'last'
+    position: 'last',
   })
+}
+
+// Store original settings for revert functionality
+let originalSettings: Silex11tyPluginWebsiteSettings | null = null
+let currentPage: Page | undefined
+
+function handleSettingsSaveStart(editor: Editor) {
+  return (page: Page) => {
+    updateBodyStates(editor, page)
+    currentPage = null
+    originalSettings = null
+  }
+}
+
+function handleSettingsClose(editor: Editor) {
+  return () => {
+    if (currentPage && originalSettings) {
+      const currentSettings = currentPage.get('settings') as Silex11tyPluginWebsiteSettings || {}
+      // Revert the whole settings object if it was changed
+      if (JSON.stringify(currentSettings) !== JSON.stringify(originalSettings)) {
+        currentPage.set('settings', originalSettings)
+        updateBodyStates(editor, currentPage)
+      }
+    }
+    currentPage = null
+    originalSettings = null
+  }
+}
+
+function updateTemporarySettings(editor: Editor, page: Page, pageDataEditor: HTMLInputElement | undefined): void {
+  if (!pageDataEditor) return
+  originalSettings = page.get('settings') as WebsiteSettings
+  const eleventyPageData = pageDataEditor.value || ''
+  page.set('settings', {
+    ...originalSettings,
+    eleventyPageData,
+  } as Silex11tyPluginWebsiteSettings)
+  updateBodyStates(editor, page)
 }
 
 /**
  * Set the state on the body component
  * This is only useful to build the GraphQL query
  */
-function stateOnBody(editor: Editor, value: string, name: string, body: Component) {
+function stateOnBody(editor: Editor, value: string, name: string, body: Component): void {
   if (value) {
     const expression = toExpression(value)
-    if(expression) {
+    if (expression) {
       setState(body, name, {
         label: name,
         hidden: true,
         expression,
       })
     } else {
-      console.error(`Invalid JSON for ${name}`)
       removeState(body, name)
       editor.runCommand('notifications:add', {
         type: 'error',
@@ -51,32 +94,29 @@ function stateOnBody(editor: Editor, value: string, name: string, body: Componen
   }
 }
 
-function showWarningDirty() {
-  document.getElementById('pageination-data-changed')?.classList.remove('silex-hidden')
-}
-
-function hideWarningDirty() {
-  document.getElementById('pageination-data-changed')?.classList.add('silex-hidden')
-}
-
 /**
  * Set the state on the body component
  * This is only useful to build the GraphQL query
  */
-function updateBodyStates(editor: Editor, page: Page) {
-  hideWarningDirty()
+const bodyStateKeys: (keyof Silex11tyPluginWebsiteSettings)[] = [
+  'eleventySeoTitle',
+  'eleventySeoDescription',
+  'eleventyFavicon',
+  'eleventyOGImage',
+  'eleventyOGTitle',
+  'eleventyOGDescription',
+  'eleventyPageData',
+  'eleventyPermalink',
+]
+
+function updateBodyStates(editor: Editor, page: Page): void {
   if (page) {
     const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
     if (settings) {
       const body = page.getMainComponent()
-      stateOnBody(editor, settings.eleventySeoTitle, 'eleventySeoTitle', body)
-      stateOnBody(editor, settings.eleventySeoDescription, 'eleventySeoDescription', body)
-      stateOnBody(editor, settings.eleventyFavicon, 'eleventyFavicon', body)
-      stateOnBody(editor, settings.eleventyOGImage, 'eleventyOGImage', body)
-      stateOnBody(editor, settings.eleventyOGTitle, 'eleventyOGTitle', body)
-      stateOnBody(editor, settings.eleventyOGDescription, 'eleventyOGDescription', body)
-      stateOnBody(editor, settings.eleventyPageData, 'eleventyPageData', body)
-      stateOnBody(editor, settings.eleventyPermalink, 'eleventyPermalink', body)
+      for (const key of bodyStateKeys) {
+        stateOnBody(editor, (settings as Record<string, string>)[key], key, body)
+      }
     }
   }
 }
@@ -84,31 +124,37 @@ function updateBodyStates(editor: Editor, page: Page) {
 /**
  * Render the settings form
  */
-function render(settings: Silex11tyPluginWebsiteSettings, editor: Editor, page: Page): TemplateResult {
+function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor: Editor, page: Page): TemplateResult {
+  const body = page.getMainComponent()
+  const pageDataEditor = createRef<HTMLInputElement>()
   setTimeout(() => {
-    // Update the settings form when the selection changed without recreating the form
-    (document.querySelectorAll(`#settings-${CMS_SETTINGS_SECTION_ID} input`) as NodeListOf<HTMLInputElement>)
+    // Update all input fields with their corresponding values from settings
+    // This is needed because we change things without refreshing the DOM in JS
+    ;(document.querySelectorAll(`
+      #settings-${CMS_SETTINGS_SECTION_ID} input,
+      #settings-${CMS_SETTINGS_SECTION_ID} state-editor
+    `) as NodeListOf<HTMLInputElement>)
       .forEach((input: HTMLInputElement) => {
-        switch (input.type) {
-        case 'checkbox':
-          input.checked = !!settings[input.name]
-          break
-        default:
-          input.value = settings[input.name] ?? ''
+        const value = settings[input.name]
+        if (input.type === 'checkbox') {
+          input.checked = !!value
+        } else if (typeof value !== 'undefined') {
+          input.value = value
+        } else {
+          input.value = ''
         }
       })
   })
-  const body = page.getMainComponent()
   return html`
     <style>
       .silex-warning {
-        margin-top: 10px;
-        padding: 10px;
-        background-color: var(--ds-primary);
-        border-color: var(--ds-button-color);
-        color: #721c24;
-        border: 1px solid transparent;
-        border-radius: .25rem;
+        margin-top: 10px
+        padding: 10px
+        background-color: var(--ds-primary)
+        border-color: var(--ds-button-color)
+        color: #721c24
+        border: 1px solid transparent
+        border-radius: .25rem
       }
     </style>
     <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
@@ -122,26 +168,18 @@ function render(settings: Silex11tyPluginWebsiteSettings, editor: Editor, page: 
           <h3>Create pages from data</h3>
           <p class="silex-help">Pagination allows you to iterate over data and create multiple webiste pages from a single page in Silex. </p>
           <state-editor
+            ${ref(pageDataEditor)}
             id="eleventyPageData"
             name="eleventyPageData"
             value=${settings.eleventyPageData ?? ''}
             .editor=${editor}
             .selected=${body}
-            @change=${() => {
-    showWarningDirty()
-  }}
+            @change=${() => updateTemporarySettings(editor, page, pageDataEditor.value)}
             no-states
             no-filters
           >
             <label slot="label">Data</label>
           </state-editor>
-          <div
-            id="pageination-data-changed"
-            class="silex-warning silex-hidden"
-            >
-            <!-- Reloading silex will make it possible to set the permalink with the latest available data -->
-            <p>\u26A0\uFE0F Pagination data changed. Please click "<strong>apply</strong>" then <strong>reload</strong> Silex.</p>
-          </div>
           <label class="silex-form__element">Size
             <input type="number" name="eleventyPageSize" .value=${settings.eleventyPageSize ?? 1}/>
           </label>

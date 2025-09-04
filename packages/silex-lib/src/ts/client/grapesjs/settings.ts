@@ -27,11 +27,11 @@ import { ClientEvent } from '../events'
 import { SILEX_VERSION } from '../../constants'
 import { Button, Editor } from 'grapesjs'
 
-const sectionsSite = [...defaultSections]
-const sectionsPage = [...defaultSections]
+const sectionsSite: SettingsSection[] = [...defaultSections]
+const sectionsPage: SettingsSection[] = [...defaultSections]
 
-const el = document.createElement('div')
-let modal
+const el: HTMLDivElement = document.createElement('div')
+let modal: any | undefined // the modal var should be of type ModalModule, not Modal, but it is not exported from grapesjs
 
 export const cmdOpenSettings = 'open-settings'
 export const cmdAddSection = 'settings:add-section'
@@ -43,23 +43,30 @@ export interface AddSectionOption {
   position: 'first' | 'last' | number
 }
 
-let headEditor = null
-export const settingsDialog = (editor, opts) => {
+let headEditor: ReturnType<Editor['CodeManager']['createViewer']> | null = null
+export const settingsDialog = (
+  editor: Editor,
+  opts: Record<string, unknown>
+): void => {
   editor.Commands.add(cmdOpenSettings, {
-    run: (_: Editor, sender: Button, {page, sectionId}) => {
+    run: (
+      _: Editor,
+      sender: Button,
+      {page, sectionId}: {page?: unknown, sectionId?: string}
+    ) => {
       modal = editor.Modal.open({
         title: page ? 'Page settings' : 'Site Settings',
         content: '',
         attributes: { class: 'settings-dialog' },
       })
         .onceClose(() => {
-          sender?.set && sender.set('active', 0) // Deactivate the button to make it ready to be clicked again, only in case of a grapesjs button (not in the pages panel)
-          editor.stopCommand(cmdOpenSettings) // apparently this is needed to be able to run the command several times
+          sender?.set && sender.set('active', 0)
+          editor.stopCommand(cmdOpenSettings)
         })
       displaySettings(editor, opts, page, sectionId)
       modal.setContent(el)
-      const form = el.querySelector('form')
-      form.onsubmit = event => {
+      const form = el.querySelector('form') as HTMLFormElement
+      form.onsubmit = (event: Event) => {
         event.preventDefault()
         editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
         saveSettings(editor, opts, page)
@@ -67,41 +74,34 @@ export const settingsDialog = (editor, opts) => {
         editor.stopCommand(cmdOpenSettings)
       }
       form.querySelector('input')?.focus()
-      // Notify other plugins
       editor.trigger(ClientEvent.SETTINGS_OPEN, page)
-      // Return the dialog
       return modal
     },
-    stop: () => {
-      modal.close()
+    stop: (): void => {
+      modal?.close()
       editor.trigger(ClientEvent.SETTINGS_CLOSE)
     },
   })
-  // Register the addSection function as a GrapesJS command
-  editor.Commands.add(cmdAddSection, (_editor: Editor, _sender: Button, options: AddSectionOption) => {
+  editor.Commands.add(cmdAddSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
     addSection(options.section, options.siteOrPage, options.position)
   })
-  editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption) => {
-    removeSection(options.section, options.siteOrPage)
+  editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
+    removeSection(options.section.id, options.siteOrPage)
   })
-  // add settings to the website
-  editor.on('storage:start:store', (data: WebsiteData) => {
+  editor.on('storage:start:store', (data: WebsiteData): void => {
     data.settings = editor.getModel().get('settings')
     /* @ts-ignore FIXME: this should not be there? or is it used on the server side in the sotrage providers? */
     data.name = editor.getModel().get('name')
   })
-  editor.on('storage:end:load', (data) => {
+  editor.on('storage:end:load', (data: WebsiteData): void => {
     const model = editor.getModel()
     model.set('settings', data.settings || {})
-    model.set('name', data.name)
+    model.set('name', editor.getModel().get('name'))
   })
-  // Normal way to apply the head content to the DOM
-  // fix #1559 Custom <head> code must be reapplied
-  editor.on('canvas:frame:load', () => {
+  editor.on('canvas:frame:load', (): void => {
     updateDom(editor)
   })
-  // When the page changes, update the dom
-  editor.on('page', (e) => {
+  editor.on('page', (_e: unknown): void => {
     updateDom(editor)
   })
   headEditor = editor.CodeManager.createViewer({
@@ -113,9 +113,7 @@ export const settingsDialog = (editor, opts) => {
   })
 }
 
-function showSection(item: SettingsSection) {
-  // **
-  // Handle the side bar
+function showSection(item: SettingsSection): void {
   const aside = el.querySelector('aside.silex-bar') as HTMLElement
   const ul = aside.querySelector('ul.silex-list--menu') as HTMLUListElement
   const li = ul.querySelector('li#settings-sidebar-' + item.id) as HTMLLIElement
@@ -126,14 +124,11 @@ function showSection(item: SettingsSection) {
       console.error('Cannot find the default section in the side bar')
       return
     }
-    showSection(defaultSections[0]) // Fallback to the first section
+    showSection(defaultSections[0])
     return
   }
-  // Update active
   Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
   li.classList.add('active')
-  // **
-  // Handle the main section
   const main = el.querySelector('main#settings__main') as HTMLElement
   const mainItem = main.querySelector(`#settings-${item.id}`)
   if(!mainItem) {
@@ -142,20 +137,19 @@ function showSection(item: SettingsSection) {
       console.error('Cannot find the default section in the settings dialog')
       return
     }
-    showSection(defaultSections[0]) // Fallback to the first section
+    showSection(defaultSections[0])
     return
   }
-  // Update hidden
   Array.from(main.querySelectorAll('.silex-hideable')).forEach(el => el.classList.add('silex-hidden'))
   mainItem.classList.remove('silex-hidden')
-  // This messes up with the save / cancel mechanism
-  // displaySettings(editor, config, model)
-  // Refresh the code editor just in case it went from hidden to visible
-  // This makes it ready to be used when the user clicks on the tab
-  headEditor.refresh()
+  headEditor?.refresh()
 }
 
-export function addSection(section: SettingsSection, siteOrPage: 'site' | 'page', position: 'first' | 'last' | number) {
+export function addSection(
+  section: SettingsSection,
+  siteOrPage: 'site' | 'page',
+  position: 'first' | 'last' | number
+): void {
   const sections = siteOrPage === 'site' ? sectionsSite : sectionsPage
   if (position === 'first') {
     sections.unshift(section)
@@ -168,7 +162,10 @@ export function addSection(section: SettingsSection, siteOrPage: 'site' | 'page'
   }
 }
 
-export function removeSection(id, siteOrPage: 'site' | 'page') {
+export function removeSection(
+  id: string,
+  siteOrPage: 'site' | 'page'
+): void {
   const sections = siteOrPage === 'site' ? sectionsSite : sectionsPage
   const index = sections.findIndex(section => section.id === id)
   if(index === -1) throw new Error(`Cannot find section with id ${id}`)
@@ -176,14 +173,16 @@ export function removeSection(id, siteOrPage: 'site' | 'page') {
 }
 
 
-let currentSection
-function displaySettings(editor, config, model = editor.getModel(), sectionId?: string) {
-  // Update the model with the current settings
-  const settings = model.get('settings') || {} as WebsiteSettings
+let currentSection: SettingsSection | undefined
+function displaySettings(
+  editor: Editor,
+  config: Record<string, unknown>,
+  model: any = editor.getModel(),
+  sectionId?: string
+): void {
+  const settings: WebsiteSettings = model.get('settings') || {} as WebsiteSettings
   model.set('settings', settings)
-  // Get the current sections for page or site
-  const menuItemsCurrent = isSite(model) ? sectionsSite : sectionsPage
-  // Init the current section selection
+  const menuItemsCurrent: SettingsSection[] = isSite(model) ? sectionsSite : sectionsPage
   const targetSection = !!sectionId && menuItemsCurrent.find(section => section.id === sectionId)
   currentSection = targetSection || currentSection || menuItemsCurrent[0]
   const sections: TemplateResult[] = menuItemsCurrent.map(item => {
@@ -194,7 +193,6 @@ function displaySettings(editor, config, model = editor.getModel(), sectionId?: 
       return html`<div class="silex-error">Error rendering settings section ${item.id}</div>`
     }
   })
-  // Render the settings dialog
   render(html`
     <form class="silex-form">
       <div class="silex-help">
@@ -212,12 +210,10 @@ function displaySettings(editor, config, model = editor.getModel(), sectionId?: 
             ${menuItemsCurrent.map(item => html`
               <li
                 id="settings-sidebar-${item.id}"
-                class=${item.id === currentSection.id ? 'active' : ''}
-                @click=${e => {
+                class=${item.id === currentSection!.id ? 'active' : ''}
+                @click=${(e: Event) => {
     e.preventDefault()
-    // Show the new section
     showSection(item)
-    // Notify other plugins
     editor.trigger(ClientEvent.SETTINGS_SECTION_CHANGE, item.id)
   }}
               >
@@ -232,45 +228,43 @@ function displaySettings(editor, config, model = editor.getModel(), sectionId?: 
       </section>
       <footer>
         <p class="silex-version">Silex ${SILEX_VERSION}</p>
-        <input class="silex-button" type="button" @click=${e => editor.stopCommand(cmdOpenSettings)} value="Cancel">
+        <input class="silex-button" type="button" @click=${() => editor.stopCommand(cmdOpenSettings)} value="Cancel">
         <input class="silex-button" type="submit" value="Apply">
       </footer>
     </form>
   `, el)
-  // Display the current section
-  showSection(currentSection)
-  // Init the code editor
-  el.querySelector(`#${idCodeWrapper}`)?.appendChild(headEditor.getElement())
-  headEditor.setContent(settings.head || '')
+  showSection(currentSection!)
+  el.querySelector(`#${idCodeWrapper}`)?.appendChild(headEditor!.getElement())
+  headEditor!.setContent(settings.head || '')
 }
 
-function saveSettings(editor, config, model = editor.getModel()) {
-  const form = el.querySelector('form')
+function saveSettings(
+  editor: Editor,
+  config: Record<string, unknown>,
+  model: any = editor.getModel()
+): void {
+  const form = el.querySelector('form') as HTMLFormElement
   const formData = new FormData(form)
-  const data = Array.from(formData as any)
-    .reduce((aggregate, [key, value]) => {
-      // Keep only the values that are set
+  const data = Array.from(formData)
+    .reduce((aggregate: {[key: string]: any}, [key, value]) => {
       if(value !== '') {
         aggregate[key] = value
       }
       return aggregate
-    }, {}) as {[key: string]: any}
-  // take the name out to the main model (by design in grapesjs pages)
+    }, {})
   const { name, ...settings } = data
   model.set({
     settings: {
       ...data,
-      head: headEditor.getContent(),
+      head: headEditor!.getContent(),
     },
     name,
   })
-  // save if auto save is on
   editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
-  // update the DOM
   updateDom(editor)
 }
-function getHeadContainer(doc, className) {
-  const container = doc.head.querySelector(`.${className}`)
+function getHeadContainer(doc: Document, className: string): HTMLElement {
+  const container = doc.head.querySelector(`.${className}`) as HTMLElement | null
   if(container) {
     return container
   }
@@ -279,21 +273,16 @@ function getHeadContainer(doc, className) {
   doc.head.appendChild(newContainer)
   return newContainer
 }
-function updateDom(editor) {
+function updateDom(editor: Editor): void {
   const doc = editor.Canvas.getDocument()
   const settings = editor.getModel().get('settings')
-  const pageSettings = editor.Pages.getSelected().get('settings')
+  const pageSettings = editor.Pages.getSelected().get('settings') as WebsiteSettings
   if(doc && settings) {
-    // Delay the update to let the DOM be ready
     setTimeout(() => {
-      // Site head
       getHeadContainer(doc, 'site-head')
         .innerHTML = settings.head || ''
-      // Pages head
       getHeadContainer(doc, 'page-head')
         .innerHTML = pageSettings?.head || ''
     })
-  } else {
-    // No document??
   }
 }
