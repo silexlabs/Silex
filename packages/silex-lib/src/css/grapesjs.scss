@@ -77,6 +77,10 @@
     outline: 1px solid $tertiaryColor;
 }
 
+.gjs-cv-canvas {
+  height: calc(100% - var(--gjs-canvas-top) - var(--footerHeight));
+}
+
 // Property panels
 .gjs-pn-buttons {
   justify-content: unset;
