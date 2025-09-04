@@ -51,6 +51,7 @@ import backgroundPlugin from 'grapesjs-style-bg'
 import resizePanelPlugin from './resize-panel'
 import notificationsPlugin, { NOTIFICATION_CHANGED } from '@silexlabs/grapesjs-notifications'
 import keymapsDialogPlugin, { cmdKeymapsDialog } from '@silexlabs/grapesjs-keymaps-dialog'
+import parserPostCSS from 'grapesjs-parser-postcss'
 
 import { pagePanelPlugin, cmdTogglePages, cmdAddPage } from './page-panel'
 import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
@@ -106,6 +107,7 @@ const plugins = [
   {name: './resize-panel', value: resizePanelPlugin},
   {name: '@silexlabs/grapesjs-notifications', value: notificationsPlugin},
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
+  {name: 'grapesjs-parser-postcss', value: parserPostCSS},
   {name: './upload-progress', value: uploadProgress},
 ]
 // Check that all plugins are loaded correctly
@@ -137,17 +139,17 @@ const catComponents = 'Components'
 
 export function getEditorConfig(config: ClientConfig): EditorConfig {
   const { websiteId, storageId, rootUrl } = config
-  
+
   // Create dynamic plugins array with conditional CMS plugin
   const dynamicPlugins = [...plugins]
   const dynamicPluginsOpts: any = {}
-  
+
   // Add CMS plugin if enabled
   if (config.cmsConfig?.enabled !== false) {
     dynamicPlugins.push({name: './cms', value: cmsPlugin})
     dynamicPluginsOpts[cmsPlugin.toString()] = config.cmsConfig
   }
-  
+
   return {
     container: '#gjs',
     height: '100%',

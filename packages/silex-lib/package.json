@@ -97,7 +97,7 @@
     "lint:fix": "$npm_execpath run lint -- --fix",
     "test": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js",
     "test:watch": "$npm_execpath test -- --watch",
-    "prepare": "husky && $npm_execpath run build"
+    "prepare": "husky"
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.0.13",
@@ -123,10 +123,10 @@
     "cookie-parser": "1.4.6",
     "cookie-session": "2.1.0",
     "cors": "2.8.5",
-    "dedent": "^1.5.3",
-    "deepmerge": "^4.3.1",
     "cross-env": "7.0.3",
     "crypto": "^1.0.1",
+    "dedent": "^1.5.3",
+    "deepmerge": "^4.3.1",
     "dotenv": "^16.4.5",
     "express": "4.19.2",
     "express-force-ssl": "0.3.2",
@@ -135,6 +135,7 @@
     "grapesjs": "^0.22.6",
     "grapesjs-blocks-basic": "1.0.2",
     "grapesjs-custom-code": "1.0.2",
+    "grapesjs-parser-postcss": "^1.0.3",
     "grapesjs-plugin-forms": "2.0.6",
     "grapesjs-style-bg": "^2.0.2",
     "grapesjs-style-border": "1.0.4",
