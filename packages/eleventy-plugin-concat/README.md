@@ -77,6 +77,8 @@ body { background: blue; }
 ```
 ### Usage
 
+#### As Eleventy Plugin
+
 1. Install the plugin using npm:
 
    ```sh
@@ -94,7 +96,53 @@ body { background: blue; }
      })
    }
    ```
+
 3. Use the global `data-concat` attribute in your templates
+
+#### As CLI Tool
+
+You can also use this plugin as a standalone CLI tool, perfect for npm scripts:
+
+1. Install the plugin:
+
+   ```sh
+   npm install @silexlabs/eleventy-plugin-concat
+   ```
+
+2. Use in npm scripts:
+
+   ```json
+   {
+     "scripts": {
+       "build:concat": "eleventy-plugin-concat 'dist/**/*.html'",
+       "optimize": "eleventy-plugin-concat '_site/**/*.html' --base-url 'https://example.com'"
+     }
+   }
+   ```
+
+3. Or run directly:
+
+   ```sh
+   # Process all HTML files in dist folder
+   npx eleventy-plugin-concat "dist/**/*.html"
+   
+   # Process with custom base URL
+   npx eleventy-plugin-concat "_site/**/*.html" --base-url "https://example.com"
+   
+   # Custom output patterns
+   npx eleventy-plugin-concat "dist/**/*.html" \
+     --js-path "assets/js/{name}.bundle.js" \
+     --css-path "assets/css/{name}.bundle.css"
+   ```
+
+**CLI Options:**
+- `--base-url <url>`: Base URL for your site (default: `http://localhost:8080`)
+- `--js-path <pattern>`: JS output path pattern (default: `js/{name}-concat.js`)
+- `--css-path <pattern>`: CSS output path pattern (default: `css/{name}-concat.css`)
+- `--js-url <pattern>`: JS URL pattern in HTML (default: `/js/{name}-concat.js`)
+- `--css-url <pattern>`: CSS URL pattern in HTML (default: `/css/{name}-concat.css`)
+
+The `{name}` placeholder will be replaced with the HTML file name (without extension).
 
 ## Options
 
