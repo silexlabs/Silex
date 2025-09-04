@@ -2,7 +2,7 @@ const {resolve} = require('path')
 const {readFile} = require('fs/promises')
 const fetch = require('node-fetch')
 
-module.exports = async function (node, attribute, options) {
+module.exports = async function (node, attribute, options, sep = '') {
   const result = await Promise.all(
     node
       .map(async script => {
@@ -21,9 +21,7 @@ module.exports = async function (node, attribute, options) {
         }
       })
   )
-  // Add a ";" to avoid problems when scripts ends with a line without a ";"
-  // Add a "\n" to avoid problems when scripts end with a comment
-  return result.join(';\n')
+  return result.join(sep)
 }
 
 function isExternal(src, options) {
@@ -46,4 +44,3 @@ function getLocalPath(src, options) {
   // Use output here to get files after Passthrough Copy
   return resolve(options.output, urlPath)
 }
-

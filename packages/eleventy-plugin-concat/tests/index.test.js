@@ -132,7 +132,7 @@ it('concat inline styles', async () => {
     assert.deepEqual(cleanup(html), getTestHtml(null, [
       {attributes: `href="${defaults.cssUrl(page)}"`},
     ]))
-    assert.deepEqual(cleanup(css), `style 1;\nstyle 2`)
+    assert.deepEqual(cleanup(css), `style 1style 2`)
   }
 })
 
@@ -187,4 +187,44 @@ it('test of getTestHtml', () => {
       <link rel="stylesheet" data-concat>
     </head>`))
 })
+it('should produce valid CSS output', async () => {
+  const htmlInput = `<!DOCTYPE html>
+<html lang="{{lang | default: "fr"}}">
+<head>
+    <link data-concat rel="stylesheet" href="/tests/test-styles.css" />
+    <style data-concat>
+.test2 {
+    background-color: #AAAAAA;
+}
+    </style>
+</head>
+<body id="i3ts5t" class="test test2"><div id="is8zlq" class="404"><div id="ir8jpi" class="website-with padding0-50/0-22"></div></div></body>
+</html>`
 
+  const [html, js, css] = await process(page, htmlInput, {
+    ...defaults,
+    output: '.', // No _site folder in tests
+    baseUrl: 'http://localhost:8080',
+  })
+
+
+  // Test CSS validation using css-tree
+  const csstree = require('css-tree')
+  try {
+    csstree.parse(css)
+    console.log('CSS is valid')
+  } catch (error) {
+    console.log('CSS validation error:', error.message)
+    assert.fail('Generated CSS is not valid: ' + error.message)
+  }
+
+  // Verify CSS contains both external file content and inline styles
+  assert.ok(css.includes('box-sizing: border-box'), 'Should include external CSS content')
+  assert.ok(css.includes('background-color: #000000'), 'Should include .test class from external file')
+  assert.ok(css.includes('background-color: #AAAAAA'), 'Should include inline style content')
+  assert.ok(css.includes('.test2'), 'Should include .test2 class from inline styles')
+
+  // Verify HTML is updated correctly
+  assert.ok(html.includes(`href="${defaults.cssUrl(page)}"`), 'Should include CSS link')
+  assert.ok(!html.includes('data-concat'), 'Should remove data-concat attributes')
+})
