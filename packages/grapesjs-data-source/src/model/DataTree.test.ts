@@ -19,11 +19,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import grapesjs, { Editor, Component } from 'grapesjs'
+import { jest } from '@jest/globals'
+import grapesjs, { Component, Editor } from 'grapesjs'
 import { DataTree } from './DataTree'
-import { Type, Filter, Property, Expression, Tree } from '../types'
-import { DataSourceEditor } from '..'
-import { getStates } from './state'
+import { Property, StoredFilter, State, Expression, Tree, Field, Token, Type, Filter  } from '../types'
+import { getStates, getParentByPersistentId, getState } from './state'
 import { simpleFilters, simpleQueryables, simpleTypes, testDataSourceId, testTokens } from '../test-data'
 
 // Mock only getState
@@ -42,32 +42,36 @@ jest.mock('lit', () => ({
 }))
 
 let editor: Editor
-let firstComponent: Component
+let containerComponent: Component
 beforeEach(async () => {
   jest.resetAllMocks()
   ;(getStates as jest.Mock).mockReturnValue([]) // Default for getStates
   editor = grapesjs.init({
     container: document.createElement('div'),
-    components: '<div></div>',
-  })
-  firstComponent = editor.getComponents().first()
+    components: '<div><div></div></div>',
+  }) as Editor
+  containerComponent = editor.getComponents().first()
 })
 
 test('DataTree instanciation', () => {
   expect(DataTree).toBeDefined()
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTree(editor, {filters: [], dataSources: []})
   expect(dataTree).toBeDefined()
 })
 
 test('Find type from  id', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
+
+  // Trigger the event to populate allTypes
+  editor.trigger('data-source:ready')
 
   // Type not found
   expect(() => dataTree.getType('unknown type', null, null)).toThrow()
@@ -83,7 +87,7 @@ test('Find type from  id', () => {
 })
 
 test('Expressions to tree', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTree(editor, {filters: [], dataSources: []})
   const expression: Expression = [{
     type: 'property',
     propType: 'field',
@@ -115,7 +119,7 @@ test('merge trees', () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   const tree1: Tree = {
     token: {
       type: 'property',
@@ -216,7 +220,7 @@ test('merge trees with multiple possible types', () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   const tree1: Tree = {
     token: {
       type: 'property',
@@ -380,13 +384,14 @@ test('get tree with filters', async () => {
     kind: 'scalar',
     dataSourceId: testDataSourceId,
   }]
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
   // Make sure it treats them all as relative
   dataTree.isRelative = () => true
@@ -467,18 +472,19 @@ test('Merge trees with empty and no options', async () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: () => simpleTypes,
     getQueryables: () => simpleTypes[0].fields,
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
 
   expect(async () => dataTree.mergeTrees(trees[0], trees[1]))
     .not.toThrow()
-  
+
   // The 2 trees are the same
   // The 2nd tree has empty options which should be ignored
   expect(dataTree.mergeTrees(trees[0], trees[1]))
@@ -491,7 +497,7 @@ test('Get query with errors in options', async () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   expect(() => dataTree.mergeTrees({
     'token': {
       'dataSourceId': 'testDataSourceId',
@@ -557,7 +563,7 @@ test('Get query from multiple expressions', async () => {
       return super.mergeTrees(tree1, tree2)
     }
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {filters: [], dataSources: []})
+  const dataTree = new DataTreeTest(editor, {filters: [], dataSources: []})
   const tree = dataTree.mergeTrees({
     'token': {
       'dataSourceId': 'testDataSourceId',
@@ -959,7 +965,7 @@ test('Get query from multiple expressions', async () => {
 //})
 
 test('isRelative', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
@@ -988,6 +994,7 @@ test('isRelative', () => {
     }] as Type[]),
     getQueryables: () => ([]),
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
   expect(dataTree.isRelative({
     type: 'property',
@@ -1039,13 +1046,14 @@ test('get tree with options', () => {
     }],
   }] as Type[]))
 
-  const dataTree = new DataTree(editor as DataSourceEditor, {filters: [], dataSources: [{
+  const dataTree = new DataTree(editor, {filters: [], dataSources: [{
     id: testDataSourceId,
     connect: async () => {},
     isConnected: () => true,
     getTypes: fn,
     getQueryables: () => [],
     getQuery: () => '',
+    fetchValues: jest.fn(),
   }]})
 
   // Simple expression with relative child expression
@@ -1108,7 +1116,7 @@ test('get tree with options', () => {
 })
 
 test('get types map', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor, {
     filters: [],
     dataSources: [{
       id: testDataSourceId,
@@ -1117,6 +1125,7 @@ test('get types map', () => {
       getTypes: () => simpleTypes,
       getQueryables: () => simpleTypes[0].fields,
       getQuery: () => '',
+      fetchValues: jest.fn(),
     }],
   })
   const types = dataTree.getAllTypes()
@@ -1125,63 +1134,8 @@ test('get types map', () => {
   expect(types[0].id).toBe('testTypeId')
 })
 
-// TODO: Value tests
-// const simpleExpression: Context = [
-//   {
-//     type: 'property',
-//     propType: 'type',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }, {
-//     type: 'property',
-//     propType: 'field',
-//     fieldId: 'testFieldId',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }
-// ]
-// test('get value with simple context', () => {
-//   const dataTree = new DataTree({
-//     filters: [],
-//     dataSources: [{
-//       id: DataSourceId,
-//       connect: async () => { },
-//       getTypes: () => simpleTypes,
-//     }],
-//   })
-// 
-//   // Empty value
-//   expect(dataTree.getValue(simpleExpression, [])).toBeNull()
-// 
-//   // 1 level value
-//   const value = dataTree.getValue(simpleExpression, [{
-//     type: 'property',
-//     propType: 'type',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }])
-//   expect(value).not.toBeNull()
-//   // TODO: test value
-// 
-//   // 2 levels value
-//   const value2 = dataTree.getValue(simpleExpression, [{
-//     type: 'property',
-//     propType: 'type',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }, {
-//     type: 'property',
-//     propType: 'field',
-//     fieldId: 'testFieldId',
-//     typeId: 'testTypeId',
-//     dataSourceId: DataSourceId,
-//   }])
-//   expect(value2).not.toBeNull()
-//   // TODO: test value
-// })
-
 test('Get experessions used by a component', () => {
-  const dataTree = new DataTree(editor as DataSourceEditor, {
+  const dataTree = new DataTree(editor, {
     filters: simpleFilters,
     dataSources: [{
       id: testDataSourceId,
@@ -1190,6 +1144,7 @@ test('Get experessions used by a component', () => {
       getTypes: () => simpleTypes,
       getQueryables: () => simpleQueryables,
       getQuery: () => '',
+      fetchValues: jest.fn(),
     }],
   })
   const component = editor.getComponents().first()
@@ -1212,19 +1167,19 @@ test('Get experessions used by a component and its children', () => {
   class DataTreeTest extends DataTree {
     getComponentExpressions = jest.fn(() => [])
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+  const dataTree = new DataTreeTest(editor, {
     filters: [],
     dataSources: [],
   })
-  dataTree.getComponentExpressionsRecursive(firstComponent)
-  expect(dataTree.getComponentExpressions).toHaveBeenCalledTimes(1) // 1 per component
+  dataTree.getComponentExpressionsRecursive(containerComponent)
+  expect(dataTree.getComponentExpressions).toHaveBeenCalledTimes(2) // 1 per component
 })
 
 test('Get experessions used by a page', () => {
   class DataTreeTest extends DataTree {
     getComponentExpressionsRecursive = jest.fn(() => [])
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+  const dataTree = new DataTreeTest(editor, {
     filters: [],
     dataSources: [],
   })
@@ -1236,10 +1191,830 @@ test('Get experessions used by all pages', () => {
   class DataTreeTest extends DataTree {
     getPageExpressions = jest.fn(() => [])
   }
-  const dataTree = new DataTreeTest(editor as DataSourceEditor, {
+  const dataTree = new DataTreeTest(editor, {
     filters: [],
     dataSources: [],
   })
   dataTree.getAllPagesExpressions()
   expect(dataTree.getPageExpressions).toHaveBeenCalledTimes(1) // 1 per page
+})
+
+test('get value with properties', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [],
+    dataSources: [{
+      id: testDataSourceId,
+      connect: async () => { },
+      isConnected: () => true,
+      getTypes: () => simpleTypes,
+      getQueryables: () => simpleTypes[0].fields,
+      getQuery: () => '',
+      fetchValues: () => Promise.resolve({
+        testFieldId1: {
+          testFieldId2: 'test field',
+        },
+      }),
+    }],
+  })
+
+  const anyData = Symbol('test')
+  expect(dataTree.getValue([], containerComponent, false, anyData)).toBe(anyData)
+
+  // 1 level deep value
+  const property1 = {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'simpleFieldId',
+    label: 'simple label',
+    kind: 'scalar',
+  } as Property
+  const dataProperty1 = {
+    simpleFieldId: 'test simpleFieldId',
+  }
+  expect(dataTree.getValue([property1], containerComponent, false, {})).toBeNull()
+  const value = dataTree.getValue([property1], containerComponent, false, dataProperty1)
+  expect(value).not.toBeNull()
+  expect(value).toBe(dataProperty1.simpleFieldId)
+
+  // 2 levels deep
+  const property2 = {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'simpleFieldId2',
+    label: 'simple label',
+    kind: 'scalar',
+  } as Property
+  const dataProperty2 = {
+    simpleFieldId: {
+      simpleFieldId2: 'test simpleFieldId2'
+    }
+  }
+  expect(dataTree.getValue([property1, property2], containerComponent, false, {})).toBeNull()
+  const value2 = dataTree.getValue([property1, property2], containerComponent, false, dataProperty2)
+  expect(value2).not.toBeNull()
+  expect(value2).toBe(dataProperty2.simpleFieldId.simpleFieldId2)
+})
+
+test('get fixed value with filters', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'identityFilter',
+      label: 'Sample Filter',
+      apply: value => `${value} modified`,
+      validate: () => true,
+      output: input => input,
+      options: {},
+    }],
+    dataSources: [],
+  })
+
+  const fixed = {
+    type: 'property',
+    propType: 'field',
+    typeIds: [],
+    dataSourceId: testDataSourceId,
+    fieldId: 'fixed',
+    label: 'simple label',
+    kind: 'scalar',
+    options: {
+      value: 'expected value',
+    }
+  } as Property
+
+  const filter = {
+    id: 'identityFilter',
+    type: 'filter',
+    options: {},
+  } as StoredFilter
+
+  expect(dataTree.getValue([fixed], containerComponent, false, {})).toBe('expected value')
+  expect(dataTree.getValue([fixed, filter], containerComponent, false, {})).toBe('expected value modified')
+})
+
+test('get value with a state', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [],
+    dataSources: [],
+  })
+
+  const fixed = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      options: {
+        value: 'expected value',
+      }
+    }],
+  }
+
+  const firstComponentChild = containerComponent.components().first()
+  const testPersistantId = 'testPersistantId'
+  containerComponent.set('id-plugin-data-source', testPersistantId)
+  const mockState = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: 'storedStateId',
+      label: 'test label',
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  //;(getStates as jest.Mock).mockReturnValue([mockState])
+  ;(getState as jest.Mock).mockReturnValue(fixed)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, false, {})
+  expect(stateValue).toBe('expected value')
+})
+
+test('get __data with a state', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'identityFilter',
+      label: 'IDENTITY',
+      apply: value => value,
+      validate: () => true,
+      output: input => input,
+      options: {},
+    }],
+    dataSources: [],
+  })
+
+  const fixed = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      options: {
+        value: ['first value', 'other expeced value'],
+      }
+    }],
+  }
+
+  const firstComponentChild = containerComponent.components().first()
+  const testPersistantId = 'testPersistantId'
+  containerComponent.set('id-plugin-data-source', testPersistantId)
+  const mockState = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: '__data',
+      label: 'test label',
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  ;(getState as jest.Mock).mockReturnValue(fixed)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, true, {})
+  expect(stateValue).toEqual(fixed.expression[0].options.value)
+})
+
+test('get `__data[previewIndex].something` with a state', () => {
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'identityFilter',
+      label: 'IDENTITY',
+      apply: value => value,
+      validate: () => true,
+      output: input => input,
+      options: {},
+    }],
+    dataSources: [],
+  })
+
+  const fixed = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      options: {
+        value: ['first value', 'other expeced value'],
+      }
+    }],
+  }
+
+  const firstComponentChild = containerComponent.components().first()
+  const testPersistantId = 'testPersistantId'
+  containerComponent.set('id-plugin-data-source', testPersistantId)
+  const mockState = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: '__data',
+      label: 'test label',
+    }, { // We need a second token, otherwise it returns the object
+      id: 'identityFilter',
+      type: 'filter',
+      options: {},
+      previewIndex: 0,
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  ;(getState as jest.Mock).mockReturnValue(fixed)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue = dataTree.getValue(mockState.expression, firstComponentChild, true, {})
+  expect(stateValue).toBe(fixed.expression[0].options.value[0])
+  return
+
+  const fixed2 = {
+    expression: [{
+      type: 'property',
+      propType: 'field',
+      typeIds: [],
+      dataSourceId: testDataSourceId,
+      fieldId: 'fixed',
+      label: 'simple label',
+      kind: 'scalar',
+      previewIndex: 1,
+      options: {
+        value: ['first value', 'other expeced value'],
+      }
+    }],
+  }
+
+  const mockState2 = {
+    expression: [{
+      type: 'state',
+      componentId: testPersistantId,
+      exposed: true,
+      storedStateId: '__data',
+      label: 'test label',
+    }, { // We need a second token, otherwise it returns the object
+      id: 'identityFilter',
+      type: 'filter',
+      options: {},
+    }] as State[],
+  }
+
+  // Use this state in the mock of getStates function
+  ;(getState as jest.Mock).mockReturnValue(fixed2)
+  ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+
+  const stateValue2 = dataTree.getValue(mockState2.expression, firstComponentChild, true, {})
+  expect(stateValue2).toBe(fixed.expression[0].options.value[1])
+})
+
+// test('get `__data[previewIndex].__data[otherPreviewIndex]` with a state', () => {
+//   const dataTree = new DataTree(editor, {
+//     filters: [{
+//       type: 'filter',
+//       id: 'identityFilter',
+//       label: 'IDENTITY',
+//       apply: value => value,
+//       validate: () => true,
+//       output: input => input,
+//       options: {},
+//     }],
+//     dataSources: [{
+//       id: testDataSourceId,
+//       connect: async () => { },
+//       isConnected: () => true,
+//       getTypes: () => simpleTypes,
+//       getQueryables: () => simpleQueryables,
+//       getQuery: () => '',
+//       fetchValues: () => Promise.resolve({
+//         testFieldId1: {
+//           testFieldId2: 'test field',
+//           testFieldIdArray: ['item1', 'item2'],
+//         },
+//       }),
+//     }],
+//   })
+//
+//   const simpleExpression: Context = [
+//     {
+//       type: 'property',
+//       propType: 'field',
+//       typeIds: [],
+//       dataSourceId: testDataSourceId,
+//       fieldId: 'testFieldId1',
+//       label: 'field label 1',
+//       kind: 'object',
+//     }, {
+//       type: 'property',
+//       propType: 'field',
+//       fieldId: 'testFieldIdArray',
+//       typeIds: [],
+//       dataSourceId: testDataSourceId,
+//       label: 'field array',
+//       kind: 'scalar',
+//     }
+//   ]
+//
+//   const childComponent = containerComponent.components().first()
+//   const PERSISTANT_ID_CHILD = 'testPersistantId2'
+//   childComponent.set('id-plugin-data-source', PERSISTANT_ID_CHILD)
+//
+//   const mockState0 = {
+//     expression: [{
+//       type: 'state',
+//       componentId: PERSISTANT_ID_CHILD,
+//       exposed: true,
+//       storedStateId: '__data',
+//       label: 'test label',
+//     }, { // We need a second token, otherwise it returns the object
+//       id: 'identityFilter',
+//       type: 'filter',
+//       options: {},
+//     }] as State[],
+//   }
+//
+//   const PERSISTANT_ID_CONTAINER = 'testPersistantId'
+//   containerComponent.set('id-plugin-data-source', PERSISTANT_ID_CONTAINER)
+//
+//   const mockState1 = {
+//     expression: [{
+//       type: 'state',
+//       componentId: PERSISTANT_ID_CONTAINER,
+//       exposed: true,
+//       storedStateId: '__data',
+//       label: 'test label',
+//     }, { // We need a second token, otherwise it returns the object
+//       id: 'identityFilter',
+//       type: 'filter',
+//       options: {},
+//     }] as State[],
+//   }
+//
+//   // Use this state in the mock of getStates function
+//   ;(getState as jest.Mock).mockReturnValueOnce(mockState0)
+//   ;(getState as jest.Mock).mockReturnValueOnce(mockState1)
+//   ;(getParentByPersistentId as jest.Mock).mockReturnValueOnce(containerComponent)
+//
+//   const stateValue = dataTree.getValue(simpleExpression, childComponent, false, {})
+//   expect(stateValue).toBe('item1')
+// })
+
+test('get value from GraphQL inline fragments (flatData.modules.item)', () => {
+  const testDataSourceId = 'squidex'
+
+  // Mock data similar to the example.graphql.json structure
+  const mockData = {
+    queryPageContents: [{
+      flatData: {
+        modules: [
+          {
+            __typename: 'PageDataModulesChildDto',
+            item: {
+              __typename: 'HeroWordSliderComponent',
+              type: 'hero-word-slider',
+              before: 'If you are looking for:',
+              words: [
+                { __typename: 'HeroWordSliderDataWordsChildDto', word: '100% free website builder' },
+                { __typename: 'HeroWordSliderDataWordsChildDto', word: 'no-code solution' }
+              ],
+              after: 'You are in the right place!',
+              cTAUrl: 'https://example.com',
+              cTALabel: 'Start now!'
+            }
+          },
+          {
+            __typename: 'PageDataModulesChildDto',
+            item: {
+              __typename: 'SimpleHeroComponent',
+              type: 'simple-hero',
+              text: '<h1>Welcome</h1>',
+              cTAUrl: 'https://example.com/welcome',
+              cTALabel: 'Get started'
+            }
+          }
+        ]
+      }
+    }]
+  }
+
+  const dataTree = new DataTree(editor, {
+    filters: [{
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      validate: () => true,
+      output: (field: Field | null) => field,
+      apply: (arr: unknown) => Array.isArray(arr) ? arr[0] : arr,
+      options: {},
+    }],
+    dataSources: [{
+      id: testDataSourceId,
+      connect: async () => {},
+      isConnected: () => true,
+      getTypes: () => ([]),
+      getQueryables: () => ([]),
+      getQuery: () => '',
+      fetchValues: () => Promise.resolve(mockData),
+    }]
+  })
+
+  // Set the preview data to simulate fetched data
+  dataTree.previewData[testDataSourceId] = mockData
+
+  // Test accessing the first item's before text
+  const beforeExpression = [
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'queryPageContents',
+      label: 'queryPageContents',
+      typeIds: ['Page'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'flatData',
+      label: 'flatData',
+      typeIds: ['PageFlatDataDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'modules',
+      label: 'modules',
+      typeIds: ['PageDataModulesChildDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'item',
+      label: 'item',
+      typeIds: ['HeroWordSliderComponent'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'before',
+      label: 'before',
+      typeIds: ['String'],
+      dataSourceId: testDataSourceId,
+      kind: 'scalar'
+    }
+  ] as Token[]
+
+  const result = dataTree.getValue(beforeExpression, containerComponent, false)
+  expect(result).toBe('If you are looking for:')
+
+  // Test accessing words array
+  const wordsExpression = [
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'queryPageContents',
+      label: 'queryPageContents',
+      typeIds: ['Page'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'flatData',
+      label: 'flatData',
+      typeIds: ['PageFlatDataDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'modules',
+      label: 'modules',
+      typeIds: ['PageDataModulesChildDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'item',
+      label: 'item',
+      typeIds: ['HeroWordSliderComponent'],
+      dataSourceId: testDataSourceId,
+      kind: 'object'
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'words',
+      label: 'words',
+      typeIds: ['HeroWordSliderDataWordsChildDto'],
+      dataSourceId: testDataSourceId,
+      kind: 'list'
+    },
+    {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      options: {}
+    },
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'word',
+      label: 'word',
+      typeIds: ['String'],
+      dataSourceId: testDataSourceId,
+      kind: 'scalar'
+    }
+  ] as Token[]
+
+  const wordsResult = dataTree.getValue(wordsExpression, containerComponent, false)
+  expect(wordsResult).toBe('100% free website builder')
+})
+
+// test('test', () => {
+//   // Mocks
+//   const testDataSourceId = 'source1'
+//   const containerData = [
+//     {
+//       __data: [
+//         { value: 'expected result' },
+//         { value: 'not this one' },
+//       ],
+//     },
+//     { __data: [] },
+//   ]
+//
+//   const dataTree = new DataTree(editor, {
+//     filters: [],
+//     dataSources: [{
+//       id: testDataSourceId,
+//       connect: async () => {},
+//       isConnected: () => true,
+//       getTypes: () => ({}),
+//       getQueryables: () => ({}),
+//       getQuery: () => '',
+//       fetchValues: () => Promise.resolve(containerData),
+//     }]
+//   })
+//
+//   // Simulate 2 nested __data states: __data[0] → __data[0] → value
+//   const outerState: State = {
+//     type: 'state',
+//     componentId: 'container',
+//     exposed: true,
+//     storedStateId: '__data',
+//     previewIndex: 0,
+//     label: 'outer',
+//   }
+//
+//   const innerState: State = {
+//     type: 'state',
+//     componentId: 'child',
+//     exposed: true,
+//     storedStateId: '__data',
+//     previewIndex: 0,
+//     label: 'inner',
+//   }
+//
+//   // Inject resolveState to manually resolve to each other
+//   dataTree.resolveState = (state, component) => {
+//     if (state.componentId === 'child') return [outerState]
+//     if (state.componentId === 'container') return []
+//     return null
+//   }
+//
+//   // Expression to resolve: __data (child) → __data (container) → value
+//   const expr: Context = [
+//     innerState,
+//     { type: 'property', propType: 'field', fieldId: 'value', dataSourceId: testDataSourceId, label: 'val', kind: 'scalar' } as Token,
+//   ]
+//
+//   const result = dataTree.getValue(expr, containerComponent, {} as unknown)
+//   expect(result).toBe('expected result')
+// })
+
+test('items state should wrap result in array for collection pages', () => {
+  const dataTree = new DataTree(editor, {filters: simpleFilters, dataSources: []})
+
+  // Mock state resolution to return property tokens
+  dataTree.resolveState = jest.fn().mockReturnValue([
+    {
+      type: 'property',
+      propType: 'field',
+      fieldId: 'countries',
+      dataSourceId: 'ds-1',
+      kind: 'list'
+    }
+  ])
+
+  // Mock preview data
+  dataTree.previewData = {
+    'ds-1': {
+      countries: [
+        { id: 1, name: 'Afghanistan', code: 'AF' },
+        { id: 2, name: 'Albania', code: 'AL' },
+        { id: 3, name: 'Algeria', code: 'DZ' }
+      ]
+    }
+  }
+
+  // Mock items state expression
+  const itemsStateExpression = [{
+    type: 'state',
+    storedStateId: 'items',
+    previewIndex: 1,
+    componentId: 'body-id',
+    exposed: true,
+    label: 'pagination.items'
+  }] as Expression
+
+  // Create body component
+  const bodyComponent = containerComponent
+  bodyComponent.set('tagName', 'body')
+
+  // Test items state - should wrap in array
+  const result = dataTree.getValue(itemsStateExpression, bodyComponent, true)
+  expect(result).toEqual([
+    { id: 1, name: 'Afghanistan', code: 'AF' },
+    { id: 2, name: 'Albania', code: 'AL' },
+    { id: 3, name: 'Algeria', code: 'DZ' }
+  ])
+})
+
+describe('getValue function - previewIndex + filter bug', () => {
+  test('should handle previewIndex with filter correctly - reproduces bug', () => {
+    // Create the first filter that returns the first element of an array
+    const firstFilter: Filter = {
+      type: 'filter',
+      id: 'first',
+      label: 'first',
+      validate: (field) => !!field && field.kind === 'list',
+      output: (field) => field, // Simplified output function
+      apply: (arr) => Array.isArray(arr) ? arr[0] : arr,
+      options: {}
+    }
+
+    // Set up the data tree with the filter
+    const dataTree = new DataTree(editor, {
+      filters: [firstFilter],
+      dataSources: []
+    })
+
+    // Mock preview data - the structure should match what the property token expects
+    // Since fieldId is 'continents', it should be directly available in the data source
+    dataTree.previewData = {
+      'ds-1': {
+        continents: [
+          { __typename: 'Continent', name: 'Africa' },
+          { __typename: 'Continent', name: 'Antarctica' },
+          { __typename: 'Continent', name: 'Asia' },
+          { __typename: 'Continent', name: 'Europe' },
+          { __typename: 'Continent', name: 'North America' },
+          { __typename: 'Continent', name: 'Oceania' },
+          { __typename: 'Continent', name: 'South America' }
+        ]
+      }
+    }
+
+    // Create the problematic expression
+    const expression: Expression = [
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'continents',
+        dataSourceId: 'ds-1',
+        kind: 'list',
+        label: 'continents',
+        typeIds: ['Continent'],
+        previewIndex: 2, // Should select Asia (index 2)
+        options: { filter: '{}' }
+      },
+      {
+        type: 'filter',
+        id: 'first',
+        label: 'first',
+        options: {}
+      },
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'name',
+        dataSourceId: 'ds-1',
+        kind: 'scalar',
+        label: 'name',
+        typeIds: ['String'],
+        options: {}
+      }
+    ]
+
+    const component = containerComponent
+    const result = dataTree.getValue(expression, component, true, null)
+
+    // This test should FAIL initially because of the bug
+    // The expected result should be 'Asia' (continent at index 2)
+    // But due to the bug, it returns null because:
+    // 1. Step 1 gets continents[2] = Asia continent object
+    // 2. Step 2 applies 'first' filter to single object -> undefined/null
+    // 3. Step 3 tries to get 'name' from null -> null
+    console.log('🧪 Test result:', result)
+    expect(result).toBe('Asia') // This should FAIL initially
+  })
+
+  test('should handle previewIndex without filter correctly - control test', () => {
+    const dataTree = new DataTree(editor, {
+      filters: [],
+      dataSources: []
+    })
+
+    // Mock preview data
+    dataTree.previewData = {
+      'ds-1': {
+        continents: [
+          { name: 'Africa' },
+          { name: 'Antarctica' },
+          { name: 'Asia' },
+          { name: 'Europe' }
+        ]
+      }
+    }
+
+    // Expression without filter (should work correctly)
+    const expression: Expression = [
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'continents',
+        dataSourceId: 'ds-1',
+        kind: 'list',
+        label: 'continents',
+        typeIds: ['Continent'],
+        previewIndex: 2, // Should select Asia (index 2)
+        options: {}
+      },
+      {
+        type: 'property',
+        propType: 'field',
+        fieldId: 'name',
+        dataSourceId: 'ds-1',
+        kind: 'scalar',
+        label: 'name',
+        typeIds: ['String'],
+        options: {}
+      }
+    ]
+
+    const component = containerComponent
+    const result = dataTree.getValue(expression, component, true, null)
+
+    // This should work correctly
+    expect(result).toBe('Asia')
+  })
 })

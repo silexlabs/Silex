@@ -1,12 +1,23 @@
-import { Expression, Field, FieldKind, IDataSource, IDataSourceModel, Options, Token, TypeId } from './types'
-import { DataSourceEditor } from '.'
+import { Expression, Field, FieldKind, IDataSource, Options, Token, TypeId } from './types'
+import { Editor } from 'grapesjs'
 import { getParentByPersistentId, getStateDisplayName } from './model/state'
 import { TemplateResult, html } from 'lit'
 import { Component } from 'grapesjs'
 import { fromStored, getExpressionResultType } from './model/token'
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
+import { getDataTree as getGlobalDataTree } from './model/dataSourceManager'
+import { getDataSource } from './model/dataSourceRegistry'
+import { FIXED_TOKEN_ID } from './types'
 
 export const NOTIFICATION_GROUP = 'Data source'
+
+/**
+ * Get the DataTree instance using the global manager
+ * Uses the new functional approach
+ */
+export function getDataTreeFromUtils(editor?: Editor) {
+  return getGlobalDataTree()
+}
 
 /**
  * Get the display name of a field
@@ -80,7 +91,7 @@ export function getTokenDisplayName(component: Component, token: Token): string 
  * Group tokens by type
  * This is used to create the groups in dropdowns
  */
-export function groupByType(editor: DataSourceEditor, component: Component, completion: Token[], expression: Expression): Record<string, Token[]> {
+export function groupByType(editor: Editor, component: Component, completion: Token[], expression: Expression): Record<string, Token[]> {
   return completion
     .reduce((acc, token) => {
       let label
@@ -90,17 +101,17 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
         if(token.dataSourceId) {
           if(expression.length > 0) {
             try {
-              const type = getExpressionResultType(expression, component, editor.DataSourceManager.getDataTree())
+              const type = getExpressionResultType(expression, component, getDataTreeFromUtils(editor))
               label = type?.label ?? type?.id ?? 'Unknown'
             } catch(e) {
               // FIXME: notify user
-              console.error('Error while getting expression result type in groupByType', {expression, component, dataTree: editor.DataSourceManager.getDataTree()})
+              console.error('Error while getting expression result type in groupByType', {expression, component, dataTree: getDataTreeFromUtils(editor)})
               label = 'Unknown'
             }
           } else {
-            const dataSource: IDataSourceModel = editor.DataSourceManager.get(token.dataSourceId)
+            const dataSource = getDataSource(token.dataSourceId)
             if(dataSource) {
-              label = dataSource.get('label') || token.dataSourceId
+              label = (dataSource as any).label || (dataSource as any).get?.('label') || token.dataSourceId
             } else {
               console.error('Data source not found', token.dataSourceId)
               editor.runCommand('notifications:add', {
@@ -136,7 +147,6 @@ export function groupByType(editor: DataSourceEditor, component: Component, comp
  * Create a "fixed" token
  * It is a hard coded content with which you can start an expression
  */
-export const FIXED_TOKEN_ID = 'fixed'
 export function getFixedToken(value: string): Token {
   return {
     type: 'property',
@@ -184,8 +194,8 @@ export function toId(token: Token): string {
  * Revert an option's tag value to a token
  * @throws Error if the token type is not found
  */
-export function fromString(editor: DataSourceEditor, id: string, componentId: string | null): Token {
-  return fromStored(JSON.parse(id), editor.DataSourceManager.getDataTree(), componentId) as Token
+export function fromString(editor: Editor, id: string, componentId: string | null): Token {
+  return fromStored(JSON.parse(id), getDataTreeFromUtils(editor), componentId) as Token
 }
 
 /**
@@ -253,8 +263,8 @@ export function convertKind(field: Field | null, from: FieldKind, to: FieldKind)
  * Get the type of a field, as provided by the data source
  * @throws Error if the field has a token with an unknown type
  */
-export function getFieldType(editor: DataSourceEditor, field: Field | null, key: string | undefined, componentId: string | null): Field | null {
-  const dataTree = editor.DataSourceManager.getDataTree()
+export function getFieldType(editor: Editor, field: Field | null, key: string | undefined, componentId: string | null): Field | null {
+  const dataTree = getDataTreeFromUtils(editor)
   if (!field || !key) return null
   const types = field.typeIds.map(typeId => dataTree.getType(typeId, field.dataSourceId ?? null, componentId))
   const fields = types.map(type => type?.fields.find(field => field.label === key))
@@ -278,8 +288,8 @@ export function getFieldType(editor: DataSourceEditor, field: Field | null, key:
  * Generate a form to edit the options of a token
  * @throws Error if the field has a token with an unknown type
  */
-export function optionsFormKeySelector(editor: DataSourceEditor, field: Field | null, options: Options, name: string): TemplateResult {
-  const dataTree = editor.DataSourceManager.getDataTree()
+export function optionsFormKeySelector(editor: Editor, field: Field | null, options: Options, name: string): TemplateResult {
+  const dataTree = getDataTreeFromUtils(editor)
   if (!field) return html`
       <label>${name}
         <input type="text" name=${name} />

@@ -1,0 +1,6 @@
+{
+  "data": {
+    "__typename": "Query",
+    "continents": []
+  }
+}

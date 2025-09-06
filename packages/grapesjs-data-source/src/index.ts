@@ -16,40 +16,34 @@
  */
 
 import commands from './commands'
-import { DataSourceManager } from './model/DataSourceManager'
+import { initializeDataSourceManager, refreshDataSources } from './model/dataSourceManager'
 import storage from './storage'
-import { COMMAND_REFRESH, DATA_SOURCE_ERROR, DataSourceEditor, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
+import { DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
 import { createDataSource, NOTIFICATION_GROUP } from './utils'
 import view from './view'
+import { Editor } from 'grapesjs'
 
 /**
  * Export the public API
  */
-export * from './model/state'
-export * from './model/DataTree'
-export * from './model/DataSourceManager'
-export * from './model/token'
-export * from './model/completion'
+// Main public API - this is what apps should use
+export * from './api'
+
+// Types and interfaces that apps need
 export * from './types'
-export * from './utils'
-export * from './view/state-editor'
-export * from './commands'
 
 /**
  * GrapeJs plugin entry point
  */
-export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions> = {}) => {
+export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => {
   const options: DataSourceEditorOptions = {
     dataSources: [],
     filters: [],
+    previewActive: true, // Default to preview active
     ...opts,
     view: {
       el: '.gjs-pn-panel.gjs-pn-views-container',
       ...opts?.view,
-    },
-    commands: {
-      refresh: COMMAND_REFRESH,
-      ...opts?.commands,
     },
   }
 
@@ -58,15 +52,15 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
     .map(ds => ({ ...ds, readonly: true }))
     // Create the data sources from config
     .map((ds: IDataSourceOptions) => createDataSource(ds))
-  
+
   // Connect the data sources (async)
   Promise.all(dataSources
     .map(ds => ds.connect()))
     // .then(() => console.info('Data sources connected'))
     .catch(err => console.error('Error while connecting data sources', err))
 
-  // Register the data source manager
-  editor.DataSourceManager = new DataSourceManager(dataSources, editor, options)
+  // Initialize the global data source manager
+  initializeDataSourceManager(dataSources, editor, options)
 
   // Register the UI for component properties
   view(editor, options)
@@ -79,6 +73,19 @@ export default (editor: DataSourceEditor, opts: Partial<DataSourceEditorOptions>
 
   // Use grapesjs-notifications plugin for errors
   editor.on(DATA_SOURCE_ERROR, (msg: string, ds: IDataSource) => editor.runCommand('notifications:add', { type: 'error', message: `Data source \`${ds.id}\` error: ${msg}`, group: NOTIFICATION_GROUP }))
+
+  // Load data after editor is fully loaded
+  editor.on('load', () => {
+    refreshDataSources()
+  })
+
+  // Also refresh data when storage loads (to handle website data loading)
+  editor.on('storage:end:load', () => {
+    // Use setTimeout to ensure components are fully loaded
+    setTimeout(() => {
+      refreshDataSources()
+    }, 100)
+  })
 }
 
 /**

@@ -17,17 +17,17 @@
 
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 import { StoredState, getState, getStateIds, removeState, setState } from '../model/state'
-import { DataSourceEditor, Token  } from '../types'
+import { Token  } from '../types'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
 import { DataTree } from '../model/DataTree'
-import { cleanStateName } from '../utils'
+import { cleanStateName, getDataTreeFromUtils } from '../utils'
 
 interface Item {
   name: string
@@ -37,9 +37,8 @@ interface Item {
 
 /**
  * Editor for selected element's states
- * 
+ *
  */
-@customElement('custom-states-editor')
 export class CustomStatesEditor extends LitElement {
   @property({type: Boolean})
     disabled = false
@@ -81,10 +80,10 @@ export class CustomStatesEditor extends LitElement {
     helpLink = ''
 
   private _reservedNames: string[] = []
-  private editor: DataSourceEditor | null = null
+  private editor: Editor | null = null
   private redrawing = false
 
-  setEditor(editor: DataSourceEditor) {
+  setEditor(editor: Editor) {
     if (this.editor) {
       console.warn('property-editor setEditor already set')
       return
@@ -261,7 +260,7 @@ export class CustomStatesEditor extends LitElement {
         ${ref(el => {
     if (el) {
       const stateEditor = el as StateEditor
-      stateEditor.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name)
+      stateEditor.data = this.getTokens(getDataTreeFromUtils(this.editor!), selected, name)
     }
   })}
         @change=${() => this.onChange(selected, name, label)}
@@ -336,14 +335,14 @@ export class CustomStatesEditor extends LitElement {
       this.setState(component, item.name, item.state)
     })
   }
-  
+
   /**
    * Create a new custom state
    */
   createCustomState(component: Component): Item | null {
     const label = cleanStateName(prompt(this.createPrompt, this.defaultName))
     if (!label) return null
-    
+
     if(this.reservedNames.includes(label)) {
       alert(`The name ${label} is reserved, please choose another name`)
       return null
@@ -362,8 +361,6 @@ export class CustomStatesEditor extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'custom-states-editor': CustomStatesEditor
-  }
+if(!customElements.get('custom-states-editor')) {
+  customElements.define('custom-states-editor', CustomStatesEditor)
 }

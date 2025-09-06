@@ -15,9 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { Expression, StateId, State } from '../types'
-import { DataSourceEditor } from '..'
 
 /**
  * @fileoverview This file contains the model for components states
@@ -76,7 +75,7 @@ export function getOrCreatePersistantId(component: Component): PersistantId {
 /**
  * Find a component by its persistant ID in the current page
  */
-export function getComponentByPersistentId(id: PersistantId, editor: DataSourceEditor): Component | null {
+export function getComponentByPersistentId(id: PersistantId, editor: Editor): Component | null {
   const pages = editor.Pages.getAll()
   for(const page of pages) {
     const body = page.getMainComponent()
@@ -87,7 +86,7 @@ export function getComponentByPersistentId(id: PersistantId, editor: DataSourceE
 }
 
 /**
- * Find a component by its persistant ID in 
+ * Find a component by its persistant ID in
  */
 export function getChildByPersistantId(id: PersistantId, parent: Component): Component | null {
   if(getPersistantId(parent) === id) return parent

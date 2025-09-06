@@ -1,0 +1,79 @@
+{
+  "dataSources": [],
+  "assets": [],
+  "styles": [
+    {
+      "selectors": [
+        "#i0f6"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#ikha"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#izij"
+      ],
+      "wrapper": 1,
+      "style": {}
+    }
+  ],
+  "pages": [
+    {
+      "frames": [
+        {
+          "component": {
+            "type": "wrapper",
+            "stylable": [
+              "background",
+              "background-color",
+              "background-image",
+              "background-repeat",
+              "background-attachment",
+              "background-position",
+              "background-size"
+            ],
+            "attributes": {
+              "id": "imnu"
+            },
+            "components": [
+              {
+                "attributes": {
+                  "id": "i0f6"
+                },
+                "components": [
+                  {
+                    "tagName": "h1",
+                    "type": "text",
+                    "attributes": {
+                      "id": "ikha"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "About this demo"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "head": {
+              "type": "head"
+            },
+            "docEl": {
+              "tagName": "html"
+            }
+          },
+          "id": "CWkwORyYHAzFZcwo"
+        }
+      ],
+      "id": "yrhlf8hT03KZ8BbD"
+    }
+  ],
+  "symbols": []
+}

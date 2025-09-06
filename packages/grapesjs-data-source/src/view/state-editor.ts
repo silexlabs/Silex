@@ -16,19 +16,21 @@
  */
 
 import {LitElement, TemplateResult, html} from 'lit'
-import {customElement, property} from 'lit/decorators.js'
-import { PROPERTY_STYLES } from './defaultStyles'
-import { DATA_SOURCE_CHANGED, DataSourceEditor, Filter, Property, Token } from '..'
-
+import {property} from 'lit/decorators.js'
 import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { FIXED_TOKEN_ID, fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
+import { PROPERTY_STYLES } from './defaultStyles'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, Filter, FIXED_TOKEN_ID, Property, State, StoredProperty, Token } from '../types'
+import { fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue, getDataTreeFromUtils } from '../utils'
 import { ExpressionInput, PopinForm } from '@silexlabs/expression-input'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 
 import '@silexlabs/expression-input'
 import { getCompletion } from '../model/completion'
 import { fromStored, getExpressionResultType } from '../model/token'
+import { StoredState, StoredStateWithId } from '../model/state'
+
+const PREVIEW_INDEX_CHANGED = 'PREVIEW_INDEX_CHANGED'
 
 /**
  * Editor for a state of the selected element's properties
@@ -50,7 +52,6 @@ import { fromStored, getExpressionResultType } from '../model/token'
  *
  */
 
-@customElement('state-editor')
 export class StateEditor extends LitElement {
   @property({type: Boolean})
     disabled = false
@@ -61,6 +62,11 @@ export class StateEditor extends LitElement {
   @property({type: Boolean, attribute: 'hide-loop-data'})
     hideLoopData = false
 
+  /**
+   * If true, will show a UI to edit previewIndex of __data
+   */
+  @property({type: Boolean, attribute: 'show-preview-index-ui'})
+    showPreviewIndexUi = false
   /**
    * used in the expressions found in filters options
    * This will be used to filter states which are not defined yet
@@ -88,6 +94,11 @@ export class StateEditor extends LitElement {
   }
   set selected(value: Component | null) {
     this._selected = value
+    // Update selected preview index
+    const token = this._data.slice(-1)[0]
+    if(token) {
+      this.previewIndex = token.previewIndex || 0
+    }
     this.requestUpdate()
   }
 
@@ -115,10 +126,15 @@ export class StateEditor extends LitElement {
     for = ''
 
   /**
+   * The previewIndex for the loop data
+   */
+  @property({ type: Number }) previewIndex = 0
+
+  /**
    * Binded listeners
    */
   private onFormdata_ = this.onFormdata.bind(this)
-  private renderBinded = this.requestUpdate.bind(this)
+  private renderBinded = () => this.requestUpdate()
 
   override connectedCallback() {
     super.connectedCallback()
@@ -132,13 +148,13 @@ export class StateEditor extends LitElement {
       this.form = this.closest('form')
     }
 
-    this.editor?.on(DATA_SOURCE_CHANGED, () => this.renderBinded())
+    this.editor?.on(`${DATA_SOURCE_CHANGED} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
   }
 
   override disconnectedCallback() {
     this.form = null
     super.disconnectedCallback()
-    this.editor?.off(DATA_SOURCE_CHANGED, this.renderBinded)
+    this.editor?.off(`${DATA_SOURCE_CHANGED} ${PREVIEW_INDEX_CHANGED} ${DATA_SOURCE_DATA_LOAD_END}`, this.renderBinded)
   }
 
   /**
@@ -227,12 +243,12 @@ export class StateEditor extends LitElement {
     if (this.editor) this.requestUpdate()
   }
 
-  private _editor: DataSourceEditor | null = null
+  private _editor: Editor | null = null
   @property({type: Object})
-  get editor(): DataSourceEditor | null {
+  get editor(): Editor | null {
     return this._editor
   }
-  set editor(value: DataSourceEditor | null) {
+  set editor(value: Editor | null) {
     this._editor = value
     this.requestUpdate()
   }
@@ -242,6 +258,7 @@ export class StateEditor extends LitElement {
   private popinsRef: Ref<PopinForm>[] = []
 
   override render() {
+    this.noFilters = false
     this.redrawing = true
     super.render()
     if(!this.name) throw new Error('name is required on state-editor')
@@ -252,7 +269,7 @@ export class StateEditor extends LitElement {
     }
 
     const selected = this.selected
-    const dataTree = this.editor.DataSourceManager.getDataTree()
+    const dataTree = getDataTreeFromUtils(this.editor)
     // FIXME: fromStored every time we render is not efficient, it is supposed to have been done before
     const _currentValue = this._data.map(token => fromStored(token, dataTree, selected.getId()))
 
@@ -279,6 +296,22 @@ export class StateEditor extends LitElement {
     // Fixed text
     const text = fixed ? (_currentValue![0] as Property)?.options?.value || '' : ''
 
+    let currentData = '' as unknown
+    try {
+      const realData = dataTree.getValue(_currentValue || [], selected, !this.showPreviewIndexUi)
+      currentData = realData
+    } catch(e) {
+      console.error('Current data could not be retrieved:', e)
+    }
+    if (typeof currentData === 'undefined' || currentData === null) currentData = ''
+    const currentDataArrayLength = Array.isArray(currentData) ? (currentData as Array<unknown>).length : 0
+    const previewIndex = (_currentValue[_currentValue.length - 1] as State)?.previewIndex
+    // Update selected preview index
+    if(this.previewIndex !== previewIndex) {
+      this.previewIndex = previewIndex || 0
+    }
+    const rangeInputRef = createRef<HTMLInputElement>()
+    const numberInputRef = createRef<HTMLInputElement>()
     // Build the expression input
     const result = html`
       <expression-input
@@ -394,9 +427,52 @@ export class StateEditor extends LitElement {
           </select>
       ` : ''}
       </expression-input>
-    `
+      <div class="ds-real-data">
+        <code class="ds-real-data__display">
+          ${Array.isArray(currentData) ? html`${currentData.length} objects with ${Object.keys(currentData[0] || {}).filter(k => k !== '__typename').join(', ')}` : currentData}
+        </code>
+        ${this.showPreviewIndexUi && (currentDataArrayLength > 0 && typeof previewIndex !== 'undefined') ? html`
+        <div class="ds-real-data__preview-index">
+          <input
+            ${ref(rangeInputRef)}
+            type="range"
+            step="1"
+            min="0"
+            .max=${currentDataArrayLength - 1}
+            .value=${this.previewIndex}
+            @input=${(event: InputEvent) => {
+    const value = (event.target as HTMLInputElement).value
+    this.onChangePreview(parseInt(value))
+    if (numberInputRef.value) numberInputRef.value.value = value
+  }}
+          >
+          <input
+              ${ref(numberInputRef)}
+              type="number"
+            step="1"
+            min="0"
+            .max=${currentDataArrayLength - 1}
+            .value=${this.previewIndex}
+            @input=${(event: InputEvent) => {
+    const value = (event.target as HTMLInputElement).value
+    this.onChangePreview(parseInt(value))
+    if (rangeInputRef.value) rangeInputRef.value.value =  value
+  }}
+            >
+            ` : ''}
+        </div>
+        `
     this.redrawing = false
     return result
+  }
+
+  private onChangePreview(index: number) {
+    const state = this._selected?.attributes.privateStates.find((s: StoredStateWithId) => s.id === '__data') as StoredState
+    if(state?.expression.length > 0) {
+      const token = state.expression[state.expression.length - 1] as StoredProperty
+      token.previewIndex = index
+    }
+    this.editor?.trigger(PREVIEW_INDEX_CHANGED)
   }
 
   private onChangeValue(event: Event) {
@@ -418,6 +494,7 @@ export class StateEditor extends LitElement {
     } else {
       // Event coming from the options
     }
+    // Stop default behavior of inputs
     event.preventDefault()
     event.stopImmediatePropagation()
     event.stopPropagation()
@@ -470,7 +547,7 @@ export class StateEditor extends LitElement {
 
   private getOptions(component: Component, tokens: Token[], idx: number): TemplateResult | '' {
     if(!this.editor) throw new Error('editor is required')
-    const dataTree = this.editor.DataSourceManager.getDataTree()
+    const dataTree = getDataTreeFromUtils(this.editor)
     const token = tokens[idx]
     const beforeToken = tokens.slice(0, idx)
     const fields = beforeToken
@@ -498,8 +575,6 @@ export class StateEditor extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'state-editor': StateEditor
-  }
+if(!window.customElements.get('state-editor')) {
+  window.customElements.define('state-editor', StateEditor)
 }

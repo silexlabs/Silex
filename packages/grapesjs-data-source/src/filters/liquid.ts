@@ -16,10 +16,9 @@
  */
 
 import { Field, Filter, Options } from '../types'
-import { DataSourceEditor } from '..'
 import { html } from 'lit'
 import { convertKind, getFieldType } from '../utils'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 
 /**
  * Check if a field is a number
@@ -51,7 +50,7 @@ export function isDate(field: Field | null, scalarOnly = true): boolean {
 /**
  * Liquid filters
  */
-export default function(editor: DataSourceEditor): Filter[] {
+export default function(editor: Editor): Filter[] {
   return [
     {
       type: 'filter',
@@ -383,7 +382,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       label: 'reverse',
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
-      apply: (arr) => (arr as unknown[]).reverse(),
+      apply: (arr) => [...(arr as unknown[])].reverse(),
       options: {},
     }, {
       type: 'filter',
@@ -637,7 +636,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       label: 'default',
       validate: (field: Field | null) => !!field && field.kind === 'scalar',
       output: field => field,
-      apply: (value, options) => value ?? options.value,
+      apply: (value, options) => value || options.value,
       options: {
         value: '',
       },
@@ -874,7 +873,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       label: 'downcase',
       validate: (field: Field | null) => isString(field),
       output: type => type,
-      apply: (str) => (str as string).toLowerCase(),
+      apply: (str) => str ? (str as string).toLowerCase() : '',
       options: {},
     }, {
       type: 'filter',
@@ -882,7 +881,7 @@ export default function(editor: DataSourceEditor): Filter[] {
       label: 'upcase',
       validate: (field: Field | null) => isString(field),
       output: type => type,
-      apply: (str) => (str as string).toUpperCase(),
+      apply: (str) => str ? (str as string).toUpperCase() : '',
       options: {},
     }, {
       type: 'filter',
@@ -901,13 +900,14 @@ export default function(editor: DataSourceEditor): Filter[] {
       validate: (field: Field | null) => !!field && field.kind === 'list',
       output: field => field,
       apply: (arr, options) => {
-        const count = options.count as number ?? 1
+        const count = parseInt(options.count as string || '1')
+        console.log({count, options})
         return (arr as unknown[])
           .sort(() => 0.5 - Math.random())
           .slice(0, count)
       },
       options: {
-        count: 1,
+        count: '1',
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Count

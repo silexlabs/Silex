@@ -1,0 +1,650 @@
+{
+  "dataSources": [
+    {
+      "id": "ds-1",
+      "label": "Squidex",
+      "url": "https://cloud.squidex.io/api/content/silex-me/graphql",
+      "type": "graphql",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "readonly": false
+    }
+  ],
+  "assets": [],
+  "styles": [
+    {
+      "selectors": [
+        "test"
+      ],
+      "style": {
+        "background-color": "red",
+        "margin": "10px 10px 10px 10px",
+        "color": "white",
+        "padding": "10px 10px 10px 10px"
+      }
+    },
+    {
+      "selectors": [
+        "#i8uf"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#it6g"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#ien3"
+      ],
+      "wrapper": 1,
+      "style": {}
+    },
+    {
+      "selectors": [
+        "test2"
+      ],
+      "style": {
+        "border": "1px solid #00882e",
+        "margin": "10px 10px 10px 10px",
+        "background-image": "unset",
+        "background-repeat": "unset",
+        "background-position": "unset",
+        "background-attachment": "unset",
+        "background-size": "unset",
+        "background-color": "orange"
+      }
+    },
+    {
+      "selectors": [
+        "#i6m6e"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#it6g-2"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#it6g-3"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "#it6g-4"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "modules"
+      ],
+      "style": {
+        "margin": "10px 10px 10px 10px",
+        "padding": "10px 10px 10px 10px",
+        "border": "1px solid black",
+        "background-color": "white"
+      }
+    },
+    {
+      "selectors": [
+        "test",
+        "module-type"
+      ],
+      "style": {}
+    },
+    {
+      "selectors": [
+        "module-type"
+      ],
+      "style": {}
+    }
+  ],
+  "pages": [
+    {
+      "frames": [
+        {
+          "component": {
+            "type": "wrapper",
+            "stylable": [
+              "background",
+              "background-color",
+              "background-image",
+              "background-repeat",
+              "background-attachment",
+              "background-position",
+              "background-size"
+            ],
+            "attributes": {
+              "id": "ien3"
+            },
+            "components": [
+              {
+                "classes": [
+                  "test2"
+                ],
+                "attributes": {
+                  "id": "i8uf"
+                },
+                "components": [
+                  {
+                    "tagName": "p",
+                    "type": "text",
+                    "classes": [
+                      "test"
+                    ],
+                    "attributes": {
+                      "id": "it6g"
+                    },
+                    "components": [
+                      {
+                        "type": "textnode",
+                        "content": "TEST"
+                      }
+                    ],
+                    "privateStates": [
+                      {
+                        "id": "innerHTML",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i8uf-1552",
+                            "previewIndex": 19,
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Page)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "flatData",
+                            "label": "flatData",
+                            "typeIds": [
+                              "PageFlatDataDto"
+                            ],
+                            "dataSourceId": "ds-1",
+                            "kind": "object",
+                            "options": {},
+                            "previewIndex": 19
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "label",
+                            "label": "label",
+                            "typeIds": [
+                              "String"
+                            ],
+                            "dataSourceId": "ds-1",
+                            "kind": "scalar",
+                            "options": {},
+                            "previewIndex": 19
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "classes": [
+                      "modules"
+                    ],
+                    "attributes": {
+                      "id": "i6m6e"
+                    },
+                    "components": [
+                      {
+                        "tagName": "p",
+                        "type": "text",
+                        "classes": [
+                          "module-type"
+                        ],
+                        "attributes": {
+                          "id": "it6g-4"
+                        },
+                        "components": [
+                          {
+                            "type": "textnode",
+                            "content": "TEST"
+                          }
+                        ],
+                        "privateStates": [
+                          {
+                            "id": "innerHTML",
+                            "expression": [
+                              {
+                                "type": "state",
+                                "storedStateId": "__data",
+                                "componentId": "i6m6e-4076",
+                                "previewIndex": 0,
+                                "exposed": false,
+                                "forceKind": "object",
+                                "label": "Loop data (PageDataModulesChildDto)"
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "item",
+                                "label": "item",
+                                "typeIds": [
+                                  "SimpleHeroComponent"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "object",
+                                "options": {}
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "type",
+                                "label": "type",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "scalar",
+                                "options": {}
+                              }
+                            ]
+                          },
+                          {
+                            "id": "condition",
+                            "expression": [
+                              {
+                                "type": "state",
+                                "storedStateId": "__data",
+                                "componentId": "i6m6e-4076",
+                                "previewIndex": 0,
+                                "exposed": false,
+                                "forceKind": "object",
+                                "label": "Loop data (PageDataModulesChildDto)"
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "item",
+                                "label": "item",
+                                "typeIds": [
+                                  "SimpleHeroComponent"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "object",
+                                "options": {}
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "type",
+                                "label": "type",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "scalar",
+                                "options": {}
+                              }
+                            ]
+                          },
+                          {
+                            "id": "condition2",
+                            "expression": [
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "fixed",
+                                "label": "Fixed value",
+                                "kind": "scalar",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "options": {
+                                  "value": "simple-hero"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "conditionOperator": "=="
+                      },
+                      {
+                        "tagName": "p",
+                        "type": "text",
+                        "attributes": {
+                          "id": "it6g-3"
+                        },
+                        "components": [
+                          {
+                            "type": "textnode",
+                            "content": "TEST"
+                          }
+                        ],
+                        "privateStates": [
+                          {
+                            "id": "innerHTML",
+                            "expression": [
+                              {
+                                "type": "state",
+                                "storedStateId": "__data",
+                                "componentId": "i6m6e-4076",
+                                "previewIndex": 0,
+                                "exposed": false,
+                                "forceKind": "object",
+                                "label": "Loop data (PageDataModulesChildDto)"
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "item",
+                                "label": "item",
+                                "typeIds": [
+                                  "SpecialHeadingComponent"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "object",
+                                "options": {}
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "type",
+                                "label": "type",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "scalar",
+                                "options": {}
+                              }
+                            ]
+                          },
+                          {
+                            "id": "condition",
+                            "expression": [
+                              {
+                                "type": "state",
+                                "storedStateId": "__data",
+                                "componentId": "i6m6e-4076",
+                                "previewIndex": 0,
+                                "exposed": false,
+                                "forceKind": "object",
+                                "label": "Loop data (PageDataModulesChildDto)"
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "item",
+                                "label": "item",
+                                "typeIds": [
+                                  "SpecialHeadingComponent"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "object",
+                                "options": {}
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "type",
+                                "label": "type",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "scalar",
+                                "options": {}
+                              }
+                            ]
+                          },
+                          {
+                            "id": "condition2",
+                            "expression": [
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "fixed",
+                                "label": "Fixed value",
+                                "kind": "scalar",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "options": {
+                                  "value": "special-heading"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "conditionOperator": "=="
+                      },
+                      {
+                        "tagName": "p",
+                        "type": "text",
+                        "classes": [
+                          "module-type"
+                        ],
+                        "attributes": {
+                          "id": "it6g-2"
+                        },
+                        "components": [
+                          {
+                            "type": "textnode",
+                            "content": "TEST"
+                          }
+                        ],
+                        "privateStates": [
+                          {
+                            "id": "innerHTML",
+                            "expression": [
+                              {
+                                "type": "state",
+                                "storedStateId": "__data",
+                                "componentId": "i6m6e-4076",
+                                "previewIndex": 0,
+                                "exposed": false,
+                                "forceKind": "object",
+                                "label": "Loop data (PageDataModulesChildDto)"
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "item",
+                                "label": "item",
+                                "typeIds": [
+                                  "SectionSquaresComponent"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "object",
+                                "options": {}
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "type",
+                                "label": "type",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "scalar",
+                                "options": {}
+                              }
+                            ]
+                          },
+                          {
+                            "id": "condition",
+                            "expression": [
+                              {
+                                "type": "state",
+                                "storedStateId": "__data",
+                                "componentId": "i6m6e-4076",
+                                "previewIndex": 0,
+                                "exposed": false,
+                                "forceKind": "object",
+                                "label": "Loop data (PageDataModulesChildDto)"
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "item",
+                                "label": "item",
+                                "typeIds": [
+                                  "SectionSquaresComponent"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "object",
+                                "options": {}
+                              },
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "type",
+                                "label": "type",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "dataSourceId": "ds-1",
+                                "kind": "scalar",
+                                "options": {}
+                              }
+                            ]
+                          },
+                          {
+                            "id": "condition2",
+                            "expression": [
+                              {
+                                "type": "property",
+                                "propType": "field",
+                                "fieldId": "fixed",
+                                "label": "Fixed value",
+                                "kind": "scalar",
+                                "typeIds": [
+                                  "String"
+                                ],
+                                "options": {
+                                  "value": "section-squares"
+                                }
+                              }
+                            ]
+                          }
+                        ],
+                        "conditionOperator": "=="
+                      }
+                    ],
+                    "privateStates": [
+                      {
+                        "id": "__data",
+                        "expression": [
+                          {
+                            "type": "state",
+                            "storedStateId": "__data",
+                            "componentId": "i8uf-1552",
+                            "exposed": false,
+                            "forceKind": "object",
+                            "label": "Loop data (Page)"
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "flatData",
+                            "label": "flatData",
+                            "typeIds": [
+                              "PageFlatDataDto"
+                            ],
+                            "dataSourceId": "ds-1",
+                            "kind": "object",
+                            "options": {}
+                          },
+                          {
+                            "type": "property",
+                            "propType": "field",
+                            "fieldId": "modules",
+                            "label": "modules",
+                            "typeIds": [
+                              "PageDataModulesChildDto"
+                            ],
+                            "dataSourceId": "ds-1",
+                            "kind": "list",
+                            "options": {},
+                            "previewIndex": 0
+                          }
+                        ]
+                      }
+                    ],
+                    "id-plugin-data-source": "i6m6e-4076"
+                  }
+                ],
+                "privateStates": [
+                  {
+                    "id": "__data",
+                    "expression": [
+                      {
+                        "options": {
+                          "top": "",
+                          "skip": "0",
+                          "filter": "",
+                          "orderby": "",
+                          "search": "",
+                          "collation": "",
+                          "random": ""
+                        },
+                        "type": "property",
+                        "propType": "field",
+                        "fieldId": "queryPageContents",
+                        "label": "queryPageContents",
+                        "typeIds": [
+                          "Page"
+                        ],
+                        "dataSourceId": "ds-1",
+                        "kind": "list"
+                      },
+                      {
+                        "type": "filter",
+                        "id": "slice",
+                        "label": "slice",
+                        "options": {
+                          "start": "[{\"type\":\"property\",\"propType\":\"field\",\"fieldId\":\"fixed\",\"label\":\"Fixed value\",\"kind\":\"scalar\",\"typeIds\":[\"String\"],\"options\":{\"value\":\"0\"}}]",
+                          "end": "[{\"type\":\"property\",\"propType\":\"field\",\"fieldId\":\"fixed\",\"label\":\"Fixed value\",\"kind\":\"scalar\",\"typeIds\":[\"String\"],\"options\":{\"value\":\"3\"}}]"
+                        },
+                        "optionsKeys": [
+                          "start",
+                          "end"
+                        ],
+                        "previewIndex": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "innerHTML",
+                    "expression": []
+                  },
+                  {
+                    "id": "condition",
+                    "expression": []
+                  }
+                ],
+                "id-plugin-data-source": "i8uf-1552"
+              }
+            ],
+            "head": {
+              "type": "head"
+            },
+            "docEl": {
+              "tagName": "html"
+            }
+          },
+          "id": "TETymAqsMCCKxiaU"
+        }
+      ],
+      "id": "zkypwTMLCNARDWe8"
+    }
+  ],
+  "symbols": []
+}

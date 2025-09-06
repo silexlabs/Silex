@@ -15,11 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import Backbone from 'backbone'
 import { IDataSourceOptions, Type, Field, Tree, TypeId, IDataSource, DATA_SOURCE_ERROR, builtinTypeIds, builtinTypes, FieldKind, DATA_SOURCE_READY, DATA_SOURCE_CHANGED } from '../types'
 import graphqlIntrospectionQuery from './graphql-introspection-query'
 import dedent from 'dedent-js'
-import { FIXED_TOKEN_ID } from '../utils'
+import { FIXED_TOKEN_ID } from '../types'
 import { buildArgs } from '../model/token'
 
 /**
@@ -42,6 +41,7 @@ interface GraphQLQueryOptions {
  */
 export interface GraphQLOptions extends GraphQLQueryOptions, IDataSourceOptions {
   serverToServer?: GraphQLQueryOptions
+  hidden?: boolean
 }
 
 // GraphQL specific types
@@ -70,24 +70,57 @@ export interface GQLType {
 
 /**
  * GraphQL DataSource implementation
- * This is a Backbone model used in the DataSourceManager collection
+ * Simple JS object that implements IDataSource interface
  */
-export default class GraphQL extends Backbone.Model<GraphQLOptions> implements IDataSource {
+export default class GraphQL implements IDataSource {
   id: string
+  label: string
+  url: string
+  type = 'graphql' as const
+  method: 'GET' | 'POST' = 'POST'
+  headers: Record<string, string> = {}
+  queryable?: TypeId[]
+  readonly?: boolean
+  hidden?: boolean
+
   protected types: Type[] = []
   protected queryables: Field[] = []
   protected queryType: string = ''
   protected ready = false
+  private eventListeners: Record<string, ((...args: unknown[]) => void)[]> = {}
 
   constructor(options: GraphQLOptions) {
-    super(options)
     this.id = options.id.toString()
-    this.set('id', options.id)
-    this.set('label', options.label)
-    this.set('url', options.url)
-    this.set('headers', options.headers)
-    this.set('queryable', options.queryable)
-    this.set('readonly', options.readonly)
+    this.label = options.label
+    this.url = options.url
+    this.type = options.type
+    this.method = options.method || 'POST'
+    this.headers = options.headers || {}
+    this.queryable = options.queryable
+    this.readonly = options.readonly
+    this.hidden = options.hidden
+  }
+
+  // Simple event handling
+  on(event: string, callback: (...args: unknown[]) => void): void {
+    if (!this.eventListeners[event]) {
+      this.eventListeners[event] = []
+    }
+    this.eventListeners[event].push(callback)
+  }
+
+  off(event: string, callback?: (...args: unknown[]) => void): void {
+    if (!this.eventListeners[event]) return
+    if (callback) {
+      this.eventListeners[event] = this.eventListeners[event].filter(cb => cb !== callback)
+    } else {
+      this.eventListeners[event] = []
+    }
+  }
+
+  trigger(event: string, ...args: unknown[]): void {
+    if (!this.eventListeners[event]) return
+    this.eventListeners[event].forEach(callback => callback(...args))
   }
 
   /**
@@ -143,12 +176,12 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
         }))
         // Map to Type
         .map(({type, kind}) => this.graphQLToType(allTypes, type, kind, true))
-      
+
       // Get all queryables as fields
       const queryableFields = query.fields
         // Map to Field
         .map((field: GQLField) => this.graphQLToField(field))
-      
+
       // Return all types, queryables and non-queryables
       return [queryableTypes.concat(nonQueryables), queryableFields, queryType]
     } catch (e) {
@@ -159,7 +192,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     const kind = this.ofKindToKind(field.type)
     return {
       id: field.name,
-      dataSourceId: this.get('id')!,
+      dataSourceId: this.id,
       label: field.name,
       typeIds: this.graphQLToTypes(field),
       kind: kind ? this.graphQLToKind(kind) : 'unknown',
@@ -259,10 +292,10 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * Convert a GraphQL type to a Type
    */
   protected graphQLToType(allTypes: TypeId[], type: GQLType, kind: GQLKind | null, queryable: boolean): Type {
-    const queryableOverride = this.get('queryable')
+    const queryableOverride = this.queryable
     const result = {
       id: type.name,
-      dataSourceId: this.get('id')!,
+      dataSourceId: this.id,
       label: type.name,
       fields: type.fields
         // Do not include fields that are not in the schema
@@ -298,9 +331,9 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
       if (this.ready) {
         this.trigger(DATA_SOURCE_CHANGED, this)
       } else {
+        this.ready = true
         this.trigger(DATA_SOURCE_READY, this)
       }
-      this.ready = true
     } catch (e) {
       return this.triggerError(`GraphQL connection failed: ${(e as Error).message}`)
     }
@@ -319,6 +352,15 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    * This has to be implemented as it is a DataSource method
    */
   getTypes(): Type[] {
+    if (!this.ready) {
+      console.error('DataSource is not ready. Attempted to get types before ready status was achieved.')
+      throw new Error('DataSource is not ready. Ensure it is connected and ready before querying.')
+    }
+
+    if (this.types.length === 0) {
+      console.error('No types available. It seems the data source may not be connected or the schema is incomplete.', this.ready)
+      throw new Error('No types found. The data source may not be connected or there might be an issue with the schema.')
+    }
     return this.types
   }
 
@@ -335,11 +377,11 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
    */
   protected async call(query: string): Promise<unknown> {
     // Retrieve the URL for the GraphQL endpoint
-    const url = this.get('url')
+    const url = this.url
     if (!url) return this.triggerError('Missing GraphQL URL') // Ensure the URL is provided
 
     // Retrieve the headers for the GraphQL request
-    const headers = this.get('headers')
+    const headers = this.headers
     if (!headers) return this.triggerError('Missing GraphQL headers') // Ensure headers are provided
 
     // Ensure the Content-Type header is set to 'application/json', normalizing the case
@@ -347,7 +389,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     headers[key || 'Content-Type'] = headers[key || 'Content-Type'] || 'application/json'
 
     // Retrieve the HTTP method (defaulting to 'POST' for GraphQL queries)
-    const method = this.get('method') ?? 'POST'
+    const method = this.method ?? 'POST'
 
     // Make the HTTP request to the GraphQL endpoint
     const response = await fetch(url, {
@@ -376,7 +418,7 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     return this.getQueryRecursive({
       // Add the main query object which is the root of the tree
       token: {
-        dataSourceId: this.get('id'),
+        dataSourceId: this.id,
         fieldId: 'query',
         kind: 'object',
         typeIds: [this.queryType],
@@ -454,12 +496,8 @@ export default class GraphQL extends Backbone.Model<GraphQLOptions> implements I
     }
   }
 
-  //async getData(query: Query): Promise<any[]> {
-  //  const result = await this.call(`
-  //      query {
-  //        ${this.buildQuery(query)}
-  //      }
-  //    `) as any
-  //  return result.data.Query[query.name]
-  //}
+  async fetchValues(query: string): Promise<unknown[]> {
+    const result = await this.call(query) as { data: unknown[] }
+    return result.data
+  }
 }

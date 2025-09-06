@@ -17,32 +17,31 @@
 
 import {LitElement, html} from 'lit'
 import { ref } from 'lit/directives/ref.js'
-import {customElement, property} from 'lit/decorators.js'
+import {property} from 'lit/decorators.js'
 
 import './state-editor'
 import { StateEditor } from './state-editor'
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
-import { BinariOperator, DataSourceEditor, Properties, Token, UnariOperator } from '../types'
+import { BinaryOperator, Properties, Token, UnariOperator } from '../types'
 import { getState, setState } from '../model/state'
 import { DataTree } from '../model/DataTree'
-import { getFixedToken } from '../utils'
+import { getFixedToken, getDataTreeFromUtils } from '../utils'
 
 /**
  * Editor for selected element's properties
- * 
+ *
  * Usage:
- * 
+ *
  * ```
  * <properties-editor disabled>
  *   <style> / * Custom styles * / </style>
  * </properties-editor>
  * ```
- * 
+ *
  */
 
-@customElement('properties-editor')
 export class PropertiesEditor extends LitElement {
   @property({type: Boolean})
     disabled = false
@@ -57,10 +56,10 @@ export class PropertiesEditor extends LitElement {
     __data: undefined,
   }
 
-  private editor: DataSourceEditor | null = null
+  private editor: Editor | null = null
   private redrawing = false
 
-  setEditor(editor: DataSourceEditor) {
+  setEditor(editor: Editor) {
     if (this.editor) {
       console.warn('property-editor setEditor already set')
       return
@@ -110,7 +109,7 @@ export class PropertiesEditor extends LitElement {
         <details class="ds-states__help">
           <summary>Help</summary>
           Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
-          <a target="_blank" href="https://docs.silex.me/en/user/cms#properties">Learn more about element properties</a>
+          <a target="_blank" href="https://docs.silex.me/en/user/cms-concepts#properties">Learn more about element properties</a>
         </details>
         <main>
           ${[
@@ -138,13 +137,13 @@ export class PropertiesEditor extends LitElement {
           >
           </div>
           ${ Object.values<string>(UnariOperator)
-    .concat(Object.values(BinariOperator))
+    .concat(Object.values(BinaryOperator))
     .map(operator => html`
                 <option value="${operator}" .selected=${selected.get('conditionOperator') === operator} >${operator}</option>
               `)
 }
           </select>
-          ${ this.renderStateEditor(selected, '', Properties.condition2, false, false, selected.has('conditionOperator') && Object.values(BinariOperator).includes(selected.get('conditionOperator'))) }
+          ${ this.renderStateEditor(selected, '', Properties.condition2, false, false, selected.has('conditionOperator') && Object.values(BinaryOperator).includes(selected.get('conditionOperator'))) }
         </main>
       </section>
       <section class="ds-section">
@@ -179,6 +178,7 @@ export class PropertiesEditor extends LitElement {
         name=${name}
         default-fixed=${this.defaultFixed}
         ?hide-loop-data=${hideLoopData}
+        ?show-preview-index-ui=${name === Properties.__data}
         ${ref(el => {
     // Get the stateEditor ref
     if (el) {
@@ -197,7 +197,7 @@ export class PropertiesEditor extends LitElement {
       const stateEditorFinally = this.inputs[name]!.stateEditor
       this.redrawing = true
       try {
-        stateEditorFinally.data = this.getTokens(this.editor!.DataSourceManager.getDataTree(), selected, name, publicState)
+        stateEditorFinally.data = this.getTokens(getDataTreeFromUtils(this.editor!), selected, name, publicState)
       } catch (e) {
         console.error('Error setting data', e)
         stateEditorFinally.data = [getFixedToken(`Error setting data: ${e}`)]
@@ -218,10 +218,20 @@ export class PropertiesEditor extends LitElement {
   onChange(component: Component, name: Properties, publicState: boolean) {
     const {stateEditor} = this.inputs[name]!
     if(this.redrawing) return
-    setState(component, name, {
-      expression: stateEditor.data,
-    }, publicState)
+    if (name === Properties.__data) {
+      setState(component, name, {
+        expression: stateEditor.data.slice(0, -1).concat({
+          ...stateEditor.data[stateEditor.data.length - 1],
+          previewIndex: 0,
+        } as unknown as Token),
+      }, publicState)
+    } else {
+      setState(component, name, {
+        expression: stateEditor.data,
+      }, publicState)
+    }
   }
+
   getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
@@ -229,8 +239,6 @@ export class PropertiesEditor extends LitElement {
   }
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    'properties-editor': PropertiesEditor
-  }
+if(!window.customElements.get('properties-editor')) {
+  window.customElements.define('properties-editor', PropertiesEditor)
 }

@@ -15,16 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Page } from 'grapesjs'
-import { Context, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceEditor, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
-import { getState, getParentByPersistentId, getStates } from './state'
+import { Component, Page, Editor } from 'grapesjs'
+import { ComponentExpression, DATA_SOURCE_CHANGED, DATA_SOURCE_READY, DataSourceId, Expression, Field, Filter, FIXED_TOKEN_ID, IDataSource, Property, State, StoredToken, Tree, Type, TypeId } from '../types'
+import { getState, getParentByPersistentId, getStates, getPersistantId } from './state'
 import { fromStored, getOptionObject } from './token'
 import { getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
-
-interface ComponentExpression {
-  expression: Expression
-  component: Component
-}
 
 /**
  * Options of the data tree
@@ -87,7 +82,23 @@ export const STANDARD_TYPES: Type[] = [
 
 export class DataTree {
   public dataSources: IDataSource[] = []
+  // Preview data returned by all APIs (for canvas preview only)
+  private _previewData: Record<DataSourceId, unknown> = {}
   public filters: Filter[] = []
+
+  // Add getter/setter with logging to track when previewData is modified
+  get previewData(): Record<DataSourceId, unknown> {
+    return this._previewData
+  }
+
+  set previewData(value: Record<DataSourceId, unknown>) {
+    // console.log('🔧 DataTree.previewData SET:', {
+    //   old: Object.keys(this._previewData),
+    //   new: Object.keys(value || {}),
+    //   stack: new Error().stack?.split('\n')[1]?.trim()
+    // })
+    this._previewData = value
+  }
 
   /**
    * All types from all data sources
@@ -106,7 +117,7 @@ export class DataTree {
     return this._queryables
   }
 
-  constructor(protected editor: DataSourceEditor, protected options: {dataSources: IDataSource[], filters: Filter[]}) {
+  constructor(protected editor: Editor, protected options: {dataSources: IDataSource[], filters: Filter[]}) {
     this.dataSources = options.dataSources
     this.filters = options.filters
 
@@ -122,21 +133,18 @@ export class DataTree {
       this._allTypes = this.getAllTypes()
       this._queryables = this.getAllQueryables()
     })
-    this._allTypes = this.getAllTypes()
-    this._queryables = this.getAllQueryables()
   }
 
   /**
    * Get type from typeId and dataSourceId
    */
   getTypes(dataSourceId?: DataSourceId): Type[] {
-    const types = this.dataSources
-      // Get the data source
+    // Get the data source
+    const ds = this.dataSources
       .find((dataSource: IDataSource) => dataSource.id === dataSourceId)
-      // Get its types
-      ?.getTypes()
-    if(!types) throw new Error(`Data source not found ${dataSourceId}`)
-    return types
+    if(!ds) throw new Error(`Data source not found ${dataSourceId}`)
+    if(!ds.isConnected()) throw new Error(`Data source ${dataSourceId} is not ready (not connected)`)
+    return ds.getTypes()
   }
 
   /**
@@ -180,6 +188,7 @@ export class DataTree {
    */
   getAllTypes(): Type[] {
     return this.dataSources
+      .filter((dataSource: IDataSource) => dataSource.isConnected())
       .flatMap((dataSource: IDataSource) => {
         return dataSource.getTypes()
       })
@@ -190,6 +199,7 @@ export class DataTree {
    */
   getAllQueryables(): Field[] {
     return this.dataSources
+      .filter((dataSource: IDataSource) => dataSource.isConnected())
       .flatMap((dataSource: IDataSource) => {
         return dataSource.getQueryables()
       })
@@ -197,10 +207,134 @@ export class DataTree {
 
   /**
    * Evaluate an expression to a value
+  */
+  getValue(
+    expression: Expression,
+    component: Component,
+    resolvePreviewIndex = true, // False only for loop
+    prevValues: unknown = null,
+  ): unknown {
+    if (expression.length === 0) {
+      return prevValues
+    }
+
+    // Always create defensive copies of tokens to prevent mutations from affecting original data
+    // When resolvePreviewIndex is false (for loop data), also clear any existing preview indices
+    const cleanExpression = expression.map(token => {
+      return { ...token }
+    })
+    const [token, ...rest] = cleanExpression
+
+    switch (token.type) {
+    case 'state': {
+      const state = token as State
+      const resolvedExpression = this.resolveState(state, component)
+      if (!resolvedExpression) {
+        throw new Error(`Unable to resolve state: ${JSON.stringify(state)}`)
+      }
+
+      // Special handling for items state - always wrap result in array when resolvePreviewIndex is true
+      const previewIndex = resolvedExpression[resolvedExpression.length - 1].previewIndex
+      if (state.storedStateId === 'items' && typeof previewIndex !== 'undefined') {
+        // @ts-expect-error - Adding runtime property for items state handling
+        resolvedExpression[0].isItems = true
+      }
+      return this.getValue(resolvedExpression.concat(...rest), component, resolvePreviewIndex, prevValues)
+    }
+
+    case 'property': {
+      // Handle the case of a "fixed" property (hard coded string set by the user)
+      if (token.fieldId === FIXED_TOKEN_ID) {
+        return this.getValue(rest, component, resolvePreviewIndex, token.options?.value)
+      }
+
+      // Handle the case where the property refers to the first level of the data source
+      // Or it can be a key in the previewly computed data
+      let prevObj
+      if (typeof prevValues === 'undefined' || prevValues === null) {
+        if (!token.dataSourceId) {
+          throw new Error(`Data source ID is missing for token: ${JSON.stringify(token)}`)
+        }
+        prevObj = this.previewData[token.dataSourceId]
+      } else {
+        prevObj = prevValues
+      }
+
+      // Now get the next value
+      let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
+
+      // Always handle preview index if resolvePreviewIndex is true
+      if (resolvePreviewIndex) {
+        value = this.handlePreviewIndex(value, token)
+      }
+
+      // For non-final tokens, always handle preview index regardless of resolvePreviewIndex
+      if (rest.length > 0 && !resolvePreviewIndex) {
+        value = this.handlePreviewIndex(value, token)
+      }
+      // @ts-expect-error - Runtime property check for items handling
+      if (token.isItems && typeof token.previewIndex !== 'undefined') {
+        if(rest.length > 0) {
+          value = [value]
+        }
+      }
+      return this.getValue(rest, component, resolvePreviewIndex, value)
+    }
+    case 'filter': {
+      const options = Object.entries(token.options).reduce((acc, [key, value]) => {
+        acc[key] = this.getValue(toExpression(value) || [], component, resolvePreviewIndex, null)
+        return acc
+      }, {} as Record<string, unknown>)
+
+      const filter = this.filters.find(f => f.id === token.id)
+      if (!filter) {
+        throw new Error(`Filter not found: ${token.id}`)
+      }
+
+      let value
+      try {
+        // value = filter.apply([prevValues], options)
+        value = filter.apply(prevValues, options)
+      } catch(e) {
+        console.warn(`Filter "${filter.id}" error:`, e, {
+          filter: filter.id,
+          prevValues,
+          options,
+          valueType: typeof prevValues,
+          isArray: Array.isArray(prevValues),
+          isNull: prevValues === null
+        })
+        // Mimic behavior of liquid - return the input value unchanged
+        return null
+        // return this.getValue(rest, component, resolvePreviewIndex, prevValues)
+      }
+
+      // Always handle preview index if resolvePreviewIndex is true, or if there are more tokens
+      if (resolvePreviewIndex || rest.length > 0) {
+        value = this.handlePreviewIndex(value, token)
+      }
+
+      return this.getValue(rest, component, resolvePreviewIndex, value)
+    }
+
+    default:
+      throw new Error(`Unsupported token type: ${token}`)
+    }
+  }
+
+  /**
+   * Handle preview index for a given value and token
    */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getValue(context: Context, expression: ComponentExpression): unknown {
-    throw new Error('Not implemented')
+  handlePreviewIndex(value: unknown, token: StoredToken): unknown {
+    if (typeof token.previewIndex === 'undefined') {
+      return value
+    }
+
+    if(Array.isArray(value)) {
+      const result = value[token.previewIndex]
+      return result
+    }
+    return value
   }
 
   /**
@@ -239,18 +373,21 @@ export class DataTree {
    * Get all expressions used by a component
    */
   getComponentExpressions(component: Component): ComponentExpression[] {
+    const publicStates = getStates(component, true)
+    const privateStates = getStates(component, false)
+
     return ([] as ComponentExpression[])
       // Visible states (custom / user defined)
       .concat(
         // For each state
-        getStates(component, true)
+        publicStates
           // Add the component
           .map(({expression}) => ({expression, component}))
       )
       // Hidden states (loop / internals)
       .concat(
         // For each state
-        getStates(component, false)
+        privateStates
           // Add the component
           .map(({expression}) => ({expression, component}))
       )
@@ -438,13 +575,13 @@ export class DataTree {
   resolveState(state: State, component: Component): Expression | null {
     const parent = getParentByPersistentId(state.componentId, component)
     if (!parent) {
-      console.warn('Component not found for state', state)
+      console.error('Component not found for state', state, component.get('id-plugin-data-source'), component.parent()?.get('id-plugin-data-source'), getPersistantId(component.parent()!))
       return null
     }
     // Get the expression of the state
     const storedState = getState(parent, state.storedStateId, state.exposed)
     if (!storedState?.expression) {
-      console.warn('State is not defined on component', parent, state)
+      console.warn('State is not defined on component', parent.getId(), state, storedState)
       return null
     }
     return storedState.expression
