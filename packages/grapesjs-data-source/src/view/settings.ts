@@ -60,6 +60,12 @@ const COMMON_STYLES = css`
     [readonly] {
       font-style: italic;
     }
+
+    /* Modal specific styles */
+    :host(.ds-modal) {
+      max-width: 600px;
+      width: 90vw;
+    }
 `
 
 export default (editor: Editor, options: Partial<DataSourceEditorViewOptions> = {}) => {
@@ -85,6 +91,7 @@ function renderSettings(editor: Editor, dsSettings: Ref, settingsEl: HTMLElement
     <ds-settings
       ${ref(dsSettings)}
       .dataSources=${[]}
+      .editor=${editor}
       @change=${(e: CustomEvent) => {
     const ds = e.detail as IDataSource
     // Handle data source changes - this may need to be reimplemented
@@ -117,68 +124,183 @@ class SettingsDataSources extends LitElement {
   @property({ type: Array })
     dataSources: IDataSource[]
 
+  @property({ type: Object })
+    editor: Editor | null
+
   constructor() {
     super()
     this.dataSources = []
+    this.editor = null
   }
 
   connectedCallback() {
     super.connectedCallback()
   }
 
+  openDataSourceModal(dataSource: IDataSource | null = null) {
+    if (!this.editor) return
+
+    const isEdit = !!dataSource
+    const title = isEdit ? 'Edit Data Source' : 'Add Data Source'
+
+    // Create or use existing data source
+    const ds = dataSource || new GraphQL(getDefaultOptions(this.dataSources.length.toString()))
+
+    // Create the form element
+    const formElement = document.createElement('ds-settings__data-source') as SettingsDataSource
+    formElement.dataSource = ds
+
+    // Handle form events
+    const handleSave = () => {
+      if (isEdit) {
+        this.dispatchEvent(new CustomEvent('change', { detail: ds }))
+      } else {
+        this.dispatchEvent(new CustomEvent('add', { detail: ds }))
+      }
+      this.editor!.Modal.close()
+    }
+
+    const handleDelete = () => {
+      this.dispatchEvent(new CustomEvent('delete', { detail: ds }))
+      this.editor!.Modal.close()
+    }
+
+    formElement.addEventListener('change', handleSave)
+    if (isEdit) {
+      formElement.addEventListener('delete', handleDelete)
+    }
+
+    // Open the modal
+    this.editor.Modal.open({
+      title,
+      content: formElement,
+      attributes: { class: 'ds-modal' }
+    })
+  }
+
   static styles = [
     COMMON_STYLES,
     css`
-      .ds-btn-prim--large {
-        padding: 10px;
-        margin: auto;
-        display: block;
+      .ds-settings {
+        padding: 16px 0;
       }
-      .ds-btn-prim--icon {
-        background-color: var(--ds-primary);
-        position: absolute;
-        right: 20px;
+      .ds-empty-state {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        text-align: center;
+      }
+      .ds-empty-state__content {
+        max-width: 300px;
+      }
+      .ds-empty-state__title {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        color: inherit;
+      }
+      .ds-empty-state__description {
+        margin: 0 0 24px 0;
+        color: var(--gjs-light-color);
+        line-height: 1.4;
+      }
+      .ds-data-sources {
+        margin-bottom: 16px;
+      }
+      .ds-add-section {
+        padding: 16px 0;
+        border-top: 1px solid var(--ds-button-bg);
+        text-align: center;
+      }
+      .ds-btn-prim--large {
+        padding: 12px 24px;
+        font-size: 14px;
       }
     `,
   ]
 
   protected render() {
-    const dsDataSource: Ref<SettingsDataSources> = createRef()
-    const options: GraphQLOptions = getDefaultOptions(this.dataSources.length.toString())
+    const visibleDataSources = this.dataSources.filter(ds => !ds.hidden)
+
     return html`
-    <section>
-    <!--
-      <button
-        type="button"
-        class="ds-btn-prim ds-btn-prim--icon"
-        @click=${() => {
-    this.dispatchEvent(new CustomEvent('add-top', { detail: options }))
-  }}>\u2795</button>
-    -->
-      <hr class="ds-separator">
-      ${repeat(this.dataSources.filter(ds => !ds.hidden), (ds: IDataSource) => ds.id, (ds: IDataSource) => html`
-        <ds-settings__data-source
-          ${ref(dsDataSource)}
-          .dataSource=${ds}
-          @change=${(e: CustomEvent) => {
-    e.preventDefault()
-    e.stopImmediatePropagation()
-    this.dispatchEvent(new CustomEvent('change', { detail: ds }))
+      <section class="ds-settings">
+        ${visibleDataSources.length === 0 ? html`
+          <div class="ds-empty-state">
+            <div class="ds-empty-state__content">
+              <h3 class="ds-empty-state__title">No Data Sources</h3>
+              <p class="ds-empty-state__description">
+                Connect to GraphQL APIs to display dynamic data in your website
+              </p>
+              <button
+                type="button"
+                class="ds-btn-prim ds-btn-prim--large"
+                @click=${() => this.openDataSourceModal()}
+              >
+                Add Your First Data Source
+              </button>
+            </div>
+          </div>
+        ` : html`
+          <div class="ds-data-sources">
+            ${repeat(visibleDataSources, (ds: IDataSource) => ds.id, (ds: IDataSource) => html`
+              <ds-data-source-card
+                .dataSource=${ds}
+                data-id=${ds.id}
+                @edit=${(e: CustomEvent) => this.openDataSourceModal(e.detail)}
+                @test=${(e: CustomEvent) => this.testConnection(e.detail)}
+                @delete=${(e: CustomEvent) => {
+    this.dispatchEvent(new CustomEvent('delete', { detail: e.detail }))
   }}
-          @delete=${() => {
-    this.dispatchEvent(new CustomEvent('delete', { detail: ds }))
-  }}
-          ></ds-settings__data-source>
-          <hr class="ds-separator">
-      `)}
-      <button
-        type="button"
-        class="ds-btn-prim ds-btn-prim--large"
-        @click=${() => {
-    this.dispatchEvent(new CustomEvent('add', { detail: options }))
-  }}>Add a Data Source</button>
-    </section>
+              ></ds-data-source-card>
+            `)}
+          </div>
+          <div class="ds-add-section">
+            <button
+              type="button"
+              class="ds-btn-prim"
+              @click=${() => this.openDataSourceModal()}
+            >
+              Add Data Source
+            </button>
+          </div>
+        `}
+      </section>
     `
+  }
+
+  testConnection(dataSource: IDataSource) {
+    // Find the card component to update its loading state
+    const cardElement = this.shadowRoot?.querySelector(`ds-data-source-card[data-id="${dataSource.id}"]`) as DataSourceCard
+    if (cardElement) {
+      cardElement.isTestingConnection = true
+    }
+
+    // Create a temporary form element to handle the connection test
+    const tempForm = document.createElement('ds-settings__data-source') as SettingsDataSource
+    tempForm.dataSource = dataSource
+
+    // Override the original connectDataSource to handle card updates
+    tempForm.connectDataSource = () => {
+      if (cardElement) {
+        cardElement.isTestingConnection = true
+      }
+
+      dataSource.connect().then(() => {
+        if (cardElement) {
+          cardElement.isTestingConnection = false
+        }
+        this.dispatchEvent(new CustomEvent('change', { detail: dataSource }))
+        this.requestUpdate()
+      }).catch((err: Error) => {
+        console.error('Data source connection error', { err })
+        if (cardElement) {
+          cardElement.isTestingConnection = false
+        }
+        this.requestUpdate()
+      })
+    }
+
+    tempForm.connectDataSource()
   }
 }
 
@@ -192,6 +314,11 @@ class SettingsDataSource extends LitElement {
     dataSource: IDataSource | null
   errorMessage: string = ''
   connected: boolean = false
+  isLoading: boolean = false
+
+  private loadingIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"><animate attributeName="r" values="3;8;3" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/></circle></svg>`
+  private connectedIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`
+  private unknownIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="2"/></svg>`
 
   constructor() {
     super()
@@ -204,15 +331,21 @@ class SettingsDataSource extends LitElement {
 
   connectDataSource() {
     if(!this.dataSource) throw new Error('No data source provided')
+    this.isLoading = true
+    this.errorMessage = ''
+    this.requestUpdate()
+
     this.dataSource.connect().then(() => {
       this.dispatchEvent(new CustomEvent('change'))
       this.errorMessage = ''
       this.connected = true
+      this.isLoading = false
       this.requestUpdate()
     }).catch((err: Error) => {
       console.error('Data source connection error', { err })
       this.errorMessage = err.message
       this.connected = false
+      this.isLoading = false
       this.requestUpdate()
     })
   }
@@ -242,12 +375,41 @@ class SettingsDataSource extends LitElement {
     .ds-property__wrapper--vert {
       flex-direction: column;
     }
-    .ds-button-bar {
+    .ds-status-section {
+      margin: 10px 0;
+    }
+    .ds-status-item {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .ds-status-loading {
+      background-color: var(--gjs-main-dark-color);
+      color: var(--ds-highlight);
+    }
+    .ds-status-success {
+      background-color: var(--gjs-main-dark-color);
+      color: var(--ds-primary);
+    }
+    .ds-status-error {
+      background-color: var(--gjs-main-dark-color);
+      color: var(--ds-highlight);
+    }
+    .ds-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-start;
+      margin-top: 15px;
     }
     .ds-no-resize {
       flex: 0 0 auto;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
     `,
     COMMON_STYLES,
@@ -340,30 +502,35 @@ class SettingsDataSource extends LitElement {
             ?readonly=${this.dataSource.readonly !== false}
             ></ds-settings__headers>
         </details>
-        <div class="ds-field ds-button-bar">
-          <div>
-            <div>
-              <p>Status: ${this.dataSource.isConnected() ? '\u2713 Connected' : '\u2717 Unknown'}</p>
-              <p>${this.errorMessage}</p>
-            </div>
+
+        <div class="ds-field">
+          <div class="ds-status-section">
+            ${this.isLoading
+    ? html`<div class="ds-status-item ds-status-loading">${this.loadingIcon} Testing connection...</div>`
+    : this.errorMessage
+      ? html`<div class="ds-status-item ds-status-error">Error: ${this.errorMessage}</div>`
+      : this.dataSource.isConnected()
+        ? html`<div class="ds-status-item ds-status-success">${this.connectedIcon} Connection successful</div>`
+        : ''
+}
           </div>
-          <div class="ds-no-resize">
-            <div>
-              ${this.dataSource.readonly !== false ? '' : html`
-                <button
-                  type="button"
-                  class="ds-btn-prim ds-btn-danger"
-                  @click=${() => {
+        </div>
+
+        <div class="ds-field ds-actions">
+          <button
+            type="submit"
+            class="ds-btn-prim"
+            ?disabled=${this.isLoading}
+            >${this.isLoading ? 'Testing...' : 'Test Connection'}</button>
+          ${this.dataSource.readonly !== false ? '' : html`
+            <button
+              type="button"
+              class="ds-btn-prim ds-btn-danger"
+              @click=${() => {
     this.dispatchEvent(new CustomEvent('delete'))
   }}
-                >Delete</button>
-              `}
-              <button
-                type="submit"
-                class="ds-btn-prim ds-btn-primary"
-                >Test connection</button>
-            </div>
-          </div>
+            >Delete Data Source</button>
+          `}
         </div>
       </div>
     </form>
@@ -373,6 +540,155 @@ class SettingsDataSource extends LitElement {
 
 if(!customElements.get('ds-settings__data-source')) {
   customElements.define('ds-settings__data-source', SettingsDataSource)
+}
+
+/**
+ * Compact card component for displaying data source summary
+ */
+class DataSourceCard extends LitElement {
+  @property({ type: Object })
+    dataSource: IDataSource | null
+
+  @property({ type: Boolean })
+    isTestingConnection: boolean = false
+
+  private loadingIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"><animate attributeName="r" values="3;8;3" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/></circle></svg>`
+  private connectedIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`
+
+  constructor() {
+    super()
+    this.dataSource = null
+    this.isTestingConnection = false
+  }
+
+  static styles = [
+    css`
+      .ds-card {
+        background-color: var(--gjs-main-dark-color);
+        border: 1px solid var(--ds-button-bg);
+        border-radius: 6px;
+        padding: 16px;
+        margin: 8px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: border-color 0.2s ease;
+      }
+      .ds-card:hover {
+        border-color: var(--ds-highlight);
+      }
+      .ds-card__info {
+        flex: 1;
+        min-width: 0;
+      }
+      .ds-card__title {
+        font-weight: 500;
+        margin: 0 0 4px 0;
+        color: inherit;
+      }
+      .ds-card__url {
+        font-size: 12px;
+        color: var(--gjs-light-color);
+        margin: 0 0 8px 0;
+        word-break: break-all;
+      }
+      .ds-card__status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+      }
+      .ds-card__status--connected {
+        color: var(--ds-primary);
+      }
+      .ds-card__status--loading {
+        color: var(--ds-highlight);
+      }
+      .ds-card__actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .ds-card__btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        background-color: var(--gjs-main-light-color);
+        color: inherit;
+        transition: background-color 0.2s ease;
+      }
+      .ds-card__btn:hover {
+        background-color: var(--ds-button-bg);
+      }
+      .ds-card__btn--danger {
+        color: var(--ds-highlight);
+        background-color: transparent;
+      }
+      .ds-card__btn--danger:hover {
+        background-color: rgba(255, 0, 0, 0.1);
+      }
+      .ds-card__btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    `,
+    COMMON_STYLES,
+  ]
+
+  protected render() {
+    if (!this.dataSource) return html``
+
+    const isConnected = this.dataSource.isConnected()
+
+    return html`
+      <div class="ds-card">
+        <div class="ds-card__info">
+          <h4 class="ds-card__title">${this.dataSource.label || 'Unnamed Data Source'}</h4>
+          <p class="ds-card__url">${this.dataSource.url || 'No URL configured'}</p>
+          ${this.isTestingConnection ? html`
+            <div class="ds-card__status ds-card__status--loading">
+              ${this.loadingIcon} Testing...
+            </div>
+          ` : isConnected ? html`
+            <div class="ds-card__status ds-card__status--connected">
+              ${this.connectedIcon} Connected
+            </div>
+          ` : ''}
+        </div>
+        <div class="ds-card__actions">
+          <button
+            class="ds-card__btn"
+            @click=${() => this.dispatchEvent(new CustomEvent('edit', { detail: this.dataSource }))}
+            ?disabled=${this.isTestingConnection}
+          >
+            Edit
+          </button>
+          <button
+            class="ds-card__btn"
+            @click=${() => this.dispatchEvent(new CustomEvent('test', { detail: this.dataSource }))}
+            ?disabled=${this.isTestingConnection}
+          >
+            ${this.isTestingConnection ? 'Testing...' : 'Test'}
+          </button>
+          ${this.dataSource.readonly !== false ? '' : html`
+            <button
+              class="ds-card__btn ds-card__btn--danger"
+              @click=${() => this.dispatchEvent(new CustomEvent('delete', { detail: this.dataSource }))}
+              ?disabled=${this.isTestingConnection}
+            >
+              Delete
+            </button>
+          `}
+        </div>
+      </div>
+    `
+  }
+}
+
+if(!customElements.get('ds-data-source-card')) {
+  customElements.define('ds-data-source-card', DataSourceCard)
 }
 
 class SettingsHeaders extends LitElement {
