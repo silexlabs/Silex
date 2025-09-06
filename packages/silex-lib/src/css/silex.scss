@@ -60,11 +60,70 @@
 }
 
 // full screen settings
-.settings-dialog > div {
-  max-width: none;
-  width: 100%;
+.settings-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
   height: 100vh;
+  z-index: $z-dialog-inline;
+  pointer-events: auto;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+
+  .settings-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--primaryColor);
+    overflow: hidden;
+  }
+  .settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--gjs-border-color, #ddd);
+  }
+  .settings-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  .settings-close {
+    color: inherit;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-body {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+  }
+  .settings-body .silex-form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .settings-body .silex-sidebar-dialog {
+    flex: 1;
+  }
+  footer {
+    position: fixed;
+    z-index: 10;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px 0;
+  }
   form.silex-form {
     padding-bottom: 100px; // leave space for fixed footer
     textarea {
@@ -91,7 +150,7 @@
     .silex-version {
       float: left;
       padding: 0 15px;
-      font-size: x-small;
+      font-size: small;
     }
   }
   .CodeMirror {

@@ -32,6 +32,14 @@ const sectionsPage: SettingsSection[] = [...defaultSections]
 
 const el: HTMLDivElement = document.createElement('div')
 let modal: any | undefined // the modal var should be of type ModalModule, not Modal, but it is not exported from grapesjs
+let settingsState: {
+  isOpen: boolean
+  title: string
+  page: unknown
+  sectionId?: string
+  sender?: Button
+} | null = null
+let customSettingsDialog: HTMLDivElement | null = null
 
 export const cmdOpenSettings = 'open-settings'
 export const cmdAddSection = 'settings:add-section'
@@ -44,42 +52,175 @@ export interface AddSectionOption {
 }
 
 let headEditor: ReturnType<Editor['CodeManager']['createViewer']> | null = null
+
+
+function createCustomSettingsDialog(editor: Editor, opts: Record<string, unknown>, page: unknown, sectionId?: string): HTMLDivElement {
+  const dialog = document.createElement('div')
+  dialog.className = 'settings-dialog gjs-two-color'
+  dialog.innerHTML = `
+    <div class="settings-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+      <div class="settings-header">
+        <h3 id="settings-title">${page ? 'Page settings' : 'Site Settings'}</h3>
+        <button type="button" class="settings-close" title="Close" aria-label="Close settings">×</button>
+      </div>
+      <div class="settings-body"></div>
+    </div>
+  `
+
+  // Handle close button
+  const closeButton = dialog.querySelector('.settings-close') as HTMLButtonElement
+  closeButton.addEventListener('click', () => {
+    closeCustomSettingsDialog(editor)
+  })
+
+  // Handle keyboard shortcuts
+  dialog.addEventListener('keydown', (e: KeyboardEvent) => {
+    // Close on Escape
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      closeCustomSettingsDialog(editor)
+      return
+    }
+
+    // Save on Ctrl/Cmd + Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault()
+      const form = dialog.querySelector('form') as HTMLFormElement
+      if (form) {
+        form.requestSubmit()
+      }
+      return
+    }
+
+    // Handle Alt+C (Cancel) and Alt+A (Apply)
+    if (e.altKey) {
+      if (e.key.toLowerCase() === 'c') {
+        e.preventDefault()
+        closeCustomSettingsDialog(editor)
+        return
+      }
+      if (e.key.toLowerCase() === 'a') {
+        e.preventDefault()
+        const form = dialog.querySelector('form') as HTMLFormElement
+        if (form) {
+          form.requestSubmit()
+        }
+        return
+      }
+    }
+  })
+
+  // Add content
+  displaySettings(editor, opts, page, sectionId)
+  const body = dialog.querySelector('.settings-body') as HTMLDivElement
+  body.appendChild(el)
+
+  // Initialize focus when dialog opens
+  setTimeout(() => {
+    const firstTab = dialog.querySelector('.silex-list--menu li[role="button"]') as HTMLElement
+    if (firstTab) {
+      firstTab.focus()
+    }
+  }, 100)
+
+  // Handle form submission
+  const form = el.querySelector('form') as HTMLFormElement
+  form.onsubmit = (event: Event) => {
+    event.preventDefault()
+    editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
+    saveSettings(editor, opts, page)
+    editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
+    closeCustomSettingsDialog(editor, false)
+  }
+
+  return dialog
+}
+
+function closeCustomSettingsDialog(editor: Editor, fromCommand = false) {
+  if (customSettingsDialog) {
+    customSettingsDialog.remove()
+    customSettingsDialog = null
+  }
+  settingsState?.sender?.set && settingsState.sender.set('active', 0)
+
+  // Only call stopCommand if not already being called from the command's stop method
+  if (!fromCommand) {
+    editor.stopCommand(cmdOpenSettings)
+  }
+
+  settingsState = null
+  editor.trigger(ClientEvent.SETTINGS_CLOSE)
+}
+
+function reopenSettingsModal(editor: Editor, opts: Record<string, unknown>) {
+  console.log('reopenSettingsModal called with settingsState:', settingsState)
+  if (!settingsState) {
+    console.log('No settingsState, aborting restoration')
+    return
+  }
+
+  console.log('Reopening settings modal with title:', settingsState.title)
+  modal = editor.Modal.open({
+    title: settingsState.title,
+    content: '',
+    attributes: { class: 'settings-dialog' },
+  })
+    .onceClose(() => {
+      console.log('Restored settings modal closed')
+      settingsState?.sender?.set && settingsState.sender.set('active', 0)
+      editor.stopCommand(cmdOpenSettings)
+      settingsState = null
+    })
+
+  displaySettings(editor, opts, settingsState.page, settingsState.sectionId)
+  modal.setContent(el)
+
+  const form = el.querySelector('form') as HTMLFormElement
+  form.onsubmit = (event: Event) => {
+    event.preventDefault()
+    editor.trigger(ClientEvent.SETTINGS_SAVE_START, settingsState?.page)
+    saveSettings(editor, opts, settingsState?.page)
+    editor.trigger(ClientEvent.SETTINGS_SAVE_END, settingsState?.page)
+    editor.stopCommand(cmdOpenSettings)
+  }
+
+  console.log('Settings modal restoration completed')
+}
+
 export const settingsDialog = (
   editor: Editor,
   opts: Record<string, unknown>
 ): void => {
+  // No need to override Modal system - we use custom dialog
+
   editor.Commands.add(cmdOpenSettings, {
     run: (
       _: Editor,
       sender: Button,
       {page, sectionId}: {page?: unknown, sectionId?: string}
     ) => {
-      modal = editor.Modal.open({
-        title: page ? 'Page settings' : 'Site Settings',
-        content: '',
-        attributes: { class: 'settings-dialog' },
-      })
-        .onceClose(() => {
-          sender?.set && sender.set('active', 0)
-          editor.stopCommand(cmdOpenSettings)
-        })
-      displaySettings(editor, opts, page, sectionId)
-      modal.setContent(el)
-      const form = el.querySelector('form') as HTMLFormElement
-      form.onsubmit = (event: Event) => {
-        event.preventDefault()
-        editor.trigger(ClientEvent.SETTINGS_SAVE_START, page)
-        saveSettings(editor, opts, page)
-        editor.trigger(ClientEvent.SETTINGS_SAVE_END, page)
-        editor.stopCommand(cmdOpenSettings)
+      const title = page ? 'Page settings' : 'Site Settings'
+
+      // Store settings state
+      settingsState = {
+        isOpen: true,
+        title,
+        page,
+        sectionId,
+        sender
       }
-      form.querySelector('input')?.focus()
+
+      // Create and show custom dialog instead of using GrapesJS modal
+      customSettingsDialog = createCustomSettingsDialog(editor, opts, page, sectionId)
+      document.body.appendChild(customSettingsDialog)
+
+      // Let the first focusable element get focus naturally
+
       editor.trigger(ClientEvent.SETTINGS_OPEN, page)
-      return modal
+      return customSettingsDialog
     },
     stop: (): void => {
-      modal?.close()
-      editor.trigger(ClientEvent.SETTINGS_CLOSE)
+      closeCustomSettingsDialog(editor, true)
     },
   })
   editor.Commands.add(cmdAddSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
@@ -129,6 +270,7 @@ function showSection(item: SettingsSection): void {
   }
   Array.from(ul.querySelectorAll('.active')).forEach(el => el.classList.remove('active'))
   li.classList.add('active')
+
   const main = el.querySelector('main#settings__main') as HTMLElement
   const mainItem = main.querySelector(`#settings-${item.id}`)
   if(!mainItem) {
@@ -206,15 +348,24 @@ function displaySettings(
       </div>
       <section class="silex-sidebar-dialog">
         <aside class="silex-bar">
-          <ul class="silex-list silex-list--menu">
-            ${menuItemsCurrent.map(item => html`
+          <ul class="silex-list silex-list--menu" aria-label="Settings sections">
+            ${menuItemsCurrent.map((item, index) => html`
               <li
                 id="settings-sidebar-${item.id}"
                 class=${item.id === currentSection!.id ? 'active' : ''}
+                role="button"
+                tabindex="0"
                 @click=${(e: Event) => {
     e.preventDefault()
     showSection(item)
     editor.trigger(ClientEvent.SETTINGS_SECTION_CHANGE, item.id)
+  }}
+                @keydown=${(e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      showSection(item)
+      editor.trigger(ClientEvent.SETTINGS_SECTION_CHANGE, item.id)
+    }
   }}
               >
                 ${item.label}
@@ -226,10 +377,10 @@ function displaySettings(
             ${ sections }
         </main>
       </section>
-      <footer>
+      <footer role="contentinfo">
         <p class="silex-version">Silex ${SILEX_VERSION}</p>
-        <input class="silex-button" type="button" @click=${() => editor.stopCommand(cmdOpenSettings)} value="Cancel">
-        <input class="silex-button" type="submit" value="Apply">
+        <input class="silex-button" type="button" value="Cancel" @click=${() => editor.stopCommand(cmdOpenSettings)} accesskey="c">
+        <input class="silex-button" type="submit" value="Apply" accesskey="a">
       </footer>
     </form>
   `, el)
