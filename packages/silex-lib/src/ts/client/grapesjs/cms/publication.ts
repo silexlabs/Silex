@@ -38,7 +38,6 @@ function getFetchPluginOptions(options: EleventyPluginOptions, settings: Silex11
 
 export default function (editor: Editor, options: EleventyPluginOptions) {
   editor.on(ClientEvent.STARTUP_END, ({ config }) => {
-    console.log('PUBLI INIT', {config})
     // Generate the liquid when the site is published
     config.addPublicationTransformers({
       // Render the components when they are published

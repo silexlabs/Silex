@@ -15,10 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, WEBSITE_PAGES_FOLDER } from '../../constants'
+import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '../../constants'
 import { ServerConfig } from '../../server/config'
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '../../server/connectors/connectors'
-import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus } from '../../types'
+import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus, EMPTY_WEBSITE } from '../../types'
 import fetch from 'node-fetch'
 import crypto, { createHash } from 'crypto'
 import { join } from 'path'
@@ -750,7 +750,7 @@ export default class GitlabConnector implements StorageConnector {
         name: this.options.repoPrefix + websiteMeta.name,
       }
     }) as any
-    await this.createFile(session, project.id, WEBSITE_DATA_FILE, stringify({} as WebsiteData))
+    await this.createFile(session, project.id, WEBSITE_DATA_FILE, stringify(EMPTY_WEBSITE))
     //await this.createFile(session, project.id, WEBSITE_META_DATA_FILE, JSON.stringify(websiteMeta))
     //await this.updateWebsite(session, project.id, {} as WebsiteData)
     //await this.setWebsiteMeta(session, project.id, websiteMeta)

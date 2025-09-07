@@ -19,11 +19,11 @@ import fs from 'fs/promises'
 import { createWriteStream } from 'fs'
 import { ConnectorFile, StorageConnector, StatusCallback, ConnectorSession, toConnectorData, ConnectorFileContent} from './connectors'
 import { dirname, join } from 'path'
-import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, defaultWebsiteData, ConnectorOptions } from '../../types'
+import { ConnectorUser, WebsiteMeta, JobStatus, WebsiteId, ConnectorType, WebsiteMetaFileContent, WebsiteData, EMPTY_WEBSITE, ConnectorOptions } from '../../types'
 import { userInfo } from 'os'
 import { requiredParam } from '../utils/validation'
 import { ServerConfig } from '../config'
-import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, WEBSITE_PAGES_FOLDER } from '../../constants'
+import { DEFAULT_WEBSITE_ID, WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '../../constants'
 import { Readable } from 'stream'
 import { v4 as uuid } from 'uuid'
 import { fileURLToPath } from 'url'
@@ -88,7 +88,7 @@ export class FsStorage implements StorageConnector<FsSession> {
       const id = DEFAULT_WEBSITE_ID
       await fs.mkdir(join(this.options.path, id, this.options.assetsFolder), { recursive: true })
       await this.setWebsiteMeta({}, id, { name: 'Default website', connectorUserSettings: {} })
-      await this.updateWebsite({}, id, defaultWebsiteData)
+      await this.updateWebsite({}, id, EMPTY_WEBSITE)
       console.info(`> [FsStorage] Created ${id} in ${this.options.path}`)
     }
   }
@@ -177,7 +177,7 @@ export class FsStorage implements StorageConnector<FsSession> {
     const id = uuid()
     await fs.mkdir(join(this.options.path, id, this.options.assetsFolder), { recursive: true })
     await this.setWebsiteMeta(session, id, meta)
-    await this.updateWebsite(session, id, defaultWebsiteData)
+    await this.updateWebsite(session, id, EMPTY_WEBSITE)
     return id
   }
 

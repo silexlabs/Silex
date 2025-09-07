@@ -1,7 +1,7 @@
 import { stringify, split, merge, getPagesFolder } from './websiteDataSerialization'
 import { expect, it, describe } from '@jest/globals'
-import { WebsiteData, defaultWebsiteData } from '../../types'
-import { WEBSITE_DATA_FILE } from '../../constants'
+import { WebsiteData, EMPTY_WEBSITE } from '../../types'
+import { WEBSITE_DATA_FILE, WEBSITE_PAGES_FOLDER } from '../../constants'
 
 describe('websiteDataSerialization', () => {
   describe('stringify', () => {
@@ -22,7 +22,7 @@ describe('websiteDataSerialization', () => {
   describe('split', () => {
     it('should split website data into separate files', () => {
       const websiteData: WebsiteData = {
-        ...defaultWebsiteData,
+        ...EMPTY_WEBSITE,
         pages: [
           { id: 'page1', getName: () => 'Home' } as any,
           { id: 'page2', getName: () => 'About' } as any
@@ -32,8 +32,8 @@ describe('websiteDataSerialization', () => {
       const files = split(websiteData)
 
       expect(files).toHaveLength(3)
-      expect(files[0].path).toBe('src/home-page1.json')
-      expect(files[1].path).toBe('src/about-page2.json')
+      expect(files[0].path).toBe('pages/home-page1.json')
+      expect(files[1].path).toBe('pages/about-page2.json')
       expect(files[2].path).toBe(WEBSITE_DATA_FILE)
 
       const mainFile = JSON.parse(files[2].content)
@@ -58,13 +58,13 @@ describe('websiteDataSerialization', () => {
 
   describe('getPagesFolder', () => {
     it('should return default folder when pagesFolder is not set', () => {
-      const websiteData = { ...defaultWebsiteData }
+      const websiteData = { ...EMPTY_WEBSITE }
       const result = getPagesFolder(websiteData)
-      expect(result).toBe('src')
+      expect(result).toBe(WEBSITE_PAGES_FOLDER)
     })
 
     it('should return custom folder when pagesFolder is set', () => {
-      const websiteData = { ...defaultWebsiteData, pagesFolder: 'custom-pages' }
+      const websiteData = { ...EMPTY_WEBSITE, pagesFolder: 'custom-pages' }
       const result = getPagesFolder(websiteData)
       expect(result).toBe('custom-pages')
     })
@@ -73,7 +73,7 @@ describe('websiteDataSerialization', () => {
   describe('split with custom pages folder', () => {
     it('should use custom pages folder in file paths', () => {
       const websiteData = {
-        ...defaultWebsiteData,
+        ...EMPTY_WEBSITE,
         pagesFolder: 'custom-pages',
         pages: [{
           id: 'page1',

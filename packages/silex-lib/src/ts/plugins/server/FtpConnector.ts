@@ -19,8 +19,8 @@ import { Client } from 'basic-ftp'
 import { Readable } from 'stream'
 import { ConnectorFile, ConnectorFileContent, HostingConnector, StatusCallback, StorageConnector, contentToReadable, contentToString, toConnectorData, toConnectorEnum} from '../../server/connectors/connectors'
 import { requiredParam } from '../../server/utils/validation'
-import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, WEBSITE_PAGES_FOLDER } from '../../constants'
-import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, defaultWebsiteData, WebsiteData, ConnectorOptions } from '../../types'
+import { WEBSITE_DATA_FILE, WEBSITE_META_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '../../constants'
+import { ConnectorType, ConnectorUser, WebsiteMeta, FileMeta, JobData, JobStatus, WebsiteId, PublicationJobData, WebsiteMetaFileContent, EMPTY_WEBSITE, WebsiteData, ConnectorOptions } from '../../types'
 import { ServerConfig } from '../../server/config'
 import { join } from 'path'
 import { tmpdir } from 'os'
@@ -443,7 +443,7 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
     await this.mkdir(ftp, assetsPath)
     // create website data file
     const websiteDataPath = join(this.rootPath(session), id, WEBSITE_DATA_FILE)
-    await this.write(ftp, websiteDataPath, stringify(defaultWebsiteData))
+    await this.write(ftp, websiteDataPath, stringify(EMPTY_WEBSITE))
     // create website meta data file
     const websiteMetaDataPath = join(this.rootPath(session), id, WEBSITE_META_DATA_FILE)
     await this.write(ftp, websiteMetaDataPath, stringify({}))

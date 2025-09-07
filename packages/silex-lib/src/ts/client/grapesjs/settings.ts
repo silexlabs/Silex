@@ -153,20 +153,16 @@ function closeCustomSettingsDialog(editor: Editor, fromCommand = false) {
 }
 
 function reopenSettingsModal(editor: Editor, opts: Record<string, unknown>) {
-  console.log('reopenSettingsModal called with settingsState:', settingsState)
   if (!settingsState) {
-    console.log('No settingsState, aborting restoration')
     return
   }
 
-  console.log('Reopening settings modal with title:', settingsState.title)
   modal = editor.Modal.open({
     title: settingsState.title,
     content: '',
     attributes: { class: 'settings-dialog' },
   })
     .onceClose(() => {
-      console.log('Restored settings modal closed')
       settingsState?.sender?.set && settingsState.sender.set('active', 0)
       editor.stopCommand(cmdOpenSettings)
       settingsState = null
@@ -183,8 +179,6 @@ function reopenSettingsModal(editor: Editor, opts: Record<string, unknown>) {
     editor.trigger(ClientEvent.SETTINGS_SAVE_END, settingsState?.page)
     editor.stopCommand(cmdOpenSettings)
   }
-
-  console.log('Settings modal restoration completed')
 }
 
 export const settingsDialog = (

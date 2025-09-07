@@ -89,7 +89,9 @@ export type ApiConnectorUserResponse = ConnectorUser
 
 // **
 // Website API
-export const defaultWebsiteData: WebsiteData = {
+export const EMPTY_PAGES = [{}] as Page[] // This is what grapesjs understands, it will create an empty page
+
+export const EMPTY_WEBSITE: WebsiteData = {
   //pages: [],
   //assets: [],
   //styles: [],
@@ -97,8 +99,9 @@ export const defaultWebsiteData: WebsiteData = {
   //fonts: [],
   //symbols: [],
   //publication: {},
+  pages: EMPTY_PAGES,
+  pagesFolder: 'pages',
 } as WebsiteData
-
 
 export interface WebsiteData {
   pages: Page[],

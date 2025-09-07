@@ -15,10 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { WebsiteData } from '../../types'
+import { EMPTY_PAGES, WebsiteData } from '../../types'
 import { Page } from 'grapesjs'
 import { getPageSlug } from '../../page'
-import { WEBSITE_PAGES_FOLDER, WEBSITE_DATA_FILE } from '../../constants'
+import { LEGACY_WEBSITE_PAGES_FOLDER, WEBSITE_DATA_FILE } from '../../constants'
 
 /**
  * Serialize JSON with stable formatting for git
@@ -51,7 +51,7 @@ export function split(websiteData: WebsiteData): Array<{path: string, content: s
   const files: Array<{path: string, content: string}> = []
 
   // Use custom pages folder if specified, otherwise use default
-  const pagesFolder = websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
+  const pagesFolder = websiteData.pagesFolder || LEGACY_WEBSITE_PAGES_FOLDER
 
   // Split pages into separate files
   const pages = websiteData.pages?.map((page: Page) => {
@@ -59,6 +59,8 @@ export function split(websiteData: WebsiteData): Array<{path: string, content: s
     const slug = getPageSlug(pageName)
     const fileName = `${slug}-${page.id}.json`
     const filePath = `${pagesFolder}/${fileName}`
+
+    if(!page.id) return page // It is the {} from EMPTY_PAGES, this happens only with unit tests
 
     files.push({
       path: filePath,
@@ -70,10 +72,10 @@ export function split(websiteData: WebsiteData): Array<{path: string, content: s
       id: page.id,
       isFile: true,
     }
-  }) || []
+  }) || EMPTY_PAGES
 
   // Create main website data file without pages content
-  const websiteDataWithoutPages = {
+  const websiteDataLinkedPages = {
     ...websiteData,
     pagesFolder,
     pages,
@@ -81,7 +83,7 @@ export function split(websiteData: WebsiteData): Array<{path: string, content: s
 
   files.push({
     path: WEBSITE_DATA_FILE,
-    content: stringify(websiteDataWithoutPages)
+    content: stringify(websiteDataLinkedPages)
   })
 
   return files
@@ -98,7 +100,7 @@ export async function merge(
   const websiteData = JSON.parse(websiteDataContent) as any
 
   // Use custom pages folder if specified, otherwise use default
-  const pagesFolder = websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
+  const pagesFolder = websiteData.pagesFolder || LEGACY_WEBSITE_PAGES_FOLDER
 
   // Handle legacy format (no split pages) or empty pages
   if (!websiteData.pages || websiteData.pages.length === 0) {
@@ -139,7 +141,7 @@ export async function merge(
  * Get the pages folder path for a website, using custom path or default
  */
 export function getPagesFolder(websiteData: WebsiteData): string {
-  return websiteData.pagesFolder || WEBSITE_PAGES_FOLDER
+  return websiteData.pagesFolder || LEGACY_WEBSITE_PAGES_FOLDER
 }
 
 /**

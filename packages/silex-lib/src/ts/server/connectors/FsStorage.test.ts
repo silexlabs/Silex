@@ -4,6 +4,7 @@ import { FsStorage } from './FsStorage'
 import { readFileSync, rmdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { WEBSITE_DATA_FILE } from '../../constants'
+import { EMPTY_WEBSITE } from '../../types'
 
 const storageRootPath = '/tmp/silex-tests'
 const assetsFolder = 'assets'
@@ -49,6 +50,7 @@ describe('FsStorage website', () => {
     expect(() => statSync(join(storageRootPath, id, WEBSITE_DATA_FILE))).not.toThrow()
     const content = readFileSync(join(storageRootPath, id, WEBSITE_DATA_FILE), 'utf8')
     const parsed = JSON.parse(content)
-    expect(parsed).toHaveProperty('pages', [])
+    console.log({parsed, content, EMPTY_WEBSITE})
+    expect(parsed).toEqual(EMPTY_WEBSITE)
   })
 })

@@ -21,7 +21,8 @@
 
 export const WEBSITE_DATA_FILE = 'website.json'
 export const WEBSITE_META_DATA_FILE = 'meta.json'
-export const WEBSITE_PAGES_FOLDER = 'src'
+export const LEGACY_WEBSITE_PAGES_FOLDER = 'src' // This is used in legacy websites, check the value in EMPTY_WEBSITE
+export const WEBSITE_PAGES_FOLDER = 'pages' // This is the default now, if not specified in the website data
 
 export const DEFAULT_WEBSITE_ID = 'default'
 export const DEFAULT_LANGUAGE = 'en'
