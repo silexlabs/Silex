@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Editor } from 'grapesjs'
+import { Component, Editor, Page } from 'grapesjs'
 import {html, render} from 'lit-html'
 import {ref} from 'lit-html/directives/ref.js'
 
@@ -30,10 +30,10 @@ export const cmdSelectNextPage = 'pages:select-next'
 export const cmdSelectPrevPage = 'pages:select-prev'
 export const cmdSelectFirstPage = 'pages:select-first'
 
-function selectPage(editor, page) {
+function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
 }
-function addPage(editor, config) {
+function addPage(editor: Editor, config: { newPageName: string, cmdOpenNewPageDialog: string }) {
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
@@ -50,7 +50,7 @@ function addPage(editor, config) {
   editor.runCommand(config.cmdOpenNewPageDialog, {page})
 }
 
-function clonePage(editor, page) {
+function clonePage(editor: Editor, page: Page) {
   const pages = editor.Pages.getAll()
   // Get a name
   let idx = 1
@@ -64,7 +64,7 @@ function clonePage(editor, page) {
   // Add page
   const newPage = editor.Pages.add({
     name: pageName,
-    component: body,
+    component: body.toJSON(),
   })
   // Select the new page
   editor.Pages.select(newPage)
@@ -145,8 +145,9 @@ function renderPages(editor, config) {
   return html`<section class="pages">
     <main class="pages__main ${pages.length === 1 ? 'pages__single-page' : ''}">
       <div class="pages__list">
-        ${ pages.map(page => {
-    const name = page.getName() || page.attributes.type
+        ${ pages.map((page: Page, index: number) => {
+    const type = page.get('type') || index === 0 ? 'main' : 'Untitled Page'
+    const name = page.getName() || type
     // keep the same structure as the layers panel
     return html`
            <div class="pages__page ${selected === page ? 'pages__page-selected' : ''}" data-page-id=${page.id} @click=${e => selectPage(editor, getPageFromEvent(e))}>

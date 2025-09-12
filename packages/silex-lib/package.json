@@ -3,13 +3,10 @@
   "description": "Free and easy website builder for everyone.",
   "version": "3.3.1-6",
   "version:backwardcompat": "3.0.0",
-  "author": {
-    "name": "Alex Hoyau",
-    "url": "https://lexoyo.me/"
-  },
+  "author": "Alex Hoyau (https://lexoyo.me/)",
   "main": "dist/server/server/index.js",
   "bin": {
-    "silex": "./dist/server/server/cli.js"
+    "silex": "dist/server/server/cli.js"
   },
   "files": [
     "dist/",
@@ -184,7 +181,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/silexlabs/silex-lib.git"
+    "url": "git+https://github.com/silexlabs/silex-lib.git"
   },
   "keywords": [
     "page builder",
@@ -220,5 +217,9 @@
     "WYSIWYG",
     "silex",
     "jekyll"
-  ]
+  ],
+  "bugs": {
+    "url": "https://short.silex.me/community"
+  },
+  "homepage": "https://github.com/silexlabs/silex-lib#readme"
 }

@@ -130,7 +130,6 @@ export class ClientConfig extends Config {
     dataSources: [],
     dir: {
       input: '',
-      silex: '_silex',
       html: '',
       assets: 'assets',
       css: 'css',

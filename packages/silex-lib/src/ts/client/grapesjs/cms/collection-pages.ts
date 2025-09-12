@@ -31,7 +31,7 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
   editor.once(`
     ${ ClientEvent.STARTUP_END }
     storage:end:load
-    `, () => {
+    `, (...args) => {
     if (done) throw new Error('FIXME: this should never happen')
     done = true
 
@@ -46,7 +46,7 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
     pagesContainer?.appendChild(container)
 
     // Function to update the collection pages display
-    function updatePages(e?: unknown) {
+    function updatePages(...args: unknown[]) {
       render(getHtml(editor), container)
     }
 
@@ -164,7 +164,7 @@ function getItemDisplayName(editor: Editor, item: unknown, index: number): strin
             const cleanName = fieldValue
               .replace(/^\/+|\/+$/g, '') // Remove leading/trailing slashes
               .replace(/\//g, ' › ') // Replace slashes with breadcrumb separator
-              || `Item ${index + 1}`
+              || `Page ${index + 1}`
 
             return cleanName
           }
@@ -176,7 +176,7 @@ function getItemDisplayName(editor: Editor, item: unknown, index: number): strin
   }
 
   // Final fallback to index-based name
-  return `Item ${index + 1}`
+  return `Page ${index + 1}`
 }
 
 function handleItemClick(editor: Editor, index: number) {

@@ -37,28 +37,34 @@ function getFetchPluginOptions(options: EleventyPluginOptions, settings: Silex11
 }
 
 export default function (editor: Editor, options: EleventyPluginOptions) {
-  editor.on(ClientEvent.STARTUP_END, ({ config }) => {
-    // Generate the liquid when the site is published
-    config.addPublicationTransformers({
-      // Render the components when they are published
-      // Will run even with enable11ty = false in order to enable HTML attributes
-      renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, component, toHtml), editor, component.getId()),
-      // Transform the paths to be published according to options.urls
-      transformPermalink: options.enable11ty ? (path: string, type: string) => withNotification(() => transformPermalink(editor, path, type, options), editor, null) : undefined,
-      // Transform the paths to be published according to options.dir
-      transformPath: options.enable11ty ? (path: string, type: string) => withNotification(() => transformPath(editor, path, type, options), editor, null) : undefined,
-      // Transform the files content
-      //transformFile: (file) => transformFile(file),
-    })
-
-    if (options.enable11ty) {
-      // Generate 11ty data files
-      // FIXME: should this be in the publication transformers
-      editor.on('silex:publish:page', data => withNotification(() => transformPage(editor, data), editor, null))
-      editor.on('silex:publish:data', ({ data/*, preventDefault, publicationManager */ }) => withNotification(() => transformFiles(editor, options, data), editor, null))
-      editor.on('silex:publish:end', () => cache.clear())
-    }
+  /* @ts-ignore There should be a better way to get Silex config */
+  const config = window.silex.config as ClientConfig
+  // Generate the liquid when the site is published
+  config.addPublicationTransformers({
+    // Render the components when they are published
+    // Will run even with enable11ty = false in order to enable HTML attributes
+    renderComponent: (component: Component, toHtml: () => string) => withNotification(() => renderComponent(editor, component, toHtml), editor, component.getId()),
+    // Transform the paths to be published according to options.urls
+    transformPermalink: options.enable11ty ? (path: string, type: string) => withNotification(() => transformPermalink(editor, path, type, options), editor, null) : undefined,
+    // Transform the paths to be published according to options.dir
+    transformPath: options.enable11ty ? (path: string, type: string) => withNotification(() => transformPath(editor, path, type, options), editor, null) : undefined,
+    // Transform the files content
+    //transformFile: (file) => transformFile(file),
   })
+
+  if (options.enable11ty) {
+    // Generate 11ty data files
+    // FIXME: should this be in the publication transformers
+    editor.on('silex:publish:page', (data, ...args) => {
+      withNotification(() => transformPage(editor, data), editor, null)
+    })
+    editor.on('silex:publish:data', ({ data/*, preventDefault, publicationManager */ }, ...args) => {
+      withNotification(() => transformFiles(editor, options, data, config), editor, null)
+    })
+    editor.on('silex:publish:end', (...args) => {
+      cache.clear()
+    })
+  }
 }
 
 /**
@@ -79,22 +85,6 @@ function makeAttribute(key: string, value: string | boolean): string {
   case 'boolean': return value ? key : ''
   default: return `${key}="${value}"`
   }
-}
-
-/**
- * Comes from silex but didn't manage to import
- * FIXME: expose this from silex
- */
-function transformPaths(editor: Editor, path: string, type: ClientSideFileType): string {
-  const config = editor.getModel().get('config')
-  return config.publicationTransformers.reduce((result: string, transformer: PublicationTransformer) => {
-    try {
-      return transformer.transformPath ? transformer.transformPath(result, type) ?? result : result
-    } catch (e) {
-      console.error('Publication transformer: error transforming path', result, e)
-      return result
-    }
-  }, path)
 }
 
 /**
@@ -250,7 +240,7 @@ export function transformPage(editor: Editor, data: { page: Page, siteSettings: 
  * This hook is called just before the files are written to the file system
  * Exported for unit tests
  */
-export function transformFiles(editor: Editor, options: EleventyPluginOptions, data: PublicationData): void {
+export function transformFiles(editor: Editor, options: EleventyPluginOptions, data: PublicationData, config: ClientConfig): void {
   // Do nothing if there is no data source, just a static site
   if(!enable11ty()) return
 
@@ -271,13 +261,13 @@ export function transformFiles(editor: Editor, options: EleventyPluginOptions, d
 
     // Find the page in the published data
     if (!data.files) throw new Error('No files in publication data')
-    const path = transformPaths(editor, `/${slug}.html`, ClientSideFileType.HTML)
+    const path = transformPath(editor, `/${slug}.html`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions)
     const pageData = data.files.find(file => file.path === path) as ClientSideFileWithContent | undefined
     if (!pageData) throw new Error(`No file for path ${path}`)
     if (pageData.type !== ClientSideFileType.HTML) throw new Error(`File for path ${path} is not HTML`)
     const dataFile = Object.keys(query).length > 0 ? {
       type: ClientSideFileType.OTHER,
-      path: transformPaths(editor, `/${slugify(page.getName() || 'index')}.11tydata.mjs`, ClientSideFileType.HTML),
+      path: transformPath(editor, `/${slugify(page.getName() || 'index')}.11tydata.mjs`, ClientSideFileType.HTML, config.cmsConfig as EleventyPluginOptions),
       //path: `/${page.getName() || 'index'}.11tydata.mjs`,
       content: getDataFile(editor, page, null, query, options),
     } : null
@@ -684,21 +674,18 @@ function transformPath(editor: Editor, path: string, type: string, options: Elev
   case 'html':
     return toPath([
       options.dir?.input,
-      options.dir?.silex,
       options.dir?.html,
       path,
     ])
   case 'css':
     return toPath([
       options.dir?.input,
-      options.dir?.silex,
       options.dir?.css,
       path.replace(/^\/?css\//, ''),
     ])
   case 'asset':
     return toPath([
       options.dir?.input,
-      options.dir?.silex,
       options.dir?.assets,
       path.replace(/^\/?assets\//, ''),
     ])

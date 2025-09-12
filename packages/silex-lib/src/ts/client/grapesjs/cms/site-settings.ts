@@ -37,7 +37,15 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
               <button
                 class="silex-button add-ds-btn"
                 title="Add a new data source"
-                @click=${() => addDataSource(createDataSource())}>
+                @click=${async () => {
+    const newDataSource = createDataSource()
+    addDataSource(newDataSource)
+    try {
+      await newDataSource.connect()
+    } catch (error) {
+      console.error('🟡 [site-settings] Data source connection failed:', error)
+    }
+  }}>
                 +
                 </button>
             </div>

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER } from '../../constants'
+import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DATA_FILE, LEGACY_WEBSITE_PAGES_FOLDER, WEBSITE_PAGES_FOLDER } from '../../constants'
 import { ServerConfig } from '../../server/config'
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '../../server/connectors/connectors'
 import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus, EMPTY_WEBSITE } from '../../types'
@@ -782,7 +782,7 @@ export default class GitlabConnector implements StorageConnector {
     // **
     // Force pagesFolder to 'pages' for writing if not defined
     if (isLegacySite) {
-      websiteData.pagesFolder = 'pages'
+      websiteData.pagesFolder = WEBSITE_PAGES_FOLDER
     }
 
     // **
@@ -798,7 +798,7 @@ export default class GitlabConnector implements StorageConnector {
 
       const existingSha = existingFiles.get(filePath) || (filePath === WEBSITE_DATA_FILE ? 'always-update' : undefined)
 
-      if (existingSha && existingSha !== 'always-update') {
+      if (existingSha) {
         if (existingSha !== newSha) {
           batchActions.push({
             action: 'update',
@@ -808,7 +808,7 @@ export default class GitlabConnector implements StorageConnector {
         } // else: skip unchanged file
       } else {
         batchActions.push({
-          action: file.path === WEBSITE_DATA_FILE ? 'update' : 'create',
+          action: 'create',
           file_path: filePath,
           content,
         })

@@ -41,9 +41,6 @@ export interface EleventyPluginOptions extends DataSourceEditorOptions {
     // E.g. content
     // Default: ''
     input?: string,
-    // Directory created in input directory for Silex files
-    // Default: _silex
-    silex?: string,
     // Directory for the HTML pages relative to the input directory
     // Silex will add HTML pages to this directory
     // Default: ''
