@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Page } from 'grapesjs'
-import { ComponentExpression, DataSourceId, Expression, IDataSource, Property, Tree, Type } from '../types'
+import { Page } from 'grapesjs'
+import { ComponentExpression, DataSourceId, Expression, IDataSource, Property, Tree } from '../types'
 import { getStates } from './state'
 import { getOptionObject } from './token'
 import { getComponentDebug, NOTIFICATION_GROUP, toExpression } from '../utils'
@@ -46,7 +46,7 @@ export function getPageExpressions(manager: DataSourceManagerState, page: Page):
       }
     })
     // Get expressions used by the component from attributes
-    Object.entries(component.getAttributes()).forEach(([key, value]) => {
+    Object.values(component.getAttributes()).forEach((value: string) => {
       const expression = toExpression(value)
       if(expression) {
         result.push({
@@ -60,7 +60,7 @@ export function getPageExpressions(manager: DataSourceManagerState, page: Page):
 }
 
 /**
- * Build a tree of expressions  
+ * Build a tree of expressions
  */
 export function getTrees(
   manager: DataSourceManagerState,

@@ -27,7 +27,7 @@ import { DataSourceId, IDataSource, Expression, StateId, StoredToken, Token, Fie
 
 // Internal imports
 import { getPageQuery as getPageQueryInternal, buildPageQueries as buildPageQueriesInternal } from './model/queryBuilder'
-import { refreshDataSources as refreshDataSourcesInternal, getFilters as getFiltersInternal, setFilters as setFiltersInternal } from './model/dataSourceManager'
+import { refreshDataSources as refreshDataSourcesInternal, getFilters as getFiltersInternal, setFilters as setFiltersInternal, getCachedQueryables as getCachedQueryablesInternal, setPreviewData as setPreviewDataInternal, getManager } from './model/dataSourceManager'
 import {
   getAllDataSources as getAllDataSourcesInternal,
   getDataSource as getDataSourceInternal,
@@ -157,8 +157,17 @@ export function getPreviewData(): Record<DataSourceId, unknown> {
 }
 
 /**
+ * Set preview data for all data sources
+ * @param data - Record mapping data source IDs to their preview data
+ */
+export function setPreviewData(data: Record<DataSourceId, unknown>): void {
+  setPreviewDataInternal(data)
+}
+
+/**
  * Clear all preview data
  */
+
 export function clearPreviewData(): void {
   return clearPreviewDataInternal()
 }
@@ -175,8 +184,14 @@ export function clearPreviewData(): void {
  * @returns The evaluated result
  */
 export function getValue(expression: Expression, component: Component, resolvePreviewIndex = true): unknown {
-  // TODO: Update to use manager instead of context
-  return null
+  const context: EvaluationContext = {
+    dataSources: getAllDataSources(),
+    filters: getFiltersInternal(),
+    previewData: getPreviewDataInternal(),
+    component,
+    resolvePreviewIndex
+  }
+  return evaluateExpressionTokens(expression, context)
 }
 
 /**
@@ -185,8 +200,8 @@ export function getValue(expression: Expression, component: Component, resolvePr
  * @returns Array of component expressions
  */
 export function getPageExpressions(page: Page) {
-  // TODO: Update to use manager instead of context
-  return []
+  const manager = getManager()
+  return getPageExpressionsInternal(manager, page)
 }
 
 /**
@@ -195,8 +210,11 @@ export function getPageExpressions(page: Page) {
  * @returns Context with available tokens for completion
  */
 export function getCompletion(options: { component: Component, expression: Expression, rootType?: TypeId, currentStateId?: StateId, hideLoopData?: boolean}): Context {
-  // TODO: Update to use manager instead of dataTree
-  return []
+  const manager = getManager()
+  return getCompletionInternal({
+    ...options,
+    manager
+  })
 }
 
 /**

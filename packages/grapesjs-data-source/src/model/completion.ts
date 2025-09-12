@@ -1,9 +1,9 @@
 import { Component } from 'grapesjs'
-import { Context, Expression, Field, Filter, Property, State, StateId, Token, Type, TypeId } from '../types'
-import { DataSourceManagerState } from './dataSourceManager'
+import { Context, DataSourceId, Expression, Field, Filter, IDataSource, Property, State, StateId, Token, Type, TypeId } from '../types'
+import { DataSourceManagerState, getManager, getTypes, STANDARD_TYPES } from './dataSourceManager'
 import { getOrCreatePersistantId, getState, getStateIds } from './state'
 import { getExpressionResultType, getTokenOptions } from './token'
-import { getFixedToken } from '../utils'
+import { getFixedToken, NOTIFICATION_GROUP } from '../utils'
 
 /**
  * Get the context of a component
@@ -122,6 +122,38 @@ export function fieldToToken(field: Field): Property {
   }
 }
 
+function getType(typeId: TypeId, dataSourceId: DataSourceId | null, componentId: string | null): Type {
+  const manager = getManager()
+  if(dataSourceId) {
+    // Get the data source
+    const dataSource = manager.dataSources
+      .find((dataSource: IDataSource) => !dataSourceId || dataSource.id === dataSourceId)
+    if(!dataSource) throw new Error(`Data source not found ${dataSourceId}`)
+    // Get its types
+    const types = dataSource?.getTypes()
+    // Return the requested type
+    const type = types.find((type: Type) => type.id === typeId)
+    if (!type) {
+      manager.editor.runCommand('notifications:add', {
+        type: 'error',
+        group: NOTIFICATION_GROUP,
+        message: `Type not found ${dataSourceId ?? ''}.${typeId}`,
+        componentId,
+      })
+      throw new Error(`Type not found ${dataSourceId ?? ''}.${typeId}`)
+    }
+    return type
+  } else {
+    // No data source id: search in standard types
+    const standardType = STANDARD_TYPES.find(type => type.id === typeId.toLowerCase())
+    if(standardType) return standardType
+    // No data source id: search in all types
+    const type = getTypes().find(type => type.id === typeId)
+    if (!type) throw new Error(`Unknown type ${typeId}`)
+    return type
+  }
+}
+
 /**
  * Auto complete an expression
  * @returns a list of possible tokens to add to the expression
@@ -132,13 +164,13 @@ export function getCompletion(options: { component: Component, expression: Expre
   if (!expression) throw new Error('Expression is required for completion')
   if (expression.length === 0) {
     if (rootType) {
-      // TODO: Get type from manager instead of dataTree
-      const type = null
+      const type = getType(rootType, null, component.getId())
       if (!type) {
         console.warn('Root type not found', rootType)
         return []
       }
-      return []  // TODO: Update once we have type resolution working
+      return type.fields
+        .map((field: Field) => fieldToToken(field))
     }
     return getContext(component, manager, currentStateId, hideLoopData)
   }
@@ -151,7 +183,7 @@ export function getCompletion(options: { component: Component, expression: Expre
     // Add fields if the kind is object
     .concat(field.kind === 'object' ? field.typeIds
       // Find possible types
-      .map((typeId: TypeId) => null) // TODO: Get type from manager
+      .map((typeId: TypeId) => getType(typeId, field.dataSourceId ?? null, component.getId()))
       // Add all of their fields
       .flatMap((type: Type | null) => type?.fields ?? [])
       // To token
@@ -161,7 +193,7 @@ export function getCompletion(options: { component: Component, expression: Expre
           // if(!t) throw new Error(`Type ${field.typeIds} not found`)
           return fieldOfField.typeIds.map((typeId: TypeId) => ({
             ...fieldToToken(fieldOfField),
-            typeIds: [typeId],
+            typeIds: [typeId ],
           }))
         }
       ) : [])
@@ -173,7 +205,7 @@ export function getCompletion(options: { component: Component, expression: Expre
           try {
             return filter.validate(field)
           } catch (e) {
-            console.warn('Filter validate error:', e, {filter, field})
+            console.warn('Filter validate error:', e, {filter, field })
             return false
           }
         })

@@ -2,20 +2,36 @@ import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
 import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
 import { fromStored } from '../model/token'
-import { getValue } from '../api'
+import { evaluateExpressionTokens, EvaluationContext } from '../model/expressionEvaluator'
+import { getAllDataSources } from '../model/dataSourceRegistry'
+import { getFilters, getPreviewData } from '../model/dataSourceManager'
 
 function getPrivateState(component: Component, stateId: string): StoredState | null {
   return getState(component, stateId, false)
 }
 
-// Pure function to evaluate a single condition
-function evaluateCondition(expression: StoredToken[], component: Component): unknown | null {
+// Helper function to evaluate expressions with internal API
+function evaluateExpression(expression: StoredToken[], component: Component, resolvePreviewIndex = true): unknown | null {
   try {
-    return getValue(expression, component, true)
+    // Convert StoredTokens to full Tokens first, like main branch did
+    const tokens = expression.map(token => fromStored(token, component.getId?.() || null))
+    const context: EvaluationContext = {
+      dataSources: getAllDataSources(),
+      filters: getFilters(),
+      previewData: getPreviewData(),
+      component,
+      resolvePreviewIndex,
+    }
+    return evaluateExpressionTokens(tokens, context)
   } catch (e) {
-    console.warn('Error evaluating condition:', e)
+    console.warn('Error evaluating expression:', e)
     return null
   }
+}
+
+// Pure function to evaluate a single condition
+function evaluateCondition(expression: StoredToken[], component: Component): unknown | null {
+  return evaluateExpression(expression, component, true)
 }
 
 // Pure function to render innerHTML for a component at a specific loop index
@@ -79,7 +95,7 @@ function renderLoopData(
     if (__data === null) {
       return null
     }
-    const result = getValue(__data.expression, component, false) // Get full array
+    const result = evaluateExpression(__data.expression, component, false) // Get full array
     return Array.isArray(result) ? JSON.parse(JSON.stringify(result)) : null
   } catch (e) {
     console.warn('Error getting loop data:', e)
@@ -102,7 +118,7 @@ export function isComponentVisible(
 
   let condition1Value: unknown
   try {
-    condition1Value = getValue(condition1State.expression, component, true)
+    condition1Value = evaluateExpression(condition1State.expression, component, true)
   } catch (e) {
     console.warn('Error evaluating condition1:', e)
     // If condition evaluation fails but no operator is set, default to visible
@@ -137,7 +153,7 @@ export function isComponentVisible(
 
   let condition2Value: unknown
   try {
-    condition2Value = getValue(condition2State.expression, component, true)
+    condition2Value = evaluateExpression(condition2State.expression, component, true)
   } catch (e) {
     console.warn('Error evaluating condition2:', e)
     // If condition2 evaluation fails, treat as falsy
@@ -176,7 +192,7 @@ function renderAttributes(
         state.id !== Properties.condition2 &&
         state.expression) {
       try {
-        const value = getValue(state.expression, component, true)
+        const value = evaluateExpression(state.expression, component, true)
         if (value !== null && value !== undefined) {
           component.view?.el.setAttribute(state.label || state.id, String(value))
         }
@@ -259,6 +275,15 @@ export function renderPreview(comp: Component, deep = 0) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
 
+        // Remove grapesjs selected marker
+        clone.classList.remove('gjs-selected')
+
+        // Keep the selection mechanism
+        clone.addEventListener('click', () => {
+          setTimeout(() => el.dispatchEvent(new MouseEvent('click', {bubbles: true})))
+        })
+
+        // Add the clone to the canvas
         el.insertAdjacentElement('afterend', clone)
 
         // Set preview index for the next iteration and render into original element

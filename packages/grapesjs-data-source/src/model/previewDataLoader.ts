@@ -16,7 +16,7 @@
  */
 
 import { DataSourceId, DATA_SOURCE_DATA_LOAD_START, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_DATA_LOAD_CANCEL } from '../types'
-import { DataSourceManagerState, getPreviewData as getPreviewDataFromManager, setPreviewData as setPreviewDataInManager } from './dataSourceManager'
+import { getPreviewData as getPreviewDataFromManager, setPreviewData as setPreviewDataInManager } from './dataSourceManager'
 import { getAllDataSources } from './dataSourceRegistry'
 import { getPageQuery } from './queryBuilder'
 import { Page, Editor } from 'grapesjs'
@@ -41,7 +41,7 @@ export function initializePreviewDataLoader(editor: Editor): void {
   globalLoader = {
     editor,
     currentUpdatePid: 0,
-    lastQueries: {}
+    lastQueries: {},
   }
 }
 
@@ -61,17 +61,17 @@ function getLoader(): PreviewDataLoaderState {
 function areQueriesEqual(queries1: Record<DataSourceId, string>, queries2: Record<DataSourceId, string>): boolean {
   const keys1 = Object.keys(queries1).sort()
   const keys2 = Object.keys(queries2).sort()
-  
+
   // Check if they have the same number of keys
   if (keys1.length !== keys2.length) {
     return false
   }
-  
+
   // Check if all keys are the same
   if (!keys1.every(key => keys2.includes(key))) {
     return false
   }
-  
+
   // Check if all values are the same
   return keys1.every(key => queries1[key] === queries2[key])
 }
@@ -83,29 +83,29 @@ function areQueriesEqual(queries1: Record<DataSourceId, string>, queries2: Recor
 export async function loadPreviewData(forceRefresh: boolean = false): Promise<void> {
   const loader = getLoader()
   loader.editor.trigger(DATA_SOURCE_DATA_LOAD_START)
-  
+
   const page = loader.editor.Pages.getSelected()
   if (!page) return
-  
+
   // Get current queries
   const currentQueries = getPageQuery(page, loader.editor)
-  
+
   // Compare with last queries to see if we need to refresh
   const queriesChanged = !areQueriesEqual(loader.lastQueries, currentQueries)
-  
+
   if (!forceRefresh && !queriesChanged) {
     // Queries haven't changed, no need to refresh data sources
     // But still trigger load end to maintain expected event flow
     loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, getPreviewDataFromManager())
     return
   }
-  
+
   // Update last queries
   loader.lastQueries = { ...currentQueries }
-  
+
   loader.currentUpdatePid++
   const data = await fetchPagePreviewData(page)
-  
+
   if (data !== 'interrupted') {
     loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, data)
   } else {
@@ -123,7 +123,7 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
   const loader = getLoader()
   const myPid = loader.currentUpdatePid
   const queries = getPageQuery(page, loader.editor)
-  
+
   // Reset preview data
   setPreviewDataInManager({})
 
@@ -132,18 +132,18 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
       Object.entries(queries)
         .map(async ([dataSourceId, query]) => {
           if (myPid !== loader.currentUpdatePid) return
-          
+
           const ds = getAllDataSources().find(ds => ds.id === dataSourceId)
           if (!ds) {
             console.error(`Data source ${dataSourceId} not found`)
             return null
           }
-          
+
           if (!ds.isConnected()) {
             console.warn(`Data source ${dataSourceId} is not connected.`)
             return null
           }
-          
+
           try {
             const value = await ds.fetchValues(query)
             const currentData = getPreviewDataFromManager()

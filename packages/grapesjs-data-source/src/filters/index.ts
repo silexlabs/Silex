@@ -35,7 +35,7 @@ export function createLiquidEngine(filters: readonly Filter[]): LiquidEngine {
 
     hasFilter(filterId: string): boolean {
       return filterMap.has(filterId)
-    }
+    },
   }
 }
 

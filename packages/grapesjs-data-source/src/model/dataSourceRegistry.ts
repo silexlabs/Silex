@@ -35,7 +35,7 @@ let globalRegistry: DataSourceRegistryState | null = null
 export function initializeDataSourceRegistry(editor: Editor): void {
   globalRegistry = {
     dataSources: [],
-    editor
+    editor,
   }
 }
 
@@ -112,6 +112,6 @@ export function dataSourcesToJSON(): unknown[] {
     method: ds.method,
     headers: ds.headers,
     readonly: ds.readonly,
-    hidden: ds.hidden
+    hidden: ds.hidden,
   }))
 }

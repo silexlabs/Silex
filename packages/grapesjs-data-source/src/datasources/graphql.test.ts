@@ -87,13 +87,13 @@ test('getTypeProp', async () => {
               'kind': 'NON_NULL',
               'ofType': {
                 'name': 'PostEntity',
-                'kind': 'OBJECT'
-              }
-            }
-          }
-        }
-      }
-    ]
+                'kind': 'OBJECT',
+              },
+            },
+          },
+        },
+      },
+    ],
   }
   expect(testType.fields[0].type).not.toBeUndefined()
   expect(gql.getOfTypeProp('name', testType.fields[0].type)).toBe('PostEntity')
@@ -113,13 +113,13 @@ test('graphQLToType', async () => {
               'kind': 'NON_NULL',
               'ofType': {
                 'name': 'PostEntity',
-                'kind': 'OBJECT'
-              }
-            }
-          }
-        }
-      }
-    ]
+                'kind': 'OBJECT',
+              },
+            },
+          },
+        },
+      },
+    ],
   }
 
   const allTypes = ['PostEntityResponseCollection', 'PostEntity']
@@ -207,16 +207,16 @@ test('graphQLToField', async () => {
           'possibleTypes': [
             {
               'kind': 'OBJECT',
-              'name': 'HeroWordSliderComponent'
+              'name': 'HeroWordSliderComponent',
             },
             {
               'kind': 'OBJECT',
-              'name': 'SectionSlideshowUpComponent'
-            }
+              'name': 'SectionSlideshowUpComponent',
+            },
           ],
           'ofType': undefined,
-        }
-      }
+        },
+      },
     },
   })).toEqual({
     id: 'posts',
@@ -248,7 +248,7 @@ test('getTypes simple mocks', async () => {
   expect(postsType.label).toBe('posts')
   expect(postsType.fields).not.toBeUndefined()
   expect(postsType.fields).toContainEqual({
-    id: 'data', label: 'data', typeIds: ['PostEntity'], kind: 'list', dataSourceId: 'testDataSourceId'
+    id: 'data', label: 'data', typeIds: ['PostEntity'], kind: 'list', dataSourceId: 'testDataSourceId',
   })
 })
 

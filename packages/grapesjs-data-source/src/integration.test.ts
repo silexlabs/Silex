@@ -11,7 +11,7 @@ import { Type, Field, DataSourceType } from './types'
 import { addDataSource } from './api'
 import { GQLField, GQLType } from './datasources/GraphQL'
 import { FieldKind, IDataSource } from '../dist'
-import { getDataTreeFromUtils } from './utils'
+import { setPreviewData } from './api'
 import { compare, GroupingReporter } from 'dom-compare'
 import { diff as jestDiff } from 'jest-diff'
 
@@ -206,7 +206,7 @@ class MockDataSource implements IDataSource {
   // }
 
   getQueryables(): Field[] {
-    const query = this.mockData.data.__schema.types
+    const query = this.mockTypes.data.__schema.types
       .find((type: GQLType) => type.name === this.queryType)
     return query.fields
   }
@@ -458,17 +458,16 @@ describe('Integration tests', () => {
       })
 
       editor.on('load', () => {
-        const dataTree = getDataTreeFromUtils()
         const mockDataSource = new MockDataSource(dataSourceId, graphqlTypes, graphqlResponse)
         addDataSource(mockDataSource)
         editor.loadProjectData(website)
         // Wait longer to account for debounced rendering
         setTimeout(() => {
-          dataTree.previewData = {
+          setPreviewData({
             [dataSourceId]: graphqlResponse.data,
-          }
+          })
           const beforePreview = editor.getWrapper()?.view?.el.outerHTML || ''
-          doRender(editor, dataTree)
+          doRender(editor)
           const actualHtml = editor.getWrapper()?.view?.el.outerHTML || ''
           const previewHtmlDir = process.env.PREVIEW_HTML_OUT_DIR
           if (previewHtmlDir) {

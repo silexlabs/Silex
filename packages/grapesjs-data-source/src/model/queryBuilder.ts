@@ -17,7 +17,7 @@
 
 import { DataSourceId, Property, StoredToken, ComponentExpression } from '../types'
 import { getPageExpressions, toTrees } from './ExpressionTree'
-import { DataSourceManagerState } from './dataSourceManager'
+import { getManager } from './dataSourceManager'
 import { getAllDataSources } from './dataSourceRegistry'
 import { Page, Editor } from 'grapesjs'
 import { getComponentDebug, NOTIFICATION_GROUP } from '../utils'
@@ -31,8 +31,8 @@ import { resolveStateExpression } from './expressionEvaluator'
  * @param dataTree - The DataTree instance to use for query generation
  */
 export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, string> {
-  // TODO: Get manager and use it instead of dataTree
-  const expressions: ComponentExpression[] = [] // getPageExpressions(manager, page)
+  const manager = getManager()
+  const expressions: ComponentExpression[] = getPageExpressions(manager, page)
   const dataSources = getAllDataSources()
 
   return dataSources
@@ -68,7 +68,7 @@ export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, s
               return resolved
             }
             }
-          })
+          }),
         }))
         // Keep only the expressions for the current data source
         .filter((componentExpression: ComponentExpression) => {
@@ -82,8 +82,7 @@ export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, s
           return first?.dataSourceId === ds.id
         })
 
-      // TODO: Use manager instead of dataTree
-      const trees: any[] = [] // toTrees(manager, dsExpressions, ds.id)
+      const trees = toTrees(manager, dsExpressions, ds.id)
       if(trees.length === 0) {
         return {
           dataSourceId: ds.id.toString(),

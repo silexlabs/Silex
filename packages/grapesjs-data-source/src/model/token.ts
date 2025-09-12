@@ -1,6 +1,7 @@
 import { Component } from 'grapesjs'
-import { Expression, Field, FieldArgument, Filter, Options, Property, PropertyOptions, StoredToken, Token, Type, TypeId } from '../types'
-import { DataSourceManagerState } from './dataSourceManager'
+import { Expression, Field, FieldArgument, Filter, Options, Property, PropertyOptions, StoredToken, Token, Type } from '../types'
+import { getFilters, getManager } from './dataSourceManager'
+import { NOTIFICATION_GROUP } from '../utils'
 import { getParentByPersistentId, getState } from './state'
 import { TemplateResult, html } from 'lit'
 
@@ -31,12 +32,31 @@ export function getFilterFromToken(token: Filter, filters: Filter[]): Filter {
 export function fromStored<T extends Token = Token>(token: StoredToken, componentId: string | null): T {
   switch (token.type) {
   case 'filter': {
-    // TODO: Get filter from manager
-    return token as T
+    if ((token as Filter).optionsForm) return token as T
+    const original = getFilters().find(filter => filter.id === token.id) as T | undefined
+    if (!original) {
+      console.error('Filter not found', token)
+      throw new Error(`Filter ${token.id} not found`)
+    }
+    return {
+      ...original,
+      ...token,
+      type: 'filter',
+    } as T
   }
   case 'property': {
-    // TODO: Get property from manager
-    return token as T
+    if ((token as Property).optionsForm) return token as T
+    const field = propertyToField(token, componentId)
+    if (!field) {
+      console.error('Field not found for token', token)
+      throw new Error(`Field ${token.fieldId} not found`)
+    }
+    return {
+      ...getTokenOptions(field) ?? {},
+      ...token,
+      type: 'property',
+      propType: 'field',
+    } as T
   }
   case 'state':
     return token as T
@@ -50,8 +70,74 @@ export function fromStored<T extends Token = Token>(token: StoredToken, componen
  * Get the type corresponding to a token
  */
 export function tokenToField(token: Token, prev: Field | null, component: Component): Field | null {
-  // TODO: Update to use manager instead of dataTree
-  return null
+  switch (token.type) {
+  case 'filter': {
+    try {
+      const filter = getFilterFromToken(token, getFilters())
+      try {
+        if (filter.validate(prev)) {
+          return filter.output(prev, filter.options ?? {})
+        }
+      } catch (e) {
+        console.warn('Filter validate error:', e, {token, prev})
+        return null
+      }
+      return null
+    } catch {
+      // FIXME: notify user
+      console.error('Error while getting filter result type', {token, prev, component})
+      return null
+    }
+  }
+  case 'property':
+    try {
+      return propertyToField(token, component.getId())
+    } catch {
+      // FIXME: notify user
+      console.error('Error while getting property result type', {token, component})
+      return null
+    }
+  case 'state': {
+    const parent = getParentByPersistentId(token.componentId, component)
+    if (!parent) {
+      console.warn('Component not found for state', token)
+      const manager = getManager()
+      manager.editor.runCommand('notifications:add', {
+        type: 'error',
+        group: NOTIFICATION_GROUP,
+        message: `Component not found for state: ${token.storedStateId}`,
+        componentId: component.getId(),
+      })
+      return null
+    }
+    const expression = getState(parent, token.storedStateId, token.exposed)?.expression
+    if (!expression) {
+      console.warn('State is not defined on component', { component: parent, token })
+      const manager = getManager()
+      manager.editor.runCommand('notifications:add', {
+        type: 'error',
+        group: NOTIFICATION_GROUP,
+        message: `State '${token.storedStateId}' is not defined on component '${parent.getName() || parent.get('id')}'`,
+        componentId: parent.getId(),
+      })
+      return null
+    }
+    try {
+      const field = getExpressionResultType(expression, parent)
+      return field ? {
+        ...field,
+        kind: token.forceKind ?? field.kind,
+      } : null
+    } catch {
+      // FIXME: notify user
+      console.error('Error while getting expression result type in tokenToField', {expression, parent, component, token, prev})
+      return null
+    }
+  }
+  default:
+    console.error('Unknown token type (reading type)', token)
+    throw new Error('Unknown token type')
+  }
 }
 
 /**
@@ -59,13 +145,42 @@ export function tokenToField(token: Token, prev: Field | null, component: Compon
  * @throws Error if the type is not found
  */
 export function propertyToField(property: Property, componentId: string | null): Field {
-  // TODO: Update to use manager instead of dataTree
+  const manager = getManager()
+  const allTypes = manager.cachedTypes.length > 0 ? manager.cachedTypes : []
+
+  const typeNames: string[] = []
+
+  // Check each typeId and handle missing types
+  for (const typeId of property.typeIds) {
+    const type: Type | undefined = allTypes.find(type => type.id === typeId && (!property.dataSourceId || type.dataSourceId === property.dataSourceId))
+    if (!type) {
+      // Show notification for missing type, similar to main branch DataTree.getType
+      manager.editor.runCommand('notifications:add', {
+        type: 'error',
+        group: NOTIFICATION_GROUP,
+        message: `Type not found ${property.dataSourceId ?? ''}.${typeId}`,
+        componentId,
+      })
+      console.error(`Type not found ${property.dataSourceId ?? ''}.${typeId}`)
+      // Continue processing other types instead of throwing
+    } else {
+      typeNames.push(type.label)
+    }
+  }
+
+  const args = property.options ? Object.entries(property.options).map(([name, value]) => ({
+    typeId: 'JSON', // FIXME: Why is this hardcoded?
+    name,
+    defaultValue: value, // FIXME: Why is this value, it should keep the initial default
+  })) : undefined
+
   return {
     id: property.fieldId,
-    label: property.label,
+    label: typeNames.length > 0 ? typeNames.join(', ') : property.label,
     typeIds: property.typeIds,
     kind: property.kind,
     dataSourceId: property.dataSourceId,
+    arguments: args,
     previewIndex: property.previewIndex,
   }
 }
@@ -74,8 +189,29 @@ export function propertyToField(property: Property, componentId: string | null):
  * Evaluate the types of each token in an expression
  */
 export function expressionToFields(expression: Expression, component: Component): Field[] {
-  // TODO: Update to use manager instead of dataTree
-  return []
+  // Resolve type of the expression 1 step at a time
+  let prev: Field | null = null
+  const unknownField: Field = {
+    id: 'unknown',
+    label: 'unknown',
+    typeIds: [],
+    kind: 'scalar',
+  }
+  return expression.map((token) => {
+    try {
+      const field = tokenToField(fromStored(token, component.getId()), prev, component)
+      if (!field) {
+        console.warn('Type not found for token in expressionToFields', { token, expression })
+        return unknownField
+      }
+      prev = field
+      return field
+    } catch {
+      // FIXME: notify user
+      console.error('Error while getting expression result type in expressionToFields', {expression, component, token, prev})
+      return unknownField
+    }
+  })
 }
 
 /**
@@ -84,8 +220,10 @@ export function expressionToFields(expression: Expression, component: Component)
  * @throws Error if the token type is not found
  */
 export function getExpressionResultType(expression: Expression, component: Component): Field | null {
-  // TODO: Update to use manager instead of dataTree
-  return null
+  // Resolve type of the expression 1 step at a time
+  return expression.reduce((prev: Field | null, token: StoredToken) => {
+    return tokenToField(fromStored(token, component.getId()), prev, component)
+  }, null)
 }
 
 /**

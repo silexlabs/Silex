@@ -210,7 +210,7 @@ export function setState(component: Component, id: StateId, state: StoredState, 
       {
         id,
         ...state,
-      }
+      },
     ])
   }
   // Set the index if needed

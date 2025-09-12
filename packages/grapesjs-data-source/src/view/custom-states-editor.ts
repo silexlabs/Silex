@@ -314,7 +314,7 @@ export class CustomStatesEditor extends LitElement {
       state: {
         ...item.state,
         label: label,
-      }
+      },
     }
   }
 

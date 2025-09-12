@@ -113,17 +113,17 @@ export function evaluateExpressionTokens(
   const [token, ...rest] = cleanExpression
 
   switch (token.type) {
-    case 'state': {
-      return evaluateStateToken(token as State, rest, context, prevValues)
-    }
-    case 'property': {
-      return evaluatePropertyToken(token as Property, rest, context, prevValues)
-    }
-    case 'filter': {
-      return evaluateFilterToken(token as Filter, rest, context, prevValues)
-    }
-    default:
-      throw new Error(`Unsupported token type: ${JSON.stringify(token)}`)
+  case 'state': {
+    return evaluateStateToken(token as State, rest, context, prevValues)
+  }
+  case 'property': {
+    return evaluatePropertyToken(token as Property, rest, context, prevValues)
+  }
+  case 'filter': {
+    return evaluateFilterToken(token as Filter, rest, context, prevValues)
+  }
+  default:
+    throw new Error(`Unsupported token type: ${JSON.stringify(token)}`)
   }
 }
 
@@ -172,26 +172,15 @@ export function resolveStateExpression(
     return null
   }
 
-  // Handle both old signature (array) and new signature (DataContext/EvaluationContext)
-  const dataSources = Array.isArray(context) ? context : 'dataSources' in context ? context.dataSources : []
-  const filters = Array.isArray(context) ? [] : 'filters' in context ? context.filters : []
-  const editor = Array.isArray(context) ? null : 'editor' in context ? context.editor : null
-
   // Create a minimal DataTree-like object for fromStored compatibility
-  const dataTreeLike = {
-    dataSources: [...dataSources],
-    filters: [...filters],
-    editor,
-  } as any
-
   return storedState.expression
     .flatMap((token: StoredToken) => {
       switch (token.type) {
-        case 'state': {
-          return resolveStateExpression(fromStored(token, component.getId()), parent, context) ?? []
-        }
-        default:
-          return token
+      case 'state': {
+        return resolveStateExpression(fromStored(token, component.getId()), parent, context) ?? []
+      }
+      default:
+        return token
       }
     })
 }
@@ -225,7 +214,7 @@ export function evaluateFilterToken(
       options,
       valueType: typeof prevValues,
       isArray: Array.isArray(prevValues),
-      isNull: prevValues === null
+      isNull: prevValues === null,
     })
     // Mimic behavior of liquid - return null on error
     return null

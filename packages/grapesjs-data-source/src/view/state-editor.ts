@@ -27,6 +27,9 @@ import { Component, Editor } from 'grapesjs'
 
 import '@silexlabs/expression-input'
 import { getCompletion } from '../model/completion'
+import { evaluateExpressionTokens, EvaluationContext } from '../model/expressionEvaluator'
+import { getAllDataSources } from '../model/dataSourceRegistry'
+import { getFilters, getPreviewData, getManager } from '../model/dataSourceManager'
 import { fromStored, getExpressionResultType } from '../model/token'
 import { StoredState, StoredStateWithId } from '../model/state'
 
@@ -273,12 +276,14 @@ export class StateEditor extends LitElement {
     const _currentValue = this._data.map(token => fromStored(token, selected.getId()))
 
     // Get the data to show in the "+" drop down
+    const manager = getManager()
     const completion = getCompletion({
       component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
       expression: _currentValue || [],
       rootType: this.rootType,
       currentStateId: this.parentName || this.name,
       hideLoopData: this.hideLoopData,
+      manager,
     })
       .filter(token => token.type !== 'filter' || !this.noFilters)
 
@@ -296,8 +301,14 @@ export class StateEditor extends LitElement {
 
     let currentData = '' as unknown
     try {
-      // TODO: Get value using new API
-      const realData = null // getValue(_currentValue || [], selected, !this.showPreviewIndexUi)
+      const context: EvaluationContext = {
+        dataSources: getAllDataSources(),
+        filters: getFilters(),
+        previewData: getPreviewData(),
+        component: selected,
+        resolvePreviewIndex: !this.showPreviewIndexUi,
+      }
+      const realData = evaluateExpressionTokens(_currentValue || [], context)
       currentData = realData
     } catch(e) {
       console.error('Current data could not be retrieved:', e)
@@ -346,6 +357,7 @@ export class StateEditor extends LitElement {
       rootType: this.rootType,
       currentStateId: idx === 0 ? this.parentName || this.name : undefined,
       hideLoopData: this.hideLoopData,
+      manager,
     })
     const partialCompletion = this.noFilters ? _partialCompletion
       .filter(token => token.type !== 'filter')

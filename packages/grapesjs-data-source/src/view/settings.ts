@@ -174,7 +174,7 @@ class SettingsDataSources extends LitElement {
     this.editor.Modal.open({
       title,
       content: formElement,
-      attributes: { class: 'ds-modal' }
+      attributes: { class: 'ds-modal' },
     })
   }
 

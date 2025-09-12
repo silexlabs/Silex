@@ -10,7 +10,7 @@ import {
   removeDataSource,
   getDataSource,
   setDataSources,
-  dataSourcesToJSON
+  dataSourcesToJSON,
 } from './dataSourceRegistry'
 import { IDataSource } from '../types'
 
@@ -40,7 +40,7 @@ describe('DataSourceRegistry', () => {
       headers: { 'Content-Type': 'application/json' },
       readonly: false,
       hidden: false,
-      connect: jest.fn(),
+      connect: jest.fn(() => Promise.resolve()),
       isConnected: jest.fn(() => true),
       getTypes: jest.fn(() => []),
       getQueryables: jest.fn(() => []),
@@ -59,7 +59,7 @@ describe('DataSourceRegistry', () => {
       headers: {},
       readonly: true,
       hidden: false,
-      connect: jest.fn(),
+      connect: jest.fn(() => Promise.resolve()),
       isConnected: jest.fn(() => true),
       getTypes: jest.fn(() => []),
       getQueryables: jest.fn(() => []),
@@ -138,9 +138,13 @@ describe('DataSourceRegistry', () => {
     })
   })
 
-  it('should trigger DATA_SOURCE_CHANGED event when adding data source', () => {
+  it('should trigger DATA_SOURCE_CHANGED event when adding data source', async () => {
     const triggerSpy = jest.spyOn(editor, 'trigger')
     addDataSource(mockDataSource1)
+    
+    // Wait for the promise to resolve
+    await new Promise(resolve => setTimeout(resolve, 0))
+    
     expect(triggerSpy).toHaveBeenCalledWith('data-source:changed')
   })
 

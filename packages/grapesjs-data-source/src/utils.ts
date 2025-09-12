@@ -1,11 +1,11 @@
-import { Expression, Field, FieldKind, IDataSource, Options, Token, TypeId } from './types'
+import { Expression, Field, FieldKind, IDataSource, Options, Token, TypeId, Type } from './types'
 import { Editor } from 'grapesjs'
 import { getParentByPersistentId, getStateDisplayName, getState } from './model/state'
 import { TemplateResult, html } from 'lit'
 import { Component } from 'grapesjs'
 import { fromStored, getExpressionResultType } from './model/token'
 import GraphQL, { GraphQLOptions } from './datasources/GraphQL'
-import { getDataSource } from './model/dataSourceRegistry'
+import { getDataSource, getAllDataSources } from './model/dataSourceRegistry'
 import { FIXED_TOKEN_ID } from './types'
 
 export const NOTIFICATION_GROUP = 'Data source'
@@ -256,9 +256,32 @@ export function convertKind(field: Field | null, from: FieldKind, to: FieldKind)
  * @throws Error if the field has a token with an unknown type
  */
 export function getFieldType(editor: Editor, field: Field | null, key: string | undefined, componentId: string | null): Field | null {
-  // TODO: This function needs to be updated to use the manager approach
-  // For now, return null to avoid compilation errors
-  return null
+  if (!field || !key) return null
+  
+  const allDataSources = getAllDataSources()
+  const dataSource = allDataSources.find((ds: IDataSource) => ds.id === field.dataSourceId)
+  if (!dataSource?.isConnected()) return null
+  
+  const types = field.typeIds.map(typeId => {
+    const dsTypes = dataSource.getTypes()
+    return dsTypes.find((type: Type) => type.id === typeId)
+  }).filter(Boolean)
+  
+  const fields = types.map((type: Type | undefined) => type?.fields.find((f: Field) => f.label === key)).filter(Boolean)
+  
+  switch (fields.length) {
+  case 0: return null
+  case 1: return fields[0]!
+  default: return {
+    id: `${field.id}.${key}`,
+    label: `${field.label}.${key}`,
+    typeIds: fields.reduce((typeIds, field) => typeIds
+      .concat(field!.typeIds.filter((t: string) => !typeIds.includes(t)))
+    , [] as string[]),
+    kind: 'object',
+    dataSourceId: field.dataSourceId
+  }
+  }
 }
 
 /**
@@ -266,15 +289,30 @@ export function getFieldType(editor: Editor, field: Field | null, key: string | 
  * @throws Error if the field has a token with an unknown type
  */
 export function optionsFormKeySelector(editor: Editor, field: Field | null, options: Options, name: string): TemplateResult {
-  // TODO: This function needs to be updated to use the manager approach
   if (!field) return html`
       <label>${name}
         <input type="text" name=${name} />
       </label>
     `
+    
+  const allDataSources = getAllDataSources()
+  const dataSource = allDataSources.find((ds: IDataSource) => ds.id === field.dataSourceId)
+  if (!dataSource?.isConnected()) {
+    return html`
+      <select name=${name}>
+        <option value="">Data source not connected</option>
+      </select>
+    `
+  }
+  
+  const dsTypes = dataSource.getTypes()
+  const fieldOptions = field.typeIds
+    .flatMap(typeId => dsTypes.find((type: Type) => type.id === typeId)?.fields || [])
+    
   return html`
       <select name=${name}>
         <option value="">Select a ${name}</option>
+        ${fieldOptions.map(f => html`<option value=${f.label} .selected=${f.label === options.key}>${f.label}</option>`)}
       </select>
     `
 }

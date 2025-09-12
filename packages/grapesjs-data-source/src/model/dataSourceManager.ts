@@ -17,7 +17,7 @@
 
 import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, Filter, IDataSource, DataSourceEditorOptions, DataSourceId, Type, Field } from '../types'
 
-const STANDARD_TYPES: Type[] = [
+export const STANDARD_TYPES: Type[] = [
   {
     id: 'string',
     label: 'String',
@@ -52,7 +52,7 @@ import {
   addDataSource as registryAddDataSource,
   removeDataSource as registryRemoveDataSource,
   setDataSources,
-  dataSourcesToJSON
+  dataSourcesToJSON,
 } from './dataSourceRegistry'
 import { initializePreviewDataLoader, loadPreviewData } from './previewDataLoader'
 import { initializeFilters } from '../filters'
@@ -103,9 +103,10 @@ function getAllQueryables(manager: DataSourceManagerState): Field[] {
  */
 function updateCachedData(): void {
   const manager = getManager()
-  
+
   manager.cachedTypes = getAllTypes(manager)
   manager.cachedQueryables = getAllQueryables(manager)
+  console.log(`🔄 Cache updated: ${manager.cachedTypes.length} types, ${manager.cachedQueryables.length} queryables`)
 }
 
 /**
@@ -130,8 +131,8 @@ export function initializeDataSourceManager(
   // Get current data sources
   const currentDataSources = getAllDataSources()
 
-  // Initialize preview data loader - we'll update this later
-  // initializePreviewDataLoader(editor, dataTree)
+  // Initialize preview data loader
+  initializePreviewDataLoader(editor)
 
   // Create bound event handlers
   const eventListeners = {
@@ -139,12 +140,14 @@ export function initializeDataSourceManager(
       editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
     },
     dataSourceReadyBinded: (ds: IDataSource) => {
+      console.log(`📡 Data source ${ds.id} is ready`)
+      updateCachedData() // Update cache when data source becomes ready
       editor.trigger(DATA_SOURCE_READY, ds)
       loadPreviewData(true) // force refresh when data source becomes ready
     },
     dataSourceErrorBinded: (message: string, ds: IDataSource) => {
       editor.trigger(DATA_SOURCE_ERROR, message, ds)
-    }
+    },
   }
 
   globalManager = {
@@ -155,7 +158,7 @@ export function initializeDataSourceManager(
     cachedQueryables: [],
     dataSources: currentDataSources,
     filters,
-    eventListeners
+    eventListeners,
   }
 
   // Set up event listeners
@@ -179,7 +182,7 @@ export function initializeDataSourceManager(
 /**
  * Get the global manager (throws if not initialized)
  */
-function getManager(): DataSourceManagerState {
+export function getManager(): DataSourceManagerState {
   if (!globalManager) {
     throw new Error('DataSourceManager not initialized. Call initializeDataSourceManager first.')
   }
@@ -207,6 +210,7 @@ export function removeDataSource(dataSource: IDataSource): void {
  * Refresh all data sources data
  */
 export function refreshDataSources(): void {
+  console.log('refreshDataSources')
   loadPreviewData(true) // force refresh when explicitly requested
 }
 
