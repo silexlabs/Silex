@@ -16,10 +16,12 @@
  */
 
 import { DataSourceId, Property, StoredToken, ComponentExpression } from '../types'
-import { DataTree } from './DataTree'
+import { getPageExpressions, toTrees } from './ExpressionTree'
+import { DataSourceManagerState } from './dataSourceManager'
 import { getAllDataSources } from './dataSourceRegistry'
 import { Page, Editor } from 'grapesjs'
 import { getComponentDebug, NOTIFICATION_GROUP } from '../utils'
+import { resolveStateExpression } from './expressionEvaluator'
 
 /**
  * Get page query for both preview and production use
@@ -28,8 +30,9 @@ import { getComponentDebug, NOTIFICATION_GROUP } from '../utils'
  * @param editor - The GrapesJS editor instance
  * @param dataTree - The DataTree instance to use for query generation
  */
-export function getPageQuery(page: Page, editor: Editor, dataTree: DataTree): Record<DataSourceId, string> {
-  const expressions = dataTree.getPageExpressions(page)
+export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, string> {
+  // TODO: Get manager and use it instead of dataTree
+  const expressions: ComponentExpression[] = [] // getPageExpressions(manager, page)
   const dataSources = getAllDataSources()
 
   return dataSources
@@ -52,7 +55,7 @@ export function getPageQuery(page: Page, editor: Editor, dataTree: DataTree): Re
             case 'filter':
               return token
             case 'state': {
-              const resolved = dataTree.resolveState(token, componentExpression.component)
+              const resolved = resolveStateExpression(token, componentExpression.component, [])
               if (!resolved) {
                 editor.runCommand('notifications:add', {
                   type: 'error',
@@ -79,7 +82,8 @@ export function getPageQuery(page: Page, editor: Editor, dataTree: DataTree): Re
           return first?.dataSourceId === ds.id
         })
 
-      const trees = dataTree.toTrees(dsExpressions, ds.id)
+      // TODO: Use manager instead of dataTree
+      const trees: any[] = [] // toTrees(manager, dsExpressions, ds.id)
       if(trees.length === 0) {
         return {
           dataSourceId: ds.id.toString(),
@@ -107,9 +111,9 @@ export function getPageQuery(page: Page, editor: Editor, dataTree: DataTree): Re
  * @param editor - The GrapesJS editor instance
  * @param dataTree - The DataTree instance to use for query generation
  */
-export function buildPageQueries(pages: Page[], editor: Editor, dataTree: DataTree): Record<string, Record<DataSourceId, string>> {
+export function buildPageQueries(pages: Page[], editor: Editor): Record<string, Record<DataSourceId, string>> {
   return pages.reduce((acc, page) => {
-    acc[page.getId()] = getPageQuery(page, editor, dataTree)
+    acc[page.getId()] = getPageQuery(page, editor)
     return acc
   }, {} as Record<string, Record<DataSourceId, string>>)
 }

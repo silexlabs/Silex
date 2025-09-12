@@ -135,7 +135,12 @@ describe('QueryBuilder', () => {
     }] as Expression
 
     jest.spyOn(dataTree, 'getPageExpressions').mockReturnValue([mockExpression])
-    jest.spyOn(dataTree, 'resolveState').mockReturnValue(resolvedExpression)
+    
+    // Mock the utility function instead of the removed method
+    const mockResolveStateExpression = jest.fn().mockReturnValue(resolvedExpression)
+    const expressionEvaluatorModule = require('./expressionEvaluator')
+    jest.spyOn(expressionEvaluatorModule, 'resolveStateExpression').mockImplementation(mockResolveStateExpression)
+    
     jest.spyOn(dataTree, 'toTrees').mockReturnValue([{
       token: resolvedExpression[0] as Property,
       children: []
@@ -145,7 +150,7 @@ describe('QueryBuilder', () => {
     expect(queries).toEqual({
       'test-ds': 'query { resolvedField }'
     })
-    expect(dataTree.resolveState).toHaveBeenCalledWith(mockExpression.expression[0], mockExpression.component)
+    expect(mockResolveStateExpression).toHaveBeenCalledWith(mockExpression.expression[0], mockExpression.component, [])
   })
 
   it('should filter expressions by data source', () => {
@@ -218,7 +223,12 @@ describe('QueryBuilder', () => {
     }
 
     jest.spyOn(dataTree, 'getPageExpressions').mockReturnValue([mockExpression])
-    jest.spyOn(dataTree, 'resolveState').mockReturnValue(null)
+    
+    // Mock the utility function to return null
+    const mockResolveStateExpression = jest.fn().mockReturnValue(null)
+    const expressionEvaluatorModule = require('./expressionEvaluator')
+    jest.spyOn(expressionEvaluatorModule, 'resolveStateExpression').mockImplementation(mockResolveStateExpression)
+    
     jest.spyOn(editor, 'runCommand').mockImplementation(() => {})
 
     expect(() => getPageQuery(page, editor, dataTree)).toThrow('Unable to resolve state')

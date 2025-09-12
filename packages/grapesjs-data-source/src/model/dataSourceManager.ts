@@ -15,11 +15,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, Filter, IDataSource, DataSourceEditorOptions } from '../types'
-import { DataTree } from './DataTree'
+import { COMPONENT_STATE_CHANGED, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR, DATA_SOURCE_READY, Filter, IDataSource, DataSourceEditorOptions, DataSourceId, Type, Field } from '../types'
+
+const STANDARD_TYPES: Type[] = [
+  {
+    id: 'string',
+    label: 'String',
+    fields: [],
+  },
+  {
+    id: 'number',
+    label: 'Number',
+    fields: [],
+  },
+  {
+    id: 'boolean',
+    label: 'Boolean',
+    fields: [],
+  },
+  {
+    id: 'date',
+    label: 'Date',
+    fields: [],
+  },
+  {
+    id: 'unknown',
+    label: 'Unknown',
+    fields: [],
+  },
+]
 import { Component, Editor } from 'grapesjs'
 import { StoredState, onStateChange } from './state'
-import getLiquidFilters from '../filters/liquid'
 import {
   initializeDataSourceRegistry,
   getAllDataSources,
@@ -29,14 +55,20 @@ import {
   dataSourcesToJSON
 } from './dataSourceRegistry'
 import { initializePreviewDataLoader, loadPreviewData } from './previewDataLoader'
+import { initializeFilters } from '../filters'
+import { validateFilters } from '../filters'
 
 /**
  * Data source manager state
  */
 export interface DataSourceManagerState {
-  dataTree: DataTree
-  editor: Editor
+  dataSources: IDataSource[]
+  filters: Filter[]
+  previewData: Record<DataSourceId, unknown>
+  readonly editor: Editor
   options: DataSourceEditorOptions
+  cachedTypes: Type[]
+  cachedQueryables: Field[]
   eventListeners: {
     dataChangedBinded: (e?: CustomEvent) => void
     dataSourceReadyBinded: (ds: IDataSource) => void
@@ -48,30 +80,32 @@ export interface DataSourceManagerState {
 let globalManager: DataSourceManagerState | null = null
 
 /**
- * Initialize filters from options
+ * Get all types from all connected data sources
  */
-function initializeFilters(editor: Editor, options: DataSourceEditorOptions): Filter[] {
-  if (typeof options.filters === 'string') {
-    return [
-      ...getLiquidFilters(editor),
-    ]
-  } else {
-    return (options.filters as Filter[])
-      .flatMap((filter: Partial<Filter> | string): Filter[] => {
-        if (typeof filter === 'string') {
-          switch (filter) {
-          case 'liquid': return getLiquidFilters(editor)
-          default: throw new Error(`Unknown filters ${filter}`)
-          }
-        } else {
-          return [{
-            ...filter as Partial<Filter>,
-            type: 'filter',
-          } as Filter]
-        }
-      })
-      .map((filter: Filter) => ({ ...filter, type: 'filter' })) as Filter[]
-  }
+function getAllTypes(manager: DataSourceManagerState): Type[] {
+  return manager.dataSources
+    .filter(ds => ds.isConnected())
+    .flatMap(ds => ds.getTypes())
+    .concat(STANDARD_TYPES)
+}
+
+/**
+ * Get all queryable fields from all connected data sources
+ */
+function getAllQueryables(manager: DataSourceManagerState): Field[] {
+  return manager.dataSources
+    .filter(ds => ds.isConnected())
+    .flatMap(ds => ds.getQueryables())
+}
+
+/**
+ * Update cached types and queryables
+ */
+function updateCachedData(): void {
+  const manager = getManager()
+  
+  manager.cachedTypes = getAllTypes(manager)
+  manager.cachedQueryables = getAllQueryables(manager)
 }
 
 /**
@@ -84,20 +118,20 @@ export function initializeDataSourceManager(
 ): void {
   const filters = initializeFilters(editor, options)
 
+  // Validate filters
+  validateFilters(filters)
+
   // Initialize the registry
   initializeDataSourceRegistry(editor)
 
   // Set initial data sources
   setDataSources(dataSources)
 
-  // Create data tree
-  const dataTree = new DataTree(editor, {
-    dataSources: getAllDataSources(),
-    filters,
-  })
+  // Get current data sources
+  const currentDataSources = getAllDataSources()
 
-  // Initialize preview data loader
-  initializePreviewDataLoader(editor, dataTree)
+  // Initialize preview data loader - we'll update this later
+  // initializePreviewDataLoader(editor, dataTree)
 
   // Create bound event handlers
   const eventListeners = {
@@ -114,9 +148,13 @@ export function initializeDataSourceManager(
   }
 
   globalManager = {
-    dataTree,
     editor,
     options,
+    previewData: {},
+    cachedTypes: [],
+    cachedQueryables: [],
+    dataSources: currentDataSources,
+    filters,
     eventListeners
   }
 
@@ -126,7 +164,11 @@ export function initializeDataSourceManager(
   // Listen for data source changes and re-setup event listeners
   editor.on(DATA_SOURCE_CHANGED, () => {
     setupEventListeners()
+    updateCachedData()
   })
+
+  // Update cached data initially
+  updateCachedData()
 
   // Relay state changes to the editor
   onStateChange((state: StoredState | null, component: Component) => {
@@ -176,25 +218,62 @@ export function resetDataSources(dataSources: IDataSource[]): void {
   setupEventListeners()
 }
 
-/**
- * Get the data tree
- */
-export function getDataTree(): DataTree {
-  return getManager().dataTree
-}
 
 /**
  * Get filters
  */
 export function getFilters(): Filter[] {
-  return getManager().dataTree.filters
+  return getManager().filters
 }
 
 /**
  * Set filters
  */
 export function setFilters(filters: Filter[]): void {
-  getManager().dataTree.filters = filters
+  getManager().filters = filters
+  updateCachedData()
+}
+
+/**
+ * Get preview data
+ */
+export function getPreviewData(): Record<DataSourceId, unknown> {
+  return getManager().previewData
+}
+
+/**
+ * Set preview data
+ */
+export function setPreviewData(data: Record<DataSourceId, unknown>): void {
+  getManager().previewData = data
+}
+
+/**
+ * Get all types from all data sources
+ */
+export function getTypes(): Type[] {
+  return getAllTypes(getManager())
+}
+
+/**
+ * Get all queryable fields from all data sources
+ */
+export function getQueryables(): Field[] {
+  return getAllQueryables(getManager())
+}
+
+/**
+ * Get cached types
+ */
+export function getCachedTypes(): Type[] {
+  return getManager().cachedTypes
+}
+
+/**
+ * Get cached queryables
+ */
+export function getCachedQueryables(): Field[] {
+  return getManager().cachedQueryables
 }
 
 /**
@@ -211,8 +290,8 @@ function setupEventListeners(): void {
   const manager = getManager()
   const dataSources = getAllDataSources()
 
-  // Update the data tree with current data sources
-  manager.dataTree.dataSources = [...dataSources]
+  // Update the manager with current data sources
+  manager.dataSources = [...dataSources]
 
   // Remove all listeners
   dataSources.forEach((dataSource: IDataSource) => {

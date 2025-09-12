@@ -16,7 +16,7 @@
  */
 
 import { DataSourceId, DATA_SOURCE_DATA_LOAD_START, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_DATA_LOAD_CANCEL } from '../types'
-import { DataTree } from './DataTree'
+import { DataSourceManagerState, getPreviewData as getPreviewDataFromManager, setPreviewData as setPreviewDataInManager } from './dataSourceManager'
 import { getAllDataSources } from './dataSourceRegistry'
 import { getPageQuery } from './queryBuilder'
 import { Page, Editor } from 'grapesjs'
@@ -27,7 +27,6 @@ import { NOTIFICATION_GROUP } from '../utils'
  */
 interface PreviewDataLoaderState {
   editor: Editor
-  dataTree: DataTree
   currentUpdatePid: number
   lastQueries: Record<DataSourceId, string>
 }
@@ -38,10 +37,9 @@ let globalLoader: PreviewDataLoaderState | null = null
 /**
  * Initialize the preview data loader
  */
-export function initializePreviewDataLoader(editor: Editor, dataTree: DataTree): void {
+export function initializePreviewDataLoader(editor: Editor): void {
   globalLoader = {
     editor,
-    dataTree,
     currentUpdatePid: 0,
     lastQueries: {}
   }
@@ -90,7 +88,7 @@ export async function loadPreviewData(forceRefresh: boolean = false): Promise<vo
   if (!page) return
   
   // Get current queries
-  const currentQueries = getPageQuery(page, loader.editor, loader.dataTree)
+  const currentQueries = getPageQuery(page, loader.editor)
   
   // Compare with last queries to see if we need to refresh
   const queriesChanged = !areQueriesEqual(loader.lastQueries, currentQueries)
@@ -98,7 +96,7 @@ export async function loadPreviewData(forceRefresh: boolean = false): Promise<vo
   if (!forceRefresh && !queriesChanged) {
     // Queries haven't changed, no need to refresh data sources
     // But still trigger load end to maintain expected event flow
-    loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, loader.dataTree.previewData)
+    loader.editor.trigger(DATA_SOURCE_DATA_LOAD_END, getPreviewDataFromManager())
     return
   }
   
@@ -124,10 +122,10 @@ export async function loadPreviewData(forceRefresh: boolean = false): Promise<vo
 export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourceId, unknown> | 'interrupted'> {
   const loader = getLoader()
   const myPid = loader.currentUpdatePid
-  const queries = getPageQuery(page, loader.editor, loader.dataTree)
+  const queries = getPageQuery(page, loader.editor)
   
   // Reset preview data
-  loader.dataTree.previewData = {}
+  setPreviewDataInManager({})
 
   try {
     const results = await Promise.all(
@@ -148,7 +146,8 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
           
           try {
             const value = await ds.fetchValues(query)
-            loader.dataTree.previewData[dataSourceId] = value
+            const currentData = getPreviewDataFromManager()
+            setPreviewDataInManager({ ...currentData, [dataSourceId]: value })
             return { dataSourceId, value }
           } catch (err) {
             console.error(`Error fetching preview data for data source ${dataSourceId}:`, err)
@@ -186,12 +185,12 @@ export async function fetchPagePreviewData(page: Page): Promise<Record<DataSourc
  * Get current preview data
  */
 export function getPreviewData(): Record<DataSourceId, unknown> {
-  return getLoader().dataTree.previewData
+  return getPreviewDataFromManager()
 }
 
 /**
  * Clear preview data
  */
 export function clearPreviewData(): void {
-  getLoader().dataTree.previewData = {}
+  setPreviewDataInManager({})
 }

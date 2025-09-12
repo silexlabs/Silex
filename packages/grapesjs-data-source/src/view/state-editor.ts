@@ -21,7 +21,7 @@ import { Ref, createRef, ref } from 'lit/directives/ref.js'
 import { styleMap } from 'lit/directives/style-map.js'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, Filter, FIXED_TOKEN_ID, Property, State, StoredProperty, Token } from '../types'
-import { fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue, getDataTreeFromUtils } from '../utils'
+import { fromString, getFixedToken, getTokenDisplayName, groupByType, toExpression, toId, toValue } from '../utils'
 import { ExpressionInput, PopinForm } from '@silexlabs/expression-input'
 import { Component, Editor } from 'grapesjs'
 
@@ -269,15 +269,13 @@ export class StateEditor extends LitElement {
     }
 
     const selected = this.selected
-    const dataTree = getDataTreeFromUtils(this.editor)
     // FIXME: fromStored every time we render is not efficient, it is supposed to have been done before
-    const _currentValue = this._data.map(token => fromStored(token, dataTree, selected.getId()))
+    const _currentValue = this._data.map(token => fromStored(token, selected.getId()))
 
     // Get the data to show in the "+" drop down
     const completion = getCompletion({
       component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
       expression: _currentValue || [],
-      dataTree,
       rootType: this.rootType,
       currentStateId: this.parentName || this.name,
       hideLoopData: this.hideLoopData,
@@ -298,7 +296,8 @@ export class StateEditor extends LitElement {
 
     let currentData = '' as unknown
     try {
-      const realData = dataTree.getValue(_currentValue || [], selected, !this.showPreviewIndexUi)
+      // TODO: Get value using new API
+      const realData = null // getValue(_currentValue || [], selected, !this.showPreviewIndexUi)
       currentData = realData
     } catch(e) {
       console.error('Current data could not be retrieved:', e)
@@ -344,7 +343,6 @@ export class StateEditor extends LitElement {
     const _partialCompletion = getCompletion({
       component: this.dismissCurrentComponentStates ? selected.parent()! : selected,
       expression: partialExpression,
-      dataTree,
       rootType: this.rootType,
       currentStateId: idx === 0 ? this.parentName || this.name : undefined,
       hideLoopData: this.hideLoopData,
@@ -547,13 +545,12 @@ export class StateEditor extends LitElement {
 
   private getOptions(component: Component, tokens: Token[], idx: number): TemplateResult | '' {
     if(!this.editor) throw new Error('editor is required')
-    const dataTree = getDataTreeFromUtils(this.editor)
     const token = tokens[idx]
     const beforeToken = tokens.slice(0, idx)
     const fields = beforeToken
       .map(token => {
         try {
-          return getExpressionResultType(tokens.concat(token), component, dataTree)
+          return getExpressionResultType(tokens.concat(token), component)
         } catch(e) {
           // FIXME: notify the user
           console.error(`Error while getting expression result type for token ${token} on component ${component.getName()}#${component.get('id')}.${component.getClasses().join('.')} (${component.cid})`, e)

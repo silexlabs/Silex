@@ -1,6 +1,6 @@
 import { Component } from 'grapesjs'
 import { Context, Expression, Field, Filter, Property, State, StateId, Token, Type, TypeId } from '../types'
-import { DataTree } from './DataTree'
+import { DataSourceManagerState } from './dataSourceManager'
 import { getOrCreatePersistantId, getState, getStateIds } from './state'
 import { getExpressionResultType, getTokenOptions } from './token'
 import { getFixedToken } from '../utils'
@@ -9,13 +9,13 @@ import { getFixedToken } from '../utils'
  * Get the context of a component
  * This includes all parents states, data sources queryable values, values provided in the options
  */
-export function getContext(component: Component, dataTree: DataTree, currentStateId?: StateId, hideLoopData = false): Context {
+export function getContext(component: Component, manager: DataSourceManagerState, currentStateId?: StateId, hideLoopData = false): Context {
   if (!component) {
     console.error('Component is required for context')
     throw new Error('Component is required for context')
   }
   // Get all queryable values from all data sources
-  const queryable: Property[] = dataTree.queryables
+  const queryable: Property[] = manager.cachedQueryables
     .map((field: Field) => {
       if (!field.dataSourceId) throw new Error(`Type ${field.id} has no data source`)
       return fieldToToken(field)
@@ -41,7 +41,7 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
       const loopDataState = getState(parent, '__data', false)
       if (loopDataState) {
         try {
-          const loopDataField = getExpressionResultType(loopDataState.expression, parent, dataTree)
+          const loopDataField = getExpressionResultType(loopDataState.expression, parent)
           if (loopDataField) {
             const displayName = (label: string) => `${parent.getName() ?? 'Unknown'}'s ${loopDataField.label} ${label}`
             if (loopDataField.kind === 'list') {
@@ -83,7 +83,7 @@ export function getContext(component: Component, dataTree: DataTree, currentStat
     parent = parent.parent() as Component
   }
   // Get filters which accept no input
-  const filters: Filter[] = dataTree.filters
+  const filters: Filter[] = manager.filters
     .filter(filter => {
       try {
         return filter.validate(null)
@@ -126,23 +126,23 @@ export function fieldToToken(field: Field): Property {
  * Auto complete an expression
  * @returns a list of possible tokens to add to the expression
  */
-export function getCompletion(options: { component: Component, expression: Expression, dataTree: DataTree, rootType?: TypeId, currentStateId?: StateId, hideLoopData?: boolean}): Context {
-  const { component, expression, dataTree, rootType, currentStateId, hideLoopData } = options
+export function getCompletion(options: { component: Component, expression: Expression, manager: DataSourceManagerState, rootType?: TypeId, currentStateId?: StateId, hideLoopData?: boolean}): Context {
+  const { component, expression, manager, rootType, currentStateId, hideLoopData } = options
   if (!component) throw new Error('Component is required for completion')
   if (!expression) throw new Error('Expression is required for completion')
   if (expression.length === 0) {
     if (rootType) {
-      const type = dataTree.getType(rootType, null, component.getId())
+      // TODO: Get type from manager instead of dataTree
+      const type = null
       if (!type) {
         console.warn('Root type not found', rootType)
         return []
       }
-      return type.fields
-        .map((field: Field) => fieldToToken(field))
+      return []  // TODO: Update once we have type resolution working
     }
-    return getContext(component, dataTree, currentStateId, hideLoopData)
+    return getContext(component, manager, currentStateId, hideLoopData)
   }
-  const field = getExpressionResultType(expression, component, dataTree)
+  const field = getExpressionResultType(expression, component)
   if (!field) {
     console.warn('Result type not found for expression', expression)
     return []
@@ -151,7 +151,7 @@ export function getCompletion(options: { component: Component, expression: Expre
     // Add fields if the kind is object
     .concat(field.kind === 'object' ? field.typeIds
       // Find possible types
-      .map((typeId: TypeId) => dataTree.getType(typeId, field.dataSourceId ?? null, component.getId()))
+      .map((typeId: TypeId) => null) // TODO: Get type from manager
       // Add all of their fields
       .flatMap((type: Type | null) => type?.fields ?? [])
       // To token
@@ -167,9 +167,9 @@ export function getCompletion(options: { component: Component, expression: Expre
       ) : [])
     // Add filters
     .concat(
-      dataTree.filters
+      manager.filters
         // Match input type
-        .filter(filter => {
+        .filter((filter: Filter) => {
           try {
             return filter.validate(field)
           } catch (e) {

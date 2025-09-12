@@ -26,8 +26,7 @@ import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
 import { BinaryOperator, Properties, Token, UnariOperator } from '../types'
 import { getState, setState } from '../model/state'
-import { DataTree } from '../model/DataTree'
-import { getFixedToken, getDataTreeFromUtils } from '../utils'
+import { getFixedToken } from '../utils'
 
 /**
  * Editor for selected element's properties
@@ -197,7 +196,7 @@ export class PropertiesEditor extends LitElement {
       const stateEditorFinally = this.inputs[name]!.stateEditor
       this.redrawing = true
       try {
-        stateEditorFinally.data = this.getTokens(getDataTreeFromUtils(this.editor!), selected, name, publicState)
+        stateEditorFinally.data = this.getTokens(selected, name, publicState)
       } catch (e) {
         console.error('Error setting data', e)
         stateEditorFinally.data = [getFixedToken(`Error setting data: ${e}`)]
@@ -232,10 +231,10 @@ export class PropertiesEditor extends LitElement {
     }
   }
 
-  getTokens(dataTree: DataTree, component: Component, name: Properties, publicState: boolean): Token[] {
+  getTokens(component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
-    return state.expression.map(token => fromStored(token, dataTree, component.getId()))
+    return state.expression.map(token => fromStored(token, component.getId()))
   }
 }
 

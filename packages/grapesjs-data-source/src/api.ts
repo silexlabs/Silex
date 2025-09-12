@@ -27,7 +27,7 @@ import { DataSourceId, IDataSource, Expression, StateId, StoredToken, Token, Fie
 
 // Internal imports
 import { getPageQuery as getPageQueryInternal, buildPageQueries as buildPageQueriesInternal } from './model/queryBuilder'
-import { getDataTree as getDataTreeInternal, refreshDataSources as refreshDataSourcesInternal } from './model/dataSourceManager'
+import { refreshDataSources as refreshDataSourcesInternal, getFilters as getFiltersInternal, setFilters as setFiltersInternal } from './model/dataSourceManager'
 import {
   getAllDataSources as getAllDataSourcesInternal,
   getDataSource as getDataSourceInternal,
@@ -56,6 +56,8 @@ import {
   type StoredState
 } from './model/state'
 import { NOTIFICATION_GROUP as NOTIFICATION_GROUP_INTERNAL, toExpression as toExpressionInternal, createDataSource as createDataSourceInternal } from './utils'
+import { getPageExpressions as getPageExpressionsInternal } from './model/ExpressionTree'
+import { evaluateExpressionTokens, EvaluationContext } from './model/expressionEvaluator'
 import { GraphQLOptions } from './datasources/GraphQL'
 import { getCompletion as getCompletionInternal } from './model/completion'
 import getLiquidFiltersInternal from './filters/liquid'
@@ -73,8 +75,7 @@ import getLiquidFiltersInternal from './filters/liquid'
  * @returns Record of data source ID to GraphQL query string
  */
 export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, string> {
-  const dataTree = getDataTreeInternal()
-  return getPageQueryInternal(page, editor, dataTree)
+  return getPageQueryInternal(page, editor)
 }
 
 /**
@@ -86,8 +87,7 @@ export function getPageQuery(page: Page, editor: Editor): Record<DataSourceId, s
  * @returns Record of page ID to data source queries
  */
 export function buildPageQueries(pages: Page[], editor: Editor): Record<string, Record<DataSourceId, string>> {
-  const dataTree = getDataTreeInternal()
-  return buildPageQueriesInternal(pages, editor, dataTree)
+  return buildPageQueriesInternal(pages, editor)
 }
 
 // ===============================
@@ -175,8 +175,8 @@ export function clearPreviewData(): void {
  * @returns The evaluated result
  */
 export function getValue(expression: Expression, component: Component, resolvePreviewIndex = true): unknown {
-  const dataTree = getDataTreeInternal()
-  return dataTree.getValue(expression, component, resolvePreviewIndex)
+  // TODO: Update to use manager instead of context
+  return null
 }
 
 /**
@@ -185,8 +185,8 @@ export function getValue(expression: Expression, component: Component, resolvePr
  * @returns Array of component expressions
  */
 export function getPageExpressions(page: Page) {
-  const dataTree = getDataTreeInternal()
-  return dataTree.getPageExpressions(page)
+  // TODO: Update to use manager instead of context
+  return []
 }
 
 /**
@@ -195,11 +195,8 @@ export function getPageExpressions(page: Page) {
  * @returns Context with available tokens for completion
  */
 export function getCompletion(options: { component: Component, expression: Expression, rootType?: TypeId, currentStateId?: StateId, hideLoopData?: boolean}): Context {
-  const dataTree = getDataTreeInternal()
-  return getCompletionInternal({
-    ...options,
-    dataTree
-  })
+  // TODO: Update to use manager instead of dataTree
+  return []
 }
 
 /**
@@ -209,8 +206,7 @@ export function getCompletion(options: { component: Component, expression: Expre
  * @returns The full token with all properties and methods
  */
 export function fromStored<T extends Token = Token>(token: StoredToken, componentId: string | null): T {
-  const dataTree = getDataTreeInternal()
-  return fromStoredInternal(token, dataTree, componentId)
+  return fromStoredInternal(token, componentId)
 }
 
 /**
@@ -220,13 +216,13 @@ export function fromStored<T extends Token = Token>(token: StoredToken, componen
  * @returns The field describing the result type, or null if invalid
  */
 export function getExpressionResultType(expression: Expression, component: Component): Field | null {
-  const dataTree = getDataTreeInternal()
-  return getExpressionResultTypeInternal(expression, component, dataTree)
+  return getExpressionResultTypeInternal(expression, component)
 }
 
 export function addFilters(filters: Filter | Filter[]) {
-  const dataTree = getDataTreeInternal()
-  dataTree.filters = dataTree.filters.concat(filters)
+  const currentFilters = getFiltersInternal()
+  const newFilters = Array.isArray(filters) ? filters : [filters]
+  setFiltersInternal(currentFilters.concat(newFilters))
 }
 
 /**
@@ -235,11 +231,11 @@ export function addFilters(filters: Filter | Filter[]) {
  * Removes by reference.
  */
 export function removeFilters(filters: Filter | Filter[]) {
-  const dataTree = getDataTreeInternal()
+  const currentFilters = getFiltersInternal()
   if (Array.isArray(filters)) {
-    dataTree.filters = dataTree.filters.filter(f => !filters.includes(f))
+    setFiltersInternal(currentFilters.filter(f => !filters.includes(f)))
   } else {
-    dataTree.filters = dataTree.filters.filter(f => f !== filters)
+    setFiltersInternal(currentFilters.filter(f => f !== filters))
   }
 }
 
@@ -343,10 +339,6 @@ export function toExpression(json: unknown | string): Expression | null {
  */
 export function createDataSource(opts: Partial<GraphQLOptions> = {}): IDataSource {
   return createDataSourceInternal(opts)
-}
-
-export function getLiquidFilters(editor: Editor) {
-  return getLiquidFiltersInternal(editor)
 }
 
 // ===============================

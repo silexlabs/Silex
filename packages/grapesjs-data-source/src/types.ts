@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component } from 'grapesjs'
+import { Component, Editor } from 'grapesjs'
 import { TemplateResult } from 'lit'
 import { Button } from 'grapesjs'
 
@@ -288,3 +288,4 @@ export interface ComponentExpression {
   expression: Expression
   component: Component
 }
+

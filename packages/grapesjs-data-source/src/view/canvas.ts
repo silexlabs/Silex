@@ -2,18 +2,16 @@ import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
 import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
 import { fromStored } from '../model/token'
-import { DataTree } from '../model/DataTree'
-import { getDataTreeFromUtils } from '../utils'
+import { getValue } from '../api'
 
 function getPrivateState(component: Component, stateId: string): StoredState | null {
   return getState(component, stateId, false)
 }
 
 // Pure function to evaluate a single condition
-function evaluateCondition(expression: StoredToken[], component: Component, dataTree: DataTree): unknown | null {
+function evaluateCondition(expression: StoredToken[], component: Component): unknown | null {
   try {
-    const tokens = expression.map(token => fromStored(token, dataTree, component.getId?.() || null))
-    return dataTree.getValue(tokens, component, true)
+    return getValue(expression, component, true)
   } catch (e) {
     console.warn('Error evaluating condition:', e)
     return null
@@ -21,7 +19,7 @@ function evaluateCondition(expression: StoredToken[], component: Component, data
 }
 
 // Pure function to render innerHTML for a component at a specific loop index
-function renderInnerHTML(component: Component, dataTree: DataTree, loopIndex?: number): string | null {
+function renderInnerHTML(component: Component, loopIndex?: number): string | null {
   const innerHTML = getPrivateState(component, Properties.innerHTML)
   if (innerHTML === null) {
     return null
@@ -31,7 +29,7 @@ function renderInnerHTML(component: Component, dataTree: DataTree, loopIndex?: n
     if (typeof loopIndex === 'number') {
       setPreviewIndex(component, loopIndex)
     }
-    const value = evaluateCondition(innerHTML.expression, component, dataTree)
+    const value = evaluateCondition(innerHTML.expression, component)
     return value !== null && value !== undefined ? String(value) : null
   } catch (e) {
     console.warn('Error rendering innerHTML:', e)
@@ -75,14 +73,13 @@ function getPreviewIndex(component: Component): number | undefined {
 
 function renderLoopData(
   component: Component,
-  dataTree: DataTree,
 ): unknown[] | null {
   try {
     const __data = getPrivateState(component, Properties.__data)!
     if (__data === null) {
       return null
     }
-    const result = dataTree.getValue(__data.expression, component, false) // Get full array
+    const result = getValue(__data.expression, component, false) // Get full array
     return Array.isArray(result) ? JSON.parse(JSON.stringify(result)) : null
   } catch (e) {
     console.warn('Error getting loop data:', e)
@@ -93,7 +90,6 @@ function renderLoopData(
 // Export for tests
 export function isComponentVisible(
   component: Component,
-  dataTree: DataTree,
 ): boolean {
   const condition1State = getPrivateState(component, Properties.condition)
   const condition2State = getPrivateState(component, Properties.condition2)
@@ -106,7 +102,7 @@ export function isComponentVisible(
 
   let condition1Value: unknown
   try {
-    condition1Value = dataTree.getValue(condition1State.expression, component, true)
+    condition1Value = getValue(condition1State.expression, component, true)
   } catch (e) {
     console.warn('Error evaluating condition1:', e)
     // If condition evaluation fails but no operator is set, default to visible
@@ -141,7 +137,7 @@ export function isComponentVisible(
 
   let condition2Value: unknown
   try {
-    condition2Value = dataTree.getValue(condition2State.expression, component, true)
+    condition2Value = getValue(condition2State.expression, component, true)
   } catch (e) {
     console.warn('Error evaluating condition2:', e)
     // If condition2 evaluation fails, treat as falsy
@@ -169,7 +165,6 @@ export function isComponentVisible(
 
 function renderAttributes(
   component: Component,
-  dataTree: DataTree,
 ): void {
   const privateStates = component.get('privateStates') || []
   privateStates.forEach((state: {id: string, expression: StoredToken[], label?: string}) => {
@@ -181,7 +176,7 @@ function renderAttributes(
         state.id !== Properties.condition2 &&
         state.expression) {
       try {
-        const value = dataTree.getValue(state.expression, component, true)
+        const value = getValue(state.expression, component, true)
         if (value !== null && value !== undefined) {
           component.view?.el.setAttribute(state.label || state.id, String(value))
         }
@@ -216,26 +211,26 @@ function renderAttributes(
 // }
 //
 
-function renderContent(comp: Component, dataTree: DataTree, deep: number) {
-  const innerHtml = renderInnerHTML(comp, dataTree)
+function renderContent(comp: Component, deep: number) {
+  const innerHtml = renderInnerHTML(comp)
 
   if (innerHtml === null) {
     comp.view!.render()
     comp.components()
-      .forEach(c => renderPreview(c, dataTree, deep+1))
+      .forEach(c => renderPreview(c, deep+1))
   } else {
     comp.view!.el.innerHTML = innerHtml!
   }
 }
 
 // exported for unit tests only
-export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
+export function renderPreview(comp: Component, deep = 0) {
   const view = comp.view
   if (!view) {
     return
   }
   const el = view.el
-  const __data = renderLoopData(comp, dataTree)
+  const __data = renderLoopData(comp)
 
   if (__data) {
     // console.log(`🔄 Loop data for ${comp.getId()}:`, __data.map((item: unknown, idx: number) =>
@@ -252,9 +247,9 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
       const fromIdx = __data.length - 1
       const toIdx = 0
       setPreviewIndex(comp, fromIdx)
-      if(isComponentVisible(comp, dataTree)) {
-        renderContent(comp, dataTree, deep)
-        renderAttributes(comp, dataTree)
+      if(isComponentVisible(comp)) {
+        renderContent(comp, deep)
+        renderAttributes(comp)
       } else {
         el.remove()
       }
@@ -268,9 +263,9 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
 
         // Set preview index for the next iteration and render into original element
         setPreviewIndex(comp, idx)
-        if (isComponentVisible(comp, dataTree)) {
-          renderContent(comp, dataTree, deep)
-          renderAttributes(comp, dataTree)
+        if (isComponentVisible(comp)) {
+          renderContent(comp, deep)
+          renderAttributes(comp)
         } else {
           // el.setAttribute('data-hidden', '')
           // el.style.display = 'none'
@@ -281,22 +276,22 @@ export function renderPreview(comp: Component, dataTree: DataTree, deep = 0) {
       setPreviewIndex(comp, initialPreviewIndex)
     }
   } else {
-    if(isComponentVisible(comp, dataTree)) {
-      renderContent(comp, dataTree, deep)
-      renderAttributes(comp, dataTree)
+    if(isComponentVisible(comp)) {
+      renderContent(comp, deep)
+      renderAttributes(comp)
     } else {
       el.remove()
     }
   }
 }
 
-export function doRender(editor: Editor, dataTree: DataTree) {
+export function doRender(editor: Editor) {
   if(!editor.getWrapper()?.view?.el) {
     return
   }
   try {
     editor.trigger(PREVIEW_RENDER_START)
-    renderPreview(editor.getWrapper()!, dataTree)
+    renderPreview(editor.getWrapper()!)
 
     requestAnimationFrame(() => {
       editor.trigger(PREVIEW_RENDER_END)
@@ -309,22 +304,21 @@ export function doRender(editor: Editor, dataTree: DataTree) {
 
 let renderTimeoutId: NodeJS.Timeout | null = null
 let debounceDelay = 500
-function debouncedRender(editor: Editor, dataTree: DataTree, eventName: string) {
+function debouncedRender(editor: Editor, eventName: string) {
   if (renderTimeoutId) clearTimeout(renderTimeoutId)
   renderTimeoutId = setTimeout(() => {
     console.info('Refresh preview started because of event', eventName)
-    doRender(editor, dataTree)
+    doRender(editor)
     renderTimeoutId = null
   }, debounceDelay)
 }
 
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
-  const dataTree = getDataTreeFromUtils()
   console.log(`Render preview on events: "${opts.previewRefreshEvents}"`)
   const events = opts.previewRefreshEvents!.split(' ')
   for(const eventName of events) {
     editor.on(eventName, () => {
-      debouncedRender(editor, dataTree, eventName)
+      debouncedRender(editor, eventName)
     })
   }
   setTimeout(() => {

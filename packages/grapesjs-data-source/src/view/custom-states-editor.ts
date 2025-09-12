@@ -26,8 +26,7 @@ import { StateEditor } from './state-editor'
 import { Component, Editor } from 'grapesjs'
 import { PROPERTY_STYLES } from './defaultStyles'
 import { fromStored } from '../model/token'
-import { DataTree } from '../model/DataTree'
-import { cleanStateName, getDataTreeFromUtils } from '../utils'
+import { cleanStateName } from '../utils'
 
 interface Item {
   name: string
@@ -260,7 +259,7 @@ export class CustomStatesEditor extends LitElement {
         ${ref(el => {
     if (el) {
       const stateEditor = el as StateEditor
-      stateEditor.data = this.getTokens(getDataTreeFromUtils(this.editor!), selected, name)
+      stateEditor.data = this.getTokens(selected, name)
     }
   })}
         @change=${() => this.onChange(selected, name, label)}
@@ -280,15 +279,15 @@ export class CustomStatesEditor extends LitElement {
     })
   }
 
-  getTokens(dataTree: DataTree, component: Component, name: string): Token[] {
+  getTokens(component: Component, name: string): Token[] {
     const state = this.getState(component, name)
     if(!state || !state.expression) return []
     return state.expression.map(token => {
       try {
-        return fromStored(token, dataTree, component.getId())
+        return fromStored(token, component.getId())
       } catch {
         // FIXME: notify user
-        console.error('Error while getting expression result type in getTokens', {expression: state.expression, component, dataTree, name})
+        console.error('Error while getting expression result type in getTokens', {expression: state.expression, component, name})
         return {
           type: 'property',
           propType: 'field',

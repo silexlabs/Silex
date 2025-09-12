@@ -62,7 +62,14 @@ export function getAllDataSources(): IDataSource[] {
 export function addDataSource(dataSource: IDataSource): void {
   const registry = getRegistry()
   registry.dataSources.push(dataSource)
-  registry.editor.trigger(DATA_SOURCE_CHANGED)
+  dataSource.connect()
+    .then(() => {
+      registry.editor.trigger(DATA_SOURCE_CHANGED)
+    })
+    .catch((error) => {
+      console.error('Failed to connect data source:', error)
+      registry.editor.trigger(DATA_SOURCE_CHANGED)
+    })
 }
 
 /**
