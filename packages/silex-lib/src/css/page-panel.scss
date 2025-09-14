@@ -10,7 +10,6 @@
     flex-direction: column;
     .pages__main {
       flex: 1; // take the available space in height
-      border: 1px solid $darkerPrimaryColor;
       background-color: $primaryColor;
       min-height: 20vh;
     }
