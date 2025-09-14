@@ -60,8 +60,8 @@ function update(editor: Editor) {
           kind: 'object',
         }]
       }, true, 0)
+      console.log('SET ITEMS', {pageData})
       // Taken from the pagination object https://www.11ty.dev/docs/pagination/
-      // items: [], // Array of current page’s chunk of data
       setState(body, 'items', {
         hidden: true,
         label: 'pagination.items',

@@ -1,6 +1,6 @@
 import { Editor } from 'grapesjs'
 import { ClientConfig } from '../../config'
-import { COMMAND_REFRESH, DATA_SOURCE_CHANGED, DATA_SOURCE_ERROR } from '@silexlabs/grapesjs-data-source'
+import { COMMAND_REFRESH, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_CANCEL, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_DATA_LOAD_START, DATA_SOURCE_ERROR } from '@silexlabs/grapesjs-data-source'
 
 document.querySelector('head')?.insertAdjacentHTML('beforeend', `
   <style>
@@ -37,16 +37,21 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
     command: () => {
       // Refresh all data sources
       editor.runCommand(COMMAND_REFRESH)
-      // Change the icon to a loading icon
-      const button = editor.Panels.getButton('options', 'refresh-data-sources')
-      if (button) {
-        button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-spinner`)
-      }
     },
     togglable: false,
     attributes: { title: 'Refresh data sources' },
   })
-  editor.on(DATA_SOURCE_CHANGED, () => {
+  editor.on(DATA_SOURCE_DATA_LOAD_START, () => {
+    const button = editor.Panels.getButton('options', 'refresh-data-sources')
+    if (button) {
+      button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-spinner`)
+      button.set('title', 'Refreshing data sources')
+    }
+  })
+  editor.on(`
+    ${ DATA_SOURCE_DATA_LOAD_END }
+    ${ DATA_SOURCE_DATA_LOAD_CANCEL }
+  `, () => {
     const button = editor.Panels.getButton('options', 'refresh-data-sources')
     if (button) {
       button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`)
