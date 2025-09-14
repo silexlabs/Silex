@@ -249,9 +249,6 @@ export function renderPreview(comp: Component, deep = 0) {
   const __data = renderLoopData(comp)
 
   if (__data) {
-    // console.log(`🔄 Loop data for ${comp.getId()}:`, __data.map((item: unknown, idx: number) =>
-    //   `${idx}: ${item.name || item.code || JSON.stringify(item).substring(0, 50)}`
-    // ))
     if (__data.length === 0) {
       el.remove()
     } else {
@@ -262,8 +259,11 @@ export function renderPreview(comp: Component, deep = 0) {
       // FIXME: as a workaround we need to loop reverse on the __data array, I have no idea why
       const fromIdx = __data.length - 1
       const toIdx = 0
+
       setPreviewIndex(comp, fromIdx)
-      if(isComponentVisible(comp)) {
+      const isVisible = isComponentVisible(comp)
+
+      if(isVisible) {
         renderContent(comp, deep)
         renderAttributes(comp)
       } else {
@@ -275,12 +275,83 @@ export function renderPreview(comp: Component, deep = 0) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
 
-        // Remove grapesjs selected marker
+        // Remove grapesjs selected marker from clone and all its children
         clone.classList.remove('gjs-selected')
+        const selectedElements = clone.querySelectorAll('.gjs-selected')
+        selectedElements.forEach(element => element.classList.remove('gjs-selected'))
 
-        // Keep the selection mechanism
-        clone.addEventListener('click', () => {
-          setTimeout(() => el.dispatchEvent(new MouseEvent('click', {bubbles: true})))
+        // Keep the selection mechanism - use GrapesJS component API
+        clone.addEventListener('click', (event) => {
+          const clickedElement = event.target as HTMLElement
+
+          // Find the corresponding GrapesJS component to select
+          let targetComponent = comp
+
+          // Look for the component ID directly in the clicked element
+          if (clickedElement.id) {
+            // Try to find a component with this ID in the entire editor
+            const editor = comp.em
+            const findComponentById = (comp: Component, id: string): Component | null => {
+              if (comp.getId() === id) return comp
+              for (const child of comp.components()) {
+                const found = findComponentById(child, id)
+                if (found) return found
+              }
+              return null
+            }
+
+            // Search from the root of the editor
+            const wrapper = editor?.getWrapper()
+            const foundComp = wrapper ? findComponentById(wrapper, clickedElement.id) : null
+            if (foundComp) {
+              targetComponent = foundComp
+            } else {
+              // Fallback: Use path-based approach
+              const path: number[] = []
+              let current = clickedElement
+
+              // Build path from clicked element up to clone, but only count elements with gjs attributes
+              while (current && current !== clone) {
+                const parent = current.parentElement
+                if (parent) {
+                  const siblings = Array.from(parent.children).filter(child =>
+                    child.hasAttribute('data-gjs-type')
+                  )
+                  const index = siblings.indexOf(current)
+                  if (index >= 0) {
+                    path.unshift(index)
+                  }
+                  current = parent
+                } else {
+                  break
+                }
+              }
+
+              // Navigate the component tree using the path
+              let currentComp = comp
+              for (let i = 0; i < path.length; i++) {
+                const index = path[i]
+                const children = currentComp.components()
+                if (index < children.length) {
+                  currentComp = children.at(index)
+                } else {
+                  break
+                }
+              }
+
+              targetComponent = currentComp
+            }
+          }
+
+          // Use GrapesJS API to select the component
+          setTimeout(() => {
+            const editor = targetComponent.em
+            if (editor) {
+              editor.setSelected(targetComponent)
+            }
+          })
+          event.preventDefault()
+          event.stopImmediatePropagation()
         })
 
         // Add the clone to the canvas
@@ -288,20 +359,21 @@ export function renderPreview(comp: Component, deep = 0) {
 
         // Set preview index for the next iteration and render into original element
         setPreviewIndex(comp, idx)
-        if (isComponentVisible(comp)) {
+        const isVisibleAtIdx = isComponentVisible(comp)
+
+        if (isVisibleAtIdx) {
           renderContent(comp, deep)
           renderAttributes(comp)
         } else {
-          // el.setAttribute('data-hidden', '')
-          // el.style.display = 'none'
-          // el.innerHTML = 'xxxx'
           el.remove()
         }
       }
       setPreviewIndex(comp, initialPreviewIndex)
     }
   } else {
-    if(isComponentVisible(comp)) {
+    const isVisible = isComponentVisible(comp)
+
+    if(isVisible) {
       renderContent(comp, deep)
       renderAttributes(comp)
     } else {
