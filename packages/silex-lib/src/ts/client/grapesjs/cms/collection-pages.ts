@@ -2,7 +2,7 @@ import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { Editor } from 'grapesjs'
 import { html, render } from 'lit-html'
-import { COMMAND_PREVIEW_REFRESH, COMMAND_REFRESH, DATA_SOURCE_DATA_LOAD_END, getValue } from '@silexlabs/grapesjs-data-source'
+import { COMMAND_PREVIEW_REFRESH, COMMAND_REFRESH, DATA_SOURCE_DATA_LOAD_END, getState, getValue, setPreviewIndex, toExpression } from '@silexlabs/grapesjs-data-source'
 import { TemplateResult } from 'lit-html'
 import { ClientEvent } from '../../events'
 import { cmdOpenSettings } from '../settings'
@@ -26,6 +26,9 @@ document.querySelector('head')?.insertAdjacentHTML('beforeend', `
   </style>
 `)
 
+let currentPage = 0
+const EVENT_UPDATE_PAGE_LIST = 'update:collection:pages:list'
+
 export default function (editor: Editor, opts: EleventyPluginOptions): void {
   let done = false
   editor.once(`
@@ -46,7 +49,11 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
     pagesContainer?.appendChild(container)
 
     // Function to update the collection pages display
-    function updatePages(...args: unknown[]) {
+    function updatePages() {
+      render(getHtml(editor), container)
+    }
+    function updatePagesWithReset() {
+      currentPage = 0
       render(getHtml(editor), container)
     }
 
@@ -55,15 +62,18 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
       ${ DATA_SOURCE_DATA_LOAD_END }
       storage:load:end
       page:all
-      `, updatePages)
+      `, updatePagesWithReset)
+
+    editor.on(EVENT_UPDATE_PAGE_LIST, updatePages)
 
     // Initial render
-    updatePages()
+    updatePagesWithReset()
   })
 }
 
 function getHtml(editor: Editor): TemplateResult {
-  const { items, currentIndex } = getCollectionData(editor)
+  const items = getCollectionData(editor)
+  console.log('RENDER', {currentPage})
   return html`
     <header class="project-bar__panel-header">
       <h3 class="project-bar__panel-header-title">Collection Pages</h3>
@@ -90,14 +100,14 @@ function getHtml(editor: Editor): TemplateResult {
     </div>`
     : items.map((item, index) => html`
                   <div
-                    class="pages__page ${index === currentIndex ? 'pages__page-selected' : ''}"
+                    class="pages__page ${index === currentPage ? 'pages__page-selected' : ''}"
                     data-item-index="${index}"
                     @click=${() => handleItemClick(editor, index)}
                   >
                     <div class="pages__page-name">
-                      ${getItemDisplayName(editor, item, index)}
+                      ${getItemDisplayName(editor, index)}
                     </div>
-                    ${index === currentIndex ? html`<i class="pages__icon pages__remove-btn fa fa-trash"></i>` : ''}
+                    ${index === currentPage ? html`<i class="pages__icon pages__remove-btn"></i>` : ''}
                   </div>
                 `)
 }
@@ -108,67 +118,67 @@ function getHtml(editor: Editor): TemplateResult {
   `
 }
 
-function getCollectionData(editor: Editor) {
+function getCollectionData(editor: Editor): unknown[] {
   const page = editor.Pages.getSelected()
   const body = page?.getMainComponent()
+  console.log('COLLECTION DATA', {page, body})
 
   if (!body) {
-    return { items: [], currentIndex: 0 }
+    console.log('COLLECTION DATA NULL')
+    return []
   }
 
   // Find the items state
-  const itemsState = body.attributes.publicStates?.find((s: unknown) => (s as { id: string }).id === 'items')
+  const itemsState = getState(body, 'items', true)
   if (!itemsState?.expression?.length) {
-    return { items: [], currentIndex: 0 }
+    console.log('COLLECTION DATA NULL')
+    return []
   }
 
+  console.log('COLLECTION DATA', {itemsState})
   try {
+    setPreviewIndex(itemsState.expression, undefined, undefined)
     const rawData = getValue(itemsState.expression, body as never, false)
 
     if (Array.isArray(rawData) && rawData.length > 0) {
       // Get current preview index from the expression
-      const lastToken = itemsState.expression[itemsState.expression.length - 1]
-      const currentIndex = (lastToken && typeof lastToken === 'object' && 'previewIndex' in lastToken)
-        ? (lastToken as { previewIndex?: number }).previewIndex || 0
-        : 0
-
-      return { items: rawData, currentIndex: Math.min(currentIndex, rawData.length - 1) }
+      console.log('COLLECTION DATA', {rawData})
+      return rawData
     }
   } catch (e) {
     console.error('Error getting collection data:', e)
   }
 
-  return { items: [], currentIndex: 0 }
+  console.log('COLLECTION DATA NULL')
+  return []
 }
 
-function getItemDisplayName(editor: Editor, item: unknown, index: number): string {
+function getItemDisplayName(editor: Editor, index: number): string {
   try {
     const page = editor.Pages.getSelected()
     const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
 
-    if (settings?.eleventyPermalink) {
+    const body = page?.getMainComponent()
+    if (!body) return
+
+    console.log('getItemDisplayName - index:', index)
+    console.log('getItemDisplayName - settings.eleventySeoTitle:', settings?.eleventySeoTitle)
+    console.log('getItemDisplayName - settings.eleventyPermalink:', settings?.eleventyPermalink)
+
+    if (settings?.eleventySeoTitle || settings?.eleventyPermalink) {
       // Parse the permalink expression
-      const permalinkExpression = JSON.parse(settings.eleventyPermalink)
+      const permalinkExpression = toExpression(settings.eleventySeoTitle || settings.eleventyPermalink)
+      console.log('getItemDisplayName - parsed permalinkExpression (before setPreviewIndex):', permalinkExpression)
 
       if (Array.isArray(permalinkExpression) && permalinkExpression.length > 0) {
-        // Find the last property token to get the field we want to extract
-        const lastPropertyToken = permalinkExpression
-          .slice().reverse()
-          .find((token: unknown) => (token as { type: string }).type === 'property') as { fieldId: string } | undefined
-
-        if (lastPropertyToken && item && typeof item === 'object') {
-          const fieldValue = (item as Record<string, unknown>)[lastPropertyToken.fieldId]
-
-          if (fieldValue && typeof fieldValue === 'string') {
-            // Clean up the result to make it more readable as a page name
-            const cleanName = fieldValue
-              .replace(/^\/+|\/+$/g, '') // Remove leading/trailing slashes
-              .replace(/\//g, ' › ') // Replace slashes with breadcrumb separator
-              || `Page ${index + 1}`
-
-            return cleanName
-          }
-        }
+        const group = settings.eleventyPageSize || 1
+        setPreviewIndex(permalinkExpression, index, group)
+        console.log('getItemDisplayName - permalinkExpression (after setPreviewIndex):', permalinkExpression)
+        const valueFalse = getValue(permalinkExpression, body, false)
+        const valueTrue = getValue(permalinkExpression, body, true)
+        console.log('getItemDisplayName - getValue(permalinkExpression, body, false):', valueFalse)
+        console.log('getItemDisplayName - getValue(permalinkExpression, body, true):', valueTrue)
+        return valueFalse as string
       }
     }
   } catch (e) {
@@ -182,17 +192,21 @@ function getItemDisplayName(editor: Editor, item: unknown, index: number): strin
 function handleItemClick(editor: Editor, index: number) {
   const page = editor.Pages.getSelected()
   const body = page?.getMainComponent()
+  currentPage = index
 
   if (!body) return
 
   // Find the items state
-  const itemsState = body.attributes.publicStates?.find((s: unknown) => (s as { id: string }).id === 'items')
+  const itemsState = getState(body, 'items', true)
+  console.log('CLICK', {itemsState, body})
   if (itemsState?.expression?.length > 0) {
     // Update the preview index
-    const token = itemsState.expression[itemsState.expression.length - 1]
-    token.previewIndex = index
+    const settings = page.get('settings') as Silex11tyPluginWebsiteSettings || {}
+    const group = settings.eleventyPageSize || 1
+    setPreviewIndex(itemsState.expression, index, group)
 
-    // Trigger the preview refresh
-    editor.runCommand(COMMAND_REFRESH)
+    // Trigger the canvas refresh
+    editor.Canvas.refresh()
+    editor.trigger(EVENT_UPDATE_PAGE_LIST)
   }
 }

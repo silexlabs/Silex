@@ -8,6 +8,7 @@
   .pages {
     display: flex;
     flex-direction: column;
+    margin-bottom: 30px;
     .pages__main {
       flex: 1; // take the available space in height
       background-color: $primaryColor;

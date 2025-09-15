@@ -1,4 +1,4 @@
-import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression } from '@silexlabs/grapesjs-data-source'
+import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, Token } from '@silexlabs/grapesjs-data-source'
 import { Silex11tyPluginWebsiteSettings } from './index'
 import { Component, Editor } from 'grapesjs'
 import { ClientConfig } from '../../config'
@@ -21,6 +21,10 @@ function update(editor: Editor) {
   const pageData = toExpression(settings?.eleventyPageData) as (Property[] | null)
   if (pageData && pageData.length > 0) {
     try {
+      // Add previewGroup
+      pageData.forEach((token) => {
+        // token.previewGroup = 2
+      })
       // Useless until proven useful:
       // Test the type of the eleventyPageData expression
       // const type = getExpressionResultType(pageData, body, editor.DataSourceManager.getDataTree())
@@ -79,6 +83,8 @@ function update(editor: Editor) {
     } catch (e) {
       console.error('Invalid JSON for eleventyPageData', e)
       removeState(body, 'pagination', true)
+      removeState(body, 'items', true)
+      // removeState(body, 'pages', true)
       editor.runCommand('notifications:add', {
         type: 'error',
         message: 'Invalid JSON for eleventyPageData',
@@ -90,7 +96,6 @@ function update(editor: Editor) {
   } else {
     removeState(body, 'pagination', true)
     removeState(body, 'items', true)
-    // For backward compatibility
-    removeState(body, 'pages', true)
+    // removeState(body, 'pages', true)
   }
 }
