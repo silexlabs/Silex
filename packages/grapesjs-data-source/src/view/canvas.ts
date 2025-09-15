@@ -1,6 +1,6 @@
 import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
-import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
+import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions, Token } from '../types'
 import { fromStored } from '../model/token'
 import { evaluateExpressionTokens, EvaluationContext } from '../model/expressionEvaluator'
 import { getAllDataSources } from '../model/dataSourceRegistry'
@@ -43,7 +43,7 @@ function renderInnerHTML(component: Component, loopIndex?: number): string | nul
   try {
     // Set preview index for loop context
     if (typeof loopIndex === 'number') {
-      setPreviewIndex(component, loopIndex)
+      setPreviewIndexToLoopData(component, loopIndex)
     }
     const value = evaluateCondition(innerHTML.expression, component)
     return value !== null && value !== undefined ? String(value) : null
@@ -54,17 +54,27 @@ function renderInnerHTML(component: Component, loopIndex?: number): string | nul
 }
 
 // Pure function to set preview index on all tokens in a component
-function setPreviewIndex(component: Component, index: number): void {
+// Exprorted for API
+function setPreviewIndexToLoopData(component: Component, index: number): void {
   const privateStates = component.get('privateStates') || []
   privateStates.forEach((state: {id: string, expression: StoredToken[]}) => {
     if (state.expression && state.expression.length > 0) {
-      state.expression.forEach((token: StoredToken & {previewIndex?: number}) => {
-        if (token.type === 'state' && token.storedStateId === '__data') {
-          token.previewIndex = index
-        } else if (token.type === 'property' || token.type === 'filter') {
-          token.previewIndex = index
-        }
-      })
+      setPreviewIndex(state.expression, index)
+    }
+  })
+}
+
+export function setPreviewIndex(expression: StoredToken[], index: number, group?: number) {
+  expression.forEach((token: StoredToken & {previewIndex?: number}) => {
+    if (token.type === 'state' && token.storedStateId === '__data'
+      || (token.type === 'state' && token.storedStateId === 'items')) {
+      console.log('SET PREVIEW', {token, index, group})
+      token.previewIndex = index
+      token.previewGroup = group
+    } else if (token.type === 'property' || token.type === 'filter') {
+      console.log('SET PREVIEW', {token, index, group})
+      token.previewIndex = index
+      token.previewGroup = group
     }
   })
 }
@@ -260,7 +270,7 @@ export function renderPreview(comp: Component, deep = 0) {
       const fromIdx = __data.length - 1
       const toIdx = 0
 
-      setPreviewIndex(comp, fromIdx)
+      setPreviewIndexToLoopData(comp, fromIdx)
       const isVisible = isComponentVisible(comp)
 
       if(isVisible) {
@@ -358,7 +368,7 @@ export function renderPreview(comp: Component, deep = 0) {
         el.insertAdjacentElement('afterend', clone)
 
         // Set preview index for the next iteration and render into original element
-        setPreviewIndex(comp, idx)
+        setPreviewIndexToLoopData(comp, idx)
         const isVisibleAtIdx = isComponentVisible(comp)
 
         if (isVisibleAtIdx) {
@@ -368,7 +378,7 @@ export function renderPreview(comp: Component, deep = 0) {
           el.remove()
         }
       }
-      setPreviewIndex(comp, initialPreviewIndex)
+      setPreviewIndexToLoopData(comp, initialPreviewIndex)
     }
   } else {
     const isVisible = isComponentVisible(comp)

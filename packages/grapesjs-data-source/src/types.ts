@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { Component, Editor } from 'grapesjs'
+import { Component } from 'grapesjs'
 import { TemplateResult } from 'lit'
 import { Button } from 'grapesjs'
 
@@ -154,6 +154,7 @@ export interface Field {
   dataSourceId?: DataSourceId
   arguments?: FieldArgument[]
   previewIndex?: number
+  previewGroup?: number
 }
 
 // **
@@ -187,6 +188,7 @@ export interface StoredProperty extends BaseProperty {
   kind: FieldKind
   options?: PropertyOptions
   previewIndex?: number
+  previewGroup?: number
 }
 export interface Property extends StoredProperty {
   optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null
@@ -206,6 +208,7 @@ export interface StoredFilter {
   quotedOptions?: string[]
   optionsKeys?: string[] // Optional, used to set a specific order
   previewIndex?: number
+  previewGroup?: number
 }
 export interface Filter extends StoredFilter {
   optionsForm?: (selected: Component, input: Field | null, options: Options, stateName: string) => TemplateResult | null
@@ -222,6 +225,7 @@ export interface State {
   type: 'state'
   storedStateId: StateId // Id of the state stored in the component
   previewIndex?: number
+  previewGroup?: number
   label: string
   componentId: string
   exposed: boolean
@@ -288,4 +292,3 @@ export interface ComponentExpression {
   expression: Expression
   component: Component
 }
-

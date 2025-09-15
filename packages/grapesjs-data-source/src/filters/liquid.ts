@@ -90,7 +90,7 @@ export default function(editor: Editor): Filter[] {
       label: 'prepend',
       validate: (field: Field | null) => isString(field),
       output: type => type,
-      apply: (str, options) => `${options.state}${str}`,
+      apply: (str, options) => `${options.value}${str}`,
       options: {
         value: '',
       },

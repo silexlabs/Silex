@@ -27,21 +27,21 @@ import { DataSourceId, IDataSource, Expression, StateId, StoredToken, Token, Fie
 
 // Internal imports
 import { getPageQuery as getPageQueryInternal, buildPageQueries as buildPageQueriesInternal } from './model/queryBuilder'
-import { refreshDataSources as refreshDataSourcesInternal, getFilters as getFiltersInternal, setFilters as setFiltersInternal, getCachedQueryables as getCachedQueryablesInternal, setPreviewData as setPreviewDataInternal, getManager } from './model/dataSourceManager'
+import { refreshDataSources as refreshDataSourcesInternal, getFilters as getFiltersInternal, setFilters as setFiltersInternal, setPreviewData as setPreviewDataInternal, getManager } from './model/dataSourceManager'
 import {
   getAllDataSources as getAllDataSourcesInternal,
   getDataSource as getDataSourceInternal,
   addDataSource as addDataSourceInternal,
-  removeDataSource as removeDataSourceInternal
+  removeDataSource as removeDataSourceInternal,
 } from './model/dataSourceRegistry'
 import {
   loadPreviewData as loadPreviewDataInternal,
   getPreviewData as getPreviewDataInternal,
-  clearPreviewData as clearPreviewDataInternal
+  clearPreviewData as clearPreviewDataInternal,
 } from './model/previewDataLoader'
 import {
   fromStored as fromStoredInternal,
-  getExpressionResultType as getExpressionResultTypeInternal
+  getExpressionResultType as getExpressionResultTypeInternal,
 } from './model/token'
 import {
   getPersistantId as getPersistantIdInternal,
@@ -53,14 +53,14 @@ import {
   getStateVariableName as getStateVariableNameInternal,
   COMPONENT_NAME_PREFIX as COMPONENT_NAME_PREFIX_INTERNAL,
   type PersistantId,
-  type StoredState
+  type StoredState,
 } from './model/state'
 import { NOTIFICATION_GROUP as NOTIFICATION_GROUP_INTERNAL, toExpression as toExpressionInternal, createDataSource as createDataSourceInternal } from './utils'
 import { getPageExpressions as getPageExpressionsInternal } from './model/ExpressionTree'
 import { evaluateExpressionTokens, EvaluationContext } from './model/expressionEvaluator'
 import { GraphQLOptions } from './datasources/GraphQL'
 import { getCompletion as getCompletionInternal } from './model/completion'
-import getLiquidFiltersInternal from './filters/liquid'
+import { setPreviewIndex as setPreviewIndexInternal } from './view/canvas'
 
 // ===============================
 // QUERY GENERATION
@@ -165,6 +165,12 @@ export function setPreviewData(data: Record<DataSourceId, unknown>): void {
 }
 
 /**
+ * Set preview index on an expression of a component
+ */
+export function setPreviewIndex(expression: StoredToken[], index: number, group?: number) {
+  setPreviewIndexInternal(expression, index, group)
+}
+/**
  * Clear all preview data
  */
 
@@ -189,7 +195,7 @@ export function getValue(expression: Expression, component: Component, resolvePr
     filters: getFiltersInternal(),
     previewData: getPreviewDataInternal(),
     component,
-    resolvePreviewIndex
+    resolvePreviewIndex,
   }
   return evaluateExpressionTokens(expression, context)
 }
@@ -213,7 +219,7 @@ export function getCompletion(options: { component: Component, expression: Expre
   const manager = getManager()
   return getCompletionInternal({
     ...options,
-    manager
+    manager,
   })
 }
 
