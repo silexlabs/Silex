@@ -768,7 +768,26 @@ export default class GitlabConnector implements StorageConnector {
     // **
     // Handle the legacy sites that have no pagesFolder
     // We want them to use "pages/" by default despite their files being in "src/" for now
-    const isLegacySite = !websiteData.pagesFolder
+    let isLegacySite = !websiteData.pagesFolder
+
+    // **
+    // Backward compatibility case
+    // The second time a legacy site is saved, the new `pages/` folder has been created
+    // but the front end still doesn't have the `pagesFolder` key
+    // This will be the case until the front end reloads
+    if (isLegacySite) {
+      const rootFiles = await this.ls({
+        session,
+        websiteId,
+        path: WEBSITE_PAGES_FOLDER,
+        recursive: false,
+      })
+      if (rootFiles.size) {
+        // Here the new `pages/` folder has been created already
+        isLegacySite = false
+        websiteData.pagesFolder = WEBSITE_PAGES_FOLDER
+      }
+    }
 
     // **
     // List existing files in the OLD pages folder (to detect files to delete)
