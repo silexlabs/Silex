@@ -1,8 +1,8 @@
-# GrapesJS Advanced Selector Manager
-
 [![Documentation](https://img.shields.io/badge/docs-selector%20guide-blue?style=flat-square)](https://docs.silex.me/en/user/selectors#valid-selectors-guide)
 
-An advanced selector management plugin for GrapesJS, specifically designed for cases where the default Selector Manager falls short,
+# GrapesJS Advanced Selector Manager
+
+An advanced selector management plugin for GrapesJS, designed for cases where the default Selector Manager falls short
 
 > This code is part of a larger project: [about Silex v3](https://www.silexlabs.org/silex-v3-kickoff/)
 > The Advanced Selector Manager comes pre-installed in Silex v3, [give it a try here](https://v3.silex.me/)

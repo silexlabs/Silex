@@ -61,7 +61,7 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
               acc.push(fromString(selectorString, _rule.getAtRule()))
             }
           } catch (e) {
-            console.error('Error matching selector', selectorString, e)
+            console.warn('Error matching selector', selectorString, e)
           }
 
           return acc
@@ -498,7 +498,7 @@ function getSuggestions(components: Component[], selector: CompoundSelector): Si
       Object.keys(attributes).forEach((attr) => {
         // Skip 'id' attribute - it should use ID selector instead of attribute selector
         if (attr === 'id') return
-        
+
         // Only attributes not in the suggestions yet
         if (suggestions.some((s) => s.type === SimpleSelectorType.ATTRIBUTE && (s as AttributeSelector).value === attr)) {
           return
@@ -507,7 +507,7 @@ function getSuggestions(components: Component[], selector: CompoundSelector): Si
         if (selector.selectors.some((s) => s.active && s.type === SimpleSelectorType.ATTRIBUTE && (s as AttributeSelector).value === attr)) {
           return
         }
-        
+
         const s = {
           type: SimpleSelectorType.ATTRIBUTE,
           value: attr,
