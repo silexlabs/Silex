@@ -5,6 +5,15 @@ import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, ge
 import './components/complex-selector'
 import './components/current-selector-display'
 
+// Debounce utility (no semicolons, matches code style)
+function debounce(fn: (...args: any[]) => void, delay: number = 100) {
+  let timer: ReturnType<typeof setTimeout>
+  return function(this: any, ...args: any[]) {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn.apply(this, args), delay)
+  }
+}
+
 ////////////////
 // Types
 export type AdvancedSelectorOptions = {
@@ -59,7 +68,7 @@ export function initListeners(editor: Editor, options: AdvancedSelectorOptions) 
 export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?: CustomSelectorEventProps) {
   if (props && props.container) {
     props.container.appendChild(container)
-    editor.on('selector:custom component:update', (/*{ selected }: {selected: CssRule[]}*/) => updateUi(editor, options))
+    editor.on('selector:custom component:update', debounce(() => updateUi(editor, options)))
   } else {
     // Keep listening
     editor.once('selector:custom', (props) => initASM(editor, options, props))
@@ -68,8 +77,13 @@ export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?
 
 function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
   const components: Component[] = editor.getSelectedAll()
-  const selector = getSelector(components)
-  if(selector) {
+  const widthMedia = editor.DeviceManager.getSelected()?.get('widthMedia')
+  const selectorInitial = getSelector(components)
+  if(selectorInitial) {
+    const selector = {
+      ...selectorInitial,
+      atRule: widthMedia ? `@media (max-width: ${widthMedia})` : undefined,
+    }
     const [errors, warnings] = getErrorsAndWarnings(selector, components)
     requestAnimationFrame(() => editStyle(editor, toString(selector)))
     render(html`
@@ -85,7 +99,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
 
       <current-selector-display
         .t=${(key: string) => getTranslation(editor, key)}
-        .value=${getSelector(components) || undefined}
+        .value=${selector || undefined}
         .selectors=${getSelectors(editor)}
         .helpLink=${options.helpLinks.actionBar}
         .error=${getTranslation(editor, errors || '')}
@@ -128,7 +142,7 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
   // Select the device if the selector contains the device
   if(selector.atRule) {
     const device = editor.DeviceManager.getAll().find(device => {
-      const width = device.get('width')
+      const width = device.get('widthMedia')
       return !!width && selector.atRule!.includes(width)
     })?.get('id')
     if(device) editor.DeviceManager.select(device)

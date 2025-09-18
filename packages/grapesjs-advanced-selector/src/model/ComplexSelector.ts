@@ -139,8 +139,8 @@ export function same(all: ComplexSelector[]): ComplexSelector | false {
   const [cs1, ...others] = all
   for (const cs2 of others) {
     if (cs1.atRule !== cs2.atRule) return false
-    if (cs1.mainSelector !== cs2.mainSelector) return false
-    if (cs1.operator !== cs2.operator) return false
+    if (cs1.mainSelector !== cs2.mainSelector) return false // FIXME: should make a string or compare each selector?
+    if (cs1.operator !== cs2.operator) return false // FIXME: should make a string or compare each selector?
     if (cs1.relatedSelector !== cs2.relatedSelector) return false
   }
 

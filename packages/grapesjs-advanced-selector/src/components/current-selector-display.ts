@@ -1,7 +1,7 @@
 import { html, css, TemplateResult } from 'lit'
 import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
-import { ComplexSelector, fromString, same, specificity, toString } from '../model/ComplexSelector'
+import { ComplexSelector, fromString, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customizeSelect, FOCUS_VISIBLE } from '../styles'
 
@@ -170,20 +170,22 @@ export class CurrentSelectorDisplay extends StylableElement {
     if (!this.value) {
       return html``
     }
+    const thisSelectorString = toString(this.value)
     const selectors = [
-      this.value,
+      { selector: this.value, selectorString: thisSelectorString },
       ...this.selectors
-        .filter((sel) => !same([sel, this.value!]))
         .sort((a, b) => specificity(b) - specificity(a))
+        .map(s => ({ selector: s, selectorString: toString(s) }))
+        .filter(({ selector, selectorString }) =>
+          thisSelectorString !== selectorString
+          || selector.atRule !== this.value?.atRule
+        )
     ]
-    const selectorsStrings = selectors.map(s => ({
-      string: toString(s),
-      atRule: s.atRule,
-    }))
-      .map(({ string, atRule }) => {
+    const selectorsStrings = selectors
+      .map(({ selectorString, selector }) => {
         return html`
-          ${atRule ? atRule.replace(/@media \(max-width: (.+)\)/, '@$1') : ''}
-          ${string}
+          ${ selector.atRule ? selector.atRule.replace(/@media \(max-width: (.+)\)/, '@$1') : '' }
+          ${ selectorString }
         `
       })
     //const uniqueStrings = new Set(selectorsStrings)
@@ -205,7 +207,7 @@ export class CurrentSelectorDisplay extends StylableElement {
           @change=${(event: Event) => {
     event.stopPropagation()
     const target = event.target as HTMLSelectElement
-    const sel = selectors[parseInt(target.value)]
+    const sel = selectors[parseInt(target.value)].selector
     this.changeSelector(sel)
   }}
         >

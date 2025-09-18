@@ -1,5 +1,5 @@
 import { Component, CssRule, Editor, Selector } from 'grapesjs'
-import { ComplexSelector, fromString } from './ComplexSelector'
+import { ComplexSelector, fromString, toString } from './ComplexSelector'
 import { AttributeOperatorType, AttributeSelector, ClassSelector, IdSelector, isSameSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { OperatorType } from './Operator'
 import { CompoundSelector } from './CompoundSelector'
@@ -41,12 +41,6 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
             // No style, this is just a selector
             return acc
           }
-          // Remove the pseudo class
-          if (rule.get('state')) {
-            // rule.unset('state') // => Avoid this as it triggers a hole lot of events and creates an infinite loop
-            delete rule.attributes.state
-          }
-          // Check if the component matches the selector
           const selectorString = rule.getSelectorsString()
           if (!selectorString) {
             // Empty selector, this must be being edited
@@ -55,10 +49,30 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
           }
 
           try {
-            if (component.view?.el.matches(selectorString)) {
-              acc.push(fromString(_rule.getSelectorsString(), _rule.getAtRule()))
-            } else if (component.tagName.toLowerCase() === 'body' && (selectorString.toLowerCase().startsWith('body') || selectorString.toLowerCase().startsWith('html'))) {
-              acc.push(fromString(selectorString, _rule.getAtRule()))
+            // Get a complex selector for this rule
+            const complex = fromString(selectorString, rule.getAtRule())
+
+            // Remove the pseudo class
+            const complexNoPseudo: ComplexSelector = {
+              ...complex,
+              mainSelector: {
+                ...complex.mainSelector,
+                pseudoClass: undefined,
+              },
+              relatedSelector: complex.relatedSelector ? {
+                ...complex.relatedSelector,
+                pseudoClass: undefined,
+              } : undefined,
+            }
+
+            // Back to a string
+            const selectorNoPseudo = toString(complexNoPseudo)
+
+            // Add the matching selectors
+            if (component.view?.el.matches(selectorNoPseudo)) {
+              acc.push(complex)
+            } else if (component.tagName.toLowerCase() === 'body' && (selectorNoPseudo.toLowerCase().startsWith('body') || selectorNoPseudo.toLowerCase().startsWith('html'))) {
+              acc.push(complex)
             }
           } catch (e) {
             console.warn('Error matching selector', selectorString, e)
