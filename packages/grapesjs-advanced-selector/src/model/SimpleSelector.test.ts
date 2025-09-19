@@ -64,7 +64,7 @@ describe('SimpleSelector', () => {
     const value = 'test'
     expect(getDisplayName({ type: SimpleSelectorType.CLASS, value, active } as ClassSelector)).toBe(value)
     expect(getDisplayName({ type: SimpleSelectorType.ID, value, active } as IdSelector)).toBe(value)
-    expect(getDisplayName({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('*')
+    expect(getDisplayName({ type: SimpleSelectorType.UNIVERSAL, active } as UniversalSelector)).toBe('⭐')
     expect(getDisplayName({ type: SimpleSelectorType.TAG, value: TAGS[0], active } as TagSelector)).toBe(TAGS[0])
     expect(getDisplayName({ type: SimpleSelectorType.CUSTOM_TAG, value: 'the-component', active } as CustomTagSelector)).toBe('the-component')
     expect(getDisplayName({ type: SimpleSelectorType.ATTRIBUTE, value: 'data-test', active } as AttributeSelector)).toBe('data-test')

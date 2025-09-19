@@ -93,7 +93,7 @@ export const STYLE_FOR_TYPE = {
   [SimpleSelectorType.CLASS]: { color: 'var(--gjs-color-green, #62c462)' },
   [SimpleSelectorType.ID]: { color: 'var(--gjs-color-yellow, #ffca6f)' },
   [SimpleSelectorType.ATTRIBUTE]: { color: 'var(--gjs-color-yellow, #ffca6f)' },
-  [SimpleSelectorType.UNIVERSAL]: { color: 'var(--gjs-color-red, #dd3636)', fontSize: 'xx-large', height: '10px' },
+  [SimpleSelectorType.UNIVERSAL]: { color: 'var(--gjs-color-red, #dd3636)' },
   [SimpleSelectorType.UNKNOWN]: { color: 'var(--gjs-color-red, #dd3636)', },
 }
 
@@ -192,7 +192,7 @@ export function getDisplayName(selector: SimpleSelector): string {
   case SimpleSelectorType.CUSTOM_TAG:
     return (selector as TagSelector).value
   case SimpleSelectorType.UNIVERSAL:
-    return '*'
+    return '⭐'
   default:
     return ''
   }
