@@ -209,7 +209,6 @@ export default class CompoundSelectorComponent extends StylableElement {
     this.value = {
       ...this.value!,
       pseudoClass: event.detail,
-      selectors: this.value!.selectors.map(selector => ({ ...selector, active: false }))
     }
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
