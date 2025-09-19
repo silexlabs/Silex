@@ -96,14 +96,14 @@ describe('CompoundSelector', () => {
       ]
     })).toBe('div#main.container')
 
-    expect(() => toString({
+    expect(toString({
       selectors: [
         universalSelector,
         classSelector,
         tagSelector,
         IdSelector,
       ]
-    })).toThrow()
+    })).toBe('*')
 
     expect(toString({
       selectors: [

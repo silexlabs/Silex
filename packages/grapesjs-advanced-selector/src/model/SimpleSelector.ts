@@ -87,20 +87,20 @@ export const ATTRIBUTE_OPERATORS = ['=', '~=', '|=', '^=', '$=', '*=']
 export const SELECTOR_PREFIXES = ['.', '#', '[', '*']
 export const TAGS: TAG[] = [ 'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'link', 'main', 'map', 'mark', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rb', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'script', 'section', 'select', 'slot', 'small', 'source', 'span', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr' ]
 export const ESCAPE_CHARS = [' ']
-export const COLOR_FOR_TYPE = {
-  [SimpleSelectorType.TAG]: 'var(--gjs-color-blue, #3b97e3)',
-  [SimpleSelectorType.CUSTOM_TAG]: 'var(--gjs-color-blue, #3b97e3)',
-  [SimpleSelectorType.CLASS]: 'var(--gjs-color-green, #62c462)',
-  [SimpleSelectorType.ID]: 'var(--gjs-color-yellow, #ffca6f)',
-  [SimpleSelectorType.ATTRIBUTE]: 'var(--gjs-color-yellow, #ffca6f)',
-  [SimpleSelectorType.UNIVERSAL]: 'var(--gjs-color-red, #dd3636)',
-  [SimpleSelectorType.UNKNOWN]: 'var(--gjs-color-red, #dd3636)',
+export const STYLE_FOR_TYPE = {
+  [SimpleSelectorType.TAG]: { color: 'var(--gjs-color-blue, #3b97e3)' },
+  [SimpleSelectorType.CUSTOM_TAG]: { color: 'var(--gjs-color-blue, #3b97e3)' },
+  [SimpleSelectorType.CLASS]: { color: 'var(--gjs-color-green, #62c462)' },
+  [SimpleSelectorType.ID]: { color: 'var(--gjs-color-yellow, #ffca6f)' },
+  [SimpleSelectorType.ATTRIBUTE]: { color: 'var(--gjs-color-yellow, #ffca6f)' },
+  [SimpleSelectorType.UNIVERSAL]: { color: 'var(--gjs-color-red, #dd3636)', fontSize: 'xx-large', height: '10px' },
+  [SimpleSelectorType.UNKNOWN]: { color: 'var(--gjs-color-red, #dd3636)', },
 }
 
 const CLASS_SYMBOL = '•'
 const ID_SYMBOL = '#'
 const ATTRIBUTE_SYMBOL = '[ ]'
-const UNIVERSAL_SYMBOL = '*'
+const UNIVERSAL_SYMBOL = ''
 const CUSTOM_TAG_SYMBOL = '⚛'
 const TAG_SYMBOL = '⚛'
 const UNKNOWN_SYMBOL = '?'

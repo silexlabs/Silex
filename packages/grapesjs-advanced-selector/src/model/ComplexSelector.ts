@@ -30,6 +30,20 @@ export function toString(cs: ComplexSelector, ignorePseudoClass: boolean = false
   return `${compoundToString(cs.mainSelector, ignorePseudoClass)}${operatorToString(cs.operator!, cs.relatedSelector)}`
 }
 
+export function noPseudo(cs: ComplexSelector) {
+  return {
+    ...cs,
+    mainSelector: {
+      ...cs.mainSelector,
+      pseudoClass: undefined,
+    },
+    relatedSelector: cs.relatedSelector ? {
+      ...cs.relatedSelector,
+      pseudoClass: undefined,
+    } : undefined,
+  }
+}
+
 export function specificity(cs: ComplexSelector): number {
   let specificity = 0
 

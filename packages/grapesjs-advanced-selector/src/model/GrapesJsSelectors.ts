@@ -1,5 +1,5 @@
 import { Component, CssRule, Editor, Selector } from 'grapesjs'
-import { ComplexSelector, fromString, toString } from './ComplexSelector'
+import { ComplexSelector, fromString, noPseudo, toString } from './ComplexSelector'
 import { AttributeOperatorType, AttributeSelector, ClassSelector, IdSelector, isSameSelector, SimpleSelector, SimpleSelectorType, TAGS, TagSelector } from './SimpleSelector'
 import { OperatorType } from './Operator'
 import { CompoundSelector } from './CompoundSelector'
@@ -53,17 +53,7 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
             const complex = fromString(selectorString, rule.getAtRule())
 
             // Remove the pseudo class
-            const complexNoPseudo: ComplexSelector = {
-              ...complex,
-              mainSelector: {
-                ...complex.mainSelector,
-                pseudoClass: undefined,
-              },
-              relatedSelector: complex.relatedSelector ? {
-                ...complex.relatedSelector,
-                pseudoClass: undefined,
-              } : undefined,
-            }
+            const complexNoPseudo: ComplexSelector = noPseudo(complex)
 
             // Back to a string
             const selectorNoPseudo = toString(complexNoPseudo)

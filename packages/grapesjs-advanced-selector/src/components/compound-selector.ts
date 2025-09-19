@@ -141,12 +141,29 @@ export default class CompoundSelectorComponent extends StylableElement {
   private changeSelector(event: CustomEvent<SimpleSelector>, idx: number) {
     const oldValue: SimpleSelector = this.value!.selectors[idx]
     const onlyId = event.detail.type === SimpleSelectorType.ID && event.detail.active
+
+    // Update the selector at the given index
+    let updatedSelectors = this.value!.selectors
+      .map((selector, i) => i === idx ? event.detail : selector)
+
+    // When ID is activated, deactivate all other selectors
+    if (onlyId) {
+      updatedSelectors = updatedSelectors.map(selector =>
+        selector.type !== SimpleSelectorType.ID ? { ...selector, active: false } : selector
+      )
+    }
+
+    // When all selectors are deactivated but pseudo class exists, activate ID selector
+    const hasActiveSelectors = updatedSelectors.some(selector => selector.active)
+    if (!hasActiveSelectors && this.value!.pseudoClass) {
+      updatedSelectors = updatedSelectors.map(selector =>
+        selector.type === SimpleSelectorType.ID ? { ...selector, active: true } : selector
+      )
+    }
+
     this.value = {
       ...this.value!,
-      selectors: this.value!.selectors
-        // Replace the old value with the new one
-        .map((selector, i) => i === idx ? event.detail : selector)
-        .map(selector => onlyId && selector.type !== SimpleSelectorType.ID ? { ...selector, active: false } : selector),
+      selectors: updatedSelectors,
     }
     if(!isSameSelector(oldValue, event.detail, false)) {
       this.dispatchEvent(new CustomEvent('rename', { detail: {
@@ -189,7 +206,11 @@ export default class CompoundSelectorComponent extends StylableElement {
     event.stopPropagation()
   }
   private changePseudoClass(event: CustomEvent) {
-    this.value = { ...this.value!, pseudoClass: event.detail }
+    this.value = {
+      ...this.value!,
+      pseudoClass: event.detail,
+      selectors: this.value!.selectors.map(selector => ({ ...selector, active: false }))
+    }
     this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
     event.stopPropagation()
   }

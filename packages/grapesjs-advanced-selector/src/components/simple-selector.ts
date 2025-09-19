@@ -1,7 +1,7 @@
 import { css, html, TemplateResult } from 'lit'
 import { property } from 'lit/decorators.js'
 import { styleMap } from 'lit/directives/style-map.js'
-import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName, COLOR_FOR_TYPE, AttributeOperatorType } from '../model/SimpleSelector'
+import { AttributeSelector, SimpleSelector, SimpleSelectorSuggestion, toString, getDisplayType, getDisplayName, suggest, validate, getCreationSuggestions, SimpleSelectorType, getEditableName, STYLE_FOR_TYPE, AttributeOperatorType } from '../model/SimpleSelector'
 import StylableElement from '../StylableElement'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customizeInput, customizeSelect, FOCUS_VISIBLE } from '../styles'
@@ -308,9 +308,7 @@ export default class SimpleSelectorComponent extends StylableElement {
   private renderLayout(content: TemplateResult, { valid, suggestions }: {suggestions: SimpleSelectorSuggestion[], valid: boolean}): TemplateResult {
     return html`
       <main
-        style=${styleMap({
-    color: COLOR_FOR_TYPE[this.value!.type],
-  })}
+        style=${styleMap(STYLE_FOR_TYPE[this.value!.type])}
         tabindex="0"
         ${ ref(this.mainRef) }
         @keydown=${(event: KeyboardEvent) => {

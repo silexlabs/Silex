@@ -53,9 +53,8 @@ export default class ComplexSelectorComponent extends StylableElement {
   @property({ type: Array, attribute: true, reflect: false })
   public relations: SimpleSelector[] = []
 
-
-  // /////////////////
-  // Properties
+  @property({ type: Boolean, attribute: true, reflect: false })
+  public hasBody: boolean = false
 
   // /////////////////
   // Element overrides
@@ -108,7 +107,8 @@ export default class ComplexSelectorComponent extends StylableElement {
   }}
         @rename=${ (event: CustomEvent) => this.dispatchEvent(new CustomEvent('rename', { detail: event.detail })) }
       ></compound-selector>
-      ${ this.value?.operator ? html`
+      ${ this.hasBody ? html`` : html`
+        ${ this.value?.operator ? html`
         <inline-select
           .t=${ this.t }
           .value=${ this.value?.operator }
@@ -121,6 +121,7 @@ export default class ComplexSelectorComponent extends StylableElement {
           class="gjs-btn-prim asm__add-inline"
           @click=${ this.addOperator }
         >\u2192 ${ this.t('Relation') }</button>
+        `}
       `}
       ${ this.value?.operator ? html`
         <compound-selector

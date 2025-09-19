@@ -1,7 +1,7 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
 import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, removeClass, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
-import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, getSelector } from './model/ComplexSelector'
+import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, getSelector, noPseudo } from './model/ComplexSelector'
 import './components/complex-selector'
 import './components/current-selector-display'
 
@@ -89,6 +89,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
     render(html`
       <complex-selector
         .t=${(key: string) => getTranslation(editor, key)}
+        .hasBody=${components.some(c => c.tagName.toLocaleLowerCase() === 'body')}
         .value=${selector}
         .suggestions=${getSuggestionsMain(editor, components, selector)}
         .relations=${getSuggestionsRelated(editor, components, selector)}
@@ -175,9 +176,10 @@ function pasteStyle(editor: Editor) {
 }
 
 function getErrorsAndWarnings(selector: ComplexSelector, components: Component[]): [string | null, string | null] {
-  if (!matchSelectorAll(toString(selector, true), components)) {
+  const selectorNoPseudo: ComplexSelector = noPseudo(selector)
+  if (!matchSelectorAll(toString(selectorNoPseudo, true), components)) {
     return ['Current selector does not match the selected components', null]
-  } else if (!matchSelectorSome(toString(selector, true), components)) {
+  } else if (!matchSelectorSome(toString(selectorNoPseudo, true), components)) {
     return [null, 'Current selector does not match all the selected components']
   }
   return [null, null]

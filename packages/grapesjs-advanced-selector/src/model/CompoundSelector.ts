@@ -12,8 +12,9 @@ export type CompoundSelector = {
  */
 export function toString(cs: CompoundSelector, ignorePseudoClass: boolean = false): string {
   // The universal selector can only be used alone
-  if (cs.selectors.length > 1 && cs.selectors.some(s => s.type === 'universal')) {
-    throw new Error('The universal selector can only be used alone')
+  if (cs.selectors.length > 1 && cs.selectors.find(s => s.type === 'universal')?.active) {
+    console.warn('The universal selector can only be used alone')
+    return `*${ cs.pseudoClass ? toStringPseudoClass(cs.pseudoClass) : '' }`
   }
   const selectorStr = cs.selectors
     .filter(s => s.active)
