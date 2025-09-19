@@ -437,8 +437,35 @@ export async function initEditor(config: EditorConfig) {
         },
       },
     }
-    editor.DomComponents.addType('image', typeConfig)
-    editor.DomComponents.addType('iframe', typeConfig)
+    const dc = editor.DomComponents;
+    dc.addType('image', typeConfig)
+    dc.addType('iframe', typeConfig)
+
+    dc.getTypes().map(type => {
+      const dcmp = dc.getType(type.id)?.model.prototype;
+      dc.addType(type.id, {
+      model: {
+        defaults: {
+          traits: [
+            {
+              type: 'text',
+              label: 'ID',
+              name: 'id',
+            },
+            ...(dcmp.defaults.traits || []),
+          ]
+        },
+        init(...args) {
+            (dcmp.init.apply(this, args));
+            if (!this.getAttributes().id) {
+              this.addAttributes({ id: this.getId() });
+            }
+          }
+      },
+    })
+  })
+
+  
 
     // Adjustments to do when the editor is ready
     editor.on('load', () => {
