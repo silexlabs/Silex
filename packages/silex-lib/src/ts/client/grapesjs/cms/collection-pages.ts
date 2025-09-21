@@ -2,7 +2,7 @@ import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { Editor } from 'grapesjs'
 import { html, render } from 'lit-html'
-import { COMMAND_PREVIEW_REFRESH, COMMAND_REFRESH, DATA_SOURCE_DATA_LOAD_END, getState, getValue, setPreviewIndex, toExpression } from '@silexlabs/grapesjs-data-source'
+import { COMMAND_PREVIEW_REFRESH, COMMAND_REFRESH, DATA_SOURCE_DATA_LOAD_END, getState, getValue, toExpression, setPreviewIndex, Property } from '@silexlabs/grapesjs-data-source'
 import { TemplateResult } from 'lit-html'
 import { ClientEvent } from '../../events'
 import { cmdOpenSettings } from '../settings'
@@ -27,7 +27,7 @@ document.querySelector('head')?.insertAdjacentHTML('beforeend', `
 `)
 
 let currentPage = 0
-const EVENT_UPDATE_PAGE_LIST = 'update:collection:pages:list'
+export const EVENT_UPDATE_PAGE_LIST = 'update:collection:pages:list'
 
 export default function (editor: Editor, opts: EleventyPluginOptions): void {
   let done = false
@@ -73,7 +73,6 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
 
 function getHtml(editor: Editor): TemplateResult {
   const items = getCollectionData(editor)
-  console.log('RENDER', {currentPage})
   return html`
     <header class="project-bar__panel-header">
       <h3 class="project-bar__panel-header-title">Collection Pages</h3>
@@ -121,35 +120,23 @@ function getHtml(editor: Editor): TemplateResult {
 function getCollectionData(editor: Editor): unknown[] {
   const page = editor.Pages.getSelected()
   const body = page?.getMainComponent()
-  console.log('COLLECTION DATA', {page, body})
 
   if (!body) {
-    console.log('COLLECTION DATA NULL')
     return []
   }
 
-  // Find the items state
-  const itemsState = getState(body, 'items', true)
-  if (!itemsState?.expression?.length) {
-    console.log('COLLECTION DATA NULL')
-    return []
-  }
+  const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
+  const pageData = toExpression(settings?.eleventyPageData) as (Property[] | null)
 
-  console.log('COLLECTION DATA', {itemsState})
-  try {
-    setPreviewIndex(itemsState.expression, undefined, undefined)
-    const rawData = getValue(itemsState.expression, body as never, false)
+  if (pageData && pageData.length > 0) {
+    const rawData = getValue(pageData, body as never, false)
 
     if (Array.isArray(rawData) && rawData.length > 0) {
       // Get current preview index from the expression
-      console.log('COLLECTION DATA', {rawData})
       return rawData
     }
-  } catch (e) {
-    console.error('Error getting collection data:', e)
   }
 
-  console.log('COLLECTION DATA NULL')
   return []
 }
 
@@ -161,26 +148,16 @@ function getItemDisplayName(editor: Editor, index: number): string {
     const body = page?.getMainComponent()
     if (!body) return
 
-    console.log('getItemDisplayName - index:', index)
-    console.log('getItemDisplayName - settings.eleventySeoTitle:', settings?.eleventySeoTitle)
-    console.log('getItemDisplayName - settings.eleventyPermalink:', settings?.eleventyPermalink)
-
     if (settings?.eleventySeoTitle || settings?.eleventyPermalink) {
       // Parse the permalink expression
       const permalinkExpression = toExpression(settings.eleventySeoTitle || settings.eleventyPermalink)
-      console.log('getItemDisplayName - parsed permalinkExpression (before setPreviewIndex):', permalinkExpression)
 
       if (Array.isArray(permalinkExpression) && permalinkExpression.length > 0) {
-        const group = settings.eleventyPageSize || 1
-        setPreviewIndex(permalinkExpression, index, group)
-        console.log('getItemDisplayName - permalinkExpression (after setPreviewIndex):', permalinkExpression)
         const valueFalse = getValue(permalinkExpression, body, false)
-        const valueTrue = getValue(permalinkExpression, body, true)
-        console.log('getItemDisplayName - getValue(permalinkExpression, body, false):', valueFalse)
-        console.log('getItemDisplayName - getValue(permalinkExpression, body, true):', valueTrue)
         return valueFalse as string
       }
     }
+    return `Page ${index}`
   } catch (e) {
     console.error('Error generating permalink for item:', e)
   }
@@ -196,17 +173,11 @@ function handleItemClick(editor: Editor, index: number) {
 
   if (!body) return
 
-  // Find the items state
-  const itemsState = getState(body, 'items', true)
-  console.log('CLICK', {itemsState, body})
-  if (itemsState?.expression?.length > 0) {
-    // Update the preview index
-    const settings = page.get('settings') as Silex11tyPluginWebsiteSettings || {}
-    const group = settings.eleventyPageSize || 1
-    setPreviewIndex(itemsState.expression, index, group)
+  // Trigger the canvas refresh
+  editor.Canvas.refresh()
+  editor.trigger(EVENT_UPDATE_PAGE_LIST)
+}
 
-    // Trigger the canvas refresh
-    editor.Canvas.refresh()
-    editor.trigger(EVENT_UPDATE_PAGE_LIST)
-  }
+export function getSelectedIndex() {
+  return currentPage
 }

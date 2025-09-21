@@ -67,13 +67,13 @@ export interface EleventyPluginOptions extends DataSourceEditorOptions {
 export interface Silex11tyPluginWebsiteSettings extends WebsiteSettings {
   eleventyPageData?: string,
   eleventyPermalink?: string,
-  eleventyPageSize?: number,
+  eleventyPageSize?: string,
   eleventyPageReverse?: boolean,
   silexLanguagesList?: string,
   silexLanguagesDefault?: string,
   eleventyNavigationKey?: string,
   eleventyNavigationTitle?: string,
-  eleventyNavigationOrder?: number,
+  eleventyNavigationOrder?: string,
   eleventyNavigationParent?: string,
   eleventyNavigationUrl?: string,
   // SEO

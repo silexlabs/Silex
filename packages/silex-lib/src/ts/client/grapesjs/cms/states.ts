@@ -1,55 +1,39 @@
-import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, Token } from '@silexlabs/grapesjs-data-source'
+import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, StoredFilter } from '@silexlabs/grapesjs-data-source'
 import { Silex11tyPluginWebsiteSettings } from './index'
-import { Component, Editor } from 'grapesjs'
-import { ClientConfig } from '../../config'
-import { ClientEvent } from '../../events'
+import { Component, Editor, Page } from 'grapesjs'
+import { EVENT_UPDATE_PAGE_LIST, getSelectedIndex } from './collection-pages'
 
 export default function(editor: Editor/*, opts: EleventyPluginOptions */): void {
-  editor.on('page:select page:update', () => update(editor))
-  editor.on('settings:save:start', () => update(editor))
+  editor.on('page:select page:update', () => updatePaginationStates(editor))
+  editor.on('settings:save:start', () => updatePaginationStates(editor))
+  editor.on(EVENT_UPDATE_PAGE_LIST, () => updatePaginationStates(editor, getSelectedIndex()))
 }
 
-function update(editor: Editor) {
+/**
+ * Update pagination states for a page with the ability to control which page index to show
+ * @param editor - The GrapesJS editor instance
+ * @param pageIndex - The current page index (0-based) for pagination preview. Use 0 for publication.
+ */
+export function updatePaginationStates(editor: Editor, pageIndex: number = 0) {
   const page = editor.Pages.getSelected()
   const body: Component = page?.getMainComponent() as Component
   if (!body) return // This happens when the current page is deleted
+
   // Do not show "Body's " prefix for states on the body
   body.set(COMPONENT_NAME_PREFIX, '')
+
   // Store pagination data in the body component
   // This is for the GraphQL query to include it
   const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
   const pageData = toExpression(settings?.eleventyPageData) as (Property[] | null)
+
   if (pageData && pageData.length > 0) {
     try {
       // Add previewGroup
       pageData.forEach((token) => {
         // token.previewGroup = 2
       })
-      // Useless until proven useful:
-      // Test the type of the eleventyPageData expression
-      // const type = getExpressionResultType(pageData, body, editor.DataSourceManager.getDataTree())
-      // if (!type) {
-      //   console.error('Invalid type for eleventyPageData')
-      //   removeState(body, 'pagination', true)
-      //   editor.runCommand('notifications:add', {
-      //     type: 'error',
-      //     message: 'Invalid type for eleventyPageData',
-      //     group: 'Errors in your settings',
-      //     componentId: body.id,
-      //   })
-      //   return
-      // }
-      // if (type.kind === 'scalar') {
-      //   console.error('Invalid type for eleventyPageData: a list is required, got a scalar type')
-      //   removeState(body, 'pagination', true)
-      //   editor.runCommand('notifications:add', {
-      //     type: 'error',
-      //     message: 'Invalid type for eleventyPageData: a list is required, got a scalar type',
-      //     group: 'Errors in your settings',
-      //     componentId: body.id,
-      //   })
-      //   return
-      // }
+
       // Update body states with the new settings
       setState(body, 'pagination', {
         hidden: true,
@@ -64,27 +48,46 @@ function update(editor: Editor) {
           kind: 'object',
         }]
       }, true, 0)
-      console.log('SET ITEMS', {pageData})
+
       // Taken from the pagination object https://www.11ty.dev/docs/pagination/
+      // Apply pagination size limit using slice filter
+      const pageSize = parseInt(settings?.eleventyPageSize || '1')
+      const startIndex = pageIndex * pageSize
+      const endIndex = startIndex + pageSize
+
+      // const slice = fromStored({
+      //   type: 'filter',
+      //   id: 'slice',
+      //   label: 'slice',
+      //   options: {
+      //     start: startIndex,
+      //     end: endIndex,
+      //   },
+      // }, body.getId())
+      const slice = {
+        type: 'filter',
+        id: 'slice',
+        label: 'slice',
+        options: {
+          start: startIndex,
+          end: endIndex,
+        },
+      } as StoredFilter
+
+      const itemsExpression = [
+        ...pageData,
+        slice,
+      ]
+
       setState(body, 'items', {
         hidden: true,
         label: 'pagination.items',
-        expression: pageData,
+        expression: itemsExpression,
       }, true, 1)
-      // Useless until proven useful:
-      // FIXME: is this supposed to be an array of arrays of pages?
-      // Taken from the pagination object https://www.11ty.dev/docs/pagination/
-      // pages: [], // Array of all chunks of paginated data (in order)
-      // setState(body, 'pages', {
-      //   hidden: true,
-      //   label: 'pagination.pages',
-      //   expression: pageData,
-      // }, true, 2)
     } catch (e) {
       console.error('Invalid JSON for eleventyPageData', e)
       removeState(body, 'pagination', true)
       removeState(body, 'items', true)
-      // removeState(body, 'pages', true)
       editor.runCommand('notifications:add', {
         type: 'error',
         message: 'Invalid JSON for eleventyPageData',
@@ -96,6 +99,5 @@ function update(editor: Editor) {
   } else {
     removeState(body, 'pagination', true)
     removeState(body, 'items', true)
-    // removeState(body, 'pages', true)
   }
 }
