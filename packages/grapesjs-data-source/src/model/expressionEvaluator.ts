@@ -195,7 +195,10 @@ export function evaluateFilterToken(
   prevValues: unknown
 ): unknown {
   const options = Object.entries(token.options).reduce((acc, [key, value]) => {
-    acc[key] = evaluateExpressionTokens(toExpression(value) || [], context, null)
+    // If value is a primitive (number, string, boolean), use it directly
+    // Only evaluate as expression if it's an actual expression object/array
+    const expression = toExpression(value)
+    acc[key] = expression ? evaluateExpressionTokens(expression, context, null) : value
     return acc
   }, {} as Record<string, unknown>)
 
