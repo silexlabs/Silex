@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shree Balaji Library - Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --sidebar-width: 280px;
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --card-bg: white;
+        }
+
+        .dark-theme {
+            --primary-color: #3b82f6;
+            --secondary-color: #94a3b8;
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --card-bg: #1e293b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.active {
+            transform: translateX(0);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .sidebar-header h4 {
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .sidebar-header small {
+            opacity: 0.8;
+            display: block;
+        }
+
+        .developer-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .developer-info .dev-title {
+            color: #fbbf24;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.25rem 1rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 0.75rem;
+            width: 20px;
+        }
+
+        .main-content {
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.shifted {
+            margin-left: var(--sidebar-width);
+        }
+
+        .top-navbar {
+            background: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            cursor: pointer;
+        }
+
+        .welcome-text {
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .content-area {
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .student-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .student-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .student-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+
+        .form-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-label {
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-control {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid #cbd5e1;
+        }
+
+        .form-control:focus {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 10px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-box input {
+            padding-left: 2.5rem;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            z-index: 10;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .expiring-soon {
+            border-left-color: var(--warning-color) !important;
+        }
+
+        .expired {
+            border-left-color: var(--danger-color) !important;
+            opacity: 0.8;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        .welcome-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: toastSlideIn 0.5s ease-out, toastFadeOut 0.5s ease-in 2.5s forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastFadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .student-details-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 150px;
+            color: var(--primary-color);
+        }
+
+        .detail-value {
+            flex: 1;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+
+        .payment-history {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--primary-color);
+        }
+
+        .payment-item {
+            background: rgba(37, 99, 235, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .id-proof-preview {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .payment-form {
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .plan-option {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .plan-option:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(37, 99, 235, 0.05);
+        }
+
+        .plan-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(37, 99, 235, 0.1);
+        }
+
+        .plan-option h5 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .plan-option .shift-time {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .amount-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success-color);
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+            
+            .main-content.shifted {
+                margin-left: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+            
+            .top-navbar {
+                padding: 1rem;
+            }
+            
+            .welcome-toast {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+            }
+            
+            .detail-label {
+                min-width: auto;
+                margin-bottom: 0.25rem;
+            }
+        }
+
+        /* Fix for zoom issue */
+        @media screen and (max-width: 480px) {
+            html {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Welcome Toast Notification (appears on load and auto-dismisses) -->
+    <div class="welcome-toast" id="welcomeToast">
+        <i class="fas fa-book"></i> Welcome to Shree Balaji Library!
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-book"></i> Shree Balaji Library</h4>
+            <small>Welcome, Raja</small>
+            <div class="developer-info">
+                <div class="dev-title">Developed by</div>
+                <div>Harshit (A Navodayan)</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a href="#" class="nav-link active" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i>
+                    Dashboard
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-page="students">
+                    <i class="fas fa-users"></i>
+                    Students
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-page="add-student">
+                    <i class="fas fa-user-plus"></i>
+                    Add Student
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-page="revenue-history">
+                    <i class="fas fa-rupee-sign"></i>
+                    Revenue History
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" data-page="notifications">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </a>
+            </div>
+            <div class="nav-item mt-4">
+                <a href="#" class="nav-link" onclick="exportData()">
+                    <i class="fas fa-download"></i>
+                    Export Data
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="#" class="nav-link" onclick="importData()">
+                    <i class="fas fa-upload"></i>
+                    Import Data
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navbar -->
+        <nav class="top-navbar">
+            <div class="d-flex align-items-center">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="welcome-text ms-3">Shree Balaji Library Management</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3 text-muted">Administrator: Raja</span>
+                <button class="btn btn-outline-primary btn-sm" onclick="toggleTheme()">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page-section active">
+            <div class="content-area">
+                <h1 class="mb-4">Dashboard</h1>
+                
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary-color);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-value" id="totalStudents">0</div>
+                        <div class="text-muted">Total Students</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success-color);">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="stat-value" id="totalRevenue">₹0</div>
+                        <div class="text-muted">Total Revenue</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning-color);">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-value" id="expiringStudents">0</div>
+                        <div class="text-muted">Expiring Soon</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                        <div class="stat-value" id="newStudents">0</div>
+                        <div class="text-muted">New This Month</div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <h5><i class="fas fa-bolt text-warning"></i> Quick Actions</h5>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <button class="btn btn-primary btn-sm" onclick="showPage('add-student')">
+                                    <i class="fas fa-plus"></i> Add Student
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="exportData()">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showNotifications()">
+                                    <i class="fas fa-bell"></i> Notifications
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="stat-card">
+                            <h5><i class="fas fa-clock text-info"></i> Recent Activity</h5>
+                            <div id="recentActivity">
+                                <p class="text-muted mb-0">No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Students Page -->
+        <div id="students" class="page-section">
+            <div class="content-area">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Students</h1>
+                    <button class="btn btn-primary" onclick="showPage('add-student')">
+                        <i class="fas fa-plus"></i> Add Student
+                    </button>
+                </div>
+
+                <!-- Search Box -->
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="Search students..." id="searchInput">
+                    <i class="fas fa-search"></i>
+                </div>
+
+                <!-- Students List -->
+                <div id="studentsList"></div>
+            </div>
+        </div>
+
+        <!-- Add Student Page -->
+        <div id="add-student" class="page-section">
+            <div class="content-area">
+                <h1 class="mb-4" id="formTitle">Add New Student</h1>
+                
+                <div class="form-container">
+                    <form id="studentForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Student Name *</label>
+                                <input type="text" class="form-control" id="studentName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Mobile Number *</label>
+                                <input type="tel" class="form-control" id="mobileNumber" placeholder="e.g., 9876543210" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Father's Name *</label>
+                                <input type="text" class="form-control" id="fatherName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Father's Mobile Number</label>
+                                <input type="tel" class="form-control" id="fatherMobile" placeholder="e.g., 9876543210">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date of Joining *</label>
+                                <input type="date" class="form-control" id="dateJoining" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Duration (Months)</label>
+                                <input type="number" class="form-control" id="duration" value="12" min="1">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Seat Number *</label>
+                                <input type="text" class="form-control" id="seatNumber" placeholder="A-101" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Special Plan</label>
+                                <select class="form-control" id="specialPlan" onchange="toggleShiftSelection()">
+                                    <option value="no">No</option>
+                                    <option value="yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="specialPlanOptions">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Special Plan Duration</label>
+                                <select class="form-control" id="specialPlanDuration" onchange="calculateSpecialPlanAmount()">
+                                    <option value="3">3 Months - ₹1999.00</option>
+                                    <option value="6">6 Months - ₹3599.00</option>
+                                    <option value="12">12 Months - ₹7499.00</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row" id="shiftOptions">
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Select Shift</label>
+                                <div class="plan-option" onclick="selectShift('6am-12pm', 449)">
+                                    <h5>Morning Shift</h5>
+                                    <div class="shift-time">6:00 AM - 12:00 PM</div>
+                                    <div class="amount-display">₹449.00</div>
+                                </div>
+                                <div class="plan-option" onclick="selectShift('12pm-6pm', 599)">
+                                    <h5>Afternoon Shift</h5>
+                                    <div class="shift-time">12:00 PM - 6:00 PM</div>
+                                    <div class="amount-display">₹599.00</div>
+                                </div>
+                                <div class="plan-option" onclick="selectShift('6pm-11pm', 449)">
+                                    <h5>Evening Shift</h5>
+                                    <div class="shift-time">6:00 PM - 11:00 PM</div>
+                                    <div class="amount-display">₹449.00</div>
+                                </div>
+                                <div class="plan-option" onclick="selectShift('6am-6pm', 699)">
+                                    <h5>Full Day Shift</h5>
+                                    <div class="shift-time">6:00 AM - 6:00 PM</div>
+                                    <div class="amount-display">₹699.00</div>
+                                </div>
+                                <div class="plan-option" onclick="selectShift('12pm-11pm', 699)">
+                                    <h5>Extended Shift</h5>
+                                    <div class="shift-time">12:00 PM - 11:00 PM</div>
+                                    <div class="amount-display">₹699.00</div>
+                                </div>
+                                <div class="plan-option" onclick="selectShift('6am-11pm', 799)">
+                                    <h5>Complete Day Shift</h5>
+                                    <div class="shift-time">6:00 AM - 11:00 PM</div>
+                                    <div class="amount-display">₹799.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Student Photo</label>
+                                <input type="file" class="form-control" id="studentPhoto" accept="image/*">
+                                <div id="studentPhotoPreview" class="mt-2"></div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-control" id="paymentMethod">
+                                    <option value="cash">Cash</option>
+                                    <option value="phonepe">PhonePe</option>
+                                    <option value="paytm">Paytm</option>
+                                    <option value="googlepay">Google Pay</option>
+                                    <option value="bank">Bank Transfer</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">ID Proof File *</label>
+                            <input type="file" class="form-control" id="idProofFile" accept="image/*" required>
+                            <div id="idProofPreview" class="mt-2"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">ID Proof Details *</label>
+                            <textarea class="form-control" id="idProofDetails" placeholder="e.g., Aadhaar Card: 1234-5678-9012" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="alert alert-info">
+                                <strong>Total Amount: <span id="totalAmountDisplay">₹0.00</span></strong>
+                                <input type="hidden" id="amount" value="0">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary" id="submitButton">
+                                <i class="fas fa-save"></i> Save Student
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="showPage('students')">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Details Page -->
+        <div id="student-details" class="page-section">
+            <div class="content-area">
+                <h1 class="mb-4">Student Details</h1>
+                
+                <div class="student-details-container" id="studentDetailsContent">
+                    <!-- Student details will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue History Page -->
+        <div id="revenue-history" class="page-section">
+            <div class="content-area">
+                <h1 class="mb-4">Revenue History</h1>
+                
+                <div class="form-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5>All Payment Records</h5>
+                        <button class="btn btn-outline-primary btn-sm" onclick="showPage('add-student')">
+                            <i class="fas fa-plus"></i> Add Payment
+                        </button>
+                    </div>
+                    
+                    <div class="search-box">
+                        <input type="text" class="form-control" placeholder="Search payments..." id="paymentSearch">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    
+                    <div id="revenueList">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No payment records found.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Page -->
+        <div id="notifications" class="page-section">
+            <div class="content-area">
+                <h1 class="mb-4">Notifications</h1>
+                <div id="notificationsList">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No notifications at the moment.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File input for import -->
+    <input type="file" id="importFile" accept=".json" style="display: none;">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Application State
+        let students = [];
+        let payments = [];
+        let currentStudent = null;
+        let editMode = false;
+        let selectedShift = null;
+        let selectedShiftAmount = 0;
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSampleData();
+            setupEventListeners();
+            updateDashboard();
+            updateNotifications();
+            
+            // Set today's date as default
+            document.getElementById('dateJoining').value = new Date().toISOString().split('T')[0];
+            
+            // Initialize form options
+            toggleShiftSelection();
+            
+            // Auto-hide welcome toast after 3 seconds
+            setTimeout(() => {
+                const toast = document.getElementById('welcomeToast');
+                if (toast) {
+                    toast.style.display = 'none';
+                }
+            }, 3000);
+        });
+
+        // Load sample data
+        function loadSampleData() {
+            const sampleStudents = [
+                {
+                    id: '1',
+                    name: 'Arjun Sharma',
+                    mobile: '9876543210',
+                    fatherName: 'Rajesh Sharma',
+                    fatherMobile: '9876543211',
+                    dateJoining: '2024-01-15',
+                    durationMonths: 12,
+                    idProofDetails: 'Aadhaar Card: 1234-5678-9012-3456',
+                    amountCollected: 1500.00,
+                    seatNo: 'A-101',
+                    studentPhoto: null,
+                    idProofFile: null,
+                    paymentMethod: 'cash',
+                    shift: '6am-12pm',
+                    specialPlan: 'no'
+                },
+                {
+                    id: '2',
+                    name: 'Priya Patel',
+                    mobile: '8765432109',
+                    fatherName: 'Mahesh Patel',
+                    fatherMobile: '8765432110',
+                    dateJoining: '2024-06-01',
+                    durationMonths: 6,
+                    idProofDetails: 'Driver\'s License: DL1234567890',
+                    amountCollected: 800.00,
+                    seatNo: 'B-205',
+                    studentPhoto: null,
+                    idProofFile: null,
+                    paymentMethod: 'phonepe',
+                    shift: '12pm-6pm',
+                    specialPlan: 'no'
+                },
+                {
+                    id: '3',
+                    name: 'Rahul Kumar',
+                    mobile: '7654321098',
+                    fatherName: 'Vikram Kumar',
+                    fatherMobile: '7654321099',
+                    dateJoining: '2024-03-10',
+                    durationMonths: 12,
+                    idProofDetails: 'Passport: P123456789',
+                    amountCollected: 2000.00,
+                    seatNo: 'C-301',
+                    studentPhoto: null,
+                    idProofFile: null,
+                    paymentMethod: 'paytm',
+                    shift: '6am-11pm',
+                    specialPlan: 'no'
+                }
+            ];
+
+            const samplePayments = [
+                {
+                    id: '1',
+                    studentId: '1',
+                    studentName: 'Arjun Sharma',
+                    amount: 1500.00,
+                    date: '2024-01-15',
+                    method: 'cash',
+                    description: 'Initial membership fee'
+                },
+                {
+                    id: '2',
+                    studentId: '2',
+                    studentName: 'Priya Patel',
+                    amount: 800.00,
+                    date: '2024-06-01',
+                    method: 'phonepe',
+                    description: '6-month membership'
+                },
+                {
+                    id: '3',
+                    studentId: '3',
+                    studentName: 'Rahul Kumar',
+                    amount: 2000.00,
+                    date: '2024-03-10',
+                    method: 'paytm',
+                    description: 'Annual membership with discount'
+                }
+            ];
+
+            const storedStudents = localStorage.getItem('libraryStudents');
+            const storedPayments = localStorage.getItem('libraryPayments');
+            
+            students = storedStudents ? JSON.parse(storedStudents) : sampleStudents;
+            payments = storedPayments ? JSON.parse(storedPayments) : samplePayments;
+            
+            saveStudents();
+            savePayments();
+        }
+
+        // Event listeners
+        function setupEventListeners() {
+            // Menu toggle
+            document.getElementById('menuToggle').addEventListener('click', toggleSidebar);
+            document.getElementById('overlay').addEventListener('click', closeSidebar);
+            
+            // Navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (!this.onclick || this.onclick.toString().indexOf('showPage') !== -1) {
+                        e.preventDefault();
+                        const page = this.dataset.page;
+                        if (page) showPage(page);
+                    }
+                });
+            });
+
+            // Student form
+            document.getElementById('studentForm').addEventListener('submit', handleStudentSubmit);
+            
+            // Search
+            document.getElementById('searchInput').addEventListener('input', filterStudents);
+            document.getElementById('paymentSearch').addEventListener('input', filterPayments);
+
+            // Import file
+            document.getElementById('importFile').addEventListener('change', handleImport);
+            
+            // File previews
+            document.getElementById('studentPhoto').addEventListener('change', function(e) {
+                previewImage(e.target, 'studentPhotoPreview');
+            });
+            
+            document.getElementById('idProofFile').addEventListener('change', function(e) {
+                previewImage(e.target, 'idProofPreview');
+            });
+        }
+
+        // File preview function
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.classList.add(previewId === 'idProofPreview' ? 'id-proof-preview' : 'file-preview');
+                    preview.appendChild(img);
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Shift selection functions
+        function toggleShiftSelection() {
+            const specialPlan = document.getElementById('specialPlan').value;
+            const shiftOptions = document.getElementById('shiftOptions');
+            const specialPlanOptions = document.getElementById('specialPlanOptions');
+            
+            if (specialPlan === 'yes') {
+                shiftOptions.style.display = 'none';
+                specialPlanOptions.style.display = 'block';
+                calculateSpecialPlanAmount();
+            } else {
+                shiftOptions.style.display = 'block';
+                specialPlanOptions.style.display = 'none';
+                updateAmountDisplay();
+            }
+        }
+
+        function selectShift(shift, amount) {
+            selectedShift = shift;
+            selectedShiftAmount = amount;
+            
+            // Remove selected class from all options
+            document.querySelectorAll('.plan-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            event.currentTarget.classList.add('selected');
+            
+            updateAmountDisplay();
+        }
+
+        function calculateSpecialPlanAmount() {
+            const duration = document.getElementById('specialPlanDuration').value;
+            let amount = 0;
+            
+            switch(duration) {
+                case '3':
+                    amount = 1999;
+                    break;
+                case '6':
+                    amount = 3599;
+                    break;
+                case '12':
+                    amount = 7499;
+                    break;
+            }
+            
+            document.getElementById('amount').value = amount;
+            document.getElementById('totalAmountDisplay').textContent = `₹${amount.toFixed(2)}`;
+        }
+
+        function updateAmountDisplay() {
+            const amount = selectedShiftAmount;
+            document.getElementById('amount').value = amount;
+            document.getElementById('totalAmountDisplay').textContent = `₹${amount.toFixed(2)}`;
+        }
+
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('shifted');
+            }
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+            if (window.innerWidth > 768) {
+                document.getElementById('mainContent').classList.remove('shifted');
+            }
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Update nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            const navLink = document.querySelector(`[data-page="${pageId}"]`);
+            if (navLink) navLink.classList.add('active');
+            
+            // Update content based on page
+            if (pageId === 'students') {
+                displayStudents();
+            } else if (pageId === 'add-student') {
+                resetForm();
+            } else if (pageId === 'notifications') {
+                updateNotifications();
+            } else if (pageId === 'revenue-history') {
+                displayPayments();
+            }
+            
+            closeSidebar();
+        }
+
+        // Student management
+        function handleStudentSubmit(e) {
+            e.preventDefault();
+            
+            const specialPlan = document.getElementById('specialPlan').value;
+            let amount = 0;
+            let shift = '';
+            let duration = parseInt(document.getElementById('duration').value);
+            
+            if (specialPlan === 'yes') {
+                const planDuration = document.getElementById('specialPlanDuration').value;
+                duration = parseInt(planDuration);
+                
+                switch(planDuration) {
+                    case '3':
+                        amount = 1999;
+                        break;
+                    case '6':
+                        amount = 3599;
+                        break;
+                    case '12':
+                        amount = 7499;
+                        break;
+                }
+                shift = 'special';
+            } else {
+                amount = selectedShiftAmount;
+                shift = selectedShift;
+                
+                if (!shift) {
+                    showAlert('Please select a shift!', 'danger');
+                    return;
+                }
+            }
+
+            // Handle file uploads
+            const studentPhotoFile = document.getElementById('studentPhoto').files[0];
+            const idProofFile = document.getElementById('idProofFile').files[0];
+            
+            let studentPhotoData = null;
+            let idProofData = null;
+            
+            if (studentPhotoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    studentPhotoData = e.target.result;
+                    completeStudentSubmission();
+                };
+                reader.readAsDataURL(studentPhotoFile);
+            } else {
+                completeStudentSubmission();
+            }
+            
+            if (idProofFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    idProofData = e.target.result;
+                    completeStudentSubmission();
+                };
+                reader.readAsDataURL(idProofFile);
+            } else {
+                completeStudentSubmission();
+            }
+            
+            function completeStudentSubmission() {
+                const formData = {
+                    name: document.getElementById('studentName').value,
+                    mobile: document.getElementById('mobileNumber').value,
+                    fatherName: document.getElementById('fatherName').value,
+                    fatherMobile: document.getElementById('fatherMobile').value,
+                    dateJoining: document.getElementById('dateJoining').value,
+                    durationMonths: duration,
+                    seatNo: document.getElementById('seatNumber').value,
+                    amountCollected: amount,
+                    idProofDetails: document.getElementById('idProofDetails').value,
+                    paymentMethod: document.getElementById('paymentMethod').value,
+                    shift: shift,
+                    specialPlan: specialPlan,
+                    studentPhoto: studentPhotoData,
+                    idProofFile: idProofData
+                };
+
+                if (editMode && currentStudent) {
+                    // Update existing student
+                    const index = students.findIndex(s => s.id === currentStudent.id);
+                    students[index] = { ...students[index], ...formData };
+                    showAlert('Student updated successfully!', 'success');
+                } else {
+                    // Add new student
+                    const newStudent = {
+                        id: Date.now().toString(),
+                        ...formData
+                    };
+                    students.push(newStudent);
+                    
+                    // Add to payment history
+                    const newPayment = {
+                        id: Date.now().toString(),
+                        studentId: newStudent.id,
+                        studentName: newStudent.name,
+                        amount: newStudent.amountCollected,
+                        date: newStudent.dateJoining,
+                        method: newStudent.paymentMethod,
+                        description: 'Initial membership fee'
+                    };
+                    payments.push(newPayment);
+                    savePayments();
+                    
+                    showAlert('Student added successfully!', 'success');
+                }
+                
+                saveStudents();
+                updateDashboard();
+                updateNotifications();
+                showPage('students');
+            }
+        }
+
+        function editStudent(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+            
+            currentStudent = student;
+            editMode = true;
+            
+            // Populate form
+            document.getElementById('studentName').value = student.name;
+            document.getElementById('mobileNumber').value = student.mobile || '';
+            document.getElementById('fatherName').value = student.fatherName || '';
+            document.getElementById('fatherMobile').value = student.fatherMobile || '';
+            document.getElementById('dateJoining').value = student.dateJoining;
+            document.getElementById('duration').value = student.durationMonths;
+            document.getElementById('seatNumber').value = student.seatNo;
+            document.getElementById('idProofDetails').value = student.idProofDetails;
+            document.getElementById('paymentMethod').value = student.paymentMethod || 'cash';
+            document.getElementById('specialPlan').value = student.specialPlan || 'no';
+            
+            // Set shift if not special plan
+            if (student.specialPlan === 'no' && student.shift) {
+                selectedShift = student.shift;
+                
+                // Set amount based on shift
+                switch(student.shift) {
+                    case '6am-12pm':
+                        selectedShiftAmount = 449;
+                        break;
+                    case '12pm-6pm':
+                        selectedShiftAmount = 599;
+                        break;
+                    case '6pm-11pm':
+                        selectedShiftAmount = 449;
+                        break;
+                    case '6am-6pm':
+                        selectedShiftAmount = 699;
+                        break;
+                    case '12pm-11pm':
+                        selectedShiftAmount = 699;
+                        break;
+                    case '6am-11pm':
+                        selectedShiftAmount = 799;
+                        break;
+                }
+                
+                // Select the shift option visually
+                document.querySelectorAll('.plan-option').forEach(option => {
+                    option.classList.remove('selected');
+                    if (option.querySelector('h5').textContent === getShiftName(student.shift)) {
+                        option.classList.add('selected');
+                    }
+                });
+            }
+            
+            // Display student photo if available
+            if (student.studentPhoto) {
+                const preview = document.getElementById('studentPhotoPreview');
+                preview.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = student.studentPhoto;
+                img.classList.add('file-preview');
+                preview.appendChild(img);
+            }
+            
+            // Display ID proof if available
+            if (student.idProofFile) {
+                const preview = document.getElementById('idProofPreview');
+                preview.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = student.idProofFile;
+                img.classList.add('id-proof-preview');
+                preview.appendChild(img);
+            }
+            
+            // Update form title
+            document.getElementById('formTitle').textContent = 'Edit Student';
+            document.getElementById('submitButton').innerHTML = 
+                '<i class="fas fa-save"></i> Update Student';
+            
+            // Update amount display
+            document.getElementById('amount').value = student.amountCollected;
+            document.getElementById('totalAmountDisplay').textContent = `₹${student.amountCollected.toFixed(2)}`;
+            
+            // Toggle shift/special plan options
+            toggleShiftSelection();
+            
+            showPage('add-student');
+        }
+
+        function viewStudentDetails(id) {
+            const student = students.find(s => s.id === id);
+            if (!student) return;
+            
+            currentStudent = student;
+            
+            const joinDate = new Date(student.dateJoining);
+            const endDate = new Date(joinDate);
+            endDate.setMonth(endDate.getMonth() + student.durationMonths);
+            
+            const today = new Date();
+            const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            
+            let statusClass = '';
+            let statusText = '';
+            
+            if (daysLeft < 0) {
+                statusClass = 'text-danger';
+                statusText = `Expired ${Math.abs(daysLeft)} days ago`;
+            } else if (daysLeft <= 3) {
+                statusClass = 'text-warning';
+                statusText = `Expires in ${daysLeft} days`;
+            } else {
+                statusClass = 'text-success';
+                statusText = `${daysLeft} days left`;
+            }
+            
+            // Get student's payment history
+            const studentPayments = payments.filter(p => p.studentId === student.id);
+            
+            const detailsHtml = `
+                <div class="text-center mb-4">
+                    ${student.studentPhoto ? 
+                        `<img src="${student.studentPhoto}" class="student-photo mb-3" alt="${student.name}">` : 
+                        `<i class="fas fa-user-circle fa-5x text-primary mb-3"></i>`
+                    }
+                    <h3>${student.name}</h3>
+                    <p class="text-muted">Seat: ${student.seatNo}</p>
+                    <span class="badge ${statusClass}">${statusText}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Mobile Number:</div>
+                    <div class="detail-value">${student.mobile || 'N/A'}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Father's Name:</div>
+                    <div class="detail-value">${student.fatherName || 'N/A'}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Father's Mobile:</div>
+                    <div class="detail-value">${student.fatherMobile || 'N/A'}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Date of Joining:</div>
+                    <div class="detail-value">${formatDate(student.dateJoining)}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Membership Duration:</div>
+                    <div class="detail-value">${student.durationMonths} months</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Membership End Date:</div>
+                    <div class="detail-value">${formatDate(endDate)}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Plan Type:</div>
+                    <div class="detail-value">${student.specialPlan === 'yes' ? 'Special Plan' : 'Regular Shift'}</div>
+                </div>
+                
+                ${student.specialPlan === 'no' ? `
+                <div class="detail-row">
+                    <div class="detail-label">Shift:</div>
+                    <div class="detail-value">${getShiftName(student.shift)} (${getShiftTime(student.shift)})</div>
+                </div>
+                ` : ''}
+                
+                <div class="detail-row">
+                    <div class="detail-label">Amount Collected:</div>
+                    <div class="detail-value">₹${student.amountCollected.toFixed(2)}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">Payment Method:</div>
+                    <div class="detail-value">${getPaymentMethodName(student.paymentMethod)}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">ID Proof Details:</div>
+                    <div class="detail-value">${student.idProofDetails}</div>
+                </div>
+                
+                ${student.idProofFile ? `
+                <div class="detail-row">
+                    <div class="detail-label">ID Proof:</div>
+                    <div class="detail-value">
+                        <img src="${student.idProofFile}" class="id-proof-preview" alt="ID Proof">
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${studentPayments.length > 0 ? `
+                <div class="payment-history">
+                    <h5><i class="fas fa-history"></i> Payment History</h5>
+                    ${studentPayments.map(payment => `
+                        <div class="payment-item">
+                            <div>
+                                <strong>₹${payment.amount.toFixed(2)}</strong>
+                                <div class="text-muted small">${formatDate(payment.date)}</div>
+                            </div>
+                            <div class="payment-method">
+                                <i class="${getPaymentMethodIcon(payment.method)}"></i>
+                                <span>${getPaymentMethodName(payment.method)}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="editStudent('${student.id}')">
+                        <i class="fas fa-edit"></i> Edit Student
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="showPage('students')">
+                        <i class="fas fa-arrow-left"></i> Back to List
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('studentDetailsContent').innerHTML = detailsHtml;
+            showPage('student-details');
+        }
+
+        function deleteStudent(id) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                students = students.filter(s => s.id !== id);
+                // Also remove associated payments
+                payments = payments.filter(p => p.studentId !== id);
+                saveStudents();
+                savePayments();
+                updateDashboard();
+                updateNotifications();
+                displayStudents();
+                showAlert('Student deleted successfully!', 'success');
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('studentForm').reset();
+            document.getElementById('dateJoining').value = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentMethod').value = 'cash';
+            document.getElementById('specialPlan').value = 'no';
+            document.getElementById('studentPhotoPreview').innerHTML = '';
+            document.getElementById('idProofPreview').innerHTML = '';
+            document.querySelectorAll('.plan-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            selectedShift = null;
+            selectedShiftAmount = 0;
+            currentStudent = null;
+            editMode = false;
+            
+            // Reset form title
+            document.getElementById('formTitle').textContent = 'Add New Student';
+            document.getElementById('submitButton').innerHTML = 
+                '<i class="fas fa-save"></i> Save Student';
+            
+            // Toggle shift options
+            toggleShiftSelection();
+        }
+
+        // Display functions
+        function displayStudents() {
+            const container = document.getElementById('studentsList');
+            
+            if (students.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5>No students found</h5>
+                        <p class="text-muted">Add your first student to get started</p>
+                        <button class="btn btn-primary" onclick="showPage('add-student')">
+                            <i class="fas fa-plus"></i> Add Student
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = students.map(student => {
+                const joinDate = new Date(student.dateJoining);
+                const endDate = new Date(joinDate);
+                endDate.setMonth(endDate.getMonth() + student.durationMonths);
+                
+                const today = new Date();
+                const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                if (daysLeft < 0) {
+                    statusClass = 'expired';
+                    statusText = `<span class="badge bg-danger">Expired ${Math.abs(daysLeft)} days ago</span>`;
+                } else if (daysLeft <= 3) {
+                    statusClass = 'expiring-soon';
+                    statusText = `<span class="badge bg-warning">Expires in ${daysLeft} days</span>`;
+                } else {
+                    statusText = `<span class="badge bg-success">${daysLeft} days left</span>`;
+                }
+
+                return `
+                    <div class="student-card ${statusClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex gap-3">
+                                <div class="student-photo-container">
+                                    ${student.studentPhoto ? 
+                                        `<img src="${student.studentPhoto}" class="student-photo" alt="${student.name}">` : 
+                                        `<i class="fas fa-user-circle fa-3x text-primary"></i>`
+                                    }
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">${student.name}</h5>
+                                    <p class="text-muted mb-1">Father: ${student.fatherName || 'N/A'}</p>
+                                    <p class="text-muted mb-1">Mobile: ${student.mobile || 'N/A'}</p>
+                                    <p class="text-muted mb-1">Seat: ${student.seatNo}</p>
+                                    <p class="text-muted mb-1">Joined: ${formatDate(student.dateJoining)}</p>
+                                    <p class="text-muted mb-0">Amount: ₹${student.amountCollected.toFixed(2)} (${student.specialPlan === 'yes' ? 'Special Plan' : getShiftName(student.shift)})</p>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                ${statusText}
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewStudentDetails('${student.id}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editStudent('${student.id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent('${student.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayPayments() {
+            const container = document.getElementById('revenueList');
+            
+            if (payments.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No payment records found.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = payments.map(payment => {
+                return `
+                    <div class="payment-item">
+                        <div>
+                            <strong>${payment.studentName}</strong>
+                            <div class="text-muted">₹${payment.amount.toFixed(2)} - ${payment.description}</div>
+                            <small class="text-muted">${formatDate(payment.date)}</small>
+                        </div>
+                        <div class="payment-method">
+                            <i class="${getPaymentMethodIcon(payment.method)}"></i>
+                            <span>${getPaymentMethodName(payment.method)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterPayments() {
+            const searchTerm = document.getElementById('paymentSearch').value.toLowerCase();
+            const container = document.getElementById('revenueList');
+            
+            if (!searchTerm) {
+                displayPayments();
+                return;
+            }
+            
+            const filteredPayments = payments.filter(payment => 
+                payment.studentName.toLowerCase().includes(searchTerm) ||
+                payment.description.toLowerCase().includes(searchTerm) ||
+                payment.method.toLowerCase().includes(searchTerm) ||
+                payment.amount.toString().includes(searchTerm)
+            );
+            
+            if (filteredPayments.length === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No payment records found for "${searchTerm}".
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredPayments.map(payment => {
+                return `
+                    <div class="payment-item">
+                        <div>
+                            <strong>${payment.studentName}</strong>
+                            <div class="text-muted">₹${payment.amount.toFixed(2)} - ${payment.description}</div>
+                            <small class="text-muted">${formatDate(payment.date)}</small>
+                        </div>
+                        <div class="payment-method">
+                            <i class="${getPaymentMethodIcon(payment.method)}"></i>
+                            <span>${getPaymentMethodName(payment.method)}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateDashboard() {
+            const total = students.length;
+            const revenue = students.reduce((sum, s) => sum + s.amountCollected, 0);
+            
+            // Calculate expiring students
+            const today = new Date();
+            const expiring = students.filter(student => {
+                const joinDate = new Date(student.dateJoining);
+                const endDate = new Date(joinDate);
+                endDate.setMonth(endDate.getMonth() + student.durationMonths);
+                const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return daysLeft >= 0 && daysLeft <= 3;
+            }).length;
+
+            // Calculate new students this month
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const newThisMonth = students.filter(student => {
+                const joinDate = new Date(student.dateJoining);
+                return joinDate.getMonth() === currentMonth && joinDate.getFullYear() === currentYear;
+            }).length;
+
+            document.getElementById('totalStudents').textContent = total;
+            document.getElementById('totalRevenue').textContent = `₹${revenue.toFixed(2)}`;
+            document.getElementById('expiringStudents').textContent = expiring;
+            document.getElementById('newStudents').textContent = newThisMonth;
+        }
+
+        function updateNotifications() {
+            const today = new Date();
+            const expiring = students.filter(student => {
+                const joinDate = new Date(student.dateJoining);
+                const endDate = new Date(joinDate);
+                endDate.setMonth(endDate.getMonth() + student.durationMonths);
+                const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return daysLeft >= 0 && daysLeft <= 3;
+            });
+
+            const expired = students.filter(student => {
+                const joinDate = new Date(student.dateJoining);
+                const endDate = new Date(joinDate);
+                endDate.setMonth(endDate.getMonth() + student.durationMonths);
+                const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                return daysLeft < 0;
+            });
+
+            const totalNotifications = expiring.length + expired.length;
+            document.getElementById('notificationBadge').textContent = totalNotifications;
+            document.getElementById('notificationBadge').style.display = totalNotifications > 0 ? 'inline' : 'none';
+
+            const container = document.getElementById('notificationsList');
+            
+            if (totalNotifications === 0) {
+                container.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> All memberships are up to date!
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            
+            if (expired.length > 0) {
+                html += `
+                    <div class="alert alert-danger">
+                        <h6><i class="fas fa-exclamation-triangle"></i> Expired Memberships (${expired.length})</h6>
+                        ${expired.map(s => `<div>• ${s.name} (${s.seatNo}) - Mobile: ${s.mobile || 'N/A'}</div>`).join('')}
+                    </div>
+                `;
+            }
+            
+            if (expiring.length > 0) {
+                html += `
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-clock"></i> Expiring Soon (${expiring.length})</h6>
+                        ${expiring.map(s => `<div>• ${s.name} (${s.seatNo}) - Mobile: ${s.mobile || 'N/A'}</div>`).join('')}
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Utility functions
+        function filterStudents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const container = document.getElementById('studentsList');
+            
+            if (!searchTerm) {
+                displayStudents();
+                return;
+            }
+            
+            const filteredStudents = students.filter(student => 
+                student.name.toLowerCase().includes(searchTerm) ||
+                (student.mobile && student.mobile.includes(searchTerm)) ||
+                (student.fatherName && student.fatherName.toLowerCase().includes(searchTerm)) ||
+                (student.fatherMobile && student.fatherMobile.includes(searchTerm)) ||
+                student.seatNo.toLowerCase().includes(searchTerm) ||
+                student.idProofDetails.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredStudents.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5>No students found</h5>
+                        <p class="text-muted">Try a different search term</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredStudents.map(student => {
+                const joinDate = new Date(student.dateJoining);
+                const endDate = new Date(joinDate);
+                endDate.setMonth(endDate.getMonth() + student.durationMonths);
+                
+                const today = new Date();
+                const daysLeft = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                if (daysLeft < 0) {
+                    statusClass = 'expired';
+                    statusText = `<span class="badge bg-danger">Expired ${Math.abs(daysLeft)} days ago</span>`;
+                } else if (daysLeft <= 3) {
+                    statusClass = 'expiring-soon';
+                    statusText = `<span class="badge bg-warning">Expires in ${daysLeft} days</span>`;
+                } else {
+                    statusText = `<span class="badge bg-success">${daysLeft} days left</span>`;
+                }
+
+                return `
+                    <div class="student-card ${statusClass}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex gap-3">
+                                <div class="student-photo-container">
+                                    ${student.studentPhoto ? 
+                                        `<img src="${student.studentPhoto}" class="student-photo" alt="${student.name}">` : 
+                                        `<i class="fas fa-user-circle fa-3x text-primary"></i>`
+                                    }
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">${student.name}</h5>
+                                    <p class="text-muted mb-1">Father: ${student.fatherName || 'N/A'}</p>
+                                    <p class="text-muted mb-1">Mobile: ${student.mobile || 'N/A'}</p>
+                                    <p class="text-muted mb-1">Seat: ${student.seatNo}</p>
+                                    <p class="text-muted mb-1">Joined: ${formatDate(student.dateJoining)}</p>
+                                    <p class="text-muted mb-0">Amount: ₹${student.amountCollected.toFixed(2)} (${student.specialPlan === 'yes' ? 'Special Plan' : getShiftName(student.shift)})</p>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                ${statusText}
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewStudentDetails('${student.id}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editStudent('${student.id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent('${student.id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-IN');
+        }
+
+        function getPaymentMethodName(method) {
+            const methods = {
+                'cash': 'Cash',
+                'phonepe': 'PhonePe',
+                'paytm': 'Paytm',
+                'googlepay': 'Google Pay',
+                'bank': 'Bank Transfer'
+            };
+            return methods[method] || method;
+        }
+
+        function getPaymentMethodIcon(method) {
+            const icons = {
+                'cash': 'fas fa-money-bill-wave',
+                'phonepe': 'fas fa-mobile-alt',
+                'paytm': 'fas fa-wallet',
+                'googlepay': 'fab fa-google-wallet',
+                'bank': 'fas fa-university'
+            };
+            return icons[method] || 'fas fa-money-bill-wave';
+        }
+
+        function getShiftName(shift) {
+            const shifts = {
+                '6am-12pm': 'Morning Shift',
+                '12pm-6pm': 'Afternoon Shift',
+                '6pm-11pm': 'Evening Shift',
+                '6am-6pm': 'Full Day Shift',
+                '12pm-11pm': 'Extended Shift',
+                '6am-11pm': 'Complete Day Shift',
+                'special': 'Special Plan'
+            };
+            return shifts[shift] || shift;
+        }
+
+        function getShiftTime(shift) {
+            const shiftTimes = {
+                '6am-12pm': '6:00 AM - 12:00 PM',
+                '12pm-6pm': '12:00 PM - 6:00 PM',
+                '6pm-11pm': '6:00 PM - 11:00 PM',
+                '6am-6pm': '6:00 AM - 6:00 PM',
+                '12pm-11pm': '12:00 PM - 11:00 PM',
+                '6am-11pm': '6:00 AM - 11:00 PM',
+                'special': 'Flexible Timing'
+            };
+            return shiftTimes[shift] || shift;
+        }
+
+        function saveStudents() {
+            localStorage.setItem('libraryStudents', JSON.stringify(students));
+        }
+
+        function savePayments() {
+            localStorage.setItem('libraryPayments', JSON.stringify(payments));
+        }
+
+        function showAlert(message, type) {
+            // Remove any existing alerts first
+            const existingAlerts = document.querySelectorAll('.alert-dismissible');
+            existingAlerts.forEach(alert => alert.remove());
+            
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index: 1100;" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('afterbegin', alertHtml);
+            
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) alert.remove();
+            }, 5000);
+        }
+
+        // Data management
+        function exportData() {
+            const data = {
+                libraryName: 'Shree Balaji Library',
+                administrator: 'Raja',
+                developer: 'Harshit (A Navodayan)',
+                exportDate: new Date().toISOString(),
+                students: students,
+                payments: payments
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `shree-balaji-library-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            
+            URL.revokeObjectURL(url);
+            showAlert('Data exported successfully!', 'success');
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        function handleImport(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.students && Array.isArray(data.students)) {
+                        if (confirm('This will replace all existing data. Continue?')) {
+                            students = data.students;
+                            payments = data.payments || [];
+                            saveStudents();
+                            savePayments();
+                            updateDashboard();
+                            updateNotifications();
+                            displayStudents();
+                            showAlert('Data imported successfully!', 'success');
+                        }
+                    } else {
+                        showAlert('Invalid file format!', 'danger');
+                    }
+                } catch (error) {
+                    showAlert('Error reading file!', 'danger');
+                }
+            };
+            reader.readAsText(file);
+            
+            // Reset the file input
+            e.target.value = '';
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            body.classList.toggle('dark-theme');
+            
+            if (body.classList.contains('dark-theme')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function showNotifications() {
+            showPage('notifications');
+        }
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            document.getElementById('themeIcon').classList.remove('fa-moon');
+            document.getElementById('themeIcon').classList.add('fa-sun');
+        }
+    </script>
+</body>
+</html>  
