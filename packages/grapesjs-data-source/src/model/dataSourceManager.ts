@@ -106,7 +106,6 @@ function updateCachedData(): void {
 
   manager.cachedTypes = getAllTypes(manager)
   manager.cachedQueryables = getAllQueryables(manager)
-  console.log(`🔄 Cache updated: ${manager.cachedTypes.length} types, ${manager.cachedQueryables.length} queryables`)
 }
 
 /**
@@ -140,7 +139,6 @@ export function initializeDataSourceManager(
       editor.trigger(DATA_SOURCE_CHANGED, e?.detail)
     },
     dataSourceReadyBinded: (ds: IDataSource) => {
-      console.log(`📡 Data source ${ds.id} is ready`)
       updateCachedData() // Update cache when data source becomes ready
       editor.trigger(DATA_SOURCE_READY, ds)
       loadPreviewData(true) // force refresh when data source becomes ready
@@ -210,7 +208,6 @@ export function removeDataSource(dataSource: IDataSource): void {
  * Refresh all data sources data
  */
 export function refreshDataSources(): void {
-  console.log('refreshDataSources')
   loadPreviewData(true) // force refresh when explicitly requested
 }
 

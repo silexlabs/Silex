@@ -38,7 +38,6 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
         isPreviewActive = true
         // Force GrapesJS to re-render to show preview data
         forceRender(editor)
-        console.log('📊 Data source preview activated')
       }
     },
   })
@@ -50,7 +49,6 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
         isPreviewActive = false
         // Force GrapesJS to re-render to show original content
         forceRender(editor)
-        console.log('📊 Data source preview deactivated')
       }
     },
   })
@@ -61,9 +59,8 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       if (isPreviewActive) {
         // Refresh data sources and force re-render
         refreshDataSources()
-        console.log('📊 Data source preview refreshed')
       } else {
-        console.log('📊 Preview is deactivated - use preview:activate first')
+        console.info('📊 Preview is deactivated - use preview:activate first')
       }
     },
   })

@@ -56,7 +56,6 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   // Connect the data sources (async)
   Promise.all(dataSources
     .map(ds => {
-      console.log(`Connecting data source: ${ds.id}`)
       return ds.connect()
         .then(() => console.log(`✅ Data source ${ds.id} connected successfully`))
         .catch(err => console.error(`❌ Data source ${ds.id} connection failed:`, err))
@@ -81,13 +80,11 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
 
   // Load data after editor is fully loaded
   editor.on('load', () => {
-    console.log('EDITOR LOADED')
     refreshDataSources()
   })
 
   // Also refresh data when storage loads (to handle website data loading)
   editor.on('storage:end:load', () => {
-    console.log('STORAGE LOADED')
     // Use setTimeout to ensure components are fully loaded
     setTimeout(() => {
       refreshDataSources()

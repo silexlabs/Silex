@@ -96,7 +96,7 @@ function renderSettings(editor: Editor, dsSettings: Ref, settingsEl: HTMLElement
     const ds = e.detail as IDataSource
     // Handle data source changes - this may need to be reimplemented
     // depending on how the data source update logic should work
-    console.log('Data source changed:', ds)
+    console.log('TODO: Data source changed:', ds)
   }}
       @add=${(e: CustomEvent) => {
     const ds = e.detail as GraphQLOptions

@@ -901,7 +901,6 @@ export default function(editor: Editor): Filter[] {
       output: field => field,
       apply: (arr, options) => {
         const count = parseInt(options.count as string || '1')
-        console.log({count, options})
         return (arr as unknown[])
           .sort(() => 0.5 - Math.random())
           .slice(0, count)

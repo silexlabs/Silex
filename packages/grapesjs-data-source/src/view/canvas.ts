@@ -1,6 +1,6 @@
 import { Editor, Component } from 'grapesjs'
 import { getState, StoredState } from '../model/state'
-import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions, Token } from '../types'
+import { Properties, StoredToken, BinaryOperator, UnariOperator, PREVIEW_RENDER_START, PREVIEW_RENDER_END, PREVIEW_RENDER_ERROR, DataSourceEditorViewOptions } from '../types'
 import { fromStored } from '../model/token'
 import { evaluateExpressionTokens, EvaluationContext } from '../model/expressionEvaluator'
 import { getAllDataSources } from '../model/dataSourceRegistry'
@@ -68,11 +68,9 @@ export function setPreviewIndex(expression: StoredToken[], index: number, group?
   expression.forEach((token: StoredToken & {previewIndex?: number}) => {
     if (token.type === 'state' && token.storedStateId === '__data'
       || (token.type === 'state' && token.storedStateId === 'items')) {
-      console.log('SET PREVIEW', {token, index, group})
       token.previewIndex = index
       token.previewGroup = group
     } else if (token.type === 'property' || token.type === 'filter') {
-      console.log('SET PREVIEW', {token, index, group})
       token.previewIndex = index
       token.previewGroup = group
     }
@@ -421,7 +419,6 @@ function debouncedRender(editor: Editor, eventName: string) {
 }
 
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
-  console.log(`Render preview on events: "${opts.previewRefreshEvents}"`)
   const events = opts.previewRefreshEvents!.split(' ')
   for(const eventName of events) {
     editor.on(eventName, () => {
