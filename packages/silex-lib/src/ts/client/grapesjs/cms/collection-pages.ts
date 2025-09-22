@@ -6,6 +6,8 @@ import { COMMAND_PREVIEW_REFRESH, COMMAND_REFRESH, DATA_SOURCE_DATA_LOAD_END, ge
 import { TemplateResult } from 'lit-html'
 import { ClientEvent } from '../../events'
 import { cmdOpenSettings } from '../settings'
+import { updatePaginationStates } from './states'
+import { debounce } from '../../utils'
 
 // Add CSS for collection pages
 document.querySelector('head')?.insertAdjacentHTML('beforeend', `
@@ -48,32 +50,35 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
     const container = document.createElement('div')
     pagesContainer?.appendChild(container)
 
-    // Function to update the collection pages display
-    function updatePages() {
-      render(getHtml(editor), container)
-    }
-    function updatePagesWithReset() {
-      currentPage = 0
-      render(getHtml(editor), container)
-    }
-
     // Listen for data changes and page selection
     editor.on(`
       ${ DATA_SOURCE_DATA_LOAD_END }
       storage:load:end
-      page:all
-      `, updatePagesWithReset)
+      page
+      `, debounce<() => void>(() => {
+  currentPage = 0
+  renderCollectionPageList(editor, container)
+}))
 
-    editor.on(EVENT_UPDATE_PAGE_LIST, updatePages)
+    editor.on(`
+      ${ EVENT_UPDATE_PAGE_LIST }
+    `, debounce<() => void>(() => {
+  renderCollectionPageList(editor, container)
+  editor.runCommand(COMMAND_PREVIEW_REFRESH)
+}))
 
     // Initial render
-    updatePagesWithReset()
+    renderCollectionPageList(editor, container)
   })
 }
 
+function renderCollectionPageList(editor: Editor, container: HTMLElement) {
+  render(getHtml(editor), container)
+}
+
 function getHtml(editor: Editor): TemplateResult {
-  const items = getCollectionData(editor)
-  return html`
+  const groups = getCollectionData(editor)
+  const result = html`
     <header class="project-bar__panel-header">
       <h3 class="project-bar__panel-header-title">Collection Pages</h3>
     </header>
@@ -81,7 +86,7 @@ function getHtml(editor: Editor): TemplateResult {
       <section class="pages">
         <main class="pages__main">
           <div class="pages__list">
-            ${items.length === 0
+            ${groups.length === 0
     ? html`<div class="pages__empty">
       No collection items found.&nbsp;
       <a
@@ -97,7 +102,10 @@ function getHtml(editor: Editor): TemplateResult {
           Add pagination data in the page settings
         </a>
     </div>`
-    : items.map((item, index) => html`
+    : groups.map((items, index) => {
+      // Temporary pagination to this particular page
+      updatePaginationStates(editor, index, true)
+      return html`
                   <div
                     class="pages__page ${index === currentPage ? 'pages__page-selected' : ''}"
                     data-item-index="${index}"
@@ -108,32 +116,41 @@ function getHtml(editor: Editor): TemplateResult {
                     </div>
                     ${index === currentPage ? html`<i class="pages__icon pages__remove-btn"></i>` : ''}
                   </div>
-                `)
+                `
+    })
 }
           </div>
         </main>
       </section>
     </div>
   `
+  if (groups.length > 0) {
+    // Reset to current page
+    updatePaginationStates(editor, currentPage, true)
+  }
+  return result
 }
 
-function getCollectionData(editor: Editor): unknown[] {
+function getCollectionData(editor: Editor): unknown[][] {
   const page = editor.Pages.getSelected()
   const body = page?.getMainComponent()
 
-  if (!body) {
-    return []
-  }
+  if (!body) return
 
   const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
   const pageData = toExpression(settings?.eleventyPageData) as (Property[] | null)
+  const pageSize = parseInt(settings?.eleventyPageSize || '1')
 
   if (pageData && pageData.length > 0) {
     const rawData = getValue(pageData, body as never, false)
 
     if (Array.isArray(rawData) && rawData.length > 0) {
-      // Get current preview index from the expression
-      return rawData
+      // Group rawData into chunks of size groupBy
+      const grouped: unknown[][] = []
+      for (let i = 0; i < rawData.length; i += pageSize) {
+        grouped.push(rawData.slice(i, i + pageSize))
+      }
+      return grouped
     }
   }
 
@@ -150,11 +167,11 @@ function getItemDisplayName(editor: Editor, index: number): string {
 
     if (settings?.eleventySeoTitle || settings?.eleventyPermalink) {
       // Parse the permalink expression
-      const permalinkExpression = toExpression(settings.eleventySeoTitle || settings.eleventyPermalink)
+      const nameExpression = toExpression(settings.eleventySeoTitle || settings.eleventyPermalink)
 
-      if (Array.isArray(permalinkExpression) && permalinkExpression.length > 0) {
-        const valueFalse = getValue(permalinkExpression, body, false)
-        return valueFalse as string
+      if (Array.isArray(nameExpression) && nameExpression.length > 0) {
+        const name = getValue(nameExpression, body, false)
+        if (typeof name === 'string') return name
       }
     }
     return `Page ${index}`
@@ -174,10 +191,6 @@ function handleItemClick(editor: Editor, index: number) {
   if (!body) return
 
   // Trigger the canvas refresh
-  editor.Canvas.refresh()
   editor.trigger(EVENT_UPDATE_PAGE_LIST)
-}
-
-export function getSelectedIndex() {
-  return currentPage
+  // editor.Canvas.refresh()
 }

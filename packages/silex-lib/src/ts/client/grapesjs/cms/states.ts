@@ -1,12 +1,10 @@
-import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, StoredFilter } from '@silexlabs/grapesjs-data-source'
+import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, StoredFilter, State, StoredState, StoredToken, Expression } from '@silexlabs/grapesjs-data-source'
 import { Silex11tyPluginWebsiteSettings } from './index'
 import { Component, Editor, Page } from 'grapesjs'
-import { EVENT_UPDATE_PAGE_LIST, getSelectedIndex } from './collection-pages'
 
 export default function(editor: Editor/*, opts: EleventyPluginOptions */): void {
   editor.on('page:select page:update', () => updatePaginationStates(editor))
   editor.on('settings:save:start', () => updatePaginationStates(editor))
-  editor.on(EVENT_UPDATE_PAGE_LIST, () => updatePaginationStates(editor, getSelectedIndex()))
 }
 
 /**
@@ -14,13 +12,13 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions */): void 
  * @param editor - The GrapesJS editor instance
  * @param pageIndex - The current page index (0-based) for pagination preview. Use 0 for publication.
  */
-export function updatePaginationStates(editor: Editor, pageIndex: number = 0) {
+export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTrigger = false) {
   const page = editor.Pages.getSelected()
   const body: Component = page?.getMainComponent() as Component
   if (!body) return // This happens when the current page is deleted
 
   // Do not show "Body's " prefix for states on the body
-  body.set(COMPONENT_NAME_PREFIX, '')
+  body.attributes.COMPONENT_NAME_PREFIX = ''
 
   // Store pagination data in the body component
   // This is for the GraphQL query to include it
@@ -29,41 +27,12 @@ export function updatePaginationStates(editor: Editor, pageIndex: number = 0) {
 
   if (pageData && pageData.length > 0) {
     try {
-      // Add previewGroup
-      pageData.forEach((token) => {
-        // token.previewGroup = 2
-      })
-
-      // Update body states with the new settings
-      setState(body, 'pagination', {
-        hidden: true,
-        label: 'pagination',
-        expression: [{
-          label: 'Unused pagination label',
-          type: 'property',
-          propType: 'field',
-          fieldId: 'pagination',
-          dataSourceId: 'eleventy',
-          typeIds: ['pagination'],
-          kind: 'object',
-        }]
-      }, true, 0)
-
       // Taken from the pagination object https://www.11ty.dev/docs/pagination/
       // Apply pagination size limit using slice filter
       const pageSize = parseInt(settings?.eleventyPageSize || '1')
       const startIndex = pageIndex * pageSize
       const endIndex = startIndex + pageSize
 
-      // const slice = fromStored({
-      //   type: 'filter',
-      //   id: 'slice',
-      //   label: 'slice',
-      //   options: {
-      //     start: startIndex,
-      //     end: endIndex,
-      //   },
-      // }, body.getId())
       const slice = {
         type: 'filter',
         id: 'slice',
@@ -79,11 +48,64 @@ export function updatePaginationStates(editor: Editor, pageIndex: number = 0) {
         slice,
       ]
 
-      setState(body, 'items', {
-        hidden: true,
-        label: 'pagination.items',
-        expression: itemsExpression,
-      }, true, 1)
+      if (preventTrigger) {
+        const itemsState: StoredState = body.attributes.publicStates.find((state: StoredFilter) => state.id === 'items')
+        if (!itemsState) {
+          if (!body.attributes.publicStates) body.attributes.publicStates = []
+          body.attributes.publicStates.push({
+            hidden: true,
+            label: 'pagination.items',
+            expression: itemsExpression,
+          })
+        } else {
+          itemsState.expression = itemsExpression
+        }
+
+        // Add or update pagination state in publicStates
+        const paginationState: StoredState = body.attributes.publicStates.find((state: StoredFilter) => state.id === 'pagination')
+        const paginationExpression = [{
+          label: 'Unused pagination label',
+          type: 'property',
+          propType: 'field',
+          fieldId: 'pagination',
+          dataSourceId: 'eleventy',
+          typeIds: ['pagination'],
+          kind: 'object',
+        }] as Expression
+        if (!paginationState) {
+          body.attributes.publicStates.push({
+            hidden: true,
+            label: 'pagination',
+            expression: paginationExpression,
+          })
+        } else {
+          paginationState.expression = paginationExpression
+        }
+      } else {
+        // FIXME: should we let UndoManager save?
+        editor.UndoManager.skip(() => {
+          setState(body, 'items', {
+            hidden: true,
+            label: 'pagination.items',
+            expression: itemsExpression,
+          }, true, 1)
+
+          // Update body states with the new settings
+          setState(body, 'pagination', {
+            hidden: true,
+            label: 'pagination',
+            expression: [{
+              label: 'Unused pagination label',
+              type: 'property' as const,
+              propType: 'field' as const,
+              fieldId: 'pagination',
+              dataSourceId: 'eleventy',
+              typeIds: ['pagination'],
+              kind: 'object' as const,
+            }]
+          }, true, 0)
+        })
+      }
     } catch (e) {
       console.error('Invalid JSON for eleventyPageData', e)
       removeState(body, 'pagination', true)
