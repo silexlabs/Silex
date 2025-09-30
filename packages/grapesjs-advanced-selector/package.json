@@ -69,7 +69,7 @@
     "typescript-eslint": "^8.31.0"
   },
   "dependencies": {
-    "@silexlabs/expression-input": "0.1.1-3",
+    "@silexlabs/expression-input": "0.2.0",
     "specificity": "^1.0.0"
   }
 }
