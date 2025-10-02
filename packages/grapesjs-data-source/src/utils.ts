@@ -13,8 +13,8 @@ export const NOTIFICATION_GROUP = 'Data source'
  */
 export function cleanStateName(name: string | null) {
   return name?.toLowerCase()
-    ?.replace(/[^a-z-1-9:]/g, '-')
-    ?.replace(/-+$/g, '') // do not end with -
+    ?.replace(/[^a-z0-9:._-]/g, '-')
+    ?.replace(/^[0-9]+/, '-') // HTML attributes cannot start with digits
 }
 
 /**
