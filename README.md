@@ -68,6 +68,7 @@ To execute a command in every package, use `git submodule foreach 'command'` or 
 | node_modules Path | `packages/node_modules-path` | `git@github.com:lexoyo/node_modules-path.git` | Get the path of the `node_modules` folder in your scripts or CLI or `package.json`. This is useful when you are building a library that can either be used as an npm dependency or directly, [see this question on SO](https://stackoverflow.com/questions/44279838/copy-assets-from-npm). |
 | @silexlabs/grapesjs-version-flow | `packages/grapesjs-version-flow` | `git@github.com:silexlabs/grapesjs-version-flow.git` | A GrapesJS plugin for managing version upgrades and migrations with sequential upgrade flow and modal UI |
 | Grapesjs Ui Suggest Classes | `packages/grapesjs-ui-suggest-classes` | `git@github.com:silexlabs/grapesjs-ui-suggest-classes.git` | A grapesjs plugin to enable auto-complete of classes in the SelectorManager UI  |
+| Grapesjs Tailwind(WIP) | `packages/grapesjs-tailwind` | `git@github.com:silexlabs/grapesjs-tailwind.git` | [DEMO](https://codepen.io/ju99ernaut/pen/BaKGadb) |
 | Symbols plugin for GrapesJS | `packages/grapesjs-symbols` | `git@github.com:silexlabs/grapesjs-sympbols.git` | This plugin enables users to create symbols, which are reusable elements, in a page and accross pages |
 | Grapesjs Storage Rate Limit | `packages/grapesjs-storage-rate-limit` | `git@github.com:silexlabs/grapesjs-storage-rate-limit.git` | A plugin for GrapesJS that provides rate-limited storage, allowing you to save changes immediately and then cool down for a specified period before saving again. |
 | GrapesJs Notifications Plugin | `packages/grapesjs-notifications` | `git@github.com:silexlabs/grapesjs-notifications.git` | Why this plugin? GrapesJs is a powerful framework to build no-code tools and allow users to create templates using a drag-and-drop interface. However, the framework does not offer a standard way of notifying users and each plugin implements its own, which is messy and not user friendly. This plugin provides a centralized notification system that can be used by all plugins to display messages to the user. |
@@ -151,16 +152,16 @@ This includes all the packages of this repo.
 > silex-meta@1.0.0 count
 > cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html
 
-     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files     966 text files.
-classified 426 filesDuplicate file check 426 files (336 known unique)Unique:      100 files                                          Unique:      200 files                                          Unique:      300 files                                               347 unique files.                              
-Counting:  100Counting:  200Counting:  300     791 files ignored.
+     100 files     200 files     300 files     400 files     500 files     600 files     700 files     800 files     900 files     948 text files.
+classified 562 filesDuplicate file check 562 files (466 known unique)Unique:      100 files                                          Unique:      200 files                                          Unique:      300 files                                          Unique:      400 files                                               483 unique files.                              
+Counting:  100Counting:  200Counting:  300Counting:  400     543 files ignored.
 
-github.com/AlDanial/cloc v 1.96  T=0.45 s (779.0 files/s, 254674.9 lines/s)
+github.com/AlDanial/cloc v 1.96  T=0.95 s (506.7 files/s, 118537.7 lines/s)
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-JavaScript                     130           1792           2765          67519
-TypeScript                     204           3009           7110          29620
+JavaScript                     273           1932           2944          68982
+TypeScript                     197           2909           6811          27772
 GraphQL                          4            115              6           1002
 JSX                              1              0              2            266
 Text                             2             32              0             86
@@ -168,7 +169,7 @@ Dockerfile                       2             10              7             67
 Bourne Shell                     3              8              1             24
 liquid                           1              0              0              9
 -------------------------------------------------------------------------------
-SUM:                           347           4966           9891          98593
+SUM:                           483           5006           9771          98208
 -------------------------------------------------------------------------------
 
 ```
