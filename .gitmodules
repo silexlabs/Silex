@@ -90,3 +90,6 @@
 	path = packages/grapesjs-version-flow
 	url = git@github.com:silexlabs/grapesjs-version-flow.git
 	branch = main
+[submodule "packages/grapesjs-tailwind"]
+	path = packages/grapesjs-tailwind
+	url = git@github.com:silexlabs/grapesjs-tailwind.git
