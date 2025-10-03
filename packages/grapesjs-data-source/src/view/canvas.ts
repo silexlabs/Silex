@@ -6,6 +6,74 @@ import { evaluateExpressionTokens, EvaluationContext } from '../model/expression
 import { getAllDataSources } from '../model/dataSourceRegistry'
 import { getFilters, getPreviewData } from '../model/dataSourceManager'
 
+// DOM diffing function to compare and update nodes only when needed
+function updateNodeContent(oldNode: Node, newNode: Node): void {
+  // If node types differ, we need to replace
+  if (oldNode.nodeType !== newNode.nodeType) {
+    oldNode.parentNode?.replaceChild(newNode.cloneNode(true), oldNode)
+    return
+  }
+
+  // Text nodes: compare and update text content
+  if (oldNode.nodeType === Node.TEXT_NODE) {
+    if (oldNode.textContent !== newNode.textContent) {
+      oldNode.textContent = newNode.textContent
+    }
+    return
+  }
+
+  // Element nodes: compare tag names
+  if (oldNode.nodeType === Node.ELEMENT_NODE && newNode.nodeType === Node.ELEMENT_NODE) {
+    const oldEl = oldNode as Element
+    const newEl = newNode as Element
+
+    // If tag names differ, replace the entire node
+    if (oldEl.tagName !== newEl.tagName) {
+      oldNode.parentNode?.replaceChild(newNode.cloneNode(true), oldNode)
+      return
+    }
+
+    // Update attributes
+    // Remove old attributes that don't exist in new element
+    const oldAttrs = oldEl.attributes
+    for (let i = oldAttrs.length - 1; i >= 0; i--) {
+      const attrName = oldAttrs[i].name
+      if (!newEl.hasAttribute(attrName)) {
+        oldEl.removeAttribute(attrName)
+      }
+    }
+
+    // Set/update attributes from new element
+    const newAttrs = newEl.attributes
+    for (let i = 0; i < newAttrs.length; i++) {
+      const attr = newAttrs[i]
+      if (oldEl.getAttribute(attr.name) !== attr.value) {
+        oldEl.setAttribute(attr.name, attr.value)
+      }
+    }
+
+    // Recursively update children
+    const oldChildren = Array.from(oldEl.childNodes)
+    const newChildren = Array.from(newEl.childNodes)
+
+    // Update existing children
+    const minLength = Math.min(oldChildren.length, newChildren.length)
+    for (let i = 0; i < minLength; i++) {
+      updateNodeContent(oldChildren[i], newChildren[i])
+    }
+
+    // Remove extra old children
+    for (let i = oldChildren.length - 1; i >= minLength; i--) {
+      oldEl.removeChild(oldChildren[i])
+    }
+
+    // Add new children
+    for (let i = minLength; i < newChildren.length; i++) {
+      oldEl.appendChild(newChildren[i].cloneNode(true))
+    }
+  }
+}
+
 function getPrivateState(component: Component, stateId: string): StoredState | null {
   return getState(component, stateId, false)
 }
@@ -243,7 +311,31 @@ function renderContent(comp: Component, deep: number) {
     comp.components()
       .forEach(c => renderPreview(c, deep+1))
   } else {
-    comp.view!.el.innerHTML = innerHtml!
+    const el = comp.view!.el
+
+    // Parse new HTML into a temporary container
+    const temp = document.createElement('div')
+    temp.innerHTML = innerHtml!
+
+    // Get children from both old and new
+    const oldChildren = Array.from(el.childNodes)
+    const newChildren = Array.from(temp.childNodes)
+
+    // Update existing children
+    const minLength = Math.min(oldChildren.length, newChildren.length)
+    for (let i = 0; i < minLength; i++) {
+      updateNodeContent(oldChildren[i], newChildren[i])
+    }
+
+    // Remove extra old children
+    for (let i = oldChildren.length - 1; i >= minLength; i--) {
+      el.removeChild(oldChildren[i])
+    }
+
+    // Add new children
+    for (let i = minLength; i < newChildren.length; i++) {
+      el.appendChild(newChildren[i].cloneNode(true))
+    }
   }
 }
 
@@ -278,7 +370,7 @@ export function renderPreview(comp: Component, deep = 0) {
         el.remove()
       }
 
-      // For subsequent iterations: clone first, then render into original, then clone again
+      // For subsequent iterations: clone first, then render into original (without diffing), then repeat
       for (let idx = fromIdx - 1; idx >= toIdx; idx--) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
@@ -366,11 +458,21 @@ export function renderPreview(comp: Component, deep = 0) {
         el.insertAdjacentElement('afterend', clone)
 
         // Set preview index for the next iteration and render into original element
+        // NOTE: We skip the diffing here because we're in a loop creating initial elements
+        // Diffing only helps on re-renders, not initial renders
         setPreviewIndexToLoopData(comp, idx)
         const isVisibleAtIdx = isComponentVisible(comp)
 
         if (isVisibleAtIdx) {
-          renderContent(comp, deep)
+          const innerHtml = renderInnerHTML(comp)
+          if (innerHtml === null) {
+            comp.view!.render()
+            comp.components()
+              .forEach(c => renderPreview(c, deep+1))
+          } else {
+            // Just set innerHTML directly without diffing in the loop
+            el.innerHTML = innerHtml
+          }
           renderAttributes(comp)
         } else {
           el.remove()
