@@ -375,11 +375,6 @@ export function renderPreview(comp: Component, deep = 0) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
 
-        // Remove grapesjs selected marker from clone and all its children
-        clone.classList.remove('gjs-selected')
-        const selectedElements = clone.querySelectorAll('.gjs-selected')
-        selectedElements.forEach(element => element.classList.remove('gjs-selected'))
-
         // Keep the selection mechanism - use GrapesJS component API
         clone.addEventListener('click', (event) => {
           const clickedElement = event.target as HTMLElement
