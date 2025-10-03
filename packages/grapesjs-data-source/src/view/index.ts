@@ -43,9 +43,9 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       ${DATA_SOURCE_DATA_LOAD_END}
       style:change
       storage:after:load
-      component
       component:add
       component:remove
+      component:update
     `,
     ...opts.view,
   }
