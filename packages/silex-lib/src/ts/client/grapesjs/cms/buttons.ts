@@ -1,6 +1,6 @@
 import { Editor } from 'grapesjs'
 import { ClientConfig } from '../../config'
-import { COMMAND_REFRESH, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_CANCEL, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_DATA_LOAD_START, DATA_SOURCE_ERROR } from '@silexlabs/grapesjs-data-source'
+import { COMMAND_REFRESH, COMMAND_PREVIEW_ACTIVATE, COMMAND_PREVIEW_DEACTIVATE, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_CANCEL, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_DATA_LOAD_START, DATA_SOURCE_ERROR, COMMAND_PREVIEW_TOGGLE, PREVIEW_DEACTIVATED, PREVIEW_ACTIVATED } from '@silexlabs/grapesjs-data-source'
 
 document.querySelector('head')?.insertAdjacentHTML('beforeend', `
   <style>
@@ -25,6 +25,16 @@ document.querySelector('head')?.insertAdjacentHTML('beforeend', `
       font-weight: 900;
     }
   }
+  .data-source-preview-toggle {
+    &.fa-eye:before {
+      content: "\\f06e";
+      font-weight: 900;
+    }
+    &.fa-eye-slash:before {
+      content: "\\f070";
+      font-weight: 900;
+    }
+  }
   </style>
 `)
 
@@ -40,6 +50,31 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
     },
     togglable: false,
     attributes: { title: 'Refresh data sources' },
+  })
+
+  editor.Panels.addButton('options', {
+    id: 'toggle-data-source-preview',
+    className: 'fa fa-fw data-source-preview-toggle fa-eye',
+    command: COMMAND_PREVIEW_TOGGLE,
+    togglable: true,
+    active: true, // Preview is active by default
+    attributes: { title: 'Disable data source preview' },
+  })
+
+  // Listen for preview activation/deactivation events to update the button icon and tooltip
+  editor.on(PREVIEW_ACTIVATED, () => {
+    const button = editor.Panels.getButton('options', 'toggle-data-source-preview')
+    if (button) {
+      button.set('className', 'fa fa-fw data-source-preview-toggle fa-eye')
+      button.set('attributes', { title: 'Disable data source preview' })
+    }
+  })
+  editor.on(PREVIEW_DEACTIVATED, () => {
+    const button = editor.Panels.getButton('options', 'toggle-data-source-preview')
+    if (button) {
+      button.set('className', 'fa fa-fw data-source-preview-toggle fa-eye-slash')
+      button.set('attributes', { title: 'Enable data source preview' })
+    }
   })
   editor.on(DATA_SOURCE_DATA_LOAD_START, () => {
     const button = editor.Panels.getButton('options', 'refresh-data-sources')
