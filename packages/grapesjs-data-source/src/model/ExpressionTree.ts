@@ -34,28 +34,31 @@ import { DataSourceManagerState } from './dataSourceManager'
  */
 export function getPageExpressions(manager: DataSourceManagerState, page: Page): ComponentExpression[] {
   const result: ComponentExpression[] = []
-  page.getMainComponent().onAll(component => {
-    // Get expressions used by the component from states
-    const states = getStates(component, true).concat(getStates(component, false))
-    states.forEach(state => {
-      if(state.expression) {
-        result.push({
-          expression: state.expression,
-          component,
-        })
-      }
+  const mainComponent = page.getMainComponent()
+  if (mainComponent) {
+    mainComponent.onAll(component => {
+      // Get expressions used by the component from states
+      const states = getStates(component, true).concat(getStates(component, false))
+      states.forEach(state => {
+        if(state.expression) {
+          result.push({
+            expression: state.expression,
+            component,
+          })
+        }
+      })
+      // Get expressions used by the component from attributes
+      Object.values(component.getAttributes()).forEach((value: string) => {
+        const expression = toExpression(value)
+        if(expression) {
+          result.push({
+            expression,
+            component,
+          })
+        }
+      })
     })
-    // Get expressions used by the component from attributes
-    Object.values(component.getAttributes()).forEach((value: string) => {
-      const expression = toExpression(value)
-      if(expression) {
-        result.push({
-          expression,
-          component,
-        })
-      }
-    })
-  })
+  }
   return result
 }
 
