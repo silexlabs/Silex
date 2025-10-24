@@ -10,7 +10,7 @@ import {
 } from './types'
 import { refreshDataSources } from './model/dataSourceManager'
 import { Editor } from 'grapesjs'
-import { doRender } from './view/canvas'
+import { doRender, restoreOriginalRender } from './view/canvas'
 
 // Global state for preview activation
 let isPreviewActive = true
@@ -56,7 +56,8 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       if (isPreviewActive) {
         isPreviewActive = false
         // Force GrapesJS to re-render to show original content
-        forceRender(editor)
+        const main = editor.Pages.getSelected()?.getMainComponent()
+        if (main) restoreOriginalRender(main)
         // Emit event
         editor.trigger(PREVIEW_DEACTIVATED)
       }
@@ -67,12 +68,17 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
   editor.Commands.add(COMMAND_PREVIEW_TOGGLE, {
     run() {
       isPreviewActive = !isPreviewActive
-      // Force GrapesJS to re-render to reflect the toggled state
-      forceRender(editor)
       // Emit event
       if (isPreviewActive) {
+        // Force GrapesJS to re-render to reflect the toggled state
+        forceRender(editor)
+        // Trigger event
         editor.trigger(PREVIEW_ACTIVATED)
       } else {
+        // Force GrapesJS to re-render to show original content
+        const main = editor.Pages.getSelected()?.getMainComponent()
+        if (main) restoreOriginalRender(main)
+        // Trigger event
         editor.trigger(PREVIEW_DEACTIVATED)
       }
     },

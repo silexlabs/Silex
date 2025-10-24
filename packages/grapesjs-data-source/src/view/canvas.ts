@@ -340,6 +340,20 @@ function renderContent(comp: Component, deep: number) {
   }
 }
 
+// Restore original GrapesJS rendering without preview data
+export function restoreOriginalRender(comp: Component) {
+  const view = comp.view
+  if (!view) {
+    return
+  }
+
+  // Force standard GrapesJS render
+  view.render()
+
+  // Recursively restore all children
+  comp.components().forEach(child => restoreOriginalRender(child))
+}
+
 // exported for unit tests only
 export function renderPreview(comp: Component, deep = 0) {
   const view = comp.view
