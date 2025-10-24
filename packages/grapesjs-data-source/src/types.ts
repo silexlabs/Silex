@@ -106,10 +106,14 @@ export const PREVIEW_RENDER_START = 'data-source:start:preview'
 export const PREVIEW_RENDER_END = 'data-source:start:end'
 export const PREVIEW_RENDER_ERROR = 'data-source:start:error'
 
+export const PREVIEW_ACTIVATED = 'data-source:preview:activated'
+export const PREVIEW_DEACTIVATED = 'data-source:preview:deactivated'
+
 export const COMMAND_REFRESH = 'data-source:refresh'
 export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
 export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
 export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
+export const COMMAND_PREVIEW_TOGGLE = 'data-source:preview:toggle'
 
 export type DataSourceType = 'graphql'
 

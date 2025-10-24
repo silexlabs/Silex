@@ -5,6 +5,7 @@ import { fromStored } from '../model/token'
 import { evaluateExpressionTokens, EvaluationContext } from '../model/expressionEvaluator'
 import { getAllDataSources } from '../model/dataSourceRegistry'
 import { getFilters, getPreviewData } from '../model/dataSourceManager'
+import { getPreviewActive } from '../commands'
 
 // DOM diffing function to compare and update nodes only when needed
 function updateNodeContent(oldNode: Node, newNode: Node): void {
@@ -519,7 +520,9 @@ export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   const events = opts.previewRefreshEvents!.split(' ')
   for(const eventName of events) {
     editor.on(eventName, () => {
-      debouncedRender(editor, eventName)
+      if (getPreviewActive()) {
+        debouncedRender(editor, eventName)
+      }
     })
   }
   setTimeout(() => {
