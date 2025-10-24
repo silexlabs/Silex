@@ -47,9 +47,10 @@ export default function (editor, options) {
 
   editor.on('component:selected style:target component:drag:end', () => renderBreadcrumbs())
   function renderBreadcrumbs() {
-    let component = editor.getSelected() ?? editor.Pages.getSelected().getMainComponent()
+    const selectedPage = editor.Pages?.getSelected()
+    let component = editor.getSelected() ?? selectedPage?.getMainComponent()
 
-    if(!breadcrumbsContainer) return
+    if(!breadcrumbsContainer || !component) return
 
     // Clear the breadcrumbs container
     breadcrumbsContainer.innerHTML = ''

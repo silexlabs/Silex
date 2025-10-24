@@ -35,8 +35,10 @@ export const internalLinksPlugin = (editor, opts) => {
   function onAll(cbk) {
     editor.Pages.getAll()
       .forEach(page => {
-        page.getMainComponent()
-          .onAll(cbk)
+        const mainComponent = page.getMainComponent()
+        if (mainComponent) {
+          mainComponent.onAll(cbk)
+        }
       })
   }
   editor.on('page', ({ event, page }) => {

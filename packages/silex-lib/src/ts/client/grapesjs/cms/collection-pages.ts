@@ -73,6 +73,15 @@ export default function (editor: Editor, opts: EleventyPluginOptions): void {
 }
 
 function renderCollectionPageList(editor: Editor, container: HTMLElement) {
+  // Guard: Ensure Pages exist, there are pages, and a selected page has a main component
+  const pages = editor.Pages
+  if (
+    !pages ||
+    pages.getAll().length === 0 ||
+    !pages.getSelected()?.getMainComponent()
+  ) {
+    return
+  }
   render(getHtml(editor), container)
 }
 

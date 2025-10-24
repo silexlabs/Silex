@@ -96,6 +96,9 @@ export const storagePlugin = (editor: PublishableEditor) => {
           // Add the pages to the project
           await progressiveLoadPages(editor, pages)
           await nextFrame()
+          // Trigger symbol update to recount instances now that pages are loaded
+          editor.trigger('symbol')
+          await nextFrame()
           // Select the first page
           const firstPage = editor.Pages.getAll()[0]
           if (firstPage) editor.Pages.select(firstPage)

@@ -21,8 +21,10 @@ import { Component, Editor } from 'grapesjs'
 export function onAll(editor: Editor, cbk: (c: Component) => void) {
   editor.Pages.getAll()
     .forEach(page => {
-      page.getMainComponent()
-        .onAll(c => cbk(c))
+      const mainComponent = page.getMainComponent()
+      if (mainComponent) {
+        mainComponent.onAll(c => cbk(c))
+      }
     })
 }
 
