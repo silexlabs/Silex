@@ -137,7 +137,6 @@
     "grapesjs-style-bg": "^2.0.2",
     "grapesjs-style-border": "1.0.4",
     "grapesjs-style-filter": "^1.0.2",
-    "grapesjs-tailwind": "^1.0.11",
     "html-minifier": "^4.0.0",
     "lit-html": "3.2.1",
     "mkdirp": "3.0.1",

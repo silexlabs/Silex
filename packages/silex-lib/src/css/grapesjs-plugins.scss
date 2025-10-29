@@ -231,33 +231,33 @@
   border-bottom: solid $primaryColor 7px;
 }
 
-// grapesjs-tailwind plugin
-/* Make blocks full width */
-.gjs-block.block-full-width {
-    padding: 0 !important;
-    width: 100% !important;
-    min-height: auto !important;
-}
-
-/* Fit icons properly */
-.gjs-block.block-full-width svg {
-    width: 100%;
-}
-body, html {
-  margin: 0;
-  height: 100%;
-}
-
-.change-theme-button {
-  width: 40px;
-  height: 40px;
-  border: none;
-  margin: 5px;
-  cursor: pointer;
-}
-
-.change-theme-button:focus {
-  /* background-color: yellow; */
-  outline: none;
-  box-shadow: 0 0 0 2pt #c5c5c575;
-}
+// // grapesjs-tailwind plugin
+// /* Make blocks full width */
+// .gjs-block.block-full-width {
+//     padding: 0 !important;
+//     width: 100% !important;
+//     min-height: auto !important;
+// }
+//
+// /* Fit icons properly */
+// .gjs-block.block-full-width svg {
+//     width: 100%;
+// }
+// body, html {
+//   margin: 0;
+//   height: 100%;
+// }
+//
+// .change-theme-button {
+//   width: 40px;
+//   height: 40px;
+//   border: none;
+//   margin: 5px;
+//   cursor: pointer;
+// }
+//
+// .change-theme-button:focus {
+//   /* background-color: yellow; */
+//   outline: none;
+//   box-shadow: 0 0 0 2pt #c5c5c575;
+// }
