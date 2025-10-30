@@ -476,6 +476,18 @@ export async function initEditor(config: EditorConfig) {
       views.buttons.remove(cmdToggleBlocks)
       views.buttons.remove(cmdToggleLayers)
 
+      // Select body when changing pages
+      // This includes initial loading, as the 1st page is selected in storage
+      editor.on('page:select', () => {
+        // Only select wrapper if nothing else is selected
+        if (!editor.getSelected()) {
+          const wrapper = editor.getWrapper()
+          if (wrapper) {
+            editor.select(wrapper)
+          }
+        }
+      })
+
       // Remove useless buttons
       editor.Panels.getPanel('options').buttons.remove('export-template')
       editor.Panels.getPanel('options').buttons.remove('fullscreen')
