@@ -29,7 +29,7 @@ export default (editor: Editor, opts) => {
     placeholderSrc: '/assets/placeholder.png',
     // These default values will never be used,
     // as there is default values in config
-    replacedElements: ['img'],
+    replacedElements: ['img', 'li', 'video'],
     // Override with provided config
     ...opts,
   }

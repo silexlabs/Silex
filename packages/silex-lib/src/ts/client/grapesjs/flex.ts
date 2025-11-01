@@ -42,47 +42,67 @@ const FLEX_ITEM_PROPS = [
 export default (editor: Editor) => {
   editor.on('load', () => {
     const sector = editor.StyleManager.getSector('flex')
-    // Add missing sectors
-    // FIXME: this makes grapesjs bug, all other props disappear
-    // FLEX_PROPS
-    //   .concat(FLEX_ITEM_PROPS)
-    //   .forEach(id => {
-    //     if (!sector.getProperty(id)) {
-    //       editor.StyleManager.addProperty('flex', {
-    //         id,
-    //       })
-    //     }
-    //   })
-    // Listen to the events that should trigger a visibility check
-    editor.on('component:selected', comp => applyVisibility(comp))
-    // `change:visible` is a workaround grapesjs behavior: https://github.com/GrapesJS/grapesjs/issues/3123
-    editor.on('change:visible', applyVisibility)
-    // `style:property:update` is useful for instantly display the flex sector when selecting display: inline-flex;
-    editor.on('style:property:update', () => applyVisibility())
-    function applyVisibility(comp: Component = editor.getSelected()) {
-      editor.off('change:visible', applyVisibility) // Avoid infinite loop
-      requestAnimationFrame(() => {
-        if(!comp) return // No selection yet
-        const computedDisplay = comp?.view?.el && getComputedStyle(comp.view.el)['display'] as string || ''
-        const isFlex = computedDisplay === 'flex' || computedDisplay === 'inline-flex'
-        const parent = comp.parent()
-        const parentComputedDisplay = parent?.view?.el && getComputedStyle(parent.view.el)['display'] as string || ''
-        const parentIsFlex = parentComputedDisplay === 'flex' || parentComputedDisplay === 'inline-flex'
-        if (parentIsFlex || isFlex) {
-          sector.set('visible', true)
-        }
-        if (parentIsFlex && isFlex) {
-          sector.getProperties()
-            .forEach(p => p.set('visible', true))
-        } else if (isFlex) {
-          sector.getProperties()
-            .forEach(p => p.set('visible', FLEX_PROPS.includes(p.getId())))
-        } else if (parentIsFlex) {
-          sector.getProperties()
-            .forEach(p => p.set('visible', FLEX_ITEM_PROPS.includes(p.getId())))
-        }
-        editor.on('change:visible', applyVisibility)
+
+    let showSector = false
+    let visibleProps: string[] = []
+
+    // Update visibility depending on selected component
+    function updateVisibility(comp: Component) {
+      const computedDisplay = comp?.view?.el && getComputedStyle(comp.view.el)['display'] as string || ''
+      const isFlex = computedDisplay === 'flex' || computedDisplay === 'inline-flex'
+      const parent = comp.parent()
+      const parentComputedDisplay = parent?.view?.el && getComputedStyle(parent.view.el)['display'] as string || ''
+      const parentIsFlex = parentComputedDisplay === 'flex' || parentComputedDisplay === 'inline-flex'
+
+      // Determine which props should be visible
+      const newVisibleProps: string[] = []
+      if (isFlex) newVisibleProps.push(...FLEX_PROPS)
+      if (parentIsFlex) newVisibleProps.push(...FLEX_ITEM_PROPS)
+
+      // Set sector visibility
+      showSector = parentIsFlex || isFlex
+      sector.set('visible', showSector)
+
+      // Set property visibility
+      visibleProps = newVisibleProps
+      sector.getProperties().forEach(p => {
+        p.set('visible', visibleProps.includes(p.getId()))
       })
     }
+
+    // Listen to the events that should trigger a visibility check
+    editor.on('component:selected', (comp: Component) => {
+      if (!comp) return
+      updateVisibility(comp)
+    })
+
+    // `style:property:update` is useful for instantly display the flex sector when selecting display: inline-flex;
+    editor.on('style:property:update', () => {
+      const comp = editor.getSelected()
+      if (comp) updateVisibility(comp)
+    })
+
+    // Watch changes made by grapesjs and revert them if needed
+    function doubleCheckSector() {
+      if (sector.get('visible') !== showSector) {
+        sector.off('change:visible', doubleCheckSector)
+        sector.set('visible', showSector)
+        sector.on('change:visible', doubleCheckSector)
+      }
+    }
+    sector.on('change:visible', doubleCheckSector)
+
+    // Watch property visibility changes
+    sector.getProperties().forEach(p => {
+      function doubleCheckProp() {
+        const shouldBeVisible = visibleProps.includes(p.getId())
+        if (p.get('visible') !== shouldBeVisible) {
+          p.off('change:visible', doubleCheckProp)
+          p.set('visible', shouldBeVisible)
+          p.on('change:visible', doubleCheckProp)
+        }
+      }
+      p.on('change:visible', doubleCheckProp)
+    })
   })
 }

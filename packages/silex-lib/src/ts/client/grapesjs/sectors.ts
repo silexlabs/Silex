@@ -43,17 +43,25 @@ export function registerSector(editor: Editor, config: SectorConfig, at?: number
     }
   })
 
-  async function applyVisibility(comp: Component = editor.getSelected()) {
+  // Update visibility depending on selected component
+  let showSector = false
+  editor.on('component:selected', async (comp: Component) => {
+    if (!comp) return // No selection yet
     const shouldShow = await config.shouldShow(comp)
-    if (sector.get('visible') !== shouldShow) {
-      sector.off('change:visible', applyVisibility)
-      sector.set('visible', shouldShow)
-      sector.on('change:visible', applyVisibility)
-      // sector.getProperties()
-      //   .forEach(p => p.set('visible', shouldShow))
+    showSector = shouldShow
+    sector.set('visible', shouldShow)
+    sector.getProperties().forEach(p => p.set('visible', shouldShow))
+  })
+
+  // Watch changes made by grapesjs and revert them if needed
+  function doubleCheck() {
+    if (sector.get('visible') !== showSector) {
+      sector.off('change:visible', doubleCheck)
+      sector.set('visible', showSector)
+      sector.getProperties().forEach(p => p.set('visible', showSector))
+      sector.on('change:visible', doubleCheck)
     }
   }
-
-  sector.on('change:visible', applyVisibility)
-  editor.on('component:selected', comp => applyVisibility(comp))
+  sector.on('change:visible', doubleCheck)
 }
+
