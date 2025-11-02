@@ -216,6 +216,17 @@
 
 .fa-diamond:before {
   content: "\f3a5";
+  font-weight: 900;
+}
+
+.fa-rotate-left:before {
+  content: "\f2ea";
+  font-weight: 900;
+}
+
+.fa-rotate-right:before {
+  content: "\f2f9";
+  font-weight: 900;
 }
 
 // Display dots when a sector has a style

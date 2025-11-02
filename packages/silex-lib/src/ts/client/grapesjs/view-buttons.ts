@@ -16,12 +16,27 @@
  *
  */
 
+import { Editor } from 'grapesjs'
+
 const pasteBtnClass = 'fa fa-fw fa-paste silex-button'
+const undoBtnClass = 'fa fa-fw fa-rotate-left silex-button'
+const redoBtnClass = 'fa fa-fw fa-rotate-right silex-button'
 const disabledClass = ' disabled'
 
-export default function(editor) {
-  // Add copy/paste buttons in the top bar
-  const [copyBtn, pasteBtn] = editor.Panels.addButton('options', [{
+export default function(editor: Editor) {
+  // Add undo/redo and copy/paste buttons in the top bar
+  // Add undo/redo and copy/paste buttons in the top bar
+  editor.Panels.addButton('options', [{
+    id: 'undo',
+    className: undoBtnClass + disabledClass,
+    command: () => editor.UndoManager.undo(),
+    attributes: { title: 'Undo (Ctrl+Z)' },
+  }, {
+    id: 'redo',
+    className: redoBtnClass + disabledClass,
+    command: () => editor.UndoManager.redo(),
+    attributes: { title: 'Redo (Ctrl+Shift+Z)' },
+  }, {
     id: 'copy',
     className: 'fa fa-fw fa-copy',
     command: 'core:copy',
@@ -33,6 +48,27 @@ export default function(editor) {
     attributes: { title: 'Paste (Ctrl+V)' },
     active: false,
   }])
+
+  // Get buttons after creation
+  const undoBtn = editor.Panels.getButton('options', 'undo')
+  const redoBtn = editor.Panels.getButton('options', 'redo')
+  const pasteBtn = editor.Panels.getButton('options', 'paste')
+
+  // Update undo/redo button states based on UndoManager
+  const updateUndoRedoButtons = () => {
+    const hasUndo = editor.UndoManager.hasUndo()
+    const hasRedo = editor.UndoManager.hasRedo()
+    undoBtn.set('className', undoBtnClass + (hasUndo ? '' : disabledClass))
+    redoBtn.set('className', redoBtnClass + (hasRedo ? '' : disabledClass))
+  }
+
+  // Listen for changes in the undo stack
+  editor.on('change:changesCount', updateUndoRedoButtons)
+  editor.on('undo', updateUndoRedoButtons)
+  editor.on('redo', updateUndoRedoButtons)
+
+  // Initial state
+  updateUndoRedoButtons()
 
   // Disable paste button if clipboard is empty
   editor.EditorModel.on('change:clipboard', (model, value) => {

@@ -55,7 +55,7 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
   const panelButtons = panel.get('buttons')
 
   // Add data source buttons at the beginning of the options panel
-  const refreshBtn = panelButtons.add([{
+  panelButtons.add([{
     id: 'refresh-data-sources',
     className: `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`,
     command: () => {
@@ -72,7 +72,7 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
       stop: () => editor.runCommand(COMMAND_PREVIEW_DEACTIVATE),
     },
     togglable: true,
-    active: false,
+    active: true,
     attributes: { title: 'Enable data source preview (Ctrl+Alt+V)' },
   }, {
     // Visual separator after data source buttons
