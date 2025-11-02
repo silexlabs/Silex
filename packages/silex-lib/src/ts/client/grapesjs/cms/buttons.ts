@@ -26,14 +26,23 @@ document.querySelector('head')?.insertAdjacentHTML('beforeend', `
     }
   }
   .data-source-preview-toggle {
-    &.fa-eye:before {
-      content: "\\f06e";
+    &.fa-table:before {
+      content: "\\f0ce";
       font-weight: 900;
     }
-    &.fa-eye-slash:before {
-      content: "\\f070";
-      font-weight: 900;
+    &.gjs-pn-active {
+      background-color: rgba(0, 0, 0, 0.15);
     }
+  }
+  .gjs-pn-btn.data-source-separator {
+    min-width: 1px;
+    height: 24px;
+    min-height: auto;
+    background-color: rgba(255, 255, 255, 0.2);
+    margin: 0 15px 0 10px;
+    padding: 0;
+    pointer-events: none;
+    cursor: default;
   }
   </style>
 `)
@@ -41,7 +50,12 @@ document.querySelector('head')?.insertAdjacentHTML('beforeend', `
 const REFRESH_BUTTON_BASE_CLASS = 'fa fa-fw data-source-refresh'
 
 export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
-  editor.Panels.addButton('options', {
+  // Get the panel to add buttons at specific positions
+  const panel = editor.Panels.getPanel('options')
+  const panelButtons = panel.get('buttons')
+
+  // Add data source buttons at the beginning of the options panel
+  const refreshBtn = panelButtons.add([{
     id: 'refresh-data-sources',
     className: `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`,
     command: () => {
@@ -49,38 +63,49 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
       editor.runCommand(COMMAND_REFRESH)
     },
     togglable: false,
-    attributes: { title: 'Refresh data sources' },
-  })
-
-  editor.Panels.addButton('options', {
+    attributes: { title: 'Refresh data sources (reload dynamic content) - Ctrl+Alt+R' },
+  }, {
     id: 'toggle-data-source-preview',
-    className: 'fa fa-fw data-source-preview-toggle fa-eye',
-    command: COMMAND_PREVIEW_TOGGLE,
+    className: 'fa fa-fw data-source-preview-toggle fa-table',
+    command: {
+      run: () => editor.runCommand(COMMAND_PREVIEW_ACTIVATE),
+      stop: () => editor.runCommand(COMMAND_PREVIEW_DEACTIVATE),
+    },
     togglable: true,
-    active: true, // Preview is active by default
-    attributes: { title: 'Disable data source preview' },
-  })
+    active: false,
+    attributes: { title: 'Enable data source preview (Ctrl+Alt+V)' },
+  }, {
+    // Visual separator after data source buttons
+    id: 'data-source-separator',
+    className: 'data-source-separator',
+    command: () => {}, // No action on click
+    togglable: false,
+    attributes: { title: '' },
+  }], { at: 0 })
 
   // Listen for preview activation/deactivation events to update the button icon and tooltip
   editor.on(PREVIEW_ACTIVATED, () => {
     const button = editor.Panels.getButton('options', 'toggle-data-source-preview')
     if (button) {
-      button.set('className', 'fa fa-fw data-source-preview-toggle fa-eye')
-      button.set('attributes', { title: 'Disable data source preview' })
+      button.set('active', true)
+      button.set('attributes', { title: 'Disable data source preview (Ctrl+Alt+V)' })
     }
   })
   editor.on(PREVIEW_DEACTIVATED, () => {
     const button = editor.Panels.getButton('options', 'toggle-data-source-preview')
     if (button) {
-      button.set('className', 'fa fa-fw data-source-preview-toggle fa-eye-slash')
-      button.set('attributes', { title: 'Enable data source preview' })
+      button.set('active', false)
+      button.set('attributes', { title: 'Enable data source preview (Ctrl+Alt+V)' })
     }
   })
+
+  // Listen for preview activation/deactivation events to update the button tooltip and style
+  // The button now handles its own state, so these listeners are not needed.
   editor.on(DATA_SOURCE_DATA_LOAD_START, () => {
     const button = editor.Panels.getButton('options', 'refresh-data-sources')
     if (button) {
       button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-spinner`)
-      button.set('title', 'Refreshing data sources')
+      button.set('title', 'Refreshing data sources (loading dynamic content)...')
     }
   })
   editor.on(`
@@ -90,7 +115,7 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
     const button = editor.Panels.getButton('options', 'refresh-data-sources')
     if (button) {
       button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`)
-      button.set('title', 'Refresh data sources')
+      button.set('title', 'Refresh data sources (reload dynamic content) - Ctrl+Alt+R')
     }
   })
   editor.on(DATA_SOURCE_ERROR, (error: Error) => {
@@ -100,5 +125,13 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
       button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-exclamation-triangle`)
       button.set('title', 'Error refreshing data sources, check the notifications')
     }
+  })
+
+  // Add keyboard shortcuts
+  editor.Keymaps.add('data-source:refresh', 'ctrl+alt+r', COMMAND_REFRESH, {
+    prevent: true,
+  })
+  editor.Keymaps.add('data-source:preview-toggle', 'ctrl+alt+v', COMMAND_PREVIEW_TOGGLE, {
+    prevent: true,
   })
 }
