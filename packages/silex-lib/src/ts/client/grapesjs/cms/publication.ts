@@ -8,8 +8,7 @@ import { ClientConfig } from '../../config'
 import { UNWRAP_ID } from './traits'
 import { EleventyDataSourceId } from './DataSource'
 import { ClientEvent } from '../../events'
-import { WebsiteSettings } from '../../../types'
-import { ClientSideFile, ClientSideFileType, ClientSideFileWithContent, PublicationData } from '@silexlabs/silex/src/ts/types'
+import { WebsiteSettings, ClientSideFile, ClientSideFileType, ClientSideFileWithContent, PublicationData  } from '../../../types'
 
 const ATTRIBUTE_MULTIPLE_VALUES = ['class', 'style']
 
