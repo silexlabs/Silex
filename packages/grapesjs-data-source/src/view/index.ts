@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DataSourceEditorOptions, DataSourceEditorViewOptions, Properties } from '../types'
+import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, COMPONENT_STATE_CHANGED, DataSourceEditorOptions, DataSourceEditorViewOptions, Properties } from '../types'
 import { PROPERTY_STYLES } from './defaultStyles'
 
 import { PropertiesEditor } from './properties-editor'
@@ -41,11 +41,11 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
     previewRefreshEvents: `
       ${DATA_SOURCE_CHANGED}
       ${DATA_SOURCE_DATA_LOAD_END}
-      style:change
+      ${COMPONENT_STATE_CHANGED}
+      component:update:classes
       storage:after:load
       component:add
       component:remove
-      component:update
     `,
     ...opts.view,
   }

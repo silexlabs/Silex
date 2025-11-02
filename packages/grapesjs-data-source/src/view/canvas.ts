@@ -503,7 +503,9 @@ export function renderPreview(comp: Component, deep = 0) {
 }
 
 export function doRender(editor: Editor) {
+  console.log('[DATA-SOURCE-PREVIEW] doRender() called - rewriting entire DOM tree')
   if(!editor.getWrapper()?.view?.el) {
+    console.log('[DATA-SOURCE-PREVIEW] No wrapper element found, skipping render')
     return
   }
   try {
@@ -512,6 +514,7 @@ export function doRender(editor: Editor) {
 
     requestAnimationFrame(() => {
       editor.trigger(PREVIEW_RENDER_END)
+      console.log('[DATA-SOURCE-PREVIEW] Render complete')
     })
   } catch (err) {
     editor.trigger(PREVIEW_RENDER_ERROR, err)
@@ -522,9 +525,13 @@ export function doRender(editor: Editor) {
 let renderTimeoutId: NodeJS.Timeout | null = null
 let debounceDelay = 500
 function debouncedRender(editor: Editor, eventName: string) {
-  if (renderTimeoutId) clearTimeout(renderTimeoutId)
+  console.log(`[DATA-SOURCE-PREVIEW] Scheduling render (debounced) for event "${eventName}", delay: ${debounceDelay}ms`)
+  if (renderTimeoutId) {
+    console.log('[DATA-SOURCE-PREVIEW] Clearing previous render timeout')
+    clearTimeout(renderTimeoutId)
+  }
   renderTimeoutId = setTimeout(() => {
-    console.info('Refresh preview started because of event', eventName)
+    console.info('[DATA-SOURCE-PREVIEW] Refresh preview started because of event', eventName)
     doRender(editor)
     renderTimeoutId = null
   }, debounceDelay)
@@ -534,6 +541,11 @@ export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   const events = opts.previewRefreshEvents!.split(' ')
   for(const eventName of events) {
     editor.on(eventName, () => {
+      console.log(`[DATA-SOURCE-PREVIEW] Event "${eventName}" fired`, {
+        previewActive: getPreviewActive(),
+        selected: editor.getSelected()?.getName?.(),
+        selectedId: editor.getSelected()?.getId?.(),
+      })
       if (getPreviewActive()) {
         debouncedRender(editor, eventName)
       }
