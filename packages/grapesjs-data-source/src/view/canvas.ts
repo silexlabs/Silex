@@ -390,6 +390,8 @@ export function renderPreview(comp: Component, deep = 0) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
 
+        clone.classList.remove('gjs-selected')
+
         // Keep the selection mechanism - use GrapesJS component API
         clone.addEventListener('click', (event) => {
           const clickedElement = event.target as HTMLElement
