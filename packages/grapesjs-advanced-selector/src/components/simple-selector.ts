@@ -88,6 +88,10 @@ export default class SimpleSelectorComponent extends StylableElement {
     section:hover header {
       width: 0;
     }
+    section.asm-simple-selector__id:focus-within header,
+    section.asm-simple-selector__id:hover header {
+      width: 12px;
+    }
     footer {
       width: 0;
       transition: all .2s ease-out;
@@ -96,6 +100,10 @@ export default class SimpleSelectorComponent extends StylableElement {
     section:focus-within footer,
     section:hover footer {
       width: 12px;
+    }
+    section.asm-simple-selector__id:focus-within footer,
+    section.asm-simple-selector__id:hover footer {
+      width: 0;
     }
     select {
       text-align: center;
@@ -186,6 +194,7 @@ export default class SimpleSelectorComponent extends StylableElement {
     if(!this.value) return html`<div>Initializing</div>`
     return html`
     <section
+      class="${this.value.type === SimpleSelectorType.ID ? 'asm-simple-selector__id' : ''}"
       tabindex="0"
       @keydown=${(event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
@@ -204,22 +213,24 @@ export default class SimpleSelectorComponent extends StylableElement {
       </header>
       ${ this.renderMain() }
       <footer>
-        <button
-          .title=${ this.t('Delete') }
-          class="gjs-btn-prim asm-simple-selector__delete-button"
-          @keydown=${(event: KeyboardEvent) => {
+        ${this.value.type !== SimpleSelectorType.ID ? html`
+          <button
+            .title=${ this.t('Delete') }
+            class="gjs-btn-prim asm-simple-selector__delete-button"
+            @keydown=${(event: KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.stopPropagation()
     }
   }}
-          @click=${(event: MouseEvent) => {
+            @click=${(event: MouseEvent) => {
     this.dispatchEvent(new CustomEvent('delete', { detail: this.value }))
     // Avoid check/uncheck the "active" checkbox
     event.stopPropagation()
   }}
-        >
-          &times;
-        </button>
+          >
+            &times;
+          </button>
+        ` : ''}
         <input
           type="checkbox"
           autocomplete="off"
