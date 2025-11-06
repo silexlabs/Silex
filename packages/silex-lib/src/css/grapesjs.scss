@@ -233,6 +233,11 @@
 .gjs-sm-sector .gjs-sm-sector-label {
     margin-right: 0.3em
 }
+
+.fa-grip-vertical:before {
+  content: "\f58e";
+  font-weight: 900;
+}
 .gjs-sm-sector .gjs-sm-sector-title::before,
 .gjs-sm-sector .gjs-sm-sector-title::after {
     content: 'o';

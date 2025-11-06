@@ -142,6 +142,92 @@ function renderPages(editor, config) {
     e.stopPropagation()
     return editor.Pages.get(el.getAttribute('data-page-id'))
   }
+
+  // Drag and drop handlers
+  let draggedPage: Page | null = null
+  let draggedPageElement: HTMLElement | null = null
+
+  const handleDragStart = (e: DragEvent, page: Page) => {
+    e.stopPropagation()
+    draggedPage = page
+    // Find the parent page element
+    draggedPageElement = (e.target as HTMLElement).closest('.pages__page') as HTMLElement
+    if (e.dataTransfer && draggedPageElement) {
+      e.dataTransfer.effectAllowed = 'move'
+      e.dataTransfer.setData('text/html', draggedPageElement.innerHTML)
+      draggedPageElement.classList.add('pages__page-dragging')
+    }
+  }
+
+  const handleDragEnd = (e: DragEvent) => {
+    if (draggedPageElement) {
+      draggedPageElement.classList.remove('pages__page-dragging')
+    }
+    draggedPage = null
+    draggedPageElement = null
+  }
+
+  const handleDragOver = (e: DragEvent) => {
+    if (!draggedPage) return
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move'
+    }
+    return false
+  }
+
+  const handleDragEnter = (e: DragEvent, page: Page) => {
+    if (draggedPage && draggedPage !== page) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+  }
+
+  const handleDragLeave = (e: DragEvent) => {
+    // No-op: visual indicator removed
+  }
+
+  const handleDrop = (e: DragEvent, targetPage: Page) => {
+    e.stopPropagation()
+    e.preventDefault()
+
+    if (draggedPage && draggedPage !== targetPage) {
+      const pages = editor.Pages.getAll()
+      const fromIndex = pages.indexOf(draggedPage)
+      const toIndex = pages.indexOf(targetPage)
+
+      if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+        // Access the internal Backbone collection
+        const pagesCollection = (editor.Pages as any).pages
+
+        // Assign temporary order attributes for sorting
+        pages.forEach((page, idx) => {
+          let newOrder = idx
+          if (idx === fromIndex) {
+            newOrder = toIndex
+          } else if (fromIndex < toIndex && idx > fromIndex && idx <= toIndex) {
+            newOrder = idx - 1
+          } else if (fromIndex > toIndex && idx >= toIndex && idx < fromIndex) {
+            newOrder = idx + 1
+          }
+          page.set('_tempOrder', newOrder, { silent: true })
+        })
+
+        // Sort the collection by the temporary order
+        const originalComparator = pagesCollection.comparator
+        pagesCollection.comparator = (page: Page) => page.get('_tempOrder')
+        pagesCollection.sort()
+        pagesCollection.comparator = originalComparator
+
+        // Clean up temporary attributes
+        pages.forEach(page => page.unset('_tempOrder', { silent: true }))
+      }
+    }
+
+    return false
+  }
+
   return html`<section class="pages">
     <main class="pages__main ${pages.length === 1 ? 'pages__single-page' : ''}">
       <div class="pages__list">
@@ -150,8 +236,22 @@ function renderPages(editor, config) {
     const name = page.getName() || type
     // keep the same structure as the layers panel
     return html`
-           <div class="pages__page ${selected === page ? 'pages__page-selected' : ''}" data-page-id=${page.id} @click=${e => selectPage(editor, getPageFromEvent(e))}>
+           <div
+             class="pages__page ${selected === page ? 'pages__page-selected' : ''}"
+             data-page-id=${page.id}
+             @click=${e => selectPage(editor, getPageFromEvent(e))}
+             @dragover=${handleDragOver}
+             @dragenter=${(e: DragEvent) => handleDragEnter(e, page)}
+             @dragleave=${handleDragLeave}
+             @drop=${(e: DragEvent) => handleDrop(e, page)}
+           >
              <div class="pages__page-name">
+               <i
+                 class="pages__icon pages__drag-handle fa fa-grip-vertical"
+                 draggable="true"
+                 @dragstart=${(e: DragEvent) => handleDragStart(e, page)}
+                 @dragend=${handleDragEnd}
+               ></i>
                ${ name }
              </div>
              <i class="pages__icon pages__remove-btn fa fa-trash" @click=${e => removePage(editor, getPageFromEvent(e))}></i>

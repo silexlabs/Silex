@@ -19,13 +19,21 @@
       align-items: center;
       background-color: $darkerPrimaryColor;
       border-bottom: 1px solid rgba(0, 0, 0, 0.25);
-      cursor: pointer;
+      cursor: cursor;
+      transition: opacity 0.2s ease, background-color 0.2s ease;
       &:hover {
         background-color: $primaryColor;
         .pages__page-name {
           color: $quaternaryColor;
         }
       }
+      &:active {
+        cursor: grabbing;
+      }
+    }
+    .pages__page-dragging {
+      opacity: 0.4;
+      cursor: grabbing !important;
     }
     .pages__page-selected {
       background-color: $lighterPrimaryColor;
@@ -41,19 +49,30 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      height: 13px;
-      font-size: initial;
+      font-size: 13px;
       text-transform: capitalize;
-      padding: 10px 6px;
+      padding: 6px;
       flex: 1;
       text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     .pages__icon {
-      padding: 10px 6px;
+      padding: 6px;
       cursor: pointer;
+      font-size: 12px;
     }
     .pages__icon:hover {
       color: $quaternaryColor;
+    }
+    .pages__drag-handle {
+      cursor: grab;
+      opacity: 0.6;
+      flex-shrink: 0;
+      &:hover {
+        opacity: 1;
+      }
     }
   }
   .#{$pn-prefix}buttons {
