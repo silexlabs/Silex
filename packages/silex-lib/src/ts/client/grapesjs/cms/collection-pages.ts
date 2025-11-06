@@ -172,24 +172,33 @@ function getItemDisplayName(editor: Editor, index: number): string {
     const settings = page?.get('settings') as Silex11tyPluginWebsiteSettings | undefined
 
     const body = page?.getMainComponent()
-    if (!body) return
+    if (!body) return `Page ${index + 1}`
 
-    if (settings?.eleventySeoTitle || settings?.eleventyPermalink) {
-      // Parse the permalink expression
-      const nameExpression = toExpression(settings.eleventySeoTitle || settings.eleventyPermalink)
-
-      if (Array.isArray(nameExpression) && nameExpression.length > 0) {
-        const name = getValue(nameExpression, body, false)
-        if (typeof name === 'string') return name
+    // Try SEO title first
+    if (settings?.eleventySeoTitle) {
+      const titleExpression = toExpression(settings.eleventySeoTitle)
+      if (Array.isArray(titleExpression) && titleExpression.length > 0) {
+        const title = getValue(titleExpression, body, false)
+        if (typeof title === 'string' && title.trim()) return title
       }
     }
-    return `Page ${index}`
-  } catch (e) {
-    console.error('Error generating permalink for item:', e)
-  }
 
-  // Final fallback to index-based name
-  return `Page ${index + 1}`
+    // Try permalink second
+    if (settings?.eleventyPermalink) {
+      const permalinkExpression = toExpression(settings.eleventyPermalink)
+      if (Array.isArray(permalinkExpression) && permalinkExpression.length > 0) {
+        const permalink = getValue(permalinkExpression, body, false)
+        if (typeof permalink === 'string' && permalink.trim()) return permalink
+      }
+    }
+
+    // Final fallback to index-based name (1-indexed)
+    return `Page ${index + 1}`
+  } catch (e) {
+    console.error('Error generating display name for item:', e)
+    // Final fallback to index-based name (1-indexed)
+    return `Page ${index + 1}`
+  }
 }
 
 function handleItemClick(editor: Editor, index: number) {
