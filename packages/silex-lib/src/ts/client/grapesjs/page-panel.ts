@@ -59,13 +59,27 @@ function clonePage(editor: Editor, page: Page) {
   while(pages.find(p => p.getName() === pageName)) {
     pageName = `${newPageName} ${idx++}`
   }
-  // Clone components
-  const body = page.getMainComponent().clone()
-  // Add page
+
+  // Clone components using Backbone approach
+  const sourceBody = page.getMainComponent()
+  const clonedComponents = sourceBody.clone()
+
+  // Get custom props but exclude frames (Backbone collection) using toJSON and delete
+  const customProps = { ...page.toJSON() }
+  delete customProps.frames
+  delete customProps.id
+  delete customProps._undo
+
+  // Create new page with custom props (but not frames collection)
   const newPage = editor.Pages.add({
+    ...customProps,
     name: pageName,
-    component: body.toJSON(),
   })
+
+  // Reset components with cloned ones
+  const targetBody = newPage.getMainComponent()
+  targetBody.components().reset(clonedComponents.components().models)
+
   // Select the new page
   editor.Pages.select(newPage)
 }
