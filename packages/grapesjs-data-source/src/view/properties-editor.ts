@@ -177,7 +177,6 @@ export class PropertiesEditor extends LitElement {
         name=${name}
         default-fixed=${this.defaultFixed}
         ?hide-loop-data=${hideLoopData}
-        ?show-preview-index-ui=${name === Properties.__data}
         ${ref(el => {
     // Get the stateEditor ref
     if (el) {

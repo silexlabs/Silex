@@ -356,24 +356,5 @@ export const PROPERTY_STYLES = `
       margin-bottom: 10px;
       text-align: right;
     }
-    .ds-real-data__preview-index {
-      display: flex;
-      input {
-        margin: 10px;
-      }
-      input[type="range"] {
-        flex-grow: 1;
-      }
-      input[type="number"] {
-        color: white;
-        background-color: var(--ds-lowlight);
-        border-radius: 2px;
-        box-sizing: border-box;
-        margin: 10px;
-        border: none;
-        padding: 5px;
-        padding-left: 10px;
-      }
-    }
   }
 `
