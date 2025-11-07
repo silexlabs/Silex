@@ -40,6 +40,10 @@ const tagCategories = [
     tags: ['ADDRESS', 'BLOCKQUOTE', 'PRE'],
   },
   {
+    label: 'Lists',
+    tags: ['UL', 'OL', 'LI'],
+  },
+  {
     label: 'Interactive/form',
     tags: ['BUTTON', 'LABEL', 'DETAILS', 'SUMMARY'],
   },
