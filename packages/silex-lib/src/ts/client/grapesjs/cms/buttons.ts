@@ -58,76 +58,102 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
   panelButtons.add([{
     id: 'refresh-data-sources',
     className: `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`,
-    command: () => {
-      // Refresh all data sources
-      editor.runCommand(COMMAND_REFRESH)
-    },
+    command: COMMAND_REFRESH,
     togglable: false,
-    attributes: { title: 'Refresh data sources (reload dynamic content) - Ctrl+Alt+R' },
+    attributes: { title: 'Refresh data sources (reload dynamic content) - Ctrl+Alt+R' }
   }, {
     id: 'toggle-data-source-preview',
-    className: 'fa fa-fw data-source-preview-toggle fa-table',
-    command: {
-      run: () => editor.runCommand(COMMAND_PREVIEW_ACTIVATE),
-      stop: () => editor.runCommand(COMMAND_PREVIEW_DEACTIVATE),
-    },
-    togglable: true,
-    active: true,
-    attributes: { title: 'Enable data source preview (Ctrl+Alt+V)' },
+    className: 'fa fa-fw data-source-preview-toggle fa-table gjs-pn-active gjs-four-color',
+    command: COMMAND_PREVIEW_TOGGLE,
+    togglable: false,
+    attributes: { title: 'Enable/Disable data source preview (Ctrl+Alt+V)' }
   }, {
-    // Visual separator after data source buttons
+    // Separator for visual grouping of data source buttons in the panel
     id: 'data-source-separator',
     className: 'data-source-separator',
-    command: () => {}, // No action on click
+    command: () => {},
     togglable: false,
-    attributes: { title: '' },
+    attributes: { title: '' }
   }], { at: 0 })
 
-  // Listen for preview activation/deactivation events to update the button icon and tooltip
-  editor.on(PREVIEW_ACTIVATED, () => {
+  // Update the preview toggle button's tooltip and visual state based on activation
+  let isActive = true
+  function updatePreviewActiveButton(editor) {
     const button = editor.Panels.getButton('options', 'toggle-data-source-preview')
     if (button) {
-      button.set('active', true)
-      button.set('attributes', { title: 'Disable data source preview (Ctrl+Alt+V)' })
+      button.set('attributes', {
+        title: isActive
+          ? 'Disable data source preview (Ctrl+Alt+V)'
+          : 'Enable data source preview (Ctrl+Alt+V)'
+      })
     }
+    const el = getPanelButtonEl(editor, 'options', '.data-source-preview-toggle')
+    if (el) {
+      if (isActive) {
+        el.classList.add('gjs-pn-active', 'gjs-four-color')
+      } else {
+        el.classList.remove('gjs-pn-active', 'gjs-four-color')
+      }
+    }
+  }
+
+  // FIXME: This should not be needed as the state is alreay set in the button definition
+  setTimeout(() => updatePreviewActiveButton(editor), 1000)
+
+  editor.on(PREVIEW_ACTIVATED, () => {
+    isActive = true
+    setTimeout(() => updatePreviewActiveButton(editor))
   })
   editor.on(PREVIEW_DEACTIVATED, () => {
-    const button = editor.Panels.getButton('options', 'toggle-data-source-preview')
-    if (button) {
-      button.set('active', false)
-      button.set('attributes', { title: 'Enable data source preview (Ctrl+Alt+V)' })
-    }
+    isActive = false
+    updatePreviewActiveButton(editor)
   })
 
-  // Listen for preview activation/deactivation events to update the button tooltip and style
-  // The button now handles its own state, so these listeners are not needed.
-  editor.on(DATA_SOURCE_DATA_LOAD_START, () => {
+  // Returns the DOM element for a button in a panel using a selector
+  function getPanelButtonEl(editor, panelId, selector) {
+    const panel = editor.Panels.getPanel(panelId)
+    if (!panel) return null
+    console.log({panel, selector}, panel.view?.el, panel.view?.el?.querySelector(selector))
+    return panel.view
+      ?.el
+      ?.querySelector(selector)
+  }
+
+  // Update the refresh button's visual state and tooltip based on data source loading status
+  function setRefreshButtonState(editor, status) {
     const button = editor.Panels.getButton('options', 'refresh-data-sources')
-    if (button) {
+    if (!button) return
+    switch (status) {
+    case 'loading':
       button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-spinner`)
       button.set('title', 'Refreshing data sources (loading dynamic content)...')
+      break
+    case 'error':
+      button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-exclamation-triangle`)
+      button.set('title', 'Error refreshing data sources, check the notifications')
+      break
+    default:
+      button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`)
+      button.set('title', 'Refresh data sources (reload dynamic content) - Ctrl+Alt+R')
     }
-  })
+  }
+
+  // Update refresh button state on data source events
   editor.on(`
     ${ DATA_SOURCE_DATA_LOAD_END }
     ${ DATA_SOURCE_DATA_LOAD_CANCEL }
   `, () => {
-    const button = editor.Panels.getButton('options', 'refresh-data-sources')
-    if (button) {
-      button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-refresh`)
-      button.set('title', 'Refresh data sources (reload dynamic content) - Ctrl+Alt+R')
-    }
+    setRefreshButtonState(editor, 'ready')
   })
   editor.on(DATA_SOURCE_ERROR, (error: Error) => {
     console.error('Data source error', error)
-    const button = editor.Panels.getButton('options', 'refresh-data-sources')
-    if (button) {
-      button.set('className', `${REFRESH_BUTTON_BASE_CLASS} fa-exclamation-triangle`)
-      button.set('title', 'Error refreshing data sources, check the notifications')
-    }
+    setRefreshButtonState(editor, 'error')
+  })
+  editor.on(DATA_SOURCE_DATA_LOAD_START, () => {
+    setRefreshButtonState(editor, 'loading')
   })
 
-  // Add keyboard shortcuts
+  // Register keyboard shortcuts for data source actions
   editor.Keymaps.add('data-source:refresh', 'ctrl+alt+r', COMMAND_REFRESH, {
     prevent: true,
   })
