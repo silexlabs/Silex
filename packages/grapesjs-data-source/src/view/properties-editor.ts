@@ -233,7 +233,9 @@ export class PropertiesEditor extends LitElement {
   getTokens(component: Component, name: Properties, publicState: boolean): Token[] {
     const state = getState(component, name, publicState)
     if(!state || !state.expression) return []
-    return state.expression.map(token => fromStored(token, component.getId()))
+    return state.expression
+      .filter(token => token && typeof token === 'object' && token.type) // Filter out invalid tokens
+      .map(token => fromStored(token, component.getId()))
   }
 }
 

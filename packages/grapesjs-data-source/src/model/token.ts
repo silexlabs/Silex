@@ -30,6 +30,17 @@ export function getFilterFromToken(token: Filter, filters: Filter[]): Filter {
  * @throws Error if the token type is not found
  */
 export function fromStored<T extends Token = Token>(token: StoredToken, componentId: string | null): T {
+  // Handle invalid tokens - return null or throw a descriptive error
+  if (!token || typeof token !== 'object') {
+    console.error('Invalid token: not an object', token)
+    throw new Error('Invalid token: expected an object')
+  }
+
+  if (!token.type) {
+    console.error('Invalid token: missing type property', token)
+    throw new Error('Invalid token: missing type property')
+  }
+
   switch (token.type) {
   case 'filter': {
     if ((token as Filter).optionsForm) return token as T
