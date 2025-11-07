@@ -107,7 +107,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
           editor.once('canvas:frame:load', () => {
             setTimeout(() => { // This is needed in chrome, otherwise a save is triggered
               editor.stopCommand(cmdPauseAutoSave)
-            })
+            }, 500)
           })
           return data
         }
