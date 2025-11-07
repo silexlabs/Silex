@@ -20,6 +20,7 @@ export const inputChainStyles = css`
     visibility: visible;
     position: static;
     display: block;
+    width: 100%;
   }
   label {
     width: 100%;
