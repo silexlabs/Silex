@@ -104,7 +104,11 @@ export const storagePlugin = (editor: PublishableEditor) => {
           if (firstPage) editor.Pages.select(firstPage)
           loader && render(getLoaderHtml('Starting', 1, 1), loader)
           await nextFrame()
-          editor.once('canvas:frame:load', () => editor.stopCommand(cmdPauseAutoSave))
+          editor.once('canvas:frame:load', () => {
+            setTimeout(() => { // This is needed in chrome, otherwise a save is triggered
+              editor.stopCommand(cmdPauseAutoSave)
+            })
+          })
           return data
         }
       } catch (err) {
@@ -142,7 +146,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
     },
 
     async doStore(data: WebsiteData, options: { id: WebsiteId, connectorId: ConnectorId }) {
-      if (editor.PublicationManager.status === PublicationStatus.STATUS_PENDING) {
+      if (editor.PublicationManager?.status === PublicationStatus.STATUS_PENDING) {
         // Publication is pending, save is delayed
         return new Promise((resolve) => {
           editor.once(ClientEvent.PUBLISH_END, () => {
