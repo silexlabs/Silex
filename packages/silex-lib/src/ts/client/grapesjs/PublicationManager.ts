@@ -20,7 +20,7 @@ import { ApiConnectorLoggedInPostMessage, ApiConnectorLoginQuery, ApiPublication
 import { Editor } from 'grapesjs'
 import { PublicationUi } from './PublicationUi'
 import { getUser, logout, publicationStatus, publish } from '../api'
-import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH } from '../../constants'
+import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from '../../constants'
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { hashString } from '../utils'
@@ -354,6 +354,56 @@ export class PublicationManager {
     return files
   }
 
+  /**
+   * Helper function to check if a viewport meta tag exists in the head content
+   * @param headContent - HTML content from head settings
+   * @returns true if viewport meta tag is found
+   */
+  private hasViewportMeta(headContent: string): boolean {
+    if (!headContent) return false
+    // Check for viewport meta tag with various formats
+    const viewportPattern = /<meta[^>]*name\s*=\s*["']viewport["'][^>]*>/i
+    return viewportPattern.test(headContent)
+  }
+
+  /**
+   * Get the default viewport meta tag if no viewport is present
+   * @param siteHead - Head content from site settings
+   * @param pageHead - Head content from page settings
+   * @returns viewport meta tag or empty string if already present
+   */
+  private ensureViewportMeta(siteHead: string, pageHead: string): string {
+    if (this.hasViewportMeta(siteHead) || this.hasViewportMeta(pageHead)) {
+      return ''
+    }
+    return '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+  }
+
+  /**
+   * Helper function to check if a generator meta tag exists in the head content
+   * @param headContent - HTML content from head settings
+   * @returns true if generator meta tag is found
+   */
+  private hasGeneratorMeta(headContent: string): boolean {
+    if (!headContent) return false
+    // Check for generator meta tag with various formats
+    const generatorPattern = /<meta[^>]*name\s*=\s*["']generator["'][^>]*>/i
+    return generatorPattern.test(headContent)
+  }
+
+  /**
+   * Get the default generator meta tag if no generator is present
+   * @param siteHead - Head content from site settings
+   * @param pageHead - Head content from page settings
+   * @returns generator meta tag or empty string if already present
+   */
+  private ensureGeneratorMeta(siteHead: string, pageHead: string): string {
+    if (this.hasGeneratorMeta(siteHead) || this.hasGeneratorMeta(pageHead)) {
+      return ''
+    }
+    return `<meta name="generator" content="Silex v${ SILEX_VERSION }">`
+  }
+
   async *getHtmlFilesYield(siteSettings: WebsiteSettings, preventDefault): AsyncGenerator<WebsiteFile | undefined> {
     for (const page of this.editor.Pages.getAll()) {
       // Clone the settings because plugins can change them
@@ -395,6 +445,8 @@ export class PublicationManager {
       // Useful data for HTML result
       const title = getSetting('title')
       const favicon = getSetting('favicon')
+      const viewportMeta = this.ensureViewportMeta(clonedSiteSettings?.head || '', pageSettings?.head || '')
+      const generatorMeta = this.ensureGeneratorMeta(clonedSiteSettings?.head || '', pageSettings?.head || '')
 
       // Return the HTML file
       yield {
@@ -402,6 +454,8 @@ export class PublicationManager {
 <html lang="${getSetting('lang')}">
 <head>
 <meta charset="UTF-8">
+${viewportMeta}
+${generatorMeta}
 <link rel="stylesheet" href="${cssPermalink}" />
 ${clonedSiteSettings?.head || ''}
 ${pageSettings?.head || ''}
