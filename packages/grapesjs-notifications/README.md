@@ -55,6 +55,13 @@ editor.runCommand('notifications:add', {
   message: 'Hello world!',
 })
 
+// Add a notification with a unique id (will replace itself if triggered again)
+editor.runCommand('notifications:add', {
+  id: 'unique-notif',
+  type: 'info',
+  message: 'This notification will not duplicate!',
+})
+
 // Listen to events
 editor.on('notifications:changed', (notifications) => {
   console.log('Notifications have changed', notifications)
@@ -141,6 +148,11 @@ editor.on(NOTIFICATION_CHANGED, () => { /* ... */ })
 
 ```ts
 export interface NotificationOptions {
+  /**
+   * Optional unique id for the notification.
+   * If provided, notifications with the same id will be replaced instead of duplicated.
+   */
+  id?: string
   message: string
   group?: string
   timeout?: number
@@ -160,6 +172,7 @@ export interface NotificationOptions {
 | Option | Description | Type | Default |
 |-|-|-|-
 | `timeout` | Default timeout for the notification in ms | `number` | No timeout |
+| `id` | Unique id for the notification. If set, notifications with the same id will be replaced instead of duplicated | `string` | No id (notifications will stack) |
 | `container` | Container for the notifications | `HTMLElement` | `document.body` |
 | `storeKey` | Store notifications in local storage under this key | `string` | No storage |
 | `icons` | Icons for the notification types | `object` | `{error: '\u2716', warning: '\u26A0', success: '\u2714', info: '\u2139'}` |

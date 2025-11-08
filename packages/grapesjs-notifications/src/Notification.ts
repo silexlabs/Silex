@@ -1,6 +1,7 @@
 import { Component, Page, Editor } from 'grapesjs'
 
 export interface NotificationOptions {
+  id?: string
   message: string
   group?: string
   timeout?: number
@@ -15,6 +16,7 @@ export interface NotificationOptions {
 }
 
 export class Notification {
+  id: string | null = null
   componentId: string | null = null
   group: string | null = null
   timeoutRef
@@ -30,6 +32,7 @@ export class Notification {
     if (this.options.timeout) {
       this.timeoutRef = setTimeout(() => this.remove(), this.options.timeout)
     }
+    this.id = options.id || null
     this.message = this.options.message!
     this.type = this.options.type!
     this.componentId = options.componentId || null

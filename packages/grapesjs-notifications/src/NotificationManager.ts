@@ -1,6 +1,10 @@
 import { Editor } from "grapesjs"
-import { Notification, NotificationOptions } from "./Notification"
+import { Notification, NotificationOptions as BaseNotificationOptions } from "./Notification"
 import { StyleInfo } from "lit/directives/style-map"
+
+export interface NotificationOptions extends BaseNotificationOptions {
+  id?: string
+}
 
 // Events
 export const NOTIFICATION_CHANGED = 'notifications:changed'
@@ -52,6 +56,13 @@ export class NotificationManager {
    * Add a notification
    */
   add(options: NotificationOptions): void {
+    if (options.id) {
+      // Remove any existing notification with the same id
+      const existing = this.notifications.find(n => n.options.id === options.id)
+      if (existing) {
+        this.remove(existing)
+      }
+    }
     const removeCallback = (notification: Notification) => this.remove(notification)
     const notification = new Notification(this.editor, options, removeCallback)
     this.notifications.push(notification)
