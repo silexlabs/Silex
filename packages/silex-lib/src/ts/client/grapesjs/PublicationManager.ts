@@ -288,6 +288,8 @@ export class PublicationManager {
       // Get the data to publish, clone the objects because plugins can change it
       const projectData = { ...this.editor.getProjectData() as WebsiteData }
       const siteSettings = { ...this.editor.getModel().get('settings') as WebsiteSettings }
+      // Check for missing SEO tags and warn user
+      this.checkSeoTags(siteSettings)
       let preventDefaultStart = false
       this.editor.trigger(ClientEvent.PUBLISH_START, {projectData, siteSettings, preventDefault: () => preventDefaultStart = true, publicationManager: this })
       if(preventDefaultStart) {
@@ -402,6 +404,108 @@ export class PublicationManager {
       return ''
     }
     return `<meta name="generator" content="Silex v${ SILEX_VERSION }">`
+  }
+
+  /**
+   * Helper function to check if a canonical link exists in the head content
+   * @param headContent - HTML content from head settings
+   * @returns true if canonical link is found
+   */
+  private hasCanonicalLink(headContent: string): boolean {
+    if (!headContent) return false
+    const canonicalPattern = /<link[^>]*rel\s*=\s*["']canonical["'][^>]*>/i
+    return canonicalPattern.test(headContent)
+  }
+
+  /**
+   * Helper function to check if alternate links exist in the head content
+   * @param headContent - HTML content from head settings
+   * @returns true if alternate links are found
+   */
+  private hasAlternateLinks(headContent: string): boolean {
+    if (!headContent) return false
+    const alternatePattern = /<link[^>]*rel\s*=\s*["']alternate["'][^>]*>/i
+    return alternatePattern.test(headContent)
+  }
+
+  /**
+   * Check for missing SEO tags and emit warnings
+   * @param siteSettings - Site settings
+   */
+  private checkSeoTags(siteSettings: WebsiteSettings): void {
+    const pages = this.editor.Pages.getAll()
+
+    // Utility function to get a setting from the page or the site settings
+    const getSetting = (pageSettings: WebsiteSettings, name: string) =>
+      (pageSettings || {})[name] || (siteSettings || {})[name] || ''
+
+    for (const page of pages) {
+      const pageSettings = page.get('settings') as WebsiteSettings || {}
+      const siteHead = siteSettings?.head || ''
+      const pageHead = pageSettings?.head || ''
+      const pageName = page.get('name') || 'Unnamed page'
+      const bodyComponent = page.getMainComponent()
+      const componentId = bodyComponent?.getId()
+      const pageId = page.getId()
+
+      // Check for lang attribute
+      const lang = getSetting(pageSettings, 'lang')
+      if (!lang || lang.trim() === '') {
+        this.editor.runCommand('notifications:add', {
+          id: `seo-validation-lang-${pageId}`,
+          type: 'warning',
+          message: `Page "${pageName}": Missing lang attribute on &lt;html&gt; tag. This is important for accessibility and SEO.`,
+          componentId,
+          group: 'seo-validation'
+        })
+      }
+
+      // Check for title
+      const title = getSetting(pageSettings, 'title')
+      if (!title || title.trim() === '') {
+        this.editor.runCommand('notifications:add', {
+          id: `seo-validation-title-${pageId}`,
+          type: 'warning',
+          message: `Page "${pageName}": Missing &lt;title&gt; tag. This is critical for SEO.`,
+          componentId,
+          group: 'seo-validation'
+        })
+      }
+
+      // Check for description
+      const description = getSetting(pageSettings, 'description')
+      if (!description || description.trim() === '') {
+        this.editor.runCommand('notifications:add', {
+          id: `seo-validation-description-${pageId}`,
+          type: 'warning',
+          message: `Page "${pageName}": Missing meta description. This is important for SEO and search results display.`,
+          componentId,
+          group: 'seo-validation'
+        })
+      }
+
+      // Check for canonical link
+      if (!this.hasCanonicalLink(siteHead) && !this.hasCanonicalLink(pageHead)) {
+        this.editor.runCommand('notifications:add', {
+          id: `seo-validation-canonical-${pageId}`,
+          type: 'warning',
+          message: `Page "${pageName}": Missing canonical link. This helps prevent duplicate content issues.`,
+          componentId,
+          group: 'seo-validation'
+        })
+      }
+
+      // Check for alternate links (hreflang for multilingual sites)
+      if (!this.hasAlternateLinks(siteHead) && !this.hasAlternateLinks(pageHead)) {
+        this.editor.runCommand('notifications:add', {
+          id: `seo-validation-alternate-${pageId}`,
+          type: 'warning',
+          message: `Page "${pageName}": Missing alternate links (hreflang). Consider adding these for multilingual sites.`,
+          componentId,
+          group: 'seo-validation'
+        })
+      }
+    }
   }
 
   async *getHtmlFilesYield(siteSettings: WebsiteSettings, preventDefault): AsyncGenerator<WebsiteFile | undefined> {
