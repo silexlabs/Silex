@@ -243,19 +243,6 @@ export default (editor: Editor, opts) => {
       info: 'Controls content overflow in a block.',
     }, { at: 6 })
 
-    editor.StyleManager.addProperty('dimension', {
-      name: 'Scroll Behavior',
-      property: 'scroll-behavior',
-      type: 'select',
-      defaults: '',
-      options: [
-        { id: '', value: '', name: '' },
-        { id: 'auto', value: 'auto', name: 'auto' },
-        { id: 'smooth', value: 'smooth', name: 'smooth' }
-      ],
-      info: 'Sets smooth or auto scroll behavior.',
-    }, { at: 7 })
-
     editor.StyleManager.removeProperty('dimension', 'margin')
     editor.StyleManager.addProperty('dimension', {
       name: 'Margin',
@@ -795,6 +782,18 @@ export default (editor: Editor, opts) => {
       info: 'The column-span CSS property makes it possible for an element to span across all columns when its value is set to all.',
     }, { at: 9 })
     editor.StyleManager.addProperty('extra', {
+      name: 'Scroll Behavior',
+      property: 'scroll-behavior',
+      type: 'select',
+      defaults: '',
+      options: [
+        { id: '', value: '', name: '' },
+        { id: 'auto', value: 'auto', name: 'auto' },
+        { id: 'smooth', value: 'smooth', name: 'smooth' }
+      ],
+      info: 'Sets smooth or auto scroll behavior.',
+    }, { at: 10 })
+    editor.StyleManager.addProperty('extra', {
       name: 'Scroll Snap Type',
       property: 'scroll-snap-type',
       type: 'composite',
@@ -824,7 +823,7 @@ export default (editor: Editor, opts) => {
         ],
       }],
       info: 'The scroll-snap-type CSS property sets the direction and mode of enforced snap points on the scroll container.',
-    }, { at: 10 })
+    }, { at: 11 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Padding',
       property: 'scroll-padding',
@@ -832,7 +831,7 @@ export default (editor: Editor, opts) => {
       defaults: '',
       units: ['px', 'em', 'rem', '%'],
       info: 'Defines offsets for scroll snapping.',
-    }, { at: 11 })
+    }, { at: 12 })
     editor.StyleManager.addProperty('extra', {
       name: 'Scroll Snap Align',
       property: 'scroll-snap-align',
@@ -846,7 +845,7 @@ export default (editor: Editor, opts) => {
         { id: 'center', value: 'center', name: 'center' },
       ],
       info: 'Aligns elements to scroll snaps.',
-    }, { at: 11 })
+    }, { at: 13 })
 
     editor.SelectorManager.states.add({name: 'before', label: 'Before'})
     editor.SelectorManager.states.add({name: 'after', label: 'After'})
