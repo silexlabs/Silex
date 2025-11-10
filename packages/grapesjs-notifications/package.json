@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-notifications",
-  "version": "0.2.0",
+  "version": "0.2.1-0",
   "description": "This GrapesJs plugin is designed to enhance the user experience within the editor by providing a robust notification system. This plugin captures and displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
