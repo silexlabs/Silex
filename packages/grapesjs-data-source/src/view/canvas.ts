@@ -538,7 +538,7 @@ export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   for(const eventName of events) {
     editor.on(eventName, () => {
       if (getPreviewActive()) {
-        debouncedRender(editor, eventName)
+        debouncedRender(editor)
       }
     })
   }
