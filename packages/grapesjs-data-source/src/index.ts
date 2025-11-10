@@ -57,10 +57,8 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
   Promise.all(dataSources
     .map(ds => {
       return ds.connect()
-        .then(() => console.log(`✅ Data source ${ds.id} connected successfully`))
-        .catch(err => console.error(`❌ Data source ${ds.id} connection failed:`, err))
+        .catch(err => console.error(`Data source ${ds.id} connection failed:`, err))
     }))
-    .then(() => console.info('All data sources connection attempts completed'))
     .catch(err => console.error('Error while connecting data sources', err))
 
   // Initialize the global data source manager

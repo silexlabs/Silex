@@ -89,8 +89,6 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
     run() {
       if (isPreviewActive) {
         forceRender(editor)
-      } else {
-        console.info('📊 Preview is deactivated - use preview:activate first')
       }
     },
   })
