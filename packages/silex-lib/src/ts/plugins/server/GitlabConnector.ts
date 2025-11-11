@@ -694,7 +694,6 @@ export default class GitlabConnector implements StorageConnector {
         session,
         path: `api/v4/users/${userId}/projects`,
         params: {
-          simple: true,
           per_page: 100,
           page,
         },
@@ -710,7 +709,12 @@ export default class GitlabConnector implements StorageConnector {
     } while (page <= totalPages)
 
     return projects
-      .filter(p => p.name.startsWith(this.options.repoPrefix) && !p.name.includes('-deleted-'))
+      .filter(
+        p =>
+          p.name.startsWith(this.options.repoPrefix) &&
+          !p.marked_for_deletion_on &&
+          !p.marked_for_deletion_at
+      )
       .map(p => ({
         websiteId: p.id,
         name: p.name.replace(this.options.repoPrefix, ''),
