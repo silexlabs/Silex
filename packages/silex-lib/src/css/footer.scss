@@ -4,9 +4,6 @@
   bottom: 0;
   left: $projectBarWidth;
   right: var(--viewsPanelWidth);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   height: $footerHeight;
 }
