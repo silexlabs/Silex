@@ -68,7 +68,7 @@
   height: 100vh;
   z-index: $z-dialog-inline;
   pointer-events: auto;
-  overflow: auto;
+  overflow: hidden; /* settings scroll is on .settings-body */
   display: flex;
   flex-direction: column;
 
@@ -156,6 +156,11 @@
   .CodeMirror {
     min-height: 400px;
     height: auto;
+  }
+  .CodeMirror-scroll {
+    /* override codemirror default styles */
+    overflow: hidden !important; /* on chrome, a horizontal scroll bar appears */
+    padding-bottom: 150px;
   }
 }
 
