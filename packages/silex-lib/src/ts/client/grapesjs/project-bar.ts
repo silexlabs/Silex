@@ -75,6 +75,17 @@ export const projectBarPlugin = (editor, opts) => {
     updateSqueez(editor)
   })
 
+  // Also listen to the preview button state changes
+  let wasVisible = false
+  const previewButton = editor.Panels.getButton('options', 'preview')
+  if (previewButton) {
+    previewButton.on('change:active', (button, active) => {
+      console.log({button, active, wasVisible})
+      if (active) wasVisible = containerPanel.get('visible')
+      else setTimeout(() => containerPanel.set('visible', wasVisible))
+    })
+  }
+
   // All other events where the canvas is resized
   editor.on('load device:select page', () => {
     updateSqueez(editor)
