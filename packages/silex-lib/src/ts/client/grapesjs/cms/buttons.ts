@@ -113,7 +113,6 @@ export default function(editor: Editor/*, opts: EleventyPluginOptions*/): void {
   function getPanelButtonEl(editor, panelId, selector) {
     const panel = editor.Panels.getPanel(panelId)
     if (!panel) return null
-    console.log({panel, selector}, panel.view?.el, panel.view?.el?.querySelector(selector))
     return panel.view
       ?.el
       ?.querySelector(selector)

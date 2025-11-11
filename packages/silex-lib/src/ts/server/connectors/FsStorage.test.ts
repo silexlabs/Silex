@@ -50,7 +50,6 @@ describe('FsStorage website', () => {
     expect(() => statSync(join(storageRootPath, id, WEBSITE_DATA_FILE))).not.toThrow()
     const content = readFileSync(join(storageRootPath, id, WEBSITE_DATA_FILE), 'utf8')
     const parsed = JSON.parse(content)
-    console.log({parsed, content, EMPTY_WEBSITE})
     expect(parsed).toEqual(EMPTY_WEBSITE)
   })
 })

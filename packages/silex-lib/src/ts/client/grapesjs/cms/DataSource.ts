@@ -324,7 +324,6 @@ export class EleventyDataSource implements IDataSource {
   }
 
   fetchValues(query: string): Promise<unknown> {
-    console.log('fetch', {query})
     throw new Error('not implemented yet')
   }
 }

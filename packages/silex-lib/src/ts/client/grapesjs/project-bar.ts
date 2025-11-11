@@ -80,7 +80,6 @@ export const projectBarPlugin = (editor, opts) => {
   const previewButton = editor.Panels.getButton('options', 'preview')
   if (previewButton) {
     previewButton.on('change:active', (button, active) => {
-      console.log({button, active, wasVisible})
       if (active) wasVisible = containerPanel.get('visible')
       else setTimeout(() => containerPanel.set('visible', wasVisible))
     })
