@@ -217,12 +217,19 @@ export class PropertiesEditor extends LitElement {
     const {stateEditor} = this.inputs[name]!
     if(this.redrawing) return
     if (name === Properties.__data) {
-      setState(component, name, {
-        expression: stateEditor.data.slice(0, -1).concat({
-          ...stateEditor.data[stateEditor.data.length - 1],
-          previewIndex: 0,
-        } as unknown as Token),
-      }, publicState)
+      // Handle the case when data is empty (after clearing)
+      if (stateEditor.data.length === 0) {
+        setState(component, name, {
+          expression: [],
+        }, publicState)
+      } else {
+        setState(component, name, {
+          expression: stateEditor.data.slice(0, -1).concat({
+            ...stateEditor.data[stateEditor.data.length - 1],
+            previewIndex: 0,
+          } as unknown as Token),
+        }, publicState)
+      }
     } else {
       setState(component, name, {
         expression: stateEditor.data,
