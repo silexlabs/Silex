@@ -45,6 +45,9 @@ module.exports = async function(config, options) {
             route: '/css/files/',
             path: nodeModules('@fontsource/ubuntu') + '/@fontsource/ubuntu/files/',
           }, {
+            route: '/lottie-player/',
+            path: nodeModules('@lottiefiles/lottie-player') + '/@lottiefiles/lottie-player/dist/',
+          }, {
             route: '/',
             path: join(__dirname, 'dist', 'client'),
           }, {
