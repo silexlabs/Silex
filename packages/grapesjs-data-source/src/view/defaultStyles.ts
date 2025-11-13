@@ -347,7 +347,7 @@ export const PROPERTY_STYLES = `
   /* real data */
   .ds-real-data {
     code {
-      overflow-x: hidden;
+      overflow: hidden;
       text-wrap: nowrap;
       display: block;
       padding: 0 10px;
