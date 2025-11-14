@@ -13,7 +13,7 @@ import { createRef, ref } from 'lit-html/directives/ref.js'
 export default function(editor: Editor, opts: EleventyPluginOptions): void {
   if (!opts.enable11ty) return // Do not add the settings if 11ty is disabled
 
-  editor.on(ClientEvent.SETTINGS_SAVE_START, handleSettingsSaveStart(editor))
+  editor.on(ClientEvent.SETTINGS_SAVE_END, handleSettingsSaveEnd(editor))
   editor.on(ClientEvent.SETTINGS_CLOSE, handleSettingsClose(editor))
 
   editor.runCommand(cmdAddSection, {
@@ -34,7 +34,7 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
 let originalSettings: Silex11tyPluginWebsiteSettings | null = null
 let currentPage: Page | undefined
 
-function handleSettingsSaveStart(editor: Editor) {
+function handleSettingsSaveEnd(editor: Editor) {
   return (page: Page) => {
     updateBodyStates(editor, page)
     currentPage = null

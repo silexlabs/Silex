@@ -1,10 +1,11 @@
 import { removeState, setState, COMPONENT_NAME_PREFIX, Property, toExpression, StoredFilter, State, StoredState, StoredToken, Expression } from '@silexlabs/grapesjs-data-source'
 import { Silex11tyPluginWebsiteSettings } from './index'
 import { Component, Editor, Page } from 'grapesjs'
+import { ClientEvent } from '../../events'
 
 export default function(editor: Editor/*, opts: EleventyPluginOptions */): void {
   editor.on('page:select page:update', () => updatePaginationStates(editor))
-  editor.on('settings:save:start', () => updatePaginationStates(editor))
+  editor.on(ClientEvent.SETTINGS_SAVE_END, () => updatePaginationStates(editor))
 }
 
 /**
