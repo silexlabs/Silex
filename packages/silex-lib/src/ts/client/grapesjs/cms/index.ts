@@ -94,6 +94,7 @@ export default function (editor: Editor, options: Partial<EleventyPluginOptions>
   const filters = [
     ...eleventyFilters,
     'liquid',
+    ...(options.filters ?? []),
   ]
 
   // Options with default

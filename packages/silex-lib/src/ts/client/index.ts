@@ -26,7 +26,6 @@ import { DEV_MESSAGE } from '../constants'
 import { ClientConfig } from './config'
 import { ClientEvent } from './events'
 import { initEditor, getEditor } from './grapesjs/index'
-import { cmdPauseAutoSave } from './grapesjs/storage'
 
 // Expose API to calling app as window.silex
 export * from './expose'
