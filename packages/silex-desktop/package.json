@@ -26,6 +26,6 @@
   },
   "homepage": "https://www.silex.me",
   "devDependencies": {
-    "@silexlabs/silex": "3.5.1-2"
+    "@silexlabs/silex": "3.5.1-3"
   }
 }
