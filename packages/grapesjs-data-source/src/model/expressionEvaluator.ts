@@ -76,13 +76,21 @@ export function evaluatePropertyToken(
   let value = prevObj ? (prevObj as Record<string, unknown>)[token.fieldId] : null
 
   // Handle preview index if resolvePreviewIndex is true
+  // Don't resolve if next token is a filter - filters need to operate on full arrays
   if (context.resolvePreviewIndex) {
-    value = handlePreviewIndex(value, token)
+    const nextToken = remaining[0]
+    if (!nextToken || nextToken.type !== 'filter') {
+      value = handlePreviewIndex(value, token)
+    }
   }
 
-  // For non-final tokens, always handle preview index regardless of resolvePreviewIndex
+  // For non-final tokens, handle preview index only if next token is not a filter
+  // Filters need to operate on full arrays, not individual items
   if (remaining.length > 0 && !context.resolvePreviewIndex) {
-    value = handlePreviewIndex(value, token)
+    const nextToken = remaining[0]
+    if (nextToken.type !== 'filter') {
+      value = handlePreviewIndex(value, token)
+    }
   }
 
   // Special handling for items state
@@ -223,8 +231,9 @@ export function evaluateFilterToken(
     return null
   }
 
-  // Always handle preview index if resolvePreviewIndex is true, or if there are more tokens
-  if (context.resolvePreviewIndex || remaining.length > 0) {
+  // Don't resolve before filters - they need arrays
+  const nextIsFilter = remaining.length > 0 && remaining[0]?.type === 'filter'
+  if (!nextIsFilter && (context.resolvePreviewIndex || remaining.length > 0)) {
     value = handlePreviewIndex(value, token)
   }
 
