@@ -233,16 +233,45 @@ function renameCssClass(editor: Editor, oldClassName: string, newClassName: stri
   }
 
   // TODO: handle the related selectors
-  const toUpdate = editor.Pages.getAll()
-    .flatMap(page => page.getMainComponent().find(`.${oldClassName}`))
+  // IMPORTANT: Find components BEFORE renaming the selector
+  // Because oldSelector.set('name') will automatically update component.getClasses()
 
-  // This has to be before we update components
+  // Helper function to recursively find all components with a class in their selector
+  const findComponentsWithClass = (component: Component, className: string): Component[] => {
+    const results: Component[] = []
+
+    // Check if this component has the class in its selector
+    const selector = component.get('selector')
+    if (selector?.mainSelector?.selectors) {
+      const hasClass = selector.mainSelector.selectors.some(
+        (sel: any) => sel.type === SimpleSelectorType.CLASS && sel.value === className
+      )
+      if (hasClass) {
+        results.push(component)
+      }
+    }
+
+    // Recursively check children
+    component.components().forEach((child: Component) => {
+      results.push(...findComponentsWithClass(child, className))
+    })
+
+    return results
+  }
+
+  const toUpdate = editor.Pages.getAll()
+    .flatMap(page => findComponentsWithClass(page.getMainComponent(), oldClassName))
+
+  // This has to be before we update component selectors (but after finding them!)
   // Otherwise it messes up the undo
   oldSelector.set('name', newClassName)
 
   // Rename the class in the components
   // TODO: handle the related selectors
+  // NOTE: No need to manually remove the old class from component.getClasses()
+  // because oldSelector.set('name', newClassName) already updated it automatically
   toUpdate.forEach(component => {
+    // Update the selector stored in component attributes
     const selector = getComponentSelector(component)
     const updatedSelector = {
       ...selector,
@@ -285,17 +314,16 @@ export function setComponentSelector(component: Component, selector: ComplexSele
     }
   })
   // FIXME: Add back the protected classes
-  // Add the missing classes
+  // Replace the classes with the ones from the selector
   const existing = component.getClasses()
-  const toAdd = existing
-    .filter((c: string) => !classes.includes(c))
-    .concat(
-      classes
-        .filter((c: string) => !existing.includes(c))
-    )
-  if (toAdd.length > 0) {
-    component.setClass(component.getClasses().concat(toAdd))
-  }
+
+  // Keep existing classes that are not in the selector + add all classes from the selector
+  const finalClasses = [
+    ...existing.filter((c: string) => !classes.includes(c)),
+    ...classes
+  ]
+
+  component.setClass(finalClasses)
 }
 
 export function getComponentSelector(component: Component): ComplexSelector {
