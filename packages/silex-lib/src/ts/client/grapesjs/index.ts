@@ -59,7 +59,6 @@ import { newPageDialog, cmdOpenNewPageDialog } from './new-page-dialog'
 import { PROJECT_BAR_PANEL_ID, projectBarPlugin } from './project-bar'
 import { settingsDialog, cmdOpenSettings } from './settings'
 import { blocksPlugin } from './blocks'
-import { lottiePlugin } from './lottie'
 import { semanticPlugin } from './semantic'
 import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
@@ -85,7 +84,6 @@ const plugins = [
   {name: './page-panel', value: pagePanelPlugin},
   {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
   {name: './blocks', value: blocksPlugin},
-  {name: './lottie', value: lottiePlugin},
   {name: './view-buttons', value: ViewButtons},
   {name: './semantic', value: semanticPlugin},
   {name: './rich-text', value: richTextPlugin},
