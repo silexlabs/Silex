@@ -153,12 +153,13 @@ export default class CompoundSelectorComponent extends StylableElement {
       )
     }
 
-    // When a class is activated, deactivate all other classes (but keep ID and TAG active)
-    const isNewlyActivatedClass = event.detail.type === SimpleSelectorType.CLASS
+    // When a NEW class is created (type changed from UNKNOWN to CLASS), deactivate all other classes
+    // But allow multiple existing classes to be manually activated for selectors like .a.b
+    const isNewlyCreatedClass = oldValue?.type === SimpleSelectorType.UNKNOWN
+      && event.detail.type === SimpleSelectorType.CLASS
       && event.detail.active
-      && (!oldValue || !oldValue.active || !isSameSelector(oldValue, event.detail))
 
-    if (isNewlyActivatedClass) {
+    if (isNewlyCreatedClass) {
       updatedSelectors = updatedSelectors.map(selector =>
         selector.type === SimpleSelectorType.CLASS && !isSameSelector(selector, event.detail)
           ? { ...selector, active: false }
