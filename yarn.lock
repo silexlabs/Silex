@@ -2385,17 +2385,10 @@
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
-"@lit-labs/ssr-dom-shim@^1.0.0", "@lit-labs/ssr-dom-shim@^1.1.0", "@lit-labs/ssr-dom-shim@^1.4.0":
+"@lit-labs/ssr-dom-shim@^1.4.0":
   version "1.4.0"
   resolved "https://registry.npmjs.org/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.4.0.tgz"
   integrity sha512-ficsEARKnmmW5njugNYKipTm4SFnbik7CXtoencDZzmzo/dQ+2Q0bgkzJuoJP20Aj0F+izzJjOqsnkd6F/o1bw==
-
-"@lit/reactive-element@^1.3.0", "@lit/reactive-element@^1.6.0":
-  version "1.6.3"
-  resolved "https://registry.npmjs.org/@lit/reactive-element/-/reactive-element-1.6.3.tgz"
-  integrity sha512-QuTgnG52Poic7uM1AN5yJ09QMe0O28e10XzSvWDz02TJiiKee4stsiownEIadWm8nYzyDAyT+gKzUoZmiWQtsQ==
-  dependencies:
-    "@lit-labs/ssr-dom-shim" "^1.0.0"
 
 "@lit/reactive-element@^2.1.0":
   version "2.1.1"
@@ -2403,17 +2396,6 @@
   integrity sha512-N+dm5PAYdQ8e6UlywyyrgI2t++wFGXfHx+dSJ1oBrg6FAxUj40jId++EaRm80MKX5JnlH1sBsyZ5h0bcZKemCg==
   dependencies:
     "@lit-labs/ssr-dom-shim" "^1.4.0"
-
-"@lottiefiles/lottie-player@^2.0.8":
-  version "2.0.12"
-  resolved "https://registry.npmjs.org/@lottiefiles/lottie-player/-/lottie-player-2.0.12.tgz"
-  integrity sha512-VuQnB+IFaY4ijrUTByth7jOLz9p7xK6goeYr/MtyGOVIggSl/TDCcSp6qztltdflFhyZrFpfbHEZNxeK5AiVgg==
-  dependencies:
-    "@types/pako" "^1.0.1"
-    lit "^2.1.2"
-    lottie-web "^5.12.2"
-    pako "^2.0.4"
-    resize-observer-polyfill "^1.5.1"
 
 "@monaco-editor/loader@^1.3.2", "@monaco-editor/loader@^1.4.0":
   version "1.5.0"
@@ -3337,8 +3319,16 @@
   dependencies:
     lit "^3.2.1"
 
-"@silexlabs/grapesjs-advanced-selector@1.3.1-0", "@silexlabs/grapesjs-advanced-selector@file:/home/lexoyo/_/Silex/packages/grapesjs-advanced-selector":
-  version "1.3.1-0"
+"@silexlabs/grapesjs-advanced-selector@1.3.1-1":
+  version "1.3.1-1"
+  resolved "https://registry.npmjs.org/@silexlabs/grapesjs-advanced-selector/-/grapesjs-advanced-selector-1.3.1-1.tgz"
+  integrity sha512-4JkIPXpJNDZMfCykIHIXLPjyMqxrispr70tka3/toU0iwDv3f25Ik3XRo4fD87IZKWMEYuIYE/ORfdm/cV34HA==
+  dependencies:
+    "@silexlabs/expression-input" "0.2.1-0"
+    specificity "^1.0.0"
+
+"@silexlabs/grapesjs-advanced-selector@1.3.1-2", "@silexlabs/grapesjs-advanced-selector@file:/home/lexoyo/_/Silex/packages/grapesjs-advanced-selector":
+  version "1.3.1-2"
   resolved "file:packages/grapesjs-advanced-selector"
   dependencies:
     "@silexlabs/expression-input" "0.2.1-0"
@@ -3361,8 +3351,8 @@
     "@silexlabs/expression-input" "0.1.1-3"
     dedent-js "^1.0.1"
 
-"@silexlabs/grapesjs-data-source@0.1.1-7", "@silexlabs/grapesjs-data-source@file:/home/lexoyo/_/Silex/packages/grapesjs-data-source":
-  version "0.1.1-7"
+"@silexlabs/grapesjs-data-source@0.1.1-8", "@silexlabs/grapesjs-data-source@file:/home/lexoyo/_/Silex/packages/grapesjs-data-source":
+  version "0.1.1-8"
   resolved "file:packages/grapesjs-data-source"
   dependencies:
     "@apollo/client" "^3.13.8"
@@ -3426,8 +3416,8 @@
     tslib "^2.8.1"
     typescript "^5.7.3"
 
-"@silexlabs/silex-dashboard@1.4.1-3", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
-  version "1.4.1-3"
+"@silexlabs/silex-dashboard@1.4.1-5", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
+  version "1.4.1-5"
   resolved "file:packages/silex-dashboard"
   dependencies:
     locale "^0.1.0"
@@ -3436,16 +3426,16 @@
     vue "^3.5.13"
 
 "@silexlabs/silex-platform@file:/home/lexoyo/_/Silex/packages/silex-platform":
-  version "1.3.1-3"
+  version "1.3.1-5"
   resolved "file:packages/silex-platform"
   dependencies:
-    "@silexlabs/silex" "3.5.1-4"
+    "@silexlabs/silex" "3.5.1-6"
     "@silexlabs/silex-cms" "0.3.1-5"
-    "@silexlabs/silex-dashboard" "1.4.1-3"
+    "@silexlabs/silex-dashboard" "1.4.1-5"
     dotenv "^16.4.7"
 
 "@silexlabs/silex-plugin-starter@file:/home/lexoyo/_/Silex/packages/silex-plugin-starter":
-  version "0.5.1-3"
+  version "0.5.1-5"
   resolved "file:packages/silex-plugin-starter"
 
 "@silexlabs/silex-plugins@1.2.0", "@silexlabs/silex-plugins@file:/home/lexoyo/_/Silex/packages/silex-plugins":
@@ -3455,21 +3445,20 @@
     component-emitter "^2.0.0"
 
 "@silexlabs/silex-puter@file:/home/lexoyo/_/Silex/packages/silex-puter":
-  version "0.5.1-3"
+  version "0.5.1-5"
   resolved "file:packages/silex-puter"
   dependencies:
-    "@silexlabs/silex" "3.5.1-4"
+    "@silexlabs/silex" "3.5.1-6"
     lit-html "^3.2.1"
 
-"@silexlabs/silex@3.5.1-4", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
-  version "3.5.1-4"
+"@silexlabs/silex@3.5.1-6", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
+  version "3.5.1-6"
   resolved "file:packages/silex-lib"
   dependencies:
     "@fontsource/ubuntu" "^5.0.13"
     "@fortawesome/fontawesome-free" "6.6.0"
-    "@lottiefiles/lottie-player" "^2.0.8"
-    "@silexlabs/grapesjs-advanced-selector" "1.3.1-0"
-    "@silexlabs/grapesjs-data-source" "0.1.1-7"
+    "@silexlabs/grapesjs-advanced-selector" "1.3.1-2"
+    "@silexlabs/grapesjs-data-source" "0.1.1-8"
     "@silexlabs/grapesjs-filter-styles" "1.2.0"
     "@silexlabs/grapesjs-fonts" "1.2.0"
     "@silexlabs/grapesjs-keymaps-dialog" "1.2.0"
@@ -4433,11 +4422,6 @@
   integrity sha512-AOmuRF0R2/5j1knA3c6G3HOk523Ga+l+ZXltX8SF1+5oqcXijjfTd8fY3XRZqSihEu9XhtQnKYLmkFaoxgsJHw==
   dependencies:
     undici-types "~6.13.0"
-
-"@types/pako@^1.0.1":
-  version "1.0.7"
-  resolved "https://registry.npmjs.org/@types/pako/-/pako-1.0.7.tgz"
-  integrity sha512-YBtzT2ztNF6R/9+UXj2wTGFnC9NklAnASt3sC0h2m1bbH7G6FyBIkt4AN8ThZpNfxUo1b2iMVO0UawiJymEt8A==
 
 "@types/parse5@^6.0.1":
   version "6.0.3"
@@ -14738,15 +14722,6 @@ lit-analyzer@^2.0.3:
     vscode-html-languageservice "3.1.0"
     web-component-analyzer "^2.0.0"
 
-lit-element@^3.3.0:
-  version "3.3.3"
-  resolved "https://registry.npmjs.org/lit-element/-/lit-element-3.3.3.tgz"
-  integrity sha512-XbeRxmTHubXENkV4h8RIPyr8lXc+Ff28rkcQzw3G6up2xg5E8Zu1IgOWIwBLEQsu3cOVFqdYwiVi0hv0SlpqUA==
-  dependencies:
-    "@lit-labs/ssr-dom-shim" "^1.1.0"
-    "@lit/reactive-element" "^1.3.0"
-    lit-html "^2.8.0"
-
 lit-element@^4.2.0:
   version "4.2.1"
   resolved "https://registry.npmjs.org/lit-element/-/lit-element-4.2.1.tgz"
@@ -14760,13 +14735,6 @@ lit-html@*, "lit-html@^2.0.0 || ^3.0.0", lit-html@^3.2.1, lit-html@^3.3.0:
   version "3.3.1"
   resolved "https://registry.npmjs.org/lit-html/-/lit-html-3.3.1.tgz"
   integrity sha512-S9hbyDu/vs1qNrithiNyeyv64c9yqiW9l+DBgI18fL+MTvOtWoFR0FWiyq1TxaYef5wNlpEmzlXoBlZEO+WjoA==
-  dependencies:
-    "@types/trusted-types" "^2.0.2"
-
-lit-html@^2.8.0:
-  version "2.8.0"
-  resolved "https://registry.npmjs.org/lit-html/-/lit-html-2.8.0.tgz"
-  integrity sha512-o9t+MQM3P4y7M7yNzqAyjp7z+mQGa4NS4CxiyLqFPyFWyc4O+nodLrkrxSaCTrla6M5YOLaT3RpbbqjszB5g3Q==
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
@@ -14785,15 +14753,6 @@ lit@*, "lit@^2.0.0 || ^3.0.0", lit@^3.0.0, lit@^3.1.0, lit@^3.2.1:
     "@lit/reactive-element" "^2.1.0"
     lit-element "^4.2.0"
     lit-html "^3.3.0"
-
-lit@^2.1.2:
-  version "2.8.0"
-  resolved "https://registry.npmjs.org/lit/-/lit-2.8.0.tgz"
-  integrity sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==
-  dependencies:
-    "@lit/reactive-element" "^1.6.0"
-    lit-element "^3.3.0"
-    lit-html "^2.8.0"
 
 livereload-js@^3.3.1:
   version "3.4.1"
@@ -15122,11 +15081,6 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
-
-lottie-web@^5.12.2:
-  version "5.13.0"
-  resolved "https://registry.npmjs.org/lottie-web/-/lottie-web-5.13.0.tgz"
-  integrity sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==
 
 lower-case-first@^2.0.2:
   version "2.0.2"
@@ -17414,11 +17368,6 @@ pako@^1.0.10, pako@~1.0.5:
   version "1.0.11"
   resolved "https://registry.npmjs.org/pako/-/pako-1.0.11.tgz"
   integrity sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==
-
-pako@^2.0.4:
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/pako/-/pako-2.1.0.tgz"
-  integrity sha512-w+eufiZ1WuJYgPXbV/PO3NCMEc3xqylkKHzp8bxp1uW4qaSNQUkwmLLEc3kKsfz8lpV1F8Ht3U1Cm+9Srog2ug==
 
 parallel-transform@^1.1.0:
   version "1.2.0"
@@ -20286,7 +20235,7 @@ signedsource@^1.0.0:
   integrity sha512-6+eerH9fEnNmi/hyM1DXcRK3pWdoMQtlkQ+ns0ntzunjKqp5i3sKCc80ym8Fib3iaYhdJUOPdhlJWj1tvge2Ww==
 
 "silex-desktop@file:/home/lexoyo/_/Silex/packages/silex-desktop":
-  version "2.8.1-3"
+  version "2.8.1-5"
   resolved "file:packages/silex-desktop"
 
 simple-concat@^1.0.0:
