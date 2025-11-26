@@ -82,14 +82,14 @@ export class FsStorage implements StorageConnector<FsSession> {
   }
 
   protected async initFs() {
-    const stat = await fs.stat(this.options.path).catch(() => null)
+    const defaultSite = join(this.options.path, DEFAULT_WEBSITE_ID)
+    const stat = await fs.stat(defaultSite).catch(() => null)
     if (!stat) {
       // create data folder with a default website
-      const id = DEFAULT_WEBSITE_ID
-      await fs.mkdir(join(this.options.path, id, this.options.assetsFolder), { recursive: true })
-      await this.setWebsiteMeta({}, id, { name: 'Default website', connectorUserSettings: {} })
-      await this.updateWebsite({}, id, EMPTY_WEBSITE)
-      console.info(`> [FsStorage] Created ${id} in ${this.options.path}`)
+      await fs.mkdir(join(defaultSite, this.options.assetsFolder), { recursive: true })
+      await this.setWebsiteMeta({}, DEFAULT_WEBSITE_ID, { name: 'Default website', connectorUserSettings: {} })
+      await this.updateWebsite({}, DEFAULT_WEBSITE_ID, EMPTY_WEBSITE)
+      console.info(`> [FsStorage] Created ${DEFAULT_WEBSITE_ID} in ${this.options.path}`)
     }
   }
 
