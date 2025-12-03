@@ -548,6 +548,7 @@ class DataSourceCard extends LitElement {
 
   private loadingIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"><animate attributeName="r" values="3;8;3" dur="1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0.3;1" dur="1s" repeatCount="indefinite"/></circle></svg>`
   private connectedIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`
+  private errorIcon = html`<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`
 
   constructor() {
     super()
@@ -596,6 +597,9 @@ class DataSourceCard extends LitElement {
         color: var(--ds-primary);
       }
       .ds-card__status--loading {
+        color: var(--ds-highlight);
+      }
+      .ds-card__status--error {
         color: var(--ds-highlight);
       }
       .ds-card__actions {
@@ -649,7 +653,11 @@ class DataSourceCard extends LitElement {
             <div class="ds-card__status ds-card__status--connected">
               ${this.connectedIcon} Connected
             </div>
-          ` : ''}
+          ` : html`
+            <div class="ds-card__status ds-card__status--error">
+              ${this.errorIcon} Not connected
+            </div>
+          `}
         </div>
         <div class="ds-card__actions">
           <button

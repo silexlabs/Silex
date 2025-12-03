@@ -26,8 +26,6 @@ export default (editor: Editor) => {
     const newDataSources: IDataSource[] = (data.dataSources || [] as GraphQLOptions[])
       .map((ds: GraphQLOptions) => new GraphQL(ds))
 
-    await Promise.all(newDataSources.map((ds: IDataSource) => ds.connect()))
-
     // Get all data sources
     const dataSources = getAllDataSources()
       // Keep only data sources from the config
@@ -37,10 +35,10 @@ export default (editor: Editor) => {
     resetDataSources(dataSources)
 
     // Add the new data sources
-    await Promise.all(newDataSources.map(ds => {
+    newDataSources.forEach(ds => {
       addDataSource(ds)
-      return ds.connect()
-    }))
+    })
+
     refreshDataSources()
   })
 }
