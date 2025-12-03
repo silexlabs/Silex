@@ -57,21 +57,122 @@ function updateNodeContent(oldNode: Node, newNode: Node): void {
     const oldChildren = Array.from(oldEl.childNodes)
     const newChildren = Array.from(newEl.childNodes)
 
-    // Update existing children
-    const minLength = Math.min(oldChildren.length, newChildren.length)
-    for (let i = 0; i < minLength; i++) {
-      updateNodeContent(oldChildren[i], newChildren[i])
-    }
+    // Build a map of old children by ID for efficient lookup
+    // Note: Multiple children can have the same ID (loop clones), so store arrays
+    const oldChildrenById = new Map<string, Element[]>()
+    const oldChildrenWithoutId: Node[] = []
 
-    // Remove extra old children
-    for (let i = oldChildren.length - 1; i >= minLength; i--) {
-      oldEl.removeChild(oldChildren[i])
-    }
+    oldChildren.forEach(child => {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        const id = (child as Element).id
+        if (id) {
+          if (!oldChildrenById.has(id)) {
+            oldChildrenById.set(id, [])
+          }
+          oldChildrenById.get(id)!.push(child as Element)
+        } else {
+          oldChildrenWithoutId.push(child)
+        }
+      } else {
+        oldChildrenWithoutId.push(child)
+      }
+    })
 
-    // Add new children
-    for (let i = minLength; i < newChildren.length; i++) {
-      oldEl.appendChild(newChildren[i].cloneNode(true))
-    }
+
+    // Track which old children have been matched
+    const matchedOldChildren = new Set<Node>()
+
+    // Process new children in order
+    let lastInsertedNode: Node | null = null
+
+    newChildren.forEach(newChild => {
+      if (newChild.nodeType === Node.ELEMENT_NODE) {
+        const newId = (newChild as Element).id
+
+        // Try to find matching old child by ID
+        if (newId && oldChildrenById.has(newId)) {
+          const candidates = oldChildrenById.get(newId)!
+          const oldChild = candidates.shift() // Take first unmatched element
+
+          if (!oldChild) {
+            // All elements with this ID already matched, treat as no match
+            const clonedNode = newChild.cloneNode(true)
+            if (lastInsertedNode) {
+              oldEl.insertBefore(clonedNode, lastInsertedNode.nextSibling)
+            } else {
+              oldEl.insertBefore(clonedNode, oldEl.firstChild)
+            }
+            lastInsertedNode = clonedNode
+            return
+          }
+
+          matchedOldChildren.add(oldChild)
+
+          // Update the existing element in place
+          updateNodeContent(oldChild, newChild)
+
+          // Ensure it's in the correct position
+          if (lastInsertedNode) {
+            if (lastInsertedNode.nextSibling !== oldChild) {
+              oldEl.insertBefore(oldChild, lastInsertedNode.nextSibling)
+            }
+          } else {
+            if (oldEl.firstChild !== oldChild) {
+              oldEl.insertBefore(oldChild, oldEl.firstChild)
+            }
+          }
+
+          lastInsertedNode = oldChild
+        } else {
+          // No matching old child found, insert new element
+          const clonedNode = newChild.cloneNode(true)
+          if (lastInsertedNode) {
+            oldEl.insertBefore(clonedNode, lastInsertedNode.nextSibling)
+          } else {
+            oldEl.insertBefore(clonedNode, oldEl.firstChild)
+          }
+          lastInsertedNode = clonedNode
+        }
+      } else {
+        // Text node or other - try to match with old children without IDs
+        const matchIndex = oldChildrenWithoutId.findIndex(oldChild =>
+          !matchedOldChildren.has(oldChild) && oldChild.nodeType === newChild.nodeType
+        )
+
+        if (matchIndex >= 0) {
+          const oldChild = oldChildrenWithoutId[matchIndex]
+          matchedOldChildren.add(oldChild)
+          updateNodeContent(oldChild, newChild)
+
+          if (lastInsertedNode) {
+            if (lastInsertedNode.nextSibling !== oldChild) {
+              oldEl.insertBefore(oldChild, lastInsertedNode.nextSibling)
+            }
+          } else {
+            if (oldEl.firstChild !== oldChild) {
+              oldEl.insertBefore(oldChild, oldEl.firstChild)
+            }
+          }
+
+          lastInsertedNode = oldChild
+        } else {
+          const clonedNode = newChild.cloneNode(true)
+          if (lastInsertedNode) {
+            oldEl.insertBefore(clonedNode, lastInsertedNode.nextSibling)
+          } else {
+            oldEl.insertBefore(clonedNode, oldEl.firstChild)
+          }
+          lastInsertedNode = clonedNode
+        }
+      }
+    })
+
+    // Remove old children that weren't matched
+    oldChildren.forEach(oldChild => {
+      if (!matchedOldChildren.has(oldChild)) {
+        oldEl.removeChild(oldChild)
+      }
+    })
   }
 }
 
@@ -308,7 +409,6 @@ function renderContent(comp: Component, deep: number) {
   const innerHtml = renderInnerHTML(comp)
 
   if (innerHtml === null) {
-    comp.view!.render()
     comp.components()
       .forEach(c => renderPreview(c, deep+1))
   } else {
@@ -367,6 +467,15 @@ export function renderPreview(comp: Component, deep = 0) {
     if (__data.length === 0) {
       el.remove()
     } else {
+      // Remove all existing loop clones (siblings with same ID from previous render)
+      const componentId = el.id
+      let nextSibling = el.nextElementSibling as HTMLElement | null
+      while (nextSibling && nextSibling.id === componentId) {
+        const toRemove = nextSibling
+        nextSibling = nextSibling.nextElementSibling as HTMLElement | null
+        toRemove.remove()
+      }
+
       const initialPreviewIndex = getPreviewIndex(comp) || 0
 
       // Render each loop iteration
@@ -387,10 +496,36 @@ export function renderPreview(comp: Component, deep = 0) {
 
       // For subsequent iterations: clone first, then render into original (without diffing), then repeat
       for (let idx = fromIdx - 1; idx >= toIdx; idx--) {
+        // Check if this iteration should be visible
+        setPreviewIndexToLoopData(comp, idx)
+        const isVisibleAtIdx = isComponentVisible(comp)
+
+        // Skip invisible iterations - don't create a clone
+        if (!isVisibleAtIdx) {
+          continue
+        }
+
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
 
         clone.classList.remove('gjs-selected')
+
+        // Remove hidden elements from the clone to prevent them from appearing in the output
+        const hiddenInClone = clone.querySelectorAll('[style*="display: none"]')
+        hiddenInClone.forEach(hiddenEl => hiddenEl.remove())
+
+        // Reset visibility on the ORIGINAL element's children before rendering next iteration
+        // This ensures the next iteration starts with all elements visible
+        const hiddenInOriginal = el.querySelectorAll('[style*="display: none"]')
+        hiddenInOriginal.forEach(hiddenEl => {
+          if (hiddenEl instanceof HTMLElement && hiddenEl.style) {
+            hiddenEl.style.removeProperty('display')
+            // Remove empty style attribute
+            if (hiddenEl.style.length === 0) {
+              hiddenEl.removeAttribute('style')
+            }
+          }
+        })
 
         // Keep the selection mechanism - use GrapesJS component API
         clone.addEventListener('click', (event) => {
@@ -469,26 +604,18 @@ export function renderPreview(comp: Component, deep = 0) {
         // Add the clone to the canvas
         el.insertAdjacentElement('afterend', clone)
 
-        // Set preview index for the next iteration and render into original element
+        // Render the current iteration into the original element
         // NOTE: We skip the diffing here because we're in a loop creating initial elements
         // Diffing only helps on re-renders, not initial renders
-        setPreviewIndexToLoopData(comp, idx)
-        const isVisibleAtIdx = isComponentVisible(comp)
-
-        if (isVisibleAtIdx) {
-          const innerHtml = renderInnerHTML(comp)
-          if (innerHtml === null) {
-            comp.view!.render()
-            comp.components()
-              .forEach(c => renderPreview(c, deep+1))
-          } else {
-            // Just set innerHTML directly without diffing in the loop
-            el.innerHTML = innerHtml
-          }
-          renderAttributes(comp)
+        const innerHtml = renderInnerHTML(comp)
+        if (innerHtml === null) {
+          comp.components()
+            .forEach(c => renderPreview(c, deep+1))
         } else {
-          el.remove()
+          // Just set innerHTML directly without diffing in the loop
+          el.innerHTML = innerHtml
         }
+        renderAttributes(comp)
       }
       setPreviewIndexToLoopData(comp, initialPreviewIndex)
     }
@@ -496,10 +623,23 @@ export function renderPreview(comp: Component, deep = 0) {
     const isVisible = isComponentVisible(comp)
 
     if(isVisible) {
+      // Make sure the element is visible (in case it was hidden before)
+      if (el.style && el.style.display === 'none') {
+        el.style.removeProperty('display')
+        // Remove empty style attribute
+        if (el.style.length === 0) {
+          el.removeAttribute('style')
+        }
+      }
       renderContent(comp, deep)
       renderAttributes(comp)
     } else {
-      el.remove()
+      // Don't remove the element, just hide it
+      // This prevents breaking loop rendering where the same element
+      // is referenced across multiple iterations
+      if (el.parentElement && el.style) {
+        el.style.display = 'none'
+      }
     }
   }
 }
