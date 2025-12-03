@@ -182,6 +182,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         connector: {
           id: websiteId,
           connectorId: storageId,
+          // If "progressive", it will load the site pages one by one for a better UX (not blocking the thread), but it breaks grapesjs symbols
+          // Check https://github.com/GrapesJS/grapesjs/issues/6663
+          mode: '',
         },
       },
     },

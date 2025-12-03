@@ -28,9 +28,16 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 export const cmdPauseAutoSave = 'pause-auto-save'
 
 const loader = document.querySelector('.silex-loader') as HTMLDivElement
+
+function renderLoader(text: string, current: number, total: number) {
+  if (loader) {
+    render(getLoaderHtml(text, current, total), loader)
+  }
+}
+
 if (loader) {
   loader.innerHTML = ''
-  render(getLoaderHtml('Loading', 0, 0), loader)
+  renderLoader('Loading', 0, 0)
   setTimeout(() => loader.classList.add('silex-loader--active'))
 }
 
@@ -74,43 +81,50 @@ export const storagePlugin = (editor: PublishableEditor) => {
   })
   // Add the storage connector
   editor.Storage.add('connector', {
-    async load(options: { id: WebsiteId, connectorId: ConnectorId }): Promise<ProjectData> {
+    async load(options: { id: WebsiteId, connectorId: ConnectorId, mode: '' | 'progressive' }): Promise<ProjectData> {
       try {
+        renderLoader('Loading user data', 0, 3)
+        await nextFrame()
         const user: ConnectorUser = await getCurrentUser(editor) ?? await updateUser(editor, ConnectorType.STORAGE, options.connectorId)
         if (!user) throw new ApiError('Not logged in', 401)
+        renderLoader('Loading website', 1, 3)
+        await nextFrame()
         const data = await websiteLoad({ websiteId: options.id, connectorId: user.storage.connectorId }) as WebsiteData
-        if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
-        if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
-        if (!data.pages) {
-          // This happens when the website was just created
-          // Let grapesjs create the pages in the frontend
-          return data
-        } else {
-          editor.runCommand(cmdPauseAutoSave)
-          const { pages, pagesFolder, ...rest } = data
-          // Load any additional project data, e.g. symbols, but not the ones we progressive load
-          loader && render(getLoaderHtml('Loading styles, assets and symbols', 0, pages.length + 1), loader)
-          // Add to the project, everything but pages
-          editor.loadProjectData(rest)
-          editor.getModel().set('pagesFolder', pagesFolder)
-          // Add the pages to the project
-          await progressiveLoadPages(editor, pages)
-          await nextFrame()
-          // Trigger symbol update to recount instances now that pages are loaded
-          editor.trigger('symbol')
-          await nextFrame()
-          // Select the first page
-          const firstPage = editor.Pages.getAll()[0]
-          if (firstPage) editor.Pages.select(firstPage)
-          loader && render(getLoaderHtml('Starting', 1, 1), loader)
-          await nextFrame()
-          editor.once('canvas:frame:load', () => {
-            setTimeout(() => { // This is needed in chrome, otherwise a save is triggered
-              editor.stopCommand(cmdPauseAutoSave)
-            }, 500)
-          })
-          return data
+        editor.runCommand(cmdPauseAutoSave)
+        if (options.mode == 'progressive') {
+          if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
+          if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
+          if (!data.pages) {
+            // This happens when the website was just created
+            // Let grapesjs create the pages in the frontend
+          } else {
+            const { pages, pagesFolder, ...rest } = data
+            // Load any additional project data, e.g. symbols, but not the ones we progressive load
+            renderLoader('Loading styles, assets and symbols', 0, pages.length + 1)
+            await nextFrame()
+            // Add to the project, everything but pages
+            editor.loadProjectData(rest)
+            editor.getModel().set('pagesFolder', pagesFolder)
+            // Add the pages to the project
+            await progressiveLoadPages(editor, pages)
+            await nextFrame()
+            // Trigger symbol update to recount instances now that pages are loaded
+            editor.trigger('symbol')
+            await nextFrame()
+            // Select the first page
+            const firstPage = editor.Pages.getAll()[0]
+            if (firstPage) editor.Pages.select(firstPage)
+          }
         }
+        // Always return the full data in the end
+        renderLoader('Starting', 1, 1)
+        await nextFrame()
+        editor.once('canvas:frame:load', () => {
+          setTimeout(() => { // This is needed in chrome, otherwise a save is triggered
+            editor.stopCommand(cmdPauseAutoSave)
+          }, 500)
+        })
+        return data
       } catch (err) {
         editor.UndoManager.clear()
         if (err.httpStatusCode === 401) {
@@ -242,8 +256,7 @@ async function progressiveLoadPages(editor: PublishableEditor, pages: Page[]) {
   editor.Pages.getAll().forEach(page => editor.Pages.remove(page))
   let i = 0
   for (const page of pages) {
-    loader && render(getLoaderHtml(`Loading page <strong>${++i}</strong> / ${pages.length + 1}`, i, pages.length + 1), loader)
-    //await new Promise(resolve => setTimeout(resolve, 1000 * 60 * 1000))
+    renderLoader(`Loading page <strong>${++i}</strong> / ${pages.length + 1}`, i, pages.length + 1)
     await nextFrame()
     const newPage = editor.Pages.add({
       ...page,
