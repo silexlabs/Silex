@@ -129,7 +129,7 @@
     "express-force-ssl": "0.3.2",
     "formidable": "3.5.1",
     "fs-extra": "^11.2.0",
-    "grapesjs": "^0.22.6",
+    "grapesjs": "^0.22.14",
     "grapesjs-blocks-basic": "1.0.2",
     "grapesjs-custom-code": "1.0.2",
     "grapesjs-parser-postcss": "^1.0.3",
