@@ -1,7 +1,7 @@
 import { createRef, Ref, ref } from 'lit/directives/ref.js'
 import {repeat} from 'lit/directives/repeat.js'
 import GraphQL, { GraphQLOptions } from '../datasources/GraphQL'
-import { DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditorViewOptions, IDataSource } from '../types'
+import { COMMAND_ADD_DATA_SOURCE, DATA_SOURCE_CHANGED, DATA_SOURCE_DATA_LOAD_END, DATA_SOURCE_ERROR, DATA_SOURCE_READY, DataSourceEditorViewOptions, IDataSource } from '../types'
 import { getDefaultOptions, getElementFromOption } from '../utils'
 import { getAllDataSources, addDataSource, removeDataSource } from '../model/dataSourceRegistry'
 import { css, html, LitElement, render } from 'lit'
@@ -83,6 +83,13 @@ export default (editor: Editor, options: Partial<DataSourceEditorViewOptions> = 
       }
     })
     renderSettings(editor, dsSettings, settingsEl)
+
+    // Add a data source
+    editor.Commands.add(COMMAND_ADD_DATA_SOURCE, {
+      run() {
+        dsSettings.value?.openDataSourceModal()
+      },
+    })
   }
 }
 
@@ -143,6 +150,7 @@ class SettingsDataSources extends LitElement {
     // Create the form element
     const formElement = document.createElement('ds-settings__data-source') as SettingsDataSource
     formElement.dataSource = ds
+    formElement.isEdit = isEdit
 
     // Handle form events
     const handleSave = () => {
@@ -159,9 +167,38 @@ class SettingsDataSources extends LitElement {
       this.editor!.Modal.close()
     }
 
+    const handleCancel = () => {
+      this.editor!.Modal.close()
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        this.editor!.Modal.close()
+      }
+    }
+
     formElement.addEventListener('change', handleSave)
+    formElement.addEventListener('cancel', handleCancel)
     if (isEdit) {
       formElement.addEventListener('delete', handleDelete)
+    }
+
+    // Add ESC key handler
+    document.addEventListener('keydown', handleKeyDown)
+
+    // Clean up on modal close
+    const modalObserver = new MutationObserver(() => {
+      if (!this.editor!.Modal.isOpen()) {
+        document.removeEventListener('keydown', handleKeyDown)
+        modalObserver.disconnect()
+      }
+    })
+    const modalParent = this.editor.Modal.getContentEl()?.parentElement
+    if (modalParent) {
+      modalObserver.observe(modalParent, {
+        attributes: true,
+        attributeFilter: ['style', 'class'],
+      })
     }
 
     // Open the modal
@@ -306,6 +343,8 @@ if(!customElements.get('ds-settings')) {
 class SettingsDataSource extends LitElement {
   @property({ type: Object })
     dataSource: IDataSource | null
+  @property({ type: Boolean })
+    isEdit: boolean = false
   errorMessage: string = ''
   connected: boolean = false
   isLoading: boolean = false
@@ -395,8 +434,18 @@ class SettingsDataSource extends LitElement {
     .ds-actions {
       display: flex;
       gap: 10px;
-      justify-content: flex-start;
+      justify-content: space-between;
+      align-items: center;
       margin-top: 15px;
+    }
+    .ds-actions-left {
+      display: flex;
+      gap: 10px;
+    }
+    .ds-actions-right {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
     }
     .ds-no-resize {
       flex: 0 0 auto;
@@ -511,20 +560,20 @@ class SettingsDataSource extends LitElement {
         </div>
 
         <div class="ds-field ds-actions">
-          <button
-            type="submit"
-            class="ds-btn-prim"
-            ?disabled=${this.isLoading}
-            >${this.isLoading ? 'Testing...' : 'Test Connection'}</button>
-          ${this.dataSource.readonly !== false ? '' : html`
+          <div class="ds-actions-right">
             <button
               type="button"
-              class="ds-btn-prim ds-btn-danger"
+              class="ds-btn-prim"
               @click=${() => {
-    this.dispatchEvent(new CustomEvent('delete'))
+    this.dispatchEvent(new CustomEvent('cancel'))
   }}
-            >Delete Data Source</button>
-          `}
+            >Cancel</button>
+            <button
+              type="submit"
+              class="ds-btn-prim"
+              ?disabled=${this.isLoading}
+              >${this.isLoading ? 'Testing...' : 'Apply'}</button>
+          </div>
         </div>
       </div>
     </form>
