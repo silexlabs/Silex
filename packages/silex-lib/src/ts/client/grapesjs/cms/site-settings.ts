@@ -1,7 +1,7 @@
 import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { html } from 'lit-html'
-import { addDataSource, createDataSource } from '@silexlabs/grapesjs-data-source'
+import { COMMAND_ADD_DATA_SOURCE, createDataSource } from '@silexlabs/grapesjs-data-source'
 import { Editor } from 'grapesjs'
 import { cmdAddSection } from '../settings'
 
@@ -19,11 +19,9 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
             margin-bottom: 10px;
           }
           .add-ds-btn {
-            width: 30px;
-            height: 30px;
             margin-left: auto;
-            font-size: 24px;
             background-color: var(--gjs-main-light-color);
+            padding: 5px 10px;
           }
           </style>
           <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
@@ -34,20 +32,12 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
             </div>
             <div class="gjs-sm-sector-title">
               Data Sources
-              <button
+              <span
                 class="silex-button add-ds-btn"
                 title="Add a new data source"
-                @click=${async () => {
-    const newDataSource = createDataSource()
-    addDataSource(newDataSource)
-    try {
-      await newDataSource.connect()
-    } catch (error) {
-      console.error('🟡 [site-settings] Data source connection failed:', error)
-    }
-  }}>
+                @click=${(event: MouseEvent) => editor.runCommand(COMMAND_ADD_DATA_SOURCE)}>
                 +
-                </button>
+                </span>
             </div>
             ${opts.view?.settingsEl ? (opts.view.settingsEl as () => HTMLElement)() : ''}
             <div class="gjs-sm-sector-title">11ty Config</div>
