@@ -1,7 +1,7 @@
 import { ClientConfig } from '../../config'
 import { CMS_SETTINGS_SECTION_ID, EleventyPluginOptions, Silex11tyPluginWebsiteSettings } from './index'
 import { html } from 'lit-html'
-import { COMMAND_ADD_DATA_SOURCE, createDataSource } from '@silexlabs/grapesjs-data-source'
+import { COMMAND_ADD_DATA_SOURCE } from '@silexlabs/grapesjs-data-source'
 import { Editor } from 'grapesjs'
 import { cmdAddSection } from '../settings'
 
