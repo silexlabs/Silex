@@ -207,6 +207,7 @@ export const PROPERTY_STYLES = `
     vertical-align: bottom;
     display: inline-flex;
     margin: 0;
+    margin-left: 20px;
   }
   expression-input::part(expression-input-item) {
     border: 1px solid rgba(0,0,0,.15);
