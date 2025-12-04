@@ -237,6 +237,7 @@ export const COMMAND_REFRESH = 'data-source:refresh'
 export const COMMAND_PREVIEW_ACTIVATE = 'data-source:preview:activate'
 export const COMMAND_PREVIEW_DEACTIVATE = 'data-source:preview:deactivate'
 export const COMMAND_PREVIEW_REFRESH = 'data-source:preview:refresh'
+export const COMMAND_ADD_DATA_SOURCE = 'data-source:add'
 
 These constants are exported by the API of the plugin, e.g.
 

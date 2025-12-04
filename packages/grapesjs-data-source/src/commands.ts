@@ -7,7 +7,6 @@ import {
   COMMAND_PREVIEW_TOGGLE,
   PREVIEW_ACTIVATED,
   PREVIEW_DEACTIVATED,
-  COMMAND_ADD_DATA_SOURCE,
 } from './types'
 import { refreshDataSources } from './model/dataSourceManager'
 import { Editor } from 'grapesjs'
