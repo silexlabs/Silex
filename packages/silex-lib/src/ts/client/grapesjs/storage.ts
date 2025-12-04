@@ -91,9 +91,9 @@ export const storagePlugin = (editor: PublishableEditor) => {
         await nextFrame()
         const data = await websiteLoad({ websiteId: options.id, connectorId: user.storage.connectorId }) as WebsiteData
         editor.runCommand(cmdPauseAutoSave)
+        if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
+        if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
         if (options.mode == 'progressive') {
-          if (data.assets) data.assets = addTempDataToAssetUrl(data.assets, options.id, user.storage.connectorId)
-          if (data.styles) data.styles = addTempDataToStyles(data.styles, options.id, user.storage.connectorId)
           if (!data.pages) {
             // This happens when the website was just created
             // Let grapesjs create the pages in the frontend
