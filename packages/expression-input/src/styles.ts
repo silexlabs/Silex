@@ -43,9 +43,24 @@ export const inputChainStyles = css`
     width: 100%;
   }
   .dirty-icon,
-  ::part(dirty-icon) {
-    display: inline-block;
+  ::part(dirty-icon),
+  .copy-icon,
+  ::part(copy-icon),
+  .paste-icon,
+  ::part(paste-icon) {
+    display: inline-flex;
+    align-items: center;
     width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+  }
+  .dirty-icon svg,
+  .copy-icon svg,
+  .paste-icon svg {
+    width: 100%;
+    height: 100%;
   }
   .property-container,
   ::part(property-container) {
