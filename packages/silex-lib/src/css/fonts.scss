@@ -10,4 +10,20 @@
   .silex-form__element {
     margin-bottom: 80px;
   }
+  .variants-toolbar .silex-button {
+    padding: 0 !important;
+    font-weight: normal;
+    background: none;
+    border: none;
+    font-size: small;
+    text-decoration: underline;
+    border-radius: 0;
+  }
+  .silex-button {
+    background:
+    none;
+      border: none;
+      font-weight: normal !important;
+      box-shadow: none;
+  }
 }
