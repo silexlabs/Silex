@@ -39,7 +39,7 @@ export const OPTIONS_STYLES = `
     background-color: transparent;
     border-radius: 2px;
     color: var(--ds-tertiary);
-    border: 1px solid rgba(0,0,0,.15);
+    border: 1px solid var(--ds-tertiary);
   }
   form .buttons input {
     margin-left: 5px;
@@ -59,20 +59,20 @@ export const OPTIONS_STYLES = `
 `
 export const PROPERTY_STYLES = `
   :root {
-    --ds-primary: #d278c9;
-    --ds-secondary: #ddd;
-    --ds-tertiary: #3d3d3d;
-    --ds-highlight: #d278c9;
-    --ds-lowlight: #363636;
-    --ds-button-color: #fff;
-    --ds-button-bg: #606060;
+    --ds-primary: #8873FE;
+    --ds-secondary: #E5E5E5;
+    --ds-tertiary: #1D1D1D;
+    --ds-highlight: #8873FE;
+    --ds-lowlight: #252525;
+    --ds-button-color: #E5E5E5;
+    --ds-button-bg: #252525;
     --ds-button-border: var(--ds-button-bg);
 
-    --expression-input-dirty-background-color: var(--ds-lowlight);
-    --expression-input-dirty-border-color: var(--ds-lowlight);
+    --expression-input-dirty-background-color: var(--ds-button-bg);
+    --expression-input-dirty-border-color: var(--ds-tertiary);
     --expression-input-dirty-color: var(--ds-highlight);
-    --expression-input-active-color: var(--ds-secondary);
-    --expression-input-active-background-color: var(--ds-button-bg);
+    --expression-input-active-color: var(--ds-tertiary);
+    --expression-input-active-background-color: var(--ds-secondary);
     --popin-dialog-background: var(--ds-secondary);
     --popin-dialog-color: var(--ds-tertiary);
     --popin-dialog-header-background: transparent;
@@ -104,16 +104,16 @@ export const PROPERTY_STYLES = `
     */
   }
   .ds-state-editor__options {
-    --ds-secondary: #363636;
-    --ds-tertiary: #ffffff;
-    --ds-lowlight: #ddd;
-    --ds-button-color: #606060;
-    --ds-button-bg: #fff;
-    --expression-input-dirty-background-color: var(--ds-lowlight);
-    --expression-input-dirty-border-color: var(--ds-lowlight);
+    --ds-secondary: #1A1A1A;
+    --ds-tertiary: #F5F5F5;
+    --ds-lowlight: #E0E0E0;
+    --ds-button-color: #1A1A1A;
+    --ds-button-bg: #FFFFFF;
+    --expression-input-dirty-background-color: var(--ds-button-bg);
+    --expression-input-dirty-border-color: var(--ds-tertiary);
     --expression-input-dirty-color: var(--ds-highlight);
-    --expression-input-active-color: var(--ds-secondary);
-    --expression-input-active-background-color: var(--ds-button-bg);
+    --expression-input-active-color: var(--ds-tertiary);
+    --expression-input-active-background-color: var(--ds-secondary);
   }
   .gjs-traits-label {
     font-family: "Ubuntu", sans-serif;
@@ -133,11 +133,11 @@ export const PROPERTY_STYLES = `
     height: 20px;
   }
   expression-input::part(add-button) {
-    background-color: rgba(255,255,255,.15);
+    background-color: var(--ds-tertiary);
     border-radius: 2px;
     padding: 3px;
     margin: 0;
-    border: 1px solid rgba(0,0,0,.15);
+    border: 1px solid var(--ds-tertiary);
     width: 24px;
     height: 24px;
     box-sizing: border-box;
@@ -172,7 +172,7 @@ export const PROPERTY_STYLES = `
     color: var(--ds-secondary);
   }
   expression-input::part(property-container) {
-    background-color: var(--ds-lowlight);
+    background-color: var(--ds-tertiary);
     border-radius: 2px;
     box-sizing: border-box;
     padding: 5px;
@@ -183,13 +183,13 @@ export const PROPERTY_STYLES = `
     box-sizing: border-box;
 
     /* inner shadow to make it visible when content is overflowing */
-    box-shadow: inset 0 0 5px 0 rgba(0,0,0,.2);
+    box-shadow: inset 0 0 5px 0 rgba(0,0,0,.3);
 
   }
   expression-input::part(steps-container) {
     display: flex;
     align-items: center;
-    background-color: rgba(0,0,0,.2);
+    background-color: var(--ds-button-bg);
     border-radius: 2px;
     padding: 5px;
     margin: 5px 0;
@@ -210,8 +210,8 @@ export const PROPERTY_STYLES = `
     margin-left: 20px;
   }
   expression-input::part(expression-input-item) {
-    border: 1px solid rgba(0,0,0,.15);
-    background-color: rgba(255,255,255,.15);
+    border: 1px solid var(--ds-tertiary);
+    background-color: var(--ds-tertiary);
     border-radius: 2px;
     margin-right: 5px;
   }
@@ -257,10 +257,10 @@ export const PROPERTY_STYLES = `
       flex: 0;
       margin: 5px;
       padding: 5px;
-      background-color: var(--ds-tertiary);
+      background-color: var(--ds-button-bg);
       border-radius: 2px;
       color: var(--ds-secondary);
-      border: 1px solid rgba(0,0,0,.15);
+      border: 1px solid var(--ds-tertiary);
       cursor: pointer;
       font-size: medium;
     }
