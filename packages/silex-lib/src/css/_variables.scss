@@ -1,12 +1,23 @@
-// All colors
-// /!\ Duplicated in the grapesjs/index.ts too => keep in sync
+/**
+ * SILEX VARIABLES
+ * Core configuration values for Silex
+ * Colors are now managed in theme-base.scss
+ * /!\ Some values duplicated in grapesjs/index.ts => keep in sync
+ */
+
+// ============================================================
+// COLORS (will be overridden by theme-base.scss)
+// ============================================================
 $primaryColor: #333333;
 $secondaryColor: #ddd;
 $tertiaryColor: #8873FE;
-$quaternaryColor: #A291FF;;
+$quaternaryColor: #A291FF;
 $darkerPrimaryColor: #292929;
 $lighterPrimaryColor: #575757;
 
+// ============================================================
+// LAYOUT DIMENSIONS
+// ============================================================
 $topBarHeight: 40px;
 $projectBarWidth: 35px;
 $projectPanelWidth: 13%;
@@ -14,28 +25,52 @@ $projectPanelMinWidth: 150px;
 $viewsPanelWidth: 25%; // 15% is grapesjs default
 $viewsProjectPanelWidth: 13%;
 $footerHeight: 30px;
+
+// ============================================================
+// TRANSITIONS
+// ============================================================
 $transitionSpeedMedium: .15s;
 $transitionSpeedSlow: .30s;
+
+// ============================================================
+// PREFIXES
+// ============================================================
 $prefix: 'gjs-';
 $pn-prefix: '#{$prefix}pn-';
 $cv-prefix: '#{$prefix}cv-';
+
+// ============================================================
+// Z-INDEXES
+// ============================================================
 $z-dialog-inline: 10;
 $z-loader: 11;
 $z-views-options-buttons: 5;
 
+// ============================================================
+// TYPOGRAPHY
+// ============================================================
 $fontFamily: 'Ubuntu', sans-serif;
 
+// ============================================================
+// CSS CUSTOM PROPERTIES (Legacy support)
+// Note: These are now primarily managed in theme-base.scss
+// ============================================================
 :root {
+  // Legacy color variables (for backward compatibility)
   --primaryColor: #{$primaryColor};
-  --gjs-primary-color: #{$primaryColor} !important;
   --secondaryColor: #{$secondaryColor};
-  --gjs-secondary-color: #{$secondaryColor} !important;
   --tertiaryColor: #{$tertiaryColor};
-  --gjs-tertiary-color: #{$tertiaryColor} !important;
   --quaternaryColor: #{$quaternaryColor};
-  --gjs-quaternary-color: #{$quaternaryColor} !important;
   --darkerPrimaryColor: #{$darkerPrimaryColor};
   --lighterPrimaryColor: #{$lighterPrimaryColor};
+
+  // GrapesJS overrides (also set in theme-base.scss with !important)
+  --gjs-primary-color: #{$primaryColor} !important;
+  --gjs-secondary-color: #{$secondaryColor} !important;
+  --gjs-tertiary-color: #{$tertiaryColor} !important;
+  --gjs-quaternary-color: #{$quaternaryColor} !important;
+
+  // Layout dimensions
   --viewsPanelWidth: #{$viewsPanelWidth};
   --viewsProjectPanelWidth: #{$viewsProjectPanelWidth};
   --footerHeight: #{$footerHeight};

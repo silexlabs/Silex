@@ -1,42 +1,43 @@
 @use "variables" as *;
 
-// squeeze the stage iframe when panel is open
-//.silex-squeeze-left .gjs-frame-wrapper {
-//  margin-left: 18%;
-//  width: auto;
-//}
+// Squeeze the stage iframe when panel is open
 .silex-squeeze-left .gjs-cv-canvas {
   left: calc(var(--viewsProjectPanelWidth) + 35px);
   width: auto;
   right: var(--viewsPanelWidth);
 }
 
-
-// button bar
+// Button bar
 .#{$pn-prefix}project-bar-panel {
   width: $projectBarWidth;
   padding: 0;
+
   .#{$pn-prefix}buttons {
     flex-direction: column;
     min-height: 100vh;
     justify-content: flex-start;
+
     .project-bar-spacer {
       flex: 1;
     }
+
     .#{$pn-prefix}btn {
       margin: 5px 0 5px 0px;
       padding: 5px;
+
       &.#{$pn-prefix}active {
-        background-color: $lighterPrimaryColor;
+        background-color: var(--silex-active-bg);
         width: $projectBarWidth;
         box-shadow: none;
       }
     }
+
     .#{$pn-prefix}btn.project-bar__dirty {
-      background-color: $quaternaryColor;
-      color: white;
+      background-color: var(--silex-accent-secondary);
+      color: var(--silex-text-inverse);
     }
   }
+
   .logo {
     background-image: url('../assets/logo-silex-small.png');
     background-repeat: no-repeat;
@@ -47,71 +48,82 @@
 }
 
 // Resize options project panel button
-.viewsOptionsProjectPanel__size-btn::before {
-  content: '→';
-}
 .viewsOptionsProjectPanel__size-btn {
   z-index: $z-views-options-buttons;
   right: auto;
   left: 0;
+
+  &::before {
+    content: '→';
+  }
 }
-// For fixed block size after project panel resizing (instead of default value 45%)
+
+// Fixed block size after project panel resizing
 .gjs-block {
   width: 84px;
 }
 
-// panels
+// Panels
 .#{$pn-prefix}project-bar-container {
   top: $topBarHeight;
   width: $projectPanelWidth;
   min-width: $projectPanelMinWidth;
   height: calc(100% - $topBarHeight - $footerHeight);
-  background-color: $lighterPrimaryColor;
+  background-color: var(--silex-bg-lighter);
+
   &:not(.gjs-hidden) {
-    display: flex; // let the child take the whole height
+    display: flex;
     flex-direction: column;
   }
+
   .project-bar__panel:not(.gjs-hidden) {
     flex: 1;
-    display: flex; // let the child take the whole height
+    display: flex;
     flex-direction: column;
-    background-color: $primaryColor;
+    background-color: var(--silex-bg-main);
     overflow: auto;
+
     .gjs-layer {
-      background-color: $primaryColor;
+      background-color: var(--silex-bg-main);
     }
   }
+
   .project-bar__panel > *:not(header) {
     flex: 1;
     display: initial;
-   }
-   .project-bar__panel-header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 5px;
-      border-bottom: 1px solid $lighterPrimaryColor;
-      .project-bar__panel-header-title {
-        flex: 1 1 auto;
-        overflow-x: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        padding: 3px 0;
-        margin: 0;
-        font-size: large;
-        font-weight: 600;
+  }
+
+  .project-bar__panel-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid var(--silex-border-color-strong);
+
+    .project-bar__panel-header-title {
+      flex: 1 1 auto;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding: 3px 0;
+      margin: 0;
+      font-size: large;
+      font-weight: 600;
+    }
+
+    .project-bar__panel-header-button {
+      cursor: pointer;
+
+      span {
+        background-color: var(--silex-bg-darker);
+        border-radius: 100%;
+        display: inline-block;
+        line-height: 13px;
       }
-      .project-bar__panel-header-button {
-        cursor: pointer;
-        span {
-          background-color: #444;
-          border-radius: 100%;
-          display: inline-block;
-          line-height: 13px;
-        }
-      }
-      .project-bar__panel-header-button:hover {
-        color: $quaternaryColor;
+
+      &:hover {
+        color: var(--silex-accent-secondary);
       }
     }
   }
+}

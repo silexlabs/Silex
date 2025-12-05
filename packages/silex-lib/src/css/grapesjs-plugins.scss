@@ -7,30 +7,35 @@
 @mixin square-borders-before {
   display: block;
   content: '' !important;
-  border: 2px solid $tertiaryColor;
+  border: 2px solid var(--silex-accent-primary);
   width: 10px;
   height: 10px;
   margin: auto;
 }
+
 .fa-arrows::before {
   @include square-borders-before;
-  border-color: $secondaryColor;
+  border-color: var(--silex-text-primary);
 }
+
 .fa-long-arrow-up::before {
   @include square-borders-before;
-  border-top-color: $secondaryColor;
+  border-top-color: var(--silex-text-primary);
 }
+
 .fa-long-arrow-down::before {
   @include square-borders-before;
-  border-bottom-color: $secondaryColor;
+  border-bottom-color: var(--silex-text-primary);
 }
+
 .fa-long-arrow-left::before {
   @include square-borders-before;
-  border-left-color: $secondaryColor;
+  border-left-color: var(--silex-text-primary);
 }
+
 .fa-long-arrow-right::before {
   @include square-borders-before;
-  border-right-color: $secondaryColor;
+  border-right-color: var(--silex-text-primary);
 }
 
 // Hide tooltip info buttons for border properties that interfere with the visual squares
@@ -76,7 +81,8 @@
 #publish-dialog {
   .notice {
     margin: 10px 0;
-    background-color: rgba(255, 166, 0, 0.2);
+    background-color: var(--silex-status-warning);
+    opacity: 0.2;
     border-radius: 5px;
     padding: 10px;
   }
@@ -87,15 +93,15 @@
     border: none;
     height: 5px;
     animation: pub-blink 0.33s infinite alternate;
-    background-color: $tertiaryColor;
+    background-color: var(--silex-accent-primary);
   }
 
   progress::-webkit-progress-bar {
-    background-color: $tertiaryColor;
+    background-color: var(--silex-accent-primary);
   }
 
   progress::-moz-progress-bar {
-    background-color: $tertiaryColor;
+    background-color: var(--silex-accent-primary);
   }
 
   header {
@@ -114,15 +120,15 @@
     }
 
     button {
-      border: solid 2px #484848;
+      border: solid 2px var(--silex-border-color-strong);
       border-radius: 50px;
       padding: 4px 9px;
-      background-color: #444;
-      color: $secondaryColor;
+      background-color: var(--silex-bg-darker);
+      color: var(--silex-text-primary);
     }
 
     .connector {
-      color: $quaternaryColor;
+      color: var(--silex-accent-secondary);
     }
   }
 
@@ -152,8 +158,8 @@
 
     details {
       border-radius: 5px;
-      border: solid #222 2px;
-      background-color: #222;
+      border: solid var(--silex-border-color) 2px;
+      background-color: var(--silex-bg-darker);
       margin: 10px 0;
       padding: 10px;
       word-break: break-word;
@@ -182,15 +188,15 @@
 
           &:hover {
             transition: 200ms;
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--gjs-soft-light-color);
           }
         }
       }
 
       &:hover {
         transition: 200ms;
-        border-color: $lighterPrimaryColor;
-        background-color: $darkerPrimaryColor;
+        border-color: var(--silex-border-color-strong);
+        background-color: var(--silex-hover-bg);
       }
 
       * {
@@ -217,7 +223,7 @@
     }
 
     .silex-button--primary {
-      background-color: $tertiaryColor;
+      background-color: var(--silex-accent-primary);
     }
   }
 }
@@ -228,7 +234,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
   padding-top: 7px;
-  border-bottom: solid $primaryColor 7px;
+  border-bottom: solid var(--silex-bg-main) 7px;
 }
 
 // // grapesjs-tailwind plugin

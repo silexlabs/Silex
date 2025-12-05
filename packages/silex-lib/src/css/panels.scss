@@ -1,0 +1,261 @@
+/**
+ * PANELS.SCSS
+ * Unified styling for all left-side panels (Blocks, Pages, Symbols, Layers)
+ * Ensures consistent look and behavior across all project panels
+ */
+
+@use "variables" as *;
+
+// ============================================================
+// UNIFIED PANEL STRUCTURE
+// ============================================================
+
+// All project panels share the same base styling
+.#{$pn-prefix}project-bar-container {
+  .project-bar__panel {
+    // Consistent header styling
+    .project-bar__panel-header {
+      background-color: var(--silex-bg-lighter);
+      border-bottom: 1px solid var(--silex-border-color-strong);
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+
+      .project-bar__panel-header-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--silex-text-primary);
+        letter-spacing: 0.02em;
+      }
+
+      .project-bar__panel-header-button {
+        opacity: 0.7;
+        transition: opacity var(--silex-transition-fast);
+
+        &:hover {
+          opacity: 1;
+          color: var(--silex-accent-primary);
+        }
+      }
+    }
+
+    // Consistent body styling
+    & > main,
+    & > .gjs-blocks-c,
+    & > *:not(header) {
+      background-color: var(--silex-bg-main);
+      padding: 8px;
+    }
+  }
+}
+
+// ============================================================
+// BLOCKS PANEL SPECIFIC
+// ============================================================
+
+.gjs-blocks-c {
+  // Block categories
+  .gjs-block-category {
+    margin-bottom: 8px;
+
+    .gjs-title {
+      padding: 8px 12px;
+      background-color: var(--silex-bg-lighter);
+      border: 1px solid var(--silex-border-color);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--silex-text-secondary);
+      cursor: pointer;
+      transition: all var(--silex-transition-fast);
+
+      &:hover {
+        background-color: var(--silex-hover-bg);
+        color: var(--silex-text-primary);
+        border-color: var(--silex-accent-primary);
+      }
+    }
+
+    .gjs-blocks-c {
+      padding: 8px 0;
+    }
+  }
+
+  // Individual blocks
+  .gjs-block {
+    margin: 6px;
+    padding: 12px;
+    background-color: var(--silex-bg-lighter);
+    border: 1px solid var(--silex-border-color);
+    border-radius: 6px;
+    transition: all var(--silex-transition-fast);
+
+    &:hover {
+      background-color: var(--silex-hover-bg);
+      border-color: var(--silex-accent-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .gjs-block-label {
+      font-size: 11px;
+      color: var(--silex-text-secondary);
+      margin-top: 8px;
+    }
+
+    /* symbols */
+    &.symbols__symbol-selected {
+      border-color: var(--silex-accent-primary);
+    }
+  }
+}
+
+// ============================================================
+// PAGES PANEL SPECIFIC
+// ============================================================
+
+.page-panel-container {
+  .pages {
+    .pages__main {
+      padding: 4px;
+    }
+
+    .pages__page {
+      margin: 2px 0;
+      padding: 10px 12px;
+      border-radius: 4px;
+      background-color: var(--silex-bg-darker);
+      border: 1px solid transparent;
+
+      &:hover {
+        background-color: var(--silex-hover-bg);
+        border-color: var(--silex-border-color);
+      }
+
+      &.pages__page-selected {
+        background-color: var(--silex-active-bg);
+        border-color: var(--silex-accent-primary);
+        border-left-width: 3px;
+      }
+    }
+
+    .pages__page-name {
+      font-size: 13px;
+      color: var(--silex-text-primary);
+    }
+
+    .pages__icon {
+      opacity: 0.6;
+      transition: opacity var(--silex-transition-fast);
+
+      &:hover {
+        opacity: 1;
+        color: var(--silex-accent-primary);
+      }
+    }
+  }
+
+  // Collection pages section
+  .pages__collection-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--silex-border-color-strong);
+
+    h3 {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--silex-text-secondary);
+      margin-bottom: 8px;
+    }
+  }
+}
+
+// ============================================================
+// LAYERS PANEL SPECIFIC
+// ============================================================
+
+.gjs-layer-wrapper {
+  .gjs-layer {
+    padding: 6px 8px;
+    margin: 1px 0;
+    border-radius: 3px;
+    transition: background-color var(--silex-transition-fast);
+
+    &:hover {
+      background-color: var(--silex-hover-bg);
+    }
+
+    &.gjs-selected {
+      background-color: var(--silex-active-bg);
+      border-left: 3px solid var(--silex-accent-primary);
+    }
+
+    .gjs-layer-title {
+      font-size: 12px;
+      color: var(--silex-text-primary);
+    }
+
+    .gjs-layer-count {
+      font-size: 10px;
+      color: var(--silex-text-secondary);
+    }
+  }
+}
+
+// ============================================================
+// SYMBOLS PANEL (if exists) - Same treatment
+// ============================================================
+
+.symbols-panel {
+  .symbol-item {
+    padding: 10px 12px;
+    margin: 4px 0;
+    background-color: var(--silex-bg-lighter);
+    border: 1px solid var(--silex-border-color);
+    border-radius: 4px;
+    transition: all var(--silex-transition-fast);
+
+    &:hover {
+      background-color: var(--silex-hover-bg);
+      border-color: var(--silex-accent-primary);
+    }
+
+    &.selected {
+      background-color: var(--silex-active-bg);
+      border-color: var(--silex-accent-primary);
+      border-left-width: 3px;
+    }
+  }
+}
+
+// ============================================================
+// CONSISTENT SCROLLBARS FOR ALL PANELS
+// ============================================================
+
+.#{$pn-prefix}project-bar-container {
+  .project-bar__panel {
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--silex-bg-main);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--silex-border-color-strong);
+      border-radius: 4px;
+
+      &:hover {
+        background: var(--silex-accent-secondary);
+      }
+    }
+  }
+}

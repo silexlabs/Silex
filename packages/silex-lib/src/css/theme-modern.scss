@@ -1,0 +1,265 @@
+/**
+ * THEME-MODERN.SCSS
+ * Modern Dark Theme 2025 for Silex
+ *
+ * Design Philosophy:
+ * - Minimalisme structuré
+ * - Beaucoup d'espace visuel
+ * - Ombres très douces, jamais fortes
+ * - Pas de gradients visibles
+ * - Micro-interactions 150–200ms
+ * - Haute lisibilité
+ * - Harmonie avec les IDE modernes (VS Code, etc.)
+ *
+ * Palette (Solid & Modern):
+ * - Global background: #111111
+ * - Surfaces: #1A1A1A, #1D1D1D
+ * - Borders: #262626
+ * - Primary text: #E5E5E5
+ * - Secondary text: #A8A8A8
+ * - Accent: #8873FE (purple moderne)
+ */
+
+@use "variables" as silex-vars;
+
+:root {
+  // ============================================================
+  // BASE COLORS - Modern Dark 2025
+  // ============================================================
+
+  // Main backgrounds
+  --primaryColor: #1A1A1A;
+  --gjs-primary-color: #1A1A1A !important;
+
+  // Text colors
+  --secondaryColor: #E5E5E5;
+  --gjs-secondary-color: #E5E5E5 !important;
+  --gjs-font-color: #E5E5E5 !important;
+  --gjs-font-color-active: #FFFFFF !important;
+
+  // Accent colors
+  --tertiaryColor: #8873FE;
+  --gjs-tertiary-color: #8873FE !important;
+  --quaternaryColor: #7461E3;
+  --gjs-quaternary-color: #7461E3 !important;
+
+  // Variations
+  --darkerPrimaryColor: #111111;
+  --lighterPrimaryColor: #1D1D1D;
+  --gjs-primary-darker: #111111;
+  --gjs-primary-lighter: #1D1D1D;
+
+  // GrapesJS system colors
+  --gjs-main-color: #1A1A1A;
+  --gjs-main-dark-color: rgba(0, 0, 0, 0.3);
+  --gjs-secondary-dark-color: rgba(0, 0, 0, 0.15);
+  --gjs-main-light-color: rgba(255, 255, 255, 0.08);
+  --gjs-secondary-light-color: rgba(255, 255, 255, 0.5);
+  --gjs-soft-light-color: rgba(255, 255, 255, 0.02);
+
+  // Status colors (solid, modern, accessible)
+  --gjs-color-blue: #6B8AFF;
+  --gjs-color-green: #5FD68F;
+  --gjs-color-yellow: #FFA94D;
+  --gjs-color-red: #FF6B6B;
+
+  // Utility colors
+  --gjs-color-highlight: #8873FE;
+  --gjs-color-warn: #FFA94D;
+
+  // ============================================================
+  // SILEX SEMANTIC TOKENS - Modern Theme
+  // ============================================================
+
+  // Backgrounds
+  --silex-bg-main: #1A1A1A;
+  --silex-bg-darker: #111111;
+  --silex-bg-lighter: #1D1D1D;
+  --silex-bg-surface: #1A1A1A;
+
+  // Text colors
+  --silex-text-primary: #E5E5E5;
+  --silex-text-secondary: #A8A8A8;
+  --silex-text-inverse: #FFFFFF;
+
+  // Borders (subtle, modern)
+  --silex-border-color: rgba(255, 255, 255, 0.08);
+  --silex-border-color-strong: #262626;
+  --gjs-light-border: rgba(255, 255, 255, 0.08);
+
+  // Shadows (très douces)
+  --silex-shadow-color: rgba(0, 0, 0, 0.4);
+  --silex-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --silex-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --silex-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+  // Interactive states (micro-interactions)
+  --silex-hover-bg: #222222;
+  --silex-active-bg: #252525;
+  --silex-focus-outline: #8873FE;
+
+  // Accents
+  --silex-accent-primary: #8873FE;
+  --silex-accent-secondary: #7461E3;
+
+  // Status colors
+  --silex-status-info: #6B8AFF;
+  --silex-status-success: #5FD68F;
+  --silex-status-warning: #FFA94D;
+  --silex-status-error: #FF6B6B;
+
+  // UI Components
+  --silex-button-bg: #252525;
+  --silex-button-hover-bg: #2D2D2D;
+  --silex-input-bg: #141414;
+  --silex-badge-bg: #2D2D2D;
+  --silex-badge-text: #E5E5E5;
+
+  // Transitions (150-200ms pour micro-interactions)
+  --silex-transition-fast: 0.15s;
+  --silex-transition-medium: 0.2s;
+  --gjs-animation-duration: 0.18s;
+
+  // ============================================================
+  // REFINEMENTS - Polish & Details
+  // ============================================================
+
+  // Scrollbars
+  --gjs-scrollbar-track: #1A1A1A;
+  --gjs-scrollbar-thumb: rgba(255, 255, 255, 0.15);
+
+  // Borders & Dividers
+  --gjs-border-color: #262626;
+
+  // Arrow & Decorations
+  --gjs-arrow-color: rgba(255, 255, 255, 0.5);
+  --gjs-dark-text-shadow: rgba(0, 0, 0, 0.4);
+}
+
+// ============================================================
+// GLOBAL REFINEMENTS
+// ============================================================
+
+// Smooth scrollbars everywhere
+.gjs-editor-cont {
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--gjs-scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--gjs-scrollbar-thumb);
+    border-radius: 5px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+  }
+}
+
+// Smooth transitions on interactive elements
+button,
+.gjs-pn-btn,
+.silex-button,
+input,
+select,
+.gjs-block,
+.gjs-layer {
+  transition: all var(--silex-transition-fast) ease;
+}
+
+// Modern focus states
+*:focus-visible {
+  outline: 2px solid var(--silex-focus-outline);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+// Refined selection highlight
+::selection {
+  background-color: rgba(136, 115, 254, 0.3);
+  color: #FFFFFF;
+}
+
+// ============================================================
+// COMPONENT-SPECIFIC REFINEMENTS
+// ============================================================
+
+// Modern buttons with subtle elevation
+.gjs-pn-btn,
+.silex-button {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  &:active {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// Refined panels
+.gjs-pn-panel,
+.silex-dialog-inline {
+  backdrop-filter: blur(10px);
+}
+
+// Modern input fields
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  border: 1px solid var(--silex-border-color-strong);
+  border-radius: 4px;
+
+  &:hover {
+    border-color: var(--gjs-secondary-light-color);
+  }
+
+  &:focus {
+    border-color: var(--silex-accent-primary);
+    box-shadow: 0 0 0 3px rgba(136, 115, 254, 0.15);
+  }
+}
+
+// Subtle separators
+.gjs-pn-panel,
+.project-bar__panel-header,
+.settings-header {
+  border-bottom-color: var(--silex-border-color-strong);
+}
+
+// Modern blocks with hover effect
+.gjs-block {
+  border: 1px solid var(--silex-border-color);
+  border-radius: 6px;
+  background: var(--silex-bg-lighter);
+
+  &:hover {
+    border-color: var(--silex-accent-primary);
+    background: var(--silex-hover-bg);
+  }
+}
+
+// Refined layers
+.gjs-layer {
+  &.gjs-selected {
+    background-color: var(--silex-active-bg);
+    border-left: 2px solid var(--silex-accent-primary);
+  }
+
+  &:hover {
+    background-color: var(--silex-hover-bg);
+  }
+}
+
+// Modern toolbar in canvas
+.gjs-toolbar {
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}

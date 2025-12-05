@@ -1,9 +1,10 @@
 @use "variables" as *;
+
 // Footer is sticky at the bottom of the stage
 .gjs-pn-footer {
   bottom: 0;
   left: $projectBarWidth;
   right: var(--viewsPanelWidth);
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--silex-shadow-sm);
   height: $footerHeight;
 }

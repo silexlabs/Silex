@@ -12,23 +12,39 @@
   }
   h2 {
     font-size: 18px;
-    background: $lighterPrimaryColor;
+    background: var(--silex-bg-lighter);
     border-radius: 8px 8px 0 0;
     padding: 8px;
     margin: 0;
     font-weight: normal;
   }
+
   h3 {
     margin: 10px 0;
     font-size: 18px;
     font-weight: normal;
   }
-  //Better contrast than grapesjs default for select menu et input
-  select, input {
-    background-color: $darkerPrimaryColor;
+
+  // Better contrast than grapesjs default for select menu and input
+  select,
+  input {
+    background-color: var(--silex-input-bg);
   }
-  .gjs-color-warn, .gjs-sm-sector .gjs-sm-field input, .gjs-clm-tags .gjs-sm-field input, .gjs-sm-sector .gjs-clm-field input, .gjs-clm-tags .gjs-clm-field input, .gjs-sm-sector .gjs-sm-field select, .gjs-clm-tags .gjs-sm-field select, .gjs-sm-sector .gjs-clm-field select, .gjs-clm-tags .gjs-clm-field select {
-    color: $secondaryColor;
+  select.gjs-input-unit {
+    height: 100%;
+    background-color: transparent;
+  }
+
+  .gjs-color-warn,
+  .gjs-sm-sector .gjs-sm-field input,
+  .gjs-clm-tags .gjs-sm-field input,
+  .gjs-sm-sector .gjs-clm-field input,
+  .gjs-clm-tags .gjs-clm-field input,
+  .gjs-sm-sector .gjs-sm-field select,
+  .gjs-clm-tags .gjs-sm-field select,
+  .gjs-sm-sector .gjs-clm-field select,
+  .gjs-clm-tags .gjs-clm-field select {
+    color: var(--silex-text-primary);
   }
 }
 
@@ -70,21 +86,30 @@
   pointer-events: auto;
   overflow: hidden; /* settings scroll is on .settings-body */
   display: flex;
-  flex-direction: column;
+
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+
+  .silex-bar .silex-list {
+    display: flex; // This list is tabs
+  }
 
   .settings-content {
-    flex: 1;
     display: flex;
     flex-direction: column;
     background-color: var(--primaryColor);
-    overflow: hidden;
+    overflow: auto;
+    width: 920px;
+    max-width: 100%;
+    max-height: 100%;
+    margin: auto;
   }
   .settings-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--gjs-border-color, #ddd);
+    border-bottom: 1px solid var(--silex-border-color-strong);
   }
   .settings-header h3 {
     margin: 0;
@@ -114,36 +139,26 @@
     flex-direction: column;
   }
   .settings-body .silex-sidebar-dialog {
-    flex: 1;
-  }
-  footer {
-    position: fixed;
-    z-index: 10;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 20px 0;
+    flex-direction: column;
   }
   form.silex-form {
-    padding-bottom: 100px; // leave space for fixed footer
     textarea {
       min-height: 250px;
     }
   }
   .silex-form__element {
     padding: 10px 5px;
-    border: 1px solid $lighterPrimaryColor;
     margin: 10px 0;
     width: 98%;
   }
+
   footer {
-    position: fixed;
     z-index: 10;
     bottom: 0;
     left: 0;
     width: 100%;
     padding: 20px 0;
-    background-color: $primaryColor;
+    background-color: var(--silex-bg-main);
     &>*:last-child {
       margin-right: 30px;
     }
@@ -169,23 +184,23 @@ input.silex-button[type="button"],
 input.silex-button[type="submit"] {
   cursor: pointer;
   font-family: inherit;
-  color: #fff;
+  color: var(--silex-text-inverse);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e9ebeb;
-  border-bottom-color: #e1e3e3;
+  border: 1px solid var(--silex-border-color);
   border-radius: 4px;
-  box-shadow: 0 2px 4px 0 rgba(14, 30, 37, .12);
-  background-color: $lighterPrimaryColor;
-  border-color: transparent;
+  box-shadow: var(--silex-shadow-sm);
+  background-color: var(--silex-button-bg);
   padding: 5px;
+
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 2px $tertiaryColor;
+    box-shadow: 0 0 0 2px var(--silex-focus-outline);
   }
+
   &:hover {
-    background-color: $darkerPrimaryColor;
+    background-color: var(--silex-button-hover-bg);
   }
 }
 
@@ -196,11 +211,11 @@ input.silex-button[type="submit"] {
 }
 
 .silex-button.silex-button--primary {
-  background-color: $lighterPrimaryColor;
+  background-color: var(--silex-button-bg);
 }
 
 .silex-button.silex-button--secondary {
-  background-color: $primaryColor;
+  background-color: var(--silex-bg-main);
 }
 
 .silex-button--size {
@@ -224,11 +239,12 @@ input.silex-button[type="submit"] {
 .silex-sidebar-dialog,
 .silex-bar {
   display: flex;
+  align-items: start;
   &>* {
     margin: 5px;
   }
   main {
-    width: 93%;
+    width: 99%;
   }
 }
 
@@ -237,24 +253,26 @@ ul.silex-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  //background-color: #575757;
-  &>li {
+
+  & > li {
     padding: 5px;
-    border-bottom: 1px solid $lighterPrimaryColor;
-    //background-color: #444;
+    border-bottom: 1px solid var(--silex-border-color-strong);
     margin: 5px;
   }
+
   fieldset {
-    border-color: $lighterPrimaryColor;
+    border-color: var(--silex-border-color-strong);
   }
-  h4 { // badge-like
+
+  h4 {
+    // badge-like
     display: inline-block;
     padding: 5px;
     padding-bottom: 2px;
     margin: 10px 5px;
     font-weight: normal;
-    color: #3d3d3d;
-    background-color: #c4c4c4;
+    color: var(--silex-badge-text);
+    background-color: var(--silex-badge-bg);
   }
   .silex-list__item__body {
     display: flex;
@@ -272,36 +290,48 @@ ul.silex-list {
 
 ol.silex-list--menu,
 ul.silex-list--menu {
-  &>li {
+  & > li {
     padding: 15px;
     margin: 0;
     border: 1px solid transparent;
-    border-bottom-color: $lighterPrimaryColor;
+    border-bottom-color: var(--silex-border-color-strong);
     text-align: center;
     cursor: pointer;
+
+    &:first-child {
+      border-top-color: var(--silex-border-color-strong);
+    }
+
+    &:hover {
+      color: var(--silex-accent-primary);
+      background-color: var(--silex-hover-bg);
+    }
   }
-  &>li:first-child {
-    border-top-color: $lighterPrimaryColor;
-  }
-  .active,
-  &>li:hover {
-    color: $tertiaryColor;
-    background-color: $darkerPrimaryColor;
+
+  .active {
+    color: var(--silex-accent-primary);
+    background-color: var(--silex-hover-bg);
   }
 }
 
 form.silex-form {
   display: flex;
   flex-direction: column;
+
   footer {
     text-align: right;
-    border-top: 1px solid $lighterPrimaryColor;
+    border-top: 1px solid var(--silex-border-color-strong);
     padding: 20px 0 10px;
     margin: 20px 0 0;
   }
-  button, input, optgroup, select, textarea {
-    background-color: $darkerPrimaryColor;
-    color: $secondaryColor;
+
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    background-color: var(--silex-input-bg);
+    color: var(--silex-text-primary);
     padding: 5px;
     border: none;
   }
@@ -314,8 +344,5 @@ form.silex-form {
   .silex-form__element {
     display: inline-flex;
     flex-direction: column;
-  }
-  .silex-form__group.col2 {
-    column-count: 2;
   }
 }

@@ -1,0 +1,235 @@
+/**
+ * DIALOGS.SCSS
+ * Unified styling for all dialogs (Settings, Fonts, modals)
+ * Ensures consistent modern look across all popup interfaces
+ *
+ * Note: There is also a dialog.scss file for inline dialogs.
+ * This file handles modal/fullscreen dialogs.
+ */
+
+@use "variables" as *;
+
+// ============================================================
+// BASE MODAL STYLES (GrapesJS modals)
+// ============================================================
+
+.gjs-mdl-dialog {
+  background-color: var(--silex-bg-main);
+  border: 1px solid var(--silex-border-color-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.gjs-mdl-header {
+  background-color: var(--silex-bg-lighter);
+  color: var(--silex-text-primary);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--silex-border-color-strong);
+  border-radius: 8px 8px 0 0;
+
+  .gjs-mdl-title {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  .gjs-mdl-btn-close {
+    color: var(--silex-text-secondary);
+    opacity: 0.7;
+    transition: all var(--silex-transition-fast);
+
+    &:hover {
+      opacity: 1;
+      color: var(--silex-accent-primary);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.gjs-mdl-content {
+  background-color: var(--silex-bg-main);
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--silex-bg-darker);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--silex-border-color-strong);
+    border-radius: 5px;
+
+    &:hover {
+      background: var(--silex-accent-secondary);
+    }
+  }
+}
+
+// ============================================================
+// FONTS DIALOG - Make it consistent with Settings
+// ============================================================
+
+.gjs-mdl-dialog-fonts,
+.fonts-dialog {
+  .gjs-mdl-content {
+    min-height: 400px;
+    max-height: 70vh;
+  }
+
+  // Add footer if it doesn't exist via CSS
+  &::after {
+    content: '';
+    display: block;
+    height: 60px;
+    background-color: var(--silex-bg-lighter);
+    border-top: 1px solid var(--silex-border-color-strong);
+  }
+}
+
+// Fonts panel content
+.gjs-fonts-c,
+[class*="fonts"] {
+  .font-item {
+    padding: 12px 16px;
+    margin: 6px 0;
+    background-color: var(--silex-bg-lighter);
+    border: 1px solid var(--silex-border-color);
+    border-radius: 6px;
+    transition: all var(--silex-transition-fast);
+
+    &:hover {
+      background-color: var(--silex-hover-bg);
+      border-color: var(--silex-accent-primary);
+    }
+
+    .font-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--silex-text-primary);
+      margin-bottom: 4px;
+    }
+
+    .font-preview {
+      font-size: 12px;
+      color: var(--silex-text-secondary);
+    }
+  }
+}
+
+// ============================================================
+// GENERAL FORM ELEMENTS IN DIALOGS
+// ============================================================
+
+.gjs-mdl-dialog,
+.settings-dialog,
+.silex-dialog-inline {
+  input[type="text"],
+  input[type="email"],
+  input[type="url"],
+  input[type="number"],
+  select,
+  textarea {
+    background-color: var(--silex-input-bg);
+    border: 1px solid var(--silex-border-color-strong);
+    color: var(--silex-text-primary);
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all var(--silex-transition-fast);
+
+    &:hover {
+      border-color: var(--gjs-secondary-light-color);
+    }
+
+    &:focus {
+      border-color: var(--silex-accent-primary);
+      box-shadow: 0 0 0 3px rgba(136, 115, 254, 0.15);
+      outline: none;
+    }
+
+    &::placeholder {
+      color: var(--silex-text-secondary);
+      opacity: 0.6;
+    }
+  }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--silex-text-primary);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  button,
+  .silex-button {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--silex-transition-fast);
+
+    &.primary,
+    &.silex-button--primary {
+      background-color: var(--silex-accent-primary);
+      color: var(--silex-bg-darker);
+      border: none;
+
+      &:hover {
+        background-color: var(--silex-accent-secondary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(136, 115, 254, 0.3);
+      }
+    }
+
+    &.secondary,
+    &.silex-button--secondary {
+      background-color: var(--silex-button-bg);
+      color: var(--silex-text-primary);
+      border: 1px solid var(--silex-border-color-strong);
+
+      &:hover {
+        background-color: var(--silex-button-hover-bg);
+      }
+    }
+  }
+}
+
+// ============================================================
+// DIALOG ANIMATIONS
+// ============================================================
+
+.gjs-mdl-dialog {
+  animation: dialogFadeIn 0.2s ease;
+}
+
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// ============================================================
+// BACKDROP
+// ============================================================
+
+.gjs-mdl-container {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}

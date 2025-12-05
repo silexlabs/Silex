@@ -2,8 +2,11 @@
 @use "normalize.css/normalize";
 
 @use "_variables";
-//@use "light";
 @use "grapesjs/src/styles/scss/main";
+
+/* Theme system */
+@use "theme-base";
+@use "theme-modern";
 
 /* Silex styles imports */
 @use "silex";
@@ -15,6 +18,8 @@
 @use "page-panel";
 @use "website-info";
 @use "grapesjs";
+@use "panels";
+@use "dialogs";
 
 //@use "grapesjs-light";
 
@@ -30,4 +35,3 @@
   background-position: center;
   background-repeat: no-repeat;
 }
-

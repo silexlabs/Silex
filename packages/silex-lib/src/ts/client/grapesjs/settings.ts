@@ -58,7 +58,7 @@ function createCustomSettingsDialog(editor: Editor, opts: Record<string, unknown
   const dialog = document.createElement('div')
   dialog.className = 'settings-dialog gjs-two-color'
   dialog.innerHTML = `
-    <div class="settings-content" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="settings-content gjs-mdl-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
       <div class="settings-header">
         <h3 id="settings-title">${page ? 'Page settings' : 'Site Settings'}</h3>
         <button type="button" class="settings-close" title="Close" aria-label="Close settings">×</button>
@@ -331,15 +331,6 @@ function displaySettings(
   })
   render(html`
     <form class="silex-form">
-      <div class="silex-help">
-        ${isSite(model) ? html`
-          <p>Here you can set the name of your website, SEO and social networks sharing data.</p>
-          <p>These settings are overriden by the page settings, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
-        ` : html`
-          <p>Here you can set the name of your page, SEO and social networks sharing data.</p>
-          <p>These settings override the site settings, <a href="https://github.com/silexlabs/Silex/wiki/Settings" target="_blank">more info about settings here</a>.</p>
-        `}
-      </div>
       <section class="silex-sidebar-dialog">
         <aside class="silex-bar">
           <ul class="silex-list silex-list--menu" aria-label="Settings sections">

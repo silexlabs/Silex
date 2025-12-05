@@ -5,46 +5,57 @@
     display: contents !important;
     height: fit-content;
   }
+
   .pages {
     display: flex;
     flex-direction: column;
     margin-bottom: 30px;
+
     .pages__main {
-      flex: 1; // take the available space in height
-      background-color: $primaryColor;
+      flex: 1;
+      background-color: var(--silex-bg-main);
       min-height: 20vh;
     }
+
     .pages__page {
       display: flex;
       align-items: center;
-      background-color: $darkerPrimaryColor;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+      background-color: var(--silex-bg-darker);
+      border-bottom: 1px solid var(--silex-border-color);
       cursor: cursor;
       transition: opacity 0.2s ease, background-color 0.2s ease;
+
       &:hover {
-        background-color: $primaryColor;
+        background-color: var(--silex-hover-bg);
+
         .pages__page-name {
-          color: $quaternaryColor;
+          color: var(--silex-accent-secondary);
         }
       }
+
       &:active {
         cursor: grabbing;
       }
     }
+
     .pages__page-dragging {
       opacity: 0.4;
       cursor: grabbing !important;
     }
+
     .pages__page-selected {
-      background-color: $lighterPrimaryColor;
+      background-color: var(--silex-active-bg);
       cursor: default;
+
       .pages__page-name {
-        color: $quaternaryColor;
+        color: var(--silex-accent-secondary);
       }
     }
+
     .pages__main.pages__single-page .pages__remove-btn {
       visibility: hidden;
     }
+
     .pages__page-name {
       white-space: nowrap;
       overflow: hidden;
@@ -58,28 +69,29 @@
       align-items: center;
       gap: 4px;
     }
+
     .pages__icon {
       padding: 6px;
       cursor: pointer;
       font-size: 12px;
+
+      &:hover {
+        color: var(--silex-accent-secondary);
+      }
     }
-    .pages__icon:hover {
-      color: $quaternaryColor;
-    }
+
     .pages__drag-handle {
       cursor: grab;
       opacity: 0.6;
       flex-shrink: 0;
+
       &:hover {
         opacity: 1;
       }
     }
   }
+
   .#{$pn-prefix}buttons {
     flex-direction: column;
-    .#{$pn-prefix}btn {
-    }
-    .#{$pn-prefix}btn:first-child {
-    }
   }
 }

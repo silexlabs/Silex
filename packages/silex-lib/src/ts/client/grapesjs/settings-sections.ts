@@ -25,7 +25,6 @@ export const defaultSections: SettingsSection[] = [{
   label: 'General',
   render: (settings, model) => html`
     <div id="settings-general" class="silex-hideable">
-      <div class="gjs-sm-sector-title">General</div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
           <h3>${isSite(model) ? 'Site name' : 'Page name'}</h3>
@@ -45,7 +44,6 @@ export const defaultSections: SettingsSection[] = [{
   label: 'SEO',
   render: (settings, model) => html`
     <div id="settings-seo" class="silex-hideable silex-hidden">
-      <div class="gjs-sm-sector-title">SEO</div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
           <h3>Title</h3>
@@ -70,7 +68,6 @@ export const defaultSections: SettingsSection[] = [{
   label: 'Social',
   render: (settings, model) => html`
     <div id="settings-social" class="silex-hideable silex-hidden">
-      <div class="gjs-sm-sector-title">Social</div>
       <div class="silex-help">
         <p>Once your website is live, you can use these tools to test sharing:&nbsp;<a target="_blank" href="https://developers.facebook.com/tools/debug/">Facebook</a>,
         <a target="_blank" href="https://cards-dev.twitter.com/validator">Twitter</a>,
@@ -105,10 +102,8 @@ export const defaultSections: SettingsSection[] = [{
   label: 'Code',
   render: (settings, model) => html`
     <div id="settings-code" class="silex-hideable silex-hidden">
-      <div class="gjs-sm-sector-title">Code</div>
       <div class="silex-form__group">
         <label class="silex-form__element" id="${idCodeWrapper}">
-          <h3>HTML head</h3>
           <p class="silex-help">HTML code which will be inserted in the HEAD tag.</p>
         </label>
       </div>

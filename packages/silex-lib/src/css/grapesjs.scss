@@ -6,19 +6,60 @@
 }
 
 
+// GrapesJS color utility classes - using CSS custom properties
 .#{$prefix} {
-  @each $cnum, $ccol in (one, $primaryColor), (two, $secondaryColor), (three, $tertiaryColor), (four, $quaternaryColor) {
-    &#{$cnum} {
-      &-bg {
-        background-color: $ccol;
+  &one {
+    &-bg {
+      background-color: var(--gjs-primary-color);
+    }
+
+    &-color {
+      color: var(--gjs-primary-color);
+
+      &-h:hover {
+        color: var(--gjs-primary-color);
       }
+    }
+  }
 
-      &-color {
-        color: $ccol;
+  &two {
+    &-bg {
+      background-color: var(--gjs-secondary-color);
+    }
 
-        &-h:hover {
-          color: $ccol;
-        }
+    &-color {
+      color: var(--gjs-secondary-color);
+
+      &-h:hover {
+        color: var(--gjs-secondary-color);
+      }
+    }
+  }
+
+  &three {
+    &-bg {
+      background-color: var(--gjs-tertiary-color);
+    }
+
+    &-color {
+      color: var(--gjs-tertiary-color);
+
+      &-h:hover {
+        color: var(--gjs-tertiary-color);
+      }
+    }
+  }
+
+  &four {
+    &-bg {
+      background-color: var(--gjs-quaternary-color);
+    }
+
+    &-color {
+      color: var(--gjs-quaternary-color);
+
+      &-h:hover {
+        color: var(--gjs-quaternary-color);
       }
     }
   }
@@ -54,10 +95,11 @@
 
 // Dialogs
 .gjs-mdl-header {
-  background-color: $primaryColor;
-  color: $secondaryColor;
+  background-color: var(--silex-bg-main);
+  color: var(--silex-text-primary);
   padding: 20px;
-  border-bottom: 1px solid $lighterPrimaryColor;
+  border-bottom: 1px solid var(--silex-border-color-strong);
+
   .gjs-mdl-btn-close {
     top: 15px;
   }
@@ -65,16 +107,22 @@
 
 // Inside the canvas
 .gjs-toolbar {
-  background-color: $tertiaryColor;
+  background-color: var(--silex-accent-primary);
 }
+
 .gjs-resizer-h {
-  border-color: $tertiaryColor;
+  border-color: var(--silex-accent-primary);
 }
-.gjs-com-badge, .gjs-com-badge-red, .gjs-badge {
-    background-color: $tertiaryColor;
+
+.gjs-com-badge,
+.gjs-com-badge-red,
+.gjs-badge {
+  background-color: var(--silex-accent-primary);
 }
-.gjs-cv-canvas .gjs-highlighter, .gjs-cv-canvas .gjs-highlighter-sel {
-    outline: 1px solid $tertiaryColor;
+
+.gjs-cv-canvas .gjs-highlighter,
+.gjs-cv-canvas .gjs-highlighter-sel {
+  outline: 1px solid var(--silex-accent-primary);
 }
 
 .gjs-cv-canvas {
@@ -102,9 +150,9 @@
 .top-style-section {
   position: sticky;
   top: -1px; /* Fixes a visual gap on the top */
-  border-bottom: solid $lighterPrimaryColor 1px;
-  background-color: $primaryColor;
-  box-shadow: 0 0 15px 0 #00000060;
+  border-bottom: solid var(--silex-border-color-strong) 1px;
+  background-color: var(--silex-bg-main);
+  box-shadow: var(--silex-shadow-lg);
   z-index: 999;
 }
 .gjs-clm-label-sel {

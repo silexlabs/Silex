@@ -9,6 +9,6 @@
   padding: 0 10px;
   line-height: 1;
   min-width: 100px;
-  border: 1px solid $lighterPrimaryColor;
-  background-color: $darkerPrimaryColor;
+  border: 1px solid var(--silex-border-color-strong);
+  background-color: var(--silex-bg-darker);
 }

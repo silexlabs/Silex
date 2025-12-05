@@ -158,14 +158,13 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
       }
     </style>
     <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
-      <div class="gjs-sm-sector-title">Silex CMS - Page settings</div>
       <div class="silex-help">
         The "Silex CMS" feature integrates <a target="_blank" href="https://www.11ty.dev/">11ty</a> static site generator and your favorite headless CMS with Silex.
         <br>Read the <a target="_blank" href="https://docs.silex.me/en/user/cms">documentation</a> to learn more.
       </div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
-          <h3>Create pages from data</h3>
+          <h3 class="gjs-sm-sector-title">Create pages from data</h3>
           <p class="silex-help">Pagination allows you to iterate over data and create multiple webiste pages from a single page in Silex. </p>
           <state-editor
             ${ref(pageDataEditor)}
@@ -202,7 +201,7 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
           </label>
         </label>
         <label class="silex-form__element">
-          <h3>Navigation Plugin</h3>
+          <h3 class="gjs-sm-sector-title">Navigation Plugin</h3>
           <p class="silex-help">This 11ty plugin enables infinite-depth hierarchical navigation in Eleventy projects. Supports breadcrumbs too! <a target="_blank" href="https://www.11ty.dev/docs/plugins/navigation/">Read more about the Navigation Plugin</a>.</p>
           <label class="silex-form__element">Key
             <input type="text" name="eleventyNavigationKey" .value=${settings.eleventyNavigationKey ?? ''}/>
