@@ -52,6 +52,7 @@ export class CurrentSelectorDisplay extends StylableElement {
     .selection {
       display: flex;
       border: 1px solid var(--gjs-primary-color, #333);
+      font-size: .85rem;
       ${ customizeSelect('select.value') }
       select.value {
         appearance: auto;
@@ -192,14 +193,6 @@ export class CurrentSelectorDisplay extends StylableElement {
     // Workaround: the selected option do not update when the value changes after user selects an option
     requestAnimationFrame(() => this.selectRef.value ? this.selectRef.value!.selectedIndex = 0 : '')
     return html`
-      <footer>
-        ${ this.error ? html`
-          <p class="asm-display__error">\u26A0 ${ this.error } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
-        ` : ''}
-        ${ this.warning ? html`
-          <p class="asm-display__warning">\u26A0 ${ this.warning } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
-        ` : ''}
-      </footer>
       <main id="pre" class="selection">
         <select
           ${ ref(this.selectRef) }
@@ -272,6 +265,14 @@ export class CurrentSelectorDisplay extends StylableElement {
           </ul>
         </aside>
       </main>
+      <footer>
+        ${ this.error ? html`
+          <p class="asm-display__error">\u26A0 ${ this.error } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
+        ` : ''}
+        ${ this.warning ? html`
+          <p class="asm-display__warning">\u26A0 ${ this.warning } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
+        ` : ''}
+      </footer>
     `
   }
 

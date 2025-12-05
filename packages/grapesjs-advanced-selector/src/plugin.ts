@@ -87,17 +87,6 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
     const [errors, warnings] = getErrorsAndWarnings(selector, components)
     requestAnimationFrame(() => editStyle(editor, toString(selector)))
     render(html`
-      <complex-selector
-        .t=${(key: string) => getTranslation(editor, key)}
-        .hasBody=${components.some(c => c.tagName.toLocaleLowerCase() === 'body')}
-        .value=${selector}
-        .suggestions=${getSuggestionsMain(editor, components, selector)}
-        .relations=${getSuggestionsRelated(editor, components, selector)}
-        @change=${(event: CustomEvent) => chagedSelector(event.detail as ComplexSelector, editor, components)}
-        @rename=${(event: CustomEvent) => renameSelector(editor, event.detail.oldValue, event.detail.value) }
-        @removeClass=${(event: CustomEvent) => removeClass(editor, event.detail) }
-      ></complex-selector>
-
       <current-selector-display
         .t=${(key: string) => getTranslation(editor, key)}
         .value=${selector || undefined}
@@ -110,6 +99,16 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
         @copy=${() => copyStyle(editor)}
         @paste=${() => pasteStyle(editor)}
       ></current-selector-display>
+      <complex-selector
+        .t=${(key: string) => getTranslation(editor, key)}
+        .hasBody=${components.some(c => c.tagName.toLocaleLowerCase() === 'body')}
+        .value=${selector}
+        .suggestions=${getSuggestionsMain(editor, components, selector)}
+        .relations=${getSuggestionsRelated(editor, components, selector)}
+        @change=${(event: CustomEvent) => chagedSelector(event.detail as ComplexSelector, editor, components)}
+        @rename=${(event: CustomEvent) => renameSelector(editor, event.detail.oldValue, event.detail.value) }
+        @removeClass=${(event: CustomEvent) => removeClass(editor, event.detail) }
+      ></complex-selector>
     `, container)
   } else {
     render(html`

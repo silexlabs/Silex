@@ -17,7 +17,7 @@ export default class InlineSelectComponent extends StylableElement {
    */
   @property({ type: Object, reflect: false })
     value?: Option
-  
+
   /**
    * List of options
    */
@@ -58,7 +58,6 @@ export default class InlineSelectComponent extends StylableElement {
     }
     section {
       display: flex;
-      justify-content: space-between;
     }
     ${ customizeSelect('select') }
     select {
@@ -90,6 +89,7 @@ export default class InlineSelectComponent extends StylableElement {
     }
     .unbreakable {
       white-space: nowrap;
+      margin: 0 0.4rem;
     }
   }
   `
@@ -157,13 +157,13 @@ export default class InlineSelectComponent extends StylableElement {
           class="asm-inline-select__btn"
           href=${ this.t(this.value.helpLink) }
           target="_blank"
-        >?</a>`: html`` 
+        >?</a>`: html``
 }<a
         href="#"
         .title=${ this.t('Remove') }
         class="asm-inline-select__btn"
         @click=${ (event: MouseEvent) => {
-    this.select() 
+    this.select()
     event.preventDefault()
   }}
       >\u2715</a>
