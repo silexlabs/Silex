@@ -8,6 +8,12 @@ export default {
         'Save': 'Save',
         'Cancel': 'Cancel',
         'Installed fonts': 'Installed fonts',
+        'All fonts': 'All fonts',
+        'Variants': 'Variants',
+        'Toggle all': 'Toggle all',
+        'No installed fonts': 'No installed fonts yet',
+        'Previous Page': 'Previous',
+        'Next Page': 'Next',
     },
 }
 

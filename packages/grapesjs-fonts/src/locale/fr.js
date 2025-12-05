@@ -9,6 +9,12 @@ export default {
         'Save': 'Enregistrer',
         'Cancel': 'Annuler',
         'Installed fonts': 'Polices installées',
+        'All fonts': 'Toutes les polices',
+        'Variants': 'Variantes',
+        'Toggle all': 'Tout sélectionner',
+        'No installed fonts': 'Aucune police installée',
+        'Previous Page': 'Précédent',
+        'Next Page': 'Suivant',
     },
 }
 

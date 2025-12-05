@@ -8,5 +8,11 @@ export default {
         'Save': 'Salvar',
         'Cancel': 'Cancelar',
         'Installed fonts': 'Fontes instaladas',
+        'All fonts': 'Todas as fontes',
+        'Variants': 'Variantes',
+        'Toggle all': 'Selecionar tudo',
+        'No installed fonts': 'Nenhuma fonte instalada',
+        'Previous Page': 'Anterior',
+        'Next Page': 'Próximo',
     },
 }
