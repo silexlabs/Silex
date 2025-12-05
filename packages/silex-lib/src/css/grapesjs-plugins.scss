@@ -267,3 +267,16 @@
 //   outline: none;
 //   box-shadow: 0 0 0 2pt #c5c5c575;
 // }
+
+// Data source plugin and expressions
+:root {
+  --expression-input-dirty-background-color: transparent !important;
+  --expression-input-dirty-border-radius: 5px !important;
+  --expression-input-active-background-color: var(--gjs-main-light-color) !important;
+  --expression-input-active-color: var(--gjs-secondary-color) !important;
+  --expression-input-dirty-border-color: var(--expression-input-active-background-color) !important;
+
+}
+.property-container::part(property-container) {
+  padding: 0 !important;
+}
