@@ -675,6 +675,28 @@ function debouncedRender(editor: Editor) {
   }, debounceDelay)
 }
 
+// Helper function to clean up loop clones for a component
+function cleanupLoopClones(component: Component): void {
+  const view = component.view
+  if (!view || !view.el) {
+    return
+  }
+
+  const el = view.el
+  const componentId = el.id
+
+  // Remove all loop clones (siblings with same ID)
+  let nextSibling = el.nextElementSibling as HTMLElement | null
+  while (nextSibling && nextSibling.id === componentId) {
+    const toRemove = nextSibling
+    nextSibling = nextSibling.nextElementSibling as HTMLElement | null
+    toRemove.remove()
+  }
+
+  // Recursively clean up clones for all children
+  component.components().forEach(child => cleanupLoopClones(child))
+}
+
 export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
   const events = opts.previewRefreshEvents!.split(' ')
   for(const eventName of events) {
@@ -684,6 +706,12 @@ export default (editor: Editor, opts: DataSourceEditorViewOptions) => {
       }
     })
   }
+
+  // Clean up loop clones when a component is removed
+  editor.on('component:remove', (component: Component) => {
+    cleanupLoopClones(component)
+  })
+
   setTimeout(() => {
     debounceDelay = opts.previewDebounceDelay!
   }, 1000)
