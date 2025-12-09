@@ -508,7 +508,9 @@ export function renderPreview(comp: Component, deep = 0) {
         // Clone the current state (with previous iteration's content)
         const clone = el.cloneNode(true) as HTMLElement
 
+        // Remove selection marker from the element and its children
         clone.classList.remove('gjs-selected')
+        clone.querySelectorAll('.gjs-selected').forEach(el => el.classList.remove('gjs-selected'))
 
         // Remove hidden elements from the clone to prevent them from appearing in the output
         const hiddenInClone = clone.querySelectorAll('[style*="display: none"]')

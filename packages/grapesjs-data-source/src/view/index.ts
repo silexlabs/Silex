@@ -42,8 +42,8 @@ export default (editor: Editor, opts: DataSourceEditorOptions) => {
       ${DATA_SOURCE_CHANGED}
       ${DATA_SOURCE_DATA_LOAD_END}
       ${COMPONENT_STATE_CHANGED}
-      component:update:classes
       storage:after:load
+      component:update:classes
       component:add
       component:remove
     `,
