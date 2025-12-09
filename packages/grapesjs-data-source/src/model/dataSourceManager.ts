@@ -166,6 +166,7 @@ export function initializeDataSourceManager(
   editor.on(DATA_SOURCE_CHANGED, () => {
     setupEventListeners()
     updateCachedData()
+    refreshDataSources()
   })
 
   // Update cached data initially
