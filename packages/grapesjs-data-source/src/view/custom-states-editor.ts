@@ -109,8 +109,9 @@ export class CustomStatesEditor extends LitElement {
         <div>
           <div class="gjs-traits-label">
             <span>${this.title}</span>
-            ${ selected ? html`
-            <button
+            <span>
+              ${ selected ? html`
+              <button
               title="Add a new state"
               class="ds-states__add-button ds-states__button"
               @click=${() => {
@@ -119,22 +120,25 @@ export class CustomStatesEditor extends LitElement {
     this.setState(selected, item.name, item.state)
   }}
               >+</button>
-            ` : ''}
+              ` : ''}
+              ${this.helpText ? html`
+              <details class="ds-states__help">
+              <summary>Help</summary>
+              <div class="ds-states__help--tooltip">
+              <span>${ this.helpText }</span>
+              ${this.helpLink ? html`
+              <a
+                class="ds-states__help-link"
+                href="${this.helpLink}"
+                target="_blank"
+                >\u{1F517} Read more...</a>
+              ` : ''}
+              </div>
+              </details>
+              ` : ''}
+            </span>
           </div>
         </div>
-        ${this.helpText ? html`
-        <details class="ds-states__help">
-          <summary>Help</summary>
-          <span>${ this.helpText }</span>
-          ${this.helpLink ? html`
-          <a
-            class="ds-states__help-link"
-            href="${this.helpLink}"
-            target="_blank"
-            >\u{1F517} Read more...</a>
-          ` : ''}
-        </details>
-        ` : ''}
       </section>
     `
   }
@@ -166,6 +170,9 @@ export class CustomStatesEditor extends LitElement {
       ${this.getHead(selected)}
       <div class="ds-states">
         <div class="ds-states__items">
+          ${ items.length === 0 ? html`
+            <p>Use the "+" button to add elements to this list</p>
+          ` : ''}
           ${items
     .map((item, index) => html`
             <div class="ds-states__item">

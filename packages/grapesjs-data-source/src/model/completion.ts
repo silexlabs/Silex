@@ -52,7 +52,7 @@ export function getContext(component: Component, manager: DataSourceManagerState
                 previewIndex: loopDataField.previewIndex,
                 exposed: false,
                 forceKind: 'object', // FIXME: this may be a scalar
-                label: `Loop data (${loopDataField.label})`,
+                label: `Loop item (${loopDataField.label})`,
               }, {
                 type: 'property',
                 propType: 'field',
@@ -69,13 +69,13 @@ export function getContext(component: Component, manager: DataSourceManagerState
                 typeIds: ['number'],
               })
             } else {
-              console.warn('Loop data is not a list for component', parent, 'and state', loopDataState)
+              console.warn('Loop item is not a list for component', parent, 'and state', loopDataState)
             }
           } else {
-            console.warn('Loop data type not found for component', parent, 'and state', loopDataState)
+            console.warn('Loop item type not found for component', parent, 'and state', loopDataState)
           }
         } catch {
-          console.error('Error while getting loop data for component', parent, 'and state', loopDataState)
+          console.error('Error while getting loop item for component', parent, 'and state', loopDataState)
         }
       }
     }

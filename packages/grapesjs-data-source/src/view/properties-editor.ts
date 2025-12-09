@@ -103,13 +103,17 @@ export class PropertiesEditor extends LitElement {
       ${head}
       <section class="ds-section">
         <div>
-          <div class="gjs-traits-label">Properties</div>
+          <div class="gjs-traits-label">
+              Properties
+              <details class="ds-states__help">
+                <summary>Help</summary>
+                <div class="ds-states__help--tooltip">
+                  Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
+                  <a target="_blank" href="https://docs.silex.me/en/user/cms-concepts#properties">Learn more about element properties</a>
+                </div>
+              </details>
+          </div>
         </div>
-        <details class="ds-states__help">
-          <summary>Help</summary>
-          Elements properties are expressions that can replace the HTML attributes of the element or it's whole content (innerHTML).
-          <a target="_blank" href="https://docs.silex.me/en/user/cms-concepts#properties">Learn more about element properties</a>
-        </details>
         <main>
           ${[
     {label: 'HTML content', name: Properties.innerHTML, publicState: false},
@@ -117,11 +121,8 @@ export class PropertiesEditor extends LitElement {
         </main>
       </section>
       <section class="ds-section">
-        <div>
-          <div class="gjs-traits-label">Visibility</div>
-        </div>
         <main>
-          ${this.renderStateEditor(selected, 'Condition', Properties.condition, false)}
+          ${this.renderStateEditor(selected, 'Visibility Condition', Properties.condition, false)}
           <div>
           <span>... is</span>
           <select
@@ -146,11 +147,8 @@ export class PropertiesEditor extends LitElement {
         </main>
       </section>
       <section class="ds-section">
-        <div>
-          <label class="gjs-traits-label ds-label">Loop</label>
-        </div>
         <main>
-          ${this.renderStateEditor(selected, 'Data', Properties.__data, false, true)}
+          ${this.renderStateEditor(selected, 'Loop Data', Properties.__data, false, true)}
         </main>
       </section>
     `

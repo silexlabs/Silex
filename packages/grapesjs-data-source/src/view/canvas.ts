@@ -276,7 +276,7 @@ function renderLoopData(
     const result = evaluateExpression(__data.expression, component, false) // Get full array
     return Array.isArray(result) ? JSON.parse(JSON.stringify(result)) : null
   } catch (e) {
-    console.warn('Error getting loop data:', e)
+    console.warn('Error getting loop item:', e)
     return null
   }
 }

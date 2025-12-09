@@ -123,6 +123,7 @@ export const PROPERTY_STYLES = `
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-height: 40px;
   }
   expression-input {
     padding: 10px;
@@ -221,8 +222,7 @@ export const PROPERTY_STYLES = `
     }
     details {
       margin: 2px;
-      padding: 10px;
-      padding-top: 0;
+      padding: 2px;
       background-color: transparent;
       border-radius: 2px;
       color: var(--ds-secondary);
@@ -242,8 +242,19 @@ export const PROPERTY_STYLES = `
     details .ds-states__help-link {
       display: block;
     }
+    details .ds-states__help--tooltip {
+      position: absolute;
+      left: 50%;
+      background: var(--ds-secondary);
+      color: var(--ds-tertiary);
+      padding: 10px;
+    }
     .gjs-traits-label {
       background-color: var(--ds-tertiary);
+      span {
+        display: flex;
+        align-items: center;
+      }
     }
     main {
       display: flex;
@@ -328,9 +339,8 @@ export const PROPERTY_STYLES = `
       padding: 5px;
       background: var(--ds-button-bg);
       color: var(--ds-button-color);
-      flex: 1;
       margin: 5px;
-      max-width: 40px;
+      padding: 7px 14px;
     }
     .ds-states__button--disabled {
       opacity: 0.5;
