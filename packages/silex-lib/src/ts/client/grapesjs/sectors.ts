@@ -45,12 +45,19 @@ export function registerSector(editor: Editor, config: SectorConfig, at?: number
 
   // Update visibility depending on selected component
   let showSector = false
-  editor.on('component:selected', async (comp: Component) => {
-    if (!comp) return // No selection yet
+  async function update(comp: Component) {
     const shouldShow = await config.shouldShow(comp)
     showSector = shouldShow
     sector.set('visible', shouldShow)
     sector.getProperties().forEach(p => p.set('visible', shouldShow))
+  }
+  editor.on('component:selected component:update:selector', (comp) => {
+    if (!comp) return // No selection yet
+    update(comp)
+    // TODO: why is this needed? Is this because of doubleCheck?
+    setTimeout(() => update(comp), 100)
+    setTimeout(() => update(comp), 500)
+    setTimeout(() => update(comp), 1000)
   })
 
   // Watch changes made by grapesjs and revert them if needed
@@ -64,4 +71,3 @@ export function registerSector(editor: Editor, config: SectorConfig, at?: number
   }
   sector.on('change:visible', doubleCheck)
 }
-
