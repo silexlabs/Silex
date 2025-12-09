@@ -33,7 +33,7 @@ export const defaultSections: SettingsSection[] = [{
         </label>
         <label class="silex-form__element">
           <h3>Website language</h3>
-          <p class="silex-help">This is the default language code for this website. Example: en, fr, es...</p>
+          <p class="silex-help">This is the default language code for this website or page. Example: en, fr, es...</p>
           <input type="text" name="lang" .value=${live(settings.lang || '')}/>
         </label>
       </div>
@@ -76,14 +76,14 @@ export const defaultSections: SettingsSection[] = [{
       <div class="silex-form__group col2">
         <label class="silex-form__element">
           <h3>Title</h3>
-          <p class="silex-help">The title of your website displayed when a user shares your website on a social network.
+          <p class="silex-help">The title of your website or page displayed when a user shares your website on a social network.
         Do not include any branding in this title, just eye-catching phrase, e.g. "Learn everything about fishing".
         Title should be between 60 and 90 characters long.</p>
           <input type="text" name="og:title" .value=${live(settings['og:title'] || '')}/>
         </label>
         <label class="silex-form__element">
           <h3>Description</h3>
-          <p class="silex-help">Description displayed when a user shares your website on a social network. Make it catchy, and invite readers to visit your website too, e.g. "Sam's website about fishing, check it out!" Title should be between 60 and 90 characters long.</p>
+          <p class="silex-help">Description displayed when a user shares your website or page on a social network. Make it catchy, and invite readers to visit your website too, e.g. "Sam's website about fishing, check it out!" Title should be between 60 and 90 characters long.</p>
           <input type="text" name="og:description" .value=${live(settings['og:description'] || '')}/>
         </label>
         <label class="silex-form__element">

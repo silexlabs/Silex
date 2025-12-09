@@ -160,12 +160,11 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
     <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
       <div class="silex-help">
         The "Silex CMS" feature integrates <a target="_blank" href="https://www.11ty.dev/">11ty</a> static site generator and your favorite headless CMS with Silex.
-        <br>Read the <a target="_blank" href="https://docs.silex.me/en/user/cms">documentation</a> to learn more.
+        <br>Read Silex <a target="_blank" href="https://docs.silex.me/en/user/cms">documentation</a> to learn more.
       </div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
-          <h3 class="gjs-sm-sector-title">Create pages from data</h3>
-          <p class="silex-help">Pagination allows you to iterate over data and create multiple webiste pages from a single page in Silex. </p>
+          <p class="silex-help">Pagination allows you to iterate over data and create multiple website pages from a single page in Silex. This feature is based on <a target="_blank" href="https://www.11ty.dev/docs/pagination/">Eleventy pagination, read more in the docs</a>.</p>
           <state-editor
             ${ref(pageDataEditor)}
             id="eleventyPageData"
@@ -177,14 +176,8 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             no-states
             no-filters
           >
-            <label slot="label">Data</label>
+            <label slot="label">Pagination Data</label>
           </state-editor>
-          <label class="silex-form__element">Size
-            <input type="number" name="eleventyPageSize" .value=${settings.eleventyPageSize ?? 1}/>
-          </label>
-          <label class="silex-form__element">Reverse
-            <input type="checkbox" name="eleventyPageReverse" ?checked=${!!settings.eleventyPageReverse}/>
-          </label>
           <state-editor
             id="eleventyPermalink"
             name="eleventyPermalink"
@@ -194,10 +187,16 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
           >
             <label slot="label">Permalink</label>
           </state-editor>
+          <details class="silex-more"><summary>Advanced params</summary>
+          <label class="silex-form__element">Reverse
+            <input type="checkbox" name="eleventyPageReverse" ?checked=${!!settings.eleventyPageReverse}/>
+          </label>
+          <label class="silex-form__element">Size
+            <input type="number" name="eleventyPageSize" .value=${settings.eleventyPageSize ?? 1} placeholder="1" />
+          </label>
           <label class="silex-form__element">Available languages
-            <p class="silex-help">Silex can duplicate this page for each language and generate a different URL for each language.</p>
-            <p class="silex-help">Provide a comma separated list of languages. For example: <code>en,fr</code>. An empty value will deactivate this feature.</p>
-            <input type="text" name="silexLanguagesList" .value=${settings.silexLanguagesList ?? ''}/>
+            <p class="silex-help">Silex can duplicate this page for each language and generate a different URL for each language. Provide a comma separated list of languages. For example: <code>en,fr</code>. An empty value will deactivate this feature.</p>
+            <input type="text" name="silexLanguagesList" .value=${settings.silexLanguagesList ?? ''} placeholder="en, fr, es" />
           </label>
         </label>
         <label class="silex-form__element">
@@ -219,6 +218,8 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             <input type="text" name="eleventyNavigationUrl" .value=${settings.eleventyNavigationUrl ?? ''}/>
           </label>
         </label>
+        </details>
+        <details class="silex-more"><summary>Override SEO and social settings</summary>
         <label class="silex-form__element">
           <h3>SEO</h3>
           <state-editor
@@ -278,6 +279,8 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
           >
             <label slot="label">OG Description</label>
           </state-editor>
+        </label>
+        </details>
       </div>
     </div>
     `

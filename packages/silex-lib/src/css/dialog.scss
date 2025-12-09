@@ -52,6 +52,7 @@
   }
 }
 
+details.silex-more,
 .silex-help {
   margin: 10px 0;
   padding: 10px;
@@ -67,6 +68,10 @@
 
   a {
     color: var(--silex-accent-secondary);
+  }
+
+  label {
+    background-color: var(--silex-bg-main);
   }
 }
 
