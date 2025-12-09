@@ -109,7 +109,7 @@ export const fontsDialogPlugin = (editor, opts) => {
     if(!opts.api_key) throw new Error(editor.I18n.t('grapesjs-fonts.You must provide Google font api key'))
 
     editor.Commands.add(cmdOpenFonts, {
-        run: (_, sender) => {
+        run: () => {
             modal = editor.Modal.open({
                 title: editor.I18n.t('grapesjs-fonts.Fonts'),
                 content: '',
@@ -205,12 +205,12 @@ function displayFontLists(editor, opts, originalFontsList = []) {
                 <div class="variants-toolbar">
                   <legend>${editor.I18n.t('grapesjs-fonts.Variants') || 'Variants'}</legend>
                   <button class="silex-button gfonts-btn--ghost" type="button" @click=${() => {
-                    const all = (((_fontsList || []).find(f => f.family === font.family)?.variants) || [])
-                    const isAll = Array.isArray(font.variants) && all.length && all.every(v => font.variants.includes(v))
-                    font.variants = isAll ? [] : [...all]
-                    saveFonts(editor, opts)
-                    displayFontLists(editor, opts, originalFontsList)
-                  }}>${editor.I18n.t('grapesjs-fonts.Toggle all') || 'Toggle all'}</button>
+        const all = (((_fontsList || []).find(f => f.family === font.family)?.variants) || [])
+        const isAll = Array.isArray(font.variants) && all.length && all.every(v => font.variants.includes(v))
+        font.variants = isAll ? [] : [...all]
+        saveFonts(editor, opts)
+        displayFontLists(editor, opts, originalFontsList)
+    }}>${editor.I18n.t('grapesjs-fonts.Toggle all') || 'Toggle all'}</button>
                 </div>
                 <div class="variants-grid">
                   ${map(((_fontsList || []).find(f => f.family === font.family)?.variants) || [], v => html`
@@ -219,14 +219,14 @@ function displayFontLists(editor, opts, originalFontsList = []) {
                         type="checkbox"
                         .checked=${(font.variants || []).includes(v)}
                         @change=${e => {
-                          const checked = e.target.checked
-                          font.variants = Array.isArray(font.variants) ? font.variants : []
-                          const has = font.variants.includes(v)
-                          if (checked && !has) font.variants = [...font.variants, v]
-                          if (!checked && has) font.variants = font.variants.filter(x => x !== v)
-                          saveFonts(editor, opts)
-                          displayFontLists(editor, opts, originalFontsList)
-                        }}
+        const checked = e.target.checked
+        font.variants = Array.isArray(font.variants) ? font.variants : []
+        const has = font.variants.includes(v)
+        if (checked && !has) font.variants = [...font.variants, v]
+        if (!checked && has) font.variants = font.variants.filter(x => x !== v)
+        saveFonts(editor, opts)
+        displayFontLists(editor, opts, originalFontsList)
+    }}
                       />
                       ${v}
                     </label>
@@ -253,25 +253,25 @@ function displayFontLists(editor, opts, originalFontsList = []) {
             type="text"
             ${ref(searchInputRef)}
             @input=${() => {
-              currentPage = 0
-              displayFontLists(editor, opts, originalFontsList)
-            }}
+        currentPage = 0
+        displayFontLists(editor, opts, originalFontsList)
+    }}
             placeholder="${editor.I18n.t('grapesjs-fonts.Search')}"
           />
           <div class="gfonts-pager">
             <button class="silex-button" ?disabled=${currentPage === 0} @click=${() => {
-              if (currentPage > 0) {
-                currentPage--
-                displayFontLists(editor, opts, originalFontsList)
-              }
-            }}>${editor.I18n.t('grapesjs-fonts.Previous Page')}</button>
+    if (currentPage > 0) {
+        currentPage--
+        displayFontLists(editor, opts, originalFontsList)
+    }
+}}>${editor.I18n.t('grapesjs-fonts.Previous Page')}</button>
             <span class="page">Page ${currentPage + 1} / ${pageCount}</span>
             <button class="silex-button" ?disabled=${currentPage === pageCount - 1} @click=${() => {
-              if (currentPage < pageCount - 1) {
-                currentPage++
-                displayFontLists(editor, opts, originalFontsList)
-              }
-            }}>${editor.I18n.t('grapesjs-fonts.Next Page')}</button>
+    if (currentPage < pageCount - 1) {
+        currentPage++
+        displayFontLists(editor, opts, originalFontsList)
+    }
+}}>${editor.I18n.t('grapesjs-fonts.Next Page')}</button>
           </div>
         </div>
         <ul class="silex-list">
