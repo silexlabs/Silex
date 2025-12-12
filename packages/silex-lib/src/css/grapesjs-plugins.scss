@@ -81,8 +81,8 @@
 #publish-dialog {
   .notice {
     margin: 10px 0;
-    background-color: var(--silex-status-warning);
-    opacity: 0.2;
+    background-color: var(--gjs-color-warn);
+    color: var(--gjs-main-color);
     border-radius: 5px;
     padding: 10px;
   }
