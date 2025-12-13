@@ -143,9 +143,24 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
   fi
 
   if $RELEASE; then
-    CMD="npm version minor -m 'chore: release %s'"
+    # Mode release (stable)
+    if [[ "$CURRENT_VERSION" == *-* ]]; then
+      # On est sur une prerelease, on veut juste la version stable sans le suffixe
+      STABLE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-[0-9]*$//')
+      CMD="npm version $STABLE_VERSION -m 'chore: release %s'"
+    else
+      # On est déjà sur une version stable, incrémenter le minor
+      CMD="npm version minor -m 'chore: release %s'"
+    fi
   else
-    CMD="npm version prerelease -m 'chore: prerelease %s'"
+    # Mode prerelease
+    if [[ "$CURRENT_VERSION" == *-* ]]; then
+      # On est déjà sur une prerelease, incrémenter le suffixe
+      CMD="npm version prerelease -m 'chore: prerelease %s'"
+    else
+      # On est sur une version stable, incrémenter le minor + ajouter -0
+      CMD="npm version preminor -m 'chore: prerelease %s'"
+    fi
   fi
 
   if $DRY_RUN; then
