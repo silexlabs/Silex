@@ -1,10 +1,6 @@
-[submodule "packages/grapesjs-ui-suggest-classes"]
-	path = packages/grapesjs-ui-suggest-classes
-	url = git@github.com:silexlabs/grapesjs-ui-suggest-classes.git
-	branch = main
 [submodule "packages/grapesjs-symbols"]
 	path = packages/grapesjs-symbols
-	url = git@github.com:silexlabs/grapesjs-sympbols.git
+	url = git@github.com:silexlabs/grapesjs-symbols.git
 	branch = main
 [submodule "packages/grapesjs-fonts"]
 	path = packages/grapesjs-fonts
