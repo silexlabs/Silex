@@ -17,6 +17,10 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/silexlabs/eleventy-plugin-concat.git"
+  },
   "license": "GPL-3.0",
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
