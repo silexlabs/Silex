@@ -50,7 +50,7 @@
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/silexlabs/expression-input.git"
+    "url": "https://github.com/silexlabs/expression-input.git"
   },
   "dependencies": {
     "lit": "^3.2.1"
