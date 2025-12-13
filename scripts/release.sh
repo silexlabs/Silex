@@ -156,10 +156,10 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     # Mode prerelease
     if [[ "$CURRENT_VERSION" == *-* ]]; then
       # On est déjà sur une prerelease, incrémenter le suffixe
-      CMD="npm version prerelease -m 'chore: prerelease %s'"
+      CMD="npm version prerelease --preid=canary -m 'chore: prerelease %s'"
     else
       # On est sur une version stable, incrémenter le minor + ajouter -0
-      CMD="npm version preminor -m 'chore: prerelease %s'"
+      CMD="npm version preminor --preid=canary -m 'chore: prerelease %s'"
     fi
   fi
 
