@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-version-flow",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "GrapesJS plugin for managing version upgrades and migrations with sequential upgrade flow and modal UI",
   "keywords": [
     "grapesjs",
