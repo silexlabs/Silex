@@ -1,6 +1,6 @@
 {
   "name": "silex-desktop",
-  "version": "2.8.1-7",
+  "version": "2.8.1",
   "description": "Silex website builder as a windows/mac/linux app",
   "main": "./index.js",
   "engines": {
