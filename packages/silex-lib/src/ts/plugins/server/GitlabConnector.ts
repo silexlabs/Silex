@@ -903,14 +903,77 @@ export default class GitlabConnector implements StorageConnector {
       session,
       path: `api/v4/projects/${websiteId}`
     })
-    return {
+
+    // Defaults
+    let pagesUrl: string | undefined = undefined
+    let pagesVisibility: string | undefined = undefined
+    let lastJob: { date: string, status: string, id?: number, name?: string, webUrl?: string } | undefined = undefined
+
+    // Try to get GitLab Pages info
+    try {
+      const pages = await this.callApi({
+        session,
+        path: `api/v4/projects/${websiteId}/pages`
+      })
+      pagesUrl = pages.url
+      // pages.access_control_level may be present; fallback to project.visibility if not
+      pagesVisibility = pages.access_control_level || project.visibility
+    } catch (e) {
+      // If pages are not enabled or call fails, ignore and leave undefined
+    }
+
+    // Try to get last relevant job (prefer 'pages' job, otherwise most recent job)
+    try {
+      const jobs = await this.callApi({
+        session,
+        path: `api/v4/projects/${websiteId}/jobs`,
+        params: {
+          per_page: 1,
+          order_by: 'finished_at',
+          sort: 'desc'
+        }
+      })
+      if (Array.isArray(jobs) && jobs.length > 0) {
+        lastJob = {
+          date: jobs[0].finished_at || jobs[0].created_at || jobs[0].started_at,
+          status: jobs[0].status,
+          id: jobs[0].id,
+          name: jobs[0].name,
+          webUrl: jobs[0].web_url
+        }
+      }
+    } catch (e) {
+      // With no jobs, leave lastJob undefined
+    }
+
+    // Fork info
+    let forkedFrom: { id: string, name: string, webUrl?: string } | undefined = undefined
+    if (project.forked_from_project) {
+      forkedFrom = {
+        id: String(project.forked_from_project.id),
+        name: project.forked_from_project.name,
+        webUrl: project.forked_from_project.web_url
+      }
+    }
+
+    const result = {
       websiteId,
       name: project.name.replace(this.options.repoPrefix, ''),
       imageUrl: project.avatar_url,
       createdAt: project.created_at,
       updatedAt: project.last_activity_at,
       connectorUserSettings: {},
+      visibility: project.visibility,
+      repoUrl: project.web_url,
+      forkCount: project.forks_count,
+      starCount: project.star_count,
+      forkedFrom,
+      pagesUrl,
+      pagesVisibility,
+      lastJob
     }
+    console.log('META', {result, websiteId})
+    return result
   }
 
   async setWebsiteMeta(session: GitlabSession, websiteId: WebsiteId, websiteMeta: WebsiteMetaFileContent): Promise<void> {

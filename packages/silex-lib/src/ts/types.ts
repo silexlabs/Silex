@@ -296,6 +296,40 @@ export interface WebsiteMeta extends WebsiteMetaFileContent {
   websiteId: WebsiteId
   createdAt?: Date
   updatedAt?: Date
+
+  /** Visibility string: 'private', 'public', 'internal', etc. */
+  visibility?: string
+
+  /** GitLab Pages site visibility: 'private', 'public', 'internal', etc. */
+  pagesVisibility?: string
+
+  /** Full GitLab repository URL */
+  repoUrl?: string
+
+  /** GitLab Pages URL, if any (null if not configured) */
+  pagesUrl?: string
+
+  /** Latest GitLab Pages or CI job info, if any */
+  lastJob?: {
+    date: string
+    status: string
+    id?: number
+    name?: string
+    webUrl?: string
+  }
+
+  /** If this project is a fork, some info about the source */
+  forkedFrom?: {
+    id: string
+    name: string
+    webUrl?: string
+  }
+
+  /** How many times this project has been forked */
+  forkCount?: number
+
+  /** How many stars this project has */
+  starCount?: number
 }
 
 /**

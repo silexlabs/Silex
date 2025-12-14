@@ -16,7 +16,7 @@
  */
 
 import {html, render, TemplateResult} from 'lit-html'
-import {defaultSections, idCodeWrapper, isSite, SettingsSection} from './settings-sections'
+import {defaultSections, idCodeWrapper, isSite, SettingsSection, updateInfo} from './settings-sections'
 
 /**
  * @fileoverview This file contains the settings dialog. The config API lets plugins add sections to the settings dialog.
@@ -44,6 +44,7 @@ let customSettingsDialog: HTMLDivElement | null = null
 export const cmdOpenSettings = 'open-settings'
 export const cmdAddSection = 'settings:add-section'
 export const cmdRemoveSection = 'settings:remove-section'
+export const cmdRenderSection = 'settings:render-section'
 
 export interface AddSectionOption {
   section: SettingsSection,
@@ -220,6 +221,9 @@ export const settingsDialog = (
   editor.Commands.add(cmdAddSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
     addSection(options.section, options.siteOrPage, options.position)
   })
+  editor.Commands.add(cmdRenderSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
+    displaySettings(editor, opts, settingsState.page, settingsState.sectionId)
+  })
   editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
     removeSection(options.section.id, options.siteOrPage)
   })
@@ -235,6 +239,7 @@ export const settingsDialog = (
   })
   editor.on('canvas:frame:load', (): void => {
     updateDom(editor)
+    updateInfo()
   })
   editor.on('page', (_e: unknown): void => {
     updateDom(editor)

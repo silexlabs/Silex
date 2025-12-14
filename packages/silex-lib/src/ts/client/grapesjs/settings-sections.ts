@@ -1,9 +1,25 @@
 import {live} from 'lit-html/directives/live.js'
-import {html, TemplateResult} from 'lit-html'
-import { WebsiteSettings } from '../../types'
+import {html, TemplateResult, nothing} from 'lit-html'
+import { WebsiteMeta, WebsiteSettings } from '../../types'
+import { websiteMetaRead } from '../api' // Adjust as needed
+import { ClientConfig, config } from '..'
+import { Editor } from 'grapesjs'
+import { cmdRenderSection } from './settings'
 
 // ID of the code editor wrapper
 export const idCodeWrapper = 'settings-head-wrapper'
+
+export let websiteMeta: WebsiteMeta | null = null
+export async function updateInfo() {
+  /* @ts-ignore There should be a better way to get Silex config */
+  const config = window.silex.config as ClientConfig
+  if (!websiteMeta) {
+    const { websiteId, storageId } = config
+    websiteMeta = await websiteMetaRead({ websiteId, connectorId: storageId })
+    console.log('RE RENDER PLS', { websiteMeta, websiteId, storageId })
+    config.getEditor().runCommand(cmdRenderSection)
+  }
+}
 
 // Is the model a site or a page?
 export function isSite(model: any) { return !!model.getHtml }
@@ -36,6 +52,74 @@ export const defaultSections: SettingsSection[] = [{
           <p class="silex-help">This is the default language code for this website or page. Example: en, fr, es...</p>
           <input type="text" name="lang" .value=${live(settings.lang || '')}/>
         </label>
+      </div>
+      <div class="silex-form__group">
+        <h4 style="margin-top:20px;">Repository / Publication info</h4>
+        <div>
+          ${websiteMeta?.repoUrl ? html`
+              <div class="silex-form__element">
+                <label>Repository</label>
+                <code>${websiteMeta.repoUrl}</code>
+                <a class="silex-link-action" href="${websiteMeta.repoUrl}" target="_blank" rel="noopener">open</a>
+            </div>
+            <div class="silex-form__element">
+              <label>Repo visibility</label>
+              ${websiteMeta.visibility ?? ''}
+              <a class="silex-link-action" href="${websiteMeta.repoUrl}/edit#js-shared-permissions" target="_blank" rel="noopener">settings</a>
+            </div>
+            <div class="silex-form__element"><label>Pages visibility</label>
+              ${websiteMeta.pagesVisibility ?? ''}
+              <a class="silex-link-action" href="${websiteMeta.repoUrl}/-/pages" target="_blank" rel="noopener">settings</a>
+            </div>
+            ${websiteMeta.pagesUrl ? html`
+              <div class="silex-form__element"><label>Published URL</label>
+                <input type="text" value="${websiteMeta.pagesUrl}" readonly style="width:220px;max-width:98%">
+                <a class="silex-link-action" href="${websiteMeta.pagesUrl}" target="_blank" rel="noopener">open</a>
+              </div>
+            ` : nothing}
+            <div class="silex-form__element"><label>Forks</label>
+              ${websiteMeta.forkCount}
+              <a class="silex-link-action" href="${websiteMeta.repoUrl}/-/forks" target="_blank" rel="noopener">view</a>
+            </div>
+            <div class="silex-form__element"><label>Stars</label>
+              ${websiteMeta.starCount}
+              <a class="silex-link-action" href="${websiteMeta.repoUrl}/-/starrers" target="_blank" rel="noopener">⭐ Star</a>
+            </div>
+            ${websiteMeta.forkedFrom && websiteMeta.forkedFrom.name ? html`
+              <div class="silex-form__element silex-info-fork">
+                <b>Forked from</b>
+                <a href="${websiteMeta.forkedFrom.webUrl ?? '#'}" target="_blank" rel="noopener">
+                  ${websiteMeta.forkedFrom.name}
+                </a>
+                ${websiteMeta.forkedFrom.webUrl ? html`
+                  <a class="silex-link-action" href="${websiteMeta.forkedFrom.webUrl}/-/starrers" target="_blank" rel="noopener">
+                    stars
+                  </a>
+                ` : nothing}
+              </div>
+            ` : nothing}
+            ${websiteMeta.lastJob ? html`
+              <div class="silex-form__element">
+                <label>Last job</label>
+                ${websiteMeta.lastJob.status ?? '?'}
+                ${websiteMeta.lastJob.date ? html`(${new Date(websiteMeta.lastJob.date).toLocaleString()})` : nothing}
+                ${websiteMeta.lastJob.webUrl ? html`
+                  <a class="silex-link-action" href="${websiteMeta.lastJob.webUrl}" target="_blank" rel="noopener">logs</a>
+                ` : nothing}
+              </div>
+            ` : nothing}
+          ` : websiteMeta?.createdAt ? html`
+              <div class="silex-form__element">
+                <label>Created At</label>
+                ${new Date(websiteMeta.createdAt).toLocaleString()}
+              </div>
+                <div class="silex-form__element">
+                  <label>Updated At</label>
+                  ${new Date(websiteMeta.updatedAt).toLocaleString()}
+                </div>
+              ` : html`<div class="silex-form__element">No repository or publication information available for this site.</div>`
+}
+        </div>
       </div>
     </div>
   `,

@@ -1,6 +1,32 @@
 @use "variables" as *;
 @use "mixins";
 
+// Simple action-link style for Info meta links (e.g., "Star" button)
+.silex-link-action {
+  margin-left: 0.5em;
+  color: var(--silex-accent-primary);
+  font-size: 0.93em;
+  font-weight: 600;
+  text-decoration: underline;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline;
+}
+
+// -------------------
+// Styles for Info Meta Data Section and pre JSON render
+// -------------------
+.silex-mono-json {
+  background: var(--silex-bg-lighter);
+  color: var(--silex-text-secondary);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-family: monospace;
+}
+
 .silex-workspace {
   @include mixins.silex-ui-full;
   display: flex;
@@ -140,6 +166,15 @@
   }
   .settings-body .silex-sidebar-dialog {
     flex-direction: column;
+  }
+  .settings-body .silex-info-fork {
+    margin-top: 10px;
+    color: var(--silex-status-warning);
+    background: var(--silex-bg-lighter);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-weight: 500;
+    display: inline-block;
   }
   form.silex-form {
     textarea {
