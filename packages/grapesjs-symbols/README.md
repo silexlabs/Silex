@@ -31,6 +31,7 @@ Features
 * Optional list of symbols which support draging symbols to the stage
 * Support for symbols in symbols
 * Support sync accross grapesjs pages
+* **Automatic unique ID generation** - When creating symbol instances, elements with `id` attributes automatically get unique IDs to avoid DOM conflicts. References like `<label for="...">`, `aria-labelledby`, `href="#..."`, and Bootstrap's `data-target`/`data-bs-target` are automatically updated to match the new IDs.
 
 ### HTML
 ```html
@@ -156,6 +157,21 @@ Notes
 
 * `symbolChildId` attributes are not synced between symbol instances (the root of a symbol instance) since it can be different when an instance is in two different other symbols
 * In a collection of Symbol, you can get the symbol with `.get(symbolId)` since the symbols have their cid set to their initial `symbolId` - see [the initialize method in Symbol.ts](./src/model/Symbol.ts)
+
+### Unique ID Generation (Plugin Feature)
+
+When using GrapesJS's symbols API directly, elements with HTML `id` attributes get duplicated across instances, which breaks:
+- `<label for="input-id">` associations
+- `aria-labelledby`, `aria-describedby`, and other ARIA references
+- Anchor links (`<a href="#section-id">`)
+- Bootstrap modals/dropdowns (`data-target="#modal-id"` or `data-bs-target="#modal-id"`)
+
+**This plugin automatically solves this problem.** When you create a symbol instance through the plugin's UI (dragging from the symbols list), it:
+1. Generates unique IDs for all elements that have an `id` attribute (e.g., `my-input` becomes `my-input-a1b2c3`)
+2. Updates all internal references to those IDs (`for`, `aria-*`, `href="#..."`, etc.)
+3. Prevents these attributes from syncing back to the original symbol
+
+This means you can safely use forms, accessible components, and Bootstrap widgets inside symbols without worrying about ID conflicts.
 
 
 ## Options
