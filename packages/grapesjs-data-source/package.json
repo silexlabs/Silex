@@ -71,7 +71,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@silexlabs/expression-input": "0.2.1-1",
+    "@silexlabs/expression-input": "0.3.0",
     "dedent-js": "^1.0.1"
   }
 }
