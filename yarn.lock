@@ -3300,7 +3300,7 @@
   integrity sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==
 
 "@silexlabs/eleventy-plugin-concat@file:/home/lexoyo/_/Silex/packages/eleventy-plugin-concat":
-  version "1.2.3"
+  version "1.3.0"
   resolved "file:packages/eleventy-plugin-concat"
   dependencies:
     node-fetch "^2.6.9"
@@ -3313,49 +3313,26 @@
   dependencies:
     lit "^3.2.1"
 
-"@silexlabs/expression-input@0.2.1-1":
-  version "0.2.1-1"
-  resolved "https://registry.npmjs.org/@silexlabs/expression-input/-/expression-input-0.2.1-1.tgz"
-  integrity sha512-irf46w3cC5h4khrMVkSYG1YaVWky9/egPd7f0roC2MTg2zkC/Ktf/2LgEazQgEKxBIYK7K60+4SJgzWuUFoiMQ==
-  dependencies:
-    lit "^3.2.1"
-
-"@silexlabs/expression-input@file:/home/lexoyo/_/Silex/packages/expression-input":
+"@silexlabs/expression-input@0.3.0", "@silexlabs/expression-input@file:/home/lexoyo/_/Silex/packages/expression-input":
   version "0.3.0"
   resolved "file:packages/expression-input"
   dependencies:
     lit "^3.2.1"
 
-"@silexlabs/grapesjs-advanced-selector@1.3.1-3":
-  version "1.3.1-3"
-  resolved "https://registry.npmjs.org/@silexlabs/grapesjs-advanced-selector/-/grapesjs-advanced-selector-1.3.1-3.tgz"
-  integrity sha512-ggXRL3yp2sdehqCVk861ZHd+EmqJdMJEmPJghIxPnJLHsyenJINo361bQtWR3cYWNsa9S3HUTJNz6ffAjMmD3w==
-  dependencies:
-    "@silexlabs/expression-input" "0.2.1-1"
-    specificity "^1.0.0"
-
-"@silexlabs/grapesjs-advanced-selector@file:/home/lexoyo/_/Silex/packages/grapesjs-advanced-selector":
-  version "1.3.2"
+"@silexlabs/grapesjs-advanced-selector@1.4.0", "@silexlabs/grapesjs-advanced-selector@file:/home/lexoyo/_/Silex/packages/grapesjs-advanced-selector":
+  version "1.4.0"
   resolved "file:packages/grapesjs-advanced-selector"
   dependencies:
-    "@silexlabs/expression-input" "0.2.1-1"
+    "@silexlabs/expression-input" "0.3.0"
     specificity "^1.0.0"
 
 "@silexlabs/grapesjs-ai-copilot@file:/home/lexoyo/_/Silex/packages/grapesjs-ai-copilot":
-  version "0.0.32-1"
+  version "0.0.33"
   resolved "file:packages/grapesjs-ai-copilot"
   dependencies:
     "@anthropic-ai/sdk" "^0.58.0"
     lit "^3.1.0"
     openai "^5.12.0"
-
-"@silexlabs/grapesjs-data-source@0.1.1-11", "@silexlabs/grapesjs-data-source@file:/home/lexoyo/_/Silex/packages/grapesjs-data-source":
-  version "0.1.1-11"
-  resolved "file:packages/grapesjs-data-source"
-  dependencies:
-    "@apollo/client" "^3.13.8"
-    "@silexlabs/expression-input" "0.2.1-1"
-    dedent-js "^1.0.1"
 
 "@silexlabs/grapesjs-data-source@0.1.1-4":
   version "0.1.1-4"
@@ -3366,34 +3343,47 @@
     "@silexlabs/expression-input" "0.1.1-3"
     dedent-js "^1.0.1"
 
-"@silexlabs/grapesjs-filter-styles@1.2.0", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
-  version "1.2.0"
+"@silexlabs/grapesjs-data-source@0.1.1", "@silexlabs/grapesjs-data-source@file:/home/lexoyo/_/Silex/packages/grapesjs-data-source":
+  version "0.1.1"
+  resolved "file:packages/grapesjs-data-source"
+  dependencies:
+    "@apollo/client" "^3.13.8"
+    "@silexlabs/expression-input" "0.3.0"
+    dedent-js "^1.0.1"
+
+"@silexlabs/grapesjs-filter-styles@1.3.0", "@silexlabs/grapesjs-filter-styles@file:/home/lexoyo/_/Silex/packages/grapesjs-filter-styles":
+  version "1.3.0"
   resolved "file:packages/grapesjs-filter-styles"
 
-"@silexlabs/grapesjs-fonts@1.2.1-1", "@silexlabs/grapesjs-fonts@file:/home/lexoyo/_/Silex/packages/grapesjs-fonts":
-  version "1.2.1-1"
+"@silexlabs/grapesjs-fonts@1.2.1", "@silexlabs/grapesjs-fonts@file:/home/lexoyo/_/Silex/packages/grapesjs-fonts":
+  version "1.2.1"
   resolved "file:packages/grapesjs-fonts"
 
-"@silexlabs/grapesjs-keymaps-dialog@1.2.0", "@silexlabs/grapesjs-keymaps-dialog@file:/home/lexoyo/_/Silex/packages/grapesjs-keymaps-dialog":
-  version "1.2.0"
+"@silexlabs/grapesjs-keymaps-dialog@1.3.0", "@silexlabs/grapesjs-keymaps-dialog@file:/home/lexoyo/_/Silex/packages/grapesjs-keymaps-dialog":
+  version "1.3.0"
   resolved "file:packages/grapesjs-keymaps-dialog"
   dependencies:
     dts-bundle-generator "^9.5.1"
 
-"@silexlabs/grapesjs-loading@1.2.0", "@silexlabs/grapesjs-loading@file:/home/lexoyo/_/Silex/packages/grapesjs-loading":
-  version "1.2.0"
+"@silexlabs/grapesjs-loading@1.3.0", "@silexlabs/grapesjs-loading@file:/home/lexoyo/_/Silex/packages/grapesjs-loading":
+  version "1.3.0"
   resolved "file:packages/grapesjs-loading"
 
-"@silexlabs/grapesjs-notifications@0.2.1-0", "@silexlabs/grapesjs-notifications@file:/home/lexoyo/_/Silex/packages/grapesjs-notifications":
-  version "0.2.1-0"
+"@silexlabs/grapesjs-notifications@0.2.1", "@silexlabs/grapesjs-notifications@file:/home/lexoyo/_/Silex/packages/grapesjs-notifications":
+  version "0.2.1"
   resolved "file:packages/grapesjs-notifications"
 
-"@silexlabs/grapesjs-storage-rate-limit@1.2.0", "@silexlabs/grapesjs-storage-rate-limit@file:/home/lexoyo/_/Silex/packages/grapesjs-storage-rate-limit":
-  version "1.2.0"
+"@silexlabs/grapesjs-storage-rate-limit@1.3.0", "@silexlabs/grapesjs-storage-rate-limit@file:/home/lexoyo/_/Silex/packages/grapesjs-storage-rate-limit":
+  version "1.3.0"
   resolved "file:packages/grapesjs-storage-rate-limit"
 
-"@silexlabs/grapesjs-symbols@1.3.0", "@silexlabs/grapesjs-symbols@file:/home/lexoyo/_/Silex/packages/grapesjs-symbols":
-  version "1.3.0"
+"@silexlabs/grapesjs-symbols@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.npmjs.org/@silexlabs/grapesjs-symbols/-/grapesjs-symbols-1.4.0.tgz"
+  integrity sha512-Agv7pVqJ0yB5vceAfM6GZhhqFeUlY0L/Odw17VL4eR0Edd599KG5o4ItSAx6pPDuZjttd1jmRSsefj+45bLtig==
+
+"@silexlabs/grapesjs-symbols@file:/home/lexoyo/_/Silex/packages/grapesjs-symbols":
+  version "1.4.1"
   resolved "file:packages/grapesjs-symbols"
 
 "@silexlabs/grapesjs-ui-suggest-classes@1.2.0":
@@ -3401,7 +3391,7 @@
   resolved "file:packages/grapesjs-ui-suggest-classes"
 
 "@silexlabs/grapesjs-version-flow@file:/home/lexoyo/_/Silex/packages/grapesjs-version-flow":
-  version "1.1.0"
+  version "1.2.0"
   resolved "file:packages/grapesjs-version-flow"
 
 "@silexlabs/silex-cms@0.3.1-5":
@@ -3423,58 +3413,58 @@
     tslib "^2.8.1"
     typescript "^5.7.3"
 
-"@silexlabs/silex-dashboard@1.4.1-7", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
-  version "1.4.1-7"
+"@silexlabs/silex-dashboard@1.4.1", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
+  version "1.4.1"
   resolved "file:packages/silex-dashboard"
   dependencies:
     locale "^0.1.0"
-    node_modules-path "^2.2.0"
+    node_modules-path "^2.3.0"
     serve-static "^2.2.0"
     vue "^3.5.13"
 
 "@silexlabs/silex-platform@file:/home/lexoyo/_/Silex/packages/silex-platform":
-  version "1.3.1-7"
+  version "1.3.1"
   resolved "file:packages/silex-platform"
   dependencies:
-    "@silexlabs/silex" "3.5.1-8"
+    "@silexlabs/silex" "3.5.1"
     "@silexlabs/silex-cms" "0.3.1-5"
-    "@silexlabs/silex-dashboard" "1.4.1-7"
+    "@silexlabs/silex-dashboard" "1.4.1"
     dotenv "^16.4.7"
 
 "@silexlabs/silex-plugin-starter@file:/home/lexoyo/_/Silex/packages/silex-plugin-starter":
-  version "0.5.1-7"
+  version "0.5.1"
   resolved "file:packages/silex-plugin-starter"
 
-"@silexlabs/silex-plugins@1.2.0", "@silexlabs/silex-plugins@file:/home/lexoyo/_/Silex/packages/silex-plugins":
-  version "1.2.0"
+"@silexlabs/silex-plugins@1.3.0", "@silexlabs/silex-plugins@file:/home/lexoyo/_/Silex/packages/silex-plugins":
+  version "1.3.0"
   resolved "file:packages/silex-plugins"
   dependencies:
     component-emitter "^2.0.0"
 
 "@silexlabs/silex-puter@file:/home/lexoyo/_/Silex/packages/silex-puter":
-  version "0.5.1-7"
+  version "0.5.1"
   resolved "file:packages/silex-puter"
   dependencies:
-    "@silexlabs/silex" "3.5.1-8"
+    "@silexlabs/silex" "3.5.1"
     lit-html "^3.2.1"
 
-"@silexlabs/silex@3.5.1-8", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
-  version "3.5.1-8"
+"@silexlabs/silex@3.5.1", "@silexlabs/silex@file:/home/lexoyo/_/Silex/packages/silex-lib":
+  version "3.5.1"
   resolved "file:packages/silex-lib"
   dependencies:
     "@fontsource/ubuntu" "^5.0.13"
     "@fortawesome/fontawesome-free" "6.6.0"
-    "@silexlabs/grapesjs-advanced-selector" "1.3.1-3"
-    "@silexlabs/grapesjs-data-source" "0.1.1-11"
-    "@silexlabs/grapesjs-filter-styles" "1.2.0"
-    "@silexlabs/grapesjs-fonts" "1.2.1-1"
-    "@silexlabs/grapesjs-keymaps-dialog" "1.2.0"
-    "@silexlabs/grapesjs-loading" "1.2.0"
-    "@silexlabs/grapesjs-notifications" "0.2.1-0"
-    "@silexlabs/grapesjs-storage-rate-limit" "1.2.0"
-    "@silexlabs/grapesjs-symbols" "1.3.0"
+    "@silexlabs/grapesjs-advanced-selector" "1.4.0"
+    "@silexlabs/grapesjs-data-source" "0.1.1"
+    "@silexlabs/grapesjs-filter-styles" "1.3.0"
+    "@silexlabs/grapesjs-fonts" "1.2.1"
+    "@silexlabs/grapesjs-keymaps-dialog" "1.3.0"
+    "@silexlabs/grapesjs-loading" "1.3.0"
+    "@silexlabs/grapesjs-notifications" "0.2.1"
+    "@silexlabs/grapesjs-storage-rate-limit" "1.3.0"
+    "@silexlabs/grapesjs-symbols" "1.4.0"
     "@silexlabs/grapesjs-ui-suggest-classes" "1.2.0"
-    "@silexlabs/silex-plugins" "1.2.0"
+    "@silexlabs/silex-plugins" "1.3.0"
     "@types/archiver" "^6.0.2"
     adm-zip "0.5.14"
     archiver "^7.0.1"
@@ -3505,7 +3495,7 @@
     html-minifier "^4.0.0"
     lit-html "3.2.1"
     mkdirp "3.0.1"
-    node_modules-path "2.2.0"
+    node_modules-path "2.3.0"
     node-fetch "2.6.9"
     normalize.css "8.0.1"
     npm-run-all "^4.1.5"
@@ -3516,7 +3506,7 @@
     uuid "^10.0.0"
 
 "@silexlabs/sitemapgen@file:/home/lexoyo/_/Silex/packages/SitemapGen":
-  version "1.1.4"
+  version "1.2.0"
   resolved "file:packages/SitemapGen"
   dependencies:
     commander "^14.0.0"
@@ -16703,8 +16693,8 @@ no-case@^3.0.4:
     lower-case "^2.0.2"
     tslib "^2.0.3"
 
-node_modules-path@^2.2.0, node_modules-path@2.2.0, "node_modules-path@file:/home/lexoyo/_/Silex/packages/node_modules-path":
-  version "2.2.0"
+node_modules-path@^2.2.0, node_modules-path@^2.3.0, node_modules-path@2.3.0, "node_modules-path@file:/home/lexoyo/_/Silex/packages/node_modules-path":
+  version "2.3.0"
   resolved "file:packages/node_modules-path"
 
 node-abi@^3.3.0:
@@ -20251,7 +20241,7 @@ signedsource@^1.0.0:
   integrity sha512-6+eerH9fEnNmi/hyM1DXcRK3pWdoMQtlkQ+ns0ntzunjKqp5i3sKCc80ym8Fib3iaYhdJUOPdhlJWj1tvge2Ww==
 
 "silex-desktop@file:/home/lexoyo/_/Silex/packages/silex-desktop":
-  version "2.8.1-7"
+  version "2.8.1"
   resolved "file:packages/silex-desktop"
 
 simple-concat@^1.0.0:
