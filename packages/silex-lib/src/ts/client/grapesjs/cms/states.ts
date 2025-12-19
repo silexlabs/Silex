@@ -55,7 +55,7 @@ export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTri
           if (!body.attributes.publicStates) body.attributes.publicStates = []
           body.attributes.publicStates.push({
             hidden: true,
-            label: 'Pagination items',
+            label: 'pagination.items',
             expression: itemsExpression,
           })
         } else {
@@ -87,7 +87,7 @@ export function updatePaginationStates(editor: Editor, pageIndex = 0, preventTri
         editor.UndoManager.skip(() => {
           setState(body, 'items', {
             hidden: true,
-            label: 'Pagination items',
+            label: 'pagination.items',
             expression: itemsExpression,
           }, true, 1)
 
