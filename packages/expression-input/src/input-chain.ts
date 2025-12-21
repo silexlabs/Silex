@@ -188,7 +188,7 @@ export class InputChain extends LitElement {
         const children = Array.from(
           this.querySelectorAll(':scope > select, :scope > custom-select')
         ) as HTMLSelectElement[]
-        children[0].value = ''
+        children.forEach(child => child.value = '')
       }
       this.dispatchEvent(new CustomEvent('change', {detail: {idx}}))
     } else {
