@@ -437,8 +437,11 @@ export class StateEditor extends LitElement {
         // We selected the "-" option, do nothing, this step will be removed
       }
       this.data = data
+    } else if(idx === -1) {
+      // Clear expression (case when user clicks reset/clear button)
+      this.data = []
     } else {
-      // Event coming from the options
+      // Event coming from the options (no idx in detail)
     }
     // Stop default behavior of inputs
     event.preventDefault()
