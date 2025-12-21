@@ -293,8 +293,14 @@ export const PROPERTY_STYLES = `
       text-indent: 1px;
       text-overflow: '';
     }
-    .ds-expression-input__add option {
-      font-size: medium;
+    .ds-expression-input__add {
+      option {
+        font-size: medium;
+      }
+      optgroup option {
+        /* all options but the "+" */
+        text-align: left;
+      }
     }
     .ds-expression-input__options-button {
       background-color: transparent;
