@@ -1,4 +1,4 @@
-import dataSourcePlugin, { DataSourceEditorOptions } from '@silexlabs/grapesjs-data-source'
+import dataSourcePlugin, { DataSourceEditorOptions, DATA_SOURCE_ERROR, IDataSource } from '@silexlabs/grapesjs-data-source'
 import { ClientConfig } from '../../config'
 import { getZeroConfig } from './config'
 import publication from './publication'
@@ -127,5 +127,36 @@ export default function (editor: Editor, options: Partial<EleventyPluginOptions>
       --ds-highlight: #a291ff !important;
     }
   </style>`)
+
+  // Handle data source connection errors (for registered data sources, e.g. on load/refresh)
+  // Only once, no need to block edition if it keeps happenning
+  editor.once(DATA_SOURCE_ERROR, (message: string, dataSource: IDataSource) => {
+    console.error('[Silex CMS] Data source connection error:', message, dataSource)
+
+    const content = document.createElement('div')
+    content.innerHTML = `
+      <p><strong>${dataSource?.label || 'Data source'}</strong></p>
+      <p>${message}</p>
+      <hr>
+      <footer>
+        <button class="silex-button silex-button--primary" data-action="settings">Go to Settings</button>
+        <button class="silex-button silex-button--secondary" data-action="close">Close</button>
+      </footer>
+    `
+
+    content.querySelector('[data-action="settings"]')?.addEventListener('click', () => {
+      editor.Modal.close()
+      editor.runCommand('open-settings', { sectionId: CMS_SETTINGS_SECTION_ID })
+    })
+    content.querySelector('[data-action="close"]')?.addEventListener('click', () => {
+      editor.Modal.close()
+    })
+
+    editor.Modal.open({
+      title: 'Data Source Error',
+      content,
+    })
+  })
+
   return editor
 }
