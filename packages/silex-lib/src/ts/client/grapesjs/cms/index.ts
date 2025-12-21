@@ -128,8 +128,8 @@ export default function (editor: Editor, options: Partial<EleventyPluginOptions>
   </style>`)
 
   // Handle data source connection errors (for registered data sources, e.g. on load/refresh)
-  // Only once, no need to block edition if it keeps happenning
-  editor.once(DATA_SOURCE_ERROR, (message: string, dataSource: IDataSource) => {
+  // Only show the dialog for the first 10 seconds after editor load
+  function handleDataSourceError(message: string, dataSource: IDataSource) {
     console.error('[Silex CMS] Data source connection error:', message, dataSource)
 
     const content = document.createElement('div')
@@ -155,7 +155,13 @@ export default function (editor: Editor, options: Partial<EleventyPluginOptions>
       title: 'Data Source Error',
       content,
     })
-  })
+  }
+
+  // Only display this error at load time
+  editor.on(DATA_SOURCE_ERROR, handleDataSourceError)
+  setTimeout(() => {
+    editor.off(DATA_SOURCE_ERROR, handleDataSourceError)
+  }, 10000)
 
   return editor
 }

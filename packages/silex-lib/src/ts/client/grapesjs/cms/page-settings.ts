@@ -156,15 +156,74 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
         border: 1px solid transparent
         border-radius: .25rem
       }
+      /* Inline help popins */
+      .help-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-left: 6px;
+        vertical-align: middle;
+        font-weight: 400;
+      }
+      .help-icon {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        font-size: 12px;
+        text-align: center;
+        border-radius: 50%;
+        background: var(--gjs-main-light-color, #444);
+        color: #fff;
+        cursor: pointer;
+        user-select: none;
+      }
+      details.help-popover {
+        position: static;
+        display: inline-block;
+      }
+      details.help-popover[open] .help-content {
+        position: absolute;
+        z-index: 1000;
+        width: 320px;
+        max-width: 60vw;
+        background: #fff;
+        color: #333;
+        border: 1px solid rgba(0,0,0,0.15);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        padding: 8px 10px;
+        border-radius: 6px;
+        a {
+          color: #333;
+        }
+      }
+      .help-content ul {
+        margin: 6px 0 0 16px;
+        padding: 0;
+      }
+      .help-content strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+      .help-content a {
+        color: var(--ds-button-color, #7a6cff);
+      }
     </style>
     <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
       <div class="silex-help">
-        The "Silex CMS" feature integrates <a target="_blank" href="https://www.11ty.dev/">11ty</a> static site generator and your favorite headless CMS with Silex.
-        <br>Read Silex <a target="_blank" href="https://docs.silex.me/en/user/cms">documentation</a> to learn more.
+        <p>The "Silex CMS" feature integrates <a target="_blank" href="https://www.11ty.dev/">11ty</a> static site generator and your favorite headless CMS with Silex.</p>
+        <p>Tip: Click the “?” icons to view inline help about pagination, expressions, and permalinks.</p>
+        <p>Related links to the docs:
+        <ul>
+          <li><a target="_blank" href="https://docs.silex.me/en/user/cms-concepts">documentation about Silex CMS concepts</a></li>
+          <li><a href="https://docs.silex.me/en/user/cms-concepts#expressions" target="_blank">Expressions</a></li>
+          <li><a href="https://docs.silex.me/en/user/cms-collection-pages" target="_blank">Collection pages</a></li>
+          <li><a href="https://www.11ty.dev/docs/pagination/" target="_blank">11ty pagination</a></li>
+        </ul>
+        </p>
       </div>
       <div class="silex-form__group col2">
         <label class="silex-form__element">
-          <p class="silex-help">Pagination allows you to iterate over data and create multiple website pages from a single page in Silex. This feature is based on <a target="_blank" href="https://www.11ty.dev/docs/pagination/">Eleventy pagination, read more in the docs</a>.</p>
+
           <state-editor
             ${ref(pageDataEditor)}
             id="eleventyPageData"
@@ -176,8 +235,30 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             no-states
             no-filters
           >
-            <label slot="label">Pagination Data</label>
+            <label slot="label">
+              Pagination Data
+              <span class="help-wrapper">
+                <details class="help-popover">
+                  <summary class="help-icon" aria-label="Help">?</summary>
+                  <div class="help-content">
+                    <strong>Pagination data</strong>
+                    <ul>
+                      <li>These fields are expressions.</li>
+                      <li>Set pagination data to make this a collection page (like Webflow collections).</li>
+                      <li>Each generated page represents one item from your data source.</li>
+                    </ul>
+                    <strong style="margin-top:6px;">Collection page expressions</strong>
+                    <ul>
+                      <li>When pagination is enabled, you can use <b>Pagination items</b>.</li>
+                      <li>“Pagination items” is an array — the items shown on the current page.</li>
+                      <li>This follows <a href="https://www.11ty.dev/docs/pagination/" target="_blank">11ty’s pagination model</a>.</li>
+                    </ul>
+                  </div>
+                </details>
+              </span>
+            </label>
           </state-editor>
+
           <state-editor
             id="eleventyPermalink"
             name="eleventyPermalink"
@@ -185,8 +266,27 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             .editor=${editor}
             .selected=${body}
           >
-            <label slot="label">Permalink</label>
+            <label slot="label">
+              Permalink
+              <span class="help-wrapper">
+                <details class="help-popover">
+                  <summary class="help-icon" aria-label="Help">?</summary>
+                  <div class="help-content">
+                    <strong>Permalink</strong>
+                    <ul>
+                      <li>Defines the published URL path (expects an expression).</li>
+                      <li>For collection pages, this is evaluated for each generated page.</li>
+                    </ul>
+                    <ul>
+                      <li><a href="https://docs.silex.me/en/user/cms-concepts#permalink" target="_blank">Permalinks in Silex</a></li>
+                      <li><a href="https://www.11ty.dev/docs/pagination/#permalink" target="_blank">11ty permalink docs</a></li>
+                    </ul>
+                  </div>
+                </details>
+              </span>
+            </label>
           </state-editor>
+
           <details class="silex-more"><summary>Advanced params</summary>
           <label class="silex-form__element">Size
             <input type="number" name="eleventyPageSize" .value=${settings.eleventyPageSize ?? 1} placeholder="1" />
