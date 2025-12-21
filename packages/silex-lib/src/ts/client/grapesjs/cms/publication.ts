@@ -159,7 +159,6 @@ export function getFrontMatter(page: Page, settings: Silex11tyPluginWebsiteSetti
       addAllPagesToCollections: true
       data: ${data}
       size: ${settings.eleventyPageSize ? settings.eleventyPageSize : '1'}
-      ${settings.eleventyPageReverse ? 'reverse: true' : ''}
     ` : ''}
     ${permalink ? `permalink: "${permalink}"` : ''}
     ${lang ? `lang: "${lang}"` : ''}

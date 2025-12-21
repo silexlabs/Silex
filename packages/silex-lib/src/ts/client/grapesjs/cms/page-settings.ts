@@ -188,9 +188,6 @@ function renderSettingsSection(settings: Silex11tyPluginWebsiteSettings, editor:
             <label slot="label">Permalink</label>
           </state-editor>
           <details class="silex-more"><summary>Advanced params</summary>
-          <label class="silex-form__element">Reverse
-            <input type="checkbox" name="eleventyPageReverse" ?checked=${!!settings.eleventyPageReverse}/>
-          </label>
           <label class="silex-form__element">Size
             <input type="number" name="eleventyPageSize" .value=${settings.eleventyPageSize ?? 1} placeholder="1" />
           </label>

@@ -68,7 +68,6 @@ export interface Silex11tyPluginWebsiteSettings extends WebsiteSettings {
   eleventyPageData?: string,
   eleventyPermalink?: string,
   eleventyPageSize?: string,
-  eleventyPageReverse?: boolean,
   silexLanguagesList?: string,
   silexLanguagesDefault?: string,
   eleventyNavigationKey?: string,
