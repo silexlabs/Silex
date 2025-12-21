@@ -139,7 +139,7 @@ export function getStateIds(component: Component, exported: boolean = true, befo
   try {
     const states = component.get(exported ? EXPORTED_STATES_KEY : PRIVATE_STATES_KEY) as StoredStateWithId[] ?? []
     const allStates = states
-      .sort(a => a.hidden ? -1 : 0) // Hidden states first
+      .sort((a, b) => Number(b.hidden ?? false) - Number(a.hidden ?? false)) // Hidden states first
       .map(state => state.id)
     if(before) {
       const index = allStates.indexOf(before)
