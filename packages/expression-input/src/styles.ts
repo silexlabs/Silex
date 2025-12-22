@@ -71,8 +71,7 @@ export const inputChainStyles = css`
     overflow-x: auto;
     padding: 10px;
     scrollbar-width: thin;
-    scrollbar-color: var(--expression-input-active-color, #333)
-      var(--expression-input-active-background-color, #eee);
+    scrollbar-color: var(--expression-input-active-color, #333) var(--expression-input-active-background-color, #eee);
   }
   .fixed-selector,
   ::part(fixed-selector) {
@@ -274,7 +273,8 @@ export const popinStyles = css`
   :host {
     display: inline-block;
     position: fixed;
-    max-width: 100vw;
+    width: max-content;
+    max-width: 60vw;
     max-height: 80vh;
     box-sizing: border-box;
     z-index: 1000; /* Ensure it's on top of other content */

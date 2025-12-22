@@ -41,6 +41,9 @@ export class PopinOverlay extends LitElement {
   private resized_ = this.ensureElementInView.bind(this)
   private blured_ = this.blured.bind(this)
   private keydown_ = this.keydown.bind(this)
+  private resizeObserver_: ResizeObserver | null = null
+  private originalParent_: HTMLElement | null = null
+  private originalNextSibling_: Node | null = null
 
   override render() {
     setTimeout(() => this.ensureElementInView())
@@ -57,6 +60,9 @@ export class PopinOverlay extends LitElement {
     // Attach elements on window
     window.addEventListener('resize', this.resized_)
     window.addEventListener('blur', this.blured_)
+    // Watch for size changes (e.g., when content changes)
+    this.resizeObserver_ = new ResizeObserver(() => this.ensureElementInView())
+    this.resizeObserver_.observe(this)
   }
 
   override disconnectedCallback() {
@@ -64,6 +70,8 @@ export class PopinOverlay extends LitElement {
     window.removeEventListener('blur', this.blured_)
     this.removeEventListener('blur', this.blured_)
     this.removeEventListener('keydown', this.keydown_)
+    this.resizeObserver_?.disconnect()
+    this.resizeObserver_ = null
     super.disconnectedCallback()
   }
 
@@ -92,10 +100,6 @@ export class PopinOverlay extends LitElement {
       if (popin !== this) {
         // Hide the dialog
         this.close()
-      } else {
-        // Focus the dialog again so that this function
-        // will be called again when the user click outside
-        //this.focus()
       }
     })
   }
@@ -118,46 +122,50 @@ export class PopinOverlay extends LitElement {
   ): void {
     super.attributeChangedCallback(name, _old, value)
     if (name === 'hidden' && value === null) {
-      this.focus()
+      // Move to body to avoid containing block issues (e.g., backdrop-filter)
+      this.originalParent_ = this.parentElement
+      this.originalNextSibling_ = this.nextSibling
+      document.body.appendChild(this)
+      // Delay focus to let the click event fully complete
+      setTimeout(() => {
+        this.focus()
+      }, 0)
       this.dispatchEvent(new CustomEvent('popin-opened'))
     }
     if (name === 'hidden' && value !== null) {
+      // Move back to original location
+      if (this.originalParent_) {
+        this.originalParent_.insertBefore(this, this.originalNextSibling_)
+        this.originalParent_ = null
+        this.originalNextSibling_ = null
+      }
       this.dispatchEvent(new CustomEvent('popin-closed'))
     }
   }
 
   protected ensureElementInView() {
-    // Set our position to the parent element position
-    const parentStyle = this.parentElement?.getBoundingClientRect()
-    this.style.left = `${parentStyle?.left}px`
-    this.style.top = `${parentStyle?.top}px`
-
-    const offsetX = 0
-    const offsetY = 0
-
-    // // Get the element's bounding rectangle
+    // Adjust position to keep the element within viewport boundaries
     const rect = this.getBoundingClientRect()
     const viewportWidth = window.innerWidth
     const viewportHeight = window.innerHeight
 
-    // Check if the element is out of the viewport on the right side
-    if (rect.left + rect.width + offsetX > viewportWidth) {
-      this.style.left = `${viewportWidth - rect.width - offsetX}px`
+    // Adjust if out of viewport on the right
+    if (rect.right > viewportWidth) {
+      const currentLeft = parseFloat(this.style.left) || 0
+      this.style.left = `${currentLeft - (rect.right - viewportWidth)}px`
     }
-
-    // Check if the element is out of the viewport on the left side
-    if (rect.left + offsetX < 0) {
-      this.style.left = `${-offsetX}px`
+    // Adjust if out of viewport on the left
+    if (rect.left < 0) {
+      this.style.left = '0px'
     }
-
-    // Check if the element is out of the viewport on the bottom
-    if (rect.top + rect.height + offsetY > viewportHeight) {
-      this.style.top = `${viewportHeight - rect.height - offsetY}px`
+    // Adjust if out of viewport on the bottom
+    if (rect.bottom > viewportHeight) {
+      const currentTop = parseFloat(this.style.top) || 0
+      this.style.top = `${currentTop - (rect.bottom - viewportHeight)}px`
     }
-
-    // Check if the element is out of the viewport on the top
-    if (rect.top + offsetY < 0) {
-      this.style.top = `${-offsetY}px`
+    // Adjust if out of viewport on the top
+    if (rect.top < 0) {
+      this.style.top = '0px'
     }
   }
 }
