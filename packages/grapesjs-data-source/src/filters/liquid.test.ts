@@ -20,7 +20,7 @@ test('is string', () => {
 
 test('is date', () => {
   expect(isDate(null)).toBe(false)
-  expect(isDate(testFields.stringField1)).toBe(false)
+  expect(isDate(testFields.stringField1)).toBe(true)
   expect(isDate(testFields.dateField1)).toBe(true)
   expect(isDate(testFields.dateField2, false)).toBe(true)
   expect(isDate(testFields.dateField2)).toBe(false)

@@ -26,7 +26,7 @@ import { Component, Editor } from 'grapesjs'
 function isNumber(field: Field | null, scalarOnly = true): boolean {
   if (!field || (scalarOnly && field.kind !== 'scalar')) return false
   const typeIds = field.typeIds.map(typeId => typeId.toLowerCase())
-  return typeIds.includes('number') || typeIds.includes('int')
+  return ['number','int','float','decimal','bigint','double','long','short','byte','integer','numeric'].some(t => typeIds.includes(t))
 }
 
 /**
@@ -35,7 +35,13 @@ function isNumber(field: Field | null, scalarOnly = true): boolean {
  */
 export function isString(field: Field | null, scalarOnly = true): boolean {
   if (!field || (scalarOnly && field.kind !== 'scalar')) return false
-  return field.typeIds.map(typeId => typeId.toLowerCase()).includes('string')
+  return field.typeIds
+    .map(typeId => typeId.toLowerCase())
+    .some(typeId =>
+      typeId.includes('string') ||
+      // In WP for example
+      typeId === 'id'
+    )
 }
 
 /**
@@ -44,7 +50,19 @@ export function isString(field: Field | null, scalarOnly = true): boolean {
  */
 export function isDate(field: Field | null, scalarOnly = true): boolean {
   if (!field || (scalarOnly && field.kind !== 'scalar')) return false
-  return field.typeIds.map(typeId => typeId.toLowerCase()).some(typeId => ['date', 'instant'].includes(typeId))
+  return field.typeIds
+    .map(typeId => typeId.toLowerCase())
+    .some(typeId =>
+      typeId.includes('date') ||
+      typeId.includes('datetime') ||
+      typeId.includes('time') ||
+      typeId.includes('timestamp') ||
+      typeId.includes('instant') ||
+      typeId.includes('timestamptz') ||
+      typeId.includes('zoned') ||
+      // In WP for example
+      typeId.includes('string')
+    )
 }
 
 /**
@@ -409,7 +427,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Index
-          <input type="number" name="index" placeholder="Index" .value=${options.index}/>
+          <input type="number" name="index" placeholder="Index" .value=${options.index || 0}/>
         </label>
     `,
     }, {
@@ -495,7 +513,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -510,7 +528,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -525,7 +543,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -540,7 +558,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -557,7 +575,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -604,7 +622,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -619,7 +637,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Value
-          <input type="number" name="value" placeholder="Value" .value=${options.value}/>
+          <input type="number" name="value" placeholder="Value" .value=${options.value || 0}/>
         </label>
       `,
     }, {
@@ -698,7 +716,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Length
-          <input type="number" name="length" placeholder="Length" .value=${options.length}/>
+          <input type="number" name="length" placeholder="Length" .value=${options.length || 50}/>
         </label>
       `,
     }, {
@@ -713,7 +731,7 @@ export default function(editor: Editor): Filter[] {
       },
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Length
-          <input type="number" name="length" placeholder="Length" .value=${options.length}/>
+          <input type="number" name="length" placeholder="Length" .value=${options.length || 15}/>
         </label>
       `,
     }, {
@@ -733,17 +751,48 @@ export default function(editor: Editor): Filter[] {
       },
       options: {
         format: '%a, %b %d, %y', // Fri, Jul 17, 15
-        timeZone: '',
+        timeZone: 'UTC',
       },
       optionsKeys: ['format', 'timeZone'],
       quotedOptions: ['format', 'timeZone'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
-        <label>Format
-          <input type="text" name="format" placeholder="Format" .value=${options.format || '%a, %b %d, %y'}/>
-        </label>
-        <label>Time zone
-          <input type="text" name="timeZone" placeholder="Time zone" .value=${options.timeZone || '' }/>
-        </label>
+        <div>
+          <label>Format<br>
+            <input type="text" name="format" placeholder="Format" .value=${options.format || '%a, %b %d, %y'}/>
+          </label>
+        </div>
+        <br><br>
+        <div>
+          <label>Timezone<br>
+            <input type="text" name="timeZone" aria-describedby="tz-help" list="tz-list" placeholder="e.g. Europe/Paris, UTC, America/New_York" .value=${options.timeZone || 'UTC' }/>
+          </label>
+        </div>
+        <datalist id="tz-list">
+          <option value="UTC"></option>
+          <option value="Europe/Paris"></option>
+          <option value="Europe/London"></option>
+          <option value="America/New_York"></option>
+          <option value="America/Los_Angeles"></option>
+          <option value="America/Chicago"></option>
+          <option value="Asia/Tokyo"></option>
+          <option value="Asia/Shanghai"></option>
+          <option value="Asia/Kolkata"></option>
+          <option value="Australia/Sydney"></option>
+          <option value="Africa/Johannesburg"></option>
+          <option value="America/Sao_Paulo"></option>
+        </datalist>
+        <details id="tz-help">
+          <summary>Timezone help</summary>
+          <p>Use a valid IANA time zone.</p>
+          <ul>
+            <li>Expected format: IANA time zone (Area/City)</li>
+            <li>Examples: Europe/Paris, UTC, America/New_York</li>
+            <li>Required field — cannot be empty</li>
+          </ul>
+          <p>See the recommended list:
+            <a href="https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List" target="_blank" rel="noopener">IANA TZ database time zones</a>.
+          </p>
+        </details>
       `,
     }, {
       type: 'filter',
@@ -760,10 +809,10 @@ export default function(editor: Editor): Filter[] {
       optionsKeys: ['search', 'replace'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
-          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+          <input type="text" name="search" placeholder="Search" .value=${options.search || ''}/>
         </label>
         <label>Replace
-          <input type="text" name="replace" placeholder="Replace" .value=${options.replace}/>
+          <input type="text" name="replace" placeholder="Replace" .value=${options.replace || ''}/>
         </label>
       `,
     }, {
@@ -781,10 +830,10 @@ export default function(editor: Editor): Filter[] {
       optionsKeys: ['search', 'replace'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
-          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+          <input type="text" name="search" placeholder="Search" .value=${options.search || ''}/>
         </label>
         <label>Replace
-          <input type="text" name="replace" placeholder="Replace" .value=${options.replace}/>
+          <input type="text" name="replace" placeholder="Replace" .value=${options.replace || ''}/>
         </label>
       `,
     }, {
@@ -806,10 +855,10 @@ export default function(editor: Editor): Filter[] {
       optionsKeys: ['search', 'replace'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
         <label>Search
-          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+          <input type="text" name="search" placeholder="Search" .value=${options.search || ''}/>
         </label>
         <label>Replace
-          <input type="text" name="replace" placeholder="Replace" .value=${options.replace}/>
+          <input type="text" name="replace" placeholder="Replace" .value=${options.replace || ''}/>
         </label>
       `,
     }, {
@@ -820,13 +869,13 @@ export default function(editor: Editor): Filter[] {
       output: type => type,
       apply: (str, options) => (str as string).replace(options.search as string, ''),
       options: {
-        search: '',
+        search: 'delete this text',
       },
       quotedOptions: ['search'],
       optionsKeys: ['search'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
-        <label>Search
-          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        <label>Text to remove
+          <input type="text" name="search" placeholder="Delete this text" .value=${options.search || 'delete this text'}/>
         </label>
       `,
     }, {
@@ -837,13 +886,13 @@ export default function(editor: Editor): Filter[] {
       output: type => type,
       apply: (str, options) => (str as string).replace(options.search as string, ''),
       options: {
-        search: '',
+        search: 'delete this text',
       },
       quotedOptions: ['search'],
       optionsKeys: ['search'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
-        <label>Search
-          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        <label>Text to remove
+          <input type="text" name="search" placeholder="Delete this text" .value=${options.search || 'delete this text'}/>
         </label>
       `,
     }, {
@@ -858,13 +907,13 @@ export default function(editor: Editor): Filter[] {
         return (str as string).slice(0, index) + (str as string).slice(index + (options.search as string).length)
       },
       options: {
-        search: '',
+        search: 'delete this text',
       },
       quotedOptions: ['search'],
       optionsKeys: ['search'],
       optionsForm: (selected: Component, field: Field | null, options: Options) => html`
-        <label>Search
-          <input type="text" name="search" placeholder="Search" .value=${options.search}/>
+        <label>Text to remove
+          <input type="text" name="search" placeholder="Delete this text" .value=${options.search || 'delete this text'}/>
         </label>
       `,
     }, {
