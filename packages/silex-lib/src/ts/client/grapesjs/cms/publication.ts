@@ -102,7 +102,10 @@ function ensureLeadingAndTrailingSlash(str: string): string {
   if (str.length === 0) return '/'
   let s = str
   if (!s.startsWith('/')) s = '/' + s
-  if (!s.endsWith('/')) s = s + '/'
+  // No empty file name
+  if (s.endsWith('/.html')) throw new Error('Permalink may not end with "/.html". Your missing a file name!')
+  // If it ends with .html, keep as-is; otherwise ensure trailing slash
+  if (!s.endsWith('/') && !s.endsWith('.html')) s = s + '/'
   return s
 }
 
