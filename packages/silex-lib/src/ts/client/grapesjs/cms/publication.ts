@@ -98,12 +98,20 @@ function slugify(text: string | number) {
     .replace(/-+$/, '') // Trim - from end of text
 }
 
+function ensureLeadingAndTrailingSlash(str: string): string {
+  if (str.length === 0) return '/'
+  let s = str
+  if (!s.startsWith('/')) s = '/' + s
+  if (!s.endsWith('/')) s = s + '/'
+  return s
+}
+
 export function getPermalink(page: Page, permalink: Token[], isCollectionPage: boolean, slug: string): string | null {
   const isHome = slug === 'index'
   // User provided a permalink explicitely
   if (permalink && permalink.length > 0) {
     const body = page.getMainComponent() as Component
-    return echoBlock1line(body, permalink.map(token => {
+    return ensureLeadingAndTrailingSlash(echoBlock1line(body, permalink.map(token => {
       // Replace states which will be one from ./states.ts
       if(token.type === 'state') {
         const state = getState(body, token.storedStateId, true)
@@ -111,11 +119,11 @@ export function getPermalink(page: Page, permalink: Token[], isCollectionPage: b
         return {
           ...state.expression[0],
           dataSourceId: undefined,
-          fieldId: token.label,
+          fieldId: token.storedStateId === 'items' ? 'pagination.items': token.label, // FIXME: unclear what is label vs storedStateId vs liquid variable name
         } as Property
       }
       return token
-    }))
+    })))
   } else if (isCollectionPage) {
     // Let 11ty handle the permalink
     return null
