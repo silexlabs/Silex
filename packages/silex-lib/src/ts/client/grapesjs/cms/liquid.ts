@@ -196,8 +196,11 @@ export function getLiquidBlock(component: Component, expression: Expression): { 
     const firstNonFilterIndex = rest.findIndex(token => token.type !== 'filter')
     const filterExpression = firstNonFilterIndex === -1 ? rest.splice(0) : rest.splice(0, firstNonFilterIndex)
     const variableName = getNextVariableName(component, numNextVar++)
-    const statement = getLiquidStatement(variableExpression.concat(filterExpression), variableName, lastVariableName)
+    const { statement, prefixStatements } = getLiquidStatement(variableExpression.concat(filterExpression), variableName, lastVariableName, component)
     lastVariableName = variableName
+    // Add any prefix statements first (for nested filter option expressions)
+    result.push(...prefixStatements)
+    // Then add the main statement
     result.push({
       variableName,
       liquid: statement,
@@ -218,8 +221,10 @@ export function getNextVariableName(component: Component, numNextVar: number): s
  * - state can only be the first token
  *
  * Example of return value: `countries.continent.countries | first.name`
+ *
+ * Returns both the main statement and any prefix statements needed for nested filter options
  */
-export function getLiquidStatement(expression: Expression, variableName: string, lastVariableName: string = ''): string {
+export function getLiquidStatement(expression: Expression, variableName: string, lastVariableName: string = '', component?: Component): { statement: string, prefixStatements: { variableName: string, liquid: string }[] } {
   if (expression.length === 0) throw new Error('Expression cannot be empty')
   // Split expression in 2: properties and filters
   const firstFilterIndex = expression.findIndex(token => token.type === 'filter')
@@ -230,15 +235,18 @@ export function getLiquidStatement(expression: Expression, variableName: string,
   if (filters.find(token => token.type !== 'filter')) {
     throw new Error('A filter cannot be followed by a property or state')
   }
+  // Get filters with any prefix statements for nested expressions
+  const { filterStr, prefixStatements } = getLiquidStatementFilters(filters, component)
   // Start with the assign statement
-  return `assign ${variableName} = ${lastVariableName ? `${lastVariableName}.` : ''
+  const statement = `assign ${variableName} = ${lastVariableName ? `${lastVariableName}.` : ''
   }${
     // Add all the properties
     getLiquidStatementProperties(properties)
   }${
     // Add all the filters
-    getLiquidStatementFilters(filters)
+    filterStr
   }`
+  return { statement, prefixStatements }
 }
 
 export function getLiquidStatementProperties(properties: (Property | State)[]): string {
@@ -262,9 +270,10 @@ export function getLiquidStatementProperties(properties: (Property | State)[]): 
     .join('.')
 }
 
-export function getLiquidStatementFilters(filters: Filter[]): string {
-  if (!filters.length) return ''
-  return ' | ' + filters.map(token => {
+export function getLiquidStatementFilters(filters: Filter[], component?: Component): { filterStr: string, prefixStatements: { variableName: string, liquid: string }[] } {
+  if (!filters.length) return { filterStr: '', prefixStatements: [] }
+  const allPrefixStatements: { variableName: string, liquid: string }[] = []
+  const filterStr = ' | ' + filters.map(token => {
     const options = token.options ? Object.entries(token.options)
       // Order the filter's options by the order they appear in the filter's optionsKeys
       .map(([key, value]) => ({
@@ -279,10 +288,15 @@ export function getLiquidStatementFilters(filters: Filter[]): string {
         return a.order - b.order
       })
       // Convert the options to liquid
-      .map(({ key, value }) => handleFilterOption(token, key, value as string)) : []
+      .map(({ key, value }) => {
+        const result = handleFilterOption(token, key, value as string, component)
+        allPrefixStatements.push(...result.prefixStatements)
+        return result.optionStr
+      }) : []
     return `${token.filterName ?? token.id}${options.length ? `: ${options.join(', ')}` : ''}`
   })
     .join(' | ')
+  return { filterStr, prefixStatements: allPrefixStatements }
 }
 
 /**
@@ -295,10 +309,25 @@ function quote(value: string): string {
   return `"${value.replace(/"/g, '\\"')}"`
 }
 
-function handleFilterOption(filter: Filter, key: string, value: string): string {
+function handleFilterOption(filter: Filter, key: string, value: string, component?: Component): { optionStr: string, prefixStatements: { variableName: string, liquid: string }[] } {
   try {
     const expression = toExpression(value)
     if (expression) {
+      // Check if expression contains filters - if so, we need to generate liquid statements for it
+      const hasFilters = expression.some(token => token.type === 'filter')
+
+      if (hasFilters && component) {
+        // Expression contains filters - we need to use getLiquidBlock to process it
+        // and use the resulting variable name as the option value
+        const statements = getLiquidBlock(component, expression)
+        const variableName = statements[statements.length - 1].variableName
+        return {
+          optionStr: filter.quotedOptions?.includes(key) ? quote(variableName) : variableName,
+          prefixStatements: statements,
+        }
+      }
+
+      // No filters - simple expression with just properties/states
       const result = expression.map(token => {
         switch (token.type) {
         case 'property': {
@@ -311,15 +340,16 @@ function handleFilterOption(filter: Filter, key: string, value: string): string 
           return getStateVariableName(token.componentId, token.storedStateId)
         }
         case 'filter': {
-          throw new Error('Filter cannot be used in a filter option')
+          // This shouldn't happen since we check hasFilters above, but handle it anyway
+          throw new Error('Filter cannot be used in a filter option without component context')
         }
         }
       })
         .join('.')
-      return filter.quotedOptions?.includes(key) ? quote(result) : result
+      return { optionStr: filter.quotedOptions?.includes(key) ? quote(result) : result, prefixStatements: [] }
     }
   } catch {
-    // Ignore
+    // Ignore parsing errors and fall through to raw value
   }
-  return filter.quotedOptions?.includes(key) ? quote(value) : value
+  return { optionStr: filter.quotedOptions?.includes(key) ? quote(value) : value, prefixStatements: [] }
 }
