@@ -114,19 +114,42 @@ export function getPermalink(page: Page, permalink: Token[], isCollectionPage: b
   // User provided a permalink explicitely
   if (permalink && permalink.length > 0) {
     const body = page.getMainComponent() as Component
-    return ensureLeadingAndTrailingSlash(echoBlock1line(body, permalink.map(token => {
+    const transformedTokens = permalink.map(token => {
       // Replace states which will be one from ./states.ts
+      // For permalink, we need to use the actual 11ty variable names, not state references
       if(token.type === 'state') {
+        // Map known 11ty pagination states to their variable names
+        const stateToFieldId: Record<string, string> = {
+          'pagination': 'pagination',
+          'items': 'pagination.items',
+          'pages': 'pagination.pages',
+        }
+        const fieldId = stateToFieldId[token.storedStateId]
+        if (fieldId) {
+          // Create a clean Property token for known 11ty pagination states
+          return {
+            type: 'property',
+            propType: 'field',
+            fieldId,
+            label: token.storedStateId,
+            dataSourceId: undefined, // No data source, this is an 11ty variable
+            typeIds: [],
+            kind: 'object',
+            options: {},
+          } as Property
+        }
+        // For other states, use the existing logic
         const state = getState(body, token.storedStateId, true)
         if(!state) throw new Error('State not found on body')
         return {
           ...state.expression[0],
           dataSourceId: undefined,
-          fieldId: token.storedStateId === 'items' ? 'pagination.items': token.label, // FIXME: unclear what is label vs storedStateId vs liquid variable name
+          fieldId: token.label,
         } as Property
       }
       return token
-    })))
+    })
+    return ensureLeadingAndTrailingSlash(echoBlock1line(body, transformedTokens))
   } else if (isCollectionPage) {
     // Let 11ty handle the permalink
     return null

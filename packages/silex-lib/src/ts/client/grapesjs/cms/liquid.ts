@@ -254,6 +254,16 @@ export function getLiquidStatementProperties(properties: (Property | State)[]): 
     switch (token.type) {
     case 'state': {
       if (index !== 0) throw new Error('State can only be the first token in an expression')
+      // Map known 11ty pagination states to their variable names
+      const stateToFieldId: Record<string, string> = {
+        'pagination': 'pagination',
+        'items': 'pagination.items',
+        'pages': 'pagination.pages',
+      }
+      const fieldId = stateToFieldId[token.storedStateId]
+      if (fieldId) {
+        return fieldId
+      }
       return getStateVariableName(token.componentId, token.storedStateId)
     }
     case 'property': {
@@ -337,6 +347,17 @@ function handleFilterOption(filter: Filter, key: string, value: string, componen
           return token.fieldId
         }
         case 'state': {
+          // Map known 11ty pagination states to their variable names
+          const stateToFieldId: Record<string, string> = {
+            'pagination': 'pagination',
+            'items': 'pagination.items',
+            'pages': 'pagination.pages',
+          }
+          const fieldId = stateToFieldId[token.storedStateId]
+          if (fieldId) {
+            return fieldId
+          }
+          // For other states, use the state variable name
           return getStateVariableName(token.componentId, token.storedStateId)
         }
         case 'filter': {
