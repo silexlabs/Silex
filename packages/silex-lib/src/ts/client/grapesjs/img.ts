@@ -105,7 +105,6 @@ export default (editor: Editor, opts) => {
           { id: 'scale-down', label: 'scale-down' },
           { id: 'initial', label: 'initial' },
           { id: 'inherit', label: 'inherit' },
-          { id: 'auto', label: 'auto' },
         ],
       }, {
         label: 'object-position',
