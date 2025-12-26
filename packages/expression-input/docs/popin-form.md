@@ -180,6 +180,7 @@ The pop-up/form layout can be styled with CSS variables:
 | Method        | Description                                                                     |
 |---------------|---------------------------------------------------------------------------------|
 | **`close()`** | Hides the pop-up, adds the `hidden` attribute, and fires `popin-closed`.        |
+| **`openAt(element)`** | Opens the pop-up positioned below the given element. Useful for dropdown-style popins. |
 
 ---
 
@@ -197,9 +198,16 @@ The pop-up/form layout can be styled with CSS variables:
   </div>
 </popin-form>
 
+<!-- Simple show (centered) -->
 <button
   onclick="document.getElementById('myPopin').removeAttribute('hidden')">
   Show Popin
+</button>
+
+<!-- Show positioned below the button -->
+<button
+  onclick="document.getElementById('myPopin').openAt(this)">
+  Show Popin Below Me
 </button>
 ```
 

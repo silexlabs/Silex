@@ -270,6 +270,17 @@ export const stepsSelectorItemStyles = css`
 `
 
 export const popinStyles = css`
+  @keyframes popin-open {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
   :host {
     display: inline-block;
     position: fixed;
@@ -288,6 +299,7 @@ export const popinStyles = css`
     flex-direction: column;
     background-color: var(--popin-form-background, #fff);
     color: var(--popin-form-color, #000);
+    animation: popin-open var(--popin-animation-duration, 50ms) ease-out;
   }
   :host([hidden]) {
     display: none !important;

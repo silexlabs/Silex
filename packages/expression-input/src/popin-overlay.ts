@@ -104,6 +104,19 @@ export class PopinOverlay extends LitElement {
     })
   }
 
+  /**
+   * Open the popin positioned relative to an anchor element
+   * The popin will be positioned below the anchor element
+   * @param anchor - The element to position the popin relative to
+   */
+  openAt(anchor: HTMLElement) {
+    const anchorRect = anchor.getBoundingClientRect()
+    this.style.left = `${anchorRect.left}px`
+    this.style.top = `${anchorRect.bottom}px`
+    this.style.transform = ''
+    this.removeAttribute('hidden')
+  }
+
   protected close() {
     this.setAttribute('hidden', '')
     this.blur()

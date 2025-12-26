@@ -51,6 +51,19 @@
         </p>
       </div>
     </section>
+    <hr><hr>
+    <section>
+      <p>This demonstrates <code>openAt(element)</code> - the popin opens below the button</p>
+      <div style="display: flex; gap: 20px;">
+        <button onclick="document.querySelector('popin-form#popin-openat').openAt(this)">Open below me (left)</button>
+        <button onclick="document.querySelector('popin-form#popin-openat').openAt(this)">Open below me (middle)</button>
+        <button onclick="document.querySelector('popin-form#popin-openat').openAt(this)">Open below me (right)</button>
+      </div>
+      <popin-form id="popin-openat" hidden style="width: 250px;">
+        <div slot="header">Positioned Popin</div>
+        <p>This popin opened below the clicked button using <code>openAt()</code></p>
+      </popin-form>
+    </section>
     <section>
       <p>This is a popin-form in a form</p>
       <form onsubmit="submit3(event)">
