@@ -367,8 +367,8 @@ export class StateEditor extends LitElement {
               <button
                 class="ds-expression-input__options-button"
                 style=${styleMap({ display: optionsForm === '' ? 'none' : '' })}
-                @click=${() => {
-    this.popinsRef[idx].value?.removeAttribute('hidden')
+                @click=${(e: MouseEvent) => {
+    this.popinsRef[idx].value?.openAt(e.currentTarget as HTMLElement)
   }}
               >...</button>
               <popin-form
