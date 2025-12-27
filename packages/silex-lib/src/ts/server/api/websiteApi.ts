@@ -248,7 +248,7 @@ export default function (config: ServerConfig, opts = {}): Router {
     try {
       const query: ApiWebsiteForkQuery = req.query as any
       const body: ApiWebsiteForkBody = req.body
-      const gitlabUrl = requiredParam<string>(body.gitlabUrl, 'GitLab URL')
+      const gitlabUrl = requiredParam<string>(body.gitlabUrl, 'GitLab project path ("username/repo")')
       const websiteId = await forkWebsite(req['session'], gitlabUrl, query.connectorId)
       res.status(200).json({ websiteId, message: 'Website forked successfully' } as ApiWebsiteForkResponse)
     } catch (e) {
@@ -438,6 +438,7 @@ export default function (config: ServerConfig, opts = {}): Router {
 
   /**
    * Fork an external/public GitLab project
+   * Only accepts a GitLab project path in the "username/repo" format.
    * This is specific to GitLab connector - it allows forking public projects from any user/organization
    */
   async function forkWebsite(session: any, gitlabUrl: string, connectorId?: string): Promise<string> {

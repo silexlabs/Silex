@@ -102,7 +102,7 @@ export async function websiteDuplicate({websiteId, connectorId}: {websiteId: Web
 
 /**
  * Fork an external/public GitLab project
- * @param gitlabUrl - The GitLab URL or path (e.g., "https://gitlab.com/user/repo" or "user/repo")
+ * @param gitlabUrl - The project path in the "username/repo" format (URLs are not accepted)
  * @param connectorId - Optional connector ID (must be a GitLab connector)
  * @returns The new website ID
  */

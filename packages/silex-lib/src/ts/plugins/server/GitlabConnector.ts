@@ -900,36 +900,14 @@ export default class GitlabConnector implements StorageConnector {
   /**
    * Fork an external/public GitLab project (from any user/organization)
    * @param session - The user session
-   * @param gitlabUrl - The GitLab URL or path (e.g., "https://gitlab.com/user/repo" or "user/repo")
+   * @param gitlabUrl - The project path in the "username/repo" format
    * @returns The new website ID (project ID)
    */
   async forkWebsite(session: GitlabSession, gitlabUrl: string): Promise<string> {
-    // Parse the GitLab URL to extract the project path
-    // Supports formats:
-    // - https://gitlab.com/user/repo
-    // - https://gitlab.com/user/repo.git
-    // - gitlab.com/user/repo
-    // - user/repo
-    let projectPath = gitlabUrl
-      .replace(/\.git$/, '') // Remove .git suffix
-      .replace(/\/$/, '') // Remove trailing slash
-
-    // Extract path from full URL
-    const urlMatch = projectPath.match(/(?:https?:\/\/)?(?:[\w.-]+\/)?(.+)/)
-    if (urlMatch) {
-      // Check if it's a full URL with domain
-      const domainMatch = projectPath.match(/(?:https?:\/\/)?([\w.-]+)\/(.+)/)
-      if (domainMatch) {
-        const [, domain, path] = domainMatch
-        // If domain matches our configured domain, use just the path
-        const configuredDomain = this.options.domain.replace(/^https?:\/\//, '')
-        if (domain === configuredDomain || domain === 'gitlab.com') {
-          projectPath = path
-        } else {
-          // Different GitLab instance - not supported
-          throw new ApiError(`Cannot fork from a different GitLab instance (${domain}). Only ${configuredDomain} is supported.`, 400)
-        }
-      }
+    // Only accept "username/repo" pattern (no URLs)
+    const projectPath = gitlabUrl.trim()
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(projectPath)) {
+      throw new ApiError('Invalid project path. Use the "username/repo" format.', 400)
     }
 
     // URL-encode the project path for the API
