@@ -29,7 +29,7 @@ import { buildArgs } from '../model/token'
  * Backend type for GraphQL datasources
  * Determines default type selection behavior
  */
-export type GraphQLBackendType = 'gitlab' | 'wordpress' | 'generic'
+export type GraphQLBackendType = 'gitlab' | 'wordpress' | 'strapi' | 'supabase' | 'generic'
 
 /**
  * Lightweight query to fetch type names and kinds during datasource creation
@@ -425,6 +425,119 @@ export default class GraphQL implements IDataSource {
         // Generic content types (not needed if querying specific collections)
         /^ContentNode/,
         /^RootQueryToContentNode/,
+      ]
+
+      const isBlacklisted = (name: string): boolean => {
+        // Blacklist all INPUT_OBJECT types (mutation inputs)
+        if (inputTypes.includes(name)) return true
+
+        // Blacklist explicitly named types
+        if (blacklistedTypes.includes(name)) return true
+
+        // Blacklist by pattern
+        return blacklistPatterns.some(pattern => pattern.test(name))
+      }
+
+      // Return all types except blacklisted ones
+      return allTypeNames.filter(name => !isBlacklisted(name))
+    }
+
+    case 'strapi': {
+      // Strapi v4/v5 GraphQL: Blacklist approach for headless CMS
+      // Strapi generates types for content types, media, and internal admin types
+
+      // Get all INPUT_OBJECT types (used for mutations, not queries)
+      const inputTypes = allTypes
+        .filter(t => t.kind === 'INPUT_OBJECT')
+        .map(t => t.name)
+
+      // Types to blacklist (not useful for static site generation)
+      const blacklistedTypes = [
+        // Mutation root
+        'Mutation',
+
+        // Generic internal type
+        'GenericMorph',
+      ]
+
+      // Patterns to blacklist
+      const blacklistPatterns = [
+        // Mutation payloads
+        /Payload$/,
+
+        // Users & Permissions plugin (admin)
+        /^UsersPermissions/,
+
+        // Upload folder management (admin)
+        /^UploadFolder/,
+
+        // i18n internal types
+        /^I18N/,
+
+        // Entity wrappers (Strapi v4 internal)
+        /EntityResponse$/,
+        /EntityResponseCollection$/,
+
+        // Content type metadata (admin)
+        /^ContentType/,
+
+        // Admin panel types
+        /^Admin/,
+      ]
+
+      const isBlacklisted = (name: string): boolean => {
+        // Blacklist all INPUT_OBJECT types (mutation inputs)
+        if (inputTypes.includes(name)) return true
+
+        // Blacklist explicitly named types
+        if (blacklistedTypes.includes(name)) return true
+
+        // Blacklist by pattern
+        return blacklistPatterns.some(pattern => pattern.test(name))
+      }
+
+      // Return all types except blacklisted ones
+      return allTypeNames.filter(name => !isBlacklisted(name))
+    }
+
+    case 'supabase': {
+      // Supabase (pg_graphql): Blacklist approach
+      // pg_graphql generates types from PostgreSQL tables
+
+      // Get all INPUT_OBJECT types (used for mutations, not queries)
+      const inputTypes = allTypes
+        .filter(t => t.kind === 'INPUT_OBJECT')
+        .map(t => t.name)
+
+      // Types to blacklist (not useful for static site generation)
+      const blacklistedTypes = [
+        // Mutation root
+        'Mutation',
+
+        // Cursor type (internal pagination)
+        'Cursor',
+      ]
+
+      // Patterns to blacklist
+      const blacklistPatterns = [
+        // Mutation-related types
+        /InsertInput$/,
+        /UpdateInput$/,
+        /DeleteInput$/,
+        /InsertResponse$/,
+        /UpdateResponse$/,
+        /DeleteResponse$/,
+
+        // Ordering types (query params, not data)
+        /OrderBy$/,
+        /OrderByDirection$/,
+
+        // Filter types (query params, not data)
+        /Filter$/,
+        /FilterInput$/,
+
+        // Edge types (keep Connection but not Edge for simpler queries)
+        /Edge$/,
       ]
 
       const isBlacklisted = (name: string): boolean => {

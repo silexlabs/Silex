@@ -689,8 +689,23 @@ class SettingsDataSource extends LitElement {
       color: var(--gjs-light-color);
       text-align: center;
     }
-    .ds-backend-option--selected span {
-      color: var(--ds-primary);
+    .ds-backend-option--beta {
+      position: relative;
+    }
+    .ds-backend-option--beta::after {
+      content: 'beta';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      padding: 1px 4px;
+      padding-top: 3px;
+      font-size: smaller;
+      font-weight: bold;
+      text-transform: uppercase;
+      background: var(--ds-primary);
+      color: var(--gjs-secondary-color);
+      border-radius: 3px;
+      line-height: 1.2;
     }
     /* Inline backend selector (compact for config phase) */
     .ds-backend-selector--inline {
@@ -1001,7 +1016,7 @@ class SettingsDataSource extends LitElement {
             </svg>
             <span>GraphQL</span>
           </label>
-          <label class="ds-backend-option ${backendType === 'wordpress' ? 'ds-backend-option--selected' : ''}">
+          <label class="ds-backend-option ds-backend-option--beta ${backendType === 'wordpress' ? 'ds-backend-option--selected' : ''}">
             <input
               type="radio"
               name="backendType"
@@ -1020,7 +1035,7 @@ class SettingsDataSource extends LitElement {
             </svg>
             <span>WordPress</span>
           </label>
-          <label class="ds-backend-option ${backendType === 'gitlab' ? 'ds-backend-option--selected' : ''}">
+          <label class="ds-backend-option ds-backend-option--beta ${backendType === 'gitlab' ? 'ds-backend-option--selected' : ''}">
             <input
               type="radio"
               name="backendType"
@@ -1038,6 +1053,45 @@ class SettingsDataSource extends LitElement {
               <path fill="#e24329" d="M364.7 158.8H256.3l43.9-134.7c1.4-4.4 7.6-4.4 9 0z"/>
             </svg>
             <span>GitLab</span>
+          </label>
+          <label class="ds-backend-option ds-backend-option--beta ${backendType === 'strapi' ? 'ds-backend-option--selected' : ''}">
+            <input
+              type="radio"
+              name="backendType"
+              value="strapi"
+              ?checked=${backendType === 'strapi'}
+              @change=${() => this.onBackendTypeChange('strapi')}
+            />
+            <svg viewBox=".24262095 .26549587 243.32256626 243.58072911" xmlns="http://www.w3.org/2000/svg">
+              <g fill="#8e75ff" fill-rule="evenodd">
+                <path d="m161.893 165.833v-78.73a5.077 5.077 0 0 0 -5.077-5.076h-78.638v-81.267h159.815a5.077 5.077 0 0 1 5.078 5.077v159.996z"/>
+                <path d="m78.178.76v81.267h-75.054a2.539 2.539 0 0 1 -1.796-4.333zm83.715 240.206v-75.133h81.178l-76.844 76.927a2.539 2.539 0 0 1 -4.334-1.794zm-83.715-158.939h81.176a2.539 2.539 0 0 1 2.539 2.538v81.268h-78.638a5.077 5.077 0 0 1 -5.077-5.077z" opacity=".405"/>
+              </g>
+            </svg>
+            <span>Strapi</span>
+          </label>
+          <label class="ds-backend-option ds-backend-option--beta ${backendType === 'supabase' ? 'ds-backend-option--selected' : ''}">
+            <input
+              type="radio"
+              name="backendType"
+              value="supabase"
+              ?checked=${backendType === 'supabase'}
+              @change=${() => this.onBackendTypeChange('supabase')}
+            />
+            <svg viewBox="0 0 109 113" xmlns="http://www.w3.org/2000/svg">
+              <path fill="url(#supabase-a)" d="M63.7 110.3c-2.5 3.1-7.6 1.4-7.7-2.6l-1.5-66.2h50.2c9.1 0 14.1 10.5 8.4 17.6L63.7 110.3Z"/>
+              <path fill="url(#supabase-b)" fill-opacity=".2" d="M63.7 110.3c-2.5 3.1-7.6 1.4-7.7-2.6l-1.5-66.2h50.2c9.1 0 14.1 10.5 8.4 17.6L63.7 110.3Z"/>
+              <path fill="#3ECF8E" d="M45.3 2.7c2.5-3.1 7.6-1.4 7.7 2.6l.7 66.2H4.4c-9.1 0-14-10.5-8.3-17.6L45.3 2.7Z"/>
+              <defs>
+                <linearGradient id="supabase-a" x1="53.97" x2="94.12" y1="54.97" y2="71.95" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#249361"/><stop offset="1" stop-color="#3ECF8E"/>
+                </linearGradient>
+                <linearGradient id="supabase-b" x1="36.16" x2="54.48" y1="30.58" y2="65.72" gradientUnits="userSpaceOnUse">
+                  <stop/><stop offset="1" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span>Supabase</span>
           </label>
         </fieldset>
       </div>
@@ -1296,6 +1350,8 @@ class DataSourceCard extends LitElement {
   private graphqlLogo = html`<svg class="ds-card__logo" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><path fill="#E535AB" d="M57.468 302.66l-14.376-8.3 160.15-277.38 14.376 8.3z"/><path fill="#E535AB" d="M39.8 272.2h320.3v16.6H39.8z"/><path fill="#E535AB" d="M206.348 374.026l-160.21-92.5 8.3-14.376 160.21 92.5zM345.522 132.947l-160.21-92.5 8.3-14.376 160.21 92.5z"/><path fill="#E535AB" d="M54.482 132.883l-8.3-14.375 160.21-92.5 8.3 14.376z"/><path fill="#E535AB" d="M342.568 302.663l-160.15-277.38 14.376-8.3 160.15 277.38zM52.5 107.5h16.6v185H52.5zM330.9 107.5h16.6v185h-16.6z"/><path fill="#E535AB" d="M203.522 367l-7.25-12.558 139.34-80.45 7.25 12.557z"/><path fill="#E535AB" d="M369.5 297.9c-9.6 16.7-31 22.4-47.7 12.8-16.7-9.6-22.4-31-12.8-47.7 9.6-16.7 31-22.4 47.7-12.8 16.8 9.7 22.5 31 12.8 47.7M90.9 137c-9.6 16.7-31 22.4-47.7 12.8-16.7-9.6-22.4-31-12.8-47.7 9.6-16.7 31-22.4 47.7-12.8 16.7 9.7 22.4 31 12.8 47.7M30.5 297.9c-9.6-16.7-3.9-38 12.8-47.7 16.7-9.6 38-3.9 47.7 12.8 9.6 16.7 3.9 38-12.8 47.7-16.8 9.6-38.1 3.9-47.7-12.8M309.1 137c-9.6-16.7-3.9-38 12.8-47.7 16.7-9.6 38-3.9 47.7 12.8 9.6 16.7 3.9 38-12.8 47.7-16.7 9.6-38.1 3.9-47.7-12.8M200 395.8c-19.3 0-34.9-15.6-34.9-34.9 0-19.3 15.6-34.9 34.9-34.9 19.3 0 34.9 15.6 34.9 34.9 0 19.2-15.6 34.9-34.9 34.9M200 74c-19.3 0-34.9-15.6-34.9-34.9 0-19.3 15.6-34.9 34.9-34.9 19.3 0 34.9 15.6 34.9 34.9 0 19.3-15.6 34.9-34.9 34.9"/></svg>`
   private wordpressLogo = html`<svg class="ds-card__logo" viewBox="0 0 122.52 122.523" xmlns="http://www.w3.org/2000/svg"><g fill="#21759b"><path d="m8.708 61.26c0 20.802 12.089 38.779 29.619 47.298l-25.069-68.686c-2.916 6.536-4.55 13.769-4.55 21.388z"/><path d="m96.74 58.608c0-6.495-2.333-10.993-4.334-14.494-2.664-4.329-5.161-7.995-5.161-12.324 0-4.831 3.664-9.328 8.825-9.328.233 0 .454.029.681.042-9.35-8.566-21.807-13.796-35.489-13.796-18.36 0-34.513 9.42-43.91 23.688 1.233.037 2.395.063 3.382.063 5.497 0 14.006-.667 14.006-.667 2.833-.167 3.167 3.994.337 4.329 0 0-2.847.335-6.015.501l19.138 56.925 11.501-34.493-8.188-22.434c-2.83-.166-5.511-.501-5.511-.501-2.832-.166-2.5-4.496.332-4.329 0 0 8.679.667 13.843.667 5.496 0 14.006-.667 14.006-.667 2.835-.167 3.168 3.994.337 4.329 0 0-2.853.335-6.015.501l18.992 56.494 5.242-17.517c2.272-7.269 4.001-12.49 4.001-16.989z"/><path d="m62.184 65.857-15.768 45.819c4.708 1.384 9.687 2.141 14.846 2.141 6.12 0 11.989-1.058 17.452-2.979-.14-.225-.269-.464-.374-.724z"/><path d="m107.376 36.046c.226 1.674.354 3.471.354 5.404 0 5.333-.996 11.328-3.996 18.824l-16.053 46.413c15.624-9.111 26.133-26.038 26.133-45.426.001-9.137-2.333-17.729-6.438-25.215z"/><path d="m61.262 0c-33.779 0-61.262 27.481-61.262 61.26 0 33.783 27.483 61.263 61.262 61.263 33.778 0 61.265-27.48 61.265-61.263-.001-33.779-27.487-61.26-61.265-61.26zm0 119.715c-32.23 0-58.453-26.223-58.453-58.455 0-32.23 26.222-58.451 58.453-58.451 32.229 0 58.45 26.221 58.45 58.451 0 32.232-26.221 58.455-58.45 58.455z"/></g></svg>`
   private gitlabLogo = html`<svg class="ds-card__logo" viewBox="0 0 380 380" xmlns="http://www.w3.org/2000/svg"><path fill="#e24329" d="M190 362.6 256.3 158.8H123.7z"/><path fill="#fc6d26" d="M190 362.6 123.7 158.8H15.3z"/><path fill="#fca326" d="m15.3 158.8-13.5 41.6c-1.2 3.8.1 7.9 3.3 10.3L190 362.6z"/><path fill="#e24329" d="M15.3 158.8h108.4L79.8 24.1c-1.4-4.4-7.6-4.4-9 0z"/><path fill="#fc6d26" d="m190 362.6 66.3-203.8h108.4z"/><path fill="#fca326" d="m364.7 158.8 13.5 41.6c1.2 3.8-.1 7.9-3.3 10.3L190 362.6z"/><path fill="#e24329" d="M364.7 158.8H256.3l43.9-134.7c1.4-4.4 7.6-4.4 9 0z"/></svg>`
+  private strapiLogo = html`<svg class="ds-card__logo" viewBox=".24262095 .26549587 243.32256626 243.58072911" xmlns="http://www.w3.org/2000/svg"><g fill="#8e75ff" fill-rule="evenodd"><path d="m161.893 165.833v-78.73a5.077 5.077 0 0 0 -5.077-5.076h-78.638v-81.267h159.815a5.077 5.077 0 0 1 5.078 5.077v159.996z"/><path d="m78.178.76v81.267h-75.054a2.539 2.539 0 0 1 -1.796-4.333zm83.715 240.206v-75.133h81.178l-76.844 76.927a2.539 2.539 0 0 1 -4.334-1.794zm-83.715-158.939h81.176a2.539 2.539 0 0 1 2.539 2.538v81.268h-78.638a5.077 5.077 0 0 1 -5.077-5.077z" opacity=".405"/></g></svg>`
+  private supabaseLogo = html`<svg class="ds-card__logo" viewBox="0 0 109 113" xmlns="http://www.w3.org/2000/svg"><path fill="#3ECF8E" d="M63.7 110.3c-2.5 3.1-7.6 1.4-7.7-2.6l-1.5-66.2h50.2c9.1 0 14.1 10.5 8.4 17.6L63.7 110.3Z"/><path fill="#3ECF8E" d="M45.3 2.7c2.5-3.1 7.6-1.4 7.7 2.6l.7 66.2H4.4c-9.1 0-14-10.5-8.3-17.6L45.3 2.7Z"/></svg>`
 
   protected render() {
     if (!this.dataSource) return html``
@@ -1305,8 +1361,10 @@ class DataSourceCard extends LitElement {
     const backendType = isGraphQL ? (this.dataSource as GraphQL).backendType : null
     const backendLogo = backendType === 'wordpress' ? this.wordpressLogo
       : backendType === 'gitlab' ? this.gitlabLogo
-        : backendType === 'generic' ? this.graphqlLogo
-          : null
+        : backendType === 'strapi' ? this.strapiLogo
+          : backendType === 'supabase' ? this.supabaseLogo
+            : backendType === 'generic' ? this.graphqlLogo
+              : null
 
     return html`
       <div class="ds-card" @click=${() => this.dispatchEvent(new CustomEvent('edit', { detail: this.dataSource }))}>
