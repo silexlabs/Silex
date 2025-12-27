@@ -484,6 +484,19 @@ class SettingsDataSource extends LitElement {
   }
 
   /**
+   * Reset types to default selection based on backend type
+   */
+  resetToDefaults() {
+    const isGraphQL = this.dataSource instanceof GraphQL
+    if (!isGraphQL) return
+
+    const backendType = (this.dataSource as GraphQL).backendType || 'generic'
+    const defaultEnabled = GraphQL.getDefaultEnabledTypes(backendType, this.availableTypes, this.queryTypeName)
+    this.selectedTypes = new Set(defaultEnabled)
+    this.requestUpdate()
+  }
+
+  /**
    * Get filtered types based on search query
    * Selected types are always shown first
    */
@@ -1051,6 +1064,7 @@ class SettingsDataSource extends LitElement {
             <div class="ds-types-actions">
               <button type="button" class="ds-btn-prim" @click=${() => this.selectAllTypes()}>Select All</button>
               <button type="button" class="ds-btn-prim" @click=${() => this.deselectAllTypes()}>Deselect All</button>
+              <button type="button" class="ds-btn-prim" @click=${() => this.resetToDefaults()}>Reset to Defaults</button>
             </div>
           </div>
 
@@ -1327,7 +1341,12 @@ class DataSourceCard extends LitElement {
           ${this.dataSource.readonly !== false ? '' : html`
             <button
               class="ds-card__btn ds-card__btn--danger"
-              @click=${(e: Event) => { e.stopPropagation(); this.dispatchEvent(new CustomEvent('delete', { detail: this.dataSource })) }}
+              @click=${(e: Event) => {
+    e.stopPropagation()
+    if (confirm(`Are you sure you want to delete the data source "${this.dataSource!.label || this.dataSource!.id}"?`)) {
+      this.dispatchEvent(new CustomEvent('delete', { detail: this.dataSource }))
+    }
+  }}
               ?disabled=${this.isTestingConnection}
             >
               Delete

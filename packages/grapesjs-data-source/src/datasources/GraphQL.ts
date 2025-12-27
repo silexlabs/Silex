@@ -353,84 +353,93 @@ export default class GraphQL implements IDataSource {
     }
 
     case 'wordpress': {
-      // WordPress/WPGraphQL: Headless CMS essentials only
-      // Using blacklist approach: new types added to schema are enabled by default
-      const wordpressDefaults = [
-        // All scalar types (detected automatically)
-        ...scalarTypeNames,
-        // Query type
-        queryTypeName,
-        'RootQuery',
-        // Content types for headless
-        'Post',
-        'Page',
-        'Category',
-        'Tag',
-        'MediaItem',
-        'Menu',
-        'MenuItem',
-        'User',
-        // Pagination
-        'PageInfo',
-        'WPPageInfo',
-        // Media
-        'MediaDetails',
-        'MediaSize',
-        // Common interfaces
-        'ContentNode',
-        'ContentType',
-        'TermNode',
-        'NodeWithTitle',
-        'NodeWithFeaturedImage',
-        'NodeWithAuthor',
-        'NodeWithExcerpt',
-        'MenuItemLinkable',
-        // WooCommerce essentials
-        'Product',
-        'ProductCategory',
-        'ProductTag',
-        // Dynamic patterns
-        ...allTypeNames.filter(name => {
-          // Exclude input/enum/filter types
-          if (name.endsWith('Input') || name.endsWith('Enum')) return false
-          if (name.endsWith('Filter') || name.endsWith('Where') || name.endsWith('OrderBy')) return false
-          // Exclude scripts/stylesheets (not needed for headless)
-          if (name.includes('Script') || name.includes('Stylesheet')) return false
-          // Exclude revisions
-          if (name.includes('Revision')) return false
-          // Exclude comments
-          if (name.includes('Comment') || name.includes('Commenter')) return false
-          // Exclude post formats
-          if (name.includes('PostFormat')) return false
-          // Exclude themes/plugins (admin only)
-          if (name.includes('Theme') || name.includes('Plugin')) return false
-          // Exclude user roles (admin only)
-          if (name.includes('UserRole')) return false
-          // Exclude templates (admin only)
-          if (name.includes('Template')) return false
+      // WordPress/WPGraphQL: Blacklist approach for headless CMS
+      // All types are enabled by default, except those explicitly blacklisted
+      // This ensures CPTs (like ACF custom post types) are included automatically
 
-          return (
-          // ACF
-            name.startsWith('Acf') ||
-              // Custom post types
-              name.endsWith('Post') ||
-              name.endsWith('Page') ||
-              // Pagination
-              name.endsWith('Connection') ||
-              name.endsWith('Edge') ||
-              // ACF fields
-              name.endsWith('Fields') ||
-              name.endsWith('FieldGroup') ||
-              // Pods
-              name.startsWith('Pod') ||
-              // SEO plugins
-              name.startsWith('SEO') ||
-              name.startsWith('Seo')
-          )
-        }),
+      // Get all INPUT_OBJECT types (used for mutations, not queries)
+      const inputTypes = allTypes
+        .filter(t => t.kind === 'INPUT_OBJECT')
+        .map(t => t.name)
+
+      // Types to blacklist (not useful for static site generation)
+      const blacklistedTypes = [
+        // Mutation root
+        'RootMutation',
+
+        // Settings (admin only)
+        'Settings',
+        'DiscussionSettings',
+        'GeneralSettings',
+        'ReadingSettings',
+        'WritingSettings',
+
+        // Admin-only types
+        'Plugin',
+        'Theme',
+        'UserRole',
+        'Avatar',
+
+        // Content templates (WP internal, not CPTs)
+        'ContentTemplate',
+        'DefaultTemplate',
       ]
-      // Return only types that actually exist in the schema
-      return allTypeNames.filter(name => wordpressDefaults.includes(name))
+
+      // Patterns to blacklist
+      const blacklistPatterns = [
+        // All mutation inputs and payloads
+        /^Create.+Input$/,
+        /^Update.+Input$/,
+        /^Delete.+Input$/,
+        /^Register.+Input$/,
+        /^Reset.+Input$/,
+        /^Restore.+Input$/,
+        /^Send.+Input$/,
+        /Payload$/,
+
+        // Admin connections
+        /^RootQueryToPlugin/,
+        /^RootQueryToTheme/,
+        /^RootQueryToUserRole/,
+
+        // Plugin/Theme/UserRole related
+        /Plugin(?:Connection|Edge|PageInfo|Status)/,
+        /Theme(?:Connection|Edge|PageInfo)/,
+        /UserRole(?:Connection|Edge|PageInfo)/,
+
+        // Enqueued assets (internal WP)
+        /Enqueued/,
+        /Script(?!$)/,  // Exclude Script-related but not if it's just "Script"
+        /Stylesheet/,
+
+        // Revisions (internal WP)
+        /Revision/,
+
+        // Comments (usually not needed for static sites)
+        /Comment/,
+        /Commenter/,
+
+        // Post formats (rarely used)
+        /PostFormat/,
+
+        // Generic content types (not needed if querying specific collections)
+        /^ContentNode/,
+        /^RootQueryToContentNode/,
+      ]
+
+      const isBlacklisted = (name: string): boolean => {
+        // Blacklist all INPUT_OBJECT types (mutation inputs)
+        if (inputTypes.includes(name)) return true
+
+        // Blacklist explicitly named types
+        if (blacklistedTypes.includes(name)) return true
+
+        // Blacklist by pattern
+        return blacklistPatterns.some(pattern => pattern.test(name))
+      }
+
+      // Return all types except blacklisted ones
+      return allTypeNames.filter(name => !isBlacklisted(name))
     }
 
     case 'generic':

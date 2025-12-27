@@ -313,6 +313,7 @@ function isEmpty(value: unknown): boolean {
   const isJsonString = isString && isJson(value)
   if (isString && !isJsonString) return value === ''
   const json = isJsonString ? JSON.parse(value) : value
+  if (json === null) return true
   if (Array.isArray(json)) return json.length === 0
   if (typeof json === 'object') return Object.values(json).filter(v => !!v).length === 0
   return false
