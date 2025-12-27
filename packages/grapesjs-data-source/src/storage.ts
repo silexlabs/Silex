@@ -9,16 +9,27 @@ export default (editor: Editor) => {
   editor.on('storage:start:store', (data: any) => {
     data.dataSources = getAllDataSources()
       .filter((ds: IDataSource) => typeof ds.readonly === 'undefined' || ds.readonly === false)
-      .map((ds: IDataSource) => ({
-        id: ds.id,
-        label: ds.label,
-        url: ds.url,
-        type: ds.type,
-        method: ds.method,
-        headers: ds.headers,
-        readonly: ds.readonly,
-        hidden: ds.hidden
-      }))
+      .map((ds: IDataSource) => {
+        const baseData = {
+          id: ds.id,
+          label: ds.label,
+          url: ds.url,
+          type: ds.type,
+          method: ds.method,
+          headers: ds.headers,
+          readonly: ds.readonly,
+          hidden: ds.hidden
+        }
+        // Include GraphQL-specific fields if available
+        if (ds instanceof GraphQL) {
+          return {
+            ...baseData,
+            backendType: ds.backendType,
+            disabledTypes: ds.disabledTypes
+          }
+        }
+        return baseData
+      })
   })
 
   editor.on('storage:end:load', async (data: { dataSources: GraphQLOptions[] }) => {

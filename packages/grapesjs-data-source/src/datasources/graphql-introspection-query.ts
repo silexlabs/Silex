@@ -13,7 +13,7 @@ export default `
     kind
     name
     description
-    fields(includeDeprecated: true) {
+    fields(includeDeprecated: false) {
       name
       description
       args {
@@ -22,8 +22,6 @@ export default `
       type {
         ...TypeRef
       }
-      isDeprecated
-      deprecationReason
     }
     inputFields {
       ...InputValue
@@ -31,11 +29,9 @@ export default `
     interfaces {
       ...TypeRef
     }
-    enumValues(includeDeprecated: true) {
+    enumValues(includeDeprecated: false) {
       name
       description
-      isDeprecated
-      deprecationReason
     }
     possibleTypes {
       ...TypeRef

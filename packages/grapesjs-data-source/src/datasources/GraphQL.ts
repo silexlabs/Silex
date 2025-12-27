@@ -26,6 +26,128 @@ import { buildArgs } from '../model/token'
  */
 
 /**
+ * Backend type for GraphQL datasources
+ * Determines default type selection behavior
+ */
+export type GraphQLBackendType = 'gitlab' | 'wordpress' | 'generic'
+
+/**
+ * Lightweight query to fetch type names and kinds during datasource creation
+ * Also fetches queryType name to know which type is the root query type
+ * Does NOT fetch fields, interfaces, enums, inputs, or possibleTypes
+ */
+export const lightweightTypeNamesQuery = `
+  query TypeNamesQuery {
+    __schema {
+      queryType {
+        name
+      }
+      types {
+        name
+        kind
+      }
+    }
+  }
+`
+
+/**
+ * Simplified fragment for selective introspection query
+ * Fetches type name, field names, field types, and field arguments
+ * This keeps the query lightweight and avoids GitLab complexity limits
+ */
+const selectiveIntrospectionFragment = `
+  fragment SelectiveType on __Type {
+    name
+    kind
+    fields(includeDeprecated: false) {
+      name
+      args {
+        name
+        type {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+            }
+          }
+        }
+        defaultValue
+      }
+      type {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+            }
+          }
+        }
+      }
+    }
+  }
+`
+
+/**
+ * Number of types to fetch per batch request
+ * Balances between number of HTTP requests and query complexity
+ * Default is 100, but GitLab requires smaller batches (5) due to query complexity limits
+ */
+export const DEFAULT_BATCH_SIZE = 100
+export const GITLAB_BATCH_SIZE = 5
+
+export function getBatchSize(backendType: GraphQLBackendType): number {
+  return backendType === 'gitlab' ? GITLAB_BATCH_SIZE : DEFAULT_BATCH_SIZE
+}
+
+/**
+ * Build a selective introspection query for a batch of types
+ * Uses __type(name: "...") for each type
+ * @param typeNames - Array of type names to fetch
+ * @returns GraphQL query string
+ */
+export function buildBatchTypeQuery(typeNames: string[]): string {
+  const typeQueries = typeNames
+    .map(name => {
+      const alias = `type_${name.replace(/[^a-zA-Z0-9_]/g, '_')}`
+      return `  ${alias}: __type(name: "${name}") { ...SelectiveType }`
+    })
+    .join('\n')
+
+  return `
+    query BatchTypeIntrospection {
+${typeQueries}
+    }
+    ${selectiveIntrospectionFragment}
+  `
+}
+
+/**
+ * Result type for lightweight type query
+ */
+export interface LightweightType {
+  name: string
+  kind: 'SCALAR' | 'OBJECT' | 'INTERFACE' | 'UNION' | 'ENUM' | 'INPUT_OBJECT' | 'LIST' | 'NON_NULL'
+}
+
+/**
+ * Result type for fetchTypeNames method
+ */
+export interface LightweightTypesResult {
+  types: LightweightType[]
+  queryTypeName: string
+}
+
+/**
  * GraphQL Data source options
  */
 interface GraphQLQueryOptions {
@@ -42,6 +164,18 @@ interface GraphQLQueryOptions {
 export interface GraphQLOptions extends GraphQLQueryOptions, IDataSourceOptions {
   serverToServer?: GraphQLQueryOptions
   hidden?: boolean
+  /**
+   * Backend type for this datasource (gitlab, wordpress, generic)
+   * Determines default type selection behavior
+   */
+  backendType?: GraphQLBackendType
+  /**
+   * List of disabled type names for this datasource
+   * Types in this list will be filtered out during introspection
+   * If undefined or empty, all types are enabled
+   * Using disabledTypes (instead of enabledTypes) ensures new types added to the schema are visible by default
+   */
+  disabledTypes?: string[]
 }
 
 // GraphQL specific types
@@ -82,6 +216,8 @@ export default class GraphQL implements IDataSource {
   queryable?: TypeId[]
   readonly?: boolean
   hidden?: boolean
+  backendType: GraphQLBackendType = 'generic'
+  disabledTypes?: string[]
 
   protected types: Type[] = []
   protected queryables: Field[] = []
@@ -99,6 +235,8 @@ export default class GraphQL implements IDataSource {
     this.queryable = options.queryable
     this.readonly = options.readonly
     this.hidden = options.hidden
+    this.backendType = options.backendType || 'generic'
+    this.disabledTypes = options.disabledTypes
   }
 
   // Simple event handling
@@ -124,6 +262,185 @@ export default class GraphQL implements IDataSource {
   }
 
   /**
+   * Fetch only type names and kinds from the GraphQL endpoint
+   * This is a lightweight query used during datasource creation
+   * Returns an object with types array and queryTypeName
+   */
+  async fetchTypeNames(): Promise<LightweightTypesResult> {
+    try {
+      const result = await this.call(lightweightTypeNamesQuery) as {data: {__schema: {queryType: {name: string}, types: LightweightType[]}}}
+      if (!result.data?.__schema?.types) {
+        throw new Error(`Invalid response: ${JSON.stringify(result)}`)
+      }
+      const queryTypeName = result.data.__schema.queryType?.name || 'Query'
+      const types = result.data.__schema.types
+        // Filter out introspection types (starting with __)
+        .filter((type: LightweightType) => !type.name.startsWith('__'))
+      return { types, queryTypeName }
+    } catch (e) {
+      console.error('[GraphQL] Failed to fetch type names:', (e as Error).message)
+      throw new Error(`Failed to fetch type names: ${(e as Error).message}`)
+    }
+  }
+
+  /**
+   * Get default enabled types based on backend type
+   * @param backendType - The backend type (gitlab, wordpress, generic)
+   * @param allTypes - Array of all available types from the schema with their kinds
+   * @param queryTypeName - The name of the query type from the schema (e.g., 'Query', 'RootQuery')
+   * @returns Array of type names that should be enabled by default
+   */
+  static getDefaultEnabledTypes(backendType: GraphQLBackendType, allTypes: LightweightType[], queryTypeName: string = 'Query'): string[] {
+    // Get all type names for filtering
+    const allTypeNames = allTypes.map(t => t.name)
+
+    // Automatically detect all SCALAR types from the schema
+    // This includes String, Boolean, Int, Float, ID, and any custom scalars like DateTime, JSON, etc.
+    const scalarTypeNames = allTypes
+      .filter(t => t.kind === 'SCALAR')
+      .map(t => t.name)
+
+    switch (backendType) {
+    case 'gitlab': {
+      // GitLab: Essential types + connections for listing
+      const gitlabCoreTypes = [
+        'Project',
+        'Namespace',
+        'User',
+        'Group',
+        'Repository',
+        'Commit',
+        'Branch',
+        'MergeRequest',
+        'Issue',
+        'Pipeline',
+        'Job',
+        'Release',
+        'Milestone',
+        'Label',
+        'Note',
+        'Discussion',
+        'Snippet',
+        'Board',
+        'Epic',
+        'Vulnerability',
+        'Package',
+        'ContainerRepository',
+        'Environment',
+        'Deployment',
+        'CiRunner',
+        'Topic',
+        'PageInfo',
+      ]
+      const gitlabDefaults = [
+        ...scalarTypeNames,
+        queryTypeName,
+        ...gitlabCoreTypes,
+        // Include connection types for pagination (e.g., GroupConnection, ProjectConnection)
+        ...allTypeNames.filter(name => {
+          // Exclude input/enum types
+          if (name.endsWith('Input') || name.endsWith('Enum')) return false
+          // Include connections and edges for core types
+          return (
+            name.endsWith('Connection') ||
+              name.endsWith('Edge') ||
+              // Include core type variations
+              gitlabCoreTypes.some(core => name.startsWith(core))
+          )
+        }),
+      ]
+      return allTypeNames.filter(name => gitlabDefaults.includes(name))
+    }
+
+    case 'wordpress': {
+      // WordPress/WPGraphQL: Headless CMS essentials only
+      // Using blacklist approach: new types added to schema are enabled by default
+      const wordpressDefaults = [
+        // All scalar types (detected automatically)
+        ...scalarTypeNames,
+        // Query type
+        queryTypeName,
+        'RootQuery',
+        // Content types for headless
+        'Post',
+        'Page',
+        'Category',
+        'Tag',
+        'MediaItem',
+        'Menu',
+        'MenuItem',
+        'User',
+        // Pagination
+        'PageInfo',
+        'WPPageInfo',
+        // Media
+        'MediaDetails',
+        'MediaSize',
+        // Common interfaces
+        'ContentNode',
+        'ContentType',
+        'TermNode',
+        'NodeWithTitle',
+        'NodeWithFeaturedImage',
+        'NodeWithAuthor',
+        'NodeWithExcerpt',
+        'MenuItemLinkable',
+        // WooCommerce essentials
+        'Product',
+        'ProductCategory',
+        'ProductTag',
+        // Dynamic patterns
+        ...allTypeNames.filter(name => {
+          // Exclude input/enum/filter types
+          if (name.endsWith('Input') || name.endsWith('Enum')) return false
+          if (name.endsWith('Filter') || name.endsWith('Where') || name.endsWith('OrderBy')) return false
+          // Exclude scripts/stylesheets (not needed for headless)
+          if (name.includes('Script') || name.includes('Stylesheet')) return false
+          // Exclude revisions
+          if (name.includes('Revision')) return false
+          // Exclude comments
+          if (name.includes('Comment') || name.includes('Commenter')) return false
+          // Exclude post formats
+          if (name.includes('PostFormat')) return false
+          // Exclude themes/plugins (admin only)
+          if (name.includes('Theme') || name.includes('Plugin')) return false
+          // Exclude user roles (admin only)
+          if (name.includes('UserRole')) return false
+          // Exclude templates (admin only)
+          if (name.includes('Template')) return false
+
+          return (
+          // ACF
+            name.startsWith('Acf') ||
+              // Custom post types
+              name.endsWith('Post') ||
+              name.endsWith('Page') ||
+              // Pagination
+              name.endsWith('Connection') ||
+              name.endsWith('Edge') ||
+              // ACF fields
+              name.endsWith('Fields') ||
+              name.endsWith('FieldGroup') ||
+              // Pods
+              name.startsWith('Pod') ||
+              // SEO plugins
+              name.startsWith('SEO') ||
+              name.startsWith('Seo')
+          )
+        }),
+      ]
+      // Return only types that actually exist in the schema
+      return allTypeNames.filter(name => wordpressDefaults.includes(name))
+    }
+
+    case 'generic':
+    default:
+      // Generic: All types checked by default
+      return [...allTypeNames]
+    }
+  }
+
+  /**
    * @throws Error
    */
   protected triggerError<T>(message: string): T {
@@ -133,57 +450,136 @@ export default class GraphQL implements IDataSource {
   }
   protected async loadData(): Promise<[Type[], Field[], string]> {
     try {
-      const result = await this.call(graphqlIntrospectionQuery) as {data: {__schema: {types: GQLType[], queryType: {name: string}}}}
-      if (!result.data?.__schema?.types) return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
-      const allTypes = result.data.__schema.types.map((type: GQLType) => type.name)
+      let schemaTypes: GQLType[]
+      let queryTypeName: string
+
+      // If disabledTypes is set, compute enabled types and use selective introspection
+      if (this.disabledTypes && this.disabledTypes.length > 0) {
+        // Fetch all type names (lightweight query)
+        const lightweightResult = await this.call(lightweightTypeNamesQuery) as {data: {__schema: {queryType: {name: string}, types: LightweightType[]}}}
+        if (!lightweightResult.data?.__schema?.types) {
+          return this.triggerError(`Invalid lightweight response: ${JSON.stringify(lightweightResult)}`)
+        }
+
+        const allTypeNames = lightweightResult.data.__schema.types
+          .map(t => t.name)
+          .filter(name => !name.startsWith('__'))
+
+        // Get the queryType name from the lightweight query
+        const lightweightQueryTypeName = lightweightResult.data.__schema.queryType?.name || 'Query'
+
+        // Compute enabled types by excluding disabled ones (blacklist logic)
+        // Always include queryType and SCALAR types - they cannot be blacklisted
+        const scalarTypeNames = lightweightResult.data.__schema.types
+          .filter(t => t.kind === 'SCALAR' && !t.name.startsWith('__'))
+          .map(t => t.name)
+
+        const enabledTypeNames = allTypeNames.filter(name => !this.disabledTypes!.includes(name))
+
+        // Ensure queryType is always included (e.g., Query, RootQuery, etc.)
+        if (!enabledTypeNames.includes(lightweightQueryTypeName) && allTypeNames.includes(lightweightQueryTypeName)) {
+          enabledTypeNames.push(lightweightQueryTypeName)
+        }
+
+        // Ensure all SCALAR types are always included
+        for (const scalarName of scalarTypeNames) {
+          if (!enabledTypeNames.includes(scalarName)) {
+            enabledTypeNames.push(scalarName)
+          }
+        }
+
+        // Split types into batches (smaller batches for GitLab due to query complexity limits)
+        const batchSize = getBatchSize(this.backendType)
+        const batches: string[][] = []
+        for (let i = 0; i < enabledTypeNames.length; i += batchSize) {
+          batches.push(enabledTypeNames.slice(i, i + batchSize))
+        }
+
+        // Fetch batches in parallel
+        const batchResults = await Promise.all(
+          batches.map(async (batch) => {
+            try {
+              const query = buildBatchTypeQuery(batch)
+              const result = await this.call(query) as {data: {[key: string]: GQLType | null}}
+              // Extract types from aliased responses
+              const types: GQLType[] = []
+              for (const [key, value] of Object.entries(result.data || {})) {
+                if (key.startsWith('type_') && value !== null) {
+                  types.push(value)
+                }
+              }
+              return types
+            } catch (e) {
+              console.warn('[GraphQL] Failed to fetch batch:', (e as Error).message)
+              return []
+            }
+          })
+        )
+
+        // Flatten batch results
+        schemaTypes = batchResults.flat()
+        queryTypeName = lightweightQueryTypeName
+      } else {
+        // No blacklist - use full introspection query
+        const result = await this.call(graphqlIntrospectionQuery) as {data: {__schema: {types: GQLType[], queryType: {name: string}}}}
+        if (!result.data?.__schema?.types) {
+          return this.triggerError(`Invalid response: ${JSON.stringify(result)}`)
+        }
+        schemaTypes = result.data.__schema.types
+        queryTypeName = result.data.__schema.queryType?.name
+      }
+
+      if (!queryTypeName) {
+        return this.triggerError('Invalid response, queryType not found')
+      }
+
+      const allTypes = schemaTypes.map((type: GQLType) => type.name)
         .concat(builtinTypeIds)
 
-      const queryType: string = result.data.__schema.queryType?.name
-      if(!queryType) return this.triggerError(`Invalid response, queryType not found: ${JSON.stringify(result)}`)
-
-      const query: GQLType | undefined = result.data.__schema.types.find((type: GQLType) => type.name === queryType)
-      if(!query) return this.triggerError(`Invalid response, query not found: ${JSON.stringify(result)}`)
+      const query: GQLType | undefined = schemaTypes.find((type: GQLType) => type.name === queryTypeName)
+      if (!query) {
+        return this.triggerError(`Query type "${queryTypeName}" not found in schema. Make sure to enable it.`)
+      }
 
       // Get non-queryable types
-      const nonQueryables = result.data.__schema.types
-        // Filter out Query, Mutation, Subscription
-        //.filter((type: GQLType) => !['Query', 'Mutation', 'Subscription'].includes(type.name))
+      const nonQueryables = schemaTypes
         // Filter out introspection types
         .filter((type: GQLType) => !type.name.startsWith('__'))
-        // Filter out types that are not in Query
-        //.map((type: GQLType) => query?.fields.find((field: GQLField) => field.name === type.name) ?? type)
         // Filter out types that are in Query (the queryables are handled separately)
-        .filter((type: GQLType) => !query?.fields.find((field: GQLField) => field.name === type.name))
-
+        .filter((type: GQLType) => !query?.fields?.find((field: GQLField) => field.name === type.name))
         // Map to Type
         .map((type: GQLType) => this.graphQLToType(allTypes, type, 'SCALAR', false))
         // Add builtin types
         .concat(builtinTypes)
 
-      if(!query) {
-        return this.triggerError('Query type not found in GraphQL schema')
-      }
-
       // Get queryable types
-      const queryableTypes = query.fields
+      const queryableTypes = (query.fields || [])
         // Map to GQLType, keeping kind for later
         .map((field: GQLField) => ({
           type: {
-            ...result.data.__schema.types.find((type: GQLType) => type.name === this.getOfTypeProp<string>('name', field.type, field.name)),
+            ...schemaTypes.find((type: GQLType) => type.name === this.getOfTypeProp<string>('name', field.type, field.name)),
             name: field.name,
           } as GQLType,
           kind: this.ofKindToKind(field.type),
         }))
+        // Filter out types that were excluded
+        .filter(({type}) => type.fields !== undefined)
         // Map to Type
         .map(({type, kind}) => this.graphQLToType(allTypes, type, kind, true))
 
       // Get all queryables as fields
-      const queryableFields = query.fields
+      const queryableFields = (query.fields || [])
+        // Filter out fields whose types were not fetched
+        .filter((field: GQLField) => {
+          const typeName = this.getOfTypeProp<string>('name', field.type, field.name)
+          // Include if the type exists in schemaTypes or is a builtin type
+          return schemaTypes.some(t => t.name === typeName) || builtinTypeIds.includes(typeName)
+        })
         // Map to Field
         .map((field: GQLField) => this.graphQLToField(field))
 
       // Return all types, queryables and non-queryables
-      return [queryableTypes.concat(nonQueryables), queryableFields, queryType]
+      return [queryableTypes.concat(nonQueryables), queryableFields, queryTypeName]
     } catch (e) {
       return this.triggerError(`GraphQL introspection failed: ${(e as Error).message}`)
     }
@@ -298,7 +694,7 @@ export default class GraphQL implements IDataSource {
       dataSourceId: this.id,
       label: type.name,
       fields: type.fields
-        // Do not include fields that are not in the schema
+        // Do not include fields whose type is not in the schema (blacklisted types)
         // FIXME: somehow this happens with fields of type datetime_functions for directus
         //?.filter((field: {name: string, type: any}) => allTypes.includes(field.name))
         ?.filter((field) => allTypes.includes(this.getOfTypeProp<string>('name', field.type, field.name)))
