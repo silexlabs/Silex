@@ -266,7 +266,15 @@ export class ExpressionInput extends InputChain {
                       'fixed-selector-fixed': true,
                     })}
                     @click=${() => (this.fixed = true)}
+                    @keydown=${(e: KeyboardEvent) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        this.fixed = true
+                      }
+                    }}
                     part="fixed-selector-fixed"
+                    tabindex="0"
+                    role="button"
                     >Fixed</span
                   >
                   <span
@@ -275,7 +283,15 @@ export class ExpressionInput extends InputChain {
                       'fixed-selector-expression': true,
                     })}
                     @click=${() => (this.fixed = false)}
+                    @keydown=${(e: KeyboardEvent) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        this.fixed = false
+                      }
+                    }}
                     part="fixed-selector-expression"
+                    tabindex="0"
+                    role="button"
                     >Expression</span
                   >
                 </div>
