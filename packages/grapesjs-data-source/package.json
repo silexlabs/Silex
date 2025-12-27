@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-data-source",
-  "version": "0.2.0-canary.0",
+  "version": "0.2.0-canary.1",
   "description": "Grapesjs Data Source",
   "main": "dist/index.js",
   "module": "dist/index.js",
