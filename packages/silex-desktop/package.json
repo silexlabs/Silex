@@ -26,6 +26,6 @@
   },
   "homepage": "https://www.silex.me",
   "devDependencies": {
-    "@silexlabs/silex": "3.6.0-canary.0"
+    "@silexlabs/silex": "3.6.0-canary.1"
   }
 }
