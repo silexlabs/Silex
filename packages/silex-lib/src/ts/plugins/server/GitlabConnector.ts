@@ -874,7 +874,7 @@ export default class GitlabConnector implements StorageConnector {
     })
   }
 
-  // Fork the repo
+  // Fork the repo (user's own project)
   async duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void> {
     const meta = await this.getWebsiteMeta(session, websiteId)
 
@@ -895,6 +895,79 @@ export default class GitlabConnector implements StorageConnector {
     })
 
     return forkedProject.id
+  }
+
+  /**
+   * Fork an external/public GitLab project (from any user/organization)
+   * @param session - The user session
+   * @param gitlabUrl - The GitLab URL or path (e.g., "https://gitlab.com/user/repo" or "user/repo")
+   * @returns The new website ID (project ID)
+   */
+  async forkWebsite(session: GitlabSession, gitlabUrl: string): Promise<string> {
+    // Parse the GitLab URL to extract the project path
+    // Supports formats:
+    // - https://gitlab.com/user/repo
+    // - https://gitlab.com/user/repo.git
+    // - gitlab.com/user/repo
+    // - user/repo
+    let projectPath = gitlabUrl
+      .replace(/\.git$/, '') // Remove .git suffix
+      .replace(/\/$/, '') // Remove trailing slash
+
+    // Extract path from full URL
+    const urlMatch = projectPath.match(/(?:https?:\/\/)?(?:[\w.-]+\/)?(.+)/)
+    if (urlMatch) {
+      // Check if it's a full URL with domain
+      const domainMatch = projectPath.match(/(?:https?:\/\/)?([\w.-]+)\/(.+)/)
+      if (domainMatch) {
+        const [, domain, path] = domainMatch
+        // If domain matches our configured domain, use just the path
+        const configuredDomain = this.options.domain.replace(/^https?:\/\//, '')
+        if (domain === configuredDomain || domain === 'gitlab.com') {
+          projectPath = path
+        } else {
+          // Different GitLab instance - not supported
+          throw new ApiError(`Cannot fork from a different GitLab instance (${domain}). Only ${configuredDomain} is supported.`, 400)
+        }
+      }
+    }
+
+    // URL-encode the project path for the API
+    const encodedPath = encodeURIComponent(projectPath)
+
+    // First, get the source project info to extract its name
+    let sourceProject: any
+    try {
+      sourceProject = await this.callApi({
+        session,
+        path: `api/v4/projects/${encodedPath}`,
+        method: 'GET',
+      })
+    } catch (e) {
+      if (e.httpStatusCode === 404) {
+        throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists and is public or you have access to it.`, 404)
+      }
+      throw e
+    }
+
+    // Generate a unique name for the fork
+    const sourceName = sourceProject.name.replace(this.options.repoPrefix, '')
+    const forkName = `${sourceName} ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
+    const safePath = sanitizeGitlabPath(this.options.repoPrefix + forkName)
+
+    // Fork the project to the user's namespace
+    const forkedProject = await this.callApi({
+      session,
+      path: `api/v4/projects/${encodedPath}/fork`,
+      method: 'POST',
+      requestBody: {
+        name: this.options.repoPrefix + forkName,
+        /* @ts-ignore */
+        path: safePath,
+      },
+    })
+
+    return forkedProject.id.toString()
   }
 
 

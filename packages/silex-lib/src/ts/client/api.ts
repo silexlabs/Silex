@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-import { API_CONNECTOR_LIST, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_PATH, API_PATH, API_PUBLICATION_PATH, API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_DELETE, API_WEBSITE_LIST, API_WEBSITE_PATH, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_CREATE, API_WEBSITE_DUPLICATE } from '../constants'
-import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorId, JobData, JobId, PublicationJobData, WebsiteId, ApiConnectorListResponse, ApiConnectorListQuery, ConnectorData, ConnectorType, ApiWebsiteReadQuery, ApiWebsiteReadResponse, WebsiteData, ApiWebsiteWriteQuery, ApiWebsiteWriteBody, ApiWebsiteWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse, ClientSideFile, PublicationData, ApiConnectorUserResponse, ConnectorUser, WebsiteMeta, ApiConnectorLogoutQuery, ApiConnectorUserQuery, ApiWebsiteListResponse, ApiWebsiteListQuery, WebsiteMetaFileContent, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, ApiWebsiteMetaWriteResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ConnectorOptions, ApiError, ApiWebsiteDuplicateQuery } from '../types'
+import { API_CONNECTOR_LIST, API_CONNECTOR_USER, API_CONNECTOR_LOGOUT, API_CONNECTOR_PATH, API_PATH, API_PUBLICATION_PATH, API_PUBLICATION_PUBLISH, API_PUBLICATION_STATUS, API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_DELETE, API_WEBSITE_LIST, API_WEBSITE_PATH, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_CREATE, API_WEBSITE_DUPLICATE, API_WEBSITE_FORK } from '../constants'
+import { ApiPublicationPublishBody, ApiPublicationPublishQuery, ApiPublicationPublishResponse, ApiPublicationStatusQuery, ApiPublicationStatusResponse, ConnectorId, JobData, JobId, PublicationJobData, WebsiteId, ApiConnectorListResponse, ApiConnectorListQuery, ConnectorData, ConnectorType, ApiWebsiteReadQuery, ApiWebsiteReadResponse, WebsiteData, ApiWebsiteWriteQuery, ApiWebsiteWriteBody, ApiWebsiteWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteBody, ApiWebsiteAssetsWriteResponse, ClientSideFile, PublicationData, ApiConnectorUserResponse, ConnectorUser, WebsiteMeta, ApiConnectorLogoutQuery, ApiConnectorUserQuery, ApiWebsiteListResponse, ApiWebsiteListQuery, WebsiteMetaFileContent, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteCreateResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, ApiWebsiteMetaWriteResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ConnectorOptions, ApiError, ApiWebsiteDuplicateQuery, ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse } from '../types'
 
 export enum ApiRoute {
   PUBLICATION_PUBLISH = API_PATH + API_PUBLICATION_PATH + API_PUBLICATION_PUBLISH,
@@ -28,6 +28,7 @@ export enum ApiRoute {
   WEBSITE_WRITE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_WRITE,
   WEBSITE_DELETE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_DELETE,
   WEBSITE_DUPLICATE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_DUPLICATE,
+  WEBSITE_FORK = API_PATH + API_WEBSITE_PATH + API_WEBSITE_FORK,
   WEBSITE_CREATE = API_PATH + API_WEBSITE_PATH + API_WEBSITE_CREATE,
   WEBSITE_LIST = API_PATH + API_WEBSITE_PATH + API_WEBSITE_LIST,
   WEBSITE_ASSETS_READ = API_PATH + API_WEBSITE_PATH + API_WEBSITE_ASSET_READ,
@@ -97,6 +98,17 @@ export async function websiteDelete({websiteId, connectorId}: {websiteId: Websit
 
 export async function websiteDuplicate({websiteId, connectorId}: {websiteId: WebsiteId, connectorId?: ConnectorId}): Promise<void> {
   await api<ApiWebsiteDuplicateQuery, null, null>(ApiRoute.WEBSITE_DUPLICATE, 'POST', { websiteId, connectorId })
+}
+
+/**
+ * Fork an external/public GitLab project
+ * @param gitlabUrl - The GitLab URL or path (e.g., "https://gitlab.com/user/repo" or "user/repo")
+ * @param connectorId - Optional connector ID (must be a GitLab connector)
+ * @returns The new website ID
+ */
+export async function websiteFork({gitlabUrl, connectorId}: {gitlabUrl: string, connectorId?: ConnectorId}): Promise<WebsiteId> {
+  const response = await api<ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse>(ApiRoute.WEBSITE_FORK, 'POST', { connectorId }, { gitlabUrl })
+  return response.websiteId
 }
 
 export async function websiteCreate({websiteId, data, connectorId}: {websiteId: WebsiteId, data: WebsiteMetaFileContent, connectorId?: ConnectorId}): Promise<void> {
