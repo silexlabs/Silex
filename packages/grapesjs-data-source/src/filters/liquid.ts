@@ -745,9 +745,42 @@ export default function(editor: Editor): Filter[] {
         typeIds: ['String'],
         kind: 'scalar',
       }),
+      // Simple strftime implementation for preview
+      // See liquidjs's full implementation: https://github.com/harttle/liquidjs/blob/master/src/util/strftime.ts
       apply: (date, options) => {
         const d = new Date(date as string)
-        return d.toLocaleDateString(options.format as string)
+        const tz = options.timeZone as string || 'UTC'
+
+        // Get date parts in the specified timezone
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).formatToParts(d)
+
+        const get = (type: string) => parts.find(p => p.type === type)?.value || ''
+        const monthNum = String(new Date(d.toLocaleString('en-US', { timeZone: tz })).getMonth() + 1).padStart(2, '0')
+
+        const tokens: Record<string, string> = {
+          '%a': get('weekday'),       // Sun
+          '%b': get('month'),         // Jan
+          '%d': get('day'),           // 01
+          '%y': get('year').slice(-2),// 25
+          '%Y': get('year'),          // 2025
+          '%m': monthNum,             // 01
+          '%H': get('hour'),          // 14
+          '%M': get('minute'),        // 30
+          '%S': get('second'),        // 05
+          '%%': '%',
+        }
+
+        return (options.format as string).replace(/%[a-zA-Z%]/g, match => tokens[match] ?? match)
       },
       options: {
         format: '%a, %b %d, %y', // Fri, Jul 17, 15
