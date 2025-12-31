@@ -1,6 +1,6 @@
 # eleventy-plugin-concat
 
-Eleventy plugin to bundle your scripts and styles
+Eleventy plugin to bundle your scripts and styles. Originally created as an Eleventy-only plugin, it now also works as a standalone CLI tool, inspired by excellent tools from CloudCannon like [Pagefind](https://pagefind.app/) and [Pagebreak](https://github.com/CloudCannon/pagebreak).
 
 This plugin is contributed by [Internet 2000 web studio](https://internet2000.net/), it is used to create green websites with [Silex website builder](https://www.silex.me/)
 
@@ -133,9 +133,19 @@ You can also use this plugin as a standalone CLI tool, perfect for npm scripts:
    npx eleventy-plugin-concat "dist/**/*.html" \
      --js-path "assets/js/{name}.bundle.js" \
      --css-path "assets/css/{name}.bundle.css"
+   
+   # Preview changes without modifying files
+   npx eleventy-plugin-concat "dist/**/*.html" --dry-run
+   
+   # Quiet mode for CI/CD (no output unless there's an error)
+   npx eleventy-plugin-concat "dist/**/*.html" --quiet
    ```
 
 **CLI Options:**
+- `-h, --help`: Show help message
+- `-v, --version`: Show version number
+- `--quiet`: Suppress non-error output (useful for CI/CD pipelines)
+- `--dry-run`: Preview changes without modifying files
 - `--base-url <url>`: Base URL for your site (default: `http://localhost:8080`)
 - `--js-path <pattern>`: JS output path pattern (default: `js/{name}-concat.js`)
 - `--css-path <pattern>`: CSS output path pattern (default: `css/{name}-concat.css`)
@@ -143,6 +153,25 @@ You can also use this plugin as a standalone CLI tool, perfect for npm scripts:
 - `--css-url <pattern>`: CSS URL pattern in HTML (default: `/css/{name}-concat.css`)
 
 The `{name}` placeholder will be replaced with the HTML file name (without extension).
+
+**Pipeline Usage:**
+
+The CLI is designed for CI/CD pipelines with proper exit codes and output control:
+
+```sh
+# Validate before processing (exit code 1 if errors)
+npx eleventy-plugin-concat "dist/**/*.html" --dry-run --quiet
+
+# Process with clean output for logs
+npx eleventy-plugin-concat "dist/**/*.html" --quiet --base-url "https://example.com"
+
+# Check version for debugging
+npx eleventy-plugin-concat --version
+```
+
+**Exit Codes:**
+- `0`: Success
+- `1`: Error (no files found, processing error, or invalid options)
 
 ## Options
 
