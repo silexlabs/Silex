@@ -26,11 +26,11 @@
     "@11ty/eleventy": "^2.0.1",
     "css-tree": "^3.1.0",
     "eslint": "^8.39.0",
-    "glob": "^11.0.3",
     "html-pages": "^3.1.0",
     "mocha": "^10.2.0"
   },
   "dependencies": {
+    "glob": "^11.0.3",
     "node-fetch": "^2.6.9",
     "node-html-parser": "^6.1.5"
   },

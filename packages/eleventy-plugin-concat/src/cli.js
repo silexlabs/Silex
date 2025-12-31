@@ -48,6 +48,13 @@ async function main() {
   }
 
   const inputPattern = args[0]
+  
+  if (!inputPattern) {
+    console.error('Error: No input pattern provided')
+    console.log(USAGE)
+    process.exit(1)
+  }
+
   let outputDir = null
   let options = { ...defaults }
   let quiet = false
@@ -109,6 +116,12 @@ async function main() {
 
   // Find HTML files
   const files = await glob(inputPattern, { absolute: true })
+
+  if (!files || !Array.isArray(files)) {
+    console.error(`Error: glob returned invalid result for pattern: ${inputPattern}`)
+    console.error(`Result type: ${typeof files}, value: ${files}`)
+    process.exit(1)
+  }
 
   if (files.length === 0) {
     console.error(`Error: No files found matching pattern: ${inputPattern}`)
