@@ -610,7 +610,18 @@ export default class GitlabConnector implements StorageConnector {
    */
   async setToken(session: GitlabSession, loginResult: any): Promise<void> {
     const sessionToken = this.getSessionToken(session)
-    if (!loginResult.state || loginResult.state !== sessionToken?.state) {
+    // Handle state that may be JSON with redirect info or a plain string
+    // Redirect info is when the user is comming from the /fork/ page of the dashboard
+    let receivedState = loginResult.state
+    try {
+      const parsed = JSON.parse(loginResult.state)
+      if (parsed.state) {
+        receivedState = parsed.state
+      }
+    } catch {
+      // Plain text
+    }
+    if (!receivedState || receivedState !== sessionToken?.state) {
       this.logout(session)
       throw new ApiError('Invalid state', 401)
     }
