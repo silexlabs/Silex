@@ -4,9 +4,9 @@
 # Sript to release packages in the Silex monorepo based on npm workspaces and git submodules.
 # This script automates the process of updating internal dependencies, bumping versions, and pushing changes to the repository.
 # Usage:
-#   ./scripts/release.sh [--release] [--dry-run]
+#   ./scripts/release.sh [--type=TYPE] [--dry-run]
 # Options:
-#   --release: Perform a release (default is prerelease)
+#   --type=TYPE: Version bump type (prepatch, patch, preminor, minor). Default: preminor
 #   --dry-run: Simulate the release process without making any changes
 #   --help: Show this help message
 
@@ -15,32 +15,39 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-RELEASE=false
+TYPE="preminor"
 DRY_RUN=false
 
 for arg in "$@"; do
   case "$arg" in
-    --release) RELEASE=true ;;
+    --type=*) TYPE="${arg#--type=}" ;;
     --dry-run) DRY_RUN=true ;;
     --h|--help)
-      echo "Usage: $0 [--release] [--dry-run]"
+      echo "Usage: $0 [--type=TYPE] [--dry-run]"
       echo "Options:"
-      echo "  --release: Perform a release (default is prerelease)"
+      echo "  --type=TYPE: Version bump type (prepatch, patch, preminor, minor). Default: preminor"
       echo "  --dry-run: Simulate the release process without making any changes"
       exit 0
       ;;
     *)
       echo "Unknown argument: $arg"
-      echo "Usage: $0 [--release] [--dry-run]"
+      echo "Usage: $0 [--type=TYPE] [--dry-run]"
       echo "Options:"
-      echo "  --release: Perform a release (default is prerelease)"
+      echo "  --type=TYPE: Version bump type (prepatch, patch, preminor, minor). Default: preminor"
       echo "  --dry-run: Simulate the release process without making any changes"
       exit 1
       ;;
   esac
 done
 
-echo "🔍 Mode: $([[ $RELEASE == true ]] && echo "RELEASE" || echo "PRERELEASE")"
+# Validate type
+if [[ ! "$TYPE" =~ ^(prepatch|patch|preminor|minor)$ ]]; then
+  echo "❌ Invalid type: $TYPE"
+  echo "   Valid types: prepatch, patch, preminor, minor"
+  exit 1
+fi
+
+echo "🔍 Type: $TYPE"
 echo "🔍 Dry run: $([[ $DRY_RUN == true ]] && echo "YES" || echo "NO")"
 echo ""
 
@@ -128,7 +135,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
 
   # Determine if version bump needed
   SHOULD_BUMP=false
-  if $RELEASE && [[ "$CURRENT_VERSION" == *-* ]]; then
+  if [[ "$TYPE" == "minor" || "$TYPE" == "patch" ]] && [[ "$CURRENT_VERSION" == *-* ]]; then
     SHOULD_BUMP=true
   elif $HAS_NEW_COMMITS; then
     SHOULD_BUMP=true
@@ -142,26 +149,29 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     continue
   fi
 
-  if $RELEASE; then
-    # Mode release (stable)
-    if [[ "$CURRENT_VERSION" == *-* ]]; then
-      # On est sur une prerelease, on veut juste la version stable sans le suffixe
-      STABLE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-[0-9]*$//')
-      CMD="npm version $STABLE_VERSION -m 'chore: release %s'"
-    else
-      # On est déjà sur une version stable, incrémenter le minor
-      CMD="npm version minor -m 'chore: release %s'"
-    fi
-  else
-    # Mode prerelease
-    if [[ "$CURRENT_VERSION" == *-* ]]; then
-      # On est déjà sur une prerelease, incrémenter le suffixe
-      CMD="npm version prerelease --preid=canary -m 'chore: prerelease %s'"
-    else
-      # On est sur une version stable, incrémenter le minor + ajouter -0
-      CMD="npm version preminor --preid=canary -m 'chore: prerelease %s'"
-    fi
-  fi
+  case "$TYPE" in
+    minor|patch)
+      # Mode release (stable)
+      if [[ "$CURRENT_VERSION" == *-* ]]; then
+        # On est sur une prerelease, on veut juste la version stable sans le suffixe
+        STABLE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-[0-9]*$//')
+        CMD="npm version $STABLE_VERSION -m 'chore: release %s'"
+      else
+        # On est déjà sur une version stable, incrémenter
+        CMD="npm version $TYPE -m 'chore: release %s'"
+      fi
+      ;;
+    preminor|prepatch)
+      # Mode prerelease
+      if [[ "$CURRENT_VERSION" == *-* ]]; then
+        # On est déjà sur une prerelease, incrémenter le suffixe
+        CMD="npm version prerelease --preid=canary -m 'chore: prerelease %s'"
+      else
+        # On est sur une version stable, incrémenter + ajouter -0
+        CMD="npm version $TYPE --preid=canary -m 'chore: prerelease %s'"
+      fi
+      ;;
+  esac
 
   if $DRY_RUN; then
     echo "  🧪 (dry-run) Would run: $CMD"
