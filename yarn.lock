@@ -3410,8 +3410,18 @@
     tslib "^2.8.1"
     typescript "^5.7.3"
 
-"@silexlabs/silex-dashboard@1.5.0-canary.2", "@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
-  version "1.5.0-canary.2"
+"@silexlabs/silex-dashboard@1.5.0-canary.4":
+  version "1.5.0-canary.3"
+  resolved "https://registry.npmjs.org/@silexlabs/silex-dashboard/-/silex-dashboard-1.5.0-canary.3.tgz"
+  integrity sha512-DL6XOc1PIx90dDCnEPtYmcJOySBa9OBYh9qMPqcJH+5e+plM7BBbISL107BjaqpS6MewbWqQj+EXa7kHLEXFog==
+  dependencies:
+    locale "^0.1.0"
+    node_modules-path "^2.3.0"
+    serve-static "^2.2.0"
+    vue "^3.5.13"
+
+"@silexlabs/silex-dashboard@file:/home/lexoyo/_/Silex/packages/silex-dashboard":
+  version "1.5.0-canary.4"
   resolved "file:packages/silex-dashboard"
   dependencies:
     locale "^0.1.0"
@@ -3420,12 +3430,12 @@
     vue "^3.5.13"
 
 "@silexlabs/silex-platform@file:/home/lexoyo/_/Silex/packages/silex-platform":
-  version "1.4.0-canary.2"
+  version "1.4.0-canary.4"
   resolved "file:packages/silex-platform"
   dependencies:
     "@silexlabs/silex" "3.6.0-canary.2"
     "@silexlabs/silex-cms" "0.3.1-5"
-    "@silexlabs/silex-dashboard" "1.5.0-canary.2"
+    "@silexlabs/silex-dashboard" "1.5.0-canary.3"
     dotenv "^16.4.7"
 
 "@silexlabs/silex-plugin-starter@file:/home/lexoyo/_/Silex/packages/silex-plugin-starter":
