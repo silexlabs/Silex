@@ -7,8 +7,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-# Get the release version from silex-lib
-RELEASE_VERSION=$(jq -r '.version' packages/silex-lib/package.json)
+# Get the release version from the monorepo
+RELEASE_VERSION=$(jq -r '.version' package.json)
 
 echo ""
 echo "============================================"

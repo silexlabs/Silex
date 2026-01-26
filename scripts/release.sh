@@ -15,30 +15,53 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-TYPE="preminor"
+TYPE=""
 DRY_RUN=false
+
+show_help() {
+  echo "Usage: $0 --type=TYPE [--dry-run]"
+  echo ""
+  echo "Release packages in the Silex monorepo based on npm workspaces and git submodules."
+  echo "This script automates the process of updating internal dependencies, bumping versions,"
+  echo "and pushing changes to the repository."
+  echo ""
+  echo "Options:"
+  echo "  --type=TYPE  (required) Version bump type:"
+  echo "               - prepatch: Increment patch and add/increment canary prerelease (e.g., 1.0.0 -> 1.0.1-canary.0)"
+  echo "               - preminor: Increment minor and add/increment canary prerelease (e.g., 1.0.0 -> 1.1.0-canary.0)"
+  echo "               - patch:    Release stable patch version (e.g., 1.0.1-canary.0 -> 1.0.1)"
+  echo "               - minor:    Release stable minor version (e.g., 1.1.0-canary.0 -> 1.1.0)"
+  echo "  --dry-run    Simulate the release process without making any changes"
+  echo "  --help       Show this help message"
+  echo ""
+  echo "Examples:"
+  echo "  $0 --type=preminor           # Create a canary prerelease"
+  echo "  $0 --type=minor              # Promote prerelease to stable minor"
+  echo "  $0 --type=patch --dry-run    # Simulate a stable patch release"
+}
 
 for arg in "$@"; do
   case "$arg" in
     --type=*) TYPE="${arg#--type=}" ;;
     --dry-run) DRY_RUN=true ;;
     --h|--help)
-      echo "Usage: $0 [--type=TYPE] [--dry-run]"
-      echo "Options:"
-      echo "  --type=TYPE: Version bump type (prepatch, patch, preminor, minor). Default: preminor"
-      echo "  --dry-run: Simulate the release process without making any changes"
+      show_help
       exit 0
       ;;
     *)
       echo "Unknown argument: $arg"
-      echo "Usage: $0 [--type=TYPE] [--dry-run]"
-      echo "Options:"
-      echo "  --type=TYPE: Version bump type (prepatch, patch, preminor, minor). Default: preminor"
-      echo "  --dry-run: Simulate the release process without making any changes"
+      echo ""
+      show_help
       exit 1
       ;;
   esac
 done
+
+# Show help if no --type provided
+if [ -z "$TYPE" ]; then
+  show_help
+  exit 0
+fi
 
 # Validate type
 if [[ ! "$TYPE" =~ ^(prepatch|patch|preminor|minor)$ ]]; then
@@ -47,12 +70,10 @@ if [[ ! "$TYPE" =~ ^(prepatch|patch|preminor|minor)$ ]]; then
   exit 1
 fi
 
-echo "🔍 Type: $TYPE"
-echo "🔍 Dry run: $([[ $DRY_RUN == true ]] && echo "YES" || echo "NO")"
+echo "🔍 Release: $TYPE$([[ $DRY_RUN == true ]] && echo " (dry-run)")"
 echo ""
 
 # Check for dirty packages
-echo "🔎 Validating working directory status for all packages..."
 DIRTY_PACKAGES=()
 for dir in packages/*; do
   [ -e "$dir/.git" ] || continue
@@ -62,21 +83,92 @@ for dir in packages/*; do
 done
 
 if [ ${#DIRTY_PACKAGES[@]} -gt 0 ]; then
-  echo "❌ Some packages have uncommitted changes:"
-  for p in "${DIRTY_PACKAGES[@]}"; do
-    echo "   - $p"
-  done
-  echo ""
-  echo "🛑 Please commit or stash these changes before running the release."
+  echo "❌ Uncommitted changes in: ${DIRTY_PACKAGES[*]}"
   exit 1
 fi
-
-echo "✅ All packages clean"
-echo ""
 
 ERRORS=()
 SKIPPED=()
 UPDATED=()
+
+# Bump version for a package or monorepo
+# Usage: bump_version <name> [--wait-npm]
+bump_version() {
+  local name="$1"
+  local wait_npm="${2:-}"
+
+  local current_version=$(jq -r .version package.json)
+  local last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+  local has_new_commits=false
+  if [ -n "$last_tag" ] && [ -n "$(git rev-list "$last_tag"..HEAD)" ]; then
+    has_new_commits=true
+  fi
+
+  # Determine if version bump needed
+  local should_bump=false
+  if [[ "$TYPE" == "minor" || "$TYPE" == "patch" ]] && [[ "$current_version" == *-* ]]; then
+    should_bump=true
+  elif $has_new_commits; then
+    should_bump=true
+  fi
+
+  if ! $should_bump; then
+    echo "  ✅ No version bump needed. Skipping."
+    SKIPPED+=("$name")
+    return 0
+  fi
+
+  local cmd
+  local expected_version=""
+  case "$TYPE" in
+    minor|patch)
+      if [[ "$current_version" == *-* ]]; then
+        expected_version=$(echo "$current_version" | sed 's/-.*$//')
+        cmd="npm version $expected_version -m '%s'"
+      else
+        cmd="npm version $TYPE -m '%s'"
+        expected_version="($TYPE bump)"
+      fi
+      ;;
+    preminor|prepatch)
+      if [[ "$current_version" == *-* ]]; then
+        cmd="npm version prerelease --preid=canary -m '%s'"
+        # Compute expected: increment last number in canary version
+        local base=$(echo "$current_version" | sed 's/\.[0-9]*$//')
+        local num=$(echo "$current_version" | grep -oE '[0-9]+$')
+        expected_version="$base.$((num + 1))"
+      else
+        cmd="npm version $TYPE --preid=canary -m '%s'"
+        expected_version="($TYPE bump)"
+      fi
+      ;;
+  esac
+
+  if $DRY_RUN; then
+    echo "  $current_version → $expected_version (dry-run)"
+    UPDATED+=("$name|$current_version → $expected_version")
+  else
+    if ! output=$(eval "$cmd" 2>&1); then
+      echo "  ❌ Failed: $output"
+      return 1
+    fi
+    local new_version=$(jq -r .version package.json)
+    echo "  $current_version → $new_version"
+    git push -q
+    git push -q --tags
+
+    if [ "$wait_npm" == "--wait-npm" ]; then
+      local package_name=$(jq -r .name package.json)
+      echo "  ⏳ Waiting for npm... https://www.npmjs.com/package/$package_name/"
+      read -p "  Press enter when available..."
+      sleep 10
+      npm cache clean --force > /dev/null 2>&1
+    fi
+
+    UPDATED+=("$name|$current_version → $new_version")
+  fi
+}
 
 INTERNAL_PACKAGE_NAMES=($(find packages -mindepth 1 -maxdepth 1 -type d -exec jq -r .name {}/package.json \;))
 PACKAGE_PATHS=($(./scripts/sort-internal-deps.js | grep '^-' | sed 's/^- //' | xargs -n1))
@@ -88,133 +180,49 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
 
   echo "📦 Processing $pkg_dir"
 
-  CURRENT_VERSION=$(jq -r .version package.json)
-  LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-  HAS_NEW_COMMITS=false
-  if [ -n "$LAST_TAG" ] && [ -n "$(git rev-list "$LAST_TAG"..HEAD)" ]; then
-    HAS_NEW_COMMITS=true
-  fi
-
   # Update internal deps
-  OUTDATED=$(npx -y npm-check-updates --dep prod,dev,peer --target=greatest || true)
-  INTERNAL_LINES=()
+  OUTDATED=$(npx -y npm-check-updates --dep prod,dev,peer --target=greatest 2>/dev/null || true)
   INTERNAL_UPGRADE_LIST=()
 
   while IFS= read -r line; do
     dep=$(echo "$line" | awk '{print $1}' | xargs)
     if [[ " ${INTERNAL_PACKAGE_NAMES[*]} " =~ " $dep " ]]; then
-      echo "  ✨ $line"
-      INTERNAL_LINES+=("$line")
       INTERNAL_UPGRADE_LIST+=("$dep")
     fi
   done <<< "$OUTDATED"
 
-  UPDATED_INTERNAL_DEPS=false
   if [[ ${#INTERNAL_UPGRADE_LIST[@]} -gt 0 ]]; then
-    UPDATED_INTERNAL_DEPS=true
     if $DRY_RUN; then
-      echo "  🧪 (dry-run) Would update internal deps: ${INTERNAL_UPGRADE_LIST[*]}"
+      echo "  ↑ deps: ${INTERNAL_UPGRADE_LIST[*]} (dry-run)"
     else
-      echo "  🔧 Updating internal deps..."
-      npx -y npm-check-updates --dep prod,dev,peer --target=greatest --upgrade "${INTERNAL_UPGRADE_LIST[@]}"
-      npm install --package-lock-only --workspaces false
+      echo "  ↑ deps: ${INTERNAL_UPGRADE_LIST[*]}"
+      npx -y npm-check-updates --dep prod,dev,peer --target=greatest --upgrade "${INTERNAL_UPGRADE_LIST[@]}" > /dev/null 2>&1
+      npm install --package-lock-only --workspaces false > /dev/null 2>&1
       git add package.json package-lock.json
-      git commit -m "chore: update internal dependencies in $pkg_dir"
-      git push
+      git commit -q -m "chore: update internal dependencies in $pkg_dir"
+      git push -q
     fi
-  else
-    echo "  ✅ No internal dependencies to update."
   fi
 
-  # Re-check for new commits after dependency update
-  HAS_NEW_COMMITS=false
-  if [ -n "$LAST_TAG" ] && [ -n "$(git rev-list "$LAST_TAG"..HEAD)" ]; then
-    HAS_NEW_COMMITS=true
-  fi
-
-  # Determine if version bump needed
-  SHOULD_BUMP=false
-  if [[ "$TYPE" == "minor" || "$TYPE" == "patch" ]] && [[ "$CURRENT_VERSION" == *-* ]]; then
-    SHOULD_BUMP=true
-  elif $HAS_NEW_COMMITS; then
-    SHOULD_BUMP=true
-  fi
-
-  if ! $SHOULD_BUMP; then
-    echo "  ✅ No version bump needed. Skipping."
-    SKIPPED+=("$pkg_dir")
-    cd "$REPO_ROOT"
-    echo ""
-    continue
-  fi
-
-  case "$TYPE" in
-    minor|patch)
-      # Mode release (stable)
-      if [[ "$CURRENT_VERSION" == *-* ]]; then
-        # On est sur une prerelease, on veut juste la version stable sans le suffixe
-        STABLE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-[0-9]*$//')
-        CMD="npm version $STABLE_VERSION -m 'chore: release %s'"
-      else
-        # On est déjà sur une version stable, incrémenter
-        CMD="npm version $TYPE -m 'chore: release %s'"
-      fi
-      ;;
-    preminor|prepatch)
-      # Mode prerelease
-      if [[ "$CURRENT_VERSION" == *-* ]]; then
-        # On est déjà sur une prerelease, incrémenter le suffixe
-        CMD="npm version prerelease --preid=canary -m 'chore: prerelease %s'"
-      else
-        # On est sur une version stable, incrémenter + ajouter -0
-        CMD="npm version $TYPE --preid=canary -m 'chore: prerelease %s'"
-      fi
-      ;;
-  esac
-
-  if $DRY_RUN; then
-    echo "  🧪 (dry-run) Would run: $CMD"
-    echo "  🧪 (dry-run) Would push + tag"
-    NEW_VERSION=$(jq -r .version package.json)
-  else
-    echo "  🚀 Bumping version..."
-    eval "$CMD"
-    NEW_VERSION=$(jq -r .version package.json)
-    git push
-    git push --tags
-
-    PACKAGE_NAME=$(jq -r .name package.json)
-    echo ""
-    echo "🛑 Waiting for $PACKAGE_NAME@$NEW_VERSION to appear on npm"
-    echo "🔗 https://www.npmjs.com/package/$PACKAGE_NAME/"
-    read -p "⏸️  Press enter to continue when it's available..."
-    echo "⏳ Waiting 10s"
-    sleep 10
-    npm cache clean --force
-  fi
-
-  UPDATED+=("$pkg_dir|$CURRENT_VERSION → $NEW_VERSION")
+  bump_version "$pkg_dir" --wait-npm
   cd "$REPO_ROOT"
-  echo ""
 done
 
-# Résumé
-echo "✅ Script completed."
 echo ""
+echo "📦 Processing monorepo"
 
-if [ ${#UPDATED[@]} -gt 0 ]; then
-  echo "📦 Tagged:"
-  for entry in "${UPDATED[@]}"; do
-    echo "   - $entry"
-  done
-  echo ""
+# Commit submodule and lockfile updates before bumping monorepo version
+CHANGED_FILES=$(git status --porcelain packages/ yarn.lock 2>/dev/null | grep -v '^??' || true)
+if [ -n "$CHANGED_FILES" ]; then
+  if $DRY_RUN; then
+    echo "  (dry-run) Would commit submodule/lockfile updates"
+  else
+    git add packages/ yarn.lock 2>/dev/null || true
+    git commit -q -m "chore: update submodule references"
+  fi
 fi
 
-if [ ${#SKIPPED[@]} -gt 0 ]; then
-  echo "⏭️ Skipped (no changes):"
-  for d in "${SKIPPED[@]}"; do
-    echo "   - $d"
-  done
-  echo ""
-fi
+bump_version "monorepo"
+
+echo ""
+echo "✅ Done. Released: ${#UPDATED[@]}, Skipped: ${#SKIPPED[@]}"
