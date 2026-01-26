@@ -956,7 +956,31 @@ export default class GitlabConnector implements StorageConnector {
       },
     })
 
-    return forkedProject.id.toString()
+    // Wait for the fork to complete (GitLab forks asynchronously)
+    const forkedProjectId = forkedProject.id.toString()
+    const maxAttempts = 30 // 30 attempts * 2 seconds = 60 seconds max
+    const pollInterval = 2000 // 2 seconds
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const project = await this.callApi({
+        session,
+        path: `api/v4/projects/${forkedProjectId}`,
+        method: 'GET',
+      })
+
+      if (project.import_status === 'finished' || project.import_status === 'none') {
+        return forkedProjectId
+      }
+
+      if (project.import_status === 'failed') {
+        throw new ApiError(`Fork failed: ${project.import_error || 'Unknown error'}`, 500)
+      }
+
+      // Status is 'scheduled' or 'started', wait and retry
+      await new Promise(resolve => setTimeout(resolve, pollInterval))
+    }
+
+    return forkedProjectId
   }
 
 
