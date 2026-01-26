@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/silex-platform",
-  "version": "1.4.0-canary.4",
+  "version": "1.4.0",
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "bin": "./bin/silex-platform",
   "scripts": {
