@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-advanced-selector",
-  "version": "1.5.0-canary.0",
+  "version": "1.5.0",
   "description": "A GrapesJS plugin for managing advanced CSS selectors with a visual interface",
   "keywords": [
     "silex",
