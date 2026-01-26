@@ -129,10 +129,41 @@ $ cd packages/Silex && npm run build && cd ../.. # build the Silex editor
 Useful commands
 
 * Start Silex: `npm start` (or use `npm run start:debug`)
-* Release a package (which is in packages/$PACKAGE_NAME) and bump version of a library and all its dependents: `scripts/release-version packages/$PACKAGE_NAME $VERSION`, then you probably want to `git push --follow-tags` the changed packages
 * Add a project: `git submodule add $PACKAGE_GIT_URL packages/$PACKAGE_NAME`, then run `npm run doc`
 * Update `package-lock.json` for a particular package: `npm i --package-lock-only --workspaces false` in the package directory
-* Publish a new version of a package: `npm version --patch && git push --follow-tags` in the package directory
+
+### Releasing
+
+Use `npm run release` to release packages in the monorepo. Run without arguments to see help:
+
+```sh
+$ npm run release
+
+Usage: scripts/release.sh --type=TYPE [--dry-run]
+
+Options:
+  --type=TYPE  (required) Version bump type:
+               - prepatch: Increment patch and add/increment canary prerelease (e.g., 1.0.0 -> 1.0.1-canary.0)
+               - preminor: Increment minor and add/increment canary prerelease (e.g., 1.0.0 -> 1.1.0-canary.0)
+               - patch:    Release stable patch version (e.g., 1.0.1-canary.0 -> 1.0.1)
+               - minor:    Release stable minor version (e.g., 1.1.0-canary.0 -> 1.1.0)
+  --dry-run    Simulate the release process without making any changes
+  --help       Show this help message
+```
+
+Examples:
+```sh
+npm run release -- --type=preminor           # Create a canary prerelease
+npm run release -- --type=minor              # Promote prerelease to stable
+npm run release -- --type=patch --dry-run    # Simulate a patch release
+```
+
+The script:
+1. Validates all packages have no uncommitted changes
+2. Processes packages in dependency order (updating internal deps first)
+3. Bumps versions and pushes tags for packages with new commits
+4. Tags the main monorepo with the same versioning logic
+5. Waits for npm publication confirmation between packages
 
 ## Third party dependencies
 
