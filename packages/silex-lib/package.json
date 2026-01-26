@@ -108,7 +108,6 @@
     "@silexlabs/grapesjs-notifications": "0.2.1",
     "@silexlabs/grapesjs-storage-rate-limit": "1.3.0",
     "@silexlabs/grapesjs-symbols": "1.4.1",
-    "@silexlabs/grapesjs-ui-suggest-classes": "1.2.0",
     "@silexlabs/silex-plugins": "1.3.0",
     "@types/archiver": "^6.0.2",
     "adm-zip": "0.5.14",
