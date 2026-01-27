@@ -212,12 +212,12 @@ echo ""
 echo "📦 Processing monorepo"
 
 # Commit submodule and lockfile updates before bumping monorepo version
-CHANGED_FILES=$(git status --porcelain packages/ yarn.lock 2>/dev/null | grep -v '^??' || true)
+CHANGED_FILES=$(git status --porcelain packages/ yarn.lock package-lock.json 2>/dev/null | grep -v '^??' || true)
 if [ -n "$CHANGED_FILES" ]; then
   if $DRY_RUN; then
     echo "  (dry-run) Would commit submodule/lockfile updates"
   else
-    git add packages/ yarn.lock 2>/dev/null || true
+    git add packages/ yarn.lock package-lock.json 2>/dev/null || true
     git commit -q -m "chore: update submodule references"
   fi
 fi
