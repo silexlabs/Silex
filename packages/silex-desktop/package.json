@@ -1,6 +1,6 @@
 {
   "name": "silex-desktop",
-  "version": "2.9.2-canary.0",
+  "version": "2.9.2",
   "description": "Silex website builder as a windows/mac/linux app",
   "main": "./index.js",
   "engines": {
