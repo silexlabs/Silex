@@ -236,8 +236,12 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
         path: `api/v4/projects/${websiteId}/jobs`,
         method: 'GET'
       })
-      if (!jobs.length) return null
-      if (jobs[0].ref === tag) {return `${projectUrl}/-/jobs/${jobs[0].id}`}
+      // Find job matching our tag (may not exist yet on first publish)
+      const matchingJob = jobs.find(j => j.ref === tag)
+      if (matchingJob) {
+        return `${projectUrl}/-/jobs/${matchingJob.id}`
+      }
+      // No matching job yet - wait and retry
       await setTimeout(waitTimeOut)
     } while ((Date.now() - t0) < this.options.timeOut)
       
