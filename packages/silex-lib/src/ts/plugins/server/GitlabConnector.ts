@@ -953,6 +953,7 @@ export default class GitlabConnector implements StorageConnector {
         name: this.options.repoPrefix + forkName,
         /* @ts-ignore */
         path: safePath,
+        visibility: 'private',
       },
     })
 
