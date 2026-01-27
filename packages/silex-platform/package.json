@@ -18,7 +18,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "@silexlabs/silex": "3.6.3",
-    "@silexlabs/silex-dashboard": "1.5.2",
+    "@silexlabs/silex-dashboard": "1.5.3",
     "dotenv": "^16.4.7"
   },
   "repository": {
