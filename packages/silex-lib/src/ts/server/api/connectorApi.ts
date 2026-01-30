@@ -258,6 +258,19 @@ async function routeLoginSuccess(req: Request, res: Response) {
     const type = toConnectorEnum(requiredParam(query.type, 'Connector type'))
     const connector = await getConnector<Connector>(config, req['session'], type, connectorId)
     if (!connector) throw new Error('Connector not found ' + connectorId)
+    // Extract redirect from state if present (new way supports JSON state with redirect or just the state text)
+    let redirect: string | undefined
+    const stateParam = (query as any).state
+    if (stateParam) {
+      try {
+        const parsed = JSON.parse(stateParam)
+        if (parsed.redirect) {
+          redirect = parsed.redirect
+        }
+      } catch {
+        // Plain text
+      }
+    }
     // Check if the user is already logged in
     if (await connector.isLoggedIn(session)) {
       console.info('User already logged in for connector ' + connectorId)
@@ -270,7 +283,7 @@ async function routeLoginSuccess(req: Request, res: Response) {
       })
     }
     // End the auth flow
-    res.send(getEndAuthHtml('Logged in', false, connectorId, type, connector.getOptions(body)))
+    res.send(getEndAuthHtml('Logged in', false, connectorId, type, connector.getOptions(body), redirect))
   } catch (error) {
     console.error('Error in the login callback', error, error?.code, error?.httpStatusCode)
     res
@@ -322,7 +335,7 @@ async function routeLogout(req: Request, res: Response) {
  * Utility function to send an HTML page to the browser
  * is page will send a postMessage to the parent window and close itself
  */
-function getEndAuthHtml(message: string, error: boolean, connectorId: ConnectorId, connectorType: ConnectorType, options?: ConnectorOptions): string {
+function getEndAuthHtml(message: string, error: boolean, connectorId: ConnectorId, connectorType: ConnectorType, options?: ConnectorOptions, redirect?: string): string {
   // Data for postMessage
   const data = {
     type: 'login', // For postMessage
@@ -331,6 +344,7 @@ function getEndAuthHtml(message: string, error: boolean, connectorId: ConnectorI
     connectorId,
     connectorType,
     options,
+    redirect,
   } as ApiConnectorLoggedInPostMessage
   // Determine status title and heading based on the error
   const status = error ? 'Error' : 'Success'
@@ -461,7 +475,7 @@ function getEndAuthHtml(message: string, error: boolean, connectorId: ConnectorI
                 }
               } else {
                 messageContainer.innerHTML = '<h1>Redirecting, please wait...</h1>';
-                window.location.href = '/'
+                window.location.href = '${redirect || '/'}'
               }
             </script>
           `}

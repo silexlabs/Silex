@@ -610,7 +610,18 @@ export default class GitlabConnector implements StorageConnector {
    */
   async setToken(session: GitlabSession, loginResult: any): Promise<void> {
     const sessionToken = this.getSessionToken(session)
-    if (!loginResult.state || loginResult.state !== sessionToken?.state) {
+    // Handle state that may be JSON with redirect info or a plain string
+    // Redirect info is when the user is comming from the /fork/ page of the dashboard
+    let receivedState = loginResult.state
+    try {
+      const parsed = JSON.parse(loginResult.state)
+      if (parsed.state) {
+        receivedState = parsed.state
+      }
+    } catch {
+      // Plain text
+    }
+    if (!receivedState || receivedState !== sessionToken?.state) {
       this.logout(session)
       throw new ApiError('Invalid state', 401)
     }
@@ -874,7 +885,7 @@ export default class GitlabConnector implements StorageConnector {
     })
   }
 
-  // Fork the repo
+  // Fork the repo (user's own project)
   async duplicateWebsite(session: GitlabSession, websiteId: string): Promise<void> {
     const meta = await this.getWebsiteMeta(session, websiteId)
 
@@ -895,6 +906,82 @@ export default class GitlabConnector implements StorageConnector {
     })
 
     return forkedProject.id
+  }
+
+  /**
+   * Fork an external/public GitLab project (from any user/organization)
+   * @param session - The user session
+   * @param gitlabUrl - The project path in the "username/repo" format
+   * @returns The new website ID (project ID)
+   */
+  async forkWebsite(session: GitlabSession, gitlabUrl: string): Promise<string> {
+    // Only accept "username/repo" pattern (no URLs)
+    const projectPath = gitlabUrl.trim()
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(projectPath)) {
+      throw new ApiError('Invalid project path. Use the "username/repo" format.', 400)
+    }
+
+    // URL-encode the project path for the API
+    const encodedPath = encodeURIComponent(projectPath)
+
+    // First, get the source project info to extract its name
+    let sourceProject: any
+    try {
+      sourceProject = await this.callApi({
+        session,
+        path: `api/v4/projects/${encodedPath}`,
+        method: 'GET',
+      })
+    } catch (e) {
+      if (e.httpStatusCode === 404) {
+        throw new ApiError(`Project not found: ${projectPath}. Make sure the project exists and is public or you have access to it.`, 404)
+      }
+      throw e
+    }
+
+    // Generate a unique name for the fork
+    const sourceName = sourceProject.name.replace(this.options.repoPrefix, '')
+    const forkName = `${sourceName} ${new Date().toISOString().slice(0, 10)} ${Math.random().toString(36).substring(2, 4)}`
+    const safePath = sanitizeGitlabPath(this.options.repoPrefix + forkName)
+
+    // Fork the project to the user's namespace
+    const forkedProject = await this.callApi({
+      session,
+      path: `api/v4/projects/${encodedPath}/fork`,
+      method: 'POST',
+      requestBody: {
+        name: this.options.repoPrefix + forkName,
+        /* @ts-ignore */
+        path: safePath,
+        visibility: 'private',
+      },
+    })
+
+    // Wait for the fork to complete (GitLab forks asynchronously)
+    const forkedProjectId = forkedProject.id.toString()
+    const maxAttempts = 30 // 30 attempts * 2 seconds = 60 seconds max
+    const pollInterval = 2000 // 2 seconds
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const project = await this.callApi({
+        session,
+        path: `api/v4/projects/${forkedProjectId}`,
+        method: 'GET',
+      })
+
+      if (project.import_status === 'finished' || project.import_status === 'none') {
+        return forkedProjectId
+      }
+
+      if (project.import_status === 'failed') {
+        throw new ApiError(`Fork failed: ${project.import_error || 'Unknown error'}`, 500)
+      }
+
+      // Status is 'scheduled' or 'started', wait and retry
+      await new Promise(resolve => setTimeout(resolve, pollInterval))
+    }
+
+    return forkedProjectId
   }
 
 

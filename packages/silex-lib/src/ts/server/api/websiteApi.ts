@@ -18,9 +18,9 @@
 import { Router } from 'express'
 import formidable from 'formidable'
 import PersistentFile from 'formidable/src/PersistentFile'
-import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH, API_WEBSITE_DUPLICATE } from '../../constants'
+import { API_WEBSITE_ASSET_READ, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_READ, API_WEBSITE_WRITE, API_WEBSITE_DELETE, API_WEBSITE_META_READ, API_WEBSITE_META_WRITE, API_WEBSITE_LIST, API_WEBSITE_CREATE, API_PATH, API_WEBSITE_PATH, API_WEBSITE_DUPLICATE, API_WEBSITE_FORK } from '../../constants'
 import { createReadStream } from 'fs'
-import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteDuplicateQuery } from '../../types'
+import { ApiError, ApiWebsiteAssetsReadParams, ApiWebsiteAssetsReadQuery, ApiWebsiteAssetsReadResponse, ApiWebsiteAssetsWriteQuery, ApiWebsiteAssetsWriteResponse, ApiWebsiteDeleteQuery, ApiWebsiteReadQuery, ApiWebsiteReadResponse, ApiWebsiteWriteBody, ApiWebsiteWriteQuery, ConnectorId, ConnectorType, WebsiteMeta, WebsiteData, WebsiteId, ApiWebsiteListQuery, ApiWebsiteListResponse, ApiWebsiteMetaReadQuery, ApiWebsiteMetaReadResponse, ApiWebsiteMetaWriteQuery, ApiWebsiteMetaWriteBody, WebsiteMetaFileContent, ApiWebsiteMetaWriteResponse, ApiWebsiteWriteResponse, ApiWebsiteCreateQuery, ApiWebsiteCreateBody, ApiWebsiteDuplicateQuery, ApiWebsiteForkQuery, ApiWebsiteForkBody, ApiWebsiteForkResponse } from '../../types'
 import { ConnectorFile, ConnectorFileContent, ConnectorSession, StorageConnector, getConnector } from '../connectors/connectors'
 import { Readable } from 'stream'
 import { requiredParam } from '../utils/validation'
@@ -243,6 +243,24 @@ export default function (config: ServerConfig, opts = {}): Router {
     }
   })
 
+  // Fork an external/public GitLab project
+  router.post(API_WEBSITE_FORK, async (req, res) => {
+    try {
+      const query: ApiWebsiteForkQuery = req.query as any
+      const body: ApiWebsiteForkBody = req.body
+      const gitlabUrl = requiredParam<string>(body.gitlabUrl, 'GitLab project path ("username/repo")')
+      const websiteId = await forkWebsite(req['session'], gitlabUrl, query.connectorId)
+      res.status(200).json({ websiteId, message: 'Website forked successfully' } as ApiWebsiteForkResponse)
+    } catch (e) {
+      console.error('Error forking website', e)
+      if (e.httpStatusCode) {
+        res.status(e.httpStatusCode).json({ message: e.message } as ApiError)
+      } else {
+        res.status(500).json({ message: e.message } as ApiError)
+      }
+    }
+  })
+
   // Load assets
   router.get(API_WEBSITE_ASSET_READ + '/:path', async (req, res) => {
     {
@@ -416,6 +434,24 @@ export default function (config: ServerConfig, opts = {}): Router {
 
     // Duplicate the website
     return storageConnector.duplicateWebsite(session, websiteId)
+  }
+
+  /**
+   * Fork an external/public GitLab project
+   * Only accepts a GitLab project path in the "username/repo" format.
+   * This is specific to GitLab connector - it allows forking public projects from any user/organization
+   */
+  async function forkWebsite(session: any, gitlabUrl: string, connectorId?: string): Promise<string> {
+    // Get the desired connector
+    const storageConnector = await getStorageConnector(session, connectorId)
+
+    // Check if the connector supports forking (only GitLab does)
+    if (typeof (storageConnector as any).forkWebsite !== 'function') {
+      throw new ApiError('This storage connector does not support forking external projects', 400)
+    }
+
+    // Fork the website
+    return (storageConnector as any).forkWebsite(session, gitlabUrl)
   }
 
   /**

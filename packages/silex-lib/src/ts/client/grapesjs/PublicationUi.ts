@@ -227,10 +227,10 @@ export class PublicationUi {
         ` : nothing}
         ${this.isPending(status) || this.isLoggedOut(status) ? nothing : html`
           <button
-            class="silex-button silex-button--primary"
+            class="silex-button ${this.isSuccess(status) ? 'silex-button--secondary' : 'silex-button--primary'}"
             id="publish-button--primary"
             @click=${() => this.editor.Commands.run(cmdPublicationStart)}
-          >Publish</button>
+          >${this.isSuccess(status) ? 'Publish again' : 'Publish'}</button>
         `}
       `}
     </main>

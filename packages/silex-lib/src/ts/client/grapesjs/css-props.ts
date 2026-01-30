@@ -71,7 +71,6 @@ export default (editor: Editor, opts) => {
       property: 'position',
       type: 'select',
       defaults: '',
-      full: true,
       options: [
         { id: '', value: '', name: '' },
         { id: 'inherit', value: 'inherit', name: 'inherit' },
@@ -85,13 +84,26 @@ export default (editor: Editor, opts) => {
       ],
       info: '',
     })
+    editor.StyleManager.addProperty('general', {
+      name: 'Container Type',
+      property: 'container-type',
+      type: 'select',
+      defaults: '',
+      options: [
+        { id: '', value: '', name: '' },
+        { id: 'normal', value: 'normal', name: 'normal' },
+        { id: 'size', value: 'size', name: 'size' },
+        { id: 'inline-size', value: 'inline-size', name: 'inline-size' },
+      ],
+      info: 'Defines the element as a query container, enabling container queries for its descendants.',
+    })
     editor.StyleManager.removeProperty('general', 'top')
     editor.StyleManager.addProperty('general', {
       name: 'Top',
       property: 'top',
       type: 'number',
       defaults: '',
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'dvh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       info: '',
     })
     editor.StyleManager.removeProperty('general', 'bottom')
@@ -100,7 +112,7 @@ export default (editor: Editor, opts) => {
       property: 'bottom',
       type: 'number',
       defaults: '',
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'dvh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       info: '',
     })
     editor.StyleManager.removeProperty('general', 'right')
@@ -109,7 +121,7 @@ export default (editor: Editor, opts) => {
       property: 'right',
       type: 'number',
       defaults: '',
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       info: '',
     })
     editor.StyleManager.removeProperty('general', 'left')
@@ -118,7 +130,7 @@ export default (editor: Editor, opts) => {
       property: 'left',
       type: 'number',
       defaults: '',
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       info: '',
     })
     registerSector(editor, {
@@ -160,7 +172,7 @@ export default (editor: Editor, opts) => {
       name: 'Width',
       property: 'width',
       type: 'integer',
-      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 0 })
@@ -169,7 +181,7 @@ export default (editor: Editor, opts) => {
       name: 'Height',
       property: 'height',
       type: 'integer',
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'dvh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 1 })
@@ -177,7 +189,7 @@ export default (editor: Editor, opts) => {
       name: 'Min width',
       property: 'min-width',
       type: 'integer',
-      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 2 })
@@ -186,7 +198,7 @@ export default (editor: Editor, opts) => {
       name: 'Max width',
       property: 'max-width',
       type: 'integer',
-      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 3 })
@@ -195,7 +207,7 @@ export default (editor: Editor, opts) => {
       name: 'Min height',
       property: 'min-height',
       type: 'integer',
-      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'dvh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 4 })
@@ -203,7 +215,7 @@ export default (editor: Editor, opts) => {
       name: 'Max height',
       property: 'max-height',
       type: 'integer',
-      units: ['px', '%', 'em', 'rem', 'vh', 'vw'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'dvh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 5 })
@@ -257,28 +269,28 @@ export default (editor: Editor, opts) => {
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'margin-right',
         name: 'Margin right',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'margin-bottom',
         name: 'Margin bottom',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'margin-left',
         name: 'Margin left',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }],
     }, { at: 8 })
     editor.StyleManager.removeProperty('dimension', 'padding')
@@ -295,7 +307,7 @@ export default (editor: Editor, opts) => {
         default: '',
         value: '10',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'padding-right',
         name: 'Padding right',
@@ -303,7 +315,7 @@ export default (editor: Editor, opts) => {
         default: '',
         value: '10',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'padding-bottom',
         name: 'Padding bottom',
@@ -311,7 +323,7 @@ export default (editor: Editor, opts) => {
         default: '',
         value: '10',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'padding-left',
         name: 'Padding left',
@@ -319,7 +331,7 @@ export default (editor: Editor, opts) => {
         default: '',
         value: '10',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }],
     }, { at: 9 })
 
@@ -333,7 +345,7 @@ export default (editor: Editor, opts) => {
       type: 'number',
       default: '',
       fixedValues: [ 'medium', 'xx-small', 'x-small', 'small', 'large', 'x-large', 'xx-large', 'smaller', 'larger', 'length', 'initial', 'inherit' ],
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
     }, { at: 1 })
     editor.StyleManager.removeProperty('typography', 'font-weight')
     editor.StyleManager.addProperty('typography', {
@@ -362,7 +374,7 @@ export default (editor: Editor, opts) => {
       type: 'number',
       default: '',
       fixedValues: [ 'normal', 'initial', 'inherit', 'unset' ],
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
     }, { at: 3 })
     editor.StyleManager.removeProperty('typography', 'color')
     editor.StyleManager.addProperty('typography', {
@@ -379,7 +391,7 @@ export default (editor: Editor, opts) => {
       type: 'number',
       default: '',
       fixedValues: [ 'normal', 'initial', 'inherit', 'unset' ],
-      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+      units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
     }, { at: 5 })
     editor.StyleManager.removeProperty('typography', 'text-align')
     editor.StyleManager.addProperty('typography', {
@@ -544,28 +556,28 @@ export default (editor: Editor, opts) => {
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'border-top-right-radius',
         name: 'Top right',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'border-bottom-right-radius',
         name: 'Bottom right',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }, {
         property: 'border-bottom-left-radius',
         name: 'Bottom left',
         type: 'number',
         default: '',
         fixedValues: [ 'initial', 'inherit', 'auto' ],
-        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw' ],
+        units: [ 'px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax' ],
       }],
     }, { at: 2 })
 
@@ -715,7 +727,7 @@ export default (editor: Editor, opts) => {
       name: 'Column gap',
       property: 'column-gap',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       info: 'The column-gap CSS property sets the size of the gap (gutter) between an element\'s columns.',
       default: '',
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],
@@ -724,7 +736,7 @@ export default (editor: Editor, opts) => {
       name: 'Row Gap',
       property: 'row-gap',
       type: 'integer',
-      units: ['px', '%', 'em'],
+      units: ['px', '%', 'em', 'rem', 'vh', 'vw', 'cqi', 'cqb', 'cqw', 'cqh', 'cqmin', 'cqmax'],
       info: 'The row-gap CSS property sets the size of the gap (gutter) between an element\'s rows.',
       default: '',
       fixedValues: ['normal', 'inherit', 'initial', 'revert', 'unset'],

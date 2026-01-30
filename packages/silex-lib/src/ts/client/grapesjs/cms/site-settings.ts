@@ -27,7 +27,6 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
           <div id="settings-${CMS_SETTINGS_SECTION_ID}" class="silex-hideable silex-hidden">
             <div class="silex-help">
               <p>The <a target="_blank" href="https://github.com/silexlabs/silex-cms">Silex CMS feature</a> integrates with your favorite headless CMS, API or database.</p>
-              <p>By adding data sources to your website you activate <a target="_blank" href="https://www.11ty.dev/docs/">11ty static site generator</a> integration. When you wil publish your website, the generated files assume you build the site with 11ty and possibly with Gitlab pages.</p>
             </div>
             <div class="gjs-sm-sector-title">
               Data Sources
@@ -39,7 +38,9 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
                 </span>
             </div>
             ${opts.view?.settingsEl ? (opts.view.settingsEl as () => HTMLElement)() : ''}
-            <div class="gjs-sm-sector-title">11ty Config</div>
+
+            <details class="silex-more">
+            <summary>11ty Config</summary>
             <div class="silex-help">
               <p>These settings are used to configure the <a target="_blank" href="https://www.11ty.dev/docs/">11ty static site generator</a> integration.</p>
               <p>Depending on your 11ty configuration, you may need to adjust these settings, it will enable or disable features in Silex.</p>
@@ -58,6 +59,7 @@ export default function(editor: Editor, opts: EleventyPluginOptions): void {
             <div class="silex-form__group col2">
             </div>
           </div>
+          </details>
           </div>
           `
       }

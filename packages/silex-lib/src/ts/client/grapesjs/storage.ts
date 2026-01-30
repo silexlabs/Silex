@@ -129,17 +129,25 @@ export const storagePlugin = (editor: PublishableEditor) => {
         editor.UndoManager.clear()
         if (err.httpStatusCode === 401) {
           editor.once(eventLoggedIn, async () => {
-            try {
-              await editor.Storage.load(options)
-            } catch (err) {
-              console.error('connectorPlugin load error', err)
-              throw err
-            }
+            // This should work but well it doesn't... window.location.reload()
+            // Here comes the workaround:
+            /* @lint-ignore */
+            window.location.href = window.location.href
+            return null
+            // try {
+            //   await this.load(options)
+            // } catch (err) {
+            //   console.error('connectorPlugin load error', err)
+            //   // Breaks grapesjs: throw err
+            //   editor.trigger('storage:error:load', err)
+            //   return null
+            // }
           })
           editor.Commands.run(cmdLogin)
         }
         console.error('connectorPlugin load error', err)
-        throw err
+        // Breaks grapesjs: throw err
+        editor.trigger('storage:error:load', err)
       }
     },
 
@@ -171,7 +179,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
       try {
         if (isSaving) {
           // Concurrent saving, save is delayed
-          editor.once('storage:start:store', () => {
+          editor.once('storage:end:store', () => {
             this.doStore(data, options)
           })
         } else {
@@ -186,12 +194,8 @@ export const storagePlugin = (editor: PublishableEditor) => {
               await websiteSave({ websiteId: options.id, connectorId: user.storage.connectorId, data })
               isSaving = false
             } else {
-              // Not logged in save is delayed
-              editor.once(eventLoggedIn, () => {
-                isSaving = false
-                return editor.Storage.store(data, options)
-              })
-              editor.Commands.run(cmdLogin)
+              // This should never happen,
+              // because the user canot save when they never logged in before
             }
           } else {
             // Canceled saving
@@ -200,7 +204,14 @@ export const storagePlugin = (editor: PublishableEditor) => {
       } catch (err) {
         console.error('connectorPlugin store error', err)
         isSaving = false
-        throw err
+        if (err.httpStatusCode === 401) {
+          editor.once(eventLoggedIn, () => {
+            isSaving = false
+            return editor.Storage.store(data, options)
+          })
+        }
+        // Breaks grapesjs: throw err
+        editor.trigger('storage:error:load', err)
       }
     }
   })
@@ -226,7 +237,6 @@ export const storagePlugin = (editor: PublishableEditor) => {
       case 404:
         return editor.Modal.open({
           title: 'Website not found',
-
           content: `This website could not be found.<br><hr>${err.message}`,
         })
       case 403:

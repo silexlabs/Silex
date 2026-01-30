@@ -98,14 +98,47 @@ function slugify(text: string | number) {
     .replace(/-+$/, '') // Trim - from end of text
 }
 
+function ensureLeadingAndTrailingSlash(str: string): string {
+  if (str.length === 0) return '/'
+  let s = str
+  if (!s.startsWith('/')) s = '/' + s
+  // No empty file name
+  if (s.endsWith('/.html')) throw new Error('Permalink may not end with "/.html". Your missing a file name!')
+  // If it ends with .html, keep as-is; otherwise ensure trailing slash
+  if (!s.endsWith('/') && !s.endsWith('.html')) s = s + '/'
+  return s
+}
+
 export function getPermalink(page: Page, permalink: Token[], isCollectionPage: boolean, slug: string): string | null {
   const isHome = slug === 'index'
   // User provided a permalink explicitely
   if (permalink && permalink.length > 0) {
     const body = page.getMainComponent() as Component
-    return echoBlock1line(body, permalink.map(token => {
+    const transformedTokens = permalink.map(token => {
       // Replace states which will be one from ./states.ts
+      // For permalink, we need to use the actual 11ty variable names, not state references
       if(token.type === 'state') {
+        // Map known 11ty pagination states to their variable names
+        const stateToFieldId: Record<string, string> = {
+          'pagination': 'pagination',
+          'items': 'pagination.items',
+          'pages': 'pagination.pages',
+        }
+        const fieldId = stateToFieldId[token.storedStateId]
+        if (fieldId) {
+          // Create a clean Property token for known 11ty pagination states
+          return {
+            type: 'property',
+            propType: 'field',
+            fieldId,
+            label: token.storedStateId,
+            dataSourceId: undefined, // No data source, this is an 11ty variable
+            typeIds: [],
+            kind: 'object',
+            options: {},
+          } as Property
+        }
+        // For other states, use the existing logic
         const state = getState(body, token.storedStateId, true)
         if(!state) throw new Error('State not found on body')
         return {
@@ -115,7 +148,8 @@ export function getPermalink(page: Page, permalink: Token[], isCollectionPage: b
         } as Property
       }
       return token
-    }))
+    })
+    return ensureLeadingAndTrailingSlash(echoBlock1line(body, transformedTokens))
   } else if (isCollectionPage) {
     // Let 11ty handle the permalink
     return null
@@ -159,7 +193,6 @@ export function getFrontMatter(page: Page, settings: Silex11tyPluginWebsiteSetti
       addAllPagesToCollections: true
       data: ${data}
       size: ${settings.eleventyPageSize ? settings.eleventyPageSize : '1'}
-      ${settings.eleventyPageReverse ? 'reverse: true' : ''}
     ` : ''}
     ${permalink ? `permalink: "${permalink}"` : ''}
     ${lang ? `lang: "${lang}"` : ''}
