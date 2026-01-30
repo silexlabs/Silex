@@ -1,7 +1,7 @@
 {
   "name": "@silexlabs/silex",
   "description": "Free and easy website builder for everyone.",
-  "version": "3.6.4-canary.0",
+  "version": "3.6.4",
   "version:backwardcompat": "3.0.0",
   "author": "Alex Hoyau (https://lexoyo.me/)",
   "main": "dist/server/server/index.js",
