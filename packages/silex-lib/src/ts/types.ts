@@ -326,6 +326,7 @@ export interface WebsiteMeta extends WebsiteMetaFileContent {
     id: string
     name: string
     webUrl?: string
+    license?: string
   }
 
   /** How many times this project has been forked */

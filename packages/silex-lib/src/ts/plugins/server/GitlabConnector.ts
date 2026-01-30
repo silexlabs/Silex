@@ -1033,13 +1033,25 @@ export default class GitlabConnector implements StorageConnector {
       // With no jobs, leave lastJob undefined
     }
 
-    // Fork info
-    let forkedFrom: { id: string, name: string, webUrl?: string } | undefined = undefined
+    // Fork info - fetch the forked-from project to get license
+    let forkedFrom: { id: string, name: string, webUrl?: string, license?: string } | undefined = undefined
     if (project.forked_from_project) {
+      let license: string | undefined = undefined
+      try {
+        const templateProject = await this.callApi({
+          session,
+          path: `api/v4/projects/${project.forked_from_project.id}`,
+          params: { license: true }
+        })
+        license = templateProject.license?.name || templateProject.license?.nickname || templateProject.license?.key
+      } catch (e) {
+        // Template may be private or inaccessible
+      }
       forkedFrom = {
         id: String(project.forked_from_project.id),
         name: project.forked_from_project.name,
-        webUrl: project.forked_from_project.web_url
+        webUrl: project.forked_from_project.web_url,
+        license
       }
     }
 
