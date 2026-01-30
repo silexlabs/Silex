@@ -42,11 +42,13 @@ export const defaultSections: SettingsSection[] = [{
   render: (settings, model) => html`
     <div id="settings-general" class="silex-hideable">
       <div class="silex-form__group col2">
-        <label class="silex-form__element">
-          <h3>${isSite(model) ? 'Site name' : 'Page name'}</h3>
-          <p class="silex-help">${isSite(model) ? 'The project name in the editor, for you to remember what it is about.' : 'Label of the page in the editor, and file name of the published HTML page.'}</p>
-          <input type="text" name="name" .value=${live(model.get('name') || '')}/>
-        </label>
+        ${!isSite(model) ? html`
+          <label class="silex-form__element">
+            <h3>Page name</h3>
+            <p class="silex-help">Label of the page in the editor, and file name of the published HTML page.</p>
+            <input type="text" name="name" .value=${live(model.get('name') || '')}/>
+          </label>
+          ` : nothing }
         <label class="silex-form__element">
           <h3>Website language</h3>
           <p class="silex-help">This is the default language code for this website or page. Example: en, fr, es...</p>
