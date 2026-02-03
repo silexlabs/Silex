@@ -7,16 +7,8 @@
     "frontendDist": "./frontend"
   },
   "app": {
-    "withGlobalTauri": false,
-    "windows": [
-      {
-        "title": "Silex",
-        "width": 1280,
-        "height": 800,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ]
+    "withGlobalTauri": true,
+    "windows": []
   },
   "bundle": {
     "active": true,
