@@ -22,12 +22,23 @@
     }, 300);
   }
 
-  // On the welcome page, clear the project state
+  var appWindow = window.__TAURI__.window;
+
+  // On the welcome page, clear the project state and use compact window
   if (
     window.location.pathname === "/welcome" ||
     window.location.pathname === "/"
   ) {
     invoke("clear_current_project");
+    // Restore compact start-screen size
+    if (appWindow && appWindow.getCurrentWindow) {
+      var win = appWindow.getCurrentWindow();
+      win.unmaximize().then(function() {
+        win.setSize(new appWindow.LogicalSize(800, 560)).then(function() {
+          win.center();
+        });
+      });
+    }
   }
 
   // On the editor page, wire up the bridge
@@ -35,6 +46,11 @@
   var websiteId = params.get("id");
 
   if (!websiteId) return;
+
+  // Maximize window for the editor
+  if (appWindow && appWindow.getCurrentWindow) {
+    appWindow.getCurrentWindow().maximize();
+  }
 
   waitForEditor(function (editor) {
     // Report current project to Tauri

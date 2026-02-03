@@ -93,6 +93,18 @@ impl SilexMcp {
             .get_webview_window("main")
             .ok_or_else(|| "No main window".to_string())?;
 
+        // Only allow eval in the editor (URL has ?id=...), not on the dashboard
+        if let Ok(url) = window.url() {
+            let path = url.path();
+            if path.starts_with("/welcome") || (path == "/" && url.query().is_none()) {
+                return Err(
+                    "eval_js is only available in the editor, not on the dashboard. \
+                     Open or create a project first."
+                        .to_string(),
+                );
+            }
+        }
+
         let id = self.eval_counter.fetch_add(1, Ordering::Relaxed);
         let (tx, rx) = oneshot::channel::<String>();
         self.pending_evals.lock().unwrap().insert(id, tx);

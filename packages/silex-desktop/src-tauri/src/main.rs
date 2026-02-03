@@ -411,7 +411,8 @@ fn main() {
                 WebviewUrl::External(url.parse().unwrap()),
             )
             .title("Silex")
-            .inner_size(1280.0, 800.0)
+            .inner_size(800.0, 560.0)
+            .center()
             .menu(menu)
             .initialization_script(include_str!("../scripts/desktop-bridge.js"))
             .build()?;
