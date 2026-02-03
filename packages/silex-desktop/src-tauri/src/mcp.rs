@@ -201,6 +201,29 @@ impl SilexMcp {
         Ok(CallToolResult::success(vec![Content::text(info.to_string())]))
     }
 
+    #[tool(description = "List all websites managed by Silex, with metadata (name, ID, timestamps, etc.)")]
+    async fn list_websites(&self) -> Result<CallToolResult, McpError> {
+        let base_url = self
+            .app_handle
+            .get_webview_window("main")
+            .and_then(|w| w.url().ok())
+            .map(|u| format!("{}://{}:{}", u.scheme(), u.host_str().unwrap_or("localhost"), u.port().unwrap_or(6805)))
+            .unwrap_or_else(|| "http://localhost:6805".to_string());
+
+        let url = format!("{}/api/website", base_url);
+        match reqwest::get(&url).await {
+            Ok(resp) => match resp.text().await {
+                Ok(body) => Ok(CallToolResult::success(vec![Content::text(body)])),
+                Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                    "Error reading response: {}", e
+                ))])),
+            },
+            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Error fetching {}: {}", url, e
+            ))])),
+        }
+    }
+
     #[tool(description = "Navigate the Silex webview to a URL")]
     async fn navigate(
         &self,

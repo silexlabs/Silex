@@ -22,23 +22,12 @@
     }, 300);
   }
 
-  var appWindow = window.__TAURI__.window;
-
-  // On the welcome page, clear the project state and use compact window
+  // On the welcome page, clear the project state
   if (
     window.location.pathname === "/welcome" ||
     window.location.pathname === "/"
   ) {
     invoke("clear_current_project");
-    // Restore compact start-screen size
-    if (appWindow && appWindow.getCurrentWindow) {
-      var win = appWindow.getCurrentWindow();
-      win.unmaximize().then(function() {
-        win.setSize(new appWindow.LogicalSize(800, 560)).then(function() {
-          win.center();
-        });
-      });
-    }
   }
 
   // On the editor page, wire up the bridge
@@ -46,11 +35,6 @@
   var websiteId = params.get("id");
 
   if (!websiteId) return;
-
-  // Maximize window for the editor
-  if (appWindow && appWindow.getCurrentWindow) {
-    appWindow.getCurrentWindow().maximize();
-  }
 
   waitForEditor(function (editor) {
     // Report current project to Tauri
@@ -76,29 +60,9 @@
       invoke("mark_unsaved");
     });
 
-    // Listen for menu events from Tauri
+    // Listen for save event (triggered by quit dialog)
     listen("menu-save", function () {
       editor.store();
-    });
-
-    listen("menu-undo", function () {
-      editor.UndoManager.undo();
-    });
-
-    listen("menu-redo", function () {
-      editor.UndoManager.redo();
-    });
-
-    listen("menu-close-project", function () {
-      invoke("clear_current_project");
-      window.location.href = "/welcome";
-    });
-
-    listen("menu-save-and-close", function () {
-      editor.store().then(function () {
-        invoke("clear_current_project");
-        window.location.href = "/welcome";
-      });
     });
   });
 })();
