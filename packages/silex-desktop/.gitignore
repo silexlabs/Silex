@@ -1,9 +1,6 @@
-# do not commit node dependencies
 node_modules
-
-# this is where electron builds apps
 dist
 
-# this is a special folder for electron, we build assets there
-static
-
+# Rust build artifacts
+src-tauri/target
+src-tauri/silex

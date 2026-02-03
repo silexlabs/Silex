@@ -1,0 +1,17 @@
+{
+  "name": "@silexlabs/silex-desktop",
+  "version": "0.1.0",
+  "description": "Silex website builder - desktop app powered by Tauri",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
