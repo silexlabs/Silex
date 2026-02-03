@@ -21,6 +21,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use silex_server::Config;
 
+mod mcp;
+
 // ==================
 // App State
 // ==================
@@ -348,7 +350,7 @@ fn resolve_frontend_path() -> PathBuf {
     dev_path
 }
 
-async fn start_server() -> u16 {
+async fn start_server(pending_evals: mcp::PendingEvals) -> u16 {
     let mut config = Config::from_env();
 
     let frontend_path = resolve_frontend_path();
@@ -356,6 +358,14 @@ async fn start_server() -> u16 {
     config.static_path = Some(frontend_path);
 
     let (app, port) = silex_server::build_app(config).await;
+
+    // Add eval-callback route for JS→Rust result passing (same origin, no CORS)
+    let app = app
+        .route(
+            "/eval-callback/:id",
+            axum::routing::post(mcp::eval_callback),
+        )
+        .layer(axum::Extension(pending_evals));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).await.unwrap();
@@ -390,7 +400,8 @@ fn main() {
             mark_unsaved,
         ])
         .setup(|app| {
-            let port = tauri::async_runtime::block_on(start_server());
+            let pending_evals = mcp::PendingEvals::default();
+            let port = tauri::async_runtime::block_on(start_server(pending_evals.clone()));
             let menu = build_menu(app.handle())?;
 
             let url = format!("http://localhost:{}/welcome", port);
@@ -404,6 +415,12 @@ fn main() {
             .menu(menu)
             .initialization_script(include_str!("../scripts/desktop-bridge.js"))
             .build()?;
+
+            // Start the MCP server on port 6807
+            let mcp_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                mcp::start_mcp_server(mcp_handle, pending_evals, 6807).await;
+            });
 
             // Handle window close with unsaved changes
             let app_handle = app.handle().clone();

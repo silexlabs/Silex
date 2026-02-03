@@ -5,6 +5,7 @@
   "permissions": [
     "core:default",
     "core:event:default",
+    "core:event:allow-emit",
     "core:window:default",
     "dialog:default"
   ]
