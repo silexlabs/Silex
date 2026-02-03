@@ -172,7 +172,7 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
     },
 
     assetManager: {
-      upload: `${rootUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSETS_WRITE}/?websiteId=${websiteId}${ storageId ? `&connectorId=${storageId}` : ''}`,
+      upload: `${rootUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSETS_WRITE}?websiteId=${websiteId}${ storageId ? `&connectorId=${storageId}` : ''}`,
     },
 
     storageManager: {
