@@ -369,8 +369,8 @@ impl StorageConnector for FsStorage {
         let mut entries = fs::read_dir(&self.data_path).await?;
 
         while let Some(entry) = entries.next_entry().await? {
-            let file_type = entry.file_type().await?;
-            if !file_type.is_dir() {
+            let metadata = fs::metadata(entry.path()).await?;
+            if !metadata.is_dir() {
                 continue;
             }
 

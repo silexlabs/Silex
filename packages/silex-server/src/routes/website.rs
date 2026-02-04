@@ -91,6 +91,13 @@ pub struct MessageResponse {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateResponse {
+    pub website_id: String,
+    pub message: String,
+}
+
+#[derive(Debug, Serialize)]
 pub struct AssetsResponse {
     pub data: Vec<String>,
 }
@@ -154,14 +161,15 @@ async fn create_website(
     session: Session,
     Query(query): Query<CreateQuery>,
     Json(meta): Json<WebsiteMetaFileContent>,
-) -> ConnectorResult<Json<MessageResponse>> {
+) -> ConnectorResult<Json<CreateResponse>> {
     let session_data = get_session_data(&session).await;
     let connector = get_storage_connector(&state, &session_data, query.connector_id.as_deref()).await?;
 
     let website_id = connector.create_website(&session_data, &meta).await?;
 
-    Ok(Json(MessageResponse {
+    Ok(Json(CreateResponse {
         message: format!("Website created with ID: {}", website_id),
+        website_id,
     }))
 }
 
