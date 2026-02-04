@@ -55,7 +55,6 @@ export const defaultSections: SettingsSection[] = [{
         <div class="silex-repo-section">
           <h4 class="silex-repo-section__title">Storage & Publication</h4>
           <p class="silex-help silex-repo-section__help">
-            Your website is stored as a <strong>GitLab project</strong>, which handles versioning and publishing.
             ${websiteMeta?.repoUrl?.includes('gitlab.com') ? html`
               <a href="https://gitlab.com" target="_blank" rel="noopener">GitLab.com</a> is the official free hosting service provided by GitLab Inc.
             ` : nothing}

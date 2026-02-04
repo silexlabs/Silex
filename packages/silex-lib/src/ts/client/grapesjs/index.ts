@@ -385,6 +385,61 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
 }
 
 // ////////////////////
+// WebKitGTK drag-and-drop workaround
+// ////////////////////
+
+/**
+ * Detect WebKitGTK (WebKit on Linux) which doesn't support
+ * HTML5 native drag-and-drop across iframes.
+ */
+function isWebKitGTK(): boolean {
+  const ua = navigator.userAgent
+  return /Linux/.test(ua) && /AppleWebKit/.test(ua) && !/Chrome/.test(ua)
+}
+
+/**
+ * Patch GrapesJS blocks to use pointer events instead of native drag.
+ * Disables `draggable` on block elements and starts the editor's
+ * `core:component-drag` command on pointerdown.
+ */
+function patchBlocksDragDrop(editor: Editor) {
+  const bm = editor.BlockManager
+  const container = document.querySelector(
+    (bm.getConfig() as any).appendTo as string
+  ) as HTMLElement | null
+  if (!container) return
+
+  function patchBlocks() {
+    const blockEls = container!.querySelectorAll('.gjs-block[draggable]')
+    blockEls.forEach((el: Element) => {
+      const htmlEl = el as HTMLElement
+      if (htmlEl.dataset.pointerPatched) return
+      htmlEl.dataset.pointerPatched = '1'
+      htmlEl.setAttribute('draggable', 'false')
+
+      htmlEl.addEventListener('pointerdown', (e: PointerEvent) => {
+        // Match the block model by index
+        const allEls = container!.querySelectorAll('.gjs-block')
+        const idx = Array.prototype.indexOf.call(allEls, htmlEl)
+        const blocks = bm.getAll()
+        const block = (blocks.models || blocks)[idx]
+        if (!block) return
+        const content = block.get('content')
+        if (!content) return
+        editor.runCommand('core:component-drag', {
+          target: content,
+          event: e,
+        })
+      })
+    })
+  }
+
+  patchBlocks()
+  const observer = new MutationObserver(patchBlocks)
+  observer.observe(container, { childList: true, subtree: true })
+}
+
+// ////////////////////
 // Initialize editor
 // ////////////////////
 // Keep a ref to the editor singleton
@@ -497,6 +552,12 @@ export async function initEditor(config: EditorConfig) {
 
       // Render the block manager, otherwise it is empty
       editor.BlockManager.render(null)
+
+      // WebKitGTK (Linux WebKit) doesn't support HTML5 native drag-and-drop
+      // across iframes. Patch blocks to use pointer events instead.
+      if (isWebKitGTK()) {
+        patchBlocksDragDrop(editor)
+      }
 
       // Use the style filter plugin
       editor.StyleManager.addProperty('extra', { extend: 'filter' })
