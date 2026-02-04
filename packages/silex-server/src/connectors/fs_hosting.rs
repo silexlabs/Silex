@@ -33,55 +33,69 @@ const USER_ICON: &str = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000
 /// Filesystem hosting connector
 ///
 /// Publishes websites to a local directory.
-/// Published files are written directly to the hosting_path.
+/// By default, publishes each site to `{data_path}/{website_id}/public/`.
+/// When `hosting_path` is explicitly configured, all sites publish to that shared directory.
 pub struct FsHosting {
-    /// Path where published websites are written
-    hosting_path: PathBuf,
+    /// Path where website data is stored (used to compute per-site publish dirs)
+    data_path: PathBuf,
+    /// Optional shared hosting path (set when user explicitly configures SILEX_HOSTING_PATH)
+    hosting_path: Option<PathBuf>,
 }
 
 impl FsHosting {
     /// Create a new FsHosting connector
     ///
     /// # Arguments
-    /// * `hosting_path` - Directory where published websites will be written
-    pub fn new(hosting_path: PathBuf) -> Self {
-        FsHosting { hosting_path }
+    /// * `data_path` - Directory where website data is stored
+    /// * `hosting_path` - Optional shared hosting directory; when `None`, each site
+    ///   publishes to `{data_path}/{website_id}/public/`
+    pub fn new(data_path: PathBuf, hosting_path: Option<PathBuf>) -> Self {
+        FsHosting {
+            data_path,
+            hosting_path,
+        }
+    }
+
+    /// Compute the publish directory for a given website
+    fn publish_dir(&self, website_id: &WebsiteId) -> PathBuf {
+        match &self.hosting_path {
+            Some(path) => path.clone(),
+            None => self.data_path.join(website_id).join("public"),
+        }
     }
 
     /// Initialize the hosting directory
     ///
-    /// Creates the hosting directory and standard subdirectories
-    /// (assets/, css/) if they don't exist.
+    /// When a shared hosting path is configured, creates it with standard
+    /// subdirectories. Otherwise, per-site directories are created on publish.
     pub async fn init(&self) -> ConnectorResult<()> {
-        // Check if hosting path exists
-        if fs::metadata(&self.hosting_path).await.is_ok() {
-            return Ok(());
+        if let Some(path) = &self.hosting_path {
+            if fs::metadata(path).await.is_ok() {
+                return Ok(());
+            }
+
+            fs::create_dir_all(path.join("assets")).await?;
+            fs::create_dir_all(path.join("css")).await?;
+
+            tracing::info!("Created hosting directory at {}", path.display());
         }
-
-        // Create the hosting directory with standard subdirectories
-        fs::create_dir_all(self.hosting_path.join("assets")).await?;
-        fs::create_dir_all(self.hosting_path.join("css")).await?;
-
-        tracing::info!(
-            "Created hosting directory at {}",
-            self.hosting_path.display()
-        );
 
         Ok(())
     }
 
-    /// Write files to the hosting path
+    /// Write files to a target directory
     ///
     /// This is the core publication logic.
     async fn write_files(
         &self,
+        target_dir: &PathBuf,
         files: &[ConnectorFile],
         job: &mut PublicationJobData,
     ) -> ConnectorResult<()> {
         for file in files {
             // Normalize the path
             let relative_path = file.path.trim_start_matches('/');
-            let file_path = self.hosting_path.join(relative_path);
+            let file_path = target_dir.join(relative_path);
 
             // Update job status
             job.base.message = format!("Writing {}", relative_path);
@@ -210,22 +224,28 @@ impl HostingConnector for FsHosting {
     async fn publish(
         &self,
         _session: &serde_json::Value,
-        _website_id: &WebsiteId,
+        website_id: &WebsiteId,
         files: Vec<ConnectorFile>,
         job_manager: &JobManager,
     ) -> ConnectorResult<PublicationJobData> {
+        let target_dir = self.publish_dir(website_id);
+
         // Start a new publication job
         let mut job = job_manager.start_job(format!("Publishing to {}", self.display_name()));
 
-        job.log(format!("Publishing {} files", files.len()));
+        job.log(format!(
+            "Publishing {} files to {}",
+            files.len(),
+            target_dir.display()
+        ));
 
-        // Write all files to the hosting directory
-        match self.write_files(&files, &mut job).await {
+        // Write all files to the target directory
+        match self.write_files(&target_dir, &files, &mut job).await {
             Ok(_) => {
                 job.success(format!(
                     "Published {} files to {}",
                     files.len(),
-                    self.hosting_path.display()
+                    target_dir.display()
                 ));
                 job_manager.complete_job(&job.base.job_id);
             }
@@ -243,8 +263,8 @@ impl HostingConnector for FsHosting {
         _session: &serde_json::Value,
         website_id: &WebsiteId,
     ) -> ConnectorResult<String> {
-        // Return a file:// URL to the index.html
-        let file_path = self.hosting_path.join(website_id).join("index.html");
+        let target_dir = self.publish_dir(website_id);
+        let file_path = target_dir.join("index.html");
         let url = format!("file://{}", file_path.display());
         Ok(url)
     }

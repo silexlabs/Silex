@@ -28,8 +28,10 @@ pub struct Config {
     /// Path where website data is stored (FsStorage)
     pub data_path: PathBuf,
 
-    /// Path where published websites go (FsHosting)
-    pub hosting_path: PathBuf,
+    /// Path where published websites go (FsHosting).
+    /// When `None` (default), each site publishes to `{data_path}/{website_id}/public/`.
+    /// When `Some`, all sites publish to the given shared directory.
+    pub hosting_path: Option<PathBuf>,
 
     /// Folder name for assets within each website
     pub assets_folder: String,
@@ -72,8 +74,8 @@ impl Config {
 
         let hosting_path = env::var("SILEX_HOSTING_PATH")
             .or_else(|_| env::var("SILEX_FS_HOSTING_ROOT"))
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from("./silex/hosting"));
+            .ok()
+            .map(PathBuf::from);
 
         let assets_folder =
             env::var("SILEX_ASSETS_FOLDER").unwrap_or_else(|_| "assets".to_string());
@@ -126,7 +128,7 @@ impl Default for Config {
             url: "http://localhost:6805".to_string(),
             port: 6805,
             data_path: PathBuf::from("./silex/storage"),
-            hosting_path: PathBuf::from("./silex/hosting"),
+            hosting_path: None,
             assets_folder: "assets".to_string(),
             default_website_id: "default".to_string(),
             static_path: None,

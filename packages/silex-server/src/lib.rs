@@ -61,6 +61,18 @@ mod embedded_ui {
         serve_from_dir(&DASHBOARD_DIR, &path)
     }
 
+    /// Serve /css/* → try dashboard css/ first, then fall back to frontend css/
+    pub async fn dashboard_css(Path(path): Path<String>) -> impl IntoResponse {
+        serve_from_dir(&DASHBOARD_DIR, &format!("css/{}", path))
+            .or_else(|_| serve_from_dir(&FRONTEND_DIR, &format!("css/{}", path)))
+    }
+
+    /// Serve /assets/* → try dashboard assets/ first, then fall back to frontend assets/
+    pub async fn dashboard_assets(Path(path): Path<String>) -> impl IntoResponse {
+        serve_from_dir(&DASHBOARD_DIR, &format!("assets/{}", path))
+            .or_else(|_| serve_from_dir(&FRONTEND_DIR, &format!("assets/{}", path)))
+    }
+
     pub async fn frontend_file(Path(path): Path<String>) -> impl IntoResponse {
         serve_from_dir(&FRONTEND_DIR, &path)
     }
@@ -112,6 +124,8 @@ pub async fn build_app(config: Config) -> (Router, u16) {
         use axum::routing::get;
         app.route("/welcome", get(embedded_ui::dashboard_index))
             .route("/welcome/*path", get(embedded_ui::dashboard_file))
+            .route("/css/*path", get(embedded_ui::dashboard_css))
+            .route("/assets/*path", get(embedded_ui::dashboard_assets))
             .route("/*path", get(embedded_ui::frontend_file))
             .fallback(get(embedded_ui::frontend_index))
     };
@@ -141,7 +155,7 @@ pub async fn init_connectors(config: &Config) -> ConnectorRegistry {
         tracing::warn!("Failed to initialize FsStorage: {}", e);
     }
 
-    let fs_hosting = FsHosting::new(config.hosting_path.clone());
+    let fs_hosting = FsHosting::new(config.data_path.clone(), config.hosting_path.clone());
     if let Err(e) = fs_hosting.init().await {
         tracing::warn!("Failed to initialize FsHosting: {}", e);
     }
@@ -151,5 +165,3 @@ pub async fn init_connectors(config: &Config) -> ConnectorRegistry {
 
     registry
 }
-
-
