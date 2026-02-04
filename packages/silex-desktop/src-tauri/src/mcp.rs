@@ -453,278 +453,201 @@ impl ServerHandler for SilexMcp {
             capabilities: ServerCapabilities::builder().enable_tools().build(),
             server_info: Implementation::from_build_env(),
             instructions: Some(
-                r#"Silex Desktop MCP server. Use these tools to inspect and control the Silex website builder.
+                r#"Silex Desktop MCP server — controls the Silex no-code website builder (built on GrapesJS).
 
-Silex is a no-code website builder built on GrapesJS. Use `eval_js` to interact with the GrapesJS API.
+Access the editor: `const editor = window.silex.getEditor();`
 
 ## Workflow
 
-1. Use `get_app_state` to check if a project is open (look for `current_website_id`).
-2. Use `list_websites` to see available sites.
-3. Use `navigate` to open a project (e.g. `http://localhost:6805/?id=my-site`), or go to `/welcome` for the dashboard.
-4. Use `eval_js` to interact with the GrapesJS editor (only works when a project is open).
-5. Use `take_screenshot` to visually verify changes (target "ui" or "canvas").
-6. Use `trigger_menu` with "save" to save, or the editor will auto-save on close.
-
-## Accessing the GrapesJS API
-
-```js
-const editor = window.silex.getEditor();
-const wrapper = editor.getWrapper();
-```
+1. `get_app_state` — check if a project is open (`current_website_id`).
+2. `list_websites` — list available sites.
+3. `navigate` — open a project (`http://localhost:6805/?id=my-site`) or dashboard (`/welcome`).
+4. `eval_js` — run GrapesJS API code (only when a project is open).
+5. `take_screenshot` — visually verify changes (target "ui" or "canvas").
+6. `trigger_menu("save")` — save the project.
 
 ## Critical Rules
 
-- Use GrapesJS API only — NEVER modify the DOM directly (direct DOM changes are not saved).
-- CSS-only interactivity — no inline JS. Use `:hover`, `:checked`, `:target`, and CSS combinators.
-- BEM class naming for all styling (e.g. `.header`, `.header__title`, `.header--dark`).
-- **Style via `CssComposer.addRules()` only. NEVER use `component.setStyle()`** (that creates inline styles on element IDs which is wrong).
-- Do NOT use CSS Grid — Silex does not support Grid. Use Flexbox instead.
-- Never resize the browser window — use GrapesJS DeviceManager breakpoints instead.
-- Ensure responsiveness for all DeviceManager breakpoints (Desktop, Tablet, Mobile).
-- The homepage MUST be named `index`.
-- Internal links must be relative and start with `./` (e.g. `href="./about.html"`).
-- Texts should be editable: set `type: 'text'` and `editable: true`.
-- Follow WCAG 2.1 AA for accessibility (sufficient color contrast, semantic HTML, alt text).
+1. **Custom/non-standard HTML attributes:** NEVER use `addAttributes()`, `set('attributes', {...})`, or any normal GrapesJS attribute API for custom attributes (data-*, Vue directives, ARIA overrides, etc.). These appear in the editor but are **stripped from published output**. The ONLY way to add attributes that survive publication is via `privateStates` with a fixed expression (see "Custom HTML Attributes" below).
 
-## Styling Components
+2. **Head injection:** NEVER add components to `wrapper.get('head')`. Use `settings.head` on the site model (all pages) or on a page object (single page) instead. See "Settings" below.
 
-ALWAYS use CSS Composer to style classes:
+3. **Styling:** Use `CssComposer.addRules()` with BEM classes ONLY. NEVER use `component.setStyle()` (creates inline styles on element IDs). NEVER use CSS Grid (Flexbox only).
+
+4. **GrapesJS API only** — never modify the DOM directly (unsaved). CSS-only interactivity (`:hover`, `:checked`, `:target`, combinators) — no inline JS.
+
+5. **Responsive:** Use DeviceManager breakpoints (Desktop, Tablet, Mobile) — never resize the browser window.
+
+6. **Content:** Texts must have `type: 'text'` and `editable: true`. Homepage must be named `index`. Internal links must be relative, starting with `./`.
+
+7. **Accessibility:** WCAG 2.1 AA — sufficient contrast, semantic HTML, alt text.
+
+## Styling
 
 ```js
 const editor = window.silex.getEditor();
-const cssComposer = editor.CssComposer;
-
-// ✅ CORRECT - Style the class
-cssComposer.addRules(`.header {
-  background-color: #ffffff;
-  padding: 1rem;
-}`);
-
-// ❌ WRONG - Never do this
-component.setStyle({ 'background-color': '#ffffff' });
+// Correct: style BEM classes via CssComposer
+editor.CssComposer.addRules(`.hero { padding: 2rem; } .hero__title { font-size: 2rem; }`);
+// WRONG: component.setStyle({ padding: '2rem' });
 ```
 
-## Adding Components
+## Components
 
 ```js
-const editor = window.silex.getEditor();
 const wrapper = editor.getWrapper();
-
-// Append a component
-wrapper.append(`<section class="hero">
-  <h1 class="hero__title">Hello</h1>
-</section>`);
-
-// Or with the component API
+// HTML string
+wrapper.append(`<section class="hero"><h1 class="hero__title">Hello</h1></section>`);
+// Object API
 wrapper.append({
-  tagName: 'section',
-  classes: ['hero'],
-  components: [
-    { tagName: 'h1', type: 'text', editable: true, classes: ['hero__title'], content: 'Hello' }
-  ]
+  tagName: 'section', classes: ['hero'],
+  components: [{ tagName: 'h1', type: 'text', editable: true, classes: ['hero__title'], content: 'Hello' }]
 });
 ```
 
-## Symbols (reusable components)
+## Symbols
 
-Symbols are used for shared elements like header/footer across pages.
+Shared elements (header/footer) reused across pages. Must be added on every page.
 
 ```js
-// Create a symbol from the currently selected component
+// Create symbol from selected component
 editor.runCommand('symbols:add', { label: 'Header', icon: 'fa fa-diamond' });
-
-// List existing symbols
+// List symbols
 const symbols = editor.Components.getSymbols();
-
-// Add a symbol instance to another page
-// 1. Select the target page
+// Add instance to another page
 editor.Pages.select('about');
-// 2. Get the symbol and append an instance
-const wrapper = editor.getWrapper();
-const headerSymbol = symbols.find(s => s.get('label') === 'Header');
-if (headerSymbol) {
-  wrapper.append(headerSymbol, { at: 0 }); // at:0 = first child
-}
+const sym = symbols.find(s => s.get('label') === 'Header');
+if (sym) editor.getWrapper().append(sym, { at: 0 });
 ```
-
-Important: Symbols such as header and footer MUST be added on every page.
 
 ## Pages
 
 ```js
 const pm = editor.Pages;
-
-// List pages
 pm.getAll();
-
-// Add a new page (id determines the output filename, e.g. 'about' → about.html)
-pm.add({ id: 'about', name: 'About' });
-
-// Select a page
+pm.add({ id: 'about', name: 'About' }); // id = output filename (about.html)
 pm.select('about');
 ```
 
 ## Settings (Site & Page)
 
-Site-level and page-level settings are stored in a `settings` object. Use this for head injection, SEO, 11ty config, etc.
+Use `settings.head` for scripts/stylesheets — never `wrapper.get('head')`.
 
 ```js
-const editor = window.silex.getEditor();
-
-// --- Site-level settings (applies to all pages) ---
+// Site-level (all pages)
 const model = editor.getModel();
-const siteSettings = model.get('settings') || {};
-// siteSettings.head — HTML injected into <head> on every page
-console.log(siteSettings.head);
+const site = model.get('settings') || {};
+model.set('settings', { ...site, head: '<link rel="stylesheet" href="global.css">' });
 
-// Set site-level head content
-model.set('settings', { ...siteSettings, head: '<script type="module">...</script>' });
-
-// --- Page-level settings (applies to current page only) ---
+// Page-level (current page only)
 const page = editor.Pages.getSelected();
-const pageSettings = page.get('settings') || {};
-// pageSettings.head — HTML injected into <head> for this page only
-// pageSettings.name — the page name
-console.log(pageSettings.head);
-
-// Set page-level head content
-page.set('settings', { ...pageSettings, head: '<link rel="stylesheet" href="custom.css">' });
+const ps = page.get('settings') || {};
+page.set('settings', { ...ps, head: '<script type="module">...</script>' });
 ```
 
-Available settings keys: `head`, `name`, `eleventyPageData`, `eleventyPermalink`, `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`.
+Keys: `head`, `name`, `eleventyPageData`, `eleventyPermalink`, `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`.
 
-**Important:** To add scripts or stylesheets to the page, use `settings.head` — do NOT add components to `wrapper.get('head')`.
-
-## Device Manager (responsive design)
+## Device Manager
 
 ```js
 const dm = editor.DeviceManager;
-
-// List available devices
 dm.getAll();
-
-// Select a device (for responsive preview)
 dm.select('Mobile portrait');
 ```
 
 ## CMS: Data Sources
 
-Data sources define where dynamic data comes from (GraphQL APIs, 11ty collections, etc.).
-
 ```js
-const editor = window.silex.getEditor();
-
-// List all data sources
-const dataSources = editor.DataSourceManager.getAll();
-dataSources.forEach(ds => {
-  console.log(ds.id, ds.get('label'), ds.isConnected());
-});
-
-// Get a specific data source
-const ds = editor.DataSourceManager.get('my-api');
-
-// Inspect available types and fields
-ds.getTypes().forEach(type => {
-  console.log('Type:', type.id, '- Fields:', type.fields.map(f => f.id));
-});
-
-// Inspect root queryable fields
-ds.getQueryables().forEach(field => {
-  console.log('Queryable:', field.id, '- Kind:', field.kind);
-});
+const dsm = editor.DataSourceManager;
+dsm.getAll().forEach(ds => console.log(ds.id, ds.get('label'), ds.isConnected()));
+const ds = dsm.get('my-api');
+ds.getTypes().forEach(t => console.log(t.id, t.fields.map(f => f.id)));
+ds.getQueryables().forEach(f => console.log(f.id, f.kind));
 ```
 
-## CMS: Expressions (component data binding)
+## CMS: Expressions & States
 
-Expressions are arrays of tokens that define how to retrieve and transform data. They are stored as **states** on components.
+Expressions are token arrays stored as **states** on components. Token types:
+- **Property**: `{ type: 'property', propType: 'field', dataSourceId, fieldId, typeIds, kind, label }`
+- **Filter**: `{ type: 'filter', id, label, options }`
+- **State**: `{ type: 'state', storedStateId, componentId, exposed: true, label }`
 
-### Token types
+State categories:
+- **publicStates** — accessible by child components
+- **privateStates** — internal to the component
 
-1. **Property** — accesses a data source field:
-   `{ type: 'property', propType: 'field', dataSourceId: 'my-api', fieldId: 'posts', typeIds: ['Post'], kind: 'list', label: 'posts' }`
-
-2. **Filter** — transforms data:
-   `{ type: 'filter', id: 'first', label: 'first', options: {} }`
-
-3. **State** — references another component's exported state:
-   `{ type: 'state', storedStateId: 'myState', componentId: 'comp-id', exposed: true, label: 'myState' }`
-
-### Setting states on components
-
-States come in two categories:
-- **Public states** (`exported: true`) — accessible by child components
-- **Private states** (`exported: false`) — internal to the component
-
-Special state IDs for property binding:
-- `innerHTML` — binds the component's HTML content to an expression
-- `condition` — visibility condition (with `conditionOperator`: 'truthy', '==', '!=', etc.)
-- `__data` — loop: renders the component once per item in the expression result
+Special private state IDs:
+- `innerHTML` — binds component HTML content
+- `condition` — visibility (use `conditionOperator`: 'truthy', '==', '!=', etc.)
+- `__data` — loop: renders once per item
 
 ```js
-const component = editor.getSelected();
+const comp = editor.getSelected();
 
-// Read existing states
-const publicStates = component.get('publicStates') || [];
-
-// Add a public state (data available to children)
-const states = component.get('publicStates') || [];
-states.push({
-  id: 'blogPosts',
-  label: 'Blog Posts',
-  hidden: false,
-  expression: [
-    { type: 'property', propType: 'field', dataSourceId: 'wordpress',
-      fieldId: 'posts', typeIds: ['PostConnection'], kind: 'list', label: 'posts' }
-  ]
+// Public state: expose data to children
+const pub = comp.get('publicStates') || [];
+pub.push({
+  id: 'blogPosts', label: 'Blog Posts', hidden: false,
+  expression: [{ type: 'property', propType: 'field', dataSourceId: 'wordpress',
+    fieldId: 'posts', typeIds: ['PostConnection'], kind: 'list', label: 'posts' }]
 });
-component.set('publicStates', [...states]);
+comp.set('publicStates', [...pub]);
 
-// Bind innerHTML to an expression (private state)
-const privateStates = component.get('privateStates') || [];
-privateStates.push({
+// Private state: bind innerHTML
+const priv = comp.get('privateStates') || [];
+priv.push({
   id: 'innerHTML',
   expression: [
-    { type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id',
-      exposed: true, label: 'blogPosts' },
-    { type: 'property', propType: 'field', fieldId: 'title',
-      typeIds: ['String'], kind: 'scalar', label: 'title' }
+    { type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id', exposed: true, label: 'blogPosts' },
+    { type: 'property', propType: 'field', fieldId: 'title', typeIds: ['String'], kind: 'scalar', label: 'title' }
   ]
 });
-component.set('privateStates', [...privateStates]);
+comp.set('privateStates', [...priv]);
 
-// Make a component loop over data
-privateStates.push({
+// Private state: loop over data
+priv.push({
   id: '__data',
-  expression: [
-    { type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id',
-      exposed: true, label: 'blogPosts' }
-  ]
+  expression: [{ type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id', exposed: true, label: 'blogPosts' }]
 });
-component.set('privateStates', [...privateStates]);
+comp.set('privateStates', [...priv]);
 ```
 
-### Evaluating and previewing
+## Custom HTML Attributes
+
+NEVER use `addAttributes()` or `set('attributes', {...})` for custom/non-standard attributes — they are stripped on publish. Use `privateStates` with a fixed expression instead. The state's `label` becomes the attribute name.
 
 ```js
-// Get the GraphQL query generated for the current page
-const page = editor.Pages.getSelected();
-// Use the data source plugin API:
+const comp = editor.getSelected();
+const priv = comp.get('privateStates') || [];
+priv.push({
+  id: comp.getId() + '-' + Math.random().toString(36).slice(2, 15),
+  label: 'v-for',  // attribute name in published HTML
+  expression: [{
+    type: 'property', propType: 'field', fieldId: 'fixed', kind: 'scalar',
+    label: 'Fixed value', typeIds: ['String'],
+    options: { value: 'item in items' }  // attribute value
+  }]
+});
+comp.set('privateStates', [...priv]);
+// Published: <div v-for="item in items">...</div>
+```
+
+## CMS: Preview
+
+```js
 editor.runCommand('data-source:preview:refresh');
 ```
 
 ## QA Checklist
 
-Before finishing, verify (use `take_screenshot` to check visually):
+Verify before finishing (use `take_screenshot`):
 - All DeviceManager breakpoints look correct
-- Texts are editable (type: 'text', editable: true)
-- CSS styling on BEM classes only (never element IDs, no inline styles)
-- Header and footer symbols present on every page
-- Color contrast meets WCAG 2.1 AA
-- Homepage named `index`
-- Internal links use relative hrefs starting with "./"
-- If CMS: data sources connected, expressions set, preview data renders correctly
-- Save the project with `trigger_menu("save")`
+- Texts are editable (`type: 'text'`, `editable: true`)
+- Styling via BEM classes only (no inline styles, no element IDs)
+- Header/footer symbols on every page
+- WCAG 2.1 AA color contrast
+- Homepage named `index`; internal links start with `./`
+- CMS (if used): data sources connected, expressions set, preview renders
+- Save with `trigger_menu("save")`
 "#
                 .into(),
             ),
