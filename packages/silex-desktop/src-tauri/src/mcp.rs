@@ -565,6 +565,37 @@ pm.add({ id: 'about', name: 'About' });
 pm.select('about');
 ```
 
+## Settings (Site & Page)
+
+Site-level and page-level settings are stored in a `settings` object. Use this for head injection, SEO, 11ty config, etc.
+
+```js
+const editor = window.silex.getEditor();
+
+// --- Site-level settings (applies to all pages) ---
+const model = editor.getModel();
+const siteSettings = model.get('settings') || {};
+// siteSettings.head — HTML injected into <head> on every page
+console.log(siteSettings.head);
+
+// Set site-level head content
+model.set('settings', { ...siteSettings, head: '<script type="module">...</script>' });
+
+// --- Page-level settings (applies to current page only) ---
+const page = editor.Pages.getSelected();
+const pageSettings = page.get('settings') || {};
+// pageSettings.head — HTML injected into <head> for this page only
+// pageSettings.name — the page name
+console.log(pageSettings.head);
+
+// Set page-level head content
+page.set('settings', { ...pageSettings, head: '<link rel="stylesheet" href="custom.css">' });
+```
+
+Available settings keys: `head`, `name`, `eleventyPageData`, `eleventyPermalink`, `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`.
+
+**Important:** To add scripts or stylesheets to the page, use `settings.head` — do NOT add components to `wrapper.get('head')`.
+
 ## Device Manager (responsive design)
 
 ```js
