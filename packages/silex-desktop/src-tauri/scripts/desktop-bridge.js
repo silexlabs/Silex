@@ -64,5 +64,6 @@
     listen("menu-save", function () {
       editor.store();
     });
+
   });
 })();

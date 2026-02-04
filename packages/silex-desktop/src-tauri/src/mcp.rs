@@ -293,7 +293,7 @@ impl SilexMcp {
         ))]))
     }
 
-    #[tool(description = "Execute JavaScript in the Silex webview and return the result. The JS is evaluated using eval(), so expressions return their value directly (e.g. \"document.title\" returns the page title). For async code, return a Promise and it will be awaited. For multi-statement code, the last expression's value is returned. Access the GrapesJS editor with: window.silex.getEditor(). Use CssComposer.addRules() for styling (never component.setStyle()). Use BEM class names.")]
+    #[tool(description = "Execute JavaScript in the Silex webview and return the result. Only works when a project is open in the editor (not on the dashboard). Has a 10-second timeout — break large operations into smaller chunks. The JS is evaluated using eval(), so expressions return their value directly (e.g. \"document.title\" returns the page title). For async code, return a Promise and it will be awaited. For multi-statement code, the last expression's value is returned. Access the GrapesJS editor with: window.silex.getEditor(). Use CssComposer.addRules() for styling (never component.setStyle()). Use BEM class names.")]
     async fn eval_js(
         &self,
         Parameters(params): Parameters<EvalParams>,
@@ -457,6 +457,15 @@ impl ServerHandler for SilexMcp {
 
 Silex is a no-code website builder built on GrapesJS. Use `eval_js` to interact with the GrapesJS API.
 
+## Workflow
+
+1. Use `get_app_state` to check if a project is open (look for `current_website_id`).
+2. Use `list_websites` to see available sites.
+3. Use `navigate` to open a project (e.g. `http://localhost:6805/?id=my-site`), or go to `/welcome` for the dashboard.
+4. Use `eval_js` to interact with the GrapesJS editor (only works when a project is open).
+5. Use `take_screenshot` to visually verify changes (target "ui" or "canvas").
+6. Use `trigger_menu` with "save" to save, or the editor will auto-save on close.
+
 ## Accessing the GrapesJS API
 
 ```js
@@ -512,7 +521,7 @@ wrapper.append({
   tagName: 'section',
   classes: ['hero'],
   components: [
-    { tagName: 'h1', type: 'text', classes: ['hero__title'], content: 'Hello' }
+    { tagName: 'h1', type: 'text', editable: true, classes: ['hero__title'], content: 'Hello' }
   ]
 });
 ```
@@ -522,11 +531,21 @@ wrapper.append({
 Symbols are used for shared elements like header/footer across pages.
 
 ```js
-// Create a symbol from a selected component
+// Create a symbol from the currently selected component
 editor.runCommand('symbols:add', { label: 'Header', icon: 'fa fa-diamond' });
 
 // List existing symbols
-editor.Components.getSymbols();
+const symbols = editor.Components.getSymbols();
+
+// Add a symbol instance to another page
+// 1. Select the target page
+editor.Pages.select('about');
+// 2. Get the symbol and append an instance
+const wrapper = editor.getWrapper();
+const headerSymbol = symbols.find(s => s.get('label') === 'Header');
+if (headerSymbol) {
+  wrapper.append(headerSymbol, { at: 0 }); // at:0 = first child
+}
 ```
 
 Important: Symbols such as header and footer MUST be added on every page.
@@ -539,7 +558,7 @@ const pm = editor.Pages;
 // List pages
 pm.getAll();
 
-// Add a new page
+// Add a new page (id determines the output filename, e.g. 'about' → about.html)
 pm.add({ id: 'about', name: 'About' });
 
 // Select a page
@@ -558,9 +577,114 @@ dm.getAll();
 dm.select('Mobile portrait');
 ```
 
+## CMS: Data Sources
+
+Data sources define where dynamic data comes from (GraphQL APIs, 11ty collections, etc.).
+
+```js
+const editor = window.silex.getEditor();
+
+// List all data sources
+const dataSources = editor.DataSourceManager.getAll();
+dataSources.forEach(ds => {
+  console.log(ds.id, ds.get('label'), ds.isConnected());
+});
+
+// Get a specific data source
+const ds = editor.DataSourceManager.get('my-api');
+
+// Inspect available types and fields
+ds.getTypes().forEach(type => {
+  console.log('Type:', type.id, '- Fields:', type.fields.map(f => f.id));
+});
+
+// Inspect root queryable fields
+ds.getQueryables().forEach(field => {
+  console.log('Queryable:', field.id, '- Kind:', field.kind);
+});
+```
+
+## CMS: Expressions (component data binding)
+
+Expressions are arrays of tokens that define how to retrieve and transform data. They are stored as **states** on components.
+
+### Token types
+
+1. **Property** — accesses a data source field:
+   `{ type: 'property', propType: 'field', dataSourceId: 'my-api', fieldId: 'posts', typeIds: ['Post'], kind: 'list', label: 'posts' }`
+
+2. **Filter** — transforms data:
+   `{ type: 'filter', id: 'first', label: 'first', options: {} }`
+
+3. **State** — references another component's exported state:
+   `{ type: 'state', storedStateId: 'myState', componentId: 'comp-id', exposed: true, label: 'myState' }`
+
+### Setting states on components
+
+States come in two categories:
+- **Public states** (`exported: true`) — accessible by child components
+- **Private states** (`exported: false`) — internal to the component
+
+Special state IDs for property binding:
+- `innerHTML` — binds the component's HTML content to an expression
+- `condition` — visibility condition (with `conditionOperator`: 'truthy', '==', '!=', etc.)
+- `__data` — loop: renders the component once per item in the expression result
+
+```js
+const component = editor.getSelected();
+
+// Read existing states
+const publicStates = component.get('publicStates') || [];
+
+// Add a public state (data available to children)
+const states = component.get('publicStates') || [];
+states.push({
+  id: 'blogPosts',
+  label: 'Blog Posts',
+  hidden: false,
+  expression: [
+    { type: 'property', propType: 'field', dataSourceId: 'wordpress',
+      fieldId: 'posts', typeIds: ['PostConnection'], kind: 'list', label: 'posts' }
+  ]
+});
+component.set('publicStates', [...states]);
+
+// Bind innerHTML to an expression (private state)
+const privateStates = component.get('privateStates') || [];
+privateStates.push({
+  id: 'innerHTML',
+  expression: [
+    { type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id',
+      exposed: true, label: 'blogPosts' },
+    { type: 'property', propType: 'field', fieldId: 'title',
+      typeIds: ['String'], kind: 'scalar', label: 'title' }
+  ]
+});
+component.set('privateStates', [...privateStates]);
+
+// Make a component loop over data
+privateStates.push({
+  id: '__data',
+  expression: [
+    { type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id',
+      exposed: true, label: 'blogPosts' }
+  ]
+});
+component.set('privateStates', [...privateStates]);
+```
+
+### Evaluating and previewing
+
+```js
+// Get the GraphQL query generated for the current page
+const page = editor.Pages.getSelected();
+// Use the data source plugin API:
+editor.runCommand('data-source:preview:refresh');
+```
+
 ## QA Checklist
 
-Before finishing, verify:
+Before finishing, verify (use `take_screenshot` to check visually):
 - All DeviceManager breakpoints look correct
 - Texts are editable (type: 'text', editable: true)
 - CSS styling on BEM classes only (never element IDs, no inline styles)
@@ -568,6 +692,8 @@ Before finishing, verify:
 - Color contrast meets WCAG 2.1 AA
 - Homepage named `index`
 - Internal links use relative hrefs starting with "./"
+- If CMS: data sources connected, expressions set, preview data renders correctly
+- Save the project with `trigger_menu("save")`
 "#
                 .into(),
             ),

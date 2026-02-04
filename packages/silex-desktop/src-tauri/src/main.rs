@@ -11,7 +11,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::net::SocketAddr;
-use std::path::PathBuf;
 use std::sync::Mutex;
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
@@ -117,30 +116,8 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
 // Server
 // ==================
 
-fn resolve_frontend_path() -> PathBuf {
-    let dev_path =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../silex-lib/dist/client");
-    if dev_path.exists() {
-        return dev_path.canonicalize().unwrap_or(dev_path);
-    }
-
-    if let Ok(path) = std::env::var("SILEX_STATIC_PATH") {
-        return PathBuf::from(path);
-    }
-
-    tracing::warn!(
-        "Could not find silex-lib frontend at {}",
-        dev_path.display()
-    );
-    dev_path
-}
-
 async fn start_server(pending_evals: mcp::PendingEvals) -> u16 {
-    let mut config = Config::from_env();
-
-    let frontend_path = resolve_frontend_path();
-    tracing::info!("Frontend path: {}", frontend_path.display());
-    config.static_path = Some(frontend_path);
+    let config = Config::from_env();
 
     let (app, port) = silex_server::build_app(config).await;
 
