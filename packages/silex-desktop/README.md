@@ -1,58 +1,55 @@
-# Silex desktop (v2) 
+# Silex Desktop
 
-This is the official [Silex](https://www.silex.me) desktop version, an installable application for Windows, MacOS and linux.
+Desktop application for [Silex](https://www.silex.me), the free/libre no-code website builder. Built with [Tauri](https://tauri.app/) v2 and the `silex-server` Rust crate.
 
-🚨 **Notice:** This repository currently contains the v2 version of Silex Desktop. It has not yet been updated to the latest v3 version of Silex. 🚨
+## Prerequisites
 
-We have a feature request to upgrade Silex Desktop to v3 with improved features! If you'd like to see this happen, please support the request by voting [here on our roadmap](https://roadmap.silex.me/posts/3/silex-desktop).
+- [Rust](https://rustup.rs/) (stable)
+- [Node.js](https://nodejs.org/) (for the Tauri CLI)
+- System dependencies for Tauri: see [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/)
 
-Your support helps prioritize this upgrade, so every vote counts. Thank you!
+## Development
 
-![Silex desktop app](https://user-images.githubusercontent.com/715377/36344714-bf264de2-141e-11e8-8c87-f698e96d91c9.png)
+```bash
+cd packages/silex-desktop
+npm install
+npm run dev
+```
 
-
-We are looking for someone to create the releases every 2 months, and for testers to test each new version on Windows and MacOS and linux after each release, [please apply here](https://github.com/silexlabs/Silex/issues/927)
-
-
-## Support and documentation
-
-Please use the mother project's [Silex issues](https://github.com/silexlabs/Silex/issues) and [Silex documentation](https://github.com/silexlabs/Silex/wiki)
-
-## Instructions
-
-Go ahead and [download the version for your system here](https://github.com/silexlabs/silex-desktop/releases/latest)
-
-### Windows
-
-[Download the .exe](https://github.com/lexoyo/silex-desktop/releases) and double click it to start Silex.
-
-### Mac
-
-1. [Download the .dmg](https://github.com/lexoyo/silex-desktop/releases)
-1. Double click the .dmg file
-1. Drag and drop Silex icon to the Application folder
-
-The first time you want to open Silex:
-
-1. Go to your Application folder
-1. Right-click silex app and select "open"
-1. Accept "the risk" in the security dialog
-1. Silex will show up
-
-The next time you want to open Silex, just click on Silex in your apps.
-
-### Linux
-
-[Downolad the .AppImage](https://github.com/lexoyo/silex-desktop/releases), make it executable (`chmod +x` the file) and run it.
-
-Note: in order to have the "thumbnails" in cloud explorer, you may need libvips-dev installed (`apt install libvips-dev` or `dnf install vips-devel`) and/or glib2.0-dev installed (`apt install glib2.0-dev` or `dnf install glib-devel`)
-
-
-## Release a new version
-
-For developers, here is how to create a new release for the latest version of Silex
+The server reads configuration from environment variables. Create a `.env` file in `src-tauri/` for local development:
 
 ```
-$ npm version patch
-$ git push origin master --follow-tags
+SILEX_DASHBOARD_PATH=../../silex_silex-dashboard-2026/public
+SILEX_STATIC_ROUTES=/:../../silex-lib/dist/client
 ```
+
+## Build
+
+```bash
+npm run build
+```
+
+This produces platform-specific installers in `src-tauri/target/release/bundle/`.
+
+## Architecture
+
+The app embeds `silex-server` as a library. On startup it:
+
+1. Starts the HTTP server on `localhost:6805` (API + static files)
+2. Opens a WebView pointing to `/` (dashboard)
+3. Starts an MCP server on port `6807` for AI-assisted editing
+
+The dashboard shows the user's websites. Clicking a site navigates to `/?id=<website_id>` which loads the GrapesJS editor.
+
+### Key files
+
+| Path | Purpose |
+|------|---------|
+| `src-tauri/src/main.rs` | Tauri app entry, server startup, window management |
+| `src-tauri/src/mcp.rs` | MCP server, eval_js bridge, prompt |
+| `src-tauri/scripts/desktop-bridge.js` | JS injected into the WebView (Tauri <-> editor bridge) |
+
+## Support
+
+- [Silex issues](https://github.com/silexlabs/Silex/issues)
+- [Silex documentation](https://github.com/silexlabs/Silex/wiki)

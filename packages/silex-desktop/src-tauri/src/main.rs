@@ -83,6 +83,13 @@ fn mark_unsaved(app: tauri::AppHandle, state: tauri::State<'_, AppState>) {
     }
 }
 
+#[tauri::command]
+fn open_folder(path: String) {
+    // Strip file:// prefix if present
+    let path = path.strip_prefix("file://").unwrap_or(&path);
+    let _ = open::that(path);
+}
+
 fn show_quit_dialog(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -160,12 +167,13 @@ fn main() {
             set_current_project,
             clear_current_project,
             mark_unsaved,
+            open_folder,
         ])
         .setup(|app| {
             let pending_evals = mcp::PendingEvals::default();
             let port = tauri::async_runtime::block_on(start_server(pending_evals.clone()));
 
-            let url = format!("http://localhost:{}/welcome", port);
+            let url = format!("http://localhost:{}/", port);
             let window = WebviewWindowBuilder::new(
                 app,
                 "main",

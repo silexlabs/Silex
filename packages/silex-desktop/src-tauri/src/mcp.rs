@@ -96,7 +96,7 @@ impl SilexMcp {
         // Only allow eval in the editor (URL has ?id=...), not on the dashboard
         if let Ok(url) = window.url() {
             let path = url.path();
-            if path.starts_with("/welcome") || (path == "/" && url.query().is_none()) {
+            if path == "/" && url.query().is_none() {
                 return Err(
                     "eval_js is only available in the editor, not on the dashboard. \
                      Open or create a project first."
@@ -259,13 +259,13 @@ impl SilexMcp {
         let result = match params.menu_id.as_str() {
             "new_project" => {
                 if let Some(w) = self.app_handle.get_webview_window("main") {
-                    w.eval("window.location.href = '/welcome?action=new'").ok();
+                    w.eval("window.location.href = '/?action=new'").ok();
                 }
                 true
             }
             "open_project" => {
                 if let Some(w) = self.app_handle.get_webview_window("main") {
-                    w.eval("window.location.href = '/welcome'").ok();
+                    w.eval("window.location.href = '/'").ok();
                 }
                 true
             }
@@ -461,10 +461,10 @@ Access the editor: `const editor = window.silex.getEditor();`
 
 1. `get_app_state` — check if a project is open (`current_website_id`).
 2. `list_websites` — list available sites.
-3. `navigate` — open a project (`http://localhost:6805/?id=my-site`) or dashboard (`/welcome`).
-4. `eval_js` — run GrapesJS API code (only when a project is open).
+3. `navigate` — open a project (`http://localhost:6805/?id=my-site`) or dashboard (`/`).
+4. `eval_js` — run GrapesJS API code (only when a project is open). **GrapesJS API operations automatically trigger saves** — there is no need to manually call `trigger_menu("save")` after making changes via the API.
 5. `take_screenshot` — visually verify changes (target "ui" or "canvas").
-6. `trigger_menu("save")` — save the project.
+6. `trigger_menu("save")` — manually save the project (only needed if you want to force an immediate save).
 
 ## Critical Rules
 
@@ -647,7 +647,7 @@ Verify before finishing (use `take_screenshot`):
 - WCAG 2.1 AA color contrast
 - Homepage named `index`; internal links start with `./`
 - CMS (if used): data sources connected, expressions set, preview renders
-- Save with `trigger_menu("save")`
+- Changes are automatically saved (manual `trigger_menu("save")` only needed to force immediate save)
 "#
                 .into(),
             ),

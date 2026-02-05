@@ -22,20 +22,25 @@
     }, 300);
   }
 
-  // On the welcome page, clear the project state
-  if (
-    window.location.pathname === "/welcome" ||
-    window.location.pathname === "/"
-  ) {
-    invoke("clear_current_project");
-  }
+  // Intercept file:// links and open in OS file manager
+  document.addEventListener("click", function (e) {
+    var link = e.target.closest("a[href^='file://']");
+    if (link) {
+      e.preventDefault();
+      invoke("open_folder", { path: link.href });
+    }
+  });
 
-  // On the editor page, wire up the bridge
   var params = new URLSearchParams(window.location.search);
   var websiteId = params.get("id");
 
-  if (!websiteId) return;
+  // On the dashboard (no ?id=), clear the project state
+  if (!websiteId) {
+    invoke("clear_current_project");
+    return;
+  }
 
+  // On the editor page, wire up the bridge
   waitForEditor(function (editor) {
     // Report current project to Tauri
     fetch("/api/website/meta?websiteId=" + encodeURIComponent(websiteId))

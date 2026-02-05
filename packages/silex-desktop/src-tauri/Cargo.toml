@@ -27,5 +27,8 @@ reqwest = { version = "0.12", features = ["json"] }
 rmcp = { version = "0.12", features = ["server", "transport-streamable-http-server"] }
 schemars = "1"
 
-# Silex server as a library (embed-ui bakes dashboard + frontend into the binary)
-silex-server = { path = "../../silex-server", features = ["embed-ui"] }
+# Open files/folders in the OS default application
+open = "5"
+
+# Silex server as a library
+silex-server = { path = "../../silex-server" }
