@@ -39,6 +39,9 @@ pub struct Config {
     /// Default website ID created on first run
     pub default_website_id: String,
 
+    /// Path to the dashboard UI (its index.html is served at `/` when no `?id=`)
+    pub dashboard_path: Option<PathBuf>,
+
     /// Simple static path (serves at "/")
     pub static_path: Option<PathBuf>,
 
@@ -83,6 +86,9 @@ impl Config {
         let default_website_id =
             env::var("SILEX_DEFAULT_WEBSITE_ID").unwrap_or_else(|_| "default".to_string());
 
+        // Dashboard path (its index.html served at `/` when no `?id=`)
+        let dashboard_path = env::var("SILEX_DASHBOARD_PATH").ok().map(PathBuf::from);
+
         // Simple static path (single directory at "/")
         let static_path = env::var("SILEX_STATIC_PATH").ok().map(PathBuf::from);
 
@@ -111,6 +117,7 @@ impl Config {
             hosting_path,
             assets_folder,
             default_website_id,
+            dashboard_path,
             static_path,
             static_routes,
         }
@@ -131,6 +138,7 @@ impl Default for Config {
             hosting_path: None,
             assets_folder: "assets".to_string(),
             default_website_id: "default".to_string(),
+            dashboard_path: None,
             static_path: None,
             static_routes: Vec::new(),
         }

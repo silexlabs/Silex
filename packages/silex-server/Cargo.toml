@@ -42,13 +42,6 @@ uuid = { version = "1", features = ["v4", "serde"] }
 whoami = "1"
 mime_guess = "2"
 
-# Embed static files at compile time
-include_dir = "0.7"
-
-[features]
-default = []
-# Embed the dashboard and frontend into the binary (for desktop / single-binary distribution)
-embed-ui = []
 
 [dev-dependencies]
 tempfile = "3"

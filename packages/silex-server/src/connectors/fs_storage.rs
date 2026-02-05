@@ -614,12 +614,22 @@ impl StorageConnector for FsStorage {
             .ok()
             .map(|t| DateTime::<Utc>::from(t));
 
-        Ok(WebsiteMeta::from_file_content(
+        let mut meta = WebsiteMeta::from_file_content(
             website_id.clone(),
             file_content,
             created_at,
             updated_at,
-        ))
+        );
+
+        // Populate paths for desktop/filesystem usage
+        meta.repo_url = Some(format!("file://{}", website_path.display()));
+
+        let public_path = website_path.join("public");
+        if fs::metadata(&public_path).await.is_ok() {
+            meta.pages_url = Some(format!("file://{}", public_path.display()));
+        }
+
+        Ok(meta)
     }
 
     async fn set_website_meta(

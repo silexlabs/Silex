@@ -26,62 +26,6 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tower_sessions::{MemoryStore, SessionManagerLayer};
 
-#[cfg(feature = "embed-ui")]
-mod embedded_ui {
-    use axum::extract::Path;
-    use axum::http::{header, StatusCode};
-    use axum::response::IntoResponse;
-    use include_dir::{include_dir, Dir};
-
-    static DASHBOARD_DIR: Dir<'_> =
-        include_dir!("$CARGO_MANIFEST_DIR/../silex_silex-dashboard-2026/public");
-
-    static FRONTEND_DIR: Dir<'_> =
-        include_dir!("$CARGO_MANIFEST_DIR/../silex-lib/dist/client");
-
-    fn serve_from_dir(dir: &'static Dir<'static>, path: &str) -> Result<impl IntoResponse, StatusCode> {
-        let file = dir.get_file(path).ok_or(StatusCode::NOT_FOUND)?;
-        let mime = mime_guess::from_path(path).first_or_octet_stream();
-        // Add charset=utf-8 for text types so browsers don't misinterpret UTF-8 as Latin-1
-        let content_type = if mime.type_() == mime_guess::mime::TEXT
-            || mime.subtype() == mime_guess::mime::JAVASCRIPT
-        {
-            format!("{}; charset=utf-8", mime)
-        } else {
-            mime.to_string()
-        };
-        Ok(([(header::CONTENT_TYPE, content_type)], file.contents()))
-    }
-
-    pub async fn dashboard_index() -> impl IntoResponse {
-        serve_from_dir(&DASHBOARD_DIR, "index.html")
-    }
-
-    pub async fn dashboard_file(Path(path): Path<String>) -> impl IntoResponse {
-        serve_from_dir(&DASHBOARD_DIR, &path)
-    }
-
-    /// Serve /css/* → try dashboard css/ first, then fall back to frontend css/
-    pub async fn dashboard_css(Path(path): Path<String>) -> impl IntoResponse {
-        serve_from_dir(&DASHBOARD_DIR, &format!("css/{}", path))
-            .or_else(|_| serve_from_dir(&FRONTEND_DIR, &format!("css/{}", path)))
-    }
-
-    /// Serve /assets/* → try dashboard assets/ first, then fall back to frontend assets/
-    pub async fn dashboard_assets(Path(path): Path<String>) -> impl IntoResponse {
-        serve_from_dir(&DASHBOARD_DIR, &format!("assets/{}", path))
-            .or_else(|_| serve_from_dir(&FRONTEND_DIR, &format!("assets/{}", path)))
-    }
-
-    pub async fn frontend_file(Path(path): Path<String>) -> impl IntoResponse {
-        serve_from_dir(&FRONTEND_DIR, &path)
-    }
-
-    pub async fn frontend_index() -> impl IntoResponse {
-        serve_from_dir(&FRONTEND_DIR, "index.html")
-    }
-}
-
 // Re-export commonly used types for convenience
 pub use config::Config;
 pub use connectors::{ConnectorRegistry, FsHosting, FsStorage, HostingConnector, StorageConnector};
@@ -101,8 +45,8 @@ pub async fn build_app(config: Config) -> (Router, u16) {
 
     let port = config.port;
 
-    #[cfg(not(feature = "embed-ui"))]
     let static_config = StaticConfig {
+        dashboard_path: config.dashboard_path.clone(),
         static_path: config.static_path.clone(),
         static_routes: config.static_routes.clone(),
     };
@@ -117,20 +61,6 @@ pub async fn build_app(config: Config) -> (Router, u16) {
         .nest("/api", routes::api_routes())
         .with_state(state);
 
-    // When embed-ui is enabled, serve dashboard and frontend from the binary.
-    // Otherwise, fall back to disk-based static file serving.
-    #[cfg(feature = "embed-ui")]
-    let app = {
-        use axum::routing::get;
-        app.route("/welcome", get(embedded_ui::dashboard_index))
-            .route("/welcome/*path", get(embedded_ui::dashboard_file))
-            .route("/css/*path", get(embedded_ui::dashboard_css))
-            .route("/assets/*path", get(embedded_ui::dashboard_assets))
-            .route("/*path", get(embedded_ui::frontend_file))
-            .fallback(get(embedded_ui::frontend_index))
-    };
-
-    #[cfg(not(feature = "embed-ui"))]
     let app = configure_static_files(app, static_config);
 
     let app = app

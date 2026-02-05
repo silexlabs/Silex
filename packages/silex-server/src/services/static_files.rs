@@ -9,16 +9,24 @@
 
 //! Static file serving for the Silex frontend
 //!
-//! Configures serving of static files from multiple directories.
-//! Supports both simple (single directory) and advanced (multiple routes) modes.
+//! Serves the dashboard and editor from one or more directories on disk.
+//! The dashboard is shown at `/` by default; the editor is shown when `?id=` is present.
 
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 
+use axum::extract::{Query, Request};
+use axum::http::{header, StatusCode};
+use axum::response::IntoResponse;
+use axum::routing::get;
 use axum::Router;
-use tower_http::services::{ServeDir, ServeFile};
+use tower_http::services::ServeDir;
 
 /// Static file configuration
 pub struct StaticConfig {
+    /// Dashboard directory (its index.html is served at `/` when no `?id=`)
+    pub dashboard_path: Option<PathBuf>,
     /// Simple mode: single directory at "/"
     pub static_path: Option<PathBuf>,
     /// Advanced mode: multiple route:path pairs
@@ -27,116 +35,145 @@ pub struct StaticConfig {
 
 /// Configure static file serving on the router
 ///
-/// Priority: static_routes > static_path
+/// When `dashboard_path` is set:
+///   - `GET /` → dashboard `index.html` (no `?id=`)
+///   - `GET /?id=...` → editor `index.html`
+///   - All other paths → files from dashboard + editor directories
 ///
-/// For static_routes, non-root routes (e.g., "/assets", "/css") are served directly.
-/// Multiple "/" routes are combined with fallback behavior, searching each directory
-/// in order until a file is found.
+/// Without `dashboard_path`, falls back to the original ServeDir behavior.
 pub fn configure_static_files<S: Clone + Send + Sync + 'static>(
     mut app: Router<S>,
     config: StaticConfig,
 ) -> Router<S> {
-    if !config.static_routes.is_empty() {
-        app = configure_routes(app, config.static_routes);
-    } else if let Some(path) = config.static_path {
-        app = configure_single_path(app, path);
+    // Collect all root directories (order matters: first match wins)
+    let mut root_dirs: Vec<PathBuf> = Vec::new();
+    let mut dashboard_index: Option<PathBuf> = None;
+    let mut editor_index: Option<PathBuf> = None;
+
+    // Dashboard directory first (its CSS/assets take priority for hashed filenames)
+    if let Some(ref dashboard) = config.dashboard_path {
+        if dashboard.exists() {
+            tracing::info!("Dashboard: {}", dashboard.display());
+            let idx = dashboard.join("index.html");
+            if idx.exists() {
+                dashboard_index = Some(idx);
+            }
+            root_dirs.push(dashboard.clone());
+        } else {
+            tracing::warn!("Dashboard path does not exist: {}", dashboard.display());
+        }
     }
+
+    // Non-root static routes (e.g., "/some-prefix" → some directory)
+    for (route, path) in &config.static_routes {
+        if route != "/" && path.exists() {
+            tracing::info!("Static route: {} -> {}", route, path.display());
+            app = app.nest_service(route, ServeDir::new(path));
+        } else if route != "/" {
+            tracing::warn!("Static route: {} -> {} (path does not exist)", route, path.display());
+        }
+    }
+
+    // Root paths from static_routes
+    for (route, path) in &config.static_routes {
+        if route == "/" && path.exists() {
+            if editor_index.is_none() {
+                let idx = path.join("index.html");
+                if idx.exists() {
+                    editor_index = Some(idx);
+                }
+            }
+            root_dirs.push(path.clone());
+        }
+    }
+
+    // Root path from static_path
+    if let Some(ref path) = config.static_path {
+        if path.exists() {
+            if editor_index.is_none() {
+                let idx = path.join("index.html");
+                if idx.exists() {
+                    editor_index = Some(idx);
+                }
+            }
+            root_dirs.push(path.clone());
+        }
+    }
+
+    for dir in &root_dirs {
+        tracing::info!("  / -> {}", dir.display());
+    }
+
+    // When dashboard is configured, serve `/` based on `?id=` query param
+    if dashboard_index.is_some() && editor_index.is_some() {
+        let dash_bytes: Vec<u8> =
+            std::fs::read(dashboard_index.as_ref().unwrap()).unwrap_or_default();
+        let edit_bytes: Vec<u8> =
+            std::fs::read(editor_index.as_ref().unwrap()).unwrap_or_default();
+        let dash = Arc::new(dash_bytes);
+        let edit = Arc::new(edit_bytes);
+
+        tracing::info!(
+            "  / -> dashboard (default) or editor (?id=)",
+        );
+
+        app = app.route(
+            "/",
+            get(move |Query(params): Query<HashMap<String, String>>| {
+                let dash = dash.clone();
+                let edit = edit.clone();
+                async move {
+                    let body = if params.contains_key("id") {
+                        edit.as_ref().clone()
+                    } else {
+                        dash.as_ref().clone()
+                    };
+                    (
+                        [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                        body,
+                    )
+                }
+            }),
+        );
+    }
+
+    // Fallback: serve static files from all root directories
+    if !root_dirs.is_empty() {
+        let dirs = Arc::new(root_dirs);
+        app = app.fallback(move |req: Request| {
+            let dirs = dirs.clone();
+            async move { serve_from_dirs(&dirs, req.uri().path()).await }
+        });
+    }
+
     app
 }
 
-/// Configure multiple static routes
-fn configure_routes<S: Clone + Send + Sync + 'static>(
-    mut app: Router<S>,
-    routes: Vec<(String, PathBuf)>,
-) -> Router<S> {
-    tracing::info!("Configuring {} static route(s)", routes.len());
+/// Try to serve a file from multiple directories in order. First match wins.
+async fn serve_from_dirs(dirs: &[PathBuf], uri_path: &str) -> impl IntoResponse {
+    let path = uri_path.trim_start_matches('/');
 
-    // Add non-root routes first (e.g., /assets/, /css/)
-    for (route, path) in &routes {
-        if route != "/" && path.exists() {
-            tracing::info!("  {} -> {}", route, path.display());
-            app = app.nest_service(route, ServeDir::new(path));
-        } else if route != "/" {
-            tracing::warn!("  {} -> {} (path does not exist)", route, path.display());
+    // Basic path traversal protection
+    if path.contains("..") {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+
+    for dir in dirs {
+        let file = dir.join(path);
+        if file.is_file() {
+            if let Ok(bytes) = tokio::fs::read(&file).await {
+                let mime = mime_guess::from_path(&file).first_or_octet_stream();
+                let content_type = if mime.type_() == mime_guess::mime::TEXT
+                    || mime.subtype() == mime_guess::mime::JAVASCRIPT
+                {
+                    format!("{}; charset=utf-8", mime)
+                } else {
+                    mime.to_string()
+                };
+                return ([(header::CONTENT_TYPE, content_type)], bytes).into_response();
+            }
         }
     }
 
-    // Collect root paths
-    let root_paths: Vec<PathBuf> = routes
-        .iter()
-        .filter(|(route, path)| route == "/" && path.exists())
-        .map(|(_, path)| path.clone())
-        .collect();
-
-    if root_paths.is_empty() {
-        return app;
-    }
-
-    // Find index.html for SPA fallback
-    let index_path = root_paths
-        .iter()
-        .map(|p| p.join("index.html"))
-        .find(|p| p.exists())
-        .unwrap_or_else(|| root_paths[0].join("index.html"));
-
-    for path in &root_paths {
-        tracing::info!("  / -> {}", path.display());
-    }
-    tracing::info!("  SPA fallback: {}", index_path.display());
-
-    // For multiple root paths, chain ServeDir with fallbacks
-    // Start from the last and work backwards, each becoming a fallback for the previous
-    match root_paths.len() {
-        0 => app,
-        1 => {
-            let serve_dir = ServeDir::new(&root_paths[0])
-                .not_found_service(ServeFile::new(&index_path));
-            app.fallback_service(serve_dir)
-        }
-        2 => {
-            // Two directories: second is fallback for first, index.html is final fallback
-            let inner = ServeDir::new(&root_paths[1])
-                .not_found_service(ServeFile::new(&index_path));
-            let outer = ServeDir::new(&root_paths[0]).not_found_service(inner);
-            app.fallback_service(outer)
-        }
-        3 => {
-            // Three directories
-            let inner = ServeDir::new(&root_paths[2])
-                .not_found_service(ServeFile::new(&index_path));
-            let middle = ServeDir::new(&root_paths[1]).not_found_service(inner);
-            let outer = ServeDir::new(&root_paths[0]).not_found_service(middle);
-            app.fallback_service(outer)
-        }
-        _ => {
-            // For more than 3, just use the last one (with warning)
-            tracing::warn!(
-                "More than 3 root paths configured; only using last 3: {:?}",
-                root_paths.iter().rev().take(3).collect::<Vec<_>>()
-            );
-            let inner = ServeDir::new(&root_paths[root_paths.len() - 1])
-                .not_found_service(ServeFile::new(&index_path));
-            let middle =
-                ServeDir::new(&root_paths[root_paths.len() - 2]).not_found_service(inner);
-            let outer =
-                ServeDir::new(&root_paths[root_paths.len() - 3]).not_found_service(middle);
-            app.fallback_service(outer)
-        }
-    }
-}
-
-/// Configure a single static path at "/"
-fn configure_single_path<S: Clone + Send + Sync + 'static>(
-    app: Router<S>,
-    path: PathBuf,
-) -> Router<S> {
-    if path.exists() {
-        tracing::info!("Serving static files from {}", path.display());
-        let index = path.join("index.html");
-        let serve_dir = ServeDir::new(&path).not_found_service(ServeFile::new(index));
-        app.fallback_service(serve_dir)
-    } else {
-        tracing::warn!("Static path {} does not exist", path.display());
-        app
-    }
+    StatusCode::NOT_FOUND.into_response()
 }

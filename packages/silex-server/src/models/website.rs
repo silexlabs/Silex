@@ -37,6 +37,7 @@ pub struct WebsiteMetaFileContent {
 /// Website metadata returned to the frontend
 ///
 /// Includes computed fields like creation/modification dates.
+/// Field names are compatible with the GitLab connector in silex-lib.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebsiteMeta {
@@ -61,6 +62,14 @@ pub struct WebsiteMeta {
     /// When the website was last modified
     #[serde(skip_serializing_if = "Option::is_none")]
     pub updated_at: Option<DateTime<Utc>>,
+
+    /// Path/URL to source files (maps to GitLab's repoUrl)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repo_url: Option<String>,
+
+    /// Path/URL to published site (maps to GitLab's pagesUrl)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pages_url: Option<String>,
 }
 
 impl WebsiteMeta {
@@ -78,6 +87,8 @@ impl WebsiteMeta {
             connector_user_settings: content.connector_user_settings,
             created_at,
             updated_at,
+            repo_url: None,
+            pages_url: None,
         }
     }
 }
