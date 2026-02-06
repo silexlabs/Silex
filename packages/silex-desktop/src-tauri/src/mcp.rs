@@ -75,9 +75,38 @@ pub struct ScreenshotParams {
     pub output_file: Option<String>,
 }
 
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CreateWebsiteParams {
+    /// Human-readable name for the website.
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WebsiteIdParams {
+    /// The ID of the website.
+    pub website_id: String,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct RenameWebsiteParams {
+    /// The ID of the website to rename.
+    pub website_id: String,
+    /// The new name for the website.
+    pub name: String,
+}
+
 // -- Internal helpers (not MCP tools) -----------------------------------------
 
 impl SilexMcp {
+    /// Get the base URL for API calls
+    fn get_base_url(&self) -> String {
+        self.app_handle
+            .get_webview_window("main")
+            .and_then(|w| w.url().ok())
+            .map(|u| format!("{}://{}:{}", u.scheme(), u.host_str().unwrap_or("localhost"), u.port().unwrap_or(6805)))
+            .unwrap_or_else(|| "http://localhost:6805".to_string())
+    }
+
     /// Execute JS in the webview and return the result.
     ///
     /// Injects a wrapper that evaluates the code with `eval()`, then POSTs the
@@ -203,13 +232,7 @@ impl SilexMcp {
 
     #[tool(description = "List all websites managed by Silex, with metadata (name, ID, timestamps, etc.)")]
     async fn list_websites(&self) -> Result<CallToolResult, McpError> {
-        let base_url = self
-            .app_handle
-            .get_webview_window("main")
-            .and_then(|w| w.url().ok())
-            .map(|u| format!("{}://{}:{}", u.scheme(), u.host_str().unwrap_or("localhost"), u.port().unwrap_or(6805)))
-            .unwrap_or_else(|| "http://localhost:6805".to_string());
-
+        let base_url = self.get_base_url();
         let url = format!("{}/api/website", base_url);
         match reqwest::get(&url).await {
             Ok(resp) => match resp.text().await {
@@ -220,6 +243,182 @@ impl SilexMcp {
             },
             Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
                 "Error fetching {}: {}", url, e
+            ))])),
+        }
+    }
+
+    #[tool(description = "Create a new website with the given name. Returns the created website info and navigates to the editor.")]
+    async fn create_website(
+        &self,
+        Parameters(params): Parameters<CreateWebsiteParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let base_url = self.get_base_url();
+        let url = format!("{}/api/website?connectorId=fs-storage", base_url);
+
+        let body = if let Some(name) = &params.name {
+            serde_json::json!({ "name": name })
+        } else {
+            serde_json::json!({})
+        };
+
+        let client = reqwest::Client::new();
+        match client.put(&url)
+            .header("Content-Type", "application/json")
+            .body(body.to_string())
+            .send()
+            .await
+        {
+            Ok(resp) => {
+                let status = resp.status();
+                match resp.text().await {
+                    Ok(response_body) => {
+                        if status.is_success() {
+                            // Parse the response to get the website ID
+                            let website_id = serde_json::from_str::<serde_json::Value>(&response_body)
+                                .ok()
+                                .and_then(|v| v.get("websiteId").and_then(|id| id.as_str().map(String::from)));
+
+                            // Navigate to the new website
+                            if let (Some(window), Some(id)) = (self.app_handle.get_webview_window("main"), website_id) {
+                                let nav_url = format!("{}/?id={}", base_url, id);
+                                let _ = window.eval(&format!("window.location.href = '{}'", nav_url));
+                            }
+                            Ok(CallToolResult::success(vec![Content::text(response_body)]))
+                        } else {
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "Error creating website ({}): {}", status, response_body
+                            ))]))
+                        }
+                    },
+                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                        "Error reading response: {}", e
+                    ))])),
+                }
+            },
+            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Error creating website: {}", e
+            ))])),
+        }
+    }
+
+    #[tool(description = "Delete a website by its ID.")]
+    async fn delete_website(
+        &self,
+        Parameters(params): Parameters<WebsiteIdParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let base_url = self.get_base_url();
+        let url = format!("{}/api/website?websiteId={}&connectorId=fs-storage", base_url, params.website_id);
+
+        let client = reqwest::Client::new();
+        match client.delete(&url).send().await {
+            Ok(resp) => {
+                let status = resp.status();
+                match resp.text().await {
+                    Ok(body) => {
+                        if status.is_success() {
+                            // Refresh the dashboard
+                            if let Some(window) = self.app_handle.get_webview_window("main") {
+                                let _ = window.eval("window.location.href = '/'");
+                            }
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}", params.website_id
+                            ))]))
+                        } else {
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "Error deleting website ({}): {}", status, body
+                            ))]))
+                        }
+                    },
+                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                        "Error reading response: {}", e
+                    ))])),
+                }
+            },
+            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Error deleting website: {}", e
+            ))])),
+        }
+    }
+
+    #[tool(description = "Rename a website (update its display name).")]
+    async fn rename_website(
+        &self,
+        Parameters(params): Parameters<RenameWebsiteParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let base_url = self.get_base_url();
+        let url = format!("{}/api/website/meta?websiteId={}&connectorId=fs-storage", base_url, params.website_id);
+
+        let body = serde_json::json!({ "name": params.name });
+
+        let client = reqwest::Client::new();
+        match client.post(&url)
+            .header("Content-Type", "application/json")
+            .body(body.to_string())
+            .send()
+            .await
+        {
+            Ok(resp) => {
+                let status = resp.status();
+                match resp.text().await {
+                    Ok(response_body) => {
+                        if status.is_success() {
+                            // Refresh the dashboard
+                            if let Some(window) = self.app_handle.get_webview_window("main") {
+                                let _ = window.eval("window.location.href = '/'");
+                            }
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "{{\"success\":true,\"message\":\"Website renamed to '{}'\"}}", params.name
+                            ))]))
+                        } else {
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "Error renaming website ({}): {}", status, response_body
+                            ))]))
+                        }
+                    },
+                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                        "Error reading response: {}", e
+                    ))])),
+                }
+            },
+            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Error renaming website: {}", e
+            ))])),
+        }
+    }
+
+    #[tool(description = "Duplicate a website.")]
+    async fn duplicate_website(
+        &self,
+        Parameters(params): Parameters<WebsiteIdParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let base_url = self.get_base_url();
+        let url = format!("{}/api/website/duplicate?websiteId={}&connectorId=fs-storage", base_url, params.website_id);
+
+        let client = reqwest::Client::new();
+        match client.post(&url).send().await {
+            Ok(resp) => {
+                let status = resp.status();
+                match resp.text().await {
+                    Ok(body) => {
+                        if status.is_success() {
+                            // Refresh the dashboard
+                            if let Some(window) = self.app_handle.get_webview_window("main") {
+                                let _ = window.eval("window.location.href = '/'");
+                            }
+                            Ok(CallToolResult::success(vec![Content::text(body)]))
+                        } else {
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "Error duplicating website ({}): {}", status, body
+                            ))]))
+                        }
+                    },
+                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                        "Error reading response: {}", e
+                    ))])),
+                }
+            },
+            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "Error duplicating website: {}", e
             ))])),
         }
     }
