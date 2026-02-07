@@ -492,7 +492,7 @@ impl SilexMcp {
         ))]))
     }
 
-    #[tool(description = "Execute JavaScript in the Silex webview and return the result. Only works when a project is open in the editor (not on the dashboard). Has a 10-second timeout — break large operations into smaller chunks. The JS is evaluated using eval(), so expressions return their value directly (e.g. \"document.title\" returns the page title). For async code, return a Promise and it will be awaited. For multi-statement code, the last expression's value is returned. Access the GrapesJS editor with: window.silex.getEditor(). Use CssComposer.addRules() for styling (never component.setStyle()). Use BEM class names.")]
+    #[tool(description = "Execute JavaScript in the Silex webview and return the result. Only works when a project is open in the editor (not on the dashboard). Has a 10-second timeout — break large operations into smaller chunks. The JS is evaluated using eval(), so expressions return their value directly (e.g. \"document.title\" returns the page title). For async code, return a Promise and it will be awaited. For multi-statement code, the last expression's value is returned. Access the GrapesJS editor with: window.silex.getEditor(). Use CssComposer.setRule(selector, propsObject) for styling (never addRules() or component.setStyle()). Use BEM class names.")]
     async fn eval_js(
         &self,
         Parameters(params): Parameters<EvalParams>,
@@ -661,17 +661,28 @@ Access the editor: `const editor = window.silex.getEditor();`
 1. `get_app_state` — check if a project is open (`current_website_id`).
 2. `list_websites` — list available sites.
 3. `navigate` — open a project (`http://localhost:6805/?id=my-site`) or dashboard (`/`).
-4. `eval_js` — run GrapesJS API code (only when a project is open). **GrapesJS API operations automatically trigger saves** — there is no need to manually call `trigger_menu("save")` after making changes via the API.
+4. `eval_js` — run GrapesJS API code (only when a project is open). GrapesJS API operations automatically trigger saves.
 5. `take_screenshot` — visually verify changes (target "ui" or "canvas").
 6. `trigger_menu("save")` — manually save the project (only needed if you want to force an immediate save).
 
-## Critical Rules
+## GrapesJS API Reference
 
-1. **Custom/non-standard HTML attributes:** NEVER use `addAttributes()`, `set('attributes', {...})`, or any normal GrapesJS attribute API for custom attributes (data-*, Vue directives, ARIA overrides, etc.). These appear in the editor but are **stripped from published output**. The ONLY way to add attributes that survive publication is via `privateStates` with a fixed expression (see "Custom HTML Attributes" below).
+Before using any GrapesJS API method, **fetch the relevant documentation page** to verify method signatures, options, and behavior. Do NOT rely on memory alone.
 
-2. **Head injection:** NEVER add components to `wrapper.get('head')`. Use `settings.head` on the site model (all pages) or on a page object (single page) instead. See "Settings" below.
+- CSS:        https://grapesjs.com/docs/api/css_composer.html
+- Components: https://grapesjs.com/docs/api/components.html
+- Pages:      https://grapesjs.com/docs/api/pages.html
+- Devices:    https://grapesjs.com/docs/api/device_manager.html
+- Editor:     https://grapesjs.com/docs/api/editor.html
+- Storage:    https://grapesjs.com/docs/api/storage_manager.html
 
-3. **Styling:** Use `CssComposer.addRules()` with BEM classes ONLY. NEVER use `component.setStyle()` (creates inline styles on element IDs). NEVER use CSS Grid (Flexbox only).
+## Critical Rules (Silex-specific)
+
+1. **Styling:** Use `CssComposer.setRule(selector, propsObject)` with BEM classes ONLY. NEVER use `addRules()` (does not persist on save). NEVER use `component.setStyle()` (creates inline styles on element IDs). NEVER use CSS Grid (Flexbox only).
+
+2. **Head injection:** NEVER add components to `wrapper.get('head')`. Use `settings.head` on the site model (all pages) or on a page object (single page) instead.
+
+3. **Custom/non-standard HTML attributes:** NEVER use `addAttributes()`, `set('attributes', {...})`, or any normal GrapesJS attribute API for custom attributes (data-*, Vue directives, ARIA overrides, etc.). These appear in the editor but are **stripped from published output**. The ONLY way to add attributes that survive publication is via `privateStates` with a fixed expression (see "Custom HTML Attributes" below).
 
 4. **GrapesJS API only** — never modify the DOM directly (unsaved). CSS-only interactivity (`:hover`, `:checked`, `:target`, combinators) — no inline JS.
 
@@ -681,53 +692,21 @@ Access the editor: `const editor = window.silex.getEditor();`
 
 7. **Accessibility:** WCAG 2.1 AA — sufficient contrast, semantic HTML, alt text.
 
-## Styling
+## Silex-specific APIs
 
-```js
-const editor = window.silex.getEditor();
-// Correct: style BEM classes via CssComposer
-editor.CssComposer.addRules(`.hero { padding: 2rem; } .hero__title { font-size: 2rem; }`);
-// WRONG: component.setStyle({ padding: '2rem' });
-```
-
-## Components
-
-```js
-const wrapper = editor.getWrapper();
-// HTML string
-wrapper.append(`<section class="hero"><h1 class="hero__title">Hello</h1></section>`);
-// Object API
-wrapper.append({
-  tagName: 'section', classes: ['hero'],
-  components: [{ tagName: 'h1', type: 'text', editable: true, classes: ['hero__title'], content: 'Hello' }]
-});
-```
-
-## Symbols
+### Symbols
 
 Shared elements (header/footer) reused across pages. Must be added on every page.
 
 ```js
-// Create symbol from selected component
 editor.runCommand('symbols:add', { label: 'Header', icon: 'fa fa-diamond' });
-// List symbols
 const symbols = editor.Components.getSymbols();
-// Add instance to another page
 editor.Pages.select('about');
 const sym = symbols.find(s => s.get('label') === 'Header');
 if (sym) editor.getWrapper().append(sym, { at: 0 });
 ```
 
-## Pages
-
-```js
-const pm = editor.Pages;
-pm.getAll();
-pm.add({ id: 'about', name: 'About' }); // id = output filename (about.html)
-pm.select('about');
-```
-
-## Settings (Site & Page)
+### Settings (Site & Page)
 
 Use `settings.head` for scripts/stylesheets — never `wrapper.get('head')`.
 
@@ -745,15 +724,7 @@ page.set('settings', { ...ps, head: '<script type="module">...</script>' });
 
 Keys: `head`, `name`, `eleventyPageData`, `eleventyPermalink`, `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`.
 
-## Device Manager
-
-```js
-const dm = editor.DeviceManager;
-dm.getAll();
-dm.select('Mobile portrait');
-```
-
-## CMS: Data Sources
+### CMS: Data Sources
 
 ```js
 const dsm = editor.DataSourceManager;
@@ -763,7 +734,7 @@ ds.getTypes().forEach(t => console.log(t.id, t.fields.map(f => f.id)));
 ds.getQueryables().forEach(f => console.log(f.id, f.kind));
 ```
 
-## CMS: Expressions & States
+### CMS: Expressions & States
 
 Expressions are token arrays stored as **states** on components. Token types:
 - **Property**: `{ type: 'property', propType: 'field', dataSourceId, fieldId, typeIds, kind, label }`
@@ -810,7 +781,7 @@ priv.push({
 comp.set('privateStates', [...priv]);
 ```
 
-## Custom HTML Attributes
+### Custom HTML Attributes
 
 NEVER use `addAttributes()` or `set('attributes', {...})` for custom/non-standard attributes — they are stripped on publish. Use `privateStates` with a fixed expression instead. The state's `label` becomes the attribute name.
 
@@ -830,7 +801,7 @@ comp.set('privateStates', [...priv]);
 // Published: <div v-for="item in items">...</div>
 ```
 
-## CMS: Preview
+### CMS: Preview
 
 ```js
 editor.runCommand('data-source:preview:refresh');
@@ -841,12 +812,11 @@ editor.runCommand('data-source:preview:refresh');
 Verify before finishing (use `take_screenshot`):
 - All DeviceManager breakpoints look correct
 - Texts are editable (`type: 'text'`, `editable: true`)
-- Styling via BEM classes only (no inline styles, no element IDs)
+- Styling via BEM classes + `setRule()` only (no `addRules()`, no inline styles, no element IDs)
 - Header/footer symbols on every page
 - WCAG 2.1 AA color contrast
 - Homepage named `index`; internal links start with `./`
 - CMS (if used): data sources connected, expressions set, preview renders
-- Changes are automatically saved (manual `trigger_menu("save")` only needed to force immediate save)
 "#
                 .into(),
             ),
