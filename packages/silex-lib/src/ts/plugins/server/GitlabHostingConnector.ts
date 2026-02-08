@@ -454,6 +454,7 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           const message = `
             <p><strong>Your website is now live!</strong></p>
             <p><a href="${gitlabUrl}" target="_blank" class="silex-button silex-button--primary">View your website</a></p>
+            <p><a href="${pageUrl}" target="_blank" class="silex-button silex-button--secondary">GitLab Pages settings</a></p>
           `
           job.logs[0].push('Build completed successfully')
           return { success: true, message }
