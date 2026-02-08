@@ -708,21 +708,34 @@ if (sym) editor.getWrapper().append(sym, { at: 0 });
 
 ### Settings (Site & Page)
 
-Use `settings.head` for scripts/stylesheets — never `wrapper.get('head')`.
+Settings cascade: page-level overrides site-level for the same key. Use `settings.head` for scripts/stylesheets — never `wrapper.get('head')`.
 
 ```js
 // Site-level (all pages)
 const model = editor.getModel();
 const site = model.get('settings') || {};
-model.set('settings', { ...site, head: '<link rel="stylesheet" href="global.css">' });
+model.set('settings', { ...site,
+  lang: 'en',                         // HTML lang attribute
+  title: 'My Website',                // <title> tag + SEO
+  description: 'A short description', // <meta name="description">
+  favicon: './assets/favicon.ico',    // <link rel="icon">
+  head: '<link rel="stylesheet" href="global.css">',
+  'og:title': 'Share Title',          // Open Graph title
+  'og:description': 'Share desc',     // Open Graph description
+  'og:image': 'https://example.com/og.jpg', // Open Graph image
+});
 
-// Page-level (current page only)
+// Page-level (overrides site for this page)
 const page = editor.Pages.getSelected();
 const ps = page.get('settings') || {};
-page.set('settings', { ...ps, head: '<script type="module">...</script>' });
+page.set('settings', { ...ps, title: 'About Us', lang: 'fr' });
 ```
 
-Keys: `head`, `name`, `eleventyPageData`, `eleventyPermalink`, `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`.
+Core keys (site or page): `lang`, `title`, `description`, `favicon`, `head`, `og:title`, `og:description`, `og:image`.
+
+CMS-only keys (page, expression-based): `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`, `eleventyPageData`, `eleventyPermalink`.
+
+CMS i18n (page): `silexLanguagesList` (comma-separated, e.g. "en,fr") duplicates the page per language at build time.
 
 ### CMS: Data Sources
 
