@@ -86,8 +86,8 @@ impl ConnectorRegistry {
         connector_id: Option<&str>,
     ) -> Option<Arc<dyn StorageConnector>> {
         match connector_id {
-            Some(id) => self.get_storage_connector(id),
-            None => self.storage_connectors.first().cloned(),
+            Some(id) if !id.is_empty() => self.get_storage_connector(id),
+            _ => self.storage_connectors.first().cloned(),
         }
     }
 
@@ -100,8 +100,8 @@ impl ConnectorRegistry {
         connector_id: Option<&str>,
     ) -> Option<Arc<dyn HostingConnector>> {
         match connector_id {
-            Some(id) => self.get_hosting_connector(id),
-            None => self.hosting_connectors.first().cloned(),
+            Some(id) if !id.is_empty() => self.get_hosting_connector(id),
+            _ => self.hosting_connectors.first().cloned(),
         }
     }
 

@@ -329,16 +329,15 @@ async fn write_assets(
         .await?;
 
     // Build URLs for the uploaded assets
-    let base_url = state.config.url.trim_end_matches('/');
+    // Use relative URLs (no origin) so the client-side displayedToStored() can parse them
+    // Use the resolved connector's ID (not the query param, which may be empty)
+    let resolved_connector_id = connector.connector_id();
     let data: Vec<String> = paths
         .iter()
         .map(|path| {
             format!(
-                "{}/api/website/assets{}?websiteId={}&connectorId={}",
-                base_url,
-                path,
-                query.website_id,
-                query.connector_id.as_deref().unwrap_or("")
+                "/api/website/assets{}?websiteId={}&connectorId={}",
+                path, query.website_id, resolved_connector_id
             )
         })
         .collect();

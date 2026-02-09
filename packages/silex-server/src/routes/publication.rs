@@ -127,8 +127,10 @@ async fn publish(
                 content: content.into_bytes(),
             });
         } else if let Some(src) = f.src {
+            // Sanitize src: if it's a full URL or API path, extract just the asset filename
+            let asset_name = sanitize_asset_src(&src);
             let content = storage_connector
-                .read_asset(&session_data, &query.website_id, &src)
+                .read_asset(&session_data, &query.website_id, &asset_name)
                 .await?;
             files.push(ConnectorFile {
                 path: f.path,
@@ -208,6 +210,31 @@ async fn get_storage_connector(
     }
 
     Ok(connector)
+}
+
+/// Sanitize an asset src path that may be a full URL or API path
+///
+/// The client may send:
+/// - Just a filename: "portrait-alex.jpg"
+/// - A stored path: "/assets/portrait-alex.jpg"
+/// - An API path: "/api/website/assets/portrait-alex.jpg?websiteId=...&connectorId=..."
+/// - A full URL: "http://localhost:6805/api/website/assets/portrait-alex.jpg?websiteId=...&connectorId=..."
+///
+/// This function extracts just the asset filename in all cases.
+fn sanitize_asset_src(src: &str) -> String {
+    // Try to extract the path after "/api/website/assets/"
+    if let Some(pos) = src.find("/api/website/assets/") {
+        let after = &src[pos + "/api/website/assets/".len()..];
+        // Strip query params if present
+        let name = after.split('?').next().unwrap_or(after);
+        return name.to_string();
+    }
+    // Strip leading "/assets/" prefix
+    if let Some(stripped) = src.strip_prefix("/assets/") {
+        return stripped.to_string();
+    }
+    // Return as-is (already a filename)
+    src.to_string()
 }
 
 /// Get the hosting connector, checking authentication
