@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -62,7 +62,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -119,7 +119,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -150,7 +150,7 @@ jobs:
         run: corepack enable
 
       - name: Install JS dependencies
-        run: yarn install
+        run: yarn install --ignore-scripts
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
