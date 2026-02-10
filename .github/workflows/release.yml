@@ -1,0 +1,187 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Job 1: Build the JS frontend (once) ──────────────────────────
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies and build
+        run: yarn install
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: packages/silex-lib/dist/client
+          retention-days: 1
+
+  # ── Job 2: Build silex-server binary (per platform) ──────────────
+  build-server:
+    needs: build-frontend
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: silex-server-linux-amd64
+            binary: silex-server
+            archive: tar.gz
+          - os: macos-latest
+            artifact: silex-server-macos-amd64
+            binary: silex-server
+            archive: tar.gz
+          - os: windows-latest
+            artifact: silex-server-windows-amd64
+            binary: silex-server.exe
+            archive: zip
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: packages/silex-server
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: packages/silex-lib/dist/client
+
+      - name: Build silex-server
+        run: cargo build --release -p silex-server
+
+      - name: Package (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p staging/client
+          cp target/release/${{ matrix.binary }} staging/
+          cp -r packages/silex-lib/dist/client/* staging/client/
+          echo 'SILEX_STATIC_ROUTES=/:./client' > staging/.env
+          tar -czf ${{ matrix.artifact }}.tar.gz -C staging .
+
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path staging/client
+          Copy-Item target/release/${{ matrix.binary }} staging/
+          Copy-Item -Recurse packages/silex-lib/dist/client/* staging/client/
+          Set-Content -Path staging/.env -Value 'SILEX_STATIC_ROUTES=/:./client'
+          Compress-Archive -Path staging/* -DestinationPath ${{ matrix.artifact }}.zip
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}.${{ matrix.archive }}
+          retention-days: 5
+
+  # ── Job 3: Build silex-desktop Tauri app (per platform) ──────────
+  build-desktop:
+    needs: build-frontend
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: packages/silex-desktop/src-tauri
+
+      - name: Download frontend dist
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: packages/silex-lib/dist/client
+
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install JS dependencies
+        run: yarn install
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: packages/silex-desktop
+          tauriScript: npx tauri
+
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: silex-desktop-${{ matrix.os }}
+          path: |
+            packages/silex-desktop/src-tauri/target/release/bundle/**/*.dmg
+            packages/silex-desktop/src-tauri/target/release/bundle/**/*.app
+            packages/silex-desktop/src-tauri/target/release/bundle/**/*.deb
+            packages/silex-desktop/src-tauri/target/release/bundle/**/*.AppImage
+            packages/silex-desktop/src-tauri/target/release/bundle/**/*.msi
+            packages/silex-desktop/src-tauri/target/release/bundle/**/*.exe
+
+  # ── Job 4: Create GitHub release on tag push ─────────────────────
+  release:
+    needs: [build-server, build-desktop]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/silex-server-*/*
+            artifacts/silex-desktop-*/**/*
