@@ -417,21 +417,6 @@ export default function(editor: Editor): Filter[] {
       options: {},
     }, {
       type: 'filter',
-      id: 'at',
-      label: 'at',
-      validate: (field: Field | null) => !!field && field.kind === 'list',
-      output: field => convertKind(field, 'list', 'object'),
-      apply: (arr, options) => (arr as unknown[])[options.index as number],
-      options: {
-        index: 0,
-      },
-      optionsForm: (selected: Component, field: Field | null, options: Options) => html`
-        <label>Index
-          <input type="number" name="index" placeholder="Index" .value=${options.index || 0}/>
-        </label>
-    `,
-    }, {
-      type: 'filter',
       id: 'slice',
       label: 'slice',
       validate: (field: Field | null) => !!field && field.kind === 'list',
