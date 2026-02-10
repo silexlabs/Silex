@@ -150,7 +150,7 @@ jobs:
         run: corepack enable
 
       - name: Install JS dependencies
-        run: yarn install --ignore-scripts
+        run: yarn install --ignore-scripts && yarn run build
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
