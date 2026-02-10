@@ -672,6 +672,9 @@ form.silex-form {
   optgroup,
   select,
   textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     background-color: var(--silex-input-bg);
     color: var(--silex-text-primary);
     padding: 5px;
