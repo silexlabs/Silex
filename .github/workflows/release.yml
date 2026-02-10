@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Enable Corepack (provides yarn)
+        run: corepack enable
+
       - name: Install dependencies and build
         run: yarn install
 
@@ -142,6 +145,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Enable Corepack (provides yarn)
+        run: corepack enable
 
       - name: Install JS dependencies
         run: yarn install
