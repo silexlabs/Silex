@@ -92,3 +92,6 @@
 [submodule "packages/silex_silex-dashboard-2026"]
 	path = packages/silex_silex-dashboard-2026
 	url = https://gitlab.com/silexlabs/silex_silex-dashboard-2026.git
+[submodule "packages/silex-server"]
+	path = packages/silex-server
+	url = git@github.com:silexlabs/silex-server.git
