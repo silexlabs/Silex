@@ -25,6 +25,9 @@ const COMMON_STYLES = css`
     }
     .ds-field input,
     .ds-field select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
       background-color: var(--gjs-main-dark-color);
       border: none;
       box-shadow: none;

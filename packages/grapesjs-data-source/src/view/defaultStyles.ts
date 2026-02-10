@@ -264,6 +264,9 @@ export const PROPERTY_STYLES = `
       width: 100%;
     }
     select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
       width: 150px;
       flex: 0;
       margin: 5px;
