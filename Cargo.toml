@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "packages/silex-server",
+    "packages/silex-desktop/src-tauri",
+]
+resolver = "2"
