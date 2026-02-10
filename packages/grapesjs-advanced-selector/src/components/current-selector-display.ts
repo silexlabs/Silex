@@ -55,7 +55,9 @@ export class CurrentSelectorDisplay extends StylableElement {
       font-size: .85rem;
       ${ customizeSelect('select.value') }
       select.value {
-        appearance: auto;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
         border: 1px solid var(--gjs-light-border, #333);
         font-size: inherit;
         font-family: monospace;
