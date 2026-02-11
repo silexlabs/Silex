@@ -10,6 +10,8 @@
 use std::net::SocketAddr;
 
 use tokio::net::TcpListener;
+use tower::Layer;
+use tower_http::normalize_path::NormalizePathLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use silex_server::Config;
@@ -37,5 +39,6 @@ async fn main() {
     let listener = TcpListener::bind(addr).await.unwrap();
     tracing::info!("Listening on {}", addr);
 
-    axum::serve(listener, app).await.unwrap();
+    let app = NormalizePathLayer::trim_trailing_slash().layer(app);
+    axum::serve(listener, axum::ServiceExt::<axum::extract::Request>::into_make_service(app)).await.unwrap();
 }

@@ -219,6 +219,12 @@ async fn serve_from_dirs(dirs: &[PathBuf], uri_path: &str) -> impl IntoResponse 
 
     for dir in dirs {
         let file = dir.join(path);
+        // If the path points to a directory (or is empty), try index.html
+        let file = if file.is_dir() || path.is_empty() {
+            file.join("index.html")
+        } else {
+            file
+        };
         if file.is_file() {
             if let Ok(bytes) = tokio::fs::read(&file).await {
                 let mime = mime_guess::from_path(&file).first_or_octet_stream();
