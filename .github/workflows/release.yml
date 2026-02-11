@@ -56,6 +56,9 @@ jobs:
       - name: Enable Corepack (provides yarn)
         run: corepack enable
 
+      - name: Use npm registry (yarnpkg.com has intermittent 500s)
+        run: yarn config set registry https://registry.npmjs.org
+
       - name: Install JS dependencies and build frontend
         run: yarn install --ignore-scripts && yarn run build
 
@@ -103,12 +106,12 @@ jobs:
         with:
           name: silex-desktop-${{ matrix.os }}
           path: |
-            packages/silex-desktop/src-tauri/target/release/bundle/**/*.dmg
-            packages/silex-desktop/src-tauri/target/release/bundle/**/*.app
-            packages/silex-desktop/src-tauri/target/release/bundle/**/*.deb
-            packages/silex-desktop/src-tauri/target/release/bundle/**/*.AppImage
-            packages/silex-desktop/src-tauri/target/release/bundle/**/*.msi
-            packages/silex-desktop/src-tauri/target/release/bundle/**/*.exe
+            target/release/bundle/**/*.dmg
+            target/release/bundle/**/*.app
+            target/release/bundle/**/*.deb
+            target/release/bundle/**/*.AppImage
+            target/release/bundle/**/*.msi
+            target/release/bundle/**/*.exe
 
   # ── Create GitHub release on tag push ────────────────────────────
   release:
