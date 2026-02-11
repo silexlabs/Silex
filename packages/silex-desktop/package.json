@@ -5,8 +5,7 @@
   "license": "GPL-3.0-or-later",
   "scripts": {
     "tauri": "tauri",
-    "dev": "tauri dev",
-    "build": "tauri build"
+    "dev": "tauri dev"
   },
   "dependencies": {
     "@tauri-apps/api": "^2"
