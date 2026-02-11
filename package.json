@@ -22,11 +22,11 @@
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "scripts": {
     "preinstall": "if ! echo \"$npm_execpath\" | grep -q \"yarn\"; then echo '🚫 Please use yarn install, not npm install! Now before you do yarn install, you need delete all node_modules and packages/**/node_modules directories.'; exit 1; fi",
-    "build": "scripts/build-packages.js",
+    "build": "node scripts/build-packages.js",
     "postinstall": "$npm_execpath run build",
     "start": "node packages/silex-lib/",
     "release": "scripts/release.sh",
-    "test": "scripts/check-internal-deps.js",
+    "test": "node scripts/check-internal-deps.js",
     "count": "cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html",
     "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && $npm_execpath run count | scripts/insert-in-readme.js count --code",
     "exec": "scripts/exec.js",

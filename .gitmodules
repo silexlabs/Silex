@@ -22,10 +22,6 @@
 	path = packages/silex-plugins
 	url = git@github.com:silexlabs/silex-plugins.git
 	branch = main
-[submodule "packages/silex-dashboard"]
-	path = packages/silex-dashboard
-	url = git@github.com:silexlabs/silex-dashboard.git
-	branch = main
 [submodule "packages/grapesjs-data-source"]
 	path = packages/grapesjs-data-source
 	url = git@github.com:silexlabs/grapesjs-data-source.git
@@ -77,10 +73,6 @@
 [submodule "packages/silex-desktop"]
 	path = packages/silex-desktop
 	url = git@github.com:silexlabs/silex-desktop.git
-	branch = main
-[submodule "packages/grapesjs-ai-copilot"]
-	path = packages/grapesjs-ai-copilot
-	url = git@github.com:silexlabs/grapesjs-ai-copilot.git
 	branch = main
 [submodule "packages/grapesjs-version-flow"]
 	path = packages/grapesjs-version-flow
