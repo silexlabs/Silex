@@ -152,6 +152,16 @@ async fn start_server(pending_evals: mcp::PendingEvals) -> u16 {
 // ==================
 
 fn main() {
+    // Fix EGL crash on Linux with certain GPU/Wayland configurations
+    // (especially NVIDIA + recent WebKitGTK). Must be set before any
+    // WebKit/GTK initialization. See: https://github.com/tauri-apps/tauri/issues/11988
+    #[cfg(target_os = "linux")]
+    {
+        if std::env::var("WEBKIT_DISABLE_DMABUF_RENDERER").is_err() {
+            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+        }
+    }
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()

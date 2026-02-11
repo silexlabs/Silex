@@ -31,4 +31,4 @@ schemars = "1"
 open = "5"
 
 # Silex server as a library
-silex-server = { path = "../../silex-server" }
+silex-server = { path = "../../silex-server", features = ["embed-frontend"] }
