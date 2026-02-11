@@ -43,6 +43,13 @@ whoami = "1"
 mime_guess = "2"
 
 
+# Embedded frontend assets (optional, for single-binary distribution)
+rust-embed = { version = "8", optional = true }
+
+[features]
+default = []
+embed-frontend = ["rust-embed"]
+
 [dev-dependencies]
 tempfile = "3"
 tokio-test = "0.4"

@@ -23,6 +23,16 @@ use axum::routing::get;
 use axum::Router;
 use tower_http::services::ServeDir;
 
+#[cfg(feature = "embed-frontend")]
+use rust_embed::Embed;
+
+/// Embedded frontend assets (compiled into the binary when `embed-frontend` feature is enabled).
+/// The folder path is relative to silex-server's Cargo.toml.
+#[cfg(feature = "embed-frontend")]
+#[derive(Embed)]
+#[folder = "../silex-lib/dist/client/"]
+struct FrontendAssets;
+
 /// Static file configuration
 pub struct StaticConfig {
     /// Dashboard directory (its index.html is served at `/` when no `?id=`)
@@ -144,9 +154,58 @@ pub fn configure_static_files<S: Clone + Send + Sync + 'static>(
             let dirs = dirs.clone();
             async move { serve_from_dirs(&dirs, req.uri().path()).await }
         });
+    } else {
+        // No filesystem directories configured — try embedded assets
+        #[cfg(feature = "embed-frontend")]
+        {
+            tracing::info!("Serving embedded frontend assets");
+
+            // Serve index.html at /
+            app = app.route(
+                "/",
+                get(|| async {
+                    match FrontendAssets::get("index.html") {
+                        Some(content) => (
+                            [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+                            content.data.to_vec(),
+                        )
+                            .into_response(),
+                        None => StatusCode::NOT_FOUND.into_response(),
+                    }
+                }),
+            );
+
+            // Serve all other embedded files as fallback
+            app = app.fallback(|req: Request| async move {
+                serve_embedded(req.uri().path()).await
+            });
+        }
     }
 
     app
+}
+
+/// Serve a file from embedded frontend assets.
+#[cfg(feature = "embed-frontend")]
+async fn serve_embedded(uri_path: &str) -> impl IntoResponse {
+    let path = uri_path.trim_start_matches('/');
+    if path.contains("..") {
+        return StatusCode::NOT_FOUND.into_response();
+    }
+    match FrontendAssets::get(path) {
+        Some(content) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+            let content_type = if mime.type_() == mime_guess::mime::TEXT
+                || mime.subtype() == mime_guess::mime::JAVASCRIPT
+            {
+                format!("{}; charset=utf-8", mime)
+            } else {
+                mime.to_string()
+            };
+            ([(header::CONTENT_TYPE, content_type)], content.data.to_vec()).into_response()
+        }
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
 }
 
 /// Try to serve a file from multiple directories in order. First match wins.
