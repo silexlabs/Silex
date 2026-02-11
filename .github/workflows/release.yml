@@ -20,15 +20,12 @@ jobs:
           - os: ubuntu-latest
             server-artifact: silex-server-linux-amd64
             binary: silex-server
-            archive: tar.gz
           - os: macos-latest
             server-artifact: silex-server-macos-amd64
             binary: silex-server
-            archive: tar.gz
           - os: windows-latest
             server-artifact: silex-server-windows-amd64
             binary: silex-server.exe
-            archive: zip
 
     steps:
       - name: Checkout repository
@@ -62,34 +59,15 @@ jobs:
       - name: Install JS dependencies and build frontend
         run: yarn install --ignore-scripts && yarn run build
 
-      # ── silex-server ─────────────────────────────────────────────
+      # ── silex-server (single binary with embedded frontend) ─────
       - name: Build silex-server
-        run: cargo build --release -p silex-server
-
-      - name: Package server (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: |
-          mkdir -p staging/client
-          cp target/release/${{ matrix.binary }} staging/
-          cp -r packages/silex-lib/dist/client/* staging/client/
-          echo 'SILEX_STATIC_ROUTES=/:./client' > staging/.env
-          tar -czf ${{ matrix.server-artifact }}.tar.gz -C staging .
-
-      - name: Package server (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path staging/client
-          Copy-Item target/release/${{ matrix.binary }} staging/
-          Copy-Item -Recurse packages/silex-lib/dist/client/* staging/client/
-          Set-Content -Path staging/.env -Value 'SILEX_STATIC_ROUTES=/:./client'
-          Compress-Archive -Path staging/* -DestinationPath ${{ matrix.server-artifact }}.zip
+        run: cargo build --release -p silex-server --features embed-frontend
 
       - name: Upload server artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.server-artifact }}
-          path: ${{ matrix.server-artifact }}.${{ matrix.archive }}
+          path: target/release/${{ matrix.binary }}
           retention-days: 5
 
       # ── silex-desktop (Tauri) ────────────────────────────────────
