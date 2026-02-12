@@ -858,13 +858,13 @@ pub async fn start_mcp_server(
         Default::default(),
     );
 
-    let router = axum_mcp::Router::new().nest_service("/mcp", mcp_service);
+    let router = axum::Router::new().nest_service("/mcp", mcp_service);
 
     let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     tracing::info!("MCP server listening on http://{}/mcp", addr);
 
     tokio::spawn(async move {
-        axum_mcp::serve(listener, router).await.unwrap();
+        axum::serve(listener, router).await.unwrap();
     });
 }

@@ -16,15 +16,14 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 base64 = "0.22"
 tokio = { version = "1", features = ["full"] }
-axum = "0.7"
+axum = "0.8"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 url = "2"
 
-# MCP (Model Context Protocol) support — uses axum 0.8 internally
-axum-mcp = { package = "axum", version = "0.8" }
-reqwest = { version = "0.12", features = ["json"] }
-rmcp = { version = "0.12", features = ["server", "transport-streamable-http-server"] }
+# MCP (Model Context Protocol) support
+reqwest = { version = "0.13", features = ["json"] }
+rmcp = { version = "0.15", features = ["server", "transport-streamable-http-server"] }
 schemars = "1"
 
 # Open files/folders in the OS default application

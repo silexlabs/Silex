@@ -135,7 +135,7 @@ async fn start_server(pending_evals: mcp::PendingEvals, data_path: std::path::Pa
     // Add eval-callback route for JS→Rust result passing (same origin, no CORS)
     let app = app
         .route(
-            "/eval-callback/:id",
+            "/eval-callback/{id}",
             axum::routing::post(mcp::eval_callback),
         )
         .layer(axum::Extension(pending_evals));
