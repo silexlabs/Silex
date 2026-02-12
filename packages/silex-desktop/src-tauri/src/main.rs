@@ -18,6 +18,7 @@ use tokio::net::TcpListener;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use silex_server::Config;
+use tauri_plugin_updater::UpdaterExt;
 
 mod mcp;
 
@@ -120,6 +121,57 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
 }
 
 // ==================
+// Auto-update
+// ==================
+
+fn check_for_updates(app: tauri::AppHandle) {
+    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+
+    tauri::async_runtime::spawn(async move {
+        match app.updater().expect("updater not configured").check().await {
+            Ok(Some(update)) => {
+                let version = update.version.clone();
+                let app_clone = app.clone();
+
+                app.dialog()
+                    .message(format!(
+                        "Silex {} is available. Do you want to update now?",
+                        version
+                    ))
+                    .title("Update Available")
+                    .kind(MessageDialogKind::Info)
+                    .buttons(MessageDialogButtons::OkCancelCustom(
+                        "Update & Restart".into(),
+                        "Later".into(),
+                    ))
+                    .show(move |accepted| {
+                        if accepted {
+                            tauri::async_runtime::spawn(async move {
+                                tracing::info!("Downloading update v{}...", version);
+                                match update.download_and_install(|_, _| {}, || {}).await {
+                                    Ok(_) => {
+                                        tracing::info!("Update installed, restarting...");
+                                        app_clone.restart();
+                                    }
+                                    Err(e) => {
+                                        tracing::error!("Update failed: {}", e);
+                                    }
+                                }
+                            });
+                        }
+                    });
+            }
+            Ok(None) => {
+                tracing::debug!("No update available");
+            }
+            Err(e) => {
+                tracing::debug!("Update check failed: {}", e);
+            }
+        }
+    });
+}
+
+// ==================
 // Server
 // ==================
 
@@ -176,6 +228,8 @@ fn main() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(AppState::default())
         .invoke_handler(tauri::generate_handler![
             set_current_project,
@@ -208,6 +262,9 @@ fn main() {
             tauri::async_runtime::spawn(async move {
                 mcp::start_mcp_server(mcp_handle, pending_evals, 6807).await;
             });
+
+            // Check for updates in the background
+            check_for_updates(app.handle().clone());
 
             // Handle window close with unsaved changes
             let app_handle = app.handle().clone();

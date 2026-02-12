@@ -13,9 +13,18 @@
   "bundle": {
     "active": true,
     "targets": ["deb", "rpm", "dmg", "nsis"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/icon.png",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ0MjAzOUFERUFCQUMwQjAKUldTd3dMcnFyVGtnMUtCSFBvZ0Z4NnN1bG5MWEJsQkk2VU43Y05INi9qNDQvTWpPVVpxRUROaDgK",
+      "endpoints": [
+        "https://github.com/silexlabs/Silex/releases/latest/download/latest.json"
+      ]
+    }
   }
 }
