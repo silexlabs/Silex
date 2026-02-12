@@ -73,7 +73,7 @@ impl Config {
         let data_path = env::var("SILEX_DATA_PATH")
             .or_else(|_| env::var("SILEX_FS_ROOT"))
             .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from("./silex/storage"));
+            .unwrap_or_else(|_| default_data_path());
 
         let hosting_path = env::var("SILEX_HOSTING_PATH")
             .or_else(|_| env::var("SILEX_FS_HOSTING_ROOT"))
@@ -129,12 +129,17 @@ impl Config {
     }
 }
 
+/// Default data path: ./silex/storage relative to the current working directory.
+fn default_data_path() -> PathBuf {
+    PathBuf::from("./silex/storage")
+}
+
 impl Default for Config {
     fn default() -> Self {
         Config {
             url: "http://localhost:6805".to_string(),
             port: 6805,
-            data_path: PathBuf::from("./silex/storage"),
+            data_path: default_data_path(),
             hosting_path: None,
             assets_folder: "assets".to_string(),
             default_website_id: "default".to_string(),
