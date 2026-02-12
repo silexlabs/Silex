@@ -123,7 +123,11 @@ fn show_quit_dialog(app: &tauri::AppHandle) {
 // Server
 // ==================
 
-async fn start_server(pending_evals: mcp::PendingEvals) -> u16 {
+async fn start_server(pending_evals: mcp::PendingEvals, data_path: std::path::PathBuf) -> u16 {
+    // Set SILEX_DATA_PATH so Config::from_env() picks it up (unless already set by user)
+    if std::env::var("SILEX_DATA_PATH").is_err() {
+        std::env::set_var("SILEX_DATA_PATH", &data_path);
+    }
     let config = Config::from_env();
 
     let (app, port) = silex_server::build_app(config).await;
@@ -180,8 +184,13 @@ fn main() {
             open_folder,
         ])
         .setup(|app| {
+            // Use Tauri's app_data_dir for user-writable storage
+            let data_path = app.path().app_data_dir()
+                .expect("failed to resolve app data dir")
+                .join("storage");
+
             let pending_evals = mcp::PendingEvals::default();
-            let port = tauri::async_runtime::block_on(start_server(pending_evals.clone()));
+            let port = tauri::async_runtime::block_on(start_server(pending_evals.clone(), data_path));
 
             let url = format!("http://localhost:{}/", port);
             let window = WebviewWindowBuilder::new(
