@@ -13,19 +13,23 @@ permissions:
 jobs:
   # ── Build silex-server + silex-desktop per platform ──────────────
   build:
+    name: build (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - platform: linux
+            os: ubuntu-latest
             server-artifact: silex-server-linux-amd64
             desktop-artifact: silex-desktop-linux
             binary: silex-server
-          - os: macos-latest
+          - platform: macos
+            os: macos-latest
             server-artifact: silex-server-macos-amd64
             desktop-artifact: silex-desktop-macos
             binary: silex-server
-          - os: windows-latest
+          - platform: windows
+            os: windows-latest
             server-artifact: silex-server-windows-amd64
             desktop-artifact: silex-desktop-windows
             binary: silex-server.exe
