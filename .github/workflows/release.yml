@@ -91,7 +91,6 @@ jobs:
             target/release/bundle/**/*.app
             target/release/bundle/**/*.deb
             target/release/bundle/**/*.rpm
-            target/release/bundle/**/*.msi
             target/release/bundle/**/*.exe
 
   # ── Create GitHub release on tag push ────────────────────────────
@@ -106,10 +105,22 @@ jobs:
         with:
           path: artifacts
 
+      - name: Prepare release files
+        run: |
+          mkdir -p release
+          # Server binaries — already named by artifact dir
+          cp artifacts/silex-server-linux-amd64/silex-server   release/silex-server-linux-amd64
+          cp artifacts/silex-server-macos-amd64/silex-server   release/silex-server-macos-amd64
+          cp artifacts/silex-server-windows-amd64/silex-server.exe release/silex-server-windows-amd64.exe
+          # Desktop — copy and let the original filenames speak for themselves
+          cp artifacts/silex-desktop-linux/**/*.deb  release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-linux/**/*.rpm  release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-macos/**/*.dmg  release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-windows/**/*.exe release/ 2>/dev/null || true
+          ls -lh release/
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: |
-            artifacts/silex-server-*/*
-            artifacts/silex-desktop-*/**/*
+          files: release/*
