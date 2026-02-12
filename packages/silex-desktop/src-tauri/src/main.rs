@@ -128,6 +128,7 @@ fn check_for_updates(app: tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
     tauri::async_runtime::spawn(async move {
+        tracing::info!("Checking for updates...");
         match app.updater().expect("updater not configured").check().await {
             Ok(Some(update)) => {
                 let version = update.version.clone();
@@ -162,10 +163,10 @@ fn check_for_updates(app: tauri::AppHandle) {
                     });
             }
             Ok(None) => {
-                tracing::debug!("No update available");
+                tracing::info!("No update available");
             }
             Err(e) => {
-                tracing::debug!("Update check failed: {}", e);
+                tracing::warn!("Update check failed: {}", e);
             }
         }
     });
@@ -243,10 +244,25 @@ fn main() {
                 .expect("failed to resolve app data dir")
                 .join("storage");
 
+            // Show splash screen while the app loads
+            let _splash = WebviewWindowBuilder::new(
+                app,
+                "splash",
+                WebviewUrl::App("splash.html".into()),
+            )
+            .title("Silex")
+            .inner_size(400.0, 300.0)
+            .resizable(false)
+            .decorations(false)
+            .center()
+            .always_on_top(true)
+            .build()?;
+
             let pending_evals = mcp::PendingEvals::default();
             let port = tauri::async_runtime::block_on(start_server(pending_evals.clone(), data_path));
 
             let url = format!("http://localhost:{}/", port);
+            let app_handle_for_splash = app.handle().clone();
             let window = WebviewWindowBuilder::new(
                 app,
                 "main",
@@ -255,6 +271,15 @@ fn main() {
             .title("Silex")
             .maximized(true)
             .initialization_script(include_str!("../scripts/desktop-bridge.js"))
+            .on_page_load(move |webview, payload| {
+                if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
+                    // Close splash — main window is already maximized behind it
+                    if let Some(splash) = app_handle_for_splash.get_webview_window("splash") {
+                        let _ = splash.close();
+                    }
+                    let _ = webview.set_focus();
+                }
+            })
             .build()?;
 
             // Start the MCP server on port 6807

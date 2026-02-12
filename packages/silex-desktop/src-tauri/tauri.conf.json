@@ -16,6 +16,7 @@
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/icon.png",
+      "icons/silex.png",
       "icons/icon.ico"
     ]
   },
