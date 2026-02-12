@@ -189,7 +189,7 @@ impl HostingConnector for FsHosting {
 
     async fn get_user(&self, session: &serde_json::Value) -> ConnectorResult<ConnectorUser> {
         // Return the current system username
-        let username = whoami::username();
+        let username = whoami::username().unwrap_or_else(|_| "unknown".to_string());
 
         // Create connector data for this hosting connector
         let storage_data = ConnectorData {

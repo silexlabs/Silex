@@ -46,7 +46,7 @@ pub fn routes() -> Router<AppState> {
         .route("/duplicate", post(duplicate_website))
         .route("/meta", get(get_meta))
         .route("/meta", post(set_meta))
-        .route("/assets/*path", get(read_asset))
+        .route("/assets/{*path}", get(read_asset))
         .route("/assets", post(write_assets))
 }
 
