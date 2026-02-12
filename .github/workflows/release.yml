@@ -78,6 +78,8 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
@@ -92,6 +94,9 @@ jobs:
             target/release/bundle/**/*.deb
             target/release/bundle/**/*.rpm
             target/release/bundle/**/*.exe
+            target/release/bundle/**/*.sig
+            target/release/bundle/**/*.tar.gz
+            target/release/bundle/**/*.zip
 
   # ── Create GitHub release on tag push ────────────────────────────
   release:
@@ -106,17 +111,62 @@ jobs:
           path: artifacts
 
       - name: Prepare release files
+        env:
+          VERSION: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
         run: |
           mkdir -p release
-          # Server binaries — already named by artifact dir
+          # Server binaries
           cp artifacts/silex-server-linux-amd64/silex-server   release/silex-server-linux-amd64
           cp artifacts/silex-server-macos-amd64/silex-server   release/silex-server-macos-amd64
           cp artifacts/silex-server-windows-amd64/silex-server.exe release/silex-server-windows-amd64.exe
-          # Desktop — copy and let the original filenames speak for themselves
+          # Desktop installers
           cp artifacts/silex-desktop-linux/**/*.deb  release/ 2>/dev/null || true
           cp artifacts/silex-desktop-linux/**/*.rpm  release/ 2>/dev/null || true
           cp artifacts/silex-desktop-macos/**/*.dmg  release/ 2>/dev/null || true
           cp artifacts/silex-desktop-windows/**/*.exe release/ 2>/dev/null || true
+          # Updater artifacts (signed archives)
+          cp artifacts/silex-desktop-linux/**/*.tar.gz     release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-linux/**/*.tar.gz.sig release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-macos/**/*.tar.gz     release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-macos/**/*.tar.gz.sig release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-windows/**/*.zip      release/ 2>/dev/null || true
+          cp artifacts/silex-desktop-windows/**/*.zip.sig  release/ 2>/dev/null || true
+
+          # Build latest.json for the updater
+          BASE="https://github.com/${REPO}/releases/download/${VERSION}"
+          VER="${VERSION#v}"
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Find platform-specific updater files by naming convention
+          LINUX_TAR=$(ls release/*_amd64.tar.gz 2>/dev/null | head -1)
+          LINUX_SIG=$(cat "${LINUX_TAR}.sig" 2>/dev/null || echo "")
+          MACOS_TAR=$(ls release/*.app.tar.gz 2>/dev/null | head -1)
+          MACOS_SIG=$(cat "${MACOS_TAR}.sig" 2>/dev/null || echo "")
+          WINDOWS_ZIP=$(ls release/*_x64-setup*.zip 2>/dev/null | head -1)
+          WINDOWS_SIG=$(cat "${WINDOWS_ZIP}.sig" 2>/dev/null || echo "")
+
+          cat > release/latest.json << EOF
+          {
+            "version": "${VER}",
+            "pub_date": "${DATE}",
+            "platforms": {
+              "linux-x86_64": {
+                "url": "${BASE}/$(basename "${LINUX_TAR}" 2>/dev/null)",
+                "signature": "${LINUX_SIG}"
+              },
+              "darwin-aarch64": {
+                "url": "${BASE}/$(basename "${MACOS_TAR}" 2>/dev/null)",
+                "signature": "${MACOS_SIG}"
+              },
+              "windows-x86_64": {
+                "url": "${BASE}/$(basename "${WINDOWS_ZIP}" 2>/dev/null)",
+                "signature": "${WINDOWS_SIG}"
+              }
+            }
+          }
+          EOF
+
           ls -lh release/
 
       - name: Create GitHub release
