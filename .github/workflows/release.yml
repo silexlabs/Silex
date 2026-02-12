@@ -19,12 +19,15 @@ jobs:
         include:
           - os: ubuntu-latest
             server-artifact: silex-server-linux-amd64
+            desktop-artifact: silex-desktop-linux
             binary: silex-server
           - os: macos-latest
             server-artifact: silex-server-macos-amd64
+            desktop-artifact: silex-desktop-macos
             binary: silex-server
           - os: windows-latest
             server-artifact: silex-server-windows-amd64
+            desktop-artifact: silex-desktop-windows
             binary: silex-server.exe
 
     steps:
@@ -82,12 +85,12 @@ jobs:
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: silex-desktop-${{ matrix.os }}
+          name: ${{ matrix.desktop-artifact }}
           path: |
             target/release/bundle/**/*.dmg
             target/release/bundle/**/*.app
             target/release/bundle/**/*.deb
-            target/release/bundle/**/*.AppImage
+            target/release/bundle/**/*.rpm
             target/release/bundle/**/*.msi
             target/release/bundle/**/*.exe
 
