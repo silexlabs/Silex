@@ -194,7 +194,16 @@ async fn start_server(pending_evals: mcp::PendingEvals, data_path: std::path::Pa
         .layer(axum::Extension(pending_evals));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
-    let listener = TcpListener::bind(addr).await.unwrap();
+    let listener = match TcpListener::bind(addr).await {
+        Ok(l) => l,
+        Err(_) => {
+            // Port taken (another instance running) — bind to OS-assigned port
+            let fallback = SocketAddr::from(([127, 0, 0, 1], 0));
+            TcpListener::bind(fallback).await.unwrap()
+        }
+    };
+    let addr = listener.local_addr().unwrap();
+    let port = addr.port();
     tracing::info!("Silex server listening on http://{}", addr);
 
     tokio::spawn(async move {
@@ -282,11 +291,18 @@ fn main() {
             })
             .build()?;
 
-            // Start the MCP server on port 6807
-            let mcp_handle = app.handle().clone();
-            tauri::async_runtime::spawn(async move {
-                mcp::start_mcp_server(mcp_handle, pending_evals, 6807).await;
-            });
+            // MCP transport: --stdio for agent-managed launch, HTTP otherwise
+            if std::env::args().any(|a| a == "--stdio") {
+                let mcp_handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    mcp::start_mcp_stdio(mcp_handle, pending_evals).await;
+                });
+            } else {
+                let mcp_handle = app.handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    mcp::start_mcp_server(mcp_handle, pending_evals, 6807).await;
+                });
+            }
 
             // Check for updates in the background
             check_for_updates(app.handle().clone());

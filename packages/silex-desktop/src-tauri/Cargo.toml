@@ -25,7 +25,7 @@ url = "2"
 
 # MCP (Model Context Protocol) support
 reqwest = { version = "0.13", features = ["json"] }
-rmcp = { version = "0.15", features = ["server", "transport-streamable-http-server"] }
+rmcp = { version = "0.15", features = ["server", "transport-streamable-http-server", "transport-io"] }
 schemars = "1"
 
 # Open files/folders in the OS default application

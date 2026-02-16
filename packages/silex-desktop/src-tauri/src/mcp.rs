@@ -17,7 +17,7 @@ use rmcp::model::*;
 use rmcp::schemars::JsonSchema;
 use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 use rmcp::transport::streamable_http_server::StreamableHttpService;
-use rmcp::{tool, tool_handler, tool_router, ErrorData as McpError, ServerHandler};
+use rmcp::{tool, tool_handler, tool_router, ErrorData as McpError, ServerHandler, ServiceExt};
 use serde::Deserialize;
 use tauri::{Emitter, Manager};
 use tokio::sync::oneshot;
@@ -1514,10 +1514,35 @@ pub async fn start_mcp_server(
     let router = axum::Router::new().nest_service("/mcp", mcp_service);
 
     let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    let listener = match tokio::net::TcpListener::bind(addr).await {
+        Ok(l) => l,
+        Err(e) => {
+            tracing::warn!("MCP HTTP port {} unavailable ({}), skipping", port, e);
+            return;
+        }
+    };
+    let addr = listener.local_addr().unwrap();
     tracing::info!("MCP server listening on http://{}/mcp", addr);
 
     tokio::spawn(async move {
         axum::serve(listener, router).await.unwrap();
     });
+}
+
+pub async fn start_mcp_stdio(
+    app_handle: tauri::AppHandle,
+    pending_evals: PendingEvals,
+) {
+    let eval_counter = Arc::new(AtomicU64::new(0));
+    let service = SilexMcp::new(app_handle, pending_evals, eval_counter);
+    tracing::info!("MCP stdio transport starting");
+    match service.serve(rmcp::transport::io::stdio()).await {
+        Ok(server) => {
+            let _ = server.waiting().await;
+            tracing::info!("MCP stdio transport closed");
+        }
+        Err(e) => {
+            tracing::warn!("MCP stdio not available (launched without stdin?): {}", e);
+        }
+    }
 }
