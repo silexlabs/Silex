@@ -7,6 +7,10 @@ import fr from './i18n/fr'
 // For devtools debugging
 export const name = '@silexlabs/grapesjs-advanced-selector'
 
+// Re-export selector model functions for programmatic use (MCP bridge, etc.)
+export { editStyle, getComponentSelector, setComponentSelector, getSelectors, matchSelectorAll } from './model/GrapesJsSelectors'
+export { toString as complexSelectorToString, fromString as complexSelectorFromString } from './model/ComplexSelector'
+
 export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => {
   // Defaults
   const options = {
