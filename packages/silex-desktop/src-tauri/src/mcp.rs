@@ -1,11 +1,9 @@
 /*
  * MCP (Model Context Protocol) server for Silex Desktop.
  *
- * Exposes Silex control as MCP tools over Streamable HTTP transport.
- * Talks directly to the Tauri AppHandle — no intermediate HTTP proxy.
- *
- * For eval_js return values, injects JS that POSTs results back to a
- * callback endpoint on the Silex web server (same origin, no CORS).
+ * Exposes Silex control as 14 merged MCP tools over Streamable HTTP transport.
+ * Designed for small local LLMs (7B-13B): action-enum params, HTML string
+ * input for components, dot-notation for CMS expressions, CSS string support.
  */
 
 use std::collections::HashMap;
@@ -26,8 +24,284 @@ use tokio::sync::oneshot;
 
 use crate::AppState;
 
+// ==========================================================================
+// Shared state
+// ==========================================================================
+
 /// Pending eval results — shared between MCP tools and the HTTP callback handler.
 pub type PendingEvals = Arc<std::sync::Mutex<HashMap<u64, oneshot::Sender<String>>>>;
+
+// ==========================================================================
+// Action enums
+// ==========================================================================
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum WebsiteAction {
+    List,
+    Create,
+    Delete,
+    Rename,
+    Duplicate,
+    Open,
+    Dashboard,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum PageAction {
+    List,
+    Add,
+    Select,
+    Remove,
+    UpdateSettings,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ComponentAction {
+    GetTree,
+    Get,
+    Add,
+    Update,
+    Move,
+    Remove,
+    Select,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SelectorAction {
+    List,
+    Select,
+    Create,
+    Delete,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum StyleAction {
+    Get,
+    Set,
+    Delete,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SymbolAction {
+    List,
+    Create,
+    Place,
+    Delete,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum DeviceAction {
+    List,
+    Set,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SettingsAction {
+    Get,
+    Set,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum CmsAction {
+    ListSources,
+    BindContent,
+    SetCondition,
+    SetLoop,
+    ExposeData,
+    SetAttribute,
+    SetStates,
+    RefreshPreview,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum EditorAction {
+    Save,
+    Undo,
+    Redo,
+}
+
+// ==========================================================================
+// Parameter structs
+// ==========================================================================
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct WebsiteParams {
+    /// The action to perform.
+    pub action: WebsiteAction,
+    /// Website ID (required for delete, rename, duplicate, open).
+    pub website_id: Option<String>,
+    /// Website name (required for create, rename).
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct PageParams {
+    /// The action to perform.
+    pub action: PageAction,
+    /// Page ID or name (for select, remove, update_settings). Omit for current page.
+    pub page_id: Option<String>,
+    /// Page display name (for add).
+    pub name: Option<String>,
+    /// Page slug / URL path (for add). Defaults to name if omitted.
+    pub slug: Option<String>,
+    /// Page-level settings object (for update_settings).
+    pub settings: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ComponentParams {
+    /// The action to perform.
+    pub action: ComponentAction,
+    /// Component ID (required for select and move target).
+    pub component_id: Option<String>,
+    /// HTML string to add as components (for add). The server parses it,
+    /// auto-sets text elements as editable, and strips inline styles.
+    pub html: Option<String>,
+    /// New text content (for update on selected component).
+    pub content: Option<String>,
+    /// Standard HTML attributes like href, src, alt (for update on selected component). Object.
+    pub attributes: Option<serde_json::Value>,
+    /// Position relative to selected component: "before", "after", or "inside" (default).
+    /// For add: places new content relative to selected (or appends to wrapper if none selected).
+    /// For move: places selected component relative to target_id component.
+    pub position: Option<String>,
+    /// Tree depth limit (for get_tree, default 2).
+    pub depth: Option<u32>,
+    /// Max components to return (for get_tree, default 50).
+    pub max_components: Option<u32>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SelectorParams {
+    /// The action to perform.
+    pub action: SelectorAction,
+    /// CSS selector string (for select, e.g. ".hero__title"). Must match the selected component.
+    pub selector: Option<String>,
+    /// CSS class name without dot (for create/delete, e.g. "hero__title").
+    pub class_name: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct StyleParams {
+    /// The action to perform. Operates on the currently active selector (set via selector tool).
+    pub action: StyleAction,
+    /// CSS properties as object, e.g. {"font-size": "2rem"} (for set).
+    pub properties: Option<serde_json::Value>,
+    /// CSS string alternative, e.g. "font-size: 2rem; color: #333;" (for set).
+    pub css: Option<String>,
+    /// CSS property name to remove (for delete).
+    pub property: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SymbolParams {
+    /// The action to perform.
+    pub action: SymbolAction,
+    /// Symbol display label (for create, place, delete).
+    pub label: Option<String>,
+    /// FontAwesome icon class (for create, e.g. "fa fa-diamond").
+    pub icon: Option<String>,
+    /// Position relative to selected component: "before", "after", or "inside" (default).
+    /// For place: where to insert the symbol relative to the selected component.
+    pub position: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct DeviceParams {
+    /// The action to perform.
+    pub action: DeviceAction,
+    /// Device name: "Desktop", "Tablet", or "Mobile" (for set).
+    pub name: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct SettingsParams {
+    /// The action to perform.
+    pub action: SettingsAction,
+    /// Settings object with keys like lang, title, description, favicon, head,
+    /// "og:title", "og:description", "og:image" (for set).
+    pub settings: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct CmsParams {
+    /// The action to perform.
+    pub action: CmsAction,
+    /// Component ID (required for all bind/set actions).
+    pub component_id: Option<String>,
+    /// Dot-notation data path, e.g. "wordpress.posts.title".
+    /// The server resolves it to the full expression token array.
+    pub expression: Option<String>,
+    /// Condition operator: "truthy", "==", "!=", etc. (for set_condition).
+    pub operator: Option<String>,
+    /// Attribute name (for set_attribute, e.g. "data-section", "aria-label").
+    pub name: Option<String>,
+    /// Attribute value (for set_attribute).
+    pub value: Option<String>,
+    /// State ID (for expose_data).
+    pub id: Option<String>,
+    /// Display label (for expose_data).
+    pub label: Option<String>,
+    /// Full public states array (for set_states power-user escape hatch).
+    pub public_states: Option<serde_json::Value>,
+    /// Full private states array (for set_states power-user escape hatch).
+    pub private_states: Option<serde_json::Value>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct EditorParams {
+    /// The action to perform.
+    pub action: EditorAction,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct EvalParams {
+    /// JavaScript code to execute in the Silex webview.
+    /// Evaluated with eval(), so expressions return their value directly.
+    /// Access the GrapesJS editor with: window.silex.getEditor()
+    pub js: String,
+    /// Optional file path to save the result to.
+    pub output_file: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ScreenshotParams {
+    /// What to capture: "ui" for the whole editor (default),
+    /// or "canvas" for only the website preview.
+    pub target: Option<String>,
+    /// File path to save the screenshot PNG to.
+    pub output_file: Option<String>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct GetHtmlCssParams {
+    /// If true, return a structural summary instead of full HTML.
+    pub summary: Option<bool>,
+}
+
+#[derive(Debug, Deserialize, JsonSchema)]
+pub struct ReportLimitationParams {
+    /// Description of the missing capability.
+    pub description: String,
+    /// What you were trying to do when you hit this limitation.
+    pub context: Option<String>,
+    /// Any workaround you found.
+    pub workaround: Option<String>,
+}
+
+// ==========================================================================
+// SilexMcp struct
+// ==========================================================================
 
 #[derive(Clone)]
 pub struct SilexMcp {
@@ -37,81 +311,52 @@ pub struct SilexMcp {
     pending_evals: PendingEvals,
 }
 
-// -- Parameter types ----------------------------------------------------------
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct NavigateParams {
-    /// The URL to navigate the Silex webview to.
-    pub url: String,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct MenuParams {
-    /// Menu action ID (e.g. "save", "undo", "redo", "new_project", "open_project", "close_project", "toggle_fullscreen").
-    pub menu_id: String,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct EvalParams {
-    /// JavaScript code to execute in the Silex webview.
-    /// The code is evaluated with eval(), so expressions return their value directly
-    /// (e.g. "document.title" returns the page title). For async code, return a
-    /// Promise and it will be awaited. For multi-statement code, the last
-    /// expression's value is returned.
-    pub js: String,
-    /// Optional file path to save the result to. If specified, the result is
-    /// written to this file and the path is returned instead of the full result.
-    /// Useful for large results.
-    pub output_file: Option<String>,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct ScreenshotParams {
-    /// What to capture: "ui" for the whole Silex editor interface (default),
-    /// or "canvas" for only the GrapesJS website preview.
-    pub target: Option<String>,
-    /// File path to save the screenshot PNG to. If not specified, saves to a
-    /// temporary file.
-    pub output_file: Option<String>,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct CreateWebsiteParams {
-    /// Human-readable name for the website.
-    pub name: Option<String>,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct WebsiteIdParams {
-    /// The ID of the website.
-    pub website_id: String,
-}
-
-#[derive(Debug, Deserialize, JsonSchema)]
-pub struct RenameWebsiteParams {
-    /// The ID of the website to rename.
-    pub website_id: String,
-    /// The new name for the website.
-    pub name: String,
-}
-
-// -- Internal helpers (not MCP tools) -----------------------------------------
+// ==========================================================================
+// Internal helpers
+// ==========================================================================
 
 impl SilexMcp {
-    /// Get the base URL for API calls
     fn get_base_url(&self) -> String {
         self.app_handle
             .get_webview_window("main")
             .and_then(|w| w.url().ok())
-            .map(|u| format!("{}://{}:{}", u.scheme(), u.host_str().unwrap_or("localhost"), u.port().unwrap_or(6805)))
+            .map(|u| {
+                format!(
+                    "{}://{}:{}",
+                    u.scheme(),
+                    u.host_str().unwrap_or("localhost"),
+                    u.port().unwrap_or(6805)
+                )
+            })
             .unwrap_or_else(|| "http://localhost:6805".to_string())
     }
 
+    /// Navigate the webview to a URL (safe, no injection).
+    fn navigate_to(&self, url: &str) -> Result<(), String> {
+        let window = self
+            .app_handle
+            .get_webview_window("main")
+            .ok_or_else(|| "No main window".to_string())?;
+        let url_json =
+            serde_json::to_string(url).map_err(|e| format!("Failed to encode URL: {}", e))?;
+        window
+            .eval(&format!("window.location.href = {}", url_json))
+            .map_err(|e| format!("Navigation failed: {}", e))
+    }
+
+    /// Check that a project is open.
+    fn require_project(&self) -> Result<(), String> {
+        let state = self.app_handle.state::<AppState>();
+        if state.current_website_id.lock().unwrap().is_none() {
+            return Err(
+                "No project open. Use website(action: 'open') or website(action: 'create') first."
+                    .into(),
+            );
+        }
+        Ok(())
+    }
+
     /// Execute JS in the webview and return the result.
-    ///
-    /// Injects a wrapper that evaluates the code with `eval()`, then POSTs the
-    /// result back to `/eval-callback/{id}` on the same origin (the Silex web
-    /// server). A oneshot channel bridges the HTTP callback to the caller.
     async fn eval_js_internal(
         &self,
         js_code: &str,
@@ -122,7 +367,6 @@ impl SilexMcp {
             .get_webview_window("main")
             .ok_or_else(|| "No main window".to_string())?;
 
-        // Only allow eval in the editor (URL has ?id=...), not on the dashboard
         if let Ok(url) = window.url() {
             let path = url.path();
             if path == "/" && url.query().is_none() {
@@ -138,12 +382,9 @@ impl SilexMcp {
         let (tx, rx) = oneshot::channel::<String>();
         self.pending_evals.lock().unwrap().insert(id, tx);
 
-        // Escape user JS as a JSON string literal for safe embedding in eval()
         let js_escaped = serde_json::to_string(js_code)
             .map_err(|e| format!("Failed to escape JS: {}", e))?;
 
-        // JS wrapper: eval code, POST result back via fetch to same-origin callback.
-        // Using .replace() instead of format!() to avoid escaping all JS braces.
         let wrapped = r#"(async()=>{try{let __r=eval(__JS__);if(__r instanceof Promise)__r=await __r;const __s=(typeof __r==='undefined')?null:(typeof __r==='string')?__r:JSON.stringify(__r);await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:true,result:__s})})}catch(__e){await fetch(window.location.origin+'/eval-callback/__ID__',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({success:false,error:__e.message||String(__e)})})}})()"#
             .replace("__JS__", &js_escaped)
             .replace("__ID__", &id.to_string());
@@ -153,7 +394,6 @@ impl SilexMcp {
             format!("Failed to inject JS: {}", e)
         })?;
 
-        // Wait for the HTTP callback
         let raw = tokio::time::timeout(std::time::Duration::from_secs(timeout_secs), rx)
             .await
             .map_err(|_| {
@@ -178,9 +418,46 @@ impl SilexMcp {
             Err(parsed.error.unwrap_or_else(|| "Unknown JS error".into()))
         }
     }
+
+    /// Helper: run JS in editor, return success CallToolResult.
+    async fn run_js(&self, js: &str) -> Result<CallToolResult, McpError> {
+        self.require_project().map_err(|e| McpError::internal_error(e, None))?;
+        match self.eval_js_internal(js, 10).await {
+            Ok(result) => Ok(CallToolResult::success(vec![Content::text(
+                result.unwrap_or_else(|| "null".into()),
+            )])),
+            Err(e) => Ok(tool_error(e)),
+        }
+    }
 }
 
-// -- MCP Tool implementations ------------------------------------------------
+/// Create an error CallToolResult (is_error = true).
+fn tool_error(msg: impl Into<String>) -> CallToolResult {
+    CallToolResult {
+        content: vec![Content::text(msg.into())],
+        structured_content: None,
+        is_error: Some(true),
+        meta: None,
+    }
+}
+
+/// JS snippet that returns the current selection state as a JSON object.
+/// Embed this in tool result JS to include selection context.
+const SELECTION_STATE_JS: &str = r#"(function(){var e=window.silex.getEditor();return window.__silexMcp.getSelectionState(e)})()"#;
+
+/// Wrap a JS expression so it returns { result, selection, next_steps }.
+fn wrap_with_selection(js_body: &str, next_steps: &str) -> String {
+    let next_js = serde_json::to_string(next_steps).unwrap();
+    format!(
+        r#"(function(){{var e=window.silex.getEditor();var __result__=(function(){{ {body} }})();var __sel__=window.__silexMcp.getSelectionState(e);if(typeof __result__==='string'){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__)){{__result__={{result:__result__}}}}if(typeof __result__==='object'&&__result__!==null){{__result__.selection=__sel__;__result__.next_steps={next}}}return JSON.stringify(__result__)}})()"#,
+        body = js_body,
+        next = next_js
+    )
+}
+
+// ==========================================================================
+// Tool implementations
+// ==========================================================================
 
 #[tool_router]
 impl SilexMcp {
@@ -197,7 +474,11 @@ impl SilexMcp {
         }
     }
 
-    #[tool(description = "Get the current Silex app state: window title, URL, project info, unsaved-changes flag")]
+    // ----------------------------------------------------------------------
+    // get_app_state
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "CALL THIS FIRST. Get current app state and selection hierarchy. Returns project info, selection state (breakpoint/page/component/selector), and what to do next.")]
     async fn get_app_state(&self) -> Result<CallToolResult, McpError> {
         let handle = &self.app_handle;
 
@@ -217,7 +498,14 @@ impl SilexMcp {
         let website_name = app_state.current_website_name.lock().unwrap().clone();
         let has_unsaved = *app_state.has_unsaved_changes.lock().unwrap();
 
-        let info = serde_json::json!({
+        let next_steps = if website_id.is_some() {
+            "Project is open. Hierarchy: Website → Breakpoint → Page → Component → Selector. Select each level before deeper operations. Use component(action:'get_tree') to see structure, component(action:'select') to select, selector(action:'list') to see selectors, selector(action:'select') to activate, then style(action:'set')."
+        } else {
+            "No project open. Next: website(action:'create', name:'My Site') to create a new site, or website(action:'list') then website(action:'open', website_id:'...') to open an existing one."
+        };
+
+        // If a project is open, also fetch selection state from the editor
+        let mut info = serde_json::json!({
             "window_title": window_title,
             "current_url": current_url,
             "current_website_id": website_id,
@@ -225,274 +513,764 @@ impl SilexMcp {
             "has_unsaved_changes": has_unsaved,
             "is_fullscreen": is_fullscreen,
             "window_size": window_size,
+            "next_steps": next_steps,
         });
 
-        Ok(CallToolResult::success(vec![Content::text(info.to_string())]))
-    }
-
-    #[tool(description = "List all websites managed by Silex, with metadata (name, ID, timestamps, etc.)")]
-    async fn list_websites(&self) -> Result<CallToolResult, McpError> {
-        let base_url = self.get_base_url();
-        let url = format!("{}/api/website", base_url);
-        match reqwest::get(&url).await {
-            Ok(resp) => match resp.text().await {
-                Ok(body) => Ok(CallToolResult::success(vec![Content::text(body)])),
-                Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                    "Error reading response: {}", e
-                ))])),
-            },
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error fetching {}: {}", url, e
-            ))])),
-        }
-    }
-
-    #[tool(description = "Create a new website with the given name. Returns the created website info and navigates to the editor.")]
-    async fn create_website(
-        &self,
-        Parameters(params): Parameters<CreateWebsiteParams>,
-    ) -> Result<CallToolResult, McpError> {
-        let base_url = self.get_base_url();
-        let url = format!("{}/api/website?connectorId=fs-storage", base_url);
-
-        let body = if let Some(name) = &params.name {
-            serde_json::json!({ "name": name })
-        } else {
-            serde_json::json!({})
-        };
-
-        let client = reqwest::Client::new();
-        match client.put(&url)
-            .header("Content-Type", "application/json")
-            .body(body.to_string())
-            .send()
-            .await
-        {
-            Ok(resp) => {
-                let status = resp.status();
-                match resp.text().await {
-                    Ok(response_body) => {
-                        if status.is_success() {
-                            // Parse the response to get the website ID
-                            let website_id = serde_json::from_str::<serde_json::Value>(&response_body)
-                                .ok()
-                                .and_then(|v| v.get("websiteId").and_then(|id| id.as_str().map(String::from)));
-
-                            // Navigate to the new website
-                            if let (Some(window), Some(id)) = (self.app_handle.get_webview_window("main"), website_id) {
-                                let nav_url = format!("{}/?id={}", base_url, id);
-                                let _ = window.eval(&format!("window.location.href = '{}'", nav_url));
-                            }
-                            Ok(CallToolResult::success(vec![Content::text(response_body)]))
-                        } else {
-                            Ok(CallToolResult::success(vec![Content::text(format!(
-                                "Error creating website ({}): {}", status, response_body
-                            ))]))
-                        }
-                    },
-                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                        "Error reading response: {}", e
-                    ))])),
+        if website_id.is_some() {
+            if let Ok(Some(sel_json)) = self.eval_js_internal(SELECTION_STATE_JS, 5).await {
+                if let Ok(sel) = serde_json::from_str::<serde_json::Value>(&sel_json) {
+                    info["selection"] = sel;
                 }
-            },
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error creating website: {}", e
-            ))])),
+            }
         }
+
+        Ok(CallToolResult::success(vec![Content::text(
+            info.to_string(),
+        )]))
     }
 
-    #[tool(description = "Delete a website by its ID.")]
-    async fn delete_website(
+    // ----------------------------------------------------------------------
+    // website — list, create, delete, rename, duplicate, open, dashboard
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Manage websites in Silex visual builder (NOT PHP). Actions: list, create, delete, rename, duplicate, open, dashboard. After create/open, use component() to add HTML content.")]
+    async fn website(
         &self,
-        Parameters(params): Parameters<WebsiteIdParams>,
+        Parameters(params): Parameters<WebsiteParams>,
     ) -> Result<CallToolResult, McpError> {
         let base_url = self.get_base_url();
-        let url = format!("{}/api/website?websiteId={}&connectorId=fs-storage", base_url, params.website_id);
-
         let client = reqwest::Client::new();
-        match client.delete(&url).send().await {
-            Ok(resp) => {
-                let status = resp.status();
-                match resp.text().await {
-                    Ok(body) => {
-                        if status.is_success() {
-                            // Refresh the dashboard
-                            if let Some(window) = self.app_handle.get_webview_window("main") {
-                                let _ = window.eval("window.location.href = '/'");
-                            }
-                            Ok(CallToolResult::success(vec![Content::text(format!(
-                                "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}", params.website_id
-                            ))]))
-                        } else {
-                            Ok(CallToolResult::success(vec![Content::text(format!(
-                                "Error deleting website ({}): {}", status, body
-                            ))]))
+
+        match params.action {
+            WebsiteAction::List => {
+                let url = format!("{}/api/website", base_url);
+                match reqwest::get(&url).await {
+                    Ok(resp) => match resp.text().await {
+                        Ok(body) => {
+                            let hint = r#"{"next_steps":"To open a website, use website(action:'open', website_id:'THE_ID'). To create a new one, use website(action:'create', name:'My Site')."}"#;
+                            Ok(CallToolResult::success(vec![
+                                Content::text(body),
+                                Content::text(hint),
+                            ]))
                         }
+                        Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
                     },
-                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                        "Error reading response: {}", e
-                    ))])),
+                    Err(e) => Ok(tool_error(format!("Error fetching websites: {}", e))),
                 }
-            },
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error deleting website: {}", e
-            ))])),
-        }
-    }
+            }
 
-    #[tool(description = "Rename a website (update its display name).")]
-    async fn rename_website(
-        &self,
-        Parameters(params): Parameters<RenameWebsiteParams>,
-    ) -> Result<CallToolResult, McpError> {
-        let base_url = self.get_base_url();
-        let url = format!("{}/api/website/meta?websiteId={}&connectorId=fs-storage", base_url, params.website_id);
-
-        let body = serde_json::json!({ "name": params.name });
-
-        let client = reqwest::Client::new();
-        match client.post(&url)
-            .header("Content-Type", "application/json")
-            .body(body.to_string())
-            .send()
-            .await
-        {
-            Ok(resp) => {
-                let status = resp.status();
-                match resp.text().await {
-                    Ok(response_body) => {
-                        if status.is_success() {
-                            // Refresh the dashboard
-                            if let Some(window) = self.app_handle.get_webview_window("main") {
-                                let _ = window.eval("window.location.href = '/'");
+            WebsiteAction::Create => {
+                let url = format!("{}/api/website?connectorId=fs-storage", base_url);
+                let body = if let Some(name) = &params.name {
+                    serde_json::json!({ "name": name })
+                } else {
+                    serde_json::json!({})
+                };
+                match client
+                    .put(&url)
+                    .header("Content-Type", "application/json")
+                    .body(body.to_string())
+                    .send()
+                    .await
+                {
+                    Ok(resp) => {
+                        let status = resp.status();
+                        match resp.text().await {
+                            Ok(response_body) => {
+                                if status.is_success() {
+                                    // Auto-navigate to the new website
+                                    if let Some(id) =
+                                        serde_json::from_str::<serde_json::Value>(&response_body)
+                                            .ok()
+                                            .and_then(|v| {
+                                                v.get("websiteId")
+                                                    .and_then(|id| id.as_str().map(String::from))
+                                            })
+                                    {
+                                        let _ = self
+                                            .navigate_to(&format!("{}/?id={}", base_url, id));
+                                    }
+                                    // Enrich response with next steps for small LLMs
+                                    let mut parsed: serde_json::Value = serde_json::from_str(&response_body).unwrap_or(serde_json::json!({}));
+                                    parsed["next_steps"] = serde_json::json!("Website created and opened. Next: component(action:'add', html:'<section><h1>Title</h1><p>Content</p></section>') to add content. Then component(action:'select') → selector(action:'create', class_name:'hero') → selector(action:'select', selector:'.hero') → style(action:'set', css:'padding: 2rem;') to style.");
+                                    Ok(CallToolResult::success(vec![Content::text(parsed.to_string())]))
+                                } else {
+                                    Ok(tool_error(format!(
+                                        "Error creating website ({}): {}",
+                                        status, response_body
+                                    )))
+                                }
                             }
+                            Err(e) => Ok(tool_error(format!("Error reading response: {}", e))),
+                        }
+                    }
+                    Err(e) => Ok(tool_error(format!("Error creating website: {}", e))),
+                }
+            }
+
+            WebsiteAction::Delete => {
+                let wid = params
+                    .website_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let url = format!(
+                    "{}/api/website?websiteId={}&connectorId=fs-storage",
+                    base_url, wid
+                );
+                match client.delete(&url).send().await {
+                    Ok(resp) => {
+                        if resp.status().is_success() {
+                            let _ = self.navigate_to(&format!("{}/", base_url));
                             Ok(CallToolResult::success(vec![Content::text(format!(
-                                "{{\"success\":true,\"message\":\"Website renamed to '{}'\"}}", params.name
+                                "{{\"success\":true,\"message\":\"Website '{}' deleted\"}}",
+                                wid
                             ))]))
                         } else {
-                            Ok(CallToolResult::success(vec![Content::text(format!(
-                                "Error renaming website ({}): {}", status, response_body
-                            ))]))
+                            let body = resp.text().await.unwrap_or_default();
+                            Ok(tool_error(format!("Error deleting website: {}", body)))
                         }
-                    },
-                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                        "Error reading response: {}", e
-                    ))])),
+                    }
+                    Err(e) => Ok(tool_error(format!("Error deleting website: {}", e))),
                 }
-            },
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error renaming website: {}", e
-            ))])),
-        }
-    }
+            }
 
-    #[tool(description = "Duplicate a website.")]
-    async fn duplicate_website(
-        &self,
-        Parameters(params): Parameters<WebsiteIdParams>,
-    ) -> Result<CallToolResult, McpError> {
-        let base_url = self.get_base_url();
-        let url = format!("{}/api/website/duplicate?websiteId={}&connectorId=fs-storage", base_url, params.website_id);
+            WebsiteAction::Rename => {
+                let wid = params
+                    .website_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let name = params
+                    .name
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("name is required", None))?;
+                let url = format!(
+                    "{}/api/website/meta?websiteId={}&connectorId=fs-storage",
+                    base_url, wid
+                );
+                let body = serde_json::json!({ "name": name });
+                match client
+                    .post(&url)
+                    .header("Content-Type", "application/json")
+                    .body(body.to_string())
+                    .send()
+                    .await
+                {
+                    Ok(resp) => {
+                        if resp.status().is_success() {
+                            Ok(CallToolResult::success(vec![Content::text(format!(
+                                "{{\"success\":true,\"message\":\"Renamed to '{}'\"}}",
+                                name
+                            ))]))
+                        } else {
+                            let body = resp.text().await.unwrap_or_default();
+                            Ok(tool_error(format!("Error renaming website: {}", body)))
+                        }
+                    }
+                    Err(e) => Ok(tool_error(format!("Error renaming website: {}", e))),
+                }
+            }
 
-        let client = reqwest::Client::new();
-        match client.post(&url).send().await {
-            Ok(resp) => {
-                let status = resp.status();
-                match resp.text().await {
-                    Ok(body) => {
-                        if status.is_success() {
-                            // Refresh the dashboard
-                            if let Some(window) = self.app_handle.get_webview_window("main") {
-                                let _ = window.eval("window.location.href = '/'");
-                            }
+            WebsiteAction::Duplicate => {
+                let wid = params
+                    .website_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let url = format!(
+                    "{}/api/website/duplicate?websiteId={}&connectorId=fs-storage",
+                    base_url, wid
+                );
+                match client.post(&url).send().await {
+                    Ok(resp) => {
+                        if resp.status().is_success() {
+                            let body = resp.text().await.unwrap_or_default();
                             Ok(CallToolResult::success(vec![Content::text(body)]))
                         } else {
-                            Ok(CallToolResult::success(vec![Content::text(format!(
-                                "Error duplicating website ({}): {}", status, body
-                            ))]))
+                            let body = resp.text().await.unwrap_or_default();
+                            Ok(tool_error(format!("Error duplicating website: {}", body)))
                         }
-                    },
-                    Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                        "Error reading response: {}", e
+                    }
+                    Err(e) => Ok(tool_error(format!("Error duplicating website: {}", e))),
+                }
+            }
+
+            WebsiteAction::Open => {
+                let wid = params
+                    .website_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("website_id is required", None))?;
+                let nav_url = format!("{}/?id={}", base_url, wid);
+                match self.navigate_to(&nav_url) {
+                    Ok(_) => Ok(CallToolResult::success(vec![Content::text(format!(
+                        "{{\"success\":true,\"message\":\"Website opened in editor\",\"next_steps\":\"Use component(action:'get_tree') to see content, then component(action:'select') to select, selector(action:'list') to see selectors, and style(action:'set') to style.\"}}",
                     ))])),
+                    Err(e) => Ok(tool_error(e)),
                 }
+            }
+
+            WebsiteAction::Dashboard => match self.navigate_to(&format!("{}/", base_url)) {
+                Ok(_) => Ok(CallToolResult::success(vec![Content::text(
+                    "{\"success\":true,\"message\":\"Navigated to dashboard\"}",
+                )])),
+                Err(e) => Ok(tool_error(e)),
             },
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error duplicating website: {}", e
-            ))])),
         }
     }
 
-    #[tool(description = "Navigate the Silex webview to a URL")]
-    async fn navigate(
+    // ----------------------------------------------------------------------
+    // page — list, add, select, remove, update_settings
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Manage pages (Level 3). Actions: list, add (name + slug), select (page_id — sets Level 3), remove (page_id), update_settings (title, lang, SEO, head injection). Homepage must be named 'index'.")]
+    async fn page(
         &self,
-        Parameters(params): Parameters<NavigateParams>,
+        Parameters(params): Parameters<PageParams>,
     ) -> Result<CallToolResult, McpError> {
-        if let Some(window) = self.app_handle.get_webview_window("main") {
-            let js = format!(
-                "window.location.href = '{}'",
-                params.url.replace('\'', "\\'")
-            );
-            match window.eval(&js) {
-                Ok(_) => Ok(CallToolResult::success(vec![Content::text(format!(
-                    "{{\"success\":true,\"message\":\"Navigating to {}\"}}",
-                    params.url
-                ))])),
-                Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                    "{{\"success\":false,\"message\":\"Failed to navigate: {}\"}}",
-                    e
-                ))])),
+        match params.action {
+            PageAction::List => {
+                let js_body = "return window.__silexMcp.listPages(e)";
+                let js = wrap_with_selection(js_body, "Use page(action:'select', page_id:'...') to select a page, then component(action:'add') to add content.");
+                self.run_js(&js).await
             }
-        } else {
-            Ok(CallToolResult::success(vec![Content::text(
-                "{\"success\":false,\"message\":\"No main window\"}",
-            )]))
+
+            PageAction::Add => {
+                let name = params.name.as_deref().unwrap_or("New Page");
+                let name_js = serde_json::to_string(name).unwrap();
+                let slug = params.slug.as_deref().unwrap_or(name);
+                let slug_js = serde_json::to_string(slug).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.addPage(e,{},{})",
+                    name_js, slug_js
+                );
+                let js = wrap_with_selection(&js_body, "Page created and selected. Use component(action:'add', html:'...') to add content.");
+                self.run_js(&js).await
+            }
+
+            PageAction::Select => {
+                let pid = params.page_id.as_deref().unwrap_or("");
+                let pid_js = serde_json::to_string(pid).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.selectPage(e,{})",
+                    pid_js
+                );
+                let js = wrap_with_selection(&js_body, "Page selected. Use component(action:'get_tree') to see content, or component(action:'add') to add content.");
+                self.run_js(&js).await
+            }
+
+            PageAction::Remove => {
+                let pid = params
+                    .page_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("page_id is required", None))?;
+                let pid_js = serde_json::to_string(pid).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.removePage(e,{})",
+                    pid_js
+                );
+                let js = wrap_with_selection(&js_body, "Page removed.");
+                self.run_js(&js).await
+            }
+
+            PageAction::UpdateSettings => {
+                let settings_json = params
+                    .settings
+                    .as_ref()
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "{}".into());
+                let pid_js = params
+                    .page_id
+                    .as_ref()
+                    .map(|p| serde_json::to_string(p).unwrap())
+                    .unwrap_or_else(|| "null".into());
+                let js_body = format!(
+                    "return window.__silexMcp.updatePageSettings(e,{},{})",
+                    pid_js, settings_json
+                );
+                let js = wrap_with_selection(&js_body, "Page settings updated.");
+                self.run_js(&js).await
+            }
         }
     }
 
-    #[tool(description = "Trigger a Silex menu action by ID (save, undo, redo, new_project, open_project, close_project, toggle_fullscreen, ...)")]
-    async fn trigger_menu(
+    // ----------------------------------------------------------------------
+    // component — get_tree, get, add, update, move, remove, select
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Manage visual components. Actions: get_tree (view structure), select (component_id required — sets Level 4), get/update/remove (operate on selected), add (html + position), move (component_id=target + position). Position: 'before'/'after'/'inside' (default) relative to selected component.")]
+    async fn component(
         &self,
-        Parameters(params): Parameters<MenuParams>,
+        Parameters(params): Parameters<ComponentParams>,
     ) -> Result<CallToolResult, McpError> {
-        let result = match params.menu_id.as_str() {
-            "new_project" => {
-                if let Some(w) = self.app_handle.get_webview_window("main") {
-                    w.eval("window.location.href = '/?action=new'").ok();
-                }
-                true
+        match params.action {
+            ComponentAction::GetTree => {
+                let depth = params.depth.unwrap_or(2);
+                let max = params.max_components.unwrap_or(50);
+                let js_body = format!("return window.__silexMcp.getTree(e,{},{})", depth, max);
+                let js = wrap_with_selection(&js_body, "Use component(action:'select', component_id:'...') to select a component, then selector(action:'list') to see its selectors.");
+                self.run_js(&js).await
             }
-            "open_project" => {
-                if let Some(w) = self.app_handle.get_webview_window("main") {
-                    w.eval("window.location.href = '/'").ok();
-                }
-                true
+
+            ComponentAction::Get => {
+                let js_body = "return window.__silexMcp.getComponent(e)";
+                let js = wrap_with_selection(js_body, "Use selector(action:'list') to see selectors, or component(action:'update') to modify.");
+                self.run_js(&js).await
             }
-            "save" => self.app_handle.emit("menu-save", ()).is_ok(),
-            "undo" => self.app_handle.emit("menu-undo", ()).is_ok(),
-            "redo" => self.app_handle.emit("menu-redo", ()).is_ok(),
-            "close_project" => self.app_handle.emit("menu-close-project", ()).is_ok(),
-            "toggle_fullscreen" => {
-                if let Some(w) = self.app_handle.get_webview_window("main") {
-                    let fs = w.is_fullscreen().unwrap_or(false);
-                    w.set_fullscreen(!fs).is_ok()
+
+            ComponentAction::Add => {
+                let html = params
+                    .html
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("html is required", None))?;
+                let html_js = serde_json::to_string(html).unwrap();
+                let pos = params.position.as_deref().unwrap_or("inside");
+                let pos_js = serde_json::to_string(pos).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.addComponent(e,{},{})",
+                    html_js, pos_js
+                );
+                let js = wrap_with_selection(&js_body, "Component added and selected. Use selector(action:'create', class_name:'...') to add a class, then selector(action:'select', selector:'.classname') and style(action:'set', css:'...') to style it.");
+                self.run_js(&js).await
+            }
+
+            ComponentAction::Update => {
+                let content_js = params
+                    .content
+                    .as_ref()
+                    .map(|s| serde_json::to_string(s).unwrap())
+                    .unwrap_or_else(|| "null".into());
+                let attrs_js = params
+                    .attributes
+                    .as_ref()
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "null".into());
+                let js_body = format!(
+                    "return window.__silexMcp.updateComponent(e,{},{})",
+                    content_js, attrs_js
+                );
+                let js = wrap_with_selection(&js_body, "Component updated. Use selector(action:'list') to see selectors for styling.");
+                self.run_js(&js).await
+            }
+
+            ComponentAction::Move => {
+                let target_id = params
+                    .component_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id (target) is required for move", None))?;
+                let target_js = serde_json::to_string(target_id).unwrap();
+                let pos = params.position.as_deref().unwrap_or("inside");
+                let pos_js = serde_json::to_string(pos).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.moveComponent(e,{},{})",
+                    target_js, pos_js
+                );
+                let js = wrap_with_selection(&js_body, "Component moved.");
+                self.run_js(&js).await
+            }
+
+            ComponentAction::Remove => {
+                let js_body = "return window.__silexMcp.removeComponent(e)";
+                let js = wrap_with_selection(js_body, "Component removed.");
+                self.run_js(&js).await
+            }
+
+            ComponentAction::Select => {
+                let cid = params
+                    .component_id
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.selectComponent(e,{})",
+                    cid_js
+                );
+                let js = wrap_with_selection(&js_body, "Component selected. Use selector(action:'list') to see selectors, or selector(action:'create', class_name:'...') to add a class.");
+                self.run_js(&js).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // selector — list, select, create, delete (Level 5)
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Manage CSS selectors on the selected component (Level 5). Actions: list (shows selectors), select (activates a selector for styling — REQUIRED before style()), create (adds a CSS class), delete (removes a CSS class). Always select a component first.")]
+    async fn selector(
+        &self,
+        Parameters(params): Parameters<SelectorParams>,
+    ) -> Result<CallToolResult, McpError> {
+        match params.action {
+            SelectorAction::List => {
+                let js_body = "var c=e.getSelected();if(!c)return{error:'No component selected. Use component(action:select) first.'};return window.__silexMcp.listComponentSelectors(e)";
+                let js = wrap_with_selection(js_body, "Use selector(action:'select', selector:'.classname') to activate a selector for styling, or selector(action:'create', class_name:'my-class') to add a new class.");
+                self.run_js(&js).await
+            }
+
+            SelectorAction::Select => {
+                let sel = params
+                    .selector
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("selector string is required", None))?;
+                let sel_js = serde_json::to_string(sel).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.selectSelector(e,{})",
+                    sel_js
+                );
+                let js = wrap_with_selection(&js_body, "Selector activated. Use style(action:'set', css:'...') to apply styles, or style(action:'get') to read current styles.");
+                self.run_js(&js).await
+            }
+
+            SelectorAction::Create => {
+                let class_name = params
+                    .class_name
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("class_name is required", None))?;
+                let class_js = serde_json::to_string(class_name).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.createSelector(e,{})",
+                    class_js
+                );
+                let js = wrap_with_selection(&js_body, "Class added. Use selector(action:'select', selector:'.classname') to activate it for styling.");
+                self.run_js(&js).await
+            }
+
+            SelectorAction::Delete => {
+                let class_name = params
+                    .class_name
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("class_name is required", None))?;
+                let class_js = serde_json::to_string(class_name).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.deleteSelector(e,{})",
+                    class_js
+                );
+                let js = wrap_with_selection(&js_body, "Class and associated styles removed.");
+                self.run_js(&js).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // style — get, set, delete (operates on active selector)
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Read/write CSS styles on the active selector. REQUIRES selector(action:'select') first. Actions: get (read styles), set (properties object or css string — validated before applying), delete (remove a CSS property).")]
+    async fn style(
+        &self,
+        Parameters(params): Parameters<StyleParams>,
+    ) -> Result<CallToolResult, McpError> {
+        match params.action {
+            StyleAction::Get => {
+                let js_body = "return window.__silexMcp.getStyle(e)";
+                let js = wrap_with_selection(js_body, "Use style(action:'set', css:'...') to modify styles, or style(action:'delete', property:'...') to remove a property.");
+                self.run_js(&js).await
+            }
+
+            StyleAction::Set => {
+                // Accept either properties object or css string
+                let props_source = if let Some(props) = &params.properties {
+                    props.to_string()
+                } else if let Some(css) = &params.css {
+                    let css_js = serde_json::to_string(css).unwrap();
+                    format!("window.__silexMcp.parseCssString({})", css_js)
                 } else {
-                    false
-                }
+                    return Ok(tool_error("Either 'properties' or 'css' is required"));
+                };
+
+                let js_body = format!(
+                    "return window.__silexMcp.setStyle(e,{})",
+                    props_source
+                );
+                let js = wrap_with_selection(&js_body, "Styles applied. Use take_screenshot to verify, or style(action:'get') to confirm.");
+                self.run_js(&js).await
             }
-            other => self
-                .app_handle
-                .emit(&format!("menu-{}", other), ())
-                .is_ok(),
+
+            StyleAction::Delete => {
+                let prop = params
+                    .property
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("property is required", None))?;
+                let prop_js = serde_json::to_string(prop).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.deleteStyleProperty(e,{})",
+                    prop_js
+                );
+                let js = wrap_with_selection(&js_body, "CSS property removed.");
+                self.run_js(&js).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // symbol — list, create, place, delete
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Manage reusable symbols (shared header/footer). Actions: list, create (from selected component), place (relative to selected component using position), delete. Select a component first for create/place.")]
+    async fn symbol(
+        &self,
+        Parameters(params): Parameters<SymbolParams>,
+    ) -> Result<CallToolResult, McpError> {
+        match params.action {
+            SymbolAction::List => {
+                let js_body = "return{symbols:window.__silexMcp.findAllSymbols(e)}";
+                let js = wrap_with_selection(js_body, "Use symbol(action:'place', label:'...') to place a symbol, or symbol(action:'create', label:'...') to create one from the selected component.");
+                self.run_js(&js).await
+            }
+
+            SymbolAction::Create => {
+                let label = params
+                    .label
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("label is required", None))?;
+                let label_js = serde_json::to_string(label).unwrap();
+                let icon_js = serde_json::to_string(
+                    params.icon.as_deref().unwrap_or("fa fa-diamond"),
+                )
+                .unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.createSymbol(e,{},{})",
+                    label_js, icon_js
+                );
+                let js = wrap_with_selection(&js_body, "Symbol created. Use symbol(action:'place', label:'...') to place it on other pages.");
+                self.run_js(&js).await
+            }
+
+            SymbolAction::Place => {
+                let label = params
+                    .label
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("label is required", None))?;
+                let label_js = serde_json::to_string(label).unwrap();
+                let pos = params.position.as_deref().unwrap_or("inside");
+                let pos_js = serde_json::to_string(pos).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.placeSymbol(e,{},{})",
+                    label_js, pos_js
+                );
+                let js = wrap_with_selection(&js_body, "Symbol placed.");
+                self.run_js(&js).await
+            }
+
+            SymbolAction::Delete => {
+                let label = params
+                    .label
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("label is required", None))?;
+                let label_js = serde_json::to_string(label).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.deleteSymbol(e,{})",
+                    label_js
+                );
+                let js = wrap_with_selection(&js_body, "Symbol deleted.");
+                self.run_js(&js).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // device — list, set
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Switch responsive breakpoint (Level 2). Actions: list, set. Use name:'Desktop', 'Tablet', or 'Mobile'. Affects which styles are edited.")]
+    async fn device(
+        &self,
+        Parameters(params): Parameters<DeviceParams>,
+    ) -> Result<CallToolResult, McpError> {
+        match params.action {
+            DeviceAction::List => {
+                let js_body = "return window.__silexMcp.listDevices(e)";
+                let js = wrap_with_selection(js_body, "Use device(action:'set', name:'Tablet') to switch breakpoint.");
+                self.run_js(&js).await
+            }
+
+            DeviceAction::Set => {
+                let name = params
+                    .name
+                    .as_deref()
+                    .ok_or_else(|| McpError::invalid_params("name is required", None))?;
+                let name_js = serde_json::to_string(name).unwrap();
+                let js_body = format!(
+                    "return window.__silexMcp.setDevice(e,{})",
+                    name_js
+                );
+                let js = wrap_with_selection(&js_body, "Breakpoint changed. Styles set now will apply to this breakpoint.");
+                self.run_js(&js).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // site_settings — get, set
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Get or set site-wide settings (Level 1): lang, title, description, favicon, head (for scripts/stylesheets), og:title, og:description, og:image.")]
+    async fn site_settings(
+        &self,
+        Parameters(params): Parameters<SettingsParams>,
+    ) -> Result<CallToolResult, McpError> {
+        match params.action {
+            SettingsAction::Get => {
+                let js_body = "return window.__silexMcp.getSiteSettings(e)";
+                let js = wrap_with_selection(js_body, "Use site_settings(action:'set', settings:{...}) to update settings.");
+                self.run_js(&js).await
+            }
+
+            SettingsAction::Set => {
+                let settings_json = params
+                    .settings
+                    .as_ref()
+                    .map(|s| s.to_string())
+                    .unwrap_or_else(|| "{}".into());
+                let js_body = format!(
+                    "return window.__silexMcp.setSiteSettings(e,{})",
+                    settings_json
+                );
+                let js = wrap_with_selection(&js_body, "Site settings updated.");
+                self.run_js(&js).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // cms — data sources, bindings, attributes, states
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "CMS data binding (optional, only if a CMS data source is configured). Actions: list_sources, bind_content, set_condition, set_loop, expose_data, set_attribute, set_states, refresh_preview. Uses dot-notation expressions like 'wordpress.posts.title'.")]
+    async fn cms(
+        &self,
+        Parameters(params): Parameters<CmsParams>,
+    ) -> Result<CallToolResult, McpError> {
+        match params.action {
+            CmsAction::ListSources => {
+                self.run_js(r#"(function(){var dsApi=window.__silexMcp.getDataSourceApi();if(!dsApi||!dsApi.getAllDataSources)return JSON.stringify({error:'Data source plugin not available. No CMS configured.'});var allDs=dsApi.getAllDataSources();var sources=[];allDs.forEach(function(ds){var types=[];try{(ds.getTypes()||[]).forEach(function(t){types.push({id:t.id,label:t.label,fields:(t.fields||[]).map(function(f){return{id:f.id,label:f.label,kind:f.kind,typeIds:f.typeIds}})})})}catch(ex){}var queryables=[];try{(ds.getQueryables()||[]).forEach(function(f){queryables.push({id:f.id,label:f.label,kind:f.kind,typeIds:f.typeIds})})}catch(ex){}sources.push({id:ds.id,label:ds.label,connected:ds.isConnected?ds.isConnected():true,types:types,queryables:queryables})});return JSON.stringify(sources)})()"#).await
+            }
+
+            CmsAction::BindContent => {
+                let cid = params.component_id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let expr = params.expression.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("expression is required", None))?;
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let expr_js = serde_json::to_string(expr).unwrap();
+                let js = Self::build_cms_js(&cid_js, &expr_js, "innerHTML", None);
+                self.run_js(&js).await
+            }
+
+            CmsAction::SetCondition => {
+                let cid = params.component_id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let expr = params.expression.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("expression is required", None))?;
+                let op = params.operator.as_deref().unwrap_or("truthy");
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let expr_js = serde_json::to_string(expr).unwrap();
+                let op_js = serde_json::to_string(op).unwrap();
+                let js = Self::build_cms_js(&cid_js, &expr_js, "condition", Some(&op_js));
+                self.run_js(&js).await
+            }
+
+            CmsAction::SetLoop => {
+                let cid = params.component_id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let expr = params.expression.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("expression is required", None))?;
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let expr_js = serde_json::to_string(expr).unwrap();
+                let js = Self::build_cms_js(&cid_js, &expr_js, "__data", None);
+                self.run_js(&js).await
+            }
+
+            CmsAction::ExposeData => {
+                let cid = params.component_id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let expr = params.expression.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("expression is required", None))?;
+                let state_id = params.id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("id is required for expose_data", None))?;
+                let label = params.label.as_deref().unwrap_or(state_id);
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let expr_js = serde_json::to_string(expr).unwrap();
+                let sid_js = serde_json::to_string(state_id).unwrap();
+                let label_js = serde_json::to_string(label).unwrap();
+
+                // Resolve expression then set as publicState via plugin API
+                let js = format!(
+                    r#"(function(){{var e=window.silex.getEditor();var c=window.__silexMcp.findComponent(e,{cid});if(!c)return JSON.stringify({{error:'Component not found'}});var tokens=window.__silexMcp.resolveExpression(e,{expr});if(tokens.error)return JSON.stringify(tokens);window.__silexMcp.setState(c,{sid},{{label:{label},hidden:false,expression:tokens}},true);return JSON.stringify({{success:true,state_id:{sid}}})}})()"#,
+                    cid = cid_js, expr = expr_js, sid = sid_js, label = label_js
+                );
+                self.run_js(&js).await
+            }
+
+            CmsAction::SetAttribute => {
+                let cid = params.component_id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let name = params.name.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("name is required", None))?;
+                let value = params.value.as_deref().unwrap_or("");
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let name_js = serde_json::to_string(name).unwrap();
+                let value_js = serde_json::to_string(value).unwrap();
+                // Use grapesjs-data-source setState for custom attributes via privateStates
+                let js = format!(
+                    r#"(function(){{var e=window.silex.getEditor();var c=window.__silexMcp.findComponent(e,{cid});if(!c)return JSON.stringify({{error:'Component not found'}});var stateId=window.__silexMcp.getOrCreatePersistantId(c)+'-attr-'+{name}.replace(/[^a-zA-Z0-9]/g,'_');window.__silexMcp.setState(c,stateId,{{label:{name},expression:[{{type:'property',propType:'field',fieldId:'fixed',kind:'scalar',label:'Fixed value',typeIds:['String'],options:{{value:{value}}}}}]}},false);return JSON.stringify({{success:true,attribute:{name},value:{value}}})}})()"#,
+                    cid = cid_js, name = name_js, value = value_js
+                );
+                self.run_js(&js).await
+            }
+
+            CmsAction::SetStates => {
+                let cid = params.component_id.as_deref()
+                    .ok_or_else(|| McpError::invalid_params("component_id is required", None))?;
+                let cid_js = serde_json::to_string(cid).unwrap();
+                let pub_js = params.public_states
+                    .as_ref()
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "null".into());
+                let priv_js = params.private_states
+                    .as_ref()
+                    .map(|v| v.to_string())
+                    .unwrap_or_else(|| "null".into());
+                // Use plugin setState for each state to ensure change callbacks fire
+                let js = format!(
+                    r#"(function(){{var e=window.silex.getEditor();var c=window.__silexMcp.findComponent(e,{cid});if(!c)return JSON.stringify({{error:'Component not found'}});var pubs={pub_states};var privs={priv_states};if(pubs!==null)pubs.forEach(function(s){{window.__silexMcp.setState(c,s.id,{{label:s.label,hidden:s.hidden,expression:s.expression}},true)}});if(privs!==null)privs.forEach(function(s){{window.__silexMcp.setState(c,s.id,{{label:s.label,hidden:s.hidden,expression:s.expression}},false)}});return JSON.stringify({{success:true}})}})()"#,
+                    cid = cid_js, pub_states = pub_js, priv_states = priv_js
+                );
+                self.run_js(&js).await
+            }
+
+            CmsAction::RefreshPreview => {
+                self.run_js(r#"(function(){var e=window.silex.getEditor();e.runCommand('data-source:preview:refresh');return JSON.stringify({success:true})})()"#).await
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // editor — save, undo, redo
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Save, undo, or redo. Always save after making changes.")]
+    async fn editor(
+        &self,
+        Parameters(params): Parameters<EditorParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let event_name = match params.action {
+            EditorAction::Save => "menu-save",
+            EditorAction::Undo => "menu-undo",
+            EditorAction::Redo => "menu-redo",
         };
 
-        Ok(CallToolResult::success(vec![Content::text(format!(
-            "{{\"success\":{},\"message\":\"Triggered menu: {}\"}}",
-            result, params.menu_id
-        ))]))
+        match self.app_handle.emit(event_name, ()) {
+            Ok(_) => Ok(CallToolResult::success(vec![Content::text(format!(
+                "{{\"success\":true,\"action\":\"{}\"}}",
+                event_name
+            ))])),
+            Err(e) => Ok(tool_error(format!("Failed to emit {}: {}", event_name, e))),
+        }
     }
 
-    #[tool(description = "Execute JavaScript in the Silex webview and return the result. Only works when a project is open in the editor (not on the dashboard). Has a 10-second timeout — break large operations into smaller chunks. The JS is evaluated using eval(), so expressions return their value directly (e.g. \"document.title\" returns the page title). For async code, return a Promise and it will be awaited. For multi-statement code, the last expression's value is returned. Access the GrapesJS editor with: window.silex.getEditor(). Use CssComposer.setRule(selector, propsObject) for styling (never addRules() or component.setStyle()). Use BEM class names.")]
+    // ----------------------------------------------------------------------
+    // eval_js — escape hatch
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Execute JavaScript in the editor webview. Escape hatch for advanced operations. Access the editor with window.silex.getEditor(). Prefer using the other tools instead.")]
     async fn eval_js(
         &self,
         Parameters(params): Parameters<EvalParams>,
@@ -500,7 +1278,6 @@ impl SilexMcp {
         match self.eval_js_internal(&params.js, 10).await {
             Ok(result) => {
                 let result_text = result.unwrap_or_else(|| "undefined".to_string());
-
                 if let Some(output_file) = params.output_file {
                     std::fs::write(&output_file, &result_text).map_err(|e| {
                         McpError::internal_error(format!("Failed to write file: {e}"), None)
@@ -510,34 +1287,17 @@ impl SilexMcp {
                         output_file
                     ))]));
                 }
-
                 Ok(CallToolResult::success(vec![Content::text(result_text)]))
             }
-            Err(error) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error: {}",
-                error
-            ))])),
+            Err(error) => Ok(tool_error(error)),
         }
     }
 
-    #[tool(description = "Get the full HTML of the page currently loaded in the Silex webview")]
-    async fn get_page_html(&self) -> Result<CallToolResult, McpError> {
-        match self
-            .eval_js_internal("document.documentElement.outerHTML", 5)
-            .await
-        {
-            Ok(Some(html)) => Ok(CallToolResult::success(vec![Content::text(html)])),
-            Ok(None) => Ok(CallToolResult::success(vec![Content::text(
-                "Error: no HTML returned",
-            )])),
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Error: {}",
-                e
-            ))])),
-        }
-    }
+    // ----------------------------------------------------------------------
+    // take_screenshot
+    // ----------------------------------------------------------------------
 
-    #[tool(description = "Take a screenshot of the Silex editor UI or the GrapesJS website canvas. Saves the screenshot as a PNG file and returns the file path.")]
+    #[tool(description = "Take a screenshot to verify your work. target:'ui' for editor, 'canvas' for website preview.")]
     async fn take_screenshot(
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
@@ -574,38 +1334,21 @@ impl SilexMcp {
 
         let data_url = match self.eval_js_internal(&screenshot_js, 30).await {
             Ok(Some(url)) => url,
-            Ok(None) => {
-                return Ok(CallToolResult::success(vec![Content::text(
-                    "Screenshot returned no data",
-                )]))
-            }
-            Err(e) => {
-                return Ok(CallToolResult::success(vec![Content::text(format!(
-                    "Screenshot failed: {}",
-                    e
-                ))]))
-            }
+            Ok(None) => return Ok(tool_error("Screenshot returned no data")),
+            Err(e) => return Ok(tool_error(format!("Screenshot failed: {}", e))),
         };
 
         let base64_prefix = "data:image/png;base64,";
         let base64_data = if data_url.starts_with(base64_prefix) {
             &data_url[base64_prefix.len()..]
         } else {
-            return Ok(CallToolResult::success(vec![Content::text(
-                "Unexpected data URL format",
-            )]));
+            return Ok(tool_error("Unexpected data URL format"));
         };
 
-        let png_bytes =
-            match base64::engine::general_purpose::STANDARD.decode(base64_data) {
-                Ok(bytes) => bytes,
-                Err(e) => {
-                    return Ok(CallToolResult::success(vec![Content::text(format!(
-                        "Failed to decode base64: {}",
-                        e
-                    ))]))
-                }
-            };
+        let png_bytes = match base64::engine::general_purpose::STANDARD.decode(base64_data) {
+            Ok(bytes) => bytes,
+            Err(e) => return Ok(tool_error(format!("Failed to decode base64: {}", e))),
+        };
 
         let output_path = if let Some(path) = params.output_file {
             std::path::PathBuf::from(path)
@@ -619,18 +1362,95 @@ impl SilexMcp {
                 "Screenshot saved to {}",
                 output_path.display()
             ))])),
-            Err(e) => Ok(CallToolResult::success(vec![Content::text(format!(
-                "Failed to write file: {}",
-                e
-            ))])),
+            Err(e) => Ok(tool_error(format!("Failed to write file: {}", e))),
         }
+    }
+
+    // ----------------------------------------------------------------------
+    // get_html_css — actual website output
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Get the website HTML and CSS output (published content, not editor DOM). Use summary:true for a compact tree view.")]
+    async fn get_html_css(
+        &self,
+        Parameters(params): Parameters<GetHtmlCssParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let summary = params.summary.unwrap_or(false);
+        if summary {
+            self.run_js(r#"(function(){var e=window.silex.getEditor();var w=e.getWrapper();function walk(c,d){var indent='';for(var i=0;i<d;i++)indent+='  ';var tag=c.get('tagName')||'div';var cls=c.getClasses().join(' ');var line=indent+'<'+tag+(cls?' class="'+cls+'"':'')+'>  ('+c.components().length+' children)';var lines=[line];if(d<4)c.components().forEach(function(ch){lines=lines.concat(walk(ch,d+1))});return lines}return walk(w,0).join('\n')})()"#).await
+        } else {
+            self.run_js(r#"(function(){var e=window.silex.getEditor();return JSON.stringify({html:e.getHtml(),css:e.getCss()})})()"#).await
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // report_limitation — feedback loop
+    // ----------------------------------------------------------------------
+
+    #[tool(description = "Call this when you cannot do something or the user seems frustrated. Reports the issue and returns a feedback link.")]
+    async fn report_limitation(
+        &self,
+        Parameters(params): Parameters<ReportLimitationParams>,
+    ) -> Result<CallToolResult, McpError> {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+        let entry = serde_json::json!({
+            "timestamp": timestamp,
+            "description": params.description,
+            "context": params.context,
+            "workaround": params.workaround,
+        });
+
+        // Try to log to file (best-effort)
+        let log_dir = std::env::var("HOME")
+            .map(|h| std::path::PathBuf::from(h).join(".silex"))
+            .unwrap_or_else(|_| std::env::temp_dir().join("silex"));
+        let _ = std::fs::create_dir_all(&log_dir);
+        let log_path = log_dir.join("limitation-reports.jsonl");
+        if let Ok(mut f) = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_path)
+        {
+            use std::io::Write;
+            let _ = writeln!(f, "{}", entry);
+        }
+
+        Ok(CallToolResult::success(vec![Content::text(format!(
+            "Limitation reported: {}. The user can help improve Silex vibe-coding at: https://roadmap.silex.me/posts/65/vibe-coding-with-silex-desktop",
+            params.description
+        ))]))
     }
 }
 
-// -- Eval callback handler (mounted on the Silex web server) ------------------
+// ==========================================================================
+// CMS helper: dot-notation expression resolution
+// ==========================================================================
 
-/// HTTP handler that receives eval results from the webview via fetch().
-/// Added to the Silex web server router so it's same-origin (no CORS).
+impl SilexMcp {
+    /// Build JS code for CMS binding (bind_content, set_condition, set_loop).
+    /// Resolves dot-notation expression to tokens, then sets as privateState
+    /// using the grapesjs-data-source plugin API via window.__silexMcp.setState().
+    fn build_cms_js(cid_js: &str, expr_js: &str, state_id: &str, operator_js: Option<&str>) -> String {
+        let sid_js = serde_json::to_string(state_id).unwrap();
+        let op_part = if let Some(op) = operator_js {
+            format!("c.set('conditionOperator',{});", op)
+        } else {
+            String::new()
+        };
+        format!(
+            r#"(function(){{var e=window.silex.getEditor();var c=window.__silexMcp.findComponent(e,{cid});if(!c)return JSON.stringify({{error:'Component not found'}});var tokens=window.__silexMcp.resolveExpression(e,{expr});if(tokens.error)return JSON.stringify(tokens);window.__silexMcp.setState(c,{sid},{{expression:tokens}},false);{op}return JSON.stringify({{success:true,state_id:{sid},tokens_count:tokens.length}})}})()"#,
+            cid = cid_js, expr = expr_js, sid = sid_js, op = op_part
+        )
+    }
+}
+
+// ==========================================================================
+// Eval callback handler
+// ==========================================================================
+
 pub async fn eval_callback(
     axum::extract::Extension(pending): axum::extract::Extension<PendingEvals>,
     axum::extract::Path(id): axum::extract::Path<u64>,
@@ -642,7 +1462,9 @@ pub async fn eval_callback(
     "ok"
 }
 
-// -- ServerHandler glue -------------------------------------------------------
+// ==========================================================================
+// ServerHandler — instructions for LLMs
+// ==========================================================================
 
 #[tool_handler]
 impl ServerHandler for SilexMcp {
@@ -652,184 +1474,13 @@ impl ServerHandler for SilexMcp {
             capabilities: ServerCapabilities::builder().enable_tools().build(),
             server_info: Implementation::from_build_env(),
             instructions: Some(
-                r#"Silex Desktop MCP server — controls the Silex no-code website builder (built on GrapesJS).
+                r#"You control Silex, a NO-CODE VISUAL website builder. Silex is NOT the old PHP micro-framework. Do NOT give PHP, Composer, or code instructions. Everything is done through these tools.
 
-Access the editor: `const editor = window.silex.getEditor();`
+WORKFLOW: get_app_state → website(create/open) → device(set) → page(select) → component(add/select) → selector(list/select/create) → style(set) → editor(save) → take_screenshot
 
-## Workflow
+HIERARCHY: Website → Breakpoint → Page → Component → Selector. Select each level before deeper operations. Position: "before"/"after"/"inside" relative to selected component.
 
-1. `get_app_state` — check if a project is open (`current_website_id`).
-2. `list_websites` — list available sites.
-3. `navigate` — open a project (`http://localhost:6805/?id=my-site`) or dashboard (`/`).
-4. `eval_js` — run GrapesJS API code (only when a project is open). GrapesJS API operations automatically trigger saves.
-5. `take_screenshot` — visually verify changes (target "ui" or "canvas").
-6. `trigger_menu("save")` — manually save the project (only needed if you want to force an immediate save).
-
-## GrapesJS API Reference
-
-Before using any GrapesJS API method, **fetch the relevant documentation page** to verify method signatures, options, and behavior. Do NOT rely on memory alone.
-
-- CSS:        https://grapesjs.com/docs/api/css_composer.html
-- Components: https://grapesjs.com/docs/api/components.html
-- Pages:      https://grapesjs.com/docs/api/pages.html
-- Devices:    https://grapesjs.com/docs/api/device_manager.html
-- Editor:     https://grapesjs.com/docs/api/editor.html
-- Storage:    https://grapesjs.com/docs/api/storage_manager.html
-
-## Critical Rules (Silex-specific)
-
-1. **Styling:** Use `CssComposer.setRule(selector, propsObject)` with BEM classes ONLY. NEVER use `addRules()` (does not persist on save). NEVER use `component.setStyle()` (creates inline styles on element IDs). NEVER use CSS Grid (Flexbox only).
-
-2. **Head injection:** NEVER add components to `wrapper.get('head')`. Use `settings.head` on the site model (all pages) or on a page object (single page) instead.
-
-3. **Custom/non-standard HTML attributes:** NEVER use `addAttributes()`, `set('attributes', {...})`, or any normal GrapesJS attribute API for custom attributes (data-*, Vue directives, ARIA overrides, etc.). These appear in the editor but are **stripped from published output**. The ONLY way to add attributes that survive publication is via `privateStates` with a fixed expression (see "Custom HTML Attributes" below).
-
-4. **GrapesJS API only** — never modify the DOM directly (unsaved). CSS-only interactivity (`:hover`, `:checked`, `:target`, combinators) — no inline JS.
-
-5. **Responsive:** Use DeviceManager breakpoints (Desktop, Tablet, Mobile) — never resize the browser window.
-
-6. **Content:** Texts must have `type: 'text'` and `editable: true`. Homepage must be named `index`. Internal links must be relative, starting with `./`.
-
-7. **Accessibility:** WCAG 2.1 AA — sufficient contrast, semantic HTML, alt text.
-
-## Silex-specific APIs
-
-### Symbols
-
-Shared elements (header/footer) reused across pages. Must be added on every page.
-
-```js
-editor.runCommand('symbols:add', { label: 'Header', icon: 'fa fa-diamond' });
-const symbols = editor.Components.getSymbols();
-editor.Pages.select('about');
-const sym = symbols.find(s => s.get('label') === 'Header');
-if (sym) editor.getWrapper().append(sym, { at: 0 });
-```
-
-### Settings (Site & Page)
-
-Settings cascade: page-level overrides site-level for the same key. Use `settings.head` for scripts/stylesheets — never `wrapper.get('head')`.
-
-```js
-// Site-level (all pages)
-const model = editor.getModel();
-const site = model.get('settings') || {};
-model.set('settings', { ...site,
-  lang: 'en',                         // HTML lang attribute
-  title: 'My Website',                // <title> tag + SEO
-  description: 'A short description', // <meta name="description">
-  favicon: './assets/favicon.ico',    // <link rel="icon">
-  head: '<link rel="stylesheet" href="global.css">',
-  'og:title': 'Share Title',          // Open Graph title
-  'og:description': 'Share desc',     // Open Graph description
-  'og:image': 'https://example.com/og.jpg', // Open Graph image
-});
-
-// Page-level (overrides site for this page)
-const page = editor.Pages.getSelected();
-const ps = page.get('settings') || {};
-page.set('settings', { ...ps, title: 'About Us', lang: 'fr' });
-```
-
-Core keys (site or page): `lang`, `title`, `description`, `favicon`, `head`, `og:title`, `og:description`, `og:image`.
-
-CMS-only keys (page, expression-based): `eleventySeoTitle`, `eleventySeoDescription`, `eleventyFavicon`, `eleventyOGImage`, `eleventyOGTitle`, `eleventyOGDescription`, `eleventyPageData`, `eleventyPermalink`.
-
-CMS i18n (page): `silexLanguagesList` (comma-separated, e.g. "en,fr") duplicates the page per language at build time.
-
-### CMS: Data Sources
-
-```js
-const dsm = editor.DataSourceManager;
-dsm.getAll().forEach(ds => console.log(ds.id, ds.get('label'), ds.isConnected()));
-const ds = dsm.get('my-api');
-ds.getTypes().forEach(t => console.log(t.id, t.fields.map(f => f.id)));
-ds.getQueryables().forEach(f => console.log(f.id, f.kind));
-```
-
-### CMS: Expressions & States
-
-Expressions are token arrays stored as **states** on components. Token types:
-- **Property**: `{ type: 'property', propType: 'field', dataSourceId, fieldId, typeIds, kind, label }`
-- **Filter**: `{ type: 'filter', id, label, options }`
-- **State**: `{ type: 'state', storedStateId, componentId, exposed: true, label }`
-
-State categories:
-- **publicStates** — accessible by child components
-- **privateStates** — internal to the component
-
-Special private state IDs:
-- `innerHTML` — binds component HTML content
-- `condition` — visibility (use `conditionOperator`: 'truthy', '==', '!=', etc.)
-- `__data` — loop: renders once per item
-
-```js
-const comp = editor.getSelected();
-
-// Public state: expose data to children
-const pub = comp.get('publicStates') || [];
-pub.push({
-  id: 'blogPosts', label: 'Blog Posts', hidden: false,
-  expression: [{ type: 'property', propType: 'field', dataSourceId: 'wordpress',
-    fieldId: 'posts', typeIds: ['PostConnection'], kind: 'list', label: 'posts' }]
-});
-comp.set('publicStates', [...pub]);
-
-// Private state: bind innerHTML
-const priv = comp.get('privateStates') || [];
-priv.push({
-  id: 'innerHTML',
-  expression: [
-    { type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id', exposed: true, label: 'blogPosts' },
-    { type: 'property', propType: 'field', fieldId: 'title', typeIds: ['String'], kind: 'scalar', label: 'title' }
-  ]
-});
-comp.set('privateStates', [...priv]);
-
-// Private state: loop over data
-priv.push({
-  id: '__data',
-  expression: [{ type: 'state', storedStateId: 'blogPosts', componentId: 'parent-id', exposed: true, label: 'blogPosts' }]
-});
-comp.set('privateStates', [...priv]);
-```
-
-### Custom HTML Attributes
-
-NEVER use `addAttributes()` or `set('attributes', {...})` for custom/non-standard attributes — they are stripped on publish. Use `privateStates` with a fixed expression instead. The state's `label` becomes the attribute name.
-
-```js
-const comp = editor.getSelected();
-const priv = comp.get('privateStates') || [];
-priv.push({
-  id: comp.getId() + '-' + Math.random().toString(36).slice(2, 15),
-  label: 'v-for',  // attribute name in published HTML
-  expression: [{
-    type: 'property', propType: 'field', fieldId: 'fixed', kind: 'scalar',
-    label: 'Fixed value', typeIds: ['String'],
-    options: { value: 'item in items' }  // attribute value
-  }]
-});
-comp.set('privateStates', [...priv]);
-// Published: <div v-for="item in items">...</div>
-```
-
-### CMS: Preview
-
-```js
-editor.runCommand('data-source:preview:refresh');
-```
-
-## QA Checklist
-
-Verify before finishing (use `take_screenshot`):
-- All DeviceManager breakpoints look correct
-- Texts are editable (`type: 'text'`, `editable: true`)
-- Styling via BEM classes + `setRule()` only (no `addRules()`, no inline styles, no element IDs)
-- Header/footer symbols on every page
-- WCAG 2.1 AA color contrast
-- Homepage named `index`; internal links start with `./`
-- CMS (if used): data sources connected, expressions set, preview renders
+RULES: Selectors must match selected component. CSS is validated — invalid properties error. BEM classes. No inline styles. No CSS Grid. Homepage = "index". Links start with "./". Save after changes.
 "#
                 .into(),
             ),
@@ -837,7 +1488,9 @@ Verify before finishing (use `take_screenshot`):
     }
 }
 
-// -- Server entry point -------------------------------------------------------
+// ==========================================================================
+// Server entry point
+// ==========================================================================
 
 pub async fn start_mcp_server(
     app_handle: tauri::AppHandle,
