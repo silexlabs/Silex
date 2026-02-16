@@ -154,7 +154,7 @@ pub struct PageParams {
     pub name: Option<String>,
     /// Page slug / URL path (for add). Defaults to name if omitted.
     pub slug: Option<String>,
-    /// Page-level settings object (for update_settings).
+    /// Page-level settings object (for update_settings). Use "name" to rename the page. Other keys (title, lang, description, head) set SEO metadata.
     pub settings: Option<serde_json::Value>,
 }
 
@@ -449,7 +449,7 @@ const SELECTION_STATE_JS: &str = r#"(function(){var e=window.silex.getEditor();r
 fn wrap_with_selection(js_body: &str, next_steps: &str) -> String {
     let next_js = serde_json::to_string(next_steps).unwrap();
     format!(
-        r#"(function(){{var e=window.silex.getEditor();var __result__=(function(){{ {body} }})();var __sel__=window.__silexMcp.getSelectionState(e);if(typeof __result__==='string'){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__)){{__result__={{result:__result__}}}}if(typeof __result__==='object'&&__result__!==null){{__result__.selection=__sel__;__result__.next_steps={next}}}return JSON.stringify(__result__)}})()"#,
+        r#"(function(){{var e=window.silex.getEditor();var __result__=(function(){{ {body} }})();var __sel__=window.__silexMcp.getSelectionState(e);if(typeof __result__==='string'){{try{{__result__=JSON.parse(__result__)}}catch(ex){{__result__={{raw:__result__}}}}}}if(Array.isArray(__result__)){{__result__={{result:__result__}}}}if(typeof __result__==='object'&&__result__!==null){{__result__.selection=__sel__;if(!__result__.error&&__result__.success!==false)__result__.next_steps={next}}}return JSON.stringify(__result__)}})()"#,
         body = js_body,
         next = next_js
     )
@@ -720,7 +720,7 @@ impl SilexMcp {
     // page — list, add, select, remove, update_settings
     // ----------------------------------------------------------------------
 
-    #[tool(description = "Manage pages (Level 3). Actions: list, add (name + slug), select (page_id — sets Level 3), remove (page_id), update_settings (title, lang, SEO, head injection). Homepage must be named 'index'.")]
+    #[tool(description = "Manage pages (Level 3). Actions: list, add (name + slug), select (page_id — sets Level 3), remove (page_id), update_settings (name to rename, title/lang/description/head for SEO). Homepage must be named 'index'.")]
     async fn page(
         &self,
         Parameters(params): Parameters<PageParams>,

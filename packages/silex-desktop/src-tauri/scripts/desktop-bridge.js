@@ -582,7 +582,14 @@
     // -- Page helpers --
 
     listPages(editor) {
-      return editor.Pages.getAll().map(p => ({ id: p.id, name: p.get('name') ?? p.id }));
+      const sel = editor.Pages.getSelected();
+      return {
+        pages: editor.Pages.getAll().map((p, i) => {
+          const name = p.get('name') || p.getName?.() || (i === 0 ? 'main' : p.id);
+          return { id: p.id, name, selected: p === sel };
+        }),
+        selected: sel?.id ?? null
+      };
     },
 
     selectPage(editor, pageId) {
@@ -615,10 +622,18 @@
         p = editor.Pages.getSelected();
       }
       if (!p) return { error: 'Page not found' };
-      const s = { ...(p.get('settings') ?? {}), ...settings };
-      p.set('settings', s);
+      // Handle page-level properties (name) separately from nested settings (SEO)
+      if (settings.name != null) {
+        p.set('name', settings.name);
+        this._log('page', 'update_settings', `Renamed page ${p.id} to "${settings.name}"`);
+      }
+      const { name: _, ...seoSettings } = settings;
+      if (Object.keys(seoSettings).length > 0) {
+        const s = { ...(p.get('settings') ?? {}), ...seoSettings };
+        p.set('settings', s);
+      }
       this._log('page', 'update_settings', `Updated settings for ${p.id}`);
-      return { success: true, settings: s };
+      return { success: true, name: p.get('name') ?? p.id, settings: p.get('settings') ?? {} };
     },
 
     // -- Device helpers --
