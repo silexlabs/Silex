@@ -11,10 +11,39 @@ in order to test your changes, you can run the package you changed or build it a
 
 ## MCP Connection
 
-Silex Desktop exposes MCP tools for controlling the visual editor. Two transports are available, http and stdio; both serve the same tool set from the same Rust server (check `packages/silex-desktop`).
+Silex Desktop exposes MCP tools for controlling the visual editor. Two transports are available (HTTP and stdio); both serve the same tool set from the same Rust server (see `packages/silex-desktop`).
 
-HTTP is always active on `localhost:6807/mcp`. The stdio transport requires the `--stdio` flag:
+### Using Silex (HTTP) — for agents designing websites
 
+When an agent is *using* Silex to build websites, connect over HTTP. The endpoint is always active while Silex Desktop is running: `http://localhost:6807/mcp`
+
+**Claude Code** (`.mcp.json` or project settings):
+```json
+{
+  "mcpServers": {
+    "silex": { "url": "http://localhost:6807/mcp" }
+  }
+}
+```
+
+**opencode** (`opencode.json`):
+```json
+{
+  "mcp": {
+    "silex": {
+      "type": "remote",
+      "url": "http://localhost:6807/mcp",
+      "enabled": true
+    }
+  }
+}
+```
+
+### Developing Silex (stdio) — for agents contributing code
+
+When an agent is *developing* Silex itself (editing source, rebuilding, testing), use the stdio transport. The MCP client spawns the Silex process directly, so it can auto-restart it after a rebuild (client-dependent — Claude Code does this automatically).
+
+**Claude Code** (`.mcp.json` or project settings):
 ```json
 {
   "mcpServers": {
@@ -26,7 +55,18 @@ HTTP is always active on `localhost:6807/mcp`. The stdio transport requires the 
 }
 ```
 
-For testing Silex with MCP, agents will probably want to start an instance of Silex with stdio (`--stdio`). This is because with http they need to ask the user to reconnect the MCP every time they rebuild and restart the app.
+**opencode** (`opencode.json`):
+```json
+{
+  "mcp": {
+    "silex": {
+      "type": "local",
+      "command": ["/path/to/silex-desktop", "--stdio"],
+      "enabled": true
+    }
+  }
+}
+```
 
 ## Development Workflow
 
