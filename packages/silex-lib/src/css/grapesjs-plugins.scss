@@ -224,6 +224,9 @@
 
     .silex-button--primary {
       background-color: var(--silex-accent-primary);
+      color: white;
+      text-decoration: none;
+      font-weight: normal;
     }
   }
 }
