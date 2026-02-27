@@ -1,7 +1,7 @@
 import { Component } from 'grapesjs'
 import { CompoundSelector, toString as compoundToString, fromString as compoundFromString, specificity as compoundSpecificity, merge as mergeCompoundSelectors, updateActivation } from './CompoundSelector'
 import { Operator, toString as operatorToString, fromString as operatorFromString } from './Operator'
-import { IdSelector, SimpleSelectorType } from './SimpleSelector'
+import { IdSelector, SimpleSelector, SimpleSelectorType, TagSelector } from './SimpleSelector'
 import { getComponentSelector } from './GrapesJsSelectors'
 
 export interface ComplexSelector {
@@ -167,7 +167,9 @@ export function same(all: ComplexSelector[]): ComplexSelector | false {
 }
 
 /**
- * Make sure that the selector always contains the ID of the component
+ * Make sure that the selector always contains a default fallback:
+ * - For body components: the `body` tag selector
+ * - For other components: the component ID selector
  */
 export function getSelector(components: Component[]): ComplexSelector | null {
   if(components.length === 0) return null
@@ -175,42 +177,41 @@ export function getSelector(components: Component[]): ComplexSelector | null {
     .map((component) => getComponentSelector(component) || EMPTY_SELECTOR)
   const selector = same(selectors)
   if(!selector) return null
-  const idSelectorOff: IdSelector = {
-    type: SimpleSelectorType.ID,
-    value: components[0].getId(),
-    active: false,
-  }
-  const idSelectorOn: IdSelector = {
-    type: SimpleSelectorType.ID,
-    value: components[0].getId(),
-    active: true,
-  }
-  // Handle the case when the component ID has changed
-  const selectorWithRenamedId = JSON.parse(JSON.stringify(selector))
-  selectorWithRenamedId.mainSelector.selectors = selector.mainSelector.selectors
-    .filter(s => s.type !== SimpleSelectorType.ID || (s as IdSelector).value === components[0].getId())
 
-  // Create the new selector
-  const newSelector = merge(selectorWithRenamedId, { mainSelector: { selectors: [idSelectorOff] } })
-  // Deactivate the ID selector
-  if(newSelector.mainSelector.selectors
-    .filter((selector) => selector.type !== SimpleSelectorType.ID && selector.active)
-    .length > 0
-  ) {
-    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
-      if (selector.type === SimpleSelectorType.ID) {
-        return idSelectorOff
-      }
-      return selector
+  // Body components use `body` tag as the default, others use the component ID
+  const isBody = components.some(c => c.tagName?.toLowerCase() === 'body')
+  const defaultOff = isBody
+    ? { type: SimpleSelectorType.TAG, value: 'body', active: false } as TagSelector
+    : { type: SimpleSelectorType.ID, value: components[0].getId(), active: false } as IdSelector
+  const defaultOn = { ...defaultOff, active: true }
+  const isDefault = isBody
+    ? (s: SimpleSelector) => s.type === SimpleSelectorType.TAG && (s as TagSelector).value === 'body'
+    : (s: SimpleSelector) => s.type === SimpleSelectorType.ID
+
+  // Handle the case when the component ID has changed (only relevant for ID selectors)
+  const cleaned = JSON.parse(JSON.stringify(selector))
+  if (!isBody) {
+    cleaned.mainSelector.selectors = selector.mainSelector.selectors
+      .filter(s => s.type !== SimpleSelectorType.ID || (s as IdSelector).value === components[0].getId())
+  }
+
+  // Ensure the default selector is present
+  const newSelector = merge(cleaned, { mainSelector: { selectors: [defaultOff] } })
+
+  // Deactivate the default if there are other active selectors
+  const hasOtherActive = newSelector.mainSelector.selectors
+    .some((s) => !isDefault(s) && s.active)
+  if(hasOtherActive) {
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((s) => {
+      if (isDefault(s)) return defaultOff
+      return s
     })
   }
-  // Activate the ID if it needs to be activated
+  // Activate the default if the selector would be empty
   if (!toString(newSelector)) {
-    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((selector) => {
-      if (selector.type === SimpleSelectorType.ID) {
-        return idSelectorOn
-      }
-      return selector
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((s) => {
+      if (isDefault(s)) return defaultOn
+      return s
     })
   }
   return newSelector
