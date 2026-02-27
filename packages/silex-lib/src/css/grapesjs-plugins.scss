@@ -209,9 +209,16 @@
     }
 
     .silex-button {
+      display: block;
       padding: 10px;
       width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
       transition: 200ms;
+      box-sizing: border-box;
 
       &:hover {
         filter: brightness(1.2);
@@ -225,8 +232,12 @@
     .silex-button--primary {
       background-color: var(--silex-accent-primary);
       color: white;
-      text-decoration: none;
-      font-weight: normal;
+    }
+
+    .silex-button--secondary {
+      background-color: var(--silex-button-bg, #252525);
+      color: var(--silex-text-primary, #E5E5E5);
+      border: 1px solid var(--silex-border-color-strong, #262626);
     }
   }
 }

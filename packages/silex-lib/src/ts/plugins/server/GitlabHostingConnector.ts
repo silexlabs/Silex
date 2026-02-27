@@ -347,7 +347,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
           job.logs[0].push('Build started')
           job.message = `
             <p><strong>Building...</strong></p>
-            <p><a href="${gitlabJobLogsUrl}" target="_blank">View build logs</a></p>
+            <div class="buttons">
+              <a href="${gitlabJobLogsUrl}" target="_blank" class="silex-button silex-button--secondary">View build logs</a>
+            </div>
           `
         }
       } catch (e) {
@@ -429,7 +431,9 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
         const progressInfo = traceInfo ? ` - ${traceInfo}` : ''
         job.message = `
           <p><strong>${statusDisplay}</strong>${progressInfo}</p>
-          <p><a href="${gitlabJobLogsUrl}" target="_blank">View build logs</a></p>
+          <div class="buttons">
+            <a href="${gitlabJobLogsUrl}" target="_blank" class="silex-button silex-button--secondary">View build logs</a>
+          </div>
         `
 
         // Check if job completed
@@ -453,8 +457,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
           const message = `
             <p><strong>Your website is now live!</strong></p>
-            <p><a href="${gitlabUrl}" target="_blank" class="silex-button silex-button--primary">View your website</a></p>
-            <p><a href="${pageUrl}" target="_blank" class="silex-button silex-button--secondary">GitLab Pages settings</a></p>
+            <div class="buttons">
+              <a href="${gitlabUrl}" target="_blank" class="silex-button silex-button--primary">View your website</a>
+              <a href="${pageUrl}" target="_blank" class="silex-button silex-button--secondary">GitLab Pages settings</a>
+            </div>
           `
           job.logs[0].push('Build completed successfully')
           return { success: true, message }
@@ -482,8 +488,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
 
           const message = `
             <p><strong>Build failed:</strong> ${failureReason}</p>
-            <p><a href="${gitlabJobLogsUrl}" target="_blank">View build logs for details</a></p>
-            <p><a href="${pageUrl}" target="_blank">Settings</a></p>
+            <div class="buttons">
+              <a href="${gitlabJobLogsUrl}" target="_blank" class="silex-button silex-button--primary">View build logs</a>
+              <a href="${pageUrl}" target="_blank" class="silex-button silex-button--secondary">Settings</a>
+            </div>
           `
           job.logs[0].push(`Build failed: ${failureReason}`)
           return { success: false, message }
@@ -503,7 +511,10 @@ export default class GitlabHostingConnector extends GitlabConnector implements H
     const message = `
       <p><strong>Build is taking longer than expected</strong></p>
       <p>Your website may still be published successfully.</p>
-      <p><a href="${gitlabJobLogsUrl}" target="_blank">Check build status</a> | <a href="${gitlabUrl}" target="_blank">Check your website</a></p>
+      <div class="buttons">
+        <a href="${gitlabUrl}" target="_blank" class="silex-button silex-button--primary">Check your website</a>
+        <a href="${gitlabJobLogsUrl}" target="_blank" class="silex-button silex-button--secondary">Check build status</a>
+      </div>
     `
     job.logs[0].push('Timeout waiting for build completion')
     return { success: false, message }
