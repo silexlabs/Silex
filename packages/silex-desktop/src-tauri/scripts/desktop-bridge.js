@@ -538,7 +538,7 @@
       return { success: true, label };
     },
 
-    placeSymbol(editor, label, position) {
+    insertSymbol(editor, label, position) {
       const sym = this.findSymbolByLabel(editor, label);
       if (!sym) {
         const all = this.findAllSymbols(editor);
@@ -561,7 +561,7 @@
       }
 
       parent.components().add(sym, opts);
-      this._log('symbol', 'place', `Placed "${label}" ${position} selected`);
+      this._log('symbol', 'insert', `Inserted "${label}" ${position} selected`);
       return { success: true, label };
     },
 
@@ -582,13 +582,11 @@
     // -- Page helpers --
 
     listPages(editor) {
-      const sel = editor.Pages.getSelected();
       return {
         pages: editor.Pages.getAll().map((p, i) => {
           const name = p.get('name') || p.getName?.() || (i === 0 ? 'main' : p.id);
-          return { id: p.id, name, selected: p === sel };
-        }),
-        selected: sel?.id ?? null
+          return { id: p.id, name };
+        })
       };
     },
 
@@ -613,40 +611,23 @@
       return { success: !!r };
     },
 
-    updatePageSettings(editor, pageId, settings) {
-      let p;
-      if (pageId) {
-        p = editor.Pages.get(pageId)
-          ?? editor.Pages.getAll().find(pg => (pg.get('name') ?? pg.id) === pageId);
-      } else {
-        p = editor.Pages.getSelected();
-      }
-      if (!p) return { error: 'Page not found' };
-      // Handle page-level properties (name) separately from nested settings (SEO)
-      if (settings.name != null) {
-        p.set('name', settings.name);
-        this._log('page', 'update_settings', `Renamed page ${p.id} to "${settings.name}"`);
-      }
-      const { name: _, ...seoSettings } = settings;
-      if (Object.keys(seoSettings).length > 0) {
-        const s = { ...(p.get('settings') ?? {}), ...seoSettings };
-        p.set('settings', s);
-      }
-      this._log('page', 'update_settings', `Updated settings for ${p.id}`);
-      return { success: true, name: p.get('name') ?? p.id, settings: p.get('settings') ?? {} };
+    renamePage(editor, newName) {
+      const p = editor.Pages.getSelected();
+      if (!p) return { error: 'No page selected' };
+      p.set('name', newName);
+      this._log('page', 'rename', `Renamed page ${p.id} to "${newName}"`);
+      return { success: true, id: p.id, name: newName };
     },
 
     // -- Device helpers --
 
     listDevices(editor) {
       const devs = editor.Devices.getDevices();
-      const sel = editor.Devices.getSelected();
       return {
         devices: devs.map(d => ({
           id: d.id, name: d.get('name'),
           width: d.get('width'), widthMedia: d.get('widthMedia')
-        })),
-        selected: sel?.id ?? null
+        }))
       };
     },
 
@@ -660,18 +641,89 @@
       return { success: true, device: dev.get('name') };
     },
 
-    // -- Site settings helpers --
+    // -- Settings helpers (unified site + page) --
 
-    getSiteSettings(editor) {
+    getSettings(editor, scope) {
+      if (scope === 'page') {
+        const p = editor.Pages.getSelected();
+        if (!p) return { error: 'No page selected' };
+        return p.get('settings') ?? {};
+      }
       return editor.getModel().get('settings') ?? {};
     },
 
-    setSiteSettings(editor, settings) {
+    setSettings(editor, scope, settings) {
+      if (scope === 'page') {
+        const p = editor.Pages.getSelected();
+        if (!p) return { error: 'No page selected' };
+        const s = { ...(p.get('settings') ?? {}), ...settings };
+        p.set('settings', s);
+        this._log('settings', 'set', `Updated page settings for ${p.id}`);
+        return { success: true, scope: 'page', settings: s };
+      }
       const m = editor.getModel();
       const s = { ...(m.get('settings') ?? {}), ...settings };
       m.set('settings', s);
-      this._log('site_settings', 'set', 'Updated site settings');
-      return { success: true, settings: s };
+      this._log('settings', 'set', 'Updated site settings');
+      return { success: true, scope: 'site', settings: s };
+    },
+
+    // -- Block helpers --
+
+    listBlocks(editor) {
+      return {
+        blocks: editor.Blocks.getAll().map(b => ({
+          id: b.id,
+          label: b.get('label') ?? '',
+          category: b.get('category')?.id ?? b.get('category') ?? ''
+        }))
+      };
+    },
+
+    insertBlock(editor, blockId, position) {
+      const block = editor.Blocks.get(blockId);
+      if (!block) {
+        const available = editor.Blocks.getAll().map(b => b.id);
+        return { error: `Block not found: ${blockId}`, available };
+      }
+      const content = block.get('content');
+      return this.addComponent(editor, content, position);
+    },
+
+    // -- Data source helpers --
+
+    listDataSources(editor) {
+      const dsApi = this.getDataSourceApi();
+      if (!dsApi || !dsApi.getAllDataSources) {
+        return { error: 'Data source plugin not available. No CMS configured.' };
+      }
+      const allDs = dsApi.getAllDataSources();
+      const sources = [];
+      allDs.forEach(ds => {
+        const types = [];
+        try {
+          (ds.getTypes() || []).forEach(t => {
+            types.push({
+              id: t.id, label: t.label,
+              fields: (t.fields || []).map(f => ({
+                id: f.id, label: f.label, kind: f.kind, typeIds: f.typeIds
+              }))
+            });
+          });
+        } catch { /* ignore */ }
+        const queryables = [];
+        try {
+          (ds.getQueryables() || []).forEach(f => {
+            queryables.push({ id: f.id, label: f.label, kind: f.kind, typeIds: f.typeIds });
+          });
+        } catch { /* ignore */ }
+        sources.push({
+          id: ds.id, label: ds.label,
+          connected: ds.isConnected ? ds.isConnected() : true,
+          types, queryables
+        });
+      });
+      return sources;
     },
 
     getOrCreatePersistantId(component) {
