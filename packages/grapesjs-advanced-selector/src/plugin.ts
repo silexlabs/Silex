@@ -108,6 +108,11 @@ function setupBodyCanvasRemap(editor: Editor) {
   editor.on('style:change', debouncedRewrite)
   editor.on('component:styleUpdate', debouncedRewrite)
   editor.on('undo redo', debouncedRewrite)
+
+  // Rewrite when selector changes — component.setClass() strips DOM-only classes
+  // This is needed in firefox ff only
+  editor.on('selector:custom', debouncedRewrite)
+  editor.on('component:update', debouncedRewrite)
 }
 
 function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
