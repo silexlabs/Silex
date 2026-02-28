@@ -2,6 +2,7 @@ import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
 import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, removeClass, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
 import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, getSelector, noPseudo } from './model/ComplexSelector'
+import { BODY_CANVAS_CLASS, rewriteBodyRulesInCanvas } from './model/BodyRemapping'
 import './components/complex-selector'
 import './components/current-selector-display'
 
@@ -73,6 +74,39 @@ export function initASM(editor: Editor, options: AdvancedSelectorOptions, props?
     // Keep listening
     editor.once('selector:custom', (props) => initASM(editor, options, props))
   }
+  setupBodyCanvasRemap(editor)
+}
+
+/**
+ * Remap `body` selectors in the canvas iframe to target the wrapper element.
+ * In GrapesJS the iframe DOM is <body> → <div.wrapper> → [page components].
+ * We add a class to the wrapper and rewrite CSSOM rules so styles intended
+ * for "body" visually apply to the wrapper instead — without changing the
+ * CssComposer model (publication still outputs `body`).
+ */
+function setupBodyCanvasRemap(editor: Editor) {
+  function rewrite() {
+    const doc = editor.Canvas.getDocument()
+    if (!doc) return
+
+    // Ensure wrapper has the class (DOM-only, no model change)
+    const wrapper = editor.getWrapper()
+    if (wrapper?.view?.el) {
+      wrapper.view.el.classList.add(BODY_CANVAS_CLASS)
+    }
+
+    rewriteBodyRulesInCanvas(doc)
+  }
+
+  // Rewrite after frame loads (initial + page switch)
+  editor.on('canvas:frame:load', rewrite)
+  editor.on('page', rewrite)
+
+  // Rewrite when CSS rules change (debounced — style:change fires rapidly during drag)
+  const debouncedRewrite = debounce(rewrite, 100)
+  editor.on('style:change', debouncedRewrite)
+  editor.on('component:styleUpdate', debouncedRewrite)
+  editor.on('undo redo', debouncedRewrite)
 }
 
 function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
