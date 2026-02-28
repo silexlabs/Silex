@@ -1,9 +1,18 @@
-import { html, css, TemplateResult } from 'lit'
+import { html, css, TemplateResult, svg } from 'lit'
 import StylableElement from '../StylableElement'
 import { property } from 'lit/decorators.js'
 import { ComplexSelector, fromString, specificity, toString } from '../model/ComplexSelector'
 import { createRef, ref } from 'lit/directives/ref.js'
 import { customizeSelect, FOCUS_VISIBLE } from '../styles'
+
+// Inline SVG icons (stroke-based, inherit color via currentColor)
+const ICON_SIZE = 14
+const iconEdit = svg`<svg xmlns="http://www.w3.org/2000/svg" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
+const iconCopy = svg`<svg xmlns="http://www.w3.org/2000/svg" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`
+const iconPaste = svg`<svg xmlns="http://www.w3.org/2000/svg" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>`
+const iconClear = svg`<svg xmlns="http://www.w3.org/2000/svg" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21"/><path d="m5.082 11.09 8.828 8.828"/></svg>`
+const iconHelp = svg`<svg xmlns="http://www.w3.org/2000/svg" width="${ICON_SIZE}" height="${ICON_SIZE}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+const iconWarning = svg`<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
 
 export class CurrentSelectorDisplay extends StylableElement {
   /**
@@ -86,7 +95,7 @@ export class CurrentSelectorDisplay extends StylableElement {
           align-items: center;
           height: 100%;
         }
-        button {
+        button, a {
           background-color: transparent;
           color: var(--gjs-font-color-active, #f8f8f8);
           cursor: pointer;
@@ -94,6 +103,8 @@ export class CurrentSelectorDisplay extends StylableElement {
           margin: 0;
           border: 1px solid transparent;
           opacity: 0.8;
+          display: inline-flex;
+          align-items: center;
           &:hover {
             transform: translateY(-1px);
             opacity: 1;
@@ -109,60 +120,41 @@ export class CurrentSelectorDisplay extends StylableElement {
     }
     .asm-display__help {
       text-decoration: none;
-      border-radius: 50%;
       color: var(--gjs-secondary-color, #333);
-      display: inline-block;
-      width: 0.5rem;
-      height: 0.5rem;
-      text-align: center;
-      line-height: 0.7rem;
-      font-size: 0.7rem;
-      padding: 4px;
       &:hover {
-        background-color: var(--gjs-secondary-color, #fff);
-        color: var(--gjs-main-color, #333);
+        color: var(--gjs-font-color-active, #fff);
       }
     }
 
     .asm-display__error {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
       a {
         text-decoration: none;
-        border-radius: 50%;
         color: var(--gjs-secondary-color, #333);
-        display: inline-block;
-        width: 0.5rem;
-        height: 0.5rem;
-        text-align: center;
-        line-height: 0.7rem;
-        font-size: 0.7rem;
-        padding: 4px;
+        display: inline-flex;
         margin-left: 0.5rem;
         &:hover {
-          background-color: var(--gjs-secondary-color, #fff);
-          color: var(--gjs-main-color, #333);
+          color: var(--gjs-font-color-active, #fff);
         }
       }
     }
     .asm-display__warning {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
       a {
         text-decoration: none;
-        border-radius: 50%;
         color: var(--gjs-secondary-color, #333);
-        display: inline-block;
-        width: 0.5rem;
-        height: 0.5rem;
-        text-align: center;
-        line-height: 0.7rem;
-        font-size: 0.7rem;
-        padding: 4px;
+        display: inline-flex;
         margin-left: 0.5rem;
         &:hover {
-          background-color: var(--gjs-secondary-color, #fff);
-          color: var(--gjs-main-color, #333);
+          color: var(--gjs-font-color-active, #fff);
         }
       }
     }
@@ -232,19 +224,19 @@ export class CurrentSelectorDisplay extends StylableElement {
     const newSelector = prompt(this.t('Edit selector'), toString(this.value!))
     this.changeSelector(newSelector ? fromString(newSelector, this.value!.atRule ?? '') : this.value!)
   }}
-              >✏️</button>
+              >${iconEdit}</button>
             </li>
             <li>
               <button
                 .title=${ this.t('Copy style') }
                 @click=${() => this.dispatchEvent(new CustomEvent('copy'))}
-              >📋</button>
+              >${iconCopy}</button>
             </li>
             <li>
               <button
                 .title=${ this.t('Paste style') }
                 @click=${() => this.dispatchEvent(new CustomEvent('paste'))}
-              >📥</button>
+              >${iconPaste}</button>
             </li>
             <li>
               <button
@@ -252,7 +244,7 @@ export class CurrentSelectorDisplay extends StylableElement {
                 @click=${() => {
     this.clearStyle()
   }}
-              >️🧹</button>
+              >${iconClear}</button>
             </li>
             ${ this.helpLink ? html`
             <li>
@@ -261,7 +253,7 @@ export class CurrentSelectorDisplay extends StylableElement {
                 .title=${ this.t('Help') }
                 .href=${ this.helpLink }
                 target="_blank"
-              >?</a>
+              >${iconHelp}</a>
             </li>
             ` : ''}
           </ul>
@@ -269,10 +261,10 @@ export class CurrentSelectorDisplay extends StylableElement {
       </main>
       <footer>
         ${ this.error ? html`
-          <p class="asm-display__error">\u26A0 ${ this.error } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
+          <p class="asm-display__error">${iconWarning} ${ this.error } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">${iconHelp}</a></p>
         ` : ''}
         ${ this.warning ? html`
-          <p class="asm-display__warning">\u26A0 ${ this.warning } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">?</a></p>
+          <p class="asm-display__warning">${iconWarning} ${ this.warning } <a href="https://docs.silex.me/en/user/selectors#troubleshooting" target="_blank" title="${this.t('Troubleshooting guide')}">${iconHelp}</a></p>
         ` : ''}
       </footer>
     `
