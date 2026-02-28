@@ -1,7 +1,7 @@
 import { Component, Editor } from 'grapesjs'
 import { html, render } from 'lit'
-import { clearStyle, editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, removeClass, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
-import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, merge, toString, getSelector, noPseudo } from './model/ComplexSelector'
+import { editStyle, getComponentSelector, getSelectedStyle, getSelectors, getSuggestionsMain, getSuggestionsRelated, getTranslation, getUntranslatedKeys, matchSelectorAll, matchSelectorSome, removeClass, renameSelector, setComponentSelector, setSelectedStyle } from './model/GrapesJsSelectors'
+import { activateSelectors, ComplexSelector, EMPTY_SELECTOR, fromString, merge, toString, getSelector, noPseudo } from './model/ComplexSelector'
 import { BODY_CANVAS_CLASS, rewriteBodyRulesInCanvas } from './model/BodyRemapping'
 import './components/complex-selector'
 import './components/current-selector-display'
@@ -210,12 +210,35 @@ function mergeSelector(selector: ComplexSelector, editor: Editor, components: Co
 }
 
 /**
- * Deletes the current selector's style from the editor.
- * Clears the style associated with the selector and updates the editor UI.
- * This does not remove the selector itself, but resets its styling.
+ * Deletes all styles associated with the current selector from the editor.
+ * Removes rules for the base selector as well as any pseudo-class or
+ * relation variants (e.g. `.foo:hover`, `.foo:has(.bar)`), across all
+ * media queries.
  */
 function deleteSelector(editor: Editor, selector: ComplexSelector) {
-  clearStyle(editor)
+  const selectorString = toString(selector)
+  if (!selectorString) return
+
+  // Find the rule that exactly matches the current selector (including pseudo-class/relation)
+  const toRemove = editor.CssComposer.getRules().filter((rule: any) => {
+    const selStr = rule.getSelectorsString()
+    if (!selStr) return false
+    try {
+      const complex = fromString(selStr, rule.getAtRule())
+      const ruleString = toString(complex)
+      return ruleString === selectorString
+    } catch {
+      return false
+    }
+  })
+
+  toRemove.forEach((rule: any) => {
+    // Clear styles before removing — getRule() keeps a stale cached reference
+    // after remove(), so editStyle() would re-select the ghost rule with old styles
+    rule.setStyle({})
+    editor.CssComposer.remove(rule)
+  })
+
   editStyle(editor, toString(selector))
 }
 
