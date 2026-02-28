@@ -98,12 +98,13 @@ function setupBodyCanvasRemap(editor: Editor) {
     rewriteBodyRulesInCanvas(doc)
   }
 
+  const debouncedRewrite = debounce(rewrite, 100)
+
   // Rewrite after frame loads (initial + page switch)
-  editor.on('canvas:frame:load', rewrite)
-  editor.on('page', rewrite)
+  editor.on('canvas:frame:load', debouncedRewrite)
+  editor.on('page', debouncedRewrite)
 
   // Rewrite when CSS rules change (debounced — style:change fires rapidly during drag)
-  const debouncedRewrite = debounce(rewrite, 100)
   editor.on('style:change', debouncedRewrite)
   editor.on('component:styleUpdate', debouncedRewrite)
   editor.on('undo redo', debouncedRewrite)
@@ -139,7 +140,7 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
         .value=${selector}
         .suggestions=${getSuggestionsMain(editor, components, selector)}
         .relations=${getSuggestionsRelated(editor, components, selector)}
-        @change=${(event: CustomEvent) => chagedSelector(event.detail as ComplexSelector, editor, components)}
+        @change=${(event: CustomEvent) => changedSelector(event.detail as ComplexSelector, editor, components)}
         @rename=${(event: CustomEvent) => renameSelector(editor, event.detail.oldValue, event.detail.value) }
         @removeClass=${(event: CustomEvent) => removeClass(editor, event.detail) }
       ></complex-selector>
@@ -151,7 +152,24 @@ function updateUi(editor: Editor, options: AdvancedSelectorOptions) {
   }
 }
 
-function chagedSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
+function changedSelector(selector: ComplexSelector, editor: Editor, components: Component[]) {
+  const isBody = components.some(c => c.tagName?.toLowerCase() === 'body')
+  // For body: body tag and ID are mutually exclusive
+  if (isBody) {
+    const bodyTagActive = selector.mainSelector.selectors
+      .some(s => s.type === 'tag' && (s as any).value === 'body' && s.active)
+    if (bodyTagActive) {
+      selector = {
+        ...selector,
+        mainSelector: {
+          ...selector.mainSelector,
+          selectors: selector.mainSelector.selectors.map(s =>
+            s.type === 'id' ? { ...s, active: false } : s
+          ),
+        },
+      }
+    }
+  }
   components.forEach((component) => {
     setComponentSelector(component, selector)
   })

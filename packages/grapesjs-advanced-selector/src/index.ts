@@ -10,7 +10,6 @@ export const name = '@silexlabs/grapesjs-advanced-selector'
 // Re-export selector model functions for programmatic use (MCP bridge, etc.)
 export { editStyle, getComponentSelector, setComponentSelector, getSelectors, matchSelectorAll } from './model/GrapesJsSelectors'
 export { toString as complexSelectorToString, fromString as complexSelectorFromString } from './model/ComplexSelector'
-export { BODY_CANVAS_CLASS, rewriteBodyRulesInCanvas } from './model/BodyRemapping'
 
 export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => {
   // Defaults

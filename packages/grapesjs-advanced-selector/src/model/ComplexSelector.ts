@@ -195,13 +195,26 @@ export function getSelector(components: Component[]): ComplexSelector | null {
       .filter(s => s.type !== SimpleSelectorType.ID || (s as IdSelector).value === components[0].getId())
   }
 
+  // Check if the default was explicitly stored as active (before merge adds it)
+  const storedDefaultActive = isBody && cleaned.mainSelector.selectors
+    .some((s: SimpleSelector) => isDefault(s) && s.active)
+
   // Ensure the default selector is present
   const newSelector = merge(cleaned, { mainSelector: { selectors: [defaultOff] } })
 
+  // For body: if body tag was explicitly stored as active, deactivate ID (mutual exclusion)
+  if (storedDefaultActive) {
+    newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((s) => {
+      if (s.type === SimpleSelectorType.ID) return { ...s, active: false }
+      return s
+    })
+  }
+
   // Deactivate the default if there are other active selectors
+  // But respect the stored state: if default was explicitly stored as active, keep it
   const hasOtherActive = newSelector.mainSelector.selectors
     .some((s) => !isDefault(s) && s.active)
-  if(hasOtherActive) {
+  if(hasOtherActive && !storedDefaultActive) {
     newSelector.mainSelector.selectors = newSelector.mainSelector.selectors.map((s) => {
       if (isDefault(s)) return defaultOff
       return s

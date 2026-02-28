@@ -309,6 +309,8 @@ export function setComponentSelector(component: Component, selector: ComplexSele
     case 'class':
       classes.push((simpleSelector as ClassSelector).value)
       break
+    case 'tag':
+      break // Tags are inherent to the component, no model update needed
     default:
       console.warn('Unhandled selector type', simpleSelector)
     }
