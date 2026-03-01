@@ -1,0 +1,23 @@
+export default {
+  'grapesjs-css-variables': {
+    'CSS Variables': 'CSS Variables',
+    'Colors': 'Colors',
+    'Sizes': 'Sizes',
+    'Typography': 'Typography',
+    'Name': 'Name',
+    'Value': 'Value',
+    'Delete': 'Delete',
+    'Add color': 'Add color',
+    'Add size': 'Add size',
+    'Add typography': 'Add typography',
+    'No variables defined': 'No variables defined yet',
+    'New variable': 'New variable',
+    'Color': 'Color',
+    'Size': 'Size',
+    'Font Family': 'Font Family',
+    'Base': 'Base',
+    'Value': 'Value',
+    'Duplicate': 'Duplicate',
+    'Delete variable': 'Delete variable',
+  },
+}
