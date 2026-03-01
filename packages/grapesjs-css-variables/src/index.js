@@ -31,7 +31,7 @@ export default (editor, opts = {}) => {
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
   editor.on('ai-capabilities:ready', (addCapability) => {
-    registerCapabilities(editor, addCapability)
+    registerCapabilities(addCapability)
   })
 }
 

@@ -25,13 +25,12 @@ export function registerCommands(editor, options) {
     run(ed, sender, opts = {}) {
       const { name, value, type } = opts
       if (!name || !value || !type) {
-        return { ok: false, error: 'Required: name, value, type (color|size|typo)' }
+        throw new Error('Required: name, value, type (color|size|typo)')
       }
       if (!TYPES.includes(type)) {
-        return { ok: false, error: 'type must be color, size, or typo' }
+        throw new Error('type must be color, size, or typo')
       }
       setVariable(editor, { name, value, type }, prefix)
-      return { ok: true }
     },
   })
 
@@ -39,13 +38,12 @@ export function registerCommands(editor, options) {
     run(ed, sender, opts = {}) {
       const { name, type } = opts
       if (!name || !type) {
-        return { ok: false, error: 'Required: name, type (color|size|typo)' }
+        throw new Error('Required: name, type (color|size|typo)')
       }
       if (!TYPES.includes(type)) {
-        return { ok: false, error: 'type must be color, size, or typo' }
+        throw new Error('type must be color, size, or typo')
       }
       removeVariable(editor, { name, type }, prefix)
-      return { ok: true }
     },
   })
 
@@ -53,26 +51,25 @@ export function registerCommands(editor, options) {
     run(ed, sender, opts = {}) {
       const { oldName, newName, type } = opts
       if (!oldName || !newName || !type) {
-        return { ok: false, error: 'Required: oldName, newName, type (color|size|typo)' }
+        throw new Error('Required: oldName, newName, type (color|size|typo)')
       }
       if (!TYPES.includes(type)) {
-        return { ok: false, error: 'type must be color, size, or typo' }
+        throw new Error('type must be color, size, or typo')
       }
       renameVariable(editor, { oldName, newName, type }, prefix)
-      return { ok: true }
     },
   })
 }
 
-export function registerCapabilities(editor, addCapability) {
-  addCapability(editor, {
+export function registerCapabilities(addCapability) {
+  addCapability({
     id: cmdListVars,
     command: cmdListVars,
     description: 'List CSS variables',
     tags: ['css'],
   })
 
-  addCapability(editor, {
+  addCapability({
     id: cmdSetVar,
     command: cmdSetVar,
     description: 'Set CSS variable',
@@ -88,7 +85,7 @@ export function registerCapabilities(editor, addCapability) {
     tags: ['css'],
   })
 
-  addCapability(editor, {
+  addCapability({
     id: cmdRemoveVar,
     command: cmdRemoveVar,
     description: 'Remove CSS variable',
@@ -103,7 +100,7 @@ export function registerCapabilities(editor, addCapability) {
     tags: ['css'],
   })
 
-  addCapability(editor, {
+  addCapability({
     id: cmdRenameVar,
     command: cmdRenameVar,
     description: 'Rename CSS variable',
