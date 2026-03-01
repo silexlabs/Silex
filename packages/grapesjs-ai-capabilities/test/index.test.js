@@ -7,6 +7,7 @@ const {
     getAllCapabilities,
     removeCapability,
     hasCapability,
+    clearCapabilities,
     PLUGIN_ID,
 } = plugin
 
@@ -22,6 +23,7 @@ function createEditor(commands = {}) {
 }
 
 function setup() {
+    clearCapabilities()
     const editor = createEditor({ 'core:canvas-clear': true })
     plugin.default(editor)
     return editor
@@ -50,7 +52,7 @@ test('PLUGIN_ID is exported', () => {
 
 test('register and retrieve a capability', () => {
     const editor = setup()
-    const res = addCapability(editor, {
+    const cap = addCapability({
         id: 'clear',
         command: 'core:canvas-clear',
         description: 'Clear the canvas',
@@ -58,142 +60,127 @@ test('register and retrieve a capability', () => {
         title: 'Clear',
         version: '1.0',
     })
-    assert.strictEqual(res.ok, true)
-    assert.strictEqual(res.capability.id, 'clear')
-    assert.strictEqual(res.capability.title, 'Clear')
+    assert.strictEqual(cap.id, 'clear')
+    assert.strictEqual(cap.title, 'Clear')
 
-    const get = getCapability(editor, 'clear')
-    assert.strictEqual(get.ok, true)
-    assert.strictEqual(get.capability.description, 'Clear the canvas')
+    const get = getCapability('clear')
+    assert.strictEqual(get.description, 'Clear the canvas')
 })
 
 test('addCapability returns a copy', () => {
     const editor = setup()
-    const res = addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd' })
-    res.capability.id = 'mutated'
-    assert.strictEqual(getCapability(editor, 'a').capability.id, 'a')
+    const cap = addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
+    cap.id = 'mutated'
+    assert.strictEqual(getCapability('a').id, 'a')
 })
 
 test('reject duplicate id', () => {
     const editor = setup()
-    addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd' })
-    const res = addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(res.ok, false)
-    assert(res.error.includes('already exists'))
+    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
+    assert.throws(
+        () => addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' }),
+        /already exists/
+    )
 })
 
 test('replace with option', () => {
     const editor = setup()
-    addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'v1' })
-    const res = addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'v2' }, { replace: true })
-    assert.strictEqual(res.ok, true)
-    assert.strictEqual(res.capability.description, 'v2')
+    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'v1' })
+    const cap = addCapability({ id: 'a', command: 'core:canvas-clear', description: 'v2' }, { replace: true })
+    assert.strictEqual(cap.description, 'v2')
 })
 
 test('validation: missing id, command, description', () => {
     const editor = setup()
-    assert.strictEqual(addCapability(editor, { command: 'x', description: 'y' }).ok, false)
-    assert.strictEqual(addCapability(editor, { id: '', command: 'x', description: 'y' }).ok, false)
-    assert.strictEqual(addCapability(editor, { id: 'a', description: 'y' }).ok, false)
-    assert.strictEqual(addCapability(editor, { id: 'a', command: 'x' }).ok, false)
-    assert.strictEqual(addCapability(editor, null).ok, false)
-    assert.strictEqual(addCapability(editor).ok, false)
+    assert.throws(() => addCapability({ command: 'x', description: 'y' }), /id/)
+    assert.throws(() => addCapability({ id: '', command: 'x', description: 'y' }), /id/)
+    assert.throws(() => addCapability({ id: 'a', description: 'y' }), /command/)
+    assert.throws(() => addCapability({ id: 'a', command: 'x' }), /description/)
+    assert.throws(() => addCapability(null))
+    assert.throws(() => addCapability(editor))
 })
 
 test('validation: tags, inputSchema, outputSchema types', () => {
     const editor = setup()
-    assert(addCapability(editor, { id: 'a', command: 'x', description: 'y', tags: 'bad' }).error.includes('tags'))
-    assert(addCapability(editor, { id: 'a', command: 'x', description: 'y', inputSchema: 'bad' }).error.includes('inputSchema'))
-    assert(addCapability(editor, { id: 'a', command: 'x', description: 'y', outputSchema: [1] }).error.includes('outputSchema'))
+    assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', tags: 'bad' }), /tags/)
+    assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', inputSchema: 'bad' }), /inputSchema/)
+    assert.throws(() => addCapability({ id: 'a', command: 'x', description: 'y', outputSchema: [1] }), /outputSchema/)
 })
 
 test('prompt alias for description', () => {
     const editor = setup()
-    const res = addCapability(editor, { id: 'p', command: 'core:canvas-clear', prompt: 'Do something' })
-    assert.strictEqual(res.ok, true)
-    assert.strictEqual(res.capability.description, 'Do something')
+    const cap = addCapability({ id: 'p', command: 'core:canvas-clear', prompt: 'Do something' })
+    assert.strictEqual(cap.description, 'Do something')
 })
 
 test('optional fields omitted when not provided', () => {
     const editor = setup()
-    const res = addCapability(editor, { id: 'min', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(res.capability.title, undefined)
-    assert.strictEqual(res.capability.tags, undefined)
-    assert.strictEqual(res.capability.version, undefined)
+    const cap = addCapability({ id: 'min', command: 'core:canvas-clear', description: 'd' })
+    assert.strictEqual(cap.title, undefined)
+    assert.strictEqual(cap.tags, undefined)
+    assert.strictEqual(cap.version, undefined)
 })
 
 test('getCapability returns copy', () => {
     const editor = setup()
-    addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd' })
-    const r = getCapability(editor, 'a')
-    r.capability.id = 'mutated'
-    assert.strictEqual(getCapability(editor, 'a').capability.id, 'a')
+    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
+    const r = getCapability('a')
+    r.id = 'mutated'
+    assert.strictEqual(getCapability('a').id, 'a')
 })
 
-test('getCapability missing returns error', () => {
-    const editor = setup()
-    const r = getCapability(editor, 'nope')
-    assert.strictEqual(r.ok, false)
-    assert(r.error.includes('not found'))
+test('getCapability missing throws', () => {
+    setup()
+    assert.throws(() => getCapability('nope'), /not found/)
 })
 
-test('getAllCapabilities returns all in order with count', () => {
+test('getAllCapabilities returns all in order', () => {
     const editor = setup()
-    addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd1' })
-    addCapability(editor, { id: 'b', command: 'core:canvas-clear', description: 'd2' })
-    const res = getAllCapabilities(editor)
-    assert.strictEqual(res.ok, true)
-    assert.strictEqual(res.count, 2)
-    assert.strictEqual(res.capabilities[0].id, 'a')
-    assert.strictEqual(res.capabilities[1].id, 'b')
+    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd1' })
+    addCapability({ id: 'b', command: 'core:canvas-clear', description: 'd2' })
+    const caps = getAllCapabilities()
+    assert.strictEqual(caps.length, 2)
+    assert.strictEqual(caps[0].id, 'a')
+    assert.strictEqual(caps[1].id, 'b')
 })
 
 test('getAllCapabilities returns copies and is JSON-serializable', () => {
     const editor = setup()
-    addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd' })
-    const res = getAllCapabilities(editor)
-    res.capabilities[0].id = 'mutated'
-    assert.strictEqual(getAllCapabilities(editor).capabilities[0].id, 'a')
-    JSON.parse(JSON.stringify(res.capabilities))
+    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd' })
+    const caps = getAllCapabilities()
+    caps[0].id = 'mutated'
+    assert.strictEqual(getAllCapabilities()[0].id, 'a')
+    JSON.parse(JSON.stringify(caps))
 })
 
 test('getAllCapabilities filter by tags', () => {
     const editor = setup()
-    addCapability(editor, { id: 'a', command: 'core:canvas-clear', description: 'd', tags: ['ui'] })
-    addCapability(editor, { id: 'b', command: 'core:canvas-clear', description: 'd', tags: ['data'] })
-    assert.strictEqual(getAllCapabilities(editor, { tags: ['ui'] }).count, 1)
-    assert.strictEqual(getAllCapabilities(editor, { tags: ['nope'] }).count, 0)
-    assert.strictEqual(getAllCapabilities(editor, {}).count, 2)
+    addCapability({ id: 'a', command: 'core:canvas-clear', description: 'd', tags: ['ui'] })
+    addCapability({ id: 'b', command: 'core:canvas-clear', description: 'd', tags: ['data'] })
+    assert.strictEqual(getAllCapabilities({ tags: ['ui'] }).length, 1)
+    assert.strictEqual(getAllCapabilities({ tags: ['nope'] }).length, 0)
+    assert.strictEqual(getAllCapabilities({}).length, 2)
 })
 
 test('removeCapability', () => {
     const editor = setup()
-    addCapability(editor, { id: 'x', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(removeCapability(editor, 'x').removed, true)
-    assert.strictEqual(removeCapability(editor, 'x').removed, false)
-    assert.strictEqual(getAllCapabilities(editor).count, 0)
+    addCapability({ id: 'x', command: 'core:canvas-clear', description: 'd' })
+    assert.strictEqual(removeCapability('x'), true)
+    assert.strictEqual(removeCapability('x'), false)
+    assert.strictEqual(getAllCapabilities().length, 0)
 })
 
 test('hasCapability', () => {
     const editor = setup()
-    addCapability(editor, { id: 'h', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(hasCapability(editor, 'h'), true)
-    assert.strictEqual(hasCapability(editor, 'nope'), false)
-    assert.strictEqual(hasCapability({}, 'h'), false)
+    addCapability({ id: 'h', command: 'core:canvas-clear', description: 'd' })
+    assert.strictEqual(hasCapability('h'), true)
+    assert.strictEqual(hasCapability('nope'), false)
 })
 
 test('late-binding warns but succeeds', () => {
     const editor = setup()
-    const res = addCapability(editor, { id: 'late', command: 'future:cmd', description: 'd' })
-    assert.strictEqual(res.ok, true)
-    assert(Array.isArray(res.warnings))
-    assert(res.warnings[0].includes('not found'))
-})
-
-test('no warnings when command exists', () => {
-    const editor = setup()
-    const res = addCapability(editor, { id: 'ok', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(res.warnings, undefined)
+    const cap = addCapability({ id: 'late', command: 'future:cmd', description: 'd' })
+    assert.strictEqual(cap.id, 'late')
 })
 
 test('triggers ai-capabilities:ready on load with addCapability', () => {
@@ -202,19 +189,9 @@ test('triggers ai-capabilities:ready on load with addCapability', () => {
     editor.on('ai-capabilities:ready', (fn) => { received = fn })
     editor.trigger('load')
     assert.strictEqual(typeof received, 'function')
-    // The received function should be addCapability
-    const res = received(editor, { id: 'via-event', command: 'core:canvas-clear', description: 'd' })
-    assert.strictEqual(res.ok, true)
-    assert.strictEqual(getCapability(editor, 'via-event').ok, true)
-})
-
-test('uninitialized editor returns error', () => {
-    const fake = {}
-    assert.strictEqual(addCapability(fake, { id: 'x', command: 'y', description: 'z' }).ok, false)
-    assert.strictEqual(getCapability(fake, 'x').ok, false)
-    assert.strictEqual(getAllCapabilities(fake).ok, false)
-    assert.strictEqual(removeCapability(fake, 'x').ok, false)
-    assert.strictEqual(hasCapability(fake, 'x'), false)
+    const cap = received({ id: 'via-event', command: 'core:canvas-clear', description: 'd' })
+    assert.strictEqual(cap.id, 'via-event')
+    assert.strictEqual(getCapability('via-event').id, 'via-event')
 })
 
 console.log(`\n${passed}/${total} passed, ${total - passed} failed`)

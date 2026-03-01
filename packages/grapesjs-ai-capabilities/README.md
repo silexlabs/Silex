@@ -1,6 +1,6 @@
 # GrapesJS AI Capabilities
 
-Discovery and metadata layer for GrapesJS commands. Allows plugins to register capabilities that external builders can expose as MCP tools or other AI integrations.
+Discovery and metadata layer for GrapesJS commands. Sits between plugins that **expose** capabilities and builders that **consume** them (MCP servers, AI agents, chat interfaces, etc.).
 
 > This code is part of a bigger project: [about Silex v3](https://www.silex.me/)
 
@@ -17,77 +17,96 @@ The strategy: keep capability descriptions **minimal**. An SLM discovers availab
 
 This approach works because SLMs are iterative: they try, fail, read the error, and try again. A 500-token tool description wastes context; a 5-word description plus a clear error on misuse teaches faster.
 
-## API
+## Use case 1: Expose capabilities to AI
 
-The plugin keeps an internal registry per editor. All functions take the editor as first argument.
+You're a **plugin author** and want your GrapesJS commands to be discoverable by AI tools.
 
-```js
-import plugin, {
-  addCapability,
-  getCapability,
-  getAllCapabilities,
-  removeCapability,
-  hasCapability,
-  PLUGIN_ID,
-} from '@silexlabs/grapesjs-ai-capabilities'
-```
-
-### addCapability(editor, def, options?)
-
-Register a capability. Returns `{ ok, capability?, error?, warnings? }`.
+Listen for the `ai-capabilities:ready` event during your plugin init. No import needed — if the ai-capabilities plugin isn't loaded, the event never fires and nothing happens:
 
 ```js
-addCapability(editor, {
-  id: 'css-var:set',
-  command: 'css-var:set',
-  description: 'Set CSS variable',
-  inputSchema: {
-    type: 'object',
-    required: ['name', 'value', 'type'],
-    properties: {
-      name: { type: 'string' },
-      value: { type: 'string' },
-      type: { type: 'string', enum: ['color', 'size', 'typo'] },
-    },
-  },
-  tags: ['css'],
-})
+// In your plugin's init function
+export default (editor, opts) => {
+  // ... your plugin setup ...
+
+  editor.on('ai-capabilities:ready', (addCapability) => {
+    addCapability({
+      id: 'css-var:set',
+      command: 'css-var:set',
+      description: 'Set CSS variable',
+      inputSchema: {
+        type: 'object',
+        required: ['name', 'value', 'type'],
+        properties: {
+          name: { type: 'string' },
+          value: { type: 'string' },
+          type: { type: 'string', enum: ['color', 'size', 'typo'] },
+        },
+      },
+      tags: ['css'],
+    })
+  })
+}
 ```
+
+Keep descriptions short. Put the detail in `inputSchema` and in your command's error messages.
+
+## Use case 2: Implement an MCP server (or other AI integration)
+
+You're a **builder** and want to expose GrapesJS capabilities as MCP tools, API endpoints, or chat actions.
+
+Import the query functions to read the registry and map capabilities to your integration:
+
+```js
+import { getAllCapabilities } from '@silexlabs/grapesjs-ai-capabilities'
+
+// Get all registered capabilities as MCP tool definitions
+const capabilities = getAllCapabilities()
+
+for (const cap of capabilities) {
+  mcpServer.addTool({
+    name: cap.id,
+    description: cap.description,
+    inputSchema: cap.inputSchema,
+    execute: (params) => editor.runCommand(cap.command, params),
+  })
+}
+```
+
+Execution always goes through `editor.runCommand()` — this plugin does not implement `run()`.
+
+## API reference
+
+The plugin keeps a single global registry. Query functions don't need the editor.
+
+### addCapability(def, options?)
+
+Register a capability. Returns the capability object. Throws on validation errors.
 
 Pass `{ replace: true }` as third argument to overwrite an existing capability.
 
-### getCapability(editor, id)
+### getCapability(id)
 
-Returns `{ ok, capability? }` or `{ ok: false, error }`.
+Returns the capability object. Throws if not found.
 
-### getAllCapabilities(editor, filter?)
+### getAllCapabilities(filter?)
 
-Returns `{ ok, capabilities, count }`. Optional filter: `{ tags: ['css'] }`.
+Returns an array of capabilities. Optional filter: `{ tags: ['css'] }`.
 
-### removeCapability(editor, id)
+### removeCapability(id)
 
-Returns `{ ok, removed }`. No-op if missing.
+Returns `true` if removed, `false` if not found.
 
-### hasCapability(editor, id)
+### hasCapability(id)
 
 Returns `true` or `false`.
 
-## Usage with other plugins
+### clearCapabilities()
 
-On `editor.on('load')`, the plugin triggers an `ai-capabilities:ready` event with the `addCapability` function. Other plugins listen for this event to register their capabilities — no imports needed, fully decoupled:
+Clears the registry. Useful for tests.
 
-```js
-// In any plugin's init function
-editor.on('ai-capabilities:ready', (addCapability) => {
-  addCapability(editor, {
-    id: 'css-var:list',
-    command: 'css-var:list',
-    description: 'List CSS variables',
-  })
-})
-```
+### Event: `ai-capabilities:ready`
 
-If `grapesjs-ai-capabilities` is not loaded, the event never fires and nothing happens.
+Fired on `editor.on('load')`. The callback receives the `addCapability` function.
 
 ## Install
 
