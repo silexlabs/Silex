@@ -14,7 +14,11 @@ import { refreshStyleManager } from './style-manager.js'
 
 const styles = document.createElement('style')
 styles.textContent = `
-  .css-vars-modal { padding: 0; }
+  .css-vars-modal {
+    padding: 0;
+    overflow-x: auto;
+    min-height: 500px;
+  }
 
   /* Toolbar */
   .css-vars-toolbar {
@@ -99,18 +103,15 @@ styles.textContent = `
     padding: 6px 4px;
     border-bottom: 1px solid var(--gjs-light-border);
     vertical-align: middle;
+    min-width: 100px;
+    &:first-of-type { min-width: initial; }
   }
   .css-vars-table tbody tr:hover {
     background: var(--gjs-soft-light-color, rgba(255,255,255,0.04));
   }
 
-  /* Handle + icon column */
-  .css-vars-col-handle { width: 40px; }
-  .css-vars-handle-cell {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+  /* Handle column */
+  .css-vars-col-handle { width: 24px; }
   .css-vars-grip {
     cursor: grab;
     color: var(--gjs-secondary-light-color);
@@ -128,13 +129,6 @@ styles.textContent = `
   .css-vars-grip:active {
     cursor: grabbing;
     opacity: 1;
-  }
-  .css-vars-var-type-icon {
-    font-style: normal;
-    font-weight: bold;
-    font-size: 12px;
-    width: 16px;
-    text-align: center;
   }
 
   /* Name column */
@@ -652,14 +646,11 @@ export function renderModal(el, editor, options) {
                 @drop=${(e) => handleDrop(e, varItem)}
               >
                 <td>
-                  <div class="css-vars-handle-cell">
-                    <span class="css-vars-grip"
-                      draggable="true"
-                      @dragstart=${(e) => handleDragStart(e, varItem)}
-                      @dragend=${handleDragEnd}
-                    >\u2847</span>
-                    <span class="css-vars-var-type-icon">${TYPE_ICONS[varItem.type] || '?'}</span>
-                  </div>
+                  <span class="css-vars-grip"
+                    draggable="true"
+                    @dragstart=${(e) => handleDragStart(e, varItem)}
+                    @dragend=${handleDragEnd}
+                  >\u2847</span>
                 </td>
                 <td>
                   <input type="text"

@@ -128,7 +128,7 @@ smStyles.textContent = `
     background: var(--gjs-main-color, #804f7b);
     color: #fff;
     border-radius: 3px;
-    padding: 2px 4px 2px 6px;
+    padding: 2px 6px;
     font-size: 11px;
     line-height: 1.4;
     white-space: nowrap;
@@ -148,18 +148,29 @@ smStyles.textContent = `
     text-overflow: ellipsis;
     flex: 1;
   }
-  .css-vars-sm-pill__clear {
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.7);
-    cursor: pointer;
-    font-size: 13px;
-    line-height: 1;
-    padding: 0 2px;
+
+  /* ── Clear button next to label ─────────────────────── */
+  .css-vars-sm-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
-  }
-  .css-vars-sm-pill__clear:hover {
+    margin-left: 4px;
+    border-radius: 50%;
+    background: var(--gjs-main-color, #804f7b);
     color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.12s;
+  }
+  .css-vars-sm-clear:hover {
+    opacity: 1;
   }
 
   /* ── State: variable applied → hide field, hide trigger */
@@ -187,7 +198,7 @@ function injectVarUI(editor, property, variables) {
     oldWrapper.remove()
   }
   // Clean up orphaned elements from previous injections
-  view.el.querySelectorAll('.css-vars-sm-trigger, .css-vars-sm-pill').forEach(el => el.remove())
+  view.el.querySelectorAll('.css-vars-sm-trigger, .css-vars-sm-pill, .css-vars-sm-clear').forEach(el => el.remove())
 
   if (variables.length === 0) return
 
@@ -234,18 +245,22 @@ function injectVarUI(editor, property, variables) {
     nameSpan.title = ownVarRef
     pill.appendChild(nameSpan)
 
+    wrapper.appendChild(pill)
+
+    // Clear button placed after the label (like the "+" trigger)
     const clearBtn = document.createElement('button')
-    clearBtn.className = 'css-vars-sm-pill__clear'
+    clearBtn.className = 'css-vars-sm-clear'
     clearBtn.textContent = '\u00d7' // ×
     clearBtn.title = 'Remove variable'
     clearBtn.addEventListener('click', (e) => {
       e.stopPropagation()
       setTargetStyleValue(editor, property, '')
-      // Let the global event handler re-inject (no local setTimeout needed)
     })
-    pill.appendChild(clearBtn)
-
-    wrapper.appendChild(pill)
+    if (labelEl) {
+      labelEl.appendChild(clearBtn)
+    } else {
+      wrapper.appendChild(clearBtn)
+    }
   } else {
     // --- SELECT MODE: "+" trigger appended after the label ---
     const trigger = document.createElement('div')
