@@ -370,14 +370,23 @@ export function renderModal(el, editor, options) {
     rerender()
   }
 
-  const onSizeChange = (varItem, widthMedia, number, unit) => {
-    if (number === '' || number === undefined) {
-      // Clear the value for this breakpoint if number is empty
-      removeVariableForDevice(editor, { name: varItem.name, type: varItem.type }, options.prefix, widthMedia)
-      rerender()
+  const onSizeChange = (varItem, widthMedia, rawInput, fallbackUnit) => {
+    const trimmed = rawInput.trim()
+    if (trimmed === '') {
+      // Only allow clearing non-base breakpoints (base = '' widthMedia)
+      // type="number" sends '' for invalid input too, so never delete the base value
+      if (widthMedia && varItem.values[widthMedia]) {
+        removeVariableForDevice(editor, { name: varItem.name, type: varItem.type }, options.prefix, widthMedia)
+        rerender()
+      }
       return
     }
-    const value = `${number}${unit}`
+    // Parse number + optional unit from the raw input (e.g. "16px", "2.5rem", "10")
+    const parsed = parseSizeValue(trimmed)
+    const num = parseFloat(parsed.number)
+    if (isNaN(num)) return // ignore non-numeric input, don't delete the row
+    const unit = parsed.unit || fallbackUnit || 'px'
+    const value = `${num}${unit}`
     setVariableForDevice(editor, { name: varItem.name, value, type: varItem.type }, options.prefix, widthMedia)
     rerender()
   }
@@ -538,14 +547,14 @@ export function renderModal(el, editor, options) {
     const placeholder = (!hasValue && wm && baseValue) ? baseParsed.number : '0'
     return html`
       <div class="css-vars-value-cell">
-        <input type="number"
+        <input type="text"
+          inputmode="decimal"
           class="css-vars-size-number"
           .value=${hasValue ? parsed.number : ''}
           placeholder=${placeholder}
-          step="any"
           @change=${(e) => {
-    const unit = el.querySelector(`[data-unit-for="${varItem.type}-${varItem.name}-${wm}"]`)?.value || parsed.unit || 'px'
-    onSizeChange(varItem, wm, e.target.value, unit)
+    const currentUnit = el.querySelector(`[data-unit-for="${varItem.type}-${varItem.name}-${wm}"]`)?.value || parsed.unit || 'px'
+    onSizeChange(varItem, wm, e.target.value, currentUnit)
   }}
         />
         <select
