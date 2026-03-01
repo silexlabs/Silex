@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-ai-capabilities",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Discovery and metadata layer for GrapesJS commands, enabling MCP tool exposure and external integrations",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
