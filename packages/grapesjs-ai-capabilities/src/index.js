@@ -21,8 +21,13 @@ function isPlainObject(v) {
     return proto === Object.prototype || proto === null
 }
 
+export const EVENT_READY = 'ai-capabilities:ready'
+
 export default (editor) => {
     registries.set(editor, new Map())
+    editor.on('load', () => {
+        editor.trigger(EVENT_READY, addCapability)
+    })
 }
 
 export function addCapability(editor, def, options = {}) {

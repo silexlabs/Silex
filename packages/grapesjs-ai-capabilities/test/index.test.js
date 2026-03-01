@@ -11,10 +11,13 @@ const {
 } = plugin
 
 function createEditor(commands = {}) {
+    const listeners = {}
     return {
         Commands: {
             has(id) { return id in commands },
         },
+        on(event, fn) { (listeners[event] = listeners[event] || []).push(fn) },
+        trigger(event, ...args) { (listeners[event] || []).forEach(fn => fn(...args)) },
     }
 }
 
@@ -191,6 +194,18 @@ test('no warnings when command exists', () => {
     const editor = setup()
     const res = addCapability(editor, { id: 'ok', command: 'core:canvas-clear', description: 'd' })
     assert.strictEqual(res.warnings, undefined)
+})
+
+test('triggers ai-capabilities:ready on load with addCapability', () => {
+    const editor = setup()
+    let received = null
+    editor.on('ai-capabilities:ready', (fn) => { received = fn })
+    editor.trigger('load')
+    assert.strictEqual(typeof received, 'function')
+    // The received function should be addCapability
+    const res = received(editor, { id: 'via-event', command: 'core:canvas-clear', description: 'd' })
+    assert.strictEqual(res.ok, true)
+    assert.strictEqual(getCapability(editor, 'via-event').ok, true)
 })
 
 test('uninitialized editor returns error', () => {

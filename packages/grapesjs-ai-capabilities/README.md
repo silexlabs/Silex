@@ -74,20 +74,20 @@ Returns `true` or `false`.
 
 ## Usage with other plugins
 
-Plugins register their own capabilities at init time. Example from `grapesjs-css-variables`:
+On `editor.on('load')`, the plugin triggers an `ai-capabilities:ready` event with the `addCapability` function. Other plugins listen for this event to register their capabilities — no imports needed, fully decoupled:
 
 ```js
-editor.on('load', () => {
-  const aiCaps = window['@silexlabs/grapesjs-ai-capabilities']
-  if (aiCaps && aiCaps.addCapability) {
-    aiCaps.addCapability(editor, {
-      id: 'css-var:list',
-      command: 'css-var:list',
-      description: 'List CSS variables',
-    })
-  }
+// In any plugin's init function
+editor.on('ai-capabilities:ready', (addCapability) => {
+  addCapability(editor, {
+    id: 'css-var:list',
+    command: 'css-var:list',
+    description: 'List CSS variables',
+  })
 })
 ```
+
+If `grapesjs-ai-capabilities` is not loaded, the event never fires and nothing happens.
 
 ## Install
 
