@@ -42,5 +42,8 @@
     "name": "Alex Hoyau",
     "url": "https://lexoyo.me/"
   },
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "dependencies": {
+    "@silexlabs/grapesjs-ai-capabilities": "^0.0.2"
+  }
 }
