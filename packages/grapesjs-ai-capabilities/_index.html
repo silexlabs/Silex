@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test AI Capabilities</title>
+  <link href="https://unpkg.com/grapesjs/dist/css/grapes.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/grapesjs"></script>
+  <style>
+    body,
+    html {
+      margin: 0;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="gjs"></div>
+  <script type="text/javascript">
+      window.addEventListener('load', () => {
+        var editor = grapesjs.init({
+          container: '#gjs',
+          fromElement: true,
+          height: '100%',
+          storageManager: { autoload: 0 },
+          plugins: ['@silexlabs/grapesjs-ai-capabilities'],
+        });
+        editor.on("load", () => {
+          // Plugin is loaded — use the console to interact:
+          //   const mod = window['@silexlabs/grapesjs-ai-capabilities']
+          //   mod.addCapability(editor, { id: 'test', command: 'core:canvas-clear', description: 'Test' })
+          //   mod.getAllCapabilities(editor)
+          console.log('grapesjs-ai-capabilities loaded. Use window[\"@silexlabs/grapesjs-ai-capabilities\"] to interact.')
+        })
+      })
+  </script>
+</body>
+</html>

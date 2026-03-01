@@ -1,0 +1,6 @@
+dist/
+.DS_Store
+private/
+node_modules/
+*.log
+stats.json
