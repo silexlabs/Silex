@@ -68,12 +68,12 @@
 - [ ] Close the modal
 - [ ] Click on a component in the canvas (e.g. "Box 1")
 - [ ] Open Style Manager
-- [ ] Find "Background color" — a small `{x}` button should appear next to it
-- [ ] Find "Color" (text color) — `{x}` button should also appear
-- [ ] Find "Width" in dimension — `{x}` button should appear (size variables)
+- [ ] Find "Background color" — a small "+" trigger should appear next to it
+- [ ] Find "Color" (text color) — "+" trigger should also appear
+- [ ] Find "Width" in dimension — "+" trigger should appear (size variables)
 
 ## 12. Apply Variable via Popover
-- [ ] Click `{x}` next to background-color
+- [ ] Click "+" next to background-color
 - [ ] Popover appears listing color variables (primary, secondary, accent)
 - [ ] Click "primary" — the field is replaced by a pill showing "primary"
 - [ ] The component's style should become `background-color: var(--color-primary)`
@@ -93,26 +93,26 @@
 
 ## 15. Size Variable Pill in Style Manager
 - [ ] Create a size variable (e.g. "spacing")
-- [ ] Select a component, apply the size variable to "Width" via the `{x}` popover
+- [ ] Select a component, apply the size variable to "Width" via the "+" trigger
 - [ ] A pill should appear showing the variable name
 - [ ] The component's style should be `width: var(--size-spacing)`
 
 ## 16. Composite Properties (Margin/Padding/Border-radius)
 - [ ] Expand the Margin composite property
-- [ ] Each sub-property (top, right, bottom, left) should have a `{x}` button
+- [ ] Each sub-property (top, right, bottom, left) should have a "+" trigger
 - [ ] Apply a size variable to margin-top — pill shows
 - [ ] Same for Padding and Border-radius sub-properties
 
 ## 17. Font Family Variable in Style Manager
 - [ ] Create a typography variable
 - [ ] Select a component, find font-family property
-- [ ] Click `{x}` — popover lists typography variables
+- [ ] Click "+" — popover lists typography variables
 - [ ] Select one — pill shows, style becomes `font-family: var(--typo-...)`
 
 ## 18. Font Weight Does NOT Show Font Family Variables
 - [ ] Create typography variables (font-family type)
 - [ ] Select a component, find font-weight property in Typography sector
-- [ ] Font-weight should NOT have a `{x}` variable button
+- [ ] Font-weight should NOT have a "+" variable button
 - [ ] Font-weight is numeric/keyword and doesn't use font-family variables
 
 ## 19. GrapesJS "x" Clear Button Works with Variables
@@ -122,16 +122,16 @@
 - [ ] The variable should be removed from the component's style
 - [ ] The pill should disappear and the normal input should return
 
-## 20. Multi-Class Variable Override
-- [ ] Select an element
-- [ ] Add CSS class `a` (using the selector manager)
-- [ ] Set a property (e.g. width) to a CSS variable using the `{x}` popover
-- [ ] The pill shows for class `.a`
-- [ ] Now add CSS class `b` to the same element
-- [ ] Switch to editing class `b` in the selector manager
-- [ ] The property should show the inherited value with an orange label (from class `.a`)
-- [ ] The `{x}` button should be available to set a different/override value for class `.b`
-- [ ] Set a different variable for class `.b` — it should work without issues
+## 20. Multi-Class Variable Isolation
+- [ ] Select an element (e.g. "Box 1")
+- [ ] Add CSS class `class-a` and `class-b` via the selector manager
+- [ ] With `.class-a` selected as target, set Color to a CSS variable via the "+" trigger → pill shows
+- [ ] Deselect `class-a` (click its checkbox) so only `.class-b` is selected
+- [ ] The Color property should show **normal UI**: text input + "+" trigger, **no pill**
+- [ ] The "+" trigger should be available to set a variable for `.class-b` independently
+- [ ] Re-enable `class-a` so both are selected (`.class-a.class-b`)
+- [ ] The combined selector also shows normal UI (no pill) since the var() is on `.class-a` alone
+- [ ] Deselect `class-b` so only `.class-a` is selected → the pill returns (variable is on this class)
 
 ## 21. Apply Variable at Different Breakpoints (Style Manager)
 - [ ] Create a color variable "primary" and a size variable "spacing" in the modal
@@ -166,7 +166,15 @@
 - [ ] Redo (Ctrl+Shift+Z) — the variable returns, pill shows again
 - [ ] Open the modal — variable list should reflect the current undo/redo state
 
-## 25. Persistence
+## 25. Size Input Robustness (Modal)
+- [ ] Open the modal, add a size variable
+- [ ] Type random non-numeric text (e.g. "abc") into the size number input → the row should NOT be deleted
+- [ ] Type "16px" into the input → number 16 extracted, unit dropdown set to "px", value stored as "16px"
+- [ ] Type "2.5rem" → number 2.5, unit "rem", stored as "2.5rem"
+- [ ] Clear the input for a non-base breakpoint → that breakpoint value is removed
+- [ ] Clear the input for the base/Desktop breakpoint → value should NOT be deleted (row survives)
+
+## 26. Persistence
 - [ ] Variables are stored in `:root` CSS rules
 - [ ] Run `editor.Css.getRule(':root').getStyle()` in console
 - [ ] Should return object with all defined variables

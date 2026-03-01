@@ -6,7 +6,7 @@ Define and manage CSS custom properties (design tokens) for colors, sizes, and t
 
 ### Links
 
-- [DEMO on CodePen](https://codepen.io/lexoyo/pen/ogzXKaL)
+- [DEMO on CodePen](https://codepen.io/lexoyo/full/ogzXKaL)
 - [Npm package](https://www.npmjs.com/package/@silexlabs/grapesjs-css-variables)
 
 ### Features
