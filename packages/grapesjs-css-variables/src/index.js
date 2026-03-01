@@ -1,4 +1,4 @@
-import { variablesPlugin, cmdOpenVariables } from './variables.js'
+import { variablesPlugin } from './variables.js'
 import { setupStyleManager } from './style-manager.js'
 import en from './locale/en.js'
 import fr from './locale/fr.js'

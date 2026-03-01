@@ -196,17 +196,11 @@ function injectVarUI(editor, property, variables) {
 
   // Read the own-target value (the active class/rule's own style)
   const targetValue = getTargetStyleValue(editor, property)
-  const fullValue = String(property.getFullValue ? property.getFullValue() : '')
-
   // Own var: set directly on this target/class
   const ownVarMatch = targetValue.match(/var\([^)]+\)/)
   const ownVarRef = ownVarMatch ? ownVarMatch[0] : ''
   const isOwnVar = !!ownVarRef
   const ownMatchedVar = isOwnVar ? variables.find(v => v.ref === ownVarRef) : null
-
-  // Inherited var: visible via fullValue but not on own target (e.g. from another class)
-  const inheritedVarMatch = !isOwnVar ? fullValue.match(/var\([^)]+\)/) : null
-  const isInheritedVar = !!inheritedVarMatch
 
   // Create wrapper
   const wrapper = document.createElement('div')

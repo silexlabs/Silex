@@ -641,7 +641,7 @@ export function renderModal(el, editor, options) {
               ${isSingleDevice
     ? html`<th>${t('Value')}</th>`
     : devices.map(d => html`<th>${d.name}</th>`)
-  }
+}
               <th class="css-vars-col-actions"></th>
             </tr>
           </thead>

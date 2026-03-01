@@ -16,7 +16,6 @@ export default {
     'Size': 'Taille',
     'Font Family': 'Famille de police',
     'Base': 'Base',
-    'Value': 'Valeur',
     'Duplicate': 'Dupliquer',
     'Delete variable': 'Supprimer la variable',
   },

@@ -16,7 +16,6 @@ export default {
     'Size': 'Size',
     'Font Family': 'Font Family',
     'Base': 'Base',
-    'Value': 'Value',
     'Duplicate': 'Duplicate',
     'Delete variable': 'Delete variable',
   },
