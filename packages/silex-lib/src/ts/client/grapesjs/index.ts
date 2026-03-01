@@ -37,6 +37,7 @@ import filterStyles from '@silexlabs/grapesjs-filter-styles'
 import symbolsPlugin from '@silexlabs/grapesjs-symbols'
 import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin from '@silexlabs/grapesjs-fonts'
+import cssVariablesPlugin from '@silexlabs/grapesjs-css-variables'
 import selectorPlugin from '@silexlabs/grapesjs-advanced-selector'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
@@ -79,6 +80,7 @@ const plugins = [
   {name: 'grapesjs-style-bg', value: backgroundPlugin},
   {name: './settings', value: settingsDialog},
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
+  {name: '@silexlabs/grapesjs-css-variables', value: cssVariablesPlugin},
   {name: '@silexlabs/grapesjs-advanced-selector', value: selectorPlugin},
   {name: './new-page-dialog', value: newPageDialog},
   {name: './page-panel', value: pagePanelPlugin},
@@ -265,6 +267,14 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
               editor.runCommand('open-fonts')
             },
           }, {
+            id: 'css-variables-btn',
+            className: 'css-variables-btn fa-solid fa-paintbrush',
+            name: 'Variables',
+            attributes: { title: 'CSS Variables' },
+            command: () => {
+              editor.runCommand('open-css-variables')
+            },
+          }, {
             id: 'settings-dialog-btn',
             className: 'page-panel-btn fa-solid fa-gears',
             name: 'Settings',
@@ -360,6 +370,9 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
         api_key: config.fontsApiKey,
         server_url: config.fontsServerUrl,
         api_url: config.fontsApiUrl,
+      },
+      [cssVariablesPlugin.toString()]: {
+        prefix: '',
       },
       [loginDialogPlugin.toString()]: {
         id: websiteId,
