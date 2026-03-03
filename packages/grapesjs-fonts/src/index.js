@@ -1,5 +1,6 @@
 import { fontsDialogPlugin } from './fonts.js'
-import commands, { registerCapabilities } from './commands.js'
+import commands from './commands.js'
+import { registerCapabilities } from './capabilities.js'
 import en from './locale/en.js'
 import fr from './locale/fr.js'
 
