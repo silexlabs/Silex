@@ -3,6 +3,8 @@ import { AdvancedSelectorOptions, initASM, initListeners } from './plugin'
 import { Editor } from 'grapesjs'
 import en from './i18n/en'
 import fr from './i18n/fr'
+import registerCommands from './commands'
+import { registerCapabilities } from './capabilities'
 
 // For devtools debugging
 export const name = '@silexlabs/grapesjs-advanced-selector'
@@ -24,10 +26,6 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
 
   editor.config.selectorManager = {
     ...editor.config.selectorManager,
-    // escapeName: (name: string) => {
-    //   console.log('escapeName =========== NEVER USED? REMOVE?', name)
-    //   return `as-${name}`
-    // },
   }
 
   if(editor.I18n) {
@@ -40,4 +38,10 @@ export default (editor: Editor, opts: Partial<AdvancedSelectorOptions> = {}) => 
 
   initASM(editor, options)
   initListeners(editor, options)
+  registerCommands(editor)
+
+  // Register AI capabilities
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
+    registerCapabilities(addCapability)
+  })
 }
