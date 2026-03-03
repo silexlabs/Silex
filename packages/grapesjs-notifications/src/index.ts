@@ -1,7 +1,8 @@
 import { Editor } from 'grapesjs'
+import { registerCapabilities } from './capabilities'
 import en from './locale/en'
-import { 
-  NotificationManager, 
+import {
+  NotificationManager,
   NotificationManagerOptions,
   NOTIFICATION_CHANGED,
   NOTIFICATION_ADDED,
@@ -10,11 +11,10 @@ import {
 } from './NotificationManager'
 import view from './view'
 import { Storage } from './Storage'
+import { NOTIFICATION_ADD, NOTIFICATION_REMOVE, NOTIFICATION_CLEAR, NOTIFICATION_LIST } from './commands'
 
-// Commands
-export const NOTIFICATION_ADD = 'notifications:add'
-export const NOTIFICATION_REMOVE = 'notifications:remove' 
-export const NOTIFICATION_CLEAR = 'notifications:clear'
+// Re-export command IDs
+export { NOTIFICATION_ADD, NOTIFICATION_REMOVE, NOTIFICATION_CLEAR, NOTIFICATION_LIST } from './commands'
 
 // Events (re-exported from NotificationManager)
 export {
@@ -69,6 +69,11 @@ export default (editor: Editor, opts: Partial<NotificationManagerOptions> = {}) 
   // Add commands
   editor.Commands.add(NOTIFICATION_ADD, {
     run(editor: Editor, sender: any, options: any) {
+      if (!options?.type) throw new Error('Required: type (one of: info, warning, error, success)')
+      if (!options?.message) throw new Error('Required: message (notification text)')
+      if (!['info', 'warning', 'error', 'success'].includes(options.type)) {
+        throw new Error(`Invalid type "${options.type}". Must be one of: info, warning, error, success`)
+      }
       notificationManager.add(options)
     }
   })
@@ -86,6 +91,15 @@ export default (editor: Editor, opts: Partial<NotificationManagerOptions> = {}) 
     }
   })
 
+  editor.Commands.add(NOTIFICATION_LIST, {
+    run() {
+      return notificationManager.getAll().map(n => ({
+        type: n.type,
+        message: n.message,
+        group: n.group,
+      }))
+    }
+  })
 
   // Handle notification changes
   editor.on(NOTIFICATION_CHANGED, (notifications) => {
@@ -95,6 +109,11 @@ export default (editor: Editor, opts: Partial<NotificationManagerOptions> = {}) 
     storage?.save(allNotifications)
     // Render notifications
     view(editor, options.container, allNotifications, options)
+  })
+
+  // Register AI capabilities if grapesjs-ai-capabilities is loaded
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
+    registerCapabilities(addCapability)
   })
 
   // Public API accessible via commands and events only
