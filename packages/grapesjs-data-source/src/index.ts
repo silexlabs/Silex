@@ -16,6 +16,7 @@
  */
 
 import commands from './commands'
+import { registerCapabilities } from './capabilities'
 import { initializeDataSourceManager, refreshDataSources } from './model/dataSourceManager'
 import storage from './storage'
 import { DATA_SOURCE_ERROR, DataSourceEditorOptions, IDataSource, IDataSourceOptions } from './types'
@@ -87,6 +88,11 @@ export default (editor: Editor, opts: Partial<DataSourceEditorOptions> = {}) => 
     setTimeout(() => {
       refreshDataSources()
     }, 100)
+  })
+
+  // Register AI capabilities if grapesjs-ai-capabilities is loaded
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
+    registerCapabilities(addCapability)
   })
 }
 
