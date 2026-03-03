@@ -20,31 +20,27 @@ jobs:
           node-version: 18.13.0
 
       - name: Enable Corepack + Yarn
-        shell: bash
         run: |
           corepack enable
           corepack prepare yarn@4.13.0 --activate
           yarn --version
 
       - name: Git longpaths
-        shell: bash
         run: git config --global core.longpaths true
 
       - name: Yarn install (skip builds)
-        shell: bash
         run: |
-          rm -rf node_modules
+          if (Test-Path node_modules) { Remove-Item -Recurse -Force node_modules }
           yarn install --mode=skip-build --no-immutable
 
       - name: preinstall passes under yarn
-        shell: bash
         run: yarn run preinstall
 
       - name: preinstall fails under npm
-        shell: bash
         run: |
-          if npm run preinstall; then
-            echo "Expected npm run preinstall to fail, but it succeeded."
-            exit 1
-          fi
-          echo "npm run preinstall failed as expected"
+          npm run preinstall
+          $code = $LASTEXITCODE
+          if ($code -eq 0) { throw "Expected npm run preinstall to fail, but it succeeded." }
+          Write-Host "npm run preinstall failed as expected (exit code $code)"
+          exit 0
+
