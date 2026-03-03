@@ -1,5 +1,6 @@
 import SymbolsView, { SymbolsViewOptions } from './view/SymbolsView'
 import initCommands from './SymbolsCommands'
+import { registerCapabilities } from './capabilities'
 import initTraits from './view/traits'
 import { makeInstanceIdsUnique } from './id-utils'
 import { Editor } from 'grapesjs'
@@ -36,5 +37,10 @@ export default (editor: Editor, opts: Partial<SymbolOptions> = {}) => {
     editor.on('symbol:instance:add', ({ component }) => {
       makeInstanceIdsUnique(editor, component)
     })
+  })
+
+  // Register AI capabilities if grapesjs-ai-capabilities is loaded
+  editor.on('ai-capabilities:ready', (addCapability: (def: Record<string, unknown>) => void) => {
+    registerCapabilities(addCapability)
   })
 }

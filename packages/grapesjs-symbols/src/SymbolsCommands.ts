@@ -2,15 +2,21 @@ import { Editor, Component } from 'grapesjs'
 import { html, render } from 'lit-html'
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js'
 
-import { allowDrop, createSymbol, deleteSymbol, unbindSymbolInstance } from './utils'
+import { allowDrop, createSymbol, deleteSymbol, getSymbols, unbindSymbolInstance } from './utils'
 
 export const cmdAdd = 'symbols:add'
 export const cmdRemove = 'symbols:remove'
 export const cmdUnlink = 'symbols:unlink'
 export const cmdCreate = 'symbols:create'
+export const cmdList = 'symbols:list'
 
 // Same signature as a grapesjs plugin
 export default function(editor: Editor) {
+  editor.Commands.add(cmdList, {
+    run() {
+      return getSymbols(editor)
+    },
+  })
   editor.Commands.add(cmdAdd, _addSymbol)
   editor.Commands.add(cmdRemove, _removeSymbol)
   editor.Commands.add(cmdUnlink, _unlinkSymbolInstance)
