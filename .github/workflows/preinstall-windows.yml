@@ -1,0 +1,55 @@
+name: preinstall guard (Windows)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: windows-latest
+
+    steps:
+      # Non-recursive submodules: avoids the nested GitLab SSH submodule
+      - name: Checkout (with top-level submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.13.0
+
+      - name: Enable Corepack + Yarn
+        shell: bash
+        run: |
+          corepack enable
+          corepack prepare yarn@4.13.0 --activate
+          yarn --version
+
+      # Optional but helps with deep paths on Windows
+      - name: Git longpaths
+        shell: bash
+        run: git config --global core.longpaths true
+
+      # CI note:
+      # Yarn defaults to immutable installs on CI; we disable it because this repo
+      # may migrate lockfile / generate yarn artifacts on first run.
+      - name: Yarn install (skip builds)
+        shell: bash
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+          yarn install --mode=skip-build --no-immutable
+
+      - name: preinstall should pass under yarn
+        shell: bash
+        run: yarn run preinstall
+
+      - name: preinstall should fail under npm
+        shell: pwsh
+        run: |
+          npm run preinstall
+          if ($LASTEXITCODE -eq 0) { throw "Expected npm run preinstall to fail, but it succeeded." }
+          "npm run preinstall failed as expected (exit code $LASTEXITCODE)"
