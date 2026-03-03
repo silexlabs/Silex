@@ -4,6 +4,14 @@ Define and manage CSS custom properties in GrapesJs editors, e.g. `--primary`. O
 
 > This code is part of a larger project: [about Silex v3](https://www.silex.me/)
 
+Screenshots:
+
+![Silex screenshot: the CSS Variables dialog, with a list of variables of different types (color, font family, size)](https://cdn.fosstodon.org/media_attachments/files/116/166/155/684/331/327/original/79794da772a8e9ce.png)
+
+![Silex UI: hover a "+" button next to the "color" property says "Use variable"](https://cdn.fosstodon.org/media_attachments/files/116/166/150/587/512/717/original/c185c4e7ad406582.png)
+
+![Silex UI: the --primary css variable is set on the "color" property](https://cdn.fosstodon.org/media_attachments/files/116/166/159/524/689/103/original/fae0685d0ca46d8c.png)
+
 ### Links
 
 - [DEMO on CodePen](https://codepen.io/lexoyo/full/ogzXKaL)
