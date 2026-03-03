@@ -11,6 +11,7 @@ import {
   setVariable,
 } from './variables.js'
 import { refreshStyleManager } from './style-manager.js'
+import { TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
 
 const styles = document.createElement('style')
 styles.textContent = `
@@ -269,7 +270,9 @@ const SIZE_UNITS = ['px', '%', 'em', 'rem', 'vh', 'vw', 'dvw', 'dvh', 'vmin', 'v
  * Sanitize a variable name: lowercase, replace spaces/special chars with hyphens
  */
 function sanitizeName(name) {
-  return name
+  // Strip leading -- so user can type "--my-var" or "my-var"
+  const stripped = name.replace(/^--/, '')
+  return stripped
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-+/g, '-')
@@ -341,9 +344,9 @@ function getFontOptions(editor) {
  * Type icons for display
  */
 const TYPE_ICONS = {
-  color: '\u25C7',  // ◇
-  size: '\u2197',   // ↗
-  typo: 'A',
+  [TYPE_COLOR]: '\u25C7',  // ◇
+  [TYPE_SIZE]: '\u2197',   // ↗
+  [TYPE_FONT_FAMILY]: 'A',
 }
 
 // Drag state (module-level, following page-panel.ts pattern)
@@ -356,7 +359,7 @@ let draggedEl = null
 export function renderModal(el, editor, options) {
   const t = (key) => editor.I18n.t(`grapesjs-css-variables.${key}`)
   const devices = getDevices(editor)
-  const allVars = getAllVariablesOrdered(editor, options.prefix)
+  const allVars = getAllVariablesOrdered(editor)
 
   // --- Event handlers ---
 
@@ -366,7 +369,7 @@ export function renderModal(el, editor, options) {
   }
 
   const onValueChange = (varItem, widthMedia, newValue) => {
-    setVariableForDevice(editor, { name: varItem.name, value: newValue, type: varItem.type }, options.prefix, widthMedia)
+    setVariableForDevice(editor, { name: varItem.name, value: newValue }, widthMedia)
     rerender()
   }
 
@@ -376,7 +379,7 @@ export function renderModal(el, editor, options) {
       // Only allow clearing non-base breakpoints (base = '' widthMedia)
       // type="number" sends '' for invalid input too, so never delete the base value
       if (widthMedia && varItem.values[widthMedia]) {
-        removeVariableForDevice(editor, { name: varItem.name, type: varItem.type }, options.prefix, widthMedia)
+        removeVariableForDevice(editor, { name: varItem.name }, widthMedia)
         rerender()
       }
       return
@@ -387,20 +390,20 @@ export function renderModal(el, editor, options) {
     if (isNaN(num)) return // ignore non-numeric input, don't delete the row
     const unit = parsed.unit || fallbackUnit || 'px'
     const value = `${num}${unit}`
-    setVariableForDevice(editor, { name: varItem.name, value, type: varItem.type }, options.prefix, widthMedia)
+    setVariableForDevice(editor, { name: varItem.name, value }, widthMedia)
     rerender()
   }
 
   const onNameChange = (varItem, newName) => {
     const sanitized = sanitizeName(newName)
     if (!sanitized || sanitized === varItem.name) return
-    renameVariable(editor, { oldName: varItem.name, newName: sanitized, type: varItem.type }, options.prefix)
+    renameVariable(editor, { oldName: varItem.name, newName: sanitized })
     rerender()
   }
 
   const onDelete = (varItem) => {
     if (!confirm(t('Delete variable') + ` "${varItem.name}"?`)) return
-    removeVariable(editor, { name: varItem.name, type: varItem.type }, options.prefix)
+    removeVariable(editor, { name: varItem.name })
     // Remove from order
     const order = editor.getModel().get('cssVarOrder') || []
     const newOrder = order.filter(o => !(o.type === varItem.type && o.name === varItem.name))
@@ -409,7 +412,7 @@ export function renderModal(el, editor, options) {
   }
 
   const onDuplicate = (varItem) => {
-    const existingNames = allVars.filter(v => v.type === varItem.type).map(v => v.name)
+    const existingNames = allVars.map(v => v.name)
     let copyName = `${varItem.name}-copy`
     let idx = 2
     while (existingNames.includes(copyName)) {
@@ -417,7 +420,7 @@ export function renderModal(el, editor, options) {
     }
     // Copy all breakpoint values
     for (const [wm, value] of Object.entries(varItem.values)) {
-      setVariableForDevice(editor, { name: copyName, value, type: varItem.type }, options.prefix, wm)
+      setVariableForDevice(editor, { name: copyName, value }, wm)
     }
     // Add to order right after original
     const order = editor.getModel().get('cssVarOrder') || []
@@ -431,15 +434,15 @@ export function renderModal(el, editor, options) {
     // Use the first available font from the editor as default for typography
     const fontOpts = getFontOptions(editor)
     const defaultFont = fontOpts.length > 0 ? (fontOpts[0].value || fontOpts[0].id || fontOpts[0]) : 'Arial, Helvetica, sans-serif'
-    const defaults = { color: '#3498db', size: '16px', typo: defaultFont }
-    const existingNames = allVars.filter(v => v.type === type).map(v => v.name)
+    const defaults = { [TYPE_COLOR]: '#3498db', [TYPE_SIZE]: '16px', [TYPE_FONT_FAMILY]: defaultFont }
+    const existingNames = allVars.map(v => v.name)
     let idx = 1
-    let name = `${type}-${idx}`
+    let name = `variable-${idx}`
     while (existingNames.includes(name)) {
       idx++
-      name = `${type}-${idx}`
+      name = `variable-${idx}`
     }
-    setVariable(editor, { name, value: defaults[type], type }, options.prefix)
+    setVariable(editor, { name, value: defaults[type] })
     // Add to order
     const order = editor.getModel().get('cssVarOrder') || []
     order.push({ type, name })
@@ -591,7 +594,7 @@ export function renderModal(el, editor, options) {
     `
   }
 
-  const VALUE_RENDERERS = { color: renderColorCell, size: renderSizeCell, typo: renderTypoCell }
+  const VALUE_RENDERERS = { [TYPE_COLOR]: renderColorCell, [TYPE_SIZE]: renderSizeCell, [TYPE_FONT_FAMILY]: renderTypoCell }
 
   const renderValueCell = (varItem, device) => {
     const wm = device.widthMedia
@@ -603,9 +606,9 @@ export function renderModal(el, editor, options) {
 
   // --- Determine which variable types are enabled ---
   const enabledTypes = []
-  if (options.enableColors) enabledTypes.push({ type: 'color', label: t('Color'), icon: TYPE_ICONS.color })
-  if (options.enableSizes) enabledTypes.push({ type: 'size', label: t('Size'), icon: TYPE_ICONS.size })
-  if (options.enableTypography) enabledTypes.push({ type: 'typo', label: t('Font Family'), icon: TYPE_ICONS.typo })
+  if (options.enableColors) enabledTypes.push({ type: TYPE_COLOR, label: t('Color'), icon: TYPE_ICONS[TYPE_COLOR] })
+  if (options.enableSizes) enabledTypes.push({ type: TYPE_SIZE, label: t('Size'), icon: TYPE_ICONS[TYPE_SIZE] })
+  if (options.enableTypography) enabledTypes.push({ type: TYPE_FONT_FAMILY, label: t('Font Family'), icon: TYPE_ICONS[TYPE_FONT_FAMILY] })
 
   // Filter variables to only enabled types
   const enabledTypeIds = enabledTypes.map(et => et.type)
@@ -664,7 +667,7 @@ export function renderModal(el, editor, options) {
                 <td>
                   <input type="text"
                     class="css-vars-name-input"
-                    .value=${varItem.name}
+                    .value=${`--${varItem.name}`}
                     @change=${(e) => onNameChange(varItem, e.target.value)}
                   />
                 </td>

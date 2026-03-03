@@ -1,6 +1,6 @@
 # GrapesJS CSS Variables
 
-Define and manage CSS custom properties (design tokens) for colors, sizes, and typography directly within GrapesJS.
+Define and manage CSS custom properties in GrapesJs editors, e.g. `--primary`. Override the default GrapesJs inputs to let the user assign the variables to a CSS property, e.g. `background-color: var(--primary);`.
 
 > This code is part of a larger project: [about Silex v3](https://www.silex.me/)
 
@@ -83,12 +83,13 @@ Customize the plugin by passing options:
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `prefix` | Variable name prefix (e.g. `'my-'` produces `--my-color-primary`) | `''` |
 | `enableColors` | Enable color variables | `true` |
 | `enableSizes` | Enable size variables | `true` |
 | `enableTypography` | Enable font-family variables | `true` |
 | `presets` | Pre-defined variables for first load (array of `{name, value, type}`) | `[]` |
 | `i18n` | Internationalization overrides | `{}` |
+
+Variable names are simple CSS custom properties: `--primary`, `--spacing`, etc.
 
 #### Presets example
 
@@ -99,7 +100,7 @@ pluginsOpts: {
     presets: [
       { name: 'primary', value: '#3498db', type: 'color' },
       { name: 'spacing', value: '16px', type: 'size' },
-      { name: 'heading', value: '"Inter", sans-serif', type: 'typo' },
+      { name: 'heading', value: '"Inter", sans-serif', type: 'font-family' },
     ],
   },
 },
@@ -121,7 +122,6 @@ const editor = grapesjs.init({
   plugins: [plugin],
   pluginsOpts: {
     [plugin]: {
-      prefix: '',
       enableColors: true,
       enableSizes: true,
       enableTypography: true,

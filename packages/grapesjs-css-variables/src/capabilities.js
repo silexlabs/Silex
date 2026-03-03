@@ -4,19 +4,18 @@ import {
   removeVariable,
   renameVariable,
 } from './variables.js'
+import { VARIABLE_TYPES, TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
 
-const TYPES = ['color', 'size', 'typo']
-
-// Aliases that SLMs might guess instead of the canonical 'typo'
+// Aliases that LLMs might guess instead of the canonical type names
 const TYPE_ALIASES = {
-  font: 'typo',
-  'font-family': 'typo',
-  typography: 'typo',
+  font: TYPE_FONT_FAMILY,
+  typo: TYPE_FONT_FAMILY,
+  typography: TYPE_FONT_FAMILY,
 }
 
 /** Normalize a type value: accept aliases, return canonical type or null. */
 function normalizeType(type) {
-  if (TYPES.includes(type)) return type
+  if (VARIABLE_TYPES.includes(type)) return type
   return TYPE_ALIASES[type] || null
 }
 
@@ -25,12 +24,10 @@ export const cmdSetVar = 'css-var:set'
 export const cmdRemoveVar = 'css-var:remove'
 export const cmdRenameVar = 'css-var:rename'
 
-export function registerCommands(editor, options) {
-  const prefix = options.prefix || ''
-
+export function registerCommands(editor) {
   editor.Commands.add(cmdListVars, {
     run() {
-      return getAllVariablesOrdered(editor, prefix)
+      return getAllVariablesOrdered(editor)
     },
   })
 
@@ -44,35 +41,37 @@ export function registerCommands(editor, options) {
       if (!canonical) {
         throw new Error(`Invalid type "${type}". Must be one of: color, size, typo (aliases: font, font-family, typography)`)
       }
-      setVariable(editor, { name, value, type: canonical }, prefix)
+      setVariable(editor, { name, value })
+      // Track type in cssVarOrder
+      const order = editor.getModel().get('cssVarOrder') || []
+      if (!order.some(o => o.name === name)) {
+        order.push({ type: canonical, name })
+        editor.getModel().set('cssVarOrder', [...order])
+      }
     },
   })
 
   editor.Commands.add(cmdRemoveVar, {
     run(ed, sender, opts = {}) {
-      const { name, type } = opts
-      if (!name || !type) {
-        throw new Error('Required: name, type. Example: {name: "primary", type: "color"}. Use css-var:list to see existing variables.')
+      const { name } = opts
+      if (!name) {
+        throw new Error('Required: name. Example: {name: "primary"}. Use css-var:list to see existing variables.')
       }
-      const canonical = normalizeType(type)
-      if (!canonical) {
-        throw new Error(`Invalid type "${type}". Must be one of: color, size, typo (aliases: font, font-family, typography)`)
-      }
-      removeVariable(editor, { name, type: canonical }, prefix)
+      removeVariable(editor, { name })
+      // Remove from cssVarOrder
+      const order = editor.getModel().get('cssVarOrder') || []
+      const newOrder = order.filter(o => o.name !== name)
+      editor.getModel().set('cssVarOrder', [...newOrder])
     },
   })
 
   editor.Commands.add(cmdRenameVar, {
     run(ed, sender, opts = {}) {
-      const { oldName, newName, type } = opts
-      if (!oldName || !newName || !type) {
-        throw new Error('Required: oldName, newName, type. Example: {oldName: "primary", newName: "brand", type: "color"}. Use css-var:list to see existing variables.')
+      const { oldName, newName } = opts
+      if (!oldName || !newName) {
+        throw new Error('Required: oldName, newName. Example: {oldName: "primary", newName: "brand"}. Use css-var:list to see existing variables.')
       }
-      const canonical = normalizeType(type)
-      if (!canonical) {
-        throw new Error(`Invalid type "${type}". Must be one of: color, size, typo (aliases: font, font-family, typography)`)
-      }
-      renameVariable(editor, { oldName, newName, type: canonical }, prefix)
+      renameVariable(editor, { oldName, newName })
     },
   })
 }
@@ -93,9 +92,9 @@ export function registerCapabilities(addCapability) {
       type: 'object',
       required: ['name', 'value', 'type'],
       properties: {
-        name: { type: 'string', description: 'Variable name without prefix (e.g. "primary")' },
+        name: { type: 'string', description: 'Variable name (e.g. "primary")' },
         value: { type: 'string', description: 'CSS value (e.g. "#ff0000", "16px", "Inter, sans-serif")' },
-        type: { type: 'string', enum: [...TYPES, 'font', 'font-family', 'typography'], description: 'color, size, or typo (font-family). Aliases accepted: font, font-family, typography' },
+        type: { type: 'string', enum: [...VARIABLE_TYPES, 'font', 'typo', 'typography'], description: 'color, size, or font-family. Aliases accepted: font, typo, typography' },
       },
     },
     tags: ['css'],
@@ -107,10 +106,9 @@ export function registerCapabilities(addCapability) {
     description: 'Remove CSS variable',
     inputSchema: {
       type: 'object',
-      required: ['name', 'type'],
+      required: ['name'],
       properties: {
         name: { type: 'string' },
-        type: { type: 'string', enum: [...TYPES, 'font', 'font-family', 'typography'], description: 'color, size, or typo (font-family)' },
       },
     },
     tags: ['css'],
@@ -122,11 +120,10 @@ export function registerCapabilities(addCapability) {
     description: 'Rename CSS variable',
     inputSchema: {
       type: 'object',
-      required: ['oldName', 'newName', 'type'],
+      required: ['oldName', 'newName'],
       properties: {
         oldName: { type: 'string' },
         newName: { type: 'string' },
-        type: { type: 'string', enum: [...TYPES, 'font', 'font-family', 'typography'], description: 'color, size, or typo (font-family)' },
       },
     },
     tags: ['css'],

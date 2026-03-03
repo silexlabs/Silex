@@ -1,4 +1,5 @@
 import { getVariables, buildVarRef, getTargetStyleValue, setTargetStyleValue } from './variables.js'
+import { TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
 
 /**
  * CSS properties targeted for each variable type
@@ -232,7 +233,7 @@ function injectVarUI(editor, property, variables) {
     pill.className = 'css-vars-sm-pill'
 
     // Color swatch for color-type variables
-    if (ownMatchedVar.type === 'color' && ownMatchedVar.value) {
+    if (ownMatchedVar.type === TYPE_COLOR && ownMatchedVar.value) {
       const swatch = document.createElement('span')
       swatch.className = 'css-vars-sm-pill__swatch'
       swatch.style.background = ownMatchedVar.value
@@ -349,27 +350,27 @@ function injectOnCompositeSubProperties(editor, sectorId, propertyId, subPropert
 /**
  * Build variable option lists from current :root variables
  */
-function buildVarOptions(editor, options) {
-  const vars = getVariables(editor, options.prefix)
+function buildVarOptions(editor) {
+  const vars = getVariables(editor)
 
   const colorOptions = vars.colors.map(v => ({
     name: v.name,
-    ref: buildVarRef(v.name, 'color', options.prefix),
-    type: 'color',
+    ref: buildVarRef(v.name),
+    type: TYPE_COLOR,
     value: v.value,
   }))
 
   const sizeOptions = vars.sizes.map(v => ({
     name: v.name,
-    ref: buildVarRef(v.name, 'size', options.prefix),
-    type: 'size',
+    ref: buildVarRef(v.name),
+    type: TYPE_SIZE,
     value: v.value,
   }))
 
   const typoOptions = vars.typos.map(v => ({
     name: v.name,
-    ref: buildVarRef(v.name, 'typo', options.prefix),
-    type: 'typo',
+    ref: buildVarRef(v.name),
+    type: TYPE_FONT_FAMILY,
     value: v.value,
   }))
 
@@ -380,7 +381,7 @@ function buildVarOptions(editor, options) {
  * Inject all variable UIs into the style manager
  */
 function injectAllDropdowns(editor, options) {
-  const { colorOptions, sizeOptions, typoOptions } = buildVarOptions(editor, options)
+  const { colorOptions, sizeOptions, typoOptions } = buildVarOptions(editor)
 
   // Color properties
   if (options.enableColors) {

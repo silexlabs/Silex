@@ -6,8 +6,6 @@ import fr from './locale/fr.js'
 
 export default (editor, opts = {}) => {
   const options = {
-    // Variable name prefix (e.g. 'my-' => --my-color-primary)
-    prefix: '',
     // Which variable types to enable
     enableColors: true,
     enableSizes: true,
@@ -27,7 +25,7 @@ export default (editor, opts = {}) => {
 
   variablesPlugin(editor, options)
   setupStyleManager(editor, options)
-  registerCommands(editor, options)
+  registerCommands(editor)
 
   // Register AI capabilities if grapesjs-ai-capabilities is loaded
   editor.on('ai-capabilities:ready', (addCapability) => {

@@ -1,41 +1,21 @@
 import { renderModal } from './modal.js'
 import { refreshStyleManager } from './style-manager.js'
+import { TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
 
 export const cmdOpenVariables = 'open-css-variables'
 
-const VARIABLE_TYPES = {
-  color: 'color',
-  size: 'size',
-  typo: 'typo',
-}
-
 /**
- * Build the full CSS variable name including type prefix
+ * Build the full CSS variable name: --{name}
  */
-function buildVarName(name, type, prefix) {
-  const p = prefix ? `${prefix}` : ''
-  return `--${p}${type}-${name}`
+function buildVarName(name) {
+  return `--${name}`
 }
 
 /**
  * Build a var() reference string
  */
-export function buildVarRef(name, type, prefix) {
-  return `var(${buildVarName(name, type, prefix)})`
-}
-
-/**
- * Parse a CSS variable name to extract type and name
- */
-function parseVarName(fullName, prefix) {
-  const p = prefix ? `${prefix}` : ''
-  for (const type of Object.values(VARIABLE_TYPES)) {
-    const pat = `--${p}${type}-`
-    if (fullName.startsWith(pat)) {
-      return { type, name: fullName.slice(pat.length) }
-    }
-  }
-  return null
+export function buildVarRef(name) {
+  return `var(${buildVarName(name)})`
 }
 
 /**
@@ -76,29 +56,35 @@ function getRootRule(editor, widthMedia) {
 }
 
 /**
- * Get all managed variables from the base :root rule (no media query)
+ * Get all managed variables from the base :root rule (no media query).
+ * Type information comes from cssVarOrder metadata.
  */
-export function getVariables(editor, prefix) {
+export function getVariables(editor) {
   const rule = getRootRule(editor, '')
   if (!rule) return { colors: [], sizes: [], typos: [] }
 
   const style = rule.getStyle()
+  const order = editor.getModel().get('cssVarOrder') || []
+  const typeByName = new Map(order.map(o => [o.name, o.type]))
+
   const colors = []
   const sizes = []
   const typos = []
 
   for (const [key, value] of Object.entries(style)) {
-    const parsed = parseVarName(key, prefix)
-    if (!parsed) continue
-    const entry = { name: parsed.name, value, fullName: key }
-    switch (parsed.type) {
-    case VARIABLE_TYPES.color:
+    if (!key.startsWith('--')) continue
+    const name = key.slice(2)
+    const type = typeByName.get(name)
+    if (!type) continue
+    const entry = { name, value, fullName: key }
+    switch (type) {
+    case TYPE_COLOR:
       colors.push(entry)
       break
-    case VARIABLE_TYPES.size:
+    case TYPE_SIZE:
       sizes.push(entry)
       break
-    case VARIABLE_TYPES.typo:
+    case TYPE_FONT_FAMILY:
       typos.push(entry)
       break
     }
@@ -110,17 +96,22 @@ export function getVariables(editor, prefix) {
 /**
  * Get variables for a specific device/breakpoint
  */
-export function getVariablesForDevice(editor, prefix, widthMedia) {
+export function getVariablesForDevice(editor, widthMedia) {
   const rule = getRootRule(editor, widthMedia)
   if (!rule) return {}
+
+  const order = editor.getModel().get('cssVarOrder') || []
+  const typeByName = new Map(order.map(o => [o.name, o.type]))
 
   const style = rule.getStyle()
   const result = {}
 
   for (const [key, value] of Object.entries(style)) {
-    const parsed = parseVarName(key, prefix)
-    if (!parsed) continue
-    result[`${parsed.type}-${parsed.name}`] = value
+    if (!key.startsWith('--')) continue
+    const name = key.slice(2)
+    const type = typeByName.get(name)
+    if (!type) continue
+    result[`${type}-${name}`] = value
   }
 
   return result
@@ -129,8 +120,8 @@ export function getVariablesForDevice(editor, prefix, widthMedia) {
 /**
  * Set or update a variable for a specific breakpoint
  */
-export function setVariableForDevice(editor, { name, value, type }, prefix, widthMedia) {
-  const varName = buildVarName(name, type, prefix)
+export function setVariableForDevice(editor, { name, value }, widthMedia) {
+  const varName = buildVarName(name)
 
   if (!widthMedia) {
     // Base/desktop: use setRule without media query
@@ -153,11 +144,11 @@ export function setVariableForDevice(editor, { name, value, type }, prefix, widt
 /**
  * Remove a variable from a specific breakpoint
  */
-export function removeVariableForDevice(editor, { name, type }, prefix, widthMedia) {
+export function removeVariableForDevice(editor, { name }, widthMedia) {
   const rule = getRootRule(editor, widthMedia)
   if (!rule) return
 
-  const varName = buildVarName(name, type, prefix)
+  const varName = buildVarName(name)
   const style = { ...rule.getStyle() }
   delete style[varName]
   rule.setStyle(style)
@@ -166,22 +157,22 @@ export function removeVariableForDevice(editor, { name, type }, prefix, widthMed
 /**
  * Remove a variable from ALL breakpoints
  */
-export function removeVariable(editor, { name, type }, prefix) {
+export function removeVariable(editor, { name }) {
   // Clean up var() references in all component styles
-  const ref = buildVarRef(name, type, prefix)
+  const ref = buildVarRef(name)
   updateVarReferences(editor, ref, '')
 
   const devices = getDevices(editor)
   for (const device of devices) {
-    removeVariableForDevice(editor, { name, type }, prefix, device.widthMedia)
+    removeVariableForDevice(editor, { name }, device.widthMedia)
   }
 }
 
 /**
- * Set or update a variable in the base :root rule (legacy compat)
+ * Set or update a variable in the base :root rule
  */
-export function setVariable(editor, { name, value, type }, prefix) {
-  setVariableForDevice(editor, { name, value, type }, prefix, '')
+export function setVariable(editor, { name, value }) {
+  setVariableForDevice(editor, { name, value }, '')
 }
 
 /**
@@ -218,14 +209,14 @@ function updateVarReferences(editor, oldRef, newRef) {
 /**
  * Rename a variable across all breakpoints
  */
-export function renameVariable(editor, { oldName, newName, type }, prefix) {
+export function renameVariable(editor, { oldName, newName }) {
   const devices = getDevices(editor)
   for (const device of devices) {
     const rule = getRootRule(editor, device.widthMedia)
     if (!rule) continue
 
-    const oldVarName = buildVarName(oldName, type, prefix)
-    const newVarName = buildVarName(newName, type, prefix)
+    const oldVarName = buildVarName(oldName)
+    const newVarName = buildVarName(newName)
     const style = { ...rule.getStyle() }
     const value = style[oldVarName]
     if (value === undefined) continue
@@ -236,79 +227,71 @@ export function renameVariable(editor, { oldName, newName, type }, prefix) {
   }
 
   // Update var() references in all component styles
-  const oldRef = buildVarRef(oldName, type, prefix)
-  const newRef = buildVarRef(newName, type, prefix)
+  const oldRef = buildVarRef(oldName)
+  const newRef = buildVarRef(newName)
   updateVarReferences(editor, oldRef, newRef)
 
   // Update order array
   const order = editor.getModel().get('cssVarOrder') || []
-  const idx = order.findIndex(o => o.type === type && o.name === oldName)
+  const idx = order.findIndex(o => o.name === oldName)
   if (idx !== -1) {
-    order[idx] = { type, name: newName }
+    order[idx] = { ...order[idx], name: newName }
     editor.getModel().set('cssVarOrder', [...order])
   }
 }
 
 /**
- * Get all variables with their per-breakpoint values, sorted by stored order
+ * Get all variables with their per-breakpoint values, sorted by stored order.
+ * Type information comes from cssVarOrder metadata.
  */
-export function getAllVariablesOrdered(editor, prefix) {
+export function getAllVariablesOrdered(editor) {
   const devices = getDevices(editor)
   const order = editor.getModel().get('cssVarOrder') || []
+  const typeByName = new Map(order.map(o => [o.name, o.type]))
 
-  // Collect all variables from the base :root rule
-  const baseRule = getRootRule(editor, '')
-  const baseStyle = baseRule ? baseRule.getStyle() : {}
-  const allVarsMap = new Map()
+  // Collect values from all :root rules (base + breakpoints)
+  const valuesMap = new Map() // name → { widthMedia → value }
 
-  for (const [key, value] of Object.entries(baseStyle)) {
-    const parsed = parseVarName(key, prefix)
-    if (!parsed) continue
-    const mapKey = `${parsed.type}-${parsed.name}`
-    allVarsMap.set(mapKey, {
-      type: parsed.type,
-      name: parsed.name,
-      values: { '': value },
-    })
-  }
-
-  // Also check breakpoint rules for variables that might only exist at breakpoints
-  for (const device of devices) {
-    if (!device.widthMedia) continue
-    const rule = getRootRule(editor, device.widthMedia)
-    if (!rule) continue
+  const collectFromRule = (widthMedia) => {
+    const rule = getRootRule(editor, widthMedia)
+    if (!rule) return
     const style = rule.getStyle()
     for (const [key, value] of Object.entries(style)) {
-      const parsed = parseVarName(key, prefix)
-      if (!parsed) continue
-      const mapKey = `${parsed.type}-${parsed.name}`
-      if (!allVarsMap.has(mapKey)) {
-        allVarsMap.set(mapKey, {
-          type: parsed.type,
-          name: parsed.name,
-          values: {},
-        })
-      }
-      allVarsMap.get(mapKey).values[device.widthMedia] = value
+      if (!key.startsWith('--')) continue
+      const name = key.slice(2)
+      if (!typeByName.has(name)) continue
+      if (!valuesMap.has(name)) valuesMap.set(name, {})
+      valuesMap.get(name)[widthMedia] = value
     }
   }
 
-  // Sort by stored order, unrecognized items go to the end
+  collectFromRule('')
+  for (const device of devices) {
+    if (device.widthMedia) collectFromRule(device.widthMedia)
+  }
+
+  // Build result sorted by order, then append unordered
   const result = []
   const seen = new Set()
 
   for (const orderItem of order) {
-    const mapKey = `${orderItem.type}-${orderItem.name}`
-    if (allVarsMap.has(mapKey)) {
-      result.push(allVarsMap.get(mapKey))
-      seen.add(mapKey)
+    if (valuesMap.has(orderItem.name)) {
+      result.push({
+        type: orderItem.type,
+        name: orderItem.name,
+        values: valuesMap.get(orderItem.name),
+      })
+      seen.add(orderItem.name)
     }
   }
 
-  // Append any variables not in the order array
-  for (const [mapKey, varData] of allVarsMap) {
-    if (!seen.has(mapKey)) {
-      result.push(varData)
+  for (const [name, values] of valuesMap) {
+    if (!seen.has(name)) {
+      result.push({
+        type: typeByName.get(name),
+        name,
+        values,
+      })
     }
   }
 
@@ -366,7 +349,13 @@ function applyPresets(editor, options) {
   if (rule && Object.keys(rule.getStyle()).length > 0) return
 
   for (const preset of options.presets) {
-    setVariable(editor, preset, options.prefix)
+    setVariable(editor, preset)
+    // Ensure preset is tracked in cssVarOrder
+    const order = editor.getModel().get('cssVarOrder') || []
+    if (!order.some(o => o.name === preset.name)) {
+      order.push({ type: preset.type, name: preset.name })
+      editor.getModel().set('cssVarOrder', [...order])
+    }
   }
 }
 
