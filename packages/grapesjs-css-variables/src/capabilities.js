@@ -4,7 +4,7 @@ import {
   removeVariable,
   renameVariable,
 } from './variables.js'
-import { VARIABLE_TYPES, TYPE_COLOR, TYPE_SIZE, TYPE_FONT_FAMILY } from './types.js'
+import { VARIABLE_TYPES, TYPE_FONT_FAMILY } from './types.js'
 
 // Aliases that LLMs might guess instead of the canonical type names
 const TYPE_ALIASES = {
