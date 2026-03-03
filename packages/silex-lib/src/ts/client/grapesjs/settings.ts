@@ -45,6 +45,8 @@ export const cmdOpenSettings = 'open-settings'
 export const cmdAddSection = 'settings:add-section'
 export const cmdRemoveSection = 'settings:remove-section'
 export const cmdRenderSection = 'settings:render-section'
+export const cmdGetSettings = 'settings:get'
+export const cmdSetSettings = 'settings:set'
 
 export interface AddSectionOption {
   section: SettingsSection,
@@ -222,10 +224,39 @@ export const settingsDialog = (
     addSection(options.section, options.siteOrPage, options.position)
   })
   editor.Commands.add(cmdRenderSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
+    if (!settingsState) return
     displaySettings(editor, opts, settingsState.page, settingsState.sectionId)
   })
   editor.Commands.add(cmdRemoveSection, (_editor: Editor, _sender: Button, options: AddSectionOption): void => {
     removeSection(options.section.id, options.siteOrPage)
+  })
+  editor.Commands.add(cmdGetSettings, (_editor: Editor, _sender: Button, options: any = {}) => {
+    const { page } = options
+    if (page) {
+      const p = typeof page === 'string'
+        ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
+        : editor.Pages.getSelected()
+      if (!p) throw new Error(`Page not found: "${page}". Use pages:list to see all pages.`)
+      return p.get('settings') || {}
+    }
+    return editor.getModel().get('settings') || {}
+  })
+  editor.Commands.add(cmdSetSettings, (_editor: Editor, _sender: Button, options: Record<string, unknown> = {}) => {
+    const { page, ...settings } = options
+    if (!Object.keys(settings).length) throw new Error('Required: at least one setting key. Valid keys: title, description, favicon, lang, head, og:title, og:description, og:image')
+    if (page) {
+      const p = typeof page === 'string'
+        ? editor.Pages.getAll().find(pp => pp.getName() === page || pp.id === page)
+        : editor.Pages.getSelected()
+      if (!p) throw new Error(`Page not found: "${page}". Use pages:list to see all pages.`)
+      const current = (p.get('settings') || {}) as Record<string, unknown>
+      p.set('settings', { ...current, ...settings })
+    } else {
+      const current = (editor.getModel().get('settings') || {}) as Record<string, unknown>
+      editor.getModel().set('settings', { ...current, ...settings })
+    }
+    editor.getModel().set('changesCount', editor.getDirtyCount() + 1)
+    updateDom(editor)
   })
   editor.on('storage:start:store', (data: WebsiteData): void => {
     data.settings = editor.getModel().get('settings')
@@ -250,6 +281,42 @@ export const settingsDialog = (
     lineNumbers: true,
     lineWrapping: true,
     autoFormat: false,
+  })
+
+  // Register AI capabilities
+  editor.on('ai-capabilities:ready', (addCapability) => {
+    addCapability({
+      id: cmdGetSettings,
+      command: cmdGetSettings,
+      description: 'Get site or page settings',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          page: { type: 'string' },
+        },
+      },
+      tags: ['settings'],
+    })
+    addCapability({
+      id: cmdSetSettings,
+      command: cmdSetSettings,
+      description: 'Set site or page settings',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          page: { type: 'string' },
+          title: { type: 'string' },
+          description: { type: 'string' },
+          favicon: { type: 'string' },
+          lang: { type: 'string' },
+          head: { type: 'string' },
+          'og:title': { type: 'string' },
+          'og:description': { type: 'string' },
+          'og:image': { type: 'string' },
+        },
+      },
+      tags: ['settings'],
+    })
   })
 }
 

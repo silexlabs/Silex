@@ -16,7 +16,6 @@ export async function updateInfo() {
   if (!websiteMeta) {
     const { websiteId, storageId } = config
     websiteMeta = await websiteMetaRead({ websiteId, connectorId: storageId })
-    console.log('RE RENDER PLS', { websiteMeta, websiteId, storageId })
     config.getEditor().runCommand(cmdRenderSection)
   }
 }

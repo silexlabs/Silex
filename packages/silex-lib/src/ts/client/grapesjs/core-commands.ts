@@ -40,9 +40,9 @@ export default (editor: Editor) => {
   })
   editor.Commands.add('blocks:add', (_ed, _sender, options: any = {}) => {
     const { blockId } = options
-    if (!blockId) throw new Error('Required: blockId')
+    if (!blockId) throw new Error('Required: blockId. Use blocks:list to see available blocks.')
     const block = editor.BlockManager.get(blockId)
-    if (!block) throw new Error(`Block "${blockId}" not found`)
+    if (!block) throw new Error(`Block "${blockId}" not found. Use blocks:list to see available blocks.`)
     const selected = editor.getSelected() || editor.getWrapper()
     return selected.append(block.getContent())?.[0]?.toHTML()
   })
@@ -64,32 +64,32 @@ export default (editor: Editor) => {
   })
   editor.Commands.add('components:select', (_ed, _sender, options: any = {}) => {
     const { id } = options
-    if (!id) throw new Error('Required: id')
+    if (!id) throw new Error('Required: id. Use components:list to see all component ids.')
     const found = findComponentById(editor, id)
-    if (!found) throw new Error(`Component "${id}" not found`)
+    if (!found) throw new Error(`Component "${id}" not found. Use components:list to see all component ids.`)
     editor.select(found)
   })
   editor.Commands.add('components:remove', (_ed, _sender, options: any = {}) => {
     const comp = options.id ? findComponentById(editor, options.id) : editor.getSelected()
-    if (!comp) throw new Error(options.id ? `Component "${options.id}" not found` : 'No component selected')
-    if (comp === editor.getWrapper()) throw new Error('Cannot remove the body')
+    if (!comp) throw new Error(options.id ? `Component "${options.id}" not found. Use components:list to see all component ids.` : 'No component selected. Use components:select first, or pass {id}.')
+    if (comp === editor.getWrapper()) throw new Error('Cannot remove the body component.')
     comp.remove()
   })
   editor.Commands.add('components:move', (_ed, _sender, options: any = {}) => {
     const { id, targetId, position } = options
-    if (!id) throw new Error('Required: id')
-    if (!targetId) throw new Error('Required: targetId')
+    if (!id) throw new Error('Required: id — the component to move. Use components:list to see all ids.')
+    if (!targetId) throw new Error('Required: targetId — the parent to move into. Use components:list to see all ids.')
     const comp = findComponentById(editor, id)
-    if (!comp) throw new Error(`Component "${id}" not found`)
+    if (!comp) throw new Error(`Component "${id}" not found. Use components:list to see all component ids.`)
     const target = findComponentById(editor, targetId)
-    if (!target) throw new Error(`Target "${targetId}" not found`)
+    if (!target) throw new Error(`Target "${targetId}" not found. Use components:list to see all component ids.`)
     const idx = typeof position === 'number' ? position : undefined
     target.append(comp.clone(), { at: idx })
     comp.remove()
   })
   editor.Commands.add('components:update', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     const { content, tagName, attributes } = options
     if (content !== undefined) selected.components(content)
     if (tagName) selected.set('tagName', tagName)
@@ -97,54 +97,54 @@ export default (editor: Editor) => {
       Object.entries(attributes).forEach(([k, v]) => selected.addAttributes({ [k]: v }))
     }
     if (content === undefined && !tagName && !attributes) {
-      throw new Error('Required: content, tagName, or attributes')
+      throw new Error('Required: at least one of {content, tagName, attributes}. Example: {content: "<b>Hello</b>"} or {tagName: "section"} or {attributes: {title: "My div"}}')
     }
   })
 
   // Styles
   editor.Commands.add('styles:get', () => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     return selected.getStyle()
   })
   editor.Commands.add('styles:set', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     const { property, value, ...rest } = options
     if (property && value !== undefined) {
       selected.addStyle({ [property]: value })
     } else if (Object.keys(rest).length) {
       selected.addStyle(rest)
     } else {
-      throw new Error('Required: property and value, or style key-value pairs')
+      throw new Error('Required: {property, value} or CSS key-value pairs. Example: {property: "color", value: "red"} or {"color": "red", "font-size": "16px"}')
     }
   })
   editor.Commands.add('styles:remove', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     const { property } = options
-    if (!property) throw new Error('Required: property')
+    if (!property) throw new Error('Required: property (CSS property name, e.g. "color", "font-size", "margin")')
     selected.removeStyle(property)
   })
 
   // CSS Classes
   editor.Commands.add('classes:list', () => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     return selected.getClasses()
   })
   editor.Commands.add('classes:add', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     const { name } = options
-    if (!name) throw new Error('Required: name')
+    if (!name) throw new Error('Required: name (CSS class name, e.g. "my-card", "container"). Use classes:list to see existing classes.')
     selected.addClass(name)
   })
   editor.Commands.add('classes:remove', (_ed, _sender, options: any = {}) => {
     const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected')
+    if (!selected) throw new Error('No component selected. Use components:select first.')
     const { name } = options
-    if (!name) throw new Error('Required: name')
+    if (!name) throw new Error('Required: name (CSS class name). Use classes:list to see classes on the selected component.')
     selected.removeClass(name)
   })
 

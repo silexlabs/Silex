@@ -29,6 +29,10 @@ export const cmdClonePage = 'pages:clone'
 export const cmdSelectNextPage = 'pages:select-next'
 export const cmdSelectPrevPage = 'pages:select-prev'
 export const cmdSelectFirstPage = 'pages:select-first'
+export const cmdListPages = 'pages:list'
+export const cmdSelectPage = 'pages:select'
+export const cmdDeletePage = 'pages:delete'
+export const cmdRenamePage = 'pages:rename'
 
 function selectPage(editor: Editor, page: Page) {
   editor.Pages.select(page)
@@ -313,5 +317,103 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
     editor.Commands.add(cmdSelectNextPage, () => selectNextPage(editor))
     editor.Commands.add(cmdSelectPrevPage, () => selectPrevPage(editor))
     editor.Commands.add(cmdSelectFirstPage, () => selectPage(editor, editor.Pages.getAll()[0]))
+    editor.Commands.add(cmdListPages, () => {
+      return editor.Pages.getAll().map((p: Page) => ({
+        id: p.id,
+        name: p.getName(),
+        selected: editor.Pages.getSelected() === p,
+      }))
+    })
+    editor.Commands.add(cmdSelectPage, (_editor: Editor, _sender: any, options: any = {}) => {
+      const { name, id } = options
+      if (!name && !id) throw new Error('Required: name or id. Use pages:list to see all pages.')
+      const page = id
+        ? editor.Pages.get(id)
+        : editor.Pages.getAll().find((p: Page) => p.getName() === name)
+      if (!page) throw new Error(`Page not found: "${name || id}". Use pages:list to see all pages.`)
+      selectPage(editor, page)
+    })
+
+    editor.Commands.add(cmdDeletePage, (_editor: Editor, _sender: any, options: any = {}) => {
+      const { name, id } = options
+      const page = name || id
+        ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
+        : editor.Pages.getSelected()
+      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages:list to see all pages.`)
+      if (editor.Pages.getAll().length === 1) throw new Error('Cannot delete the only page. At least one page must exist.')
+      removePage(editor, page)
+    })
+    editor.Commands.add(cmdRenamePage, (_editor: Editor, _sender: any, options: any = {}) => {
+      const { name, id, newName } = options
+      if (!newName) throw new Error('Required: newName (the new page name string)')
+      const page = name || id
+        ? (id ? editor.Pages.get(id) : editor.Pages.getAll().find((p: Page) => p.getName() === name))
+        : editor.Pages.getSelected()
+      if (!page) throw new Error(`Page not found: "${name || id || 'selected'}". Use pages:list to see all pages.`)
+      page.set('name', newName)
+    })
+
+    // Register AI capabilities
+    editor.on('ai-capabilities:ready', (addCapability) => {
+      addCapability({
+        id: cmdListPages,
+        command: cmdListPages,
+        description: 'List all pages',
+        tags: ['pages'],
+      })
+      addCapability({
+        id: cmdSelectPage,
+        command: cmdSelectPage,
+        description: 'Select a page by name or id',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            id: { type: 'string' },
+          },
+        },
+        tags: ['pages'],
+      })
+      addCapability({
+        id: cmdAddPage,
+        command: cmdAddPage,
+        description: 'Create a new page',
+        tags: ['pages'],
+      })
+      addCapability({
+        id: cmdClonePage,
+        command: cmdClonePage,
+        description: 'Clone the selected page',
+        tags: ['pages'],
+      })
+      addCapability({
+        id: cmdDeletePage,
+        command: cmdDeletePage,
+        description: 'Delete a page',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            id: { type: 'string' },
+          },
+        },
+        tags: ['pages'],
+      })
+      addCapability({
+        id: cmdRenamePage,
+        command: cmdRenamePage,
+        description: 'Rename a page',
+        inputSchema: {
+          type: 'object',
+          required: ['newName'],
+          properties: {
+            name: { type: 'string' },
+            id: { type: 'string' },
+            newName: { type: 'string' },
+          },
+        },
+        tags: ['pages'],
+      })
+    })
   })
 }

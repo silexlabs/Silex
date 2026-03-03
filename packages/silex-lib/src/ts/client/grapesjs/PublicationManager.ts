@@ -141,6 +141,15 @@ export class PublicationManager {
     editor.Commands.add(cmdPublicationStart, () => this.startPublication())
     editor.Commands.add(cmdPublicationLogin, (editor: PublishableEditor, sender: any, connector: ConnectorData) => this.goLogin(connector))
     editor.Commands.add(cmdPublicationLogout, () => this.goLogout())
+    // Register AI capabilities
+    editor.on('ai-capabilities:ready', (addCapability) => {
+      addCapability({
+        id: cmdPublicationStart,
+        command: cmdPublicationStart,
+        description: 'Publish the website',
+        tags: ['publication'],
+      })
+    })
     // Add the publication dialog to the editor
     if (this.options.appendTo) {
       this.dialog = new PublicationUi(editor, {

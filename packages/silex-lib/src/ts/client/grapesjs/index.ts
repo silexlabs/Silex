@@ -65,6 +65,7 @@ import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
 import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
+import coreCommandsPlugin from './core-commands'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
 import { API_PATH, API_WEBSITE_ASSETS_WRITE, API_WEBSITE_PATH, SILEX_VERSION } from '../../constants'
@@ -115,6 +116,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
   {name: 'grapesjs-parser-postcss', value: parserPostCSS},
   {name: './upload-progress', value: uploadProgress},
+  {name: './core-commands', value: coreCommandsPlugin},
 ]
 // Check that all plugins are loaded correctly
 plugins
