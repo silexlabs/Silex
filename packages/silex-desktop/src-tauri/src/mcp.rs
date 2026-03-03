@@ -428,13 +428,29 @@ impl SilexMcp {
         }
     }
 
-    /// Helper: run JS in editor, return success CallToolResult.
+    /// Helper: run JS in editor, return CallToolResult.
+    /// Detects error/failure signals in the JS result and marks the response
+    /// with is_error=true so that LLMs can distinguish success from failure.
     async fn run_js(&self, js: &str) -> Result<CallToolResult, McpError> {
         self.require_project().map_err(|e| McpError::internal_error(e, None))?;
         match self.eval_js_internal(js, 10).await {
-            Ok(result) => Ok(CallToolResult::success(vec![Content::text(
-                result.unwrap_or_else(|| "null".into()),
-            )])),
+            Ok(result) => {
+                let text = result.unwrap_or_else(|| "null".into());
+                // Detect error signals from JS bridge: {error: "..."} or {success: false}
+                let is_error = serde_json::from_str::<serde_json::Value>(&text)
+                    .ok()
+                    .map(|v| {
+                        v.get("error").map_or(false, |e| !e.is_null())
+                            || v.get("success").map_or(false, |s| s == false)
+                    })
+                    .unwrap_or(false);
+                Ok(CallToolResult {
+                    content: vec![Content::text(text)],
+                    structured_content: None,
+                    is_error: if is_error { Some(true) } else { None },
+                    meta: None,
+                })
+            }
             Err(e) => Ok(tool_error(e)),
         }
     }
