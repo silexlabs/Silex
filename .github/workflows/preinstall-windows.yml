@@ -8,10 +8,8 @@ on:
 jobs:
   verify:
     runs-on: windows-latest
-
     steps:
-      # Non-recursive submodules: avoids the nested GitLab SSH submodule
-      - name: Checkout (with top-level submodules)
+      - name: Checkout (top-level submodules)
         uses: actions/checkout@v4
         with:
           submodules: true
@@ -28,28 +26,25 @@ jobs:
           corepack prepare yarn@4.13.0 --activate
           yarn --version
 
-      # Optional but helps with deep paths on Windows
       - name: Git longpaths
         shell: bash
         run: git config --global core.longpaths true
 
-      # CI note:
-      # Yarn defaults to immutable installs on CI; we disable it because this repo
-      # may migrate lockfile / generate yarn artifacts on first run.
       - name: Yarn install (skip builds)
         shell: bash
         run: |
           rm -rf node_modules
-          rm -f package-lock.json
           yarn install --mode=skip-build --no-immutable
 
-      - name: preinstall should pass under yarn
+      - name: preinstall passes under yarn
         shell: bash
         run: yarn run preinstall
 
-      - name: preinstall should fail under npm
-        shell: pwsh
+      - name: preinstall fails under npm
+        shell: bash
         run: |
-          npm run preinstall
-          if ($LASTEXITCODE -eq 0) { throw "Expected npm run preinstall to fail, but it succeeded." }
-          "npm run preinstall failed as expected (exit code $LASTEXITCODE)"
+          if npm run preinstall; then
+            echo "Expected npm run preinstall to fail, but it succeeded."
+            exit 1
+          fi
+          echo "npm run preinstall failed as expected"
