@@ -44,6 +44,5 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "@silexlabs/grapesjs-ai-capabilities": "^0.0.3"
   }
 }
