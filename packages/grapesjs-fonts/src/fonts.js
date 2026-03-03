@@ -92,9 +92,23 @@ function saveFonts(editor, opts) {
 }
 
 /**
+ * Get the cached list of available fonts from Google
+ */
+export function getAvailableFonts() {
+    return _fontsList
+}
+
+/**
+ * Get the configured Google Fonts API base URL
+ */
+export function getApiUrl() {
+    return fontApi
+}
+
+/**
  * Load the available fonts from google
  */
-async function loadFontList(url) {
+export async function loadFontList(url) {
     _fontsList = _fontsList ?? (await (await fetch(url)).json())?.items
 
     localStorage.setItem(LS_FONTS, JSON.stringify(_fontsList))

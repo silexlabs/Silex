@@ -1,5 +1,5 @@
 import { fontsDialogPlugin } from './fonts.js'
-import commands from './commands.js'
+import commands, { registerCapabilities } from './commands.js'
 import en from './locale/en.js'
 import fr from './locale/fr.js'
 
@@ -11,7 +11,7 @@ export default (editor, opts = {}) => {
         preserveDefaultFonts: true,
     },  ...opts }
 
-  
+
     // Load i18n files
     editor.I18n && editor.I18n.addMessages({
         en,
@@ -21,6 +21,11 @@ export default (editor, opts = {}) => {
 
     commands(editor, options)
     fontsDialogPlugin(editor, options)
+
+    // Register AI capabilities if grapesjs-ai-capabilities is loaded
+    editor.on('ai-capabilities:ready', (addCapability) => {
+        registerCapabilities(addCapability)
+    })
 }
 
 // Expose commands to the app
