@@ -80,15 +80,31 @@ const selectiveIntrospectionFragment = `
       type {
         kind
         name
+        possibleTypes {
+          kind
+          name
+        }
         ofType {
           kind
           name
+          possibleTypes {
+            kind
+            name
+          }
           ofType {
             kind
             name
+            possibleTypes {
+              kind
+              name
+            }
             ofType {
               kind
               name
+              possibleTypes {
+                kind
+                name
+              }
             }
           }
         }
@@ -752,8 +768,11 @@ export default class GraphQL implements IDataSource {
    */
   protected graphQLToTypes(field: GQLField): TypeId[] {
     const possibleTypes = this.getOfTypeProp<{name: string, kind: GQLKind}[]>('possibleTypes', field.type, [])
-    if(possibleTypes.length > 0) return possibleTypes.map(type => type.name)
-    return [this.getOfTypeProp<string>('name', field.type, field.name)]
+    if(possibleTypes.length > 0) {
+      return possibleTypes.map(type => type.name)
+    }
+    const typeName = this.getOfTypeProp<string>('name', field.type, field.name)
+    return [typeName]
   }
 
   /**
