@@ -70,9 +70,12 @@
 	path = packages/grapesjs-version-flow
 	url = git@github.com:silexlabs/grapesjs-version-flow.git
 	branch = main
-[submodule "packages/silex_silex-dashboard-2026"]
-	path = packages/silex_silex-dashboard-2026
-	url = https://gitlab.com/silexlabs/silex_silex-dashboard-2026.git
 [submodule "packages/silex-server"]
 	path = packages/silex-server
 	url = git@github.com:silexlabs/silex-server.git
+[submodule "packages/grapesjs-css-variables"]
+	path = packages/grapesjs-css-variables
+	url = git@github.com:silexlabs/grapesjs-css-variables.git
+[submodule "packages/grapesjs-ai-capabilities"]
+	path = packages/grapesjs-ai-capabilities
+	url = git@github.com:silexlabs/grapesjs-ai-capabilities.git
