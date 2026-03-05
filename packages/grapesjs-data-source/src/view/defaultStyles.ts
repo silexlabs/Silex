@@ -295,6 +295,7 @@ export const PROPERTY_STYLES = `
       -moz-appearance: none;
       text-indent: 1px;
       text-overflow: '';
+      margin-right: 150px;
     }
     .ds-expression-input__add {
       option {
