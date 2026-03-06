@@ -131,7 +131,7 @@ export const storagePlugin = (editor: PublishableEditor) => {
           editor.once(eventLoggedIn, async () => {
             // This should work but well it doesn't... window.location.reload()
             // Here comes the workaround:
-            /* @lint-ignore */
+            // eslint-disable-next-line no-self-assign
             window.location.href = window.location.href
             return null
             // try {
