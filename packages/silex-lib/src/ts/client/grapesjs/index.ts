@@ -528,12 +528,6 @@ export async function initEditor(config: EditorConfig) {
               ...(dcmp.defaults.traits || []),
             ]
           },
-          init(...args) {
-            (dcmp.init.apply(this, args))
-            if (!this.getAttributes().id) {
-              this.addAttributes({ id: this.getId() })
-            }
-          }
         },
       })
     })

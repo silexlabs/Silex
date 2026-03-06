@@ -15,23 +15,62 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * Default styles for blocks, applied via CSS classes instead of inline styles.
+ * This prevents GrapesJS from adding auto-generated IDs to published HTML
+ * (GrapesJS adds IDs to components with inline styles for #id CSS selectors).
+ */
+const BLOCK_DEFAULT_STYLES: Record<string, Record<string, string>> = {
+  'container': { 'min-height': '100px' },
+  'text': { 'padding': '10px' },
+}
+
+function defaultClassName(blockType: string): string {
+  if (blockType in BLOCK_DEFAULT_STYLES) return `silex-default-${blockType}`
+  return ''
+}
+
 export const blocksPlugin = (editor, opts) => {
   // Defaults
   const options = {
     ...opts,
   }
-  // Container block
+
+  // Container block — use class instead of inline style
   const containerId = 'container'
   editor.BlockManager.add(containerId, {
     label: 'Container',
     category: 'Basics',
     attributes: { class: 'container-png' },
     content: {
-      type: containerId, // display as "Container"
-      style: {
-        'min-height': '100px',
-      },
+      type: containerId,
+      classes: [defaultClassName(containerId)],
     },
   })
   editor.DomComponents.addType(containerId, {})
+
+  // Override grapesjs-blocks-basic blocks to use classes instead of inline styles
+  const blocksToFix = ['text', 'link', 'image', 'video', 'map']
+  blocksToFix.forEach(blockId => {
+    const block = editor.BlockManager.get(blockId)
+    if (block) {
+      const content = block.get('content')
+      if (content && typeof content === 'object' && content.style) {
+        delete content.style
+        const cls = defaultClassName(blockId)
+        if (cls) content.classes = [...(content.classes || []), cls]
+        block.set('content', { ...content })
+      }
+    }
+  })
+
+  // Add default CSS rules for block classes after project data is loaded
+  editor.on('storage:end:load', () => {
+    Object.entries(BLOCK_DEFAULT_STYLES).forEach(([blockType, styles]) => {
+      const selector = `.${defaultClassName(blockType)}`
+      if (!editor.Css.getRule(selector)) {
+        editor.Css.setRule(selector, styles)
+      }
+    })
+  })
 }
