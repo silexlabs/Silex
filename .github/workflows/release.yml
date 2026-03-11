@@ -103,7 +103,7 @@ jobs:
       - name: Disable updater artifacts config
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         shell: bash
-        run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > packages/silex-desktop/src-tauri/tauri.ci.json
+        run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > packages/silex-desktop/tauri.ci.json
 
       - name: Build Tauri app (unsigned)
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
