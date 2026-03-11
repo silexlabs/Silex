@@ -86,6 +86,10 @@
 	path = packages/silex-platform
 	url = https://github.com/silexlabs/silex-platform.git
 	branch = main
+[submodule "packages/silex-dashboard"]
+	path = packages/silex-dashboard
+	url = https://github.com/silexlabs/silex-dashboard.git
+	branch = main
 [submodule "packages/silex_silex-dashboard-2026"]
 	path = packages/silex_silex-dashboard-2026
 	url = https://gitlab.com/silexlabs/silex_silex-dashboard-2026.git
