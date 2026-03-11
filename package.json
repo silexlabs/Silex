@@ -21,7 +21,7 @@
   "license": "GPL-3.0-or-later",
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "scripts": {
-    "preinstall": "if ! echo \"$npm_execpath\" | grep -q \"yarn\"; then echo '🚫 Please use yarn install, not npm install! Now before you do yarn install, you need delete all node_modules and packages/**/node_modules directories.'; exit 1; fi",
+    "preinstall": "node scripts/ensure-yarn.js",
     "build": "node scripts/build-packages.js",
     "postinstall": "$npm_execpath run build",
     "start": "node packages/silex-lib/",
