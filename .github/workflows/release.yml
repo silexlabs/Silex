@@ -15,23 +15,22 @@ jobs:
   build:
     name: build (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
         include:
           - platform: linux
             os: ubuntu-latest
-            server-artifact: silex-server-linux-amd64
-            desktop-artifact: silex-desktop-linux
             binary: silex-server
-          - platform: macos
+          - platform: macos-arm
             os: macos-latest
-            server-artifact: silex-server-macos-amd64
-            desktop-artifact: silex-desktop-macos
+            binary: silex-server
+          - platform: macos-x64
+            os: macos-latest
+            rust-target: x86_64-apple-darwin
             binary: silex-server
           - platform: windows
             os: windows-latest
-            server-artifact: silex-server-windows-amd64
-            desktop-artifact: silex-desktop-windows
             binary: silex-server.exe
 
     steps:
@@ -47,6 +46,8 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
@@ -73,47 +74,64 @@ jobs:
         shell: bash
         run: yarn install --ignore-scripts && yarn run build
 
-      # ── silex-server (single binary with embedded frontend) ─────
-      - name: Build silex-server
-        run: cargo build --release -p silex-server --features embed-frontend
-
-      - name: Upload server artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.server-artifact }}
-          path: target/release/${{ matrix.binary }}
-          retention-days: 5
+      # Fail early if the frontend wasn't built (prevents broken embedded assets)
+      - name: Verify frontend was built
+        shell: bash
+        run: |
+          if [ ! -f packages/silex-lib/dist/client/index.html ]; then
+            echo "::error::Frontend build failed — packages/silex-lib/dist/client/index.html not found"
+            exit 1
+          fi
 
       # ── silex-desktop (Tauri) ────────────────────────────────────
+      # Build Tauri first — it compiles silex-server as a library dependency.
+      # The standalone server build below reuses the cached compilation.
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # Only sign on tag pushes (secrets unavailable on fork PRs)
+          TAURI_SIGNING_PRIVATE_KEY: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
+          args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
+      # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
+      # The ** glob covers both paths without duplication.
       - name: Upload desktop artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.desktop-artifact }}
+          name: silex-desktop-${{ matrix.platform }}
           path: |
-            target/release/bundle/**/*.dmg
-            target/release/bundle/**/*.app
-            target/release/bundle/**/*.deb
-            target/release/bundle/**/*.rpm
-            target/release/bundle/**/*.exe
-            target/release/bundle/**/*.sig
-            target/release/bundle/**/*.tar.gz
-            target/release/bundle/**/*.zip
+            target/**/release/bundle/**/*.dmg
+            target/**/release/bundle/**/*.app
+            target/**/release/bundle/**/*.deb
+            target/**/release/bundle/**/*.rpm
+            target/**/release/bundle/**/*.exe
+            target/**/release/bundle/**/*.sig
+            target/**/release/bundle/**/*.tar.gz
+            target/**/release/bundle/**/*.zip
+
+      # ── silex-server (single binary with embedded frontend) ─────
+      # Built after Tauri to reuse the compiled silex-server library.
+      - name: Build silex-server
+        run: cargo build --release -p silex-server --features embed-frontend ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: silex-server-${{ matrix.platform }}
+          path: target/**/release/${{ matrix.binary }}
+          retention-days: 5
 
   # ── Create GitHub release on tag push ────────────────────────────
   release:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Download all artifacts
@@ -127,57 +145,54 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           mkdir -p release
-          # Server binaries
-          cp artifacts/silex-server-linux-amd64/silex-server   release/silex-server-linux-amd64
-          cp artifacts/silex-server-macos-amd64/silex-server   release/silex-server-macos-amd64
-          cp artifacts/silex-server-windows-amd64/silex-server.exe release/silex-server-windows-amd64.exe
-          # Desktop installers
-          cp artifacts/silex-desktop-linux/**/*.deb  release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-linux/**/*.rpm  release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-macos/**/*.dmg  release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-windows/**/*.exe release/ 2>/dev/null || true
-          # Updater artifacts (signed archives)
-          cp artifacts/silex-desktop-linux/**/*.tar.gz     release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-linux/**/*.tar.gz.sig release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-macos/**/*.tar.gz     release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-macos/**/*.tar.gz.sig release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-windows/**/*.zip      release/ 2>/dev/null || true
-          cp artifacts/silex-desktop-windows/**/*.zip.sig  release/ 2>/dev/null || true
 
-          # Build latest.json for the updater
+          # Server binaries — rename per platform
+          cp artifacts/silex-server-linux/silex-server       release/silex-server-linux-amd64
+          cp artifacts/silex-server-macos-arm/silex-server   release/silex-server-macos-arm64
+          cp artifacts/silex-server-macos-x64/silex-server   release/silex-server-macos-x64
+          cp artifacts/silex-server-windows/silex-server.exe release/silex-server-windows-amd64.exe
+
+          # Desktop installers + updater artifacts (flatten into release/)
+          find artifacts/silex-desktop-* -type f \
+            \( -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.exe' \
+               -o -name '*.tar.gz' -o -name '*.tar.gz.sig' \
+               -o -name '*.zip' -o -name '*.zip.sig' \) \
+            -exec cp {} release/ \;
+
+          # Helper: find file + read its .sig
+          sig() { cat "$1.sig" 2>/dev/null || echo ""; }
+
+          # Build latest.json for the Tauri updater
           BASE="https://github.com/${REPO}/releases/download/${VERSION}"
-          VER="${VERSION#v}"
-          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          LINUX_TAR=$(find release -name '*_amd64.tar.gz' ! -name '*.sig' | head -1)
+          MACOS_ARM_TAR=$(find release -name '*_aarch64.app.tar.gz' | head -1)
+          MACOS_X64_TAR=$(find release -name '*_x64.app.tar.gz' | head -1)
+          WINDOWS_ZIP=$(find release -name '*_x64-setup*.zip' ! -name '*.sig' | head -1)
 
-          # Find platform-specific updater files by naming convention
-          LINUX_TAR=$(ls release/*_amd64.tar.gz 2>/dev/null | head -1)
-          LINUX_SIG=$(cat "${LINUX_TAR}.sig" 2>/dev/null || echo "")
-          MACOS_TAR=$(ls release/*.app.tar.gz 2>/dev/null | head -1)
-          MACOS_SIG=$(cat "${MACOS_TAR}.sig" 2>/dev/null || echo "")
-          WINDOWS_ZIP=$(ls release/*_x64-setup*.zip 2>/dev/null | head -1)
-          WINDOWS_SIG=$(cat "${WINDOWS_ZIP}.sig" 2>/dev/null || echo "")
-
-          cat > release/latest.json << EOF
-          {
-            "version": "${VER}",
-            "pub_date": "${DATE}",
-            "platforms": {
-              "linux-x86_64": {
-                "url": "${BASE}/$(basename "${LINUX_TAR}" 2>/dev/null)",
-                "signature": "${LINUX_SIG}"
-              },
-              "darwin-aarch64": {
-                "url": "${BASE}/$(basename "${MACOS_TAR}" 2>/dev/null)",
-                "signature": "${MACOS_SIG}"
-              },
-              "windows-x86_64": {
-                "url": "${BASE}/$(basename "${WINDOWS_ZIP}" 2>/dev/null)",
-                "signature": "${WINDOWS_SIG}"
+          jq -n \
+            --arg ver   "${VERSION#v}" \
+            --arg date  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg lu    "${BASE}/$(basename "$LINUX_TAR")" \
+            --arg ls    "$(sig "$LINUX_TAR")" \
+            --arg mau   "${BASE}/$(basename "$MACOS_ARM_TAR")" \
+            --arg mas   "$(sig "$MACOS_ARM_TAR")" \
+            --arg mxu   "${BASE}/$(basename "$MACOS_X64_TAR")" \
+            --arg mxs   "$(sig "$MACOS_X64_TAR")" \
+            --arg wu    "${BASE}/$(basename "$WINDOWS_ZIP")" \
+            --arg ws    "$(sig "$WINDOWS_ZIP")" \
+            '{
+              version: $ver, pub_date: $date,
+              platforms: {
+                "linux-x86_64":    { url: $lu,  signature: $ls },
+                "darwin-aarch64":  { url: $mau, signature: $mas },
+                "darwin-x86_64":   { url: $mxu, signature: $mxs },
+                "windows-x86_64":  { url: $wu,  signature: $ws }
               }
-            }
-          }
-          EOF
+            }' > release/latest.json
 
+          echo "--- latest.json ---"
+          cat release/latest.json
+          echo "--- release files ---"
           ls -lh release/
 
       - name: Create GitHub release
