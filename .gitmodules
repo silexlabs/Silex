@@ -73,12 +73,20 @@
 [submodule "packages/silex-server"]
 	path = packages/silex-server
 	url = git@github.com:silexlabs/silex-server.git
+	branch = main
 [submodule "packages/grapesjs-css-variables"]
 	path = packages/grapesjs-css-variables
 	url = git@github.com:silexlabs/grapesjs-css-variables.git
+	branch = main
 [submodule "packages/grapesjs-ai-capabilities"]
 	path = packages/grapesjs-ai-capabilities
 	url = git@github.com:silexlabs/grapesjs-ai-capabilities.git
+	branch = main
+[submodule "packages/silex-platform"]
+	path = packages/silex-platform
+	url = git@github.com:silexlabs/silex-platform.git
+	branch = main
 [submodule "packages/silex_silex-dashboard-2026"]
 	path = packages/silex_silex-dashboard-2026
 	url = https://gitlab.com/silexlabs/silex_silex-dashboard-2026.git
+	branch = main
