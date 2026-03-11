@@ -107,8 +107,8 @@ jobs:
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
-          # Skip updater artifacts (they require signing) — only build installers
-          args: --bundles deb,rpm,dmg,nsis ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+          # Disable updater artifacts (they require signing keys) but still produce installers
+          args: --config '{"bundle":{"createUpdaterArtifacts":false}}' ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
       # The ** glob covers both paths without duplication.
