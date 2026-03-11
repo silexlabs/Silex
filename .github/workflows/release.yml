@@ -99,6 +99,12 @@ jobs:
           tauriScript: yarn tauri
           args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
+      # Write a temp config to disable updater artifacts (they require signing keys)
+      - name: Disable updater artifacts config
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > packages/silex-desktop/src-tauri/tauri.ci.json
+
       - name: Build Tauri app (unsigned)
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: tauri-apps/tauri-action@v0
@@ -107,8 +113,7 @@ jobs:
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
-          # Disable updater artifacts (they require signing keys) but still produce installers
-          args: --config '{"bundle":{"createUpdaterArtifacts":false}}' ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+          args: --config tauri.ci.json ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
       # The ** glob covers both paths without duplication.
