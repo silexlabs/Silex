@@ -33,6 +33,12 @@ use rust_embed::Embed;
 #[folder = "../silex-lib/dist/client/"]
 struct FrontendAssets;
 
+/// Embedded dashboard assets (the landing page shown at `/` when no `?id=` param).
+#[cfg(feature = "embed-frontend")]
+#[derive(Embed)]
+#[folder = "../silex_silex-dashboard-2026/public/"]
+struct DashboardAssets;
+
 /// Static file configuration
 pub struct StaticConfig {
     /// Dashboard directory (its index.html is served at `/` when no `?id=`)
@@ -158,26 +164,28 @@ pub fn configure_static_files<S: Clone + Send + Sync + 'static>(
         // No filesystem directories configured — try embedded assets
         #[cfg(feature = "embed-frontend")]
         {
-            tracing::info!("Serving embedded frontend assets");
+            tracing::info!("Serving embedded frontend (editor + dashboard)");
 
-            // Serve index.html at /
+            // `/` → dashboard when no `?id=`, editor when `?id=` is present
             app = app.route(
                 "/",
-                get(|| async {
-                    match FrontendAssets::get("index.html") {
-                        Some(content) => (
-                            [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
-                            content.data.to_vec(),
-                        )
-                            .into_response(),
-                        None => StatusCode::NOT_FOUND.into_response(),
+                get(|Query(params): Query<HashMap<String, String>>| async move {
+                    if params.contains_key("id") {
+                        serve_embedded_asset::<FrontendAssets>("index.html").await
+                    } else {
+                        serve_embedded_asset::<DashboardAssets>("index.html").await
                     }
                 }),
             );
 
-            // Serve all other embedded files as fallback
+            // Serve all other files: try dashboard first, then editor
             app = app.fallback(|req: Request| async move {
-                serve_embedded(req.uri().path()).await
+                let path = req.uri().path().trim_start_matches('/');
+                // Dashboard assets take priority (same as filesystem mode)
+                if let Some(resp) = try_embedded_asset::<DashboardAssets>(path).await {
+                    return resp;
+                }
+                serve_embedded_asset::<FrontendAssets>(path).await
             });
         }
     }
@@ -185,25 +193,30 @@ pub fn configure_static_files<S: Clone + Send + Sync + 'static>(
     app
 }
 
-/// Serve a file from embedded frontend assets.
+/// Try to serve a file from an embedded asset collection. Returns `None` if not found.
 #[cfg(feature = "embed-frontend")]
-async fn serve_embedded(uri_path: &str) -> impl IntoResponse {
-    let path = uri_path.trim_start_matches('/');
+async fn try_embedded_asset<E: rust_embed::Embed>(path: &str) -> Option<axum::response::Response> {
     if path.contains("..") {
-        return StatusCode::NOT_FOUND.into_response();
+        return None;
     }
-    match FrontendAssets::get(path) {
-        Some(content) => {
-            let mime = mime_guess::from_path(path).first_or_octet_stream();
-            let content_type = if mime.type_() == mime_guess::mime::TEXT
-                || mime.subtype() == mime_guess::mime::JAVASCRIPT
-            {
-                format!("{}; charset=utf-8", mime)
-            } else {
-                mime.to_string()
-            };
-            ([(header::CONTENT_TYPE, content_type)], content.data.to_vec()).into_response()
-        }
+    E::get(path).map(|content| {
+        let mime = mime_guess::from_path(path).first_or_octet_stream();
+        let content_type = if mime.type_() == mime_guess::mime::TEXT
+            || mime.subtype() == mime_guess::mime::JAVASCRIPT
+        {
+            format!("{}; charset=utf-8", mime)
+        } else {
+            mime.to_string()
+        };
+        ([(header::CONTENT_TYPE, content_type)], content.data.to_vec()).into_response()
+    })
+}
+
+/// Serve a file from an embedded asset collection, returning 404 if not found.
+#[cfg(feature = "embed-frontend")]
+async fn serve_embedded_asset<E: rust_embed::Embed>(path: &str) -> axum::response::Response {
+    match try_embedded_asset::<E>(path).await {
+        Some(resp) => resp,
         None => StatusCode::NOT_FOUND.into_response(),
     }
 }
