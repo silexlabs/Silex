@@ -86,13 +86,24 @@ jobs:
       # ── silex-desktop (Tauri) ────────────────────────────────────
       # Build Tauri first — it compiles silex-server as a library dependency.
       # The standalone server build below reuses the cached compilation.
-      - name: Build Tauri app
+      # Sign updater artifacts only on tag pushes (secrets unavailable on fork PRs).
+      - name: Build Tauri app (signed)
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Only sign on tag pushes (secrets unavailable on fork PRs)
-          TAURI_SIGNING_PRIVATE_KEY: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY || '' }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ startsWith(github.ref, 'refs/tags/v') && secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD || '' }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: packages/silex-desktop
+          tauriScript: yarn tauri
+          args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+
+      - name: Build Tauri app (unsigned)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
