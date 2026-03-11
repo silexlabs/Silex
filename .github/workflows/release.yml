@@ -107,7 +107,8 @@ jobs:
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
-          args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+          # Skip updater artifacts (they require signing) — only build installers
+          args: --bundles deb,rpm,dmg,nsis ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
       # The ** glob covers both paths without duplication.
