@@ -34,6 +34,10 @@ jobs:
             binary: silex-server.exe
 
     steps:
+      # Prevent CRLF conversion on Windows (eslint requires LF)
+      - name: Force LF line endings
+        run: git config --global core.autocrlf false
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
