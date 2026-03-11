@@ -63,7 +63,14 @@ jobs:
       - name: Use npm registry (yarnpkg.com has intermittent 500s)
         run: yarn config set registry https://registry.npmjs.org
 
+      # On Windows, npm/yarn default to cmd.exe for scripts, which breaks
+      # Unix shell syntax (rm -rf, $var) used in package build scripts.
+      - name: Use bash for package scripts (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npm config set script-shell "C:\Program Files\Git\bin\bash.exe"
+
       - name: Install JS dependencies and build frontend
+        shell: bash
         run: yarn install --ignore-scripts && yarn run build
 
       # ── silex-server (single binary with embedded frontend) ─────
