@@ -64,8 +64,7 @@ export const blocksPlugin = (editor, opts) => {
     }
   })
 
-  // Add default CSS rules for block classes after project data is loaded
-  editor.on('storage:end:load', () => {
+  editor.on('canvas:frame:load', () => {
     Object.entries(BLOCK_DEFAULT_STYLES).forEach(([blockType, styles]) => {
       const selector = `.${defaultClassName(blockType)}`
       if (!editor.Css.getRule(selector)) {
