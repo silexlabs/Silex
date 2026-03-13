@@ -277,6 +277,14 @@
   font-weight: 900;
 }
 
+// Fix inline SVG icons in RTE toolbar (link, wrap) having no intrinsic size on WebKit
+.gjs-rte-actionbar .gjs-rte-action svg,
+.actionbar .action svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+}
+
 // Display dots when a sector has a style
 .gjs-sm-sector .gjs-sm-sector-label {
     margin-right: 0.3em
