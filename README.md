@@ -40,15 +40,13 @@ Or [download the desktop app](https://github.com/silexlabs/silex-desktop/release
 
 The Silex Desktop app includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes 14 tools for controlling the visual editor — create pages, add components, apply styles, bind CMS data, take screenshots, and more. Any MCP-compatible AI tool can use it.
 
-### Connect to a running app (HTTP)
-
-If Silex Desktop is already open (launched from your dock, shortcut, or `cargo tauri dev`), connect your AI tool to the HTTP endpoint:
+Launch Silex Desktop, then point your AI tool at the MCP endpoint:
 
 ```
 http://localhost:6807/mcp
 ```
 
-**Claude Code** — add to `.mcp.json` at project root, or run `claude mcp add --transport http silex http://localhost:6807/mcp`:
+**Claude Code** — run `claude mcp add --transport http silex http://localhost:6807/mcp`, or add to `.mcp.json`:
 
 ```json
 {
@@ -61,26 +59,11 @@ http://localhost:6807/mcp
 }
 ```
 
-**Any other MCP client** — point a Streamable HTTP transport at `http://localhost:6807/mcp`.
+**Goose** — add a remote server in your [profile config](https://block.github.io/goose/docs/getting-started/using-extensions#remote-extensions) with endpoint `http://localhost:6807/mcp`.
 
-### Let the AI tool launch Silex (stdio)
+**OpenCode** — add an MCP server in your [config file](https://opencode.ai/docs/configuration#mcp-servers) with URL `http://localhost:6807/mcp`.
 
-If your AI tool manages MCP servers as child processes, configure it to launch Silex Desktop with the `--stdio` flag. The tool starts the app and communicates over stdin/stdout — no manual reconnect needed after restarts.
-
-```json
-{
-  "mcpServers": {
-    "silex": {
-      "command": "/path/to/silex-desktop",
-      "args": ["--stdio"]
-    }
-  }
-}
-```
-
-Replace `/path/to/silex-desktop` with the actual path to the installed binary.
-
-The `--stdio` flag enables the stdio transport alongside the HTTP one. Without it, only HTTP is active.
+**Any other MCP client** — use a Streamable HTTP transport pointed at the same URL.
 
 ## Contributing
 
