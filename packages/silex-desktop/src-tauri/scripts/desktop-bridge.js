@@ -7,6 +7,10 @@
 
   const TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li', 'td', 'th', 'label', 'blockquote'];
 
+  // Expose debug logging for silex-lib client code
+  window.__silexDebug = (msg) => invoke('log_debug', { message: msg });
+  invoke('log_debug', { message: '[bridge] desktop-bridge loaded, page=' + window.location.href });
+
   // MCP helpers (available globally for eval_js calls)
   window.__silexMcp = {
     findComponent(editor, id) {
@@ -759,12 +763,16 @@
     }, 300);
   };
 
-  // Intercept file:// links and open in OS file manager
+  // Intercept file:// links and open in OS file manager.
+  // macOS WKWebView may strip file:// from href attributes, so we match
+  // any <a> click and check the resolved .href property.
   document.addEventListener('click', (e) => {
-    const link = e.target.closest("a[href^='file://']");
-    if (link) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    const url = link.href || '';
+    if (url.startsWith('file://')) {
       e.preventDefault();
-      invoke('open_folder', { path: link.href });
+      invoke('open_folder', { path: url });
     }
   });
 

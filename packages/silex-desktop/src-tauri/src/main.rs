@@ -91,6 +91,11 @@ fn open_folder(path: String) {
     let _ = open::that(path);
 }
 
+#[tauri::command]
+fn log_debug(message: String) {
+    tracing::debug!("[webview] {message}");
+}
+
 fn show_quit_dialog(app: &tauri::AppHandle) {
     use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
 
@@ -246,6 +251,7 @@ fn main() {
             clear_current_project,
             mark_unsaved,
             open_folder,
+            log_debug,
         ])
         .setup(|app| {
             // Use Tauri's app_data_dir for user-writable storage
