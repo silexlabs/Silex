@@ -769,7 +769,9 @@
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (!link) return;
-    const url = link.href || '';
+    // Prefer getAttribute (raw, unencoded) over .href (browser-resolved,
+    // percent-encodes spaces) so that file:// paths reach open_folder intact.
+    const url = link.getAttribute('href') || link.href || '';
     if (url.startsWith('file://')) {
       e.preventDefault();
       invoke('open_folder', { path: url });
