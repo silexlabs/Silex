@@ -84,6 +84,13 @@ The `--stdio` flag enables the stdio transport alongside the HTTP one. Without i
 
 ## Contributing
 
+We welcome contributions of all kinds — code, documentation, bug reports, and community support.
+
+- **[Contributing guide for developers](https://docs.silex.me/en/dev/contribute)** — license, code structure, PR process
+- **[Contributing guide for non-developers](https://docs.silex.me/en/user/contribute)** — documentation, translations, community help
+- **[Code of Conduct](https://docs.silex.me/en/collaborate)**
+- **[Security Policy](https://docs.silex.me/en/security)**
+
 This repository contains all Silex packages as git submodules, managed with [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/).
 
 ### Setup
