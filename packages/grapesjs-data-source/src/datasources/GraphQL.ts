@@ -439,7 +439,6 @@ export default class GraphQL implements IDataSource {
         /PostFormat/,
 
         // Generic content types (not needed if querying specific collections)
-        /^ContentNode/,
         /^RootQueryToContentNode/,
       ]
 
