@@ -400,21 +400,24 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
 }
 
 // ////////////////////
-// WebKitGTK drag-and-drop workaround
+// Cross-iframe drag-and-drop workaround
 // ////////////////////
 
 /**
- * Detect non-Chrome WebKit engines (WebKitGTK on Linux, WKWebView on macOS)
- * which don't support HTML5 native drag-and-drop across iframes.
+ * Detect environments where HTML5 native drag-and-drop across iframes
+ * doesn't work: non-Chrome WebKit (WebKitGTK, WKWebView) and Tauri
+ * desktop (WebView2 on Windows also fails cross-iframe drag).
  */
-function isNonChromeWebKit(): boolean {
+function needsDragPatch(): boolean {
   const ua = navigator.userAgent
-  return /AppleWebKit/.test(ua) && !/Chrome/.test(ua)
+  const isNonChromeWebKit = /AppleWebKit/.test(ua) && !/Chrome/.test(ua)
+  const isTauri = !!(window as any).__TAURI_INTERNALS__
+  return isNonChromeWebKit || isTauri
 }
 
 /**
- * Patch GrapesJS blocks for non-Chrome WebKit browsers (WebKitGTK, WKWebView)
- * which don't support HTML5 native drag-and-drop across iframes.
+ * Patch GrapesJS blocks for environments that don't support HTML5 native
+ * drag-and-drop across iframes (WebKitGTK, WKWebView, WebView2 in Tauri).
  * Disables the draggable attribute so GrapesJS falls back to its
  * mousedown-based sorter path, and prevents text selection during drag.
  */
@@ -560,9 +563,9 @@ export async function initEditor(config: EditorConfig) {
       // Render the block manager, otherwise it is empty
       editor.BlockManager.render(null)
 
-      // Non-Chrome WebKit (Linux WebKitGTK, macOS WKWebView) doesn't support
+      // Some environments (WebKitGTK, WKWebView, Tauri WebView2) don't support
       // HTML5 native drag-and-drop across iframes. Patch blocks to use pointer events instead.
-      if (isNonChromeWebKit()) {
+      if (needsDragPatch()) {
         patchBlocksDragDrop(editor)
       }
 
