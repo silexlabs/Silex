@@ -242,12 +242,16 @@ impl HostingConnector for FsHosting {
         // Write all files to the target directory
         match self.write_files(&target_dir, &files, &mut job).await {
             Ok(_) => {
+                let folder_url = format!("file://{}", target_dir.display());
                 job.success(format!(
-                    "Published {} files to {}",
+                    "<p>Published {} files successfully.</p>\
+                     <div class=\"buttons\">\
+                       <a href=\"{}\" class=\"silex-button silex-button--primary\">Open published folder</a>\
+                     </div>",
                     files.len(),
-                    target_dir.display()
+                    folder_url,
                 ));
-                job_manager.complete_job(&job.base.job_id);
+                job_manager.update_job(&job);
             }
             Err(e) => {
                 job.fail(format!("Publication failed: {}", e));

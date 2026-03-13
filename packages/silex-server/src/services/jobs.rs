@@ -60,6 +60,12 @@ impl JobManager {
         jobs.get(job_id).cloned()
     }
 
+    /// Update the stored job with the final state from the local clone
+    pub fn update_job(&self, job_data: &PublicationJobData) {
+        let mut jobs = self.jobs.write().unwrap();
+        jobs.insert(job_data.base.job_id.clone(), job_data.clone());
+    }
+
     /// Mark a job as completed
     pub fn complete_job(&self, job_id: &JobId) {
         let mut jobs = self.jobs.write().unwrap();
