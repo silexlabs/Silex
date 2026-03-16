@@ -8,7 +8,16 @@ import { Asset, ClientSideFileType, ConnectorId, Style, WebsiteId } from '../typ
  * After loading the site data we convert all URLs to the client side version
  * Before saving the site data we convert all URLs to the storage version
  * During publicationn we convert all URLs to the storage version and back
+ * Support the full URLs for when the user provides a URL in the image dialog
  */
+
+/**
+ * Check if a URL is an external (absolute) URL
+ * External URLs should not be transformed or treated as local assets
+ */
+export function isExternalUrl(url: string): boolean {
+  return url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')
+}
 
 // Get the base URL where Silex is served
 const baseUrl = window.location.pathname.replace(/\/$/, '')
@@ -23,6 +32,10 @@ const SERVER_URL = window.location.origin
  * Exported for unit tests
  */
 export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId: ConnectorId): string {
+  // External URLs (http://, https://, //) are not local assets, return as-is
+  if (isExternalUrl(path)) {
+    return path
+  }
   // Check the path is a stored path
   if (path.startsWith('/assets')) {
     // Make an absolute URL
@@ -60,6 +73,10 @@ export function storedToDisplayed(path: string, websiteId: WebsiteId, storageId:
  * Exported for unit tests
  */
 export function displayedToStored(path: string): string {
+  // External URLs (http://, https://, //) are not local assets, return as-is
+  if (isExternalUrl(path)) {
+    return path
+  }
   // The path to the assets API
   const apiPath = `${baseUrl}${API_PATH}${API_WEBSITE_PATH}${API_WEBSITE_ASSET_READ}`
   // Check the path is a displayed path
@@ -89,6 +106,8 @@ export function displayedToStored(path: string): string {
 export const assetsPublicationTransformer = {
   transformPath(path: string, type: ClientSideFileType): string {
     if(type === ClientSideFileType.ASSET) {
+      // External URLs should not be transformed
+      if (isExternalUrl(path)) return path
       const result = displayedToStored(path)
       return result
     }
@@ -96,6 +115,8 @@ export const assetsPublicationTransformer = {
   },
   transformPermalink(path: string, type: ClientSideFileType): string {
     if(type === ClientSideFileType.ASSET) {
+      // External URLs should not be transformed
+      if (isExternalUrl(path)) return path
       const result = displayedToStored(path)
       return result
     }

@@ -18,6 +18,7 @@
 import { Component, CssRule, StyleProps, Editor } from 'grapesjs'
 import { ClientSideFile, ClientSideFileType, Initiator, PublicationData } from '../types'
 import { onAll } from './utils'
+import { isExternalUrl } from './assetUrl'
 
 /**
  * @fileoverview Silex publication transformers are used to control how the site is rendered and published
@@ -67,6 +68,10 @@ export const publicationTransformerDefault: PublicationTransformer = {
   },
   // Define files URLs
   transformPermalink(link: string, type: ClientSideFileType, initiator: Initiator): string {
+    // External URLs should not be transformed
+    if (isExternalUrl(link)) {
+      return link
+    }
     switch(initiator) {
     case Initiator.HTML:
       return link
@@ -133,7 +138,7 @@ export function renderComponents(editor: Editor) {
       // Handle both c.attributes.src and c.attributes.attributes.src
       // For some reason we need both
       // Especially when the component is not on the current page, we need c.attributes.attributes.src
-      if(c.get('attributes').src) {
+      if(c.get('attributes').src && !isExternalUrl(c.get('attributes').src)) {
         c[ATTRIBUTE_METHOD_STORE_SRC] = c.get('attributes').src
         const src = transformPermalink(editor, c.get('attributes').src, ClientSideFileType.ASSET, Initiator.HTML)
         c.set('attributes', {
@@ -141,7 +146,7 @@ export function renderComponents(editor: Editor) {
           src,
         })
       }
-      if(c.get('src')) {
+      if(c.get('src') && !isExternalUrl(c.get('src'))) {
         c[ATTRIBUTE_METHOD_STORE_ATTRIBUTES_SRC] = c.get('src')
         const src = transformPermalink(editor, c.get('src'), ClientSideFileType.ASSET, Initiator.HTML)
         c.set('src', src)

@@ -24,7 +24,7 @@ import { API_CONNECTOR_LOGIN, API_CONNECTOR_PATH, API_PATH, SILEX_VERSION } from
 import { ClientEvent } from '../events'
 import { resetRenderComponents, resetRenderCssRules, transformPermalink, transformFiles, transformPath, renderComponents, renderCssRules } from '../publication-transformers'
 import { hashString } from '../utils'
-import { displayedToStored } from '../assetUrl'
+import { displayedToStored, isExternalUrl } from '../assetUrl'
 
 /**
  * @fileoverview Publication manager for Silex
@@ -248,6 +248,13 @@ export class PublicationManager {
         type: ClientSideFileType.CSS,
       } as ClientSideFile]))
       .concat(projectData.assets
+        // Filter out external assets (http://, https://, //) - they don't need to be downloaded/uploaded
+        .filter(asset => {
+          if (isExternalUrl(asset.src)) {
+            return false
+          }
+          return true
+        })
         .map(asset => {
           // TODO: is this needed?
           // // Remove /assets that is added by grapesjs

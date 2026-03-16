@@ -1,5 +1,5 @@
 import { jest,  expect, describe, it, beforeEach } from '@jest/globals'
-import { removeTempDataFromStyles } from './assetUrl'
+import { removeTempDataFromStyles, isExternalUrl } from './assetUrl'
 
 describe('assetUrl', () => {
   beforeEach(() => {
@@ -122,6 +122,42 @@ describe('assetUrl', () => {
     // Convert a URL which is already as displayed
     expect(storedToDisplayed(`/api/website/assets/test.webp?websiteId=${websiteIdEncoded}&connectorId=${connectorIdEncoded}`, websiteId, connectorId))
       .toBe(`/api/website/assets/test.webp?websiteId=${websiteIdEncoded}&connectorId=${connectorIdEncoded}`)
+  })
+
+  it('isExternalUrl detects external URLs', () => {
+    expect(isExternalUrl('https://example.com/image.jpg')).toBe(true)
+    expect(isExternalUrl('http://example.com/image.jpg')).toBe(true)
+    expect(isExternalUrl('//cdn.example.com/image.jpg')).toBe(true)
+    expect(isExternalUrl('/assets/image.jpg')).toBe(false)
+    expect(isExternalUrl('/api/website/assets/image.jpg')).toBe(false)
+    expect(isExternalUrl('data:image/png;base64,abc')).toBe(false)
+    expect(isExternalUrl('<svg xmlns="http://www.w3.org/2000/svg"></svg>')).toBe(false)
+  })
+
+  it('storedToDisplayed returns external URLs unchanged', async () => {
+    const { storedToDisplayed } = await import('./assetUrl')
+    const extUrl = 'https://cdna.artstation.com/p/assets/images/images/000/000/001/large/test-image.jpg'
+    expect(storedToDisplayed(extUrl, 'test-id', 'test-connector')).toBe(extUrl)
+    expect(storedToDisplayed('http://example.com/photo.png', 'test-id', 'test-connector')).toBe('http://example.com/photo.png')
+    expect(storedToDisplayed('//cdn.example.com/img.webp', 'test-id', 'test-connector')).toBe('//cdn.example.com/img.webp')
+  })
+
+  it('displayedToStored returns external URLs unchanged', async () => {
+    const { displayedToStored } = await import('./assetUrl')
+    const extUrl = 'https://cdna.artstation.com/p/assets/images/images/000/000/001/large/test-image.jpg'
+    expect(displayedToStored(extUrl)).toBe(extUrl)
+    expect(displayedToStored('http://example.com/photo.png')).toBe('http://example.com/photo.png')
+    expect(displayedToStored('//cdn.example.com/img.webp')).toBe('//cdn.example.com/img.webp')
+  })
+
+  it('background-image with external URLs left unchanged', async () => {
+    const { addTempDataToStyles } = await import('./assetUrl')
+    const extBg = 'url(\'https://cdn.example.com/photo.jpg\')'
+    const selectors = ['body']
+    const style = { style: { 'background-image': extBg }, selectors }
+    // External URL in background-image should pass through unchanged
+    expect(addTempDataToStyles([style], 'test-id', 'test-connector')).toEqual([style])
+    expect(removeTempDataFromStyles([style])).toEqual([style])
   })
 
   it('multiple backgrounds', async () => {
