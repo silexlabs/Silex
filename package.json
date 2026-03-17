@@ -22,11 +22,11 @@
   "homepage": "https://github.com/silexlabs/silex-meta#readme",
   "scripts": {
     "preinstall": "node scripts/ensure-yarn.js",
-    "build": "scripts/build-packages.js",
+    "build": "node scripts/build-packages.js",
     "postinstall": "$npm_execpath run build",
     "start": "node packages/silex-lib/",
     "release": "scripts/release.sh",
-    "test": "scripts/check-internal-deps.js",
+    "test": "node scripts/check-internal-deps.js",
     "count": "cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html",
     "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && $npm_execpath run count | scripts/insert-in-readme.js count --code",
     "exec": "scripts/exec.js",
@@ -47,5 +47,6 @@
   },
   "dependencies": {
     "grapesjs-cli": "^4.1.3"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

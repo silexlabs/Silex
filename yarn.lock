@@ -3055,7 +3055,7 @@
   dependencies:
     "@types/node" "*"
 
-"@typescript-eslint/eslint-plugin@8.44.0", "@typescript-eslint/eslint-plugin@^8.22.0", "@typescript-eslint/eslint-plugin@^8.30.1", "@typescript-eslint/eslint-plugin@^8.31.0", "@typescript-eslint/eslint-plugin@^8.41.1-alpha.5", "@typescript-eslint/eslint-plugin@^8.8.1":
+"@typescript-eslint/eslint-plugin@8.44.0", "@typescript-eslint/eslint-plugin@^8.22.0", "@typescript-eslint/eslint-plugin@^8.30.1", "@typescript-eslint/eslint-plugin@^8.31.0", "@typescript-eslint/eslint-plugin@^8.41.1-alpha.5":
   version "8.44.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.44.0.tgz"
   integrity sha512-EGDAOGX+uwwekcS0iyxVDmRV9HX6FLSM5kzrAToLTsr9OWCIKG/y3lQheCq18yZ5Xh78rRKJiEpP0ZaCs4ryOQ==
@@ -3070,7 +3070,7 @@
     natural-compare "^1.4.0"
     ts-api-utils "^2.1.0"
 
-"@typescript-eslint/parser@8.44.0", "@typescript-eslint/parser@^8.22.0", "@typescript-eslint/parser@^8.30.1", "@typescript-eslint/parser@^8.31.0", "@typescript-eslint/parser@^8.31.1":
+"@typescript-eslint/parser@8.44.0", "@typescript-eslint/parser@^8.22.0", "@typescript-eslint/parser@^8.30.1", "@typescript-eslint/parser@^8.31.0":
   version "8.44.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-8.44.0.tgz"
   integrity sha512-VGMpFQGUQWYT9LfnPcX8ouFojyrZ/2w3K5BucvxL/spdNehccKhB4jUyB1yBCXpr2XFm0jkECxgrpXBW2ipoAw==
@@ -11193,7 +11193,7 @@ lit-element@^4.2.0:
     "@lit/reactive-element" "^2.1.0"
     lit-html "^3.3.0"
 
-lit-html@3.2.1, lit-html@^3.2.1:
+lit-html@3.2.1:
   version "3.2.1"
   resolved "https://registry.npmjs.org/lit-html/-/lit-html-3.2.1.tgz"
   integrity sha512-qI/3lziaPMSKsrwlxH/xMgikhQ0EGOX2ICU73Bi/YHFvz2j/yMCIrw4+puF2IpQ4+upd3EWbvnHM9+PnJn48YA==

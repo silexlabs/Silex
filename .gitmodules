@@ -1,100 +1,96 @@
 [submodule "packages/grapesjs-symbols"]
 	path = packages/grapesjs-symbols
-	url = git@github.com:silexlabs/grapesjs-symbols.git
+	url = https://github.com/silexlabs/grapesjs-symbols.git
 	branch = main
 [submodule "packages/grapesjs-fonts"]
 	path = packages/grapesjs-fonts
-	url = git@github.com:silexlabs/grapesjs-fonts.git
+	url = https://github.com/silexlabs/grapesjs-fonts.git
 	branch = main
 [submodule "packages/node_modules-path"]
 	path = packages/node_modules-path
-	url = git@github.com:lexoyo/node_modules-path.git
+	url = https://github.com/lexoyo/node_modules-path.git
 	branch = main
 [submodule "packages/grapesjs-loading"]
 	path = packages/grapesjs-loading
-	url = git@github.com:silexlabs/grapesjs-loading.git
+	url = https://github.com/silexlabs/grapesjs-loading.git
 	branch = main
 [submodule "packages/eleventy-plugin-concat"]
 	path = packages/eleventy-plugin-concat
-	url = git@github.com:silexlabs/eleventy-plugin-concat.git
+	url = https://github.com/silexlabs/eleventy-plugin-concat.git
 	branch = main
 [submodule "packages/silex-plugins"]
 	path = packages/silex-plugins
-	url = git@github.com:silexlabs/silex-plugins.git
-	branch = main
-[submodule "packages/silex-dashboard"]
-	path = packages/silex-dashboard
-	url = git@github.com:silexlabs/silex-dashboard.git
+	url = https://github.com/silexlabs/silex-plugins.git
 	branch = main
 [submodule "packages/grapesjs-data-source"]
 	path = packages/grapesjs-data-source
-	url = git@github.com:silexlabs/grapesjs-data-source.git
+	url = https://github.com/silexlabs/grapesjs-data-source.git
 	branch = main
 [submodule "packages/silex-plugin-starter"]
 	path = packages/silex-plugin-starter
-	url = git@github.com:silexlabs/silex-plugin-starter.git
+	url = https://github.com/silexlabs/silex-plugin-starter.git
 	branch = main
 [submodule "packages/grapesjs-filter-styles"]
 	path = packages/grapesjs-filter-styles
-	url = git@github.com:silexlabs/grapesjs-filter-styles.git
+	url = https://github.com/silexlabs/grapesjs-filter-styles.git
 	branch = main
 [submodule "packages/grapesjs-storage-rate-limit"]
 	path = packages/grapesjs-storage-rate-limit
-	url = git@github.com:silexlabs/grapesjs-storage-rate-limit.git
+	url = https://github.com/silexlabs/grapesjs-storage-rate-limit.git
 	branch = main
 [submodule "packages/expression-input"]
 	path = packages/expression-input
-	url = git@github.com:silexlabs/expression-input.git
+	url = https://github.com/silexlabs/expression-input.git
 	branch = main
 [submodule "packages/grapesjs-notifications"]
 	path = packages/grapesjs-notifications
-	url = git@github.com:silexlabs/grapesjs-notifications.git
+	url = https://github.com/silexlabs/grapesjs-notifications.git
 	branch = main
 [submodule "packages/grapesjs-keymaps-dialog"]
 	path = packages/grapesjs-keymaps-dialog
-	url = git@github.com:silexlabs/grapesjs-keymaps-dialog.git
+	url = https://github.com/silexlabs/grapesjs-keymaps-dialog.git
 	branch = main
 [submodule "packages/grapesjs-advanced-selector"]
 	path = packages/grapesjs-advanced-selector
-	url = git@github.com:silexlabs/grapesjs-advanced-selector.git
-	branch = main
-[submodule "packages/silex-puter"]
-	path = packages/silex-puter
-	url = git@github.com:silexlabs/silex-puter.git
-	branch = main
-[submodule "packages/silex-platform"]
-	path = packages/silex-platform
-	url = git@github.com:silexlabs/silex-platform.git
+	url = https://github.com/silexlabs/grapesjs-advanced-selector.git
 	branch = main
 [submodule "packages/silex-lib"]
 	path = packages/silex-lib
-	url = git@github.com:silexlabs/silex-lib.git
+	url = https://github.com/silexlabs/silex-lib.git
 	branch = main
 [submodule "packages/SitemapGen"]
 	path = packages/SitemapGen
-	url = git@github.com:silexlabs/SitemapGen.git
+	url = https://github.com/silexlabs/SitemapGen.git
 	branch = main
 [submodule "packages/silex-desktop"]
 	path = packages/silex-desktop
-	url = git@github.com:silexlabs/silex-desktop.git
-	branch = main
-[submodule "packages/grapesjs-ai-copilot"]
-	path = packages/grapesjs-ai-copilot
-	url = git@github.com:silexlabs/grapesjs-ai-copilot.git
+	url = https://github.com/silexlabs/silex-desktop.git
 	branch = main
 [submodule "packages/grapesjs-version-flow"]
 	path = packages/grapesjs-version-flow
-	url = git@github.com:silexlabs/grapesjs-version-flow.git
+	url = https://github.com/silexlabs/grapesjs-version-flow.git
 	branch = main
-[submodule "packages/grapesjs-tailwind"]
-	path = packages/grapesjs-tailwind
-	url = git@github.com:silexlabs/grapesjs-tailwind.git
-[submodule "packages/silex_silex-dashboard-2026"]
-	path = packages/silex_silex-dashboard-2026
-	url = git@gitlab.com:lexoyo/silex_silex-dashboard-2026.git
+[submodule "packages/silex-server"]
+	path = packages/silex-server
+	url = https://github.com/silexlabs/silex-server.git
+	branch = main
 [submodule "packages/grapesjs-css-variables"]
 	path = packages/grapesjs-css-variables
-	url = git@github.com:silexlabs/grapesjs-css-variables.git
+	url = https://github.com/silexlabs/grapesjs-css-variables.git
+	branch = main
 [submodule "packages/grapesjs-ai-capabilities"]
 	path = packages/grapesjs-ai-capabilities
-	url = git@github.com:silexlabs/grapesjs-ai-capabilities.git
+	url = https://github.com/silexlabs/grapesjs-ai-capabilities.git
+	branch = main
+[submodule "packages/silex-platform"]
+	path = packages/silex-platform
+	url = https://github.com/silexlabs/silex-platform.git
+	branch = main
+[submodule "packages/silex-dashboard"]
+	path = packages/silex-dashboard
+	url = https://github.com/silexlabs/silex-dashboard.git
+	branch = main
+[submodule "packages/silex_silex-dashboard-2026"]
+	path = packages/silex_silex-dashboard-2026
+	url = https://gitlab.com/silexlabs/silex_silex-dashboard-2026.git
+	branch = main
