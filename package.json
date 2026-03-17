@@ -1,6 +1,6 @@
 {
   "name": "silex-meta",
-  "version": "3.7.3-canary.1",
+  "version": "3.7.3-canary.2",
   "description": "Meta repo for Silex development",
   "private": true,
   "repository": {
