@@ -7,7 +7,7 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import path from 'path';
 
 function getPackagesToBuild() {
@@ -32,8 +32,9 @@ function getPackagesToBuild() {
     
     // Fallback: get all packages from packages directory
     try {
-      const output = execSync('ls packages', { encoding: 'utf-8' });
-      return output.split('\n').filter(pkg => pkg.trim().length > 0);
+      return readdirSync('packages', { withFileTypes: true })
+        .filter(d => d.isDirectory())
+        .map(d => d.name);
     } catch (fallbackError) {
       console.error('❌ Failed to list packages:', fallbackError.message);
       return [];

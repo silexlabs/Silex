@@ -1,0 +1,2 @@
+# Force LF line endings for source files (prevents CRLF on Windows checkout)
+* text=auto eol=lf

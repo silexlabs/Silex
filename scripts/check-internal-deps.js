@@ -14,6 +14,7 @@ const graph = {};
 
 for (const pkg of packages) {
   const pkgPath = path.join(packagesDir, pkg, 'package.json');
+  if (!existsSync(pkgPath)) continue;
   const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf8'));
   const name = pkgJson.name;
   const deps = {

@@ -1,0 +1,223 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  # ── Build silex-server + silex-desktop per platform ──────────────
+  build:
+    name: build (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            os: ubuntu-latest
+            binary: silex-server
+          - platform: macos-arm
+            os: macos-latest
+            binary: silex-server
+          - platform: macos-x64
+            os: macos-latest
+            rust-target: x86_64-apple-darwin
+            binary: silex-server
+          - platform: windows
+            os: windows-latest
+            binary: silex-server.exe
+
+    steps:
+      # Prevent CRLF conversion on Windows (eslint requires LF)
+      - name: Force LF line endings
+        run: git config --global core.autocrlf false
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Enable Corepack (provides yarn)
+        run: corepack enable
+
+      - name: Use npm registry (yarnpkg.com has intermittent 500s)
+        run: yarn config set registry https://registry.npmjs.org
+
+      # On Windows, npm/yarn default to cmd.exe for scripts, which breaks
+      # Unix shell syntax (rm -rf, $var) used in package build scripts.
+      - name: Use bash for package scripts (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npm config set script-shell "C:\Program Files\Git\bin\bash.exe"
+
+      - name: Install JS dependencies and build frontend
+        shell: bash
+        run: yarn install --ignore-scripts && yarn run build
+
+      # Fail early if the frontend wasn't built (prevents broken embedded assets)
+      - name: Verify frontend was built
+        shell: bash
+        run: |
+          if [ ! -f packages/silex-lib/dist/client/index.html ]; then
+            echo "::error::Frontend build failed — packages/silex-lib/dist/client/index.html not found"
+            exit 1
+          fi
+
+      # ── silex-desktop (Tauri) ────────────────────────────────────
+      # Build Tauri first — it compiles silex-server as a library dependency.
+      # The standalone server build below reuses the cached compilation.
+      # Sign updater artifacts only on tag pushes (secrets unavailable on fork PRs).
+      - name: Build Tauri app (signed)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          projectPath: packages/silex-desktop
+          tauriScript: yarn tauri
+          args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+
+      # Write a temp config to disable updater artifacts (they require signing keys)
+      - name: Disable updater artifacts config
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        shell: bash
+        run: echo '{"bundle":{"createUpdaterArtifacts":false}}' > packages/silex-desktop/tauri.ci.json
+
+      - name: Build Tauri app (unsigned)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: packages/silex-desktop
+          tauriScript: yarn tauri
+          args: --config tauri.ci.json ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+
+      # target/release/bundle/ for native builds, target/<triple>/release/bundle/ for cross-builds.
+      # The ** glob covers both paths without duplication.
+      - name: Upload desktop artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: silex-desktop-${{ matrix.platform }}
+          path: |
+            target/**/release/bundle/**/*.dmg
+            target/**/release/bundle/**/*.app
+            target/**/release/bundle/**/*.deb
+            target/**/release/bundle/**/*.rpm
+            target/**/release/bundle/**/*.exe
+            target/**/release/bundle/**/*.sig
+            target/**/release/bundle/**/*.tar.gz
+            target/**/release/bundle/**/*.zip
+
+      # ── silex-server (single binary with embedded frontend) ─────
+      # Built after Tauri to reuse the compiled silex-server library.
+      - name: Build silex-server
+        run: cargo build --release -p silex-server --features embed-frontend ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: silex-server-${{ matrix.platform }}
+          path: target/**/release/${{ matrix.binary }}
+          retention-days: 5
+
+  # ── Create GitHub release on tag push ────────────────────────────
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release files
+        env:
+          VERSION: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir -p release
+
+          # Server binaries — rename per platform
+          cp artifacts/silex-server-linux/silex-server       release/silex-server-linux-amd64
+          cp artifacts/silex-server-macos-arm/silex-server   release/silex-server-macos-arm64
+          cp artifacts/silex-server-macos-x64/silex-server   release/silex-server-macos-x64
+          cp artifacts/silex-server-windows/silex-server.exe release/silex-server-windows-amd64.exe
+
+          # Desktop installers + updater artifacts (flatten into release/)
+          find artifacts/silex-desktop-* -type f \
+            \( -name '*.deb' -o -name '*.rpm' -o -name '*.dmg' -o -name '*.exe' \
+               -o -name '*.tar.gz' -o -name '*.tar.gz.sig' \
+               -o -name '*.zip' -o -name '*.zip.sig' \) \
+            -exec cp {} release/ \;
+
+          # Helper: find file + read its .sig
+          sig() { cat "$1.sig" 2>/dev/null || echo ""; }
+
+          # Build latest.json for the Tauri updater
+          BASE="https://github.com/${REPO}/releases/download/${VERSION}"
+          LINUX_TAR=$(find release -name '*_amd64.tar.gz' ! -name '*.sig' | head -1)
+          MACOS_ARM_TAR=$(find release -name '*_aarch64.app.tar.gz' | head -1)
+          MACOS_X64_TAR=$(find release -name '*_x64.app.tar.gz' | head -1)
+          WINDOWS_ZIP=$(find release -name '*_x64-setup*.zip' ! -name '*.sig' | head -1)
+
+          jq -n \
+            --arg ver   "${VERSION#v}" \
+            --arg date  "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg lu    "${BASE}/$(basename "$LINUX_TAR")" \
+            --arg ls    "$(sig "$LINUX_TAR")" \
+            --arg mau   "${BASE}/$(basename "$MACOS_ARM_TAR")" \
+            --arg mas   "$(sig "$MACOS_ARM_TAR")" \
+            --arg mxu   "${BASE}/$(basename "$MACOS_X64_TAR")" \
+            --arg mxs   "$(sig "$MACOS_X64_TAR")" \
+            --arg wu    "${BASE}/$(basename "$WINDOWS_ZIP")" \
+            --arg ws    "$(sig "$WINDOWS_ZIP")" \
+            '{
+              version: $ver, pub_date: $date,
+              platforms: {
+                "linux-x86_64":    { url: $lu,  signature: $ls },
+                "darwin-aarch64":  { url: $mau, signature: $mas },
+                "darwin-x86_64":   { url: $mxu, signature: $mxs },
+                "windows-x86_64":  { url: $wu,  signature: $ws }
+              }
+            }' > release/latest.json
+
+          echo "--- latest.json ---"
+          cat release/latest.json
+          echo "--- release files ---"
+          ls -lh release/
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release/*
