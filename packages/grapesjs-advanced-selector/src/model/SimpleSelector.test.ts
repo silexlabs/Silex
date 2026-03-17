@@ -112,7 +112,11 @@ describe('SimpleSelector', () => {
     expect(validate('data-test')).toBe('.data-test')
     expect(validate('div')).toBe('div')
     expect(validate('a')).toBe('a')
-    expect(validate('A')).toBe('a')
+    expect(validate('A')).toBe('a') // 'a' is an HTML tag, lowercase by spec
+    // Classes and IDs preserve case (case-sensitive by CSS spec)
+    expect(validate('testMajuscule')).toBe('.testMajuscule')
+    expect(validate('.testMajuscule')).toBe('.testMajuscule')
+    expect(validate('#testMajuscule')).toBe('#testMajuscule')
     expect(validate('.')).toBe(false)
     expect(validate('.valid')).toBe('.valid')
     expect(validate('.almost -valid')).toBe('.almost--valid')

@@ -216,14 +216,18 @@ export function validate(_value: string): string | false {
   if (_value === '*') return _value
   // Escape special characters for the regular expression
   const escapedOperators = ESCAPE_CHARS.map(op => `\\${op}`).join('|')
-  const value = _value
+  // Lowercased version for tags/attributes validation (case-insensitive by spec)
+  const valueLower = _value
     .toLowerCase()
     .replace(new RegExp(escapedOperators, 'g'), '-')
+  // Case-preserving version for classes/IDs (case-sensitive by spec)
+  const value = _value
+    .replace(new RegExp(escapedOperators, 'g'), '-')
   // No starting with number or -
-  if (value.match(/^[0-9-]/)) return false
-  if (value.startsWith('-')) return false
+  if (valueLower.match(/^[0-9-]/)) return false
+  if (valueLower.startsWith('-')) return false
   // Attributes should be from the ATTRIBUTES list
-  if (value.match(/^\[[a-z-]*\]?$/) && ATTRIBUTES.includes(value.replace('[', '').replace(']', ''))) return value.replace(']', '') + ']'
+  if (valueLower.match(/^\[[a-z-]*\]?$/) && ATTRIBUTES.includes(valueLower.replace('[', '').replace(']', ''))) return valueLower.replace(']', '') + ']'
   // Attribute with a value
   const attrWithVal = _value // Keep the original value, not escaped because the attr value could contain spaces
     .match(/^\[([\w-]+)\s*=\s*"([^"]*)"?\]?$/)
@@ -232,16 +236,16 @@ export function validate(_value: string): string | false {
     if(ATTRIBUTES.includes(name)) return `[${name}="${val}"]`
   }
   // Custom attributes should start with data-
-  if (value.match(/^\[data-[_a-zA-Z]+[_a-zA-Z0-9]*\]?$/)) return value.replace(']', '') + ']'
+  if (valueLower.match(/^\[data-[_a-zA-Z]+[_a-zA-Z0-9]*\]?$/)) return valueLower.replace(']', '') + ']'
   // Custom tags should contain a - and be defined as web components
-  if(value.match(/^[a-z-]*[a-z]$/) && value.includes('-') && window.customElements.get(value)) return value
+  if(valueLower.match(/^[a-z-]*[a-z]$/) && valueLower.includes('-') && window.customElements.get(valueLower)) return valueLower
   // Tags should be from the TAGS list
-  if (value.match(/^[a-z]*$/) && TAGS.includes(value as TAG)) return value
-  // Classes should start with . then a letter
+  if (valueLower.match(/^[a-z]*$/) && TAGS.includes(valueLower as TAG)) return valueLower
+  // Classes should start with . then a letter (case-sensitive)
   if (value.match(/^\.-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/)) return value
-  // IDs should start with # then a letter
+  // IDs should start with # then a letter (case-sensitive)
   if (value.match(/^#-?[_a-zA-Z]+[_a-zA-Z0-9-]*$/)) return value
-  // Check if it is a valid css class when adding a dot at the beginning
+  // Check if it is a valid css class when adding a dot at the beginning (case-sensitive)
   if (value.match(/^-?[_a-zA-Z]+[_a-zA-Z0-9-]*[_a-zA-Z0-9]$/)) return '.' + value
   // Not a valid selector and not fixable
   return false
