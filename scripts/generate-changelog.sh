@@ -154,14 +154,14 @@ while IFS="$SEP" read -r subject author package; do
     msg="${BASH_REMATCH[2]}"
     [[ -n "${SEEN[$msg]+x}" ]] && continue
     SEEN[$msg]=1
-    FEATURES+="- $msg ($pkg_link) @$author"$'\n'
+    FEATURES+="- $msg ($pkg_link) - $author"$'\n'
 
   elif [[ "$subject" =~ ^fix(\(.+\))?:\ (.+) ]]; then
     msg="${BASH_REMATCH[2]}"
     matches_any "$msg" "${FIX_SKIP_PATTERNS[@]}" && continue
     [[ -n "${SEEN[$msg]+x}" ]] && continue
     SEEN[$msg]=1
-    FIXES+="- $msg ($pkg_link) @$author"$'\n'
+    FIXES+="- $msg ($pkg_link) - $author"$'\n'
 
   elif [[ "$subject" =~ ^chore(\(.+\))?:\ (.+) ]]; then
     continue
@@ -170,7 +170,7 @@ while IFS="$SEP" read -r subject author package; do
     matches_any "$subject" "${OTHER_SKIP_PATTERNS[@]}" && continue
     [[ -n "${SEEN[$subject]+x}" ]] && continue
     SEEN[$subject]=1
-    OTHER+="- $subject ($pkg_link) @$author"$'\n'
+    OTHER+="- $subject ($pkg_link) - $author"$'\n'
   fi
 done <<< "$ALL_COMMITS"
 
