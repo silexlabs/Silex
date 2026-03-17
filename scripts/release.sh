@@ -226,3 +226,13 @@ bump_version "monorepo"
 
 echo ""
 echo "✅ Done. Released: ${#UPDATED[@]}, Skipped: ${#SKIPPED[@]}"
+
+if [[ ${#UPDATED[@]} -gt 0 ]] && ! $DRY_RUN; then
+  MONOREPO_VERSION=$(jq -r .version package.json)
+  echo ""
+  echo "📋 Next steps:"
+  echo "   1. CI is building artifacts and creating a draft release on GitHub"
+  echo "      https://github.com/silexlabs/Silex/actions"
+  echo "   2. Once CI is green, review and publish the release:"
+  echo "      https://github.com/silexlabs/Silex/releases/tag/${MONOREPO_VERSION}"
+fi
