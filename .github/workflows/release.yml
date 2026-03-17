@@ -155,6 +155,40 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Find previous tag
+        id: prev_tag
+        run: |
+          # Find the previous tag of the same type (prerelease or stable)
+          CURRENT="${GITHUB_REF_NAME}"
+          if [[ "$CURRENT" == *-* ]]; then
+            # Prerelease: find previous prerelease tag
+            PREV=$(git tag --sort=-version:refname | grep -E '^v.*-' | grep -v "^${CURRENT}$" | head -1)
+          else
+            # Stable: find previous stable tag
+            PREV=$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${CURRENT}$" | head -1)
+          fi
+          echo "tag=${PREV:-}" >> "$GITHUB_OUTPUT"
+          echo "Previous tag: ${PREV:-none}"
+
+      - name: Generate release notes
+        id: changelog
+        run: |
+          PREV="${{ steps.prev_tag.outputs.tag }}"
+          if [[ -n "$PREV" ]]; then
+            BODY=$(./scripts/generate-changelog.sh "${PREV}..${GITHUB_REF_NAME}")
+          else
+            BODY="## What's Changed"$'\n\n'"First release!"
+          fi
+          # Write to file (multiline output)
+          echo "$BODY" > release-notes.md
+          cat release-notes.md
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -219,7 +253,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body_path: release-notes.md
           draft: true
           prerelease: ${{ contains(github.ref_name, 'canary') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
           files: release/*

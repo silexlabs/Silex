@@ -1,182 +1,289 @@
 #!/bin/bash
 set -euo pipefail
 
-# Usage:
-#   ./scripts/generate-changelog.sh [FROM_TAG..TO_TAG]
+# Generate GitHub Release Notes with submodule support
 #
-# Examples:
-#   ./scripts/generate-changelog.sh                    # Since last release of each package
-#   ./scripts/generate-changelog.sh v3.5.0..v3.6.0    # Between two monorepo tags
+# Usage:
+#   ./scripts/generate-changelog.sh FROM_TAG..TO_TAG
+#
+# Output: GitHub-flavored markdown suitable for release pages
+# Features:
+#   - Traverses git submodules to collect all commits
+#   - Groups by conventional commit type (feat/fix/chore)
+#   - Deduplicates and filters out version bumps
+#   - Detects new contributors (across monorepo + submodules)
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
-# Parse tag range argument
+# --- Configurable noise filters ---
+# Subjects matching these patterns are always skipped
+SKIP_PATTERNS=(
+  '^[0-9]+\.[0-9]+'                    # version numbers (e.g. "3.7.3-canary.1")
+  '^v[0-9]+\.[0-9]+'                   # version tags
+  '^chore:\ update\ internal\ dep'     # internal dep bumps
+  '^Merge\ (branch|pull\ request)'     # merge commits
+  '^Bump\ v'                           # npm version bumps
+  '^wip'                               # work in progress
+  '^doc:'                              # docs (conventional)
+  '^docs:'                             # docs (conventional alt)
+)
+# fix: messages matching these are skipped (CI/infra, not user-facing)
+FIX_SKIP_PATTERNS=(
+  '^release'
+  '^build'
+  '^desktop\ build'
+)
+# Non-conventional subjects matching these are skipped
+OTHER_SKIP_PATTERNS=(
+  '^auto\ updater$'
+  '^latest\ version'
+  '^removed?\ .*(repo|submodule|platform)'
+)
+
+# ASCII Unit Separator — safe delimiter unlikely to appear in commit messages
+SEP=$'\x1f'
+
+# --- Submodule name → GitHub URL mapping ---
+declare -A PACKAGE_URL
+for _dir in packages/*; do
+  [ -f "$_dir/.git" ] || continue
+  _name=$(basename "$_dir")
+  _remote=$(cd "$_dir" && git remote get-url origin 2>/dev/null || true)
+  # Convert git@github.com:org/repo.git → https://github.com/org/repo
+  _remote=$(echo "$_remote" | sed -E 's|^git@github\.com:|https://github.com/|; s|\.git$||')
+  PACKAGE_URL[$_name]="$_remote"
+done
+
+# --- Parse arguments ---
 TAG_RANGE="${1:-}"
-FROM_TAG=""
-TO_TAG=""
 
-if [[ -n "$TAG_RANGE" ]]; then
-  if [[ "$TAG_RANGE" == *..* ]]; then
-    FROM_TAG="${TAG_RANGE%..*}"
-    TO_TAG="${TAG_RANGE#*..}"
-  else
-    echo "❌ Invalid format. Use: FROM_TAG..TO_TAG (e.g., v3.5.0..v3.6.0)"
-    exit 1
-  fi
-
-  # Validate tags exist in monorepo
-  if ! git rev-parse "$FROM_TAG" >/dev/null 2>&1; then
-    echo "❌ Tag '$FROM_TAG' not found in monorepo"
-    exit 1
-  fi
-  if ! git rev-parse "$TO_TAG" >/dev/null 2>&1; then
-    echo "❌ Tag '$TO_TAG' not found in monorepo"
-    exit 1
-  fi
-
-  echo ""
-  echo "============================================"
-  echo "🚀 Changelog: $FROM_TAG → $TO_TAG"
-  echo "============================================"
-else
-  # Get the release version from the monorepo
-  RELEASE_VERSION=$(jq -r '.version' package.json)
-  echo ""
-  echo "============================================"
-  echo "🚀 Release: v$RELEASE_VERSION"
-  echo "============================================"
+if [[ -z "$TAG_RANGE" || "$TAG_RANGE" != *..* ]]; then
+  echo "Usage: $0 FROM_TAG..TO_TAG" >&2
+  echo "Example: $0 v3.7.2..v3.7.3-canary.3" >&2
+  exit 1
 fi
 
-for dir in packages/*; do
-  [ -f "$dir/.git" ] || continue
+FROM_TAG="${TAG_RANGE%..*}"
+TO_TAG="${TAG_RANGE#*..}"
 
+for tag in "$FROM_TAG" "$TO_TAG"; do
+  if ! git rev-parse "$tag" >/dev/null 2>&1; then
+    echo "❌ Tag '$tag' not found" >&2
+    exit 1
+  fi
+done
+
+# --- Helper: iterate submodules with changes between two monorepo tags ---
+# Usage: for_each_submodule <callback_function>
+# Callback receives: $1=dir, $2=from_sha, $3=to_sha
+for_each_submodule() {
+  local callback="$1"
+  for dir in packages/*; do
+    [ -f "$dir/.git" ] || continue
+    local from_sha to_sha
+    from_sha=$(git ls-tree "$FROM_TAG" "$dir" 2>/dev/null | awk '{print $3}')
+    to_sha=$(git ls-tree "$TO_TAG" "$dir" 2>/dev/null | awk '{print $3}')
+    [[ -z "$from_sha" || -z "$to_sha" || "$from_sha" == "$to_sha" ]] && continue
+    "$callback" "$dir" "$from_sha" "$to_sha"
+  done
+}
+
+# --- Helper: check if subject matches any pattern in an array ---
+matches_any() {
+  local subject="$1"
+  shift
+  for pattern in "$@"; do
+    if [[ "$subject" =~ $pattern ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# --- Helper: format package name as markdown link if URL available ---
+format_package() {
+  local pkg="$1"
+  local url="${PACKAGE_URL[$pkg]:-}"
+  if [[ -n "$url" ]]; then
+    echo "[$pkg]($url)"
+  else
+    echo "$pkg"
+  fi
+}
+
+# --- Collect all commits (monorepo + submodules) ---
+ALL_COMMITS=""
+
+collect_submodule_commits() {
+  local dir="$1" from_sha="$2" to_sha="$3"
+  local name
   name=$(basename "$dir")
+  cd "$dir"
+  while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    ALL_COMMITS+="${line}${SEP}${name}"$'\n'
+  done < <(git --no-pager log "${from_sha}..${to_sha}" --pretty=format:"%s${SEP}%an" 2>/dev/null || true)
+  cd "$REPO_ROOT"
+}
 
-  if [[ -n "$FROM_TAG" ]]; then
-    # Mode: monorepo tag range
-    # Get the submodule commit SHA at each monorepo tag
-    from_submodule_sha=$(git ls-tree "$FROM_TAG" "$dir" 2>/dev/null | awk '{print $3}')
-    to_submodule_sha=$(git ls-tree "$TO_TAG" "$dir" 2>/dev/null | awk '{print $3}')
+# Monorepo-level commits
+while IFS= read -r line; do
+  [[ -z "$line" ]] && continue
+  ALL_COMMITS+="${line}${SEP}monorepo"$'\n'
+done < <(git --no-pager log "${FROM_TAG}..${TO_TAG}" --pretty=format:"%s${SEP}%an" 2>/dev/null || true)
 
-    # Skip if submodule didn't exist at FROM_TAG
-    if [[ -z "$from_submodule_sha" ]]; then
-      cd "$REPO_ROOT"
-      continue
-    fi
+for_each_submodule collect_submodule_commits
 
-    # Skip if no changes in submodule between tags
-    if [[ "$from_submodule_sha" == "$to_submodule_sha" ]]; then
-      cd "$REPO_ROOT"
-      continue
-    fi
+# --- Filter, deduplicate, and categorize ---
+declare -A SEEN
+FEATURES=""
+FIXES=""
+OTHER=""
 
-    cd "$dir"
+while IFS="$SEP" read -r subject author package; do
+  [[ -z "$subject" ]] && continue
 
-    # Get commits between the two submodule commits
-    commits=$(git --no-pager log "${from_submodule_sha}..${to_submodule_sha}" --pretty=format:"- %s (%an)" 2>/dev/null || true)
+  # Skip noise
+  matches_any "$subject" "${SKIP_PATTERNS[@]}" && continue
 
-    if [[ -z "$commits" ]]; then
-      cd "$REPO_ROOT"
-      continue
-    fi
+  # Extract conventional commit type
+  pkg_link=$(format_package "$package")
 
-    echo "────────────────────────────────────────────"
-    echo "📦 Package: $name"
+  if [[ "$subject" =~ ^feat(\(.+\))?:\ (.+) ]]; then
+    msg="${BASH_REMATCH[2]}"
+    [[ -n "${SEEN[$msg]+x}" ]] && continue
+    SEEN[$msg]=1
+    FEATURES+="- $msg ($pkg_link) @$author"$'\n'
 
-    # Show version info if available
-    from_version=$(git describe --tags --abbrev=0 "$from_submodule_sha" 2>/dev/null || echo "$from_submodule_sha")
-    to_version=$(git describe --tags --abbrev=0 "$to_submodule_sha" 2>/dev/null || echo "$to_submodule_sha")
-    echo "   Version: $from_version → $to_version"
-    echo ""
-    echo "   Changes:"
-    echo "$commits" | sed 's/^/      /'
-    echo ""
+  elif [[ "$subject" =~ ^fix(\(.+\))?:\ (.+) ]]; then
+    msg="${BASH_REMATCH[2]}"
+    matches_any "$msg" "${FIX_SKIP_PATTERNS[@]}" && continue
+    [[ -n "${SEEN[$msg]+x}" ]] && continue
+    SEEN[$msg]=1
+    FIXES+="- $msg ($pkg_link) @$author"$'\n'
+
+  elif [[ "$subject" =~ ^chore(\(.+\))?:\ (.+) ]]; then
+    continue
 
   else
-    # Mode: since last release (original behavior)
-    cd "$dir"
-
-    # Get all semver tags (with optional v prefix and prerelease suffix)
-    # Matches: v1.2.3, 1.2.3, v1.2.3-canary.1, 1.2.3-alpha.0, v1.2.3-1, etc.
-    all_tags=($(git tag --sort=-creatordate | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$' || true))
-
-    last_real_tag=""
-    last_pre_tag=""
-
-    # Find last stable release (no dash in version)
-    for tag in "${all_tags[@]}"; do
-      if [[ "$tag" != *-* ]]; then
-        last_real_tag="$tag"
-        break
-      fi
-    done
-
-    # Find last prerelease (has dash in version)
-    for tag in "${all_tags[@]}"; do
-      if [[ "$tag" == *-* ]]; then
-        last_pre_tag="$tag"
-        break
-      fi
-    done
-
-    # Get commits since last stable release
-    commits_since_release=""
-    if [[ -z "$last_real_tag" ]]; then
-      commits_since_release=$(git --no-pager log --pretty=format:"- %s (%an)")
-    else
-      last_real_tag_commit=$(git rev-list -n 1 "$last_real_tag")
-      commits_since_release=$(git --no-pager log "${last_real_tag_commit}..HEAD" --pretty=format:"- %s (%an)")
-    fi
-
-    # Get commits since last prerelease (only if prerelease is newer than release)
-    commits_since_prerelease=""
-    prerelease_is_newer=false
-    if [[ -n "$last_pre_tag" ]]; then
-      last_pre_tag_commit=$(git rev-list -n 1 "$last_pre_tag")
-      # Check if prerelease is newer than release (prerelease commit is not an ancestor of release commit)
-      if [[ -z "$last_real_tag" ]] || ! git merge-base --is-ancestor "$last_pre_tag_commit" "$last_real_tag_commit" 2>/dev/null; then
-        prerelease_is_newer=true
-        commits_since_prerelease=$(git --no-pager log "${last_pre_tag_commit}..HEAD" --pretty=format:"- %s (%an)")
-      fi
-    fi
-
-    # Skip if no commits since release AND no commits since prerelease
-    if [[ -z "$commits_since_release" && -z "$commits_since_prerelease" ]]; then
-      cd "$REPO_ROOT"
-      continue
-    fi
-
-    echo "────────────────────────────────────────────"
-    echo "📦 Package: $name"
-    if [[ -f "README.md" ]]; then
-      echo "README Preview:"
-      grep -v '^\s*$' README.md | sed -n '1,10p' | sed 's/^/   /'
-      echo ""
-    fi
-
-    echo "Release summary:"
-    echo "   Last release: ${last_real_tag:-none}"
-    if [[ -n "$last_pre_tag" ]]; then
-      echo "   Last prerelease: $last_pre_tag"
-    fi
-
-    # Show commits since last prerelease (only if prerelease is newer than release)
-    if [[ "$prerelease_is_newer" == "true" && -n "$commits_since_prerelease" ]]; then
-      echo ""
-      echo "   Commits since $last_pre_tag (prerelease):"
-      echo "$commits_since_prerelease" | sed 's/^/      /'
-    fi
-
-    # Show commits since last stable release
-    if [[ -n "$commits_since_release" ]]; then
-      echo ""
-      echo "   All commits since ${last_real_tag:-beginning}:"
-      echo "$commits_since_release" | sed 's/^/      /'
-    fi
-
-    echo ""
+    matches_any "$subject" "${OTHER_SKIP_PATTERNS[@]}" && continue
+    [[ -n "${SEEN[$subject]+x}" ]] && continue
+    SEEN[$subject]=1
+    OTHER+="- $subject ($pkg_link) @$author"$'\n'
   fi
+done <<< "$ALL_COMMITS"
 
+# --- Detect new contributors ---
+RELEASE_AUTHORS=""
+PREV_AUTHORS=""
+
+collect_release_authors() {
+  local dir="$1" from_sha="$2" to_sha="$3"
+  cd "$dir"
+  RELEASE_AUTHORS+=$(git --no-pager log "${from_sha}..${to_sha}" --pretty=format:"%an" 2>/dev/null)$'\n'
+  cd "$REPO_ROOT"
+}
+
+collect_prev_authors() {
+  local dir="$1" from_sha="$2"
+  cd "$dir"
+  # Limit history depth to avoid traversing entire repo
+  PREV_AUTHORS+=$(git --no-pager log "$from_sha" --max-count=500 --pretty=format:"%an" 2>/dev/null)$'\n'
+  cd "$REPO_ROOT"
+}
+
+# Release authors
+RELEASE_AUTHORS+=$(git log "${FROM_TAG}..${TO_TAG}" --pretty=format:"%an" 2>/dev/null)$'\n'
+for_each_submodule collect_release_authors
+RELEASE_AUTHORS=$(echo "$RELEASE_AUTHORS" | sort -u | grep -v '^$' || true)
+
+# Previous authors (with depth limit)
+PREV_AUTHORS+=$(git log "$FROM_TAG" --max-count=500 --pretty=format:"%an" 2>/dev/null)$'\n'
+# For prev authors we need all submodules that existed at FROM_TAG, not just changed ones
+for dir in packages/*; do
+  [ -f "$dir/.git" ] || continue
+  from_sha=$(git ls-tree "$FROM_TAG" "$dir" 2>/dev/null | awk '{print $3}')
+  [[ -z "$from_sha" ]] && continue
+  cd "$dir"
+  PREV_AUTHORS+=$(git --no-pager log "$from_sha" --max-count=500 --pretty=format:"%an" 2>/dev/null)$'\n'
   cd "$REPO_ROOT"
 done
+PREV_AUTHORS=$(echo "$PREV_AUTHORS" | sort -u | grep -v '^$' || true)
+
+NEW_CONTRIBUTORS=""
+while IFS= read -r author; do
+  [[ -z "$author" ]] && continue
+  if ! echo "$PREV_AUTHORS" | grep -qxF "$author"; then
+    NEW_CONTRIBUTORS+="- $author"$'\n'
+  fi
+done <<< "$RELEASE_AUTHORS"
+
+# --- Output markdown ---
+echo "## What's Changed"
+echo ""
+
+if [[ -n "$FEATURES" ]]; then
+  echo "### Features"
+  echo ""
+  echo -n "$FEATURES"
+  echo ""
+fi
+
+if [[ -n "$FIXES" ]]; then
+  echo "### Bug Fixes"
+  echo ""
+  echo -n "$FIXES"
+  echo ""
+fi
+
+if [[ -n "$OTHER" ]]; then
+  echo "### Other Changes"
+  echo ""
+  echo -n "$OTHER"
+  echo ""
+fi
+
+if [[ -n "$NEW_CONTRIBUTORS" ]]; then
+  echo "### New Contributors"
+  echo ""
+  echo -n "$NEW_CONTRIBUTORS"
+  echo ""
+fi
+
+if [[ -n "$RELEASE_AUTHORS" ]]; then
+  echo "### Contributors"
+  echo ""
+  while IFS= read -r author; do
+    [[ -z "$author" ]] && continue
+    echo "- $author"
+  done <<< "$RELEASE_AUTHORS"
+  echo ""
+fi
+
+# --- Try it ---
+if [[ "$TO_TAG" == *-canary* || "$TO_TAG" == *-alpha* || "$TO_TAG" == *-beta* ]]; then
+  echo "### Try it"
+  echo ""
+  echo "This is a **pre-release** intended for testing: https://canary.silex.me"
+else
+  echo "### Try it"
+  echo ""
+  echo "Available now on https://v3.silex.me"
+fi
+echo ""
+
+# --- Downloads table ---
+VERSION="$TO_TAG"
+BASE="https://github.com/silexlabs/Silex/releases/download/${VERSION}"
+echo "### Downloads"
+echo ""
+echo "| Platform | Server (CLI) | Desktop App |"
+echo "|----------|-------------|-------------|"
+echo "| Linux x64 | [silex-server-linux-amd64](${BASE}/silex-server-linux-amd64) | [.deb](${BASE}/silex-desktop_amd64.deb) |"
+echo "| macOS ARM | [silex-server-macos-arm64](${BASE}/silex-server-macos-arm64) | [.dmg](${BASE}/Silex_aarch64.dmg) |"
+echo "| macOS x64 | [silex-server-macos-x64](${BASE}/silex-server-macos-x64) | [.dmg](${BASE}/Silex_x64.dmg) |"
+echo "| Windows x64 | [silex-server-windows-amd64.exe](${BASE}/silex-server-windows-amd64.exe) | [.exe](${BASE}/Silex_x64-setup.exe) |"
+echo ""
+
+echo "**Full Changelog**: https://github.com/silexlabs/Silex/compare/${FROM_TAG}...${TO_TAG}"
