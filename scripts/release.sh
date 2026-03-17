@@ -170,7 +170,7 @@ bump_version() {
   fi
 }
 
-INTERNAL_PACKAGE_NAMES=($(find packages -mindepth 1 -maxdepth 1 -type d -exec jq -r .name {}/package.json \;))
+INTERNAL_PACKAGE_NAMES=($(find packages -mindepth 1 -maxdepth 1 -type d -exec sh -c '[ -f "$1/package.json" ] && jq -r .name "$1/package.json"' _ {} \;))
 PACKAGE_PATHS=($(./scripts/sort-internal-deps.js | grep '^-' | sed 's/^- //' | xargs -n1))
 
 for pkg_dir in "${PACKAGE_PATHS[@]}"; do
