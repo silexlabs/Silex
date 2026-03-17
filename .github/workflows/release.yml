@@ -220,4 +220,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
+          draft: true
+          prerelease: ${{ contains(github.ref_name, 'canary') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') }}
           files: release/*
