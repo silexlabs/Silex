@@ -167,11 +167,11 @@ jobs:
         run: |
           mkdir -p release
 
-          # Server binaries — rename per platform
-          cp artifacts/silex-server-linux/silex-server       release/silex-server-linux-amd64
-          cp artifacts/silex-server-macos-arm/silex-server   release/silex-server-macos-arm64
-          cp artifacts/silex-server-macos-x64/silex-server   release/silex-server-macos-x64
-          cp artifacts/silex-server-windows/silex-server.exe release/silex-server-windows-amd64.exe
+          # Server binaries — find inside artifact dirs (upload preserves target/ path)
+          find artifacts/silex-server-linux   -name 'silex-server' -type f -exec cp {} release/silex-server-linux-amd64 \;
+          find artifacts/silex-server-macos-arm -name 'silex-server' -type f -exec cp {} release/silex-server-macos-arm64 \;
+          find artifacts/silex-server-macos-x64 -name 'silex-server' -type f -exec cp {} release/silex-server-macos-x64 \;
+          find artifacts/silex-server-windows -name 'silex-server.exe' -type f -exec cp {} release/silex-server-windows-amd64.exe \;
 
           # Desktop installers + updater artifacts (flatten into release/)
           find artifacts/silex-desktop-* -type f \
