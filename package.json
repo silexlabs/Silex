@@ -27,8 +27,7 @@
     "start": "node packages/silex-lib/",
     "release": "scripts/release.sh",
     "test": "node scripts/check-internal-deps.js",
-    "count": "cloc packages --exclude-dir node_modules,doc,strapi,test,dist,mock --exclude-ext=md,xml,pug,njk,ini,scss,css,json,svg,yaml,yml,html",
-    "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && $npm_execpath run count | scripts/insert-in-readme.js count --code",
+    "doc": "scripts/generate-submodules-doc.js | scripts/insert-in-readme.js submodules && scripts/generate-contributors-doc.js | scripts/insert-in-readme.js contributors",
     "exec": "scripts/exec.js",
     "prepare": "husky"
   },
