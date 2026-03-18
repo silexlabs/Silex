@@ -6,7 +6,7 @@ async function main(content, key, code) {
   console.log(content)
   // Read README.md
   const readme = await readFile('README.md', 'utf-8')
-  const keyText = `> Auto generated ${key}`
+  const keyText = `<!-- Auto generated ${key} -->`
   // Replace content between keys
   const lines = readme.split('\n')
   const keyIndexStart = lines.findIndex((line) => line.trim() === keyText)
