@@ -11,6 +11,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::net::SocketAddr;
+use std::path::PathBuf;
 use std::sync::Mutex;
 
 use tauri::{Emitter, Manager, WebviewUrl, WebviewWindowBuilder};
@@ -21,6 +22,55 @@ use silex_server::Config;
 use tauri_plugin_updater::UpdaterExt;
 
 mod mcp;
+
+// ==================
+// Telemetry consent
+// ==================
+
+fn telemetry_consent_path(data_dir: &PathBuf) -> PathBuf {
+    data_dir.join("telemetry_consent")
+}
+
+/// Returns Some(true) if opted in, Some(false) if opted out, None if never asked.
+fn read_telemetry_consent(data_dir: &PathBuf) -> Option<bool> {
+    std::fs::read_to_string(telemetry_consent_path(data_dir))
+        .ok()
+        .map(|s| s.trim() == "true")
+}
+
+fn write_telemetry_consent(data_dir: &PathBuf, accepted: bool) {
+    let _ = std::fs::create_dir_all(data_dir);
+    let _ = std::fs::write(
+        telemetry_consent_path(data_dir),
+        if accepted { "true" } else { "false" },
+    );
+}
+
+/// Prompt the user for telemetry consent (non-blocking, saves result for next launch).
+fn prompt_telemetry_consent(app: &tauri::AppHandle, data_dir: PathBuf) {
+    use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
+
+    app.dialog()
+        .message(
+            "Help improve Silex by sending anonymous crash reports and basic usage data?\n\n\
+             No personal data or website content is ever collected.\n\
+             You can change this later in Settings.",
+        )
+        .title("Telemetry")
+        .kind(MessageDialogKind::Info)
+        .buttons(MessageDialogButtons::OkCancelCustom(
+            "Yes, help improve Silex".into(),
+            "No thanks".into(),
+        ))
+        .show(move |accepted| {
+            write_telemetry_consent(&data_dir, accepted);
+            if accepted {
+                tracing::info!("Telemetry opted in");
+            } else {
+                tracing::info!("Telemetry opted out");
+            }
+        });
+}
 
 // ==================
 // App State
@@ -94,6 +144,17 @@ fn open_folder(path: String) {
 #[tauri::command]
 fn log_debug(message: String) {
     tracing::debug!("[webview] {message}");
+}
+
+#[tauri::command]
+fn get_glitchtip_dsn() -> Option<String> {
+    // Only expose DSN to the frontend if the user has opted in
+    let data_dir = dirs::data_dir()?.join("org.silex.desktop");
+    if read_telemetry_consent(&data_dir) == Some(true) {
+        option_env!("GLITCHTIP_DSN").map(String::from)
+    } else {
+        None
+    }
 }
 
 fn show_quit_dialog(app: &tauri::AppHandle) {
@@ -233,12 +294,61 @@ fn main() {
         }
     }
 
+    // Resolve the app data dir early so we can check telemetry consent before Tauri starts.
+    // This mirrors the path Tauri uses: ~/.local/share/org.silex.desktop (Linux),
+    // ~/Library/Application Support/org.silex.desktop (macOS),
+    // %APPDATA%/org.silex.desktop (Windows).
+    let app_data_dir = dirs::data_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("org.silex.desktop");
+    let _ = std::fs::create_dir_all(&app_data_dir);
+
+    // Initialize error tracking (GlitchTip / Sentry-compatible).
+    // Sentry is always initialized when GLITCHTIP_DSN is set, but events are only
+    // sent if the user has opted in. This way consent takes effect immediately
+    // (no need to restart after opting in on first launch).
+    let consent_dir_for_send = app_data_dir.clone();
+    let consent_dir_for_traces = app_data_dir.clone();
+    let _sentry_guard = sentry::init(sentry::ClientOptions {
+        dsn: option_env!("GLITCHTIP_DSN")
+            .and_then(|s| s.parse().ok()),
+        release: Some(env!("CARGO_PKG_VERSION").into()),
+        environment: Some(
+            if cfg!(debug_assertions) { "development" } else { "production" }.into(),
+        ),
+        before_send: Some(std::sync::Arc::new(move |event| {
+            if read_telemetry_consent(&consent_dir_for_send) == Some(true) {
+                Some(event)
+            } else {
+                None
+            }
+        })),
+        // Sample 100% of transactions (volume is low for a desktop app),
+        // but only if the user has opted in.
+        traces_sampler: Some(std::sync::Arc::new(move |_ctx| {
+            if read_telemetry_consent(&consent_dir_for_traces) == Some(true) {
+                1.0
+            } else {
+                0.0
+            }
+        })),
+        // Track sessions for user count and crash-free rate
+        auto_session_tracking: true,
+        session_mode: sentry::SessionMode::Application,
+        ..Default::default()
+    });
+    sentry::configure_scope(|scope| {
+        scope.set_tag("os", std::env::consts::OS);
+        scope.set_tag("arch", std::env::consts::ARCH);
+    });
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| "silex_server=info,silex_desktop=info".into()),
         )
         .with(tracing_subscriber::fmt::layer())
+        .with(sentry::integrations::tracing::layer())
         .init();
 
     tauri::Builder::default()
@@ -252,12 +362,35 @@ fn main() {
             mark_unsaved,
             open_folder,
             log_debug,
+            get_glitchtip_dsn,
         ])
         .setup(|app| {
+            // Log app launch with OS/arch info (visible in Issues even without errors)
+            sentry::capture_event(sentry::protocol::Event {
+                message: Some("app_started".into()),
+                level: sentry::Level::Info,
+                ..Default::default()
+            });
+
+            // Start a performance transaction for app startup
+            let tx_ctx = sentry::TransactionContext::new("app_startup", "lifecycle");
+            let transaction = sentry::start_transaction(tx_ctx);
+            sentry::configure_scope(|scope| scope.set_span(Some(transaction.clone().into())));
+
             // Use Tauri's app_data_dir for user-writable storage
             let data_path = app.path().app_data_dir()
                 .expect("failed to resolve app data dir")
                 .join("storage");
+
+            // On first launch, ask the user for telemetry consent.
+            // The choice is saved and takes effect on next launch.
+            let consent_dir = app.path().app_data_dir()
+                .expect("failed to resolve app data dir");
+            if option_env!("GLITCHTIP_DSN").is_some()
+                && read_telemetry_consent(&consent_dir).is_none()
+            {
+                prompt_telemetry_consent(app.handle(), consent_dir);
+            }
 
             // Show splash screen while the app loads
             let _splash = WebviewWindowBuilder::new(
@@ -309,6 +442,9 @@ fn main() {
                     mcp::start_mcp_server(mcp_handle, pending_evals, 6807).await;
                 });
             }
+
+            // Finish the startup transaction (sends to GlitchTip Performance)
+            transaction.finish();
 
             // Check for updates in the background
             check_for_updates(app.handle().clone());

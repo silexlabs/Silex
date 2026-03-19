@@ -5,6 +5,29 @@
   const { invoke } = window.__TAURI__.core;
   const { listen } = window.__TAURI__.event;
 
+  // Frontend error tracking (GlitchTip / Sentry-compatible).
+  // DSN is read from the same GLITCHTIP_DSN env var via a Tauri command.
+  invoke('get_glitchtip_dsn').then((dsn) => {
+    if (!dsn) return;
+    const script = document.createElement('script');
+    script.src = 'https://browser.sentry-cdn.com/8.46.0/bundle.tracing.min.js';
+    script.crossOrigin = 'anonymous';
+    script.onload = () => {
+      if (window.Sentry) {
+        window.Sentry.init({
+          dsn,
+          release: '0.1.0',
+          environment: 'production',
+          tracesSampleRate: 1.0,
+          integrations: [window.Sentry.browserTracingIntegration()],
+        });
+        window.Sentry.setTag('os', navigator.platform);
+        window.Sentry.setTag('context', 'webview');
+      }
+    };
+    document.head.appendChild(script);
+  }).catch(() => { /* GLITCHTIP_DSN not set — telemetry disabled */ });
+
   const TEXT_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a', 'li', 'td', 'th', 'label', 'blockquote'];
 
   // Expose debug logging for silex-lib client code
@@ -787,8 +810,17 @@
     return;
   }
 
+  // Track project_open: from navigation to editor ready
+  const openStart = Date.now() / 1000;
+
   // On the editor page, wire up the bridge
   waitForEditor((editor) => {
+    // Finish project_open transaction
+    if (window.Sentry?.startInactiveSpan) {
+      const span = window.Sentry.startInactiveSpan({ name: 'project_open', op: 'lifecycle', startTime: openStart, forceTransaction: true });
+      span?.end();
+    }
+
     // Report current project to Tauri
     fetch(`/api/website/meta?websiteId=${encodeURIComponent(websiteId)}`)
       .then(r => r.json())
@@ -807,6 +839,30 @@
 
     // Track unsaved changes
     editor.on('change:changesCount', () => invoke('mark_unsaved'));
+
+    // Track project_save
+    editor.on('storage:start:store', () => {
+      editor.__saveSpan = window.Sentry?.startInactiveSpan?.({ name: 'project_save', op: 'lifecycle', forceTransaction: true });
+    });
+    editor.on('storage:end:store', () => {
+      editor.__saveSpan?.end();
+      editor.__saveSpan = null;
+    });
+    editor.on('storage:error:store', () => {
+      if (editor.__saveSpan) { editor.__saveSpan.setStatus({ code: 2, message: 'internal_error' }); editor.__saveSpan.end(); editor.__saveSpan = null; }
+    });
+
+    // Track project_publish
+    editor.on('silex:publish:start', () => {
+      editor.__publishSpan = window.Sentry?.startInactiveSpan?.({ name: 'project_publish', op: 'lifecycle', forceTransaction: true });
+    });
+    editor.on('silex:publish:end', () => {
+      editor.__publishSpan?.end();
+      editor.__publishSpan = null;
+    });
+    editor.on('silex:publish:error', () => {
+      if (editor.__publishSpan) { editor.__publishSpan.setStatus({ code: 2, message: 'internal_error' }); editor.__publishSpan.end(); editor.__publishSpan = null; }
+    });
 
     // Listen for menu events from Tauri (triggered by MCP or quit dialog)
     listen('menu-save', () => editor.store());

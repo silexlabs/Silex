@@ -31,5 +31,11 @@ schemars = "1"
 # Open files/folders in the OS default application
 open = "5"
 
+# Platform-specific directories (for telemetry consent before Tauri init)
+dirs = "6"
+
+# Error tracking / telemetry (GlitchTip / Sentry-compatible)
+sentry = { version = "0.35", features = ["tracing"] }
+
 # Silex server as a library
 silex-server = { path = "../../silex-server", features = ["embed-frontend"] }

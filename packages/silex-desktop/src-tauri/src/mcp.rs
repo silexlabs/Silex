@@ -507,6 +507,17 @@ impl SilexMcp {
         }
     }
 
+    /// Start a Sentry transaction for an MCP tool call.
+    fn start_tool_transaction(tool_name: &str, action: &str) -> sentry::TransactionOrSpan {
+        let tx_ctx = sentry::TransactionContext::new(
+            &format!("mcp/{}", tool_name),
+            "mcp.tool",
+        );
+        let transaction = sentry::start_transaction(tx_ctx);
+        transaction.set_data("action", serde_json::Value::String(action.to_string()));
+        transaction.into()
+    }
+
     // ----------------------------------------------------------------------
     // website — list, create, delete, rename, duplicate, open, dashboard
     // ----------------------------------------------------------------------
@@ -516,6 +527,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<WebsiteParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("website", &format!("{:?}", params.action));
         let base_url = self.get_base_url();
         let client = reqwest::Client::new();
 
@@ -701,6 +713,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<PageParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("page", &format!("{:?}", params.action));
         match params.action {
             PageAction::List => {
                 let js_body = "return window.__silexMcp.listPages(e)";
@@ -771,6 +784,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ComponentParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("component", &format!("{:?}", params.action));
         match params.action {
             ComponentAction::GetTree => {
                 let depth = params.depth.unwrap_or(2);
@@ -868,6 +882,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<SelectorParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("selector", &format!("{:?}", params.action));
         match params.action {
             SelectorAction::List => {
                 let js_body = "var c=e.getSelected();if(!c)return{error:'No component selected. Use component(action:select) first.'};return window.__silexMcp.listComponentSelectors(e)";
@@ -928,6 +943,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<StyleParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("style", &format!("{:?}", params.action));
         match params.action {
             StyleAction::Get => {
                 let js_body = "return window.__silexMcp.getStyle(e)";
@@ -979,6 +995,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<SymbolParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("symbol", &format!("{:?}", params.action));
         match params.action {
             SymbolAction::List => {
                 let js_body = "return{symbols:window.__silexMcp.findAllSymbols(e)}";
@@ -1045,6 +1062,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<DeviceParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("device", &format!("{:?}", params.action));
         match params.action {
             DeviceAction::List => {
                 let js_body = "return window.__silexMcp.listDevices(e)";
@@ -1077,6 +1095,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<SettingsParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("settings", &format!("{:?}", params.action));
         let scope = params.scope.as_str();
         if scope != "site" && scope != "page" {
             return Ok(tool_error("scope must be 'site' or 'page'"));
@@ -1118,6 +1137,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<BlockParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("block", &format!("{:?}", params.action));
         match params.action {
             BlockAction::List => {
                 let js_body = "return window.__silexMcp.listBlocks(e)";
@@ -1150,6 +1170,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<DataSourceParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("data_source", &format!("{:?}", params.action));
         match params.action {
             DataSourceAction::List => {
                 let js_body = "return window.__silexMcp.listDataSources(e)";
@@ -1184,6 +1205,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<StateParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("state", &format!("{:?}", params.action));
         match params.action {
             StateAction::List => {
                 let js_body = "var c=e.getSelected();if(!c)return{error:'No component selected'};return{public_states:c.get('publicStates')??[],private_states:c.get('privateStates')??[]}";
@@ -1288,6 +1310,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<HistoryParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("history", &format!("{:?}", params.action));
         let js_body = match params.action {
             HistoryAction::Undo => "e.UndoManager.undo();return{success:true,action:'undo'}",
             HistoryAction::Redo => "e.UndoManager.redo();return{success:true,action:'redo'}",
@@ -1305,6 +1328,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<EvalParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("eval_js", "eval");
         match self.eval_js_internal(&params.js, 10).await {
             Ok(result) => {
                 let result_text = result.unwrap_or_else(|| "undefined".to_string());
@@ -1332,6 +1356,7 @@ impl SilexMcp {
         &self,
         Parameters(params): Parameters<ScreenshotParams>,
     ) -> Result<CallToolResult, McpError> {
+        let _tx = Self::start_tool_transaction("screenshot", params.target.as_deref().unwrap_or("ui"));
         let target = params.target.as_deref().unwrap_or("ui");
 
         let screenshot_js = r#"
