@@ -1,6 +1,6 @@
 # Silex Platform by Silex Labs
 
-This is also a good example on how to customize Silex. And it has a Dockerfile for easy deployment.
+Ready-to-deploy Silex instance maintained by Silex Labs. Comes with Docker support and many plugins enabled by default.
 
 It has convenient environment variables and many plugins enabled by default, and it is ready to be deployed on CapRover.
 
