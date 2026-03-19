@@ -1,6 +1,6 @@
 ## Silex core library
 
-This repository is the core library of Silex, it is a nodejs server which serves the Silex editor and the websites created with Silex. The core library is used in the online version of Silex, in the desktop app, and in the nodejs integration. It is available as a npx cli, as a docker image, and as a npm/nodejs library.
+Core library of Silex — Node.js server, visual editor, npx CLI and Docker image. Powers the online editor, the desktop app and all Silex integrations.
 
 Useful links
 
