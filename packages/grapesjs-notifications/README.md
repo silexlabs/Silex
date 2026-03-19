@@ -1,6 +1,6 @@
 # GrapesJs Notifications Plugin
 
-Why this plugin? GrapesJs is a powerful framework to build no-code tools and allow users to create templates using a drag-and-drop interface. However, the framework does not offer a standard way of notifying users and each plugin implements its own, which is messy and not user friendly. This plugin provides a centralized notification system that can be used by all plugins to display messages to the user.
+Centralized notification system for GrapesJS plugins. Displays errors, warnings and activity messages in a consistent UI.
 
 It displays various types of notifications including errors, warnings, and activities, thereby facilitating a more interactive and responsive interface. The most important feature is probably that it allows users to interact with the notifications by clicking on them to select a specific component in the editor, go to a page or scroll to the component.
 
