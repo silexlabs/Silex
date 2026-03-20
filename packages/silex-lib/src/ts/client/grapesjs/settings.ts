@@ -289,6 +289,7 @@ export const settingsDialog = (
       id: cmdGetSettings,
       command: cmdGetSettings,
       description: 'Get site or page settings',
+      readOnly: true,
       inputSchema: {
         type: 'object',
         properties: {

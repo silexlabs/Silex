@@ -65,6 +65,7 @@ import { orderedList, richTextPlugin, unorderedList } from './rich-text'
 import { internalLinksPlugin } from './internal-links'
 import {defaultKms, keymapsPlugin} from './keymaps'
 import publicationManagerPlugin, { PublicationManagerOptions } from './PublicationManager'
+import aiCapabilitiesPlugin from '@silexlabs/grapesjs-ai-capabilities'
 import coreCommandsPlugin from './core-commands'
 import ViewButtons from './view-buttons'
 import { storagePlugin } from './storage'
@@ -116,6 +117,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-keymaps-dialog', value: keymapsDialogPlugin},
   {name: 'grapesjs-parser-postcss', value: parserPostCSS},
   {name: './upload-progress', value: uploadProgress},
+  {name: '@silexlabs/grapesjs-ai-capabilities', value: aiCapabilitiesPlugin},
   {name: './core-commands', value: coreCommandsPlugin},
 ]
 // Check that all plugins are loaded correctly

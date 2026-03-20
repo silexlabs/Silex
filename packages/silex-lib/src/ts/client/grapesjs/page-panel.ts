@@ -359,6 +359,7 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
         id: cmdListPages,
         command: cmdListPages,
         description: 'List all pages',
+        readOnly: true,
         tags: ['pages'],
       })
       addCapability({
@@ -390,6 +391,7 @@ export const pagePanelPlugin = (editor: Editor, opts) => {
         id: cmdDeletePage,
         command: cmdDeletePage,
         description: 'Delete a page',
+        destructive: true,
         inputSchema: {
           type: 'object',
           properties: {

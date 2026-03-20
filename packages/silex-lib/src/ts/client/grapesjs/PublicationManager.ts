@@ -147,6 +147,7 @@ export class PublicationManager {
         id: cmdPublicationStart,
         command: cmdPublicationStart,
         description: 'Publish the website',
+        openWorld: true,
         tags: ['publication'],
       })
     })

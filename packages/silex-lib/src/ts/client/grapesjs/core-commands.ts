@@ -101,30 +101,37 @@ export default (editor: Editor) => {
     }
   })
 
-  // Styles
+  // Styles (operate on the active CSS rule, not inline styles)
   editor.Commands.add('styles:get', () => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components:select first.')
-    return selected.getStyle()
+    const rule = (editor as any).StyleManager?.getSelected?.()
+    if (!rule) throw new Error('No selector active. Use selector:edit-style first.')
+    return {
+      selector: rule.selectorsToString?.() ?? '',
+      style: rule.getStyle(),
+      mediaText: rule.get('mediaText') ?? '',
+    }
   })
   editor.Commands.add('styles:set', (_ed, _sender, options: any = {}) => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components:select first.')
+    const rule = (editor as any).StyleManager?.getSelected?.()
+    if (!rule) throw new Error('No selector active. Use selector:edit-style first.')
     const { property, value, ...rest } = options
+    const existing = rule.getStyle?.() ?? {}
     if (property && value !== undefined) {
-      selected.addStyle({ [property]: value })
+      rule.setStyle({ ...existing, [property]: value })
     } else if (Object.keys(rest).length) {
-      selected.addStyle(rest)
+      rule.setStyle({ ...existing, ...rest })
     } else {
       throw new Error('Required: {property, value} or CSS key-value pairs. Example: {property: "color", value: "red"} or {"color": "red", "font-size": "16px"}')
     }
   })
   editor.Commands.add('styles:remove', (_ed, _sender, options: any = {}) => {
-    const selected = editor.getSelected()
-    if (!selected) throw new Error('No component selected. Use components:select first.')
+    const rule = (editor as any).StyleManager?.getSelected?.()
+    if (!rule) throw new Error('No selector active. Use selector:edit-style first.')
     const { property } = options
     if (!property) throw new Error('Required: property (CSS property name, e.g. "color", "font-size", "margin")')
-    selected.removeStyle(property)
+    const style = rule.getStyle()
+    delete style[property]
+    rule.setStyle(style)
   })
 
   // CSS Classes
@@ -148,12 +155,39 @@ export default (editor: Editor) => {
     selected.removeClass(name)
   })
 
+  // Devices
+  editor.Commands.add('device:list', () => {
+    return editor.Devices.getDevices().map((d: any) => ({
+      id: d.id,
+      name: d.get('name'),
+      width: d.get('width'),
+      widthMedia: d.get('widthMedia'),
+    }))
+  })
+  editor.Commands.add('device:set', (_ed, _sender, options: any = {}) => {
+    const { name } = options
+    if (!name) throw new Error('Required: name (device name or id, e.g. "Desktop", "Tablet", "Mobile"). Use device:list to see available devices.')
+    const dev = editor.Devices.get(name)
+      || editor.Devices.getDevices().find((d: any) => d.get('name') === name)
+    if (!dev) throw new Error(`Device "${name}" not found. Use device:list to see available devices.`)
+    editor.Devices.select(dev)
+  })
+
+  // History
+  editor.Commands.add('history:undo', () => {
+    editor.UndoManager.undo()
+  })
+  editor.Commands.add('history:redo', () => {
+    editor.UndoManager.redo()
+  })
+
   // Register AI capabilities
   editor.on('ai-capabilities:ready', (addCapability) => {
     addCapability({
       id: 'blocks:list',
       command: 'blocks:list',
       description: 'List available blocks',
+      readOnly: true,
       tags: ['blocks'],
     })
     addCapability({
@@ -173,6 +207,7 @@ export default (editor: Editor) => {
       id: 'components:list',
       command: 'components:list',
       description: 'List all components in the page',
+      readOnly: true,
       tags: ['components'],
     })
     addCapability({
@@ -192,6 +227,7 @@ export default (editor: Editor) => {
       id: 'components:remove',
       command: 'components:remove',
       description: 'Remove a component',
+      destructive: true,
       inputSchema: {
         type: 'object',
         properties: {
@@ -232,13 +268,14 @@ export default (editor: Editor) => {
     addCapability({
       id: 'styles:get',
       command: 'styles:get',
-      description: 'Get styles of selected component',
+      description: 'Get CSS styles from the active selector (set via selector:edit-style)',
+      readOnly: true,
       tags: ['styles'],
     })
     addCapability({
       id: 'styles:set',
       command: 'styles:set',
-      description: 'Set style on selected component',
+      description: 'Set CSS style on the active selector (set via selector:edit-style)',
       inputSchema: {
         type: 'object',
         properties: {
@@ -251,7 +288,8 @@ export default (editor: Editor) => {
     addCapability({
       id: 'styles:remove',
       command: 'styles:remove',
-      description: 'Remove a style property from selected component',
+      description: 'Remove a CSS property from the active selector (set via selector:edit-style)',
+      destructive: true,
       inputSchema: {
         type: 'object',
         required: ['property'],
@@ -265,6 +303,7 @@ export default (editor: Editor) => {
       id: 'classes:list',
       command: 'classes:list',
       description: 'List CSS classes on selected component',
+      readOnly: true,
       tags: ['classes'],
     })
     addCapability({
@@ -284,6 +323,7 @@ export default (editor: Editor) => {
       id: 'classes:remove',
       command: 'classes:remove',
       description: 'Remove CSS class from selected component',
+      destructive: true,
       inputSchema: {
         type: 'object',
         required: ['name'],
@@ -292,6 +332,38 @@ export default (editor: Editor) => {
         },
       },
       tags: ['classes'],
+    })
+    addCapability({
+      id: 'device:list',
+      command: 'device:list',
+      description: 'List available responsive breakpoints/devices',
+      readOnly: true,
+      tags: ['device'],
+    })
+    addCapability({
+      id: 'device:set',
+      command: 'device:set',
+      description: 'Switch responsive breakpoint by device name',
+      inputSchema: {
+        type: 'object',
+        required: ['name'],
+        properties: {
+          name: { type: 'string', description: 'Device name or id (e.g. "Desktop", "Tablet", "Mobile")' },
+        },
+      },
+      tags: ['device'],
+    })
+    addCapability({
+      id: 'history:undo',
+      command: 'history:undo',
+      description: 'Undo the last change',
+      tags: ['history'],
+    })
+    addCapability({
+      id: 'history:redo',
+      command: 'history:redo',
+      description: 'Redo the last undone change',
+      tags: ['history'],
     })
   })
 }
