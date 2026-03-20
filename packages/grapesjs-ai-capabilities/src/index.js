@@ -1,7 +1,7 @@
 export const PLUGIN_ID = 'grapesjs-ai-capabilities'
 
 const registry = new Map()
-const OPTIONAL_FIELDS = ['title', 'tags', 'version']
+const OPTIONAL_FIELDS = ['title', 'tags', 'version', 'readOnly', 'destructive', 'idempotent', 'openWorld']
 
 function isPlainObject(v) {
     if (v === null || typeof v !== 'object') return false
@@ -12,6 +12,17 @@ function isPlainObject(v) {
 export const EVENT_READY = 'ai-capabilities:ready'
 
 export default (editor) => {
+    // Expose registry for cross-module access (desktop-bridge, MCP server)
+    if (typeof window !== 'undefined') {
+        window.grapesjsAiCapabilities = {
+            addCapability,
+            getCapability,
+            getAllCapabilities,
+            removeCapability,
+            hasCapability,
+            clearCapabilities,
+        }
+    }
     editor.on('load', () => {
         editor.trigger(EVENT_READY, addCapability)
     })

@@ -74,6 +74,16 @@ for (const cap of capabilities) {
 
 Execution always goes through `editor.runCommand()` — this plugin does not implement `run()`.
 
+## Window global
+
+When running in a browser, the plugin exposes the registry as `window.grapesjsAiCapabilities`. This is useful for environments that cannot use ES module imports (e.g. Tauri initialization scripts, browser console, injected scripts):
+
+```js
+const caps = window.grapesjsAiCapabilities.getAllCapabilities()
+```
+
+For all other cases, prefer the module imports described above.
+
 ## API reference
 
 The plugin keeps a single global registry. Query functions don't need the editor.
