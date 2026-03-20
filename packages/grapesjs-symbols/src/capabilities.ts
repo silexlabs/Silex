@@ -5,6 +5,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     id: cmdList,
     command: cmdList,
     description: 'List all symbols',
+    readOnly: true,
     tags: ['symbols'],
   })
   addCapability({
@@ -24,6 +25,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     id: cmdRemove,
     command: cmdRemove,
     description: 'Delete a symbol',
+    destructive: true,
     inputSchema: {
       type: 'object',
       required: ['symbolId'],
