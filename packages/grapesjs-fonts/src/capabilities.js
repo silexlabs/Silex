@@ -5,18 +5,22 @@ export function registerCapabilities(addCapability) {
         id: cmdGetHtml,
         command: cmdGetHtml,
         description: 'Get HTML imports for installed fonts',
+        readOnly: true,
         tags: ['fonts'],
     })
     addCapability({
         id: cmdFontsInstalled,
         command: cmdFontsInstalled,
         description: 'List installed fonts',
+        readOnly: true,
         tags: ['fonts'],
     })
     addCapability({
         id: cmdFontsAvailable,
         command: cmdFontsAvailable,
         description: 'List available Google Fonts',
+        readOnly: true,
+        openWorld: true,
         inputSchema: {
             type: 'object',
             properties: {
@@ -30,6 +34,7 @@ export function registerCapabilities(addCapability) {
         id: cmdFontsInstall,
         command: cmdFontsInstall,
         description: 'Install a Google Font by family name',
+        openWorld: true,
         inputSchema: {
             type: 'object',
             required: ['family'],
@@ -43,6 +48,7 @@ export function registerCapabilities(addCapability) {
         id: cmdFontsRemove,
         command: cmdFontsRemove,
         description: 'Remove an installed font',
+        destructive: true,
         inputSchema: {
             type: 'object',
             required: ['family'],
