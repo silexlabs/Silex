@@ -238,6 +238,15 @@
     if (url.startsWith('file://')) {
       e.preventDefault();
       invoke('open_folder', { path: url });
+    } else if (url.startsWith('http://') || url.startsWith('https://')) {
+      // External URLs open in OS default browser; same-origin URLs stay in webview
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin !== window.location.origin) {
+          e.preventDefault();
+          invoke('open_folder', { path: url });
+        }
+      } catch { /* malformed URL, let browser handle */ }
     }
   });
 
