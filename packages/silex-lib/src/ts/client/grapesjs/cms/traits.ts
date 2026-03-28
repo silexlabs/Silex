@@ -10,7 +10,7 @@ import { html, render } from 'lit-html'
 
 export const UNWRAP_ID = 'plugin-unwrap'
 const LABEL = 'Unwrap content'
-const LABEL_DETAILS = 'Remove the component and keep its content'
+const LABEL_DETAILS = 'Remove the element and keep its content'
 
 export default function(editor: Editor/*, opts: EleventyPluginOptions */): void {
   // Add the new trait to all component types
