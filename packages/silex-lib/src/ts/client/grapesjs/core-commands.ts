@@ -193,7 +193,7 @@ export default (editor: Editor) => {
     addCapability({
       id: 'blocks:add',
       command: 'blocks:add',
-      description: 'Insert a block into selected component',
+      description: 'Insert a block into selected element',
       inputSchema: {
         type: 'object',
         required: ['blockId'],
@@ -206,14 +206,14 @@ export default (editor: Editor) => {
     addCapability({
       id: 'components:list',
       command: 'components:list',
-      description: 'List all components in the page',
+      description: 'List all elements in the page',
       readOnly: true,
       tags: ['components'],
     })
     addCapability({
       id: 'components:select',
       command: 'components:select',
-      description: 'Select a component by id',
+      description: 'Select an element by id',
       inputSchema: {
         type: 'object',
         required: ['id'],
@@ -226,12 +226,12 @@ export default (editor: Editor) => {
     addCapability({
       id: 'components:remove',
       command: 'components:remove',
-      description: 'Remove a component',
+      description: 'Remove an element',
       destructive: true,
       inputSchema: {
         type: 'object',
         properties: {
-          id: { type: 'string', description: 'Component id. Omit to remove selected.' },
+          id: { type: 'string', description: 'Element id. Omit to remove selected.' },
         },
       },
       tags: ['components'],
@@ -239,7 +239,7 @@ export default (editor: Editor) => {
     addCapability({
       id: 'components:move',
       command: 'components:move',
-      description: 'Move a component into another parent',
+      description: 'Move an element into another parent',
       inputSchema: {
         type: 'object',
         required: ['id', 'targetId'],
@@ -254,7 +254,7 @@ export default (editor: Editor) => {
     addCapability({
       id: 'components:update',
       command: 'components:update',
-      description: 'Update content, tagName or attributes of selected component',
+      description: 'Update content, tagName or attributes of selected element',
       inputSchema: {
         type: 'object',
         properties: {
@@ -302,14 +302,14 @@ export default (editor: Editor) => {
     addCapability({
       id: 'classes:list',
       command: 'classes:list',
-      description: 'List CSS classes on selected component',
+      description: 'List CSS classes on selected element',
       readOnly: true,
       tags: ['classes'],
     })
     addCapability({
       id: 'classes:add',
       command: 'classes:add',
-      description: 'Add CSS class to selected component',
+      description: 'Add CSS class to selected element',
       inputSchema: {
         type: 'object',
         required: ['name'],
@@ -322,7 +322,7 @@ export default (editor: Editor) => {
     addCapability({
       id: 'classes:remove',
       command: 'classes:remove',
-      description: 'Remove CSS class from selected component',
+      description: 'Remove CSS class from selected element',
       destructive: true,
       inputSchema: {
         type: 'object',

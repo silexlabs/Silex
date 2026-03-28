@@ -145,7 +145,7 @@ export const cmdToggleNotifications = 'open-notifications'
 // Config
 // ////////////////////
 const catBasic = 'Containers'
-const catComponents = 'Components'
+const catComponents = 'Elements'
 
 export function getEditorConfig(config: ClientConfig): EditorConfig {
   const { websiteId, storageId, rootUrl } = config
@@ -168,6 +168,16 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
 
     //pageManager: {},
     telemetry: false,
+
+    i18n: {
+      messages: {
+        en: {
+          traitManager: {
+            label: 'Element settings',
+          },
+        },
+      },
+    },
 
     layerManager: {
       appendTo: '.layer-manager-container',
@@ -479,7 +489,7 @@ export async function initEditor(config: EditorConfig) {
     ;['image', 'video']
       .forEach(id => editor.Blocks.get(id)?.set('category', 'Media'))
     ;['map']
-      .forEach(id => editor.Blocks.get(id)?.set('category', 'Components'))
+      .forEach(id => editor.Blocks.get(id)?.set('category', 'Elements'))
     editor.Blocks.render([])
 
     editor.Commands.add('gjs-open-import-webpage', openImport(editor, {
