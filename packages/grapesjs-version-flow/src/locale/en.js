@@ -16,7 +16,7 @@ export default {
   'modal.error.retry': 'Retry',
   'modal.error.viewLogs': 'View Logs',
   'modal.firstRun.title': 'Initial Setup',
-  'modal.firstRun.message': 'Initializing components for this version.',
+  'modal.firstRun.message': 'Initializing elements for this version.',
   'modal.firstRun.whatsNew': 'View Changes',
   'modal.close': 'Close',
   'modal.skip': 'Skip',
