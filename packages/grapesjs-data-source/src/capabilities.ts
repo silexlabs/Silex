@@ -36,7 +36,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: CMD_DS_GET_STATES,
     command: CMD_DS_GET_STATES,
-    description: 'Get data expressions on selected component',
+    description: 'Get data expressions on selected element',
     readOnly: true,
     inputSchema: {
       type: 'object',
@@ -49,7 +49,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: CMD_DS_SET_STATE,
     command: CMD_DS_SET_STATE,
-    description: 'Set data expression on selected component',
+    description: 'Set data expression on selected element',
     inputSchema: {
       type: 'object',
       required: ['stateId', 'expression'],
@@ -65,7 +65,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: CMD_DS_REMOVE_STATE,
     command: CMD_DS_REMOVE_STATE,
-    description: 'Remove data expression from selected component',
+    description: 'Remove data expression from selected element',
     destructive: true,
     inputSchema: {
       type: 'object',
