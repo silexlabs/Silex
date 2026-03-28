@@ -184,7 +184,7 @@
       // Add hierarchy warnings so SLMs know what's missing
       const warnings = [];
       if (!state.page) warnings.push("No page selected — use page(action:'select') first");
-      if (!state.component) warnings.push("No component selected — use component(action:'select') before selector/style/symbol operations");
+      if (!state.component) warnings.push("No element selected — use component(action:'select') before selector/style/symbol operations");
       if (!state.selector) warnings.push("No selector active — use selector(action:'select') before style(action:'set')");
       if (warnings.length > 0) state.warnings = warnings;
 
