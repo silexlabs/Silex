@@ -257,9 +257,9 @@ function pasteStyle(editor: Editor) {
 function getErrorsAndWarnings(selector: ComplexSelector, components: Component[]): [string | null, string | null] {
   const selectorNoPseudo: ComplexSelector = noPseudo(selector)
   if (!matchSelectorAll(toString(selectorNoPseudo, true), components)) {
-    return ['Current selector does not match the selected components', null]
+    return ['Current selector does not match the selected elements', null]
   } else if (!matchSelectorSome(toString(selectorNoPseudo, true), components)) {
-    return [null, 'Current selector does not match all the selected components']
+    return [null, 'Current selector does not match all the selected elements']
   }
   return [null, null]
 }
