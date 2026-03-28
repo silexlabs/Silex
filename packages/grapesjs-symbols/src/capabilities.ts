@@ -11,7 +11,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: cmdAdd,
     command: cmdAdd,
-    description: 'Create symbol from component',
+    description: 'Create symbol from element',
     inputSchema: {
       type: 'object',
       properties: {
@@ -38,7 +38,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: cmdUnlink,
     command: cmdUnlink,
-    description: 'Unlink component from symbol',
+    description: 'Unlink element from symbol',
     tags: ['symbols'],
   })
   addCapability({
