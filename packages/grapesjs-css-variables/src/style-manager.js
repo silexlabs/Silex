@@ -71,33 +71,38 @@ smStyles.textContent = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     flex-shrink: 0;
-    margin-left: 4px;
-    opacity: 0.3;
-    transition: opacity 0.12s;
+    margin-left: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    vertical-align: middle;
   }
   .gjs-sm-property:hover .css-vars-sm-trigger,
   .css-vars-sm-trigger:focus-within {
+    opacity: 0.5;
+  }
+  .css-vars-sm-trigger:hover {
     opacity: 1;
   }
-  /* The visible "+" circle */
+  /* The visible "+" text */
   .css-vars-sm-trigger__icon {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--gjs-main-color, #804f7b);
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
+    width: 12px;
+    height: 12px;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 14px;
+    font-weight: normal;
     line-height: 1;
     pointer-events: none;
+    opacity: 0.6;
   }
   /* The transparent native <select> overlaying the circle */
   .css-vars-sm-trigger__select {
@@ -155,20 +160,21 @@ smStyles.textContent = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     flex-shrink: 0;
-    margin-left: 4px;
-    border-radius: 50%;
-    background: var(--gjs-main-color, #804f7b);
-    color: #fff;
+    margin-left: 2px;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
     border: none;
     cursor: pointer;
-    font-size: 10px;
-    font-weight: bold;
+    font-size: 12px;
+    font-weight: normal;
     line-height: 1;
-    opacity: 0.6;
-    transition: opacity 0.12s;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+    vertical-align: middle;
   }
   .css-vars-sm-clear:hover {
     opacity: 1;
