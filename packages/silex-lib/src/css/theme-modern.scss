@@ -51,7 +51,7 @@
 
   // GrapesJS system colors
   --gjs-main-color: #1A1A1A;
-  --gjs-main-dark-color: rgba(0, 0, 0, 0.3);
+  --gjs-main-dark-color: #141414;
   --gjs-secondary-dark-color: rgba(0, 0, 0, 0.15);
   --gjs-main-light-color: rgba(255, 255, 255, 0.08);
   --gjs-secondary-light-color: rgba(255, 255, 255, 0.5);
@@ -139,6 +139,10 @@
 // ============================================================
 // GLOBAL REFINEMENTS
 // ============================================================
+
+body {
+  overflow: hidden;
+}
 
 // Smooth scrollbars everywhere
 .gjs-editor-cont {
@@ -262,4 +266,270 @@ textarea {
 .gjs-toolbar {
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+// ============================================================
+// STYLE MANAGER PANEL — matching mockup
+// ============================================================
+
+// Sector headers — darker, with hover, caret on right
+.gjs-sm-sector-title {
+  background-color: var(--silex-active-bg);
+  border-bottom: 1px solid var(--silex-border-color-strong);
+  transition: background-color var(--silex-transition-fast) ease;
+
+  &:hover {
+    background-color: var(--silex-hover-bg);
+  }
+}
+
+// Properties container
+.gjs-sm-properties {
+  background-color: var(--silex-bg-surface);
+}
+
+// Input fields — global dark style
+.gjs-field {
+  border: 1px solid var(--silex-border-color-strong);
+  border-radius: 4px;
+  transition: border-color var(--silex-transition-fast) ease;
+
+  &:hover {
+    border-color: var(--gjs-secondary-light-color);
+  }
+
+  &:focus-within {
+    border-color: var(--silex-accent-primary);
+  }
+}
+
+// Slider fields — no border, transparent bg
+.gjs-field-range {
+  border: none;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+// Search bar — rounded pill shape
+.gjs-editor-cont input[id$="filter-styles"].gjs-field {
+  border-radius: 9999px;
+  background-color: var(--gjs-primary-darker);
+  border: 1px solid var(--silex-border-color-strong);
+  padding: 5px 12px;
+  font-size: 11px;
+}
+
+// Selector area — compact, dark
+.gjs-clm-tags {
+  background-color: var(--silex-badge-bg);
+  padding: 4px 5px;
+}
+
+// Selector header row — tighter
+.gjs-clm-sels-info {
+  padding: 2px 0;
+  margin: 0;
+}
+
+// "Pseudo Class" / "Relation" toggle — smaller, subtler
+.gjs-clm-tags .gjs-clm-header-status {
+  font-size: 11px;
+  opacity: 0.6;
+  padding: 2px 0;
+}
+
+// Specificity and toolbar row — compact
+.gjs-pn-panel .gjs-pn-buttons {
+  padding: 2px 0;
+}
+
+// Composite properties (margin, padding) — tinted purple sub-group
+.gjs-sm-property.gjs-sm-composite {
+  background-color: rgba(136, 115, 254, 0.04);
+  border: 1px solid rgba(136, 115, 254, 0.08);
+  border-radius: 6px;
+  padding: 8px;
+  margin-top: 4px;
+
+  // Composite label (e.g., "Margin", "Padding") — purple uppercase
+  > .gjs-sm-label {
+    color: var(--silex-accent-primary);
+    text-transform: uppercase;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .gjs-sm-properties {
+    background-color: transparent;
+  }
+
+  // Inner fields — no extra border inside composite
+  .gjs-field {
+    border-color: rgba(136, 115, 254, 0.12);
+  }
+}
+
+// Sliders — purple accent
+.gjs-field-range input[type="range"] {
+  accent-color: var(--silex-accent-primary);
+
+  &::-webkit-slider-thumb {
+    background-color: var(--silex-accent-primary);
+  }
+
+  &::-webkit-slider-runnable-track {
+    background-color: var(--silex-accent-primary);
+    opacity: 0.4;
+  }
+
+  &::-moz-range-thumb {
+    background-color: var(--silex-accent-primary);
+  }
+
+  &::-moz-range-track {
+    background-color: var(--silex-accent-primary);
+    opacity: 0.4;
+  }
+
+  &::-moz-range-progress {
+    background-color: var(--silex-accent-primary);
+  }
+}
+
+// Property labels — smaller, more subtle
+.gjs-sm-sector .gjs-sm-label {
+  font-size: 10px;
+  color: var(--silex-text-secondary);
+}
+
+// Tighter property spacing
+.gjs-sm-property {
+  margin-bottom: 2px;
+}
+
+// ============================================================
+// PANEL HEADER — Style/Trait toggle buttons
+// ============================================================
+
+// Replace brush icon with purple dot
+.gjs-pn-btn.fa-paint-brush {
+  font-size: 0;
+  position: relative;
+  width: 20px;
+  height: 20px;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--gjs-secondary-color);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  &.gjs-pn-active::before {
+    background-color: var(--silex-accent-primary);
+  }
+}
+
+// Keep gear but make it SVG-style
+.gjs-pn-btn {
+  opacity: 0.6;
+  transition: opacity 0.15s;
+
+  &.gjs-pn-active,
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// Views panel — compact
+.gjs-pn-views {
+  padding: 4px;
+  border-bottom: 1px solid var(--silex-border-color-strong);
+}
+
+// ============================================================
+// TRAIT MANAGER (Element settings panel)
+// ============================================================
+
+// "Element settings" title — uppercase like sector headers
+.gjs-traits-label {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--silex-text-secondary);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--silex-border-color-strong);
+}
+
+// "States" / "Attributes" section headers (data-source plugin)
+.gjs-sm-sector-title[data-sector-title] {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+// Trait rows — tighter
+.gjs-trt-trait {
+  padding: 3px 10px;
+}
+
+// Trait category titles — match sector style
+.gjs-trait-category .gjs-title {
+  background-color: var(--silex-active-bg);
+  border-bottom: 1px solid var(--silex-border-color-strong);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 8px 10px;
+  transition: background-color var(--silex-transition-fast) ease;
+
+  &:hover {
+    background-color: var(--silex-hover-bg);
+  }
+}
+
+// Data source action buttons (X, copy, up, down) — subtle
+.gjs-pn-panel .ds-state__actions button,
+.ds-state__actions button {
+  background: transparent;
+  border: 1px solid var(--silex-border-color-strong);
+  border-radius: 4px;
+  color: var(--silex-text-secondary);
+  opacity: 0.5;
+  padding: 4px 8px;
+  font-size: 11px;
+  transition: opacity var(--silex-transition-fast) ease;
+
+  &:hover {
+    opacity: 1;
+    border-color: var(--gjs-secondary-light-color);
+  }
+}
+
+// Data source plugin — override white buttons to dark theme
+.ds-state-editor__options {
+  --ds-button-color: var(--silex-text-primary);
+  --ds-button-bg: var(--silex-input-bg);
+  --ds-button-border: var(--silex-border-color-strong);
+}
+
+// Data source action buttons (x, ✏, ↑, ↓) — smaller, subtler
+.ds-section .buttons button,
+.ds-section .buttons input {
+  opacity: 0.5;
+  transition: opacity var(--silex-transition-fast) ease;
+
+  &:hover {
+    opacity: 1;
+  }
 }

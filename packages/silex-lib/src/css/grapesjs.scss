@@ -149,11 +149,11 @@
 // Sticky CSS tags section
 .top-style-section {
   position: sticky;
-  top: -1px; /* Fixes a visual gap on the top */
+  top: 0;
   border-bottom: solid var(--silex-border-color-strong) 1px;
   background-color: var(--silex-bg-main);
-  box-shadow: var(--silex-shadow-lg);
-  z-index: 999;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  z-index: 10;
 }
 .gjs-clm-label-sel {
   opacity: 0.5;
@@ -188,6 +188,12 @@
 }
 .gjs-sm-icon[title]:not([title=""]):hover::after {
   background: var(--gjs-main-dark-color);
+}
+
+// Element settings
+.gjs-field.gjs-field-plugin-unwrap {
+  width: fit-content;
+  border: 1px solid rgba(136, 115, 254, 0.3);
 }
 
 /*
@@ -285,9 +291,47 @@
   vertical-align: middle;
 }
 
-// Display dots when a sector has a style
+// // Sector icons (SVG data-URI via ::before on sector label)
+// .gjs-sm-sector .gjs-sm-sector-label::before {
+//     display: inline-block;
+//     width: 14px;
+//     height: 14px;
+//     margin-right: 6px;
+//     vertical-align: -2px;
+// }
+// // Layout (general) — move arrows
+// .gjs-sm-sector__general .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 9 2 12 5 15'/%3E%3Cpolyline points='9 5 12 2 15 5'/%3E%3Cpolyline points='15 19 12 22 9 19'/%3E%3Cpolyline points='19 9 22 12 19 15'/%3E%3Cline x1='2' y1='12' x2='22' y2='12'/%3E%3Cline x1='12' y1='2' x2='12' y2='22'/%3E%3C/svg%3E");
+// }
+// // Flexbox — layers
+// .gjs-sm-sector__flex .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Cline x1='3' y1='12' x2='21' y2='12'/%3E%3Cline x1='12' y1='3' x2='12' y2='21'/%3E%3C/svg%3E");
+// }
+// // Size (dimension) — maximize
+// .gjs-sm-sector__dimension .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cpolyline points='9 21 3 21 3 15'/%3E%3Cline x1='21' y1='3' x2='14' y2='10'/%3E%3Cline x1='3' y1='21' x2='10' y2='14'/%3E%3C/svg%3E");
+// }
+// // Typography — type T
+// .gjs-sm-sector__typography .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 7 4 4 20 4 20 7'/%3E%3Cline x1='9' y1='20' x2='15' y2='20'/%3E%3Cline x1='12' y1='4' x2='12' y2='20'/%3E%3C/svg%3E");
+// }
+// // Backgrounds & Borders (decorations) — palette
+// .gjs-sm-sector__decorations .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='13.5' cy='6.5' r='0.5' fill='%23e5e5e5'/%3E%3Ccircle cx='17.5' cy='10.5' r='0.5' fill='%23e5e5e5'/%3E%3Ccircle cx='8.5' cy='7.5' r='0.5' fill='%23e5e5e5'/%3E%3Ccircle cx='6.5' cy='12.5' r='0.5' fill='%23e5e5e5'/%3E%3Cpath d='M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z'/%3E%3C/svg%3E");
+// }
+// // Effects (extra) — zap
+// .gjs-sm-sector__extra .gjs-sm-sector-label::before {
+//     content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23e5e5e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2'/%3E%3C/svg%3E");
+// }
+
+// Sector label styling
 .gjs-sm-sector .gjs-sm-sector-label {
-    margin-right: 0.3em
+    margin: 0;
+    margin-right: 0.3em;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
 }
 
 .fa-grip-vertical:before {
@@ -299,8 +343,13 @@
     content: 'o';
     display: none;
     margin-left: 0.4em;
-    order: 5;
 }
+
+// Order of the 3 elements making the sector group header
+.gjs-sm-sector .gjs-sm-sector-label { order: 1; }
+.gjs-sm-sector .gjs-sm-sector-title::before, .gjs-sm-sector .gjs-sm-sector-title::after { order: 2; }
+.gjs-sm-sector .gjs-sm-sector-caret { order: 3; margin-left: auto; }
+
 .gjs-sm-sector:has(.gjs-sm-label.gjs-four-color) .gjs-sm-sector-title::before {
     display: block;
     color: var(--gjs-quaternary-color);
