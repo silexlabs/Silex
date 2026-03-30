@@ -12,47 +12,80 @@ export default (editor, opts = {}) => {
     const container = document.createElement('div')
     container.innerHTML = `
       <style>
+        #${id}-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          margin: 6px 5px;
+        }
+        #${id}-icon {
+          position: absolute;
+          left: 10px;
+          pointer-events: none;
+          opacity: 0.4;
+          display: flex;
+          align-items: center;
+        }
+        #${id} {
+          width: 100%;
+          border-radius: 9999px;
+          padding: 15px 12px 15px 30px;
+          font-size: 11px;
+          border: 1px solid var(--gjs-border-color, #262626);
+          background: var(--gjs-primary-darker, #111);
+          color: inherit;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        #${id}:focus {
+          border-color: var(--gjs-tertiary-color, #8873FE);
+        }
         #${id}-btn {
           position: absolute;
-          right: 0;
+          right: 8px;
           border: none;
-          padding: 5px;
-          margin: 5px;
-          line-height: 1;
-          border-radius: 50%;
-          width: 25px;
-          height: 25px;
-          border: 1px solid;
-          z-index: 1;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          transition: opacity .15s ease;
+          padding: 0;
+          background: transparent;
+          color: inherit;
           cursor: pointer;
-          opacity: .75;
+          opacity: 0;
+          transition: opacity .15s ease;
+          font-size: 14px;
+          line-height: 1;
+          display: flex;
+          align-items: center;
         }
-        .empty #${id}-btn {
-          cursor: initial;
-          opacity: .25;
+        #${id}-container:not(.empty) #${id}-btn {
+          opacity: .5;
+        }
+        #${id}-btn:hover {
+          opacity: 1;
         }
       </style>
 
-      <button
-        id="${id}-btn"
-        class="gjs-field gjs-sm-properties gjs-two-color"
-        >X</button>
-      <input id="${id}" type="text" class="gjs-field gjs-sm-properties gjs-two-color" placeholder="${options.placeholder}" />
+      <div id="${id}-container" class="empty">
+        <span id="${id}-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input id="${id}" type="text" placeholder="${options.placeholder}" />
+        <button id="${id}-btn">&times;</button>
+      </div>
     `
     const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`)
     const appendBefore = typeof options.appendBefore === 'string' ? document.querySelector(options.appendBefore) : options.appendBefore
     const appendTo = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : options.appendTo
     const wrapper = appendBefore ? appendBefore.parentElement : appendTo ?? tags.parentElement.parentElement
     wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild)
+    const searchContainer = wrapper.querySelector(`#${id}-container`)
     const input = wrapper.querySelector(`#${id}`)
-    input.onkeyup = () => refresh(editor, input, wrapper)
+    input.onkeyup = () => {
+      searchContainer.classList.toggle('empty', !input.value)
+      refresh(editor, input, wrapper)
+    }
     const button = wrapper.querySelector(`#${id}-btn`)
     button.onclick = () => {
       input.value = ''
+      searchContainer.classList.add('empty')
       refresh(editor, input, wrapper)
     }
     editor.on('component:selected component:styleUpdate style:target', () => {
