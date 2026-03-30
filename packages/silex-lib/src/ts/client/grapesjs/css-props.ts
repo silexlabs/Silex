@@ -219,7 +219,7 @@ export default (editor: Editor, opts) => {
       default: '',
       fixedValues: ['inherit', 'initial', 'unset', 'none', 'max-content', 'min-content', 'fit-content', 'auto'],
     }, { at: 5 })
-    editor.StyleManager.addProperty('dimension', {
+    editor.StyleManager.addProperty('general', {
       name: 'Overflow',
       property: 'overflow',
       type: 'composite',
@@ -253,7 +253,7 @@ export default (editor: Editor, opts) => {
         ],
       }],
       info: 'Controls content overflow in a block.',
-    }, { at: 6 })
+    })
 
     editor.StyleManager.removeProperty('dimension', 'margin')
     editor.StyleManager.addProperty('dimension', {
@@ -623,7 +623,7 @@ export default (editor: Editor, opts) => {
     /***************/
     /* Extra       */
     /***************/
-    editor.StyleManager.addProperty('extra', {
+    editor.StyleManager.addProperty('general', {
       name: 'Z index',
       property: 'z-index',
       type: 'slider',
@@ -634,8 +634,8 @@ export default (editor: Editor, opts) => {
       info: 'Stacking order of the element',
       default: '',
       fixedValues: ['auto', 'unset', 'initial', 'inherit', 'revert'],
-    }, { at: 1 })
-    editor.StyleManager.addProperty('extra', {
+    })
+    editor.StyleManager.addProperty('general', {
       name: 'Pointer events',
       property: 'pointer-events',
       type: 'select',
@@ -657,7 +657,7 @@ export default (editor: Editor, opts) => {
         { id: 'unset', value: 'unset', name: 'unset' },
       ],
       info: 'The pointer-events CSS property sets under what circumstances (if any) a particular graphic element can become the target of pointer events.',
-    }, { at: 2 })
+    })
     editor.StyleManager.addProperty('extra', {
       name: 'Cursor',
       property: 'cursor',

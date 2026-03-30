@@ -175,6 +175,16 @@ export function getEditorConfig(config: ClientConfig): EditorConfig {
           traitManager: {
             label: 'Element settings',
           },
+          styleManager: {
+            sectors: {
+              general: 'Layout',
+              dimension: 'Size',
+              typography: 'Typography',
+              decorations: 'Backgrounds & Borders',
+              extra: 'Effects',
+              flex: 'Flexbox',
+            },
+          },
         },
       },
     },
