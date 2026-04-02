@@ -53,32 +53,32 @@
     "url": "https://github.com/silexlabs/expression-input.git"
   },
   "dependencies": {
-    "lit": "^3.2.1"
+    "lit": "^3.3.2"
   },
   "devDependencies": {
     "@custom-elements-manifest/analyzer": "^0.10.4",
-    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.19.0",
     "@open-wc/testing": "^4.0.0",
     "@playwright/test": "^1.50.0",
-    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
     "@web/dev-server": "^0.4.6",
     "@web/dev-server-legacy": "^2.1.1",
-    "@web/test-runner": "^0.19.0",
-    "@web/test-runner-playwright": "^0.11.0",
+    "@web/test-runner": "^0.20.2",
+    "@web/test-runner-playwright": "^0.11.1",
     "@webcomponents/webcomponentsjs": "^2.8.0",
     "eslint": "^9.19.0",
     "globals": "^15.14.0",
     "husky": "^9.1.7",
     "lit-analyzer": "^2.0.3",
-    "prettier": "^3.4.2",
-    "rimraf": "^6.0.1",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.3",
     "rollup": "^4.32.1",
-    "rollup-plugin-summary": "^3.0.0",
+    "rollup-plugin-summary": "^3.0.1",
     "typescript": "~5.7.3"
   }
 }
