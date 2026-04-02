@@ -523,6 +523,12 @@ export default class FtpConnector implements StorageConnector<FtpSession> {
       // Ignore error if pages directory doesn't exist yet
     }
 
+    // Ensure the pages directory exists before writing page files
+    const hasPageFiles = filesToWrite.some(f => f.path.startsWith(pagesFolder))
+    if (hasPageFiles) {
+      await this.mkdir(ftp, pagesPath)
+    }
+
     for (const file of filesToWrite) {
       const filePath = join(storageRootPath, websiteId, file.path)
       await this.write(ftp, filePath, file.content)
