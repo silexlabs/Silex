@@ -115,6 +115,20 @@ describe('CompoundSelector', () => {
     })).toBe('div#main.container[data-test]')
   })
 
+  test('toString - bare pseudo-class without active selectors returns empty string', () => {
+    expect(toString({
+      selectors: [],
+      pseudoClass,
+    } as CompoundSelector)).toBe('')
+
+    expect(toString({
+      selectors: [
+        { ...classSelector, active: false },
+      ],
+      pseudoClass,
+    } as CompoundSelector)).toBe('')
+  })
+
   test('specificity - calculates correct specificity', () => {
     expect(specificity({
       selectors: [

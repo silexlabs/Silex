@@ -20,6 +20,8 @@ export function toString(cs: CompoundSelector, ignorePseudoClass: boolean = fals
     .filter(s => s.active)
     .sort((a, b) => getSelectorPriority(a) - getSelectorPriority(b))
     .map(toStringSimpleSelector).join('')
+  // A pseudo-class alone (e.g. bare `:hover`) is not a valid selector
+  if (!selectorStr) return ''
   const pseudoStr = (!ignorePseudoClass && cs.pseudoClass) ? toStringPseudoClass(cs.pseudoClass) : ''
   return `${selectorStr}${pseudoStr}`
 }
