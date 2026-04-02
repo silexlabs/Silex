@@ -42,7 +42,7 @@
   ],
   "license": "GPL-3.0-only",
   "dependencies": {
-    "commander": "^14.0.0",
+    "commander": "^14.0.3",
     "jsdom": "^24.0.0"
   },
   "devDependencies": {
