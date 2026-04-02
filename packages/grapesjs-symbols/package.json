@@ -42,13 +42,13 @@
     "grapesjs-plugin"
   ],
   "devDependencies": {
-    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.19.0",
-    "@rollup/plugin-commonjs": "^28.0.2",
-    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-commonjs": "^29.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.2",
-    "@types/backbone": "^1.4.22",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/backbone": "^1.4.23",
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
@@ -59,8 +59,8 @@
     "jest-environment-jsdom": "^29.6.2",
     "node_modules-path": "^2.3.0",
     "rollup": "^4.32.1",
-    "rollup-plugin-summary": "^3.0.0",
-    "ts-jest": "^29.1.0"
+    "rollup-plugin-summary": "^3.0.1",
+    "ts-jest": "^29.4.9"
   },
   "author": {
     "name": "Alex Hoyau",
