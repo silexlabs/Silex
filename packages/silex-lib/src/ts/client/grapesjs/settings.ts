@@ -351,7 +351,7 @@ function showSection(item: SettingsSection): void {
   }
   Array.from(main.querySelectorAll('.silex-hideable')).forEach(el => el.classList.add('silex-hidden'))
   mainItem.classList.remove('silex-hidden')
-  headEditor?.refresh()
+  requestAnimationFrame(() => headEditor?.refresh())
 }
 
 export function addSection(
@@ -445,6 +445,7 @@ function displaySettings(
   showSection(currentSection!)
   el.querySelector(`#${idCodeWrapper}`)?.appendChild(headEditor!.getElement())
   headEditor!.setContent(settings.head || '')
+  requestAnimationFrame(() => headEditor?.refresh())
 }
 
 function saveSettings(
