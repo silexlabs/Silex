@@ -334,7 +334,7 @@ export function getComponentSelector(component: Component): ComplexSelector {
   const selector = component.get('selector') ?? {
     mainSelector: {
       selectors: oldClasses
-        .map(className => ({ type: SimpleSelectorType.CLASS, value: className, active: true })),
+        .map(className => ({ type: SimpleSelectorType.CLASS, value: className, active: false })),
     },
   }
   return {
