@@ -155,8 +155,7 @@ bump_version() {
     fi
     local new_version=$(jq -r .version package.json)
     echo "  $current_version → $new_version"
-    git push -q
-    git push -q --tags
+    git push -q origin HEAD --tags
 
     if [ "$wait_npm" == "--wait-npm" ]; then
       local package_name=$(jq -r .name package.json)
@@ -200,7 +199,7 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
       npm install --package-lock-only --workspaces false > /dev/null 2>&1
       git add package.json package-lock.json
       git commit -q -m "chore: update internal dependencies in $pkg_dir"
-      git push -q
+      git push -q origin HEAD
     fi
   fi
 
