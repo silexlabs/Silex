@@ -63,6 +63,8 @@ Silex has been built by contributors from around the world since 2009. Today, ov
 - **[Community forums](https://community.silex.me)** — ask questions, share ideas
 - **[Chat](https://short.silex.me/chat)** — quick help
 - **[Bug reports](https://github.com/silexlabs/Silex/issues)**
+- **[AI-assisted coding](AGENTS.md)** — setup guide for Claude Code, Cursor, opencode, etc.
+- **[Development workflow](DEVELOPMENT.md)** — build commands, submodules, debug cycle
 
 ### How the repo is organized
 
