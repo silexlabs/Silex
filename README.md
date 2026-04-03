@@ -31,7 +31,7 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 
 ## Features
 
-- **[GrapesJS](https://grapesjs.com/)-based visual editor** — drag-and-drop page building with HTML, CSS, and JS editors
+- **[GrapesJS](https://github.com/GrapesJS/grapesjs)-based visual editor** — drag-and-drop page building with HTML, CSS, and JS editors
 - **Static HTML output** — fast, secure, easy to host anywhere
 - **CMS integration** — bind components to WordPress, Strapi, Squidex, or any GraphQL API
 - **[11ty](https://www.11ty.dev/) compatible** — generate static sites from Silex templates, deploy with CI/CD
@@ -221,7 +221,7 @@ Silex is made up of many packages (git submodules), each with its own contributo
 
 Silex stands on the shoulders of these open-source projects and their communities:
 
-- [GrapesJS](https://grapesjs.com/) — front-end drag-and-drop framework
+- [GrapesJS](https://github.com/GrapesJS/grapesjs) — front-end drag-and-drop framework
 - [11ty (Eleventy)](https://www.11ty.dev/) — static site generator used for CMS integration
 - [Tauri](https://tauri.app/) — desktop app framework (Rust + WebView)
 - [TypeScript](https://www.typescriptlang.org/) — language used across packages
