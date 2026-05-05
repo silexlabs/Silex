@@ -27,7 +27,6 @@
     "plugin"
   ],
   "devDependencies": {
-    "@babel/types": "^7.29.0",
     "grapesjs-cli": "^4.1.3"
   },
   "peerDependencies": {
