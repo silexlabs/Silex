@@ -124,7 +124,6 @@
     "cookie-session": "2.1.1",
     "cors": "2.8.6",
     "cross-env": "7.0.3",
-    "crypto": "^1.0.1",
     "dedent": "^1.5.3",
     "deepmerge": "^4.3.1",
     "dotenv": "^16.4.5",
@@ -148,7 +147,6 @@
     "normalize.css": "8.0.1",
     "npm-run-all": "^4.1.5",
     "object-path": "0.11.8",
-    "promise-sequential": "1.1.1",
     "sass": "1.98.0",
     "serve-static": "1.15.0",
     "uuid": "^10.0.0"
@@ -162,7 +160,6 @@
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
     "css-loader": "7.1.4",
-    "dedent": "^1.5.3",
     "eslint": "^8.31.0",
     "file-loader": "6.2.0",
     "globals": "^16.0.0",
