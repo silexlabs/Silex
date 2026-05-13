@@ -23,6 +23,44 @@ import { registerSector } from './sectors'
  */
 
 export default (editor: Editor, opts) => {
+  // custom StyleManager type for background-image with Asset Manager integration
+  editor.StyleManager.addType('background-image-asset', {
+    create() {
+      const btn = document.createElement('button')
+      btn.textContent = 'Select / Replace Image'
+      btn.title = 'Replace background image'
+      btn.className = 'gjs-btn-prim silex-sm-background-image-btn'
+
+      btn.addEventListener('click', () => {
+        editor.AssetManager.open({
+          select(asset, complete) {
+            if (!asset) return
+            const src = asset.getSrc?.() ?? asset.get('src')
+
+            const rule = editor.StyleManager.getSelected()
+            if (!rule) {
+              console.warn('No style rule selected for background-image')
+              return
+            }
+
+            const style = rule.getStyle() || {}
+            rule.setStyle({
+              ...style,
+              'background-image': `url("${src}")`,
+            })
+
+            // Close Asset Manager only on final selection (consistent with GrapesJS pattern)
+            if (complete && editor.AssetManager.close) {
+              editor.AssetManager.close()
+            }
+          },
+        })
+      })
+      
+      return btn
+    },
+  })
+
   editor.on('load', () => {
   /***************/
   /* General     */
@@ -542,6 +580,14 @@ export default (editor: Editor, opts) => {
       default: '',
       full: true,
     }, { at: 0 })
+    editor.StyleManager.removeProperty('decorations', 'background-image')
+    editor.StyleManager.addProperty('decorations', {
+      name: 'Background image',
+      property: 'background-image',
+      type: 'background-image-asset',
+      default: '',
+      full: true,
+    }, { at: 1 })
     editor.StyleManager.removeProperty('decorations', 'border-radius')
     editor.StyleManager.addProperty('decorations', {
       name: 'Border radius',
