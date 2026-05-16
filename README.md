@@ -116,7 +116,7 @@ Run `npm run release` for guided version bumping across packages. Run without ar
 
 The upcoming Silex Desktop app will let you create and transform sites through prompts: describe what you want, see it built live, refine the design in real time, publish clean HTML/CSS anywhere.
 
-Silex uses [MCP](https://modelcontextprotocol.io/) (Model Context Protocol), an open standard — so you choose your AI. Run a local model with [Ollama](https://ollama.com/) for full privacy, or use any MCP-compatible tool: [OpenCode](https://opencode.ai/), [Goose](https://block.github.io/goose/), Claude Code, etc. The MCP server is optimized for small local models (7B+).
+Silex uses [MCP](https://modelcontextprotocol.io/) (Model Context Protocol), an open standard — so you choose your AI. Run a local model with [Ollama](https://ollama.com/) for full privacy, or use any MCP-compatible tool: [OpenCode](https://opencode.ai/), [Goose](https://goose-docs.ai/), Claude Code, etc. The MCP server is optimized for small local models (7B+).
 
 See the [vibe coding roadmap](https://roadmap.silex.me/posts/65/vibe-coding-with-silex-desktop) for what's coming (prompt library, examples cookbook, best practices guide — contributions welcome).
 
