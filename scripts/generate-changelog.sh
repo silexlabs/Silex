@@ -276,14 +276,34 @@ echo ""
 # --- Downloads table ---
 VERSION="$TO_TAG"
 BASE="https://github.com/silexlabs/Silex/releases/download/${VERSION}"
+
+# Tauri reads src-tauri/tauri.conf.json's `version` to name artifact files.
+# This is independent of packages/silex-desktop/package.json (npm version).
+# silex-desktop is a submodule, so we resolve its pinned SHA at TO_TAG, then
+# read tauri.conf.json from inside the submodule.
+DESKTOP_VERSION=""
+DESKTOP_SHA=$(git ls-tree "$TO_TAG" packages/silex-desktop 2>/dev/null | awk '{print $3}')
+if [[ -n "$DESKTOP_SHA" ]]; then
+  DESKTOP_VERSION=$(cd packages/silex-desktop 2>/dev/null \
+    && git show "$DESKTOP_SHA:src-tauri/tauri.conf.json" 2>/dev/null \
+    | jq -r '.version // .package.version // empty' 2>/dev/null || true)
+fi
+
 echo "### Downloads"
 echo ""
 echo "| Platform | Server (CLI) | Desktop App |"
 echo "|----------|-------------|-------------|"
-echo "| Linux x64 | [silex-server-linux-amd64](${BASE}/silex-server-linux-amd64) | [.deb](${BASE}/silex-desktop_amd64.deb) |"
-echo "| macOS ARM | [silex-server-macos-arm64](${BASE}/silex-server-macos-arm64) | [.dmg](${BASE}/Silex_aarch64.dmg) |"
-echo "| macOS x64 | [silex-server-macos-x64](${BASE}/silex-server-macos-x64) | [.dmg](${BASE}/Silex_x64.dmg) |"
-echo "| Windows x64 | [silex-server-windows-amd64.exe](${BASE}/silex-server-windows-amd64.exe) | [.exe](${BASE}/Silex_x64-setup.exe) |"
+if [[ -n "$DESKTOP_VERSION" ]]; then
+  echo "| Linux x64 | [silex-server-linux-amd64](${BASE}/silex-server-linux-amd64) | [.deb](${BASE}/Silex_${DESKTOP_VERSION}_amd64.deb) · [.rpm](${BASE}/Silex-${DESKTOP_VERSION}-1.x86_64.rpm) |"
+  echo "| macOS ARM | [silex-server-macos-arm64](${BASE}/silex-server-macos-arm64) | [.dmg](${BASE}/Silex_${DESKTOP_VERSION}_aarch64.dmg) |"
+  echo "| macOS x64 | [silex-server-macos-x64](${BASE}/silex-server-macos-x64) | [.dmg](${BASE}/Silex_${DESKTOP_VERSION}_x64.dmg) |"
+  echo "| Windows x64 | [silex-server-windows-amd64.exe](${BASE}/silex-server-windows-amd64.exe) | [.exe](${BASE}/Silex_${DESKTOP_VERSION}_x64-setup.exe) |"
+else
+  echo "| Linux x64 | [silex-server-linux-amd64](${BASE}/silex-server-linux-amd64) | _desktop version unknown_ |"
+  echo "| macOS ARM | [silex-server-macos-arm64](${BASE}/silex-server-macos-arm64) | _desktop version unknown_ |"
+  echo "| macOS x64 | [silex-server-macos-x64](${BASE}/silex-server-macos-x64) | _desktop version unknown_ |"
+  echo "| Windows x64 | [silex-server-windows-amd64.exe](${BASE}/silex-server-windows-amd64.exe) | _desktop version unknown_ |"
+fi
 echo ""
 
 echo "**Full Changelog**: https://github.com/silexlabs/Silex/compare/${FROM_TAG}...${TO_TAG}"
