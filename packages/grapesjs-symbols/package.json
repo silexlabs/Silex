@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-symbols",
-  "version": "1.4.2-canary.2",
+  "version": "1.4.2",
   "description": "Symbols for GrapesJS",
   "main": "dist/es5/index.js",
   "module": "dist/es6/index.js",
@@ -26,13 +26,13 @@
   },
   "scripts": {
     "start": "grapesjs-cli serve",
-    "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json && $npm_execpath run bundle",
+    "build": "rimraf dist && tsc && tsc --build tsconfig.es5.json && yarn run bundle",
     "bundle": "rollup -c",
     "lint": "eslint \"src/**/*.ts\"",
-    "lint:fix": "$npm_execpath run lint -- --fix",
+    "lint:fix": "yarn run lint -- --fix",
     "test": "jest",
     "test:watch": "node --experimental-vm-modules `node_modules jest`/jest/bin/jest.js --watch",
-    "bump": "$npm_execpath version patch -m 'Bump v%s'",
+    "bump": "yarn version patch -m 'Bump v%s'",
     "prepare": "husky"
   },
   "keywords": [
@@ -57,6 +57,7 @@
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.6.2",
     "node_modules-path": "^2.3.0",
+    "rimraf": "^6.1.3",
     "rollup": "^4.32.1",
     "rollup-plugin-summary": "^3.0.1",
     "ts-jest": "^29.4.9"
