@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/silex-platform",
-  "version": "1.4.6-canary.6",
+  "version": "1.4.7",
   "description": "This repo holds the code for the free public Silex instance hosted by Silex Labs foundation",
   "bin": "./bin/silex-platform",
   "scripts": {
@@ -17,8 +17,8 @@
   },
   "license": "AGPL-3.0",
   "dependencies": {
-    "@silexlabs/silex": "3.6.5-canary.8",
-    "@silexlabs/silex-dashboard": "1.5.5-canary.3",
+    "@silexlabs/silex": "3.6.6",
+    "@silexlabs/silex-dashboard": "1.5.6",
     "dotenv": "^16.4.7"
   },
   "repository": {
