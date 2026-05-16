@@ -104,26 +104,31 @@ export const PROPERTY_STYLES = `
     */
   }
   .ds-state-editor__options {
-    --ds-secondary: #1A1A1A;
-    --ds-tertiary: #F5F5F5;
-    --ds-lowlight: #E0E0E0;
-    --ds-button-color: #1A1A1A;
-    --ds-button-bg: #FFFFFF;
+    --ds-secondary: #252525;
+    --ds-tertiary: #E5E5E5;
+    --ds-lowlight: #333;
+    --ds-button-color: #E5E5E5;
+    --ds-button-bg: #1A1A1A;
+    --ds-button-border: #333;
     --expression-input-dirty-background-color: var(--ds-button-bg);
-    --expression-input-dirty-border-color: var(--ds-tertiary);
+    --expression-input-dirty-border-color: #333;
     --expression-input-dirty-color: var(--ds-highlight);
-    --expression-input-active-color: var(--ds-tertiary);
-    --expression-input-active-background-color: var(--ds-secondary);
+    --expression-input-active-color: #1A1A1A;
+    --expression-input-active-background-color: var(--ds-highlight);
   }
   .gjs-traits-label {
-    font-family: "Ubuntu", sans-serif;
-    font-size: 0.85rem;
-    padding: 9px 10px 9px 20px;
+    font-family: inherit;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 10px;
     text-align: left;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    min-height: 40px;
+    min-height: 30px;
+    border-bottom: 1px solid var(--ds-lowlight);
   }
   expression-input {
     padding: 10px;
@@ -178,6 +183,12 @@ export const PROPERTY_STYLES = `
     box-sizing: border-box;
     padding: 5px;
     margin: 5px 0;
+    border: 1px solid var(--silex-border-color-strong);
+    border-radius: 4px;
+    appearance: none;
+    padding: var(--gjs-input-padding);
+    margin: 2px;
+    background: var(--darkerPrimaryColor);
   }
   expression-input::part(scroll-container) {
     overflow: auto;
@@ -280,11 +291,13 @@ export const PROPERTY_STYLES = `
     }
     input.ds-expression-input__fixed {
       color: var(--ds-secondary);
-      padding: 10px;
-      border: none;
-      background-color: transparent;
-      width: 100%;
+      width: 98%;
       box-sizing: border-box;
+      border-radius: 4px;
+      appearance: none;
+      padding: 10px var(--gjs-input-padding);
+      margin: 2px;
+      background: var(--darkerPrimaryColor);
     }
     .ds-expression-input__add {
       max-width: 40px;

@@ -5,6 +5,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     id: 'data-source:refresh',
     command: 'data-source:refresh',
     description: 'Refresh data sources',
+    openWorld: true,
     tags: ['data'],
   })
   addCapability({
@@ -29,12 +30,14 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     id: CMD_DS_LIST,
     command: CMD_DS_LIST,
     description: 'List connected data sources',
+    readOnly: true,
     tags: ['data'],
   })
   addCapability({
     id: CMD_DS_GET_STATES,
     command: CMD_DS_GET_STATES,
-    description: 'Get data expressions on selected component',
+    description: 'Get data expressions on selected element',
+    readOnly: true,
     inputSchema: {
       type: 'object',
       properties: {
@@ -46,7 +49,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: CMD_DS_SET_STATE,
     command: CMD_DS_SET_STATE,
-    description: 'Set data expression on selected component',
+    description: 'Set data expression on selected element',
     inputSchema: {
       type: 'object',
       required: ['stateId', 'expression'],
@@ -62,7 +65,8 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: CMD_DS_REMOVE_STATE,
     command: CMD_DS_REMOVE_STATE,
-    description: 'Remove data expression from selected component',
+    description: 'Remove data expression from selected element',
+    destructive: true,
     inputSchema: {
       type: 'object',
       required: ['stateId'],
