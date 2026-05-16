@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-data-source",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Grapesjs Data Source",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -71,7 +71,7 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@silexlabs/expression-input": "0.4.4",
+    "@silexlabs/expression-input": "0.4.5",
     "dedent-js": "^1.0.1"
   }
 }
