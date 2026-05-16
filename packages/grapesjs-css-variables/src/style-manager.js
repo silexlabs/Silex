@@ -65,7 +65,7 @@ smStyles.textContent = `
     flex: 1;
   }
 
-  /* ── "+" trigger placed after the label ────────────── */
+  /* ── pencil trigger placed after the label ────────────── */
   .css-vars-sm-trigger {
     position: relative;
     display: inline-flex;
@@ -75,14 +75,15 @@ smStyles.textContent = `
     height: 14px;
     flex-shrink: 0;
     margin-left: 4px;
-    opacity: 0.3;
-    transition: opacity 0.12s;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+    vertical-align: middle;
+    cursor: pointer;
   }
-  .gjs-sm-property:hover .css-vars-sm-trigger,
-  .css-vars-sm-trigger:focus-within {
+  .css-vars-sm-trigger:hover {
     opacity: 1;
   }
-  /* The visible "+" circle */
+  /* The visible pencil icon */
   .css-vars-sm-trigger__icon {
     position: absolute;
     inset: 0;
@@ -91,11 +92,11 @@ smStyles.textContent = `
     justify-content: center;
     width: 14px;
     height: 14px;
-    border-radius: 50%;
-    background: var(--gjs-main-color, #804f7b);
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 11px;
+    font-weight: normal;
     line-height: 1;
     pointer-events: none;
   }
@@ -159,16 +160,20 @@ smStyles.textContent = `
     height: 14px;
     flex-shrink: 0;
     margin-left: 4px;
-    border-radius: 50%;
-    background: var(--gjs-main-color, #804f7b);
-    color: #fff;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
     border: none;
     cursor: pointer;
-    font-size: 10px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: normal;
     line-height: 1;
-    opacity: 0.6;
-    transition: opacity 0.12s;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+    vertical-align: middle;
+  }
+  .css-vars-sm-clear:hover {
+    opacity: 1;
   }
   .css-vars-sm-clear:hover {
     opacity: 1;
@@ -267,10 +272,10 @@ function injectVarUI(editor, property, variables) {
     const trigger = document.createElement('div')
     trigger.className = 'css-vars-sm-trigger'
 
-    // Visible "+" circle
+    // Visible pencil icon
     const icon = document.createElement('span')
     icon.className = 'css-vars-sm-trigger__icon'
-    icon.textContent = '+'
+    icon.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>'
     trigger.appendChild(icon)
 
     // Transparent native <select> overlaying the circle

@@ -81,6 +81,7 @@ export function registerCapabilities(addCapability) {
     id: cmdListVars,
     command: cmdListVars,
     description: 'List CSS variables',
+    readOnly: true,
     tags: ['css'],
   })
 
@@ -104,6 +105,7 @@ export function registerCapabilities(addCapability) {
     id: cmdRemoveVar,
     command: cmdRemoveVar,
     description: 'Remove CSS variable',
+    destructive: true,
     inputSchema: {
       type: 'object',
       required: ['name'],
