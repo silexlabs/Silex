@@ -58,11 +58,6 @@
   }
 }
 
-// Fixed block size after project panel resizing
-.gjs-block {
-  width: 84px;
-}
-
 // Panels
 .#{$pn-prefix}project-bar-container {
   top: $topBarHeight;

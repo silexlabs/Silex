@@ -52,69 +52,6 @@
 }
 
 // ============================================================
-// BLOCKS PANEL SPECIFIC
-// ============================================================
-
-.gjs-blocks-c {
-  // Block categories
-  .gjs-block-category {
-    margin-bottom: 8px;
-
-    .gjs-title {
-      padding: 8px 12px;
-      background-color: var(--silex-bg-lighter);
-      border: 1px solid var(--silex-border-color);
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--silex-text-secondary);
-      cursor: pointer;
-      transition: all var(--silex-transition-fast);
-
-      &:hover {
-        background-color: var(--silex-hover-bg);
-        color: var(--silex-text-primary);
-        border-color: var(--silex-accent-primary);
-      }
-    }
-
-    .gjs-blocks-c {
-      padding: 8px 0;
-    }
-  }
-
-  // Individual blocks
-  .gjs-block {
-    margin: 6px;
-    padding: 12px;
-    background-color: var(--silex-bg-lighter);
-    border: 1px solid var(--silex-border-color);
-    border-radius: 6px;
-    transition: all var(--silex-transition-fast);
-
-    &:hover {
-      background-color: var(--silex-hover-bg);
-      border-color: var(--silex-accent-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-
-    .gjs-block-label {
-      font-size: 11px;
-      color: var(--silex-text-secondary);
-      margin-top: 8px;
-    }
-
-    /* symbols */
-    &.symbols__symbol-selected {
-      border-color: var(--silex-accent-primary);
-    }
-  }
-}
-
-// ============================================================
 // PAGES PANEL SPECIFIC
 // ============================================================
 
