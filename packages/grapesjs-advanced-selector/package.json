@@ -1,6 +1,6 @@
 {
   "name": "@silexlabs/grapesjs-advanced-selector",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "A GrapesJS plugin for managing advanced CSS selectors with a visual interface",
   "keywords": [
     "silex",
@@ -69,7 +69,7 @@
     "typescript-eslint": "^8.31.0"
   },
   "dependencies": {
-    "@silexlabs/expression-input": "0.4.4",
+    "@silexlabs/expression-input": "0.4.5",
     "specificity": "^1.0.0"
   }
 }
