@@ -10,7 +10,7 @@ Guidance for contributors using AI-assisted coding tools (Claude Code, Cursor, o
 
 When you change a package, rebuild it, then rebuild any packages that depend on it.
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for build commands, debug cycle, and submodule workflow.
+See [README.md → Development](README.md#development) for build commands, debug cycle, and submodule workflow.
 
 ## When designing websites in Silex (using the editor)
 
