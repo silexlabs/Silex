@@ -29,6 +29,15 @@ New to the project? Look for issues labeled [good first issue](https://github.co
 3. Include a clear description of what changed and how to test it
 4. Make sure existing tests pass
 
+## Branches and releases
+
+Day-to-day work happens on `main` — PRs target this branch. Deployments are driven by git tags:
+
+- Prerelease tags (e.g. `v3.7.0-1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds
+- Stable tags (e.g. `v3.7.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads
+
+Releases are cut by maintainers.
+
 ## Coding standards
 
 - Use [BEM](https://getbem.com/) class naming for CSS
