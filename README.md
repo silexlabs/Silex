@@ -59,18 +59,23 @@ Then open [http://localhost:6805](http://localhost:6805).
 Silex has been built by contributors from around the world since 2009. Today, over 1,000 people use it every week, and 23,000+ accounts have been created. It's a small, friendly community — you'll get noticed, your PRs get reviewed, and your work has real impact.
 
 - **[Good first issues](https://github.com/silexlabs/Silex/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** — start here
-- **[Contributing guide](https://docs.silex.me/en/dev/contribute)** — how to get started
+- **[Contributing guide](./CONTRIBUTING.md)** — coding standards, PR process, discuss-first rule
 - **[Community forums](https://community.silex.me)** — ask questions, share ideas
 - **[Chat](https://short.silex.me/chat)** — quick help
 - **[Bug reports](https://github.com/silexlabs/Silex/issues)**
 - **[AI-assisted coding](AGENTS.md)** — setup guide for Claude Code, Cursor, opencode, etc.
-- **[Development workflow](DEVELOPMENT.md)** — build commands, submodules, debug cycle
+
+See the [Development](#development) section below for build, submodules, and release workflow.
+
+## Development
 
 ### How the repo is organized
 
 This is a **meta repo** — it doesn't contain much code itself. Instead, it pulls together all Silex packages as [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) in the `packages/` directory. Dependencies are managed with [Yarn Workspaces](https://classic.yarnpkg.com/en/docs/workspaces/).
 
 Each package (e.g. `silex-lib`, `grapesjs-fonts`) is its **own git repository** with its own issues, PRs and releases. You can contribute to a single package without touching the rest.
+
+Day-to-day work happens on `main` — PRs target this branch. Deployments are driven by git tags: prerelease tags (e.g. `v3.7.0-1`) deploy to [canary.silex.me](https://canary.silex.me) and produce desktop test builds; stable tags (e.g. `v3.7.0`) deploy to [v3.silex.me](https://v3.silex.me) and publish desktop downloads.
 
 ### Dev setup
 
@@ -84,7 +89,7 @@ npm start          # starts the editor at http://localhost:6805
 
 **Windows users:** Run `yarn install --ignore-scripts && yarn run build` instead.
 
-### Contributing to a package
+### Working on a package
 
 1. Fork the package repo on GitHub (e.g. `silexlabs/silex-lib`)
 2. Add your fork as a remote:
@@ -123,9 +128,9 @@ Once Silex Desktop is running, connect your AI tool to:
 http://localhost:6807/mcp
 ```
 
-**[OpenCode](https://opencode.ai/)** — add an MCP server in your [config file](https://opencode.ai/docs/configuration#mcp-servers) with URL `http://localhost:6807/mcp`.
+**[OpenCode](https://opencode.ai/)** — add an MCP server in your [config file](https://opencode.ai/docs/mcp-servers) with URL `http://localhost:6807/mcp`.
 
-**[Goose](https://block.github.io/goose/)** — add a remote server in your [profile config](https://block.github.io/goose/docs/getting-started/using-extensions#remote-extensions) with endpoint `http://localhost:6807/mcp`.
+**[Goose](https://goose-docs.ai/)** — add a remote server in your [profile config](https://goose-docs.ai/docs/getting-started/using-extensions#remote-extensions-over-streamable-http) with endpoint `http://localhost:6807/mcp`.
 
 **Claude Code** — `claude mcp add --transport http silex http://localhost:6807/mcp`
 
@@ -232,4 +237,4 @@ Silex stands on the shoulders of these open-source projects and their communitie
 
 Brought to you since 2009 by [Alex Hoyau](https://lexoyo.me) and the Silex community.
 
-Silex is free/libre software. [Join the community](https://community.silex.me/), [contribute](https://docs.silex.me/en/dev/contribute), [donate](https://opencollective.com/silex), or [report bugs](https://github.com/silexlabs/Silex/issues).
+Silex is free/libre software. [Join the community](https://community.silex.me/), [contribute](./CONTRIBUTING.md), [donate](https://opencollective.com/silex), or [report bugs](https://github.com/silexlabs/Silex/issues).
