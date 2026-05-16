@@ -20,12 +20,14 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     id: NOTIFICATION_CLEAR,
     command: NOTIFICATION_CLEAR,
     description: 'Clear all notifications',
+    destructive: true,
     tags: ['notifications'],
   })
   addCapability({
     id: NOTIFICATION_LIST,
     command: NOTIFICATION_LIST,
     description: 'List all notifications',
+    readOnly: true,
     tags: ['notifications'],
   })
 }
