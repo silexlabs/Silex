@@ -31,7 +31,7 @@ Most no-code tools lock you in: proprietary formats, forced hosting, subscriptio
 
 ## Features
 
-- **[GrapesJS](https://grapesjs.com/)-based visual editor** — drag-and-drop page building with HTML, CSS, and JS editors
+- **[GrapesJS](https://github.com/GrapesJS/grapesjs)-based visual editor** — drag-and-drop page building with HTML, CSS, and JS editors
 - **Static HTML output** — fast, secure, easy to host anywhere
 - **CMS integration** — bind components to WordPress, Strapi, Squidex, or any GraphQL API
 - **[11ty](https://www.11ty.dev/) compatible** — generate static sites from Silex templates, deploy with CI/CD
@@ -63,6 +63,8 @@ Silex has been built by contributors from around the world since 2009. Today, ov
 - **[Community forums](https://community.silex.me)** — ask questions, share ideas
 - **[Chat](https://short.silex.me/chat)** — quick help
 - **[Bug reports](https://github.com/silexlabs/Silex/issues)**
+- **[AI-assisted coding](AGENTS.md)** — setup guide for Claude Code, Cursor, opencode, etc.
+- **[Development workflow](DEVELOPMENT.md)** — build commands, submodules, debug cycle
 
 ### How the repo is organized
 
@@ -221,7 +223,7 @@ Silex is made up of many packages (git submodules), each with its own contributo
 
 Silex stands on the shoulders of these open-source projects and their communities:
 
-- [GrapesJS](https://grapesjs.com/) — front-end drag-and-drop framework
+- [GrapesJS](https://github.com/GrapesJS/grapesjs) — front-end drag-and-drop framework
 - [11ty (Eleventy)](https://www.11ty.dev/) — static site generator used for CMS integration
 - [Tauri](https://tauri.app/) — desktop app framework (Rust + WebView)
 - [TypeScript](https://www.typescriptlang.org/) — language used across packages
