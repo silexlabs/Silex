@@ -12,93 +12,118 @@ export default (editor, opts = {}) => {
     const container = document.createElement('div')
     container.innerHTML = `
       <style>
+        #${id}-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+          margin: 6px 5px;
+        }
+        #${id}-icon {
+          position: absolute;
+          left: 10px;
+          pointer-events: none;
+          opacity: 0.4;
+          display: flex;
+          align-items: center;
+        }
+        #${id} {
+          width: 100%;
+          border-radius: 9999px;
+          padding: 15px 12px 15px 30px;
+          font-size: 11px;
+          border: 1px solid var(--gjs-border-color, #262626);
+          background: var(--gjs-primary-darker, #111);
+          color: inherit;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        #${id}:focus {
+          border-color: var(--gjs-tertiary-color, #8873FE);
+        }
         #${id}-btn, #${id}-modified-btn {
           position: absolute;
           border: none;
           padding: 0;
-          margin: 5px;
-          line-height: 1;
-          border-radius: 50%;
-          width: 25px;
-          height: 25px;
-          border: 1px solid;
-          z-index: 1;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          transition: opacity .15s ease;
+          background: transparent;
+          color: inherit;
           cursor: pointer;
-          opacity: .75;
+          opacity: 0;
+          transition: opacity .15s ease;
+          font-size: 14px;
+          line-height: 1;
+          display: flex;
+          align-items: center;
         }
-        #${id}-btn{ 
-          right: 0; 
+        #${id}-btn {
+          right: 10px;
         }
-        #${id}-modified-btn { 
-          right: 30px; 
-          opacity: .25;
+        #${id}-modified-btn {
+          right: 32px;
         }
-        #${id}-btn svg, #${id}-modified-btn svg {
-          width: 16px; 
-          height: 16px;
+        #${id}-modified-btn svg {
+          width: 14px;
+          height: 14px;
           display: block;
           pointer-events: none;
         }
-        #${id}-modified-btn.active {
-          color: var(--gjs-main-color);
-          background-color: var(--gjs-tertiary-color);
-          border-color: var(--gjs-tertiary-color);
-          box-shadow: 0 0 5px var(--gjs-main-dark-color);
+        #${id}-container #${id}-modified-btn {
+          opacity: .4;
+        }
+        #${id}-container:not(.empty) #${id}-btn {
+          opacity: .5;
+        }
+        #${id}-btn:hover, #${id}-modified-btn:hover {
           opacity: 1;
         }
-        .empty #${id}-btn {
-          cursor: initial;
-          opacity: .25;
+        #${id}-modified-btn.active {
+          color: var(--gjs-tertiary-color, #8873FE);
+          opacity: 1;
         }
       </style>
 
-      <button 
-        id="${id}-modified-btn" 
-        title="Show modified only"
-        >
-        <svg fill="#000000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 6h-14c-1.1 0-1.4.6-.6 1.4l4.2 4.2c.8.8 1.4 2.3 1.4 3.4v5l4-2v-3.5c0-.8.6-2.1 1.4-2.9l4.2-4.2c.8-.8.5-1.4-.6-1.4z"/>
-        </svg>
+      <div id="${id}-container" class="empty">
+        <span id="${id}-icon">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input id="${id}" type="text" placeholder="${options.placeholder}" />
+        <button id="${id}-modified-btn" title="Show modified only">
+          <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 6h-14c-1.1 0-1.4.6-.6 1.4l4.2 4.2c.8.8 1.4 2.3 1.4 3.4v5l4-2v-3.5c0-.8.6-2.1 1.4-2.9l4.2-4.2c.8-.8.5-1.4-.6-1.4z"/>
+          </svg>
         </button>
-      <button
-        id="${id}-btn"
-        class="gjs-field gjs-sm-properties gjs-two-color"
-        >
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12 7 7m5 5 5 5m-5-5 5-5m-5 5-5 5"/>
-        </svg>
-        </button>
-      <input id="${id}" type="text" class="gjs-field gjs-sm-properties gjs-two-color" placeholder="${options.placeholder}" />
+        <button id="${id}-btn">&times;</button>
+      </div>
     `
     const tags = editor.getContainer().querySelector(`.${prefix}clm-tags`)
     const appendBefore = typeof options.appendBefore === 'string' ? document.querySelector(options.appendBefore) : options.appendBefore
     const appendTo = typeof options.appendTo === 'string' ? document.querySelector(options.appendTo) : options.appendTo
     const wrapper = appendBefore ? appendBefore.parentElement : appendTo ?? tags.parentElement.parentElement
     wrapper.insertBefore(container, appendBefore ?? tags.parentElement.parentElement.lastElementChild)
-    
+
+    const searchContainer = wrapper.querySelector(`#${id}-container`)
     const input = wrapper.querySelector(`#${id}`)
     const button = wrapper.querySelector(`#${id}-btn`)
     const modBtn = wrapper.querySelector(`#${id}-modified-btn`)
 
-    input.onkeyup = () => refresh(editor, input, wrapper, modBtn)
-    
+    input.onkeyup = () => {
+      searchContainer.classList.toggle('empty', !input.value)
+      refresh(editor, input, searchContainer, modBtn)
+    }
+
     button.onclick = () => {
       input.value = ''
-      refresh(editor, input, wrapper, modBtn)
+      searchContainer.classList.add('empty')
+      refresh(editor, input, searchContainer, modBtn)
     }
-    
+
     modBtn.onclick = () => {
       modBtn.classList.toggle('active')
-      refresh(editor, input, wrapper, modBtn)
+      refresh(editor, input, searchContainer, modBtn)
     }
-    
+
     editor.on('component:selected component:styleUpdate style:target', () => {
       resetAll(editor)
-      setTimeout(() => refresh(editor, input, wrapper, modBtn))
+      setTimeout(() => refresh(editor, input, searchContainer, modBtn))
     })
   })
 }
@@ -226,18 +251,18 @@ function getSearchableItems(editor) {
  * according to a text input.
  * @param editor The editor.
  * @param input The text input.
- * @param wrapper The wrapper element.
+ * @param container The search container element (carries the `empty` class).
+ * @param modBtn The "show modified only" toggle button.
  */
-function refresh(editor, input, wrapper, modBtn) {
+function refresh(editor, input, container, modBtn) {
   const showOnlyModified = modBtn && modBtn.classList.contains('active')
 
   if (input.value || showOnlyModified) {
-    wrapper.classList.remove('empty')
+    container.classList.remove('empty')
 
     const properties = getSearchableItems(editor).filter(item => {
       const matchesSearch = item.searchable.toLowerCase().includes(input.value.trim().toLowerCase())
       const isModified = item.property.hasValue({ noParent: true })
-      //  text search AND modification status
       return showOnlyModified ? (matchesSearch && isModified) : matchesSearch
     })
     // Reset visibility
@@ -252,7 +277,7 @@ function refresh(editor, input, wrapper, modBtn) {
     })
 
   } else {
-    wrapper.classList.add('empty')
+    container.classList.add('empty')
     resetAll(editor)
   }
 }
