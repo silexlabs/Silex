@@ -2,13 +2,14 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: 'selector:get',
     command: 'selector:get',
-    description: 'Get CSS selector of selected component',
+    description: 'Get CSS selector of selected element',
+    readOnly: true,
     tags: ['selectors'],
   })
   addCapability({
     id: 'selector:set',
     command: 'selector:set',
-    description: 'Set CSS selector on selected component',
+    description: 'Set CSS selector on selected element',
     inputSchema: {
       type: 'object',
       required: ['selector'],
@@ -21,7 +22,8 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
   addCapability({
     id: 'selector:list-rules',
     command: 'selector:list-rules',
-    description: 'List all CSS rules applied to selected component',
+    description: 'List all CSS rules applied to selected element',
+    readOnly: true,
     tags: ['selectors'],
   })
   addCapability({
@@ -41,6 +43,7 @@ export function registerCapabilities(addCapability: (def: Record<string, unknown
     id: 'selector:info',
     command: 'selector:info',
     description: 'List valid pseudo-classes, operators, and selector examples',
+    readOnly: true,
     tags: ['selectors'],
   })
 }

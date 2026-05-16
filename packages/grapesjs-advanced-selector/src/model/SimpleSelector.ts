@@ -91,7 +91,7 @@ export const STYLE_FOR_TYPE = {
   [SimpleSelectorType.TAG]: { color: 'var(--gjs-color-blue, #3b97e3)' },
   [SimpleSelectorType.CUSTOM_TAG]: { color: 'var(--gjs-color-blue, #3b97e3)' },
   [SimpleSelectorType.CLASS]: { color: 'var(--gjs-color-green, #62c462)' },
-  [SimpleSelectorType.ID]: { color: 'var(--gjs-color-yellow, #ffca6f)' },
+  [SimpleSelectorType.ID]: { color: 'var(--gjs-tertiary-color, #8873FE)' },
   [SimpleSelectorType.ATTRIBUTE]: { color: 'var(--gjs-color-yellow, #ffca6f)' },
   [SimpleSelectorType.UNIVERSAL]: { color: 'var(--gjs-color-red, #dd3636)' },
   [SimpleSelectorType.UNKNOWN]: { color: 'var(--gjs-color-red, #dd3636)', },

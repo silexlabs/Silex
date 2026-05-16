@@ -56,11 +56,12 @@ export class CurrentSelectorDisplay extends StylableElement {
     ${ FOCUS_VISIBLE }
     & {
       font-size: 0.65rem;
-      padding: 0.5rem 0;
+      padding: 0.25rem 0;
     }
     .selection {
       display: flex;
       border: 1px solid var(--gjs-primary-color, #333);
+      border-radius: 4px;
       font-size: .85rem;
       ${ customizeSelect('select.value') }
       select.value {
@@ -71,14 +72,14 @@ export class CurrentSelectorDisplay extends StylableElement {
         font-size: inherit;
         font-family: monospace;
         text-align: center;
-        margin: .25rem;
-        padding: .15rem 0;
-        text-align: center;
+        margin: .15rem;
+        padding: .1rem 0;
         text-wrap: wrap;
         width: 100%;
         cursor: pointer;
         background: var(--gjs-primary-color);
         color: inherit;
+        border-radius: 3px;
       }
       ul {
         list-style-type: none;
@@ -86,7 +87,7 @@ export class CurrentSelectorDisplay extends StylableElement {
         margin: 0;
         & > li {
           display: inline;
-          margin: 0 0.25rem;
+          margin: 0 0.15rem;
         }
       }
       aside {
@@ -99,22 +100,21 @@ export class CurrentSelectorDisplay extends StylableElement {
           background-color: transparent;
           color: var(--gjs-font-color-active, #f8f8f8);
           cursor: pointer;
-          padding: 0;
+          padding: 2px;
           margin: 0;
-          border: 1px solid transparent;
-          opacity: 0.8;
+          border: none;
+          opacity: 0.35;
           display: inline-flex;
           align-items: center;
+          transition: opacity 0.15s;
           &:hover {
-            transform: translateY(-1px);
             opacity: 1;
-            background-color: var(--gjs-primary-color, #444);
           }
         }
         .specificity {
-          font-size: small;
-          padding-top: 2px;
+          font-size: 9px;
           cursor: default;
+          opacity: 0.4;
         }
       }
     }
@@ -129,9 +129,11 @@ export class CurrentSelectorDisplay extends StylableElement {
     .asm-display__error {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
+      padding: 2px 0;
       display: flex;
       align-items: center;
       gap: 0.25rem;
+      font-size: 10px;
       a {
         text-decoration: none;
         color: var(--gjs-secondary-color, #333);
@@ -145,9 +147,11 @@ export class CurrentSelectorDisplay extends StylableElement {
     .asm-display__warning {
       color: var(--gjs-warning-color, #f90);
       margin: 0;
+      padding: 2px 0;
       display: flex;
       align-items: center;
       gap: 0.25rem;
+      font-size: 10px;
       a {
         text-decoration: none;
         color: var(--gjs-secondary-color, #333);
