@@ -277,17 +277,9 @@ echo ""
 VERSION="$TO_TAG"
 BASE="https://github.com/silexlabs/Silex/releases/download/${VERSION}"
 
-# Tauri reads src-tauri/tauri.conf.json's `version` to name artifact files.
-# This is independent of packages/silex-desktop/package.json (npm version).
-# silex-desktop is a submodule, so we resolve its pinned SHA at TO_TAG, then
-# read tauri.conf.json from inside the submodule.
-DESKTOP_VERSION=""
-DESKTOP_SHA=$(git ls-tree "$TO_TAG" packages/silex-desktop 2>/dev/null | awk '{print $3}')
-if [[ -n "$DESKTOP_SHA" ]]; then
-  DESKTOP_VERSION=$(cd packages/silex-desktop 2>/dev/null \
-    && git show "$DESKTOP_SHA:src-tauri/tauri.conf.json" 2>/dev/null \
-    | jq -r '.version // .package.version // empty' 2>/dev/null || true)
-fi
+# Desktop artifacts (Tauri) are named with the monorepo version — the release
+# workflow patches tauri.conf.json from the tag before building.
+DESKTOP_VERSION="${TO_TAG#v}"
 
 echo "### Desktop app"
 echo ""
