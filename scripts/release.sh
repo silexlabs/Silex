@@ -155,7 +155,7 @@ bump_version() {
     fi
     local new_version=$(jq -r .version package.json)
     echo "  $current_version → $new_version"
-    git push -q origin HEAD --tags
+    git push -q --follow-tags origin HEAD
 
     if [ "$wait_npm" == "--wait-npm" ]; then
       local package_name=$(jq -r .name package.json)
