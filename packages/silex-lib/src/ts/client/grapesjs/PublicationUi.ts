@@ -55,7 +55,7 @@ export type PublicationDialogOptions = {
 // Utils
 function cleanupLogEntry(arr: string[][]): string {
   return arr[arr.length - 1]
-    ?.map(str => str.replace(/\[.*\]/g, '').trim())
+    ?.map(str => str.replace(/\[[^\]]*\]/g, '').trim())
     ?.filter(str => !!str)
     ?.join('\n')
 }

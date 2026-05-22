@@ -19,7 +19,7 @@ import { API_CONNECTOR_LOGIN_CALLBACK, API_CONNECTOR_PATH, API_PATH, WEBSITE_DAT
 import { ServerConfig } from '../../server/config'
 import { ConnectorFile, ConnectorFileContent, StatusCallback, StorageConnector, contentToBuffer, contentToString, toConnectorData } from '../../server/connectors/connectors'
 import { ApiError, ConnectorType, ConnectorUser, WebsiteData, WebsiteId, WebsiteMeta, WebsiteMetaFileContent, JobStatus, EMPTY_WEBSITE } from '../../types'
-import fetch from 'node-fetch'
+import fetch, { Response, RequestInit } from 'node-fetch'
 import crypto, { createHash } from 'crypto'
 import { join } from 'path'
 import { Agent } from 'https'
@@ -336,7 +336,7 @@ export default class GitlabConnector implements StorageConnector {
           session,
         })
       }
-      response = await fetch(url, requestBody && method !== 'GET' ? {
+      response = await this.fetchWithRetry(url, requestBody && method !== 'GET' ? {
         agent: this.getAgent(),
         method,
         headers,
@@ -448,26 +448,31 @@ export default class GitlabConnector implements StorageConnector {
         throw new ApiError(`Gitlab API error: ${message} (${text})`, response.status)
       }
     }
+    // Some endpoints (e.g. /jobs/:id/trace) return plain text rather than JSON.
+    // Skip JSON.parse when the server says the response isn't JSON.
+    const contentType = response.headers.get('content-type') ?? ''
+    if (response.ok && !contentType.includes('application/json')) {
+      return text
+    }
     let json: { message: string, error: string } | any
     try {
       json = JSON.parse(text)
     } catch (e) {
       if (!response.ok) {
         throw e
-      } else {
-        console.error('[GitlabConnector] Response from Gitlab API is not valid JSON', {
-          statusText: response.statusText,
-          url,
-          method,
-          body: requestBody,
-          params,
-          responseText: text,
-          error: e,
-          session,
-          stack: e?.stack || new Error().stack,
-        })
-        return text
       }
+      console.error('[GitlabConnector] Response from Gitlab API is not valid JSON', {
+        statusText: response.statusText,
+        url,
+        method,
+        body: requestBody,
+        params,
+        responseText: text,
+        error: e,
+        session,
+        stack: e?.stack || new Error().stack,
+      })
+      return text
     }
     return json
   }
@@ -480,7 +485,7 @@ export default class GitlabConnector implements StorageConnector {
     // Construct the raw URL
     // GET /projects/:id/repository/files/:file_path/raw
     const rawUrl = `${domain}/api/v4/projects/${projectId}/repository/files/${encodeURIComponent(filePath)}/raw?ref=${branch}&access_token=${token}`
-    const fileRes = await fetch(rawUrl, {
+    const fileRes = await this.fetchWithRetry(rawUrl, {
       agent: this.getAgent(),
     })
 
@@ -550,6 +555,22 @@ export default class GitlabConnector implements StorageConnector {
       })
     }
     return undefined
+  }
+
+  // GitLab returns transient 5xx (e.g. 500, 503 "Upstream Gitaly has been exhausted")
+  // on raw-file fetches even for valid repos. Retry with exponential backoff + jitter.
+  private async fetchWithRetry(url: string, init: RequestInit = {}, maxRetries = 3): Promise<Response> {
+    let response: Response | undefined
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      response = await fetch(url, init)
+      if (response.status < 500 || attempt === maxRetries) return response
+      // Drain the body so the connection can be reused
+      try { await response.text() } catch { /* ignore */ }
+      const backoffMs = Math.min(8000, 500 * Math.pow(2, attempt)) + Math.floor(Math.random() * 500)
+      console.warn(`[GitlabConnector] GitLab returned ${response.status} on ${url.split('?')[0]}, retrying in ${backoffMs}ms (attempt ${attempt + 1}/${maxRetries})`)
+      await new Promise(resolve => setTimeout(resolve, backoffMs))
+    }
+    return response as Response
   }
 
   /**

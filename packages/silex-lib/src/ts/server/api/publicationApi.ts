@@ -42,6 +42,22 @@ export class PublicationError extends Error {
 
 const PROJECT_ROOT = require.main ? require.main.path : process.cwd()
 
+// Limit parallel storage reads so we don't overwhelm the upstream API
+// (GitLab returns 5xx for the same project under high concurrent load)
+const PUBLISH_STORAGE_CONCURRENCY = 5
+
+async function mapWithConcurrency<T, R>(items: T[], limit: number, mapper: (item: T, index: number) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let cursor = 0
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (let i = cursor++; i < items.length; i = cursor++) {
+      results[i] = await mapper(items[i], i)
+    }
+  })
+  await Promise.all(workers)
+  return results
+}
+
 /**
  * Get the desired connector
  * Can be the default connector or a specific one
@@ -123,7 +139,7 @@ export default function (config: ServerConfig): Router {
       const storage = await getStorageConnector(session, config, storageId)
 
       // Load the content if necessary
-      const filesList: ConnectorFile[] = await Promise.all(files.map(async (file: ClientSideFile) => {
+      const filesList: ConnectorFile[] = await mapWithConcurrency(files, PUBLISH_STORAGE_CONCURRENCY, async (file: ClientSideFile) => {
         const fileWithContent = file as ClientSideFileWithContent
         const fileWithSrc = file as ClientSideFileWithSrc
         if(!fileWithContent.content && !fileWithSrc.src) throw new PublicationError('Missing content or src in file', 400)
@@ -134,7 +150,7 @@ export default function (config: ServerConfig): Router {
           // Content
           content,
         }
-      }))
+      })
 
       res.json({
         url: await hostingConnector.getUrl(session, websiteId),

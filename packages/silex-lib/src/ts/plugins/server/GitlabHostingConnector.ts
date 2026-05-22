@@ -47,13 +47,13 @@ const GITLAB_FAILED_STATUSES = ['failed', 'canceled', 'skipped']
  * Returns an array of meaningful log lines
  */
 function filterTraceLines(trace: string): string[] {
+  // eslint-disable-next-line no-control-regex
+  const ansiEscape = /\x1b\[[0-9;?]*[a-zA-Z]/g
   return trace.split('\n')
-    .map(l => l.trim())
+    .map(l => l.replace(ansiEscape, '').trim())
     .filter(l => l.length > 0)
     // Remove GitLab internal markers
     .filter(l => !l.match(/^section_/))
-    // eslint-disable-next-line no-control-regex
-    .filter(l => !l.match(/^\x1b/)) // Remove ANSI escape sequences at start
     // Remove timestamps at the beginning of lines
     .map(l => l.replace(/^\d{4}-\d{2}-\d{2}T[\d:.]+Z\s*\d*O?\s*/, ''))
     // Remove Docker/Git setup noise
