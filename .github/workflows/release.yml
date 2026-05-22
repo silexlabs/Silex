@@ -90,6 +90,14 @@ jobs:
       # ── silex-desktop (Tauri) ────────────────────────────────────
       # Build Tauri first — it compiles silex-server as a library dependency.
       # The standalone server build below reuses the cached compilation.
+      # Compute the monorepo version (tag without the leading 'v') so Tauri
+      # bundles the artifacts as Silex_<tag>_*.deb etc.
+      - name: Compute release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: release_version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
       # Sign updater artifacts only on tag pushes (secrets unavailable on fork PRs).
       - name: Build Tauri app (signed)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -102,7 +110,7 @@ jobs:
         with:
           projectPath: packages/silex-desktop
           tauriScript: yarn tauri
-          args: ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
+          args: --config '{"version":"${{ steps.release_version.outputs.version }}"}' ${{ matrix.rust-target && format('--target {0}', matrix.rust-target) || '' }}
 
       # Write a temp config to disable updater artifacts (they require signing keys)
       - name: Disable updater artifacts config
