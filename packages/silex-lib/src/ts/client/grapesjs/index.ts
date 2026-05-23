@@ -39,6 +39,7 @@ import loadingPlugin from '@silexlabs/grapesjs-loading'
 import fontsDialogPlugin from '@silexlabs/grapesjs-fonts'
 import cssVariablesPlugin from '@silexlabs/grapesjs-css-variables'
 import selectorPlugin from '@silexlabs/grapesjs-advanced-selector'
+import bodyRemapPlugin from './body-remap'
 import symbolDialogsPlugin, { cmdPromptAddSymbol } from './symbolDialogs'
 import loginDialogPlugin, { LoginDialogOptions, cmdLogout } from './LoginDialog'
 import footerPlugin from './footer'
@@ -84,6 +85,7 @@ const plugins = [
   {name: '@silexlabs/grapesjs-fonts', value: fontsDialogPlugin},
   {name: '@silexlabs/grapesjs-css-variables', value: cssVariablesPlugin},
   {name: '@silexlabs/grapesjs-advanced-selector', value: selectorPlugin},
+  {name: './body-remap', value: bodyRemapPlugin},
   {name: './new-page-dialog', value: newPageDialog},
   {name: './page-panel', value: pagePanelPlugin},
   {name: 'grapesjs-blocks-basic', value: blocksBasicPlugin},
