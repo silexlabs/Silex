@@ -5,6 +5,21 @@ import { OperatorType } from './Operator'
 import { CompoundSelector } from './CompoundSelector'
 
 ////////////////
+// Canvas body remap
+// In GrapesJS, the iframe DOM is <body> → <div.wrapper> → [components]. The
+// wrapper has a class (set by the silex-lib body-remap plugin) and CSS rules
+// targeting `body` are rewritten to target that class so they visually apply.
+// For .matches() to also recognize selectors like `body > .x`, we apply the
+// same rewrite here before testing against the DOM.
+// Kept in sync with silex-lib/src/ts/client/grapesjs/body-remap.ts
+const CANVAS_BODY_WRAPPER_CLASS = 'silex-page-body'
+const BODY_TAG_SELECTOR_RE = /(^|[,\s>+~])body(?![a-zA-Z0-9_-])/g
+function normalizeSelectorForCanvas(selector: string): string {
+  if (selector.includes(CANVAS_BODY_WRAPPER_CLASS)) return selector
+  return selector.replace(BODY_TAG_SELECTOR_RE, `$1.${CANVAS_BODY_WRAPPER_CLASS}`)
+}
+
+////////////////
 // GrapeJs functions
 const untranslatedKeys = new Set<string>()
 export function getTranslation(editor: Editor, key: string): string {
@@ -59,9 +74,10 @@ export function getSelectors(editor: Editor): ComplexSelector[] {
             const selectorNoPseudo = toString(complexNoPseudo)
 
             // Add the matching selectors
-            if (component.view?.el.matches(selectorNoPseudo)) {
+            if (component.view?.el.matches(normalizeSelectorForCanvas(selectorNoPseudo))) {
               acc.push(complex)
-            } else if (component.tagName.toLowerCase() === 'body' && (selectorNoPseudo.toLowerCase().startsWith('body') || selectorNoPseudo.toLowerCase().startsWith('html'))) {
+            } else if (component.tagName.toLowerCase() === 'body' && selectorNoPseudo.toLowerCase().startsWith('html')) {
+              // `html` selector: not present in canvas DOM, match on body component
               acc.push(complex)
             }
           } catch (e) {
@@ -96,15 +112,13 @@ export function editStyle(editor: Editor, selector: string) {
  */
 export function matchSelectorAll(selector: string, components: Component[]): boolean {
   try {
+    const normalized = normalizeSelectorForCanvas(selector)
     return components.some((component) => {
-      // Special case for body component in GrapesJS editor
-      // In GrapesJS, the body element is rendered as a div in the editor
-      if (component.tagName?.toLowerCase() === 'body' &&
-          (selector.toLowerCase().startsWith('body') ||
-           selector.toLowerCase().startsWith('html'))) {
+      // `html` selector: not present in canvas DOM, match on body component
+      if (component.tagName?.toLowerCase() === 'body' && selector.toLowerCase().startsWith('html')) {
         return true
       }
-      return component.view?.el.matches(selector)
+      return component.view?.el.matches(normalized)
     })
   } catch {
     return false
@@ -116,15 +130,13 @@ export function matchSelectorAll(selector: string, components: Component[]): boo
  */
 export function matchSelectorSome(selector: string, components: Component[]): boolean {
   try {
+    const normalized = normalizeSelectorForCanvas(selector)
     return components.every((component) => {
-      // Special case for body component in GrapesJS editor
-      // In GrapesJS, the body element is rendered as a div in the editor
-      if (component.tagName?.toLowerCase() === 'body' &&
-          (selector.toLowerCase().startsWith('body') ||
-           selector.toLowerCase().startsWith('html'))) {
+      // `html` selector: not present in canvas DOM, match on body component
+      if (component.tagName?.toLowerCase() === 'body' && selector.toLowerCase().startsWith('html')) {
         return true
       }
-      return component.view?.el.matches(selector)
+      return component.view?.el.matches(normalized)
     })
   } catch {
     return false
