@@ -306,6 +306,18 @@ export function setVariableOrder(editor, order) {
 }
 
 /**
+ * Resolve the rule the user is currently editing in the Style Manager —
+ * matches the active selector chip in the UI. Falls back to
+ * `getModelToStyle(component)` if the SM has no rule selected yet (rare).
+ */
+function getActiveStyleTarget(editor) {
+  const sel = editor.StyleManager.getSelected()
+  if (sel) return sel
+  const comp = editor.getSelected()
+  return comp ? editor.StyleManager.getModelToStyle(comp) : null
+}
+
+/**
  * Get the current CSS value for a property from the style target.
  * Needed because GrapesJS number-type properties can't parse var() references,
  * so getFullValue() returns empty for those. We read directly from the target style.
@@ -313,9 +325,7 @@ export function setVariableOrder(editor, order) {
 export function getTargetStyleValue(editor, property) {
   const propName = property.get ? property.get('property') : ''
   if (!propName) return ''
-  const selected = editor.getSelected()
-  if (!selected) return ''
-  const target = editor.StyleManager.getModelToStyle(selected)
+  const target = getActiveStyleTarget(editor)
   if (!target) return ''
   const style = target.getStyle()
   return String(style[propName] || '')
@@ -328,9 +338,7 @@ export function getTargetStyleValue(editor, property) {
 export function setTargetStyleValue(editor, property, value) {
   const propName = property.get ? property.get('property') : ''
   if (!propName) return
-  const selected = editor.getSelected()
-  if (!selected) return
-  const target = editor.StyleManager.getModelToStyle(selected)
+  const target = getActiveStyleTarget(editor)
   if (!target) return
   const style = { ...target.getStyle() }
   if (value) {
