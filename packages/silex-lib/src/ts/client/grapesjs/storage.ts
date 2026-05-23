@@ -119,11 +119,17 @@ export const storagePlugin = (editor: PublishableEditor) => {
         // Always return the full data in the end
         renderLoader('Starting', 1, 1)
         await nextFrame()
-        editor.once('canvas:frame:load', () => {
-          setTimeout(() => { // This is needed in chrome, otherwise a save is triggered
-            editor.stopCommand(cmdPauseAutoSave)
-          }, 500)
-        })
+        // Re-enable autosave once the canvas frame is ready. For empty/fast
+        // projects the `canvas:frame:load` event may have already fired before
+        // we get here, so check the current frame state first.
+        const resumeAutoSave = () => setTimeout(() => { // delay needed in chrome, otherwise a save is triggered
+          editor.stopCommand(cmdPauseAutoSave)
+        }, 500)
+        if (editor.Canvas?.getDocument?.()?.body) {
+          resumeAutoSave()
+        } else {
+          editor.once('canvas:frame:load', resumeAutoSave)
+        }
         return data
       } catch (err) {
         editor.UndoManager.clear()
