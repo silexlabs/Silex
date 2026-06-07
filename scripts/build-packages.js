@@ -55,10 +55,9 @@ function buildPackage(packageName) {
   
   try {
     // Try to run build script if it exists
-    execSync('npm run build --if-present', { 
-      cwd: packagePath, 
+    execSync('yarn run build --if-present', {
+      cwd: packagePath,
       stdio: 'inherit',
-      env: { ...process.env, npm_execpath: 'yarn' }
     });
     console.log(`✅ ${packageName} built successfully`);
   } catch (error) {
