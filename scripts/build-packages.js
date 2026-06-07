@@ -7,7 +7,7 @@
  */
 
 import { execSync } from 'child_process';
-import { existsSync, readdirSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 import path from 'path';
 
 function getPackagesToBuild() {
@@ -51,11 +51,17 @@ function buildPackage(packageName) {
     return;
   }
 
-  console.log(`🔨 Building ${packageName}...`);
-  
+  // Yarn does not strip --if-present from the script args, so check manually.
+  const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+  if (!pkg.scripts || !pkg.scripts.build) {
+    console.log(`⏭️  Skipping ${packageName} - no build script`)
+    return
+  }
+
+  console.log(`🔨 Building ${packageName}...`)
+
   try {
-    // Try to run build script if it exists
-    execSync('yarn run build --if-present', {
+    execSync('yarn run build', {
       cwd: packagePath,
       stdio: 'inherit',
     });
