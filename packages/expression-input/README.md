@@ -14,7 +14,7 @@ This is part of a bigger project: [Silex no-code website builder](https://www.si
 ## Installation
 
 ```bash
-npm install --save @silexlabs/expression-input
+yarn add @silexlabs/expression-input
 ```
 
 Or include it via a `<script>` tag:
@@ -45,15 +45,15 @@ To contribute to this project:
 
 2. **Install Dependencies**:
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Build the Project**:
    ```bash
-   npm run build
+   yarn run build
    ```
 
 4. **Start Development Server**:
    ```bash
-   npm run serve
+   yarn run serve
    ```
