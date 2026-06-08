@@ -196,8 +196,13 @@ for pkg_dir in "${PACKAGE_PATHS[@]}"; do
     else
       echo "  ↑ deps: ${INTERNAL_UPGRADE_LIST[*]}"
       npx -y npm-check-updates --dep prod,dev,peer --target=greatest --upgrade "${INTERNAL_UPGRADE_LIST[@]}" > /dev/null 2>&1
-      npm install --package-lock-only --workspaces false > /dev/null 2>&1
-      git add package.json package-lock.json
+      if [ -f yarn.lock ]; then
+        yarn install --ignore-scripts > /dev/null 2>&1
+        git add package.json yarn.lock
+      else
+        npm install --package-lock-only --workspaces false > /dev/null 2>&1
+        git add package.json package-lock.json
+      fi
       git commit -q -m "chore: update internal dependencies in $pkg_dir"
       git push -q origin HEAD
     fi
