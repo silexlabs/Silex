@@ -23,7 +23,7 @@
   "scripts": {
     "preinstall": "node scripts/ensure-yarn.js",
     "build": "node scripts/build-packages.js",
-    "postinstall": "$npm_execpath run build",
+    "postinstall": "yarn build",
     "start": "node packages/silex-lib/",
     "release": "scripts/release.sh",
     "test": "node scripts/check-internal-deps.js",

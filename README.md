@@ -84,7 +84,7 @@ git clone git@github.com:silexlabs/Silex.git --recurse-submodules -j8
 cd Silex
 nvm install        # optional — uses version from .nvmrc
 yarn install       # installs dependencies and builds all packages
-npm start          # starts the editor at http://localhost:6805
+yarn start         # starts the editor at http://localhost:6805
 ```
 
 **Windows users:** Run `yarn install --ignore-scripts && yarn run build` instead.
@@ -108,7 +108,7 @@ npm start          # starts the editor at http://localhost:6805
 
 ### Releasing
 
-Run `npm run release` for guided version bumping across packages. Run without arguments to see help and options (prepatch, preminor, patch, minor, dry-run).
+Run `yarn run release` for guided version bumping across packages. Run without arguments to see help and options (prepatch, preminor, patch, minor, dry-run).
 
 ## AI / Vibe coding
 
