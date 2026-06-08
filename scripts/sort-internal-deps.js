@@ -44,7 +44,8 @@ if (showInternalDeps) {
 }
 
 // Trouver l'argument non positionnel
-const nonPositionalArgs = process.argv.filter(arg => !arg.startsWith('-') && !arg.startsWith('/'));
+// slice(2) drops node + script path (don't filter by '/': Windows paths start with "C:\").
+const nonPositionalArgs = process.argv.slice(2).filter(arg => !arg.startsWith('-'));
 if (nonPositionalArgs.length > 0) {
   const pkgName = nonPositionalArgs[0];
   if (pkgName) {
@@ -56,9 +57,15 @@ if (nonPositionalArgs.length > 0) {
 const currentScript = process.argv[1];
 const scriptDir = path.dirname(currentScript);
 const packagesDir = path.join(scriptDir, '..', 'packages');
-const packagePaths = glob.sync(`${packagesDir}/**/package.json`, {
-  ignore: '**/node_modules/**',
-});
+// On Windows, interpolating packagesDir into the pattern inserts "\" (glob escapes) and
+// glob returns "\" paths; pass it via cwd and normalize to "/" so the checks below match.
+const packagePaths = glob
+  .sync('**/package.json', {
+    cwd: packagesDir,
+    ignore: '**/node_modules/**',
+    absolute: true,
+  })
+  .map(p => p.replace(/\\/g, '/'));
 
 const internalPackages = {};
 

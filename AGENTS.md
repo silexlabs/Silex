@@ -27,7 +27,7 @@ Silex Desktop exposes MCP tools for controlling the editor. See the [silex-deskt
 ## When writing code for Silex (editing source)
 
 - Prefer small, focused changes.
-- Run `npm run build` for affected packages and verify no regressions before delivering.
+- Run `yarn run build` for affected packages and verify no regressions before delivering.
 - Do not commit, push, or modify git history unless explicitly asked.
 
 See [Contribute](https://docs-66e101.gitlab.io/fr/designer/contribute/) for the full contributor guide.
