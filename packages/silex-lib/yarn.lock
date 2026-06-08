@@ -781,19 +781,19 @@
   resolved "https://registry.yarnpkg.com/@pkgjs/parseargs/-/parseargs-0.11.0.tgz#a77ea742fab25775145434eb1d2328cf5013ac33"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@silexlabs/expression-input@0.4.5":
-  version "0.4.5"
-  resolved "https://registry.yarnpkg.com/@silexlabs/expression-input/-/expression-input-0.4.5.tgz#79408f43d0f922e7d32d8be044e8d5843890c1eb"
-  integrity sha512-MXP84sZ3msydPK70hvs4Xfw2GpKx7ySu7pgC+7zjQf6I8b5GQfWqvaVosxFQ4KRxZzPM2jpR9XHOsvd2WHsiuA==
+"@silexlabs/expression-input@0.5.0-canary.1":
+  version "0.5.0-canary.1"
+  resolved "https://registry.yarnpkg.com/@silexlabs/expression-input/-/expression-input-0.5.0-canary.1.tgz#f2b6bcd05a7e5fc0e855146414b6e17576584d7e"
+  integrity sha512-uCFtRP821TJWxWly5C00x7QYB1rxFf1Wvdq+xSPFyE1RFKB2nYA7nJPD30oAatsyyrQbwmKQwTSZj7pBLfyyNA==
   dependencies:
     lit "^3.3.2"
 
-"@silexlabs/grapesjs-advanced-selector@1.6.0-canary.1":
-  version "1.6.0-canary.1"
-  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-advanced-selector/-/grapesjs-advanced-selector-1.6.0-canary.1.tgz#a08b037f29b5d87dcc9882f8e3c788f400cd55ee"
-  integrity sha512-D+3dwKUyTikp+/Bk0OE5Ro+/5zPUtu+ba6+uHvytO3UrPYi9wFSkIhMh4mdMokAb7jhpIfe/yipx7AwOvDAJbA==
+"@silexlabs/grapesjs-advanced-selector@1.6.0-canary.3":
+  version "1.6.0-canary.3"
+  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-advanced-selector/-/grapesjs-advanced-selector-1.6.0-canary.3.tgz#28f4699ef93ba9e34d7e14a717ff7785b0a87804"
+  integrity sha512-GE2/hV7CDQUDe1HFYbFKb1+8Yj6gvc30w2/DrS+FBhHprTJJVnl0uyYdwwg7/VAskPfmUF6GGYdtIUtc4IzDHw==
   dependencies:
-    "@silexlabs/expression-input" "0.4.5"
+    "@silexlabs/expression-input" "0.5.0-canary.1"
     specificity "^1.0.0"
 
 "@silexlabs/grapesjs-ai-capabilities@0.0.4":
@@ -801,18 +801,18 @@
   resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-ai-capabilities/-/grapesjs-ai-capabilities-0.0.4.tgz#02cc9ddd61b1c1304c00d219c6663574cbb8506d"
   integrity sha512-gIkN+HmS7P6YXHw+E6SnSUZvKvBAQQmbUemcsurh0E7ZEx3ybss7BwohC1Dea+Gr3Lv8d47f4AS1R7/FJkMJmA==
 
-"@silexlabs/grapesjs-css-variables@0.1.0-canary.0":
-  version "0.1.0-canary.0"
-  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-css-variables/-/grapesjs-css-variables-0.1.0-canary.0.tgz#7979152f4dcfaaa0fe62e7a4954ecece19dad721"
-  integrity sha512-UxI7Coe9+QuXwGdBv/LHSPx3BfvC2Q4wamulndqXBFMIxr/pVkqpHc39o2Pbh6QRmj3p2Tq/tcuTBOfDWNvp+g==
+"@silexlabs/grapesjs-css-variables@0.1.0-canary.1":
+  version "0.1.0-canary.1"
+  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-css-variables/-/grapesjs-css-variables-0.1.0-canary.1.tgz#127b4e64140f858c0d104a0c28cbe2d8a4345ed8"
+  integrity sha512-uDZh78jQ2LIXfvm4IppjYUjbToXQmtN7v2eXHbtSr0FAe0Me7TaDeJOpmSRaE9ahCEEIfvVxzONsp/ZCId/n0A==
 
-"@silexlabs/grapesjs-data-source@0.3.0-canary.0":
-  version "0.3.0-canary.0"
-  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-data-source/-/grapesjs-data-source-0.3.0-canary.0.tgz#5475f0266657d5a2eda10308829d2d84bfe7da65"
-  integrity sha512-2M65no4iASlXqGnqUeSPoj0CJaHW7g3tuJscYRd4w9k/O75Mz8pFz9jru18v6K+dXPjeA3B5cMq6d42iWPkTQA==
+"@silexlabs/grapesjs-data-source@0.3.0-canary.2":
+  version "0.3.0-canary.2"
+  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-data-source/-/grapesjs-data-source-0.3.0-canary.2.tgz#4abc8314cdab14d487a4c4803c36958dfa1d135e"
+  integrity sha512-XT8QUySv1lPLHfi/mZgP725kzDJMlVf9VGI9SUTSG2Ncd45FjPA7Pj1W2ypyYqzzkOGj3vbugeHGGERLcV0mpg==
   dependencies:
     "@apollo/client" "^3.13.8"
-    "@silexlabs/expression-input" "0.4.5"
+    "@silexlabs/expression-input" "0.5.0-canary.1"
     dedent-js "^1.0.1"
 
 "@silexlabs/grapesjs-filter-styles@1.4.0-canary.0":
@@ -825,17 +825,17 @@
   resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-fonts/-/grapesjs-fonts-1.2.2.tgz#35017b8a4d983fffe965df4d960ada06ba4f11ea"
   integrity sha512-KT0ZuiAIOEHwrNaJm8XUksROGNffV58Sv1GLW2M0Ztsg05kmKlIfQ9YsbQY9x7nu6CXPS6AI+YzZWJ5jsnZW1w==
 
-"@silexlabs/grapesjs-keymaps-dialog@1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-keymaps-dialog/-/grapesjs-keymaps-dialog-1.3.1.tgz#0f6d4fd0c3ab7b8011b5dd2ce66a9c74be0b9092"
-  integrity sha512-HPrFafd2yxxlZBl3ao2CzZF2tbR2vhDXTbr3LtWNKEnqRs0akscTE5WeHfhAtDdHPyapzlWGhnL2l11DGVMx9g==
+"@silexlabs/grapesjs-keymaps-dialog@1.4.0-canary.4":
+  version "1.4.0-canary.4"
+  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-keymaps-dialog/-/grapesjs-keymaps-dialog-1.4.0-canary.4.tgz#b551db607826a608515ff7b1bd659085cde7f98e"
+  integrity sha512-k6GS9QsOgjIDlnObzIYYYowqQaLOOC7ZI9/A+SOeErdwniL+pS7IVKEA/P/0hVDA3DGRz0+caTILum2GcpNNuQ==
   dependencies:
     dts-bundle-generator "^9.5.1"
 
-"@silexlabs/grapesjs-loading@1.4.0-canary.0":
-  version "1.4.0-canary.0"
-  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-loading/-/grapesjs-loading-1.4.0-canary.0.tgz#3efb142d656fb13f399d31de56273ef3de8c3fe3"
-  integrity sha512-AwLTTRCE3q4ACSO65xnwEB51nEJRv3kCvEDOzK+CV4MefZ6EriwjOvhB6qBf9Zg3Uz0fZQj+j/M806ean5NI0w==
+"@silexlabs/grapesjs-loading@1.4.0-canary.2":
+  version "1.4.0-canary.2"
+  resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-loading/-/grapesjs-loading-1.4.0-canary.2.tgz#9dd367b1c8e2f1cb1dff3033ddf8ef0faa88322b"
+  integrity sha512-H4ocbAcyXoh85U5OZ0r12ohvcjLLD2HmdpNRV837X0v+6IbhdOs1oI2B9zGtTab2NBw88jZDyqr2JpwshlieXQ==
 
 "@silexlabs/grapesjs-notifications@0.3.0-canary.0":
   version "0.3.0-canary.0"
@@ -852,10 +852,10 @@
   resolved "https://registry.yarnpkg.com/@silexlabs/grapesjs-symbols/-/grapesjs-symbols-1.5.0-canary.0.tgz#7a2cb97342037bbe9db337754369b50f67362ef4"
   integrity sha512-5jDkMnSlsrNPEmvLMyu7y/5CTMmdbgXUs58eRZN7tFvlv7d+T/GpDeGwp1HxFiEiX7iH5kqHXAHee8QuWLSR3Q==
 
-"@silexlabs/silex-plugins@1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@silexlabs/silex-plugins/-/silex-plugins-1.3.1.tgz#14776e8b88f4c134f73bc05a68d9e63942d76928"
-  integrity sha512-LW2t9OKLZiixUbIak0do/XMhFBV6ja0RpR5qDVIaHF5CULyKzWQJ8qPXo01RRQIZ6pryCN7OU+I7MLiij/rQKw==
+"@silexlabs/silex-plugins@1.4.0-canary.0":
+  version "1.4.0-canary.0"
+  resolved "https://registry.yarnpkg.com/@silexlabs/silex-plugins/-/silex-plugins-1.4.0-canary.0.tgz#35ff9cf9a908133f669f1f1ac3d9f84948b35e48"
+  integrity sha512-H6oKp784m2axZSmif/d9mY8KIwWicSJL4bDuiXReRNl8sNtsaxoEk70j49Qig3z+uaP+l2/3FUP6+4cWhLF8Mg==
   dependencies:
     component-emitter "^2.0.0"
 
