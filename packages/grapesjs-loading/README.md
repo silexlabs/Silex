@@ -58,7 +58,7 @@ body, html {
 * CDN
   * `https://unpkg.com/@silexlabs/grapesjs-loading`
 * NPM
-  * `npm i @silexlabs/grapesjs-loading`
+  * `yarn add @silexlabs/grapesjs-loading`
 * GIT
   * `git clone https://github.com/silexlabs/grapesjs-loading.git`
 
@@ -120,19 +120,19 @@ $ cd grapesjs-loading
 Install dependencies
 
 ```sh
-$ npm i
+$ yarn install
 ```
 
 Build the project
 
 ```sh
-$ npm run build
+$ yarn run build
 ```
 
 Start the dev server
 
 ```sh
-$ npm start
+$ yarn start
 ```
 
 ## License
