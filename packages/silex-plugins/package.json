@@ -12,11 +12,11 @@
     "LICENSE"
   ],
   "scripts": {
-    "preversion": "$npm_execpath run lint && $npm_execpath test && $npm_execpath run build",
-    "watch": "$npm_execpath test -- --watch",
-    "build": "rm -rf dist && tsc && tsc --build tsconfig.es5.json",
+    "preversion": "yarn lint && yarn test && yarn build",
+    "watch": "yarn test --watch",
+    "build": "rimraf dist && tsc && tsc --build tsconfig.es5.json",
     "lint": "eslint src",
-    "fix": "$npm_execpath run lint -- --fix",
+    "fix": "yarn lint --fix",
     "test": "jest"
   },
   "repository": {
@@ -49,6 +49,7 @@
     "eslint": "^9.25.1",
     "globals": "^16.0.0",
     "jest": "^29.7.0",
+    "rimraf": "^6.0.1",
     "typescript": "^5.8.3"
   }
 }

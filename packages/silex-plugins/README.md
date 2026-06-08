@@ -10,7 +10,7 @@ A plugin takes a Config object and returns an object which will be merged into t
 
 ## How it works
 
-1. Install with `npm i @silexlabs/silex-plugins`
+1. Install with `yarn add @silexlabs/silex-plugins`
 1. Use in your app to add a plugin system
 1. Create plugins for your app
 
@@ -118,15 +118,15 @@ To contribute to this project:
 
 2. **Install Dependencies**:
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Build the Project**:
    ```bash
-   npm run build
+   yarn run build
    ```
 
 4. **Run Tests**:
    ```bash
-   npm test
+   yarn test
    ```
