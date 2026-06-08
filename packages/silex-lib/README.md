@@ -52,7 +52,7 @@ This command will run Silex in a Docker container.
 First, install Silex as a dev dependency in your project:
 
 ```bash
-npm install --save-dev @silexlabs/silex
+yarn add -D @silexlabs/silex
 ```
 
 Then, you can run Silex with the `silex` command in your `package.json` scripts:
@@ -78,7 +78,7 @@ $ npx silex --client-config=./examples/client-config-transformers.js --server-co
 Or like this:
 
 ```sh
-$ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_SERVER_CONFIG=`pwd`/examples/server-config-plugins.js npm run start:debug
+$ SILEX_CLIENT_CONFIG=./examples/client-config-transformers.js SILEX_SERVER_CONFIG=`pwd`/examples/server-config-plugins.js yarn run start:debug
 ```
 
 ## Development
@@ -93,17 +93,17 @@ To contribute to this project:
 
 2. **Install Dependencies**:
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Build the Project**:
    ```bash
-   npm run build
+   yarn run build
    ```
 
 4. **Start Development Server**:
    ```bash
-   npm run start:debug
+   yarn run start:debug
    ```
 
 ## Contributing

@@ -1,5 +1,5 @@
-npm install --package-lock-only --workspaces false
-npm run build
-npm run lint:fix
+yarn install --ignore-scripts
+yarn run build
+yarn run lint:fix
 git update-index --again
-npm test
+yarn test

@@ -122,11 +122,11 @@ export class PublicationManager {
       ...opts,
     } as PublicationManagerOptions
     // Save the publication settings in the website settings
-    editor.on('storage:start:store', (data) => {
+    editor.on('storage:start:store', (data: WebsiteData) => {
       data.publication = this.settings
     })
     // load publication settings from the website
-    editor.on('storage:end:load', (data) => {
+    editor.on('storage:end:load', (data: WebsiteData) => {
       this.settings = data.publication ?? {}
       // Check if the user is logged in
       getUser({ type: ConnectorType.HOSTING, connectorId: this.settings.connector?.connectorId })
