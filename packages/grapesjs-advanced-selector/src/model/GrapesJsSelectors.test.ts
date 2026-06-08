@@ -13,7 +13,7 @@ describe('getSelectors', () => {
       tagName: 'BODY',
       view: {
         el: {
-          matches: jest.fn(() => false),
+          matches: jest.fn((sel: string) => sel === 'BODY[data-attr]'),
         }
       }
     } as unknown as Component
